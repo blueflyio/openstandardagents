@@ -17,7 +17,7 @@ OSSA defines four access tiers that control agent permissions and capabilities:
 ## Configuration
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 
 spec:

@@ -102,7 +102,7 @@ Before OSSA, AI agents were:
 OSSA v0.3.2 introduces a **unified LLM configuration** that eliminates hardcoded model names and enables runtime model selection:
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 metadata:
   name: flexible-agent

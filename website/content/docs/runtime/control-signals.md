@@ -357,7 +357,7 @@ payload:
 Configure signals in your runtime specification:
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: RuntimeSpec
 
 control_signals:
@@ -503,7 +503,7 @@ signal:
 ### Routing Configuration
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: MessageRouting
 
 routes:

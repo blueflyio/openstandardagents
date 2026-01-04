@@ -85,7 +85,7 @@ tier_4_policy:
 ### Request Schema
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: DelegationRequest
 metadata:
   request_id: "req-550e8400-e29b-41d4-a716-446655440000"
@@ -135,7 +135,7 @@ context:
 ### Response Schema
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: DelegationResponse
 metadata:
   request_id: "req-550e8400-e29b-41d4-a716-446655440000"
@@ -162,7 +162,7 @@ result:
 ### Error Response
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: DelegationResponse
 metadata:
   request_id: "req-550e8400-e29b-41d4-a716-446655440000"
@@ -290,7 +290,7 @@ per_target_agent:
 Tier 2 agent requests analysis from Tier 1 agent:
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: DelegationRequest
 metadata:
   request_id: "req-analysis-001"
@@ -317,7 +317,7 @@ justification: "Content quality review before publication"
 Tier 4 policy agent coordinates with Tier 3 operator:
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: DelegationRequest
 metadata:
   request_id: "req-deploy-001"
@@ -352,7 +352,7 @@ Attempt to escalate privileges (blocked by delegation matrix):
 
 ```yaml
 # Request (will be rejected)
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: DelegationRequest
 metadata:
   request_id: "req-invalid-001"
@@ -370,7 +370,7 @@ justification: "Need to fix typo in content"
 
 ---
 # Response (rejected)
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: DelegationResponse
 metadata:
   request_id: "req-invalid-001"
@@ -384,7 +384,7 @@ error:
 ## OSSA Agent Manifest with Delegation
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 metadata:
   name: content-analyzer

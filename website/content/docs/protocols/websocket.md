@@ -359,7 +359,7 @@ ws.send(JSON.stringify({
 ### OSSA Agent Manifest with WebSocket
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 metadata:
   name: realtime-processor

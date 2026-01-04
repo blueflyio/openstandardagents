@@ -38,7 +38,7 @@ OSSA v0.3.2 supports environment variable substitution for all LLM configuration
 ### Basic Syntax
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 metadata:
   name: configurable-agent
@@ -89,7 +89,7 @@ spec:
 Configure automatic failover when the primary model fails:
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 metadata:
   name: resilient-agent
@@ -129,7 +129,7 @@ spec:
 Configure retry behavior for transient failures:
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 metadata:
   name: reliable-agent
@@ -157,7 +157,7 @@ spec:
 ### Anthropic
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 metadata:
   name: anthropic-agent
@@ -179,7 +179,7 @@ spec:
 ### OpenAI
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 metadata:
   name: openai-agent
@@ -200,7 +200,7 @@ spec:
 ### Google
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 metadata:
   name: google-agent
@@ -220,7 +220,7 @@ spec:
 ### Groq
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 metadata:
   name: groq-agent
@@ -240,7 +240,7 @@ spec:
 ### Ollama (Self-Hosted)
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 metadata:
   name: ollama-agent
@@ -255,7 +255,7 @@ spec:
 ### AWS Bedrock
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 metadata:
   name: bedrock-agent
@@ -270,7 +270,7 @@ spec:
 ### Azure OpenAI
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 metadata:
   name: azure-agent
@@ -287,7 +287,7 @@ spec:
 ### Custom Provider
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 metadata:
   name: custom-agent
@@ -351,7 +351,7 @@ Reduces likelihood of repeating topics/concepts.
 ### Code Generation
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 metadata:
   name: code-generator
@@ -372,7 +372,7 @@ spec:
 ### Customer Support
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 metadata:
   name: support-agent
@@ -392,7 +392,7 @@ spec:
 ### Data Analysis
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 metadata:
   name: analyst
@@ -409,7 +409,7 @@ spec:
 ### Multi-Provider Resilience
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 metadata:
   name: resilient-agent
@@ -441,7 +441,7 @@ spec:
 ## Complete Example
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 metadata:
   name: technical-writer
@@ -487,7 +487,7 @@ spec:
 For provider-specific features not covered in the base schema, use extensions:
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 metadata:
   name: extended-agent

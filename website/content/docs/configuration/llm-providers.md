@@ -20,7 +20,7 @@ OSSA supports multiple LLM providers through a unified configuration interface.
 ## Configuration
 
 ```yaml
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.2
 kind: Agent
 
 spec:
