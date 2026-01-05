@@ -33,7 +33,7 @@ If you need a new agent capability:
 
 1. **Create manifest in platform-agents**:
    - `platform-agents/packages/@ossa/{agent-name}/agent.ossa.yaml`
-   - Follow OSSA v0.3.2 specification
+   - Follow OSSA v0.3.3 specification
    - Map to separation-of-duties
    - Add version bump + changelog
 

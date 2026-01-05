@@ -18,7 +18,7 @@ const GITLAB_API = 'https://gitlab.com/api/v4';
 // Use numeric project ID for reliable cross-project job token access
 const PROJECT_ID = '76265294';  // blueflyio/openstandardagents
 const EXAMPLES_PATH = 'examples';
-const REF = 'main';
+const REF = process.env.OSSA_EXAMPLES_REF || 'release/v0.3.x';
 
 const outputFile = path.join(__dirname, '../public/examples.json');
 
@@ -169,7 +169,7 @@ async function listFilesRecursive(dirPath, allFiles = []) {
 }
 
 async function main() {
-  console.log('🔄 Fetching examples from blueflyio/openstandardagents (main branch)...\n');
+  console.log(`🔄 Fetching examples from blueflyio/openstandardagents (${REF} branch)...\n`);
 
   try {
     // List all example files

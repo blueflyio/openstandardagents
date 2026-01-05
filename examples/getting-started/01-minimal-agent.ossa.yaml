@@ -29,7 +29,7 @@
 # │  Every OSSA manifest has this structure (just like Kubernetes):                 │
 # │                                                                                 │
 # │  ┌─────────────────────────────────────────────────────────────────────┐       │
-# │  │ apiVersion: ossa/v0.3.2          # API version (required)          │       │
+# │  │ apiVersion: ossa/v0.3.3          # API version (required)          │       │
 # │  │ kind: Agent | Task | Workflow    # Resource type (required)        │       │
 # │  │ metadata:                        # Name, version, labels (required)│       │
 # │  │   name: my-agent                                                   │       │
@@ -94,7 +94,7 @@
 # │ KEY CONCEPTS IN THIS EXAMPLE                                                    │
 # ├─────────────────────────────────────────────────────────────────────────────────┤
 # │                                                                                 │
-# │  1. apiVersion: ossa/v0.3.2                                                     │
+# │  1. apiVersion: ossa/v0.3.3                                                     │
 # │     ─────────────────────────                                                   │
 # │     Specifies which version of the OSSA specification to use.                   │
 # │     v0.3.0 adds: Tasks, Workflows, Agent-to-Agent messaging.                    │
@@ -184,7 +184,7 @@
 #   v0.3.0 - Added Tasks, Workflows, A2A messaging, enhanced safety
 #   v1.0.0 - (coming) Production-stable release
 # ──────────────────────────────────────────────────────────────────────────────────
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 
 # ──────────────────────────────────────────────────────────────────────────────────
 # KIND (Required)

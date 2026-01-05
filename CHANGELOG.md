@@ -10,7 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Update website with latest OSSA features
-- Sync v0.3.2 from npm package
+- Update to OSSA v0.3.3 with Skills Compatibility Extension
+- Sync v0.3.3 schema from release/v0.3.x branch
 
 ### Fixed
 

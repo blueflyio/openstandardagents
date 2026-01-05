@@ -50,10 +50,12 @@ pnpm sync:spec --dry-run    # Preview changes
 
 ```
 @bluefly/openstandardagents package
-├── spec/ → website/public/schema/
-│   ├── v0.2.6/
-│   │   └── ossa-0.2.6.schema.json
-│   ├── latest.json
+├── spec/ → website/public/schemas/
+│   ├── v0.3.3/              # Latest version with Skills extension
+│   │   └── ossa-0.3.3.schema.json
+│   ├── v0.3.2/
+│   │   └── ossa-0.3.2.schema.json
+│   ├── latest.json          # Points to v0.3.3
 │   └── index.json
 │
 └── examples/ → website/public/examples/
@@ -129,7 +131,7 @@ openstandardagents.org/
 
 ```bash
 # Website (.env.local)
-NEXT_PUBLIC_OSSA_VERSION=0.2.6
+NEXT_PUBLIC_OSSA_VERSION=0.3.2
 NEXT_PUBLIC_API_URL=https://api.openstandardagents.org
 
 # Discord Bot (.env.local)
@@ -200,12 +202,12 @@ pnpm update @bluefly/openstandardagents
 pnpm sync:spec
 
 # Update to specific version
-pnpm add @bluefly/openstandardagents@0.2.8
+pnpm add @bluefly/openstandardagents@0.3.2
 pnpm sync:spec
 
 # Commit and deploy
 git add package.json pnpm-lock.yaml
-git commit -m "chore: update OSSA to v0.2.8"
+git commit -m "chore: update OSSA to v0.3.2"
 git push
 ```
 
@@ -254,4 +256,4 @@ Apache-2.0 - See [LICENSE](LICENSE) for details.
 
 ---
 
-**Maintained by BlueFly.io** | **OSSA v0.2.6** | **Last Updated: 2024-11-30**
+**Maintained by BlueFly.io** | **OSSA v0.3.3** | **Last Updated: 2025-01-05**
