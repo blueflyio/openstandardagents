@@ -40,6 +40,8 @@ include:
   - template: Jobs/Code-Quality.gitlab-ci.yml
   # Review Apps (OrbStack K8s)
   - local: .gitlab/ci/review-apps.yml
+  # Bot Agent Jobs
+  - local: .gitlab/ci/bot-jobs.yml
   # OSSA Agent Pipelines
   #- local: .gitlab/ci/seo-automation.yml
 
