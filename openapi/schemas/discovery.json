@@ -1,0 +1,488 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openstandardagents.org/schemas/discovery/v1.json",
+  "title": "OSSA Agent Discovery Schemas",
+  "description": "JSON Schema definitions for OSSA v0.3.0 Agent Discovery and Registry API",
+  "definitions": {
+    "RegistrationRequest": {
+      "$id": "#/definitions/RegistrationRequest",
+      "type": "object",
+      "description": "Request to register or update an agent in the registry",
+      "required": [
+        "agentId",
+        "name",
+        "version",
+        "manifest",
+        "endpoint",
+        "status"
+      ],
+      "properties": {
+        "agentId": {
+          "type": "string",
+          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$",
+          "maxLength": 253,
+          "description": "Unique agent identifier (DNS-1123 subdomain format for Kubernetes compatibility)",
+          "examples": [
+            "security-scanner-01",
+            "doc-agent",
+            "compliance-auditor-01"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$",
+          "maxLength": 253,
+          "description": "Agent name from manifest.metadata.name",
+          "examples": [
+            "security-scanner",
+            "doc-agent"
+          ]
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+          "description": "Semantic version (semver 2.0.0)",
+          "examples": [
+            "1.0.0",
+            "0.3.0",
+            "2.1.5-beta.1"
+          ]
+        },
+        "manifest": {
+          "type": "object",
+          "description": "Complete OSSA v0.3.0 manifest",
+          "required": [
+            "apiVersion",
+            "kind",
+            "metadata"
+          ],
+          "properties": {
+            "apiVersion": {
+              "type": "string",
+              "pattern": "^ossa/v0\\.3\\.[0-9]+$",
+              "description": "OSSA API version",
+              "examples": [
+                "ossa/v0.3.0"
+              ]
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "Agent",
+                "Task",
+                "Workflow"
+              ],
+              "description": "Resource kind"
+            },
+            "metadata": {
+              "type": "object",
+              "required": [
+                "name",
+                "version"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$",
+                  "maxLength": 253,
+                  "description": "Resource name"
+                },
+                "version": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+                  "description": "Resource version (semver 2.0.0)"
+                },
+                "description": {
+                  "type": "string",
+                  "description": "Human-readable description"
+                },
+                "labels": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Key-value labels for organization and filtering"
+                }
+              }
+            }
+          }
+        },
+        "endpoint": {
+          "type": "string",
+          "format": "uri",
+          "description": "Agent API endpoint URL",
+          "examples": [
+            "https://agents.example.com/security-scanner",
+            "http://localhost:3000/agent"
+          ]
+        },
+        "domains": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^domain::[a-z0-9-]+$"
+          },
+          "description": "Primary functional domains",
+          "examples": [
+            [
+              "domain::security",
+              "domain::documentation"
+            ]
+          ]
+        },
+        "subdomains": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^subdomain::[a-z0-9-]+$"
+          },
+          "description": "Specialized subdomains within domains",
+          "examples": [
+            [
+              "subdomain::scanning",
+              "subdomain::compliance"
+            ]
+          ]
+        },
+        "concerns": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^concern::[a-z0-9-]+$"
+          },
+          "description": "Cross-cutting concerns",
+          "examples": [
+            [
+              "concern::quality",
+              "concern::security",
+              "concern::performance"
+            ]
+          ]
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]*$"
+          },
+          "description": "Specific capabilities provided by the agent",
+          "examples": [
+            [
+              "vulnerability-detection",
+              "dependency-audit",
+              "security-reporting"
+            ]
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "active",
+            "inactive",
+            "degraded",
+            "maintenance"
+          ],
+          "description": "Current operational status of the agent"
+        },
+        "healthEndpoint": {
+          "type": "string",
+          "format": "uri",
+          "description": "Health check endpoint URL",
+          "examples": [
+            "https://agents.example.com/security-scanner/health"
+          ]
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Additional agent metadata (freeform)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AgentMetadata": {
+      "$id": "#/definitions/AgentMetadata",
+      "type": "object",
+      "description": "Agent metadata returned in discovery results",
+      "required": [
+        "agentId",
+        "name",
+        "version",
+        "status",
+        "endpoint",
+        "registeredAt",
+        "lastSeen"
+      ],
+      "properties": {
+        "agentId": {
+          "type": "string",
+          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$",
+          "maxLength": 253,
+          "description": "Unique agent identifier"
+        },
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$",
+          "maxLength": 253,
+          "description": "Agent name"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+          "description": "Agent version (semver)"
+        },
+        "domains": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Primary functional domains"
+        },
+        "subdomains": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Specialized subdomains"
+        },
+        "concerns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Cross-cutting concerns"
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Agent capabilities"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "active",
+            "inactive",
+            "degraded",
+            "maintenance"
+          ],
+          "description": "Current operational status"
+        },
+        "endpoint": {
+          "type": "string",
+          "format": "uri",
+          "description": "Agent API endpoint"
+        },
+        "healthEndpoint": {
+          "type": "string",
+          "format": "uri",
+          "description": "Health check endpoint"
+        },
+        "registeredAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Registration timestamp (ISO 8601)"
+        },
+        "lastSeen": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last heartbeat timestamp (ISO 8601)"
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Registration expiry timestamp (requires renewal)"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Additional metadata"
+        }
+      },
+      "additionalProperties": false
+    },
+    "DiscoveryQuery": {
+      "$id": "#/definitions/DiscoveryQuery",
+      "type": "object",
+      "description": "Query parameters for agent discovery",
+      "properties": {
+        "domain": {
+          "type": "string",
+          "pattern": "^domain::[a-z0-9-]+$",
+          "description": "Primary functional domain filter",
+          "examples": [
+            "domain::security",
+            "domain::documentation",
+            "domain::performance"
+          ]
+        },
+        "subdomain": {
+          "type": "string",
+          "pattern": "^subdomain::[a-z0-9-]+$",
+          "description": "Subdomain filter",
+          "examples": [
+            "subdomain::scanning",
+            "subdomain::compliance"
+          ]
+        },
+        "concerns": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^concern::[a-z0-9-]+$"
+          },
+          "description": "Concerns filter (match any)",
+          "examples": [
+            [
+              "concern::quality",
+              "concern::security"
+            ]
+          ]
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]*$"
+          },
+          "description": "Capabilities filter (must match all)",
+          "examples": [
+            [
+              "vulnerability-detection",
+              "security-reporting"
+            ]
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "active",
+            "inactive",
+            "degraded",
+            "maintenance"
+          ],
+          "description": "Filter by operational status"
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 20,
+          "description": "Maximum number of results to return"
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0,
+          "description": "Pagination offset"
+        }
+      },
+      "additionalProperties": false
+    },
+    "DiscoveryResult": {
+      "$id": "#/definitions/DiscoveryResult",
+      "type": "object",
+      "description": "Agent discovery results with pagination",
+      "required": [
+        "total",
+        "limit",
+        "offset",
+        "agents"
+      ],
+      "properties": {
+        "total": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total number of matching agents"
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Result limit"
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Result offset"
+        },
+        "agents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AgentMetadata"
+          },
+          "description": "Array of matching agent metadata"
+        }
+      },
+      "additionalProperties": false
+    },
+    "TaxonomyDomain": {
+      "$id": "#/definitions/TaxonomyDomain",
+      "type": "string",
+      "pattern": "^domain::[a-z0-9-]+$",
+      "description": "Primary functional domain using OSSA taxonomy",
+      "examples": [
+        "domain::security",
+        "domain::documentation",
+        "domain::performance",
+        "domain::governance",
+        "domain::gitops",
+        "domain::platform"
+      ]
+    },
+    "TaxonomySubdomain": {
+      "$id": "#/definitions/TaxonomySubdomain",
+      "type": "string",
+      "pattern": "^subdomain::[a-z0-9-]+$",
+      "description": "Specialized subdomain within a domain",
+      "examples": [
+        "subdomain::scanning",
+        "subdomain::compliance",
+        "subdomain::optimization",
+        "subdomain::deployment",
+        "subdomain::monitoring"
+      ]
+    },
+    "TaxonomyConcern": {
+      "$id": "#/definitions/TaxonomyConcern",
+      "type": "string",
+      "pattern": "^concern::[a-z0-9-]+$",
+      "description": "Cross-cutting concern",
+      "examples": [
+        "concern::quality",
+        "concern::security",
+        "concern::performance",
+        "concern::governance",
+        "concern::observability"
+      ]
+    },
+    "Capability": {
+      "$id": "#/definitions/Capability",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_-]*$",
+      "description": "Specific capability identifier",
+      "examples": [
+        "vulnerability-detection",
+        "dependency-audit",
+        "security-reporting",
+        "documentation-healing",
+        "compliance-audit",
+        "performance-analysis"
+      ]
+    },
+    "AgentStatus": {
+      "$id": "#/definitions/AgentStatus",
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive",
+        "degraded",
+        "maintenance"
+      ],
+      "description": "Agent operational status",
+      "examples": [
+        "active"
+      ]
+    }
+  }
+}

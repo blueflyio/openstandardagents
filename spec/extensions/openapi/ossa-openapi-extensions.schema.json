@@ -1,0 +1,804 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openstandardagents.org/schemas/v0.3.2/extensions/openapi/ossa-openapi-extensions.json",
+  "title": "OSSA OpenAPI Extensions Schema",
+  "description": "JSON Schema for validating OpenAPI 3.x documents that use OSSA (Open Standard for Scalable AI Agents) extensions. This schema defines all OSSA-specific vendor extensions (x-ossa-*) that can be added to OpenAPI specifications to enable agent-aware APIs.",
+  "version": "0.3.2",
+  "type": "object",
+  "properties": {
+    "openapi": {
+      "type": "string",
+      "pattern": "^3\\.[0-9]+\\.[0-9]+$",
+      "description": "OpenAPI version. OSSA extensions support OpenAPI 3.0.x and 3.1.x"
+    },
+    "info": {
+      "type": "object"
+    },
+    "x-ossa-metadata": {
+      "$ref": "#/definitions/XOssaMetadata"
+    },
+    "x-ossa": {
+      "$ref": "#/definitions/XOssa"
+    },
+    "x-agent": {
+      "$ref": "#/definitions/XAgent"
+    },
+    "paths": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/PathItemWithOssaExtensions"
+      }
+    }
+  },
+  "definitions": {
+    "XOssaMetadata": {
+      "$id": "#/definitions/XOssaMetadata",
+      "type": "object",
+      "title": "x-ossa-metadata Extension",
+      "description": "Root-level extension providing comprehensive OSSA agent metadata including compliance, governance, security, and observability configuration.",
+      "required": ["version"],
+      "properties": {
+        "version": {
+          "type": "string",
+          "pattern": "^(0\\.[0-9]+\\.[0-9]+|[1-9][0-9]*\\.[0-9]+\\.[0-9]+)(-[a-zA-Z0-9.-]+)?(\\+[a-zA-Z0-9.-]+)?$",
+          "description": "OSSA specification version (semver format)",
+          "examples": ["0.3.2", "1.0.0", "0.3.2-beta.1"]
+        },
+        "compliance": {
+          "type": "object",
+          "description": "Compliance level and framework information",
+          "properties": {
+            "level": {
+              "type": "string",
+              "enum": ["basic", "standard", "advanced", "enterprise"],
+              "default": "basic",
+              "description": "OSSA compliance level achieved by this API"
+            },
+            "frameworks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "uniqueItems": true,
+              "description": "List of compliance frameworks this API adheres to",
+              "examples": [["SOC2", "HIPAA", "GDPR"]]
+            }
+          },
+          "additionalProperties": false
+        },
+        "governance": {
+          "type": "object",
+          "description": "Governance and approval information for the API",
+          "properties": {
+            "approved": {
+              "type": "boolean",
+              "default": false,
+              "description": "Whether this API has been approved for production use"
+            },
+            "approvedBy": {
+              "type": "string",
+              "description": "Name or ID of the person/team who approved this API"
+            },
+            "approvalDate": {
+              "type": "string",
+              "format": "date",
+              "description": "Date when the API was approved (YYYY-MM-DD format)"
+            }
+          },
+          "additionalProperties": false
+        },
+        "security": {
+          "type": "object",
+          "description": "Security classification and requirements",
+          "properties": {
+            "classification": {
+              "type": "string",
+              "enum": ["public", "internal", "confidential", "restricted"],
+              "default": "internal",
+              "description": "Data classification level for this API"
+            },
+            "authentication": {
+              "type": "string",
+              "enum": ["required", "optional", "none"],
+              "default": "required",
+              "description": "Authentication requirement for this API"
+            },
+            "encryption": {
+              "type": "string",
+              "description": "Encryption standard required (e.g., 'TLS 1.3', 'AES-256')"
+            }
+          },
+          "additionalProperties": false
+        },
+        "observability": {
+          "type": "object",
+          "description": "Observability and monitoring configuration",
+          "properties": {
+            "tracing": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether distributed tracing is enabled"
+            },
+            "metrics": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether metrics collection is enabled"
+            },
+            "logging": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether structured logging is enabled"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false,
+      "examples": [
+        {
+          "version": "0.3.2",
+          "compliance": {
+            "level": "standard",
+            "frameworks": ["SOC2", "GDPR"]
+          },
+          "governance": {
+            "approved": true,
+            "approvedBy": "security-team",
+            "approvalDate": "2025-01-15"
+          },
+          "security": {
+            "classification": "confidential",
+            "authentication": "required",
+            "encryption": "TLS 1.3"
+          },
+          "observability": {
+            "tracing": true,
+            "metrics": true,
+            "logging": true
+          }
+        }
+      ]
+    },
+    "XOssa": {
+      "$id": "#/definitions/XOssa",
+      "type": "object",
+      "title": "x-ossa Extension",
+      "description": "Root-level extension providing core OSSA compliance information and agent identification.",
+      "required": ["version", "agent"],
+      "properties": {
+        "version": {
+          "type": "string",
+          "pattern": "^(0\\.[0-9]+\\.[0-9]+|[1-9][0-9]*\\.[0-9]+\\.[0-9]+)(-[a-zA-Z0-9.-]+)?(\\+[a-zA-Z0-9.-]+)?$",
+          "description": "OSSA specification version"
+        },
+        "agent": {
+          "type": "object",
+          "required": ["id", "type"],
+          "description": "Agent identification and classification",
+          "properties": {
+            "id": {
+              "type": "string",
+              "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$",
+              "minLength": 1,
+              "maxLength": 63,
+              "description": "Unique agent identifier (DNS-compatible)"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "orchestrator",
+                "worker",
+                "specialist",
+                "critic",
+                "judge",
+                "monitor",
+                "gateway",
+                "governor",
+                "integrator",
+                "voice"
+              ],
+              "description": "Agent type classification"
+            },
+            "compliance": {
+              "type": "object",
+              "description": "Agent-specific compliance information",
+              "properties": {
+                "standards": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "uniqueItems": true,
+                  "description": "Compliance standards the agent adheres to"
+                },
+                "validated": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Whether compliance has been validated"
+                },
+                "validatedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "ISO 8601 timestamp of last validation"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false,
+      "examples": [
+        {
+          "version": "0.3.2",
+          "agent": {
+            "id": "code-reviewer-agent",
+            "type": "specialist",
+            "compliance": {
+              "standards": ["OSSA-0.3.2", "SOC2-Type2"],
+              "validated": true,
+              "validatedAt": "2025-01-15T10:30:00Z"
+            }
+          }
+        }
+      ]
+    },
+    "XAgent": {
+      "$id": "#/definitions/XAgent",
+      "type": "object",
+      "title": "x-agent Extension",
+      "description": "Root-level extension for agent-specific capabilities, tools, and configuration.",
+      "properties": {
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "description": "List of capabilities this agent provides"
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "description": "List of tools/MCP servers this agent can use"
+        },
+        "environment": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Environment variables and configuration"
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Behavioral rules and constraints for the agent"
+        }
+      },
+      "additionalProperties": false,
+      "examples": [
+        {
+          "capabilities": ["code-review", "security-scan", "test-generation"],
+          "tools": ["mcp://github", "mcp://filesystem"],
+          "environment": {
+            "MAX_FILE_SIZE": "10MB",
+            "TIMEOUT_SECONDS": "300"
+          },
+          "rules": [
+            "Never modify production code directly",
+            "Always create feature branches for changes"
+          ]
+        }
+      ]
+    },
+    "PathItemWithOssaExtensions": {
+      "type": "object",
+      "description": "OpenAPI Path Item with OSSA operation-level extensions",
+      "properties": {
+        "get": { "$ref": "#/definitions/OperationWithOssaExtensions" },
+        "put": { "$ref": "#/definitions/OperationWithOssaExtensions" },
+        "post": { "$ref": "#/definitions/OperationWithOssaExtensions" },
+        "delete": { "$ref": "#/definitions/OperationWithOssaExtensions" },
+        "options": { "$ref": "#/definitions/OperationWithOssaExtensions" },
+        "head": { "$ref": "#/definitions/OperationWithOssaExtensions" },
+        "patch": { "$ref": "#/definitions/OperationWithOssaExtensions" },
+        "trace": { "$ref": "#/definitions/OperationWithOssaExtensions" }
+      },
+      "additionalProperties": true
+    },
+    "OperationWithOssaExtensions": {
+      "type": "object",
+      "description": "OpenAPI Operation with OSSA extensions",
+      "properties": {
+        "operationId": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "x-ossa-capability": {
+          "$ref": "#/definitions/XOssaCapability"
+        },
+        "x-ossa-autonomy": {
+          "$ref": "#/definitions/XOssaAutonomy"
+        },
+        "x-ossa-constraints": {
+          "$ref": "#/definitions/XOssaConstraints"
+        },
+        "x-ossa-tools": {
+          "$ref": "#/definitions/XOssaTools"
+        },
+        "x-ossa-llm": {
+          "$ref": "#/definitions/XOssaLlm"
+        }
+      },
+      "additionalProperties": true
+    },
+    "XOssaCapability": {
+      "$id": "#/definitions/XOssaCapability",
+      "title": "x-ossa-capability Extension",
+      "description": "Operation-level extension that links an API operation to an agent capability. Can be a simple string name or a detailed capability object.",
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "description": "Simple capability name"
+        },
+        {
+          "type": "object",
+          "required": ["name"],
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Capability name"
+            },
+            "description": {
+              "type": "string",
+              "description": "Human-readable description of the capability"
+            },
+            "inputSchema": {
+              "type": "object",
+              "description": "JSON Schema for capability input"
+            },
+            "outputSchema": {
+              "type": "object",
+              "description": "JSON Schema for capability output"
+            }
+          },
+          "additionalProperties": false
+        }
+      ],
+      "examples": [
+        "code-review",
+        {
+          "name": "security-scan",
+          "description": "Scans code for security vulnerabilities",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "repository": { "type": "string" },
+              "branch": { "type": "string" }
+            },
+            "required": ["repository"]
+          },
+          "outputSchema": {
+            "type": "object",
+            "properties": {
+              "vulnerabilities": { "type": "array" },
+              "severity": { "type": "string" }
+            }
+          }
+        }
+      ]
+    },
+    "XOssaAutonomy": {
+      "$id": "#/definitions/XOssaAutonomy",
+      "type": "object",
+      "title": "x-ossa-autonomy Extension",
+      "description": "Operation-level extension that defines the autonomy level and human-in-the-loop requirements for an operation.",
+      "required": ["level"],
+      "properties": {
+        "level": {
+          "type": "string",
+          "enum": ["supervised", "autonomous", "semi-autonomous"],
+          "description": "Autonomy level for this operation. 'supervised' requires human approval, 'autonomous' runs without intervention, 'semi-autonomous' may escalate in certain conditions."
+        },
+        "approval_required": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether explicit human approval is required before execution"
+        },
+        "allowed_actions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "description": "Whitelist of actions the agent is allowed to perform"
+        },
+        "blocked_actions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "description": "Blacklist of actions the agent must never perform"
+        }
+      },
+      "additionalProperties": false,
+      "examples": [
+        {
+          "level": "semi-autonomous",
+          "approval_required": true,
+          "allowed_actions": ["read", "analyze", "suggest"],
+          "blocked_actions": ["delete", "force_push", "merge_to_main"]
+        }
+      ]
+    },
+    "XOssaConstraints": {
+      "$id": "#/definitions/XOssaConstraints",
+      "type": "object",
+      "title": "x-ossa-constraints Extension",
+      "description": "Operation-level extension for defining cost, token, time, and resource constraints.",
+      "properties": {
+        "cost": {
+          "type": "object",
+          "description": "Cost and token usage constraints",
+          "properties": {
+            "maxTokensPerDay": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Maximum tokens allowed per day for this operation"
+            },
+            "maxTokensPerRequest": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Maximum tokens allowed per single request"
+            },
+            "maxCostPerDay": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Maximum cost allowed per day (in specified currency)"
+            },
+            "currency": {
+              "type": "string",
+              "pattern": "^[A-Z]{3}$",
+              "default": "USD",
+              "description": "ISO 4217 currency code for cost calculations"
+            }
+          },
+          "additionalProperties": false
+        },
+        "performance": {
+          "type": "object",
+          "description": "Performance constraints",
+          "properties": {
+            "maxLatencySeconds": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Maximum allowed latency in seconds"
+            },
+            "maxConcurrentRequests": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Maximum concurrent requests allowed"
+            }
+          },
+          "additionalProperties": false
+        },
+        "time": {
+          "type": "object",
+          "description": "Time-based constraints",
+          "properties": {
+            "maxExecutionTime": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Maximum execution time in seconds"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false,
+      "examples": [
+        {
+          "cost": {
+            "maxTokensPerDay": 100000,
+            "maxTokensPerRequest": 4096,
+            "maxCostPerDay": 50.00,
+            "currency": "USD"
+          },
+          "performance": {
+            "maxLatencySeconds": 30,
+            "maxConcurrentRequests": 10
+          },
+          "time": {
+            "maxExecutionTime": 300
+          }
+        }
+      ]
+    },
+    "XOssaTools": {
+      "$id": "#/definitions/XOssaTools",
+      "type": "array",
+      "title": "x-ossa-tools Extension",
+      "description": "Operation-level extension defining MCP servers or tools required for this operation.",
+      "items": {
+        "$ref": "#/definitions/XOssaTool"
+      },
+      "examples": [
+        [
+          {
+            "type": "mcp",
+            "server": "mcp://github",
+            "namespace": "repo",
+            "capabilities": ["read", "write", "pr"]
+          },
+          {
+            "type": "http",
+            "server": "https://api.example.com",
+            "capabilities": ["query"]
+          }
+        ]
+      ]
+    },
+    "XOssaTool": {
+      "$id": "#/definitions/XOssaTool",
+      "type": "object",
+      "title": "OSSA Tool Definition",
+      "description": "Definition of a single tool or MCP server required by an operation.",
+      "required": ["type", "server"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["mcp", "http", "custom"],
+          "description": "Type of tool: 'mcp' for Model Context Protocol servers, 'http' for REST APIs, 'custom' for other integrations"
+        },
+        "server": {
+          "type": "string",
+          "description": "Server URL or MCP identifier"
+        },
+        "namespace": {
+          "type": "string",
+          "description": "Optional namespace within the tool"
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "description": "List of capabilities to use from this tool"
+        }
+      },
+      "additionalProperties": false
+    },
+    "XOssaLlm": {
+      "$id": "#/definitions/XOssaLlm",
+      "type": "object",
+      "title": "x-ossa-llm Extension",
+      "description": "Operation-level extension for LLM configuration overrides. Allows specifying which LLM provider and model to use for a specific operation.",
+      "required": ["provider", "model"],
+      "properties": {
+        "provider": {
+          "type": "string",
+          "enum": ["openai", "anthropic", "google", "azure", "bedrock", "ollama", "custom"],
+          "description": "LLM provider to use"
+        },
+        "model": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Model identifier (e.g., 'claude-sonnet-4-20250514', 'gpt-4-turbo')"
+        },
+        "temperature": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2,
+          "default": 0.7,
+          "description": "Sampling temperature (0 = deterministic, 2 = maximum creativity)"
+        },
+        "maxTokens": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum tokens in the response"
+        }
+      },
+      "additionalProperties": false,
+      "examples": [
+        {
+          "provider": "anthropic",
+          "model": "claude-sonnet-4-20250514",
+          "temperature": 0.3,
+          "maxTokens": 4096
+        },
+        {
+          "provider": "openai",
+          "model": "gpt-4-turbo",
+          "temperature": 0.7,
+          "maxTokens": 8192
+        }
+      ]
+    },
+    "XOssaAgentId": {
+      "$id": "#/definitions/XOssaAgentId",
+      "type": "object",
+      "title": "x-ossa-agent-id Extension",
+      "description": "Parameter-level extension for agent identification header configuration.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "default": "X-OSSA-Agent-ID",
+          "description": "Header name for agent identification"
+        },
+        "description": {
+          "type": "string",
+          "default": "Unique identifier of the calling OSSA agent",
+          "description": "Description of the header parameter"
+        },
+        "required": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether the agent ID header is required"
+        }
+      },
+      "additionalProperties": false
+    },
+    "XOssaVersion": {
+      "$id": "#/definitions/XOssaVersion",
+      "type": "object",
+      "title": "x-ossa-version Extension",
+      "description": "Parameter-level extension for OSSA version header configuration.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "default": "X-OSSA-Version",
+          "description": "Header name for OSSA version"
+        },
+        "description": {
+          "type": "string",
+          "default": "OSSA specification version the caller implements",
+          "description": "Description of the header parameter"
+        },
+        "required": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the version header is required"
+        }
+      },
+      "additionalProperties": false
+    },
+    "XOssaCapabilitySchema": {
+      "$id": "#/definitions/XOssaCapabilitySchema",
+      "type": "object",
+      "title": "x-ossa-capability-schema Extension",
+      "description": "Schema-level extension for capability schema metadata.",
+      "required": ["capabilityName"],
+      "properties": {
+        "capabilityName": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Name of the capability this schema belongs to"
+        },
+        "input": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether this schema is for capability input"
+        },
+        "output": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether this schema is for capability output"
+        },
+        "validation": {
+          "type": "object",
+          "description": "Validation configuration",
+          "properties": {
+            "required": {
+              "type": "boolean",
+              "default": false,
+              "description": "Whether validation is required"
+            },
+            "strict": {
+              "type": "boolean",
+              "default": false,
+              "description": "Whether strict validation mode is enabled"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": true,
+  "examples": [
+    {
+      "openapi": "3.1.0",
+      "info": {
+        "title": "Code Review Agent API",
+        "version": "1.0.0",
+        "description": "API for automated code review agent"
+      },
+      "x-ossa-metadata": {
+        "version": "0.3.2",
+        "compliance": {
+          "level": "standard",
+          "frameworks": ["SOC2"]
+        },
+        "security": {
+          "classification": "internal",
+          "authentication": "required"
+        },
+        "observability": {
+          "tracing": true,
+          "metrics": true,
+          "logging": true
+        }
+      },
+      "x-ossa": {
+        "version": "0.3.2",
+        "agent": {
+          "id": "code-reviewer",
+          "type": "specialist",
+          "compliance": {
+            "standards": ["OSSA-0.3.2"],
+            "validated": true
+          }
+        }
+      },
+      "x-agent": {
+        "capabilities": ["code-review", "security-scan"],
+        "tools": ["mcp://github", "mcp://filesystem"],
+        "rules": ["Never approve your own code changes"]
+      },
+      "paths": {
+        "/review": {
+          "post": {
+            "operationId": "reviewCode",
+            "summary": "Review code changes",
+            "x-ossa-capability": {
+              "name": "code-review",
+              "description": "Analyzes code changes for quality and best practices"
+            },
+            "x-ossa-autonomy": {
+              "level": "semi-autonomous",
+              "approval_required": false,
+              "blocked_actions": ["merge", "force_push"]
+            },
+            "x-ossa-constraints": {
+              "cost": {
+                "maxTokensPerRequest": 8192,
+                "maxCostPerDay": 100.00,
+                "currency": "USD"
+              },
+              "time": {
+                "maxExecutionTime": 60
+              }
+            },
+            "x-ossa-tools": [
+              {
+                "type": "mcp",
+                "server": "mcp://github",
+                "capabilities": ["read_pr", "add_comment"]
+              }
+            ],
+            "x-ossa-llm": {
+              "provider": "anthropic",
+              "model": "claude-sonnet-4-20250514",
+              "temperature": 0.2,
+              "maxTokens": 4096
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,376 @@
+# ╔═══════════════════════════════════════════════════════════════════════════════╗
+# ║                                                                               ║
+# ║   ██████╗ ███████╗███████╗ █████╗     ██╗   ██╗ ██████╗    ██████╗  ██████╗   ║
+# ║  ██╔═══██╗██╔════╝██╔════╝██╔══██╗    ██║   ██║██╔═████╗   ╚════██╗██╔═████╗  ║
+# ║  ██║   ██║███████╗███████╗███████║    ██║   ██║██║██╔██║    █████╔╝██║██╔██║  ║
+# ║  ██║   ██║╚════██║╚════██║██╔══██║    ╚██╗ ██╔╝████╔╝██║    ╚═══██╗████╔╝██║  ║
+# ║  ╚██████╔╝███████║███████║██║  ██║     ╚████╔╝ ╚██████╔╝██╗██████╔╝╚██████╔╝  ║
+# ║   ╚═════╝ ╚══════╝╚══════╝╚═╝  ╚═╝      ╚═══╝   ╚═════╝ ╚═╝╚═════╝  ╚═════╝   ║
+# ║                                                                               ║
+# ║               GETTING STARTED: 01 - YOUR FIRST OSSA AGENT                     ║
+# ║                                                                               ║
+# ╚═══════════════════════════════════════════════════════════════════════════════╝
+#
+# ┌─────────────────────────────────────────────────────────────────────────────────┐
+# │ WHAT YOU'LL LEARN                                                               │
+# ├─────────────────────────────────────────────────────────────────────────────────┤
+# │                                                                                 │
+# │  ✓ The THREE REQUIRED FIELDS in every OSSA manifest                            │
+# │  ✓ How to define an agent's PERSONA with the 'role' field                      │
+# │  ✓ How to configure ANY LLM provider with vendor-neutral syntax                │
+# │  ✓ Why OSSA is the "OpenAPI of Agents" - write once, run anywhere              │
+# │                                                                                 │
+# └─────────────────────────────────────────────────────────────────────────────────┘
+#
+# ┌─────────────────────────────────────────────────────────────────────────────────┐
+# │ THE OSSA MANIFEST STRUCTURE                                                     │
+# ├─────────────────────────────────────────────────────────────────────────────────┤
+# │                                                                                 │
+# │  Every OSSA manifest has this structure (just like Kubernetes):                 │
+# │                                                                                 │
+# │  ┌─────────────────────────────────────────────────────────────────────┐       │
+# │  │ apiVersion: ossa/v0.3.2          # API version (required)          │       │
+# │  │ kind: Agent | Task | Workflow    # Resource type (required)        │       │
+# │  │ metadata:                        # Name, version, labels (required)│       │
+# │  │   name: my-agent                                                   │       │
+# │  │   version: 1.0.0                                                   │       │
+# │  │ spec:                            # The actual configuration        │       │
+# │  │   role: "..."                    # For Agents: the system prompt   │       │
+# │  │   llm: { provider, model }       # LLM configuration               │       │
+# │  └─────────────────────────────────────────────────────────────────────┘       │
+# │                                                                                 │
+# │  Think of it like:                                                              │
+# │  • OpenAPI has paths, methods, schemas                                          │
+# │  • OSSA has kind, role, tools, autonomy, safety                                 │
+# │                                                                                 │
+# └─────────────────────────────────────────────────────────────────────────────────┘
+#
+# ┌─────────────────────────────────────────────────────────────────────────────────┐
+# │ HOW TO RUN THIS EXAMPLE                                                         │
+# ├─────────────────────────────────────────────────────────────────────────────────┤
+# │                                                                                 │
+# │  STEP 1: Install the OSSA CLI                                                   │
+# │  ─────────────────────────────────                                              │
+# │  $ npm install -g @bluefly/ossa-cli                                             │
+# │                                                                                 │
+# │  STEP 2: Set your API key (choose one)                                          │
+# │  ────────────────────────────────────                                           │
+# │  $ export ANTHROPIC_API_KEY=sk-ant-...                                          │
+# │  # OR                                                                           │
+# │  $ export OPENAI_API_KEY=sk-...                                                 │
+# │  # OR                                                                           │
+# │  $ export GOOGLE_API_KEY=...                                                    │
+# │                                                                                 │
+# │  STEP 3: Validate the manifest (catches errors before runtime)                  │
+# │  ────────────────────────────────────────────────────────────                   │
+# │  $ ossa validate 01-minimal-agent.ossa.yaml                                     │
+# │                                                                                 │
+# │  Expected output:                                                               │
+# │  ✓ Schema validation passed                                                     │
+# │  ✓ LLM configuration valid                                                      │
+# │  ✓ Ready to run                                                                 │
+# │                                                                                 │
+# │  STEP 4: Run the agent interactively                                            │
+# │  ────────────────────────────────────                                           │
+# │  $ ossa run 01-minimal-agent.ossa.yaml --interactive                            │
+# │                                                                                 │
+# │  > Hello!                                                                       │
+# │  Agent: Hi there! I'm a friendly assistant. How can I help you today?           │
+# │                                                                                 │
+# │  > What can you do?                                                             │
+# │  Agent: I can help you with questions, explanations, and general assistance.    │
+# │         In future examples, you'll see agents with tools, safety controls,      │
+# │         and the ability to communicate with other agents!                       │
+# │                                                                                 │
+# │  STEP 5: Export to a framework (optional)                                       │
+# │  ─────────────────────────────────────────                                      │
+# │  $ ossa export 01-minimal-agent.ossa.yaml --format langchain                    │
+# │  $ ossa export 01-minimal-agent.ossa.yaml --format crewai                       │
+# │  $ ossa export 01-minimal-agent.ossa.yaml --format autogen                      │
+# │                                                                                 │
+# └─────────────────────────────────────────────────────────────────────────────────┘
+#
+# ┌─────────────────────────────────────────────────────────────────────────────────┐
+# │ KEY CONCEPTS IN THIS EXAMPLE                                                    │
+# ├─────────────────────────────────────────────────────────────────────────────────┤
+# │                                                                                 │
+# │  1. apiVersion: ossa/v0.3.2                                                     │
+# │     ─────────────────────────                                                   │
+# │     Specifies which version of the OSSA specification to use.                   │
+# │     v0.3.0 adds: Tasks, Workflows, Agent-to-Agent messaging.                    │
+# │                                                                                 │
+# │  2. kind: Agent                                                                 │
+# │     ────────────────                                                            │
+# │     OSSA supports three kinds:                                                  │
+# │     • Agent    - LLM-powered, can reason and use tools                          │
+# │     • Task     - Deterministic, no LLM (batch jobs, data transforms)            │
+# │     • Workflow - Composes Agents and Tasks into pipelines                       │
+# │                                                                                 │
+# │  3. metadata.name                                                               │
+# │     ─────────────                                                               │
+# │     Unique identifier for your agent. Use lowercase, hyphens allowed.           │
+# │     Example: code-reviewer, security-scanner, data-processor                    │
+# │                                                                                 │
+# │  4. spec.role                                                                   │
+# │     ─────────                                                                   │
+# │     The system prompt - defines WHO the agent is and HOW it behaves.            │
+# │     This is sent to the LLM at the start of every conversation.                 │
+# │     TIP: Be specific! "You are a helpful assistant" is too vague.               │
+# │                                                                                 │
+# │  5. spec.llm                                                                    │
+# │     ────────                                                                    │
+# │     Vendor-neutral LLM configuration. Works with 20+ providers:                 │
+# │     anthropic, openai, google, azure, groq, together, ollama...                 │
+# │     Use environment variables for portability: ${LLM_PROVIDER:-anthropic}       │
+# │                                                                                 │
+# └─────────────────────────────────────────────────────────────────────────────────┘
+#
+# ┌─────────────────────────────────────────────────────────────────────────────────┐
+# │ PORTABILITY: THE OSSA SUPERPOWER                                                │
+# ├─────────────────────────────────────────────────────────────────────────────────┤
+# │                                                                                 │
+# │  This manifest works with ANY LLM provider. Just change the environment:        │
+# │                                                                                 │
+# │  # Run with Anthropic                                                           │
+# │  $ LLM_PROVIDER=anthropic LLM_MODEL=claude-sonnet-4-20250514 ossa run ...       │
+# │                                                                                 │
+# │  # Run with OpenAI                                                              │
+# │  $ LLM_PROVIDER=openai LLM_MODEL=gpt-4o ossa run ...                            │
+# │                                                                                 │
+# │  # Run with Google                                                              │
+# │  $ LLM_PROVIDER=google LLM_MODEL=gemini-2.0-flash ossa run ...                  │
+# │                                                                                 │
+# │  # Run with Ollama (local, free!)                                               │
+# │  $ LLM_PROVIDER=ollama LLM_MODEL=llama3.1:70b ossa run ...                      │
+# │                                                                                 │
+# │  # Run with Groq (fast!)                                                        │
+# │  $ LLM_PROVIDER=groq LLM_MODEL=llama-3.1-70b-versatile ossa run ...             │
+# │                                                                                 │
+# │  Same manifest, same behavior, different providers. That's OSSA.                │
+# │                                                                                 │
+# └─────────────────────────────────────────────────────────────────────────────────┘
+#
+# ┌─────────────────────────────────────────────────────────────────────────────────┐
+# │ NEXT STEPS                                                                      │
+# ├─────────────────────────────────────────────────────────────────────────────────┤
+# │                                                                                 │
+# │  02-agent-with-tools.ossa.yaml                                                  │
+# │     Learn to add TOOLS that let your agent interact with external systems       │
+# │     (GitHub, filesystems, databases, APIs)                                      │
+# │                                                                                 │
+# │  03-agent-with-safety.ossa.yaml                                                 │
+# │     Learn PRODUCTION-READY safety: PII detection, rate limiting, guardrails     │
+# │                                                                                 │
+# │  04-agent-with-messaging.ossa.yaml                                              │
+# │     Learn AGENT-TO-AGENT messaging: pub/sub, commands, event-driven pipelines   │
+# │                                                                                 │
+# │  05-workflow-composition.ossa.yaml                                              │
+# │     Learn to ORCHESTRATE multiple agents and tasks into workflows               │
+# │                                                                                 │
+# └─────────────────────────────────────────────────────────────────────────────────┘
+#
+# ═══════════════════════════════════════════════════════════════════════════════════
+#                           THE ACTUAL MANIFEST STARTS HERE
+# ═══════════════════════════════════════════════════════════════════════════════════
+
+# ──────────────────────────────────────────────────────────────────────────────────
+# API VERSION (Required)
+# ──────────────────────────────────────────────────────────────────────────────────
+# The OSSA specification version. v0.3.0 is the latest stable release.
+# Format: ossa/vMAJOR.MINOR.PATCH
+#
+# Version history:
+#   v0.2.x - Original agent specification
+#   v0.3.0 - Added Tasks, Workflows, A2A messaging, enhanced safety
+#   v1.0.0 - (coming) Production-stable release
+# ──────────────────────────────────────────────────────────────────────────────────
+apiVersion: ossa/v0.3.2
+
+# ──────────────────────────────────────────────────────────────────────────────────
+# KIND (Required)
+# ──────────────────────────────────────────────────────────────────────────────────
+# The type of resource. OSSA supports three kinds:
+#
+#   Agent    - LLM-powered entity that can reason, use tools, maintain state
+#   Task     - Deterministic step, no LLM (batch processing, transformations)
+#   Workflow - Composition of Agents and Tasks into executable pipelines
+#
+# Choose Agent when you need:
+#   • Natural language understanding
+#   • Reasoning and decision making
+#   • Dynamic tool selection
+#   • Conversational interactions
+# ──────────────────────────────────────────────────────────────────────────────────
+kind: Agent
+
+# ──────────────────────────────────────────────────────────────────────────────────
+# METADATA (Required)
+# ──────────────────────────────────────────────────────────────────────────────────
+# Identifies your agent. Like package.json for npm or Cargo.toml for Rust.
+#
+#   name:        Unique identifier (lowercase, hyphens OK, no spaces)
+#   version:     Semantic version (MAJOR.MINOR.PATCH)
+#   description: Human-readable explanation (for documentation, registries)
+#   labels:      Key-value pairs for organization and filtering
+# ──────────────────────────────────────────────────────────────────────────────────
+metadata:
+  # Unique name - used for logging, tracing, registry lookup
+  # Convention: lowercase, hyphens, descriptive
+  # Bad:  "agent1", "myAgent", "Agent_Test"
+  # Good: "hello-world-agent", "code-reviewer", "security-scanner"
+  name: hello-world-agent
+
+  # Semantic versioning - follow semver.org rules
+  # MAJOR: Breaking changes to interface/behavior
+  # MINOR: New features, backward compatible
+  # PATCH: Bug fixes, backward compatible
+  version: 1.0.0
+
+  # Human-readable description - appears in registries, documentation
+  # Be specific! What does this agent do? Who should use it?
+  description: |
+    The simplest possible OSSA agent - perfect for learning the basics.
+    This agent demonstrates the minimal required configuration:
+    apiVersion, kind, metadata, and spec with role + llm.
+
+  # Labels for organization - use for filtering, searching, categorization
+  # Common patterns:
+  #   difficulty: beginner | intermediate | advanced
+  #   domain: security | devops | data | support
+  #   team: platform | frontend | ml
+  labels:
+    difficulty: beginner
+    tutorial: "01"
+    domain: getting-started
+
+# ──────────────────────────────────────────────────────────────────────────────────
+# SPEC (Agent-specific configuration)
+# ──────────────────────────────────────────────────────────────────────────────────
+# The 'spec' section contains the actual agent configuration.
+# For kind: Agent, you need at minimum:
+#   • role OR prompts.system.template (the system prompt)
+#   • llm (which model to use)
+#
+# Optional sections (covered in later examples):
+#   • tools     - External capabilities (MCP, functions, APIs)
+#   • autonomy  - Human-in-loop controls
+#   • safety    - Guardrails, PII detection, rate limiting
+#   • messaging - Agent-to-agent communication
+#   • state     - Persistence configuration
+# ──────────────────────────────────────────────────────────────────────────────────
+spec:
+  # ────────────────────────────────────────────────────────────────────────────────
+  # ROLE (The System Prompt)
+  # ────────────────────────────────────────────────────────────────────────────────
+  # The role field defines WHO the agent is and HOW it should behave.
+  # This is sent to the LLM as the system prompt at conversation start.
+  #
+  # TIPS FOR WRITING GREAT ROLES:
+  #
+  # 1. Be specific about identity
+  #    Bad:  "You are an assistant"
+  #    Good: "You are a security analyst specializing in code review"
+  #
+  # 2. Define capabilities clearly
+  #    Bad:  "Help users"
+  #    Good: "You can analyze code, identify vulnerabilities, and suggest fixes"
+  #
+  # 3. Set behavioral guidelines
+  #    Bad:  (nothing)
+  #    Good: "Always explain your reasoning. Ask clarifying questions if unsure."
+  #
+  # 4. Specify output format if needed
+  #    "Provide responses in markdown with code blocks for any code"
+  #
+  # 5. Include constraints
+  #    "Never execute code directly. Always show code for user to run."
+  # ────────────────────────────────────────────────────────────────────────────────
+  role: |
+    You are a friendly and helpful AI assistant. Your purpose is to:
+
+    1. Answer questions clearly and accurately
+    2. Help users understand OSSA (Open Standard for Scalable AI Agents)
+    3. Provide examples when they help clarify concepts
+    4. Admit when you don't know something rather than guessing
+
+    Communication style:
+    • Be concise but thorough
+    • Use markdown formatting for clarity
+    • Break down complex topics into digestible pieces
+    • Be encouraging to users learning new concepts
+
+    This is a minimal OSSA agent example. In later examples, you'll see
+    agents with tools (to interact with external systems), safety controls
+    (for production use), and messaging (for agent-to-agent communication).
+
+  # ────────────────────────────────────────────────────────────────────────────────
+  # LLM CONFIGURATION
+  # ────────────────────────────────────────────────────────────────────────────────
+  # Configure which AI model powers your agent. OSSA is vendor-neutral -
+  # the same manifest works with any of 20+ supported providers.
+  #
+  # Required fields:
+  #   provider - The LLM service (anthropic, openai, google, groq, etc.)
+  #   model    - The specific model ID
+  #
+  # Optional fields (shown in later examples):
+  #   temperature      - Randomness (0=deterministic, 2=creative)
+  #   maxTokens        - Maximum response length
+  #   fallback_models  - Backup providers for resilience
+  #   cost_tracking    - Budget management
+  #
+  # PORTABILITY TIP:
+  # Use environment variables so the same manifest works everywhere:
+  #   provider: ${LLM_PROVIDER:-anthropic}   # Default to anthropic
+  #   model: ${LLM_MODEL:-claude-sonnet-4-20250514}   # Default to Sonnet
+  #
+  # Then deploy:
+  #   Dev:  LLM_PROVIDER=ollama LLM_MODEL=llama3.1 (free, local)
+  #   Test: LLM_PROVIDER=anthropic LLM_MODEL=claude-haiku (fast, cheap)
+  #   Prod: LLM_PROVIDER=anthropic LLM_MODEL=claude-sonnet-4-20250514 (best)
+  # ────────────────────────────────────────────────────────────────────────────────
+  llm:
+    # LLM provider - use env var with default for portability
+    # Supported: anthropic, openai, google, azure, groq, together, fireworks,
+    #            ollama, deepseek, mistral, cohere, replicate, perplexity...
+    provider: ${LLM_PROVIDER:-anthropic}
+
+    # Model identifier - exact name from provider's documentation
+    # Examples:
+    #   Anthropic: claude-sonnet-4-20250514, claude-opus-4-20250514, claude-haiku
+    #   OpenAI:    gpt-4o, gpt-4o-mini, gpt-4-turbo
+    #   Google:    gemini-2.0-flash, gemini-pro
+    #   Groq:      llama-3.1-70b-versatile, mixtral-8x7b-32768
+    #   Ollama:    llama3.1, mistral, codellama
+    model: ${LLM_MODEL:-claude-sonnet-4-20250514}
+
+    # Temperature controls randomness/creativity
+    #   0.0 = Deterministic (same input → same output)
+    #   0.7 = Balanced (good default for most tasks)
+    #   1.0+ = Creative (more variety, may be less accurate)
+    #
+    # Guidelines:
+    #   Code generation: 0.0-0.3
+    #   Analysis/reasoning: 0.3-0.5
+    #   Creative writing: 0.7-1.0
+    #   Brainstorming: 0.8-1.2
+    temperature: 0.7
+
+# ═══════════════════════════════════════════════════════════════════════════════════
+# THAT'S IT! This is a complete, valid OSSA agent manifest.
+# ═══════════════════════════════════════════════════════════════════════════════════
+#
+# Summary of what we defined:
+#   ✓ apiVersion  - ossa/v0.3.0 (latest stable)
+#   ✓ kind        - Agent (LLM-powered)
+#   ✓ metadata    - Name, version, description, labels
+#   ✓ spec.role   - The agent's persona (system prompt)
+#   ✓ spec.llm    - Model configuration (provider-neutral)
+#
+# What we'll add in next examples:
+#   → 02: tools      - MCP servers, functions, APIs
+#   → 03: safety     - PII detection, rate limits, guardrails
+#   → 04: messaging  - Pub/sub, commands, A2A communication
+#   → 05: workflows  - Orchestrate multiple agents/tasks
+#
+# ═══════════════════════════════════════════════════════════════════════════════════

@@ -1,0 +1,78 @@
+apiVersion: ossa/v0.3.2
+kind: Agent
+metadata:
+  name: claude-code-reviewer
+  version: 1.0.0
+  description: Claude Code agent for TypeScript/Node.js code review
+
+spec:
+  role: |
+    You are a senior code reviewer specializing in TypeScript, Node.js,
+    and OSSA specification compliance. Review code for quality, security,
+    and adherence to best practices.
+
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-5-20250929
+    temperature: 0.2
+    max_tokens: 16384
+
+  capabilities:
+    - name: review_code
+      description: Review code changes for quality and security
+      input_schema:
+        type: object
+        properties:
+          file_paths:
+            type: array
+            items:
+              type: string
+          focus_areas:
+            type: array
+            items:
+              type: string
+              enum: [security, performance, types, tests, docs]
+        required: [file_paths]
+
+    - name: suggest_improvements
+      description: Suggest code improvements and refactoring
+      input_schema:
+        type: object
+        properties:
+          file_path:
+            type: string
+          improvement_type:
+            type: string
+            enum: [refactor, optimize, simplify, secure]
+        required: [file_path, improvement_type]
+
+  constraints:
+    max_file_size: 100000
+    allowed_extensions:
+      - .ts
+      - .tsx
+      - .js
+      - .json
+      - .yaml
+      - .yml
+
+extensions:
+  claude_code:
+    enabled: true
+    agent_type: reviewer
+    capabilities:
+      - file_read
+      - grep_search
+      - glob_search
+    review_focus:
+      - type_safety
+      - error_handling
+      - security_vulnerabilities
+      - code_clarity
+      - test_coverage
+
+  anthropic:
+    enabled: true
+    model: claude-sonnet-4-5-20250929
+    max_tokens: 16384
+    temperature: 0.2

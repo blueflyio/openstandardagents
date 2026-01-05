@@ -1,0 +1,171 @@
+openapi: 3.1.0
+info:
+  title: System Performance Monitor Agent API
+  version: 0.3.2
+  description: |
+    Real-time monitoring agent for system health, performance, and resource utilization.
+    Collects metrics, detects anomalies, and generates alerts.
+
+x-ossa-metadata:
+  version: 0.2.5-RC
+  compliance:
+    level: standard
+    frameworks:
+      - OSSA
+      - OpenAPI 3.1
+
+x-ossa:
+  version: 0.2.5-RC
+  agent:
+    id: system-performance-monitor
+    type: monitor
+    compliance:
+      standards:
+        - openapi-first
+        - type-safe
+      validated: true
+      validatedAt: "2024-01-15T10:00:00Z"
+
+servers:
+  - url: https://monitor.platform.com/api/v1
+    description: Production
+
+tags:
+  - name: metrics
+    description: Metrics collection operations
+  - name: health
+    description: Health check operations
+  - name: alerts
+    description: Alerting operations
+
+paths:
+  /metrics/collect:
+    post:
+      summary: Collect metrics
+      description: Collect system metrics from specified sources
+      operationId: collectMetrics
+      tags: [metrics]
+      x-ossa-capability: collect-metrics
+      x-ossa-autonomy:
+        level: autonomous
+        approval_required: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sources]
+              properties:
+                sources:
+                  type: array
+                  items:
+                    type: string
+                metrics:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Metrics collected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  metrics:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        value:
+                          type: number
+                        timestamp:
+                          type: string
+                          format: date-time
+                        labels:
+                          type: object
+
+  /health/check:
+    get:
+      summary: Check system health
+      description: Perform health check on system components
+      operationId: checkHealth
+      tags: [health]
+      x-ossa-capability: check-health
+      x-ossa-autonomy:
+        level: autonomous
+        approval_required: false
+      parameters:
+        - name: component
+          in: query
+          schema:
+            type: string
+          description: Specific component to check
+      responses:
+        '200':
+          description: Health status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [healthy, degraded, unhealthy]
+                  components:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        status:
+                          type: string
+                        last_check:
+                          type: string
+                          format: date-time
+
+  /alerts/generate:
+    post:
+      summary: Generate alert
+      description: Generate alert based on threshold violations or anomalies
+      operationId: generateAlert
+      tags: [alerts]
+      x-ossa-capability: generate-alerts
+      x-ossa-autonomy:
+        level: autonomous
+        approval_required: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [severity, message]
+              properties:
+                severity:
+                  type: string
+                  enum: [critical, warning, info]
+                message:
+                  type: string
+                metric:
+                  type: string
+                threshold:
+                  type: object
+      responses:
+        '200':
+          description: Alert generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  alert_id:
+                    type: string
+                  status:
+                    type: string
+                    enum: [fired, resolved]
+
