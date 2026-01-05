@@ -8,7 +8,7 @@ guardrails:no-duplicate-agents:
   variables:
     GIT_DEPTH: "0"
   before_script:
-    - apk add --no-cache git bash
+    - apk add --no-cache git bash grep
     - git fetch --all --prune
   script:
     - |
@@ -17,8 +17,10 @@ guardrails:no-duplicate-agents:
       # Determine base ref (MR pipelines vs branch pipelines)
       if [ -n "${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-}" ]; then
         BASE="origin/${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}"
+        git fetch origin "${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}"
       else
         BASE="origin/${CI_DEFAULT_BRANCH:-main}"
+        git fetch origin "${CI_DEFAULT_BRANCH:-main}"
       fi
 
       echo "Base ref: $BASE"
@@ -36,12 +38,15 @@ guardrails:no-duplicate-agents:
         exit 1
       fi
 
-      # Block CI references to bot agents
-      if grep -E '\.(gitlab|yml|yaml)$' /tmp/changed_files.txt | xargs grep -l 'bot-' 2>/dev/null; then
-        echo "ERROR: CI files referencing 'bot-' agents are not allowed."
-        echo "Use canonical agents from platform-agents instead."
-        exit 1
-      fi
+      # Block CI files referencing bot- agents
+      for file in $(grep -E '\.(gitlab|yml|yaml)$' /tmp/changed_files.txt 2>/dev/null || true); do
+        if [ -f "$file" ] && grep -q "bot-" "$file" 2>/dev/null; then
+          echo "ERROR: CI file '$file' references 'bot-' agents."
+          echo "Use canonical agents from platform-agents instead."
+          grep -n "bot-" "$file" | head -5
+          exit 1
+        fi
+      done
 
       echo "✅ No duplicate agents detected"
   rules:
@@ -54,7 +59,7 @@ guardrails:no-agent-manifests-here:
   variables:
     GIT_DEPTH: "0"
   before_script:
-    - apk add --no-cache git bash
+    - apk add --no-cache git bash grep
     - git fetch --all --prune
   script:
     - |
@@ -62,9 +67,12 @@ guardrails:no-agent-manifests-here:
 
       if [ -n "${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-}" ]; then
         BASE="origin/${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}"
+        git fetch origin "${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}"
       else
         BASE="origin/${CI_DEFAULT_BRANCH:-main}"
+        git fetch origin "${CI_DEFAULT_BRANCH:-main}"
       fi
+
       git diff --name-only "$BASE"...HEAD > /tmp/changed_files.txt || true
 
       # Allow examples/ directory (reference examples only)
