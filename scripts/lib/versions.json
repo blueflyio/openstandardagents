@@ -79,9 +79,9 @@
     }
   ],
   "githubTags": {
-    "latestStable": null,
+    "latestStable": "v0.3.2",
     "latestDev": null,
-    "total": 0
+    "total": 17
   },
   "fallbackVersion": "0.2.3"
 }
