@@ -1,0 +1,209 @@
+# =============================================================================
+# OSSA Getting Started: 05 - Workflow Composition
+# =============================================================================
+#
+# Workflows compose multiple Tasks and Agents into executable pipelines.
+# This is OSSA's power feature - orchestrate complex processes declaratively.
+#
+# Workflow vs Agent:
+# - Agent: LLM-powered, can reason and decide
+# - Task: Deterministic, no LLM (batch jobs, transformations)
+# - Workflow: Composes Agents and Tasks with control flow
+#
+# Features:
+# - Triggers: webhook, cron, events
+# - Steps: sequential, parallel, conditional
+# - Error handling: retry, rollback, compensation
+# - Data flow: pass outputs between steps
+#
+# Run:   ossa validate 05-workflow-composition.ossa.yaml
+# =============================================================================
+
+apiVersion: ossa/v0.3.2
+kind: Workflow
+metadata:
+  name: code-review-pipeline
+  version: 1.0.0
+  description: Automated code review pipeline with security scanning
+  labels:
+    difficulty: advanced
+    tutorial: "05"
+    use-case: ci-cd
+
+spec:
+  # Triggers that start the workflow
+  triggers:
+    # Webhook trigger - receives HTTP POST
+    - type: webhook
+      path: /api/review
+      method: POST
+      authentication:
+        type: bearer
+        secret_ref: ${WEBHOOK_SECRET}
+
+    # Event trigger - GitLab merge request events
+    - type: event
+      source: gitlab
+      events:
+        - merge_request.opened
+        - merge_request.updated
+      filter:
+        # Only trigger for specific branches
+        expression: "${{ event.target_branch in ['main', 'develop'] }}"
+
+  # Input schema - validates incoming data
+  inputs:
+    type: object
+    required: [repository_url, branch]
+    properties:
+      repository_url:
+        type: string
+        format: uri
+        description: Git repository URL
+      branch:
+        type: string
+        description: Branch to review
+      pr_number:
+        type: integer
+        description: Pull request number (if applicable)
+
+  # Output schema - what the workflow produces
+  outputs:
+    type: object
+    properties:
+      review_status:
+        type: string
+        enum: [approved, changes_requested, blocked]
+      findings:
+        type: array
+        items:
+          type: object
+      security_score:
+        type: number
+        minimum: 0
+        maximum: 100
+
+  # Workflow steps - the main logic
+  steps:
+    # Step 1: Validate the PR (deterministic Task - no LLM)
+    - id: validate
+      name: Validate PR Structure
+      kind: Task
+      ref: ./tasks/validate-pr.ossa.yaml
+      input:
+        repository: "${{ workflow.input.repository_url }}"
+        branch: "${{ workflow.input.branch }}"
+      # Step outputs are available to subsequent steps
+      output:
+        files_changed: array
+        is_valid: boolean
+
+    # Step 2: Security scan (Agent - uses LLM)
+    # Only runs if PR is valid
+    - id: security-scan
+      name: Security Analysis
+      kind: Agent
+      ref: ./agents/security-scanner.ossa.yaml
+      condition: "${{ steps.validate.output.is_valid == true }}"
+      input:
+        files: "${{ steps.validate.output.files_changed }}"
+        scan_type: full
+      output:
+        vulnerabilities: array
+        security_score: number
+
+    # Step 3: Code review (Agent - uses LLM)
+    # Runs in parallel with security scan
+    - id: code-review
+      name: Code Quality Review
+      kind: Agent
+      ref: ./agents/code-reviewer.ossa.yaml
+      condition: "${{ steps.validate.output.is_valid == true }}"
+      parallel_with: security-scan  # Run simultaneously with security scan
+      input:
+        files: "${{ steps.validate.output.files_changed }}"
+        review_type: comprehensive
+      output:
+        suggestions: array
+        quality_score: number
+
+    # Step 4: Aggregate results (Task - no LLM)
+    # Waits for both security-scan and code-review
+    - id: aggregate
+      name: Aggregate Review Results
+      kind: Task
+      depends_on:
+        - security-scan
+        - code-review
+      ref: ./tasks/aggregate-results.ossa.yaml
+      input:
+        security_findings: "${{ steps.security-scan.output.vulnerabilities }}"
+        security_score: "${{ steps.security-scan.output.security_score }}"
+        code_suggestions: "${{ steps.code-review.output.suggestions }}"
+        quality_score: "${{ steps.code-review.output.quality_score }}"
+      output:
+        final_status: string
+        combined_findings: array
+
+    # Step 5: Post comment to PR (Task - no LLM)
+    - id: post-comment
+      name: Post Review Comment
+      kind: Task
+      ref: ./tasks/post-pr-comment.ossa.yaml
+      input:
+        pr_number: "${{ workflow.input.pr_number }}"
+        status: "${{ steps.aggregate.output.final_status }}"
+        findings: "${{ steps.aggregate.output.combined_findings }}"
+
+    # Conditional step: Block if critical issues
+    - id: block-merge
+      name: Block Merge on Critical Issues
+      kind: Task
+      condition: "${{ steps.aggregate.output.final_status == 'blocked' }}"
+      ref: ./tasks/block-merge.ossa.yaml
+      input:
+        pr_number: "${{ workflow.input.pr_number }}"
+        reason: "Critical security vulnerabilities found"
+
+  # Shared context available to all steps
+  context:
+    variables:
+      organization: "${{ env.GITHUB_ORG }}"
+      default_reviewers:
+        - "@security-team"
+        - "@code-review-team"
+
+  # Error handling configuration
+  error_handling:
+    # What to do when a step fails
+    on_failure: compensation  # Options: fail_fast, continue, compensation, rollback
+
+    # Compensation steps - undo partial work
+    compensation_steps:
+      - id: cleanup
+        name: Cleanup Failed Review
+        kind: Task
+        ref: ./tasks/cleanup-review.ossa.yaml
+        input:
+          pr_number: "${{ workflow.input.pr_number }}"
+
+    # Retry configuration for transient failures
+    retry:
+      max_attempts: 3
+      backoff: exponential
+      initial_delay_seconds: 5
+
+  # Timeouts
+  timeouts:
+    workflow: 30m      # Total workflow timeout
+    step_default: 5m   # Default per-step timeout
+
+  # Observability
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+    metrics:
+      enabled: true
+      custom_labels:
+        workflow: code-review-pipeline

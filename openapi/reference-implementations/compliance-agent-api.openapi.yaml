@@ -1,0 +1,192 @@
+openapi: 3.1.0
+info:
+  title: FedRAMP Compliance Scanner Agent API
+  version: 0.3.2
+  description: |
+    Automated FedRAMP compliance scanning agent that validates
+    infrastructure against FedRAMP Moderate controls.
+
+x-ossa-metadata:
+  version: 0.2.5-RC
+  compliance:
+    level: enterprise
+    frameworks:
+      - OSSA
+      - OpenAPI 3.1
+      - FedRAMP
+      - SOC2
+  governance:
+    approved: true
+    approvedBy: Security Team
+    approvalDate: "2024-01-15"
+
+x-ossa:
+  version: 0.2.5-RC
+  agent:
+    id: fedramp-compliance-scanner
+    type: worker
+    compliance:
+      standards:
+        - openapi-first
+        - type-safe
+      validated: true
+      validatedAt: "2024-01-15T10:00:00Z"
+
+servers:
+  - url: https://compliance-scanner.platform.com/api/v1
+    description: Production
+
+tags:
+  - name: scanning
+    description: Compliance scanning operations
+  - name: remediation
+    description: Remediation operations
+  - name: reporting
+    description: Reporting operations
+
+paths:
+  /scan:
+    post:
+      summary: Scan infrastructure for compliance
+      description: Scan Kubernetes infrastructure for FedRAMP compliance violations
+      operationId: scanInfrastructure
+      tags: [scanning]
+      x-ossa-capability: scan_infrastructure
+      x-ossa-autonomy:
+        level: autonomous
+        approval_required: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [namespace]
+              properties:
+                namespace:
+                  type: string
+                  description: Kubernetes namespace to scan
+                controls:
+                  type: array
+                  items:
+                    type: string
+                  description: Specific controls to check (e.g., AC-2, AC-3)
+      responses:
+        '200':
+          description: Scan completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  compliant:
+                    type: boolean
+                  violations:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        control:
+                          type: string
+                        severity:
+                          type: string
+                          enum: [low, medium, high, critical]
+                        description:
+                          type: string
+                        resource:
+                          type: string
+
+  /remediate:
+    post:
+      summary: Remediate compliance violations
+      description: Automatically remediate compliance violations
+      operationId: remediate
+      tags: [remediation]
+      x-ossa-capability: remediate
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [violation_id]
+              properties:
+                violation_id:
+                  type: string
+                  description: Violation identifier from scan
+                auto_apply:
+                  type: boolean
+                  default: false
+                  description: Whether to automatically apply remediation
+      responses:
+        '200':
+          description: Remediation completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  remediated:
+                    type: boolean
+                  actions:
+                    type: array
+                    items:
+                      type: string
+                  status:
+                    type: string
+
+  /reports/generate:
+    post:
+      summary: Generate compliance report
+      description: Generate FedRAMP compliance report
+      operationId: generateReport
+      tags: [reporting]
+      x-ossa-capability: generate_report
+      x-ossa-autonomy:
+        level: autonomous
+        approval_required: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [format]
+              properties:
+                format:
+                  type: string
+                  enum: [pdf, html, json]
+                  default: json
+                period:
+                  type: object
+                  properties:
+                    start:
+                      type: string
+                      format: date-time
+                    end:
+                      type: string
+                      format: date-time
+      responses:
+        '200':
+          description: Report generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  report_url:
+                    type: string
+                    format: uri
+                  summary:
+                    type: object
+                    properties:
+                      total_controls:
+                        type: integer
+                      compliant:
+                        type: integer
+                      violations:
+                        type: integer
+

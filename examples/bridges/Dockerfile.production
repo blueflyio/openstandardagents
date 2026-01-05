@@ -1,0 +1,87 @@
+# Production Multi-Stage Dockerfile for AIFlow Agent
+# Optimized for size, security, and performance
+
+#===========================================
+# Stage 1: Base Dependencies
+#===========================================
+FROM python:3.11-slim as base
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN groupadd -r aiflow && useradd -r -g aiflow -u 1000 aiflow
+
+# Set working directory
+WORKDIR /app
+
+#===========================================
+# Stage 2: Dependencies Builder
+#===========================================
+FROM base as builder
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    g++ \
+    make \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir --prefix=/install -r requirements.txt
+
+#===========================================
+# Stage 3: Production Runtime
+#===========================================
+FROM base as production
+
+# Copy installed dependencies from builder
+COPY --from=builder /install /usr/local
+
+# Copy application code
+COPY aiflow-bridge-enhanced.py /app/
+COPY aiflow-phoenix-tracing.py /app/
+
+# Copy character configuration
+COPY characters/ /app/characters/
+
+# Change ownership to non-root user
+RUN chown -R aiflow:aiflow /app
+
+# Switch to non-root user
+USER aiflow
+
+# Expose port
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# Run the application
+CMD ["python", "-u", "aiflow-bridge-enhanced.py"]
+
+# Metadata
+LABEL org.opencontainers.image.title="AIFlow Social Agent" \
+      org.opencontainers.image.description="Personality-driven social AI agent with BuildKit registration" \
+      org.opencontainers.image.version="1.0.0" \
+      org.opencontainers.image.vendor="OSSA Community" \
+      org.opencontainers.image.source="https://github.com/blueflyio/openstandardagents" \
+      ossa.compliant="true" \
+      ossa.version="1.0" \
+      agent.framework="aiflow" \
+      agent.role="chat"
+

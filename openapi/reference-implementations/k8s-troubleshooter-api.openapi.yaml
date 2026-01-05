@@ -1,0 +1,167 @@
+openapi: 3.1.0
+info:
+  title: Kubernetes Troubleshooter Agent API
+  version: 0.3.2
+  description: |
+    Autonomous Kubernetes cluster troubleshooting agent with diagnostic capabilities.
+    Diagnoses pod failures, network issues, resource constraints, and configuration problems.
+
+x-ossa-metadata:
+  version: 0.2.5-RC
+  compliance:
+    level: standard
+    frameworks:
+      - OSSA
+      - OpenAPI 3.1
+
+x-ossa:
+  version: 0.2.5-RC
+  agent:
+    id: k8s-troubleshooter
+    type: worker
+    compliance:
+      standards:
+        - openapi-first
+        - type-safe
+      validated: true
+      validatedAt: "2024-01-15T10:00:00Z"
+
+servers:
+  - url: https://troubleshooter.platform.com/api/v1
+    description: Production
+  - url: http://k8s-troubleshooter:3000/api/v1
+    description: Kubernetes internal
+
+tags:
+  - name: diagnostics
+    description: Diagnostic operations
+  - name: pods
+    description: Pod operations
+  - name: cluster
+    description: Cluster operations
+
+paths:
+  /diagnose/pod:
+    post:
+      summary: Diagnose pod issues
+      description: |
+        Analyzes a Kubernetes pod to identify failures, configuration issues,
+        and resource constraints. Uses MCP tools to gather pod logs, events, and metrics.
+      operationId: diagnosePod
+      tags: [diagnostics, pods]
+      x-ossa-capability: pod-diagnostics
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+        allowed_actions:
+          - read_pods
+          - read_logs
+          - read_events
+          - read_metrics
+        blocked_actions:
+          - delete_pods
+          - scale_deployments
+          - modify_configs
+      x-ossa-tools:
+        - type: mcp
+          server: kubernetes-mcp
+          capabilities:
+            - get_pods
+            - get_logs
+            - get_events
+            - describe_resource
+            - get_metrics
+      x-ossa-llm:
+        provider: openai
+        model: gpt-4
+        temperature: 0.2
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [pod_name, namespace]
+              properties:
+                pod_name:
+                  type: string
+                  description: Name of the pod to diagnose
+                namespace:
+                  type: string
+                  description: Kubernetes namespace
+                  default: default
+                include_logs:
+                  type: boolean
+                  default: true
+                  description: Whether to include pod logs in diagnosis
+      responses:
+        '200':
+          description: Diagnosis completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [healthy, degraded, failed]
+                  issues:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        severity:
+                          type: string
+                          enum: [critical, warning, info]
+                        message:
+                          type: string
+                        resource:
+                          type: string
+                  recommendations:
+                    type: array
+                    items:
+                      type: string
+                  metadata:
+                    type: object
+                    properties:
+                      diagnosed_at:
+                        type: string
+                        format: date-time
+                      execution_time_ms:
+                        type: integer
+
+  /cluster/health:
+    get:
+      summary: Check cluster health
+      description: Perform comprehensive cluster health check
+      operationId: checkClusterHealth
+      tags: [cluster]
+      x-ossa-capability: cluster-diagnostics
+      x-ossa-autonomy:
+        level: autonomous
+        approval_required: false
+      responses:
+        '200':
+          description: Cluster health status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [healthy, degraded, unhealthy]
+                  nodes:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        status:
+                          type: string
+                        issues:
+                          type: array
+                          items:
+                            type: string
+
