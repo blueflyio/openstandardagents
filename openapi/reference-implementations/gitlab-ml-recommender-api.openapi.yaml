@@ -1,0 +1,151 @@
+openapi: 3.1.0
+info:
+  title: GitLab ML Recommendation Engine API
+  version: 0.3.2
+  description: |
+    AI-powered customer success recommendation agent using RAG (Retrieval-Augmented Generation).
+    Provides data-driven recommendations for proactive customer engagement.
+
+x-ossa-metadata:
+  version: 0.2.5-RC
+  compliance:
+    level: standard
+    frameworks:
+      - OSSA
+      - OpenAPI 3.1
+
+x-ossa:
+  version: 0.3.2
+  agent:
+    id: gitlab-ml-recommender
+    type: integrator
+    compliance:
+      standards:
+        - openapi-first
+        - type-safe
+      validated: true
+      validatedAt: "2024-01-15T10:00:00Z"
+
+servers:
+  - url: https://ml-recommender.platform.com/api/v1
+    description: Production
+
+tags:
+  - name: recommendations
+    description: Recommendation operations
+  - name: search
+    description: Semantic search operations
+
+paths:
+  /recommendations/generate:
+    post:
+      summary: Generate recommendations
+      description: |
+        Generate AI-powered recommendations using RAG pipeline.
+        Performs semantic search in Qdrant and generates recommendations with GPT-4.
+      operationId: generateRecommendations
+      tags: [recommendations]
+      x-ossa-capability: generate-recommendations
+      x-ossa-autonomy:
+        level: autonomous
+        approval_required: false
+      x-ossa-llm:
+        provider: openai
+        model: gpt-4
+        temperature: 0.7
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [customer_id]
+              properties:
+                customer_id:
+                  type: string
+                  description: Customer identifier
+                context:
+                  type: object
+                  description: Additional context for recommendations
+                limit:
+                  type: integer
+                  default: 10
+                  description: Maximum number of recommendations
+      responses:
+        '200':
+          description: Recommendations generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  recommendations:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        title:
+                          type: string
+                        description:
+                          type: string
+                        priority:
+                          type: string
+                        confidence:
+                          type: number
+                        source:
+                          type: string
+                  customer_health_score:
+                    type: number
+
+  /search/semantic:
+    post:
+      summary: Semantic search
+      description: Perform semantic search in Qdrant vector database
+      operationId: semanticSearch
+      tags: [search]
+      x-ossa-capability: semantic-search
+      x-ossa-autonomy:
+        level: autonomous
+        approval_required: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [query]
+              properties:
+                query:
+                  type: string
+                  description: Search query text
+                top_k:
+                  type: integer
+                  default: 5
+                  description: Number of results to return
+                filters:
+                  type: object
+                  description: Additional filters for search
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        text:
+                          type: string
+                        score:
+                          type: number
+                        metadata:
+                          type: object
+

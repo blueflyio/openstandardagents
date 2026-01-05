@@ -1,0 +1,231 @@
+openapi: 3.1.0
+jsonSchemaDialect: https://spec.openapis.org/oas/3.1/dialect/base
+info:
+  title: OSSA CLI Commands API
+  version: 0.3.2
+  description: |
+    # OSSA CLI Commands OpenAPI Specification
+
+    Complete API specification for all OSSA CLI commands, ensuring type safety,
+    validation, and consistency between CLI and REST API operations.
+
+    ## Principles
+    - **DRY**: Single source of truth for command schemas
+    - **SOLID**: Command separation and dependency injection
+    - **Zod Validation**: Runtime validation for all inputs
+    - **OpenAPI First**: Spec drives CLI command definitions
+    - **CRUD Complete**: Full Create, Read, Update, Delete operations
+
+  contact:
+    name: Bluefly.io LLM Platform Team
+    url: https://github.com/blueflyio/openstandardagents
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+paths:
+  /cli/agent/create:
+    post:
+      summary: "Create agent (CLI: ossa agent create)"
+      description: Register a new agent via CLI
+      operationId: cliAgentCreate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentCreateCLI'
+      responses:
+        '200':
+          description: Agent created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /cli/agent/list:
+    get:
+      summary: "List agents (CLI: ossa agent list)"
+      description: List all agents with filtering
+      operationId: cliAgentList
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: type
+          in: query
+          schema:
+            $ref: '#/components/schemas/AgentType'
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/AgentStatus'
+        - name: domain
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of agents
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentsList'
+
+  /cli/agent/get:
+    get:
+      summary: "Get agent (CLI: ossa agent get)"
+      description: Get detailed information about an agent
+      operationId: cliAgentGet
+      parameters:
+        - name: agent
+          in: query
+          required: true
+          schema:
+            type: string
+            pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?(@\d+\.\d+\.\d+(-[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)*)?(\+[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)*)?)?$'
+      responses:
+        '200':
+          description: Agent details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /cli/agent/update:
+    put:
+      summary: "Update agent (CLI: ossa agent update)"
+      description: Update an existing agent
+      operationId: cliAgentUpdate
+      parameters:
+        - name: agent
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentUpdate'
+      responses:
+        '200':
+          description: Agent updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /cli/agent/delete:
+    delete:
+      summary: "Delete agent (CLI: ossa agent delete)"
+      description: Delete an agent
+      operationId: cliAgentDelete
+      parameters:
+        - name: agent
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: force
+          in: query
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '204':
+          description: Agent deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+components:
+  schemas:
+    AgentCreateCLI:
+      type: object
+      required:
+        - path
+      properties:
+        path:
+          type: string
+          minLength: 1
+          description: Path to OSSA agent manifest file
+        registry:
+          type: string
+          enum: [gitlab, github]
+          default: gitlab
+        token:
+          type: string
+          description: Authentication token (optional, can use env var)
+        dryRun:
+          type: boolean
+          default: false
+
+    AgentType:
+      type: string
+      enum:
+        - orchestrator
+        - worker
+        - specialist
+        - critic
+        - monitor
+        - gateway
+
+    AgentStatus:
+      type: string
+      enum:
+        - registered
+        - active
+        - inactive
+        - suspended
+        - deprecated
+
+    AgentResponse:
+      $ref: '../agent-crud.yaml#/components/schemas/AgentResponse'
+
+    AgentsList:
+      $ref: '../agent-crud.yaml#/components/schemas/AgentsList'
+
+    AgentUpdate:
+      $ref: '../agent-crud.yaml#/components/schemas/AgentUpdate'
+
+  responses:
+    ValidationError:
+      $ref: '../agent-crud.yaml#/components/responses/ValidationError'
+
+    NotFound:
+      $ref: '../agent-crud.yaml#/components/responses/NotFound'
+
+    Conflict:
+      $ref: '../agent-crud.yaml#/components/responses/Conflict'
+
+x-ossa-metadata:
+  version: 0.3.1
+  compliance:
+    level: enterprise
+    frameworks:
+      - OSSA v0.3.1
+      - OpenAPI 3.1
+      - RFC7807
+  governance:
+    approved: true
+    approvedBy: Platform Team
+    approvalDate: 2025-12-23

@@ -1,0 +1,125 @@
+{
+  "apiVersion": "ossa/v0.3.2",
+  "kind": "Agent",
+  "metadata": {
+    "name": "code-assistant",
+    "version": "1.0.0",
+    "description": "AI coding agent with agents.md repository guidance",
+    "labels": {
+      "domain": "development",
+      "framework": "agents-md"
+    }
+  },
+  "spec": {
+    "role": "You are an expert software developer. Follow the project's coding standards and conventions. Write clean, maintainable code with proper tests.",
+    "llm": {
+      "provider": "openai",
+      "model": "gpt-4o",
+      "temperature": 0.2
+    },
+    "tools": [
+      {
+        "type": "mcp",
+        "name": "filesystem",
+        "server": "filesystem",
+        "capabilities": [
+          {
+            "name": "read_file"
+          },
+          {
+            "name": "write_file"
+          },
+          {
+            "name": "list_directory"
+          }
+        ]
+      },
+      {
+        "type": "mcp",
+        "name": "git",
+        "server": "git",
+        "capabilities": [
+          {
+            "name": "status"
+          },
+          {
+            "name": "diff"
+          },
+          {
+            "name": "commit"
+          }
+        ]
+      }
+    ],
+    "constraints": {
+      "performance": {
+        "maxLatencySeconds": 30,
+        "timeoutSeconds": 120
+      }
+    },
+    "autonomy": {
+      "level": "supervised",
+      "approval_required": true,
+      "allowed_actions": [
+        "read",
+        "write",
+        "test"
+      ],
+      "blocked_actions": [
+        "deploy",
+        "delete"
+      ]
+    }
+  },
+  "extensions": {
+    "agents_md": {
+      "enabled": true,
+      "generate": true,
+      "output_path": "AGENTS.md",
+      "sections": {
+        "dev_environment": {
+          "enabled": true,
+          "source": "spec.tools",
+          "append": "- Use `pnpm` for package management\n- Run `pnpm dev` to start development server"
+        },
+        "testing": {
+          "enabled": true,
+          "custom": "Run `pnpm test` before committing.\nEnsure all tests pass and coverage is maintained.\nUse Jest for unit tests and Playwright for E2E."
+        },
+        "pr_instructions": {
+          "enabled": true,
+          "source": "spec.autonomy",
+          "custom": "- Use conventional commits format\n- Include tests for new features\n- Update documentation as needed\n- Request review from at least one team member"
+        },
+        "code_style": {
+          "enabled": true,
+          "custom": "- TypeScript strict mode enabled\n- ESLint + Prettier for formatting\n- Prefer functional programming patterns\n- Use descriptive variable names"
+        }
+      },
+      "sync": {
+        "on_manifest_change": true,
+        "include_comments": true
+      },
+      "mapping": {
+        "tools_to_dev_environment": true,
+        "constraints_to_testing": true,
+        "autonomy_to_pr_instructions": true
+      },
+      "cursor_integration": true
+    },
+    "cursor": {
+      "enabled": true,
+      "agent_type": "composer",
+      "workspace_config": {
+        "context_files": [
+          "src/**/*.ts",
+          "tests/**/*.ts"
+        ],
+        "ignore_patterns": [
+          "node_modules/**",
+          "dist/**"
+        ]
+      }
+    }
+  }
+}

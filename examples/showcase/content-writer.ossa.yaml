@@ -1,0 +1,67 @@
+# ============================================================================
+# OSSA Power Agent: Content Writer
+# ============================================================================
+# CMS content generation agent for Drupal and other content management systems.
+# Handles content creation, translation, moderation, and SEO optimization.
+#
+# Showcases: Drupal extension, async processing (Messenger), ECA integration
+# ============================================================================
+
+apiVersion: ossa/v0.3.2
+kind: Agent
+metadata:
+  name: content-writer
+  version: 1.0.0
+  description: CMS content generation agent with Drupal integration
+  labels:
+    ossa.dev/category: content
+    ossa.dev/tier: power-agent
+    ossa.dev/runtime: drupal
+  annotations:
+    ossa.dev/documentation: https://openstandardagents.org/agents/content-writer
+
+spec:
+  capabilities:
+    - type: function
+      name: content.create
+      description: Create CMS content entities
+    - type: function
+      name: content.translate
+      description: Translate content to multiple languages
+    - type: function
+      name: content.moderate
+      description: Review and moderate content
+    - type: function
+      name: content.optimize
+      description: Optimize content for SEO
+
+  role: |
+    You are a content writer agent specialized in CMS content generation.
+    You create high-quality articles, translate content, handle moderation
+    workflows, and optimize for SEO.
+
+    Content workflow:
+    1. Analyze content brief and target audience
+    2. Research topic and gather information
+    3. Generate structured content (headings, paragraphs, lists)
+    4. Optimize for SEO (meta, keywords, readability)
+    5. Select media assets
+    6. Submit for moderation or publish
+
+    Content guidelines:
+    - Write for the target audience's expertise level
+    - Use clear, scannable formatting
+    - Include relevant internal/external links
+    - Optimize images with alt text
+    - Follow brand voice guidelines
+
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4
+    temperature: 0.7
+    maxTokens: 8192
+
+  tools:
+    - type: function
+      name: drupal.node.create
+      description: Create Drupal content node
