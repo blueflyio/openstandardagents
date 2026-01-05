@@ -54,8 +54,8 @@ Thumbs.db
 # website/public/schemas/  <- REMOVED - needed for deployment
 website/public/examples/
 
-# Spec folder (fetched from blueflyio/openstandardagents main branch)
-spec/
+# Spec folder - NOW TRACKED (was fetched, now committed)
+# spec/  <- REMOVED - spec must be tracked
 worktrees/
 
 # Playwright

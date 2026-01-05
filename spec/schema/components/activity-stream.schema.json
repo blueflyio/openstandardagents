@@ -1,0 +1,94 @@
+{
+  "$id": "https://ossa.dev/schema/components/activity-stream.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "OSSA Activity Stream Configuration",
+  "description": "Activity stream settings for agent observability",
+  "type": "object",
+  "properties": {
+    "enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Enable activity stream publishing"
+    },
+    "format": {
+      "type": "string",
+      "enum": ["activity-streams-2.0", "json", "cloudevents"],
+      "default": "activity-streams-2.0",
+      "description": "Activity stream format"
+    },
+    "sink": {
+      "type": "object",
+      "description": "Event sink configuration",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["webhook", "kafka", "pubsub", "redis", "stdout"],
+          "description": "Sink type"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Webhook URL or connection string"
+        },
+        "topic": {
+          "type": "string",
+          "description": "Topic or channel name"
+        },
+        "batch_size": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 100,
+          "description": "Batch size for event delivery"
+        },
+        "flush_interval_ms": {
+          "type": "integer",
+          "minimum": 100,
+          "default": 5000,
+          "description": "Flush interval in milliseconds"
+        }
+      },
+      "required": ["type"]
+    },
+    "events": {
+      "type": "object",
+      "description": "Event filtering",
+      "properties": {
+        "include": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Event types to include"
+        },
+        "exclude": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Event types to exclude"
+        }
+      }
+    },
+    "enrichment": {
+      "type": "object",
+      "description": "Event enrichment settings",
+      "properties": {
+        "add_trace_context": {
+          "type": "boolean",
+          "default": true,
+          "description": "Include W3C trace context"
+        },
+        "add_agent_metadata": {
+          "type": "boolean",
+          "default": true,
+          "description": "Include agent metadata"
+        },
+        "add_timestamp": {
+          "type": "boolean",
+          "default": true
+        },
+        "custom_attributes": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}
