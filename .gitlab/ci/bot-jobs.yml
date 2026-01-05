@@ -57,3 +57,43 @@ bot:security-scanner:
   variables:
     MR_IID: $CI_MERGE_REQUEST_IID
   allow_failure: false
+
+bot:test-generator:
+  stage: test
+  image: node:20
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: manual
+      allow_failure: true
+  script:
+    - npm install
+    - node scripts/bots/bot-test-generator.ts
+  variables:
+    MR_IID: $CI_MERGE_REQUEST_IID
+  allow_failure: true
+
+bot:architecture-validator:
+  stage: validate
+  image: node:20
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  script:
+    - npm install
+    - node scripts/bots/bot-architecture-validator.ts
+  variables:
+    MR_IID: $CI_MERGE_REQUEST_IID
+  allow_failure: true
+
+bot:ci-pipeline:
+  stage: quality
+  image: node:20
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: manual
+      allow_failure: true
+  script:
+    - npm install
+    - node scripts/bots/bot-ci-pipeline.ts
+  variables:
+    PIPELINE_ID: $CI_PIPELINE_ID
+  allow_failure: true
