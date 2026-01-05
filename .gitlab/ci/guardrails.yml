@@ -1,0 +1,79 @@
+# Guardrails to prevent duplicate agents and enforce single source of truth
+# OSSA repo = spec + CLI + examples only
+# Canonical agents = platform-agents only
+
+guardrails:no-duplicate-agents:
+  stage: validate
+  image: alpine:3.20
+  variables:
+    GIT_DEPTH: "0"
+  before_script:
+    - apk add --no-cache git bash
+    - git fetch --all --prune
+  script:
+    - |
+      set -euo pipefail
+
+      # Determine base ref (MR pipelines vs branch pipelines)
+      if [ -n "${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-}" ]; then
+        BASE="origin/${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}"
+      else
+        BASE="origin/${CI_DEFAULT_BRANCH:-main}"
+      fi
+
+      echo "Base ref: $BASE"
+      git diff --name-only "$BASE"...HEAD > /tmp/changed_files.txt || true
+      echo "Changed files:"
+      cat /tmp/changed_files.txt || true
+
+      # Block paths that would recreate duplicate agent implementations in OSSA repo
+      if grep -E '^(scripts/bots/|bots/|\.gitlab/agents/bot-|\.gitlab/ci/bot-jobs\.yml)' /tmp/changed_files.txt; then
+        echo "ERROR: Duplicate bot/agent artifacts are not allowed in openstandardagents."
+        echo "Use canonical agents from platform-agents instead."
+        echo ""
+        echo "Canonical agents are in: blueflyio/agent-platform/platform-agents"
+        echo "Do not create scripts/bots/* or .gitlab/agents/bot-* in this repo."
+        exit 1
+      fi
+
+      echo "✅ No duplicate agents detected"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH'
+
+guardrails:no-agent-manifests-here:
+  stage: validate
+  image: alpine:3.20
+  variables:
+    GIT_DEPTH: "0"
+  before_script:
+    - apk add --no-cache git bash
+    - git fetch --all --prune
+  script:
+    - |
+      set -euo pipefail
+
+      BASE="origin/${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-$CI_DEFAULT_BRANCH:-main}"
+      git diff --name-only "$BASE"...HEAD > /tmp/changed_files.txt || true
+
+      # Allow examples/ directory (reference examples only)
+      # Block agent manifests everywhere else
+      if grep -v '^examples/' /tmp/changed_files.txt | grep -E '\.ossa\.ya?ml$'; then
+        echo "ERROR: OSSA agent manifests must live in platform-agents, not openstandardagents."
+        echo ""
+        echo "Allowed locations:"
+        echo "  - examples/*.ossa.yaml (reference examples only)"
+        echo ""
+        echo "Forbidden locations:"
+        echo "  - .gitlab/agents/*.ossa.yaml"
+        echo "  - scripts/**/*.ossa.yaml"
+        echo "  - Any production agent manifests"
+        echo ""
+        echo "Canonical agents belong in: blueflyio/agent-platform/platform-agents"
+        exit 1
+      fi
+
+      echo "✅ No production agent manifests detected"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH'
