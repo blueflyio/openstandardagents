@@ -1,0 +1,101 @@
+ossa: v0.3.0
+
+kind: worker
+metadata:
+  name: bot-ci-pipeline
+  namespace: openstandardagents.org
+  version: 1.0.0
+  title: CI Pipeline Agent
+  description: >-
+    Manages CI/CD pipeline configuration, optimization, and troubleshooting.
+    Provides pipeline analysis and optimization suggestions.
+  labels:
+    component: ci-cd
+    domain: infrastructure
+    tier: automation
+  annotations:
+    maintainer: devops@bluefly.io
+    documentation: https://gitlab.com/blueflyio/ossa/openstandardagents.org/-/wikis/agents/ci-pipeline
+    service-account: bot-ci-pipeline
+
+spec:
+  capabilities:
+    - pipeline-management
+    - ci-optimization
+    - job-analysis
+    - troubleshooting
+
+  llm:
+    model:
+      primary: claude-sonnet-4-20250514
+      fallback:
+        - claude-3-5-sonnet-20241022
+    execution_profile: balanced
+    token_limits:
+      max_input: 50000
+      max_output: 4096
+
+  tools:
+    - name: gitlab-api
+      type: mcp
+      config:
+        server: gitlab-mcp
+        operations:
+          - get_pipeline_status
+          - get_job_logs
+          - retry_job
+          - cancel_pipeline
+          - get_ci_config
+
+  commands:
+    analyze:
+      description: Analyze pipeline performance
+      handler: |
+        Analyze CI/CD pipeline:
+        1. Job execution times
+        2. Resource usage
+        3. Parallelization opportunities
+        4. Cache optimization
+        5. Dependency optimization
+        6. Cost analysis
+
+    optimize:
+      description: Optimize pipeline configuration
+      handler: |
+        Suggest pipeline optimizations:
+        1. Parallel job execution
+        2. Cache strategies
+        3. Artifact management
+        4. Runner selection
+        5. Job ordering
+
+    troubleshoot:
+      description: Troubleshoot failed pipelines
+      handler: |
+        Diagnose pipeline failures:
+        1. Analyze job logs
+        2. Identify root cause
+        3. Suggest fixes
+        4. Provide remediation steps
+
+  triggers:
+    - type: webhook
+      source: gitlab
+      events:
+        - pipeline.failed
+        - job.failed
+
+  outputs:
+    schema:
+      type: object
+      properties:
+        analysis:
+          type: object
+        optimizations:
+          type: array
+          items:
+            type: object
+        issues:
+          type: array
+          items:
+            type: object

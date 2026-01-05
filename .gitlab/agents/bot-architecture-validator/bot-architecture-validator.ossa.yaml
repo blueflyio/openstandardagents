@@ -1,0 +1,100 @@
+ossa: v0.3.0
+
+kind: worker
+metadata:
+  name: bot-architecture-validator
+  namespace: openstandardagents.org
+  version: 1.0.0
+  title: Architecture Validator Agent
+  description: >-
+    Validates code changes against architectural principles: SOLID, DRY, OpenAPI-first,
+    TDD compliance, and separation of duties.
+  labels:
+    component: architecture
+    domain: quality
+    tier: automation
+  annotations:
+    maintainer: devops@bluefly.io
+    documentation: https://gitlab.com/blueflyio/ossa/openstandardagents.org/-/wikis/agents/architecture-validator
+    service-account: bot-architecture-validator
+
+spec:
+  capabilities:
+    - architecture-validation
+    - design-pattern-checking
+    - solid-principles
+    - openapi-compliance
+
+  llm:
+    model:
+      primary: claude-sonnet-4-20250514
+      fallback:
+        - claude-3-5-sonnet-20241022
+    execution_profile: balanced
+    token_limits:
+      max_input: 100000
+      max_output: 4096
+
+  tools:
+    - name: gitlab-api
+      type: mcp
+      config:
+        server: gitlab-mcp
+        operations:
+          - get_mr_changes
+          - post_mr_comment
+    - name: code-analysis
+      type: builtin
+      config:
+        check_solid: true
+        check_dry: true
+        check_openapi: true
+
+  commands:
+    validate:
+      description: Validate architecture compliance
+      parameters:
+        principles:
+          type: array
+          items:
+            type: string
+          default: [solid, dry, openapi-first, tdd, separation-of-duties]
+      handler: |
+        Validate code against architectural principles:
+        1. SOLID principles compliance
+        2. DRY (Don't Repeat Yourself)
+        3. OpenAPI-first (specs before implementation)
+        4. TDD compliance (tests first)
+        5. Separation of duties
+        6. Dependency injection
+        7. Interface segregation
+        8. Single responsibility
+
+        Provide detailed feedback with examples.
+
+  triggers:
+    - type: webhook
+      source: gitlab
+      events:
+        - merge_request.opened
+        - merge_request.updated
+
+  outputs:
+    schema:
+      type: object
+      properties:
+        compliant:
+          type: boolean
+        violations:
+          type: array
+          items:
+            type: object
+            properties:
+              principle:
+                type: string
+              file:
+                type: string
+              line:
+                type: integer
+              message:
+                type: string

@@ -1,0 +1,92 @@
+ossa: v0.3.0
+
+kind: worker
+metadata:
+  name: bot-wiki-sync
+  namespace: openstandardagents.org
+  version: 1.0.0
+  title: Wiki Sync Agent
+  description: >-
+    Automatically syncs documentation between GitLab Wiki and project repository.
+    Keeps wiki pages in sync with markdown files in the repository.
+  labels:
+    component: documentation
+    domain: gitlab
+    tier: automation
+  annotations:
+    maintainer: devops@bluefly.io
+    documentation: https://gitlab.com/blueflyio/ossa/openstandardagents.org/-/wikis/agents/wiki-sync
+    service-account: bot-wiki-sync
+
+spec:
+  capabilities:
+    - wiki-management
+    - markdown-processing
+    - git-operations
+    - file-syncing
+
+  llm:
+    model:
+      primary: claude-sonnet-4-20250514
+      fallback:
+        - claude-3-5-sonnet-20241022
+    execution_profile: speed
+    token_limits:
+      max_input: 50000
+      max_output: 4096
+
+  tools:
+    - name: gitlab-api
+      type: mcp
+      config:
+        server: gitlab-mcp
+        operations:
+          - get_wiki_page
+          - create_wiki_page
+          - update_wiki_page
+          - list_wiki_pages
+          - get_file_content
+          - commit_file
+
+  commands:
+    sync:
+      description: Sync markdown files to GitLab Wiki
+      parameters:
+        source_dir:
+          type: string
+          default: "docs/"
+        wiki_slug:
+          type: string
+          description: Wiki page slug (optional)
+      handler: |
+        Sync markdown files from repository to GitLab Wiki:
+        1. Scan source directory for .md files
+        2. Compare with existing wiki pages
+        3. Create or update wiki pages
+        4. Preserve wiki formatting
+        5. Report sync status
+
+  triggers:
+    - type: webhook
+      source: gitlab
+      events:
+        - push
+      filter:
+        changes_include:
+          - "docs/**/*.md"
+          - "website/content/docs/**/*.md"
+
+  outputs:
+    schema:
+      type: object
+      properties:
+        pages_synced:
+          type: integer
+        pages_created:
+          type: integer
+        pages_updated:
+          type: integer
+        errors:
+          type: array
+          items:
+            type: string
