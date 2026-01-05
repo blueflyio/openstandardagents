@@ -36,6 +36,14 @@ coverage/
 .turbo/
 .eslintcache
 
+# Shell scripts (FORBIDDEN - use .gitlab-ci.yml instead)
+*.sh
+*.bash
+*.sh.old
+*.bash.old
+**/*.sh
+**/*.bash
+
 # OS
 Thumbs.db
 *.tmp
