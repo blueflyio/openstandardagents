@@ -1,0 +1,64 @@
+{
+  "version": "0.1.9",
+  "timestamp": "2024-12-12T10:00:00Z",
+  "migration": {
+    "from": "OSSA",
+    "to": "agent-buildkit",
+    "branch": "feature/ossa-implementation-v0.1.9"
+  },
+  "files_to_migrate": {
+    "cli": {
+      "count": 4,
+      "source": "src/cli/",
+      "target": "src/ossa-tools/cli/",
+      "files": ["index.ts", "commands/registry.ts", "commands/ossa.ts", "commands/mcp.ts"]
+    },
+    "mcp_server": {
+      "count": 7,
+      "source": "src/mcp-server/",
+      "target": "src/ossa-tools/mcp-server/",
+      "files": ["index.ts", "server.ts", "tools.ts", "transport.ts", "handlers.ts", "types.ts", "config.ts"]
+    },
+    "core_runtime": {
+      "count": 11,
+      "source": "src/core/",
+      "target": "src/ossa-tools/runtime/",
+      "files": ["orchestrator.ts", "registry.ts", "compliance.ts", "lifecycle.ts", "execution.ts", "state.ts", "queue.ts", "scheduler.ts", "logger.ts", "metrics.ts", "config.ts"]
+    },
+    "infrastructure": {
+      "count": 53,
+      "source": "infrastructure/",
+      "target": "src/ossa-tools/infrastructure/",
+      "includes": ["docker-compose*.yml", "*.yaml", "k8s/", "helm/", "scripts/"]
+    },
+    "vortex": {
+      "count": 5,
+      "source": "vortex/",
+      "target": "src/ossa-tools/vortex/",
+      "critical": true,
+      "features": ["67% token reduction", "$2.4M annual savings"]
+    },
+    "agents": {
+      "count": 17,
+      "source": ".agents/",
+      "target": "src/ossa-tools/agents-registry/",
+      "types": ["orchestrator", "worker", "critic", "judge", "trainer", "governor", "monitor"]
+    }
+  },
+  "files_to_keep": {
+    "specifications": {
+      "count": 16,
+      "locations": [
+        "src/api/*.openapi.yml",
+        "src/api/*.schema.json",
+        "src/types/",
+        "src/specification/validator.ts",
+        "examples/"
+      ]
+    }
+  },
+  "total_files": {
+    "to_migrate": 76,
+    "to_keep": 16
+  }
+}

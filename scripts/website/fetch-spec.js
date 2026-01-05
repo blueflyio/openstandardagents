@@ -16,7 +16,8 @@ const GITLAB_API = 'https://gitlab.com/api/v4';
 // Use numeric project ID for reliable cross-project job token access
 const PROJECT_ID = '76265294';  // blueflyio/openstandardagents
 const SPEC_PATH = 'spec';
-const REF = 'main';
+// Use release/v0.3.x branch for latest v0.3.3 spec (main is not latest)
+const REF = process.env.OSSA_SPEC_REF || 'release/v0.3.x';
 
 const SPEC_DIR = path.join(__dirname, '../../spec');
 const SCHEMAS_DIR = path.join(__dirname, '../../website/public/schemas');
@@ -170,7 +171,7 @@ function validateSchemaStructure() {
 }
 
 async function main() {
-  console.log('🔄 Fetching spec from blueflyio/openstandardagents (main branch)...\n');
+  console.log(`🔄 Fetching spec from blueflyio/openstandardagents (${REF} branch)...\n`);
 
   try {
     // Clean existing spec dir

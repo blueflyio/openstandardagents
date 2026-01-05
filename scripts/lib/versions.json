@@ -1,7 +1,7 @@
 {
-  "stable": "0.3.2",
-  "stableTag": "v0.3.2",
-  "latest": "0.3.2",
+  "stable": "0.3.3",
+  "stableTag": "v0.3.3",
+  "latest": "0.3.3",
   "dev": "0.2.5-dev",
   "devTag": "v0.2.5-dev",
   "all": [
@@ -79,9 +79,9 @@
     }
   ],
   "githubTags": {
-    "latestStable": "v0.3.2",
+    "latestStable": null,
     "latestDev": null,
-    "total": 17
+    "total": 0
   },
   "fallbackVersion": "0.2.3"
 }

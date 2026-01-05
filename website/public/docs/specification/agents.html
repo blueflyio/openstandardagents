@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSSA Agent Specification</title>
+    <meta name="description" content="OSSA Agent Specification - Open Standards for Scalable Agents">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="/assets/style.css">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Page-specific styles for better visual appeal */
+        .callout {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--spacing-md);
+            padding: var(--spacing-lg);
+            margin: var(--spacing-lg) 0;
+            border-radius: 0.5rem;
+            border-left: 4px solid var(--color-primary);
+        }
+        
+        .callout-info {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+            border-left-color: var(--color-primary);
+        }
+        
+        .callout-warning {
+            background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%);
+            border-left-color: var(--color-warning);
+        }
+        
+        .callout-success {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border-left-color: var(--color-success);
+        }
+        
+        .callout-icon {
+            font-size: 1.5rem;
+            line-height: 1;
+        }
+        
+        .callout-content {
+            flex: 1;
+        }
+        
+        .callout-content strong {
+            display: block;
+            margin-bottom: var(--spacing-xs);
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+        
+        .agent-icon {
+            font-size: 2rem;
+            margin-bottom: var(--spacing-md);
+            text-align: center;
+        }
+        
+        .agent-types-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--spacing-xl);
+            margin-top: var(--spacing-2xl);
+        }
+        
+        .agent-type {
+            background: var(--bg-card);
+            padding: var(--spacing-xl);
+            border-radius: 1rem;
+            border: 1px solid var(--border-color);
+            transition: var(--transition);
+            text-align: center;
+        }
+        
+        .agent-type:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-xl);
+            border-color: var(--color-primary);
+        }
+        
+        .agent-type h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: var(--spacing-md);
+            color: var(--text-primary);
+        }
+        
+        .agent-type ul {
+            list-style: none;
+            padding: 0;
+            text-align: left;
+        }
+        
+        .agent-type li {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .spec-section {
+            margin: var(--spacing-3xl) 0;
+        }
+        
+        .spec-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--spacing-xl);
+            margin: var(--spacing-xl) 0;
+        }
+        
+        .spec-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: var(--spacing-xl);
+            transition: var(--transition);
+        }
+        
+        .spec-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-xl);
+            border-color: var(--color-primary);
+        }
+        
+        .spec-card h3 {
+            margin-top: 0;
+            margin-bottom: var(--spacing-md);
+            color: var(--text-primary);
+            font-size: 1.25rem;
+        }
+        
+        .code-example {
+            background: var(--bg-dark);
+            color: #e2e8f0;
+            padding: var(--spacing-lg);
+            border-radius: 0.5rem;
+            font-family: var(--font-mono);
+            font-size: 0.875rem;
+            line-height: 1.6;
+            overflow-x: auto;
+            margin: var(--spacing-md) 0;
+        }
+        
+        .protocol-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .protocol-list li {
+            padding: var(--spacing-sm) 0;
+            border-bottom: 1px solid var(--border-color-light);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        
+        .protocol-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .protocol-icon {
+            font-size: 1.25rem;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <h1>OSSA</h1>
+                    <span class="tagline">Open Standards for Scalable Agents</span>
+                </div>
+                <nav class="nav">
+                    <a href="/index.html" class="nav-link">Home</a>
+                    <a href="/api-docs.html" class="nav-link">API Reference</a>
+                    <a href="/docs/specification/agents.html" class="nav-link active">Specification</a>
+                    <a href="/docs/development/roadmap.html" class="nav-link">Roadmap</a>
+                    <a href="https://gitlab.com/blueflyio/agent-platform/gitlab_components/ossa" class="nav-link" target="_blank">GitLab</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <section class="content">
+            <div class="container">
+                <div class="page-header">
+                    <h1 class="page-title">Agent Specification</h1>
+                    <p class="page-description">Complete OSSA agent taxonomy and implementation standards</p>
+                </div>
+
+                <div class="content-body">
+                    <section class="overview-section">
+                        <h2 class="section-title">Agent Taxonomy</h2>
+                        <div class="callout callout-info">
+                            <div class="callout-icon">🏗️</div>
+                            <div class="callout-content">
+                                <strong>OSSA Standard</strong>
+                                <p>OSSA defines 9 standard agent types, each with specific responsibilities and capabilities. This taxonomy ensures consistent implementation across all OSSA-compliant systems.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="agent-types-grid">
+                            <div class="agent-type">
+                                <div class="agent-icon">🔧</div>
+                                <h3>1. Workers</h3>
+                                <ul>
+                                    <li>Execute specific, well-defined tasks</li>
+                                    <li>Stateless and horizontally scalable</li>
+                                    <li>Focus on single responsibility</li>
+                                </ul>
+                            </div>
+
+                            <div class="agent-type">
+                                <div class="agent-icon">🎯</div>
+                                <h3>2. Orchestrators</h3>
+                                <ul>
+                                    <li>Coordinate multiple agents</li>
+                                    <li>Manage workflows and dependencies</li>
+                                    <li>Handle task distribution and aggregation</li>
+                                </ul>
+                            </div>
+
+                            <div class="agent-type">
+                                <div class="agent-icon">🔌</div>
+                                <h3>3. Integrators</h3>
+                                <ul>
+                                    <li>Connect with external systems</li>
+                                    <li>Handle API communications</li>
+                                    <li>Transform data between formats</li>
+                                </ul>
+                            </div>
+
+                            <div class="agent-type">
+                                <div class="agent-icon">📊</div>
+                                <h3>4. Monitors</h3>
+                                <ul>
+                                    <li>Observe system health</li>
+                                    <li>Track performance metrics</li>
+                                    <li>Alert on anomalies</li>
+                                </ul>
+                            </div>
+
+                            <div class="agent-type">
+                                <div class="agent-icon">🔍</div>
+                                <h3>5. Critics</h3>
+                                <ul>
+                                    <li>Review and validate output</li>
+                                    <li>Provide quality assessment</li>
+                                    <li>Suggest improvements</li>
+                                </ul>
+                            </div>
+
+                            <div class="agent-type">
+                                <div class="agent-icon">⚖️</div>
+                                <h3>6. Judges</h3>
+                                <ul>
+                                    <li>Make decisions between options</li>
+                                    <li>Resolve conflicts</li>
+                                    <li>Apply business rules</li>
+                                </ul>
+                            </div>
+
+                            <div class="agent-type">
+                                <div class="agent-icon">🛡️</div>
+                                <h3>7. Governors</h3>
+                                <ul>
+                                    <li>Enforce policies and compliance</li>
+                                    <li>Manage resource allocation</li>
+                                    <li>Control access and permissions</li>
+                                </ul>
+                            </div>
+
+                            <div class="agent-type">
+                                <div class="agent-icon">🗣️</div>
+                                <h3>8. Voice</h3>
+                                <ul>
+                                    <li>Handle natural language interfaces</li>
+                                    <li>Manage conversational flows</li>
+                                    <li>Provide user interaction layer</li>
+                                </ul>
+                            </div>
+
+                            <div class="agent-type">
+                                <div class="agent-icon">🎓</div>
+                                <h3>9. Trainers</h3>
+                                <ul>
+                                    <li>Improve agent capabilities</li>
+                                    <li>Manage learning processes</li>
+                                    <li>Update knowledge bases</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="spec-section">
+                        <h2 class="section-title">Implementation Standards</h2>
+                        <div class="callout callout-warning">
+                            <div class="callout-icon">⚠️</div>
+                            <div class="callout-content">
+                                <strong>Compliance Requirements</strong>
+                                <p>All OSSA-compliant agents must implement these core standards for certification and interoperability.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="spec-grid">
+                            <div class="spec-card">
+                                <h3>🔗 ACDL Protocol</h3>
+                                <p>Agent Communication & Discovery Language protocol for standardized inter-agent communication.</p>
+                                <div class="code-example">
+apiVersion: ossa.dev/v1
+kind: Agent
+metadata:
+  name: example-agent
+  capabilities:
+    - data-processing
+    - api-integration
+spec:
+  protocol: ACDL/1.0
+  endpoint: https://agent.example.com/api
+                                </div>
+                            </div>
+                            
+                            <div class="spec-card">
+                                <h3>📋 OpenAPI 3.1</h3>
+                                <p>Complete API specifications must be provided for all agent endpoints and capabilities.</p>
+                                <div class="code-example">
+openapi: 3.1.0
+info:
+  title: Example Agent API
+  version: 1.0.0
+  description: OSSA-compliant agent
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: Agent is healthy
+                                </div>
+                            </div>
+                            
+                            <div class="spec-card">
+                                <h3>💚 Health Monitoring</h3>
+                                <p>Standardized health check endpoints for monitoring and orchestration systems.</p>
+                                <div class="code-example">
+GET /health
+Response:
+{
+  "status": "healthy",
+  "version": "1.0.0",
+  "uptime": 3600,
+  "capabilities": [
+    "data-processing",
+    "api-integration"
+  ]
+}
+                                </div>
+                            </div>
+                            
+                            <div class="spec-card">
+                                <h3>📊 Metrics & Telemetry</h3>
+                                <p>Emit standardized metrics for observability and performance monitoring.</p>
+                                <div class="code-example">
+# Prometheus format
+agent_requests_total{method="POST"} 150
+agent_response_time_seconds 0.025
+agent_errors_total{type="validation"} 2
+agent_active_connections 12
+                                </div>
+                            </div>
+                            
+                            <div class="spec-card">
+                                <h3>🛑 Graceful Shutdown</h3>
+                                <p>Handle termination signals properly to ensure data integrity and clean resource cleanup.</p>
+                                <div class="code-example">
+process.on('SIGTERM', async () => {
+  console.log('Received SIGTERM, shutting down gracefully');
+  await closeConnections();
+  await flushMetrics();
+  process.exit(0);
+});
+                                </div>
+                            </div>
+                            
+                            <div class="spec-card">
+                                <h3>🔐 Security Standards</h3>
+                                <p>Authentication, authorization, and encrypted communication requirements.</p>
+                                <div class="code-example">
+security:
+  - bearerAuth: []
+  - apiKey: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="spec-section">
+                        <h2 class="section-title">Communication Protocols</h2>
+                        <div class="callout callout-info">
+                            <div class="callout-icon">🌐</div>
+                            <div class="callout-content">
+                                <strong>Multi-Protocol Support</strong>
+                                <p>OSSA agents support multiple communication protocols optimized for different use cases and performance requirements.</p>
+                            </div>
+                        </div>
+                        
+                        <ul class="protocol-list">
+                            <li>
+                                <span class="protocol-icon">🔄</span>
+                                <div>
+                                    <strong>REST APIs</strong> - Synchronous HTTP operations with OpenAPI specifications
+                                </div>
+                            </li>
+                            <li>
+                                <span class="protocol-icon">⚡</span>
+                                <div>
+                                    <strong>WebSockets</strong> - Real-time bidirectional communication for live updates
+                                </div>
+                            </li>
+                            <li>
+                                <span class="protocol-icon">📨</span>
+                                <div>
+                                    <strong>Message Queues</strong> - Asynchronous task processing with guaranteed delivery
+                                </div>
+                            </li>
+                            <li>
+                                <span class="protocol-icon">🚀</span>
+                                <div>
+                                    <strong>gRPC</strong> - High-performance inter-agent communication with type safety
+                                </div>
+                            </li>
+                        </ul>
+                    </section>
+
+                    <section class="spec-section">
+                        <h2 class="section-title">Discovery Mechanism</h2>
+                        <div class="callout callout-success">
+                            <div class="callout-icon">🔍</div>
+                            <div class="callout-content">
+                                <strong>ACDL Discovery Protocol</strong>
+                                <p>The Agent Communication & Discovery Language protocol enables automatic service discovery and mesh formation.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="spec-grid">
+                            <div class="spec-card">
+                                <h3>🔄 Automatic Registration</h3>
+                                <p>Agents automatically register their capabilities and endpoints with the discovery service.</p>
+                            </div>
+                            
+                            <div class="spec-card">
+                                <h3>📢 Capability Advertisement</h3>
+                                <p>Publish available capabilities, resource requirements, and service level agreements.</p>
+                            </div>
+                            
+                            <div class="spec-card">
+                                <h3>🕸️ Service Mesh Formation</h3>
+                                <p>Dynamic formation of service mesh topologies based on agent capabilities and requirements.</p>
+                            </div>
+                            
+                            <div class="spec-card">
+                                <h3>⚖️ Load Balancing & Failover</h3>
+                                <p>Intelligent request routing with automatic failover and load distribution.</p>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>OSSA</h3>
+                    <p>Open Standards for Scalable Agents</p>
+                    <p>Version 0.1.9 - Specification Standard</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <a href="/docs/specification/agents.html">Specification</a>
+                    <a href="/api-docs.html">API Reference</a>
+                    <a href="/src/api/ossa-complete.openapi.yml">OpenAPI Spec</a>
+                    <a href="/docs/development/roadmap.html">Roadmap</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Community</h4>
+                    <a href="https://https://gitlab.com/blueflyio/openstandardagents" target="_blank">GitLab</a>
+                    <a href="https://https://gitlab.com/blueflyio/openstandardagents/-/issues" target="_blank">Issues</a>
+                    <a href="https://https://gitlab.com/blueflyio/openstandardagents/-/merge_requests" target="_blank">Merge Requests</a>
+                    <a href="https://gitlab.com/blueflyio/agent-platform/gitlab_components/agent_buildkit" target="_blank">Agent
+                        BuildKit</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Legal</h4>
+                    <a href="https://opensource.org/licenses/MIT" target="_blank">MIT License</a>
+                    <a href="https://https://gitlab.com/blueflyio/openstandardagents/-/blob/main/README.md"
+                        target="_blank">Documentation</a>
+                    <a href="https://https://gitlab.com/blueflyio/openstandardagents/-/blob/main/SECURITY.md" target="_blank">Security</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 OSSA Project. Licensed under MIT.</p>
+                <p>Built with ❤️ for the AI agent community</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

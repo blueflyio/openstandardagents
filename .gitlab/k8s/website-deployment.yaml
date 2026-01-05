@@ -1,0 +1,122 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ossa-website
+  namespace: ossa-website
+  labels:
+    app: ossa-website
+    version: v0.3.3
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ossa-website
+  template:
+    metadata:
+      labels:
+        app: ossa-website
+    spec:
+      containers:
+      - name: website
+        image: registry.gitlab.com/blueflyio/openstandardagents.org:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3000
+          name: http
+          protocol: TCP
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: NEXT_PUBLIC_BASE_URL
+          value: "https://openstandardagents.org"
+        - name: GITLAB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: gitlab-token
+              key: token
+        - name: OSSA_SPEC_REF
+          value: "release/v0.3.x"
+        - name: OSSA_EXAMPLES_REF
+          value: "release/v0.3.x"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /liveness
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/version
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        volumeMounts:
+        - name: public
+          mountPath: /app/public
+        - name: lib
+          mountPath: /app/lib
+      volumes:
+      - name: public
+        emptyDir: {}
+      - name: lib
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ossa-website
+  namespace: ossa-website
+spec:
+  selector:
+    app: ossa-website
+  ports:
+  - port: 80
+    targetPort: 3000
+    protocol: TCP
+    name: http
+  type: ClusterIP
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ossa-website
+  namespace: ossa-website
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - openstandardagents.org
+    - www.openstandardagents.org
+    secretName: ossa-website-tls
+  rules:
+  - host: openstandardagents.org
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: ossa-website
+            port:
+              number: 80
+  - host: www.openstandardagents.org
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: ossa-website
+            port:
+              number: 80

@@ -1,0 +1,45 @@
+{
+  "version": "0.3.3",
+  "releaseDate": "2025-01-05",
+  "overview": "OSSA v0.3.3 introduces Skills Compatibility Extension for seamless interoperability with Anthropic Skills and AgentSkills.io specifications. Fully backward compatible with v0.3.2.",
+  "features": [],
+  "categories": [],
+  "homepage": [
+    {
+      "title": "Skills Compatibility",
+      "color": "green",
+      "bullets": [
+        "Bidirectional compatibility with Anthropic Skills format",
+        "Export OSSA manifests to SKILL.md format",
+        "Import Skills into OSSA-compliant runtimes"
+      ]
+    },
+    {
+      "title": "Progressive Disclosure",
+      "color": "blue",
+      "bullets": [
+        "Token-budgeted metadata → instructions → resources pattern",
+        "Optimized for Claude, Cursor, and Claude Code platforms",
+        "On-demand resource loading via OpenAPI endpoints"
+      ]
+    },
+    {
+      "title": "Backward Compatible",
+      "color": "purple",
+      "bullets": [
+        "v0.3.2 manifests validate against v0.3.3 schema",
+        "No breaking changes - upgrade optional",
+        "Gradual migration path for existing agents"
+      ]
+    },
+    {
+      "title": "Enhanced CLI Tools",
+      "color": "orange",
+      "bullets": [
+        "`ossa export --format skills` for Skills conversion",
+        "`ossa import --format skills` for Skills import",
+        "Automatic validation and transformation"
+      ]
+    }
+  ]
+}

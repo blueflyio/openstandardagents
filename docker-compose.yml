@@ -1,31 +1,32 @@
-# OSSA Website - Local Development (Docker Compose)
-#
-# For local development:
-#   docker compose up -d
-#   Access at: http://openstandardagents.orb.local
-#
-# For quick dev (no docker):
-#   cd website && pnpm dev
-#   Access at: http://localhost:3000
+version: '3.8'
 
 services:
   website:
-    build: .
-    container_name: openstandardagents-website
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: website
+    container_name: ossa-website
     ports:
-      - "3333:80"
-    labels:
-      - "dev.orbstack.domains=openstandardagents.orb.local"
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_BASE_URL=http://localhost:3000
+      - GITLAB_TOKEN=${GITLAB_TOKEN:-}
+      - OSSA_SPEC_REF=${OSSA_SPEC_REF:-release/v0.3.x}
+      - OSSA_EXAMPLES_REF=${OSSA_EXAMPLES_REF:-release/v0.3.x}
+    volumes:
+      - ./website/public:/app/website/public
+      - ./website/lib:/app/website/lib
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/version"]
       interval: 30s
       timeout: 10s
       retries: 3
     networks:
-      - openstandardagents
+      - ossa-network
 
 networks:
-  openstandardagents:
-    name: openstandardagents
-    external: true
+  ossa-network:
+    driver: bridge
