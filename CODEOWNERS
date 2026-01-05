@@ -1,40 +1,24 @@
-# CODEOWNERS for openstandardagents.org
-# https://docs.gitlab.com/ee/user/project/codeowners/
-#
-# These owners will be requested for review when changes are made
-# to the corresponding files or directories.
+# OSSA Spec Repository - CODEOWNERS
+# Single source of truth: OSSA spec + CLI tooling only
+# Canonical agents live in platform-agents
 
-# Default owners for everything
-* @bluefly
+# --- OSSA SPEC: must be reviewed by maintainers ---
+/openapi/                               @blueflyio/ossa-maintainers
+/spec/                                  @blueflyio/ossa-maintainers
+/schemas/                               @blueflyio/ossa-maintainers
+/docs/                                  @blueflyio/ossa-maintainers
+/website/content/docs/                  @blueflyio/ossa-maintainers
+/scripts/cli/                           @blueflyio/ossa-maintainers
+/scripts/cli/commands/                   @blueflyio/ossa-maintainers
 
-# OSSA Specification - requires spec maintainers review
-/spec/                      @bluefly
-/website/spec/              @bluefly
-*.schema.json               @bluefly
+# --- CI / pipeline definitions: no silent changes ---
+/.gitlab-ci.yml                         @blueflyio/ossa-maintainers
+/.gitlab/ci/                            @blueflyio/ossa-maintainers
+/.gitlab/agents/                        @blueflyio/ossa-maintainers
 
-# Website source code
-/website/                   @bluefly
-/website/app/               @bluefly
-/website/components/        @bluefly
-/website/lib/               @bluefly
+# --- Hard ban zones (no production agents in OSSA repo) ---
+/scripts/bots/                          @blueflyio/ossa-maintainers
+/bots/                                  @blueflyio/ossa-maintainers
 
-# Infrastructure and DevOps
-/k8s/                       @bluefly
-/.gitlab/                   @bluefly
-/.gitlab-ci.yml             @bluefly
-/Dockerfile                 @bluefly
-/docker-compose*.yml        @bluefly
-/devfile.yaml               @bluefly
-
-# Agent manifests - OSSA compliance required
-/.gitlab/agents/            @bluefly
-/.gitlab/duo/               @bluefly
-/.agents/                   @bluefly
-*.ossa.yaml                 @bluefly
-
-# CI/CD configuration
-/.gitlab/ci/                @bluefly
-
-# Security-sensitive files
-CODEOWNERS                  @bluefly
-.gitlab-ci.yml              @bluefly
+# --- Examples only (not production agents) ---
+/examples/                               @blueflyio/ossa-maintainers
