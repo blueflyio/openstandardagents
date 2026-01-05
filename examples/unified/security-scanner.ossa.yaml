@@ -1,0 +1,311 @@
+# OSSA v0.3.0 - Unified Security Scanner Agent
+# Compatible with: OSSA, GitLab Duo, Google A2A, MCP
+# Zero hardcoded models, runtime-agnostic
+
+apiVersion: ossa/v0.3.2
+kind: Agent
+
+metadata:
+  name: security-scanner
+  version: 1.0.0
+  description: Universal security scanner with multi-runtime support
+  labels:
+    domain: security
+    capability: scanning
+    runtime: unified
+    compliance: ossa-certified
+
+spec:
+  # ============================================
+  # UNIFIED LLM CONFIGURATION
+  # No hardcoded models - all runtime-configurable
+  # ============================================
+  llm:
+    # Primary LLM (configurable via env)
+    provider: ${LLM_PROVIDER:-anthropic}
+    model: ${LLM_MODEL:-claude-sonnet}
+    profile: ${LLM_PROFILE:-safe}  # Use 'safe' profile for security
+    
+    # LLM parameters
+    temperature: ${LLM_TEMPERATURE:-0.0}  # Deterministic for security
+    maxTokens: ${LLM_MAX_TOKENS:-16000}
+    topP: ${LLM_TOP_P:-0.9}
+
+    # Multi-provider fallback (resilience)
+    fallback_models:
+      - provider: ${LLM_FALLBACK_PROVIDER_1:-openai}
+        model: ${LLM_FALLBACK_MODEL_1:-gpt-4o}
+        condition: on_error
+      - provider: ${LLM_FALLBACK_PROVIDER_2:-google}
+        model: ${LLM_FALLBACK_MODEL_2:-gemini-2.0-flash}
+        condition: on_rate_limit
+
+    # Retry configuration
+    retry_config:
+      max_attempts: ${LLM_RETRY_ATTEMPTS:-3}
+      backoff_strategy: ${LLM_BACKOFF_STRATEGY:-exponential}
+      initial_delay_ms: 1000
+      max_delay_ms: 30000
+
+  # ============================================
+  # EXECUTION PROFILES (Google A2A compatible)
+  # ============================================
+  execution_profile:
+    default: ${LLM_PROFILE:-safe}
+    profiles:
+      fast:
+        maxTokens: 4000
+        temperature: 0.0
+        description: "Quick triage scans"
+      balanced:
+        maxTokens: 16000
+        temperature: 0.1
+        description: "Standard security analysis"
+      deep:
+        maxTokens: 32000
+        temperature: 0.0
+        reasoning_enabled: true
+        description: "Deep threat analysis"
+      safe:
+        temperature: 0.0
+        validation_required: true
+        audit_log: true
+        description: "Compliance-grade scanning"
+
+  # ============================================
+  # RUNTIME DECLARATION (Multi-platform)
+  # ============================================
+  runtime:
+    type: ${AGENT_RUNTIME:-unified}
+    supports:
+      - google-a2a
+      - gitlab-duo
+      - ossa-mesh
+      - mcp
+      - local-execution
+      - kubernetes
+    
+    scheduling:
+      strategy: ${AGENT_SCHEDULING:-priority}
+      priority: ${AGENT_PRIORITY:-high}  # Security is high priority
+      max_concurrent: ${AGENT_MAX_CONCURRENT:-5}
+      timeout_seconds: ${AGENT_TIMEOUT:-600}  # 10 min for deep scans
+    
+    resource_limits:
+      memory_mb: ${AGENT_MEMORY_MB:-1024}
+      cpu_millicores: ${AGENT_CPU_MILLICORES:-1000}
+      gpu_required: false
+
+  # ============================================
+  # CAPABILITIES (A2A/Duo compatible)
+  # ============================================
+  capabilities:
+    - name: security_scan
+      type: action
+      runtime: hybrid
+      description: "Run comprehensive security analysis"
+      input_schema:
+        type: object
+        required: [path]
+        properties:
+          path:
+            type: string
+            description: "Path to scan"
+          severity:
+            type: string
+            enum: [low, medium, high, critical]
+            default: medium
+          scan_type:
+            type: string
+            enum: [sast, dast, secrets, dependencies]
+            default: sast
+      output_schema:
+        type: object
+        properties:
+          findings:
+            type: array
+            items:
+              type: object
+              properties:
+                severity:
+                  type: string
+                title:
+                  type: string
+                file:
+                  type: string
+                line:
+                  type: integer
+          score:
+            type: number
+            minimum: 0
+            maximum: 100
+      timeout_seconds: 600
+      retry_policy:
+        max_attempts: 2
+        backoff: exponential
+
+    - name: validate_compliance
+      type: validation
+      runtime: llm
+      description: "Validate OSSA compliance"
+      input_schema:
+        type: object
+        required: [standard]
+        properties:
+          standard:
+            type: string
+            enum: [ossa, nist, fedramp, soc2]
+
+  # ============================================
+  # FUNCTIONS (A2A format - OpenAI compatible)
+  # ============================================
+  functions:
+    - name: scan_security
+      description: "Run OSSA security analysis on codebase"
+      parameters:
+        type: object
+        properties:
+          path:
+            type: string
+            description: "Path to scan (absolute or relative)"
+          severity:
+            type: string
+            enum: [low, medium, high, critical]
+            description: "Minimum severity level to report"
+          scan_type:
+            type: string
+            enum: [sast, dast, secrets, dependencies]
+            description: "Type of security scan"
+        required: [path]
+      returns:
+        type: object
+        properties:
+          findings:
+            type: array
+            description: "List of security findings"
+          score:
+            type: number
+            description: "Overall security score (0-100)"
+          scan_duration_ms:
+            type: integer
+
+    - name: validate_compliance
+      description: "Validate compliance with security standards"
+      parameters:
+        type: object
+        properties:
+          standard:
+            type: string
+            enum: [ossa, nist, fedramp, soc2]
+          path:
+            type: string
+        required: [standard, path]
+      returns:
+        type: object
+        properties:
+          compliant:
+            type: boolean
+          violations:
+            type: array
+
+  # ============================================
+  # EXTENSIONS (A2A compatible)
+  # ============================================
+  extensions:
+    - type: http
+      name: ossa-mesh
+      endpoint: ${OSSA_MESH_URL:-http://ossa-mesh:8080}
+      credentials_ref: OSSA_MESH_TOKEN
+      description: "OSSA mesh network integration"
+    
+    - type: mcp
+      name: gitlab-mcp
+      endpoint: ${GITLAB_MCP_URL:-http://gitlab-mcp:3000}
+      credentials_ref: GITLAB_TOKEN
+      description: "GitLab MCP integration"
+    
+    - type: http
+      name: semgrep-api
+      endpoint: ${SEMGREP_API_URL:-https://semgrep.dev/api}
+      credentials_ref: SEMGREP_TOKEN
+      description: "Semgrep SAST engine"
+
+  # ============================================
+  # AGENT ROLE & BEHAVIOR
+  # ============================================
+  role: |
+    You are a security scanner agent specializing in OSSA compliance and threat detection.
+    
+    Your responsibilities:
+    1. Scan codebases for security vulnerabilities
+    2. Validate OSSA compliance
+    3. Detect secrets and credentials
+    4. Analyze dependencies for known CVEs
+    5. Generate actionable security reports
+    
+    Always:
+    - Use deterministic analysis (temperature=0.0)
+    - Log all findings for audit trail
+    - Prioritize critical vulnerabilities
+    - Provide remediation guidance
+    
+    Never:
+    - Skip validation steps
+    - Ignore low-severity findings
+    - Make assumptions about security
+
+  taxonomy:
+    domain: security
+    subdomain: scanning
+    capability: sast
+
+  # ============================================
+  # TOOLS (MCP format)
+  # ============================================
+  tools:
+    - name: semgrep_scan
+      description: "Run Semgrep SAST analysis"
+      source:
+        type: mcp
+        uri: mcp://semgrep-service/scan
+      input:
+        type: object
+        required: [path, rules]
+        properties:
+          path:
+            type: string
+          rules:
+            type: array
+            items:
+              type: string
+
+    - name: trivy_scan
+      description: "Scan dependencies with Trivy"
+      source:
+        type: mcp
+        uri: mcp://trivy-service/scan
+      input:
+        type: object
+        required: [path]
+        properties:
+          path:
+            type: string
+          scan_type:
+            type: string
+            enum: [vuln, config, secret]
+
+  # ============================================
+  # OBSERVABILITY
+  # ============================================
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT}
+    metrics:
+      enabled: true
+      port: 9090
+    logging:
+      level: ${LOG_LEVEL:-info}
+      format: json
+      audit_enabled: true

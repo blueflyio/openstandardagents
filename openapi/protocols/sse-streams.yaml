@@ -1,0 +1,479 @@
+openapi: 3.1.0
+info:
+  title: OSSA Server-Sent Events (SSE) API
+  version: 0.3.2
+  description: |
+    OpenAPI extension for Server-Sent Events streams in OSSA.
+    Defines SSE endpoints for unidirectional server-to-client event streaming.
+
+  contact:
+    name: OSSA Standards Team
+    url: https://openstandardagents.org
+
+servers:
+  - url: https://agent.example.com
+    description: SSE server endpoint
+
+x-sse-config:
+  heartbeat_interval_seconds: 30
+  reconnect_time_ms: 3000
+  max_event_buffer_size: 100
+  event_retention_seconds: 300
+  max_connections_per_client: 6
+
+paths:
+  /events:
+    get:
+      summary: Main event stream endpoint
+      description: |
+        Subscribe to server-sent events from agent.
+        Returns text/event-stream with continuous event delivery.
+
+      operationId: subscribeToEvents
+
+      parameters:
+        - name: channels
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Comma-separated list of channels to subscribe to
+          example: content.published,user.login,agent.status
+
+        - name: last-event-id
+          in: header
+          required: false
+          schema:
+            type: string
+          description: Resume from this event ID (for reconnection)
+
+      responses:
+        '200':
+          description: Event stream established
+          headers:
+            Content-Type:
+              schema:
+                type: string
+                enum: [text/event-stream]
+            Cache-Control:
+              schema:
+                type: string
+                example: no-cache, no-store, must-revalidate
+            Connection:
+              schema:
+                type: string
+                enum: [keep-alive]
+            X-Accel-Buffering:
+              schema:
+                type: string
+                enum: ['no']
+              description: Disable buffering for real-time delivery
+
+          content:
+            text/event-stream:
+              schema:
+                $ref: '#/components/schemas/EventStream'
+
+              examples:
+                message_event:
+                  summary: Standard message event
+                  value: |
+                    event: message
+                    id: msg-123e4567-e89b-12d3-a456-426614174000
+                    data: {"type":"message","timestamp":"2025-12-18T14:00:00Z","payload":{"channel":"content.published","data":{"contentId":"node-123"}},"metadata":{"agentId":"agent://example.com/publisher"}}
+
+                status_event:
+                  summary: Status update event
+                  value: |
+                    event: status
+                    id: status-456e7890-a12b-34c5-d678-901234567890
+                    data: {"type":"status","timestamp":"2025-12-18T14:00:00Z","payload":{"status":"healthy","load":0.45},"metadata":{"agentId":"agent://example.com/agent"}}
+
+        '401':
+          description: Unauthorized - Invalid authentication
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+        '429':
+          description: Too Many Requests - Connection limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+        - queryToken: []
+
+      x-sse-events:
+        - $ref: '#/components/sse-events/Message'
+        - $ref: '#/components/sse-events/Status'
+        - $ref: '#/components/sse-events/CapabilityResponse'
+        - $ref: '#/components/sse-events/Error'
+
+  /events/stream/{streamId}:
+    get:
+      summary: Dedicated stream endpoint
+      description: |
+        Subscribe to a specific event stream (e.g., for a long-running capability execution).
+
+      operationId: subscribeToStream
+
+      parameters:
+        - name: streamId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Stream identifier from initiating request
+
+      responses:
+        '200':
+          description: Stream established
+          content:
+            text/event-stream:
+              schema:
+                $ref: '#/components/schemas/EventStream'
+
+        '404':
+          description: Stream not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+      security:
+        - bearerAuth: []
+
+  /capabilities/{capability}/invoke:
+    post:
+      summary: Invoke capability with streaming response
+      description: |
+        Invoke a capability that returns streaming results via SSE.
+        Response includes streamId to connect to SSE endpoint.
+
+      operationId: invokeCapabilityStreaming
+
+      parameters:
+        - name: capability
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Capability name to invoke
+          example: analyze_content
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                input:
+                  type: object
+                  description: Capability input parameters
+                options:
+                  type: object
+                  properties:
+                    timeout_seconds:
+                      type: integer
+                      minimum: 1
+                    priority:
+                      type: string
+                      enum: [low, normal, high, critical]
+
+      responses:
+        '202':
+          description: Capability invocation accepted, streaming in progress
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - streamId
+                  - streamUrl
+                properties:
+                  streamId:
+                    type: string
+                    format: uuid
+                  streamUrl:
+                    type: string
+                    format: uri
+                    example: https://agent.example.com/events/stream/abc-123
+
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+      security:
+        - bearerAuth: []
+
+components:
+  sse-events:
+    Message:
+      summary: General message event
+      description: Standard event delivery
+      event:
+        name: message
+        schema:
+          $ref: '#/components/schemas/SSEEvent'
+
+    Status:
+      summary: Agent status update
+      description: Periodic health and status broadcasts
+      event:
+        name: status
+        schema:
+          allOf:
+            - $ref: '#/components/schemas/SSEEvent'
+            - type: object
+              required:
+                - payload
+              properties:
+                payload:
+                  type: object
+                  required:
+                    - status
+                  properties:
+                    status:
+                      type: string
+                      enum: [healthy, degraded, unhealthy, offline]
+                    load:
+                      type: number
+                      minimum: 0
+                      maximum: 1
+                    uptime:
+                      type: integer
+                      minimum: 0
+                      description: Uptime in seconds
+                    metrics:
+                      type: object
+                      additionalProperties: true
+
+    CapabilityResponse:
+      summary: Streaming capability response
+      description: Response chunks from capability execution
+      event:
+        name: capability_response
+        schema:
+          allOf:
+            - $ref: '#/components/schemas/SSEEvent'
+            - type: object
+              required:
+                - payload
+                - metadata
+              properties:
+                payload:
+                  type: object
+                  required:
+                    - capability
+                  properties:
+                    capability:
+                      type: string
+                      description: Capability name
+                    result:
+                      type: object
+                      description: Partial or complete result
+                    progress:
+                      type: object
+                      properties:
+                        percent:
+                          type: number
+                          minimum: 0
+                          maximum: 100
+                        current:
+                          type: integer
+                        total:
+                          type: integer
+                metadata:
+                  allOf:
+                    - $ref: '#/components/schemas/EventMetadata'
+                    - type: object
+                      properties:
+                        final:
+                          type: boolean
+                          description: True if this is the last event
+                          default: false
+
+    Error:
+      summary: Error event
+      description: Error notification
+      event:
+        name: error
+        schema:
+          allOf:
+            - $ref: '#/components/schemas/SSEEvent'
+            - type: object
+              required:
+                - payload
+              properties:
+                payload:
+                  type: object
+                  required:
+                    - code
+                    - message
+                  properties:
+                    code:
+                      type: string
+                      enum:
+                        - PROCESSING_ERROR
+                        - CAPABILITY_ERROR
+                        - TIMEOUT
+                        - INTERNAL_ERROR
+                    message:
+                      type: string
+                    retryable:
+                      type: boolean
+                      default: false
+
+  schemas:
+    EventStream:
+      type: string
+      format: event-stream
+      description: |
+        Text/event-stream format per SSE specification.
+
+        Format:
+        event: <event-name>
+        id: <event-id>
+        retry: <reconnect-time-ms>
+        data: <json-payload>
+        (blank line)
+
+      example: |
+        event: message
+        id: msg-123
+        retry: 3000
+        data: {"type":"message","payload":{...}}
+
+        : heartbeat
+
+        event: status
+        id: status-456
+        data: {"type":"status","payload":{...}}
+
+
+    SSEEvent:
+      type: object
+      required:
+        - type
+        - id
+        - timestamp
+        - payload
+        - metadata
+      properties:
+        type:
+          type: string
+          enum:
+            - message
+            - status
+            - capability_response
+            - error
+          description: Event type discriminator
+        id:
+          type: string
+          format: uuid
+          description: Unique event identifier
+        timestamp:
+          type: string
+          format: date-time
+          description: Event timestamp (ISO 8601)
+        payload:
+          type: object
+          description: Event-specific payload
+        metadata:
+          $ref: '#/components/schemas/EventMetadata'
+
+    EventMetadata:
+      type: object
+      required:
+        - agentId
+      properties:
+        agentId:
+          type: string
+          format: uri
+          description: Agent URI of sender
+          example: agent://example.com/my-agent
+        streamId:
+          type: string
+          format: uuid
+          description: Stream identifier for multi-stream scenarios
+        correlationId:
+          type: string
+          format: uuid
+          description: Links event to originating request
+        sequence:
+          type: integer
+          minimum: 0
+          description: Event sequence number
+        final:
+          type: boolean
+          description: Indicates last event in sequence
+          default: false
+
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: session
+
+    queryToken:
+      type: apiKey
+      in: query
+      name: token
+
+security:
+  - bearerAuth: []
+  - cookieAuth: []
+
+x-rate-limits:
+  events_per_second: 50
+  max_connections_per_client: 6
+  max_event_size_bytes: 65536
+
+x-reliability:
+  event_buffer_size: 100
+  event_retention_seconds: 300
+  heartbeat_interval_seconds: 30
+  auto_reconnect: true
+  reconnect_time_ms: 3000
+
+x-cors:
+  allowed_origins:
+    - https://trusted-domain.com
+  allow_credentials: true
+
+tags:
+  - name: Events
+    description: Event stream subscriptions
+  - name: Capabilities
+    description: Streaming capability invocations
+  - name: Health
+    description: Agent health monitoring

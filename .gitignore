@@ -36,6 +36,14 @@ coverage/
 .turbo/
 .eslintcache
 
+# Shell scripts (FORBIDDEN - use .gitlab-ci.yml instead)
+*.sh
+*.bash
+*.sh.old
+*.bash.old
+**/*.sh
+**/*.bash
+
 # OS
 Thumbs.db
 *.tmp
@@ -46,8 +54,8 @@ Thumbs.db
 # website/public/schemas/  <- REMOVED - needed for deployment
 website/public/examples/
 
-# Spec folder (fetched from blueflyio/openstandardagents main branch)
-spec/
+# Spec folder - NOW TRACKED (was fetched, now committed)
+# spec/  <- REMOVED - spec must be tracked
 worktrees/
 
 # Playwright

@@ -40,8 +40,14 @@ include:
   - template: Jobs/Code-Quality.gitlab-ci.yml
   # Review Apps (OrbStack K8s)
   - local: .gitlab/ci/review-apps.yml
+  # Guardrails (prevent duplicate agents)
+  - local: .gitlab/ci/guardrails.yml
   # OSSA Agent Pipelines
   #- local: .gitlab/ci/seo-automation.yml
+  # Use canonical agents from platform-agents (pinned version)
+  - project: 'blueflyio/agent-platform/platform-agents'
+    ref: 'v0.1.4-dev8'
+    file: '/.gitlab/ci/agent-suite.yml'
 
 stages:
   - sync

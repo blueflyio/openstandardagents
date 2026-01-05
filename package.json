@@ -38,7 +38,10 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@playwright/test": "^1.57.0",
-    "@types/node": "^24.10.1",
+    "@types/node": "^24.10.4",
+    "commander": "^14.0.2",
+    "dotenv": "^17.2.3",
+    "glob": "^13.0.0",
     "prettier": "^3.2.0",
     "typescript": "^5.7.0"
   },

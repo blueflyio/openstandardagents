@@ -1,0 +1,193 @@
+openapi: 3.1.0
+info:
+  title: Workflow Orchestration Agent API
+  version: 0.3.2
+  description: |
+    Advanced workflow orchestration agent that coordinates multi-step processes,
+    manages agent swarms, and provides intelligent task routing.
+
+x-ossa-metadata:
+  version: 0.2.5-RC
+  compliance:
+    level: enterprise
+    frameworks:
+      - OSSA
+      - OpenAPI 3.1
+
+x-ossa:
+  version: 0.2.5-RC
+  agent:
+    id: workflow-orchestrator
+    type: orchestrator
+    compliance:
+      standards:
+        - openapi-first
+        - type-safe
+      validated: true
+      validatedAt: "2024-01-15T10:00:00Z"
+
+servers:
+  - url: https://workflow-orchestrator.platform.com/api/v1
+    description: Production
+
+tags:
+  - name: workflows
+    description: Workflow execution operations
+  - name: coordination
+    description: Agent coordination operations
+
+paths:
+  /workflows/execute:
+    post:
+      summary: Execute workflow
+      description: Execute multi-step workflow with agent coordination
+      operationId: executeWorkflow
+      tags: [workflows]
+      x-ossa-capability: execute_workflow
+      x-ossa-autonomy:
+        level: semi-autonomous
+        approval_required: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [workflow_definition]
+              properties:
+                workflow_definition:
+                  type: object
+                  required: [name, steps]
+                  properties:
+                    name:
+                      type: string
+                    steps:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          step_id:
+                            type: string
+                          agent_id:
+                            type: string
+                          capability:
+                            type: string
+                          input:
+                            type: object
+                          dependencies:
+                            type: array
+                            items:
+                              type: string
+                options:
+                  type: object
+                  properties:
+                    parallel:
+                      type: boolean
+                      default: false
+                    retry:
+                      type: object
+      responses:
+        '202':
+          description: Workflow execution started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  workflow_id:
+                    type: string
+                  status:
+                    type: string
+                    enum: [pending, running, completed, failed]
+
+  /workflows/{workflow_id}:
+    get:
+      summary: Get workflow status
+      description: Retrieve workflow execution status and results
+      operationId: getWorkflowStatus
+      tags: [workflows]
+      x-ossa-capability: execute_workflow
+      x-ossa-autonomy:
+        level: autonomous
+        approval_required: false
+      parameters:
+        - name: workflow_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Workflow status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  workflow_id:
+                    type: string
+                  status:
+                    type: string
+                  steps:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        step_id:
+                          type: string
+                        status:
+                          type: string
+                        result:
+                          type: object
+                  result:
+                    type: object
+
+  /coordinate/swarm:
+    post:
+      summary: Coordinate agent swarm
+      description: Coordinate multiple agents for parallel task execution
+      operationId: coordinateSwarm
+      tags: [coordination]
+      x-ossa-capability: coordinate_agents
+      x-ossa-autonomy:
+        level: semi-autonomous
+        approval_required: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [agents, task]
+              properties:
+                agents:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      agent_id:
+                        type: string
+                      capability:
+                        type: string
+                task:
+                  type: object
+                strategy:
+                  type: string
+                  enum: [parallel, sequential, priority]
+      responses:
+        '200':
+          description: Swarm coordination initiated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  coordination_id:
+                    type: string
+                  agents:
+                    type: array
+                    items:
+                      type: object
+                  status:
+                    type: string
+
