@@ -1,0 +1,112 @@
+ossa: v0.3.0
+
+kind: worker
+metadata:
+  name: bot-security-scanner
+  namespace: openstandardagents.org
+  version: 1.0.0
+  title: Security Scanner Agent
+  description: >-
+    Scans code changes for security vulnerabilities, exposed secrets, and
+    compliance violations. Blocks MRs with critical security issues.
+  labels:
+    component: security
+    domain: compliance
+    tier: automation
+  annotations:
+    maintainer: security@bluefly.io
+    documentation: https://gitlab.com/blueflyio/ossa/openstandardagents.org/-/wikis/agents/security-scanner
+    service-account: bot-security-scanner
+
+spec:
+  capabilities:
+    - security-scanning
+    - secret-detection
+    - vulnerability-analysis
+    - compliance-checking
+
+  llm:
+    model:
+      primary: claude-sonnet-4-20250514
+      fallback:
+        - claude-3-5-sonnet-20241022
+    execution_profile: balanced
+    token_limits:
+      max_input: 100000
+      max_output: 4096
+
+  safety:
+    content_filtering:
+      enabled: true
+      categories:
+        - secrets
+        - credentials
+        - code-injection
+    guardrails:
+      - id: no-secret-exposure
+        description: Block any exposed secrets
+        action: block
+      - id: critical-vulnerability
+        description: Block critical security vulnerabilities
+        action: block
+
+  tools:
+    - name: gitlab-api
+      type: mcp
+      config:
+        server: gitlab-mcp
+        operations:
+          - get_mr_changes
+          - block_mr
+          - post_mr_comment
+    - name: secret-detection
+      type: builtin
+      config:
+        patterns:
+          - api_key
+          - secret
+          - password
+          - token
+          - credential
+
+  commands:
+    scan:
+      description: Scan MR for security issues
+      parameters:
+        scope:
+          type: string
+          enum: [full, quick, secrets-only]
+          default: full
+      handler: |
+        Perform comprehensive security scan:
+        1. Secret detection (API keys, tokens, passwords)
+        2. Dependency vulnerability scanning
+        3. Code injection risks
+        4. Authentication/authorization issues
+        5. Data exposure risks
+        6. Compliance violations (SOC2, GDPR, HIPAA)
+
+        Block MR if critical issues found.
+
+  triggers:
+    - type: webhook
+      source: gitlab
+      events:
+        - merge_request.opened
+        - merge_request.updated
+        - push
+
+  outputs:
+    schema:
+      type: object
+      properties:
+        vulnerabilities_found:
+          type: integer
+        secrets_detected:
+          type: integer
+        critical_issues:
+          type: array
+          items:
+            type: object
+        blocked:
+          type: boolean

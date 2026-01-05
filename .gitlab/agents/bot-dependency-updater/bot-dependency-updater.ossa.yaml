@@ -1,0 +1,101 @@
+ossa: v0.3.0
+
+kind: worker
+metadata:
+  name: bot-dependency-updater
+  namespace: openstandardagents.org
+  version: 1.0.0
+  title: Dependency Updater Agent
+  description: >-
+    Automatically updates project dependencies (npm, composer, pip) with security patches
+    and compatible updates. Creates MRs for dependency updates.
+  labels:
+    component: maintenance
+    domain: dependencies
+    tier: automation
+  annotations:
+    maintainer: devops@bluefly.io
+    documentation: https://gitlab.com/blueflyio/ossa/openstandardagents.org/-/wikis/agents/dependency-updater
+    service-account: bot-dependency-updater
+
+spec:
+  capabilities:
+    - dependency-analysis
+    - package-management
+    - security-patching
+    - mr-creation
+
+  llm:
+    model:
+      primary: claude-sonnet-4-20250514
+      fallback:
+        - claude-3-5-sonnet-20241022
+    execution_profile: balanced
+    token_limits:
+      max_input: 30000
+      max_output: 2048
+
+  tools:
+    - name: gitlab-api
+      type: mcp
+      config:
+        server: gitlab-mcp
+        operations:
+          - create_merge_request
+          - get_file_content
+          - commit_file
+    - name: npm-audit
+      type: builtin
+      config:
+        package_managers:
+          - npm
+          - composer
+          - pip
+
+  commands:
+    update:
+      description: Update dependencies
+      parameters:
+        package_manager:
+          type: string
+          enum: [npm, composer, pip, all]
+          default: all
+        update_type:
+          type: string
+          enum: [patch, minor, major, security]
+          default: security
+        create_mr:
+          type: boolean
+          default: true
+      handler: |
+        Update project dependencies:
+        1. Scan package files (package.json, composer.json, requirements.txt)
+        2. Check for available updates
+        3. Filter by update type (patch/minor/major/security)
+        4. Update dependency versions
+        5. Run tests to verify compatibility
+        6. Create MR with changelog
+
+  triggers:
+    - type: schedule
+      cron: "0 2 * * *"  # Daily at 2 AM
+    - type: webhook
+      source: gitlab
+      events:
+        - pipeline.success
+      filter:
+        variables:
+          DEPENDENCY_UPDATE: "true"
+
+  outputs:
+    schema:
+      type: object
+      properties:
+        packages_updated:
+          type: integer
+        security_patches:
+          type: integer
+        mr_created:
+          type: boolean
+        mr_url:
+          type: string

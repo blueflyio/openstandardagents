@@ -1,0 +1,97 @@
+ossa: v0.3.0
+
+kind: worker
+metadata:
+  name: bot-policy-enforcer
+  namespace: openstandardagents.org
+  version: 1.0.0
+  title: Policy Enforcement Agent
+  description: >-
+    Enforces project policies: branch naming, commit messages, MR requirements,
+    code standards, and workflow compliance.
+  labels:
+    component: governance
+    domain: compliance
+    tier: automation
+  annotations:
+    maintainer: devops@bluefly.io
+    documentation: https://gitlab.com/blueflyio/ossa/openstandardagents.org/-/wikis/agents/policy-enforcer
+    service-account: bot-policy-enforcer
+
+spec:
+  capabilities:
+    - policy-validation
+    - workflow-enforcement
+    - compliance-checking
+    - mr-blocking
+
+  llm:
+    model:
+      primary: claude-sonnet-4-20250514
+      fallback:
+        - claude-3-5-sonnet-20241022
+    execution_profile: speed
+    token_limits:
+      max_input: 50000
+      max_output: 2048
+
+  tools:
+    - name: gitlab-api
+      type: mcp
+      config:
+        server: gitlab-mcp
+        operations:
+          - get_mr_details
+          - get_commits
+          - block_mr
+          - post_mr_comment
+          - add_mr_label
+
+  commands:
+    validate:
+      description: Validate MR against all policies
+      parameters:
+        strict:
+          type: boolean
+          default: false
+      handler: |
+        Validate merge request against policies:
+        1. Branch naming convention
+        2. Commit message format
+        3. MR target branch
+        4. Issue linkage
+        5. Milestone assignment
+        6. Required labels
+        7. Code standards
+        8. Test coverage
+        9. Documentation requirements
+
+        Block MR if critical violations found.
+
+  triggers:
+    - type: webhook
+      source: gitlab
+      events:
+        - merge_request.opened
+        - merge_request.updated
+        - push
+
+  outputs:
+    schema:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        violations:
+          type: array
+          items:
+            type: object
+            properties:
+              policy:
+                type: string
+              severity:
+                type: string
+              message:
+                type: string
+        blocked:
+          type: boolean
