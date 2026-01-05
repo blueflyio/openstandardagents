@@ -12,16 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update website with latest OSSA features
 - Sync v0.3.2 from npm package
 
-### Documentation
-
-- Comprehensive v0.3.2 specification documentation
-
 ### Fixed
 
-- Correct version to 0.3.1
-- Add allow_failure to changelog and sync jobs
 - Install git before using git commands in sync:auto
-- Remove release:npm and release:promote-rc-to-final jobs - not needed for GitLab Pages
 - Remove all release jobs, auto-deploy pages on main
 - Update OSSA_VERSION to 0.3.1 on main
 - Update versions.json to 0.3.1 on main
@@ -32,6 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Auto-deploy pages on main instead of manual
 - Remove resource_group for auto pages deploy
 - Remove environment block from pages job
+- Add missing documentation files from framework website
+- Add all automation documentation files from framework website
 
 ### Merge
 
