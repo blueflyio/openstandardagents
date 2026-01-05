@@ -44,9 +44,9 @@ include:
   - local: .gitlab/ci/guardrails.yml
   # OSSA Agent Pipelines
   #- local: .gitlab/ci/seo-automation.yml
-  # Use canonical agents from platform-agents
+  # Use canonical agents from platform-agents (pinned version)
   - project: 'blueflyio/agent-platform/platform-agents'
-    ref: 'main'
+    ref: 'v0.1.4-dev8'
     file: '/.gitlab/ci/agent-suite.yml'
 
 stages:

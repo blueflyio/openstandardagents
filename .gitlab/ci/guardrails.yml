@@ -27,12 +27,19 @@ guardrails:no-duplicate-agents:
       cat /tmp/changed_files.txt || true
 
       # Block paths that would recreate duplicate agent implementations in OSSA repo
-      if grep -E '^(scripts/bots/|bots/|\.gitlab/agents/bot-|\.gitlab/ci/bot-jobs\.yml)' /tmp/changed_files.txt; then
+      if grep -E '^(scripts/bots/|bots/|\.gitlab/agents/bot-|\.gitlab/ci/bot-jobs\.yml|\.gitlab/ci/agent-integration\.yml)' /tmp/changed_files.txt; then
         echo "ERROR: Duplicate bot/agent artifacts are not allowed in openstandardagents."
         echo "Use canonical agents from platform-agents instead."
         echo ""
         echo "Canonical agents are in: blueflyio/agent-platform/platform-agents"
-        echo "Do not create scripts/bots/* or .gitlab/agents/bot-* in this repo."
+        echo "Do not create scripts/bots/*, bots/, .gitlab/agents/bot-*, or bot CI jobs in this repo."
+        exit 1
+      fi
+
+      # Block CI references to bot agents
+      if grep -E '\.(gitlab|yml|yaml)$' /tmp/changed_files.txt | xargs grep -l 'bot-' 2>/dev/null; then
+        echo "ERROR: CI files referencing 'bot-' agents are not allowed."
+        echo "Use canonical agents from platform-agents instead."
         exit 1
       fi
 
@@ -53,7 +60,11 @@ guardrails:no-agent-manifests-here:
     - |
       set -euo pipefail
 
-      BASE="origin/${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-$CI_DEFAULT_BRANCH:-main}"
+      if [ -n "${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-}" ]; then
+        BASE="origin/${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}"
+      else
+        BASE="origin/${CI_DEFAULT_BRANCH:-main}"
+      fi
       git diff --name-only "$BASE"...HEAD > /tmp/changed_files.txt || true
 
       # Allow examples/ directory (reference examples only)
