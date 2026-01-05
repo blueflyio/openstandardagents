@@ -136,7 +136,7 @@ agent:mr-reviewer:
   extends: .agent-base
   stage: agents
   script:
-    - invoke_agent "bot-mr-reviewer" "review full"
+    - invoke_agent "merge-request-reviewer" "review full"
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
   allow_failure: true
@@ -145,7 +145,7 @@ agent:ossa-validator:
   extends: .agent-base
   stage: agents
   script:
-    - invoke_agent "bot-ossa-validator" "validate --strict"
+    - invoke_agent "manifest-validator" "validate --strict"
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes:
@@ -160,7 +160,7 @@ agent:ci-fixer:
   extends: .agent-base
   stage: agents
   script:
-    - invoke_agent "bot-gitlab-ci-fixer" "validate"
+    - invoke_agent "pipeline-remediation" "validate"
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes:
@@ -172,7 +172,7 @@ agent:website-reviewer:
   extends: .agent-base
   stage: agents
   script:
-    - invoke_agent "bot-mr-reviewer" "review --focus website"
+    - invoke_agent "merge-request-reviewer" "review --focus website"
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes:
@@ -185,7 +185,7 @@ agent:hotfix-review:
     - .hotfix-rules
   stage: agents
   script:
-    - invoke_agent "bot-mr-reviewer" "review urgent --security" "critical"
+    - invoke_agent "merge-request-reviewer" "review urgent --security" "critical"
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_LABELS =~ /hotfix/
   when: always
@@ -208,7 +208,7 @@ review:aggregate:
         "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests/${CI_MERGE_REQUEST_IID}/notes?per_page=100")
 
       # Count agent responses
-      AGENT_RESPONSES=$(echo "$COMMENTS" | jq '[.[] | select(.author.username | startswith("bot-"))] | length')
+      AGENT_RESPONSES=$(echo "$COMMENTS" | jq '[.[] | select(.author.username | test("^(merge-request-reviewer|manifest-validator|pipeline-remediation|code-quality-reviewer|issue-lifecycle-manager)"))] | length')
       echo "Agent responses: $AGENT_RESPONSES"
 
       # Check for blocking issues
