@@ -27,7 +27,7 @@ interface MRInfo {
 }
 
 async function listMRsInMilestone(milestone: string) {
-  console.log(`\n📋 Listing MRs in milestone: ${milestone}\n`);
+  console.log(`\n[LIST] Listing MRs in milestone: ${milestone}\n`);
 
   const mrs = await gitlab.MergeRequests.all({
     projectId: PROJECT_ID,
@@ -43,8 +43,8 @@ async function listMRsInMilestone(milestone: string) {
   console.log(`Found ${mrs.length} open MRs:\n`);
 
   for (const mr of mrs) {
-    const status = mr.has_conflicts ? '❌ CONFLICTS' : '✅ Clean';
-    const target = mr.target_branch === 'development' ? '✅ dev' : `⚠️  ${mr.target_branch}`;
+    const status = mr.has_conflicts ? '[FAIL] CONFLICTS' : '[PASS] Clean';
+    const target = mr.target_branch === 'development' ? '[PASS] dev' : `[WARN]  ${mr.target_branch}`;
     
     console.log(`!${mr.iid}: ${mr.title}`);
     console.log(`   Target: ${target} | Status: ${status}`);
@@ -53,7 +53,7 @@ async function listMRsInMilestone(milestone: string) {
 }
 
 async function listMRsNotInMilestone(milestone: string) {
-  console.log(`\n📋 Listing open MRs NOT in milestone: ${milestone}\n`);
+  console.log(`\n[LIST] Listing open MRs NOT in milestone: ${milestone}\n`);
 
   const allMRs = await gitlab.MergeRequests.all({
     projectId: PROJECT_ID,
@@ -81,22 +81,22 @@ async function listMRsNotInMilestone(milestone: string) {
 }
 
 async function retargetMR(mrId: number, targetBranch: string) {
-  console.log(`\n🎯 Retargeting MR !${mrId} to ${targetBranch}...\n`);
+  console.log(`\n[TARGET] Retargeting MR !${mrId} to ${targetBranch}...\n`);
 
   try {
     await gitlab.MergeRequests.edit(PROJECT_ID, mrId, {
       target_branch: targetBranch,
     });
 
-    console.log(`✅ Successfully retargeted MR !${mrId} to ${targetBranch}`);
+    console.log(`[PASS] Successfully retargeted MR !${mrId} to ${targetBranch}`);
   } catch (error: any) {
-    console.error(`❌ Failed to retarget MR: ${error.message}`);
+    console.error(`[FAIL] Failed to retarget MR: ${error.message}`);
     process.exit(1);
   }
 }
 
 async function closeMR(mrId: number, reason: string) {
-  console.log(`\n🚫 Closing MR !${mrId}...\n`);
+  console.log(`\n[BLOCK] Closing MR !${mrId}...\n`);
 
   try {
     // Add comment explaining closure
@@ -109,22 +109,22 @@ async function closeMR(mrId: number, reason: string) {
       state_event: 'close',
     });
 
-    console.log(`✅ Successfully closed MR !${mrId}`);
+    console.log(`[PASS] Successfully closed MR !${mrId}`);
   } catch (error: any) {
-    console.error(`❌ Failed to close MR: ${error.message}`);
+    console.error(`[FAIL] Failed to close MR: ${error.message}`);
     process.exit(1);
   }
 }
 
 async function rebaseMR(mrId: number) {
-  console.log(`\n🔄 Rebasing MR !${mrId}...\n`);
+  console.log(`\n[SYNC] Rebasing MR !${mrId}...\n`);
 
   try {
     await gitlab.MergeRequests.rebase(PROJECT_ID, mrId);
-    console.log(`✅ Rebase initiated for MR !${mrId}`);
+    console.log(`[PASS] Rebase initiated for MR !${mrId}`);
     console.log('   Check the MR page for rebase status.');
   } catch (error: any) {
-    console.error(`❌ Failed to rebase MR: ${error.message}`);
+    console.error(`[FAIL] Failed to rebase MR: ${error.message}`);
     process.exit(1);
   }
 }
@@ -145,15 +145,15 @@ async function assignMilestone(mrId: number, milestone: string) {
       milestone_id: targetMilestone.id,
     });
 
-    console.log(`✅ Successfully assigned MR !${mrId} to milestone ${milestone}`);
+    console.log(`[PASS] Successfully assigned MR !${mrId} to milestone ${milestone}`);
   } catch (error: any) {
-    console.error(`❌ Failed to assign milestone: ${error.message}`);
+    console.error(`[FAIL] Failed to assign milestone: ${error.message}`);
     process.exit(1);
   }
 }
 
 async function bulkRetarget(milestone: string, targetBranch: string) {
-  console.log(`\n🎯 Bulk retargeting all MRs in ${milestone} to ${targetBranch}...\n`);
+  console.log(`\n[TARGET] Bulk retargeting all MRs in ${milestone} to ${targetBranch}...\n`);
 
   const mrs = await gitlab.MergeRequests.all({
     projectId: PROJECT_ID,
@@ -172,11 +172,11 @@ async function bulkRetarget(milestone: string, targetBranch: string) {
     }
   }
 
-  console.log(`\n✅ Bulk retarget complete`);
+  console.log(`\n[PASS] Bulk retarget complete`);
 }
 
 async function bulkRebase(milestone: string) {
-  console.log(`\n🔄 Bulk rebasing all MRs in ${milestone}...\n`);
+  console.log(`\n[SYNC] Bulk rebasing all MRs in ${milestone}...\n`);
 
   const mrs = await gitlab.MergeRequests.all({
     projectId: PROJECT_ID,
@@ -197,7 +197,7 @@ async function bulkRebase(milestone: string) {
     }
   }
 
-  console.log(`\n✅ Bulk rebase complete`);
+  console.log(`\n[PASS] Bulk rebase complete`);
 }
 
 // CLI

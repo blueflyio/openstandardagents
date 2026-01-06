@@ -56,20 +56,20 @@ async function processTemplates() {
 
       if (updated) {
         fs.writeFileSync(file, content);
-        console.log(`✅ Processed: ${file}`);
+        console.log(`[PASS] Processed: ${file}`);
         totalProcessed++;
       }
     }
   }
 
   if (totalProcessed === 0) {
-    console.log('ℹ️  No template placeholders found to process');
+    console.log('[INFO]  No template placeholders found to process');
   } else {
-    console.log(`\n✅ Processed ${totalProcessed} file(s) with version ${versionConfig.current}`);
+    console.log(`\n[PASS] Processed ${totalProcessed} file(s) with version ${versionConfig.current}`);
   }
 }
 
 processTemplates().catch(err => {
-  console.error('❌ Error processing templates:', err);
+  console.error('[FAIL] Error processing templates:', err);
   process.exit(1);
 });

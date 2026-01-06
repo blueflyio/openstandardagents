@@ -36,4 +36,4 @@ home = home.replace(
 );
 fs.writeFileSync(homePath, home);
 
-console.log(`✅ Synced version to ${current}`);
+console.log(`[PASS] Synced version to ${current}`);

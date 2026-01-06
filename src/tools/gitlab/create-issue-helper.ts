@@ -59,7 +59,7 @@ function getConfig(): Config {
   const args = process.argv.slice(2);
   
   if (args.length < 3) {
-    console.error('❌ Usage: tsx src/tools/gitlab/create-issue-helper.ts <title> <milestone-id> <labels> [description-file]');
+    console.error('[FAIL] Usage: tsx src/tools/gitlab/create-issue-helper.ts <title> <milestone-id> <labels> [description-file]');
     console.error('   Example: tsx src/tools/gitlab/create-issue-helper.ts "Enhance bin" 3 "enhancement,cli,bin" .gitlab/ISSUE-BIN-ENHANCEMENT.md');
     process.exit(1);
   }
@@ -69,14 +69,14 @@ function getConfig(): Config {
   // Parse milestone ID
   const milestoneId = parseInt(milestoneIdStr, 10);
   if (isNaN(milestoneId) || milestoneId <= 0) {
-    console.error(`❌ Invalid milestone ID: ${milestoneIdStr}`);
+    console.error(`[FAIL] Invalid milestone ID: ${milestoneIdStr}`);
     process.exit(1);
   }
 
   // Parse labels
   const labels = labelsStr.split(',').map(l => l.trim()).filter(l => l.length > 0);
   if (labels.length === 0) {
-    console.error(`❌ No valid labels provided: ${labelsStr}`);
+    console.error(`[FAIL] No valid labels provided: ${labelsStr}`);
     process.exit(1);
   }
 
@@ -85,7 +85,7 @@ function getConfig(): Config {
   if (descFile) {
     const descPath = path.isAbsolute(descFile) ? descFile : path.join(process.cwd(), descFile);
     if (!fs.existsSync(descPath)) {
-      console.error(`❌ Description file not found: ${descPath}`);
+      console.error(`[FAIL] Description file not found: ${descPath}`);
       process.exit(1);
     }
     description = fs.readFileSync(descPath, 'utf-8');
@@ -99,7 +99,7 @@ function getConfig(): Config {
                       '';
 
   if (!gitlabToken) {
-    console.error('❌ No GitLab token found. Please set one of:');
+    console.error('[FAIL] No GitLab token found. Please set one of:');
     console.error('   - SERVICE_ACCOUNT_OSSA_TOKEN');
     console.error('   - SERVICE_ACCOUNT_VERSION_MANAGER_TOKEN');
     console.error('   - GITLAB_TOKEN');
@@ -129,12 +129,12 @@ function getConfig(): Config {
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      console.error('❌ Configuration validation failed:');
+      console.error('[FAIL] Configuration validation failed:');
       error.issues.forEach((issue) => {
         console.error(`   • ${issue.path.join('.')}: ${issue.message}`);
       });
     } else {
-      console.error('❌ Configuration error:', error instanceof Error ? error.message : String(error));
+      console.error('[FAIL] Configuration error:', error instanceof Error ? error.message : String(error));
     }
     process.exit(1);
   }
@@ -189,7 +189,7 @@ async function createIssue(config: Config): Promise<GitLabIssueResponse> {
     return issue;
   } catch (error) {
     if (error instanceof z.ZodError) {
-      console.error('❌ Invalid response from GitLab API:');
+      console.error('[FAIL] Invalid response from GitLab API:');
       error.issues.forEach((issue) => {
         console.error(`   • ${issue.path.join('.')}: ${issue.message}`);
       });
@@ -204,12 +204,12 @@ async function createIssue(config: Config): Promise<GitLabIssueResponse> {
 // ============================================================================
 
 async function main(): Promise<void> {
-  console.log('🔧 GitLab Issue Creation Helper (Zod Edition)');
+  console.log('[FIX] GitLab Issue Creation Helper (Zod Edition)');
   console.log('==============================================\n');
 
   const config = getConfig();
   
-  console.log(`📋 Configuration:`);
+  console.log(`[LIST] Configuration:`);
   console.log(`   Project: ${config.projectId}`);
   console.log(`   Title: ${config.title}`);
   console.log(`   Milestone: #${config.milestoneId}`);
@@ -220,19 +220,19 @@ async function main(): Promise<void> {
   try {
     const issue = await createIssue(config);
     
-    console.log('✅ Issue created successfully!');
+    console.log('[PASS] Issue created successfully!');
     console.log(`   Issue: !${issue.iid}`);
     console.log(`   URL: ${issue.web_url}`);
     console.log(`   State: ${issue.state}`);
   } catch (error) {
-    console.error('❌ Failed to create issue:', error instanceof Error ? error.message : String(error));
+    console.error('[FAIL] Failed to create issue:', error instanceof Error ? error.message : String(error));
     process.exit(1);
   }
 }
 
 // Run
 main().catch((error) => {
-  console.error('❌ Fatal error:', error instanceof Error ? error.message : String(error));
+  console.error('[FAIL] Fatal error:', error instanceof Error ? error.message : String(error));
   process.exit(1);
 });
 

@@ -73,4 +73,4 @@ doc += `## Getting Help
 mkdirSync(join(process.cwd(), 'website/content/docs/errors'), { recursive: true });
 writeFileSync(OUTPUT_FILE, doc);
 
-console.log(`✅ Generated error reference: ${Object.keys(byCode).length} error types`);
+console.log(`[PASS] Generated error reference: ${Object.keys(byCode).length} error types`);

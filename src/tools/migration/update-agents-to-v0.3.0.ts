@@ -109,10 +109,10 @@ function updateAgentManifest(filePath: string): boolean {
     });
 
     writeFileSync(filePath, updated, 'utf8');
-    console.log(`  ✅ Updated: ${filePath}`);
+    console.log(`  [PASS] Updated: ${filePath}`);
     return true;
   } catch (error: any) {
-    console.error(`  ❌ Error updating ${filePath}: ${error.message}`);
+    console.error(`  [FAIL] Error updating ${filePath}: ${error.message}`);
     return false;
   }
 }
@@ -140,7 +140,7 @@ function findAgentManifests(dir: string): string[] {
 }
 
 function main() {
-  console.log('🚀 Updating all agents to OSSA v0.3.0 with ALL features\n');
+  console.log('[RUN] Updating all agents to OSSA v0.3.0 with ALL features\n');
   
   const manifests = findAgentManifests(AGENTS_DIR);
   console.log(`Found ${manifests.length} agent manifests\n`);
@@ -161,10 +161,10 @@ function main() {
     console.log('');
   }
   
-  console.log('\n📊 Summary:');
-  console.log(`  ✅ Updated: ${updated}`);
+  console.log('\n[STATS] Summary:');
+  console.log(`  [PASS] Updated: ${updated}`);
   console.log(`  ⏭️  Skipped: ${skipped}`);
-  console.log(`  ❌ Errors: ${errors}`);
+  console.log(`  [FAIL] Errors: ${errors}`);
   console.log('\n✨ All agents updated to v0.3.0!');
 }
 

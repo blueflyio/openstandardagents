@@ -20,7 +20,7 @@ async function createIssue(
   labels: string[] = []
 ) {
   if (!GITLAB_TOKEN) {
-    console.error('❌ GITLAB_TOKEN or SERVICE_ACCOUNT_OSSA_TOKEN required');
+    console.error('[FAIL] GITLAB_TOKEN or SERVICE_ACCOUNT_OSSA_TOKEN required');
     process.exit(1);
   }
 
@@ -48,11 +48,11 @@ async function createIssue(
     }
 
     const issue = await response.json();
-    console.log(`✅ Issue created: !${issue.iid}`);
+    console.log(`[PASS] Issue created: !${issue.iid}`);
     console.log(`   URL: ${issue.web_url}`);
     return issue.iid;
   } catch (error) {
-    console.error('❌ Error creating issue:', error);
+    console.error('[FAIL] Error creating issue:', error);
     process.exit(1);
   }
 }

@@ -45,13 +45,13 @@ fs.writeFileSync(VERSION_FILE, JSON.stringify(versionConfig, null, 2) + '\n');
 const specDir = path.join(process.cwd(), 'spec', `v${newVersion}`);
 if (!fs.existsSync(specDir)) {
   fs.mkdirSync(specDir, { recursive: true });
-  console.log(`✅ Created spec directory: ${specDir}`);
+  console.log(`[PASS] Created spec directory: ${specDir}`);
 }
 
 // Run sync
 execSync('npm run version:sync', { stdio: 'inherit' });
 
-console.log(`✅ Bumped version: ${versionConfig.current} → ${newVersion}`);
+console.log(`[PASS] Bumped version: ${versionConfig.current} → ${newVersion}`);
 console.log(`\nNext steps:`);
 console.log(`1. Update schema: spec/v${newVersion}/ossa-${newVersion}.schema.json`);
 console.log(`2. Commit: git add . && git commit -m "chore: bump version to ${newVersion}"`);

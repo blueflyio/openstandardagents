@@ -38,6 +38,6 @@ function lowercaseFiles(dir: string) {
   }
 }
 
-console.log('🔄 Converting documentation filenames to lowercase...\n');
+console.log('[SYNC] Converting documentation filenames to lowercase...\n');
 lowercaseFiles(DOCS_DIR);
-console.log('\n✅ Done!');
+console.log('\n[PASS] Done!');

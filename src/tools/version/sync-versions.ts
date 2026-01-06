@@ -429,19 +429,19 @@ function updateWebsiteDocs(version: string): void {
 // ============================================================================
 
 function main(): void {
-  console.log('🔄 OSSA Version Sync (Zod Edition)');
+  console.log('[SYNC] OSSA Version Sync (Zod Edition)');
   console.log('==================================\n');
 
   const version = getCurrentVersion();
-  console.log(`📦 Current version: ${version}`);
-  console.log(`🔧 Mode: ${config.mode.toUpperCase()}\n`);
+  console.log(`[PKG] Current version: ${version}`);
+  console.log(`[FIX] Mode: ${config.mode.toUpperCase()}\n`);
 
   // Handle template versions (e.g., {{VERSION}})
   if (isTemplateVersion(version)) {
-    console.log('ℹ️  Template version detected - skipping version sync operations');
+    console.log('[INFO]  Template version detected - skipping version sync operations');
     console.log('   (Template versions are managed by CI/CD automation)\n');
     console.log('='.repeat(50));
-    console.log('\n✅ Version validation passed (template mode)');
+    console.log('\n[PASS] Version validation passed (template mode)');
     process.exit(0);
   }
 
@@ -458,37 +458,37 @@ function main(): void {
 
   if (config.mode === 'check') {
     if (result.errors.length > 0) {
-      console.log('\n❌ Version consistency check FAILED:\n');
+      console.log('\n[FAIL] Version consistency check FAILED:\n');
       result.errors.forEach(err => console.log(`  • ${err}`));
       console.log('\nRun with --fix to update all references');
       process.exit(1);
     } else {
-      console.log('\n✅ All version references are consistent!');
+      console.log('\n[PASS] All version references are consistent!');
       if (result.warnings.length > 0) {
-        console.log('\n⚠️  Warnings:\n');
+        console.log('\n[WARN]  Warnings:\n');
         result.warnings.forEach(warn => console.log(`  • ${warn}`));
       }
       process.exit(0);
     }
   } else {
     if (result.changes.length > 0) {
-      console.log('\n✅ Version sync complete:\n');
+      console.log('\n[PASS] Version sync complete:\n');
       result.changes.forEach(change => console.log(`  • ${change}`));
-      console.log('\n💡 Review changes and commit:');
+      console.log('\n[TIP] Review changes and commit:');
       console.log(`   git add .`);
       console.log(`   git commit -m "chore: sync version references to v${version}"`);
     } else {
-      console.log('\n✅ All version references are already current!');
+      console.log('\n[PASS] All version references are already current!');
     }
 
     if (result.errors.length > 0) {
-      console.log('\n❌ Errors:\n');
+      console.log('\n[FAIL] Errors:\n');
       result.errors.forEach(err => console.log(`  • ${err}`));
       process.exit(1);
     }
 
     if (result.warnings.length > 0) {
-      console.log('\n⚠️  Warnings:\n');
+      console.log('\n[WARN]  Warnings:\n');
       result.warnings.forEach(warn => console.log(`  • ${warn}`));
     }
   }
@@ -498,7 +498,7 @@ function main(): void {
 try {
   main();
 } catch (error) {
-  console.error('\n❌ Fatal Error:', error instanceof Error ? error.message : String(error));
+  console.error('\n[FAIL] Fatal Error:', error instanceof Error ? error.message : String(error));
   if (error instanceof z.ZodError) {
     console.error('\nValidation Errors:');
     error.issues.forEach((err: z.ZodIssue) => console.error(`  • ${err.path.join('.')}: ${err.message}`));
