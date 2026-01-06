@@ -48,6 +48,7 @@ include:
   - local: '.gitlab/ci/utilities.yml'
   - local: '.gitlab/ci/openapi-validation.yml'  # OpenAPI & OSSA extensions validation (#176)
   - local: '.gitlab/ci/release-environments.yml'  # Release environment deployments (#376)
+  - local: '.gitlab/ci/version-automation-duo.yml'  # GitLab Duo Agent Platform version automation
 
 # Override SAST template jobs - run independently without blocking
 semgrep-sast:

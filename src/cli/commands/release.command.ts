@@ -543,7 +543,7 @@ versionCommand
         'openapi/**/*.{yaml,yml,json}',
         '.gitlab/**/*.{yaml,yml}',
         'bin/**/*.{ts,js,sh}',
-        'scripts/**/*.{ts,js}',
+        'src/tools/**/*.{ts,js}',
       ];
 
       if (options.includeExamples) {
