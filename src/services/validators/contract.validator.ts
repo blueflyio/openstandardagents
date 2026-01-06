@@ -2,6 +2,7 @@ import { injectable } from 'inversify';
 import Ajv, { ErrorObject } from 'ajv';
 import addFormats from 'ajv-formats';
 import * as semver from 'semver';
+import type { OssaAgent } from '../../types/index.js';
 
 export interface EventContract {
   channel: string;
@@ -81,7 +82,7 @@ export class ContractValidator {
    * Validate that an agent fulfills its declared contract
    */
   validateAgentContract(
-    agentManifest: any,
+    agentManifest: OssaAgent,
     runtimeEvents?: string[],
     runtimeCommands?: string[]
   ): ContractValidationResult {
@@ -101,7 +102,7 @@ export class ContractValidator {
 
     // Validate published events
     const declaredPublishes = messaging.publishes || [];
-    const declaredChannels = new Set(declaredPublishes.map((p: any) => p.channel));
+    const declaredChannels = new Set(declaredPublishes.map((p: EventContract) => p.channel));
 
     if (runtimeEvents) {
       // Check that agent publishes what it claims to publish
@@ -132,13 +133,13 @@ export class ContractValidator {
         // Validate schema is valid JSON Schema
         try {
           this.ajv.compile(event.schema);
-        } catch (error: any) {
+        } catch (error: unknown) {
           result.valid = false;
           result.errors.push({
             agent: agentName,
             type: 'schema_mismatch',
-            message: `Invalid schema for event "${event.channel}": ${error.message}`,
-            details: error,
+            message: `Invalid schema for event "${event.channel}": ${error instanceof Error ? error.message : String(error)}`,
+            details: error instanceof Error ? { message: error.message, name: error.name } : { error: String(error) },
           });
         }
       }
@@ -163,7 +164,7 @@ export class ContractValidator {
 
     // Validate commands
     const declaredCommands = messaging.commands || [];
-    const declaredCommandNames = new Set(declaredCommands.map((c: any) => c.name));
+    const declaredCommandNames = new Set(declaredCommands.map((c: CommandContract) => c.name));
 
     if (runtimeCommands) {
       // Check that agent exposes what it claims to expose
@@ -194,13 +195,13 @@ export class ContractValidator {
         // Validate input schema
         try {
           this.ajv.compile(command.inputSchema);
-        } catch (error: any) {
+        } catch (error: unknown) {
           result.valid = false;
           result.errors.push({
             agent: agentName,
             type: 'schema_mismatch',
-            message: `Invalid input schema for command "${command.name}": ${error.message}`,
-            details: error,
+            message: `Invalid input schema for command "${command.name}": ${error instanceof Error ? error.message : String(error)}`,
+            details: error instanceof Error ? { message: error.message, name: error.name } : { error: String(error) },
           });
         }
       }
@@ -209,13 +210,13 @@ export class ContractValidator {
         // Validate output schema
         try {
           this.ajv.compile(command.outputSchema);
-        } catch (error: any) {
+        } catch (error: unknown) {
           result.valid = false;
           result.errors.push({
             agent: agentName,
             type: 'schema_mismatch',
-            message: `Invalid output schema for command "${command.name}": ${error.message}`,
-            details: error,
+            message: `Invalid output schema for command "${command.name}": ${error instanceof Error ? error.message : String(error)}`,
+            details: error instanceof Error ? { message: error.message, name: error.name } : { error: String(error) },
           });
         }
       }
@@ -228,8 +229,8 @@ export class ContractValidator {
    * Test contract compatibility between two agents
    */
   testContractBetweenAgents(
-    consumerManifest: any,
-    providerManifest: any
+    consumerManifest: OssaAgent,
+    providerManifest: OssaAgent
   ): ContractValidationResult {
     const result: ContractValidationResult = {
       valid: true,
@@ -251,13 +252,13 @@ export class ContractValidator {
     // Check if consumer's subscriptions match provider's publications
     const consumerSubscribes = consumerMessaging.subscribes || [];
     const providerPublishes = providerMessaging.publishes || [];
-    const providerChannels = new Set(providerPublishes.map((p: any) => p.channel));
+    const providerChannels = new Set(providerPublishes.map((p: EventContract) => p.channel));
 
     for (const subscription of consumerSubscribes) {
       const channel = subscription.channel;
 
       // Find matching published event
-      const publishedEvent = providerPublishes.find((p: any) => p.channel === channel);
+      const publishedEvent = providerPublishes.find((p: EventContract) => p.channel === channel);
 
       if (!publishedEvent) {
         // Provider doesn't publish this channel
@@ -291,11 +292,11 @@ export class ContractValidator {
     // Check command compatibility
     // If consumer has dependency on provider and expects certain commands
     const consumerDeps = consumerManifest.spec?.dependencies?.agents || [];
-    const providerDep = consumerDeps.find((d: any) => d.name === providerName);
+    const providerDep = consumerDeps.find((d: { name: string }) => d.name === providerName);
 
     if (providerDep && providerDep.contract?.commands) {
       const providerCommands = providerMessaging.commands || [];
-      const providerCommandNames = new Set(providerCommands.map((c: any) => c.name));
+      const providerCommandNames = new Set(providerCommands.map((c: CommandContract) => c.name));
 
       for (const expectedCommand of providerDep.contract.commands) {
         if (!providerCommandNames.has(expectedCommand)) {
@@ -315,7 +316,7 @@ export class ContractValidator {
   /**
    * Detect breaking changes between two versions of an agent
    */
-  detectBreakingChanges(oldManifest: any, newManifest: any): BreakingChangesResult {
+  detectBreakingChanges(oldManifest: OssaAgent, newManifest: OssaAgent): BreakingChangesResult {
     const changes: BreakingChange[] = [];
 
     const oldName = oldManifest.metadata?.name || 'unknown';
@@ -333,8 +334,8 @@ export class ContractValidator {
     // Check for removed events
     const oldPublishes = oldMessaging.publishes || [];
     const newPublishes = newMessaging.publishes || [];
-    const oldChannels = new Set(oldPublishes.map((p: any) => p.channel));
-    const newChannels = new Set(newPublishes.map((p: any) => p.channel));
+    const oldChannels = new Set(oldPublishes.map((p: EventContract) => p.channel));
+    const newChannels = new Set(newPublishes.map((p: EventContract) => p.channel));
 
     for (const channel of oldChannels) {
       if (!newChannels.has(channel)) {
@@ -351,7 +352,7 @@ export class ContractValidator {
 
     // Check for event schema changes
     for (const oldEvent of oldPublishes) {
-      const newEvent = newPublishes.find((p: any) => p.channel === oldEvent.channel);
+      const newEvent = newPublishes.find((p: EventContract) => p.channel === oldEvent.channel);
       if (newEvent && oldEvent.schema && newEvent.schema) {
         const compatible = this.validateSchemaCompatibility(oldEvent.schema, newEvent.schema);
         if (!compatible.compatible) {
@@ -370,8 +371,8 @@ export class ContractValidator {
     // Check for removed commands
     const oldCommands = oldMessaging.commands || [];
     const newCommands = newMessaging.commands || [];
-    const oldCommandNames = new Set(oldCommands.map((c: any) => c.name));
-    const newCommandNames = new Set(newCommands.map((c: any) => c.name));
+    const oldCommandNames = new Set(oldCommands.map((c: CommandContract) => c.name));
+    const newCommandNames = new Set(newCommands.map((c: CommandContract) => c.name));
 
     for (const commandName of oldCommandNames) {
       if (!newCommandNames.has(commandName)) {
@@ -388,7 +389,7 @@ export class ContractValidator {
 
     // Check for command signature changes
     for (const oldCommand of oldCommands) {
-      const newCommand = newCommands.find((c: any) => c.name === oldCommand.name);
+      const newCommand = newCommands.find((c: CommandContract) => c.name === oldCommand.name);
       if (newCommand) {
         // Check input schema changes
         if (oldCommand.inputSchema && newCommand.inputSchema) {
@@ -449,7 +450,7 @@ export class ContractValidator {
   private validateSchemaCompatibility(
     oldSchema: Record<string, unknown>,
     newSchema: Record<string, unknown>
-  ): { compatible: boolean; reason?: string; details?: any } {
+  ): { compatible: boolean; reason?: string; details?: Record<string, unknown> } {
     // Basic structural checks
     // This is a simplified check - a full implementation would need more sophisticated comparison
 
@@ -531,7 +532,7 @@ export class ContractValidator {
   private validateContractSchemaCompatibility(
     consumerSchema: Record<string, unknown>,
     providerSchema: Record<string, unknown>
-  ): { compatible: boolean; reason?: string; details?: any } {
+  ): { compatible: boolean; reason?: string; details?: Record<string, unknown> } {
     // Check type compatibility
     if (consumerSchema.type && providerSchema.type && consumerSchema.type !== providerSchema.type) {
       return {
@@ -624,7 +625,7 @@ export class ContractValidator {
   /**
    * Extract contract from manifest
    */
-  extractContract(manifest: any): AgentContract {
+  extractContract(manifest: OssaAgent): AgentContract {
     const messaging = manifest.spec?.messaging || {};
 
     return {
@@ -639,7 +640,7 @@ export class ContractValidator {
   /**
    * Validate all contracts in a set of manifests
    */
-  validateAllContracts(manifests: any[]): ContractValidationResult {
+  validateAllContracts(manifests: OssaAgent[]): ContractValidationResult {
     const result: ContractValidationResult = {
       valid: true,
       errors: [],

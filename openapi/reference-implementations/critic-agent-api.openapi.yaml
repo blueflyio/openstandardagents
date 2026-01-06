@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Code Quality Critic Agent API
-  version: 0.3.2
+  version: 0.3.3
   description: |
     Quality assurance agent for code review, testing, and continuous improvement.
     Analyzes code quality, detects issues, and suggests improvements.

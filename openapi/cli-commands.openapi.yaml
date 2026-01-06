@@ -2,7 +2,7 @@ openapi: 3.1.0
 jsonSchemaDialect: https://spec.openapis.org/oas/3.1/dialect/base
 info:
   title: OSSA CLI Commands API
-  version: 0.3.2
+  version: 0.3.3
   description: |
     # OSSA CLI Commands OpenAPI Specification
 
@@ -180,23 +180,9 @@ components:
           default: false
 
     AgentType:
-      type: string
-      enum:
-        - orchestrator
-        - worker
-        - specialist
-        - critic
-        - monitor
-        - gateway
-
+      $ref: '../schemas/common/agent.yaml#/components/schemas/AgentType'
     AgentStatus:
-      type: string
-      enum:
-        - registered
-        - active
-        - inactive
-        - suspended
-        - deprecated
+      $ref: '../schemas/common/agent.yaml#/components/schemas/AgentStatus'
 
     AgentResponse:
       $ref: '../agent-crud.yaml#/components/schemas/AgentResponse'
@@ -218,7 +204,7 @@ components:
       $ref: '../agent-crud.yaml#/components/responses/Conflict'
 
 x-ossa-metadata:
-  version: 0.3.1
+      version: 0.3.3
   compliance:
     level: enterprise
     frameworks:

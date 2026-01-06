@@ -62,10 +62,10 @@ program
 program
   .command('providers')
   .description('Manage LLM provider configurations')
-  .option('list', 'List providers')
-  .option('add <name>', 'Add provider')
-  .option('remove <name>', 'Remove provider')
-  .option('set-default <name>', 'Set default provider')
+  .option('--list', 'List providers')
+  .option('--add <name>', 'Add provider')
+  .option('--remove <name>', 'Remove provider')
+  .option('--set-default <name>', 'Set default provider')
   .action(async (options) => {
     const { manageProviders } = await import('./commands/providers.js');
     await manageProviders(options);
