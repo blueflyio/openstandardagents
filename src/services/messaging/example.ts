@@ -14,7 +14,7 @@ import { MessagingService, DeliveryGuarantee, MessagePriority } from './index.js
  * 3. Command (RPC) pattern for requesting remediation actions
  */
 async function main() {
-  console.log('🚀 OSSA Messaging Runtime Example\n');
+  console.log('[RUN] OSSA Messaging Runtime Example\n');
 
   // ============================================================
   // Agent 1: Security Scanner
@@ -77,7 +77,7 @@ async function main() {
 
   // Subscribe to code commits
   await securityScanner.subscribe('code.commits', async (message) => {
-    console.log('🔍 [Security Scanner] Scanning commit:', message.payload);
+    console.log('[CHECK] [Security Scanner] Scanning commit:', message.payload);
 
     // Simulate vulnerability scanning
     const commit = message.payload as any;
@@ -92,11 +92,11 @@ async function main() {
             : MessagePriority.NORMAL,
         correlationId: message.id,
       });
-      console.log(`  ⚠️  Found ${vuln.severity} vulnerability: ${vuln.cve}`);
+      console.log(`  [WARN]  Found ${vuln.severity} vulnerability: ${vuln.cve}`);
     }
   });
 
-  console.log('✅ Security Scanner agent started\n');
+  console.log('[PASS] Security Scanner agent started\n');
 
   // ============================================================
   // Agent 2: Remediation Agent
@@ -146,28 +146,28 @@ async function main() {
   await remediationAgent.subscribe('security.vulnerabilities', async (message) => {
     const vuln = message.payload as any;
     console.log(
-      `🔧 [Remediation Agent] Processing ${vuln.severity} vulnerability: ${vuln.cve}`,
+      `[FIX] [Remediation Agent] Processing ${vuln.severity} vulnerability: ${vuln.cve}`,
     );
 
     if (vuln.severity === 'critical' || vuln.severity === 'high') {
       // Auto-remediate critical/high vulnerabilities
-      console.log(`  🚨 Auto-remediating critical vulnerability...`);
+      console.log(`  [ALERT] Auto-remediating critical vulnerability...`);
       const result = await simulateRemediation(vuln);
-      console.log(`  ✅ Remediation ${result.success ? 'successful' : 'failed'}`);
+      console.log(`  [PASS] Remediation ${result.success ? 'successful' : 'failed'}`);
     } else {
-      console.log(`  📋 Created ticket for manual review`);
+      console.log(`  [LIST] Created ticket for manual review`);
     }
   });
 
   // Register command handler
   await remediationAgent.registerCommandHandler('apply_patch', async (input: any) => {
-    console.log(`\n🔧 [Remediation Agent] Received command: apply_patch for ${input.cve}`);
+    console.log(`\n[FIX] [Remediation Agent] Received command: apply_patch for ${input.cve}`);
     const result = await simulatePatch(input.package);
-    console.log(`  ✅ Patch applied: ${input.package} → ${result.patchedVersion}`);
+    console.log(`  [PASS] Patch applied: ${input.package} → ${result.patchedVersion}`);
     return result;
   });
 
-  console.log('✅ Remediation Agent started\n');
+  console.log('[PASS] Remediation Agent started\n');
 
   // ============================================================
   // Simulate Events
@@ -205,7 +205,7 @@ async function main() {
 
   await new Promise((resolve) => setTimeout(resolve, 500));
 
-  console.log('\n📊 Metrics:\n');
+  console.log('\n[STATS] Metrics:\n');
 
   const scannerMetrics = securityScanner.getMetrics();
   console.log('Security Scanner:');
@@ -241,10 +241,10 @@ async function main() {
   // Graceful Shutdown
   // ============================================================
 
-  console.log('\n🛑 Shutting down...');
+  console.log('\n[STOP] Shutting down...');
   await securityScanner.stop();
   await remediationAgent.stop();
-  console.log('✅ Shutdown complete\n');
+  console.log('[PASS] Shutdown complete\n');
 }
 
 /**
@@ -299,6 +299,6 @@ async function simulatePatch(packageName: string): Promise<any> {
 
 // Run the example
 main().catch((error) => {
-  console.error('❌ Error:', error);
+  console.error('[FAIL] Error:', error);
   process.exit(1);
 });

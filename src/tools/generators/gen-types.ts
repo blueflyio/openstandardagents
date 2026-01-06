@@ -21,7 +21,7 @@ async function main() {
   try {
     // Get version with validation
     const version = getCurrentVersion();
-    console.log(`📦 Current version: ${version}`);
+    console.log(`[PKG] Current version: ${version}`);
     
     // Build paths
     const schemaPath = join(ROOT, getSchemaPath(version));
@@ -32,17 +32,17 @@ async function main() {
     console.log(`📄 Schema: ${schemaPath}`);
     
     // Generate types
-    console.log('🔄 Generating TypeScript types...');
+    console.log('[SYNC] Generating TypeScript types...');
     const output = execCommand(`npx json-schema-to-typescript ${schemaPath}`, {
       encoding: 'utf8',
     });
     
     // Write output
     writeFile(outputPath, output);
-    console.log(`✅ Generated: ${outputPath}`);
+    console.log(`[PASS] Generated: ${outputPath}`);
     
   } catch (error) {
-    console.error('❌ Error:', error instanceof Error ? error.message : String(error));
+    console.error('[FAIL] Error:', error instanceof Error ? error.message : String(error));
     process.exit(1);
   }
 }

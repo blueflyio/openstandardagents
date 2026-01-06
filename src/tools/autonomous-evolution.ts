@@ -92,7 +92,7 @@ interface Migration {
 }
 
 async function main() {
-  console.log('🚀 OSSA Autonomous Evolution System');
+  console.log('[RUN] OSSA Autonomous Evolution System');
   console.log('The First Living, Breathing AI Agent Standard\n');
 
   const cycle: EvolutionCycle = {
@@ -102,7 +102,7 @@ async function main() {
     release: await executeReleasePhase(),
   };
 
-  console.log('\n✅ Evolution cycle complete!');
+  console.log('\n[PASS] Evolution cycle complete!');
   console.log(`   Research: ${cycle.research.findings.length} findings`);
   console.log(`   Proposals: ${cycle.propose.issues.length} issues`);
   console.log(`   Implementation: ${cycle.implement.tasks.length} tasks`);
@@ -119,7 +119,7 @@ async function executeResearchPhase(): Promise<ResearchPhase> {
 }
 
 async function executeProposalPhase(): Promise<ProposalPhase> {
-  console.log('\n💡 Phase 2: Improvement Proposals');
+  console.log('\n[TIP] Phase 2: Improvement Proposals');
   return {
     issues: [],
     priorities: [],
@@ -127,7 +127,7 @@ async function executeProposalPhase(): Promise<ProposalPhase> {
 }
 
 async function executeImplementationPhase(): Promise<ImplementationPhase> {
-  console.log('\n🔧 Phase 3: Implementation');
+  console.log('\n[FIX] Phase 3: Implementation');
   return {
     tasks: [],
     assignments: [],
@@ -135,7 +135,7 @@ async function executeImplementationPhase(): Promise<ImplementationPhase> {
 }
 
 async function executeReleasePhase(): Promise<ReleasePhase> {
-  console.log('\n🚀 Phase 4: Release');
+  console.log('\n[RUN] Phase 4: Release');
   return {
     version: '0.3.0',
     changelog: '',

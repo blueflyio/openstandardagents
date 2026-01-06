@@ -106,22 +106,22 @@ check('Version References', () => {
 console.log('\n' + '='.repeat(50));
 
 if (errors.length > 0) {
-  console.log('\n❌ ERRORS:');
+  console.log('\n[FAIL] ERRORS:');
   errors.forEach(e => console.log(`  - ${e}`));
 }
 
 if (warnings.length > 0) {
-  console.log('\n⚠️  WARNINGS:');
+  console.log('\n[WARN]  WARNINGS:');
   warnings.forEach(w => console.log(`  - ${w}`));
 }
 
 if (errors.length === 0 && warnings.length === 0) {
-  console.log('\n✅ All validations passed!');
+  console.log('\n[PASS] All validations passed!');
   process.exit(0);
 } else if (errors.length === 0) {
-  console.log('\n✅ Validations passed with warnings');
+  console.log('\n[PASS] Validations passed with warnings');
   process.exit(0);
 } else {
-  console.log(`\n❌ ${errors.length} error(s) found`);
+  console.log(`\n[FAIL] ${errors.length} error(s) found`);
   process.exit(1);
 }

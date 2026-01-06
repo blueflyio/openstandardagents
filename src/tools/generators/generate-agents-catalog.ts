@@ -75,4 +75,4 @@ for (const agent of agents.sort((a, b) => a.name.localeCompare(b.name))) {
 mkdirSync(join(process.cwd(), 'website/content/docs/agents'), { recursive: true });
 writeFileSync(OUTPUT_FILE, doc);
 
-console.log(`✅ Generated agents catalog: ${agents.length} agents`);
+console.log(`[PASS] Generated agents catalog: ${agents.length} agents`);

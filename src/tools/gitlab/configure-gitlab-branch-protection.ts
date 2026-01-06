@@ -10,7 +10,7 @@ const PROJECT_ID = 'blueflyio/openstandardagents';
 const TOKEN = process.env.GITLAB_TOKEN || process.env.SERVICE_ACCOUNT_OSSA_TOKEN || process.env.GITLAB_PUSH_TOKEN;
 
 if (!TOKEN) {
-  console.error('❌ Error: GITLAB_TOKEN or SERVICE_ACCOUNT_OSSA_TOKEN required');
+  console.error('[FAIL] Error: GITLAB_TOKEN or SERVICE_ACCOUNT_OSSA_TOKEN required');
   process.exit(1);
 }
 
@@ -30,14 +30,14 @@ interface ProtectionRule {
 
 async function protectBranch(branch: string, rules: ProtectionRule): Promise<void> {
   try {
-    console.log(`\n🔒 Protecting branch: ${branch}`);
+    console.log(`\n[LOCK] Protecting branch: ${branch}`);
     
     // Check if branch is already protected
     const existing = await gitlab.ProtectedBranches.all(PROJECT_ID);
     const isProtected = existing.some((pb: any) => pb.name === branch);
     
     if (isProtected) {
-      console.log(`  ⚠️  ${branch} is already protected. Updating...`);
+      console.log(`  [WARN]  ${branch} is already protected. Updating...`);
       await gitlab.ProtectedBranches.unprotect(PROJECT_ID, branch);
     }
     
@@ -48,18 +48,18 @@ async function protectBranch(branch: string, rules: ProtectionRule): Promise<voi
       allow_force_push: false,
     });
     
-    console.log(`  ✅ ${branch} protected successfully`);
+    console.log(`  [PASS] ${branch} protected successfully`);
     console.log(`     - Push: Blocked (no direct pushes)`);
     console.log(`     - Merge: Maintainers only (via MR)`);
     console.log(`     - Force push: Disabled`);
   } catch (error: any) {
-    console.error(`  ❌ Failed to protect ${branch}:`, error.message);
+    console.error(`  [FAIL] Failed to protect ${branch}:`, error.message);
     throw error;
   }
 }
 
 async function main() {
-  console.log('🔒 Configuring GitLab Branch Protection Rules\n');
+  console.log('[LOCK] Configuring GitLab Branch Protection Rules\n');
   console.log(`Project: ${PROJECT_ID}`);
   console.log(`Token: ${TOKEN.substring(0, 10)}...`);
   
@@ -80,14 +80,14 @@ async function main() {
       allow_force_push: false,
     });
     
-    console.log('\n✅ Branch protection configured successfully!');
+    console.log('\n[PASS] Branch protection configured successfully!');
     console.log('\nProtected branches:');
     console.log('  - main: No direct pushes, MR required');
     console.log('  - development: No direct pushes, MR required');
     console.log('\nView in GitLab:');
     console.log(`  https://gitlab.com/${PROJECT_ID}/-/settings/repository#protected-branches`);
   } catch (error: any) {
-    console.error('\n❌ Error configuring branch protection:', error.message);
+    console.error('\n[FAIL] Error configuring branch protection:', error.message);
     process.exit(1);
   }
 }

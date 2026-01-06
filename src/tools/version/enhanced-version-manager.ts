@@ -175,33 +175,33 @@ async function main() {
   const bumpType = BumpTypeSchema.parse(args[0] || 'patch');
   const milestoneId = process.env.CI_MILESTONE_ID || args[1];
 
-  console.log('🤖 Enhanced Version Manager');
+  console.log('[BOT] Enhanced Version Manager');
   console.log('===========================\n');
 
   const config = getVersionConfig();
-  console.log(`📦 Current version: ${config.current}`);
+  console.log(`[PKG] Current version: ${config.current}`);
 
   // Try to get version from milestone
   let targetVersion: string | null = null;
   if (milestoneId) {
     targetVersion = await getMilestoneVersion(milestoneId);
     if (targetVersion) {
-      console.log(`🎯 Milestone version: ${targetVersion}`);
+      console.log(`[TARGET] Milestone version: ${targetVersion}`);
     }
   }
 
   // Calculate new version
   const newVersion = targetVersion || bumpVersion(config.current, bumpType);
-  console.log(`🚀 New version: ${newVersion}\n`);
+  console.log(`[RUN] New version: ${newVersion}\n`);
 
   // Update .version.json
   config.latest_stable = config.current.replace('-RC', '');
   config.current = newVersion;
   fs.writeFileSync(VERSION_FILE, JSON.stringify(config, null, 2) + '\n');
-  console.log('✅ Updated .version.json');
+  console.log('[PASS] Updated .version.json');
 
   // Run sync
-  console.log('\n📝 Syncing version references...');
+  console.log('\n[NOTE] Syncing version references...');
   execSync('npm run version:sync', { stdio: 'inherit' });
 
   // Process docs
@@ -209,12 +209,12 @@ async function main() {
   execSync('npm run docs:process', { stdio: 'inherit' });
 
   // Validate
-  console.log('\n🔍 Validating version consistency...');
+  console.log('\n[CHECK] Validating version consistency...');
   try {
     execSync('npm run version:sync -- --check', { stdio: 'inherit' });
-    console.log('✅ Version consistency validated');
+    console.log('[PASS] Version consistency validated');
   } catch (error) {
-    console.error('❌ Version consistency check failed');
+    console.error('[FAIL] Version consistency check failed');
     process.exit(1);
   }
 
@@ -226,7 +226,7 @@ async function main() {
     console.log(`\n🌿 Creating branch: ${sourceBranch}`);
     execSync(`git checkout -b ${sourceBranch}`, { stdio: 'inherit' });
 
-    console.log('\n📝 Committing changes...');
+    console.log('\n[NOTE] Committing changes...');
     execSync('git add .', { stdio: 'inherit' });
     execSync(`git commit -m "chore: bump version to ${newVersion}"`, { stdio: 'inherit' });
 
@@ -242,16 +242,16 @@ async function main() {
     );
 
     if (mrId) {
-      console.log(`✅ Merge request created: !${mrId}`);
+      console.log(`[PASS] Merge request created: !${mrId}`);
     }
   }
 
-  console.log('\n✅ Version management complete!');
+  console.log('\n[PASS] Version management complete!');
   console.log(`   ${config.current} → ${newVersion}`);
 }
 
 main().catch((error) => {
-  console.error('❌ Error:', error);
+  console.error('[FAIL] Error:', error);
   process.exit(1);
 });
 

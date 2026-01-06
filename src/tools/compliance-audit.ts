@@ -27,7 +27,7 @@ const GITLAB_HOST = process.env.GITLAB_HOST?.replace('gitlab.com', 'https://gitl
 const TOKEN = process.env.GITLAB_TOKEN || process.env.SERVICE_ACCOUNT_OSSA_TOKEN || process.env.GITLAB_PUSH_TOKEN;
 
 if (!TOKEN) {
-  console.error('❌ Error: GITLAB_TOKEN required');
+  console.error('ERROR: GITLAB_TOKEN required');
   console.error('   Set environment variable: export GITLAB_TOKEN=<your-token>');
   process.exit(1);
 }
@@ -669,7 +669,7 @@ async function auditPipelineConfiguration(projectId: string): Promise<Compliance
 
 // Main audit function
 async function runAudit(projectId: string): Promise<AuditReport> {
-  console.log(`\n🔍 Running GitLab Ultimate Compliance Audit\n`);
+  console.log(`\nRunning GitLab Ultimate Compliance Audit\n`);
   console.log(`Project: ${projectId}`);
   console.log(`GitLab Host: ${GITLAB_HOST}`);
   console.log(`Token: ${TOKEN.substring(0, 10)}...\n`);
@@ -733,7 +733,7 @@ function displayReport(report: AuditReport): void {
   const categories = [...new Set(report.checks.map(c => c.category))];
 
   for (const category of categories) {
-    console.log(`\n📋 ${category}`);
+    console.log(`\n${category}`);
     console.log('-'.repeat(80));
 
     const categoryChecks = report.checks.filter(c => c.category === category);
@@ -741,7 +741,7 @@ function displayReport(report: AuditReport): void {
       console.log(`${getStatusIcon(check.status)} ${check.check}`);
       console.log(`   ${check.message}`);
       if (check.remediation) {
-        console.log(`   💡 ${check.remediation}`);
+        console.log(`   TIP: ${check.remediation}`);
       }
     }
   }
@@ -750,10 +750,10 @@ function displayReport(report: AuditReport): void {
   console.log('SUMMARY');
   console.log('='.repeat(80));
   console.log(`Total Checks: ${report.summary.total}`);
-  console.log(`✅ Passed: ${report.summary.passed}`);
-  console.log(`❌ Failed: ${report.summary.failed}`);
-  console.log(`⚠️  Warnings: ${report.summary.warnings}`);
-  console.log(`ℹ️  Info: ${report.summary.total - report.summary.passed - report.summary.failed - report.summary.warnings}`);
+  console.log(`Passed: ${report.summary.passed}`);
+  console.log(`Failed: ${report.summary.failed}`);
+  console.log(`Warnings: ${report.summary.warnings}`);
+  console.log(`Info: ${report.summary.total - report.summary.passed - report.summary.failed - report.summary.warnings}`);
   console.log('='.repeat(80) + '\n');
 }
 
@@ -777,17 +777,17 @@ async function main() {
 
     // Exit with appropriate code
     if (report.overallStatus === 'non-compliant') {
-      console.log('⚠️  Project has compliance issues that need attention\n');
+      console.log('WARNING: Project has compliance issues that need attention\n');
       process.exit(1);
     } else if (report.overallStatus === 'partial') {
-      console.log('⚠️  Project is partially compliant - review warnings\n');
+      console.log('WARNING: Project is partially compliant - review warnings\n');
       process.exit(0);
     } else {
-      console.log('✅ Project is fully compliant!\n');
+      console.log('Project is fully compliant!\n');
       process.exit(0);
     }
   } catch (error: any) {
-    console.error('\n❌ Audit failed:', error.message);
+    console.error('\nAudit failed:', error.message);
     console.error(error.stack);
     process.exit(1);
   }

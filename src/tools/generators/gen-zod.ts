@@ -21,7 +21,7 @@ async function main() {
   try {
     // Get version with validation
     const version = getCurrentVersion();
-    console.log(`📦 Current version: ${version}`);
+    console.log(`[PKG] Current version: ${version}`);
     
     // Build paths
     const schemaPath = join(ROOT, getSchemaPath(version));
@@ -32,15 +32,15 @@ async function main() {
     console.log(`📄 Schema: ${schemaPath}`);
     
     // Generate Zod schemas
-    console.log('🔄 Generating Zod schemas...');
+    console.log('[SYNC] Generating Zod schemas...');
     execCommand(`npx json-schema-to-zod -i ${schemaPath} -o ${outputPath}`, {
       stdio: 'inherit',
     });
     
-    console.log(`✅ Generated: ${outputPath}`);
+    console.log(`[PASS] Generated: ${outputPath}`);
     
   } catch (error) {
-    console.error('❌ Error:', error instanceof Error ? error.message : String(error));
+    console.error('[FAIL] Error:', error instanceof Error ? error.message : String(error));
     process.exit(1);
   }
 }

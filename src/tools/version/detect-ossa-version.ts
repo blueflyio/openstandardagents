@@ -42,7 +42,7 @@ function detectOssaVersion(): string | null {
       const baseVersion = stripPreRelease(match[1]);
       const version = normalizeVersion(baseVersion);
       if (isValidVersion(version)) {
-        console.log(`📦 Found version in build.env: ${match[1]} -> ${version}`);
+        console.log(`[PKG] Found version in build.env: ${match[1]} -> ${version}`);
         return version;
       }
     }
@@ -55,7 +55,7 @@ function detectOssaVersion(): string | null {
     if (pkg.version && pkg.version !== '{{VERSION}}') {
       const version = normalizeVersion(pkg.version);
       if (isValidVersion(version)) {
-        console.log(`📦 Found version in package.json: ${version}`);
+        console.log(`[PKG] Found version in package.json: ${version}`);
         return version;
       }
     }
@@ -91,7 +91,7 @@ function detectOssaVersion(): string | null {
       .replace(/^v([0-9]+\.[0-9]+)$/, 'v$1.0');
 
     if (isValidVersion(converted)) {
-      console.log(`🎯 Found version in milestone: ${milestone} -> ${converted}`);
+      console.log(`[TARGET] Found version in milestone: ${milestone} -> ${converted}`);
       return converted;
     }
   }
@@ -111,18 +111,18 @@ function detectOssaVersion(): string | null {
 }
 
 function main() {
-  console.log('🔍 Detecting OSSA version...\n');
+  console.log('[CHECK] Detecting OSSA version...\n');
 
   const version = detectOssaVersion();
 
   if (!version) {
-    console.error('❌ ERROR: Could not determine OSSA version.');
+    console.error('[FAIL] ERROR: Could not determine OSSA version.');
     console.error('Expected one of: build.env VERSION, package.json version, CI_COMMIT_TAG, spec/v*, MR milestone, release/vX.Y.x');
     process.exit(1);
   }
 
   if (!isValidVersion(version)) {
-    console.error(`❌ ERROR: Invalid version format: ${version} (expected vX.Y.Z)`);
+    console.error(`[FAIL] ERROR: Invalid version format: ${version} (expected vX.Y.Z)`);
     process.exit(1);
   }
 
@@ -132,7 +132,7 @@ function main() {
   const envContent = `OSSA_VERSION=${cleanVersion}\nDETECTED_VERSION=${cleanVersion}\n`;
   fs.writeFileSync('ossa-version.env', envContent);
 
-  console.log(`\n✅ OSSA Version: ${cleanVersion}`);
+  console.log(`\n[PASS] OSSA Version: ${cleanVersion}`);
   console.log(`📄 Written to: ossa-version.env`);
 }
 

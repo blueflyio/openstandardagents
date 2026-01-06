@@ -61,7 +61,7 @@ function findSchemas(dir) {
   return schemas;
 }
 
-console.log('🔧 Fixing schema format constraints...\n');
+console.log('[FIX] Fixing schema format constraints...\n');
 
 const schemas = findSchemas(SPEC_DIR);
 let fixedCount = 0;

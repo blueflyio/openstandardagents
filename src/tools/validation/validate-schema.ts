@@ -21,7 +21,7 @@ async function main() {
   try {
     // Get version with validation
     const version = getCurrentVersion();
-    console.log(`📦 Current version: ${version}`);
+    console.log(`[PKG] Current version: ${version}`);
     
     // Build schema path
     const schemaPath = join(ROOT, getSchemaPath(version));
@@ -38,10 +38,10 @@ async function main() {
     
     // Run validation
     execCommand(command, { stdio: 'inherit' });
-    console.log('✅ Schema validation passed');
+    console.log('[PASS] Schema validation passed');
     
   } catch (error) {
-    console.error('❌ Error:', error instanceof Error ? error.message : String(error));
+    console.error('[FAIL] Error:', error instanceof Error ? error.message : String(error));
     process.exit(1);
   }
 }
