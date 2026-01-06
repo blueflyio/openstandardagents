@@ -21,7 +21,7 @@ autonomous:master-coordinator:
       when: always
   variables:
     AGENT_NAME: task-dispatcher
-    SERVICE_ACCOUNT: "@t"ask-dispatcher
+    SERVICE_ACCOUNT: "@task-dispatcher"
     AGENT_TOKEN: ${SERVICE_ACCOUNT_TASK_DISPATCHER_TOKEN}
   before_script:
     - apk add --no-cache curl jq
