@@ -11,7 +11,7 @@
  * - Pipeline configuration
  *
  * Usage:
- *   tsx scripts/compliance-audit.ts [project-id]
+ *   tsx src/tools/compliance-audit.ts [project-id]
  *
  * Environment Variables:
  *   GITLAB_TOKEN - GitLab API token (required)

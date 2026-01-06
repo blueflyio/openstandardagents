@@ -7,7 +7,7 @@
  * Uses Zod for runtime validation and type safety.
  * 
  * Usage:
- *   npx tsx scripts/create-issue-helper.ts <title> <milestone-id> <labels> [description-file]
+ *   npx tsx src/tools/gitlab/create-issue-helper.ts <title> <milestone-id> <labels> [description-file]
  * 
  * Example:
  *   npx tsx scripts/create-issue-helper.ts "Enhance bin" 3 "enhancement,cli,bin" .gitlab/ISSUE-BIN-ENHANCEMENT.md
@@ -59,8 +59,8 @@ function getConfig(): Config {
   const args = process.argv.slice(2);
   
   if (args.length < 3) {
-    console.error('❌ Usage: tsx scripts/create-issue-helper.ts <title> <milestone-id> <labels> [description-file]');
-    console.error('   Example: tsx scripts/create-issue-helper.ts "Enhance bin" 3 "enhancement,cli,bin" .gitlab/ISSUE-BIN-ENHANCEMENT.md');
+    console.error('❌ Usage: tsx src/tools/gitlab/create-issue-helper.ts <title> <milestone-id> <labels> [description-file]');
+    console.error('   Example: tsx src/tools/gitlab/create-issue-helper.ts "Enhance bin" 3 "enhancement,cli,bin" .gitlab/ISSUE-BIN-ENHANCEMENT.md');
     process.exit(1);
   }
 

@@ -60,8 +60,8 @@ async function createIssue(
 // Main
 const args = process.argv.slice(2);
 if (args.length < 3) {
-  console.log('Usage: tsx scripts/create-milestone-issue.ts <title> <milestone-id> <labels> [description-file]');
-  console.log('Example: tsx scripts/create-milestone-issue.ts "Enhance bin" 3 "enhancement,cli"');
+  console.log('Usage: tsx src/tools/gitlab/create-milestone-issue.ts <title> <milestone-id> <labels> [description-file]');
+  console.log('Example: tsx src/tools/gitlab/create-milestone-issue.ts "Enhance bin" 3 "enhancement,cli"');
   process.exit(1);
 }
 

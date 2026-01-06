@@ -11,7 +11,7 @@
  * - CI_PATCH_VERSION: Patch number (e.g., "1")
  * 
  * Usage:
- *   CI_DETERMINED_VERSION=0.3.0 tsx scripts/ci-version-sync.ts
+ *   CI_DETERMINED_VERSION=0.3.0 tsx src/tools/version/ci-version-sync.ts
  */
 
 import fs from 'fs';

@@ -53,14 +53,17 @@ include:
 semgrep-sast:
   needs: []
   allow_failure: true
+  script: []
 
 secret_detection:
   needs: []
   allow_failure: true
+  script: []
 
 gemnasium-dependency_scanning:
   needs: []
   allow_failure: true
+  script: []
 
 stages:
   - .pre           # GitLab reserved pre-stage (used by create-release-mrs)
