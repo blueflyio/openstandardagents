@@ -5,7 +5,7 @@
  * Generated from: /Users/flux423/Sites/LLM/OssA/openstandardagents/openapi/reference-implementations/self-evolving-ecosystem.openapi.yaml
  * OSSA Version: 0.3.3
  * API Version: ossa/v0.3.3
- * Generated on: 2026-01-06T18:10:13.483Z
+ * Generated on: 2026-01-06T18:11:54.182Z
  */
 
 import { z } from 'zod';
@@ -14,6 +14,60 @@ import * as CommonSchemas from './common-schemas.zod';
 // ============================================================================
 // Component Schemas
 // ============================================================================
+
+export const agentPerformanceSchema = z.object({
+  responseTime: z.number().optional(),
+  throughput: z.number().optional(),
+  accuracy: z.number().min(0).max(1).optional(),
+  errorRate: z.number().optional(),
+  resourceUtilization: z.number().min(0).max(1).optional(),
+  learningVelocity: z.number().optional()
+});
+
+export type AgentPerformance = z.infer<typeof agentPerformanceSchema>;
+
+export const agentLearningSchema = z.object({
+  modelVersion: z.string().optional(),
+  trainingRounds: z.number().int().optional(),
+  accuracy: z.number().optional(),
+  lastUpdated: z.string().datetime().optional(),
+  personalizationLevel: z.number().min(0).max(1).optional(),
+  knowledgeGraph: z.record(z.string(), z.unknown()).optional()
+});
+
+export type AgentLearning = z.infer<typeof agentLearningSchema>;
+
+export const coordinationLinkSchema = z.object({
+  targetAgentId: z.string().uuid().optional(),
+  linkType: z.enum(["peer", "supervisor", "subordinate", "collaborator"]).optional(),
+  communicationFrequency: z.number().optional(),
+  successRate: z.number().min(0).max(1).optional()
+});
+
+export type CoordinationLink = z.infer<typeof coordinationLinkSchema>;
+
+export const agentSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string(),
+  type: z.enum(["orchestrator", "worker", "critic", "integrator", "specialist"]),
+  role: z.enum(["security_compliance", "performance_optimization", "research_innovation", "knowledge_management", "infrastructure_ops", "revenue_optimization"]),
+  capabilities: z.array(z.string()),
+  status: z.enum(["active", "learning", "adapting", "idle", "error"]),
+  performance: agentPerformanceSchema.optional(),
+  learning: agentLearningSchema.optional(),
+  coordination: z.array(coordinationLinkSchema).optional()
+});
+
+export type Agent = z.infer<typeof agentSchema>;
+
+export const agentDependencySchema = z.object({
+  from: z.string().uuid().optional(),
+  to: z.string().uuid().optional(),
+  type: z.enum(["requires", "provides", "collaborates", "monitors"]).optional(),
+  strength: z.number().min(0).max(1).optional()
+});
+
+export type AgentDependency = z.infer<typeof agentDependencySchema>;
 
 /**
  * Hierarchical coordination between agents
@@ -28,6 +82,16 @@ export const coordinationMatrixSchema = z.object({
 });
 
 export type CoordinationMatrix = z.infer<typeof coordinationMatrixSchema>;
+
+export const adaptationEventSchema = z.object({
+  timestamp: z.string().datetime().optional(),
+  type: z.enum(["agent_added", "agent_removed", "capability_enhanced", "coordination_optimized", "performance_improved", "cost_reduced"]).optional(),
+  impact: z.number().optional(),
+  fitnessChange: z.number().optional(),
+  description: z.string().optional()
+});
+
+export type AdaptationEvent = z.infer<typeof adaptationEventSchema>;
 
 /**
  * Current state of ecosystem self-evolution
@@ -81,60 +145,6 @@ export const ecosystemSchema = z.object({
 });
 
 export type Ecosystem = z.infer<typeof ecosystemSchema>;
-
-export const agentPerformanceSchema = z.object({
-  responseTime: z.number().optional(),
-  throughput: z.number().optional(),
-  accuracy: z.number().min(0).max(1).optional(),
-  errorRate: z.number().optional(),
-  resourceUtilization: z.number().min(0).max(1).optional(),
-  learningVelocity: z.number().optional()
-});
-
-export type AgentPerformance = z.infer<typeof agentPerformanceSchema>;
-
-export const agentLearningSchema = z.object({
-  modelVersion: z.string().optional(),
-  trainingRounds: z.number().int().optional(),
-  accuracy: z.number().optional(),
-  lastUpdated: z.string().datetime().optional(),
-  personalizationLevel: z.number().min(0).max(1).optional(),
-  knowledgeGraph: z.record(z.string(), z.unknown()).optional()
-});
-
-export type AgentLearning = z.infer<typeof agentLearningSchema>;
-
-export const agentSchema = z.object({
-  id: z.string().uuid(),
-  name: z.string(),
-  type: z.enum(["orchestrator", "worker", "critic", "integrator", "specialist"]),
-  role: z.enum(["security_compliance", "performance_optimization", "research_innovation", "knowledge_management", "infrastructure_ops", "revenue_optimization"]),
-  capabilities: z.array(z.string()),
-  status: z.enum(["active", "learning", "adapting", "idle", "error"]),
-  performance: agentPerformanceSchema.optional(),
-  learning: agentLearningSchema.optional(),
-  coordination: z.array(coordinationLinkSchema).optional()
-});
-
-export type Agent = z.infer<typeof agentSchema>;
-
-export const agentDependencySchema = z.object({
-  from: z.string().uuid().optional(),
-  to: z.string().uuid().optional(),
-  type: z.enum(["requires", "provides", "collaborates", "monitors"]).optional(),
-  strength: z.number().min(0).max(1).optional()
-});
-
-export type AgentDependency = z.infer<typeof agentDependencySchema>;
-
-export const coordinationLinkSchema = z.object({
-  targetAgentId: z.string().uuid().optional(),
-  linkType: z.enum(["peer", "supervisor", "subordinate", "collaborator"]).optional(),
-  communicationFrequency: z.number().optional(),
-  successRate: z.number().min(0).max(1).optional()
-});
-
-export type CoordinationLink = z.infer<typeof coordinationLinkSchema>;
 
 export const federatedLearningSessionSchema = z.object({
   id: z.string().uuid(),
@@ -298,16 +308,6 @@ export const dynamicPricingSchema = z.object({
 });
 
 export type DynamicPricing = z.infer<typeof dynamicPricingSchema>;
-
-export const adaptationEventSchema = z.object({
-  timestamp: z.string().datetime().optional(),
-  type: z.enum(["agent_added", "agent_removed", "capability_enhanced", "coordination_optimized", "performance_improved", "cost_reduced"]).optional(),
-  impact: z.number().optional(),
-  fitnessChange: z.number().optional(),
-  description: z.string().optional()
-});
-
-export type AdaptationEvent = z.infer<typeof adaptationEventSchema>;
 
 export const createEcosystemRequestSchema = z.object({
   name: z.string(),

@@ -321,35 +321,85 @@ function orderSchemas(schemas, refs) {
   // Topological sort: primitives first, then dependencies
   const visited = new Set();
   const result = [];
+  const processing = new Set();
   
-  function visit(name) {
-    if (visited.has(name)) return;
-    visited.add(name);
+  function getDependencies(schema) {
+    const deps = new Set();
     
-    const schema = schemas[name];
-    if (!schema) return;
-    
-    // If schema has $ref, visit dependencies first
     if (schema.$ref) {
-      const refName = schema.$ref.replace('#/components/schemas/', '');
-      if (schemas[refName] && !visited.has(refName)) {
-        visit(refName);
+      const refName = schema.$ref.replace('#/components/schemas/', '').split('/').pop();
+      if (schemas[refName]) {
+        deps.add(refName);
       }
     }
     
-    // If schema has properties, visit property schemas first
     if (schema.properties) {
       for (const prop of Object.values(schema.properties)) {
         if (prop.$ref) {
-          const refName = prop.$ref.replace('#/components/schemas/', '');
-          if (schemas[refName] && !visited.has(refName)) {
-            visit(refName);
+          const refName = prop.$ref.replace('#/components/schemas/', '').split('/').pop();
+          if (schemas[refName]) {
+            deps.add(refName);
+          }
+        }
+        if (prop.items?.$ref) {
+          const refName = prop.items.$ref.replace('#/components/schemas/', '').split('/').pop();
+          if (schemas[refName]) {
+            deps.add(refName);
           }
         }
       }
     }
     
+    if (schema.items?.$ref) {
+      const refName = schema.items.$ref.replace('#/components/schemas/', '').split('/').pop();
+      if (schemas[refName]) {
+        deps.add(refName);
+      }
+    }
+    
+    if (schema.allOf) {
+      for (const s of schema.allOf) {
+        if (s.$ref) {
+          const refName = s.$ref.replace('#/components/schemas/', '').split('/').pop();
+          if (schemas[refName]) {
+            deps.add(refName);
+          }
+        }
+      }
+    }
+    
+    return deps;
+  }
+  
+  function visit(name) {
+    if (visited.has(name)) return;
+    if (processing.has(name)) {
+      // Circular reference - add anyway but mark
+      result.push(name);
+      visited.add(name);
+      processing.delete(name);
+      return;
+    }
+    
+    processing.add(name);
+    const schema = schemas[name];
+    if (!schema) {
+      visited.add(name);
+      processing.delete(name);
+      return;
+    }
+    
+    // Visit dependencies first
+    const deps = getDependencies(schema);
+    for (const dep of deps) {
+      if (!visited.has(dep)) {
+        visit(dep);
+      }
+    }
+    
     result.push(name);
+    visited.add(name);
+    processing.delete(name);
   }
   
   // Visit all schemas

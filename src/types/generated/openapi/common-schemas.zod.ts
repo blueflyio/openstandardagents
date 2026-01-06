@@ -5,7 +5,7 @@
  * Generated from: shared schemas
  * OSSA Version: 0.3.3
  * API Version: ossa/v0.3.3
- * Generated on: 2026-01-06T18:10:13.431Z
+ * Generated on: 2026-01-06T18:11:54.127Z
  */
 
 import { z } from 'zod';
@@ -143,6 +143,28 @@ export const agentTypeSchema = z.enum(["orchestrator", "worker", "specialist", "
 
 export type AgentType = z.infer<typeof agentTypeSchema>;
 
+export const capabilitySchema = z.object({
+  name: z.string(),
+  category: z.enum(["core", "analysis", "generation", "transformation", "integration"]),
+  description: z.string().optional(),
+  version: z.string().optional(),
+  parameters: z.record(z.string(), z.unknown()).optional()
+});
+
+export type Capability = z.infer<typeof capabilitySchema>;
+
+export const interfaceSchema = z.object({
+  type: z.enum(["rest", "graphql", "grpc", "websocket", "mcp"]),
+  endpoint: z.string().url(),
+  protocol: z.string().optional(),
+  authentication: z.object({
+  type: z.string().optional(),
+  config: z.record(z.string(), z.unknown()).optional()
+}).optional()
+});
+
+export type Interface = z.infer<typeof interfaceSchema>;
+
 export const resourceRequirementsSchema = z.object({
   cpu: z.string().regex(/^[0-9]+m?$/).optional(),
   memory: z.string().regex(/^[0-9]+(Mi|Gi)$/).optional(),
@@ -187,28 +209,6 @@ export type AgentManifest = z.infer<typeof agentManifestSchema>;
 export const agentStatusSchema = z.enum(["registered", "active", "inactive", "suspended", "deprecated"]);
 
 export type AgentStatus = z.infer<typeof agentStatusSchema>;
-
-export const capabilitySchema = z.object({
-  name: z.string(),
-  category: z.enum(["core", "analysis", "generation", "transformation", "integration"]),
-  description: z.string().optional(),
-  version: z.string().optional(),
-  parameters: z.record(z.string(), z.unknown()).optional()
-});
-
-export type Capability = z.infer<typeof capabilitySchema>;
-
-export const interfaceSchema = z.object({
-  type: z.enum(["rest", "graphql", "grpc", "websocket", "mcp"]),
-  endpoint: z.string().url(),
-  protocol: z.string().optional(),
-  authentication: z.object({
-  type: z.string().optional(),
-  config: z.record(z.string(), z.unknown()).optional()
-}).optional()
-});
-
-export type Interface = z.infer<typeof interfaceSchema>;
 
 export const agentRegistrationSchema = z.object({
   id: z.string().uuid().optional(),
