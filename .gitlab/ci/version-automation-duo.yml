@@ -83,7 +83,7 @@ platform-agents:version-bump:
   extends: .platform_agent_base
   variables:
     PLATFORM_AGENT: release-coordinator
-    AGENT_SERVICE_ACCOUNT: @release-coordinator
+    AGENT_SERVICE_ACCOUNT: "@release-coordinator"
     AGENT_ENDPOINT: ${PLATFORM_AGENTS_API}/agents/release-coordinator/invoke
     VAST_AI_INSTANCE: ${VAST_AI_INSTANCE_TYPE:-RTX3090}
   before_script:
