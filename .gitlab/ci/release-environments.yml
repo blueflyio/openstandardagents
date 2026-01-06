@@ -22,7 +22,7 @@ deploy:release-environment:
       #!/bin/sh
       set -e
 
-      echo "🚀 Deploying to release/v0.3.x environment"
+      echo "[RUN] Deploying to release/v0.3.x environment"
       echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
       echo "Branch: ${CI_COMMIT_BRANCH}"
       echo "Commit: ${CI_COMMIT_SHORT_SHA}"
@@ -33,13 +33,13 @@ deploy:release-environment:
       # Extract version from branch name
       if echo "${CI_COMMIT_BRANCH}" | grep -qE '^release/v[0-9]+\.[0-9]+\.x$'; then
         VERSION=$(echo "${CI_COMMIT_BRANCH}" | sed -E 's|release/v([0-9]+\.[0-9]+)\.x|\1|')
-        echo "✅ Release version: v${VERSION}.x"
+        echo "[PASS] Release version: v${VERSION}.x"
       else
-        echo "⚠️  Not a release branch, skipping deployment"
+        echo "[WARN]  Not a release branch, skipping deployment"
         exit 0
       fi
 
-      echo "📦 Release environment deployment complete"
+      echo "[PKG] Release environment deployment complete"
   rules:
     # Auto-deploy on merge to release branch
     - if: $CI_COMMIT_BRANCH =~ /^release\/v[0-9]+\.[0-9]+\.x$/
@@ -57,7 +57,7 @@ stop:release-environment:
     name: release/v0.3.x
     action: stop
   script:
-    - echo "🛑 Stopping release/v0.3.x environment"
+    - echo "[STOP] Stopping release/v0.3.x environment"
   rules:
     - if: $CI_COMMIT_BRANCH =~ /^release\/v[0-9]+\.[0-9]+\.x$/
       when: manual
@@ -77,7 +77,7 @@ deploy:production:
       #!/bin/sh
       set -e
 
-      echo "🚀 Deploying to PRODUCTION environment"
+      echo "[RUN] Deploying to PRODUCTION environment"
       echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
       echo "Branch: ${CI_COMMIT_BRANCH}"
       echo "Commit: ${CI_COMMIT_SHORT_SHA}"
@@ -87,7 +87,7 @@ deploy:production:
 
       # Verify we're on main branch
       if [ "${CI_COMMIT_BRANCH}" != "main" ]; then
-        echo "❌ ERROR: Production deployment only allowed from main branch"
+        echo "[FAIL] ERROR: Production deployment only allowed from main branch"
         exit 1
       fi
 
@@ -95,11 +95,11 @@ deploy:production:
       if [ -n "${CI_COMMIT_TAG}" ]; then
         if echo "${CI_COMMIT_TAG}" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
           VERSION=$(echo "${CI_COMMIT_TAG}" | sed 's/^v//')
-          echo "✅ Production version: v${VERSION}"
+          echo "[PASS] Production version: v${VERSION}"
         fi
       fi
 
-      echo "📦 Production deployment complete"
+      echo "[PKG] Production deployment complete"
   rules:
     # Only on main branch after successful merge
     - if: $CI_COMMIT_BRANCH == "main"
@@ -119,7 +119,7 @@ stop:production:
     name: production
     action: stop
   script:
-    - echo "🛑 Stopping production environment"
+    - echo "[STOP] Stopping production environment"
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual

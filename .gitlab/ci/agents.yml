@@ -2,7 +2,7 @@
 # Uses agents from blueflyio/platform-agents
 
 variables:
-  # ✅ FIXED: Use correct project path
+  # [PASS] FIXED: Use correct project path
   AGENT_PLATFORM_PROJECT: blueflyio/platform-agents
 
 # GitHub PR Sync Agent
@@ -30,31 +30,31 @@ code:review:agent:
   allow_failure: false
   before_script:
     - npm ci --legacy-peer-deps
-    - npm run build || (echo "⚠️  Build failed, skipping code review" && exit 0)
+    - npm run build || (echo "[WARN]  Build failed, skipping code review" && exit 0)
   script:
     - |
       set +e
-      echo "🔍 Code Review Agent Starting..."
+      echo "[CHECK] Code Review Agent Starting..."
       echo "   MR: !${CI_MERGE_REQUEST_IID}"
       echo "   Project: ${CI_PROJECT_PATH}"
 
       # Check for OSSA agent manifest
       MANIFEST_PATH=".gitlab/agents/ossa-agent/manifest.ossa.yaml"
       if [ ! -f "$MANIFEST_PATH" ]; then
-        echo "ℹ️  No code review agent manifest found at ${MANIFEST_PATH}"
+        echo "[INFO]  No code review agent manifest found at ${MANIFEST_PATH}"
         echo "   Skipping code review. Create manifest to enable."
         exit 0
       fi
 
-      echo "📋 Running code review from: ${MANIFEST_PATH}"
+      echo "[LIST] Running code review from: ${MANIFEST_PATH}"
       export GITLAB_TOKEN="${AGENT_SERVICE_TOKEN:-$CI_JOB_TOKEN}"
       export MR_IID="${CI_MERGE_REQUEST_IID}"
       export TARGET_PROJECT="${CI_PROJECT_PATH}"
       
       if node dist/cli/index.js run "$MANIFEST_PATH" 2>&1; then
-        echo "✅ Code review completed successfully"
+        echo "[PASS] Code review completed successfully"
       else
-        echo "⚠️  Code review completed with warnings (non-blocking)"
+        echo "[WARN]  Code review completed with warnings (non-blocking)"
         exit 0
       fi
   rules:
@@ -94,20 +94,20 @@ security:scan:agent:
     - npm run build
   script:
     - |
-      echo "🔒 Security Scan Agent Starting..."
+      echo "[LOCK] Security Scan Agent Starting..."
       echo "   Project: ${CI_PROJECT_PATH}"
       echo "   Scan Type: full"
 
       # Check for security scanner manifest
       MANIFEST_PATH=".gitlab/agents/security-scanner/manifest.ossa.yaml"
       if [ -f "$MANIFEST_PATH" ]; then
-        echo "📋 Running security scan from: ${MANIFEST_PATH}"
+        echo "[LIST] Running security scan from: ${MANIFEST_PATH}"
         export GITLAB_TOKEN="${AGENT_SERVICE_TOKEN:-$CI_JOB_TOKEN}"
         export TARGET_PROJECT="${CI_PROJECT_PATH}"
         export SCAN_TYPE="full"
-        node dist/cli/index.js run "$MANIFEST_PATH" || echo "⚠️  Security scan completed with warnings"
+        node dist/cli/index.js run "$MANIFEST_PATH" || echo "[WARN]  Security scan completed with warnings"
       else
-        echo "ℹ️  No security scanner manifest found at ${MANIFEST_PATH}"
+        echo "[INFO]  No security scanner manifest found at ${MANIFEST_PATH}"
         echo "   Skipping security scan. Create manifest to enable."
         echo "   Using GitLab native security scanning instead."
       fi
@@ -129,10 +129,10 @@ ts:build:agent:
     - |
       echo "🔨 TypeScript Build Agent"
       if [ -d "dist" ]; then
-        echo "✅ Using build artifacts from build:dist job"
+        echo "[PASS] Using build artifacts from build:dist job"
         ls -la dist/ | head -10
       else
-        echo "ℹ️  No build artifacts found, skipping"
+        echo "[INFO]  No build artifacts found, skipping"
       fi
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
@@ -206,10 +206,10 @@ native:build:agent:
     - |
       echo "🔨 Native Build Agent"
       if [ -d "dist" ]; then
-        echo "✅ Using build artifacts from build:dist job"
-        echo "ℹ️  No native bindings required for this TypeScript project"
+        echo "[PASS] Using build artifacts from build:dist job"
+        echo "[INFO]  No native bindings required for this TypeScript project"
       else
-        echo "ℹ️  No build artifacts found, skipping"
+        echo "[INFO]  No build artifacts found, skipping"
       fi
   rules:
     - if: $CI_COMMIT_TAG
@@ -237,11 +237,11 @@ agent:mr-manager:
     - |
       # Verify webhook authentication
       if [ "$CI_PIPELINE_SOURCE" != "trigger" ] && [ "$CI_PIPELINE_SOURCE" != "pipeline" ]; then
-        echo "ℹ️  Not triggered by webhook/trigger, skipping MR Manager"
+        echo "[INFO]  Not triggered by webhook/trigger, skipping MR Manager"
         exit 0
       fi
 
-      echo "🤖 MR Manager Agent Starting..."
+      echo "[BOT] MR Manager Agent Starting..."
       echo "   Pipeline Source: ${CI_PIPELINE_SOURCE}"
       echo "   Trigger: ${TRIGGER_EVENT_TYPE:-unknown}"
 
@@ -251,10 +251,10 @@ agent:mr-manager:
       # Check if manifest exists
       MANIFEST_PATH=".gitlab/agents/mr-manager/manifest.ossa.yaml"
       if [ -f "$MANIFEST_PATH" ]; then
-        echo "📋 Running agent from: ${MANIFEST_PATH}"
-        node dist/cli/index.js run "$MANIFEST_PATH" || echo "⚠️  Agent completed with warnings"
+        echo "[LIST] Running agent from: ${MANIFEST_PATH}"
+        node dist/cli/index.js run "$MANIFEST_PATH" || echo "[WARN]  Agent completed with warnings"
       else
-        echo "⚠️  Agent manifest not found: ${MANIFEST_PATH}"
+        echo "[WARN]  Agent manifest not found: ${MANIFEST_PATH}"
         echo "   Create the manifest or update MANIFEST_PATH"
       fi
   rules:
@@ -274,12 +274,12 @@ agent:issue-triage:
   script:
     - |
       if [ "$CI_PIPELINE_SOURCE" != "trigger" ]; then
-        echo "ℹ️  Not triggered by webhook, skipping Issue Triage"
+        echo "[INFO]  Not triggered by webhook, skipping Issue Triage"
         exit 0
       fi
 
       if [ "$TRIGGER_EVENT_TYPE" != "issue" ]; then
-        echo "ℹ️  Not an issue event, skipping"
+        echo "[INFO]  Not an issue event, skipping"
         exit 0
       fi
 
@@ -288,9 +288,9 @@ agent:issue-triage:
 
       MANIFEST_PATH=".gitlab/agents/issue-triage/manifest.ossa.yaml"
       if [ -f "$MANIFEST_PATH" ]; then
-        node dist/cli/index.js run "$MANIFEST_PATH" || echo "⚠️  Agent completed with warnings"
+        node dist/cli/index.js run "$MANIFEST_PATH" || echo "[WARN]  Agent completed with warnings"
       else
-        echo "⚠️  Agent manifest not found: ${MANIFEST_PATH}"
+        echo "[WARN]  Agent manifest not found: ${MANIFEST_PATH}"
       fi
   rules:
     - if: $CI_PIPELINE_SOURCE == "trigger" && $TRIGGER_EVENT_TYPE == "issue"
