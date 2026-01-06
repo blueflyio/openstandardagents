@@ -18,6 +18,9 @@ activate:autonomous-framework:
     - if: $CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"
       when: always
       allow_failure: true
+    - if: $CI_COMMIT_BRANCH =~ /^chore\/migrate-scripts-to-src$/
+      when: always
+      allow_failure: true
     - when: manual
       allow_failure: true
   before_script:
