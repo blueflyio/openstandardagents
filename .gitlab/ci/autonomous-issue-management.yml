@@ -1,0 +1,117 @@
+# ============================================================================
+# Autonomous Issue Management
+# ============================================================================
+# Fully autonomous issue lifecycle management
+# ============================================================================
+
+variables:
+  PLATFORM_AGENTS_API: ${PLATFORM_AGENTS_API_URL:-https://api.blueflyagents.com}
+
+# ============================================================================
+# AUTO-ASSIGN ISSUES
+# ============================================================================
+
+autonomous:auto-assign-issues:
+  stage: .pre
+  image: node:22-alpine
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: always
+  variables:
+    AGENT_NAME: issue-lifecycle-manager
+    SERVICE_ACCOUNT: @issue-lifecycle-manager
+    AGENT_TOKEN: ${SERVICE_ACCOUNT_ISSUE_LIFECYCLE_TOKEN}
+  before_script:
+    - apk add --no-cache curl jq
+  script:
+    - |
+      echo "Autonomous Issue Assignment"
+      echo "=========================="
+      
+      curl -X POST \
+        "${PLATFORM_AGENTS_API}/agents/${AGENT_NAME}/invoke" \
+        -H "Authorization: Bearer ${AGENT_TOKEN}" \
+        -H "X-Service-Account: ${SERVICE_ACCOUNT}" \
+        -H "Content-Type: application/json" \
+        -d "{
+          \"task\": \"auto-assign-unassigned\",
+          \"inputs\": {
+            \"project_id\": ${CI_PROJECT_ID},
+            \"assign_by\": \"expertise\",
+            \"create_subtasks\": true
+          }
+        }" | jq '.'
+  allow_failure: false
+
+# ============================================================================
+# AUTO-LABEL ISSUES
+# ============================================================================
+
+autonomous:auto-label-issues:
+  stage: .pre
+  image: node:22-alpine
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: always
+  variables:
+    AGENT_NAME: issue-lifecycle-manager
+    SERVICE_ACCOUNT: @issue-lifecycle-manager
+    AGENT_TOKEN: ${SERVICE_ACCOUNT_ISSUE_LIFECYCLE_TOKEN}
+  before_script:
+    - apk add --no-cache curl jq
+  script:
+    - |
+      echo "Autonomous Issue Labeling"
+      echo "========================"
+      
+      curl -X POST \
+        "${PLATFORM_AGENTS_API}/agents/${AGENT_NAME}/invoke" \
+        -H "Authorization: Bearer ${AGENT_TOKEN}" \
+        -H "X-Service-Account: ${SERVICE_ACCOUNT}" \
+        -H "Content-Type: application/json" \
+        -d "{
+          \"task\": \"auto-label-all\",
+          \"inputs\": {
+            \"project_id\": ${CI_PROJECT_ID},
+            \"label_by\": \"content_analysis\",
+            \"update_existing\": true
+          }
+        }" | jq '.'
+  allow_failure: false
+
+# ============================================================================
+# AUTO-CLOSE RESOLVED ISSUES
+# ============================================================================
+
+autonomous:close-resolved-issues:
+  stage: .post
+  image: node:22-alpine
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: always
+  variables:
+    AGENT_NAME: issue-lifecycle-manager
+    SERVICE_ACCOUNT: @issue-lifecycle-manager
+    AGENT_TOKEN: ${SERVICE_ACCOUNT_ISSUE_LIFECYCLE_TOKEN}
+  before_script:
+    - apk add --no-cache curl jq
+  script:
+    - |
+      echo "Autonomous Issue Resolution"
+      echo "=========================="
+      
+      curl -X POST \
+        "${PLATFORM_AGENTS_API}/agents/${AGENT_NAME}/invoke" \
+        -H "Authorization: Bearer ${AGENT_TOKEN}" \
+        -H "X-Service-Account: ${SERVICE_ACCOUNT}" \
+        -H "Content-Type: application/json" \
+        -d "{
+          \"task\": \"close-resolved\",
+          \"inputs\": {
+            \"project_id\": ${CI_PROJECT_ID},
+            \"check_mrs\": true,
+            \"check_commits\": true,
+            \"auto_close\": true
+          }
+        }" | jq '.'
+  allow_failure: true
