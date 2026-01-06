@@ -59,6 +59,7 @@ include:
   - local: '.gitlab/ci/autonomous-setup.yml'  # Autonomous framework setup
   - local: '.gitlab/ci/autonomous-activation.yml'  # One-time activation
   - local: '.gitlab/ci/auto-merge-mr-697.yml'  # Auto-merge MR #697
+  - local: '.gitlab/ci/enhanced-orchestration.yml'  # Enhanced agent orchestration with A2A, analytics, routing
 
 # Override SAST template jobs - run independently without blocking
 semgrep-sast:
