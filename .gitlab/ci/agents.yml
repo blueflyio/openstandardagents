@@ -283,7 +283,7 @@ agent:issue-triage:
         exit 0
       fi
 
-      echo "🏷️  Issue Triage Agent Starting..."
+      echo "[TAG]  Issue Triage Agent Starting..."
       export GITLAB_TOKEN="${AGENT_SERVICE_TOKEN}"
 
       MANIFEST_PATH=".gitlab/agents/issue-triage/manifest.ossa.yaml"

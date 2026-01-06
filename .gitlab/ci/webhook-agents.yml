@@ -501,7 +501,7 @@ manual:triage-issue:
     - npm run build --silent
   script:
     - |
-      echo "🏷️  Manual Issue Triage"
+      echo "[TAG]  Manual Issue Triage"
       echo ""
       echo "Project ID: ${MANUAL_PROJECT_ID:-$CI_PROJECT_ID}"
       echo "Issue IID: ${MANUAL_ISSUE_IID:-not specified}"

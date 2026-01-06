@@ -30,7 +30,7 @@ function updateAgentManifest(filePath: string): boolean {
 
     // Skip if already v0.3.0
     if (manifest.apiVersion === 'ossa/v0.3.0') {
-      console.log(`  ⏭️  Already v0.3.0: ${filePath}`);
+      console.log(`  [SKIP]  Already v0.3.0: ${filePath}`);
       return false;
     }
 
@@ -163,7 +163,7 @@ function main() {
   
   console.log('\n[STATS] Summary:');
   console.log(`  [PASS] Updated: ${updated}`);
-  console.log(`  ⏭️  Skipped: ${skipped}`);
+  console.log(`  [SKIP]  Skipped: ${skipped}`);
   console.log(`  [FAIL] Errors: ${errors}`);
   console.log('\n✨ All agents updated to v0.3.0!');
 }

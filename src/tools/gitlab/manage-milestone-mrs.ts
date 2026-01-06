@@ -130,7 +130,7 @@ async function rebaseMR(mrId: number) {
 }
 
 async function assignMilestone(mrId: number, milestone: string) {
-  console.log(`\n🏷️  Assigning MR !${mrId} to milestone ${milestone}...\n`);
+  console.log(`\n[TAG]  Assigning MR !${mrId} to milestone ${milestone}...\n`);
 
   try {
     // Get milestone ID
