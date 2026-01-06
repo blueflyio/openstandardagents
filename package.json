@@ -59,14 +59,7 @@
     "templates/",
     "README.md",
     "LICENSE",
-    "CHANGELOG.md",
-    ".env.local",
-    ".devfile.yaml",
-    ".wiki-config.json",
-    ".gitlab-ci-trigger",
-    "junit.xml",
-    "llms-ctx-full.txt",
-    "llms-ctx.txt"
+    "CHANGELOG.md"
   ],
   "publishConfig": {
     "access": "public",
@@ -155,9 +148,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.0",
     "@aws-sdk/client-bedrock-runtime": "^3.955.0",
-    "@gitbeaker/node": "^35.8.1",
     "@google/generative-ai": "^0.21.0",
-    "@octokit/rest": "^20.0.0",
     "@qdrant/js-client-rest": "^1.9.0",
     "ajv": "^8.12.0",
     "ajv-formats": "^3.0.1",
@@ -174,6 +165,7 @@
     "zod": "^4.1.11"
   },
   "devDependencies": {
+    "@gitbeaker/node": "^35.8.1",
     "@gitbeaker/rest": "^43.8.0",
     "@jest/globals": "^29.7.0",
     "@octokit/rest": "^22.0.1",
