@@ -6,8 +6,8 @@
  * Uses AJV to validate against the OSSA OpenAPI extensions JSON Schema.
  *
  * Usage:
- *   npx tsx scripts/validate-openapi-extensions.ts <file1.yaml> [file2.yaml] ...
- *   npx tsx scripts/validate-openapi-extensions.ts openapi/*.yaml
+ *   npx tsx src/tools/validation/validate-openapi-extensions.ts <file1.yaml> [file2.yaml] ...
+ *   npx tsx src/tools/validation/validate-openapi-extensions.ts openapi/*.yaml
  *
  * Exit codes:
  *   0 - All files valid
@@ -486,10 +486,10 @@ function main(): void {
     console.log(chalk.blue('OSSA OpenAPI Extensions Validator\n'));
     console.log('Usage:');
     console.log(
-      '  npx tsx scripts/validate-openapi-extensions.ts <file1.yaml> [file2.yaml] ...'
+      '  npx tsx src/tools/validation/validate-openapi-extensions.ts <file1.yaml> [file2.yaml] ...'
     );
     console.log(
-      '  npx tsx scripts/validate-openapi-extensions.ts openapi/*.yaml\n'
+      '  npx tsx src/tools/validation/validate-openapi-extensions.ts openapi/*.yaml\n'
     );
     console.log('Options:');
     console.log('  --help, -h     Show this help message');
@@ -503,10 +503,10 @@ function main(): void {
     console.log('  2 - Runtime error\n');
     console.log('Examples:');
     console.log(
-      '  npx tsx scripts/validate-openapi-extensions.ts openapi/agent-crud.yaml'
+      '  npx tsx src/tools/validation/validate-openapi-extensions.ts openapi/agent-crud.yaml'
     );
     console.log(
-      '  find openapi -name "*.yaml" | xargs npx tsx scripts/validate-openapi-extensions.ts'
+      '  find openapi -name "*.yaml" | xargs npx tsx src/tools/validation/validate-openapi-extensions.ts'
     );
     process.exit(0);
   }

@@ -6,7 +6,7 @@ import { resolve } from 'path';
 const { version } = JSON.parse(readFileSync('package.json', 'utf-8'));
 
 // Website moved to openstandardagents.org repository
-// Version is read from package.json at runtime via scripts/lib/version.ts
+// Version is read from package.json at runtime via src/tools/lib/version.ts
 // No hardcoded version files to sync
 const files = [];
 

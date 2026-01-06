@@ -16,7 +16,7 @@
  * - CHANGELOG.md unreleased section
  *
  * Usage:
- *   npx tsx scripts/sync-versions.ts [--check|--fix]
+ *   npx tsx src/tools/version/sync-versions.ts [--check|--fix]
  *
  *   --check: Validate version consistency (CI mode)
  *   --fix:   Update all version references
