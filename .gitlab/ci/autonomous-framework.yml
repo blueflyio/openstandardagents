@@ -21,7 +21,7 @@ autonomous:issue-triage:
     - if: $CI_PIPELINE_SOURCE == "webhook" && $CI_WEBHOOK_EVENT == "issue"
   variables:
     AGENT_NAME: issue-lifecycle-manager
-    SERVICE_ACCOUNT: @issue-lifecycle-manager
+    SERVICE_ACCOUNT: "@issue-lifecycle-manager"
     AGENT_TOKEN: ${SERVICE_ACCOUNT_ISSUE_LIFECYCLE_TOKEN}
   before_script:
     - apk add --no-cache curl jq
@@ -60,7 +60,7 @@ autonomous:code-quality:
       when: on_success
   variables:
     AGENT_NAME: code-quality-reviewer
-    SERVICE_ACCOUNT: @code-quality-reviewer
+    SERVICE_ACCOUNT: "@c"ode-quality-reviewer
     AGENT_TOKEN: ${SERVICE_ACCOUNT_CODE_QUALITY_TOKEN}
   before_script:
     - apk add --no-cache curl jq
@@ -107,7 +107,7 @@ autonomous:mr-review:
       when: on_success
   variables:
     AGENT_NAME: mr-reviewer
-    SERVICE_ACCOUNT: @mr-reviewer
+    SERVICE_ACCOUNT: "@m"r-reviewer
     AGENT_TOKEN: ${SERVICE_ACCOUNT_MR_REVIEWER_TOKEN}
   before_script:
     - apk add --no-cache curl jq
@@ -160,7 +160,7 @@ autonomous:pipeline-remediation:
       when: on_failure
   variables:
     AGENT_NAME: pipeline-remediation
-    SERVICE_ACCOUNT: @pipeline-remediation
+    SERVICE_ACCOUNT: "@p"ipeline-remediation
     AGENT_TOKEN: ${SERVICE_ACCOUNT_PIPELINE_REMEDIATION_TOKEN}
   before_script:
     - apk add --no-cache curl jq
@@ -209,7 +209,7 @@ autonomous:documentation-sync:
         - "website/**/*"
   variables:
     AGENT_NAME: documentation-aggregator
-    SERVICE_ACCOUNT: @documentation-aggregator
+    SERVICE_ACCOUNT: "@d"ocumentation-aggregator
     AGENT_TOKEN: ${SERVICE_ACCOUNT_DOCUMENTATION_TOKEN}
   before_script:
     - apk add --no-cache curl jq git
@@ -248,7 +248,7 @@ autonomous:version-management:
       when: on_success
   variables:
     AGENT_NAME: release-coordinator
-    SERVICE_ACCOUNT: @release-coordinator
+    SERVICE_ACCOUNT: "@r"elease-coordinator
     AGENT_TOKEN: ${SERVICE_ACCOUNT_RELEASE_COORDINATOR_TOKEN}
   before_script:
     - apk add --no-cache curl jq
