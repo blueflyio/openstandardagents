@@ -64,7 +64,7 @@ function detectOssaVersion(): string | null {
   // Priority 3: CI_COMMIT_TAG
   const commitTag = process.env.CI_COMMIT_TAG;
   if (commitTag && isValidVersion(commitTag)) {
-    console.log(`🏷️  Found version in CI_COMMIT_TAG: ${commitTag}`);
+    console.log(`[TAG]  Found version in CI_COMMIT_TAG: ${commitTag}`);
     return normalizeVersion(commitTag);
   }
 

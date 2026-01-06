@@ -206,7 +206,7 @@ async function versionSync(config: VersionSyncConfig): Promise<SyncResult[]> {
     if (result.matches > 0) {
       results.push(result);
 
-      const status = result.updated ? '[PASS]' : '⏸️';
+      const status = result.updated ? '[PASS]' : '[PAUSE]';
       const relativePath = path.relative(config.rootDir, result.file);
       console.log(`   ${status} ${relativePath} (${result.matches} matches)`);
     }

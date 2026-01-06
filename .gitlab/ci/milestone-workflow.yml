@@ -190,7 +190,7 @@ auto:label-mr:
     - |
       #!/bin/sh
 
-      echo "🏷️ AUTO-LABELING MR"
+      echo "[TAG] AUTO-LABELING MR"
       echo "==================="
 
       # Determine label from branch name
