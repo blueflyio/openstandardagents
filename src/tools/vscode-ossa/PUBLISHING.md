@@ -32,7 +32,7 @@ This guide explains how to publish the OSSA Language Support extension to the VS
 
 ### 1. Install Dependencies
 ```bash
-cd /Users/flux423/Sites/LLM/openstandardagents/tools/vscode-ossa
+cd /Users/flux423/Sites/LLM/openstandardagents/src/tools/vscode-ossa
 npm install
 ```
 
@@ -222,7 +222,7 @@ publish-vscode-extension:
   only:
     - tags
   script:
-    - cd tools/vscode-ossa
+    - cd src/tools/vscode-ossa
     - npm install
     - npm run compile
     - vsce publish -p $VSCE_PAT

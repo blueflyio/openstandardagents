@@ -4,7 +4,7 @@
 
 This is the official Visual Studio Code extension for **OSSA (Open Standard for Scalable AI Agents)**. Just as OpenAPI has editor support for REST API definitions, OSSA now has first-class support in VS Code for AI agent definitions.
 
-**Location**: `/Users/flux423/Sites/LLM/openstandardagents/tools/vscode-ossa`
+**Location**: `/Users/flux423/Sites/LLM/openstandardagents/src/tools/vscode-ossa`
 
 ## Project Status
 
@@ -181,7 +181,7 @@ User: Fill in TODOs and save
 
 2. **Install & Test**
    ```bash
-   cd /Users/flux423/Sites/LLM/openstandardagents/tools/vscode-ossa
+   cd /Users/flux423/Sites/LLM/openstandardagents/src/tools/vscode-ossa
    npm install
    npm run compile
    code .  # Open in VS Code
@@ -296,7 +296,7 @@ User: Fill in TODOs and save
 ## Files Summary
 
 ```
-tools/vscode-ossa/
+src/tools/vscode-ossa/
 ├── 📦 package.json              (5,104 bytes) Extension manifest
 ├── 🔧 tsconfig.json             (427 bytes)   TypeScript config
 ├── 🎨 language-configuration.json (664 bytes) Language settings

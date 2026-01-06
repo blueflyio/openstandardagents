@@ -61,7 +61,7 @@ Customize behavior in VS Code settings:
 1. Clone the repository:
    ```bash
    git clone https://gitlab.com/blueflyio/ossa/openstandardagents.git
-   cd openstandardagents/tools/vscode-ossa
+   cd openstandardagents/src/tools/vscode-ossa
    ```
 
 2. Install dependencies:
