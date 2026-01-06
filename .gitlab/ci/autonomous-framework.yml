@@ -60,7 +60,7 @@ autonomous:code-quality:
       when: on_success
   variables:
     AGENT_NAME: code-quality-reviewer
-    SERVICE_ACCOUNT: "@c"ode-quality-reviewer
+    SERVICE_ACCOUNT: "@code-quality-reviewer"
     AGENT_TOKEN: ${SERVICE_ACCOUNT_CODE_QUALITY_TOKEN}
   before_script:
     - apk add --no-cache curl jq
@@ -107,7 +107,7 @@ autonomous:mr-review:
       when: on_success
   variables:
     AGENT_NAME: mr-reviewer
-    SERVICE_ACCOUNT: "@m"r-reviewer
+    SERVICE_ACCOUNT: "@mr-reviewer"
     AGENT_TOKEN: ${SERVICE_ACCOUNT_MR_REVIEWER_TOKEN}
   before_script:
     - apk add --no-cache curl jq
