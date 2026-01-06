@@ -5,7 +5,7 @@
  * Generated from: /Users/flux423/Sites/LLM/OssA/openstandardagents/openapi/github-sync.yaml
  * OSSA Version: 0.3.3
  * API Version: ossa/v0.3.3
- * Generated on: 2026-01-06T18:08:30.933Z
+ * Generated on: 2026-01-06T18:10:13.437Z
  */
 
 import { z } from 'zod';

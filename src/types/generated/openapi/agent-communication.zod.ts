@@ -5,7 +5,7 @@
  * Generated from: /Users/flux423/Sites/LLM/OssA/openstandardagents/openapi/agent-communication.yaml
  * OSSA Version: 0.3.3
  * API Version: ossa/v0.3.3
- * Generated on: 2026-01-06T18:08:30.967Z
+ * Generated on: 2026-01-06T18:10:13.471Z
  */
 
 import { z } from 'zod';
@@ -14,19 +14,6 @@ import * as CommonSchemas from './common-schemas.zod';
 // ============================================================================
 // Component Schemas
 // ============================================================================
-
-export const sendMessageRequestSchema = z.object({
-  to: z.string().url().regex(/^agent:\/\/[a-z0-9]([-a-z0-9]*[a-z0-9])?$/),
-  from: z.string().url().regex(/^agent:\/\/[a-z0-9]([-a-z0-9]*[a-z0-9])?$/),
-  type: messageTypeSchema,
-  payload: messagePayloadSchema,
-  correlationId: z.string().optional(),
-  timeout: z.number().int().min(1000).max(300000).optional(),
-  priority: z.enum(["low", "normal", "high", "critical"]).optional(),
-  webhookUrl: z.string().url().optional()
-});
-
-export type SendMessageRequest = z.infer<typeof sendMessageRequestSchema>;
 
 /**
  * Standard message types for A2A communication:
@@ -53,6 +40,19 @@ export const messagePayloadSchema = z.record(z.string(), z.unknown());
 
 export type MessagePayload = z.infer<typeof messagePayloadSchema>;
 
+export const sendMessageRequestSchema = z.object({
+  to: z.string().url().regex(/^agent:\/\/[a-z0-9]([-a-z0-9]*[a-z0-9])?$/),
+  from: z.string().url().regex(/^agent:\/\/[a-z0-9]([-a-z0-9]*[a-z0-9])?$/),
+  type: messageTypeSchema,
+  payload: messagePayloadSchema,
+  correlationId: z.string().optional(),
+  timeout: z.number().int().min(1000).max(300000).optional(),
+  priority: z.enum(["low", "normal", "high", "critical"]).optional(),
+  webhookUrl: z.string().url().optional()
+});
+
+export type SendMessageRequest = z.infer<typeof sendMessageRequestSchema>;
+
 export const messageSchema = z.object({
   id: z.string().uuid(),
   to: z.string().url(),
@@ -77,6 +77,20 @@ export const messageResponseSchema = z.object({
 });
 
 export type MessageResponse = z.infer<typeof messageResponseSchema>;
+
+export const retentionPolicySchema = z.object({
+  retentionDays: z.number().int().min(1).max(365).optional(),
+  maxMessages: z.number().int().min(100).optional()
+});
+
+export type RetentionPolicy = z.infer<typeof retentionPolicySchema>;
+
+export const accessControlSchema = z.object({
+  public: z.boolean().optional(),
+  allowedAgents: z.array(z.string()).optional()
+});
+
+export type AccessControl = z.infer<typeof accessControlSchema>;
 
 export const createChannelRequestSchema = z.object({
   name: z.string().regex(/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/),
@@ -112,19 +126,12 @@ export const channelsListSchema = z.object({
 
 export type ChannelsList = z.infer<typeof channelsListSchema>;
 
-export const retentionPolicySchema = z.object({
-  retentionDays: z.number().int().min(1).max(365).optional(),
-  maxMessages: z.number().int().min(100).optional()
+export const subscriptionFilterSchema = z.object({
+  messageTypes: z.array(messageTypeSchema).optional(),
+  agentFilter: z.string().optional()
 });
 
-export type RetentionPolicy = z.infer<typeof retentionPolicySchema>;
-
-export const accessControlSchema = z.object({
-  public: z.boolean().optional(),
-  allowedAgents: z.array(z.string()).optional()
-});
-
-export type AccessControl = z.infer<typeof accessControlSchema>;
+export type SubscriptionFilter = z.infer<typeof subscriptionFilterSchema>;
 
 export const subscribeRequestSchema = z.object({
   agentId: z.string().url().regex(/^agent:\/\/[a-z0-9]([-a-z0-9]*[a-z0-9])?$/),
@@ -134,13 +141,6 @@ export const subscribeRequestSchema = z.object({
 });
 
 export type SubscribeRequest = z.infer<typeof subscribeRequestSchema>;
-
-export const subscriptionFilterSchema = z.object({
-  messageTypes: z.array(messageTypeSchema).optional(),
-  agentFilter: z.string().optional()
-});
-
-export type SubscriptionFilter = z.infer<typeof subscriptionFilterSchema>;
 
 export const subscriptionSchema = z.object({
   id: z.string().uuid(),

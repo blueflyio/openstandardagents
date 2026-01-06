@@ -116,26 +116,35 @@ function generateZodFile(schemas, title, version, apiVersion, sourceFile) {
     refs.set(name, toSchemaName(name));
   }
 
-  // Generate schemas
+  // Generate schemas in dependency order (fix circular references)
   lines.push('// ============================================================================');
   lines.push('// Component Schemas');
   lines.push('// ============================================================================');
   lines.push('');
 
+  // First pass: collect all schema definitions
+  const schemaDefs = new Map();
   for (const [name, schema] of Object.entries(schemas)) {
     const schemaName = toSchemaName(name);
-    const typeName = name;
+    const zodSchema = toZodSchema(schema, name, refs, new Set());
+    schemaDefs.set(name, { schemaName, typeName: name, zodSchema, description: schema.description });
+  }
 
-    if (schema.description) {
+  // Second pass: generate in order (primitives first, then complex)
+  const ordered = orderSchemas(schemas, refs);
+  for (const name of ordered) {
+    const def = schemaDefs.get(name);
+    if (!def) continue;
+
+    if (def.description) {
       lines.push('/**');
-      lines.push(` * ${schema.description.split('\n').join('\n * ')}`);
+      lines.push(` * ${def.description.split('\n').join('\n * ')}`);
       lines.push(' */');
     }
 
-    const zodSchema = toZodSchema(schema, name, refs, new Set());
-    lines.push(`export const ${schemaName} = ${zodSchema};`);
+    lines.push(`export const ${def.schemaName} = ${def.zodSchema};`);
     lines.push('');
-    lines.push(`export type ${typeName} = z.infer<typeof ${schemaName}>;`);
+    lines.push(`export type ${def.typeName} = z.infer<typeof ${def.schemaName}>;`);
     lines.push('');
   }
 
@@ -306,6 +315,49 @@ function toSchemaName(name) {
 
 function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+function orderSchemas(schemas, refs) {
+  // Topological sort: primitives first, then dependencies
+  const visited = new Set();
+  const result = [];
+  
+  function visit(name) {
+    if (visited.has(name)) return;
+    visited.add(name);
+    
+    const schema = schemas[name];
+    if (!schema) return;
+    
+    // If schema has $ref, visit dependencies first
+    if (schema.$ref) {
+      const refName = schema.$ref.replace('#/components/schemas/', '');
+      if (schemas[refName] && !visited.has(refName)) {
+        visit(refName);
+      }
+    }
+    
+    // If schema has properties, visit property schemas first
+    if (schema.properties) {
+      for (const prop of Object.values(schema.properties)) {
+        if (prop.$ref) {
+          const refName = prop.$ref.replace('#/components/schemas/', '');
+          if (schemas[refName] && !visited.has(refName)) {
+            visit(refName);
+          }
+        }
+      }
+    }
+    
+    result.push(name);
+  }
+  
+  // Visit all schemas
+  for (const name of Object.keys(schemas)) {
+    visit(name);
+  }
+  
+  return result;
 }
 
 generate().catch(console.error);

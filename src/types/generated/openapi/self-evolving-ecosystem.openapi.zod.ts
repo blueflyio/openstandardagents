@@ -5,7 +5,7 @@
  * Generated from: /Users/flux423/Sites/LLM/OssA/openstandardagents/openapi/reference-implementations/self-evolving-ecosystem.openapi.yaml
  * OSSA Version: 0.3.3
  * API Version: ossa/v0.3.3
- * Generated on: 2026-01-06T18:08:30.980Z
+ * Generated on: 2026-01-06T18:10:13.483Z
  */
 
 import { z } from 'zod';
@@ -14,6 +14,58 @@ import * as CommonSchemas from './common-schemas.zod';
 // ============================================================================
 // Component Schemas
 // ============================================================================
+
+/**
+ * Hierarchical coordination between agents
+ */
+export const coordinationMatrixSchema = z.object({
+  orchestrators: z.array(z.string().uuid()).optional(),
+  workers: z.array(z.string().uuid()).optional(),
+  specialists: z.array(z.string().uuid()).optional(),
+  dependencies: z.array(agentDependencySchema).optional(),
+  communicationProtocol: z.enum(["event_driven", "request_response", "streaming", "pub_sub"]).optional(),
+  conflictResolution: z.enum(["consensus", "priority_based", "ai_mediation", "escalation"]).optional()
+});
+
+export type CoordinationMatrix = z.infer<typeof coordinationMatrixSchema>;
+
+/**
+ * Current state of ecosystem self-evolution
+ */
+export const evolutionStateSchema = z.object({
+  generation: z.number().int().optional(),
+  fitnessScore: z.number().min(0).max(100).optional(),
+  adaptationHistory: z.array(adaptationEventSchema).optional(),
+  currentOptimizations: z.array(z.string()).optional(),
+  learningRate: z.number().optional(),
+  mutationProbability: z.number().min(0).max(1).optional()
+});
+
+export type EvolutionState = z.infer<typeof evolutionStateSchema>;
+
+export const learningMetricsSchema = z.object({
+  accuracy: z.number().min(0).max(1).optional(),
+  loss: z.number().optional(),
+  f1Score: z.number().optional(),
+  precision: z.number().optional(),
+  recall: z.number().optional(),
+  trainingRounds: z.number().int().optional(),
+  convergenceRate: z.number().optional(),
+  privacyBudgetUsed: z.number().optional()
+});
+
+export type LearningMetrics = z.infer<typeof learningMetricsSchema>;
+
+export const performanceMetricsSchema = z.object({
+  ecosystemHealth: z.number().min(0).max(100).optional(),
+  agentCoordination: z.number().min(0).max(1).optional(),
+  learningEfficiency: z.number().optional(),
+  adaptationSpeed: z.number().optional(),
+  costEfficiency: z.number().optional(),
+  userSatisfaction: z.number().min(0).max(5).optional()
+});
+
+export type PerformanceMetrics = z.infer<typeof performanceMetricsSchema>;
 
 export const ecosystemSchema = z.object({
   id: z.string().uuid(),
@@ -30,6 +82,28 @@ export const ecosystemSchema = z.object({
 
 export type Ecosystem = z.infer<typeof ecosystemSchema>;
 
+export const agentPerformanceSchema = z.object({
+  responseTime: z.number().optional(),
+  throughput: z.number().optional(),
+  accuracy: z.number().min(0).max(1).optional(),
+  errorRate: z.number().optional(),
+  resourceUtilization: z.number().min(0).max(1).optional(),
+  learningVelocity: z.number().optional()
+});
+
+export type AgentPerformance = z.infer<typeof agentPerformanceSchema>;
+
+export const agentLearningSchema = z.object({
+  modelVersion: z.string().optional(),
+  trainingRounds: z.number().int().optional(),
+  accuracy: z.number().optional(),
+  lastUpdated: z.string().datetime().optional(),
+  personalizationLevel: z.number().min(0).max(1).optional(),
+  knowledgeGraph: z.record(z.string(), z.unknown()).optional()
+});
+
+export type AgentLearning = z.infer<typeof agentLearningSchema>;
+
 export const agentSchema = z.object({
   id: z.string().uuid(),
   name: z.string(),
@@ -43,20 +117,6 @@ export const agentSchema = z.object({
 });
 
 export type Agent = z.infer<typeof agentSchema>;
-
-/**
- * Hierarchical coordination between agents
- */
-export const coordinationMatrixSchema = z.object({
-  orchestrators: z.array(z.string().uuid()).optional(),
-  workers: z.array(z.string().uuid()).optional(),
-  specialists: z.array(z.string().uuid()).optional(),
-  dependencies: z.array(agentDependencySchema).optional(),
-  communicationProtocol: z.enum(["event_driven", "request_response", "streaming", "pub_sub"]).optional(),
-  conflictResolution: z.enum(["consensus", "priority_based", "ai_mediation", "escalation"]).optional()
-});
-
-export type CoordinationMatrix = z.infer<typeof coordinationMatrixSchema>;
 
 export const agentDependencySchema = z.object({
   from: z.string().uuid().optional(),
@@ -89,19 +149,6 @@ export const federatedLearningSessionSchema = z.object({
 
 export type FederatedLearningSession = z.infer<typeof federatedLearningSessionSchema>;
 
-export const learningMetricsSchema = z.object({
-  accuracy: z.number().min(0).max(1).optional(),
-  loss: z.number().optional(),
-  f1Score: z.number().optional(),
-  precision: z.number().optional(),
-  recall: z.number().optional(),
-  trainingRounds: z.number().int().optional(),
-  convergenceRate: z.number().optional(),
-  privacyBudgetUsed: z.number().optional()
-});
-
-export type LearningMetrics = z.infer<typeof learningMetricsSchema>;
-
 /**
  * Real-time flow state optimization based on Csikszentmihalyi research
  */
@@ -116,17 +163,6 @@ export const flowStateOptimizationSchema = z.object({
 });
 
 export type FlowStateOptimization = z.infer<typeof flowStateOptimizationSchema>;
-
-export const gamificationEventSchema = z.object({
-  eventType: z.enum(["achievement_unlocked", "level_up", "badge_earned", "challenge_completed", "leaderboard_rank_change", "skill_mastered", "flow_state_achieved"]),
-  developerId: z.string().uuid(),
-  achievement: achievementSchema.optional(),
-  context: z.record(z.string(), z.unknown()).optional(),
-  timestamp: z.string().datetime(),
-  impact: motivationImpactSchema.optional()
-});
-
-export type GamificationEvent = z.infer<typeof gamificationEventSchema>;
 
 export const achievementSchema = z.object({
   id: z.string().optional(),
@@ -153,21 +189,16 @@ export const motivationImpactSchema = z.object({
 
 export type MotivationImpact = z.infer<typeof motivationImpactSchema>;
 
-/**
- * ResearchKit cognitive load measurement
- */
-export const cognitiveLoadStudySchema = z.object({
-  studyId: z.string().uuid(),
-  participantId: z.string().uuid(),
-  sessionId: z.string().uuid(),
-  biometricData: biometricDataSchema.optional(),
-  behavioralData: behavioralDataSchema.optional(),
-  nasaTLX: nASATLXSchema.optional(),
-  cognitiveLoad: cognitiveLoadSchema.optional(),
-  consent: z.boolean().optional()
+export const gamificationEventSchema = z.object({
+  eventType: z.enum(["achievement_unlocked", "level_up", "badge_earned", "challenge_completed", "leaderboard_rank_change", "skill_mastered", "flow_state_achieved"]),
+  developerId: z.string().uuid(),
+  achievement: achievementSchema.optional(),
+  context: z.record(z.string(), z.unknown()).optional(),
+  timestamp: z.string().datetime(),
+  impact: motivationImpactSchema.optional()
 });
 
-export type CognitiveLoadStudy = z.infer<typeof cognitiveLoadStudySchema>;
+export type GamificationEvent = z.infer<typeof gamificationEventSchema>;
 
 export const biometricDataSchema = z.object({
   heartRateVariability: z.number().optional(),
@@ -220,18 +251,21 @@ export const cognitiveLoadSchema = z.object({
 
 export type CognitiveLoad = z.infer<typeof cognitiveLoadSchema>;
 
-export const dynamicPricingSchema = z.object({
-  tier: z.enum(["freemium", "developer", "team", "enterprise"]),
-  basePrice: z.number(),
-  optimizedPrice: z.number(),
-  marketConditions: marketConditionsSchema.optional(),
-  customerProfile: customerProfileSchema.optional(),
-  willingnessToPay: z.number().optional(),
-  conversionProbability: z.number().min(0).max(1).optional(),
-  revenueImpact: z.number().optional()
+/**
+ * ResearchKit cognitive load measurement
+ */
+export const cognitiveLoadStudySchema = z.object({
+  studyId: z.string().uuid(),
+  participantId: z.string().uuid(),
+  sessionId: z.string().uuid(),
+  biometricData: biometricDataSchema.optional(),
+  behavioralData: behavioralDataSchema.optional(),
+  nasaTLX: nASATLXSchema.optional(),
+  cognitiveLoad: cognitiveLoadSchema.optional(),
+  consent: z.boolean().optional()
 });
 
-export type DynamicPricing = z.infer<typeof dynamicPricingSchema>;
+export type CognitiveLoadStudy = z.infer<typeof cognitiveLoadStudySchema>;
 
 export const marketConditionsSchema = z.object({
   competitorPricing: z.record(z.string(), z.unknown()).optional(),
@@ -252,19 +286,18 @@ export const customerProfileSchema = z.object({
 
 export type CustomerProfile = z.infer<typeof customerProfileSchema>;
 
-/**
- * Current state of ecosystem self-evolution
- */
-export const evolutionStateSchema = z.object({
-  generation: z.number().int().optional(),
-  fitnessScore: z.number().min(0).max(100).optional(),
-  adaptationHistory: z.array(adaptationEventSchema).optional(),
-  currentOptimizations: z.array(z.string()).optional(),
-  learningRate: z.number().optional(),
-  mutationProbability: z.number().min(0).max(1).optional()
+export const dynamicPricingSchema = z.object({
+  tier: z.enum(["freemium", "developer", "team", "enterprise"]),
+  basePrice: z.number(),
+  optimizedPrice: z.number(),
+  marketConditions: marketConditionsSchema.optional(),
+  customerProfile: customerProfileSchema.optional(),
+  willingnessToPay: z.number().optional(),
+  conversionProbability: z.number().min(0).max(1).optional(),
+  revenueImpact: z.number().optional()
 });
 
-export type EvolutionState = z.infer<typeof evolutionStateSchema>;
+export type DynamicPricing = z.infer<typeof dynamicPricingSchema>;
 
 export const adaptationEventSchema = z.object({
   timestamp: z.string().datetime().optional(),
@@ -275,39 +308,6 @@ export const adaptationEventSchema = z.object({
 });
 
 export type AdaptationEvent = z.infer<typeof adaptationEventSchema>;
-
-export const agentPerformanceSchema = z.object({
-  responseTime: z.number().optional(),
-  throughput: z.number().optional(),
-  accuracy: z.number().min(0).max(1).optional(),
-  errorRate: z.number().optional(),
-  resourceUtilization: z.number().min(0).max(1).optional(),
-  learningVelocity: z.number().optional()
-});
-
-export type AgentPerformance = z.infer<typeof agentPerformanceSchema>;
-
-export const agentLearningSchema = z.object({
-  modelVersion: z.string().optional(),
-  trainingRounds: z.number().int().optional(),
-  accuracy: z.number().optional(),
-  lastUpdated: z.string().datetime().optional(),
-  personalizationLevel: z.number().min(0).max(1).optional(),
-  knowledgeGraph: z.record(z.string(), z.unknown()).optional()
-});
-
-export type AgentLearning = z.infer<typeof agentLearningSchema>;
-
-export const performanceMetricsSchema = z.object({
-  ecosystemHealth: z.number().min(0).max(100).optional(),
-  agentCoordination: z.number().min(0).max(1).optional(),
-  learningEfficiency: z.number().optional(),
-  adaptationSpeed: z.number().optional(),
-  costEfficiency: z.number().optional(),
-  userSatisfaction: z.number().min(0).max(5).optional()
-});
-
-export type PerformanceMetrics = z.infer<typeof performanceMetricsSchema>;
 
 export const createEcosystemRequestSchema = z.object({
   name: z.string(),

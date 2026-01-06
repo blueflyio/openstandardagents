@@ -5,7 +5,7 @@
  * Generated from: shared schemas
  * OSSA Version: 0.3.3
  * API Version: ossa/v0.3.3
- * Generated on: 2026-01-06T18:08:30.926Z
+ * Generated on: 2026-01-06T18:10:13.431Z
  */
 
 import { z } from 'zod';
@@ -126,15 +126,6 @@ export const executionErrorSchema = z.object({
 
 export type ExecutionError = z.infer<typeof executionErrorSchema>;
 
-export const agentManifestSchema = z.object({
-  apiVersion: z.literal("ossa/v0.3.3"),
-  kind: z.literal("AgentManifest"),
-  metadata: metadataSchema,
-  spec: agentSpecSchema
-});
-
-export type AgentManifest = z.infer<typeof agentManifestSchema>;
-
 export const metadataSchema = z.object({
   name: z.string().regex(/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/),
   version: z.string().regex(/^\d+\.\d+\.\d+(-[a-zA-Z0-9]+)?$/),
@@ -144,6 +135,31 @@ export const metadataSchema = z.object({
 });
 
 export type Metadata = z.infer<typeof metadataSchema>;
+
+/**
+ * Agent type classification
+ */
+export const agentTypeSchema = z.enum(["orchestrator", "worker", "specialist", "critic", "monitor", "gateway"]);
+
+export type AgentType = z.infer<typeof agentTypeSchema>;
+
+export const resourceRequirementsSchema = z.object({
+  cpu: z.string().regex(/^[0-9]+m?$/).optional(),
+  memory: z.string().regex(/^[0-9]+(Mi|Gi)$/).optional(),
+  storage: z.string().regex(/^[0-9]+(Mi|Gi)$/).optional(),
+  gpu: z.string().optional()
+});
+
+export type ResourceRequirements = z.infer<typeof resourceRequirementsSchema>;
+
+export const requirementsSchema = z.object({
+  runtime: z.string().optional(),
+  resources: resourceRequirementsSchema.optional(),
+  dependencies: z.array(z.string()).optional(),
+  environment: z.record(z.string(), z.unknown()).optional()
+});
+
+export type Requirements = z.infer<typeof requirementsSchema>;
 
 export const agentSpecSchema = z.object({
   type: agentTypeSchema,
@@ -156,12 +172,14 @@ export const agentSpecSchema = z.object({
 
 export type AgentSpec = z.infer<typeof agentSpecSchema>;
 
-/**
- * Agent type classification
- */
-export const agentTypeSchema = z.enum(["orchestrator", "worker", "specialist", "critic", "monitor", "gateway"]);
+export const agentManifestSchema = z.object({
+  apiVersion: z.literal("ossa/v0.3.3"),
+  kind: z.literal("AgentManifest"),
+  metadata: metadataSchema,
+  spec: agentSpecSchema
+});
 
-export type AgentType = z.infer<typeof agentTypeSchema>;
+export type AgentManifest = z.infer<typeof agentManifestSchema>;
 
 /**
  * Current operational status of the agent
@@ -192,35 +210,6 @@ export const interfaceSchema = z.object({
 
 export type Interface = z.infer<typeof interfaceSchema>;
 
-export const requirementsSchema = z.object({
-  runtime: z.string().optional(),
-  resources: resourceRequirementsSchema.optional(),
-  dependencies: z.array(z.string()).optional(),
-  environment: z.record(z.string(), z.unknown()).optional()
-});
-
-export type Requirements = z.infer<typeof requirementsSchema>;
-
-export const resourceRequirementsSchema = z.object({
-  cpu: z.string().regex(/^[0-9]+m?$/).optional(),
-  memory: z.string().regex(/^[0-9]+(Mi|Gi)$/).optional(),
-  storage: z.string().regex(/^[0-9]+(Mi|Gi)$/).optional(),
-  gpu: z.string().optional()
-});
-
-export type ResourceRequirements = z.infer<typeof resourceRequirementsSchema>;
-
-export const agentSchema = z.object({
-  id: z.string().uuid().optional(),
-  manifest: agentManifestSchema.optional(),
-  status: agentStatusSchema.optional(),
-  registration: agentRegistrationSchema.optional(),
-  certification: z.unknown().optional(),
-  metrics: agentMetricsSchema.optional()
-});
-
-export type Agent = z.infer<typeof agentSchema>;
-
 export const agentRegistrationSchema = z.object({
   id: z.string().uuid().optional(),
   agentId: z.string().uuid().optional(),
@@ -241,3 +230,14 @@ export const agentMetricsSchema = z.object({
 });
 
 export type AgentMetrics = z.infer<typeof agentMetricsSchema>;
+
+export const agentSchema = z.object({
+  id: z.string().uuid().optional(),
+  manifest: agentManifestSchema.optional(),
+  status: agentStatusSchema.optional(),
+  registration: agentRegistrationSchema.optional(),
+  certification: z.unknown().optional(),
+  metrics: agentMetricsSchema.optional()
+});
+
+export type Agent = z.infer<typeof agentSchema>;
