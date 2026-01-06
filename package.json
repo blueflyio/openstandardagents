@@ -28,7 +28,9 @@
     "generate:all": "tsx src/cli/index.ts generate all",
     "docs:generate": "tsx src/tools/docs/unified-doc-generator.ts",
     "validate:all": "tsx src/cli/index.ts validate .gitlab/agents/**/*.ossa.yaml examples/**/*.ossa.yaml",
-    "version:sync": "tsx src/tools/version/unified-version-sync.ts"
+    "version:sync": "tsx src/tools/version/unified-version-sync.ts",
+    "config:generate": "tsx src/tools/generators/unified-config-generator.ts",
+    "agent:generate": "tsx src/tools/generators/enhanced-agent-generator.ts"
   },
   "repository": {
     "type": "git",
