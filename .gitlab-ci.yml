@@ -49,6 +49,8 @@ include:
   - local: '.gitlab/ci/openapi-validation.yml'  # OpenAPI & OSSA extensions validation (#176)
   - local: '.gitlab/ci/release-environments.yml'  # Release environment deployments (#376)
   - local: '.gitlab/ci/version-automation-duo.yml'  # GitLab Duo Agent Platform version automation
+  - local: '.gitlab/ci/autonomous-framework.yml'  # Autonomous framework maintenance
+  - local: '.gitlab/ci/webhook-triggers.yml'  # Webhook triggers for autonomous flows
 
 # Override SAST template jobs - run independently without blocking
 semgrep-sast:
