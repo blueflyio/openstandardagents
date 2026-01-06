@@ -24,8 +24,6 @@ duo:version-analysis:
     - if: $CI_MILESTONE_STATE == "closed"
     - when: manual
       allow_failure: true
-    - when: on_success
-      allow_failure: true
   variables:
     AGENT_NAME: version-automation-agent
     AGENT_TASK: detect-version-sources
@@ -169,8 +167,20 @@ duo:multi-file-sync:
       echo "🤖 GitLab Duo Agent: Multi-File Sync"
       echo "===================================="
       
-      source version-bump.env
-      VERSION_SOURCES=$(cat version-sources.txt | jq -s '.')
+      # Load version-bump.env if available
+      if [ -f "version-bump.env" ]; then
+        source version-bump.env
+      else
+        echo "WARNING: version-bump.env not found, using fallback"
+        NEW_VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "0.3.3")
+      fi
+      
+      # Load version sources if available
+      if [ -f "version-sources.txt" ]; then
+        VERSION_SOURCES=$(cat version-sources.txt | jq -s '.')
+      else
+        VERSION_SOURCES="[]"
+      fi
       
       # Invoke Duo Agent for file sync using release-coordinator service account
       RESPONSE=$(curl -s -X POST \
@@ -284,8 +294,14 @@ duo:create-version-mr:
         
         echo "$RESPONSE" | jq '.'
         
-        MR_URL=$(echo "$RESPONSE" | jq -r '.outputs.mr_url')
-        echo "✅ Merge request created: ${MR_URL}"
+        MR_IID=$(echo "$RESPONSE" | jq -r '.iid // .id // empty')
+        if [ -n "$MR_IID" ]; then
+          MR_URL="${CI_PROJECT_URL}/-/merge_requests/${MR_IID}"
+          echo "✅ Merge request created: ${MR_URL}"
+        else
+          echo "⚠️  MR creation response did not include IID or ID"
+          echo "Response: $RESPONSE"
+        fi
       else
         echo "ℹ️  No changes to commit"
       fi
