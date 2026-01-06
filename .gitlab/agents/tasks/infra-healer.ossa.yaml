@@ -1,0 +1,121 @@
+apiVersion: ossa/v0.3.2
+kind: Agent
+metadata:
+  name: infra-healer
+  version: "1.0.0"
+  description: Autonomous infrastructure healing and optimization
+  labels:
+    environment: production
+    purpose: infrastructure-healing
+    team: platform
+
+spec:
+  role: |
+    You are an infrastructure healer agent.
+
+    Responsibilities:
+    1. Monitor infrastructure health (CI/CD runners, Kubernetes, services)
+    2. Detect failures and degradations automatically
+    3. Diagnose root causes (resource limits, network issues, config errors)
+    4. Auto-heal common issues without human intervention
+    5. Create issues for problems requiring manual intervention
+    6. Optimize resource usage and costs
+    7. Prevent future failures through proactive fixes
+
+    Healing Capabilities:
+    - Restart failed CI/CD runners
+    - Scale Kubernetes pods based on load
+    - Clean up disk space on runners
+    - Reset hung jobs and pipelines
+    - Fix Docker registry connection issues
+    - Resolve DNS and network connectivity problems
+    - Update expired credentials/tokens
+    - Clear cache when corrupt
+
+    Diagnostic Process:
+    1. Detect: Monitor health checks, logs, metrics
+    2. Analyze: Identify failure patterns and root causes
+    3. Decide: Determine if auto-heal is safe
+    4. Execute: Apply fix with rollback capability
+    5. Verify: Confirm fix resolved issue
+    6. Report: Log actions taken and create issue if needed
+
+    Safety Rules:
+    - Never delete data without backup
+    - Always test fixes in non-prod first (when possible)
+    - Require approval for destructive actions
+    - Log all healing actions for audit
+    - Create issue if uncertain about fix
+
+  llm:
+    provider: anthropic
+    model: claude-3-5-sonnet-20241022
+    temperature: 0.2
+    max_tokens: 4000
+
+  capabilities:
+    - name: monitor_infrastructure
+      description: Check infrastructure health status
+    - name: diagnose_failure
+      description: Analyze failure root cause
+    - name: restart_service
+      description: Restart failed service
+    - name: scale_resources
+      description: Scale pods/runners
+    - name: clean_disk_space
+      description: Free up disk space
+    - name: reset_job
+      description: Cancel and retry stuck job
+    - name: fix_network
+      description: Resolve network issues
+    - name: update_credentials
+      description: Rotate expired credentials
+    - name: create_issue
+      description: Create issue for manual intervention
+
+  safety:
+    input_validation:
+      max_length: 100000
+    output_validation:
+      require_citations: true
+      max_tokens: 4000
+    approval_required:
+      - delete_data
+      - modify_production
+
+  constraints:
+    max_cost_per_run: 2.00
+    timeout_seconds: 600
+
+  dependencies:
+    - type: service
+      name: gitlab-api
+      version: v4
+      optional: false
+    - type: service
+      name: kubernetes-api
+      version: v1
+      optional: true
+    - type: cli
+      name: kubectl
+      version: latest
+      optional: true
+
+  observability:
+    tracing:
+      enabled: true
+      provider: opentelemetry
+    logging:
+      level: info
+      structured: true
+    metrics:
+      enabled: true
+      track_costs: true
+      track_latency: true
+      custom_labels:
+        agent_type: infra-healer
+        environment: production
+
+  lifecycle:
+    state: active
+    maturity: stable

@@ -1,0 +1,13 @@
+{
+  "exclude": [
+    "**/node_modules/**",
+    "**/__pycache__/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/examples/**",
+    "**/tests/fixtures/**"
+  ],
+  "reportMissingImports": false,
+  "reportMissingTypeStubs": false,
+  "useLibraryCodeForTypes": false
+}

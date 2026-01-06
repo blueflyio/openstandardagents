@@ -15,13 +15,6 @@ import * as CommonSchemas from './common-schemas.zod';
 // Component Schemas
 // ============================================================================
 
-export const generateRequestSchema = z.object({
-  manifest: z.record(z.string(), z.unknown()),
-  options: generationOptionsSchema.optional()
-});
-
-export type GenerateRequest = z.infer<typeof generateRequestSchema>;
-
 export const generationOptionsSchema = z.object({
   chart_name: z.string().optional(),
   namespace: z.string().optional(),
@@ -67,13 +60,20 @@ export const generationOptionsSchema = z.object({
 
 export type GenerationOptions = z.infer<typeof generationOptionsSchema>;
 
+export const generateRequestSchema = z.object({
+  manifest: z.record(z.string(), z.unknown()),
+  options: generationOptionsSchema.optional()
+});
+
+export type GenerateRequest = z.infer<typeof generateRequestSchema>;
+
 export const generateResponseSchema = z.object({
   chart: z.string(),
   files: z.object({
-  Chart.yaml: z.string().optional(),
-  values.yaml: z.string().optional(),
-  templates: z.record(z.string(), z.unknown()).optional()
-}),
+    "Chart.yaml": z.string().optional(),
+    "values.yaml": z.string().optional(),
+    templates: z.record(z.string(), z.unknown()).optional()
+  }),
   metadata: z.object({
   chart_name: z.string().optional(),
   version: z.string().optional(),

@@ -1,0 +1,127 @@
+# Reusable GitLab CI/CD template for GitHub mirroring
+# Include this template in your .gitlab-ci.yml:
+#   include:
+#     - local: '.gitlab/ci/mirror-github.yml'
+
+# ============================================================================
+# STAGE: MIRROR GITHUB
+# Syncs releases and tags to GitHub repository
+# ============================================================================
+
+mirror:github:
+  stage: mirror-github
+  image: curlimages/curl:latest
+  before_script:
+    - apk add --no-cache jq git
+  script:
+    - |
+      set -e
+      echo "Syncing to GitHub repository..."
+      
+      # Validate required variables
+      if [ -z "$GITHUB_MIRROR_TOKEN" ]; then
+        echo "WARNING: GITHUB_MIRROR_TOKEN not set - skipping GitHub mirror"
+        echo "To enable GitHub mirroring, add GITHUB_MIRROR_TOKEN to GitLab CI/CD variables"
+        exit 0
+      fi
+      
+      GITHUB_OWNER="${GITHUB_ORG:-BlueflyCollective}"
+      GITHUB_REPO_NAME="${GITHUB_REPO:-${CI_PROJECT_NAME}}"
+      GITHUB_API="https://api.github.com"
+      
+      echo "GitHub Repository: ${GITHUB_OWNER}/${GITHUB_REPO_NAME}"
+      
+      # Determine tag from CI environment
+      if [ -n "$CI_COMMIT_TAG" ]; then
+        TAG_NAME="$CI_COMMIT_TAG"
+        echo "Processing tag: ${TAG_NAME}"
+      elif [ -n "$CI_COMMIT_REF_NAME" ] && [[ "$CI_COMMIT_REF_NAME" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+ ]]; then
+        TAG_NAME="$CI_COMMIT_REF_NAME"
+        echo "Processing version tag: ${TAG_NAME}"
+      else
+        echo "WARNING: No tag detected - skipping GitHub release sync"
+        echo "CI_COMMIT_TAG: ${CI_COMMIT_TAG:-not set}"
+        echo "CI_COMMIT_REF_NAME: ${CI_COMMIT_REF_NAME:-not set}"
+        exit 0
+      fi
+      
+      # Fetch GitLab release data if available
+      echo "Fetching GitLab release data..."
+      GITLAB_RELEASE_RESPONSE=$(curl -sS -H "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${TAG_NAME}" || echo "")
+      
+      RELEASE_NAME="${TAG_NAME}"
+      RELEASE_BODY=""
+      
+      if [ -n "$GITLAB_RELEASE_RESPONSE" ] && echo "$GITLAB_RELEASE_RESPONSE" | jq -e '.name' > /dev/null 2>&1; then
+        RELEASE_NAME=$(echo "$GITLAB_RELEASE_RESPONSE" | jq -r '.name // "'"${TAG_NAME}"'"')
+        RELEASE_BODY=$(echo "$GITLAB_RELEASE_RESPONSE" | jq -r '.description // ""')
+        echo "Found GitLab release: ${RELEASE_NAME}"
+      else
+        # Fallback: use CHANGELOG.md if available
+        if [ -f "CHANGELOG.md" ]; then
+          echo "Extracting release notes from CHANGELOG.md..."
+          RELEASE_BODY=$(awk "/^## \[${TAG_NAME#v}\]/,/^## /" CHANGELOG.md | head -n -1 || echo "")
+          if [ -z "$RELEASE_BODY" ]; then
+            RELEASE_BODY="Release ${TAG_NAME}"
+          fi
+        else
+          RELEASE_BODY="Release ${TAG_NAME}"
+        fi
+      fi
+      
+      # Check if GitHub release already exists
+      echo "Checking if GitHub release exists..."
+      EXISTING_RELEASE=$(curl -sS -H "Authorization: token ${GITHUB_MIRROR_TOKEN}" \
+        "${GITHUB_API}/repos/${GITHUB_OWNER}/${GITHUB_REPO_NAME}/releases/tags/${TAG_NAME}" || echo "")
+      
+      if echo "$EXISTING_RELEASE" | jq -e '.id' > /dev/null 2>&1; then
+        RELEASE_ID=$(echo "$EXISTING_RELEASE" | jq -r '.id')
+        echo "Updating existing GitHub release (ID: ${RELEASE_ID})..."
+        
+        # Update release
+        UPDATE_RESPONSE=$(curl -sS -X PATCH \
+          -H "Authorization: token ${GITHUB_MIRROR_TOKEN}" \
+          -H "Content-Type: application/json" \
+          -d "{\"tag_name\":\"${TAG_NAME}\",\"name\":\"${RELEASE_NAME}\",\"body\":$(echo "$RELEASE_BODY" | jq -Rs .),\"draft\":false,\"prerelease\":false}" \
+          "${GITHUB_API}/repos/${GITHUB_OWNER}/${GITHUB_REPO_NAME}/releases/${RELEASE_ID}")
+        
+        if echo "$UPDATE_RESPONSE" | jq -e '.id' > /dev/null 2>&1; then
+          echo "GitHub release updated successfully"
+          echo "Release URL: $(echo "$UPDATE_RESPONSE" | jq -r '.html_url')"
+        else
+          echo "ERROR: Failed to update GitHub release"
+          echo "Response: ${UPDATE_RESPONSE}"
+          exit 1
+        fi
+      else
+        echo "Creating new GitHub release..."
+        
+        # Create release
+        CREATE_RESPONSE=$(curl -sS -X POST \
+          -H "Authorization: token ${GITHUB_MIRROR_TOKEN}" \
+          -H "Content-Type: application/json" \
+          -d "{\"tag_name\":\"${TAG_NAME}\",\"name\":\"${RELEASE_NAME}\",\"body\":$(echo "$RELEASE_BODY" | jq -Rs .),\"draft\":false,\"prerelease\":false}" \
+          "${GITHUB_API}/repos/${GITHUB_OWNER}/${GITHUB_REPO_NAME}/releases")
+        
+        if echo "$CREATE_RESPONSE" | jq -e '.id' > /dev/null 2>&1; then
+          echo "GitHub release created successfully"
+          echo "Release URL: $(echo "$CREATE_RESPONSE" | jq -r '.html_url')"
+        else
+          echo "ERROR: Failed to create GitHub release"
+          echo "Response: ${CREATE_RESPONSE}"
+          exit 1
+        fi
+      fi
+      
+      echo "GitHub mirroring completed"
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: on_success
+    - if: $CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_NAME =~ /^v?[0-9]+\.[0-9]+\.[0-9]+$/
+      when: on_success
+  needs:
+    - job: release:prod
+      optional: true
+  allow_failure: true
+

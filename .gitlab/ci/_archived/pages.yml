@@ -1,0 +1,54 @@
+# GitLab Pages Deployment
+# Builds and deploys the Next.js website to GitLab Pages
+
+pages:deploy:
+  stage: pages
+  image: node:20-alpine
+  variables:
+    NPM_CONFIG_LEGACY_PEER_DEPS: "1"
+  before_script:
+    - apk add --no-cache git
+    - cd website
+    - npm ci --legacy-peer-deps
+  script:
+    - |
+      echo "Building Next.js website for GitLab Pages..."
+      
+      # Set base path for GitLab Pages (empty for custom domain)
+      export NEXT_PUBLIC_BASE_PATH=""
+      
+      # Copy schemas to public (if not already present)
+      if [ -d "../spec/v0.2.3" ] && [ ! -f "public/schemas/ossa-0.2.3.schema.json" ]; then
+        mkdir -p public/schemas
+        cp ../spec/v0.2.3/ossa-0.2.3.schema.json public/schemas/ 2>/dev/null || true
+      fi
+      
+      # Build Next.js site
+      npm run build
+      
+      # Verify build output
+      if [ ! -d ".next/out" ]; then
+        echo "ERROR: Build output not found"
+        exit 1
+      fi
+
+      # Add security headers
+      mkdir -p .next/out
+      printf '%s\n' \
+        '/*' \
+        '  X-Content-Type-Options: nosniff' \
+        '  X-Frame-Options: DENY' \
+        '  X-XSS-Protection: 1; mode=block' \
+        '  Referrer-Policy: strict-origin-when-cross-origin' \
+        '  Permissions-Policy: geolocation=(), microphone=(), camera=()' \
+        '  Content-Security-Policy: default-src '\''self'\''; script-src '\''self'\'' '\''unsafe-inline'\'' '\''unsafe-eval'\''; style-src '\''self'\'' '\''unsafe-inline'\''; img-src '\''self'\'' data: https:; font-src '\''self'\'' data:; connect-src '\''self'\'' https://api.github.com https://gitlab.com;' \
+        > .next/out/_headers
+
+      echo "Website build completed successfully"
+  artifacts:
+    paths:
+      - website/.next/out
+    expire_in: 30 days
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH =~ /^release\//

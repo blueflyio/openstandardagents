@@ -1,0 +1,77 @@
+# Performance Tuning for OSSA Runners
+# Optimized settings for maximum throughput
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: runner-performance-tuning
+  namespace: gitlab-runner
+data:
+  tuning-config.json: |
+    {
+      "concurrent": 20,
+      "checkInterval": 0,
+      "sessionTimeout": 1800,
+      "outputLimit": 4096,
+      "requestConcurrency": 10,
+      "maxBuilds": 5,
+      "gracefulKillTimeout": 600,
+      "gracefulShutdownTimeout": 30,
+      "preCloneScript": "",
+      "postCloneScript": "",
+      "preBuildScript": "",
+      "postBuildScript": "",
+      "cloneUrl": "",
+      "environment": [
+        "FF_USE_LEGACY_KUBERNETES_EXECUTION_STRATEGY=false",
+        "FF_USE_DIRECT_DOWNLOAD=true",
+        "FF_GIT_STRATEGY=clone",
+        "FF_ENABLE_BASH_EXIT_CODE_CHECK=true"
+      ],
+      "kubernetes": {
+        "cpuLimit": "2",
+        "memoryLimit": "4Gi",
+        "cpuRequest": "500m",
+        "memoryRequest": "1Gi",
+        "serviceCpuLimit": "1",
+        "serviceMemoryLimit": "2Gi",
+        "helperCpuLimit": "500m",
+        "helperMemoryLimit": "1Gi",
+        "pollTimeout": 180,
+        "outputLimit": 4096,
+        "namespace": "gitlab-runner",
+        "privileged": false,
+        "imagePullPolicy": "if-not-present",
+        "imagePullSecrets": [],
+        "nodeSelector": {},
+        "tolerations": [],
+        "affinity": {},
+        "podSecurityContext": {
+          "runAsNonRoot": true,
+          "runAsUser": 1000,
+          "fsGroup": 1000
+        },
+        "containerSecurityContext": {
+          "privileged": false,
+          "allowPrivilegeEscalation": false
+        },
+        "volumes": [
+          {
+            "name": "cache",
+            "emptyDir": {}
+          },
+          {
+            "name": "builds",
+            "emptyDir": {}
+          }
+        ],
+        "cache": {
+          "Type": "s3",
+          "ServerAddress": "${S3_CACHE_SERVER}",
+          "AccessKey": "${S3_CACHE_ACCESS_KEY}",
+          "SecretKey": "${S3_CACHE_SECRET_KEY}",
+          "BucketName": "gitlab-runner-cache",
+          "Insecure": false
+        }
+      }
+    }

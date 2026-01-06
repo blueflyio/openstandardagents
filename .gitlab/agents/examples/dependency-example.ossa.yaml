@@ -1,0 +1,151 @@
+apiVersion: ossa/v0.3.2
+kind: Agent
+metadata:
+  name: security-healer
+  version: "2.1.0"
+  description: |
+    Autonomous security vulnerability remediation agent.
+    Consumes vulnerability events and automatically creates MRs to fix them.
+  labels:
+    domain: security
+    capability: vulnerability-remediation
+    team: security-ops
+
+spec:
+  taxonomy:
+    domain: security
+    subdomain: vulnerability-management
+    capability: automated-remediation
+
+  role: |
+    You are a security remediation specialist. When vulnerabilities are detected,
+    you automatically create merge requests to fix them by updating dependencies
+    or applying patches.
+
+  llm:
+    provider: anthropic
+    model: claude-sonnet
+    temperature: 0.2
+
+  # Agent Dependencies Section
+  dependencies:
+    # Agent dependencies (other OSSA agents)
+    agents:
+      - name: vulnerability-scanner
+        version: "^1.2.0"  # Requires v1.2.x or compatible
+        required: true
+        reason: "Consumes vulnerability.detected events from this agent"
+        contract:
+          publishes:
+            - security.vulnerability.detected
+
+      - name: gitlab-api-client
+        version: ">=2.0.0 <3.0.0"
+        required: true
+        reason: "Uses GitLab API wrapper for creating MRs and managing issues"
+        contract:
+          commands:
+            - create_merge_request
+            - add_mr_comment
+            - get_project_info
+
+      - name: slack-notifier
+        version: "*"  # Any version
+        required: false
+        reason: "Optional Slack notifications for security fixes"
+        contract:
+          commands:
+            - send_notification
+
+    # Service dependencies (external services)
+    services:
+      - name: gitlab-api
+        version: "v4"
+        endpoint: "${GITLAB_API_URL}"
+        required: true
+        reason: "Primary GitLab API for all Git operations"
+
+      - name: prometheus
+        version: ">=2.0"
+        endpoint: "${PROMETHEUS_URL}"
+        required: false
+        reason: "Optional metrics collection for security remediation tracking"
+
+    # MCP dependencies (Model Context Protocol servers)
+    mcp:
+      - name: jira-mcp
+        version: "^1.0.0"
+        url: "${JIRA_MCP_URL}"
+        required: false
+        tools:
+          - getJiraIssue
+          - createJiraTask
+          - updateJiraStatus
+        reason: "Optional integration with Jira for security tracking"
+
+  # Agent publishes these events
+  messaging:
+    publishes:
+      - channel: security.vulnerability.fixed
+        schema:
+          type: object
+          required: [vulnerability_id, fix_version, mr_url]
+          properties:
+            vulnerability_id:
+              type: string
+              pattern: "^CVE-[0-9]{4}-[0-9]+$"
+            fix_version:
+              type: string
+            mr_url:
+              type: string
+              format: uri
+            fixed_at:
+              type: string
+              format: date-time
+
+    # Agent subscribes to these events
+    subscribes:
+      - channel: security.vulnerability.detected
+        handler: handle_vulnerability_detected
+        schema:
+          type: object
+          required: [vulnerability_id, severity, package_name]
+          properties:
+            vulnerability_id:
+              type: string
+            severity:
+              type: string
+              enum: [critical, high, medium, low]
+            package_name:
+              type: string
+            cvss_score:
+              type: number
+              minimum: 0
+              maximum: 10
+
+  tools:
+    - type: mcp
+      name: gitlab-mcp
+      description: GitLab API operations via MCP
+
+  autonomy:
+    level: autonomous
+    approval_required: false
+    allowed_actions:
+      - create_merge_request
+      - update_dependency
+      - add_mr_comment
+
+  constraints:
+    cost:
+      maxTokensPerDay: 100000
+      maxCostPerDay: 10
+      currency: USD
+
+  observability:
+    tracing:
+      enabled: true
+    metrics:
+      enabled: true
+    logging:
+      level: info

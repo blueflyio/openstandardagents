@@ -1,0 +1,19 @@
+apiVersion: ossa/v0.3.2
+kind: Agent
+metadata:
+  name: ossa-community-listener
+  version: 1.0.0
+  description: Monitors community feedback and creates improvement issues
+  lifecycle:
+    state: active
+    maturity: beta
+spec:
+  role: OSSA Community Listener - monitors feedback and identifies pain points
+  llm:
+    provider: anthropic
+    model: claude-3-5-sonnet-20241022
+  tools:
+    - type: mcp
+      name: gitlab-api
+      capabilities:
+        - create_issue

@@ -1,0 +1,40 @@
+# GitLab CI Component: OSSA Agent Validator
+# Version: 0.1.9-alpha.1
+
+spec:
+  inputs:
+    manifest_path:
+      default: '.agents'
+      description: 'Path to agent manifests'
+    schema_version:
+      default: '0.1.9'
+      description: 'OSSA schema version to validate against'
+    strict_mode:
+      default: true
+      description: 'Enable strict validation mode'
+
+---
+.agent-validator:
+  image: node:20-alpine
+  stage: validate
+  before_script:
+    - npm install -g @ossa/validator@$[[ inputs.schema_version ]]
+  script:
+    - echo "🔍 Validating OSSA agents in $[[ inputs.manifest_path ]]"
+    - ossa validate agents --path "$[[ inputs.manifest_path ]]" --version "$[[ inputs.schema_version ]]"
+    - |
+      if [[ "$[[ inputs.strict_mode ]]" == "true" ]]; then
+        ossa validate compliance --tier governed --path "$[[ inputs.manifest_path ]]"
+      fi
+    - echo "✅ Agent validation completed"
+  artifacts:
+    reports:
+      junit: validation-report.xml
+    paths:
+      - validation-report.xml
+      - compliance-report.json
+    expire_in: 1 week
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH =~ /^feature\//

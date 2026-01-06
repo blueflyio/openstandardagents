@@ -1,0 +1,17 @@
+apiVersion: ossa/v0.3.2
+kind: Agent
+metadata:
+  name: ossa-research-agent
+  version: 1.0.0
+  description: Autonomous research agent that monitors AI agent standards
+spec:
+  role: OSSA Research Agent - monitors ecosystem and proposes improvements
+  llm:
+    provider: anthropic
+    model: claude-3-5-sonnet-20241022
+  tools:
+    - type: mcp
+      name: gitlab-api
+      capabilities:
+        - create_issue
+        - list_issues

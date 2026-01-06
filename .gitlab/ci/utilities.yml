@@ -1,0 +1,109 @@
+# ============================================================================
+# REPO HYGIENE GUARDRAILS
+# ============================================================================
+# Enforce: no worktrees inside repo, no wiki submodules
+# These checks fail hard to prevent repo contamination
+
+repo:hygiene:
+  stage: validate
+  needs: []  # Skip .pre stage - allows job to auto-start
+  image: alpine:3.20
+  rules:
+    - when: always
+  script:
+    - |
+      set -e
+      echo "Running repo hygiene checks..."
+      
+      # Worktrees must not exist in repo (even untracked)
+      if [ -d .worktrees ]; then
+        echo "ERROR: .worktrees/ directory found in repo"
+        exit 1
+      fi
+      
+      if [ -d .workingtrees ]; then
+        echo "ERROR: .workingtrees/ directory found in repo"
+        exit 1
+      fi
+      
+      # Check for nested worktree directories (excluding .git directory)
+      NESTED_WORKTREES=$(find . -type d \( -name '.worktrees' -o -name '.workingtrees' \) ! -path './.git/*' 2>/dev/null || true)
+      if [ -n "$NESTED_WORKTREES" ]; then
+        echo "ERROR: Nested worktree directories found:"
+        echo "$NESTED_WORKTREES"
+        exit 1
+      fi
+      
+      # No wiki submodules / embedded wiki dirs
+      if [ -d .gitlab/wiki ]; then
+        echo "ERROR: .gitlab/wiki/ directory found (wiki must be external)"
+        exit 1
+      fi
+      
+      if [ -f .gitmodules ]; then
+        echo "ERROR: .gitmodules exists (wiki must not be a submodule)"
+        cat .gitmodules
+        exit 1
+      fi
+      
+      echo "Repo hygiene checks passed"
+# ============================================================================
+# NPM DIST-TAG MANAGEMENT
+# ============================================================================
+# Manual job to fix/update npm dist-tags
+
+npm:fix-dist-tags:
+  stage: release
+  image: node:${NODE_VERSION}-alpine
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
+  before_script:
+    - npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}
+  script:
+    - |
+      set -e
+      PACKAGE_NAME="@bluefly/openstandardagents"
+      
+      echo "📦 Current npm dist-tags:"
+      npm view ${PACKAGE_NAME} dist-tags
+      
+      echo ""
+      echo "📋 Available versions:"
+      npm view ${PACKAGE_NAME} versions --json | tail -20
+      
+      # Get current latest
+      LATEST=$(npm view ${PACKAGE_NAME} dist-tags.latest)
+      echo ""
+      echo "Current latest: ${LATEST}"
+      
+      # Determine what legacy should be (previous minor/major stable)
+      # For 0.3.1, legacy should be 0.2.9
+      MAJOR_MINOR=$(echo $LATEST | cut -d. -f1,2)
+      PREV_MINOR=$(($(echo $MAJOR_MINOR | cut -d. -f2) - 1))
+      PREV_VERSION="0.${PREV_MINOR}.9"
+      
+      # Check if that version exists
+      if npm view ${PACKAGE_NAME}@${PREV_VERSION} version 2>/dev/null; then
+        echo "Setting legacy tag to ${PREV_VERSION}..."
+        npm dist-tag add ${PACKAGE_NAME}@${PREV_VERSION} legacy
+      else
+        echo "Previous version ${PREV_VERSION} not found, checking for latest in 0.${PREV_MINOR}.x..."
+        # Find the latest patch in previous minor
+        PREV_LATEST=$(npm view ${PACKAGE_NAME} versions --json | jq -r ".[] | select(startswith(\"0.${PREV_MINOR}.\")) | select(contains(\"-\") | not)" | tail -1)
+        if [ -n "$PREV_LATEST" ]; then
+          echo "Setting legacy tag to ${PREV_LATEST}..."
+          npm dist-tag add ${PACKAGE_NAME}@${PREV_LATEST} legacy
+        fi
+      fi
+      
+      # Find latest RC if any
+      LATEST_RC=$(npm view ${PACKAGE_NAME} versions --json | jq -r '.[] | select(contains("-rc"))' | tail -1)
+      if [ -n "$LATEST_RC" ]; then
+        echo "Setting rc tag to ${LATEST_RC}..."
+        npm dist-tag add ${PACKAGE_NAME}@${LATEST_RC} rc
+      fi
+      
+      echo ""
+      echo "✅ Updated npm dist-tags:"
+      npm view ${PACKAGE_NAME} dist-tags

@@ -1,0 +1,81 @@
+# ============================================================================
+# GitLab Duo Flow: Release Orchestration
+# ============================================================================
+# Autonomous release orchestration flow triggered by milestone closure
+# Showcases OSSA v0.3.0 Workflow kind integration with GitLab Duo
+# ============================================================================
+
+image: node:22-alpine
+injectGatewayToken: true
+
+commands:
+  - echo "🚀 Starting OSSA Release Orchestration Flow"
+
+steps:
+  - id: validate_milestone
+    agent: release-orchestrator
+    with:
+      milestone_id: "{{ event.milestone.id }}"
+      milestone_title: "{{ event.milestone.title }}"
+      action: validate
+
+  - id: generate_changelog
+    agent: changelog-generator
+    with:
+      milestone_id: "{{ event.milestone.id }}"
+      project_id: "{{ event.project.id }}"
+    needs:
+      - validate_milestone
+
+  - id: validate_release
+    agent: release-validator
+    with:
+      version: "{{ steps.validate_milestone.output.version }}"
+      changelog: "{{ steps.generate_changelog.output.changelog }}"
+    needs:
+      - generate_changelog
+
+  - id: publish_npm
+    agent: release-orchestrator
+    with:
+      version: "{{ steps.validate_milestone.output.version }}"
+      action: publish_npm
+    needs:
+      - validate_release
+
+  - id: create_gitlab_release
+    tool: CreateRelease
+    with:
+      project_id: "{{ event.project.id }}"
+      tag_name: "v{{ steps.validate_milestone.output.version }}"
+      name: "Release v{{ steps.validate_milestone.output.version }}"
+      description: "{{ steps.generate_changelog.output.changelog }}"
+      milestones: ["{{ event.milestone.title }}"]
+    needs:
+      - publish_npm
+
+  - id: close_milestone
+    tool: UpdateMilestone
+    with:
+      project_id: "{{ event.project.id }}"
+      milestone_id: "{{ event.milestone.id }}"
+      state_event: close
+    needs:
+      - create_gitlab_release
+
+  - id: notify_team
+    tool: CreateMergeRequestNote
+    with:
+      project_id: "{{ event.project.id }}"
+      merge_request_id: "{{ event.merge_request.id }}"
+      body: |
+        ## ✅ Release v{{ steps.validate_milestone.output.version }} Completed
+
+        **Milestone:** {{ event.milestone.title }}
+        **npm Package:** https://www.npmjs.com/package/@bluefly/openstandardagents/v/{{ steps.validate_milestone.output.version }}
+        **GitLab Release:** {{ steps.create_gitlab_release.output.release_url }}
+
+        All release steps completed successfully via OSSA v0.3.0 autonomous agents.
+    needs:
+      - close_milestone
+

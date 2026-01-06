@@ -1,0 +1,64 @@
+# GitLab CI Component: OSSA MCP Tester
+# Version: 0.1.9-alpha.1
+
+spec:
+  inputs:
+    endpoint:
+      default: 'http://localhost:3000'
+      description: 'MCP endpoint to test'
+    test_suite:
+      default: 'conformance'
+      description: 'Test suite to run (conformance, performance, security)'
+    timeout:
+      default: 300
+      description: 'Test timeout in seconds'
+
+---
+.mcp-tester:
+  image: node:20-alpine
+  stage: test
+  services:
+    - name: redis:7-alpine
+      alias: redis
+  variables:
+    REDIS_URL: 'redis://redis:6379'
+    MCP_ENDPOINT: '$[[ inputs.endpoint ]]'
+  before_script:
+    - npm install -g @ossa/mcp-tester@0.1.9
+    - apk add --no-cache curl
+  script:
+    - echo "🧪 Testing MCP compliance at $[[ inputs.endpoint ]]"
+    - |
+      # Start test server if needed
+      if [[ "$[[ inputs.endpoint ]]" == "http://localhost:3000" ]]; then
+        npm run mock:server:bg || echo "Mock server not available"
+        sleep 5
+      fi
+    - curl -f "$[[ inputs.endpoint ]]/health" || (echo "❌ Endpoint health check failed" && exit 1)
+    - |
+      case "$[[ inputs.test_suite ]]" in
+        "conformance")
+          ossa test mcp-conformance --endpoint "$[[ inputs.endpoint ]]" --timeout "$[[ inputs.timeout ]]"
+          ;;
+        "performance")
+          ossa test mcp-performance --endpoint "$[[ inputs.endpoint ]]" --duration 60
+          ;;
+        "security")
+          ossa test mcp-security --endpoint "$[[ inputs.endpoint ]]"
+          ;;
+        *)
+          echo "❌ Unknown test suite: $[[ inputs.test_suite ]]"
+          exit 1
+          ;;
+      esac
+    - echo "✅ MCP testing completed"
+  artifacts:
+    reports:
+      junit: mcp-test-results.xml
+      performance: mcp-performance.json
+    paths:
+      - mcp-test-results.xml
+      - mcp-performance.json
+      - mcp-security-report.json
+    expire_in: 1 week
+  timeout: 10m

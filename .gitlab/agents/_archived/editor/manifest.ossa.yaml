@@ -1,0 +1,12 @@
+apiVersion: ossa/v0.3.2
+kind: Agent
+metadata:
+  name: content-editor
+  version: "1.0.0"
+  description: "Content team editor agent for managing documentation and content"
+spec:
+  role: "You are a content editor agent that helps manage and maintain documentation."
+  llm:
+    provider: ${LLM_PROVIDER:-openai}
+    model: ${LLM_MODEL:-gpt-4}
+    profile: ${LLM_PROFILE:-balanced}

@@ -1,0 +1,108 @@
+# Backup and Recovery for OSSA Runners
+# Configuration backup and disaster recovery
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: runner-config-backup
+  namespace: gitlab-runner
+spec:
+  schedule: "0 */6 * * *"
+  successfulJobsHistoryLimit: 10
+  failedJobsHistoryLimit: 5
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: gitlab-runner
+          containers:
+          - name: backup
+            image: bitnami/kubectl:latest
+            command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Backing up runner configuration..."
+              
+              # Backup ConfigMap
+              kubectl get configmap gitlab-runner-config -n gitlab-runner -o yaml > /backup/runner-config-$(date +%Y%m%d-%H%M%S).yaml
+              
+              # Backup secrets (metadata only)
+              kubectl get secret gitlab-runner-secret -n gitlab-runner -o yaml | \
+                sed '/data:/,$d' > /backup/runner-secret-metadata-$(date +%Y%m%d-%H%M%S).yaml
+              
+              # Backup deployment
+              kubectl get deployment gitlab-runner-autoscaler -n gitlab-runner -o yaml > /backup/runner-deployment-$(date +%Y%m%d-%H%M%S).yaml
+              
+              # Keep only last 10 backups
+              ls -t /backup/*.yaml | tail -n +11 | xargs rm -f
+              
+              echo "Backup complete"
+            volumeMounts:
+            - name: backup-storage
+              mountPath: /backup
+          volumes:
+          - name: backup-storage
+            persistentVolumeClaim:
+              claimName: runner-backup-pvc
+          restartPolicy: OnFailure
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: runner-backup-pvc
+  namespace: gitlab-runner
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: local-path
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: runner-recovery
+  namespace: gitlab-runner
+spec:
+  template:
+    spec:
+      serviceAccountName: gitlab-runner
+      containers:
+      - name: recovery
+        image: bitnami/kubectl:latest
+        command:
+        - /bin/sh
+        - -c
+        - |
+          echo "Recovering runner from backup..."
+          
+          BACKUP_FILE="${BACKUP_FILE:-/backup/runner-config-latest.yaml}"
+          
+          if [ ! -f "$BACKUP_FILE" ]; then
+            echo "Backup file not found: $BACKUP_FILE"
+            exit 1
+          fi
+          
+          # Restore ConfigMap
+          kubectl apply -f "$BACKUP_FILE"
+          
+          # Restart deployment to pick up new config
+          kubectl rollout restart deployment/gitlab-runner-autoscaler -n gitlab-runner
+          
+          # Wait for rollout
+          kubectl rollout status deployment/gitlab-runner-autoscaler -n gitlab-runner
+          
+          echo "Recovery complete"
+        volumeMounts:
+        - name: backup-storage
+          mountPath: /backup
+      volumes:
+      - name: backup-storage
+        persistentVolumeClaim:
+          claimName: runner-backup-pvc
+      restartPolicy: Never
+  backoffLimit: 3

@@ -1,0 +1,62 @@
+# GitLab CI Component: OSSA Security Scanner
+# Version: 0.1.9-alpha.1
+
+spec:
+  inputs:
+    scan_type:
+      default: 'full'
+      description: 'Scan type (quick, full, compliance)'
+    threshold:
+      default: 'medium'
+      description: 'Security threshold (low, medium, high, critical)'
+    include_dependencies:
+      default: true
+      description: 'Include dependency scanning'
+
+---
+.security-scanner:
+  image: registry.gitlab.com/security-products/semgrep:latest
+  stage: test
+  variables:
+    SEMGREP_RULES: 'auto'
+    SAST_EXCLUDED_PATHS: 'node_modules, dist, .git'
+  before_script:
+    - apk add --no-cache nodejs npm
+    - npm install -g @ossa/security-scanner@0.1.9
+  script:
+    - echo "🔒 Running OSSA security scan ($[[ inputs.scan_type ]])"
+    - |
+      case "$[[ inputs.scan_type ]]" in
+        "quick")
+          ossa security scan --quick --threshold "$[[ inputs.threshold ]]"
+          ;;
+        "full")
+          ossa security scan --full --threshold "$[[ inputs.threshold ]]"
+          semgrep --config=auto --json --output=semgrep-report.json .
+          ;;
+        "compliance")
+          ossa security compliance --nist-800-53 --iso-27001 --threshold "$[[ inputs.threshold ]]"
+          ;;
+        *)
+          echo "❌ Unknown scan type: $[[ inputs.scan_type ]]"
+          exit 1
+          ;;
+      esac
+    - |
+      if [[ "$[[ inputs.include_dependencies ]]" == "true" ]]; then
+        echo "🔍 Scanning dependencies"
+        npm audit --audit-level "$[[ inputs.threshold ]]" --json > dependency-audit.json || true
+        ossa security deps --threshold "$[[ inputs.threshold ]]"
+      fi
+    - echo "✅ Security scanning completed"
+  artifacts:
+    reports:
+      sast: semgrep-report.json
+      dependency_scanning: dependency-audit.json
+    paths:
+      - security-report.json
+      - semgrep-report.json
+      - dependency-audit.json
+      - compliance-report.json
+    expire_in: 1 week
+  allow_failure: false

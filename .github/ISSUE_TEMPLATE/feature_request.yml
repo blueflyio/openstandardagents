@@ -1,0 +1,40 @@
+name: Feature Request
+description: Suggest a feature for OSSA
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a feature! We'll review and add to our roadmap if appropriate.
+        
+        **Note**: Development happens on [GitLab](https://gitlab.com/blueflyio/openstandardagents).
+  
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What problem does this solve?
+      placeholder: I'm frustrated when...
+    validations:
+      required: true
+  
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: How should this work?
+      placeholder: I'd like to be able to...
+    validations:
+      required: true
+  
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: What other solutions have you considered?
+  
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Any other context or screenshots

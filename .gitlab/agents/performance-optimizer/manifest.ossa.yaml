@@ -1,0 +1,289 @@
+apiVersion: ossa/v0.3.2
+kind: Agent
+metadata:
+  name: performance-optimizer
+  version: 1.0.0
+  description: |
+    Autonomous performance optimization agent for Kubernetes workloads.
+    Analyzes resource usage patterns, identifies bottlenecks, and provides
+    actionable recommendations for CPU, memory, network, and storage optimization.
+  labels:
+    environment: production
+    team: platform-engineering
+    domain: performance
+    capability: optimization
+    dora-metric: lead-time
+    ossa-version: v0.3.0
+  annotations:
+    documentation: https://openstandardagents.org/docs/agents/performance-optimizer
+    support: ops@openstandardagents.org
+    runbook: https://openstandardagents.org/docs/runbooks/performance-optimizer
+    slo: p95 response time < 500ms
+spec:
+  taxonomy:
+    domain: infrastructure
+    subdomain: performance-engineering
+    capability: resource_optimization
+  role: |
+    You are an expert performance engineer specializing in Kubernetes resource optimization.
+
+    Your responsibilities:
+    1. Analyze Prometheus metrics for CPU, memory, network, and I/O usage patterns
+    2. Identify performance bottlenecks (hot spots, resource contention, slow queries)
+    3. Recommend Horizontal Pod Autoscaler (HPA) configurations based on traffic patterns
+    4. Suggest Vertical Pod Autoscaler (VPA) settings for right-sizing pods
+    5. Optimize database queries based on slow query logs and explain plans
+    6. Reduce container image sizes through multi-stage builds and layer optimization
+    7. Analyze network latency (service mesh overhead, DNS resolution, inter-pod communication)
+    8. Coordinate with cost-analyzer for cost-effective optimization recommendations
+
+    For each optimization:
+    - Baseline metrics (current state)
+    - Expected improvement (% reduction in latency/resource usage)
+    - Implementation complexity (low/medium/high)
+    - Risk assessment (safe/moderate/high-risk)
+    - Cost impact (increase/decrease/neutral)
+
+    Always prioritize p95/p99 latency improvements and resource efficiency gains.
+  llm:
+    provider: ${LLM_PROVIDER:-openai}
+    model: ${LLM_MODEL:-gpt-4o}
+    temperature: 0.2
+    maxTokens: 6000
+    topP: 0.9
+    fallback_models:
+      - provider: ${LLM_FALLBACK_PROVIDER_1:-anthropic}
+        model: ${LLM_FALLBACK_MODEL_1:-claude-sonnet}
+      - provider: ${LLM_FALLBACK_PROVIDER_2:-openai}
+        model: ${LLM_FALLBACK_MODEL_2:-gpt-4o-mini}
+    retry_config:
+      max_attempts: 3
+      backoff_strategy: exponential
+    cost_tracking:
+      enabled: true
+      budget_alert_threshold: 30
+      cost_allocation_tags:
+        project: ossa-agents
+        team: platform-engineering
+        service: performance-optimizer
+  tools:
+    - type: http
+      name: prometheus-query
+      description: |
+        Query Prometheus for resource usage metrics, latency histograms,
+        request rates, and error rates. Supports PromQL queries.
+      endpoint: http://prometheus:9090/api/v1/query
+      config:
+        method: POST
+        timeout: 30
+        queryLanguage: promql
+      auth:
+        type: bearer
+        tokenPath: /var/secrets/prometheus-token
+    - type: mcp
+      name: kubernetes-metrics
+      description: |
+        Access Kubernetes metrics-server data for real-time pod and node
+        resource usage (CPU, memory, network, ephemeral storage).
+      config:
+        server: kubernetes-mcp
+        metricsServer: metrics.k8s.io
+      auth:
+        type: mtls
+        certPath: /var/secrets/k8s-client-cert.pem
+    - type: mcp
+      name: postgres-analyzer
+      description: |
+        Analyze PostgreSQL slow query logs, explain plans, and index usage.
+        Provides optimization recommendations for queries and schema.
+      config:
+        server: postgres-mcp
+        database: application_db
+        slowQueryThreshold: 1000
+      auth:
+        type: password
+        passwordPath: /var/secrets/postgres-password
+    - type: http
+      name: dive-analyzer
+      description: |
+        Analyze container image layers using Dive tool. Identifies
+        layer bloat, duplicate files, and optimization opportunities.
+      endpoint: http://dive-server:8080/analyze
+      config:
+        method: POST
+        timeout: 60
+      auth:
+        type: none
+    - type: mcp
+      name: istio-telemetry
+      description: |
+        Access Istio service mesh telemetry for request latency, retry rates,
+        circuit breaker status, and inter-service communication patterns.
+      config:
+        server: istio-telemetry-mcp
+        namespace: istio-system
+      auth:
+        type: mtls
+        certPath: /var/secrets/istio-client-cert.pem
+    - type: a2a
+      name: cost-analyzer
+      description: |
+        Communicate with cost-analyzer agent to validate that performance
+        optimizations don't increase infrastructure costs disproportionately.
+      endpoint: http://cost-analyzer:8080/a2a
+      config:
+        protocol: json-rpc
+        version: "2.0"
+      auth:
+        type: mtls
+        certPath: /var/secrets/a2a-client-cert.pem
+  autonomy:
+    level: autonomous
+    approval_required: false
+    allowed_actions:
+      - query_prometheus_metrics
+      - analyze_slow_queries
+      - analyze_container_images
+      - generate_optimization_reports
+      - recommend_hpa_settings
+      - recommend_vpa_settings
+      - read_kubernetes_resources
+    blocked_actions:
+      - apply_hpa_configs
+      - apply_vpa_configs
+      - modify_deployments
+      - restart_pods
+  constraints:
+    cost:
+      maxTokensPerDay: 300000
+      maxTokensPerRequest: 6000
+      maxCostPerDay: 30
+      currency: USD
+    performance:
+      maxLatencySeconds: 60
+      maxConcurrentRequests: 15
+      timeoutSeconds: 300
+    resources:
+      cpu: 1000m
+      memory: 2Gi
+      ephemeralStorage: 5Gi
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+      endpoint: http://jaeger-collector:4318
+      samplingRate: 0.1
+    metrics:
+      enabled: true
+      exporter: prometheus
+      endpoint: http://prometheus:9090/metrics
+      customMetrics:
+        - name: optimization_recommendations_total
+          type: counter
+          description: Total optimization recommendations generated
+        - name: estimated_cost_savings_usd
+          type: gauge
+          description: Estimated monthly cost savings from optimizations
+        - name: analysis_duration_seconds
+          type: histogram
+          description: Performance analysis duration
+    logging:
+      level: info
+      format: json
+  state:
+    backend: redis
+    config:
+      host: redis-cluster.default.svc.cluster.local
+      port: 6379
+      database: 3
+      ttl: 604800
+      keyPrefix: "performance-optimizer:"
+  extensions:
+    kagent:
+      kubernetes:
+        namespace: platform-system
+        labels:
+          app: performance-optimizer
+          team: platform-engineering
+          dora-metric: lead-time
+        annotations:
+          description: Automated performance optimization agent
+          contact: ops@openstandardagents.org
+          slo: p95 response time < 500ms
+        resourceLimits:
+          cpu: 1000m
+          memory: 2Gi
+          ephemeralStorage: 5Gi
+        serviceAccount: performance-optimizer-sa
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 65534
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
+      guardrails:
+        requireApproval: false
+        costLimits:
+          maxTokensPerDay: 300000
+          maxCostPerDay: 30
+          currency: USD
+        allowedActions:
+          - kubernetes:get:pods
+          - kubernetes:get:deployments
+          - kubernetes:get:horizontalpodautoscalers
+          - kubernetes:get:verticalpodautoscalers
+          - kubernetes:get:nodes
+          - prometheus:query:*
+        auditLog:
+          destination: compliance-engine
+          retention: 90days
+      a2aConfig:
+        enabled: true
+        protocol: json-rpc
+        endpoints:
+          - http://cost-analyzer:8080/a2a
+          - http://monitoring-agent:8080/a2a
+        authentication:
+          type: mtls
+          certPath: /var/secrets/a2a-client-cert.pem
+          keyPath: /var/secrets/a2a-client-key.pem
+      meshIntegration:
+        enabled: true
+        istioIntegration: true
+        ambientMesh: true
+        mtlsMode: STRICT
+extensions:
+  kagent:
+    api_version: kagent.dev/v1alpha2
+    kubernetes:
+      namespace: agent-system
+      labels:
+        app.kubernetes.io/name: performance-optimizer
+        app.kubernetes.io/part-of: ossa-showcase
+        openstandardagents.org/version: v0.3.0
+      resourceLimits:
+        cpu: "1"
+        memory: 2Gi
+    deployment:
+      replicas:
+        min: 1
+        max: 3
+      strategy: rolling-update
+    a2aConfig:
+      enabled: true
+      protocol: json-rpc
+    meshIntegration:
+      enabled: true
+      istioIntegration: true
+  gitlab_duo:
+    enabled: true
+    flow_execution: true
+    model: ${GITLAB_DUO_MODEL:-claude-sonnet-4.5-20250929}
+    knowledge_graph:
+      enabled: true
+      index_on_push: true
+  mcp:
+    enabled: true
+    server_type: stdio
+    server_name: performance-optimizer-mcp

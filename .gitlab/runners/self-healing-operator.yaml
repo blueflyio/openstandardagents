@@ -1,0 +1,73 @@
+# Self-Healing Operator for OSSA Runners
+# Kubernetes operator for advanced self-healing
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: runner-self-healing-operator
+  namespace: gitlab-runner
+  labels:
+    app: gitlab-runner
+    component: self-healing-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gitlab-runner
+      component: self-healing-operator
+  template:
+    metadata:
+      labels:
+        app: gitlab-runner
+        component: self-healing-operator
+    spec:
+      serviceAccountName: gitlab-runner
+      containers:
+      - name: operator
+        image: bitnami/kubectl:latest
+        command:
+        - /bin/sh
+        - -c
+        - |
+          while true; do
+            echo "Self-healing operator checking runner health..."
+            
+            # Get all runner pods
+            PODS=$(kubectl get pods -n gitlab-runner -l app=gitlab-runner -o json)
+            
+            # Check each pod
+            echo "$PODS" | jq -r '.items[] | select(.status.phase != "Running" or (.status.containerStatuses[0].restartCount // 0) > 5) | .metadata.name' | \
+              while read pod; do
+                echo "Healing pod: $pod"
+                
+                # Get pod details
+                STATUS=$(kubectl get pod $pod -n gitlab-runner -o jsonpath='{.status.phase}')
+                RESTARTS=$(kubectl get pod $pod -n gitlab-runner -o jsonpath='{.status.containerStatuses[0].restartCount}')
+                
+                echo "  Status: $STATUS, Restarts: $RESTARTS"
+                
+                # Delete and let deployment recreate
+                kubectl delete pod $pod -n gitlab-runner --grace-period=0 --force || true
+                
+                echo "  Pod deleted, waiting for recreation..."
+                sleep 5
+              done
+            
+            # Check deployment health
+            kubectl get deployment gitlab-runner-autoscaler -n gitlab-runner -o json | \
+              jq -e '.status.conditions[] | select(.type=="Available" and .status=="True")' > /dev/null || {
+              echo "Deployment not healthy, triggering rollout restart..."
+              kubectl rollout restart deployment/gitlab-runner-autoscaler -n gitlab-runner
+            }
+            
+            # Wait before next check
+            sleep 60
+          done
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+      restartPolicy: Always
