@@ -5,7 +5,7 @@
  * Generated from: /Users/flux423/Sites/LLM/OssA/openstandardagents/openapi/agent-identity.yaml
  * OSSA Version: 0.3.3
  * API Version: ossa/v0.3.3
- * Generated on: 2026-01-06T18:10:13.446Z
+ * Generated on: 2026-01-06T18:11:54.144Z
  */
 
 import { z } from 'zod';
@@ -19,9 +19,21 @@ export const agentIdentitySchema = z.unknown();
 
 export type AgentIdentity = z.infer<typeof agentIdentitySchema>;
 
+export const agentIdentitySchema = z.unknown();
+
+export type AgentIdentity = z.infer<typeof agentIdentitySchema>;
+
 export const authenticationRequestSchema = z.unknown();
 
 export type AuthenticationRequest = z.infer<typeof authenticationRequestSchema>;
+
+export const authenticationRequestSchema = z.unknown();
+
+export type AuthenticationRequest = z.infer<typeof authenticationRequestSchema>;
+
+export const tokenResponseSchema = z.unknown();
+
+export type TokenResponse = z.infer<typeof tokenResponseSchema>;
 
 export const tokenResponseSchema = z.unknown();
 
@@ -31,9 +43,21 @@ export const securityContextSchema = z.unknown();
 
 export type SecurityContext = z.infer<typeof securityContextSchema>;
 
+export const securityContextSchema = z.unknown();
+
+export type SecurityContext = z.infer<typeof securityContextSchema>;
+
 export const tokenRevocationRequestSchema = z.unknown();
 
 export type TokenRevocationRequest = z.infer<typeof tokenRevocationRequestSchema>;
+
+export const tokenRevocationRequestSchema = z.unknown();
+
+export type TokenRevocationRequest = z.infer<typeof tokenRevocationRequestSchema>;
+
+export const tokenRevocationResponseSchema = z.unknown();
+
+export type TokenRevocationResponse = z.infer<typeof tokenRevocationResponseSchema>;
 
 export const tokenRevocationResponseSchema = z.unknown();
 

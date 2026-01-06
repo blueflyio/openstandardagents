@@ -5,7 +5,7 @@
  * Generated from: /Users/flux423/Sites/LLM/OssA/openstandardagents/openapi/agent-crud.yaml
  * OSSA Version: 0.3.3
  * API Version: ossa/v0.3.3
- * Generated on: 2026-01-06T18:10:13.463Z
+ * Generated on: 2026-01-06T18:11:54.160Z
  */
 
 import { z } from 'zod';
@@ -23,6 +23,14 @@ export const agentMetadataSchema = z.object({
 });
 
 export type AgentMetadata = z.infer<typeof agentMetadataSchema>;
+
+export const fallbackModelSchema = z.object({
+  provider: z.string(),
+  model: z.string(),
+  condition: z.enum(["on_error", "on_rate_limit", "on_timeout"])
+});
+
+export type FallbackModel = z.infer<typeof fallbackModelSchema>;
 
 export const retryConfigSchema = z.object({
   max_attempts: z.number().int().min(1).max(10).optional(),
@@ -76,6 +84,34 @@ export const runtimeConfigSchema = z.object({
 
 export type RuntimeConfig = z.infer<typeof runtimeConfigSchema>;
 
+export const capabilitySchema = z.object({
+  name: z.string(),
+  type: z.enum(["action", "query", "monitor", "transform"]),
+  runtime: z.enum(["llm", "code", "hybrid"]).optional(),
+  description: z.string().optional(),
+  input_schema: z.record(z.string(), z.unknown()).optional()
+});
+
+export type Capability = z.infer<typeof capabilitySchema>;
+
+export const functionSchema = z.object({
+  name: z.string().regex(/^[a-z_][a-z0-9_]*$/),
+  description: z.string(),
+  parameters: z.record(z.string(), z.unknown()),
+  returns: z.record(z.string(), z.unknown()).optional()
+});
+
+export type Function = z.infer<typeof functionSchema>;
+
+export const extensionSchema = z.object({
+  type: z.enum(["http", "mcp", "grpc", "websocket"]),
+  name: z.string(),
+  endpoint: z.string().url(),
+  credentials_ref: z.string().optional()
+});
+
+export type Extension = z.infer<typeof extensionSchema>;
+
 export const taxonomySchema = z.object({
   domain: z.string().optional(),
   subdomain: z.string().optional(),
@@ -83,6 +119,21 @@ export const taxonomySchema = z.object({
 });
 
 export type Taxonomy = z.infer<typeof taxonomySchema>;
+
+export const toolSourceSchema = z.object({
+  type: z.enum(["mcp", "http", "grpc"]),
+  uri: z.string().url()
+});
+
+export type ToolSource = z.infer<typeof toolSourceSchema>;
+
+export const toolSchema = z.object({
+  name: z.string(),
+  description: z.string().optional(),
+  source: toolSourceSchema
+});
+
+export type Tool = z.infer<typeof toolSchema>;
 
 export const graphConnectionSchema = z.object({
   endpoint: z.string().url().optional(),
@@ -178,14 +229,6 @@ export const agentsListSchema = z.object({
 
 export type AgentsList = z.infer<typeof agentsListSchema>;
 
-export const fallbackModelSchema = z.object({
-  provider: z.string(),
-  model: z.string(),
-  condition: z.enum(["on_error", "on_rate_limit", "on_timeout"])
-});
-
-export type FallbackModel = z.infer<typeof fallbackModelSchema>;
-
 export const profileConfigSchema = z.object({
   maxTokens: z.number().int().optional(),
   temperature: z.number().optional(),
@@ -196,49 +239,6 @@ export const profileConfigSchema = z.object({
 });
 
 export type ProfileConfig = z.infer<typeof profileConfigSchema>;
-
-export const capabilitySchema = z.object({
-  name: z.string(),
-  type: z.enum(["action", "query", "monitor", "transform"]),
-  runtime: z.enum(["llm", "code", "hybrid"]).optional(),
-  description: z.string().optional(),
-  input_schema: z.record(z.string(), z.unknown()).optional()
-});
-
-export type Capability = z.infer<typeof capabilitySchema>;
-
-export const functionSchema = z.object({
-  name: z.string().regex(/^[a-z_][a-z0-9_]*$/),
-  description: z.string(),
-  parameters: z.record(z.string(), z.unknown()),
-  returns: z.record(z.string(), z.unknown()).optional()
-});
-
-export type Function = z.infer<typeof functionSchema>;
-
-export const extensionSchema = z.object({
-  type: z.enum(["http", "mcp", "grpc", "websocket"]),
-  name: z.string(),
-  endpoint: z.string().url(),
-  credentials_ref: z.string().optional()
-});
-
-export type Extension = z.infer<typeof extensionSchema>;
-
-export const toolSourceSchema = z.object({
-  type: z.enum(["mcp", "http", "grpc"]),
-  uri: z.string().url()
-});
-
-export type ToolSource = z.infer<typeof toolSourceSchema>;
-
-export const toolSchema = z.object({
-  name: z.string(),
-  description: z.string().optional(),
-  source: toolSourceSchema
-});
-
-export type Tool = z.infer<typeof toolSchema>;
 
 export const agentTypeSchema = CommonSchemas.agentTypeSchema;
 
