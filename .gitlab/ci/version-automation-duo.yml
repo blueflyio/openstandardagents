@@ -44,7 +44,7 @@ duo:version-analysis:
       }
   script:
     - |
-      echo "🤖 GitLab Duo Agent: Version Analysis"
+      echo "GitLab Duo Agent: Version Analysis"
       echo "======================================"
       
       # Invoke Duo Agent via API using release-coordinator service account
@@ -61,7 +61,7 @@ duo:version-analysis:
       echo "$RESPONSE" | jq -r '.outputs.version_sources[]' > version-sources.txt
       echo "$RESPONSE" | jq -r '.outputs.current_version' > current-version.txt
       
-      echo "✅ Version analysis complete"
+      echo "Version analysis complete"
   artifacts:
     reports:
       dotenv: version-analysis.env
@@ -90,12 +90,12 @@ platform-agents:version-bump:
     - apk add --no-cache curl jq
     - |
       if [ "$VAST_AI_ENABLED" = "true" ]; then
-        echo "🚀 Using Vast.ai for agent execution"
+        echo "Using Vast.ai for agent execution"
         export AGENT_ENDPOINT="${PLATFORM_AGENTS_API}/vast-ai/${VAST_AI_INSTANCE}/agents/release-manager/invoke"
       fi
   script:
     - |
-      echo "🤖 Platform Agents: Version Bump"
+      echo "Platform Agents: Version Bump"
       echo "================================="
       
       CURRENT_VERSION=$(cat current-version.txt)
@@ -124,7 +124,7 @@ platform-agents:version-bump:
       NEW_VERSION=$(echo "$RESPONSE" | jq -r '.outputs.new_version')
       echo "NEW_VERSION=${NEW_VERSION}" >> version-bump.env
       
-      echo "✅ Version bump complete: ${CURRENT_VERSION} → ${NEW_VERSION}"
+      echo "Version bump complete: ${CURRENT_VERSION} -> ${NEW_VERSION}"
   artifacts:
     reports:
       dotenv: version-bump.env
@@ -164,7 +164,7 @@ duo:multi-file-sync:
     - git checkout ${CI_COMMIT_REF_NAME}
   script:
     - |
-      echo "🤖 GitLab Duo Agent: Multi-File Sync"
+      echo "GitLab Duo Agent: Multi-File Sync"
       echo "===================================="
       
       # Load version-bump.env if available
@@ -204,14 +204,14 @@ duo:multi-file-sync:
       
       # Show diff
       echo ""
-      echo "📝 Files to be updated:"
+      echo "Files to be updated:"
       cat updated-files.txt
       
       echo ""
-      echo "🔍 Git diff:"
+      echo "Git diff:"
       git diff --stat || true
       
-      echo "✅ File sync complete"
+      echo "File sync complete"
   artifacts:
     paths:
       - updated-files.txt
@@ -246,7 +246,7 @@ duo:create-version-mr:
     - git config user.name "GitLab CI"
   script:
     - |
-      echo "🤖 GitLab Duo Agent: Create Version MR"
+      echo "GitLab Duo Agent: Create Version MR"
       echo "======================================"
       
       # Load version from artifacts if available
@@ -298,19 +298,19 @@ duo:create-version-mr:
         MR_IID=$(echo "$RESPONSE" | jq -r '.iid // empty')
         if [ -n "$MR_IID" ] && [ "$MR_IID" != "null" ]; then
           MR_URL="${CI_PROJECT_URL}/-/merge_requests/${MR_IID}"
-          echo "✅ Merge request created: ${MR_URL}"
+          echo "Merge request created: ${MR_URL}"
         else
           # Check for error
           ERROR_MSG=$(echo "$RESPONSE" | jq -r '.message // .error // .error_description // empty' 2>/dev/null)
           if [ -n "$ERROR_MSG" ] && [ "$ERROR_MSG" != "null" ]; then
-            echo "❌ Failed to create MR: ${ERROR_MSG}"
+            echo "Failed to create MR: ${ERROR_MSG}"
           else
-            echo "⚠️  MR creation response did not include IID"
+            echo "WARNING: MR creation response did not include IID"
             echo "Response: $RESPONSE"
           fi
         fi
       else
-        echo "ℹ️  No changes to commit"
+        echo "No changes to commit"
       fi
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"
