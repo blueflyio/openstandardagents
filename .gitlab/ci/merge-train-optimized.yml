@@ -38,7 +38,7 @@ train:notify-failure:
     - apk add --no-cache curl
   script:
     - |
-      echo "🚨 Merge Train Pipeline Failed!"
+      echo "[ALERT] Merge Train Pipeline Failed!"
       echo "   MR: !${CI_MERGE_REQUEST_IID}"
       echo "   Pipeline: ${CI_PIPELINE_URL}"
 
@@ -47,7 +47,7 @@ train:notify-failure:
         curl -X POST "$SLACK_WEBHOOK_URL" \
           -H "Content-Type: application/json" \
           -d "{
-            \"text\": \"🚨 Merge train failed\",
+            \"text\": \"[ALERT] Merge train failed\",
             \"blocks\": [
               {
                 \"type\": \"section\",
@@ -58,9 +58,9 @@ train:notify-failure:
               }
             ]
           }"
-        echo "✅ Slack notification sent"
+        echo "[PASS] Slack notification sent"
       else
-        echo "ℹ️ SLACK_WEBHOOK_URL not configured - skipping notification"
+        echo "[INFO] SLACK_WEBHOOK_URL not configured - skipping notification"
       fi
 
       # Also post to GitLab MR as comment
@@ -68,7 +68,7 @@ train:notify-failure:
         curl --request POST \
           --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
           --header "Content-Type: application/json" \
-          --data "{\"body\": \"🚨 **Merge train pipeline failed**\n\nPipeline: ${CI_PIPELINE_URL}\n\nPlease check the logs and fix the issues before re-adding to merge train.\"}" \
+          --data "{\"body\": \"[ALERT] **Merge train pipeline failed**\n\nPipeline: ${CI_PIPELINE_URL}\n\nPlease check the logs and fix the issues before re-adding to merge train.\"}" \
           "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests/${CI_MERGE_REQUEST_IID}/notes" || true
       fi
   rules:
