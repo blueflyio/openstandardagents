@@ -19,7 +19,7 @@ autonomous:auto-assign-issues:
       when: always
   variables:
     AGENT_NAME: issue-lifecycle-manager
-    SERVICE_ACCOUNT: @issue-lifecycle-manager
+    SERVICE_ACCOUNT: "@i"ssue-lifecycle-manager
     AGENT_TOKEN: ${SERVICE_ACCOUNT_ISSUE_LIFECYCLE_TOKEN}
   before_script:
     - apk add --no-cache curl jq
@@ -55,7 +55,7 @@ autonomous:auto-label-issues:
       when: always
   variables:
     AGENT_NAME: issue-lifecycle-manager
-    SERVICE_ACCOUNT: @issue-lifecycle-manager
+    SERVICE_ACCOUNT: "@i"ssue-lifecycle-manager
     AGENT_TOKEN: ${SERVICE_ACCOUNT_ISSUE_LIFECYCLE_TOKEN}
   before_script:
     - apk add --no-cache curl jq
@@ -91,7 +91,7 @@ autonomous:close-resolved-issues:
       when: always
   variables:
     AGENT_NAME: issue-lifecycle-manager
-    SERVICE_ACCOUNT: @issue-lifecycle-manager
+    SERVICE_ACCOUNT: "@i"ssue-lifecycle-manager
     AGENT_TOKEN: ${SERVICE_ACCOUNT_ISSUE_LIFECYCLE_TOKEN}
   before_script:
     - apk add --no-cache curl jq
