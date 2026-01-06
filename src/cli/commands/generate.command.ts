@@ -119,6 +119,17 @@ generateCommand
   });
 
 // ============================================================================
+// Subcommand: generate openapi-zod
+// ============================================================================
+generateCommand
+  .command('openapi-zod')
+  .description('Generate Zod schemas from OpenAPI specs (OPENAPI-FIRST)')
+  .option('--dry-run', 'Show what would be generated without writing files')
+  .action(async (options) => {
+    await runGenerator('openapi-zod', options.dryRun);
+  });
+
+// ============================================================================
 // Subcommand: generate all
 // ============================================================================
 generateCommand

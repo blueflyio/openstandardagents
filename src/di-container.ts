@@ -14,6 +14,7 @@ import { SchemaRepository } from './repositories/schema.repository.js';
 import { GenerationService } from './services/generation.service.js';
 import { MigrationService } from './services/migration.service.js';
 import { ValidationService } from './services/validation.service.js';
+import { ValidationZodService } from './services/validation-zod.service.js';
 import { AgentsMdService } from './services/agents-md/agents-md.service.js';
 import { TestRunnerService } from './services/test-runner/test-runner.service.js';
 import { GitService } from './services/git.service.js';
@@ -25,6 +26,7 @@ import { VSCodeGenerator } from './services/codegen/generators/vscode.generator.
 import { OpenAPIGenerator } from './services/codegen/generators/openapi.generator.js';
 import { TypesGenerator } from './services/codegen/generators/types.generator.js';
 import { ZodGenerator } from './services/codegen/generators/zod.generator.js';
+import { OpenAPIZodGenerator } from './services/codegen/generators/openapi-zod.generator.js';
 
 // Validators
 import { DependenciesValidator } from './services/validators/dependencies.validator.js';
@@ -37,8 +39,8 @@ export const container = new Container();
 container.bind(SchemaRepository).toSelf().inSingletonScope();
 container.bind(ManifestRepository).toSelf().inSingletonScope();
 
-// Bind services
-container.bind(ValidationService).toSelf();
+// Bind services - Use Zod-based validation (DRY, SOLID, ZOD, OPENAPI-FIRST)
+container.bind(ValidationService).to(ValidationZodService);
 container.bind(GenerationService).toSelf();
 container.bind(MigrationService).toSelf();
 container.bind(AgentsMdService).toSelf();
@@ -51,6 +53,7 @@ container.bind(VSCodeGenerator).toSelf();
 container.bind(OpenAPIGenerator).toSelf();
 container.bind(TypesGenerator).toSelf();
 container.bind(ZodGenerator).toSelf();
+container.bind(OpenAPIZodGenerator).toSelf();
 container.bind(CodegenService).toSelf();
 
 // Bind validators
@@ -75,7 +78,7 @@ export function resetContainer(): void {
   // Rebind all services
   container.bind(SchemaRepository).toSelf().inSingletonScope();
   container.bind(ManifestRepository).toSelf().inSingletonScope();
-  container.bind(ValidationService).toSelf();
+  container.bind(ValidationService).to(ValidationZodService);
   container.bind(GenerationService).toSelf();
   container.bind(MigrationService).toSelf();
   container.bind(AgentsMdService).toSelf();
@@ -86,6 +89,7 @@ export function resetContainer(): void {
   container.bind(OpenAPIGenerator).toSelf();
   container.bind(TypesGenerator).toSelf();
   container.bind(ZodGenerator).toSelf();
+  container.bind(OpenAPIZodGenerator).toSelf();
   container.bind(CodegenService).toSelf();
   container.bind(ContractValidator).toSelf();
   container.bind(DependenciesValidator).toSelf();

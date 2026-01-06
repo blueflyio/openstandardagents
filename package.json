@@ -21,7 +21,11 @@
     "website:build": "pnpm --filter website build",
     "bot:dev": "pnpm --filter bots/ossa-discord dev",
     "bot:start": "pnpm --filter bots/ossa-discord start",
-    "typecheck": "pnpm -r typecheck"
+    "typecheck": "pnpm -r typecheck",
+    "generate:zod": "node --loader ts-node/esm scripts/cli/ossa.ts generate zod",
+    "generate:openapi-zod": "node --loader ts-node/esm scripts/cli/ossa.ts generate openapi-zod",
+    "generate:types": "node --loader ts-node/esm scripts/cli/ossa.ts generate types",
+    "generate:all": "node --loader ts-node/esm scripts/cli/ossa.ts generate all"
   },
   "repository": {
     "type": "git",
