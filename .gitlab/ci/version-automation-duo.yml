@@ -19,6 +19,13 @@ duo:version-analysis:
   image: node:22-alpine
   needs: []
   extends: .duo_agent_base
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_MILESTONE_STATE == "closed"
+    - when: manual
+      allow_failure: true
+    - when: on_success
+      allow_failure: true
   variables:
     AGENT_NAME: version-automation-agent
     AGENT_TASK: detect-version-sources
@@ -143,8 +150,10 @@ duo:multi-file-sync:
   needs:
     - job: platform-agents:version-bump
       artifacts: true
+      optional: true
     - job: duo:version-analysis
       artifacts: true
+      optional: true
   extends: .duo_agent_base
   variables:
     AGENT_NAME: version-automation-agent
@@ -163,10 +172,11 @@ duo:multi-file-sync:
       source version-bump.env
       VERSION_SOURCES=$(cat version-sources.txt | jq -s '.')
       
-      # Invoke Duo Agent for file sync
+      # Invoke Duo Agent for file sync using release-coordinator service account
       RESPONSE=$(curl -s -X POST \
-        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/duo/agents/${VERSION_AUTOMATION_AGENT_ID}/invoke" \
-        -H "PRIVATE-TOKEN: ${GITLAB_DUO_AGENT_TOKEN}" \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/duo/agents/invoke" \
+        -H "PRIVATE-TOKEN: ${SERVICE_ACCOUNT_RELEASE_COORDINATOR_TOKEN:-${GITLAB_TOKEN}}" \
+        -H "X-Service-Account: @release-coordinator" \
         -H "Content-Type: application/json" \
         -d "{
           \"task\": \"sync-all-files\",
@@ -212,8 +222,10 @@ duo:create-version-mr:
   needs:
     - job: duo:multi-file-sync
       artifacts: true
+      optional: true
     - job: platform-agents:version-bump
       artifacts: true
+      optional: true
   extends: .duo_agent_base
   variables:
     AGENT_NAME: version-automation-agent
@@ -227,8 +239,15 @@ duo:create-version-mr:
       echo "🤖 GitLab Duo Agent: Create Version MR"
       echo "======================================"
       
-      source version-bump.env
-      UPDATED_FILES=$(cat updated-files.txt | tr '\n' ',' | sed 's/,$//')
+      # Load version from artifacts if available
+      if [ -f "version-bump.env" ]; then
+        source version-bump.env
+      else
+        # Fallback: detect from package.json
+        NEW_VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "0.3.3")
+      fi
+      
+      UPDATED_FILES=$(cat updated-files.txt 2>/dev/null | tr '\n' ',' | sed 's/,$//' || echo "package.json,.version.json")
       
       # Create branch for version bump
       BRANCH_NAME="chore/version-bump-${NEW_VERSION}"
