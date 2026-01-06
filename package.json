@@ -22,10 +22,13 @@
     "bot:dev": "pnpm --filter bots/ossa-discord dev",
     "bot:start": "pnpm --filter bots/ossa-discord start",
     "typecheck": "pnpm -r typecheck",
-    "generate:zod": "node --loader ts-node/esm scripts/cli/ossa.ts generate zod",
-    "generate:openapi-zod": "node --loader ts-node/esm scripts/cli/ossa.ts generate openapi-zod",
-    "generate:types": "node --loader ts-node/esm scripts/cli/ossa.ts generate types",
-    "generate:all": "node --loader ts-node/esm scripts/cli/ossa.ts generate all"
+    "generate:zod": "tsx src/cli/index.ts generate zod",
+    "generate:openapi-zod": "tsx src/cli/index.ts generate openapi-zod",
+    "generate:types": "tsx src/cli/index.ts generate types",
+    "generate:all": "tsx src/cli/index.ts generate all",
+    "docs:generate": "tsx src/tools/docs/unified-doc-generator.ts",
+    "validate:all": "tsx src/cli/index.ts validate .gitlab/agents/**/*.ossa.yaml examples/**/*.ossa.yaml",
+    "version:sync": "tsx src/tools/version/unified-version-sync.ts"
   },
   "repository": {
     "type": "git",
