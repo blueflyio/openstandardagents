@@ -294,13 +294,20 @@ duo:create-version-mr:
         
         echo "$RESPONSE" | jq '.'
         
-        MR_IID=$(echo "$RESPONSE" | jq -r '.iid // .id // empty')
-        if [ -n "$MR_IID" ]; then
+        # Parse MR response - GitLab API returns iid, not id
+        MR_IID=$(echo "$RESPONSE" | jq -r '.iid // empty')
+        if [ -n "$MR_IID" ] && [ "$MR_IID" != "null" ]; then
           MR_URL="${CI_PROJECT_URL}/-/merge_requests/${MR_IID}"
           echo "✅ Merge request created: ${MR_URL}"
         else
-          echo "⚠️  MR creation response did not include IID or ID"
-          echo "Response: $RESPONSE"
+          # Check for error
+          ERROR_MSG=$(echo "$RESPONSE" | jq -r '.message // .error // .error_description // empty' 2>/dev/null)
+          if [ -n "$ERROR_MSG" ] && [ "$ERROR_MSG" != "null" ]; then
+            echo "❌ Failed to create MR: ${ERROR_MSG}"
+          else
+            echo "⚠️  MR creation response did not include IID"
+            echo "Response: $RESPONSE"
+          fi
         fi
       else
         echo "ℹ️  No changes to commit"
