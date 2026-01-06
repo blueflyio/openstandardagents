@@ -137,7 +137,7 @@
     "// RELEASE & PUBLISH": "",
     "prerelease": "npm run quality && npm run test && npm run validate",
     "prepublishOnly": "npm run build:clean && npm run test && npm run lint",
-    "release:check": "npm run prerelease && echo '✅ Ready for release'"
+    "release:check": "npm run prerelease && echo 'Ready for release'"
   },
   "keywords": [
     "ossa",

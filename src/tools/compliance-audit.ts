@@ -73,10 +73,10 @@ function createCheck(
 
 function getStatusIcon(status: string): string {
   switch (status) {
-    case 'pass': return '✅';
-    case 'fail': return '❌';
-    case 'warning': return '⚠️';
-    case 'info': return 'ℹ️';
+    case 'pass': return '[PASS]';
+    case 'fail': return '[FAIL]';
+    case 'warning': return '[WARN]';
+    case 'info': return '[INFO]';
     default: return '•';
   }
 }

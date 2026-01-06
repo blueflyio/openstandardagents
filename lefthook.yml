@@ -21,7 +21,7 @@ pre-commit:
         # Only check if version-related files are staged
         STAGED_FILES=$(git diff --cached --name-only)
         if echo "$STAGED_FILES" | grep -qE "(package.json|README.md|spec/)"; then
-          echo "🔍 Validating version consistency..."
+          echo "Validating version consistency..."
 
           if [ -n "$SKIP_VERSION_CHECK" ]; then
             echo "WARNING: SKIP_VERSION_CHECK set - bypassing validation (NOT RECOMMENDED)"
@@ -188,12 +188,12 @@ commit-msg:
         COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
 
         # Forbidden patterns that should NEVER appear in commit messages
-        if echo "$COMMIT_MSG" | grep -qiE "Generated with.*Claude|Co-Authored-By:.*Claude|🤖|claude.ai|noreply@anthropic.com"; then
+        if echo "$COMMIT_MSG" | grep -qiE "Generated with.*Claude|Co-Authored-By:.*Claude|robot|claude.ai|noreply@anthropic.com"; then
           echo ""
-          echo "🚫 COMMIT BLOCKED: Forbidden Claude/AI attribution detected!"
+          echo "COMMIT BLOCKED: Forbidden Claude/AI attribution detected!"
           echo "  ERROR: NO 'Generated with Claude Code'"
           echo "  ERROR: NO 'Co-Authored-By: Claude'"
-          echo "  ERROR: NO 🤖 emoji"
+          echo "  ERROR: NO emoji or AI attribution allowed"
           echo "  ERROR: NO AI/Claude references"
           echo ""
           echo "   Write as the human developer"

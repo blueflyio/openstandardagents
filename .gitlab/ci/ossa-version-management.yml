@@ -184,7 +184,7 @@ version:consistency:check:
         echo "ERROR: Found unresolved {{VERSION}} placeholders in dist/"
         exit 1
       fi
-      echo "✅ No unresolved placeholders in dist/"
+      echo "No unresolved placeholders in dist/"
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH == "main"'
