@@ -5,7 +5,7 @@
  * Generated from: /Users/flux423/Sites/LLM/OssA/openstandardagents/openapi/agent-identity.yaml
  * OSSA Version: 0.3.3
  * API Version: ossa/v0.3.3
- * Generated on: 2026-01-06T18:04:52.238Z
+ * Generated on: 2026-01-06T18:08:30.942Z
  */
 
 import { z } from 'zod';
