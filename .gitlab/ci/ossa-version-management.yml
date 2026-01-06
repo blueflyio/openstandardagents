@@ -28,7 +28,7 @@ detect-ossa-version:
   before_script:
     - npm ci --ignore-scripts --prefer-offline 2>/dev/null || npm install tsx --no-save
   script:
-    - npx tsx scripts/detect-ossa-version.ts
+    - npx tsx src/tools/version/detect-ossa-version.ts
   artifacts:
     reports:
       dotenv: ossa-version.env

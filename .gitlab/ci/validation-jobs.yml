@@ -211,7 +211,7 @@ validate:scripts-version:
       when: always
     - changes:
       - package.json
-      - scripts/**/*
+      - src/tools/**/*
       when: always
 
 validate:docs-consistency:
@@ -229,12 +229,12 @@ validate:docs-consistency:
       VERSION=$(jq -r '.current' .version.json)
       echo "Release version: v${VERSION}"
 
-      if ! npx tsx scripts/sync-versions.ts --check; then
+      if ! npx tsx src/tools/version/sync-versions.ts --check; then
         echo ""
         echo "ERROR: Documentation is out of sync!"
         echo ""
         echo "FIX REQUIRED:"
-        echo "1. Run locally: npx tsx scripts/sync-versions.ts --fix"
+        echo "1. Run locally: npx tsx src/tools/version/sync-versions.ts --fix"
         echo "2. Commit the changes"
         echo "3. Push and re-run pipeline"
         exit 1

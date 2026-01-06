@@ -399,7 +399,7 @@ sync-version-files:
       export CI_PATCH_VERSION=$(echo "$DEV_TAG_VERSION" | cut -d. -f3)
       
       # Run CI version sync
-      npx tsx scripts/ci-version-sync.ts
+      npx tsx src/tools/version/ci-version-sync.ts
       
       # Commit version changes
       git config user.email "ci@bluefly.io"

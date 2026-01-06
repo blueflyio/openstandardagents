@@ -28,18 +28,18 @@ pre-commit:
             exit 0
           fi
 
-          if [ ! -f "scripts/sync-versions.ts" ]; then
+          if [ ! -f "src/tools/version/sync-versions.ts" ]; then
             echo "WARNING: sync-versions.ts not found, skipping validation"
             exit 0
           fi
 
           # Run version sync check
-          if ! npx tsx scripts/sync-versions.ts --check 2>&1; then
+          if ! npx tsx src/tools/version/sync-versions.ts --check 2>&1; then
             echo ""
             echo "ERROR: COMMIT BLOCKED: Version references are inconsistent!"
             echo ""
             echo "FIX THIS:"
-            echo " 1. Run: npx tsx scripts/sync-versions.ts --fix"
+            echo " 1. Run: npx tsx src/tools/version/sync-versions.ts --fix"
             echo " 2. Review the changes"
             echo " 3. Stage the updated files: git add ."
             echo " 4. Retry your commit"
