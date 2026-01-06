@@ -14,7 +14,7 @@ Get started with the OSSA VS Code extension in 5 minutes!
 ```bash
 # Clone the repository
 git clone https://gitlab.com/blueflyio/ossa/openstandardagents.git
-cd openstandardagents/tools/vscode-ossa
+cd openstandardagents/src/tools/vscode-ossa
 
 # Install dependencies
 npm install

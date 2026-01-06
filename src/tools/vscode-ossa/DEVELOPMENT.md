@@ -11,7 +11,7 @@ This guide helps you develop and test the OSSA VS Code extension locally.
 
 ### 2. Install Dependencies
 ```bash
-cd /Users/flux423/Sites/LLM/openstandardagents/tools/vscode-ossa
+cd /Users/flux423/Sites/LLM/openstandardagents/src/tools/vscode-ossa
 npm install
 ```
 
@@ -47,7 +47,7 @@ vscode-ossa/
 
 1. Open this folder in VS Code:
    ```bash
-   code /Users/flux423/Sites/LLM/openstandardagents/tools/vscode-ossa
+   code /Users/flux423/Sites/LLM/openstandardagents/src/tools/vscode-ossa
    ```
 
 2. Press `F5` to launch Extension Development Host
