@@ -22,7 +22,7 @@ const VERSION = process.env.CI_DETERMINED_VERSION || process.env.CI_COMMIT_TAG?.
 const BRANCH_VERSION = process.env.CI_BRANCH_VERSION || VERSION.split('.').slice(0, 2).join('.');
 const PATCH_VERSION = process.env.CI_PATCH_VERSION || VERSION.split('.')[2];
 
-console.log(`🔄 CI Version Sync`);
+console.log(`CI Version Sync`);
 console.log(`==================`);
 console.log(`Version: ${VERSION}`);
 console.log(`Branch: ${BRANCH_VERSION}`);
@@ -36,7 +36,7 @@ if (pkg.exports && pkg.exports['./schema']) {
   pkg.exports['./schema'] = `./spec/v${VERSION}/ossa-${VERSION}.schema.json`;
 }
 fs.writeFileSync(packageJsonPath, JSON.stringify(pkg, null, 2) + '\n');
-console.log(`✅ Updated package.json: ${VERSION}`);
+console.log(`Updated package.json: ${VERSION}`);
 
 // Update .version.json
 const versionJsonPath = path.join(process.cwd(), '.version.json');
@@ -44,14 +44,14 @@ const versionConfig = JSON.parse(fs.readFileSync(versionJsonPath, 'utf8'));
 versionConfig.current = VERSION;
 versionConfig.spec_version = VERSION;
 fs.writeFileSync(versionJsonPath, JSON.stringify(versionConfig, null, 2) + '\n');
-console.log(`✅ Updated .version.json: ${VERSION}`);
+console.log(`Updated .version.json: ${VERSION}`);
 
 // Run sync-versions to update README.md and other files
 try {
   execSync('npm run version:sync', { stdio: 'inherit' });
-  console.log(`✅ Synced all version references`);
+  console.log(`Synced all version references`);
 } catch (error) {
-  console.error(`⚠️  version:sync failed, continuing...`);
+  console.error(`WARNING: version:sync failed, continuing...`);
 }
 
-console.log(`\n✅ CI version sync complete!`);
+console.log(`\nCI version sync complete!`);
