@@ -1,0 +1,24 @@
+apiVersion: ossa/v0.3.2
+kind: Agent
+metadata:
+  name: ossa-evolution-dashboard
+  version: 1.0.0
+  description: Generates evolution dashboard and metrics reports
+  lifecycle:
+    state: active
+    maturity: beta
+spec:
+  role: OSSA Evolution Dashboard Agent - generates metrics and visualizations
+  llm:
+    provider: anthropic
+    model: claude-3-5-sonnet-20241022
+  tools:
+    - type: mcp
+      name: gitlab-api
+      capabilities:
+        - list_issues
+        - list_releases
+        - get_statistics
+extensions:
+  anthropic:
+    model: claude-3-5-sonnet-20241022

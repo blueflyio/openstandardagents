@@ -1,0 +1,17 @@
+apiVersion: ossa/v0.3.2
+kind: Agent
+metadata:
+  name: ossa-schema-evolution
+  version: 1.0.0
+  description: Autonomous agent that evolves the OSSA schema
+spec:
+  role: OSSA Schema Evolution Agent - updates schema based on approved proposals
+  llm:
+    provider: anthropic
+    model: claude-3-5-sonnet-20241022
+  tools:
+    - type: mcp
+      name: gitlab-api
+      capabilities:
+        - read_issue
+        - create_mr

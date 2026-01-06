@@ -1,0 +1,260 @@
+# ============================================================================
+# STAGE 0 - VERSION DETECTION & DEV TAG MANAGEMENT
+# ============================================================================
+
+detect:version:
+  stage: setup
+  needs: []  # Skip .pre stage - allows pipeline to auto-start
+  image: alpine:latest
+  timeout: 5 minutes
+  tags:
+    - saas-linux-small-amd64
+  before_script:
+    - apk add --no-cache curl jq
+    - apk add --no-cache git bash
+    - chmod +x .gitlab/scripts/detect-version.sh
+  script:
+    - .gitlab/scripts/detect-version.sh
+  artifacts:
+    expire_in: 1 hour
+    paths:
+      - build.env
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^release\/v/'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^release\/v/'
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+    - if: '$CI_COMMIT_TAG'
+
+# FIXED: detect:milestone-and-tags - ONLY detect, don't push tags
+# Tag creation is handled by create-patch-version which has GITLAB_PUSH_TOKEN
+detect:milestone-and-tags:
+  stage: setup
+  needs: []  # Skip .pre stage - allows pipeline to auto-start
+  image: alpine:latest
+  timeout: 10 minutes
+  before_script:
+    - apk add --no-cache curl jq git bash
+    - git config user.email "ci@bluefly.io"
+    - git config user.name "GitLab CI"
+    # READ-ONLY - no push needed in this job
+    - git remote set-url origin "https://oauth2:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+    - git fetch --unshallow --tags --force || git fetch --tags --force || true
+  script:
+    - |
+      #!/bin/bash
+      set -euo pipefail
+
+      echo "DEV TAG DETECTION (NOT CREATION)"
+      echo "================================="
+      echo "Branch: ${CI_COMMIT_BRANCH}"
+      echo "Commit: ${CI_COMMIT_SHA}"
+      echo ""
+
+      # Initialize env files
+      cat > dev-tags.env << 'EOF'
+      DEV_TAG_VERSION=
+      DEV_TAG_NAME=
+      DEV_TAG_BUILD=
+      EOF
+
+      # Only DETECT on release branches - don't create tags here
+      if echo "$CI_COMMIT_BRANCH" | grep -qE "^release/v"; then
+        BRANCH_VERSION=$(echo "$CI_COMMIT_BRANCH" | sed -n 's|^release/v\([0-9]\+\.[0-9]\+\).*|\1|p')
+
+        if [ -z "$BRANCH_VERSION" ]; then
+          echo "ERROR: Could not extract version from branch: $CI_COMMIT_BRANCH"
+        else
+          echo "Branch version: ${BRANCH_VERSION}.x"
+
+          # Find next patch version
+          LATEST_RELEASE=$(git tag -l "v${BRANCH_VERSION}.*" 2>/dev/null | grep -v "dev\|RC" | sort -V | tail -1 || true)
+
+          if [ -z "$LATEST_RELEASE" ]; then
+            DEV_VERSION="${BRANCH_VERSION}.0"
+          else
+            PATCH=$(echo "$LATEST_RELEASE" | sed "s/v${BRANCH_VERSION}\.//" | grep -oE '^[0-9]+' || echo "0")
+            [ -z "$PATCH" ] && PATCH=0
+            NEXT_PATCH=$((PATCH + 1))
+            DEV_VERSION="${BRANCH_VERSION}.${NEXT_PATCH}"
+          fi
+
+          echo "Target version: v${DEV_VERSION}"
+
+          # Get latest dev tag
+          LATEST_DEV_TAG=$(git tag -l "v${DEV_VERSION}-dev.*" 2>/dev/null | sort -V | tail -1 || true)
+          CURRENT_BUILD=$(echo "$LATEST_DEV_TAG" | sed "s/.*-dev\.//" | grep -E '^[0-9]+$' || echo "0")
+          [ -z "$CURRENT_BUILD" ] && CURRENT_BUILD=0
+          NEXT_BUILD=$((CURRENT_BUILD + 1))
+
+          # ONLY DETECT - don't create tag
+          NEW_TAG="v${DEV_VERSION}-dev.${NEXT_BUILD}"
+          echo "Next dev tag will be: ${NEW_TAG}"
+
+          # Save to env file for create-patch-version job
+          cat > dev-tags.env << EOF
+      DEV_TAG_VERSION=${DEV_VERSION}
+      DEV_TAG_NAME=${NEW_TAG}
+      DEV_TAG_BUILD=${NEXT_BUILD}
+      EOF
+        fi
+      else
+        echo "Skipping dev tag detection (not on release/* branch)"
+      fi
+      
+      # Detect ACTIVE milestones ready for release
+      # NEW FLOW: Milestone stays ACTIVE, release closes it
+      echo ""
+      echo "RELEASE READINESS CHECK"
+      echo "========================"
+      echo "Looking for ACTIVE milestone matching release version..."
+      echo "(Range milestones like v0.3.x cover multiple patch releases)"
+      echo ""
+
+      if [ ! -f .version.json ]; then
+        echo "ERROR: .version.json not found"
+        exit 1
+      fi
+      if ! jq -e '.current' .version.json >/dev/null 2>&1; then
+        echo "ERROR: .version.json does not contain valid 'current' field"
+        exit 1
+      fi
+      VERSION="$(jq -r '.current' .version.json)"
+      if [ -z "$VERSION" ] || [ "$VERSION" = "null" ]; then
+        echo "ERROR: Could not read version from .version.json"
+        exit 1
+      fi
+      MM="$(echo "$VERSION" | awk -F. '{print $1"."$2}')"
+      RANGE_TITLE="v${MM}.x"
+
+      # Default to root namespace; allow override
+      RELEASE_GROUP_FULL_PATH="${RELEASE_GROUP_FULL_PATH:-$CI_PROJECT_ROOT_NAMESPACE}"
+
+      # Select token for API access - GITLAB_PUSH_TOKEN can access group milestones
+      if [ -n "${GITLAB_PUSH_TOKEN:-}" ]; then
+        API_TOKEN_HEADER="PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}"
+        echo "Using GITLAB_PUSH_TOKEN for API access"
+      elif [ -n "${GITLAB_TOKEN:-}" ]; then
+        API_TOKEN_HEADER="PRIVATE-TOKEN: ${GITLAB_TOKEN}"
+        echo "Using GITLAB_TOKEN for API access"
+      else
+        API_TOKEN_HEADER="JOB-TOKEN: ${CI_JOB_TOKEN}"
+        echo "Using CI_JOB_TOKEN for API access (may have limited scope)"
+      fi
+
+      # Resolve group id from full path (URL-encode slash)
+      ENC_GROUP_PATH="$(printf '%s' "$RELEASE_GROUP_FULL_PATH" | sed 's/\//%2F/g')"
+      GROUP_JSON="$(curl -sS --max-time 30 --header "${API_TOKEN_HEADER}" \
+        "${CI_API_V4_URL}/groups/${ENC_GROUP_PATH}" 2>/dev/null || echo '{}')"
+      GROUP_ID="$(echo "$GROUP_JSON" | jq -r '.id // empty' 2>/dev/null || echo '')"
+
+      if [ -z "$GROUP_ID" ]; then
+        echo "WARNING: Could not resolve group id for: ${RELEASE_GROUP_FULL_PATH}"
+        echo "$GROUP_JSON" | jq -r '.message // .error // empty' 2>/dev/null || true
+        # Fallback to project milestones
+        echo "INFO: Falling back to project milestones..."
+        MILESTONES_JSON="$(curl -sS --max-time 30 -G --header "${API_TOKEN_HEADER}" \
+          "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/milestones" \
+          --data-urlencode "state=active" \
+          --data-urlencode "search=${MM}" 2>/dev/null || echo '[]')"
+      else
+        MILESTONES_JSON="$(curl -sS --max-time 30 -G --header "${API_TOKEN_HEADER}" \
+          "${CI_API_V4_URL}/groups/${GROUP_ID}/milestones" \
+          --data-urlencode "state=active" \
+          --data-urlencode "search=${MM}" 2>/dev/null || echo '[]')"
+      fi
+
+      # Validate JSON before parsing - graceful fallback on failure
+      if ! echo "$MILESTONES_JSON" | jq -e 'type == "array"' > /dev/null 2>&1; then
+        echo "WARNING: Invalid JSON response from milestones API (token may lack scope)"
+        echo "$MILESTONES_JSON" | head -5
+        echo ""
+        echo "Continuing without milestone validation..."
+        MILESTONES_JSON="[]"
+      fi
+
+      # Match range milestone first, then exact
+      # Use ($| ) instead of \b for word boundary (works better in jq regex)
+      MILESTONE="$(echo "$MILESTONES_JSON" | jq -c --arg range "^${RANGE_TITLE}(\\s*\\(GROUP\\))?(\$| )" --arg exact "^v?${VERSION}(\\s*\\(GROUP\\))?(\$| )" '
+        map(select(.state=="active")) |
+        (map(select(.title|test($range))) + map(select(.title|test($exact)))) |
+        .[0] // empty
+      ')"
+
+      if [ -z "$MILESTONE" ] || [ "$MILESTONE" = "null" ]; then
+        echo "RELEASE_VERSION=" > milestone-version.env
+        echo "MILESTONE_TITLE=" >> milestone-version.env
+        echo "MILESTONE_ID=" >> milestone-version.env
+        echo "MILESTONE_URL=" >> milestone-version.env
+        echo "MILESTONE_READY=false" >> milestone-version.env
+        echo "ISSUE_COUNT=0" >> milestone-version.env
+        echo "OPEN_ISSUE_COUNT=0" >> milestone-version.env
+        echo "RANGE_MILESTONE=false" >> milestone-version.env
+        echo "ERROR: No active milestone matching ${RANGE_TITLE} or v${VERSION} in group ${RELEASE_GROUP_FULL_PATH}"
+        exit 0
+      fi
+
+      TITLE="$(echo "$MILESTONE" | jq -r '.title // ""')"
+      ID="$(echo "$MILESTONE" | jq -r '.id // ""')"
+      WEB_URL="$(echo "$MILESTONE" | jq -r '.web_url // ""')"
+      TOTAL_ISSUES="$(echo "$MILESTONE" | jq -r '.issues_stats.total // 0')"
+      OPEN_ISSUES="$(echo "$MILESTONE" | jq -r '.issues_stats.opened // 0')"
+      if [ -n "$TITLE" ]; then
+        IS_RANGE="$(echo "$TITLE" | grep -Eq 'v[0-9]+\.[0-9]+\.x' && echo true || echo false)"
+      else
+        IS_RANGE="false"
+      fi
+
+      {
+        echo "RELEASE_VERSION=${VERSION}"
+        echo "MILESTONE_TITLE=${TITLE}"
+        echo "MILESTONE_ID=${ID}"
+        echo "MILESTONE_URL=${WEB_URL}"
+        # Range milestones (v0.3.x) stay ACTIVE for multiple patch releases
+        # Open issues don't block release - they continue to next patch
+        # This is INTENTIONAL: range milestones track a release line, not a single release
+        # BEHAVIORAL CHANGE: Previous logic required all issues closed. New logic allows
+        # open issues for range milestones (v0.3.x) since they span multiple patch releases.
+        # Exact version milestones (v0.3.0) would still require all issues closed if we used them.
+        echo "MILESTONE_READY=true"
+        echo "ISSUE_COUNT=${TOTAL_ISSUES}"
+        echo "OPEN_ISSUE_COUNT=${OPEN_ISSUES}"
+        echo "RANGE_MILESTONE=${IS_RANGE}"
+      } > milestone-version.env
+
+      echo "Milestone: ${TITLE}"
+      echo "  Total issues: ${TOTAL_ISSUES}"
+      echo "  Open issues: ${OPEN_ISSUES}"
+      if [ "$IS_RANGE" = "true" ]; then
+        echo "  Range milestone: open issues are informational (will continue in next patch)"
+        echo "  Release-ready: ${TITLE} (range milestone - open issues allowed)"
+      else
+        echo "  Release-ready: ${TITLE}"
+      fi
+      
+      # Merge dev-tags.env into milestone-version.env
+      if [ -s dev-tags.env ]; then
+        cat dev-tags.env >> milestone-version.env
+      fi
+
+      # Back-compat for older jobs/includes expecting release-version.env
+      cp -f milestone-version.env release-version.env
+
+      echo ""
+      echo "📋 Summary:"
+      cat milestone-version.env
+  artifacts:
+    reports:
+      dotenv: milestone-version.env
+    paths:
+      - milestone-version.env
+      - release-version.env
+      - dev-tags.env
+    expire_in: 1 day
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: always
+    - if: $CI_COMMIT_BRANCH =~ /^release\/v/
+      when: always
+  allow_failure: false
+

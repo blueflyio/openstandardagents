@@ -1,0 +1,111 @@
+# GitLab Kubernetes Agent Configuration for OSSA
+# Production-ready configuration with CI/CD integration, observability, and security
+
+# User access configuration
+# Grants Kubernetes cluster access to project/group members and activates Dashboard for Kubernetes
+user_access:
+  # Access method: user impersonation (Premium/Ultimate tier)
+  # Users maintain their identity in Kubernetes for better audit trails and user-specific RBAC
+  # Switch to agent: {} if using Free tier
+  access_as:
+    user: {}  # ✅ Using Ultimate tier - users maintain identity
+    # agent: {}  # Alternative for Free tier (commented out)
+
+  # Projects whose members should have access to this agent
+  # Members can access the cluster through this agent for deployments and operations
+  projects:
+    - id: blueflyio/ossa/openstandardagents
+    # Add more projects as needed:
+    # - id: blueflyio/agent-platform/agent-buildkit
+
+  # Groups whose members should have access to this agent
+  # Grants access to the group and all its descendant groups and projects
+  groups:
+    - id: blueflyio
+    - id: blueflyio/agent-platform
+
+# CI/CD access configuration with impersonation (restricted access)
+# Uses impersonation to restrict access based on project/group membership
+# More secure than default service account access
+ci_access:
+  # Projects whose CI/CD pipelines can access the cluster
+  projects:
+    - id: blueflyio/ossa/openstandardagents
+      access_as:
+        # Impersonate the CI/CD job user for better security
+        # Requires RBAC configuration in the cluster
+        impersonate:
+          # Use the CI/CD job's user identity
+          username: "gitlab:user:{{.user.username}}"
+          # Use the CI/CD job's groups
+          groups:
+            - "gitlab:group:{{.group.path}}"
+            - "gitlab:project:{{.project.path_with_namespace}}"
+
+  # Groups whose CI/CD pipelines can access the cluster
+  groups:
+    - id: blueflyio
+      access_as:
+        impersonate:
+          username: "gitlab:user:{{.user.username}}"
+          groups:
+            - "gitlab:group:{{.group.path}}"
+
+# GitOps configuration
+# Enables GitLab to manage Kubernetes resources via GitOps workflows
+gitops:
+  manifest_projects:
+    - id: blueflyio/ossa/openstandardagents
+      default_namespace: ossa-agents
+      paths:
+        - glob: '.gitlab/agents/*/deployment.yaml'
+        - glob: '.gitlab/agents/*/service.yaml'
+        - glob: 'infrastructure/k8s/**/*.yaml'
+    - id: blueflyio/agent-platform/agent-buildkit
+      default_namespace: ossa-prod
+      paths:
+        - glob: 'k8s/**/*.yaml'
+
+# Observability configuration
+# Enables monitoring and observability features for the agent
+observability:
+  # Logging configuration
+  logging:
+    level: info
+    # Available levels: debug, info, warn, error
+  
+  # Metrics configuration
+  metrics:
+    enabled: true
+    # Prometheus scraping endpoint will be available at /metrics
+
+# Agent configuration
+agent:
+  # Health check configuration
+  health:
+    enabled: true
+    interval: 30s
+    timeout: 10s
+  
+  # Connection settings
+  connection:
+    # Maximum number of concurrent connections
+    max_connections: 100
+    # Connection timeout
+    timeout: 60s
+    # Keep-alive interval
+    keep_alive: 30s
+
+# Security configuration
+security:
+  # Network policies (applied if supported)
+  network_policy:
+    enabled: true
+  
+  # TLS configuration
+  tls:
+    # Verify TLS certificates
+    verify: true
+    # Minimum TLS version
+    min_version: "1.2"
+

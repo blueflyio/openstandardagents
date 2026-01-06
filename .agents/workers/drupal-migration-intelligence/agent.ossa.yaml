@@ -1,0 +1,229 @@
+apiVersion: ossa/v0.3.3
+kind: Agent
+
+metadata:
+  name: drupal-migration-intelligence
+  version: 1.0.0
+  description: |
+    Intelligent Drupal migration specialist for D7 to D11 migrations
+    with automated assessment and planning.
+
+  labels:
+    ossa-version: v0.3.0
+    platform: drupal
+    provider: blueflyio
+    category: worker
+    domain: migration
+
+spec:
+  taxonomy:
+    domain: migration
+    subdomain: drupal
+    capability: d7-to-d11
+
+  role: |
+    You are a Drupal Migration Intelligence specialist.
+
+    Your responsibilities:
+    1. Assess existing Drupal 7 sites for migration readiness
+    2. Generate comprehensive migration plans with phases and dependencies
+    3. Execute content migration with field mapping and validation
+    4. Validate migrated content and functionality
+    5. Provide migration effort estimates and risk assessments
+
+    Focus on thorough assessment and reliable migration execution.
+
+  llm:
+    provider: ${LLM_PROVIDER:-anthropic}
+    model: ${LLM_MODEL:-claude-sonnet-4}
+    temperature: 0.2
+    maxTokens: 8000
+
+    fallback_models:
+      - provider: ${LLM_FALLBACK_PROVIDER_1:-openai}
+        model: ${LLM_FALLBACK_MODEL_1:-gpt-4o}
+
+    retry_config:
+      max_attempts: 3
+      backoff_strategy: exponential
+
+    cost_tracking:
+      enabled: true
+      budget_alert_threshold: 100.00
+      cost_allocation_tags:
+        platform: drupal
+        team: migration-agents
+
+  capabilities:
+    - name: assess_drupal_site
+      description: Comprehensive assessment of existing Drupal 7 site for migration readiness
+      input_schema:
+        type: object
+        required: [siteInfo]
+        properties:
+          siteInfo:
+            type: object
+            properties:
+              drupalRoot:
+                type: string
+              databaseUrl:
+                type: string
+              filesPath:
+                type: string
+              version:
+                type: string
+              multisite:
+                type: boolean
+          assessmentOptions:
+            type: object
+            properties:
+              includeCustomCode:
+                type: boolean
+                default: true
+              analyzeContribModules:
+                type: boolean
+                default: true
+      output_schema:
+        type: object
+        properties:
+          assessmentId:
+            type: string
+          migrationComplexity:
+            type: string
+            enum: [low, medium, high, critical]
+          recommendations:
+            type: array
+
+    - name: generate_migration_plan
+      description: Create detailed migration plan with phases and dependencies
+      input_schema:
+        type: object
+        required: [assessmentId, migrationGoals]
+        properties:
+          assessmentId:
+            type: string
+          migrationGoals:
+            type: object
+            properties:
+              targetDrupalVersion:
+                type: string
+                default: 11.x
+              hostingEnvironment:
+                type: string
+                enum: [acquia, pantheon, platform_sh, aws, custom]
+      output_schema:
+        type: object
+        properties:
+          migrationPlanId:
+            type: string
+          phases:
+            type: array
+          resourceRequirements:
+            type: object
+
+    - name: execute_content_migration
+      description: Execute content migration with field mapping and validation
+      input_schema:
+        type: object
+        required: [migrationPlanId, contentTypes]
+        properties:
+          migrationPlanId:
+            type: string
+          contentTypes:
+            type: array
+          migrationOptions:
+            type: object
+            properties:
+              batchSize:
+                type: number
+                default: 100
+              validateMigration:
+                type: boolean
+                default: true
+      output_schema:
+        type: object
+        properties:
+          migrationJobId:
+            type: string
+          status:
+            type: string
+          progress:
+            type: object
+
+    - name: validate_migration
+      description: Comprehensive validation of migrated content and functionality
+      input_schema:
+        type: object
+        required: [migrationJobId]
+        properties:
+          migrationJobId:
+            type: string
+          validationChecks:
+            type: array
+            items:
+              type: string
+              enum: [content_integrity, field_mapping, media_files, user_accounts, taxonomies, url_aliases]
+      output_schema:
+        type: object
+        properties:
+          validationId:
+            type: string
+          overallStatus:
+            type: string
+            enum: [passed, failed, warning]
+          checks:
+            type: array
+
+  autonomy:
+    level: assisted
+    approval_required:
+      - execute_content_migration
+    escalation:
+      enabled: true
+      triggers:
+        - migration_failure
+        - data_integrity_issue
+      target: drupal-platform-team
+
+  constraints:
+    cost:
+      maxTokensPerDay: 500000
+      maxCostPerDay: 50.00
+    time:
+      maxTurns: 50
+      timeout: 3600
+
+  runtime:
+    type: docker
+    config:
+      timeout: 3600
+      retries: 3
+      resources:
+        cpu: 2
+        memory: 4Gi
+
+  observability:
+    logging:
+      level: info
+    metrics:
+      enabled: true
+    tracing:
+      enabled: true
+      provider: otel
+
+  safety:
+    content_filtering:
+      enabled: true
+    guardrails:
+      enabled: true
+      max_output_tokens: 8000
+
+  integration:
+    platform: drupal
+    version: ">=10.0.0"
+    configuration:
+      protocol: http
+      endpoints:
+        base_url: http://localhost:3000
+        health: /health
+        metrics: /metrics
