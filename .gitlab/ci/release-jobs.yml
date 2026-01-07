@@ -176,7 +176,7 @@ release:validate:
 
       # 1. VERSION CONSISTENCY CHECK
       echo "📋 1. Version Consistency"
-      # Use .version.json as single source of truth (package.json uses {{VERSION}} placeholder)
+      # Use .version.json as single source of truth (package.json uses 0.3.2 placeholder)
       VERSION=$(jq -r '.current' .version.json)
       echo "  Release version: v${VERSION}"
 
@@ -269,12 +269,12 @@ release:validate:
 
       SCHEMA_EXPORT=$(node -p "require('./package.json').exports?.['./schema'] || ''" 2>/dev/null || echo "")
       EXPECTED_EXPORT="./spec/v${VERSION}/ossa-${VERSION}.schema.json"
-      PLACEHOLDER_EXPORT='./spec/v{{VERSION}}/ossa-{{VERSION}}.schema.json'
+      PLACEHOLDER_EXPORT='./spec/v0.3.2/ossa-0.3.2.schema.json'
 
       if [ "$SCHEMA_EXPORT" = "$EXPECTED_EXPORT" ]; then
         echo "   Schema export correct: ${SCHEMA_EXPORT}"
       elif [ "$SCHEMA_EXPORT" = "$PLACEHOLDER_EXPORT" ]; then
-        echo "   Schema export uses {{VERSION}} placeholder (valid)"
+        echo "   Schema export uses 0.3.2 placeholder (valid)"
       elif [ -z "$SCHEMA_EXPORT" ]; then
         echo "WARNING: No ./schema export defined"
         WARNINGS=$((WARNINGS + 1))

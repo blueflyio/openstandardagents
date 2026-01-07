@@ -46,7 +46,7 @@ spec:
        - OpenAPI specifications
        - CHANGELOG.md
        - RELEASING.md
-    3. Process {{VERSION}} placeholders in documentation templates
+    3. Process 0.3.2 placeholders in documentation templates
 
     4. Create spec directories for new versions
 

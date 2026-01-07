@@ -1,6 +1,6 @@
 {
   "name": "@bluefly/openstandardagents.org",
-  "version": "0.3.3",
+  "version": "{{VERSION}}",
   "description": "Community platform, website, and Discord integration for Open Standard Agents",
   "type": "module",
   "private": true,

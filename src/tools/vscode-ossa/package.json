@@ -2,7 +2,7 @@
   "name": "ossa-language-support",
   "displayName": "OSSA (Open Standard for Scalable AI Agents)",
   "description": "Language support for OSSA manifest files - the OpenAPI of AI Agents. Provides validation, snippets, and IntelliSense for .ossa.yaml and .ossa.json files.",
-  "version": "0.1.0",
+  "version": "0.3.2",
   "publisher": "bluefly",
   "icon": "images/icon.png",
   "repository": {

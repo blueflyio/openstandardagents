@@ -59,7 +59,7 @@ OSSA-compliant agent that handles:
 **Capabilities**:
 - `version-bumping` - Calculate and apply version bumps
 - `version-synchronization` - Sync across all files
-- `documentation-processing` - Process {{VERSION}} templates
+- `documentation-processing` - Process 0.3.2 templates
 - `git-operations` - Commit, push, create branches/MRs
 - `milestone-integration` - Extract versions from milestones
 - `mr-creation` - Automated merge request creation
@@ -91,7 +91,7 @@ TypeScript script with GitLab API integration:
 2. **Agent Invocation**: CI/CD job calls version-manager agent
 3. **Version Calculation**: Agent calculates new version
 4. **File Updates**: Agent syncs all version references
-5. **Documentation**: Agent processes {{VERSION}} templates
+5. **Documentation**: Agent processes 0.3.2 templates
 6. **Git Operations**: Agent creates branch, commits, pushes
 7. **Merge Request**: Agent creates MR automatically
 8. **Notification**: Agent comments on MR with summary
@@ -124,7 +124,7 @@ The version-manager agent automatically updates:
 | `README.md` | Badges, schema links, version references |
 | `CHANGELOG.md` | `[Unreleased]` → `[vX.Y.Z]` |
 | `RELEASING.md` | Current version reference |
-| `website/content/docs/**/*.md` | All {{VERSION}} placeholders |
+| `website/content/docs/**/*.md` | All 0.3.2 placeholders |
 | `spec/v{X.Y.Z}/` | Directory creation and schema files |
 | OpenAPI specs | Version metadata |
 

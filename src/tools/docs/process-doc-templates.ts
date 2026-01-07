@@ -16,11 +16,11 @@ const lastUpdated = new Date().toISOString().split('T')[0];
 const specVersion = versionConfig.spec_version || versionConfig.current;
 
 const replacements = {
-  '{{VERSION}}': versionConfig.current,
-  '{{VERSION_STABLE}}': versionConfig.latest_stable,
-  '{{SPEC_VERSION}}': specVersion,
+  '0.3.2': versionConfig.current,
+  '0.3.1': versionConfig.latest_stable,
+  '0.3.2': specVersion,
   '{{LAST_UPDATED}}': lastUpdated,
-  '{{SPEC_PATH}}': versionConfig.spec_path.replace('{version}', versionConfig.current),
+  'spec/v0.3.2': versionConfig.spec_path.replace('{version}', versionConfig.current),
   '{{SCHEMA_FILE}}': versionConfig.schema_file.replace('{version}', versionConfig.current),
   '{{NPM_VERSION}}': packageJson.version,
 };

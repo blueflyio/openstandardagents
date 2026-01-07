@@ -34,14 +34,14 @@ npm run version:check           # Validate consistency
 - README badges
 - CHANGELOG.md
 - RELEASING.md
-- All docs with `{{VERSION}}` placeholders
+- All docs with `0.3.2` placeholders
 - Spec directories
 - OpenAPI specs
 
 ## Placeholders
-- `{{VERSION}}` - Current
-- `{{VERSION_STABLE}}` - Stable
-- `{{SPEC_PATH}}` - Path
+- `0.3.2` - Current
+- `0.3.1` - Stable
+- `spec/v0.3.2` - Path
 - `{{SCHEMA_FILE}}` - File
 
 ## Automation Triggers

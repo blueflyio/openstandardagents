@@ -54,8 +54,8 @@ validate-and-inject-version:
     - apk add --no-cache bash gettext findutils
     - |
       # Sync version if package.json has placeholder (needed for CLI to load)
-      if [ -f "package.json" ] && grep -q '"version": "{{VERSION}}"' package.json; then
-        echo "package.json has {{VERSION}} placeholder, syncing version..."
+      if [ -f "package.json" ] && grep -q '"version": "0.3.2"' package.json; then
+        echo "package.json has 0.3.2 placeholder, syncing version..."
         # Try to get version from build.env if available
         if [ -f "build.env" ]; then
           set -a
@@ -86,7 +86,7 @@ validate-and-inject-version:
         echo "OSSA_VERSION not set from detect-ossa-version, detecting from package.json..."
         if [ -f "package.json" ]; then
           PACKAGE_VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "")
-          if [ -n "$PACKAGE_VERSION" ] && [ "$PACKAGE_VERSION" != "{{VERSION}}" ]; then
+          if [ -n "$PACKAGE_VERSION" ] && [ "$PACKAGE_VERSION" != "0.3.2" ]; then
             OSSA_VERSION="$PACKAGE_VERSION"
             echo "Using version from package.json: $OSSA_VERSION"
           fi
@@ -167,21 +167,21 @@ version:consistency:check:
       # Show current version status
       node dist/cli/index.js release version status || true
 
-      # Check for unresolved {{VERSION}} placeholders in dist/
-      # IMPORTANT: Exclude files that intentionally reference {{VERSION}} for detection purposes
+      # Check for unresolved 0.3.2 placeholders in dist/
+      # IMPORTANT: Exclude files that intentionally reference 0.3.2 for detection purposes
       echo ""
       echo "Checking dist/ for unresolved placeholders..."
 
-      # Files that legitimately check for {{VERSION}} as part of placeholder detection logic
+      # Files that legitimately check for 0.3.2 as part of placeholder detection logic
       # Also exclude spec/ files which are templates processed by version:sync:placeholders
       EXCLUDE_PATTERN="dist/utils/version\\.js|dist/repositories/schema\\.repository\\.(js|d\\.ts)|dist/cli/commands/release\\.command\\.(js|d\\.ts)|dist/spec/"
 
-      # Find {{VERSION}} in dist/, excluding legitimate detection files
-      FOUND=$(grep -r "{{VERSION}}" dist/ 2>/dev/null | grep -v -E "($EXCLUDE_PATTERN)" || true)
+      # Find 0.3.2 in dist/, excluding legitimate detection files
+      FOUND=$(grep -r "0.3.2" dist/ 2>/dev/null | grep -v -E "($EXCLUDE_PATTERN)" || true)
 
       if [ -n "$FOUND" ]; then
         echo "$FOUND"
-        echo "ERROR: Found unresolved {{VERSION}} placeholders in dist/"
+        echo "ERROR: Found unresolved 0.3.2 placeholders in dist/"
         exit 1
       fi
       echo "✅ No unresolved placeholders in dist/"
