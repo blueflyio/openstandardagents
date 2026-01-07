@@ -20,6 +20,7 @@ import { releaseCommandGroup } from './commands/release.command.js';
 import { setupCommand } from './commands/setup.command.js';
 import { syncCommand } from './commands/sync.command.js';
 import { agentsMdCommand } from './commands/agents-md.command.js';
+import { llmsTxtCommand } from './commands/llms-txt.command.js';
 import { quickstartCommand } from './commands/quickstart.command.js';
 import { dependenciesCommand } from './commands/dependencies.command.js';
 import { contractCommand } from './commands/contract.command.js';
@@ -146,6 +147,7 @@ program.addCommand(releaseCommandGroup);
 program.addCommand(setupCommand);
 program.addCommand(syncCommand);
 program.addCommand(agentsMdCommand);
+program.addCommand(llmsTxtCommand);
 
 // Registry commands
 program.addCommand(publishCommand);
