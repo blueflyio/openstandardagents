@@ -2,6 +2,8 @@
 
 > **OSSA** is a vendor-neutral, open specification for defining, deploying, and orchestrating AI agents across platforms. Think OpenAPI for REST APIs, but for AI agents.
 
+> 💡 **For AI Coding Agents**: See [AGENTS.md](AGENTS.md) for setup, code style, and development guidelines. See [llms.txt](llms.txt) for LLM-friendly project overview.
+
 [![npm version](https://img.shields.io/npm/v/@bluefly/openstandardagents)](https://www.npmjs.com/package/@bluefly/openstandardagents)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![GitLab CI](https://gitlab.com/blueflyio/ossa/openstandardagents/badges/main/pipeline.svg)](https://gitlab.com/blueflyio/ossa/openstandardagents/-/pipelines)
