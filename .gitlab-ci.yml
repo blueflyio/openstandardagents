@@ -44,6 +44,12 @@ include:
   - local: .gitlab/ci/guardrails.yml
   # Extension Development Team Pipeline
   - local: .gitlab/ci/extension-development.yml
+  # Release Automation (tagging and publishing)
+  - local: .gitlab/ci/release-workflow.yml
+  - local: .gitlab/ci/rc-promotion.yml
+  - local: .gitlab/ci/post-release.yml
+  # GitHub Mirroring
+  - local: .gitlab/ci/mirror-jobs.yml
   # OSSA Agent Pipelines
   #- local: .gitlab/ci/seo-automation.yml
   # Use canonical agents from platform-agents (pinned version)
@@ -60,6 +66,7 @@ stages:
   - quality
   - deploy
   - release
+  - mirror
 
 variables:
   NODE_VERSION: "20"
@@ -926,102 +933,16 @@ changelog:generate:
 # =============================================================================
 # RELEASE TAGGING
 # =============================================================================
-# On release/* branches: Create pre-release tags (v0.X.Y-dev, v0.X.Y-dev1, etc.)
-release:pre-release:
-  stage: release
-  image: alpine:latest
-  needs:
-    - detect:version
-  before_script:
-    - apk add --no-cache git bash curl
-    - git config user.email "ci@gitlab.com"
-    - git config user.name "GitLab CI"
-    - git remote set-url origin "https://oauth2:${GITLAB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
-  script:
-    - |
-      if [ -f build.env ]; then
-        source build.env
-        echo "Creating pre-release tag: ${RELEASE_TAG}"
-
-        # Check if tag already exists
-        if git rev-parse "${RELEASE_TAG}" >/dev/null 2>&1; then
-          echo "Tag ${RELEASE_TAG} already exists, skipping"
-          exit 0
-        fi
-
-        # Create annotated tag
-        git tag -a "${RELEASE_TAG}" \
-          -m "Pre-release: ${RELEASE_TAG}" \
-          -m "Branch: ${CI_COMMIT_BRANCH}" \
-          -m "Commit: ${CI_COMMIT_SHA}" \
-          -m "Pipeline: ${CI_PIPELINE_ID}"
-
-        # Push tag
-        git push origin "${RELEASE_TAG}"
-
-        echo "SUCCESS: Created pre-release tag: ${RELEASE_TAG}"
-      else
-        echo "WARNING: build.env not found, skipping tag creation"
-      fi
-  rules:
-    # Auto-create dev tags on release branches (no manual approval needed)
-    - if: $CI_COMMIT_BRANCH =~ /^release\/v/
-      when: on_success
-
-# On main: Create RC (release candidate) tag automatically
-# Flow: release/v0.3.x → main → v0.3.X-rc.N (auto)
-#       Then manually: promote-rc-to-final → v0.3.X (final)
-release:rc:
-  stage: release
-  image: alpine:latest
-  needs:
-    - detect:version
-    - build:website
-  before_script:
-    - apk add --no-cache git bash curl jq
-    - git config user.email "ci@gitlab.com"
-    - git config user.name "GitLab CI"
-    - git remote set-url origin "https://oauth2:${GITLAB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
-  script:
-    - |
-      if [ -f build.env ]; then
-        source build.env
-
-        if [ "$IS_RC" != "true" ]; then
-          echo "Not an RC context, skipping RC tag creation"
-          exit 0
-        fi
-
-        echo "Creating RC tag: ${RELEASE_TAG}"
-
-        # Check if tag already exists
-        if git rev-parse "${RELEASE_TAG}" >/dev/null 2>&1; then
-          echo "Tag ${RELEASE_TAG} already exists, skipping"
-          exit 0
-        fi
-
-        # Create annotated RC tag
-        git tag -a "${RELEASE_TAG}" \
-          -m "Release Candidate: ${RELEASE_TAG}" \
-          -m "Commit: ${CI_COMMIT_SHA}" \
-          -m "Pipeline: ${CI_PIPELINE_ID}"
-
-        # Push tag
-        git push origin "${RELEASE_TAG}"
-
-        echo "SUCCESS: Created RC tag: ${RELEASE_TAG}"
-        echo "REF:  To promote to final: Click 'release:promote-rc-to-final' job"
-      else
-        echo "WARNING: build.env not found, skipping RC tag"
-      fi
-  rules:
-    - if: $CI_COMMIT_BRANCH == "main"
-      when: on_success
-
-# =============================================================================
-# NOTE: release:promote-rc-to-final and release:npm jobs REMOVED
-# This is a website deployed to GitLab Pages, not an npm package.
-# Production deployment is handled by the 'pages' job above.
+# Tagging rules handled by:
+# - .gitlab/ci/release-workflow.yml (dev tags, RC tags)
+# - .gitlab/ci/rc-promotion.yml (promote RC to final)
+# - .gitlab/ci/post-release.yml (npm publish)
+#
+# Tagging rules:
+# 1. Any branch → release branch: Auto-create dev tag (create-dev-tag:release)
+# 2. Release branch → main: Auto-create RC tag (create-rc-tag)
+# 3. Manual button: Promote RC to final (release:promote-rc-to-final)
+# 4. Manual button: Publish to npmjs (release:publish-npm)
 # =============================================================================
 
 # =============================================================================
