@@ -17,7 +17,7 @@
  *   npm run migrate:dry     # Dry run without changes
  */
 
-import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, readdirSync } from 'fs';
 import { join } from 'path';
 import { glob } from 'glob';
 import { parse, stringify } from 'yaml';
@@ -88,13 +88,60 @@ class MigrationRunner {
   }
 
   private getCurrentVersion(): string {
+    // Try to get from package.json first
     try {
       const pkg = JSON.parse(readFileSync(join(this.projectRoot, 'package.json'), 'utf-8'));
-      return pkg.version;
+      const version = pkg.version;
+
+      // Check if version is a template placeholder (e.g., "{{VERSION}}")
+      if (version && !this.isTemplateVersion(version)) {
+        return version;
+      }
+      // If version is a template placeholder, fall through to spec directory discovery
     } catch {
-      console.error('❌ Could not read package.json');
-      process.exit(1);
+      // Fall through to spec directory discovery
     }
+
+    // Fallback: get latest version from spec directory
+    const specDir = join(this.projectRoot, 'spec');
+    if (existsSync(specDir)) {
+      try {
+        const dirs = readdirSync(specDir, { withFileTypes: true })
+          .filter((dirent) => dirent.isDirectory() && dirent.name.startsWith('v'))
+          .map((dirent) => dirent.name)
+          .sort((a: string, b: string) => {
+            // Sort versions numerically (e.g., v0.3.1 < v0.3.2 < v0.3.3)
+            const v1 = a.replace(/^v/, '').split('.').map(Number);
+            const v2 = b.replace(/^v/, '').split('.').map(Number);
+            for (let i = 0; i < Math.max(v1.length, v2.length); i++) {
+              const p1 = v1[i] || 0;
+              const p2 = v2[i] || 0;
+              if (p1 < p2) return -1;
+              if (p1 > p2) return 1;
+            }
+            return 0;
+          });
+
+        if (dirs.length > 0) {
+          // Return the highest version (last in sorted array), remove 'v' prefix
+          return dirs[dirs.length - 1].replace(/^v/, '');
+        }
+      } catch {
+        // Continue to error handling
+      }
+    }
+
+    // Ultimate fallback - should never reach here in normal operation
+    console.error('❌ Could not determine current version from package.json or spec directory');
+    console.error('   package.json version is a placeholder ({{VERSION}}) and no spec directories found');
+    process.exit(1);
+  }
+
+  /**
+   * Check if version string is a template placeholder
+   */
+  private isTemplateVersion(version: string): boolean {
+    return /^\{\{[A-Z_]+\}\}$/.test(version);
   }
 
   private getManifestVersion(filePath: string): string | null {
@@ -135,8 +182,18 @@ class MigrationRunner {
 
 
   private compareVersions(v1: string, v2: string): number {
+    // Validate inputs - reject template placeholders or invalid versions
+    if (this.isTemplateVersion(v1) || this.isTemplateVersion(v2)) {
+      throw new Error(`Cannot compare template version placeholder: ${this.isTemplateVersion(v1) ? v1 : v2}`);
+    }
+
     const parts1 = v1.split('.').map(Number);
     const parts2 = v2.split('.').map(Number);
+
+    // Validate that all parts are valid numbers (not NaN)
+    if (parts1.some(isNaN) || parts2.some(isNaN)) {
+      throw new Error(`Invalid version format: ${parts1.some(isNaN) ? v1 : v2}`);
+    }
 
     for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
       const p1 = parts1[i] || 0;

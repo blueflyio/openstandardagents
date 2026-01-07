@@ -491,9 +491,21 @@ export class LlmsTxtService {
     const manifestContent = await fs.readFile(manifestPath, 'utf-8')
     const manifest = JSON.parse(manifestContent) as OssaAgent
 
-    const extension = (manifest.extensions as any)?.llms_txt as LlmsTxtExtension | undefined
+    const rawExtension = (manifest.extensions as any)?.llms_txt
 
-    if (!extension?.enabled) {
+    if (!rawExtension) {
+      throw new Error('llms_txt extension not found in manifest')
+    }
+
+    // Validate with Zod (ZOD principle)
+    const parseResult = LlmsTxtExtensionSchema.safeParse(rawExtension)
+    if (!parseResult.success) {
+      throw new Error(`Invalid llms_txt extension: ${parseResult.error.message}`)
+    }
+
+    const extension = parseResult.data
+
+    if (!extension.enabled) {
       throw new Error('llms_txt extension is not enabled')
     }
 
@@ -506,6 +518,43 @@ export class LlmsTxtService {
     if (watch) {
       console.log(`Watching ${manifestPath} for changes...`)
       // TODO: Implement file watching
+    }
+  }
+
+  /**
+   * Read llms.txt file (CRUD: Read)
+   */
+  async readLlmsTxt(filePath: string): Promise<string> {
+    try {
+      return await fs.readFile(filePath, 'utf-8')
+    } catch (error) {
+      if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
+        throw new Error(`llms.txt file not found: ${filePath}`)
+      }
+      throw error
+    }
+  }
+
+  /**
+   * Update llms.txt file (CRUD: Update)
+   */
+  async updateLlmsTxt(manifest: OssaAgent, filePath?: string): Promise<void> {
+    const content = await this.generateLlmsTxt(manifest)
+    const targetPath = filePath || (manifest.extensions as any)?.llms_txt?.file_path || 'llms.txt'
+    await this.writeLlmsTxt(manifest, targetPath)
+  }
+
+  /**
+   * Delete llms.txt file (CRUD: Delete)
+   */
+  async deleteLlmsTxt(filePath: string): Promise<void> {
+    try {
+      await fs.unlink(filePath)
+    } catch (error) {
+      if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
+        throw new Error(`llms.txt file not found: ${filePath}`)
+      }
+      throw error
     }
   }
 }
