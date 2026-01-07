@@ -29,10 +29,9 @@ export class VersionValidator {
       this.validatePackageJson();
     }
 
-    // Check .version.json
-    if (existsSync('.version.json')) {
-      this.validateVersionJson();
-    }
+    // Skip .version.json - it's the SOURCE OF TRUTH for versions
+    // It should contain actual version numbers, not placeholders
+    // The version-sync script reads from .version.json and replaces {{VERSION}} in other files
 
     // Check other files
     await this.validateOtherFiles();
