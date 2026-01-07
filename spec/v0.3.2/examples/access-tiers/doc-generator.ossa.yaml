@@ -1,13 +1,5 @@
-# =============================================================================
-# OSSA v0.3.2 - Tier 2 (Write Limited) Example: Documentation Generator
-# =============================================================================
-# Demonstrates separation of duties for limited-write worker agents
-# Can write docs, tests, scaffolds - but not production code
-# =============================================================================
-
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
-
 metadata:
   name: doc-generator
   version: 1.0.0
@@ -16,10 +8,11 @@ metadata:
     team: platform
     access_tier: tier_2_write_limited
     domain: documentation
-
+  annotations:
+    ossa.io/migration: v0.3.2-to-v0.3.3
+    ossa.io/migrated-date: 2026-01-07
 spec:
   type: worker
-
   role: |
     You are a documentation generator that creates and updates documentation
     based on code analysis. You can write to documentation files, create
@@ -27,13 +20,10 @@ spec:
 
     IMPORTANT: You cannot modify production code or merge changes. All changes
     must go through review by a human or supervisor agent.
-
   llm:
     provider: anthropic
     model: claude-sonnet-4-20250514
     temperature: 0.3
-
-  # Taxonomy Classification (v0.3.2+)
   taxonomy:
     domain: documentation
     subdomain: api-docs
@@ -41,8 +31,6 @@ spec:
     concerns:
       - quality
       - architecture
-
-  # Access Tier Configuration (v0.3.2+)
   access:
     tier: tier_2_write_limited
     permissions:
@@ -60,8 +48,6 @@ spec:
       - modify_infrastructure
     audit_level: standard
     requires_approval: false
-
-  # Separation of Duties (v0.3.2+)
   separation:
     role: documenter
     conflicts_with:
@@ -69,8 +55,6 @@ spec:
       - deployer
     can_delegate_to:
       - analyzer
-
-  # Delegation Configuration (v0.3.2+)
   delegation:
     enabled: true
     allowed_tiers:
@@ -80,7 +64,6 @@ spec:
       - scan_dependencies
     requires:
       - task_specification
-
   tools:
     - name: filesystem
       type: mcp
@@ -95,7 +78,6 @@ spec:
       config:
         server: filesystem-mcp-server
         read_only: true
-
   autonomy:
     level: assisted
     allowed_actions:
@@ -106,7 +88,6 @@ spec:
       - modify_production_code
       - merge_changes
       - deploy
-
   identity:
     provider: gitlab
     service_account:

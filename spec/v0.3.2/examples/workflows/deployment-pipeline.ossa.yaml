@@ -1,13 +1,4 @@
-# ============================================================================
-# OSSA Workflow: Deployment Pipeline
-# ============================================================================
-# Multi-stage deployment workflow with rollback capabilities
-# Demonstrates environment promotion, canary deployments, and approval gates
-#
-# @see https://openstandardagents.org/spec/v0.3.2/workflow
-# ============================================================================
-
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Workflow
 metadata:
   name: deployment-pipeline
@@ -16,10 +7,11 @@ metadata:
     domain: infrastructure
     tier: tier_3_write_elevated
   annotations:
-    ossa.io/description: "Production deployment with staged rollout and monitoring"
-    ossa.io/category: "deployment"
-    ossa.io/compliance: "SOC2,ISO27001"
-
+    ossa.io/description: Production deployment with staged rollout and monitoring
+    ossa.io/category: deployment
+    ossa.io/compliance: SOC2,ISO27001
+    ossa.io/migration: v0.3.2-to-v0.3.3
+    ossa.io/migrated-date: 2026-01-07
 spec:
   triggers:
     - type: event
@@ -30,11 +22,11 @@ spec:
         status: success
     - type: webhook
       endpoint: /api/v1/deploy
-      methods: [POST]
+      methods:
+        - POST
       authentication:
         type: bearer
         scope: deploy:production
-
   inputs:
     type: object
     required:
@@ -43,13 +35,15 @@ spec:
     properties:
       artifact_id:
         type: string
-        description: "Container image or artifact identifier"
+        description: Container image or artifact identifier
       version:
         type: string
-        pattern: "^v?[0-9]+\\.[0-9]+\\.[0-9]+"
+        pattern: ^v?[0-9]+\.[0-9]+\.[0-9]+
       environment:
         type: string
-        enum: [staging, production]
+        enum:
+          - staging
+          - production
         default: staging
       canary_percentage:
         type: integer
@@ -59,7 +53,6 @@ spec:
       rollback_on_failure:
         type: boolean
         default: true
-
   outputs:
     type: object
     properties:
@@ -67,7 +60,11 @@ spec:
         type: string
       status:
         type: string
-        enum: [success, partial, failed, rolled_back]
+        enum:
+          - success
+          - partial
+          - failed
+          - rolled_back
       endpoints:
         type: array
         items:
@@ -82,166 +79,157 @@ spec:
             type: integer
           health_check_passed:
             type: boolean
-
   steps:
-    # Pre-deployment validation
     - id: validate-artifact
-      name: "Validate Artifact"
+      name: Validate Artifact
       ref: tasks/validate-artifact
       kind: Task
       input:
-        artifact_id: "${{ inputs.artifact_id }}"
-        version: "${{ inputs.version }}"
+        artifact_id: ${{ inputs.artifact_id }}
+        version: ${{ inputs.version }}
         checks:
           - signature
           - vulnerability-scan
           - compliance
-
-    # Staging deployment (always runs first)
     - id: deploy-staging
-      name: "Deploy to Staging"
+      name: Deploy to Staging
       ref: tasks/deploy-kubernetes
       kind: Task
-      depends_on: [validate-artifact]
-      condition: "${{ inputs.environment == 'staging' || inputs.environment == 'production' }}"
+      depends_on:
+        - validate-artifact
+      condition: ${{ inputs.environment == 'staging' || inputs.environment ==
+        'production' }}
       input:
         cluster: staging-cluster
-        namespace: "${{ env.APP_NAMESPACE }}"
-        image: "${{ inputs.artifact_id }}:${{ inputs.version }}"
+        namespace: ${{ env.APP_NAMESPACE }}
+        image: ${{ inputs.artifact_id }}:${{ inputs.version }}
         replicas: 2
       timeout_seconds: 300
-
-    # Staging health check
     - id: health-staging
-      name: "Staging Health Check"
+      name: Staging Health Check
       ref: tasks/health-check
       kind: Task
-      depends_on: [deploy-staging]
+      depends_on:
+        - deploy-staging
       input:
         endpoints:
-          - "${{ steps.deploy-staging.output.service_url }}/health"
-          - "${{ steps.deploy-staging.output.service_url }}/ready"
+          - ${{ steps.deploy-staging.output.service_url }}/health
+          - ${{ steps.deploy-staging.output.service_url }}/ready
         timeout_seconds: 60
         retry: 5
       on_failure: halt
-
-    # AI-powered smoke test (Agent)
     - id: smoke-test
-      name: "AI Smoke Test"
+      name: AI Smoke Test
       ref: agents/test-runner
       kind: Agent
-      depends_on: [health-staging]
+      depends_on:
+        - health-staging
       input:
-        target_url: "${{ steps.deploy-staging.output.service_url }}"
+        target_url: ${{ steps.deploy-staging.output.service_url }}
         test_suite: smoke
         generate_report: true
       timeout_seconds: 180
-
-    # Production approval gate
     - id: prod-approval
-      name: "Production Approval"
+      name: Production Approval
       type: approval
-      condition: "${{ inputs.environment == 'production' }}"
-      depends_on: [smoke-test]
+      condition: ${{ inputs.environment == 'production' }}
+      depends_on:
+        - smoke-test
       approvers:
         - role: sre-lead
         - role: release-manager
       require: 2
       timeout_hours: 8
       metadata:
-        staging_results: "${{ steps.smoke-test.output.report_url }}"
-        version: "${{ inputs.version }}"
-
-    # Canary deployment (production only)
+        staging_results: ${{ steps.smoke-test.output.report_url }}
+        version: ${{ inputs.version }}
     - id: deploy-canary
-      name: "Canary Deployment"
+      name: Canary Deployment
       ref: tasks/deploy-kubernetes
       kind: Task
-      condition: "${{ inputs.environment == 'production' }}"
-      depends_on: [prod-approval]
+      condition: ${{ inputs.environment == 'production' }}
+      depends_on:
+        - prod-approval
       input:
         cluster: production-cluster
-        namespace: "${{ env.APP_NAMESPACE }}"
-        image: "${{ inputs.artifact_id }}:${{ inputs.version }}"
+        namespace: ${{ env.APP_NAMESPACE }}
+        image: ${{ inputs.artifact_id }}:${{ inputs.version }}
         strategy: canary
-        canary_weight: "${{ inputs.canary_percentage }}"
+        canary_weight: ${{ inputs.canary_percentage }}
       timeout_seconds: 300
-
-    # Canary monitoring (Agent - observes metrics)
     - id: monitor-canary
-      name: "Monitor Canary"
+      name: Monitor Canary
       ref: agents/deployment-monitor
       kind: Agent
-      condition: "${{ inputs.environment == 'production' }}"
-      depends_on: [deploy-canary]
+      condition: ${{ inputs.environment == 'production' }}
+      depends_on:
+        - deploy-canary
       input:
-        deployment_id: "${{ steps.deploy-canary.output.deployment_id }}"
+        deployment_id: ${{ steps.deploy-canary.output.deployment_id }}
         duration_minutes: 15
         thresholds:
           error_rate: 0.01
           latency_p99_ms: 500
           success_rate: 0.99
       timeout_seconds: 1200
-
-    # Full production rollout
     - id: deploy-full
-      name: "Full Production Rollout"
+      name: Full Production Rollout
       ref: tasks/deploy-kubernetes
       kind: Task
-      condition: "${{ inputs.environment == 'production' && steps.monitor-canary.output.healthy }}"
-      depends_on: [monitor-canary]
+      condition: ${{ inputs.environment == 'production' &&
+        steps.monitor-canary.output.healthy }}
+      depends_on:
+        - monitor-canary
       input:
         cluster: production-cluster
-        namespace: "${{ env.APP_NAMESPACE }}"
-        image: "${{ inputs.artifact_id }}:${{ inputs.version }}"
+        namespace: ${{ env.APP_NAMESPACE }}
+        image: ${{ inputs.artifact_id }}:${{ inputs.version }}
         strategy: rolling
         max_unavailable: 1
         max_surge: 2
-
-    # Post-deployment notification
     - id: notify-success
-      name: "Notify Success"
+      name: Notify Success
       ref: tasks/send-notifications
       kind: Task
-      depends_on: [deploy-full]
+      depends_on:
+        - deploy-full
       input:
-        channels: [slack, email]
+        channels:
+          - slack
+          - email
         template: deployment-success
         data:
-          version: "${{ inputs.version }}"
-          environment: "${{ inputs.environment }}"
-          endpoints: "${{ steps.deploy-full.output.endpoints }}"
-
+          version: ${{ inputs.version }}
+          environment: ${{ inputs.environment }}
+          endpoints: ${{ steps.deploy-full.output.endpoints }}
   context:
     variables:
-      trace_id: "${{ uuid() }}"
+      trace_id: ${{ uuid() }}
     secrets:
       - name: KUBECONFIG
         ref: vault://secret/k8s/kubeconfig
       - name: REGISTRY_TOKEN
         ref: vault://secret/registry/token
-
   concurrency:
-    group: "deploy-${{ inputs.environment }}"
+    group: deploy-${{ inputs.environment }}
     cancel_in_progress: false
-
   error_handling:
     on_failure: compensate
     compensation_steps:
       - id: rollback
-        name: "Rollback Deployment"
+        name: Rollback Deployment
         ref: tasks/rollback-deployment
         kind: Task
-        condition: "${{ inputs.rollback_on_failure }}"
+        condition: ${{ inputs.rollback_on_failure }}
         input:
-          cluster: "${{ context.last_cluster }}"
-          deployment_id: "${{ context.last_deployment_id }}"
-          target_version: "${{ context.previous_version }}"
+          cluster: ${{ context.last_cluster }}
+          deployment_id: ${{ context.last_deployment_id }}
+          target_version: ${{ context.previous_version }}
       - id: notify-failure
-        name: "Alert On-Call"
+        name: Alert On-Call
         ref: tasks/send-alert
         kind: Task
         input:
           channel: pagerduty
           severity: critical
-          message: "Deployment failed for version ${{ inputs.version }}"
+          message: Deployment failed for version ${{ inputs.version }}

@@ -1,24 +1,5 @@
-# ============================================================================
-# OSSA Wiki Healer Agent
-# ============================================================================
-#
-# PURPOSE:
-#   Automated documentation aggregation and healing agent. Monitors GitLab
-#   wikis, README files, and documentation repositories for staleness,
-#   inconsistencies, and completeness issues.
-#
-# CAPABILITIES:
-#   - Aggregate documentation from multiple sources
-#   - Detect stale and outdated documentation
-#   - Identify missing documentation coverage
-#   - Generate documentation updates from code changes
-#   - Sync documentation across wikis and repositories
-#
-# ============================================================================
-
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
-
 metadata:
   name: wiki-healer
   version: 1.0.0
@@ -27,32 +8,24 @@ metadata:
     documentation quality across GitLab wikis, README files, and docs
     repositories. Detects staleness, generates updates, and ensures
     documentation completeness.
-
   labels:
     environment: production
     team: documentation
     domain: docs
     capability: documentation_healing
     wave: "5"
-
   annotations:
     documentation: https://openstandardagents.org/docs/agents/wiki-healer
     support: ops@openstandardagents.org
     gitlab-handle: "@bot-wiki-aggregator"
-    category: "Docs"
-
+    category: Docs
+    ossa.io/migration: v0.3.2-to-v0.3.3
+    ossa.io/migrated-date: 2026-01-07
 spec:
-  # ==========================================================================
-  # TAXONOMY: Documentation Domain Classification
-  # ==========================================================================
   taxonomy:
     domain: documentation
     subdomain: knowledge-management
     capability: wiki_aggregation
-
-  # ==========================================================================
-  # ROLE: Documentation Healing Expertise
-  # ==========================================================================
   role: |
     You are an expert documentation healer specializing in maintaining
     documentation quality and completeness across distributed systems.
@@ -72,19 +45,11 @@ spec:
     - Validate code examples still work
     - Identify undocumented public APIs
     - Detect inconsistencies across documentation sources
-
-  # ==========================================================================
-  # LLM CONFIGURATION: Documentation-Focused Model
-  # ==========================================================================
   llm:
     provider: anthropic
     model: claude-3-5-sonnet-20241022
     temperature: 0.3
     maxTokens: 8000
-
-  # ==========================================================================
-  # TOOLS: Documentation Scanning & Generation
-  # ==========================================================================
   tools:
     - type: mcp
       name: gitlab-wiki
@@ -97,7 +62,6 @@ spec:
       auth:
         type: bearer
         tokenPath: /var/secrets/gitlab-token
-
     - type: mcp
       name: filesystem
       description: |
@@ -107,10 +71,9 @@ spec:
         server: filesystem-mcp
         allowed_paths:
           - "*.md"
-          - "docs/**"
-          - "website/**"
+          - docs/**
+          - website/**
           - "*.rst"
-
     - type: http
       name: markdown-lint
       description: |
@@ -119,7 +82,6 @@ spec:
       config:
         method: POST
         timeout: 60
-
     - type: a2a
       name: agent-mesh
       description: |
@@ -129,10 +91,6 @@ spec:
       config:
         protocol: json-rpc
         version: "2.0"
-
-  # ==========================================================================
-  # CAPABILITIES: Documentation Healing Operations
-  # ==========================================================================
   capabilities:
     - name: scan_wikis
       description: Scan GitLab wikis for stale or missing content
@@ -171,7 +129,6 @@ spec:
               type: string
           success:
             type: boolean
-
     - name: aggregate_docs
       description: Aggregate documentation from multiple sources
       input_schema:
@@ -184,7 +141,11 @@ spec:
               properties:
                 type:
                   type: string
-                  enum: [wiki, readme, docs_dir, external]
+                  enum:
+                    - wiki
+                    - readme
+                    - docs_dir
+                    - external
                 location:
                   type: string
         required:
@@ -198,7 +159,6 @@ spec:
             type: integer
           success:
             type: boolean
-
     - name: detect_staleness
       description: Detect stale documentation by comparing with code changes
       input_schema:
@@ -226,7 +186,6 @@ spec:
               type: string
           success:
             type: boolean
-
     - name: generate_updates
       description: Generate documentation updates from code changes
       input_schema:
@@ -250,7 +209,6 @@ spec:
             maximum: 1
           success:
             type: boolean
-
     - name: sync_wiki
       description: Sync documentation to GitLab wiki
       input_schema:
@@ -274,74 +232,51 @@ spec:
             type: integer
           success:
             type: boolean
-
-  # ==========================================================================
-  # TRIGGERS: Event-Driven Documentation Healing
-  # ==========================================================================
   triggers:
     - type: schedule
       name: weekly_audit
-      schedule: "0 8 * * 1"  # Monday 8am
+      schedule: 0 8 * * 1
       description: Weekly documentation completeness audit
-
     - type: webhook
       name: on_merge
       event: merge_request_merged
       description: Check documentation after code merges
-
     - type: webhook
       name: on_release
       event: release_created
       description: Generate release documentation
-
-  # ==========================================================================
-  # AUTONOMY: Supervised Documentation Updates
-  # ==========================================================================
   autonomy:
     level: supervised
     approval_required: true
-
     allowed_actions:
       - scan_wikis
       - aggregate_docs
       - detect_staleness
       - generate_updates
       - create_merge_requests
-
     blocked_actions:
       - delete_wiki_pages
       - force_push
-
-  # ==========================================================================
-  # CONSTRAINTS: Documentation Agent Limits
-  # ==========================================================================
   constraints:
     cost:
       maxTokensPerDay: 200000
       maxTokensPerRequest: 8000
-      maxCostPerDay: 20.00
+      maxCostPerDay: 20
       currency: USD
-
     performance:
       maxLatencySeconds: 60
       maxConcurrentRequests: 5
       timeoutSeconds: 300
-
     resources:
-      cpu: "1000m"
-      memory: "2Gi"
-      ephemeralStorage: "5Gi"
-
-  # ==========================================================================
-  # OBSERVABILITY: Documentation Metrics
-  # ==========================================================================
+      cpu: 1000m
+      memory: 2Gi
+      ephemeralStorage: 5Gi
   observability:
     tracing:
       enabled: true
       exporter: otlp
       endpoint: http://jaeger-collector:4318
       samplingRate: 0.5
-
     metrics:
       enabled: true
       exporter: prometheus
@@ -349,26 +284,21 @@ spec:
       customMetrics:
         - name: wiki_pages_scanned
           type: counter
-          description: "Total wiki pages scanned"
+          description: Total wiki pages scanned
         - name: stale_docs_detected
           type: gauge
-          description: "Number of stale documentation pages"
+          description: Number of stale documentation pages
         - name: docs_updated
           type: counter
-          description: "Documentation pages updated"
-
+          description: Documentation pages updated
     logging:
       level: info
       format: json
-
-  # ==========================================================================
-  # STATE: Documentation Index
-  # ==========================================================================
   state:
     backend: redis
     config:
       host: redis-cluster.default.svc.cluster.local
       port: 6379
       database: 3
-      ttl: 604800  # 7 days
+      ttl: 604800
       keyPrefix: "wiki-healer:"

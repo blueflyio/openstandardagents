@@ -1,4 +1,4 @@
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: release-validator
@@ -6,6 +6,9 @@ metadata:
   labels:
     tier: release-automation
     criticality: critical
+  annotations:
+    ossa.io/migration: v0.3.2-to-v0.3.3
+    ossa.io/migrated-date: 2026-01-07
 spec:
   role: validator
   capabilities:
@@ -14,9 +17,12 @@ spec:
     - ci-integration
   triggers:
     - type: pipeline
-      events: [merge_request]
-      target_branches: [main]
-      source_branches: [release/*]
+      events:
+        - merge_request
+      target_branches:
+        - main
+      source_branches:
+        - release/*
   tasks:
     - name: validate-release
       description: Comprehensive release validation
@@ -31,19 +37,22 @@ spec:
           required: true
         - name: check-changelog
           action: exec
-          command: |
+          command: >
             if [ ! -f CHANGELOG.md ]; then
               echo "ERROR: CHANGELOG.md missing"
               exit 1
             fi
-            if ! grep -q "## \[${CI_COMMIT_TAG:-UNRELEASED}\]" CHANGELOG.md; then
+
+            if ! grep -q "## \[${CI_COMMIT_TAG:-UNRELEASED}\]" CHANGELOG.md;
+            then
               echo "ERROR: CHANGELOG.md not updated for this release"
               exit 1
             fi
         - name: check-version
           action: exec
-          command: |
+          command: >
             PKG_VERSION=$(jq -r '.version' package.json)
+
             if [[ "$CI_COMMIT_TAG" != "v$PKG_VERSION" ]]; then
               echo "ERROR: package.json version ($PKG_VERSION) doesn't match tag ($CI_COMMIT_TAG)"
               exit 1
@@ -55,9 +64,11 @@ spec:
             npm run docs:check || exit 1
         - name: check-breaking-changes
           action: exec
-          command: |
+          command: >
             # Check if BREAKING CHANGE in commits
-            if git log --grep="BREAKING CHANGE" HEAD~10..HEAD | grep -q "BREAKING"; then
+
+            if git log --grep="BREAKING CHANGE" HEAD~10..HEAD | grep -q
+            "BREAKING"; then
               if ! grep -q "## Breaking Changes" CHANGELOG.md; then
                 echo "ERROR: Breaking changes in commits but not documented in CHANGELOG"
                 exit 1
@@ -70,7 +81,7 @@ spec:
     - type: comment
       template: |
         ## 🚦 Release Validation Results
-        
+
         {% if success %}
         ✅ All release requirements met. Ready to merge!
         {% else %}

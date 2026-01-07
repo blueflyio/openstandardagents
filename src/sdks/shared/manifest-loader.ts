@@ -29,9 +29,9 @@ export class ManifestLoader {
    * Load manifest from file
    * CRUD: Read
    */
-  static load<T extends ManifestBase>(
+  static load<T extends ManifestBase = ManifestBase>(
     filePath: string,
-    schema: z.ZodSchema<T>,
+    schema: z.ZodSchema<T> | z.ZodTypeAny = z.any(),
     options: ManifestLoaderOptions = {}
   ): T {
     const content = readFileSync(filePath, 'utf-8');

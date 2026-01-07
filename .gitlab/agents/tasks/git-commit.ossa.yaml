@@ -1,14 +1,4 @@
-# ═══════════════════════════════════════════════════════════════════════════════
-# Task: Git Commit Generated Files
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# This is a DETERMINISTIC task - no LLM required.
-# Input: List of files to commit + message
-# Output: Commit SHA
-#
-# ═══════════════════════════════════════════════════════════════════════════════
-
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Task
 metadata:
   name: git-commit
@@ -17,21 +7,23 @@ metadata:
   labels:
     category: vcs
     deterministic: "true"
-
+  annotations:
+    ossa.io/migration: v0.3.2-to-v0.3.3
+    ossa.io/migrated-date: 2026-01-07
 spec:
   execution:
     type: deterministic
     runtime: shell
     timeout_seconds: 30
-
   capabilities:
     - git_add
     - git_commit
     - git_status
-
   input:
     type: object
-    required: [files, message]
+    required:
+      - files
+      - message
     properties:
       files:
         type: array
@@ -47,9 +39,8 @@ spec:
         description: Add [skip ci] to commit message
       author:
         type: string
-        default: "OSSA Bot <ossa-bot@openstandardagents.org>"
+        default: OSSA Bot <ossa-bot@openstandardagents.org>
         description: Git author for the commit
-
   output:
     type: object
     properties:
@@ -62,40 +53,54 @@ spec:
       skipped:
         type: boolean
         description: True if no changes to commit
-
   error_handling:
     on_error: fail
     error_mapping:
       NO_CHANGES: skip
       GIT_ERROR: fail
-
 runtime:
   type: shell
-  script: |
+  script: >
     #!/bin/bash
+
     set -e
 
+
     # Stage files
+
     for file in $INPUT_FILES; do
       git add "$file" 2>/dev/null || true
     done
 
+
     # Check for changes
+
     if git diff --cached --quiet; then
       echo '{"skipped": true, "files_committed": 0}'
       exit 0
     fi
 
+
     # Build commit message
+
     MESSAGE="$INPUT_MESSAGE"
+
     if [ "$INPUT_SKIP_CI" = "true" ]; then
       MESSAGE="$MESSAGE [skip ci]"
     fi
 
+
     # Commit
+
     git commit -m "$MESSAGE" --author="$INPUT_AUTHOR"
 
+
     # Output
+
     SHA=$(git rev-parse HEAD)
-    COUNT=$(git diff-tree --no-commit-id --name-only -r HEAD | wc -l | tr -d ' ')
-    echo "{\"commit_sha\": \"$SHA\", \"files_committed\": $COUNT, \"skipped\": false}"
+
+    COUNT=$(git diff-tree --no-commit-id --name-only -r HEAD | wc -l | tr -d '
+    ')
+
+    echo "{\"commit_sha\": \"$SHA\", \"files_committed\": $COUNT, \"skipped\":
+    false}"

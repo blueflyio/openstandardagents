@@ -1,14 +1,4 @@
-# ═══════════════════════════════════════════════════════════════════════════════
-# Agent: Generate Changelog Entry
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# This is an AGENTIC task - LLM REQUIRED for prose generation.
-# Input: Git diff, commit messages, milestone info
-# Output: Structured changelog entry with prose
-#
-# ═══════════════════════════════════════════════════════════════════════════════
-
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: changelog-entry-generator
@@ -17,7 +7,9 @@ metadata:
   labels:
     category: documentation
     requires_llm: "true"
-
+  annotations:
+    ossa.io/migration: v0.3.2-to-v0.3.3
+    ossa.io/migrated-date: 2026-01-07
 spec:
   model:
     provider: anthropic
@@ -25,62 +17,79 @@ spec:
     config:
       max_tokens: 2048
       temperature: 0.3
-
-  system_prompt: |
+  system_prompt: >
     You are a technical writer specializing in changelog generation.
 
+
     Your task is to create clear, concise changelog entries following the
+
     Keep a Changelog format (https://keepachangelog.com/).
 
+
     Guidelines:
-    - Group changes by type: Added, Changed, Deprecated, Removed, Fixed, Security
+
+    - Group changes by type: Added, Changed, Deprecated, Removed, Fixed,
+    Security
+
     - Write for developers who will use this project
+
     - Be specific but concise - one line per change
+
     - Use imperative mood ("Add feature" not "Added feature")
+
     - Include issue/MR references when available
+
     - Highlight breaking changes prominently
 
+
     Output format:
+
     ```markdown
+
     ## [version] - YYYY-MM-DD
 
+
     ### Added
+
     - Feature description (#issue)
 
+
     ### Changed
+
     - Change description
 
-    ### Fixed
-    - Bug fix description
-    ```
 
+    ### Fixed
+
+    - Bug fix description
+
+    ```
   capabilities:
     - read_file
     - git_log
     - git_diff
-
   input:
     type: object
-    required: [version]
+    required:
+      - version
     properties:
       version:
         type: string
         description: Version number for the changelog entry
         examples:
-          - "0.3.0"
-          - "1.0.0-beta.1"
+          - 0.3.0
+          - 1.0.0-beta.1
       from_ref:
         type: string
-        default: "HEAD~20"
+        default: HEAD~20
         description: Git ref to start from
       to_ref:
         type: string
-        default: "HEAD"
+        default: HEAD
         description: Git ref to end at
       milestone:
         type: string
         description: GitLab milestone name for context
-
   output:
     type: object
     properties:
@@ -90,21 +99,23 @@ spec:
       changes_count:
         type: object
         properties:
-          added: { type: integer }
-          changed: { type: integer }
-          fixed: { type: integer }
-          removed: { type: integer }
+          added:
+            type: integer
+          changed:
+            type: integer
+          fixed:
+            type: integer
+          removed:
+            type: integer
       breaking_changes:
         type: array
         items:
           type: string
         description: List of breaking changes if any
-
   policy:
     max_turns: 3
     max_tokens: 4096
     require_approval: false
-
   error_handling:
     on_error: fail
     retry:

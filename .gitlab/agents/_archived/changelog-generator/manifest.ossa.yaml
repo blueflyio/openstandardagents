@@ -1,4 +1,4 @@
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: changelog-generator
@@ -6,6 +6,9 @@ metadata:
   labels:
     tier: release-automation
     criticality: high
+  annotations:
+    ossa.io/migration: v0.3.2-to-v0.3.3
+    ossa.io/migrated-date: 2026-01-07
 spec:
   role: generator
   capabilities:
@@ -14,7 +17,8 @@ spec:
     - conventional-commits
   triggers:
     - type: pipeline
-      events: [tag]
+      events:
+        - tag
       pattern: v*
   tasks:
     - name: generate-changelog
@@ -25,33 +29,50 @@ spec:
           command: git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "v0.0.0"
         - name: parse-commits
           action: exec
-          command: |
-            git log $(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")..HEAD \
+          command: >
+            git log $(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo
+            "")..HEAD \
               --pretty=format:"%h|%s|%b" --no-merges
         - name: group-by-type
           action: exec
-          command: |
+          command: >
             #!/bin/bash
+
             echo "# Changelog"
+
             echo ""
+
             echo "## [${CI_COMMIT_TAG}] - $(date +%Y-%m-%d)"
+
             echo ""
-            
+
+
             # Features
+
             echo "### ✨ Features"
-            git log $(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")..HEAD \
+
+            git log $(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo
+            "")..HEAD \
               --pretty=format:"- %s (%h)" --no-merges --grep="^feat"
             echo ""
-            
+
+
             # Fixes
+
             echo "### 🐛 Bug Fixes"
-            git log $(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")..HEAD \
+
+            git log $(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo
+            "")..HEAD \
               --pretty=format:"- %s (%h)" --no-merges --grep="^fix"
             echo ""
-            
+
+
             # Docs
+
             echo "### 📚 Documentation"
-            git log $(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")..HEAD \
+
+            git log $(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo
+            "")..HEAD \
               --pretty=format:"- %s (%h)" --no-merges --grep="^docs"
             echo ""
         - name: write-changelog

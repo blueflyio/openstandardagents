@@ -8,8 +8,26 @@
 
 import { z } from 'zod';
 import { readFileSync } from 'fs';
-import Ajv from 'ajv';
-import addFormats from 'ajv-formats';
+
+// JSON Schema validation - using dynamic import to avoid requiring ajv as dependency
+// If ajv is needed, it should be added to package.json dependencies
+let Ajv: any;
+let addFormats: any;
+
+async function loadAjv(): Promise<boolean> {
+  if (!Ajv) {
+    try {
+      const ajvModule = await import('ajv');
+      const formatsModule = await import('ajv-formats');
+      Ajv = ajvModule.default || ajvModule.Ajv;
+      addFormats = formatsModule.default;
+    } catch {
+      // Ajv not available - JSON Schema validation will be skipped
+      return false;
+    }
+  }
+  return true;
+}
 
 export interface ValidationResult {
   valid: boolean;
@@ -18,22 +36,45 @@ export interface ValidationResult {
 }
 
 export class SchemaValidator {
-  private ajv: Ajv;
+  private ajv: any | null = null;
+  private ajvLoaded = false;
 
   constructor() {
-    this.ajv = new Ajv({ allErrors: true, strict: false });
-    addFormats(this.ajv);
+    // Ajv will be loaded lazily if available
+  }
+
+  private async ensureAjv(): Promise<boolean> {
+    if (!this.ajvLoaded) {
+      this.ajvLoaded = await loadAjv();
+      if (this.ajvLoaded && Ajv) {
+        this.ajv = new Ajv({ allErrors: true, strict: false });
+        if (addFormats) {
+          addFormats(this.ajv);
+        }
+      }
+    }
+    return this.ajvLoaded;
   }
 
   /**
    * Validate against JSON Schema
    * CRUD: Read (validation)
    */
-  validateJSONSchema(
+  async validateJSONSchema(
     data: unknown,
     schemaPath: string,
     strict = false
-  ): ValidationResult {
+  ): Promise<ValidationResult> {
+    const ajvAvailable = await this.ensureAjv();
+
+    if (!ajvAvailable || !this.ajv) {
+      return {
+        valid: false,
+        errors: ['JSON Schema validation requires ajv package. Install with: npm install ajv ajv-formats'],
+        warnings: [],
+      };
+    }
+
     const schema = JSON.parse(readFileSync(schemaPath, 'utf-8'));
     const validate = this.ajv.compile(schema);
     const valid = validate(data);

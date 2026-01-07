@@ -1,6 +1,4 @@
-# OSSA v0.3.1 Agent with Identity Configuration
-# Demonstrates service account integration for automated git operations
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: typescript-worker
@@ -9,17 +7,17 @@ metadata:
   labels:
     team: platform
     tier: development
+  annotations:
+    ossa.io/migration: v0.3.2-to-v0.3.3
+    ossa.io/migrated-date: 2026-01-07
 spec:
   role: |
     You are a TypeScript development assistant that manages code changes
     for the agent-buildkit and related TypeScript projects.
-
   llm:
     provider: anthropic
     model: claude-sonnet-4-20250514
     temperature: 0.2
-
-  # Agent Identity Configuration (v0.3.1+)
   identity:
     provider: gitlab
     service_account:
@@ -43,8 +41,7 @@ spec:
     observability:
       service_name: typescript-worker
       service_namespace: development
-      service_version: "1.0.0"
-
+      service_version: 1.0.0
   tools:
     - name: git
       type: mcp
@@ -54,14 +51,12 @@ spec:
       type: mcp
       config:
         server: filesystem-mcp-server
-
   autonomy:
     level: supervised
     require_approval:
       - push_to_protected_branch
       - delete_branch
       - force_push
-
   safety:
     max_tokens_per_turn: 8000
     rate_limits:

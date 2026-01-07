@@ -1,20 +1,9 @@
-# ============================================================================
-# OSSA v0.3.0 COMPREHENSIVE TEMPLATE - ALL FEATURES
-# ============================================================================
-# This template demonstrates EVERY feature available in OSSA v0.3.0:
-# - Agent kind with full spec
-# - All extensions (KAgent, GitLab Duo, MCP)
-# - Complete observability, safety, autonomy, constraints
-# - Runtime bindings
-# - Use this as reference for updating all agents
-# ============================================================================
-
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: template-agent-v0-3-0
   version: 1.0.0
-  description: "Comprehensive OSSA v0.3.0 template showcasing all features"
+  description: Comprehensive OSSA v0.3.0 template showcasing all features
   labels:
     domain: platform
     tier: production
@@ -25,54 +14,40 @@ metadata:
     openstandardagents.org/stability: stable
     openstandardagents.org/showcase: "true"
     gitlab.com/duo-integration: enabled
-
+    ossa.io/migration: v0.3.2-to-v0.3.3
+    ossa.io/migrated-date: 2026-01-07
 spec:
-  # ==========================================================================
-  # ROLE: Agent Behavior & Expertise
-  # ==========================================================================
   role: |
     You are an expert platform agent demonstrating OSSA v0.3.0 capabilities.
     You showcase all features including KAgent integration, GitLab Duo flows,
     MCP tools, observability, safety, and autonomous operations.
-
-  # ==========================================================================
-  # LLM CONFIGURATION: Model Selection & Behavior
-  # ==========================================================================
   llm:
     provider: ${LLM_PROVIDER:-anthropic}
     model: ${LLM_MODEL:-claude-sonnet-4.5-20250929}
     temperature: 0.2
     maxTokens: 16000
     topP: 0.9
-    
     fallback_models:
       - provider: openai
         model: gpt-4o
       - provider: anthropic
         model: claude-haiku-3.5
-    
     retry_config:
       max_attempts: 3
       backoff_strategy: exponential
       initial_delay_ms: 1000
-    
     cost_tracking:
       enabled: true
-      budget_alert_threshold: 50.00
+      budget_alert_threshold: 50
       cost_allocation_tags:
         project: ossa-showcase
         team: platform
-
-  # ==========================================================================
-  # TOOLS: MCP Server Integration
-  # ==========================================================================
   tools:
     - type: mcp
       name: gitlab-api
       server: gitlab-mcp-server
       namespace: blueflyio
       endpoint: https://gitlab.com/api/v4
-      
       transport:
         protocol: http
         streaming: none
@@ -81,7 +56,6 @@ spec:
           burstLimit: 20
           strategy: token_bucket
           onExceeded: queue
-      
       auth:
         type: bearer
         credentials: env:GITLAB_TOKEN
@@ -89,39 +63,36 @@ spec:
           - api
           - read_api
           - write_api
-      
       circuit_breaker:
         enabled: true
         failure_threshold: 5
         timeout_seconds: 60
-      
       capabilities:
         - name: get_project
           version: "2.0"
           description: Get GitLab project details
-          scopes: [read:projects]
+          scopes:
+            - read:projects
           transport:
             protocol: http
             binding: GET /projects/{id}
           input_schema:
             type: object
             properties:
-              project_id: { type: integer }
-            required: [project_id]
-
+              project_id:
+                type: integer
+            required:
+              - project_id
     - type: mcp
       name: kubernetes-api
       server: kubernetes-mcp-server
       endpoint: ${K8S_API_ENDPOINT}
-      
       transport:
         protocol: http
         streaming: none
-      
       auth:
         type: bearer
         credentials: file:/var/run/secrets/kubernetes.io/serviceaccount/token
-      
       capabilities:
         - name: get_pods
           version: "1.0"
@@ -129,28 +100,23 @@ spec:
           input_schema:
             type: object
             properties:
-              namespace: { type: string }
-            required: [namespace]
-
-  # ==========================================================================
-  # AUTONOMY: Permission Model & Action Gates
-  # ==========================================================================
+              namespace:
+                type: string
+            required:
+              - namespace
   autonomy:
     level: autonomous
     approval_required: false
-    
     allowed_actions:
       - read_projects
       - read_pipelines
       - read_merge_requests
       - analyze_code
       - generate_reports
-    
     blocked_actions:
       - delete_projects
       - modify_protected_branches
       - bypass_security_scans
-    
     escalation_policy:
       triggers:
         - breaking_change_detected
@@ -159,29 +125,19 @@ spec:
       notify:
         - slack:#platform-alerts
         - gitlab:@platform-team
-
-  # ==========================================================================
-  # CONSTRAINTS: Cost & Performance Limits
-  # ==========================================================================
   constraints:
     cost:
       maxTokensPerDay: 500000
       maxTokensPerRequest: 32000
-      maxCostPerDay: 50.00
+      maxCostPerDay: 50
       currency: USD
-    
     performance:
       maxLatencySeconds: 45
       maxConcurrentRequests: 10
       timeoutSeconds: 180
-    
     resources:
       cpu: "1"
       memory: 2Gi
-
-  # ==========================================================================
-  # STATE: Long-Running State Management
-  # ==========================================================================
   state:
     mode: long_running
     storage:
@@ -195,22 +151,16 @@ spec:
         enabled: true
         algorithm: aes-256-gcm
         keyRef: env:AGENT_ENCRYPTION_KEY
-    
     context_window:
       max_messages: 100
       max_tokens: 64000
       strategy: summarization
-
-  # ==========================================================================
-  # OBSERVABILITY: Tracing, Metrics, Logging
-  # ==========================================================================
   observability:
     tracing:
       enabled: true
       exporter: otlp
       endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://phoenix:6006/v1/traces}
-      sampling_rate: 1.0
-    
+      sampling_rate: 1
     metrics:
       enabled: true
       exporter: prometheus
@@ -222,11 +172,9 @@ spec:
         - name: agent_latency_seconds
           type: histogram
           description: Agent request latency
-    
     logging:
       level: info
       format: json
-    
     alerting:
       enabled: true
       channels:
@@ -236,10 +184,6 @@ spec:
         - name: high_error_rate
           condition: error_rate > 0.05
           severity: warning
-
-  # ==========================================================================
-  # SAFETY: Content Filtering & Guardrails
-  # ==========================================================================
   safety:
     content_filtering:
       enabled: true
@@ -249,7 +193,6 @@ spec:
         - malicious_code
       threshold: high
       action: block
-    
     pii_detection:
       enabled: true
       types:
@@ -259,12 +202,10 @@ spec:
         - password
         - credit_card
       action: redact
-    
     rate_limiting:
       enabled: true
       requests_per_minute: 100
       burst_limit: 20
-    
     guardrails:
       enabled: true
       policies:
@@ -275,36 +216,25 @@ spec:
             - no_protected_branch_modifications
       max_tool_calls: 100
       max_execution_time_seconds: 600
-    
     human_in_loop:
       enabled: true
       triggers:
         - high_risk_action
         - breaking_change
         - compliance_violation
-
-  # ==========================================================================
-  # TRIGGERS: Event-Driven Activation
-  # ==========================================================================
   triggers:
     - type: webhook
       event: merge_request
       conditions:
         - object_attributes.action == "open"
         - object_attributes.target_branch == "main"
-    
     - type: webhook
       event: pipeline
       conditions:
         - object_attributes.status == "failed"
-    
     - type: schedule
-      cron: "0 */6 * * *"
+      cron: 0 */6 * * *
       timezone: UTC
-
-  # ==========================================================================
-  # COLLABORATION: Agent-to-Agent Communication
-  # ==========================================================================
   collaboration:
     mode: collaborative
     handoffs:
@@ -316,48 +246,35 @@ spec:
         conditions:
           - cost_optimization_needed
         context_transfer: minimal
-    
     delegation:
       enabled: true
       allowed_agents:
         - security-scanner
         - performance-optimizer
       max_depth: 2
-    
     communication:
       protocols:
         - mcp
         - http
         - json-rpc
       message_format: json
-
-  # ==========================================================================
-  # RELIABILITY: SLA & Circuit Breaker
-  # ==========================================================================
   reliability:
     sla:
-      availability_percent: 99.0
+      availability_percent: 99
       latency_p95_ms: 15000
-      error_rate_percent: 1.0
-    
+      error_rate_percent: 1
     circuit_breaker:
       enabled: true
       failure_threshold: 5
       timeout_seconds: 60
       half_open_requests: 3
-    
     health_check:
       enabled: true
       interval_seconds: 30
       timeout_seconds: 5
-    
     failover:
       enabled: true
       strategy: active-passive
-
-  # ==========================================================================
-  # DEPLOYMENT: Lifecycle Management
-  # ==========================================================================
   deployment:
     strategy: rolling
     rollback:
@@ -381,15 +298,7 @@ spec:
       graceful_shutdown:
         enabled: true
         timeout_seconds: 30
-
-# ============================================================================
-# EXTENSIONS: Framework-Specific Integrations
-# ============================================================================
-
 extensions:
-  # ========================================================================
-  # KAGENT: Kubernetes-Native Agent Deployment
-  # ========================================================================
   kagent:
     api_version: kagent.dev/v1alpha2
     kubernetes:
@@ -397,16 +306,15 @@ extensions:
       labels:
         app.kubernetes.io/name: template-agent
         app.kubernetes.io/part-of: ossa-showcase
-        app.kubernetes.io/version: "1.0.0"
+        app.kubernetes.io/version: 1.0.0
         openstandardagents.org/version: v0.3.0
       annotations:
-        description: "OSSA v0.3.0 showcase agent"
-        contact: "platform-team@bluefly.io"
+        description: OSSA v0.3.0 showcase agent
+        contact: platform-team@bluefly.io
       resourceLimits:
         cpu: "1"
         memory: 2Gi
         ephemeral-storage: 10Gi
-    
     deployment:
       replicas:
         min: 2
@@ -414,12 +322,11 @@ extensions:
       strategy: rolling-update
       podDisruptionBudget:
         minAvailable: 1
-    
     guardrails:
       requireApproval: false
       costLimits:
         maxTokensPerDay: 500000
-        maxCostPerDay: 50.00
+        maxCostPerDay: 50
         currency: USD
       allowedActions:
         - kubernetes:get:pods
@@ -428,7 +335,6 @@ extensions:
       auditLog:
         destination: compliance-engine
         retention: 7years
-    
     a2aConfig:
       enabled: true
       protocol: json-rpc
@@ -437,21 +343,14 @@ extensions:
         - http://cost-analyzer:8080/a2a
       authentication:
         type: mtls
-    
     meshIntegration:
       enabled: true
       istioIntegration: true
       ambientMesh: true
-
-  # ========================================================================
-  # GITLAB DUO: GitLab Duo Agent Platform Integration
-  # ========================================================================
   gitlab_duo:
     enabled: true
     flow_execution: true
     model: ${GITLAB_DUO_MODEL:-claude-sonnet-4.5-20250929}
-    
-    # GitLab Duo Flow Configuration
     flows:
       - name: code-review-flow
         path: .gitlab/flows/code-review-flow.yaml
@@ -459,21 +358,16 @@ extensions:
           - event: merge_request
             conditions:
               - target_branch == "main"
-      
       - name: pipeline-optimization-flow
         path: .gitlab/flows/pipeline-optimization-flow.yaml
         triggers:
           - event: pipeline
             conditions:
               - status == "failed"
-    
-    # GitLab Knowledge Graph Integration
     knowledge_graph:
       enabled: true
       index_on_push: true
       query_enabled: true
-    
-    # GitLab Duo Agent Card
     agent_card:
       name: Template Agent v0.3.0
       description: Comprehensive OSSA v0.3.0 showcase agent
@@ -485,10 +379,6 @@ extensions:
         schemes:
           - bearer
           - oauth2
-
-  # ========================================================================
-  # MCP: Model Context Protocol Extension
-  # ========================================================================
   mcp:
     enabled: true
     server_type: stdio
@@ -499,19 +389,28 @@ extensions:
         inputSchema:
           type: object
           properties:
-            file_path: { type: string }
-            analysis_type: 
+            file_path:
               type: string
-              enum: [quality, security, performance]
-          required: [file_path]
+            analysis_type:
+              type: string
+              enum:
+                - quality
+                - security
+                - performance
+          required:
+            - file_path
       - name: optimize_pipeline
         description: Optimize GitLab CI/CD pipeline
         inputSchema:
           type: object
           properties:
-            project_id: { type: integer }
-            pipeline_id: { type: integer }
-          required: [project_id, pipeline_id]
+            project_id:
+              type: integer
+            pipeline_id:
+              type: integer
+          required:
+            - project_id
+            - pipeline_id
     resources:
       - uri: gitlab://project/{project_id}/repository
         name: gitlab-repository
@@ -524,12 +423,6 @@ extensions:
           - name: code_diff
             description: Git diff of changes
             required: true
-
-# ============================================================================
-# RUNTIME: Runtime-Specific Capability Bindings (for Task/Workflow)
-# ============================================================================
-# Note: Runtime bindings are used for Task and Workflow kinds
-# For Agent kind, runtime is inferred from extensions.kagent
 runtime:
   type: kubernetes
   bindings:
@@ -541,4 +434,3 @@ runtime:
       capability: kubernetes_cluster_access
       binding: service_account
       service_account: k8s-agent-sa
-

@@ -1,4 +1,4 @@
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: example-validator
@@ -6,6 +6,9 @@ metadata:
   labels:
     tier: release-automation
     criticality: high
+  annotations:
+    ossa.io/migration: v0.3.2-to-v0.3.3
+    ossa.io/migrated-date: 2026-01-07
 spec:
   role: validator
   capabilities:
@@ -14,8 +17,12 @@ spec:
     - ci-integration
   triggers:
     - type: pipeline
-      events: [merge_request, push]
-      branches: [release/*, main]
+      events:
+        - merge_request
+        - push
+      branches:
+        - release/*
+        - main
   tasks:
     - name: validate-examples
       description: Validate all example files

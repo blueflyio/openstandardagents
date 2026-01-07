@@ -1,14 +1,4 @@
-# ═══════════════════════════════════════════════════════════════════════════════
-# OSSA Schema Automation Workflow
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# This workflow automates SDK generation, validation, and documentation
-# from the OSSA JSON Schema source of truth.
-#
-# Trigger: Schema file changes, version tags, MR creation
-# ═══════════════════════════════════════════════════════════════════════════════
-
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Workflow
 metadata:
   name: schema-automation
@@ -17,25 +7,23 @@ metadata:
   labels:
     category: ci-cd
     trigger: schema-change
-
+  annotations:
+    ossa.io/migration: v0.3.2-to-v0.3.3
+    ossa.io/migrated-date: 2026-01-07
 spec:
   triggers:
-    # Trigger on schema file changes
     - type: event
       source: gitlab
       events:
         - push
       filter:
-        expression: "${{ 'spec/' in event.changes or 'schema' in event.changes }}"
-
-    # Trigger on version tags
+        expression: ${{ 'spec/' in event.changes or 'schema' in event.changes }}
     - type: event
       source: gitlab
       events:
         - tag_push
       filter:
-        expression: "${{ event.ref starts_with 'v0.' }}"
-
+        expression: ${{ event.ref starts_with 'v0.' }}
   inputs:
     type: object
     properties:
@@ -48,75 +36,55 @@ spec:
       validate_examples:
         type: boolean
         default: true
-
   steps:
-    # ─────────────────────────────────────────────────────────────────────────
-    # STEP 1: Generate Python SDK types from schema (DETERMINISTIC)
-    # ─────────────────────────────────────────────────────────────────────────
     - id: generate-python-types
       name: Generate Python Pydantic Models
       kind: Task
-      condition: "${{ workflow.input.generate_sdks }}"
+      condition: ${{ workflow.input.generate_sdks }}
       ref: ./.gitlab/agents/tasks/schema-to-python.ossa.yaml
       input:
-        schema_path: "${{ workflow.input.schema_path }}"
+        schema_path: ${{ workflow.input.schema_path }}
         output_path: sdks/python/ossa/types.py
         generator: pydantic
       output:
         generated_file: string
         types_count: integer
-
-    # ─────────────────────────────────────────────────────────────────────────
-    # STEP 2: Generate TypeScript types from schema (DETERMINISTIC)
-    # ─────────────────────────────────────────────────────────────────────────
     - id: generate-typescript-types
       name: Generate TypeScript Types
       kind: Task
-      condition: "${{ workflow.input.generate_sdks }}"
+      condition: ${{ workflow.input.generate_sdks }}
       parallel_with: generate-python-types
       ref: ./.gitlab/agents/tasks/schema-to-typescript.ossa.yaml
       input:
-        schema_path: "${{ workflow.input.schema_path }}"
+        schema_path: ${{ workflow.input.schema_path }}
         output_path: src/types/generated.ts
         generator: zod
       output:
         generated_file: string
         types_count: integer
-
-    # ─────────────────────────────────────────────────────────────────────────
-    # STEP 3: Generate VS Code snippets from schema examples (DETERMINISTIC)
-    # ─────────────────────────────────────────────────────────────────────────
     - id: generate-vscode-snippets
       name: Generate VS Code Snippets
       kind: Task
-      condition: "${{ workflow.input.generate_sdks }}"
+      condition: ${{ workflow.input.generate_sdks }}
       parallel_with: generate-python-types
       ref: ./.gitlab/agents/tasks/schema-to-snippets.ossa.yaml
       input:
-        schema_path: "${{ workflow.input.schema_path }}"
+        schema_path: ${{ workflow.input.schema_path }}
         output_path: src/tools/vscode-ossa/snippets/ossa-snippets.json
       output:
         snippets_count: integer
-
-    # ─────────────────────────────────────────────────────────────────────────
-    # STEP 4: Validate all examples against schema (DETERMINISTIC)
-    # ─────────────────────────────────────────────────────────────────────────
     - id: validate-examples
       name: Validate YAML Examples
       kind: Task
-      condition: "${{ workflow.input.validate_examples }}"
+      condition: ${{ workflow.input.validate_examples }}
       ref: ./.gitlab/agents/tasks/validate-examples.ossa.yaml
       input:
-        schema_path: "${{ workflow.input.schema_path }}"
-        examples_glob: "examples/**/*.ossa.yaml"
+        schema_path: ${{ workflow.input.schema_path }}
+        examples_glob: examples/**/*.ossa.yaml
       output:
         valid_count: integer
         invalid_count: integer
         errors: array
-
-    # ─────────────────────────────────────────────────────────────────────────
-    # STEP 5: Commit generated files (DETERMINISTIC)
-    # ─────────────────────────────────────────────────────────────────────────
     - id: commit-generated
       name: Commit Generated Files
       kind: Task
@@ -124,22 +92,20 @@ spec:
         - generate-python-types
         - generate-typescript-types
         - generate-vscode-snippets
-      condition: "${{ steps.generate-python-types.output.types_count > 0 }}"
+      condition: ${{ steps.generate-python-types.output.types_count > 0 }}
       ref: ./.gitlab/agents/tasks/git-commit.ossa.yaml
       input:
         files:
-          - "${{ steps.generate-python-types.output.generated_file }}"
-          - "${{ steps.generate-typescript-types.output.generated_file }}"
+          - ${{ steps.generate-python-types.output.generated_file }}
+          - ${{ steps.generate-typescript-types.output.generated_file }}
           - src/tools/vscode-ossa/snippets/ossa-snippets.json
         message: "chore(generated): update SDK types from schema"
         skip_ci: true
-
   error_handling:
     on_failure: continue
     retry:
       max_attempts: 2
       backoff: exponential
-
   observability:
     tracing:
       enabled: true

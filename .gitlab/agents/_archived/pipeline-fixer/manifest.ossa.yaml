@@ -1,17 +1,5 @@
-# ============================================================================
-# OSSA Pipeline Fixer Agent
-# ============================================================================
-#
-# PURPOSE:
-#   Automatically detect and fix common CI/CD pipeline failures. Analyzes
-#   job logs, identifies root causes, and applies fixes or suggests
-#   remediation steps.
-#
-# ============================================================================
-
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
-
 metadata:
   name: pipeline-fixer
   version: 1.0.0
@@ -30,13 +18,13 @@ metadata:
   annotations:
     documentation: https://openstandardagents.org/docs/agents/pipeline-fixer
     support: ops@openstandardagents.org
-
+    ossa.io/migration: v0.3.2-to-v0.3.3
+    ossa.io/migrated-date: 2026-01-07
 spec:
   taxonomy:
     domain: ci-cd
     subdomain: pipeline-automation
     capability: failure-remediation
-
   role: |
     You are an expert CI/CD engineer specializing in GitLab pipeline
     troubleshooting and automated remediation.
@@ -57,13 +45,11 @@ spec:
     - Resource limits (memory, disk)
     - Network timeouts (retry logic)
     - Linting/formatting issues (auto-fix)
-
   llm:
     provider: anthropic
     model: claude-3-5-sonnet-20241022
     temperature: 0.1
     maxTokens: 8000
-
   tools:
     - type: mcp
       name: gitlab-api
@@ -74,18 +60,16 @@ spec:
       auth:
         type: bearer
         tokenPath: /var/secrets/gitlab-token
-
     - type: mcp
       name: filesystem
       description: Read and modify CI configuration files.
       config:
         server: filesystem-mcp
         allowed_paths:
-          - '.gitlab-ci.yml'
-          - '.gitlab/**'
-          - 'package*.json'
-          - 'composer*.json'
-
+          - .gitlab-ci.yml
+          - .gitlab/**
+          - package*.json
+          - composer*.json
     - type: a2a
       name: agent-mesh
       description: Communicate with gitops-deployer and mr-reviewer agents.
@@ -93,57 +77,69 @@ spec:
       config:
         protocol: json-rpc
         version: "2.0"
-
   capabilities:
     - name: analyze_failure
       description: Analyze a failing pipeline job
       input_schema:
         type: object
         properties:
-          project_id: { type: string }
-          job_id: { type: integer }
-        required: [project_id, job_id]
+          project_id:
+            type: string
+          job_id:
+            type: integer
+        required:
+          - project_id
+          - job_id
       output_schema:
         type: object
         properties:
-          failure_type: { type: string }
-          root_cause: { type: string }
-          suggested_fix: { type: string }
-          auto_fixable: { type: boolean }
-          success: { type: boolean }
-
+          failure_type:
+            type: string
+          root_cause:
+            type: string
+          suggested_fix:
+            type: string
+          auto_fixable:
+            type: boolean
+          success:
+            type: boolean
     - name: apply_fix
       description: Apply automated fix for a failure
       input_schema:
         type: object
         properties:
-          project_id: { type: string }
-          failure_type: { type: string }
-          fix_config: { type: object }
-        required: [project_id, failure_type]
-
+          project_id:
+            type: string
+          failure_type:
+            type: string
+          fix_config:
+            type: object
+        required:
+          - project_id
+          - failure_type
     - name: retry_pipeline
       description: Retry a failed pipeline
       input_schema:
         type: object
         properties:
-          project_id: { type: string }
-          pipeline_id: { type: integer }
-        required: [project_id, pipeline_id]
-
+          project_id:
+            type: string
+          pipeline_id:
+            type: integer
+        required:
+          - project_id
+          - pipeline_id
   triggers:
     - type: webhook
       name: on_pipeline_failed
       event: pipeline
       filter:
         status: failed
-
     - type: webhook
       name: on_job_failed
       event: job
       filter:
         status: failed
-
   autonomy:
     level: autonomous
     approval_required: false
@@ -155,19 +151,17 @@ spec:
     blocked_actions:
       - delete_pipelines
       - modify_protected_branches
-
   constraints:
     cost:
       maxTokensPerDay: 200000
-      maxCostPerDay: 20.00
+      maxCostPerDay: 20
       currency: USD
     performance:
       maxLatencySeconds: 120
       timeoutSeconds: 300
     resources:
-      cpu: "1000m"
-      memory: "2Gi"
-
+      cpu: 1000m
+      memory: 2Gi
   observability:
     tracing:
       enabled: true
@@ -183,7 +177,6 @@ spec:
     logging:
       level: info
       format: json
-
 extensions:
   kagent:
     api_version: kagent.dev/v1alpha2
@@ -197,7 +190,9 @@ extensions:
         cpu: "1"
         memory: 2Gi
     deployment:
-      replicas: { min: 1, max: 3 }
+      replicas:
+        min: 1
+        max: 3
       strategy: rolling-update
     a2aConfig:
       enabled: true
@@ -205,7 +200,6 @@ extensions:
     meshIntegration:
       enabled: true
       istioIntegration: true
-
   gitlab_duo:
     enabled: true
     flow_execution: true
@@ -213,7 +207,6 @@ extensions:
     knowledge_graph:
       enabled: true
       index_on_push: true
-
   mcp:
     enabled: true
     server_type: stdio

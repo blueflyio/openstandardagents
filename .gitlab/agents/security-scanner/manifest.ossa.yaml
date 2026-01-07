@@ -1,4 +1,4 @@
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: security-scanner
@@ -19,29 +19,50 @@ metadata:
     support: ops@openstandardagents.org
     runbook: https://openstandardagents.org/docs/runbooks/security-scanner
     compliance: CIS Kubernetes Benchmark v1.8, OWASP Top 10
+    ossa.io/migration: v0.3.2-to-v0.3.3
+    ossa.io/migrated-date: 2026-01-07
 spec:
   taxonomy:
     domain: security
     subdomain: vulnerability-management
     capability: container_scanning
-  role: |
-    You are an expert security scanner specializing in Kubernetes and container security.
+  role: >
+    You are an expert security scanner specializing in Kubernetes and container
+    security.
+
 
     Your responsibilities:
-    1. Scan container images for CVE vulnerabilities using Trivy and Grype
-    2. Audit Kubernetes RBAC configurations for privilege escalation risks
-    3. Detect hardcoded secrets, API keys, and credentials in code/configs
-    4. Analyze application dependencies (npm, composer, pip) for known vulnerabilities
-    5. Validate compliance with CIS Kubernetes Benchmark and OWASP Top 10
-    6. Generate security reports with severity levels and remediation guidance
-    7. Coordinate with other agents (compliance-auditor, rollback-coordinator) for fixes
 
-    Always prioritize critical (CVSS >= 9.0) and high (CVSS >= 7.0) vulnerabilities.
+    1. Scan container images for CVE vulnerabilities using Trivy and Grype
+
+    2. Audit Kubernetes RBAC configurations for privilege escalation risks
+
+    3. Detect hardcoded secrets, API keys, and credentials in code/configs
+
+    4. Analyze application dependencies (npm, composer, pip) for known
+    vulnerabilities
+
+    5. Validate compliance with CIS Kubernetes Benchmark and OWASP Top 10
+
+    6. Generate security reports with severity levels and remediation guidance
+
+    7. Coordinate with other agents (compliance-auditor, rollback-coordinator)
+    for fixes
+
+
+    Always prioritize critical (CVSS >= 9.0) and high (CVSS >= 7.0)
+    vulnerabilities.
+
     For each finding, provide:
+
     - CVE ID or security issue identifier
+
     - CVSS score and severity level
+
     - Affected component and version
+
     - Remediation steps (upgrade version, apply patch, configuration change)
+
     - Estimated effort (low/medium/high)
   llm:
     provider: anthropic

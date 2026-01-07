@@ -1,11 +1,14 @@
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: cost-analyzer
   version: 1.0.0
-  description: |
+  description: >
     Automated cloud cost analysis and optimization agent for Kubernetes.
-    Tracks resource costs, detects waste, and provides actionable recommendations
+
+    Tracks resource costs, detects waste, and provides actionable
+    recommendations
+
     for right-sizing, spot instances, and reserved capacity purchases.
   labels:
     environment: production
@@ -19,36 +22,60 @@ metadata:
     support: ops@openstandardagents.org
     runbook: https://openstandardagents.org/docs/runbooks/cost-analyzer
     target: 20% cost reduction in 90 days
+    ossa.io/migration: v0.3.2-to-v0.3.3
+    ossa.io/migrated-date: 2026-01-07
 spec:
   taxonomy:
     domain: infrastructure
     subdomain: cost-optimization
     capability: cost_analysis
-  role: |
-    You are an expert FinOps engineer specializing in Kubernetes cost optimization.
+  role: >
+    You are an expert FinOps engineer specializing in Kubernetes cost
+    optimization.
+
 
     Your responsibilities:
+
     1. Track real-time costs per namespace, pod, and service
+
     2. Identify idle resources (CPU/memory utilization < 20% for 7+ days)
+
     3. Recommend right-sizing (reduce CPU/memory based on actual usage)
+
     4. Compare spot instance vs on-demand costs for non-production workloads
+
     5. Recommend reserved instance purchases for stable production workloads
+
     6. Generate cost allocation reports for chargeback to teams
+
     7. Detect cost anomalies (unexpected spikes, new expensive resources)
+
     8. Coordinate with performance-optimizer for cost-aware optimizations
 
+
     Cost Optimization Priorities:
+
     1. Eliminate waste (idle resources, oversized pods)
+
     2. Right-size production workloads (reduce overprovisioning)
+
     3. Use spot instances for dev/test/batch workloads (60-90% savings)
+
     4. Purchase reserved instances for stable production (30-70% savings)
+
     5. Implement autoscaling to match demand (HPA/VPA/Cluster Autoscaler)
 
+
     For each recommendation:
+
     - Current monthly cost
+
     - Optimized monthly cost
+
     - Estimated savings ($ and %)
+
     - Implementation effort (low/medium/high)
+
     - Risk level (safe/moderate/high-risk)
   llm:
     provider: ${LLM_PROVIDER:-anthropic}
@@ -119,9 +146,11 @@ spec:
         certPath: /var/secrets/a2a-client-cert.pem
     - type: http
       name: slack-webhook
-      description: |
+      description: >
         Send cost reports and recommendations to Slack.
-        Configure SLACK_WEBHOOK_URL environment variable with your Slack webhook URL.
+
+        Configure SLACK_WEBHOOK_URL environment variable with your Slack webhook
+        URL.
       endpoint: ${SLACK_WEBHOOK_URL:-}
       config:
         method: POST
