@@ -8,7 +8,7 @@ This migration system follows npm best practices and automatically updates OSSA 
 
 ✅ **Automatic**: Runs on `npm install` / `npm update` via `postinstall` hook
 ✅ **Smart Detection**: Automatically detects which files need migration
-✅ **Incremental**: Applies migrations step-by-step (v0.3.2 → v0.3.3 → v0.3.4)
+✅ **Incremental**: Applies migrations step-by-step (v0.3.3 → v0.3.3 → v0.3.4)
 ✅ **Safe**: Dry-run mode to preview changes
 ✅ **Tracked**: Records migration state in `.migration-state.json`
 ✅ **Skip Option**: Can be disabled via `SKIP_MIGRATIONS=true`
@@ -44,9 +44,9 @@ Migrations are registered in `migrations/index.ts`:
 ```typescript
 const MIGRATIONS: Migration[] = [
   {
-    from: '0.3.2',
+    from: '0.3.3',
     to: '0.3.3',
-    script: 'migrations/scripts/migrate-v0.3.2-to-v0.3.3.ts',
+    script: 'migrations/scripts/migrate-v0.3.3-to-v0.3.3.ts',
     description: 'Add Skills Compatibility Extension'
   }
 ];
@@ -90,9 +90,9 @@ migrations/
 ├── MIGRATION-SYSTEM.md                # This file (system overview)
 ├── index.ts                           # Migration runner
 ├── guides/                            # Human-readable guides
-│   └── MIGRATION-v0.3.2-to-v0.3.3.md
+│   └── MIGRATION-v0.3.3-to-v0.3.3.md
 └── scripts/                           # Automated scripts
-    └── migrate-v0.3.2-to-v0.3.3.ts
+    └── migrate-v0.3.3-to-v0.3.3.ts
 ```
 
 ## Adding a New Migration
@@ -102,7 +102,7 @@ When releasing a new version (e.g., v0.3.4):
 ### Step 1: Create Migration Guide
 
 ```bash
-cp migrations/guides/MIGRATION-v0.3.2-to-v0.3.3.md \
+cp migrations/guides/MIGRATION-v0.3.3-to-v0.3.3.md \
    migrations/guides/MIGRATION-v0.3.3-to-v0.3.4.md
 ```
 
@@ -111,7 +111,7 @@ Edit the guide with new version details.
 ### Step 2: Create Migration Script
 
 ```bash
-cp migrations/scripts/migrate-v0.3.2-to-v0.3.3.ts \
+cp migrations/scripts/migrate-v0.3.3-to-v0.3.3.ts \
    migrations/scripts/migrate-v0.3.3-to-v0.3.4.ts
 ```
 

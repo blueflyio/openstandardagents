@@ -7,7 +7,7 @@ metadata:
     app: example
     version: v1.0.0
   annotations:
-    ossa.io/migration: v0.3.2-to-v0.3.3
+    ossa.io/migration: v0.3.3-to-v0.3.3
     ossa.io/migrated-date: 2026-01-07
 spec:
   role: Example agent demonstrating all quick-win capabilities

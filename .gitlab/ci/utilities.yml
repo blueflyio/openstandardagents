@@ -78,7 +78,7 @@ npm:fix-dist-tags:
       echo "Current latest: ${LATEST}"
       
       # Determine what legacy should be (previous minor/major stable)
-      # For 0.3.1, legacy should be 0.2.9
+      # For 0.3.3, legacy should be 0.2.9
       MAJOR_MINOR=$(echo $LATEST | cut -d. -f1,2)
       PREV_MINOR=$(($(echo $MAJOR_MINOR | cut -d. -f2) - 1))
       PREV_VERSION="0.${PREV_MINOR}.9"

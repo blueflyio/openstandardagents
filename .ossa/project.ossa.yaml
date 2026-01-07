@@ -253,7 +253,7 @@ extensions:
         enabled: true
         file_list:
           - migrations/README.md
-          - migrations/guides/MIGRATION-v0.3.2-to-v0.3.3.md
+          - migrations/guides/MIGRATION-v0.3.3-to-v0.3.3.md
           - migrations/index.ts
       development:
         enabled: true
@@ -266,8 +266,8 @@ extensions:
         enabled: true
         file_list:
           - spec/v0.3.3/
-          - spec/v0.3.2/
-          - spec/v0.3.1/
+          - spec/v0.3.3/
+          - spec/v0.3.3/
           - spec/
       openapi_specifications:
         enabled: true
@@ -350,7 +350,7 @@ extensions:
         enabled: true
         file_list:
           - migrations/README.md
-          - migrations/guides/MIGRATION-v0.3.2-to-v0.3.3.md
+          - migrations/guides/MIGRATION-v0.3.3-to-v0.3.3.md
           - migrations/index.ts
       development:
         enabled: true
@@ -363,8 +363,8 @@ extensions:
         enabled: true
         file_list:
           - spec/v0.3.3/
-          - spec/v0.3.2/
-          - spec/v0.3.1/
+          - spec/v0.3.3/
+          - spec/v0.3.3/
           - spec/
       openapi_specifications:
         enabled: true

@@ -3,7 +3,7 @@
  * Enhanced Agent Manifest Generator
  * 
  * Generates comprehensive OSSA agent manifests using the comprehensive template
- * with all v0.3.2+ features
+ * with all v0.3.3+ features
  * 
  * Usage: npm run agent:generate -- --name "My Agent" --type worker
  */
@@ -43,7 +43,7 @@ class EnhancedAgentGenerator {
     }
     
     // Fallback default template
-    return `apiVersion: ossa/v0.3.2
+    return `apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: {{NAME}}

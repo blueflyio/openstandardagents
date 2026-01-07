@@ -32,23 +32,23 @@ npm run version:bump release
 - `website/package.json` version
 - README.md badges
 - `website/content/docs/00-HOME.md` badges
-- All `0.3.2` placeholders in docs
+- All `0.3.3` placeholders in docs
 
 ### Use Placeholders in Docs
 
 Instead of hardcoding versions:
 ```markdown
 ❌ version: 0.2.6
-✅ version: 0.3.2
+✅ version: 0.3.3
 
 ❌ spec/v0.2.6/ossa-0.2.6.schema.json
-✅ spec/v0.3.2/{{SCHEMA_FILE}}
+✅ spec/v0.3.3/{{SCHEMA_FILE}}
 ```
 
 Available placeholders:
-- `0.3.2` - Current version (0.2.6)
-- `0.3.1` - Latest stable (0.2.4)
-- `spec/v0.3.2` - Spec directory path
+- `0.3.3` - Current version (0.2.6)
+- `0.3.3` - Latest stable (0.2.4)
+- `spec/v0.3.3` - Spec directory path
 - `{{SCHEMA_FILE}}` - Schema filename
 
 ### Build Process

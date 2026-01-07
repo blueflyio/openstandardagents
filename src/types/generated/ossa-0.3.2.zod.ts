@@ -1,8 +1,8 @@
 /**
- * OSSA v0.3.2 Zod Schemas
+ * OSSA v0.3.3 Zod Schemas
  *
  * AUTO-GENERATED - DO NOT EDIT
- * Generated from: spec/v0.3.2/ossa-0.3.2.schema.json
+ * Generated from: spec/v0.3.3/ossa-0.3.3.schema.json
  *
  * Regenerate with: ossa generate zod
  */
@@ -11,7 +11,7 @@ import { z } from 'zod';
 
 
 // Basic OSSA schema - manual generation fallback
-export const OssaApiVersionSchema = z.literal('ossa/v0.3.2');
+export const OssaApiVersionSchema = z.literal('ossa/v0.3.3');
 
 export const OssaMetadataSchema = z.object({
   name: z.string(),

@@ -10,7 +10,7 @@ metadata:
     team: platform
     critical: "true"
   annotations:
-    ossa.io/migration: v0.3.2-to-v0.3.3
+    ossa.io/migration: v0.3.3-to-v0.3.3
     ossa.io/migrated-date: 2026-01-07
 spec:
   role: |

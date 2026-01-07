@@ -1,4 +1,4 @@
-# OSSA v0.3.2 Runtime Specification
+# OSSA v0.3.3 Runtime Specification
 
 This document provides human-readable documentation for the OSSA Agent Runtime Specification, which defines how agents execute, communicate, and manage state.
 
@@ -393,7 +393,7 @@ All memory providers MUST implement these operations:
 ## Example Configuration
 
 ```yaml
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: RuntimeSpec
 
 lifecycle:
@@ -454,4 +454,4 @@ network_isolation:
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 0.3.2 | 2024-01 | Initial runtime specification with lifecycle, control signals, execution model, network isolation, and memory model |
+| 0.3.3 | 2024-01 | Initial runtime specification with lifecycle, control signals, execution model, network isolation, and memory model |

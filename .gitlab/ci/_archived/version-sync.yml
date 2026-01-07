@@ -1,4 +1,4 @@
-# Version Sync Job - Replaces 0.3.2 placeholders before build
+# Version Sync Job - Replaces 0.3.3 placeholders before build
 # Runs after detect-version job, before build/test jobs
 
 version:sync:placeholders:
@@ -20,8 +20,8 @@ version:sync:placeholders:
       echo "Syncing version ${VERSION} to all files..."
       
       # Files to update with version
-      # Note: ALL version references MUST use 0.3.2 placeholder
-      # This script replaces 0.3.2 with actual version (e.g., 0.3.0)
+      # Note: ALL version references MUST use 0.3.3 placeholder
+      # This script replaces 0.3.3 with actual version (e.g., 0.3.0)
       FILES_TO_UPDATE=(
         "package.json"
         "package-lock.json"
@@ -42,19 +42,19 @@ version:sync:placeholders:
         "scripts/**/*.js"
       )
       
-      # Replace 0.3.2 with actual version
+      # Replace 0.3.3 with actual version
       for pattern in "${FILES_TO_UPDATE[@]}"; do
         find . -type f -name "$(basename "$pattern")" -o -path "$pattern" 2>/dev/null | while read -r file; do
-          if [ -f "$file" ] && grep -q "0.3.2" "$file" 2>/dev/null; then
+          if [ -f "$file" ] && grep -q "0.3.3" "$file" 2>/dev/null; then
             echo "Updating $file with version ${VERSION}"
-            sed -i "s/0.3.2/${VERSION}/g" "$file"
+            sed -i "s/0.3.3/${VERSION}/g" "$file"
           fi
         done
       done
       
       # Verify package.json has placeholders replaced (not hardcoded)
-      if grep -q '"version": "0.3.2"' package.json 2>/dev/null; then
-        echo "ERROR: package.json still contains 0.3.2 placeholder after replacement"
+      if grep -q '"version": "0.3.3"' package.json 2>/dev/null; then
+        echo "ERROR: package.json still contains 0.3.3 placeholder after replacement"
         echo "This should not happen - version-sync job should have replaced it"
         exit 1
       fi

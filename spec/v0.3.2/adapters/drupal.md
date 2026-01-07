@@ -100,7 +100,7 @@ ECA (Event-Condition-Action) rules map naturally to OSSA Tasks with event trigge
 
 ```yaml
 # ECA Model → OSSA Task
-apiVersion: ossa/v0.3.1
+apiVersion: ossa/v0.3.3
 kind: Task
 metadata:
   name: eca-node-publish
@@ -156,7 +156,7 @@ runtime:
 
 ```yaml
 # Maestro Template → OSSA Workflow
-apiVersion: ossa/v0.3.1
+apiVersion: ossa/v0.3.3
 kind: Workflow
 metadata:
   name: content-approval-workflow
@@ -226,7 +226,7 @@ runtime:
 
 ```yaml
 # FlowDrop Diagram → OSSA Workflow
-apiVersion: ossa/v0.3.1
+apiVersion: ossa/v0.3.3
 kind: Workflow
 metadata:
   name: user-registration-flow
@@ -299,7 +299,7 @@ runtime:
 
 ```yaml
 # AI Agent Runner → OSSA Agent
-apiVersion: ossa/v0.3.1
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: content-assistant
@@ -348,7 +348,7 @@ runtime:
 
 ```yaml
 # Minikanban Card → OSSA Task
-apiVersion: ossa/v0.3.1
+apiVersion: ossa/v0.3.3
 kind: Task
 metadata:
   name: kanban-task
@@ -523,7 +523,7 @@ spec:
 
 ## OSSA Compliance
 
-This adapter implements OSSA v0.3.1 specification:
+This adapter implements OSSA v0.3.3 specification:
 
 - ✅ Task execution with deterministic semantics
 - ✅ Workflow orchestration with step dependencies
@@ -535,7 +535,7 @@ This adapter implements OSSA v0.3.1 specification:
 
 ## Related
 
-- [OSSA Specification v0.3.1](../README.md)
+- [OSSA Specification v0.3.3](../README.md)
 - [Symfony Adapter](./symfony.md)
 - [Node.js Adapter](./nodejs.md)
 - [Capability Registry](../capability-schema.md)

@@ -180,10 +180,10 @@ validate:scripts-version:
       
       # Verify exports["./schema"] uses dynamic version placeholder or matches current version
       EXPECTED_EXPORT="./spec/v${VERSION}/ossa-${VERSION}.schema.json"
-      PLACEHOLDER_EXPORT='./spec/v0.3.2/ossa-0.3.2.schema.json'
+      PLACEHOLDER_EXPORT='./spec/v0.3.3/ossa-0.3.3.schema.json'
       ACTUAL_EXPORT=$(node -p "require('./package.json').exports?.['./schema'] || ''")
       if [ "$ACTUAL_EXPORT" = "$PLACEHOLDER_EXPORT" ]; then
-        echo "exports[\"./schema\"] uses 0.3.2 placeholder (will be replaced during release)"
+        echo "exports[\"./schema\"] uses 0.3.3 placeholder (will be replaced during release)"
       elif [ "$ACTUAL_EXPORT" = "$EXPECTED_EXPORT" ]; then
         echo "exports[\"./schema\"] matches current version: ${EXPECTED_EXPORT}"
       elif [ -n "$ACTUAL_EXPORT" ]; then

@@ -1,6 +1,6 @@
 {
   "name": "@ossa/typescript-client",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "TypeScript reference implementation for OSSA API",
   "type": "module",
   "main": "./dist/index.js",

@@ -42,9 +42,9 @@ interface Migration {
 // Migration registry - add new migrations here
 const MIGRATIONS: Migration[] = [
   {
-    from: '0.3.2',
+    from: '0.3.3',
     to: '0.3.3',
-    script: 'migrations/scripts/migrate-v0.3.2-to-v0.3.3.ts',
+    script: 'migrations/scripts/migrate-v0.3.3-to-v0.3.3.ts',
     description: 'Add Skills Compatibility Extension'
   }
   // Add future migrations here:
@@ -110,7 +110,7 @@ class MigrationRunner {
           .filter((dirent) => dirent.isDirectory() && dirent.name.startsWith('v'))
           .map((dirent) => dirent.name)
           .sort((a: string, b: string) => {
-            // Sort versions numerically (e.g., v0.3.1 < v0.3.2 < v0.3.3)
+            // Sort versions numerically (e.g., v0.3.3 < v0.3.3 < v0.3.3)
             const v1 = a.replace(/^v/, '').split('.').map(Number);
             const v2 = b.replace(/^v/, '').split('.').map(Number);
             for (let i = 0; i < Math.max(v1.length, v2.length); i++) {

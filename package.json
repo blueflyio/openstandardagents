@@ -1,6 +1,6 @@
 {
   "name": "@bluefly/openstandardagents",
-  "version": "{{VERSION}}",
+  "version": "0.3.3",
   "description": "Open Standard for Scalable AI Agents - Vendor-neutral specification, CLI tools, and SDKs for defining and deploying AI agents",
   "type": "module",
   "private": false,

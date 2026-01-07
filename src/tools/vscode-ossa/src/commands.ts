@@ -126,7 +126,7 @@ export class OSSACommandProvider {
   }
 
   private generateAgentManifest(name: string, version: string, provider: string, model: string): string {
-    return `apiVersion: ossa/v0.3.2
+    return `apiVersion: ossa/v0.3.3
 kind: Agent
 
 metadata:
@@ -173,7 +173,7 @@ spec:
   }
 
   private generateTaskManifest(name: string, version: string): string {
-    return `apiVersion: ossa/v0.3.2
+    return `apiVersion: ossa/v0.3.3
 kind: Task
 
 metadata:
@@ -198,7 +198,7 @@ spec:
   }
 
   private generateWorkflowManifest(name: string, version: string): string {
-    return `apiVersion: ossa/v0.3.2
+    return `apiVersion: ossa/v0.3.3
 kind: Workflow
 
 metadata:

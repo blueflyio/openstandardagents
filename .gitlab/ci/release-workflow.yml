@@ -180,7 +180,7 @@ detect-release-version:
       echo "Branch version: ${BRANCH_VERSION}"
       
       # Detect version from latest dev tags (dynamic based on branch)
-      # Find the highest version with dev tags (e.g., if we have v0.3.2-dev1, v0.3.2-dev2, use v0.3.2)
+      # Find the highest version with dev tags (e.g., if we have v0.3.3-dev1, v0.3.3-dev2, use v0.3.3)
       LATEST_DEV_TAG=$(git tag -l "v${BRANCH_VERSION}.*-dev*" 2>/dev/null | sort -V | tail -1 || echo "")
       
       if [ -z "$LATEST_DEV_TAG" ]; then
@@ -190,7 +190,7 @@ detect-release-version:
         exit 0
       fi
       
-      # Extract version from dev tag (e.g., v0.3.2-dev5 -> v0.3.2)
+      # Extract version from dev tag (e.g., v0.3.3-dev5 -> v0.3.3)
       BASE_VERSION=$(echo "$LATEST_DEV_TAG" | sed 's/-dev[0-9]*$//' | sed 's/^v//')
       RELEASE_VERSION="v${BASE_VERSION}"
       

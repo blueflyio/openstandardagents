@@ -1,5 +1,5 @@
 /**
- * OSSA v0.3.1 Messaging Extension
+ * OSSA v0.3.3 Messaging Extension
  * Agent-to-Agent messaging implementation
  */
 
