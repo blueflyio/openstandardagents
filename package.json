@@ -1,12 +1,24 @@
 {
-  "name": "@bluefly/openstandardagents.org",
+  "name": "@bluefly/openstandardagents",
   "version": "{{VERSION}}",
-  "description": "Community platform, website, and Discord integration for Open Standard Agents",
+  "description": "Open Standard for Scalable AI Agents - Vendor-neutral specification, CLI tools, and SDKs for defining and deploying AI agents",
   "type": "module",
-  "private": true,
-  "workspaces": [
-    "website",
-    "bots/ossa-discord"
+  "private": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "ossa": "./bin/ossa"
+  },
+  "files": [
+    "dist",
+    "bin",
+    "spec",
+    "schemas",
+    "examples",
+    "openapi",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "dev": "pnpm -r dev",
@@ -40,14 +52,31 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://gitlab.com/blueflyio/ossa/openstandardagents.org.git"
+    "url": "https://gitlab.com/blueflyio/ossa/openstandardagents.git"
+  },
+  "homepage": "https://openstandardagents.org",
+  "bugs": {
+    "url": "https://gitlab.com/blueflyio/ossa/openstandardagents/-/issues"
   },
   "keywords": [
     "ossa",
-    "agents",
-    "discord",
-    "community",
-    "ai"
+    "open-standard-agents",
+    "ai-agents",
+    "agent-framework",
+    "agent-specification",
+    "langchain",
+    "langflow",
+    "crewai",
+    "autogen",
+    "ai-orchestration",
+    "multi-agent",
+    "agent-deployment",
+    "yaml",
+    "json-schema",
+    "typescript",
+    "python",
+    "openapi",
+    "gitlab-duo"
   ],
   "author": "BlueFly.io",
   "license": "Apache-2.0",
