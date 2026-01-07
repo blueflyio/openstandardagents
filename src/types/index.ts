@@ -232,6 +232,7 @@ export interface OssaAgent {
   };
   extensions?: {
     agents_md?: AgentsMdExtension;
+    llms_txt?: LlmsTxtExtension;
     cursor?: CursorExtension;
     [key: string]: unknown;
   };
@@ -264,6 +265,64 @@ export interface AgentsMdExtension {
     include_comments?: boolean;
   };
   cursor_integration?: boolean;
+}
+
+/**
+ * llms.txt section configuration
+ */
+export interface LlmsTxtSection {
+  enabled?: boolean;
+  source?: string;
+  custom?: string;
+  append?: string;
+  prepend?: string;
+  title?: string;
+  file_list?: string[];
+}
+
+/**
+ * llms.txt extension configuration
+ */
+export interface LlmsTxtExtension {
+  enabled?: boolean;
+  generate?: boolean;
+  file_path?: string;
+  auto_discover?: boolean;
+  format?: {
+    include_h1_title?: boolean;
+    include_blockquote?: boolean;
+    include_h2_sections?: boolean;
+    include_optional?: boolean;
+  };
+  sections?: {
+    core_specification?: LlmsTxtSection;
+    quick_start?: LlmsTxtSection;
+    cli_tools?: LlmsTxtSection;
+    sdks?: LlmsTxtSection;
+    examples?: LlmsTxtSection;
+    migration_guides?: LlmsTxtSection;
+    development?: LlmsTxtSection;
+    specification_versions?: LlmsTxtSection;
+    openapi_specifications?: LlmsTxtSection;
+    documentation?: LlmsTxtSection;
+    optional?: LlmsTxtSection;
+    custom?: LlmsTxtSection[];
+  };
+  sync?: {
+    on_manifest_change?: boolean;
+    include_comments?: boolean;
+    preserve_custom?: boolean;
+    watch?: boolean;
+  };
+  mapping?: {
+    metadata_to_h1?: boolean;
+    description_to_blockquote?: boolean;
+    spec_to_core_specification?: boolean;
+    tools_to_cli_tools?: boolean;
+    examples_to_examples?: boolean;
+    migrations_to_migration_guides?: boolean;
+  };
+  include_metadata?: boolean;
 }
 
 /**

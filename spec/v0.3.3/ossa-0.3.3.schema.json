@@ -2922,7 +2922,11 @@
           "type": "string",
           "default": "llms.txt",
           "description": "Path to llms.txt file (relative to repository root)",
-          "examples": ["llms.txt", "docs/llms.txt", ".llms.txt"]
+          "examples": [
+            "llms.txt",
+            "docs/llms.txt",
+            ".llms.txt"
+          ]
         },
         "generate": {
           "type": "boolean",
@@ -3094,7 +3098,11 @@
         "source": {
           "type": "string",
           "description": "OSSA manifest path to derive content from",
-          "examples": ["spec.tools", "metadata.description", "examples"]
+          "examples": [
+            "spec.tools",
+            "metadata.description",
+            "examples"
+          ]
         },
         "custom": {
           "type": "string",

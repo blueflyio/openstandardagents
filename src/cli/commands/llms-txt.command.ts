@@ -3,8 +3,8 @@
  * Generate, validate, and sync llms.txt files from OSSA manifests
  */
 
-import { Command } from 'commander'
 import chalk from 'chalk'
+import { Command } from 'commander'
 import { container } from '../../di-container.js'
 import { ManifestRepository } from '../../repositories/manifest.repository.js'
 import { LlmsTxtService } from '../../services/llms-txt/llms-txt.service.js'
@@ -127,7 +127,7 @@ llmsTxtCommand
 
       if (options.watch) {
         console.log(chalk.blue('\n👀 Watching for changes... (Press Ctrl+C to stop)'))
-        await new Promise(() => {})
+        await new Promise(() => { })
       } else {
         process.exit(0)
       }

@@ -304,3 +304,100 @@ extensions:
       examples_to_examples: true
       migrations_to_migration_guides: true
     include_metadata: false
+  llms_txt:
+    enabled: true
+    generate: true
+    file_path: llms.txt
+    format:
+      include_h1_title: true
+      include_blockquote: true
+      include_h2_sections: true
+      include_optional: true
+    sections:
+      core_specification:
+        enabled: true
+        file_list:
+          - spec/v0.3.3/ossa-0.3.3.schema.json
+          - openapi/
+          - spec/v0.3.3/
+      quick_start:
+        enabled: true
+        file_list:
+          - README.md#-quick-start
+          - docs/QUICKSTART.md
+          - docs/api-reference/
+          - examples/
+      cli_tools:
+        enabled: true
+        file_list:
+          - bin/ossa
+          - docs/api-reference/endpoints.md
+          - docs/guides/getting-started.md
+      sdks:
+        enabled: true
+        file_list:
+          - src/sdks/typescript/
+          - sdks/python/
+          - src/sdks/README.md
+      examples:
+        enabled: true
+        file_list:
+          - examples/agent-manifests/
+          - examples/adapters/
+          - examples/multi-agent/
+          - examples/reference-implementations/
+      migration_guides:
+        enabled: true
+        file_list:
+          - migrations/README.md
+          - migrations/guides/MIGRATION-v0.3.2-to-v0.3.3.md
+          - migrations/index.ts
+      development:
+        enabled: true
+        file_list:
+          - CONTRIBUTING.md
+          - CODE_OF_CONDUCT.md
+          - SECURITY.md
+          - README.md#-development
+      specification_versions:
+        enabled: true
+        file_list:
+          - spec/v0.3.3/
+          - spec/v0.3.2/
+          - spec/v0.3.1/
+          - spec/
+      openapi_specifications:
+        enabled: true
+        file_list:
+          - openapi/agent-crud.yaml
+          - openapi/agent-discovery.yaml
+          - openapi/agent-communication.yaml
+          - openapi/agent-identity.yaml
+          - openapi/cli-commands.openapi.yaml
+      documentation:
+        enabled: true
+        file_list:
+          - docs/IMPLEMENTATION-SUMMARY.md
+          - docs/UNIFIED-AGENT-PLATFORM.md
+          - docs/integrations/gitlab-ultimate-observability.md
+          - docs/research/
+      optional:
+        enabled: true
+        file_list:
+          - docs/roadmap/
+          - docs/whitepaper/
+          - infrastructure/
+          - .gitlab-ci.yml
+    sync:
+      on_manifest_change: true
+      include_comments: false
+      preserve_custom: true
+      watch: false
+    mapping:
+      metadata_to_h1: true
+      description_to_blockquote: true
+      spec_to_core_specification: true
+      tools_to_cli_tools: true
+      examples_to_examples: true
+      migrations_to_migration_guides: true
+    include_metadata: false

@@ -5,44 +5,44 @@
  * Main CLI entry point
  */
 
-import 'reflect-metadata';
 import { program } from 'commander';
-import { validateCommand } from './commands/validate.command.js';
-import { generateCommand } from './commands/generate.command.js';
-import { migrateCommand } from './commands/migrate.command.js';
-import { initCommand } from './commands/init.command.js';
-import { exportCommand } from './commands/export.command.js';
-import { importCommand } from './commands/import.command.js';
-import { schemaCommand } from './commands/schema.command.js';
-import { runCommand } from './commands/run.command.js';
-import { gitlabAgentCommand } from './commands/gitlab-agent.command.js';
-import { releaseCommandGroup } from './commands/release.command.js';
-import { setupCommand } from './commands/setup.command.js';
-import { syncCommand } from './commands/sync.command.js';
+import 'reflect-metadata';
+import { agentCardCommand } from './commands/agent-card.command.js';
 import { agentsMdCommand } from './commands/agents-md.command.js';
-import { llmsTxtCommand } from './commands/llms-txt.command.js';
-import { quickstartCommand } from './commands/quickstart.command.js';
-import { dependenciesCommand } from './commands/dependencies.command.js';
+import { agentsCommandGroup } from './commands/agents.command.js';
 import { contractCommand } from './commands/contract.command.js';
-import { publishCommand } from './commands/publish.command.js';
-import { searchCommand } from './commands/search.command.js';
-import { installCommand } from './commands/install.command.js';
-import { infoCommand } from './commands/info.command.js';
+import { dependenciesCommand } from './commands/dependencies.command.js';
 import { deployGroup } from './commands/deploy.command.js';
-import { testCommand } from './commands/test.command.js';
 import {
   deployCommand,
-  statusCommand,
   rollbackCommand,
+  statusCommand,
   stopCommand,
 } from './commands/deploy.js';
-import { lintCommand } from './commands/lint.command.js';
 import { diffCommand } from './commands/diff.command.js';
-import { agentsCommandGroup } from './commands/agents.command.js';
-import { workspaceCommand } from './commands/workspace.command.js';
-import { registryCommand } from './commands/registry.command.js';
-import { agentCardCommand } from './commands/agent-card.command.js';
+import { exportCommand } from './commands/export.command.js';
 import { extensionTeamCommand } from './commands/extension-team.command.js';
+import { generateCommand } from './commands/generate.command.js';
+import { gitlabAgentCommand } from './commands/gitlab-agent.command.js';
+import { importCommand } from './commands/import.command.js';
+import { infoCommand } from './commands/info.command.js';
+import { initCommand } from './commands/init.command.js';
+import { installCommand } from './commands/install.command.js';
+import { lintCommand } from './commands/lint.command.js';
+import { llmsTxtCommand } from './commands/llms-txt.command.js';
+import { migrateCommand } from './commands/migrate.command.js';
+import { publishCommand } from './commands/publish.command.js';
+import { quickstartCommand } from './commands/quickstart.command.js';
+import { registryCommand } from './commands/registry.command.js';
+import { releaseCommandGroup } from './commands/release.command.js';
+import { runCommand } from './commands/run.command.js';
+import { schemaCommand } from './commands/schema.command.js';
+import { searchCommand } from './commands/search.command.js';
+import { setupCommand } from './commands/setup.command.js';
+import { syncCommand } from './commands/sync.command.js';
+import { testCommand } from './commands/test.command.js';
+import { validateCommand } from './commands/validate.command.js';
+import { workspaceCommand } from './commands/workspace.command.js';
 
 // Load package.json for version (lazy to avoid Jest module resolution issues)
 import * as fs from 'fs';
