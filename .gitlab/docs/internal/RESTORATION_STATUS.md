@@ -36,7 +36,7 @@
 - ✅ `spec/v0.3.3/ossa-0.3.3.schema.json` (231KB)
 - ✅ `spec/v0.3.3/examples/first-class-citizen-agent-template.yaml` (4.7KB)
 - ✅ `spec/v0.3.3/examples/agent-with-identity.ossa.yaml`
-- ✅ All spec versions: v0.3.0, v0.3.1, v0.3.2, v0.3.3
+- ✅ All spec versions: v0.3.0, v0.3.3, v0.3.3, v0.3.3
 
 ### ⚠️ Intentionally Removed (Per Consolidation Plan)
 

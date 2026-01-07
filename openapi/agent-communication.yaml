@@ -1068,5 +1068,5 @@ x-ossa-metadata:
   compliance:
     level: standard
     frameworks:
-      - OSSA v0.3.2
+      - OSSA v0.3.3
       - OpenAPI 3.1

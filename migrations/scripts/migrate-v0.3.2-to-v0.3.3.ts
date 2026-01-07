@@ -1,17 +1,17 @@
 #!/usr/bin/env tsx
 /**
- * Migration Script: v0.3.2 → v0.3.3
+ * Migration Script: v0.3.3 → v0.3.3
  *
- * Automatically migrates OSSA manifests from v0.3.2 to v0.3.3
+ * Automatically migrates OSSA manifests from v0.3.3 to v0.3.3
  *
  * Features:
- * - Updates apiVersion from ossa/v0.3.2 to ossa/v0.3.3
+ * - Updates apiVersion from ossa/v0.3.3 to ossa/v0.3.3
  * - Optionally adds Skills extension if requested
  * - Preserves all existing configuration
  * - Adds migration annotations
  *
  * Usage:
- *   tsx migrations/scripts/migrate-v0.3.2-to-v0.3.3.ts <manifest-file> [--add-skills]
+ *   tsx migrations/scripts/migrate-v0.3.3-to-v0.3.3.ts <manifest-file> [--add-skills]
  */
 
 import { readFileSync, writeFileSync } from 'fs';
@@ -34,13 +34,13 @@ function migrateManifest(filePath: string, options: MigrationOptions = {}): void
       return;
     }
 
-    // Check if source version is v0.3.2
-    if (manifest.apiVersion !== 'ossa/v0.3.2') {
-      console.log(`⚠️  ${filePath} is not v0.3.2 (current: ${manifest.apiVersion}), skipping`);
+    // Check if source version is v0.3.3
+    if (manifest.apiVersion !== 'ossa/v0.3.3') {
+      console.log(`⚠️  ${filePath} is not v0.3.3 (current: ${manifest.apiVersion}), skipping`);
       return;
     }
 
-    console.log(`🔄 Migrating ${filePath} from v0.3.2 to v0.3.3...`);
+    console.log(`🔄 Migrating ${filePath} from v0.3.3 to v0.3.3...`);
 
     // Update apiVersion
     manifest.apiVersion = 'ossa/v0.3.3';
@@ -54,7 +54,7 @@ function migrateManifest(filePath: string, options: MigrationOptions = {}): void
     if (!manifest.metadata.annotations) {
       manifest.metadata.annotations = {};
     }
-    manifest.metadata.annotations['ossa.io/migration'] = 'v0.3.2-to-v0.3.3';
+    manifest.metadata.annotations['ossa.io/migration'] = 'v0.3.3-to-v0.3.3';
     manifest.metadata.annotations['ossa.io/migrated-date'] = new Date().toISOString().split('T')[0];
 
     // Optionally add Skills extension
@@ -96,7 +96,7 @@ const options: MigrationOptions = {
 };
 
 if (!filePath) {
-  console.error('Usage: tsx migrations/scripts/migrate-v0.3.2-to-v0.3.3.ts <manifest-file> [--add-skills] [--dry-run]');
+  console.error('Usage: tsx migrations/scripts/migrate-v0.3.3-to-v0.3.3.ts <manifest-file> [--add-skills] [--dry-run]');
   process.exit(1);
 }
 

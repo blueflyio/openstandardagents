@@ -73,10 +73,10 @@ class UnifiedVersionSync {
 
       // Replace version placeholders
       const replacements: Record<string, string> = {
-        '0.3.2': this.versionConfig.current,
-        '0.3.1': this.versionConfig.latest_stable,
-        '0.3.2': this.versionConfig.spec_version,
-        'spec/v0.3.2': this.versionConfig.spec_path.replace('{version}', this.versionConfig.current),
+        '0.3.3': this.versionConfig.current,
+        '0.3.3': this.versionConfig.latest_stable,
+        '0.3.3': this.versionConfig.spec_version,
+        'spec/v0.3.3': this.versionConfig.spec_path.replace('{version}', this.versionConfig.current),
       };
 
       for (const [placeholder, value] of Object.entries(replacements)) {

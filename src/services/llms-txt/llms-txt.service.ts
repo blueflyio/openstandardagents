@@ -295,7 +295,7 @@ export class LlmsTxtService {
       })
     } else {
       lines.push('- [Migration System](migrations/README.md): How to migrate between OSSA versions')
-      lines.push('- [v0.3.2 to v0.3.3](migrations/guides/MIGRATION-v0.3.2-to-v0.3.3.md): Skills Compatibility Extension')
+      lines.push('- [v0.3.3 to v0.3.3](migrations/guides/MIGRATION-v0.3.3-to-v0.3.3.md): Skills Compatibility Extension')
       lines.push('- [Migration Runner](migrations/index.ts): Automated migration tool')
     }
 
@@ -344,8 +344,8 @@ export class LlmsTxtService {
       })
     } else {
       lines.push('- [v0.3.3](spec/v0.3.3/): Latest version with Skills Compatibility Extension')
-      lines.push('- [v0.3.2](spec/v0.3.2/): Previous stable version')
-      lines.push('- [v0.3.1](spec/v0.3.1/): Legacy version')
+      lines.push('- [v0.3.3](spec/v0.3.3/): Previous stable version')
+      lines.push('- [v0.3.3](spec/v0.3.3/): Legacy version')
       lines.push('- [Schema Index](spec/): All specification versions')
     }
 

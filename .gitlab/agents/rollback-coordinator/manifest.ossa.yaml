@@ -19,7 +19,7 @@ metadata:
     support: ops@openstandardagents.org
     runbook: https://openstandardagents.org/docs/runbooks/rollback-coordinator
     safety: automated-rollback-enabled
-    ossa.io/migration: v0.3.2-to-v0.3.3
+    ossa.io/migration: v0.3.3-to-v0.3.3
     ossa.io/migrated-date: 2026-01-07
 spec:
   taxonomy:

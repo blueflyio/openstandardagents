@@ -1,5 +1,5 @@
 # =============================================================================
-# OSSA v0.3.2 - Agent Taxonomy Specification
+# OSSA v0.3.3 - Agent Taxonomy Specification
 # =============================================================================
 # Hierarchical classification system for agents with cross-cutting concerns
 # Now includes access tier integration for separation of duties
@@ -8,7 +8,7 @@
 #   - https://gitlab.com/blueflyio/openstandardagents/-/issues/363 (separation of duties)
 # =============================================================================
 
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: TaxonomySpec
 version: "2.0.0"
 

@@ -468,22 +468,22 @@ components:
 
   schemas:
     AgentIdentity:
-      $ref: 'https://openstandardagents.org/schemas/v0.3.2/identity.json#/definitions/AgentIdentity'
+      $ref: 'https://openstandardagents.org/schemas/v0.3.3/identity.json#/definitions/AgentIdentity'
 
     AuthenticationRequest:
-      $ref: 'https://openstandardagents.org/schemas/v0.3.2/identity.json#/definitions/AuthenticationRequest'
+      $ref: 'https://openstandardagents.org/schemas/v0.3.3/identity.json#/definitions/AuthenticationRequest'
 
     TokenResponse:
-      $ref: 'https://openstandardagents.org/schemas/v0.3.2/identity.json#/definitions/TokenResponse'
+      $ref: 'https://openstandardagents.org/schemas/v0.3.3/identity.json#/definitions/TokenResponse'
 
     SecurityContext:
-      $ref: 'https://openstandardagents.org/schemas/v0.3.2/identity.json#/definitions/SecurityContext'
+      $ref: 'https://openstandardagents.org/schemas/v0.3.3/identity.json#/definitions/SecurityContext'
 
     TokenRevocationRequest:
-      $ref: 'https://openstandardagents.org/schemas/v0.3.2/identity.json#/definitions/TokenRevocationRequest'
+      $ref: 'https://openstandardagents.org/schemas/v0.3.3/identity.json#/definitions/TokenRevocationRequest'
 
     TokenRevocationResponse:
-      $ref: 'https://openstandardagents.org/schemas/v0.3.2/identity.json#/definitions/TokenRevocationResponse'
+      $ref: 'https://openstandardagents.org/schemas/v0.3.3/identity.json#/definitions/TokenRevocationResponse'
 
     Error:
       type: object

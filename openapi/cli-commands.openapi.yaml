@@ -364,7 +364,7 @@ x-ossa-metadata:
   compliance:
     level: enterprise
     frameworks:
-      - OSSA v0.3.1
+      - OSSA v0.3.3
       - OpenAPI 3.1
       - RFC7807
   governance:

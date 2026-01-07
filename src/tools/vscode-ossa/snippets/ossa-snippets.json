@@ -2,7 +2,7 @@
   "OSSA Minimal Agent": {
     "prefix": "ossa-agent",
     "body": [
-      "apiVersion: ossa/v0.3.2",
+      "apiVersion: ossa/v0.3.3",
       "kind: Agent",
       "",
       "metadata:",
@@ -26,7 +26,7 @@
   "OSSA Agent with Tools": {
     "prefix": "ossa-agent-tools",
     "body": [
-      "apiVersion: ossa/v0.3.2",
+      "apiVersion: ossa/v0.3.3",
       "kind: Agent",
       "",
       "metadata:",
@@ -56,7 +56,7 @@
   "OSSA Agent with Safety": {
     "prefix": "ossa-agent-safety",
     "body": [
-      "apiVersion: ossa/v0.3.2",
+      "apiVersion: ossa/v0.3.3",
       "kind: Agent",
       "",
       "metadata:",
@@ -92,7 +92,7 @@
   "OSSA Task": {
     "prefix": "ossa-task",
     "body": [
-      "apiVersion: ossa/v0.3.2",
+      "apiVersion: ossa/v0.3.3",
       "kind: Task",
       "",
       "metadata:",
@@ -115,7 +115,7 @@
   "OSSA Workflow": {
     "prefix": "ossa-workflow",
     "body": [
-      "apiVersion: ossa/v0.3.2",
+      "apiVersion: ossa/v0.3.3",
       "kind: Workflow",
       "",
       "metadata:",
@@ -264,7 +264,7 @@
   "OSSA Complete Agent": {
     "prefix": "ossa-agent-complete",
     "body": [
-      "apiVersion: ossa/v0.3.2",
+      "apiVersion: ossa/v0.3.3",
       "kind: Agent",
       "",
       "metadata:",

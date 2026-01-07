@@ -3,7 +3,7 @@
 # ============================================================================
 # 
 # Enables parallel release development with merge trains:
-# - Work on v0.3.2 while preparing v0.3.3
+# - Work on v0.3.3 while preparing v0.3.3
 # - Each release branch has its own merge train
 # - Feature branches → release/* (auto-merge via train)
 # - Release branches → main (manual approval via train)

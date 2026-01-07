@@ -164,7 +164,7 @@ commands:
     for manifest in $(find . -name "*.ossa.yaml" ! -path "./node_modules/*"); do
       # Missing apiVersion
       if ! grep -q "^apiVersion:" "$manifest"; then
-        echo "🔧 $manifest: Add 'apiVersion: ossa/v0.3.2'"
+        echo "🔧 $manifest: Add 'apiVersion: ossa/v0.3.3'"
         FIXES=$((FIXES + 1))
       fi
     

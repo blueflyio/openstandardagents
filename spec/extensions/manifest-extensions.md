@@ -1,6 +1,6 @@
 # OSSA Manifest Extensions: Messaging
 
-**Version:** 0.3.1
+**Version:** 0.3.3
 **Status:** Stable
 **Last Updated:** 2025-12-18
 
@@ -13,7 +13,7 @@ This document describes how to integrate the Agent-to-Agent Messaging extension 
 The `messaging` field is added to the `spec` section of Agent manifests:
 
 ```yaml
-apiVersion: ossa/v0.3.1
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: my-agent
@@ -285,7 +285,7 @@ spec:
 ## Complete Example
 
 ```yaml
-apiVersion: ossa/v0.3.1
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: task-orchestrator
@@ -413,7 +413,7 @@ spec:
 ## Worker Agent Example
 
 ```yaml
-apiVersion: ossa/v0.3.1
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: code-reviewer

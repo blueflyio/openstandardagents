@@ -5,7 +5,7 @@
 # Demonstrates OSSA v0.3.0 Workflow kind with all features
 # ============================================================================
 
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Workflow
 metadata:
   name: release-orchestration-workflow

@@ -2,7 +2,7 @@
   "name": "ossa-language-support",
   "displayName": "OSSA (Open Standard for Scalable AI Agents)",
   "description": "Language support for OSSA manifest files - the OpenAPI of AI Agents. Provides validation, snippets, and IntelliSense for .ossa.yaml and .ossa.json files.",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "publisher": "bluefly",
   "icon": "images/icon.png",
   "repository": {
@@ -67,33 +67,33 @@
     "yamlValidation": [
       {
         "fileMatch": "*.ossa.yaml",
-        "url": "https://openstandardagents.org/schemas/v0.3.2/manifest.json"
+        "url": "https://openstandardagents.org/schemas/v0.3.3/manifest.json"
       },
       {
         "fileMatch": "*.ossa.yml",
-        "url": "https://openstandardagents.org/schemas/v0.3.2/manifest.json"
+        "url": "https://openstandardagents.org/schemas/v0.3.3/manifest.json"
       },
       {
         "fileMatch": "**/manifest.ossa.yaml",
-        "url": "https://openstandardagents.org/schemas/v0.3.2/manifest.json"
+        "url": "https://openstandardagents.org/schemas/v0.3.3/manifest.json"
       },
       {
         "fileMatch": "**/.agents/**/manifest.yaml",
-        "url": "https://openstandardagents.org/schemas/v0.3.2/manifest.json"
+        "url": "https://openstandardagents.org/schemas/v0.3.3/manifest.json"
       },
       {
         "fileMatch": "**/.gitlab/agents/**/manifest.ossa.yaml",
-        "url": "https://openstandardagents.org/schemas/v0.3.2/manifest.json"
+        "url": "https://openstandardagents.org/schemas/v0.3.3/manifest.json"
       }
     ],
     "jsonValidation": [
       {
         "fileMatch": "*.ossa.json",
-        "url": "https://openstandardagents.org/schemas/v0.3.2/manifest.json"
+        "url": "https://openstandardagents.org/schemas/v0.3.3/manifest.json"
       },
       {
         "fileMatch": "**/manifest.ossa.json",
-        "url": "https://openstandardagents.org/schemas/v0.3.2/manifest.json"
+        "url": "https://openstandardagents.org/schemas/v0.3.3/manifest.json"
       }
     ],
     "snippets": [
@@ -124,10 +124,10 @@
         },
         "ossa.validation.schemaVersion": {
           "type": "string",
-          "default": "v0.3.2",
+          "default": "v0.3.3",
           "enum": [
-            "v0.3.2",
-            "v0.3.1",
+            "v0.3.3",
+            "v0.3.3",
             "v0.3.0",
             "v0.2.9",
             "v0.2.8"

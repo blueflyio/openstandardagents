@@ -7,7 +7,7 @@
 # NOTE: This is a reference configuration, not an OSSA manifest.
 # It documents recommended port allocations for infrastructure guidance.
 #
-# @see https://openstandardagents.org/spec/v0.3.2/infrastructure
+# @see https://openstandardagents.org/spec/v0.3.3/infrastructure
 # ============================================================================
 
 # Configuration metadata

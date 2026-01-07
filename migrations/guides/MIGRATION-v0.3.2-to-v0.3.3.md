@@ -1,4 +1,4 @@
-# Migration Guide: OSSA v0.3.2 → v0.3.3
+# Migration Guide: OSSA v0.3.3 → v0.3.3
 
 > **Status**: Draft
 > **Last Updated**: 2025-12-31
@@ -11,7 +11,7 @@ OSSA v0.3.3 introduces **Skills Compatibility Extension** for interoperability w
 
 ### Key Changes
 
-- ✅ **Backward Compatible**: v0.3.2 manifests validate against v0.3.3 schema
+- ✅ **Backward Compatible**: v0.3.3 manifests validate against v0.3.3 schema
 - ✅ **Skills Extension**: New `extensions.skills` for bidirectional Skills format support
 - ✅ **Progressive Disclosure**: Token-budgeted metadata → instructions → resources pattern
 
@@ -21,10 +21,10 @@ OSSA v0.3.3 introduces **Skills Compatibility Extension** for interoperability w
 
 ### Option 1: No Changes Required (Recommended for Existing Agents)
 
-**v0.3.2 agents continue to work without modification:**
+**v0.3.3 agents continue to work without modification:**
 
 ```yaml
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: my-agent

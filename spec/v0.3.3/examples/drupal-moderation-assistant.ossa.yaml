@@ -5,7 +5,7 @@ metadata:
   version: 1.0.0
   description: Content moderation assistant that helps users review and publish content
   annotations:
-    ossa.io/migration: v0.3.2-to-v0.3.3
+    ossa.io/migration: v0.3.3-to-v0.3.3
     ossa.io/migrated-date: 2026-01-07
 spec:
   capabilities:

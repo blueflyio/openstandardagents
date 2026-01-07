@@ -13,9 +13,9 @@ migrations/
 ├── README.md                    # This file
 ├── index.ts                      # Migration runner (auto-detects and applies migrations)
 ├── guides/                       # Human-readable migration guides
-│   └── MIGRATION-v0.3.2-to-v0.3.3.md
+│   └── MIGRATION-v0.3.3-to-v0.3.3.md
 └── scripts/                      # Automated migration scripts
-    └── migrate-v0.3.2-to-v0.3.3.ts
+    └── migrate-v0.3.3-to-v0.3.3.ts
 ```
 
 ## Usage
@@ -73,13 +73,13 @@ When releasing a new version:
 
 1. **Create migration guide** in `guides/`:
    ```bash
-   cp migrations/guides/MIGRATION-v0.3.2-to-v0.3.3.md \
+   cp migrations/guides/MIGRATION-v0.3.3-to-v0.3.3.md \
       migrations/guides/MIGRATION-v0.3.3-to-v0.3.4.md
    ```
 
 2. **Create migration script** in `scripts/`:
    ```bash
-   cp migrations/scripts/migrate-v0.3.2-to-v0.3.3.ts \
+   cp migrations/scripts/migrate-v0.3.3-to-v0.3.3.ts \
       migrations/scripts/migrate-v0.3.3-to-v0.3.4.ts
    ```
 
@@ -141,14 +141,14 @@ migrateManifest(filePath, { dryRun: process.argv.includes('--dry-run') });
 ## Best Practices
 
 1. **Backward Compatibility**: Always maintain backward compatibility when possible
-2. **Incremental**: Migrations should be incremental (v0.3.2 → v0.3.3 → v0.3.4)
+2. **Incremental**: Migrations should be incremental (v0.3.3 → v0.3.3 → v0.3.4)
 3. **Idempotent**: Running a migration twice should be safe
 4. **Preserve Data**: Never lose user data during migration
 5. **Add Annotations**: Add migration metadata to manifests:
    ```yaml
    metadata:
      annotations:
-       ossa.io/migration: v0.3.2-to-v0.3.3
+       ossa.io/migration: v0.3.3-to-v0.3.3
        ossa.io/migrated-date: 2025-12-31
    ```
 

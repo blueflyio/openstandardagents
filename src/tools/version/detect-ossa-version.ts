@@ -52,7 +52,7 @@ function detectOssaVersion(): string | null {
   const packageJsonPath = path.join(process.cwd(), 'package.json');
   if (fs.existsSync(packageJsonPath)) {
     const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-    if (pkg.version && pkg.version !== '0.3.2') {
+    if (pkg.version && pkg.version !== '0.3.3') {
       const version = normalizeVersion(pkg.version);
       if (isValidVersion(version)) {
         console.log(`📦 Found version in package.json: ${version}`);
