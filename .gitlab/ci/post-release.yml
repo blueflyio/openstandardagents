@@ -155,24 +155,30 @@ increment-dev-tag:
     - npm ci
     - npm install -g tsx
   script:
-    - tsx .gitlab/release-automation/scripts/increment-dev-tag.ts
+    - tsx src/services/release-automation/increment-dev-tag.ts
   rules:
     - if: $CI_COMMIT_BRANCH =~ /^release\/v/ && $CI_PIPELINE_SOURCE == "push"
       when: on_success
   allow_failure: true
 
 # Manual release buttons (main branch only)
-release-to-npm:
+# Button 1: Publish to npmjs
+release:publish-npm:
   stage: release
   image: node:${NODE_VERSION}-alpine
   before_script:
-    - apk add --no-cache curl jq
-    - npm ci
+    - apk add --no-cache curl jq git
+    - npm ci --prefer-offline --no-audit
   script:
-    - RELEASE_ACTION=npm tsx .gitlab/release-automation/scripts/release-buttons.ts
+    - RELEASE_ACTION=npm tsx src/services/release-automation/release-buttons.ts
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual
+  environment:
+    name: npmjs/production
+    url: https://www.npmjs.com/package/@bluefly/openstandardagents
+  variables:
+    NPM_TOKEN: $NPM_TOKEN
 
 release-to-github:
   stage: release
@@ -182,7 +188,7 @@ release-to-github:
     - apk add --no-cache curl jq
     - npm ci
   script:
-    - RELEASE_ACTION=github tsx .gitlab/release-automation/scripts/release-buttons.ts
+    - RELEASE_ACTION=github tsx src/services/release-automation/release-buttons.ts
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual
@@ -197,7 +203,7 @@ announce-release:
     - apk add --no-cache curl jq
     - npm ci
   script:
-    - RELEASE_ACTION=announce tsx .gitlab/release-automation/scripts/release-buttons.ts
+    - RELEASE_ACTION=announce tsx src/services/release-automation/release-buttons.ts
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual
