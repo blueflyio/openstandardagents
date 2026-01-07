@@ -1,66 +1,73 @@
-# OSSA (Open Standard for Scalable AI Agents)
+# openstandardagents-project
+
+Open Standard for Scalable AI Agents - Vendor-neutral specification, CLI tools, and SDKs for defining and deploying AI agents
 
 ## Project Overview
 
-OSSA is a vendor-neutral, open specification for defining, deploying, and orchestrating AI agents across platforms. Think OpenAPI for REST APIs, but for AI agents.
+You are the OSSA (Open Standard for Scalable AI Agents) project - a vendor-neutral,
+open specification for defining, deploying, and orchestrating AI agents across platforms.
 
-This repository contains:
+Think OpenAPI for REST APIs, but for AI agents.
+
+This project provides:
 - OSSA specification schemas (JSON Schema, OpenAPI)
-- CLI tooling (`ossa` commands)
+- CLI tooling (ossa commands)
 - TypeScript and Python SDKs
 - Reference examples (100+ examples)
 - Migration tools and guides
 
+Always follow SOLID, DRY, Zod, OpenAPI, and CRUD principles.
+Never create shell scripts - use TypeScript instead.
+Never create scripts/ folders - use src/ instead.
+Never hardcode versions - use {{VERSION}} placeholders.
+
 ## Setup Commands
 
-- Install dependencies: `npm install` or `pnpm install`
-- Build project: `npm run build`
-- Run tests: `npm test`
-- Validate all manifests: `npm run validate:all`
-- Generate types: `npm run generate:all`
+- Install dependencies: `npm install`
+- Build TypeScript project: `npm run build`
+- Run test suite: `npm test`
+- Validate all OSSA manifests: `npm run validate:all`
+- Generate types and validators: `npm run generate:all`
+- Validate OSSA manifest: `ossa validate`
 
 ## Code Style
 
-- **TypeScript strict mode** - All code must pass strict type checking
-- **Single quotes** - Use single quotes for strings
-- **No semicolons** - Semicolons are optional, prefer without
-- **Functional patterns** - Prefer functional programming where possible
-- **SOLID principles** - Single Responsibility, Dependency Injection
-- **DRY** - Don't Repeat Yourself, use shared utilities
-- **Zod validation** - All inputs/outputs validated with Zod schemas
-- **OpenAPI-first** - All APIs defined in OpenAPI 3.1 specs
+- TypeScript strict mode - All code must pass strict type checking
+- Single quotes - Use single quotes for strings
+- No semicolons - Semicolons are optional, prefer without
+- Functional patterns - Prefer functional programming where possible
+- SOLID principles - Single Responsibility, Dependency Injection
+- DRY - Don't Repeat Yourself, use shared utilities
+- Zod validation - All inputs/outputs validated with Zod schemas
+- OpenAPI-first - All APIs defined in OpenAPI 3.1 specs
+
 
 ## File Organization
 
-- `src/` - Primary source directory (TypeScript)
-- `spec/` - OSSA specification schemas (JSON Schema, YAML)
-- `examples/` - Reference examples (OSSA manifests)
-- `openapi/` - OpenAPI specifications
-- `tests/` - Test suite (unit, integration, e2e)
-- `docs/` - Documentation
+- src/ - Primary source directory (TypeScript)
+- spec/ - OSSA specification schemas (JSON Schema, YAML)
+- examples/ - Reference examples (OSSA manifests)
+- openapi/ - OpenAPI specifications
+- tests/ - Test suite (unit, integration, e2e)
+- docs/ - Documentation
 
-**CRITICAL RULES:**
-- ❌ NO `scripts/` folders (use `src/` instead)
-- ❌ NO shell scripts (`.sh` files) - use TypeScript
-- ❌ NO `.md` files in root (use GitLab Wiki)
-- ✅ All code in `src/`
+CRITICAL RULES:
+- ❌ NO scripts/ folders (use src/ instead)
+- ❌ NO shell scripts (.sh files) - use TypeScript
+- ❌ NO .md files in root (use GitLab Wiki)
+- ✅ All code in src/
 - ✅ All configs follow SOLID/DRY/Zod/OpenAPI/CRUD
+
 
 ## Testing Instructions
 
 - Run all tests: `npm test`
-- Run specific test suite: `npm run test:unit` or `npm run test:integration`
+- Run specific suite: `npm run test:unit` or `npm run test:integration`
 - Run E2E tests: `npm run test:e2e`
 - Check coverage: Tests should maintain 95%+ coverage
 - Validate manifests: `npm run validate:all` before committing
 - Fix all lint errors: `npm run lint`
 
-**Test Requirements:**
-- All new features must include tests
-- Tests must pass before committing
-- Coverage must not decrease
-- Integration tests for CLI commands
-- E2E tests for full workflows
 
 ## Build Process
 
@@ -119,6 +126,11 @@ This repository contains:
 - **CI must pass** before merge
 - **No hardcoded versions** - use `{{VERSION}}` placeholders
 
+Examples:
+- `feat(cli): add validate command`
+- `fix(schema): correct trigger validation`
+
+
 ## Architecture Principles
 
 - **SOLID**: Single Responsibility, Dependency Injection
@@ -156,11 +168,18 @@ This repository contains:
 
 ## Security Considerations
 
+- Content filtering enabled
+- PII detection enabled
+- Prohibited topics:
+  - credentials
+  - secrets
+  - api_keys
+
 - Never commit secrets or API keys
 - Use environment variables for sensitive data
 - Validate all inputs with Zod schemas
-- Follow security guidelines in `SECURITY.md`
-- Report vulnerabilities via security@openstandardagents.org
+- Follow security guidelines in SECURITY.md
+
 
 ## Debugging
 
