@@ -4,62 +4,10 @@
  * Follows llmstxt.org specification
  */
 
-import { injectable } from 'inversify'
 import * as fs from 'fs/promises'
-import * as path from 'path'
-import type { OssaAgent } from '../../types/index.js'
-
-interface LlmsTxtExtension {
-  enabled?: boolean
-  file_path?: string
-  generate?: boolean
-  auto_discover?: boolean
-  format?: {
-    include_h1_title?: boolean
-    include_blockquote?: boolean
-    include_h2_sections?: boolean
-    include_optional?: boolean
-  }
-  sections?: {
-    core_specification?: LlmsTxtSection
-    quick_start?: LlmsTxtSection
-    cli_tools?: LlmsTxtSection
-    sdks?: LlmsTxtSection
-    examples?: LlmsTxtSection
-    migration_guides?: LlmsTxtSection
-    development?: LlmsTxtSection
-    specification_versions?: LlmsTxtSection
-    openapi_specifications?: LlmsTxtSection
-    documentation?: LlmsTxtSection
-    optional?: LlmsTxtSection
-    custom?: LlmsTxtSection[]
-  }
-  sync?: {
-    on_manifest_change?: boolean
-    include_comments?: boolean
-    preserve_custom?: boolean
-    watch?: boolean
-  }
-  mapping?: {
-    metadata_to_h1?: boolean
-    description_to_blockquote?: boolean
-    spec_to_core_specification?: boolean
-    tools_to_cli_tools?: boolean
-    examples_to_examples?: boolean
-    migrations_to_migration_guides?: boolean
-  }
-  include_metadata?: boolean
-}
-
-interface LlmsTxtSection {
-  enabled?: boolean
-  source?: string
-  custom?: string
-  append?: string
-  prepend?: string
-  title?: string
-  file_list?: string[]
-}
+import { injectable } from 'inversify'
+import type { OssaAgent, LlmsTxtExtension, LlmsTxtSection } from '../../types/index.js'
+import { LlmsTxtExtensionSchema } from '../../types/llms-txt.zod.js'
 
 /**
  * Service for generating and managing llms.txt files from OSSA manifests
@@ -72,9 +20,21 @@ export class LlmsTxtService {
    * @returns Generated llms.txt content as string
    */
   async generateLlmsTxt(manifest: OssaAgent): Promise<string> {
-    const extension = (manifest.extensions as any)?.llms_txt as LlmsTxtExtension | undefined
+    const rawExtension = (manifest.extensions as any)?.llms_txt
 
-    if (!extension?.enabled) {
+    if (!rawExtension) {
+      throw new Error('llms_txt extension not found in manifest')
+    }
+
+    // Validate with Zod (ZOD principle)
+    const parseResult = LlmsTxtExtensionSchema.safeParse(rawExtension)
+    if (!parseResult.success) {
+      throw new Error(`Invalid llms_txt extension: ${parseResult.error.message}`)
+    }
+
+    const extension = parseResult.data
+
+    if (!extension.enabled) {
       throw new Error('llms_txt extension is not enabled in manifest')
     }
 
