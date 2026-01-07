@@ -41,6 +41,7 @@ import { agentsCommandGroup } from './commands/agents.command.js';
 import { workspaceCommand } from './commands/workspace.command.js';
 import { registryCommand } from './commands/registry.command.js';
 import { agentCardCommand } from './commands/agent-card.command.js';
+import { extensionTeamCommand } from './commands/extension-team.command.js';
 
 // Load package.json for version (lazy to avoid Jest module resolution issues)
 import * as fs from 'fs';
@@ -170,6 +171,9 @@ program.addCommand(agentsCommandGroup);
 program.addCommand(workspaceCommand);
 program.addCommand(registryCommand);
 program.addCommand(agentCardCommand);
+
+// Extension development commands
+program.addCommand(extensionTeamCommand);
 
 // Parse arguments - MUST be after all commands are registered
 program.parse();

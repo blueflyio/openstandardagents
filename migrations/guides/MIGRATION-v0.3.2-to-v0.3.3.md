@@ -112,6 +112,6 @@ ossa import --format skills --path ./my-skill/
 
 ## References
 
-- [Skills Compatibility Extension](../extensions/skills-compatibility.md)
+- [Skills Compatibility Extension](../../spec/v0.3.3/extensions/skills-compatibility.md)
 - [Anthropic Skills Repository](https://github.com/anthropics/skills)
 - [AgentSkills.io Specification](https://agentskills.io/specification)

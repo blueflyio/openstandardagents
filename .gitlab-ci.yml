@@ -42,6 +42,8 @@ include:
   - local: .gitlab/ci/review-apps.yml
   # Guardrails (prevent duplicate agents)
   - local: .gitlab/ci/guardrails.yml
+  # Extension Development Team Pipeline
+  - local: .gitlab/ci/extension-development.yml
   # OSSA Agent Pipelines
   #- local: .gitlab/ci/seo-automation.yml
   # Use canonical agents from platform-agents (pinned version)
@@ -129,7 +131,7 @@ validate:mr-target:
           exit 1
         fi
       fi
-      
+
       echo "SUCCESS: MR target validation passed"
       BASH_SCRIPT
 
@@ -823,14 +825,14 @@ mr-manager-agent:
       echo "Checking GitLab Ultimate + Agent availability..."
       LICENSE_CHECK=$(curl -s --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
         "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}" 2>/dev/null | jq -r '.namespace.plan // "free"' || echo "free")
-      
+
       if [[ "$LICENSE_CHECK" != "ultimate" ]]; then
         echo "WARNING: GitLab Ultimate not detected (plan: $LICENSE_CHECK)"
         echo "Skipping agent job - requires GitLab Ultimate + Duo Agents"
         echo "This is not a failure - agent features are optional"
         exit 0
       fi
-      
+
       echo "GitLab Ultimate detected - agent features available"
     - npm install -g pnpm
   script:
@@ -939,23 +941,23 @@ release:pre-release:
       if [ -f build.env ]; then
         source build.env
         echo "Creating pre-release tag: ${RELEASE_TAG}"
-        
+
         # Check if tag already exists
         if git rev-parse "${RELEASE_TAG}" >/dev/null 2>&1; then
           echo "Tag ${RELEASE_TAG} already exists, skipping"
           exit 0
         fi
-        
+
         # Create annotated tag
         git tag -a "${RELEASE_TAG}" \
           -m "Pre-release: ${RELEASE_TAG}" \
           -m "Branch: ${CI_COMMIT_BRANCH}" \
           -m "Commit: ${CI_COMMIT_SHA}" \
           -m "Pipeline: ${CI_PIPELINE_ID}"
-        
+
         # Push tag
         git push origin "${RELEASE_TAG}"
-        
+
         echo "SUCCESS: Created pre-release tag: ${RELEASE_TAG}"
       else
         echo "WARNING: build.env not found, skipping tag creation"
