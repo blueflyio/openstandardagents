@@ -1,0 +1,209 @@
+# OSSA Project Manifest for openstandardagents
+# This manifest defines the project itself as an OSSA agent
+# Enables bidirectional sync with AGENTS.md and llms.txt
+
+apiVersion: ossa/v0.3.3
+kind: Agent
+metadata:
+  name: openstandardagents-project
+  version: 0.3.3
+  description: Open Standard for Scalable AI Agents - Vendor-neutral specification, CLI tools, and SDKs for defining and deploying AI agents
+  labels:
+    domain: ossa
+    type: specification
+    project: openstandardagents
+  annotations:
+    homepage: https://openstandardagents.org
+    repository: https://gitlab.com/blueflyio/ossa/openstandardagents
+
+spec:
+  role: |
+    You are the OSSA (Open Standard for Scalable AI Agents) project - a vendor-neutral, 
+    open specification for defining, deploying, and orchestrating AI agents across platforms.
+    
+    Think OpenAPI for REST APIs, but for AI agents.
+    
+    This project provides:
+    - OSSA specification schemas (JSON Schema, OpenAPI)
+    - CLI tooling (ossa commands)
+    - TypeScript and Python SDKs
+    - Reference examples (100+ examples)
+    - Migration tools and guides
+    
+    Always follow SOLID, DRY, Zod, OpenAPI, and CRUD principles.
+    Never create shell scripts - use TypeScript instead.
+    Never create scripts/ folders - use src/ instead.
+    Never hardcode versions - use {{VERSION}} placeholders.
+
+  llm:
+    provider: ${LLM_PROVIDER:-anthropic}
+    model: ${LLM_MODEL:-claude-sonnet-4}
+    temperature: 0.1
+    maxTokens: 16000
+
+  tools:
+    - type: function
+      name: npm_install
+      config:
+        command: npm install
+        description: Install dependencies
+    - type: function
+      name: npm_build
+      config:
+        command: npm run build
+        description: Build TypeScript project
+    - type: function
+      name: npm_test
+      config:
+        command: npm test
+        description: Run test suite
+    - type: function
+      name: npm_validate
+      config:
+        command: npm run validate:all
+        description: Validate all OSSA manifests
+    - type: function
+      name: npm_generate
+      config:
+        command: npm run generate:all
+        description: Generate types and validators
+    - type: function
+      name: ossa_validate
+      config:
+        command: ossa validate
+        description: Validate OSSA manifest
+    - type: mcp
+      name: filesystem
+      server: filesystem
+      capabilities:
+        - read_file
+        - write_file
+        - list_directory
+    - type: mcp
+      name: git
+      server: git
+      capabilities:
+        - status
+        - diff
+        - commit
+        - push
+
+  autonomy:
+    level: supervised
+    approval_required: true
+    allowed_actions:
+      - read
+      - write
+      - test
+      - validate
+      - generate
+    blocked_actions:
+      - merge_to_main
+      - merge_to_development
+      - delete_branch
+      - force_push
+
+  constraints:
+    performance:
+      maxLatencySeconds: 60
+      timeoutSeconds: 120
+    quality:
+      minCoverage: 95
+      maxComplexity: 15
+      requireTests: true
+    prohibited:
+      - hardcode_versions
+      - create_shell_scripts
+      - create_scripts_folders
+      - commit_to_main
+      - commit_to_development
+
+  safety:
+    content_filter: enabled
+    pii_detection: true
+    prohibited_topics:
+      - credentials
+      - secrets
+      - api_keys
+
+extensions:
+  agents_md:
+    enabled: true
+    generate: true
+    file_path: AGENTS.md
+    auto_discover: false
+    sections:
+      dev_environment:
+        enabled: true
+        source: spec.tools
+        append: |
+          ## Additional Setup
+          - Configure IDE: Install TypeScript, ESLint extensions
+          - Enable pre-commit hooks: Lefthook runs automatically
+          - Set up GitLab CI/CD: Already configured in .gitlab-ci.yml
+      testing:
+        enabled: true
+        source: spec.constraints
+        custom: |
+          - Run all tests: `npm test`
+          - Run specific suite: `npm run test:unit` or `npm run test:integration`
+          - Run E2E tests: `npm run test:e2e`
+          - Check coverage: Tests should maintain 95%+ coverage
+          - Validate manifests: `npm run validate:all` before committing
+          - Fix all lint errors: `npm run lint`
+      pr_instructions:
+        enabled: true
+        source: spec.autonomy
+        title_format: "type(scope): description"
+        append: |
+          Examples:
+          - `feat(cli): add validate command`
+          - `fix(schema): correct trigger validation`
+      code_style:
+        enabled: true
+        custom: |
+          - TypeScript strict mode - All code must pass strict type checking
+          - Single quotes - Use single quotes for strings
+          - No semicolons - Semicolons are optional, prefer without
+          - Functional patterns - Prefer functional programming where possible
+          - SOLID principles - Single Responsibility, Dependency Injection
+          - DRY - Don't Repeat Yourself, use shared utilities
+          - Zod validation - All inputs/outputs validated with Zod schemas
+          - OpenAPI-first - All APIs defined in OpenAPI 3.1 specs
+      security:
+        enabled: true
+        source: spec.safety
+        append: |
+          - Never commit secrets or API keys
+          - Use environment variables for sensitive data
+          - Validate all inputs with Zod schemas
+          - Follow security guidelines in SECURITY.md
+      architecture:
+        enabled: true
+        custom: |
+          - src/ - Primary source directory (TypeScript)
+          - spec/ - OSSA specification schemas (JSON Schema, YAML)
+          - examples/ - Reference examples (OSSA manifests)
+          - openapi/ - OpenAPI specifications
+          - tests/ - Test suite (unit, integration, e2e)
+          - docs/ - Documentation
+          
+          CRITICAL RULES:
+          - ❌ NO scripts/ folders (use src/ instead)
+          - ❌ NO shell scripts (.sh files) - use TypeScript
+          - ❌ NO .md files in root (use GitLab Wiki)
+          - ✅ All code in src/
+          - ✅ All configs follow SOLID/DRY/Zod/OpenAPI/CRUD
+    sync:
+      on_manifest_change: true
+      include_comments: true
+      preserve_custom: true
+      watch: false
+    mapping:
+      tools_to_dev_environment: true
+      constraints_to_testing: true
+      autonomy_to_pr_instructions: true
+      safety_to_security: true
+      role_to_overview: true
+    cursor_integration: true
+    include_metadata: true
