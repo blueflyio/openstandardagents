@@ -26,7 +26,7 @@ export class SchemaRepository implements ISchemaRepository {
   }
 
   /**
-   * Check if version is a template placeholder (e.g., {{VERSION}})
+   * Check if version is a template placeholder (e.g., 0.3.2)
    */
   private isTemplateVersion(version: string): boolean {
     return /^\{\{[A-Z_]+\}\}$/.test(version);

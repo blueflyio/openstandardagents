@@ -93,10 +93,10 @@ function readVersionFromPackageJson(): string {
     const pkgPath = findPackageJson(process.cwd());
     if (pkgPath) {
       const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
-      if (pkg.version && pkg.version !== '{{VERSION}}') {
+      if (pkg.version && pkg.version !== '0.3.2') {
         return pkg.version;
       }
-      // If version is {{VERSION}} placeholder, continue to next strategy
+      // If version is 0.3.2 placeholder, continue to next strategy
     }
   } catch {
     // Continue to next strategy
@@ -108,7 +108,7 @@ function readVersionFromPackageJson(): string {
       const pkgPath = findPackageJson(__dirname);
       if (pkgPath) {
         const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
-        if (pkg.version && pkg.version !== '{{VERSION}}') {
+        if (pkg.version && pkg.version !== '0.3.2') {
           return pkg.version;
         }
       }

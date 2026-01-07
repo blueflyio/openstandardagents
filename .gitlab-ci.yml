@@ -632,10 +632,11 @@ quality:browser-performance:
 
 quality:accessibility:
   stage: quality
-  image: node:${NODE_VERSION}
+  image: node:${NODE_VERSION}-alpine
   needs:
     - build:website
   before_script:
+    - apk add --no-cache npm
     - npm install -g pa11y-ci
   script:
     - pa11y-ci --sitemap website-build/sitemap.xml --json > accessibility.json || true
