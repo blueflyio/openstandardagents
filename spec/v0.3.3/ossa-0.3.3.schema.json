@@ -66,6 +66,9 @@
         "agents_md": {
           "$ref": "#/definitions/AgentsMdExtension"
         },
+        "llms_txt": {
+          "$ref": "#/definitions/LlmsTxtExtension"
+        },
         "dify": {
           "$ref": "#/definitions/DifyExtension"
         },
@@ -2902,6 +2905,219 @@
           "type": "string",
           "description": "Format string for section title",
           "examples": ["[{metadata.labels.domain}] {title}"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "LlmsTxtExtension": {
+      "type": "object",
+      "description": "llms.txt extension for bidirectional markdown/OSSA conversion - enables generation, parsing, synchronization, and validation between llms.txt files and OSSA manifests",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable llms_txt extension"
+        },
+        "file_path": {
+          "type": "string",
+          "default": "llms.txt",
+          "description": "Path to llms.txt file (relative to repository root)",
+          "examples": ["llms.txt", "docs/llms.txt", ".llms.txt"]
+        },
+        "generate": {
+          "type": "boolean",
+          "default": true,
+          "description": "Auto-generate llms.txt from manifest"
+        },
+        "auto_discover": {
+          "type": "boolean",
+          "default": false,
+          "description": "Auto-discover agents from llms.txt sections"
+        },
+        "format": {
+          "type": "object",
+          "description": "llms.txt format configuration",
+          "properties": {
+            "include_h1_title": {
+              "type": "boolean",
+              "default": true,
+              "description": "Include H1 title"
+            },
+            "include_blockquote": {
+              "type": "boolean",
+              "default": true,
+              "description": "Include blockquote summary"
+            },
+            "include_h2_sections": {
+              "type": "boolean",
+              "default": true,
+              "description": "Include H2 sections with file lists"
+            },
+            "include_optional": {
+              "type": "boolean",
+              "default": true,
+              "description": "Include Optional section for secondary info"
+            }
+          },
+          "additionalProperties": false
+        },
+        "sections": {
+          "type": "object",
+          "description": "Section-level configuration for llms.txt",
+          "properties": {
+            "core_specification": {
+              "$ref": "#/definitions/LlmsTxtSection"
+            },
+            "quick_start": {
+              "$ref": "#/definitions/LlmsTxtSection"
+            },
+            "cli_tools": {
+              "$ref": "#/definitions/LlmsTxtSection"
+            },
+            "sdks": {
+              "$ref": "#/definitions/LlmsTxtSection"
+            },
+            "examples": {
+              "$ref": "#/definitions/LlmsTxtSection"
+            },
+            "migration_guides": {
+              "$ref": "#/definitions/LlmsTxtSection"
+            },
+            "development": {
+              "$ref": "#/definitions/LlmsTxtSection"
+            },
+            "specification_versions": {
+              "$ref": "#/definitions/LlmsTxtSection"
+            },
+            "openapi_specifications": {
+              "$ref": "#/definitions/LlmsTxtSection"
+            },
+            "documentation": {
+              "$ref": "#/definitions/LlmsTxtSection"
+            },
+            "optional": {
+              "$ref": "#/definitions/LlmsTxtSection"
+            },
+            "custom": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/LlmsTxtSection"
+              },
+              "description": "Additional custom sections"
+            }
+          },
+          "additionalProperties": {
+            "$ref": "#/definitions/LlmsTxtSection"
+          }
+        },
+        "sync": {
+          "type": "object",
+          "description": "Synchronization configuration",
+          "properties": {
+            "on_manifest_change": {
+              "type": "boolean",
+              "default": true,
+              "description": "Regenerate llms.txt when manifest changes"
+            },
+            "include_comments": {
+              "type": "boolean",
+              "default": false,
+              "description": "Include generation comments in output (llms.txt should be clean)"
+            },
+            "preserve_custom": {
+              "type": "boolean",
+              "default": true,
+              "description": "Preserve custom sections not mapped to manifest"
+            },
+            "watch": {
+              "type": "boolean",
+              "default": false,
+              "description": "Watch for file changes"
+            }
+          },
+          "additionalProperties": false
+        },
+        "mapping": {
+          "type": "object",
+          "description": "Explicit mapping between OSSA and llms.txt",
+          "properties": {
+            "metadata_to_h1": {
+              "type": "boolean",
+              "default": true,
+              "description": "Map metadata.name to H1 title"
+            },
+            "description_to_blockquote": {
+              "type": "boolean",
+              "default": true,
+              "description": "Map metadata.description to blockquote"
+            },
+            "spec_to_core_specification": {
+              "type": "boolean",
+              "default": true,
+              "description": "Map spec to Core Specification section"
+            },
+            "tools_to_cli_tools": {
+              "type": "boolean",
+              "default": true,
+              "description": "Map spec.tools to CLI Tools section"
+            },
+            "examples_to_examples": {
+              "type": "boolean",
+              "default": true,
+              "description": "Map examples to Examples section"
+            },
+            "migrations_to_migration_guides": {
+              "type": "boolean",
+              "default": true,
+              "description": "Map migrations to Migration Guides section"
+            }
+          },
+          "additionalProperties": false
+        },
+        "include_metadata": {
+          "type": "boolean",
+          "default": false,
+          "description": "Include OSSA metadata in generated llms.txt (usually false for clean output)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "LlmsTxtSection": {
+      "type": "object",
+      "description": "Configuration for an individual llms.txt section",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether this section is enabled"
+        },
+        "source": {
+          "type": "string",
+          "description": "OSSA manifest path to derive content from",
+          "examples": ["spec.tools", "metadata.description", "examples"]
+        },
+        "custom": {
+          "type": "string",
+          "description": "Custom markdown content for this section"
+        },
+        "append": {
+          "type": "string",
+          "description": "Content to append after auto-generated content"
+        },
+        "prepend": {
+          "type": "string",
+          "description": "Content to prepend before auto-generated content"
+        },
+        "title": {
+          "type": "string",
+          "description": "Override default section title"
+        },
+        "file_list": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of files/links to include in this section"
         }
       },
       "additionalProperties": false
