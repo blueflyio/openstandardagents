@@ -1,7 +1,14 @@
+# Lefthook Configuration
+# Uses TypeScript validators instead of shell scripts (SOLID, DRY, Zod)
+
 pre-commit:
-  parallel: true
+  parallel: false
   commands:
-    audit-tokens:
-      run: node scripts/audit-tokens.js
-      stage: pre-commit
-      only: git diff --cached --name-only | grep -E "(\.gitlab-ci\.yml|scripts/|package\.json|\.env)" || true
+    validate-gitlab-ci:
+      run: tsx src/tools/validation/gitlab-ci-validator.ts .gitlab-ci.yml
+      glob: ".gitlab-ci.yml"
+      stage_fixed: true
+
+    prevent-hardcoded-versions:
+      run: tsx src/tools/validation/version-validator.ts
+      stage_fixed: false

@@ -1,118 +1,94 @@
-# GitLab Webhook Agents
+# OSSA Agents Directory
 
-Automated agents triggered by GitLab webhooks for issue triage and MR management.
+## Purpose
 
-## Architecture
+This directory contains **OSSA-specific reference agents** and workflows that demonstrate OSSA patterns. For general DevOps agents, use `blueflyio/agent-platform/platform-agents`.
+
+## Separation of Duties
+
+### ✅ OSSA-Specific (Keep Here)
+
+**Reference Agents** (`examples/`):
+- `platform-researcher.ossa.yaml` - Research platforms for OSSA compatibility
+- `schema-designer.ossa.yaml` - Design OSSA extension schemas
+- `code-generator.ossa.yaml` - Generate OSSA extension code
+- `test-generator.ossa.yaml` - Generate OSSA extension tests
+
+**Workflows**:
+- `extension-development-team.ossa.yaml` - Build OSSA extensions (uses platform-agents agents)
+
+### ❌ General DevOps (Use Platform-Agents)
+
+**DO NOT** create general DevOps agents here. Use agents from `blueflyio/agent-platform/platform-agents`:
+
+- `merge-request-reviewer` - Create/review MRs
+- `manifest-validator` - Validate manifests
+- `documentation-aggregator` - Aggregate documentation
+- `task-dispatcher` - Task orchestration
+- `code-quality-reviewer` - Code quality checks
+- `vulnerability-scanner` - Security scanning
+- `pipeline-remediation` - CI/CD fixes
+- `release-coordinator` - Release management
+- `issue-lifecycle-manager` - Issue management
+
+## Directory Structure
 
 ```
-GitLab Event (Issue/MR/Note)
-    │
-    ▼
-Webhook → Trigger Pipeline
-    │
-    ▼
-webhook:validate (validates event)
-    │
-    ▼
-agent:router (determines which agent)
-    │
-    ├──► agent:issue-triage (for issues)
-    │
-    └──► agent:mr-manager (for MRs)
-    │
-    ▼
-agent:report (summary)
+.gitlab/agents/
+├── examples/                    # OSSA-specific reference agents
+│   ├── platform-researcher.ossa.yaml
+│   ├── schema-designer.ossa.yaml
+│   ├── code-generator.ossa.yaml
+│   └── test-generator.ossa.yaml
+├── workflows/                   # Workflow inputs
+│   └── *.json
+├── extension-development-team.ossa.yaml  # Main workflow (uses platform-agents)
+├── extension-team-kickoff.yaml          # Kickoff workflow
+└── README.md                    # This file
 ```
 
-## Agents
+## Usage
 
-### MR Manager (`mr-manager`)
-- **Manifest**: `.gitlab/agents/mr-manager/manifest.ossa.yaml`
-- **Triggers**: MR open, update, approved, notes
-- **Tasks**:
-  - Validate conventional commit title
-  - Auto-apply labels based on type
-  - Assign reviewers
-  - Add to merge train when ready
-  - Post status comments
+### Extension Development Workflow
 
-### Issue Triage (`issue-triage`)
-- **Manifest**: `.gitlab/agents/issue-triage/manifest.ossa.yaml`
-- **Triggers**: Issue open, update, notes
-- **Tasks**:
-  - Validate issue template
-  - Classify issue type (bug/feature/docs/question)
-  - Estimate weight
-  - Auto-assign owner
-  - Add to milestone
-  - Post triage report
+The `extension-development-team.ossa.yaml` workflow:
+1. Uses **OSSA-specific** agents from `examples/` for OSSA-specific tasks
+2. Uses **platform-agents** agents for general DevOps tasks
 
-## Setup
+```yaml
+# OSSA-Specific: Research platform
+- ref: ./examples/platform-researcher.ossa.yaml
 
-### 1. Create CI Variables
+# Use Platform-Agents: Documentation
+- agent: documentation-aggregator
+  source: platform-agents
 
-```bash
-# In GitLab: Settings → CI/CD → Variables
+# Use Platform-Agents: Validation
+- agent: manifest-validator
+  source: platform-agents
 
-# GITLAB_TOKEN - Personal access token with api scope
-# WEBHOOK_SECRET - Random secret for webhook validation
+# Use Platform-Agents: Create PR
+- agent: merge-request-reviewer
+  source: platform-agents
 ```
 
-### 2. Create Pipeline Trigger
+## Contributing
 
-```bash
-curl --request POST \
-  --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
-  "https://gitlab.com/api/v4/projects/blueflyio%2Fopenstandardagents.org/triggers" \
-  --data "description=Webhook Agent Trigger"
+### Adding OSSA-Specific Agents
 
-# Save the token as WEBHOOK_TRIGGER_TOKEN
-```
+1. Ensure agent is **unique to OSSA**
+2. Place in `examples/` directory
+3. Document OSSA-specific patterns
+4. Reference in workflows
 
-### 3. Create Webhook
+### Adding General DevOps Agents
 
-```bash
-curl --request POST \
-  --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
-  --header "Content-Type: application/json" \
-  "https://gitlab.com/api/v4/projects/blueflyio%2Fopenstandardagents.org/hooks" \
-  --data '{
-    "url": "https://gitlab.com/api/v4/projects/blueflyio%2Fopenstandardagents.org/trigger/pipeline",
-    "token": "WEBHOOK_TRIGGER_TOKEN",
-    "issues_events": true,
-    "merge_requests_events": true,
-    "note_events": true,
-    "enable_ssl_verification": true
-  }'
-```
+**DO NOT** add here. Instead:
+1. Add to `blueflyio/agent-platform/platform-agents`
+2. Reference from workflows using `agent: <name>` and `source: platform-agents`
 
-### 4. Test Webhook
+## Reference
 
-Create a test issue or MR and check:
-- Pipeline triggered with source "trigger"
-- Agent jobs executed
-- Comments posted by agents
-
-## Monitoring
-
-Check agent execution:
-- **Pipelines**: Settings → CI/CD → Pipelines (filter by "trigger")
-- **Jobs**: View individual agent job logs
-- **Comments**: Check MR/Issue comments for agent reports
-
-## Troubleshooting
-
-### Webhook not triggering
-- Check webhook is active: Settings → Webhooks
-- Verify trigger token is correct
-- Check webhook recent deliveries for errors
-
-### Agent not executing
-- Check `agent:router` job logs
-- Verify event type is supported
-- Check agent manifest exists
-
-### No comments posted
-- Verify `GITLAB_TOKEN` has api scope
-- Check agent job logs for API errors
-- Verify project permissions
+- **Platform-Agents**: `blueflyio/agent-platform/platform-agents`
+- **OSSA Spec**: `spec/v0.3.3/`
+- **Contributing Guide**: `CONTRIBUTING.md`

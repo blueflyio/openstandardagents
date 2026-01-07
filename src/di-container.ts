@@ -18,6 +18,7 @@ import { ValidationZodService } from './services/validation-zod.service.js';
 import { AgentsMdService } from './services/agents-md/agents-md.service.js';
 import { TestRunnerService } from './services/test-runner/test-runner.service.js';
 import { GitService } from './services/git.service.js';
+import { ExtensionTeamKickoffService } from './services/extension-team/extension-team-kickoff.service.js';
 
 // Codegen Service and Generators
 import { CodegenService } from './services/codegen/codegen.service.js';
@@ -46,6 +47,7 @@ container.bind(MigrationService).toSelf();
 container.bind(AgentsMdService).toSelf();
 container.bind(TestRunnerService).toSelf();
 container.bind(GitService).toSelf();
+container.bind(ExtensionTeamKickoffService).toSelf();
 
 // Bind codegen generators (must be bound before CodegenService)
 container.bind(ManifestGenerator).toSelf();
