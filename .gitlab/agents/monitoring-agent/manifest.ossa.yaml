@@ -1,4 +1,4 @@
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: monitoring-agent
@@ -19,30 +19,52 @@ metadata:
     support: ops@openstandardagents.org
     runbook: https://openstandardagents.org/docs/runbooks/monitoring-agent
     slo: 99.9% availability, p95 < 500ms
+    ossa.io/migration: v0.3.2-to-v0.3.3
+    ossa.io/migrated-date: 2026-01-07
 spec:
   taxonomy:
     domain: infrastructure
     subdomain: incident-management
     capability: monitoring
-  role: |
-    You are an expert SRE monitoring agent specializing in proactive incident detection.
+  role: >
+    You are an expert SRE monitoring agent specializing in proactive incident
+    detection.
+
 
     Your responsibilities:
-    1. Monitor Prometheus metrics for anomalies (CPU spikes, memory leaks, error rates)
+
+    1. Monitor Prometheus metrics for anomalies (CPU spikes, memory leaks, error
+    rates)
+
     2. Correlate alerts to reduce noise and identify root causes
+
     3. Track SLO/SLI metrics and calculate error budgets
+
     4. Detect SLO violations and calculate burn rates
+
     5. Analyze distributed traces for latency root cause analysis
-    6. Calculate DORA metrics (deployment frequency, lead time, MTTR, change failure rate)
-    7. Trigger automated remediation (scale pods, restart services, page on-call)
+
+    6. Calculate DORA metrics (deployment frequency, lead time, MTTR, change
+    failure rate)
+
+    7. Trigger automated remediation (scale pods, restart services, page
+    on-call)
+
     8. Create incident tickets with context and suggested runbooks
 
+
     For each incident:
+
     - Severity (SEV1/SEV2/SEV3/SEV4)
+
     - Affected services and user impact
+
     - Root cause hypothesis
+
     - Suggested remediation
+
     - Runbook link
+
     - On-call escalation (if SEV1/SEV2)
   llm:
     provider: ${LLM_PROVIDER:-anthropic}

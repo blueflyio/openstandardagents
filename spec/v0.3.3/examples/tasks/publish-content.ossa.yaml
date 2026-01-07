@@ -1,13 +1,4 @@
-# ============================================================================
-# OSSA Task: Content Publishing
-# ============================================================================
-# Deterministic task for publishing content - no LLM decision-making
-# Use kind: Task for pure functions, batch operations, and system integrations
-#
-# @see https://openstandardagents.org/spec/v0.3.2/task
-# ============================================================================
-
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Task
 metadata:
   name: publish-content
@@ -16,25 +7,21 @@ metadata:
     domain: content-management
     tier: tier_2_write_limited
   annotations:
-    ossa.io/description: "Publish content to production with validation"
-    ossa.io/category: "content"
-    ossa.io/compliance: "SOC2"
-
+    ossa.io/description: Publish content to production with validation
+    ossa.io/category: content
+    ossa.io/compliance: SOC2
+    ossa.io/migration: v0.3.2-to-v0.3.3
+    ossa.io/migrated-date: 2026-01-07
 spec:
-  # Execution configuration
   execution:
-    type: transactional  # all-or-nothing (rollback on failure)
-    runtime: drupal      # target runtime
-    entrypoint: "Drupal\\ossa_content\\Task\\PublishContentTask::execute"
+    type: transactional
+    runtime: drupal
+    entrypoint: Drupal\ossa_content\Task\PublishContentTask::execute
     timeout_seconds: 60
-
-  # Required capabilities (bound at runtime)
   capabilities:
     - publish_content
     - invalidate_cache
     - send_notification
-
-  # Input validation schema
   input:
     type: object
     required:
@@ -43,8 +30,8 @@ spec:
     properties:
       content_id:
         type: string
-        pattern: "^[a-zA-Z0-9_-]+$"
-        description: "Unique content identifier"
+        pattern: ^[a-zA-Z0-9_-]+$
+        description: Unique content identifier
       content_type:
         type: string
         enum:
@@ -58,9 +45,7 @@ spec:
       schedule_at:
         type: string
         format: date-time
-        description: "Optional scheduled publish time"
-
-  # Output schema
+        description: Optional scheduled publish time
   output:
     type: object
     required:
@@ -80,15 +65,11 @@ spec:
       notifications_sent:
         type: integer
         minimum: 0
-
-  # Batch processing support
   batch:
     enabled: true
     parallelism: 5
     retry: 3
     backoff_seconds: 10
-
-  # Error handling
   error_handling:
     on_failure: rollback
     retryable_errors:
@@ -99,27 +80,24 @@ spec:
       - CONTENT_NOT_FOUND
       - VALIDATION_ERROR
       - PERMISSION_DENIED
-
-# Runtime bindings (how capabilities map to concrete implementations)
 runtime:
   drupal:
     publish_content:
       service: "@content_moderation.moderation_information"
-      method: "transitionContent"
+      method: transitionContent
     invalidate_cache:
       service: "@cache.render"
-      method: "invalidateAll"
+      method: invalidateAll
     send_notification:
       service: "@ossa_notifications.subscriber_notifier"
-      method: "notifySubscribers"
-
+      method: notifySubscribers
   symfony:
     publish_content:
-      service: "App\\Service\\ContentPublisher"
-      method: "publish"
+      service: App\Service\ContentPublisher
+      method: publish
     invalidate_cache:
-      service: "symfony.cache.adapter.redis"
-      method: "clear"
+      service: symfony.cache.adapter.redis
+      method: clear
     send_notification:
-      service: "App\\Notification\\SubscriberNotifier"
-      method: "send"
+      service: App\Notification\SubscriberNotifier
+      method: send

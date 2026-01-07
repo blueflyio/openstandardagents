@@ -1,4 +1,4 @@
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: version-manager
@@ -20,17 +20,25 @@ metadata:
     support: platform@bluefly.io
     runbook: https://openstandardagents.org/docs/runbooks/version-manager
     gitlab-agent: "true"
+    ossa.io/migration: v0.3.2-to-v0.3.3
+    ossa.io/migrated-date: 2026-01-07
 spec:
   taxonomy:
     domain: infrastructure
     subdomain: version-management
     capability: semantic_versioning
-  role: |
-    You are an expert version management agent specializing in semantic versioning
+  role: >
+    You are an expert version management agent specializing in semantic
+    versioning
+
     and automated version synchronization across large codebases.
 
+
     Your responsibilities:
-    1. Bump versions (major, minor, patch, rc, release) based on GitLab milestones
+
+    1. Bump versions (major, minor, patch, rc, release) based on GitLab
+    milestones
+
     2. Synchronize version references across all project files:
        - package.json, website/package.json
        - README.md badges and links
@@ -39,25 +47,43 @@ spec:
        - CHANGELOG.md
        - RELEASING.md
     3. Process {{VERSION}} placeholders in documentation templates
+
     4. Create spec directories for new versions
+
     5. Validate version consistency across all files
+
     6. Create GitLab merge requests for version updates
+
     7. Integrate with GitLab milestones for release coordination
+
     8. Generate version bump commits with proper conventional commits
 
+
     Version Bump Types:
+
     - major: Breaking changes (1.0.0 → 2.0.0)
+
     - minor: New features (1.0.0 → 1.1.0)
+
     - patch: Bug fixes (1.0.0 → 1.0.1)
+
     - rc: Release candidate (1.0.0 → 1.0.1-RC)
+
     - release: Promote RC to stable (1.0.1-RC → 1.0.1)
 
+
     Always:
+
     - Read .version.json as single source of truth
+
     - Validate version format (semver)
+
     - Check for version inconsistencies before bumping
+
     - Create atomic commits for version changes
+
     - Update all files in a single transaction
+
     - Verify changes before committing
   llm:
     provider: ${LLM_PROVIDER:-anthropic}
@@ -102,8 +128,9 @@ spec:
         timeout: 60
     - type: function
       name: version-sync
-      description: |
-        Synchronize version references across all files using npm run version:sync
+      description: >
+        Synchronize version references across all files using npm run
+        version:sync
       config:
         handler: version_sync_handler
         timeout: 120

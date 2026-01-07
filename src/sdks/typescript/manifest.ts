@@ -10,7 +10,7 @@
 import { writeFileSync } from 'fs';
 import { stringify } from 'yaml';
 import { z } from 'zod';
-import { ManifestLoader } from '../shared/manifest-loader.js';
+import { ManifestLoader, type ManifestBase } from '../shared/manifest-loader.js';
 import { SchemaValidator } from '../shared/schema-validator.js';
 import type {
   AgentManifest,
@@ -38,17 +38,19 @@ export class ManifestService {
    * CRUD: Read
    */
   load(filePath: string): OSSAManifest {
-    const content = this.loader.load(filePath, z.unknown(), { validate: false });
+    // Load without validation first to determine kind
+    const rawContent = ManifestLoader.load(filePath, z.any() as z.ZodTypeAny, { validate: false });
 
     // Determine schema based on kind
     const schema =
-      content.kind === 'Agent'
+      rawContent.kind === 'Agent'
         ? AgentManifestSchema
-        : content.kind === 'Task'
+        : rawContent.kind === 'Task'
         ? TaskManifestSchema
         : WorkflowManifestSchema;
 
-    return schema.parse(content);
+    // Validate and return typed manifest
+    return schema.parse(rawContent);
   }
 
   /**
@@ -69,8 +71,16 @@ export class ManifestService {
 
     const result = this.validator.validateZod(manifest, schema, strict);
 
+    if (result.valid) {
+      return {
+        valid: true,
+        errors: [],
+        warnings: [],
+      };
+    }
+
     return {
-      valid: result.valid,
+      valid: false,
       errors: result.errors || [],
       warnings: [],
     };

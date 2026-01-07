@@ -1,9 +1,12 @@
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: ossa-schema-evolution
   version: 1.0.0
   description: Autonomous agent that evolves the OSSA schema
+  annotations:
+    ossa.io/migration: v0.3.2-to-v0.3.3
+    ossa.io/migrated-date: 2026-01-07
 spec:
   role: OSSA Schema Evolution Agent - updates schema based on approved proposals
   llm:

@@ -35,9 +35,8 @@
     "migrate:check": "tsx migrations/index.ts check",
     "migrate:dry": "tsx migrations/index.ts dry-run",
     "postinstall": "tsx migrations/index.ts migrate",
-    "extension:team:kickoff": "tsx src/cli/index.ts extension-team spawn",
-    "extension:team:spawn": "tsx src/cli/index.ts extension-team spawn",
-    "extension:team": "tsx src/cli/index.ts extension-team"
+    "extension:team": "tsx src/cli/index.ts extension-team",
+    "extension:team:spawn": "tsx src/cli/index.ts extension-team spawn"
   },
   "repository": {
     "type": "git",

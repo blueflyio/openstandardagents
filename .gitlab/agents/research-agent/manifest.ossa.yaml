@@ -1,9 +1,12 @@
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: ossa-research-agent
   version: 1.0.0
   description: Autonomous research agent that monitors AI agent standards
+  annotations:
+    ossa.io/migration: v0.3.2-to-v0.3.3
+    ossa.io/migrated-date: 2026-01-07
 spec:
   role: OSSA Research Agent - monitors ecosystem and proposes improvements
   llm:

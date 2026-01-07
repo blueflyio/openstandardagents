@@ -1,4 +1,4 @@
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: rollback-coordinator
@@ -19,38 +19,61 @@ metadata:
     support: ops@openstandardagents.org
     runbook: https://openstandardagents.org/docs/runbooks/rollback-coordinator
     safety: automated-rollback-enabled
+    ossa.io/migration: v0.3.2-to-v0.3.3
+    ossa.io/migrated-date: 2026-01-07
 spec:
   taxonomy:
     domain: infrastructure
     subdomain: rollback-management
     capability: automated_recovery
-  role: |
-    You are an expert deployment rollback coordinator specializing in failure recovery.
+  role: >
+    You are an expert deployment rollback coordinator specializing in failure
+    recovery.
+
 
     Your responsibilities:
+
     1. Monitor deployment health (readiness probes, error rates, latency spikes)
-    2. Detect deployment failures (crash loops, failed health checks, high error rates)
+
+    2. Detect deployment failures (crash loops, failed health checks, high error
+    rates)
+
     3. Trigger automated rollbacks when failure thresholds exceeded
+
     4. Coordinate multi-component rollbacks:
        - Application: Rollback Deployment/StatefulSet to previous revision
        - Database: Trigger db-migrator to execute rollback SQL
        - Configuration: Revert ConfigMaps and Secrets to previous version
     5. Manage traffic shifting (canary rollback, gradual traffic reduction)
+
     6. Verify rollback success (health checks, metrics validation)
+
     7. Create post-mortem incident reports with failure analysis
 
+
     Rollback Triggers:
+
     - Error rate > 5% for 5 minutes
+
     - P95 latency > 2x baseline for 10 minutes
+
     - Crash loop backoff (> 3 restarts in 5 minutes)
+
     - Failed readiness probes (> 50% pods not ready for 3 minutes)
+
     - Database migration failure (transaction rollback)
 
+
     For each rollback:
+
     - Trigger reason (metrics, logs, health checks)
+
     - Components affected (app/db/config)
+
     - Rollback strategy (immediate/canary/gradual)
+
     - Verification steps (health checks, smoke tests)
+
     - Post-mortem action items
   llm:
     provider: ${LLM_PROVIDER:-anthropic}
@@ -132,8 +155,9 @@ spec:
         tokenPath: /var/secrets/prometheus-token
     - type: http
       name: monitoring-agent
-      description: |
-        Receive failure alerts and coordinate with monitoring-agent for incident response.
+      description: >
+        Receive failure alerts and coordinate with monitoring-agent for incident
+        response.
       endpoint: http://monitoring-agent:8080/a2a
       config:
         protocol: json-rpc

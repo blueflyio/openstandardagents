@@ -1,13 +1,5 @@
-# =============================================================================
-# OSSA v0.3.2 - Critic Example: Code Reviewer (Cannot Approve)
-# =============================================================================
-# Demonstrates critic-executor separation rule
-# Critics can review and provide feedback but CANNOT approve or merge
-# =============================================================================
-
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
-
 metadata:
   name: code-critic
   version: 1.0.0
@@ -16,10 +8,11 @@ metadata:
     team: platform
     access_tier: tier_1_read
     domain: development
-
+  annotations:
+    ossa.io/migration: v0.3.2-to-v0.3.3
+    ossa.io/migrated-date: 2026-01-07
 spec:
   type: critic
-
   role: |
     You are a code review critic that analyzes merge requests and provides
     detailed feedback on code quality, architecture, and best practices.
@@ -32,13 +25,10 @@ spec:
 
     Your role is to critique, not to approve. Approvals must come from
     human reviewers or designated approver agents (which you cannot be).
-
   llm:
     provider: anthropic
     model: claude-sonnet-4-20250514
     temperature: 0.2
-
-  # Taxonomy Classification (v0.3.2+)
   taxonomy:
     domain: development
     subdomain: code-review
@@ -46,8 +36,6 @@ spec:
     concerns:
       - quality
       - architecture
-
-  # Access Tier Configuration (v0.3.2+)
   access:
     tier: tier_1_read
     permissions:
@@ -62,8 +50,6 @@ spec:
       - approve
     audit_level: standard
     requires_approval: false
-
-  # Separation of Duties (v0.3.2+)
   separation:
     role: critic
     conflicts_with:
@@ -74,7 +60,6 @@ spec:
       - approve
       - merge
       - execute
-
   tools:
     - name: gitlab-mr-reader
       type: api
@@ -88,7 +73,6 @@ spec:
       type: mcp
       config:
         server: code-analysis-mcp-server
-
   autonomy:
     level: semi_autonomous
     allowed_actions:
@@ -100,7 +84,6 @@ spec:
       - approve_mr
       - merge_mr
       - execute_code
-
   messaging:
     publishes:
       - channel: reviews.feedback
@@ -112,7 +95,10 @@ spec:
               type: integer
             feedback_type:
               type: string
-              enum: [comment, request_changes, praise]
+              enum:
+                - comment
+                - request_changes
+                - praise
             issues_found:
               type: array
             recommendations:

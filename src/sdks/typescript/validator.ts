@@ -50,7 +50,7 @@ export class ValidatorService {
    * Validate against JSON Schema file
    * CRUD: Read (validation)
    */
-  validateJSONSchema(manifest: OSSAManifest, schemaPath: string, strict = false) {
-    return this.validator.validateJSONSchema(manifest, schemaPath, strict);
+  async validateJSONSchema(manifest: OSSAManifest, schemaPath: string, strict = false) {
+    return await this.validator.validateJSONSchema(manifest, schemaPath, strict);
   }
 }
