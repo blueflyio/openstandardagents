@@ -75,13 +75,13 @@ tagCommand
 
       const tag = await tagService.create(tagRequest);
 
-      console.log(chalk.green('✅ Tag created successfully!'));
+      console.log(chalk.green('[PASS] Tag created successfully!'));
       console.log(chalk.cyan(`   Name: ${tag.name}`));
       console.log(chalk.cyan(`   Type: ${tag.type}`));
       console.log(chalk.cyan(`   Version: ${tag.version}`));
       console.log(chalk.cyan(`   Commit: ${tag.commitSha.substring(0, 8)}`));
     } catch (error) {
-      console.error(chalk.red('❌ Failed to create tag:'), error);
+      console.error(chalk.red('[FAIL] Failed to create tag:'), error);
       process.exit(1);
     }
   });
@@ -105,7 +105,7 @@ tagCommand
         perPage: parseInt(options.perPage, 10),
       });
 
-      console.log(chalk.blue(`📋 Tags (${result.pagination.total} total):\n`));
+      console.log(chalk.blue(`[LIST] Tags (${result.pagination.total} total):\n`));
 
       if (result.items.length === 0) {
         console.log(chalk.yellow('   No tags found'));
@@ -124,7 +124,7 @@ tagCommand
         chalk.gray(`\n   Page ${result.pagination.page} of ${result.pagination.totalPages}`)
       );
     } catch (error) {
-      console.error(chalk.red('❌ Failed to list tags:'), error);
+      console.error(chalk.red('[FAIL] Failed to list tags:'), error);
       process.exit(1);
     }
   });
@@ -141,11 +141,11 @@ tagCommand
       const tag = await tagService.read(name);
 
       if (!tag) {
-        console.error(chalk.red(`❌ Tag not found: ${name}`));
+        console.error(chalk.red(`[FAIL] Tag not found: ${name}`));
         process.exit(1);
       }
 
-      console.log(chalk.blue(`📋 Tag: ${tag.name}\n`));
+      console.log(chalk.blue(`[LIST] Tag: ${tag.name}\n`));
       console.log(chalk.cyan(`   Type: ${tag.type}`));
       console.log(chalk.cyan(`   Version: ${tag.version}`));
       console.log(chalk.cyan(`   Commit: ${tag.commitSha}`));
@@ -153,7 +153,7 @@ tagCommand
       console.log(chalk.cyan(`   Message: ${tag.message || '(none)'}`));
       console.log(chalk.cyan(`   Created: ${tag.createdAt}`));
     } catch (error) {
-      console.error(chalk.red('❌ Failed to show tag:'), error);
+      console.error(chalk.red('[FAIL] Failed to show tag:'), error);
       process.exit(1);
     }
   });
@@ -166,7 +166,7 @@ tagCommand
   .action(async (name: string, options: { force?: boolean }) => {
     try {
       if (!options.force) {
-        console.log(chalk.yellow(`⚠️  This will delete tag: ${name}`));
+        console.log(chalk.yellow(`[WARN]  This will delete tag: ${name}`));
         console.log(chalk.yellow('   Use --force to skip confirmation'));
         process.exit(1);
       }
@@ -176,9 +176,9 @@ tagCommand
 
       await tagService.delete(name);
 
-      console.log(chalk.green(`✅ Tag deleted: ${name}`));
+      console.log(chalk.green(`[PASS] Tag deleted: ${name}`));
     } catch (error) {
-      console.error(chalk.red('❌ Failed to delete tag:'), error);
+      console.error(chalk.red('[FAIL] Failed to delete tag:'), error);
       process.exit(1);
     }
   });
@@ -219,7 +219,7 @@ milestoneCommand
 
         const milestone = await milestoneService.create(milestoneRequest);
 
-        console.log(chalk.green('✅ Milestone created successfully!'));
+        console.log(chalk.green('[PASS] Milestone created successfully!'));
         console.log(chalk.cyan(`   ID: ${milestone.id}`));
         console.log(chalk.cyan(`   Title: ${milestone.title}`));
         console.log(chalk.cyan(`   State: ${milestone.state}`));
@@ -232,7 +232,7 @@ milestoneCommand
           )
         );
       } catch (error) {
-        console.error(chalk.red('❌ Failed to create milestone:'), error);
+        console.error(chalk.red('[FAIL] Failed to create milestone:'), error);
         process.exit(1);
       }
     }
@@ -255,7 +255,7 @@ milestoneCommand
         perPage: parseInt(options.perPage, 10),
       });
 
-      console.log(chalk.blue(`📋 Milestones (${result.pagination.total} total):\n`));
+      console.log(chalk.blue(`[LIST] Milestones (${result.pagination.total} total):\n`));
 
       if (result.items.length === 0) {
         console.log(chalk.yellow('   No milestones found'));
@@ -274,7 +274,7 @@ milestoneCommand
         chalk.gray(`\n   Page ${result.pagination.page} of ${result.pagination.totalPages}`)
       );
     } catch (error) {
-      console.error(chalk.red('❌ Failed to list milestones:'), error);
+      console.error(chalk.red('[FAIL] Failed to list milestones:'), error);
       process.exit(1);
     }
   });
@@ -291,11 +291,11 @@ milestoneCommand
       const milestone = await milestoneService.read(parseInt(id, 10));
 
       if (!milestone) {
-        console.error(chalk.red(`❌ Milestone not found: ${id}`));
+        console.error(chalk.red(`[FAIL] Milestone not found: ${id}`));
         process.exit(1);
       }
 
-      console.log(chalk.blue(`📋 Milestone: ${milestone.title}\n`));
+      console.log(chalk.blue(`[LIST] Milestone: ${milestone.title}\n`));
       console.log(chalk.cyan(`   ID: ${milestone.id}`));
       console.log(chalk.cyan(`   State: ${milestone.state}`));
       if (milestone.description) {
@@ -315,7 +315,7 @@ milestoneCommand
       console.log(chalk.cyan(`   Created: ${milestone.createdAt}`));
       console.log(chalk.cyan(`   Updated: ${milestone.updatedAt}`));
     } catch (error) {
-      console.error(chalk.red('❌ Failed to show milestone:'), error);
+      console.error(chalk.red('[FAIL] Failed to show milestone:'), error);
       process.exit(1);
     }
   });
@@ -371,9 +371,9 @@ releaseCommand
         message: `Auto-incremented dev tag ${nextNum}`,
       });
 
-      console.log(chalk.green(`✅ Created dev tag: ${tag.name}`));
+      console.log(chalk.green(`[PASS] Created dev tag: ${tag.name}`));
     } catch (error) {
-      console.error(chalk.red('❌ Failed to increment dev tag:'), error);
+      console.error(chalk.red('[FAIL] Failed to increment dev tag:'), error);
       process.exit(1);
     }
   });
@@ -471,14 +471,14 @@ versionCommand
     try {
       const validTypes = ['major', 'minor', 'patch', 'rc', 'release'];
       if (!validTypes.includes(type)) {
-        console.error(chalk.red(`❌ Invalid type. Must be one of: ${validTypes.join(', ')}`));
+        console.error(chalk.red(`[FAIL] Invalid type. Must be one of: ${validTypes.join(', ')}`));
         process.exit(1);
       }
 
       const config = await readVersionConfig();
       const newVersion = bumpVersion(config.current, type as 'major' | 'minor' | 'patch' | 'rc' | 'release');
 
-      console.log(chalk.blue(`📦 Version bump: ${type}`));
+      console.log(chalk.blue(`[PKG] Version bump: ${type}`));
       console.log(chalk.cyan(`   Current: ${config.current}`));
       console.log(chalk.green(`   New:     ${newVersion}`));
 
@@ -508,10 +508,10 @@ versionCommand
         console.log(chalk.green(`   Created: ${updatedConfig.spec_path}`));
       }
 
-      console.log(chalk.green('\n✅ Version bumped successfully!'));
+      console.log(chalk.green('\n[PASS] Version bumped successfully!'));
       console.log(chalk.gray(`\n   Next: Run 'ossa release version sync' to update all files`));
     } catch (error) {
-      console.error(chalk.red('❌ Failed to bump version:'), error);
+      console.error(chalk.red('[FAIL] Failed to bump version:'), error);
       process.exit(1);
     }
   });
@@ -530,7 +530,7 @@ versionCommand
       const config = await readVersionConfig();
       const version = config.current;
 
-      console.log(chalk.blue(`📦 Syncing version: ${version}`));
+      console.log(chalk.blue(`[PKG] Syncing version: ${version}`));
 
       // Files to sync
       const patterns = [
@@ -543,7 +543,7 @@ versionCommand
         'openapi/**/*.{yaml,yml,json}',
         '.gitlab/**/*.{yaml,yml}',
         'bin/**/*.{ts,js,sh}',
-        'scripts/**/*.{ts,js}',
+        'src/tools/**/*.{ts,js}',
       ];
 
       if (options.includeExamples) {
@@ -580,10 +580,10 @@ versionCommand
       if (options.dryRun) {
         console.log(chalk.yellow(`\n   --dry-run: Would update ${filesUpdated} files`));
       } else {
-        console.log(chalk.green(`\n✅ Synced ${filesUpdated} files`));
+        console.log(chalk.green(`\n[PASS] Synced ${filesUpdated} files`));
       }
     } catch (error) {
-      console.error(chalk.red('❌ Failed to sync version:'), error);
+      console.error(chalk.red('[FAIL] Failed to sync version:'), error);
       process.exit(1);
     }
   });
@@ -599,7 +599,7 @@ versionCommand
       const config = await readVersionConfig();
       const version = config.current;
 
-      console.log(chalk.blue(`📦 Checking version consistency: ${version}\n`));
+      console.log(chalk.blue(`[PKG] Checking version consistency: ${version}\n`));
 
       const issues: string[] = [];
 
@@ -634,14 +634,14 @@ versionCommand
       }
 
       if (issues.length === 0) {
-        console.log(chalk.green('✅ All version checks passed!'));
+        console.log(chalk.green('[PASS] All version checks passed!'));
       } else {
-        console.log(chalk.red('❌ Version consistency issues found:\n'));
+        console.log(chalk.red('[FAIL] Version consistency issues found:\n'));
         issues.forEach(issue => console.log(chalk.yellow(`   • ${issue}`)));
         process.exit(1);
       }
     } catch (error) {
-      console.error(chalk.red('❌ Failed to check version:'), error);
+      console.error(chalk.red('[FAIL] Failed to check version:'), error);
       process.exit(1);
     }
   });
@@ -666,7 +666,7 @@ versionCommand
         // Git not available or no tags
       }
 
-      console.log(chalk.blue('📦 Version Status\n'));
+      console.log(chalk.blue('[PKG] Version Status\n'));
       console.log(chalk.cyan('   .version.json:'));
       console.log(chalk.white(`      current:       ${config.current}`));
       console.log(chalk.white(`      latest_stable: ${config.latest_stable}`));
@@ -681,12 +681,12 @@ versionCommand
       // Show if there are inconsistencies
       const isPlaceholder = packageJson.version === '{{VERSION}}';
       if (isPlaceholder) {
-        console.log(chalk.green('\n   ✅ Using {{VERSION}} placeholder (correct for CI)'));
+        console.log(chalk.green('\n   [PASS] Using {{VERSION}} placeholder (correct for CI)'));
       } else if (packageJson.version !== config.current) {
-        console.log(chalk.yellow(`\n   ⚠️  Version mismatch: package.json (${packageJson.version}) vs .version.json (${config.current})`));
+        console.log(chalk.yellow(`\n   [WARN]  Version mismatch: package.json (${packageJson.version}) vs .version.json (${config.current})`));
       }
     } catch (error) {
-      console.error(chalk.red('❌ Failed to get version status:'), error);
+      console.error(chalk.red('[FAIL] Failed to get version status:'), error);
       process.exit(1);
     }
   });
@@ -704,7 +704,7 @@ versionCommand
       const config = await readVersionConfig();
       const targetVersion = options.target || `ossa/v${config.spec_version}`;
 
-      console.log(chalk.blue(`📦 Updating examples to apiVersion: ${targetVersion}\n`));
+      console.log(chalk.blue(`[PKG] Updating examples to apiVersion: ${targetVersion}\n`));
 
       const files = await glob('examples/**/*.{yaml,yml}', {
         ignore: ['**/node_modules/**'],
@@ -733,10 +733,10 @@ versionCommand
       if (options.dryRun) {
         console.log(chalk.yellow(`\n   --dry-run: Would update ${updated} files`));
       } else {
-        console.log(chalk.green(`\n✅ Updated ${updated} example files`));
+        console.log(chalk.green(`\n[PASS] Updated ${updated} example files`));
       }
     } catch (error) {
-      console.error(chalk.red('❌ Failed to update examples:'), error);
+      console.error(chalk.red('[FAIL] Failed to update examples:'), error);
       process.exit(1);
     }
   });

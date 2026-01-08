@@ -72,7 +72,7 @@ check:divergence:
   script:
     - |
       if [ "$CI_MERGE_REQUEST_TARGET_BRANCH" = "main" ] || echo "$CI_MERGE_REQUEST_TARGET_BRANCH" | grep -qE "^release/v"; then
-        echo "🔍 Checking for divergent branches..."
+        echo "Checking for divergent branches..."
         git fetch origin
         
         BEHIND=$(git log --oneline origin/$CI_MERGE_REQUEST_SOURCE_BRANCH..origin/$CI_MERGE_REQUEST_TARGET_BRANCH 2>/dev/null | wc -l)
@@ -105,7 +105,7 @@ check:ds-store:
     - apk add --no-cache git
   script:
     - |
-      echo "🔍 Checking for .DS_Store files..."
+      echo "Checking for .DS_Store files..."
       if git diff --name-only $CI_MERGE_REQUEST_DIFF_BASE_SHA 2>/dev/null | grep -q "\.DS_Store"; then
         echo "ERROR: .DS_Store files in MR"
         exit 1
@@ -211,7 +211,7 @@ validate:scripts-version:
       when: always
     - changes:
       - package.json
-      - scripts/**/*
+      - src/tools/**/*
       when: always
 
 validate:docs-consistency:
@@ -223,18 +223,18 @@ validate:docs-consistency:
     - npm ci --legacy-peer-deps
   script:
     - |
-      echo "🔍 Pre-Release Documentation Validation"
+      echo "Pre-Release Documentation Validation"
       echo "========================================"
 
       VERSION=$(jq -r '.current' .version.json)
       echo "Release version: v${VERSION}"
 
-      if ! npx tsx scripts/sync-versions.ts --check; then
+      if ! npx tsx src/tools/version/sync-versions.ts --check; then
         echo ""
         echo "ERROR: Documentation is out of sync!"
         echo ""
         echo "FIX REQUIRED:"
-        echo "1. Run locally: npx tsx scripts/sync-versions.ts --fix"
+        echo "1. Run locally: npx tsx src/tools/version/sync-versions.ts --fix"
         echo "2. Commit the changes"
         echo "3. Push and re-run pipeline"
         exit 1

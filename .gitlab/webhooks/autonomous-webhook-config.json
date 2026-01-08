@@ -1,0 +1,33 @@
+{
+  "url": "https://api.blueflyagents.com/api/webhooks/gitlab",
+  "token": "${WEBHOOK_SECRET}",
+  "enable_ssl_verification": true,
+  "push_events": false,
+  "push_events_branch_filter": "",
+  "issues_events": true,
+  "confidential_issues_events": true,
+  "merge_requests_events": true,
+  "tag_push_events": true,
+  "note_events": false,
+  "confidential_note_events": false,
+  "job_events": false,
+  "pipeline_events": true,
+  "wiki_page_events": false,
+  "deployment_events": false,
+  "releases_events": true,
+  "subgroup_events": false,
+  "variables": [
+    {
+      "key": "WEBHOOK_EVENT_TYPE",
+      "value": "${event_type}"
+    },
+    {
+      "key": "WEBHOOK_OBJECT_KIND",
+      "value": "${object_kind}"
+    },
+    {
+      "key": "WEBHOOK_ACTION",
+      "value": "${action}"
+    }
+  ]
+}

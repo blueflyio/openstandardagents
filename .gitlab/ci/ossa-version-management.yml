@@ -28,7 +28,7 @@ detect-ossa-version:
   before_script:
     - npm ci --ignore-scripts --prefer-offline 2>/dev/null || npm install tsx --no-save
   script:
-    - npx tsx scripts/detect-ossa-version.ts
+    - npx tsx src/tools/version/detect-ossa-version.ts
   artifacts:
     reports:
       dotenv: ossa-version.env
@@ -184,7 +184,7 @@ version:consistency:check:
         echo "ERROR: Found unresolved {{VERSION}} placeholders in dist/"
         exit 1
       fi
-      echo "✅ No unresolved placeholders in dist/"
+      echo "No unresolved placeholders in dist/"
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH == "main"'

@@ -35,7 +35,7 @@ agentsMdCommand
       // Check if agents_md extension is enabled
       if (!manifest.extensions?.agents_md?.enabled) {
         console.error(chalk.red('Error: agents_md extension is not enabled in manifest'));
-        console.log(chalk.yellow('\n💡 Add the following to your manifest to enable:'));
+        console.log(chalk.yellow('\n[TIP] Add the following to your manifest to enable:'));
         console.log(
           chalk.gray(`
 extensions:
@@ -68,7 +68,7 @@ extensions:
         console.log(chalk.gray('─'.repeat(50)));
       }
 
-      console.log(chalk.yellow('\n💡 Next steps:'));
+      console.log(chalk.yellow('\n[TIP] Next steps:'));
       console.log(chalk.gray(`  1. Review the generated AGENTS.md file`));
       console.log(
         chalk.gray(
@@ -114,7 +114,7 @@ agentsMdCommand
           console.log(chalk.yellow(`  ${index + 1}. ${warning}`));
         });
 
-        console.log(chalk.yellow('\n💡 Suggestion:'));
+        console.log(chalk.yellow('\n[TIP] Suggestion:'));
         console.log(
           chalk.gray(
             `  Regenerate AGENTS.md: ${chalk.white(`ossa agents-md generate ${manifestPath} -o ${agentsMdPath}`)}`
@@ -150,7 +150,7 @@ agentsMdCommand
       // Check if sync is enabled
       if (!manifest.extensions?.agents_md?.sync?.on_manifest_change) {
         console.error(chalk.red('Error: Sync on manifest change is not enabled'));
-        console.log(chalk.yellow('\n💡 Add the following to your manifest to enable:'));
+        console.log(chalk.yellow('\n[TIP] Add the following to your manifest to enable:'));
         console.log(
           chalk.gray(`
 extensions:

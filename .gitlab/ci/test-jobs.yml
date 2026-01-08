@@ -35,7 +35,7 @@ test:code-quality:
   script:
     - npm ci --legacy-peer-deps
     - npx eslint src/ -f json -o eslint-report.json || true
-    - node scripts/eslint-to-codequality.cjs
+    - node src/tools/eslint-to-codequality.cjs
   artifacts:
     reports:
       codequality: gl-code-quality-report.json

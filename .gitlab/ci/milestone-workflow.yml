@@ -11,7 +11,7 @@ validate:branch-target:
       #!/bin/sh
       set -e
 
-      echo "🎯 BRANCH TARGET VALIDATION"
+      echo "[TARGET] BRANCH TARGET VALIDATION"
       echo "==========================="
       echo ""
       echo "Source: ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME}"
@@ -23,10 +23,10 @@ validate:branch-target:
         feature/*|bugfix/*|chore/*|fix/*|docs/*|refactor/*|test/*|feat/*|hotfix/*)
           case "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" in
             release/*|main)
-              echo "✅ Feature branch correctly targets ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}"
+              echo "[PASS] Feature branch correctly targets ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}"
               ;;
             *)
-              echo "❌ ERROR: Feature branches must target 'release/*' or 'main'"
+              echo "[FAIL] ERROR: Feature branches must target 'release/*' or 'main'"
               echo ""
               echo "Your branch: ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME}"
               echo "Targeting:   ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}"
@@ -38,13 +38,13 @@ validate:branch-target:
           ;;
         release/*)
           if [ "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" != "main" ]; then
-            echo "❌ ERROR: Release branches must target 'main'"
+            echo "[FAIL] ERROR: Release branches must target 'main'"
             exit 1
           fi
-          echo "✅ Release branch targeting main"
+          echo "[PASS] Release branch targeting main"
           ;;
         *)
-          echo "ℹ️ Non-standard branch naming - manual review required"
+          echo "[INFO] Non-standard branch naming - manual review required"
           ;;
       esac
   rules:
@@ -63,7 +63,7 @@ validate:milestone-assignment:
       #!/bin/sh
       set -e
 
-      echo "📋 MILESTONE VALIDATION"
+      echo "[LIST] MILESTONE VALIDATION"
       echo "======================="
       echo ""
 
@@ -78,7 +78,7 @@ validate:milestone-assignment:
 
       # Validate JSON response
       if ! echo "$MR_DATA" | jq empty 2>/dev/null; then
-        echo "⚠️ WARNING: Could not fetch MR details from API"
+        echo "[WARN] WARNING: Could not fetch MR details from API"
         echo "Response: $MR_DATA"
         echo "Skipping milestone validation..."
         exit 0
@@ -89,7 +89,7 @@ validate:milestone-assignment:
 
       # If no milestone from MR API (CI_JOB_TOKEN can't see group milestones), check group milestones directly
       if [ -z "$MILESTONE" ] || [ "$MILESTONE" = "null" ] || [ "$MILESTONE" = "" ]; then
-        echo "ℹ️ Checking group milestones (CI_JOB_TOKEN has limited scope)..."
+        echo "[INFO] Checking group milestones (CI_JOB_TOKEN has limited scope)..."
         
         # Get project namespace to find group ID dynamically
         if [ -n "${GITLAB_PUSH_TOKEN:-}" ]; then
@@ -121,7 +121,7 @@ validate:milestone-assignment:
         if [ -n "$MILESTONE_ID" ] && [ "$MILESTONE_ID" != "null" ] && [ "$MILESTONE_ID" != "" ]; then
           MILESTONE=$(echo "$GROUP_MILESTONES" | jq -r ".[] | select(.id == ${MILESTONE_ID}) | .title" 2>/dev/null || echo "")
           if [ -n "$MILESTONE" ] && [ "$MILESTONE" != "null" ]; then
-            echo "✅ Found group milestone assigned to MR: ${MILESTONE}"
+            echo "[PASS] Found group milestone assigned to MR: ${MILESTONE}"
           fi
         fi
         
@@ -131,7 +131,7 @@ validate:milestone-assignment:
           if [ -n "$MR_MILESTONE_ID" ] && [ "$MR_MILESTONE_ID" != "null" ] && [ "$MR_MILESTONE_ID" != "" ]; then
             MILESTONE=$(echo "$GROUP_MILESTONES" | jq -r ".[] | select(.id == ${MR_MILESTONE_ID}) | .title" 2>/dev/null || echo "")
             if [ -n "$MILESTONE" ] && [ "$MILESTONE" != "null" ]; then
-              echo "✅ Found group milestone by milestone_id: ${MILESTONE}"
+              echo "[PASS] Found group milestone by milestone_id: ${MILESTONE}"
             fi
           fi
         fi
@@ -145,12 +145,12 @@ validate:milestone-assignment:
 
       # Always allow if we can't verify (CI_JOB_TOKEN limitation with group milestones)
       if [ -z "$MILESTONE" ] || [ "$MILESTONE" = "null" ] || [ "$MILESTONE" = "" ]; then
-        echo "⚠️ WARNING: Cannot verify milestone assignment"
+        echo "[WARN] WARNING: Cannot verify milestone assignment"
         echo "   CI_JOB_TOKEN has limited scope for group milestones"
         echo "   If milestone is assigned, GITLAB_PUSH_TOKEN is required for verification"
-        echo "✅ Allowing merge (milestone validation may be inaccurate without proper token)"
+        echo "[PASS] Allowing merge (milestone validation may be inaccurate without proper token)"
       else
-        echo "✅ Milestone assigned: ${MILESTONE}"
+        echo "[PASS] Milestone assigned: ${MILESTONE}"
       fi
 
       # Check if targeting main - must come from release/* or hotfix/*
@@ -158,20 +158,20 @@ validate:milestone-assignment:
         case "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" in
           release/*|hotfix/*)
             if [ -z "$MILESTONE" ]; then
-              echo "⚠️ Cannot verify milestone - CI_JOB_TOKEN has limited scope"
+              echo "[WARN] Cannot verify milestone - CI_JOB_TOKEN has limited scope"
               echo "   Release version determined from branch name"
             fi
-            echo "✅ Release/hotfix MR to main from ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME}"
+            echo "[PASS] Release/hotfix MR to main from ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME}"
             ;;
           *)
             echo ""
-            echo "❌ ERROR: Only 'release/*' or 'hotfix/*' branches can merge to 'main'"
+            echo "[FAIL] ERROR: Only 'release/*' or 'hotfix/*' branches can merge to 'main'"
             echo ""
             echo "Workflow:"
-            echo "  1. feature/* → release/* (✅ allowed)"
-            echo "  2. release/* → main (✅ allowed)"
-            echo "  3. hotfix/* → main (✅ allowed for urgent fixes)"
-            echo "  4. ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME} → main (❌ blocked)"
+            echo "  1. feature/* → release/* ([PASS] allowed)"
+            echo "  2. release/* → main ([PASS] allowed)"
+            echo "  3. hotfix/* → main ([PASS] allowed for urgent fixes)"
+            echo "  4. ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME} → main ([FAIL] blocked)"
             exit 1
             ;;
         esac
@@ -190,7 +190,7 @@ auto:label-mr:
     - |
       #!/bin/sh
 
-      echo "🏷️ AUTO-LABELING MR"
+      echo "[TAG] AUTO-LABELING MR"
       echo "==================="
 
       # Determine label from branch name
@@ -220,7 +220,7 @@ auto:label-mr:
           LABEL="type::hotfix"
           ;;
         *)
-          echo "ℹ️ No auto-label for branch pattern"
+          echo "[INFO] No auto-label for branch pattern"
           exit 0
           ;;
       esac
@@ -235,9 +235,9 @@ auto:label-mr:
           --data "add_labels=${LABEL}" \
           "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests/${CI_MERGE_REQUEST_IID}" > /dev/null
 
-        echo "✅ Added label: ${LABEL}"
+        echo "[PASS] Added label: ${LABEL}"
       else
-        echo "ℹ️ GITLAB_PUSH_TOKEN not set - skipping auto-label"
+        echo "[INFO] GITLAB_PUSH_TOKEN not set - skipping auto-label"
       fi
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"

@@ -23,13 +23,13 @@ const validateDependenciesCommand = new Command('validate')
   .description('Validate all agent dependencies')
   .action(async (pattern: string, options: { verbose?: boolean }) => {
     try {
-      console.log(chalk.blue(`\n🔍 Validating agent dependencies...`));
+      console.log(chalk.blue(`\n[CHECK] Validating agent dependencies...`));
       console.log(chalk.gray(`Pattern: ${pattern}\n`));
 
       // Find all manifests
       const files = await glob(pattern, { absolute: true });
       if (files.length === 0) {
-        console.log(chalk.yellow('⚠️  No agent manifests found matching pattern'));
+        console.log(chalk.yellow('[WARN]  No agent manifests found matching pattern'));
         process.exit(1);
       }
 
@@ -44,12 +44,12 @@ const validateDependenciesCommand = new Command('validate')
           const manifest = await manifestRepo.load(file);
           manifests.push(manifest as AgentManifest);
         } catch (error: any) {
-          console.log(chalk.yellow(`⚠️  Skipping ${path.basename(file)}: ${error.message}`));
+          console.log(chalk.yellow(`[WARN]  Skipping ${path.basename(file)}: ${error.message}`));
         }
       }
 
       if (manifests.length === 0) {
-        console.log(chalk.red('❌ No valid manifests found'));
+        console.log(chalk.red('[FAIL] No valid manifests found'));
         process.exit(1);
       }
 
@@ -59,18 +59,18 @@ const validateDependenciesCommand = new Command('validate')
 
       // Output results
       if (result.valid) {
-        console.log(chalk.green('\n✅ All dependencies are valid!\n'));
+        console.log(chalk.green('\n[PASS] All dependencies are valid!\n'));
         if (options.verbose) {
           console.log(chalk.gray(`Validated ${manifests.length} agents`));
           console.log(chalk.gray(`Total dependencies: ${countDependencies(manifests)}`));
         }
         process.exit(0);
       } else {
-        console.log(chalk.red('\n❌ Dependency validation failed!\n'));
+        console.log(chalk.red('\n[FAIL] Dependency validation failed!\n'));
 
         // Show version conflicts
         if (result.conflicts.length > 0) {
-          console.log(chalk.yellow('⚠️  Version Conflicts:'));
+          console.log(chalk.yellow('[WARN]  Version Conflicts:'));
           for (const conflict of result.conflicts) {
             console.log(chalk.red(`\n  ${conflict.dependency}:`));
             for (const version of conflict.conflictingVersions) {
@@ -82,7 +82,7 @@ const validateDependenciesCommand = new Command('validate')
 
         // Show circular dependencies
         if (result.circularDependencies.length > 0) {
-          console.log(chalk.yellow('⚠️  Circular Dependencies:'));
+          console.log(chalk.yellow('[WARN]  Circular Dependencies:'));
           for (const circular of result.circularDependencies) {
             console.log(chalk.red(`    ${circular.cycle.join(' → ')}`));
           }
@@ -91,7 +91,7 @@ const validateDependenciesCommand = new Command('validate')
 
         // Show missing dependencies
         if (result.missingDependencies.length > 0) {
-          console.log(chalk.yellow('⚠️  Missing Dependencies:'));
+          console.log(chalk.yellow('[WARN]  Missing Dependencies:'));
           for (const missing of result.missingDependencies) {
             console.log(
               chalk.red(`    ${missing.agent} requires ${missing.dependency} (not found)`)
@@ -102,7 +102,7 @@ const validateDependenciesCommand = new Command('validate')
 
         // Show contract violations
         if (result.contractViolations.length > 0) {
-          console.log(chalk.yellow('⚠️  Contract Violations:'));
+          console.log(chalk.yellow('[WARN]  Contract Violations:'));
           for (const violation of result.contractViolations) {
             console.log(chalk.red(`    ${violation.agent} → ${violation.dependency}:`));
             console.log(chalk.gray(`      ${violation.violation}`));
@@ -113,7 +113,7 @@ const validateDependenciesCommand = new Command('validate')
         process.exit(1);
       }
     } catch (error: any) {
-      console.error(chalk.red(`\n❌ Error: ${error.message}\n`));
+      console.error(chalk.red(`\n[FAIL] Error: ${error.message}\n`));
       if (options.verbose && error.stack) {
         console.error(chalk.gray(error.stack));
       }
@@ -130,7 +130,7 @@ const checkConflictsCommand = new Command('check-conflicts')
   .description('Check for version conflicts between agents')
   .action(async (pattern: string) => {
     try {
-      console.log(chalk.blue(`\n🔍 Checking for version conflicts...\n`));
+      console.log(chalk.blue(`\n[CHECK] Checking for version conflicts...\n`));
 
       // Load manifests
       const files = await glob(pattern, { absolute: true });
@@ -151,10 +151,10 @@ const checkConflictsCommand = new Command('check-conflicts')
       const result = validator.validateDependencies(manifests);
 
       if (result.conflicts.length === 0) {
-        console.log(chalk.green('✅ No version conflicts found!\n'));
+        console.log(chalk.green('[PASS] No version conflicts found!\n'));
         process.exit(0);
       } else {
-        console.log(chalk.red(`❌ Found ${result.conflicts.length} version conflicts:\n`));
+        console.log(chalk.red(`[FAIL] Found ${result.conflicts.length} version conflicts:\n`));
         for (const conflict of result.conflicts) {
           console.log(chalk.yellow(`  ${conflict.dependency}:`));
           for (const version of conflict.conflictingVersions) {
@@ -165,7 +165,7 @@ const checkConflictsCommand = new Command('check-conflicts')
         process.exit(1);
       }
     } catch (error: any) {
-      console.error(chalk.red(`\n❌ Error: ${error.message}\n`));
+      console.error(chalk.red(`\n[FAIL] Error: ${error.message}\n`));
       process.exit(1);
     }
   });
@@ -196,7 +196,7 @@ const graphCommand = new Command('graph')
       }
 
       if (manifests.length === 0) {
-        console.log(chalk.red('❌ No valid manifests found'));
+        console.log(chalk.red('[FAIL] No valid manifests found'));
         process.exit(1);
       }
 
@@ -235,7 +235,7 @@ const graphCommand = new Command('graph')
       // Output
       if (options.output) {
         fs.writeFileSync(options.output, output, 'utf-8');
-        console.log(chalk.green(`\n✅ Dependency graph written to ${options.output}`));
+        console.log(chalk.green(`\n[PASS] Dependency graph written to ${options.output}`));
         if (options.format === 'dot') {
           console.log(chalk.gray(`\nGenerate PNG: dot -Tpng ${options.output} -o graph.png\n`));
         }
@@ -245,7 +245,7 @@ const graphCommand = new Command('graph')
 
       process.exit(0);
     } catch (error: any) {
-      console.error(chalk.red(`\n❌ Error: ${error.message}\n`));
+      console.error(chalk.red(`\n[FAIL] Error: ${error.message}\n`));
       process.exit(1);
     }
   });
@@ -260,7 +260,7 @@ const deployOrderCommand = new Command('deploy-order')
   .description('Calculate deployment order for agents')
   .action(async (pattern: string, options: { format?: string }) => {
     try {
-      console.log(chalk.blue(`\n🔍 Calculating deployment order...\n`));
+      console.log(chalk.blue(`\n[CHECK] Calculating deployment order...\n`));
 
       // Load manifests
       const files = await glob(pattern, { absolute: true });
@@ -277,7 +277,7 @@ const deployOrderCommand = new Command('deploy-order')
       }
 
       if (manifests.length === 0) {
-        console.log(chalk.red('❌ No valid manifests found'));
+        console.log(chalk.red('[FAIL] No valid manifests found'));
         process.exit(1);
       }
 
@@ -298,7 +298,7 @@ const deployOrderCommand = new Command('deploy-order')
         };
         console.log(JSON.stringify(output, null, 2));
       } else {
-        console.log(chalk.green(`✅ Deployment order (${batches.length} batches):\n`));
+        console.log(chalk.green(`[PASS] Deployment order (${batches.length} batches):\n`));
         for (let i = 0; i < batches.length; i++) {
           const batch = batches[i];
           console.log(chalk.yellow(`Batch ${i + 1}:`));
@@ -314,7 +314,7 @@ const deployOrderCommand = new Command('deploy-order')
 
       process.exit(0);
     } catch (error: any) {
-      console.error(chalk.red(`\n❌ Error: ${error.message}\n`));
+      console.error(chalk.red(`\n[FAIL] Error: ${error.message}\n`));
       process.exit(1);
     }
   });

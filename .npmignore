@@ -1,19 +1,26 @@
 # OSSA - npm Package Exclusions
 # Only include what's needed for the npm package
+# This file complements package.json "files" array
 
 # Development directories
+.agents-workspace/
 .agents/
 .cursor/
 .claude/
 .vscode/
 .gitlab/
+.github/
 .git/
 .worktrees/
+.husky/
+.lefthook/
+.kiro/
 
 # Build artifacts (generated during prepublishOnly)
 coverage/
 *.log
 *.tsbuildinfo
+junit.xml
 
 # Test files
 tests/
@@ -21,13 +28,13 @@ tests/
 **/*.spec.ts
 playwright.config.ts
 jest.config.ts
+tsconfig.test.json
 
 # Source files (we ship dist/)
 src/
 tsconfig.json
-tsconfig.test.json
 
-# CLI source (legacy)
+# CLI source (legacy - bin/ is the entry point)
 cli/
 
 # Development files
@@ -39,36 +46,52 @@ cli/
 *.swo
 *~
 
-# GitLab CI/CD
+# GitLab CI/CD and build tooling
 .gitlab-ci.yml
 lefthook.yml
+cliff.toml
+.releaserc.json
+release.config.js
+.spectral.yaml
+.redocly.yaml
+.prettierrc.json
+.prettierignore
 
 # Documentation (keep README, LICENSE, CHANGELOG)
-docs/integration/
+docs/
 CLEANUP_PLAN.md
+CODE_OF_CONDUCT.md
+CONTRIBUTING.md
 
-# Tools and scripts
+# Tools and scripts (build-time only)
 tools/
 generate-all-services.ts
 pyrightconfig.json
 
+# Infrastructure and deployment (not part of package)
+infrastructure/
+deployment/
+hooks/
+
+# Development context files
+llms.txt
+llms-ctx*.txt
+.wiki-config.json
+.devfile.yaml
+.gitlab-ci-trigger
+.env.local
+
 # Duplicate directories
 ossa-standard/
 
-# Hooks
-hooks/
-
-# Public folder (GitLab Pages only)
-public/
-
 # Keep these for npm package:
+# - dist/ (compiled code)
 # - spec/ (specification files)
 # - schemas/ (JSON schemas)
 # - examples/ (reference examples)
 # - openapi/ (OpenAPI specs)
 # - templates/ (agent templates)
-# - dist/ (compiled code)
-# - bin/ (CLI entry point)
+# - bin/ (CLI entry points)
 # - README.md
 # - LICENSE
 # - CHANGELOG.md
