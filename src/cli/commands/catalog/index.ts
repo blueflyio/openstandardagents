@@ -14,13 +14,13 @@
  */
 
 import { Command } from 'commander';
-import { createConvertCommand } from './convert.command';
-import { createValidateCommand } from './validate.command';
-import { createPushCommand } from './push.command';
-import { createPullCommand } from './pull.command';
-import { createSyncCommand } from './sync.command';
-import { createDiffCommand } from './diff.command';
-import { createListCommand } from './list.command';
+import { createConvertCommand } from './convert.command.js';
+import { createValidateCommand } from './validate.command.js';
+import { createPushCommand } from './push.command.js';
+import { createPullCommand } from './pull.command.js';
+import { createSyncCommand } from './sync.command.js';
+import { createDiffCommand } from './diff.command.js';
+import { createListCommand } from './list.command.js';
 
 export function createCatalogCommand(): Command {
   const catalog = new Command('catalog')
@@ -40,5 +40,5 @@ export function createCatalogCommand(): Command {
 }
 
 // Re-export config and schemas for external use
-export { CatalogConfig, catalogConfig } from './config';
-export * from './schemas';
+export { CatalogConfig, catalogConfig } from './config.js';
+export * from './schemas.js';

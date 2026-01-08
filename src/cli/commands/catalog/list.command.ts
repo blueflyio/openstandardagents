@@ -8,8 +8,8 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import * as fs from 'fs';
 import * as yaml from 'yaml';
-import { ListOptionsSchema, type ListOptions } from './schemas';
-import { CatalogConfig } from './config';
+import { ListOptionsSchema, type ListOptions } from './schemas.js';
+import { CatalogConfig } from './config.js';
 
 interface AgentStatus {
   id: string;

@@ -8,8 +8,8 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import * as fs from 'fs';
 import * as yaml from 'yaml';
-import { PushOptionsSchema, type PushOptions } from './schemas';
-import { CatalogConfig } from './config';
+import { PushOptionsSchema, type PushOptions } from './schemas.js';
+import { CatalogConfig } from './config.js';
 
 export function createPushCommand(): Command {
   return new Command('push')

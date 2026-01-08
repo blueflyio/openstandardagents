@@ -9,8 +9,8 @@ import chalk from 'chalk';
 import * as fs from 'fs';
 import * as yaml from 'yaml';
 import { z } from 'zod';
-import { ValidateOptionsSchema, type ValidateOptions } from './schemas';
-import { CatalogConfig } from './config';
+import { ValidateOptionsSchema, type ValidateOptions } from './schemas.js';
+import { CatalogConfig } from './config.js';
 
 // OSSA v0.3.x manifest schema (simplified)
 const OssaManifestSchema = z.object({

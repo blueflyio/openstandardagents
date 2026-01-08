@@ -6,8 +6,8 @@
 
 import { Command } from 'commander';
 import chalk from 'chalk';
-import { SyncOptionsSchema, type SyncOptions } from './schemas';
-import { CatalogConfig } from './config';
+import { SyncOptionsSchema, type SyncOptions } from './schemas.js';
+import { CatalogConfig } from './config.js';
 
 export function createSyncCommand(): Command {
   return new Command('sync')

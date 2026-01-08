@@ -8,8 +8,8 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import * as fs from 'fs';
 import * as yaml from 'yaml';
-import { PullOptionsSchema, type PullOptions } from './schemas';
-import { CatalogConfig } from './config';
+import { PullOptionsSchema, type PullOptions } from './schemas.js';
+import { CatalogConfig } from './config.js';
 
 export function createPullCommand(): Command {
   return new Command('pull')

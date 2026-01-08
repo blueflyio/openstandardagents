@@ -8,8 +8,8 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import * as fs from 'fs';
 import * as yaml from 'yaml';
-import { ConvertOptionsSchema, type ConvertOptions } from './schemas';
-import { CatalogConfig } from './config';
+import { ConvertOptionsSchema, type ConvertOptions } from './schemas.js';
+import { CatalogConfig } from './config.js';
 
 export function createConvertCommand(): Command {
   return new Command('convert')
