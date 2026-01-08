@@ -57,7 +57,6 @@ spec:
     temperature: 0.7
   tools:
   tools:
-    - name: drupal.node.create
       description: Create Drupal content node
       handler:
         runtime: drupal
