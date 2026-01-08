@@ -30,7 +30,7 @@ function updateAgentManifest(filePath: string): boolean {
 
     // Skip if already v0.3.0
     if (manifest.apiVersion === 'ossa/v0.3.0') {
-      console.log(`  [SKIP]  Already v0.3.0: ${filePath}`);
+      console.log(`  ⏭️  Already v0.3.0: ${filePath}`);
       return false;
     }
 
@@ -105,13 +105,14 @@ function updateAgentManifest(filePath: string): boolean {
     const updated = yaml.stringify(manifest, {
       indent: 2,
       lineWidth: 0,
+      sortKeys: false,
     });
 
     writeFileSync(filePath, updated, 'utf8');
-    console.log(`  [PASS] Updated: ${filePath}`);
+    console.log(`  ✅ Updated: ${filePath}`);
     return true;
   } catch (error: any) {
-    console.error(`  [FAIL] Error updating ${filePath}: ${error.message}`);
+    console.error(`  ❌ Error updating ${filePath}: ${error.message}`);
     return false;
   }
 }
@@ -139,7 +140,7 @@ function findAgentManifests(dir: string): string[] {
 }
 
 function main() {
-  console.log('[RUN] Updating all agents to OSSA v0.3.0 with ALL features\n');
+  console.log('🚀 Updating all agents to OSSA v0.3.0 with ALL features\n');
   
   const manifests = findAgentManifests(AGENTS_DIR);
   console.log(`Found ${manifests.length} agent manifests\n`);
@@ -160,10 +161,10 @@ function main() {
     console.log('');
   }
   
-  console.log('\n[STATS] Summary:');
-  console.log(`  [PASS] Updated: ${updated}`);
-  console.log(`  [SKIP]  Skipped: ${skipped}`);
-  console.log(`  [FAIL] Errors: ${errors}`);
+  console.log('\n📊 Summary:');
+  console.log(`  ✅ Updated: ${updated}`);
+  console.log(`  ⏭️  Skipped: ${skipped}`);
+  console.log(`  ❌ Errors: ${errors}`);
   console.log('\n✨ All agents updated to v0.3.0!');
 }
 

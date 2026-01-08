@@ -1,0 +1,6 @@
+{
+  "platform": "n8n",
+  "priority": "critical",
+  "deadline": "2026-02-15",
+  "requirements": {}
+}

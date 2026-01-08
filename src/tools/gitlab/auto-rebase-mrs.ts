@@ -11,7 +11,7 @@ const PROJECT_ID = 'blueflyio/openstandardagents';
 const TOKEN = process.env.GITLAB_TOKEN || process.env.SERVICE_ACCOUNT_OSSA_TOKEN || process.env.GITLAB_PUSH_TOKEN;
 
 if (!TOKEN) {
-  console.error('[FAIL] Error: GITLAB_TOKEN or SERVICE_ACCOUNT_OSSA_TOKEN required');
+  console.error('❌ Error: GITLAB_TOKEN or SERVICE_ACCOUNT_OSSA_TOKEN required');
   process.exit(1);
 }
 
@@ -23,7 +23,7 @@ const gitlab = new Gitlab({
 async function rebaseMR(mr: any): Promise<boolean> {
   const { iid, source_branch, target_branch, merge_status } = mr;
   
-  console.log(`\n[SYNC] Rebasing MR !${iid}: ${source_branch} -> ${target_branch}`);
+  console.log(`\n🔄 Rebasing MR !${iid}: ${source_branch} -> ${target_branch}`);
   
   try {
     // Fetch branches
@@ -35,11 +35,11 @@ async function rebaseMR(mr: any): Promise<boolean> {
     ).toString().trim();
     
     if (behind === '0') {
-      console.log(`  [PASS] Already up to date`);
+      console.log(`  ✅ Already up to date`);
       return true;
     }
     
-    console.log(`  [WARN]  ${behind} commits behind, rebasing...`);
+    console.log(`  ⚠️  ${behind} commits behind, rebasing...`);
     
     // Create worktree
     const worktreePath = `../rebase-${iid}-${source_branch.replace(/\//g, '-')}`;
@@ -58,25 +58,25 @@ async function rebaseMR(mr: any): Promise<boolean> {
       // Push
       execSync(`cd ${worktreePath} && git push origin ${source_branch} --force-with-lease`, { stdio: 'inherit' });
       
-      console.log(`  [PASS] Rebased and pushed successfully`);
+      console.log(`  ✅ Rebased and pushed successfully`);
       
       // Cleanup
       execSync(`git worktree remove ${worktreePath}`, { stdio: 'ignore' });
       
       return true;
     } catch (error) {
-      console.error(`  [FAIL] Rebase failed - conflicts may exist`);
+      console.error(`  ❌ Rebase failed - conflicts may exist`);
       console.error(`  Worktree: ${worktreePath}`);
       return false;
     }
   } catch (error: any) {
-    console.error(`  [FAIL] Error: ${error.message}`);
+    console.error(`  ❌ Error: ${error.message}`);
     return false;
   }
 }
 
 async function main() {
-  console.log('[SYNC] Auto-rebasing all open MRs\n');
+  console.log('🔄 Auto-rebasing all open MRs\n');
   
   try {
     const mrs = await gitlab.MergeRequests.all({
@@ -92,7 +92,7 @@ async function main() {
     const success = results.filter(Boolean).length;
     const failed = results.length - success;
     
-    console.log(`\n[PASS] Summary:`);
+    console.log(`\n✅ Summary:`);
     console.log(`  Successfully rebased: ${success}`);
     console.log(`  Failed: ${failed}`);
     
@@ -100,7 +100,7 @@ async function main() {
       process.exit(1);
     }
   } catch (error: any) {
-    console.error('[FAIL] Error:', error.message);
+    console.error('❌ Error:', error.message);
     process.exit(1);
   }
 }

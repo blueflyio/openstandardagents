@@ -5,7 +5,7 @@ import { join } from 'path';
 const version = JSON.parse(readFileSync('package.json', 'utf-8')).version;
 const examplesDir = 'examples';
 
-console.log(`[NOTE] Updating examples to version ${version}`);
+console.log(`📝 Updating examples to version ${version}`);
 
 let updated = 0;
 
@@ -33,4 +33,4 @@ function updateYamlFiles(dir: string) {
 }
 
 updateYamlFiles(examplesDir);
-console.log(`[PASS] Updated ${updated} example files`);
+console.log(`✅ Updated ${updated} example files`);

@@ -1,6 +1,4 @@
-# OSSA v0.3.1 Multi-Provider Identity Configuration
-# Enterprise-grade agent with fallback identity chain and compliance
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: enterprise-deployer
@@ -13,22 +11,20 @@ metadata:
   annotations:
     security.ossa.io/audit-level: high
     security.ossa.io/mfa-required: "true"
+    ossa.io/migration: v0.3.3-to-v0.3.3
+    ossa.io/migrated-date: 2026-01-07
 spec:
   role: |
     You are an enterprise deployment orchestrator responsible for managing
     production deployments across multiple cloud providers and git platforms.
     You must ensure all operations are auditable, compliant, and follow
     the principle of least privilege.
-
   llm:
     provider: anthropic
     model: claude-sonnet-4-20250514
     temperature: 0.1
     max_tokens: 16000
-
-  # Comprehensive Identity Configuration
   identity:
-    # Primary: GitLab self-hosted
     provider: gitlab
     service_account:
       id: 31840535
@@ -37,8 +33,6 @@ spec:
       display_name: CI/CD Bot
       roles:
         - maintainer
-
-    # Authentication with rotation policy
     authentication:
       method: project_access_token
       scopes:
@@ -53,8 +47,6 @@ spec:
         enabled: true
         interval_days: 90
         notify_on_rotation: true
-
-    # Multi-source token configuration
     token_source:
       env_var: GITLAB_BOT_CI_TOKEN
       file_path: ~/.tokens/bot-ci-local
@@ -66,15 +58,11 @@ spec:
         name: gitlab-ci-token
         namespace: ci-cd
         key: token
-
-    # Auto-detection patterns
     patterns:
       - "*/gitlab_components"
       - "*/infrastructure/*"
       - "**/deploy/**"
       - "**/ci-cd/**"
-
-    # Fallback identity chain for high availability
     fallback:
       - provider: github
         service_account:
@@ -86,7 +74,6 @@ spec:
             path: secret/data/ci/github-token
         condition:
           platform_unavailable: true
-
       - provider: azure-devops
         service_account:
           username: ado-ci-service
@@ -98,8 +85,6 @@ spec:
         condition:
           pattern_match:
             - "**/azure/**"
-
-    # Full DORA metrics tracking
     dora_tracking:
       enabled: true
       metrics:
@@ -125,8 +110,6 @@ spec:
           high: "24"
           medium: "168"
           low: "720"
-
-    # Claude Code session integration
     session:
       init_on_start: true
       propagate_to_subprocesses: true
@@ -136,18 +119,14 @@ spec:
       hooks:
         pre_prompt_submit: true
         post_session: true
-
-    # OpenTelemetry observability
     observability:
       service_name: enterprise-deployer
       service_namespace: production
-      service_version: "2.0.0"
+      service_version: 2.0.0
       service_instance_id: ${HOSTNAME}
       resource_attributes:
         deployment.environment: production
         cloud.provider: multi
-
-    # Enterprise compliance
     compliance:
       require_mfa: true
       ip_allowlist:
@@ -159,8 +138,6 @@ spec:
       frameworks:
         - SOC2
         - ISO27001
-
-    # Security policies
     security:
       token_encryption: both
       minimum_token_length: 40
@@ -176,8 +153,6 @@ spec:
         requests_per_minute: 100
         requests_per_hour: 2000
         git_operations_per_hour: 200
-
-  # Tool configuration
   tools:
     - name: kubernetes
       type: mcp
@@ -195,8 +170,6 @@ spec:
       type: mcp
       config:
         server: git-mcp-server
-
-  # Strict autonomy controls
   autonomy:
     level: semi-autonomous
     require_approval:
@@ -211,8 +184,6 @@ spec:
       channels:
         - slack://platform-oncall
         - pagerduty://platform-critical
-
-  # Comprehensive safety configuration
   safety:
     max_tokens_per_turn: 16000
     rate_limits:
@@ -228,8 +199,6 @@ spec:
         - error_rate > 0.5
         - latency_p99 > 30000
       recovery_requires_approval: true
-
-  # State management
   state:
     storage: redis
     ttl: 86400

@@ -1,6 +1,6 @@
-# OSSA v0.3.2 Access Tiers Examples
+# OSSA v0.3.3 Access Tiers Examples
 
-This directory contains example agent manifests demonstrating the **Access Tiers** and **Separation of Duties** features introduced in OSSA v0.3.2.
+This directory contains example agent manifests demonstrating the **Access Tiers** and **Separation of Duties** features introduced in OSSA v0.3.3.
 
 ## Access Tier Hierarchy
 
@@ -49,7 +49,7 @@ In security/compliance domains, readers should not write:
 ## Usage in Agent Manifests
 
 ```yaml
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 
 metadata:
@@ -103,4 +103,4 @@ ossa audit --tier-violations
 
 - [access_tiers.yaml](../../access_tiers.yaml) - Full access tier definitions
 - [taxonomy.yaml](../../taxonomy.yaml) - Domain taxonomy with tier mappings
-- [ossa-0.3.2.schema.json](../../ossa-0.3.2.schema.json) - JSON Schema with tier validation
+- [ossa-0.3.3.schema.json](../../ossa-0.3.3.schema.json) - JSON Schema with tier validation

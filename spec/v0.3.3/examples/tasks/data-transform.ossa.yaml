@@ -1,12 +1,3 @@
-# ============================================================================
-# OSSA Task: Data Transformation
-# ============================================================================
-# Idempotent data transformation task - safe to retry, deterministic output
-# Demonstrates batch processing and multiple runtime bindings
-#
-# @see https://openstandardagents.org/spec/v0.3.2/task
-# ============================================================================
-
 apiVersion: ossa/v0.3.3
 kind: Task
 metadata:
@@ -16,23 +7,22 @@ metadata:
     domain: data-engineering
     tier: tier_1_read
   annotations:
-    ossa.io/description: "Transform CSV data to structured JSON"
-    ossa.io/category: "data-transformation"
+    ossa.io/description: Transform CSV data to structured JSON
+    ossa.io/category: data-transformation
     ossa.io/idempotent: "true"
-
+    ossa.io/migration: v0.3.3-to-v0.3.3
+    ossa.io/migrated-date: 2026-01-07
 spec:
   execution:
-    type: idempotent     # safe to retry without side effects
-    runtime: any         # works on any runtime
-    entrypoint: "transform"
+    type: idempotent
+    runtime: any
+    entrypoint: transform
     timeout_seconds: 300
-
   capabilities:
     - read_file
     - parse_csv
     - write_json
     - validate_schema
-
   input:
     type: object
     required:
@@ -42,13 +32,13 @@ spec:
     properties:
       source_path:
         type: string
-        description: "Path to source CSV file"
+        description: Path to source CSV file
       target_path:
         type: string
-        description: "Path to output JSON file"
+        description: Path to output JSON file
       schema:
         type: object
-        description: "JSON Schema for validation"
+        description: JSON Schema for validation
         properties:
           columns:
             type: array
@@ -59,7 +49,12 @@ spec:
                   type: string
                 type:
                   type: string
-                  enum: [string, integer, number, boolean, date]
+                  enum:
+                    - string
+                    - integer
+                    - number
+                    - boolean
+                    - date
                 required:
                   type: boolean
       options:
@@ -77,7 +72,6 @@ spec:
           batch_size:
             type: integer
             default: 1000
-
   output:
     type: object
     required:
@@ -96,52 +90,48 @@ spec:
         type: string
       checksum:
         type: string
-        description: "SHA256 of output file"
+        description: SHA256 of output file
       processing_time_ms:
         type: integer
-
   batch:
     enabled: true
     parallelism: 10
     retry: 3
     backoff_seconds: 5
-
   error_handling:
-    on_failure: continue  # process remaining rows even if some fail
+    on_failure: continue
     retryable_errors:
       - IO_ERROR
       - MEMORY_LIMIT
     fatal_errors:
       - SCHEMA_MISMATCH
       - INVALID_FORMAT
-
 runtime:
   python:
     read_file:
-      module: "pathlib"
-      class: "Path"
-      method: "read_text"
+      module: pathlib
+      class: Path
+      method: read_text
     parse_csv:
-      module: "csv"
-      function: "DictReader"
+      module: csv
+      function: DictReader
     write_json:
-      module: "json"
-      function: "dump"
+      module: json
+      function: dump
     validate_schema:
-      module: "jsonschema"
-      function: "validate"
-
+      module: jsonschema
+      function: validate
   node:
     read_file:
-      module: "fs/promises"
-      function: "readFile"
+      module: fs/promises
+      function: readFile
     parse_csv:
-      module: "csv-parse"
-      function: "parse"
+      module: csv-parse
+      function: parse
     write_json:
-      module: "fs/promises"
-      function: "writeFile"
+      module: fs/promises
+      function: writeFile
     validate_schema:
-      module: "ajv"
-      class: "Ajv"
-      method: "validate"
+      module: ajv
+      class: Ajv
+      method: validate

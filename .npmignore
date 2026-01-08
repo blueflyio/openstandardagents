@@ -84,14 +84,19 @@ llms-ctx*.txt
 # Duplicate directories
 ossa-standard/
 
-# Keep these for npm package:
-# - dist/ (compiled code)
-# - spec/ (specification files)
+# Hooks
+hooks/
+
+# Public folder (GitLab Pages only)
+public/
+
+# Keep these for npm package (listed in package.json "files"):
+# - dist/ (compiled TypeScript code)
+# - bin/ (CLI entry point)
+# - spec/ (OSSA specification files)
 # - schemas/ (JSON schemas)
 # - examples/ (reference examples)
-# - openapi/ (OpenAPI specs)
-# - templates/ (agent templates)
-# - bin/ (CLI entry points)
+# - openapi/ (OpenAPI specifications)
 # - README.md
 # - LICENSE
 # - CHANGELOG.md

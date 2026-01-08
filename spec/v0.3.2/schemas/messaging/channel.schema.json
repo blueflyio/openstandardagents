@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://openstandardagents.org/schemas/v0.3.1/messaging/channel.json",
+  "$id": "https://openstandardagents.org/schemas/v0.3.3/messaging/channel.json",
   "title": "OSSA Channel Schema",
-  "description": "Schema for message channel configuration in OSSA v0.3.1",
+  "description": "Schema for message channel configuration in OSSA v0.3.3",
   "type": "object",
   "required": [
     "name",

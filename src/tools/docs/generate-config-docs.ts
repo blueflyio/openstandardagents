@@ -106,4 +106,4 @@ Override configuration with environment variables:
 mkdirSync(join(process.cwd(), 'website/content/docs/configuration'), { recursive: true });
 writeFileSync(OUTPUT_FILE, doc);
 
-console.log(`[PASS] Generated configuration reference`);
+console.log(`✅ Generated configuration reference`);

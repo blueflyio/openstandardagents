@@ -1,139 +1,94 @@
 # Contributing to OSSA
 
-Thank you for your interest in contributing to **OSSA (Open Standard for Scalable AI Agents)**!
+Thank you for your interest in contributing to OSSA! This document provides guidelines and instructions for contributing to the Open Standard for Scalable AI Agents.
 
-## 📋 Table of Contents
+## 🌟 Code of Conduct
 
-- [Repository Structure](#repository-structure)
-- [Code of Conduct](#code-of-conduct)
-- [Getting Started](#getting-started)
-- [Development Workflow](#development-workflow)
-- [Commit Convention](#commit-convention)
-- [Release Process](#release-process)
-- [Pull Request Process](#pull-request-process)
-- [Testing](#testing)
-- [Documentation](#documentation)
-
-## 🏗️ Repository Structure
-
-OSSA uses a **dual-repository workflow**:
-
-| Repository | Purpose | Access |
-|------------|---------|--------|
-| [GitLab](https://gitlab.com/blueflyio/openstandardagents) | Primary development, CI/CD, releases | Private (core team) |
-| [GitHub](https://github.com/blueflyio/openstandardagents) | Public mirror, community contributions | Public |
-
-### How It Works
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                     Community Contribution Flow                  │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│   GitHub (Public)              GitLab (Private)                 │
-│   ┌─────────────┐              ┌─────────────┐                 │
-│   │   Issue     │──── sync ───▶│   Issue     │                 │
-│   │   or PR     │              │   or MR     │                 │
-│   └─────────────┘              └──────┬──────┘                 │
-│                                       │                         │
-│                                       ▼                         │
-│                                ┌─────────────┐                 │
-│                                │   CI/CD     │                 │
-│                                │   Tests     │                 │
-│                                └──────┬──────┘                 │
-│                                       │                         │
-│                                       ▼                         │
-│   ┌─────────────┐              ┌─────────────┐                 │
-│   │   Mirror    │◀── push ────│   Merge     │                 │
-│   │   Updated   │              │   to main   │                 │
-│   └─────────────┘              └─────────────┘                 │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### Where to Contribute
-
-| Contribution Type | Where | Notes |
-|-------------------|-------|-------|
-| Bug reports | GitHub Issues | Auto-synced to GitLab |
-| Feature requests | GitHub Issues | Auto-synced to GitLab |
-| Code changes | GitHub PR | Reviewed here, merged on GitLab |
-| Documentation | GitHub PR | Same as code |
-| Security issues | Email only | ops@openstandardagents.org |
-
-### Why Dual Repositories?
-
-1. **Privacy**: Internal development, CI/CD secrets, and infrastructure stay private
-2. **Public Access**: Open specification accessible to the community
-3. **Best of Both**: GitLab's superior CI/CD + GitHub's community reach
-4. **Agent-Powered**: OSSA agents automate sync between platforms
-
-## 🤝 Code of Conduct
-
-This project adheres to a Code of Conduct. By participating, you are expected to uphold this code.
+By participating in this project, you agree to abide by our [Code of Conduct](CODE_OF_CONDUCT.md). We are committed to providing a welcoming and inclusive environment for all contributors.
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-- Node.js 20+
-- npm or pnpm
+- Node.js >= 20.0.0
+- npm, pnpm, or yarn
 - Git
 
-### Initial Setup
+### Setup
 
 ```bash
-# Clone the repository
-git clone https://github.com/blueflyio/openstandardagents.git
+# Fork and clone the repository
+git clone https://gitlab.com/blueflyio/ossa/openstandardagents.git
 cd openstandardagents
 
 # Install dependencies
 npm install
 
-# Build the project
-npm run build
-
-# Run tests
+# Run tests to verify setup
 npm test
 
-# Validate OSSA examples
-npm run validate
+# Validate examples
+npm run validate:all
 ```
 
-## 🔄 Development Workflow
+## 📝 How to Contribute
 
-We use **GitHub Flow**:
+### Reporting Bugs
 
-1. **Create a feature branch** from `main`:
+1. Check if the issue already exists in [GitLab Issues](https://gitlab.com/blueflyio/ossa/openstandardagents/-/issues)
+2. If not, create a new issue with:
+   - Clear title and description
+   - Steps to reproduce
+   - Expected vs actual behavior
+   - Environment details (OS, Node version, etc.)
+   - Relevant logs or error messages
+
+### Suggesting Features
+
+1. Check existing issues and discussions
+2. Create an issue describing:
+   - The feature and its use case
+   - Why it would be valuable for the community
+   - Potential implementation approach (if you have ideas)
+
+### Submitting Changes
+
+1. **Create a branch** from `development`:
    ```bash
-   git checkout -b feat/your-feature-name
+   git checkout development
+   git pull origin development
+   git checkout -b feature/your-feature-name
    ```
 
-2. **Make your changes** following our commit convention
+2. **Make your changes**:
+   - Write clean, well-documented code
+   - Follow existing code style
+   - Add tests for new functionality
+   - Update documentation as needed
 
-3. **Test your changes**:
+3. **Run validations**:
    ```bash
-   npm test
-   npm run lint
-   npm run build
+   npm run validate:all  # Validate all manifests
+   npm test              # Run tests
+   npm run lint          # Check code style
    ```
 
-4. **Push and create a Pull Request**
+4. **Commit your changes**:
+   - Follow [Conventional Commits](https://www.conventionalcommits.org/)
+   - Use clear, descriptive commit messages
+   - Example: `feat: add support for custom triggers`
 
-### Branch Naming Convention
+5. **Push and create Merge Request**:
+   ```bash
+   git push origin feature/your-feature-name
+   ```
+   Then create a Merge Request targeting `development` branch.
 
-- `feat/*` - New features
-- `fix/*` - Bug fixes
-- `docs/*` - Documentation changes
-- `refactor/*` - Code refactoring
-- `test/*` - Test additions/modifications
-- `chore/*` - Build process or auxiliary tool changes
-
-## 📝 Commit Convention
-
-We use **Conventional Commits** specification. This is **CRITICAL** for automated semantic versioning.
+## 📋 Contribution Guidelines
 
 ### Commit Message Format
+
+We use [Conventional Commits](https://www.conventionalcommits.org/):
 
 ```
 <type>(<scope>): <subject>
@@ -143,224 +98,108 @@ We use **Conventional Commits** specification. This is **CRITICAL** for automate
 <footer>
 ```
 
-### Types
+**Types:**
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation changes
+- `style`: Code style changes (formatting, etc.)
+- `refactor`: Code refactoring
+- `test`: Adding or updating tests
+- `chore`: Maintenance tasks
 
-- `feat`: New feature (triggers MINOR version bump)
-- `fix`: Bug fix (triggers PATCH version bump)
-- `docs`: Documentation only changes
-- `refactor`: Code change that neither fixes a bug nor adds a feature
-- `perf`: Performance improvement (triggers PATCH version bump)
-- `test`: Adding missing tests
-- `chore`: Changes to build process or auxiliary tools
-- `ci`: Changes to CI configuration files
-
-### Breaking Changes
-
-Add `BREAKING CHANGE:` in the commit footer or `!` after the type:
-
-```bash
-# MAJOR version bump
-git commit -m "feat!: redesign agent manifest schema
-
-BREAKING CHANGE: The manifest schema now requires apiVersion field"
+**Examples:**
+```
+feat(cli): add validate command
+fix(schema): correct trigger validation
+docs: update quickstart guide
 ```
 
-### Examples
+### Code Style
 
-```bash
-# Feature (MINOR version bump: 0.2.3 → 0.3.0)
-git commit -m "feat(validation): add CrewAI extension validator"
+- Use TypeScript for all new code
+- Follow existing patterns and conventions
+- Use ESLint and Prettier (configured in project)
+- Write self-documenting code with clear variable names
 
-# Bug fix (PATCH version bump: 0.2.3 → 0.2.4)
-git commit -m "fix(schema): correct required fields in LangChain extension"
+### Testing
 
-# Breaking change (MAJOR version bump: 0.2.3 → 1.0.0)
-git commit -m "feat!: migrate to apiVersion from ossaVersion
+- Write tests for new features
+- Ensure all tests pass before submitting
+- Aim for high test coverage
+- Include both unit and integration tests
 
-BREAKING CHANGE: All manifests must now use apiVersion instead of ossaVersion"
+### Documentation
 
-# Documentation (no version bump)
-git commit -m "docs: update getting started guide"
-```
+- Update README.md if adding new features
+- Add JSDoc comments for public APIs
+- Update examples if behavior changes
+- Keep migration guides up to date
 
-## 🎯 Release Process
+## 🏗️ Project Structure
 
-**Releases are fully automated using semantic-release.**
+### Repository Boundaries
 
-### How It Works
+**This repository (`openstandardagents`) contains:**
+- ✅ OSSA specification (schemas, OpenAPI, documentation)
+- ✅ CLI tooling (`ossa` commands)
+- ✅ Reference examples (`examples/` directory)
+- ✅ SDKs (TypeScript, Python)
+- ✅ Documentation and guides
 
-1. **Merge to `main`** with conventional commits
-2. **GitHub Actions automatically**:
-   - Analyzes commit messages
-   - Determines next version (major.minor.patch)
-   - Generates CHANGELOG.md
-   - Creates GitHub Release
-   - Publishes to npm
-   - Deploys website to GitHub Pages
-   - Comments on related PRs/issues
+**This repository does NOT contain:**
+- ❌ Production agent implementations (use `platform-agents` repo)
+- ❌ Bot scripts or production CI jobs
+- ❌ Website code (use `openstandardagents.org` repo)
 
-### Version Determination
-
-| Commit Type | Version Bump | Example |
-|-------------|--------------|---------|
-| `fix:` | PATCH | 0.2.3 → 0.2.4 |
-| `feat:` | MINOR | 0.2.3 → 0.3.0 |
-| `feat!:` or `BREAKING CHANGE:` | MAJOR | 0.2.3 → 1.0.0 |
-| `docs:`, `chore:`, `test:` | No release | - |
-
-### Release Branches
-
-- **`main`**: Production releases (latest tag on npm)
-- **`develop`**: Beta releases (beta tag on npm)
-
-## 🔍 Pull Request Process
-
-1. **Update tests** for any code changes
-2. **Update documentation** as needed
-3. **Ensure CI passes**:
-   - All tests pass
-   - Linting passes
-   - Build succeeds
-   - Security audit passes
-4. **Request review** from maintainers
-5. **Address feedback**
-6. **Squash commits** for feature branches (recommended)
-7. **Merge** using "Squash and Merge" (default for feature branches)
-
-### Squash Merge Workflow
-
-**This project encourages squash merging for feature branches** to maintain a clean, readable git history.
-
-#### When to Squash
-
-- **Feature branches** (`feat/*`, `fix/*`, `refactor/*`): Always squash
-- **Documentation branches** (`docs/*`): Squash if multiple commits
-- **Major releases**: May preserve commit history (case-by-case)
-
-#### Best Practices
-
-1. **Enable squash** when creating the merge request (encouraged by default)
-2. **Write a clear squash commit message** following conventional commits format
-3. **Include issue references** in the squash commit message (e.g., `Closes #123`)
-4. **Summarize all changes** in the squash commit body if multiple features were added
-
-#### Squash Commit Message Format
-
-When squashing, the final commit message should be:
+### Directory Structure
 
 ```
-<type>(<scope>): <summary of all changes>
-
-- Detailed change 1
-- Detailed change 2
-- Detailed change 3
-
-Closes #123
+openstandardagents/
+├── spec/              # OSSA specification schemas
+├── src/              # TypeScript source code
+│   ├── cli/          # CLI commands
+│   ├── services/     # Core services
+│   ├── tools/        # Development tools
+│   └── sdks/         # SDK implementations
+├── examples/         # Reference examples
+├── openapi/          # OpenAPI specifications
+├── tests/            # Test suite
+└── docs/             # Documentation
 ```
 
-**Example:**
+## 🔍 Review Process
 
-```
-feat(validation): add multi-framework extension support
+1. **Automated Checks**: CI/CD will run:
+   - Linting and formatting checks
+   - Test suite
+   - Manifest validation
+   - Type checking
 
-- Add CrewAI extension validator
-- Add LangGraph extension validator
-- Update schema documentation with examples
-- Add integration tests for all validators
+2. **Code Review**: Maintainers will review:
+   - Code quality and style
+   - Test coverage
+   - Documentation updates
+   - Alignment with project goals
 
-Closes #123, Closes #124
-```
+3. **Feedback**: We'll provide constructive feedback and work with you to improve your contribution.
 
-### PR Title Convention
+## 📚 Resources
 
-PR titles should follow the conventional commit format (this becomes the squash commit title):
+- **[OSSA Specification](https://openstandardagents.org)** - Official specification
+- **[Quick Start Guide](docs/QUICKSTART.md)** - Get started quickly
+- **[API Reference](docs/api-reference/)** - Complete API docs
+- **[Examples](examples/)** - Reference implementations
 
-```
-feat: add LangGraph extension support
-fix: resolve schema validation edge case
-docs: improve OpenAPI extension examples
-```
+## ❓ Questions?
 
-## ✅ Testing
+- **General questions**: [GitLab Discussions](https://gitlab.com/blueflyio/ossa/openstandardagents/-/issues)
+- **Technical questions**: Create an issue with the `question` label
+- **Security issues**: See [SECURITY.md](SECURITY.md)
 
-### Running Tests
+## 🙏 Thank You!
 
-```bash
-# Run all tests
-npm test
-
-# Run tests in watch mode
-npm test -- --watch
-
-# Run specific test file
-npm test -- schema.repository.test.ts
-
-# Run tests with coverage
-npm test -- --coverage
-```
-
-### Test Requirements
-
-- All new features **must** have tests
-- All bug fixes **must** have regression tests
-- Maintain **>80% code coverage**
-
-## 📚 Documentation
-
-### Public Documentation
-Public-facing documentation is managed in the [GitLab Wiki](https://gitlab.com/blueflyio/openstandardagents/-/wikis/home) and automatically synced to [openstandardagents.org](https://openstandardagents.org).
-
-**Public docs include:**
-- OSSA specification and standard
-- Usage guides and tutorials
-- API reference and schema documentation
-- Migration guides
-- Community contribution guidelines
-
-### Internal Documentation
-Internal project documentation is located in `.gitlab/docs/`:
-- `/development` - Development workflows and coding standards
-  - **VERSIONING.md** - Automated version management (CRITICAL: never manually update versions)
-- `/releases` - Release management and versioning
-- `/infrastructure` - CI/CD, GitLab agents, Kubernetes setup
-- `/processes` - Project governance and internal processes
-
-### Code Documentation
-
-- Use **JSDoc** for all public APIs
-- Include **examples** in JSDoc comments
-- Document **parameters** and **return types**
-
-## 🔐 Security
-
-### Reporting Security Issues
-
-**DO NOT** open public issues for security vulnerabilities.
-
-Email: ops@openstandardagents.org
-
-## 📊 Code Style
-
-We use:
-- **ESLint** for linting
-- **Prettier** for formatting (auto-format on commit)
-- **TypeScript** for type safety
-
-```bash
-# Lint code
-npm run lint
-
-# Fix auto-fixable issues
-npm run lint -- --fix
-```
-
-## 🎓 Resources
-
-- **Conventional Commits**: https://www.conventionalcommits.org/
-- **Semantic Versioning**: https://semver.org/
-- **OSSA Specification**: https://openstandardagents.org/docs
-- **GitHub Actions**: https://github.com/blueflyio/openstandardagents/actions
+Your contributions make OSSA better for everyone. We appreciate your time and effort!
 
 ---
 
-**Questions?** Open an [Issue](https://github.com/blueflyio/openstandardagents/issues).
+**Remember**: OSSA is for the community. Keep contributions clear, well-tested, and well-documented.

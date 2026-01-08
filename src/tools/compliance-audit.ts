@@ -27,7 +27,7 @@ const GITLAB_HOST = process.env.GITLAB_HOST?.replace('gitlab.com', 'https://gitl
 const TOKEN = process.env.GITLAB_TOKEN || process.env.SERVICE_ACCOUNT_OSSA_TOKEN || process.env.GITLAB_PUSH_TOKEN;
 
 if (!TOKEN) {
-  console.error('ERROR: GITLAB_TOKEN required');
+  console.error('❌ Error: GITLAB_TOKEN required');
   console.error('   Set environment variable: export GITLAB_TOKEN=<your-token>');
   process.exit(1);
 }
@@ -73,10 +73,10 @@ function createCheck(
 
 function getStatusIcon(status: string): string {
   switch (status) {
-    case 'pass': return '[PASS]';
-    case 'fail': return '[FAIL]';
-    case 'warning': return '[WARN]';
-    case 'info': return '[INFO]';
+    case 'pass': return '✅';
+    case 'fail': return '❌';
+    case 'warning': return '⚠️';
+    case 'info': return 'ℹ️';
     default: return '•';
   }
 }
@@ -166,8 +166,7 @@ async function auditMergeRequestApprovals(projectId: string): Promise<Compliance
     const project = await gitlab.Projects.show(projectId);
 
     // Check if approvals are required (available in Free tier via project settings)
-    const approvalsBeforeMerge = (project as any).approvals_before_merge;
-    if (approvalsBeforeMerge && typeof approvalsBeforeMerge === 'number' && approvalsBeforeMerge > 0) {
+    if (project.approvals_before_merge && project.approvals_before_merge > 0) {
       checks.push(createCheck(
         category,
         'Approvals Required',
@@ -186,7 +185,7 @@ async function auditMergeRequestApprovals(projectId: string): Promise<Compliance
 
     // Try to get advanced approval rules (Premium/Ultimate feature)
     try {
-      const rules = await (gitlab as any).ProjectApprovalRules?.all(projectId);
+      const rules = await gitlab.ProjectApprovalRules.all(projectId);
       if (rules && rules.length > 0) {
         checks.push(createCheck(
           category,
@@ -610,7 +609,7 @@ async function auditPipelineConfiguration(projectId: string): Promise<Compliance
     ));
 
     // Get recent pipelines
-    const pipelines = await gitlab.Pipelines.all(projectId, { perPage: 10 });
+    const pipelines = await gitlab.Pipelines.all(projectId, { per_page: 10 });
     if (pipelines && pipelines.length > 0) {
       const successCount = pipelines.filter((p: any) => p.status === 'success').length;
       const failCount = pipelines.filter((p: any) => p.status === 'failed').length;
@@ -670,10 +669,10 @@ async function auditPipelineConfiguration(projectId: string): Promise<Compliance
 
 // Main audit function
 async function runAudit(projectId: string): Promise<AuditReport> {
-  console.log(`\nRunning GitLab Ultimate Compliance Audit\n`);
+  console.log(`\n🔍 Running GitLab Ultimate Compliance Audit\n`);
   console.log(`Project: ${projectId}`);
   console.log(`GitLab Host: ${GITLAB_HOST}`);
-  console.log(`Token: ${TOKEN?.substring(0, 10) || 'NOT SET'}...\n`);
+  console.log(`Token: ${TOKEN.substring(0, 10)}...\n`);
 
   // Get project info
   const project = await gitlab.Projects.show(projectId);
@@ -734,7 +733,7 @@ function displayReport(report: AuditReport): void {
   const categories = [...new Set(report.checks.map(c => c.category))];
 
   for (const category of categories) {
-    console.log(`\n${category}`);
+    console.log(`\n📋 ${category}`);
     console.log('-'.repeat(80));
 
     const categoryChecks = report.checks.filter(c => c.category === category);
@@ -742,7 +741,7 @@ function displayReport(report: AuditReport): void {
       console.log(`${getStatusIcon(check.status)} ${check.check}`);
       console.log(`   ${check.message}`);
       if (check.remediation) {
-        console.log(`   TIP: ${check.remediation}`);
+        console.log(`   💡 ${check.remediation}`);
       }
     }
   }
@@ -751,10 +750,10 @@ function displayReport(report: AuditReport): void {
   console.log('SUMMARY');
   console.log('='.repeat(80));
   console.log(`Total Checks: ${report.summary.total}`);
-  console.log(`Passed: ${report.summary.passed}`);
-  console.log(`Failed: ${report.summary.failed}`);
-  console.log(`Warnings: ${report.summary.warnings}`);
-  console.log(`Info: ${report.summary.total - report.summary.passed - report.summary.failed - report.summary.warnings}`);
+  console.log(`✅ Passed: ${report.summary.passed}`);
+  console.log(`❌ Failed: ${report.summary.failed}`);
+  console.log(`⚠️  Warnings: ${report.summary.warnings}`);
+  console.log(`ℹ️  Info: ${report.summary.total - report.summary.passed - report.summary.failed - report.summary.warnings}`);
   console.log('='.repeat(80) + '\n');
 }
 
@@ -778,17 +777,17 @@ async function main() {
 
     // Exit with appropriate code
     if (report.overallStatus === 'non-compliant') {
-      console.log('WARNING: Project has compliance issues that need attention\n');
+      console.log('⚠️  Project has compliance issues that need attention\n');
       process.exit(1);
     } else if (report.overallStatus === 'partial') {
-      console.log('WARNING: Project is partially compliant - review warnings\n');
+      console.log('⚠️  Project is partially compliant - review warnings\n');
       process.exit(0);
     } else {
-      console.log('Project is fully compliant!\n');
+      console.log('✅ Project is fully compliant!\n');
       process.exit(0);
     }
   } catch (error: any) {
-    console.error('\nAudit failed:', error.message);
+    console.error('\n❌ Audit failed:', error.message);
     console.error(error.stack);
     process.exit(1);
   }

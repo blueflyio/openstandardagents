@@ -1,0 +1,125 @@
+# ============================================================================
+# OSSA Power Agent: Workflow Orchestrator
+# ============================================================================
+# Multi-agent workflow orchestration agent. Coordinates complex workflows
+# involving multiple agents with routing, state management, and composition.
+#
+# Showcases: Workflow kind, agent-to-agent communication, composition
+# ============================================================================
+
+apiVersion: ossa/v0.3.3
+kind: Workflow
+metadata:
+  name: workflow-orchestrator
+  version: 1.0.0
+  description: Multi-agent workflow orchestration and coordination
+  labels:
+    ossa.dev/category: orchestration
+    ossa.dev/tier: power-agent
+  annotations:
+    ossa.dev/documentation: https://openstandardagents.org/agents/workflow-orchestrator
+
+spec:
+  # Workflow-specific configuration
+  execution:
+    type: orchestrated
+    parallelism: 5
+    timeout: 3600s
+
+  capabilities:
+    - name: workflow.create
+      description: Create and configure workflows
+    - name: workflow.execute
+      description: Execute multi-agent workflows
+    - name: workflow.monitor
+      description: Monitor workflow execution status
+    - name: workflow.route
+      description: Route tasks to appropriate agents
+
+  role: |
+    You are the workflow orchestrator responsible for coordinating complex
+    multi-agent workflows. You manage task routing, state persistence,
+    and agent-to-agent communication.
+
+    Orchestration patterns:
+    1. Sequential - Execute agents in order
+    2. Parallel - Execute multiple agents concurrently
+    3. Conditional - Route based on conditions
+    4. Fan-out/Fan-in - Distribute and aggregate
+    5. Human-in-the-loop - Pause for human approval
+
+  llm:
+    provider: ${OSSA_LLM_PROVIDER:-anthropic}
+    model: ${OSSA_LLM_MODEL:-claude-sonnet-4}
+    temperature: 0.2
+    maxTokens: ${OSSA_LLM_MAX_TOKENS:-8192}
+
+  # Agent composition
+  agents:
+    - ref: code-reviewer
+      alias: reviewer
+      on_complete: security-scanner
+
+    - ref: security-scanner
+      alias: security
+      on_complete: ci-pipeline
+
+    - ref: ci-pipeline
+      alias: pipeline
+      condition: security.result.passed == true
+
+  # Workflow steps
+  steps:
+    - id: review
+      agent: reviewer
+      input:
+        mr_iid: ${input.mr_iid}
+        project_id: ${input.project_id}
+
+    - id: security
+      agent: security
+      depends_on: [review]
+      condition: review.status == "approved"
+      input:
+        paths: ${input.changed_files}
+
+    - id: deploy
+      agent: pipeline
+      depends_on: [security]
+      condition: security.passed == true
+      input:
+        action: deploy
+        environment: ${input.environment}
+
+  # State management
+  state:
+    persistence: redis
+    ttl: 86400
+    schema:
+      type: object
+      properties:
+        current_step:
+          type: string
+        completed_steps:
+          type: array
+        results:
+          type: object
+
+  # Messaging for agent coordination
+  messaging:
+    transport: redis
+    queues:
+      - name: workflow-events
+        description: Workflow lifecycle events
+      - name: agent-results
+        description: Agent execution results
+    events:
+      publish:
+        - workflow.started
+        - workflow.completed
+        - workflow.failed
+        - step.completed
+      subscribe:
+        - agent.completed
+        - agent.failed
+        - human.approved

@@ -74,7 +74,7 @@
   },
   "homepage": "https://openstandardagents.org",
   "scripts": {
-    "// ──────────────────────────────────────────────────────────────": "",
+    "// ─────────────────────────────────────────────────────────────────────────────": "",
     "// BUILD & DEVELOPMENT": "",
     "prebuild": "npm run docs:process",
     "build": "tsc && npm run build:assets",

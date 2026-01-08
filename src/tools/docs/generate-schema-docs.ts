@@ -228,7 +228,7 @@ function generateFieldDoc(fieldPath: string, property: SchemaProperty): string {
 }
 
 function main() {
-  console.log('[RUN] Generating schema documentation...\n');
+  console.log('🚀 Generating schema documentation...\n');
   
   // Create output directory
   mkdirSync(OUTPUT_DIR, { recursive: true });
@@ -256,7 +256,7 @@ function main() {
     const outputFile = join(OUTPUT_DIR, filename);
     
     writeFileSync(outputFile, docContent);
-    console.log(`[PASS] Generated: ${filename}`);
+    console.log(`✅ Generated: ${filename}`);
     count++;
   }
   
@@ -307,11 +307,11 @@ View the complete JSON Schema:
 `;
   
   writeFileSync(join(OUTPUT_DIR, 'index.md'), indexContent);
-  console.log(`[PASS] Generated: index.md`);
+  console.log(`✅ Generated: index.md`);
   
   console.log(`\n✨ Schema documentation generated successfully!`);
   console.log(`📂 Output: ${OUTPUT_DIR}`);
-  console.log(`[STATS] Fields documented: ${count}`);
+  console.log(`📊 Fields documented: ${count}`);
 }
 
 main();

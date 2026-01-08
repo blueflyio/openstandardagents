@@ -16,11 +16,11 @@ const lastUpdated = new Date().toISOString().split('T')[0];
 const specVersion = versionConfig.spec_version || versionConfig.current;
 
 const replacements = {
-  '{{VERSION}}': versionConfig.current,
-  '{{VERSION_STABLE}}': versionConfig.latest_stable,
-  '{{SPEC_VERSION}}': specVersion,
+  '0.3.3': versionConfig.current,
+  '0.3.3': versionConfig.latest_stable,
+  '0.3.3': specVersion,
   '{{LAST_UPDATED}}': lastUpdated,
-  '{{SPEC_PATH}}': versionConfig.spec_path.replace('{version}', versionConfig.current),
+  'spec/v0.3.3': versionConfig.spec_path.replace('{version}', versionConfig.current),
   '{{SCHEMA_FILE}}': versionConfig.schema_file.replace('{version}', versionConfig.current),
   '{{NPM_VERSION}}': packageJson.version,
 };
@@ -56,20 +56,20 @@ async function processTemplates() {
 
       if (updated) {
         fs.writeFileSync(file, content);
-        console.log(`[PASS] Processed: ${file}`);
+        console.log(`✅ Processed: ${file}`);
         totalProcessed++;
       }
     }
   }
 
   if (totalProcessed === 0) {
-    console.log('[INFO]  No template placeholders found to process');
+    console.log('ℹ️  No template placeholders found to process');
   } else {
-    console.log(`\n[PASS] Processed ${totalProcessed} file(s) with version ${versionConfig.current}`);
+    console.log(`\n✅ Processed ${totalProcessed} file(s) with version ${versionConfig.current}`);
   }
 }
 
 processTemplates().catch(err => {
-  console.error('[FAIL] Error processing templates:', err);
+  console.error('❌ Error processing templates:', err);
   process.exit(1);
 });
