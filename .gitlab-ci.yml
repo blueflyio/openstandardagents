@@ -49,18 +49,19 @@ include:
   - local: '.gitlab/ci/openapi-validation.yml'  # OpenAPI & OSSA extensions validation (#176)
   - local: '.gitlab/ci/release-environments.yml'  # Release environment deployments (#376)
   - local: '.gitlab/ci/version-automation-duo.yml'  # GitLab Duo Agent Platform version automation
-  - local: '.gitlab/ci/autonomous-framework.yml'  # Autonomous framework maintenance
-  - local: '.gitlab/ci/webhook-triggers.yml'  # Webhook triggers for autonomous flows
-  - local: '.gitlab/ci/autonomous-schedules.yml'  # Scheduled autonomous tasks
-  - local: '.gitlab/ci/autonomous-integration.yml'  # Autonomous system integration
-  - local: '.gitlab/ci/autonomous-mr-management.yml'  # Autonomous MR management
-  - local: '.gitlab/ci/autonomous-issue-management.yml'  # Autonomous issue management
-  - local: '.gitlab/ci/autonomous-complete.yml'  # Complete autonomous framework
-  - local: '.gitlab/ci/autonomous-setup.yml'  # Autonomous framework setup
-  - local: '.gitlab/ci/autonomous-activation.yml'  # One-time activation
-  - local: '.gitlab/ci/auto-merge-mr-697.yml'  # Auto-merge MR #697
-  - local: '.gitlab/ci/enhanced-orchestration.yml'  # Enhanced agent orchestration with A2A, analytics, routing
-  - local: '.gitlab/ci/issue-consolidation.yml'  # Issue consolidation and auto-completion
+  # DISABLED: Missing files causing YAML parsing errors
+  # - local: '.gitlab/ci/autonomous-framework.yml'  # Autonomous framework maintenance
+  # - local: '.gitlab/ci/webhook-triggers.yml'  # Webhook triggers for autonomous flows
+  # - local: '.gitlab/ci/autonomous-schedules.yml'  # Scheduled autonomous tasks
+  # - local: '.gitlab/ci/autonomous-integration.yml'  # Autonomous system integration
+  # - local: '.gitlab/ci/autonomous-mr-management.yml'  # Autonomous MR management
+  # - local: '.gitlab/ci/autonomous-issue-management.yml'  # Autonomous issue management
+  # - local: '.gitlab/ci/autonomous-complete.yml'  # Complete autonomous framework
+  # - local: '.gitlab/ci/autonomous-setup.yml'  # Autonomous framework setup
+  # - local: '.gitlab/ci/autonomous-activation.yml'  # One-time activation
+  # - local: '.gitlab/ci/auto-merge-mr-697.yml'  # Auto-merge MR #697
+  # - local: '.gitlab/ci/enhanced-orchestration.yml'  # Enhanced agent orchestration with A2A, analytics, routing
+  # - local: '.gitlab/ci/issue-consolidation.yml'  # Issue consolidation and auto-completion
 
 # Override SAST template jobs - run independently without blocking
 semgrep-sast:
