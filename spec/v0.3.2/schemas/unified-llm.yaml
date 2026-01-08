@@ -1,9 +1,9 @@
-# OSSA v0.3.1 - Unified LLM Configuration Schema
+# OSSA v0.3.3 - Unified LLM Configuration Schema
 # Compatible with: OSSA, GitLab Duo, Google A2A, MCP
 # Zero hardcoded models, runtime-configurable, multi-provider
 
 $schema: http://json-schema.org/draft-07/schema#
-$id: https://openstandardagents.org/schemas/v0.3.1/unified-llm.yaml
+$id: https://openstandardagents.org/schemas/v0.3.3/unified-llm.yaml
 
 title: Unified LLM Configuration
 description: |

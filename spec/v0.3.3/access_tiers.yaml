@@ -1,11 +1,11 @@
 # =============================================================================
-# OSSA v0.3.2 - Access Tiers & Separation of Duties Specification
+# OSSA v0.3.3 - Access Tiers & Separation of Duties Specification
 # =============================================================================
 # Defines privilege levels, role separations, and access controls for agents
 # Issue: https://gitlab.com/blueflyio/openstandardagents/-/issues/363
 # =============================================================================
 
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: AccessTierSpec
 version: "1.0.0"
 

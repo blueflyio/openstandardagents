@@ -154,7 +154,7 @@ spec:
 # Specialized agent for research tasks
 
 ---
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 
 metadata:
@@ -221,7 +221,7 @@ spec:
 # Specialized agent for data analysis
 
 ---
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 
 metadata:
@@ -282,7 +282,7 @@ spec:
 # Specialized agent for content creation
 
 ---
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 
 metadata:

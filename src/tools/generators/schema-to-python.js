@@ -1,0 +1,236 @@
+#!/usr/bin/env node
+/**
+ * Schema to Python Pydantic Models Generator
+ *
+ * Converts OSSA JSON Schema to Python Pydantic v2 models.
+ * This is a DETERMINISTIC task - no LLM required.
+ *
+ * Usage: node schema-to-python.js <schema-path> <output-path> [--generator=pydantic]
+ */
+
+import { readFileSync, writeFileSync } from 'node:fs';
+import { basename, dirname } from 'node:path';
+
+// Type mapping: JSON Schema -> Python
+const TYPE_MAP = {
+  string: 'str',
+  integer: 'int',
+  number: 'float',
+  boolean: 'bool',
+  array: 'list',
+  object: 'dict',
+  null: 'None',
+};
+
+// Convert camelCase to snake_case
+function toSnakeCase(str) {
+  return str.replace(/([A-Z])/g, '_$1').toLowerCase().replace(/^_/, '');
+}
+
+// Convert to PascalCase for class names
+function toPascalCase(str) {
+  return str.replace(/(^|[-_])(\w)/g, (_, __, c) => c.toUpperCase());
+}
+
+// Generate Python type from JSON Schema property
+function generatePythonType(prop, definitions, indent = 0) {
+  if (!prop) return 'Any';
+
+  // Handle $ref
+  if (prop.$ref) {
+    const refName = prop.$ref.split('/').pop();
+    return toPascalCase(refName);
+  }
+
+  // Handle anyOf/oneOf (Union types)
+  if (prop.anyOf || prop.oneOf) {
+    const types = (prop.anyOf || prop.oneOf).map(t => generatePythonType(t, definitions));
+    return `Union[${types.join(', ')}]`;
+  }
+
+  // Handle allOf (intersection - use first for simplicity)
+  if (prop.allOf) {
+    return generatePythonType(prop.allOf[0], definitions);
+  }
+
+  // Handle enum
+  if (prop.enum) {
+    return `Literal[${prop.enum.map(v => typeof v === 'string' ? `"${v}"` : v).join(', ')}]`;
+  }
+
+  // Handle const
+  if (prop.const !== undefined) {
+    return `Literal[${typeof prop.const === 'string' ? `"${prop.const}"` : prop.const}]`;
+  }
+
+  const baseType = TYPE_MAP[prop.type] || 'Any';
+
+  // Handle array with items
+  if (prop.type === 'array' && prop.items) {
+    const itemType = generatePythonType(prop.items, definitions);
+    return `list[${itemType}]`;
+  }
+
+  // Handle object with additionalProperties
+  if (prop.type === 'object' && prop.additionalProperties) {
+    const valueType = generatePythonType(prop.additionalProperties, definitions);
+    return `dict[str, ${valueType}]`;
+  }
+
+  return baseType;
+}
+
+// Generate Pydantic model from JSON Schema definition
+function generatePydanticModel(name, schema, definitions) {
+  const className = toPascalCase(name);
+  const lines = [];
+
+  // Class docstring
+  if (schema.description) {
+    lines.push(`class ${className}(BaseModel):`);
+    lines.push(`    """${schema.description}"""`);
+    lines.push('');
+  } else {
+    lines.push(`class ${className}(BaseModel):`);
+  }
+
+  const required = new Set(schema.required || []);
+  const properties = schema.properties || {};
+  const propNames = Object.keys(properties);
+
+  if (propNames.length === 0) {
+    lines.push('    pass');
+    return lines.join('\n');
+  }
+
+  // Generate fields
+  for (const propName of propNames) {
+    const prop = properties[propName];
+    const pythonName = toSnakeCase(propName);
+    const pythonType = generatePythonType(prop, definitions);
+    const isRequired = required.has(propName);
+
+    // Build Field() arguments
+    const fieldArgs = [];
+
+    if (propName !== pythonName) {
+      fieldArgs.push(`alias="${propName}"`);
+    }
+
+    if (prop.description) {
+      fieldArgs.push(`description="${prop.description.replace(/"/g, '\\"')}"`);
+    }
+
+    if (prop.default !== undefined) {
+      const defaultVal = typeof prop.default === 'string'
+        ? `"${prop.default}"`
+        : JSON.stringify(prop.default);
+      fieldArgs.push(`default=${defaultVal}`);
+    } else if (!isRequired) {
+      fieldArgs.push('default=None');
+    }
+
+    if (prop.examples?.length) {
+      fieldArgs.push(`examples=${JSON.stringify(prop.examples)}`);
+    }
+
+    // Generate field line
+    const optionalType = !isRequired && prop.default === undefined
+      ? `Optional[${pythonType}]`
+      : pythonType;
+
+    if (fieldArgs.length > 0) {
+      lines.push(`    ${pythonName}: ${optionalType} = Field(${fieldArgs.join(', ')})`);
+    } else {
+      lines.push(`    ${pythonName}: ${optionalType}`);
+    }
+  }
+
+  // Add model config if needed
+  const hasAliases = propNames.some(p => toSnakeCase(p) !== p);
+  if (hasAliases) {
+    lines.push('');
+    lines.push('    model_config = ConfigDict(');
+    lines.push('        populate_by_name=True,');
+    lines.push('        use_enum_values=True,');
+    lines.push('    )');
+  }
+
+  return lines.join('\n');
+}
+
+// Main generator function
+function generatePythonFromSchema(schemaPath, outputPath, generator = 'pydantic') {
+  // Read schema
+  const schemaContent = readFileSync(schemaPath, 'utf-8');
+  const schema = JSON.parse(schemaContent);
+
+  const definitions = schema.$defs || schema.definitions || {};
+  const models = [];
+  const generatedNames = [];
+
+  // Header
+  const header = `# Auto-generated from OSSA JSON Schema - DO NOT EDIT
+# Generated by: src/tools/generators/schema-to-python.js
+# Schema: ${basename(schemaPath)}
+# Generator: ${generator}
+
+from __future__ import annotations
+
+from typing import Any, Literal, Optional, Union
+
+from pydantic import BaseModel, ConfigDict, Field
+
+`;
+
+  // Generate models for each definition
+  for (const [name, def] of Object.entries(definitions)) {
+    if (def.type === 'object' || def.properties) {
+      models.push(generatePydanticModel(name, def, definitions));
+      generatedNames.push(toPascalCase(name));
+    }
+  }
+
+  // Generate root model if schema has properties
+  if (schema.properties) {
+    models.push(generatePydanticModel('OSSAManifest', schema, definitions));
+    generatedNames.push('OSSAManifest');
+  }
+
+  // Generate __all__ export
+  const allExport = `__all__ = [\n${generatedNames.map(n => `    "${n}",`).join('\n')}\n]\n\n`;
+
+  // Write output
+  const output = header + allExport + models.join('\n\n\n') + '\n';
+  writeFileSync(outputPath, output);
+
+  return {
+    generated_file: outputPath,
+    types_count: generatedNames.length,
+    definitions: generatedNames,
+  };
+}
+
+// CLI execution
+if (process.argv[1].endsWith('schema-to-python.js')) {
+  const args = process.argv.slice(2);
+
+  if (args.length < 2) {
+    console.error('Usage: schema-to-python.js <schema-path> <output-path> [--generator=pydantic]');
+    process.exit(1);
+  }
+
+  const schemaPath = args[0];
+  const outputPath = args[1];
+  const generator = args.find(a => a.startsWith('--generator='))?.split('=')[1] || 'pydantic';
+
+  try {
+    const result = generatePythonFromSchema(schemaPath, outputPath, generator);
+    console.log(JSON.stringify(result, null, 2));
+  } catch (error) {
+    console.error('Error:', error.message);
+    process.exit(1);
+  }
+}
+
+export { generatePythonFromSchema };

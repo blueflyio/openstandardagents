@@ -1,10 +1,10 @@
 /**
- * OSSA v0.3.1 Messaging Extension - Type Definitions
+ * OSSA v0.3.3 Messaging Extension - Type Definitions
  * Extended types for Agent-to-Agent messaging
  */
 
 /**
- * Message envelope conforming to OSSA v0.3.1 spec
+ * Message envelope conforming to OSSA v0.3.3 spec
  */
 export interface Message {
   id: string;

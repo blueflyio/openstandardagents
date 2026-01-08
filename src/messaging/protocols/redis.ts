@@ -1,5 +1,5 @@
 /**
- * OSSA v0.3.1 Messaging Extension - Redis Transport
+ * OSSA v0.3.3 Messaging Extension - Redis Transport
  * Redis-based message broker for production use
  */
 

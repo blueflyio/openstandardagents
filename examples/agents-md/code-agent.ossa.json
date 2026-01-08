@@ -75,7 +75,7 @@
     "agents_md": {
       "enabled": true,
       "generate": true,
-      "file_path": "AGENTS.md",
+      "output_path": "AGENTS.md",
       "sections": {
         "dev_environment": {
           "enabled": true,

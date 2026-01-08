@@ -1,0 +1,59 @@
+{
+  "autoApply": {
+    "enabled": true,
+    "allowedFilePatterns": [
+      "**/*.ts",
+      "**/*.tsx",
+      "**/*.json",
+      "**/*.yaml",
+      "**/*.yml"
+    ],
+    "blockedFilePatterns": [
+      "package-lock.json",
+      "**/node_modules/**",
+      "**/dist/**",
+      "spec/v0.2.5-RC/ossa-0.2.5-RC.schema.json"
+    ]
+  },
+  "autoRun": {
+    "enabled": true,
+    "allowedCommands": [
+      "npm run test",
+      "npm run test:unit",
+      "npm run test:integration",
+      "npm run lint",
+      "npm run typecheck",
+      "npm run validate:schema",
+      "npm run validate:examples",
+      "npm run build",
+      "ossa validate",
+      "ossa generate",
+      "ossa migrate"
+    ],
+    "blockedCommands": [
+      "rm -rf",
+      "dd if=",
+      "mkfs",
+      "LEFTHOOK=0"
+    ]
+  },
+  "toolAllowList": {
+    "read_file": true,
+    "list_directory": true,
+    "codebase_search": true,
+    "grep": true,
+    "glob_file_search": true,
+    "search_replace": true,
+    "write": true,
+    "run_terminal_cmd": true,
+    "read_lints": true,
+    "delete_file": false,
+    "web_search": true
+  },
+  "security": {
+    "redactSecrets": true,
+    "blockDangerousOperations": true,
+    "requireValidation": true
+  }
+}
+

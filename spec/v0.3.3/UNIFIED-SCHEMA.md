@@ -1,4 +1,4 @@
-# OSSA v0.3.1 - Unified Agent Schema
+# OSSA v0.3.3 - Unified Agent Schema
 
 ## The Rocketship 🚀
 
@@ -13,7 +13,7 @@ llm:
   model: claude-sonnet-4-20250514
 ```
 
-**After (v0.3.1):**
+**After (v0.3.3):**
 ```yaml
 llm:
   provider: ${LLM_PROVIDER:-anthropic}
@@ -35,7 +35,7 @@ llm:
 
 ### Compatibility Matrix
 
-| Feature | OSSA v0.2.x | Duo | A2A | v0.3.1 |
+| Feature | OSSA v0.2.x | Duo | A2A | v0.3.3 |
 |---------|-------------|-----|-----|--------|
 | Runtime-configurable models | ❌ | ❌ | ✅ | ✅ |
 | Execution profiles | ❌ | ❌ | ✅ | ✅ |

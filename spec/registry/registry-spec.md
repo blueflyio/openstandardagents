@@ -686,7 +686,7 @@ Retrieve agent dependencies with version resolution.
     "runtime": {
       "@ossa/runtime": {
         "required": "^0.3.0",
-        "resolved": "0.3.2",
+        "resolved": "0.3.3",
         "type": "runtime"
       }
     },
@@ -707,9 +707,9 @@ Retrieve agent dependencies with version resolution.
   },
   "dependency_tree": {
     "blueflyio/security-scanner@1.2.0": {
-      "@ossa/runtime@0.3.2": {},
+      "@ossa/runtime@0.3.3": {},
       "blueflyio/vuln-db-agent@2.1.5": {
-        "@ossa/runtime@0.3.2": {}
+        "@ossa/runtime@0.3.3": {}
       },
       "kubernetes-api@1.28.4": {}
     }
@@ -1163,9 +1163,9 @@ OSSA CLI resolves dependencies using semver:
 ```bash
 # Example dependency tree
 security-scanner@1.2.0
-├── @ossa/runtime@0.3.2
+├── @ossa/runtime@0.3.3
 ├── vuln-db-agent@2.1.5
-│   └── @ossa/runtime@0.3.2 (deduped)
+│   └── @ossa/runtime@0.3.3 (deduped)
 └── kubernetes-tools@1.28.4
 
 # CLI automatically:
@@ -1332,7 +1332,7 @@ Every published agent undergoes automated security scanning:
 ```yaml
 # Check dependencies for known vulnerabilities
 ✓ No vulnerable dependencies found
-  Scanned: @ossa/runtime@0.3.2, vuln-scanner-lib@2.1.0
+  Scanned: @ossa/runtime@0.3.3, vuln-scanner-lib@2.1.0
 ```
 
 #### 3. Secret Detection

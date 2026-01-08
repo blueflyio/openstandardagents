@@ -1,12 +1,12 @@
-# OSSA Agent Taxonomy Schema v0.3.1
+# OSSA Agent Taxonomy Schema v0.3.3
 # Comprehensive hierarchical classification for AI agents
 # Aligned with OSSA spec roles, multi-agent patterns, and industry standards
 
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Taxonomy
 metadata:
   name: agent-taxonomy
-  version: "0.3.1"
+  version: "0.3.3"
   description: |
     Formal agent taxonomy with hierarchical domains, cross-cutting capabilities,
     autonomy levels, and multi-agent orchestration patterns. Designed for

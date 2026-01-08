@@ -1,8 +1,8 @@
-# OSSA v0.3.1 - Functions Schema
+# OSSA v0.3.3 - Functions Schema
 # Google A2A compatible function declarations (OpenAI function calling format)
 
 $schema: http://json-schema.org/draft-07/schema#
-$id: https://openstandardagents.org/schemas/v0.3.1/functions.yaml
+$id: https://openstandardagents.org/schemas/v0.3.3/functions.yaml
 
 title: Agent Functions
 description: |

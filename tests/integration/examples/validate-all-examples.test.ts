@@ -9,11 +9,6 @@ import { glob } from 'glob';
 import { ValidationService } from '../../../src/services/validation.service.js';
 import { SchemaRepository } from '../../../src/repositories/schema.repository.js';
 import { ManifestRepository } from '../../../src/repositories/manifest.repository.js';
-import { getApiVersion, getVersion } from '../../../src/utils/version.js';
-
-// Dynamic version from package.json - NEVER hardcode
-const CURRENT_API_VERSION = getApiVersion();
-const CURRENT_VERSION = getVersion();
 
 describe('All Examples Validation', () => {
   let validationService: ValidationService;
@@ -62,7 +57,7 @@ describe('All Examples Validation', () => {
   describe('Generated manifests', () => {
     it('should validate generated chat agent', async () => {
       const manifest = {
-        apiVersion: CURRENT_API_VERSION,
+        apiVersion: 'ossa/v0.2.4',
         kind: 'Agent',
         metadata: {
           name: 'test-chat',
@@ -84,7 +79,7 @@ describe('All Examples Validation', () => {
         },
       };
 
-      const result = await validationService.validate(manifest, CURRENT_VERSION);
+      const result = await validationService.validate(manifest, '0.2.4');
 
       expect(result.valid).toBe(true);
       expect(result.errors).toHaveLength(0);

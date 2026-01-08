@@ -1,0 +1,6 @@
+{
+  "platform": "vertex-ai",
+  "priority": "critical",
+  "deadline": "2026-02-01",
+  "requirements": {}
+}
