@@ -324,7 +324,7 @@ agentsCommandGroup
         }
 
         console.log(chalk.blue(`Updating agent: ${agentName}@${version}`));
-        console.log(chalk.yellow('⚠️  Update functionality requires API implementation'));
+        console.log(chalk.yellow('[WARN]  Update functionality requires API implementation'));
         console.log(chalk.gray('  Validated update payload:'), JSON.stringify(validated, null, 2));
 
         console.log(chalk.green(`\n✓ Update validated (API implementation pending)`));
@@ -377,12 +377,12 @@ agentsCommandGroup
         }
 
         if (!options.force) {
-          console.log(chalk.yellow(`⚠️  This will delete agent: ${agentName}@${version}`));
+          console.log(chalk.yellow(`[WARN]  This will delete agent: ${agentName}@${version}`));
           console.log(chalk.yellow('   Use --force to skip confirmation'));
         }
 
         console.log(chalk.blue(`Deleting agent: ${agentName}@${version}`));
-        console.log(chalk.yellow('⚠️  Delete functionality requires API implementation'));
+        console.log(chalk.yellow('[WARN]  Delete functionality requires API implementation'));
 
         console.log(chalk.green(`\n✓ Delete validated (API implementation pending)`));
       } catch (error) {

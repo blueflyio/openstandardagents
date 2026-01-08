@@ -141,7 +141,7 @@ release:validate:
     - |
       #!/bin/bash
       set -euo pipefail
-      echo "🔒 PRE-RELEASE VALIDATION"
+      echo "[LOCK] PRE-RELEASE VALIDATION"
       echo "========================="
       echo ""
 
@@ -157,7 +157,7 @@ release:validate:
       RELEASE_VERSION="${RELEASE_VERSION:-}"
 
       # 0. MILESTONE GATE CHECK
-      echo "📋 0. Milestone Gate"
+      echo "[LIST] 0. Milestone Gate"
       RANGE_MILESTONE="${RANGE_MILESTONE:-false}"
       if [ "${MILESTONE_READY}" != "true" ]; then
         echo "RELEASE BLOCKED: no matching active milestone"
@@ -175,7 +175,7 @@ release:validate:
       echo ""
 
       # 1. VERSION CONSISTENCY CHECK
-      echo "📋 1. Version Consistency"
+      echo "[LIST] 1. Version Consistency"
       # Use .version.json as single source of truth (package.json uses {{VERSION}} placeholder)
       VERSION=$(jq -r '.current' .version.json)
       echo "  Release version: v${VERSION}"
@@ -199,7 +199,7 @@ release:validate:
 
       # 2. SCHEMA VALIDATION
       echo ""
-      echo "📋 2. Schema Validation"
+      echo "[LIST] 2. Schema Validation"
 
       # Check schema is valid JSON
       if jq empty "$SCHEMA_PATH" 2>/dev/null; then
@@ -220,7 +220,7 @@ release:validate:
 
       # 3. EXAMPLES VALIDATION
       echo ""
-      echo "📋 3. Examples Validation"
+      echo "[LIST] 3. Examples Validation"
 
       EXAMPLE_COUNT=0
       EXAMPLE_WARNINGS=0
@@ -247,7 +247,7 @@ release:validate:
 
       # 4. BUILD ARTIFACTS CHECK
       echo ""
-      echo "📋 4. Build Artifacts"
+      echo "[LIST] 4. Build Artifacts"
 
       if [ -f "dist/cli/index.js" ]; then
         echo "   CLI built: dist/cli/index.js"
@@ -265,7 +265,7 @@ release:validate:
 
       # 5. PACKAGE.JSON EXPORTS CHECK
       echo ""
-      echo "📋 5. Package Exports"
+      echo "[LIST] 5. Package Exports"
 
       SCHEMA_EXPORT=$(node -p "require('./package.json').exports?.['./schema'] || ''" 2>/dev/null || echo "")
       EXPECTED_EXPORT="./spec/v${VERSION}/ossa-${VERSION}.schema.json"
@@ -287,7 +287,7 @@ release:validate:
 
       # 6. TEST RUN
       echo ""
-      echo "📋 6. Test Suite"
+      echo "[LIST] 6. Test Suite"
 
       if npm run test 2>&1; then
         echo "   All tests passed"
@@ -298,7 +298,7 @@ release:validate:
 
       # 7. TYPECHECK
       echo ""
-      echo "📋 7. TypeScript Validation"
+      echo "[LIST] 7. TypeScript Validation"
 
       if npm run typecheck 2>&1; then
         echo "   TypeScript compilation clean"
@@ -309,7 +309,7 @@ release:validate:
 
       # 8. NO HARDCODED VERSIONS IN SCRIPTS
       echo ""
-      echo "📋 8. Script Version Check"
+      echo "[LIST] 8. Script Version Check"
 
       if node -e "const pkg = require('./package.json'); const scripts = JSON.stringify(pkg.scripts || {}); if (scripts.match(/spec\/v0\.[0-9]/)) { process.exit(1); }" 2>/dev/null; then
         echo "   No hardcoded versions in scripts"
@@ -321,7 +321,7 @@ release:validate:
       # SUMMARY
       echo ""
       echo "========================================"
-      echo "📊 VALIDATION SUMMARY"
+      echo "[STATS] VALIDATION SUMMARY"
       echo "========================================"
       echo "  Errors: ${ERRORS}"
       echo "  Warnings: ${WARNINGS}"
@@ -364,7 +364,7 @@ release:preview:
     - npm ci --legacy-peer-deps
   script:
     - |
-      echo "🔍 Release Preview (Dry-Run)"
+      echo "[CHECK] Release Preview (Dry-Run)"
       echo "============================"
       
       if [ "$ENABLE_RELEASE" = "true" ]; then
@@ -374,7 +374,7 @@ release:preview:
       fi
       
       if [ -n "$RELEASE_VERSION" ]; then
-        echo "📦 Detected from closed milestone:"
+        echo "[PKG] Detected from closed milestone:"
         echo "  Milestone: ${MILESTONE_TITLE}"
         echo "  Version: v${RELEASE_VERSION}"
         echo "  Ready: ${MILESTONE_READY:-false}"
@@ -679,7 +679,7 @@ create-release:
   image: registry.gitlab.com/gitlab-org/cli:latest
   script:
     - |
-      echo "📋 Creating GitLab Release for $CI_COMMIT_TAG"
+      echo "[LIST] Creating GitLab Release for $CI_COMMIT_TAG"
 
       # Extract version number
       VERSION=$(echo "$CI_COMMIT_TAG" | sed 's/^v//')

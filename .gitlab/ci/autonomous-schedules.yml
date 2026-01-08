@@ -1,0 +1,260 @@
+# ============================================================================
+# Autonomous Scheduled Tasks
+# ============================================================================
+# Scheduled jobs that run autonomously to maintain the framework
+# Uses existing platform-agents service accounts
+# ============================================================================
+
+variables:
+  PLATFORM_AGENTS_API: ${PLATFORM_AGENTS_API_URL:-https://api.blueflyagents.com}
+
+# ============================================================================
+# DAILY AUTONOMOUS TASKS
+# ============================================================================
+
+autonomous:daily-issue-scan:
+  stage: .pre
+  image: node:22-alpine
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: always
+  variables:
+    AGENT_NAME: issue-lifecycle-manager
+    SERVICE_ACCOUNT: "@issue-lifecycle-manager"
+    AGENT_TOKEN: ${SERVICE_ACCOUNT_ISSUE_LIFECYCLE_TOKEN}
+  before_script:
+    - apk add --no-cache curl jq
+  script:
+    - |
+      echo "Daily Autonomous Issue Scan"
+      echo "==========================="
+      
+      curl -X POST \
+        "${PLATFORM_AGENTS_API}/agents/${AGENT_NAME}/invoke" \
+        -H "Authorization: Bearer ${AGENT_TOKEN}" \
+        -H "X-Service-Account: ${SERVICE_ACCOUNT}" \
+        -H "Content-Type: application/json" \
+        -d "{
+          \"task\": \"scan-all-issues\",
+          \"inputs\": {
+            \"project_id\": ${CI_PROJECT_ID},
+            \"auto_triage\": true,
+            \"auto_assign\": true,
+            \"auto_label\": true,
+            \"create_subtasks\": true,
+            \"update_stale\": true
+          }
+        }" | jq '.'
+  allow_failure: false
+
+autonomous:daily-code-quality:
+  stage: validate
+  image: node:22-alpine
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: always
+  variables:
+    AGENT_NAME: code-quality-reviewer
+    SERVICE_ACCOUNT: "@code-quality-reviewer"
+    AGENT_TOKEN: ${SERVICE_ACCOUNT_CODE_QUALITY_TOKEN}
+  before_script:
+    - apk add --no-cache curl jq
+  script:
+    - |
+      echo "Daily Autonomous Code Quality Scan"
+      echo "=================================="
+      
+      curl -X POST \
+        "${PLATFORM_AGENTS_API}/agents/${AGENT_NAME}/invoke" \
+        -H "Authorization: Bearer ${AGENT_TOKEN}" \
+        -H "X-Service-Account: ${SERVICE_ACCOUNT}" \
+        -H "Content-Type: application/json" \
+        -d "{
+          \"task\": \"full-codebase-review\",
+          \"inputs\": {
+            \"project_id\": ${CI_PROJECT_ID},
+            \"scope\": \"entire_codebase\",
+            \"auto_fix\": true,
+            \"create_issues\": true,
+            \"create_fix_mrs\": true
+          }
+        }" | jq '.'
+  allow_failure: false
+
+autonomous:daily-documentation:
+  stage: deploy
+  image: node:22-alpine
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: always
+  variables:
+    AGENT_NAME: documentation-aggregator
+    SERVICE_ACCOUNT: "@documentation-aggregator"
+    AGENT_TOKEN: ${SERVICE_ACCOUNT_DOCUMENTATION_TOKEN}
+  before_script:
+    - apk add --no-cache curl jq git
+  script:
+    - |
+      echo "Daily Autonomous Documentation Sync"
+      echo "==================================="
+      
+      curl -X POST \
+        "${PLATFORM_AGENTS_API}/agents/${AGENT_NAME}/invoke" \
+        -H "Authorization: Bearer ${AGENT_TOKEN}" \
+        -H "X-Service-Account: ${SERVICE_ACCOUNT}" \
+        -H "Content-Type: application/json" \
+        -d "{
+          \"task\": \"sync-and-validate\",
+          \"inputs\": {
+            \"project_id\": ${CI_PROJECT_ID},
+            \"source\": \"repository\",
+            \"target\": \"gitlab_wiki\",
+            \"auto_update\": true,
+            \"validate_links\": true,
+            \"check_examples\": true,
+            \"create_issues\": true
+          }
+        }" | jq '.'
+  allow_failure: true
+
+# ============================================================================
+# HOURLY AUTONOMOUS TASKS
+# ============================================================================
+
+autonomous:hourly-mr-review:
+  stage: validate
+  image: node:22-alpine
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: always
+  variables:
+    AGENT_NAME: mr-reviewer
+    SERVICE_ACCOUNT: "@mr-reviewer"
+    AGENT_TOKEN: ${SERVICE_ACCOUNT_MR_REVIEWER_TOKEN}
+  before_script:
+    - apk add --no-cache curl jq
+  script:
+    - |
+      echo "Hourly Autonomous MR Review"
+      echo "==========================="
+      
+      curl -X POST \
+        "${PLATFORM_AGENTS_API}/agents/${AGENT_NAME}/invoke" \
+        -H "Authorization: Bearer ${AGENT_TOKEN}" \
+        -H "X-Service-Account: ${SERVICE_ACCOUNT}" \
+        -H "Content-Type: application/json" \
+        -d "{
+          \"task\": \"review-all-open-mrs\",
+          \"inputs\": {
+            \"project_id\": ${CI_PROJECT_ID},
+            \"auto_approve_safe\": true,
+            \"auto_rebase\": true,
+            \"create_fix_mrs\": true,
+            \"suggest_improvements\": true
+          }
+        }" | jq '.'
+  allow_failure: false
+
+autonomous:hourly-pipeline-monitor:
+  stage: .post
+  image: node:22-alpine
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: always
+  variables:
+    AGENT_NAME: pipeline-remediation
+    SERVICE_ACCOUNT: "@pipeline-remediation"
+    AGENT_TOKEN: ${SERVICE_ACCOUNT_PIPELINE_REMEDIATION_TOKEN}
+  before_script:
+    - apk add --no-cache curl jq
+  script:
+    - |
+      echo "Hourly Autonomous Pipeline Monitoring"
+      echo "===================================="
+      
+      curl -X POST \
+        "${PLATFORM_AGENTS_API}/agents/${AGENT_NAME}/invoke" \
+        -H "Authorization: Bearer ${AGENT_TOKEN}" \
+        -H "X-Service-Account: ${SERVICE_ACCOUNT}" \
+        -H "Content-Type: application/json" \
+        -d "{
+          \"task\": \"monitor-all-pipelines\",
+          \"inputs\": {
+            \"project_id\": ${CI_PROJECT_ID},
+            \"lookback_hours\": 24,
+            \"auto_fix\": true,
+            \"create_issues\": true,
+            \"create_fix_mrs\": true
+          }
+        }" | jq '.'
+  allow_failure: true
+
+# ============================================================================
+# WEEKLY AUTONOMOUS TASKS
+# ============================================================================
+
+autonomous:weekly-ecosystem-analysis:
+  stage: .pre
+  image: node:22-alpine
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: always
+  variables:
+    AGENT_NAME: task-dispatcher
+    SERVICE_ACCOUNT: "@task-dispatcher"
+    AGENT_TOKEN: ${SERVICE_ACCOUNT_TASK_DISPATCHER_TOKEN}
+  before_script:
+    - apk add --no-cache curl jq
+  script:
+    - |
+      echo "Weekly Autonomous Ecosystem Analysis"
+      echo "===================================="
+      
+      curl -X POST \
+        "${PLATFORM_AGENTS_API}/agents/${AGENT_NAME}/invoke" \
+        -H "Authorization: Bearer ${AGENT_TOKEN}" \
+        -H "X-Service-Account: ${SERVICE_ACCOUNT}" \
+        -H "Content-Type: application/json" \
+        -d "{
+          \"task\": \"ecosystem-analysis\",
+          \"inputs\": {
+            \"project_id\": ${CI_PROJECT_ID},
+            \"create_improvement_issues\": true,
+            \"max_issues\": 10,
+            \"prioritize\": true
+          }
+        }" | jq '.'
+  allow_failure: true
+
+autonomous:weekly-version-check:
+  stage: release
+  image: node:22-alpine
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: always
+  variables:
+    AGENT_NAME: release-coordinator
+    SERVICE_ACCOUNT: "@release-coordinator"
+    AGENT_TOKEN: ${SERVICE_ACCOUNT_RELEASE_COORDINATOR_TOKEN}
+  before_script:
+    - apk add --no-cache curl jq
+  script:
+    - |
+      echo "Weekly Autonomous Version Check"
+      echo "=============================="
+      
+      curl -X POST \
+        "${PLATFORM_AGENTS_API}/agents/${AGENT_NAME}/invoke" \
+        -H "Authorization: Bearer ${AGENT_TOKEN}" \
+        -H "X-Service-Account: ${SERVICE_ACCOUNT}" \
+        -H "Content-Type: application/json" \
+        -d "{
+          \"task\": \"check-version-opportunities\",
+          \"inputs\": {
+            \"project_id\": ${CI_PROJECT_ID},
+            \"check_milestones\": true,
+            \"check_commits\": true,
+            \"auto_create_mr\": true
+          }
+        }" | jq '.'
+  allow_failure: false

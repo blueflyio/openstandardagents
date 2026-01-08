@@ -57,7 +57,7 @@ create-dev-tag:release:
         # Instead, increment to next patch version
         SAFETY_COUNTER=0
         while git tag -l "v${BASE_VERSION}" 2>/dev/null | grep -q "^v${BASE_VERSION}$"; do
-          echo "⚠️  Version v${BASE_VERSION} already released!"
+          echo "WARNING: Version v${BASE_VERSION} already released!"
           MAJOR_MINOR=$(echo "$BASE_VERSION" | cut -d. -f1-2)
           PATCH=$(echo "$BASE_VERSION" | cut -d. -f3)
           NEXT_PATCH=$((PATCH + 1))
@@ -338,7 +338,7 @@ create-rc-tag:
 
       # Push tag
       if git push origin "$RC_TAG" 2>&1; then
-        echo "✅ Created RC tag: $RC_TAG"
+        echo "Created RC tag: $RC_TAG"
       else
         echo "Failed to push tag $RC_TAG"
         git tag -d "$RC_TAG" 2>/dev/null || true
@@ -399,7 +399,7 @@ sync-version-files:
       export CI_PATCH_VERSION=$(echo "$DEV_TAG_VERSION" | cut -d. -f3)
       
       # Run CI version sync
-      npx tsx scripts/ci-version-sync.ts
+      npx tsx src/tools/version/ci-version-sync.ts
       
       # Commit version changes
       git config user.email "ci@bluefly.io"
@@ -473,7 +473,7 @@ create-gitlab-release:
         }" \
         "https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/releases"
 
-      echo "✅ Created GitLab Release: https://gitlab.com/blueflyio/ossa/openstandardagents/-/releases/${CI_COMMIT_TAG}"
+      echo "Created GitLab Release: https://gitlab.com/blueflyio/ossa/openstandardagents/-/releases/${CI_COMMIT_TAG}"
   rules:
     - if: '$CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+(-RC|-dev[0-9]*)?$/'
       when: on_success

@@ -165,7 +165,7 @@ export const diffCommand = new Command('diff')
             console.log(chalk.green('No differences found'));
           } else {
             if (result.breaking) {
-              console.log(chalk.red(`⚠️  ${breakingChanges.length} breaking change(s) detected\n`));
+              console.log(chalk.red(`[WARN]  ${breakingChanges.length} breaking change(s) detected\n`));
             }
 
             console.log(chalk.blue(`Found ${result.changes.length} change(s):\n`));
@@ -192,7 +192,7 @@ export const diffCommand = new Command('diff')
             }
 
             if (result.breaking) {
-              console.log(chalk.red(`\n⚠️  Breaking changes detected - migration may be required`));
+              console.log(chalk.red(`\n[WARN]  Breaking changes detected - migration may be required`));
             }
           }
         }
