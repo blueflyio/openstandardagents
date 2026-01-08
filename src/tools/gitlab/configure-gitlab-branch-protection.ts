@@ -43,9 +43,9 @@ async function protectBranch(branch: string, rules: ProtectionRule): Promise<voi
     
     // Protect the branch
     await gitlab.ProtectedBranches.protect(PROJECT_ID, branch, {
-      push_access_levels: [{ access_level: 0 }], // No one can push
-      merge_access_levels: [{ access_level: 40 }], // Maintainers can merge
-      allow_force_push: false,
+      pushAccessLevel: 0, // No one can push
+      mergeAccessLevel: 40, // Maintainers can merge
+      allowForcePush: false,
     });
     
     console.log(`  [PASS] ${branch} protected successfully`);
@@ -61,23 +61,23 @@ async function protectBranch(branch: string, rules: ProtectionRule): Promise<voi
 async function main() {
   console.log('[LOCK] Configuring GitLab Branch Protection Rules\n');
   console.log(`Project: ${PROJECT_ID}`);
-  console.log(`Token: ${TOKEN.substring(0, 10)}...`);
+  console.log(`Token: ${TOKEN?.substring(0, 10) || 'NOT SET'}...`);
   
   try {
     // Protect main branch
     await protectBranch('main', {
       name: 'main',
-      push_access_levels: [{ access_level: 0 }], // No one
-      merge_access_levels: [{ access_level: 40 }], // Maintainers
-      allow_force_push: false,
+      pushAccessLevel: 0, // No one
+      mergeAccessLevel: 40, // Maintainers
+      allowForcePush: false,
     });
     
     // Protect development branch
     await protectBranch('development', {
       name: 'development',
-      push_access_levels: [{ access_level: 0 }], // No one
-      merge_access_levels: [{ access_level: 40 }], // Maintainers
-      allow_force_push: false,
+      pushAccessLevel: 0, // No one
+      mergeAccessLevel: 40, // Maintainers
+      allowForcePush: false,
     });
     
     console.log('\n[PASS] Branch protection configured successfully!');
