@@ -311,7 +311,7 @@ function generateCommandDoc(cmd: CommandInfo): string {
 }
 
 function main() {
-  console.log('[RUN] Generating CLI documentation...\n');
+  console.log('🚀 Generating CLI documentation...\n');
   
   // Create output directory
   mkdirSync(OUTPUT_DIR, { recursive: true });
@@ -324,7 +324,7 @@ function main() {
     const outputFile = join(OUTPUT_DIR, `ossa-${name}.md`);
     
     writeFileSync(outputFile, docContent);
-    console.log(`[PASS] Generated: ossa-${name}.md`);
+    console.log(`✅ Generated: ossa-${name}.md`);
   }
   
   // Generate index
@@ -401,7 +401,7 @@ Example \`.ossarc.json\`:
 `;
   
   writeFileSync(join(OUTPUT_DIR, 'index.md'), indexContent);
-  console.log(`[PASS] Generated: index.md`);
+  console.log(`✅ Generated: index.md`);
   
   console.log(`\n✨ CLI documentation generated successfully!`);
   console.log(`📂 Output: ${OUTPUT_DIR}`);

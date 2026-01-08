@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://openstandardagents.org/schemas/v0.3.1/messaging/subscription.json",
+  "$id": "https://openstandardagents.org/schemas/v0.3.3/messaging/subscription.json",
   "title": "OSSA Subscription Schema",
-  "description": "Schema for agent message subscriptions in OSSA v0.3.1",
+  "description": "Schema for agent message subscriptions in OSSA v0.3.3",
   "type": "object",
   "required": [
     "channel",

@@ -139,7 +139,7 @@ git push origin fix/bug-fix
 - Not published to npm (or published with `@dev` tag)
 
 ### Main Branch
-- Stable versions: `0.3.0`, `0.3.1`, `1.0.0`
+- Stable versions: `0.3.0`, `0.3.3`, `1.0.0`
 - Published to npm with `@latest` tag
 
 ## Troubleshooting

@@ -1,5 +1,5 @@
 /**
- * OSSA v0.3.1 Messaging Extension - Message Broker
+ * OSSA v0.3.3 Messaging Extension - Message Broker
  * Core message broker interface and base implementation
  */
 

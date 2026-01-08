@@ -1,0 +1,128 @@
+# ============================================================================
+# OSSA Power Agent: Content Writer
+# ============================================================================
+# CMS content generation agent for Drupal and other content management systems.
+# Handles content creation, translation, moderation, and SEO optimization.
+#
+# Showcases: Drupal extension, async processing (Messenger), ECA integration
+# ============================================================================
+
+apiVersion: ossa/v0.3.3
+kind: Agent
+metadata:
+  name: content-writer
+  version: 1.0.0
+  description: CMS content generation agent with Drupal integration
+  labels:
+    ossa.dev/category: content
+    ossa.dev/tier: power-agent
+    ossa.dev/runtime: drupal
+  annotations:
+    ossa.dev/documentation: https://openstandardagents.org/agents/content-writer
+
+spec:
+  capabilities:
+    - name: content.create
+      description: Create CMS content entities
+    - name: content.translate
+      description: Translate content to multiple languages
+    - name: content.moderate
+      description: Review and moderate content
+    - name: content.optimize
+      description: Optimize content for SEO
+
+  role: |
+    You are a content writer agent specialized in CMS content generation.
+    You create high-quality articles, translate content, handle moderation
+    workflows, and optimize for SEO.
+
+    Content workflow:
+    1. Analyze content brief and target audience
+    2. Research topic and gather information
+    3. Generate structured content (headings, paragraphs, lists)
+    4. Optimize for SEO (meta, keywords, readability)
+    5. Select media assets
+    6. Submit for moderation or publish
+
+    Content guidelines:
+    - Write for the target audience's expertise level
+    - Use clear, scannable formatting
+    - Include relevant internal/external links
+    - Optimize images with alt text
+    - Follow brand voice guidelines
+
+  llm:
+    provider: ${OSSA_LLM_PROVIDER:-anthropic}
+    model: ${OSSA_LLM_MODEL:-claude-sonnet-4}
+    temperature: 0.7
+  tools:
+  tools:
+      handler:
+        runtime: drupal
+        capability: node.create
+    - name: drupal.node.update
+      description: Update existing content node
+      handler:
+        runtime: drupal
+        capability: node.update
+
+    - name: drupal.media.search
+      description: Search media library
+      handler:
+        runtime: drupal
+        capability: media.search
+
+    - name: drupal.taxonomy.suggest
+      description: Suggest taxonomy terms
+      handler:
+        runtime: drupal
+        capability: taxonomy.suggest
+
+    - name: seo.analyze
+      description: Analyze content for SEO
+      handler:
+        runtime: local
+        capability: seo.analyze
+
+extensions:
+  drupal:
+    module: ai_agents_ossa
+    config_entity: true
+
+    permissions:
+      entity_permissions:
+        - "create article content"
+        - "edit any article content"
+        - "view media"
+        - "use ai content generation"
+      custom_permissions:
+        - "execute content writer agent"
+      execution_user: "1"
+      permission_mode: agent_only
+
+    # Async processing via Symfony Messenger
+    messenger:
+      transport: redis
+      queue: content_generation
+      retry_strategy:
+        max_retries: 3
+        delay: 2000
+        multiplier: 2
+        max_delay: 30000
+
+    # ECA workflow integration
+    workflow_engine: eca
+    eca_events:
+      - content_brief_submitted
+      - content_review_requested
+      - content_approved
+
+    # Discovery paths
+    discovery_paths:
+      - "config/agents/*.ossa.yaml"
+      - "modules/custom/*/agents/*.ossa.yaml"
+
+    hooks:
+      before_execute: ai_agents_ossa_before_execute
+      after_execute: ai_agents_ossa_after_execute
+      on_error: ai_agents_ossa_on_error

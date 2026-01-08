@@ -1,5 +1,5 @@
 /**
- * Tests for OSSA v0.3.1 Message Broker
+ * Tests for OSSA v0.3.3 Message Broker
  */
 
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';

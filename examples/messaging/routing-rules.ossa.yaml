@@ -201,7 +201,7 @@ spec:
 
 ---
 # Additional MessageRouting for development/staging environment
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: MessageRouting
 metadata:
   name: security-workflow-routing-dev
@@ -254,7 +254,7 @@ spec:
 
 ---
 # MessageRouting for high-availability setup with multiple targets
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: MessageRouting
 metadata:
   name: security-workflow-routing-ha

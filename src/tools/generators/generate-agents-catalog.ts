@@ -26,14 +26,13 @@ function findAgents(): Agent[] {
       // Use safeLoad to prevent arbitrary code execution (CWE-502)
       const data = yaml.load(content, { schema: yaml.JSON_SCHEMA }) as Record<string, unknown>;
       
-      if (data?.agent && typeof data.agent === 'object' && data.agent !== null) {
-        const agent = data.agent as Record<string, unknown>;
+      if (data?.agent) {
         agents.push({
-          id: String(agent.id || ''),
-          name: String(agent.name || ''),
-          role: String(agent.role || ''),
-          description: agent.description ? String(agent.description) : undefined,
-          capabilities: Array.isArray(agent.capabilities) ? agent.capabilities as Array<{ name: string; description: string }> : [],
+          id: data.agent.id,
+          name: data.agent.name,
+          role: data.agent.role,
+          description: data.agent.description,
+          capabilities: data.agent.capabilities || [],
           path: relative(process.cwd(), manifestPath)
         });
       }
@@ -76,4 +75,4 @@ for (const agent of agents.sort((a, b) => a.name.localeCompare(b.name))) {
 mkdirSync(join(process.cwd(), 'website/content/docs/agents'), { recursive: true });
 writeFileSync(OUTPUT_FILE, doc);
 
-console.log(`[PASS] Generated agents catalog: ${agents.length} agents`);
+console.log(`✅ Generated agents catalog: ${agents.length} agents`);

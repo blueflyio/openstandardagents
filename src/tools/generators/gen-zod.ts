@@ -9,9 +9,9 @@
 import { join } from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import { getCurrentVersion, getSchemaPath, getZodOutputPath } from '../lib/version.js';
-import { requireFile, writeFile } from '../lib/file-ops.js';
-import { execCommand } from '../lib/exec.js';
+import { getCurrentVersion, getSchemaPath, getZodOutputPath } from './lib/version.js';
+import { requireFile, writeFile } from './lib/file-ops.js';
+import { execCommand } from './lib/exec.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -21,7 +21,7 @@ async function main() {
   try {
     // Get version with validation
     const version = getCurrentVersion();
-    console.log(`[PKG] Current version: ${version}`);
+    console.log(`📦 Current version: ${version}`);
     
     // Build paths
     const schemaPath = join(ROOT, getSchemaPath(version));
@@ -32,15 +32,15 @@ async function main() {
     console.log(`📄 Schema: ${schemaPath}`);
     
     // Generate Zod schemas
-    console.log('[SYNC] Generating Zod schemas...');
+    console.log('🔄 Generating Zod schemas...');
     execCommand(`npx json-schema-to-zod -i ${schemaPath} -o ${outputPath}`, {
       stdio: 'inherit',
     });
     
-    console.log(`[PASS] Generated: ${outputPath}`);
+    console.log(`✅ Generated: ${outputPath}`);
     
   } catch (error) {
-    console.error('[FAIL] Error:', error instanceof Error ? error.message : String(error));
+    console.error('❌ Error:', error instanceof Error ? error.message : String(error));
     process.exit(1);
   }
 }

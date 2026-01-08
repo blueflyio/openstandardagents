@@ -26,7 +26,7 @@ describe('SchemaRepository', () => {
     it('should return current version', () => {
       const version = repo.getCurrentVersion();
       expect(typeof version).toBe('string');
-      // Accept either semver (0.3.0) or template placeholder ({{VERSION}})
+      // Accept either semver (0.3.0) or template placeholder (0.3.3)
       expect(version).toMatch(/^\d+\.\d+\.\d+|^\{\{[A-Z_]+\}\}$/);
     });
   });

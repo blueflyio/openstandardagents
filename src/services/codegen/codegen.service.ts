@@ -19,6 +19,7 @@ import { VSCodeGenerator } from './generators/vscode.generator.js';
 import { OpenAPIGenerator } from './generators/openapi.generator.js';
 import { TypesGenerator } from './generators/types.generator.js';
 import { ZodGenerator } from './generators/zod.generator.js';
+import { OpenAPIZodGenerator } from './generators/openapi-zod.generator.js';
 
 export interface GenerateResult {
   generator: string;
@@ -36,7 +37,7 @@ export interface DriftReport {
   }>;
 }
 
-export type GeneratorType = 'types' | 'zod' | 'manifests' | 'vscode' | 'openapi' | 'all';
+export type GeneratorType = 'types' | 'zod' | 'openapi-zod' | 'manifests' | 'vscode' | 'openapi' | 'all';
 
 @injectable()
 export class CodegenService {
@@ -46,6 +47,7 @@ export class CodegenService {
     @inject(OpenAPIGenerator) private openapiGenerator: OpenAPIGenerator,
     @inject(TypesGenerator) private typesGenerator: TypesGenerator,
     @inject(ZodGenerator) private zodGenerator: ZodGenerator,
+    @inject(OpenAPIZodGenerator) private openapiZodGenerator: OpenAPIZodGenerator,
   ) {}
 
   /**
@@ -121,6 +123,7 @@ export class CodegenService {
     const generatorMap: Record<string, Generator> = {
       types: this.typesGenerator,
       zod: this.zodGenerator,
+      'openapi-zod': this.openapiZodGenerator,
       manifests: this.manifestGenerator,
       vscode: this.vscodeGenerator,
       openapi: this.openapiGenerator,

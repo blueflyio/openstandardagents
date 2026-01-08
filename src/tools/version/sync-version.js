@@ -10,7 +10,7 @@ const { version } = JSON.parse(readFileSync('package.json', 'utf-8'));
 // No hardcoded version files to sync
 const files = [];
 
-console.log(`[PKG] Syncing version: ${version}\n`);
+console.log(`📦 Syncing version: ${version}\n`);
 
 let updated = 0;
 for (const { path, pattern, replacement } of files) {

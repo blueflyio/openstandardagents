@@ -1,0 +1,88 @@
+openapi: 3.1.0
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for server-to-server authentication
+
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from authentication endpoint
+
+    OAuth2:
+      type: oauth2
+      description: OAuth2 authorization code flow
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.llm.bluefly.io/oauth/authorize
+          tokenUrl: https://auth.llm.bluefly.io/oauth/token
+          scopes:
+            read: Read access to resources
+            write: Write access to resources
+            execute: Execute agent tasks and workflows
+            admin: Administrative access
+            messaging: Agent-to-agent messaging
+
+    AgentMTLS:
+      type: mutualTLS
+      description: Mutual TLS for agent-to-agent communication
+
+  schemas:
+    TokenResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+        token_type:
+          type: string
+          default: Bearer
+        expires_in:
+          type: integer
+        scope:
+          type: array
+          items:
+            type: string
+        instance_id:
+          type: string
+          format: uuid
+        issued_at:
+          type: string
+          format: date-time
+        token_id:
+          type: string
+          format: uuid
+
+    SecurityContext:
+      type: object
+      properties:
+        authenticated:
+          type: boolean
+        principal:
+          type: object
+          properties:
+            agent_id:
+              type: string
+            instance_id:
+              type: string
+              format: uuid
+            tenant_id:
+              type: string
+            user_id:
+              type: string
+        scopes:
+          type: array
+          items:
+            type: string
+        permissions:
+          type: object
+          properties:
+            resources:
+              type: array
+              items:
+                type: object
+            policy_version:
+              type: string

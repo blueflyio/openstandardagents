@@ -176,7 +176,7 @@ export class VSCodeGenerator implements Generator {
       (match) => {
         // Only replace if it looks like an OSSA version
         if (match.includes("v0.3") || match.includes("v0.2")) {
-          // apiVersion is "ossa/v0.3.2", so .replace('ossa/', '') gives "v0.3.2"
+          // apiVersion is "ossa/v0.3.3", so .replace('ossa/', '') gives "v0.3.3"
           return `'${apiVersion.replace('ossa/', '')}'`;
         }
         return match;

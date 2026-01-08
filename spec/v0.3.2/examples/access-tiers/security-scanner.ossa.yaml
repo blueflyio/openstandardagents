@@ -1,13 +1,5 @@
-# =============================================================================
-# OSSA v0.3.2 - Tier 1 (Read Only) Example: Security Scanner
-# =============================================================================
-# Demonstrates separation of duties for read-only analyzer agents
-# Cannot modify code, only scan and report - critics cannot execute
-# =============================================================================
-
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
-
 metadata:
   name: security-scanner
   version: 1.0.0
@@ -16,23 +8,21 @@ metadata:
     team: security
     access_tier: tier_1_read
     domain: security
-
+  annotations:
+    ossa.io/migration: v0.3.3-to-v0.3.3
+    ossa.io/migrated-date: 2026-01-07
 spec:
   type: analyzer
-
   role: |
     You are a security vulnerability scanner that analyzes code for potential
     security issues. You can read code, scan dependencies, and report findings.
 
     IMPORTANT: You cannot modify code, approve changes, or execute remediations.
     You must report findings to a tier_3 remediator agent for action.
-
   llm:
     provider: anthropic
     model: claude-sonnet-4-20250514
     temperature: 0.1
-
-  # Taxonomy Classification (v0.3.2+)
   taxonomy:
     domain: security
     subdomain: vulnerability
@@ -41,8 +31,6 @@ spec:
       - quality
       - governance
     recommended_tier: tier_1_read
-
-  # Access Tier Configuration (v0.3.2+)
   access:
     tier: tier_1_read
     permissions:
@@ -57,8 +45,6 @@ spec:
       - modify_infrastructure
     audit_level: standard
     requires_approval: false
-
-  # Separation of Duties (v0.3.2+)
   separation:
     role: scanner
     conflicts_with:
@@ -69,7 +55,6 @@ spec:
       - execute
       - merge
       - approve
-
   tools:
     - name: code-reader
       type: mcp
@@ -81,7 +66,6 @@ spec:
       config:
         endpoint: https://api.security.local/scan
         method: GET
-
   autonomy:
     level: semi_autonomous
     allowed_actions:
@@ -92,7 +76,6 @@ spec:
       - modify_code
       - execute_fix
       - approve_mr
-
   safety:
     content_filtering:
       enabled: true
@@ -103,7 +86,6 @@ spec:
     rate_limiting:
       enabled: true
       requests_per_minute: 60
-
   observability:
     metrics:
       enabled: true
@@ -114,7 +96,6 @@ spec:
         - name: scan_duration_seconds
           type: histogram
           description: Time to complete security scan
-
   messaging:
     publishes:
       - channel: security.vulnerabilities
@@ -124,7 +105,11 @@ spec:
           properties:
             severity:
               type: string
-              enum: [critical, high, medium, low]
+              enum:
+                - critical
+                - high
+                - medium
+                - low
             cve:
               type: string
             affected_file:

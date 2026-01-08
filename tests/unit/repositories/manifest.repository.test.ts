@@ -41,7 +41,7 @@ spec:
     it('should load JSON manifest', async () => {
       const file = path.join(tempDir, 'test.json');
       const data = {
-        apiVersion: 'ossa/v0.3.3',
+        apiVersion: 'ossa/v0.2.8',
         kind: 'Agent',
         metadata: { name: 'test', version: '1.0.0' },
         spec: { role: 'assistant' },
@@ -59,7 +59,7 @@ spec:
   describe('save', () => {
     it('should save as YAML', async () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3.3',
+        apiVersion: 'ossa/v0.2.8',
         kind: 'Agent',
         metadata: { name: 'test', version: '1.0.0' },
         spec: { role: 'assistant' },
@@ -71,7 +71,7 @@ spec:
 
     it('should save as JSON', async () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3.3',
+        apiVersion: 'ossa/v0.2.8',
         kind: 'Agent',
         metadata: { name: 'test', version: '1.0.0' },
         spec: { role: 'assistant' },

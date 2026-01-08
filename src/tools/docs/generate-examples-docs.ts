@@ -86,7 +86,7 @@ Auto-generated catalog of all OSSA agent examples.
   return doc;
 }
 
-console.log('[RUN] Generating examples documentation...\n');
+console.log('🚀 Generating examples documentation...\n');
 
 const examples = findYamlFiles(EXAMPLES_DIR);
 console.log(`📁 Found ${examples.length} examples\n`);
@@ -96,5 +96,5 @@ const doc = generateDocs(examples);
 mkdirSync(join(process.cwd(), 'website/content/docs/examples'), { recursive: true });
 writeFileSync(OUTPUT_FILE, doc);
 
-console.log(`[PASS] Generated: ${relative(process.cwd(), OUTPUT_FILE)}`);
+console.log(`✅ Generated: ${relative(process.cwd(), OUTPUT_FILE)}`);
 console.log(`\n✨ Examples documentation generated successfully!`);

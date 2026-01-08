@@ -19,7 +19,7 @@ npm run version:bump release   # RC → stable
 
 # Manual sync (if needed)
 npm run version:sync           # Sync version to all files
-npm run docs:process           # Process {{VERSION}} placeholders
+npm run docs:process           # Process 0.3.3 placeholders
 ```
 
 **Single source of truth**: `.version.json`

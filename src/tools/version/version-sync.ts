@@ -195,7 +195,7 @@ async function versionSync(config: VersionSyncConfig): Promise<SyncResult[]> {
   const files = await findFiles(config.rootDir, config.patterns);
   const results: SyncResult[] = [];
 
-  console.log(`\n[PKG] OSSA Version Sync`);
+  console.log(`\n📦 OSSA Version Sync`);
   console.log(`   Version: ${config.version}`);
   console.log(`   Mode: ${config.dryRun ? 'Dry Run' : config.checkMode ? 'Check' : 'Sync'}`);
   console.log(`   Files to scan: ${files.length}\n`);
@@ -206,7 +206,7 @@ async function versionSync(config: VersionSyncConfig): Promise<SyncResult[]> {
     if (result.matches > 0) {
       results.push(result);
 
-      const status = result.updated ? '[PASS]' : '[PAUSE]';
+      const status = result.updated ? '✅' : '⏸️';
       const relativePath = path.relative(config.rootDir, result.file);
       console.log(`   ${status} ${relativePath} (${result.matches} matches)`);
     }
@@ -215,7 +215,7 @@ async function versionSync(config: VersionSyncConfig): Promise<SyncResult[]> {
   const updatedCount = results.filter((r) => r.updated).length;
   const totalMatches = results.reduce((sum, r) => sum + r.matches, 0);
 
-  console.log(`\n[STATS] Summary:`);
+  console.log(`\n📊 Summary:`);
   console.log(`   Files with version strings: ${results.length}`);
   console.log(`   Total version matches: ${totalMatches}`);
   console.log(`   Files updated: ${updatedCount}`);
@@ -248,18 +248,18 @@ async function main() {
     if (checkMode) {
       const needsUpdate = results.some((r) => r.updated);
       if (needsUpdate) {
-        console.log('\n[FAIL] Version sync needed. Run `npm run version:sync` to update.');
+        console.log('\n❌ Version sync needed. Run `npm run version:sync` to update.');
         process.exit(1);
       } else {
-        console.log('\n[PASS] All versions are in sync.');
+        console.log('\n✅ All versions are in sync.');
       }
     } else if (dryRun) {
-      console.log('\n[CHECK] Dry run complete. No files were modified.');
+      console.log('\n🔍 Dry run complete. No files were modified.');
     } else {
-      console.log('\n[PASS] Version sync complete.');
+      console.log('\n✅ Version sync complete.');
     }
   } catch (error) {
-    console.error('[FAIL] Error:', error);
+    console.error('❌ Error:', error);
     process.exit(1);
   }
 }

@@ -1,4 +1,4 @@
-# Migration Guide: OSSA v0.3.1 → v0.3.2
+# Migration Guide: OSSA v0.3.3 → v0.3.3
 
 > **Status**: Draft  
 > **Last Updated**: 2025-12-28
@@ -7,11 +7,11 @@
 
 ## Overview
 
-OSSA v0.3.2 introduces **Access Tiers & Separation of Duties** while maintaining backward compatibility with v0.3.1 manifests.
+OSSA v0.3.3 introduces **Access Tiers & Separation of Duties** while maintaining backward compatibility with v0.3.3 manifests.
 
 ### Key Changes
 
-- ✅ **Backward Compatible**: v0.3.1 manifests validate against v0.3.2 schema
+- ✅ **Backward Compatible**: v0.3.3 manifests validate against v0.3.3 schema
 - ✅ **Optional Features**: Access tiers are optional - existing agents work without changes
 - ✅ **Progressive Enhancement**: Add access tiers when ready
 
@@ -21,10 +21,10 @@ OSSA v0.3.2 introduces **Access Tiers & Separation of Duties** while maintaining
 
 ### Option 1: No Changes Required (Recommended for Existing Agents)
 
-**v0.3.1 agents continue to work without modification:**
+**v0.3.3 agents continue to work without modification:**
 
 ```yaml
-apiVersion: ossa/v0.3.1
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: my-agent
@@ -35,14 +35,14 @@ spec:
     model: claude-sonnet
 ```
 
-**This manifest validates against v0.3.2 schema** - no changes needed.
+**This manifest validates against v0.3.3 schema** - no changes needed.
 
 ### Option 2: Update API Version Only
 
 Simply update the `apiVersion` field:
 
 ```yaml
-apiVersion: ossa/v0.3.2  # Changed from v0.3.1
+apiVersion: ossa/v0.3.3  # Changed from v0.3.3
 kind: Agent
 metadata:
   name: my-agent
@@ -58,7 +58,7 @@ spec:
 Add access tier configuration for privilege separation:
 
 ```yaml
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: my-agent
@@ -67,7 +67,7 @@ metadata:
 spec:
   type: analyzer  # Agent type
   
-  # Access Tier Configuration (NEW in v0.3.2)
+  # Access Tier Configuration (NEW in v0.3.3)
   access:
     tier: tier_1_read
     permissions:
@@ -77,7 +77,7 @@ spec:
       - write_*
     audit_level: standard
   
-  # Separation of Duties (NEW in v0.3.2)
+  # Separation of Duties (NEW in v0.3.3)
   separation:
     role: analyzer
     conflicts_with:
@@ -219,13 +219,13 @@ separation:
 
 ## Validation
 
-### Validate v0.3.1 Manifest Against v0.3.2 Schema
+### Validate v0.3.3 Manifest Against v0.3.3 Schema
 
 ```bash
 # Using OSSA CLI
 ossa validate agent.ossa.yaml
 
-# Schema accepts both v0.3.1 and v0.3.2
+# Schema accepts both v0.3.3 and v0.3.3
 ```
 
 ### Validate Access Tier Configuration
@@ -242,17 +242,17 @@ ossa audit --tier-violations
 
 ## Breaking Changes
 
-**None** - v0.3.2 is fully backward compatible with v0.3.1.
+**None** - v0.3.3 is fully backward compatible with v0.3.3.
 
 ### Deprecations
 
-None in v0.3.2.
+None in v0.3.3.
 
 ---
 
 ## Examples
 
-See `spec/v0.3.2/examples/access-tiers/` for complete examples:
+See `spec/v0.3.3/examples/access-tiers/` for complete examples:
 
 - `security-scanner.ossa.yaml` - Tier 1 (Read Only)
 - `code-critic.ossa.yaml` - Tier 1 (Read Only)
@@ -266,11 +266,11 @@ See `spec/v0.3.2/examples/access-tiers/` for complete examples:
 
 ### Do I need to migrate immediately?
 
-**No**. v0.3.1 manifests continue to work. Migrate when you need access tier features.
+**No**. v0.3.3 manifests continue to work. Migrate when you need access tier features.
 
-### Can I mix v0.3.1 and v0.3.2 agents?
+### Can I mix v0.3.3 and v0.3.3 agents?
 
-**Yes**. Both versions validate against v0.3.2 schema.
+**Yes**. Both versions validate against v0.3.3 schema.
 
 ### What if I don't specify an access tier?
 
@@ -285,7 +285,7 @@ See [Access Tier Selection Guide](#access-tier-selection-guide) above.
 ## Related Documentation
 
 - [Access Tiers Specification](access_tiers.yaml)
-- [Schema Reference](ossa-0.3.2.schema.json)
+- [Schema Reference](ossa-0.3.3.schema.json)
 - [Examples](../examples/access-tiers/)
 
 ---

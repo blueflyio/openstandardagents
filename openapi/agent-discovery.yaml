@@ -409,7 +409,7 @@ components:
           properties:
             apiVersion:
               type: string
-              pattern: '^ossa/v0\.3\.[0-9]+$'
+              pattern: '^ossa/v0\.3\.3$'
             kind:
               type: string
               enum: [Agent, Task, Workflow]

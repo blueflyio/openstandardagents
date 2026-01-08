@@ -45,4 +45,4 @@ import { OSSAManifest, AgentSpec } from '@bluefly/openstandardagents';
 mkdirSync(join(process.cwd(), 'website/content/docs/types-reference'), { recursive: true });
 writeFileSync(OUTPUT_FILE, doc);
 
-console.log(`[PASS] Generated types reference: ${interfaces.length} interfaces, ${types.length} types`);
+console.log(`✅ Generated types reference: ${interfaces.length} interfaces, ${types.length} types`);

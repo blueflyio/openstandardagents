@@ -1,20 +1,20 @@
 /**
- * OSSA v0.3.2 TypeScript Types
+ * OSSA v0.3.3 TypeScript Types
  *
  * AUTO-GENERATED - DO NOT EDIT
- * Generated from: spec/v0.3.2/ossa-0.3.2.schema.json
+ * Generated from: spec/v0.3.3/ossa-0.3.3.schema.json
  *
  * Regenerate with: ossa generate types
  */
 
 /**
- * Open Standard for Scalable AI Agents (OSSA) v0.3.2 - Unified Task Schema with Access Tiers & Separation of Duties. Supports Agent (agentic loops with LLM), Task (deterministic workflow steps), and Workflow (composition of Tasks and Agents) kinds. Includes Agent-to-Agent Messaging Extension and Access Control Tiers for privilege separation.
+ * Open Standard for Scalable AI Agents (OSSA) v0.3.3 - Unified Task Schema with Access Tiers & Separation of Duties. Supports Agent (agentic loops with LLM), Task (deterministic workflow steps), and Workflow (composition of Tasks and Agents) kinds. Includes Agent-to-Agent Messaging Extension and Access Control Tiers for privilege separation.
  */
 export type OSSAV032ManifestSchema = {
   [k: string]: unknown;
 } & {
   /**
-   * OSSA API version (v0.3.2+ supports Task and Workflow kinds)
+   * OSSA API version (v0.3.3+ supports Task and Workflow kinds)
    */
   apiVersion: string;
   /**

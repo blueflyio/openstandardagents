@@ -30,7 +30,7 @@ describe('ossa agents-md command', () => {
 
       // Create test manifest
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.3.3',
+        apiVersion: 'ossa/v0.2.8',
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -91,7 +91,7 @@ describe('ossa agents-md command', () => {
       const manifestPath = path.join(tempDir, 'manifest.yaml');
 
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.3.3',
+        apiVersion: 'ossa/v0.2.8',
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -123,7 +123,7 @@ describe('ossa agents-md command', () => {
       const manifestPath = path.join(tempDir, 'manifest.yaml');
 
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.3.3',
+        apiVersion: 'ossa/v0.2.8',
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -159,7 +159,7 @@ describe('ossa agents-md command', () => {
       const agentsMdPath = path.join(tempDir, 'AGENTS.md');
 
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.3.3',
+        apiVersion: 'ossa/v0.2.8',
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -205,7 +205,7 @@ Test content`;
       const agentsMdPath = path.join(tempDir, 'AGENTS.md');
 
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.3.3',
+        apiVersion: 'ossa/v0.2.8',
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -246,7 +246,7 @@ Test content`;
       const agentsMdPath = path.join(tempDir, 'AGENTS.md');
 
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.3.3',
+        apiVersion: 'ossa/v0.2.8',
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -284,7 +284,7 @@ Test content`;
       const manifestPath = path.join(tempDir, 'manifest.yaml');
 
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.3.3',
+        apiVersion: 'ossa/v0.2.8',
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -322,7 +322,7 @@ Test content`;
       const agentsMdPath = path.join(tempDir, 'AGENTS.md');
 
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.3.3',
+        apiVersion: 'ossa/v0.2.8',
         kind: 'Agent',
         metadata: {
           name: 'workflow-agent',

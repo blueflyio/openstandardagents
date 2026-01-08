@@ -1,0 +1,174 @@
+ossa: v0.3.0
+
+kind: trigger
+metadata:
+  name: gitlab-mr-events
+  namespace: openstandardagents.org
+  version: 1.0.0
+  title: GitLab MR Event Trigger
+  description: >-
+    Trigger configuration for GitLab merge request events.
+    Routes events to appropriate agents based on event type and file changes.
+  labels:
+    component: trigger
+    domain: gitlab
+    tier: infrastructure
+
+spec:
+  source:
+    type: webhook
+    provider: gitlab
+    config:
+      secret_token: ${{ secrets.GITLAB_WEBHOOK_SECRET }}
+      verify_ssl: true
+
+  events:
+    - name: merge_request.opened
+      description: Triggered when a new MR is opened
+      routing:
+        default: mr-agent-router
+        agents:
+          - bot-mr-reviewer
+
+    - name: merge_request.updated
+      description: Triggered when MR is updated (new commits, rebase)
+      routing:
+        default: mr-agent-router
+        agents:
+          - bot-mr-reviewer
+      debounce:
+        window: 30s
+        strategy: last
+
+    - name: merge_request.reopened
+      description: Triggered when a closed MR is reopened
+      routing:
+        default: mr-agent-router
+        agents:
+          - bot-mr-reviewer
+
+    - name: merge_request.merged
+      description: Triggered when MR is merged
+      routing:
+        agents:
+          - bot-docs-sync
+      post_actions:
+        - cleanup_review_comments
+        - update_metrics
+
+    - name: note.created
+      description: Triggered when a comment is added to MR
+      routing:
+        default: mr-agent-router
+      filter:
+        note_type: merge_request
+        contains_mention: true
+
+  filters:
+    global:
+      - exclude_bots: true
+      - exclude_wip: true
+      - exclude_draft: true
+
+    file_patterns:
+      ossa_changes:
+        patterns:
+          - "**/*.ossa.yaml"
+          - "**/*.ossa.yml"
+          - ".agents/**/*"
+          - ".gitlab/agents/**/*"
+          - "spec/**/*"
+        agents:
+          - bot-ossa-validator
+
+      ci_changes:
+        patterns:
+          - ".gitlab-ci.yml"
+          - ".gitlab/ci/**/*.yml"
+        agents:
+          - bot-gitlab-ci-fixer
+
+      website_changes:
+        patterns:
+          - "website/**/*"
+        agents:
+          - bot-mr-reviewer
+
+      docs_changes:
+        patterns:
+          - "wiki/**/*"
+          - "docs/**/*"
+          - "**/*.md"
+        agents:
+          - bot-docs-sync
+
+  label_routing:
+    hotfix:
+      priority: critical
+      timeout: 60
+      agents:
+        - bot-mr-reviewer
+      commands:
+        - review urgent --security
+
+    skip-review:
+      action: skip
+      log: true
+
+    wip:
+      action: skip
+
+    needs-ossa-review:
+      agents:
+        - bot-ossa-validator
+      commands:
+        - validate --strict
+
+  priority_rules:
+    - condition: labels.includes('hotfix')
+      priority: critical
+      timeout: 60
+
+    - condition: labels.includes('security')
+      priority: high
+      timeout: 120
+
+    - condition: source_branch.startsWith('release/')
+      priority: high
+      timeout: 180
+
+    - condition: default
+      priority: normal
+      timeout: 300
+
+  rate_limiting:
+    per_project:
+      requests: 100
+      window: 1h
+    per_mr:
+      requests: 20
+      window: 1h
+    burst:
+      requests: 10
+      window: 1m
+
+  error_handling:
+    retry:
+      max_attempts: 3
+      backoff: exponential
+      initial_delay: 5s
+    on_failure:
+      - log_error
+      - notify_channel: slack
+      - create_incident: false
+
+  observability:
+    metrics:
+      enabled: true
+      labels:
+        - event_type
+        - project_id
+        - routing_decision
+    tracing:
+      enabled: true
+      sample_rate: 0.1

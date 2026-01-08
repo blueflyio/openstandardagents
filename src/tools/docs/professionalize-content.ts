@@ -52,7 +52,7 @@ async function professionalizeContent(
 
 Rules:
 1. Remove ALL emojis completely
-2. Replace emoji meaning with professional text (e.g., "🎉" → "Successfully", "[PASS]" → "Completed", "[FAIL]" → "Failed", "[RUN]" → "Deployed")
+2. Replace emoji meaning with professional text (e.g., "🎉" → "Successfully", "✅" → "Completed", "❌" → "Failed", "🚀" → "Deployed")
 3. Maintain the technical accuracy and meaning
 4. Keep the tone professional but not overly formal
 5. Do NOT add new emojis

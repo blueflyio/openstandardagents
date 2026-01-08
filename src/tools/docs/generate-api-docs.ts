@@ -139,7 +139,7 @@ function generateAPIDoc(spec: OpenAPISpec, filename: string): string {
 }
 
 function main() {
-  console.log('[RUN] Generating API documentation...\n');
+  console.log('🚀 Generating API documentation...\n');
   
   // Create output directory
   mkdirSync(OUTPUT_DIR, { recursive: true });
@@ -161,9 +161,9 @@ function main() {
       const outputFile = join(OUTPUT_DIR, file.replace('.openapi.yaml', '.md'));
       
       writeFileSync(outputFile, docContent);
-      console.log(`[PASS] Generated: ${basename(outputFile)}`);
+      console.log(`✅ Generated: ${basename(outputFile)}`);
     } catch (error) {
-      console.log(`[WARN]  Skipped: ${file} (${(error as Error).message})`);
+      console.log(`⚠️  Skipped: ${file} (${(error as Error).message})`);
     }
   }
   
@@ -210,7 +210,7 @@ For API support, please:
 `;
   
   writeFileSync(join(OUTPUT_DIR, 'index.md'), indexContent);
-  console.log(`[PASS] Generated: index.md`);
+  console.log(`✅ Generated: index.md`);
   
   console.log(`\n✨ API documentation generated successfully!`);
   console.log(`📂 Output: ${OUTPUT_DIR}`);

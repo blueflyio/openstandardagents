@@ -1,0 +1,13 @@
+on:
+  merge_request:
+    events: ["opened", "updated"]
+    paths:
+      - "**/*.ossa.yaml"
+      - "**/*.ossa.yml"
+      - "**/*agent.yaml"
+      - "**/*agent.yml"
+      - ".gitlab/agents/**/*.yaml"
+      - "examples/**/*.yaml"
+
+run:
+  flow: ossa_validator_flow

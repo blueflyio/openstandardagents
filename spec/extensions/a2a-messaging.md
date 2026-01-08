@@ -1,6 +1,6 @@
 # OSSA Extension: Agent-to-Agent Messaging (A2A Messaging)
 
-**Version:** 0.3.1
+**Version:** 0.3.3
 **Status:** Draft
 **Author:** OSSA Core Team
 **Last Updated:** 2025-12-18
@@ -227,7 +227,7 @@ Example: `agents.tasks.assigned.dlq`
 Declare channels an agent publishes to:
 
 ```yaml
-apiVersion: ossa/v0.3.1
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: task-orchestrator
@@ -254,7 +254,7 @@ spec:
 Declare channels an agent subscribes to:
 
 ```yaml
-apiVersion: ossa/v0.3.1
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: code-reviewer
@@ -450,7 +450,7 @@ See:
 
 ## Compatibility
 
-- **Minimum OSSA Version**: v0.3.1
+- **Minimum OSSA Version**: v0.3.3
 - **Supported Runtimes**: Node.js 18+, Deno 1.30+, Bun 1.0+
 - **Transport Requirements**: Redis 6.0+
 
@@ -463,7 +463,7 @@ See:
 
 ## Changelog
 
-### v0.3.1 (2025-12-18)
+### v0.3.3 (2025-12-18)
 
 - Initial specification for A2A Messaging extension
 - Message format and channel types defined
