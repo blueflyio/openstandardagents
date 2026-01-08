@@ -74,67 +74,68 @@ duo:version-analysis:
 # PLATFORM AGENTS INTEGRATION (via Vast.ai)
 # ============================================================================
 
-platform_agents_version_bump:
-  stage: build
-  image: node:22-alpine
-  needs:
-    - job: duo:version-analysis
-      artifacts: true
-  extends: .platform_agent_base
-  variables:
-    PLATFORM_AGENT: release-coordinator
-    AGENT_SERVICE_ACCOUNT: "@release-coordinator"
-    AGENT_ENDPOINT: ${PLATFORM_AGENTS_API}/agents/release-coordinator/invoke
-    VAST_AI_INSTANCE: ${VAST_AI_INSTANCE_TYPE:-RTX3090}
-  before_script:
-    - apk add --no-cache curl jq
-    - |
-      if [ "$VAST_AI_ENABLED" = "true" ]; then
-        echo "Using Vast.ai for agent execution"
-        export AGENT_ENDPOINT="${PLATFORM_AGENTS_API}/vast-ai/${VAST_AI_INSTANCE}/agents/release-manager/invoke"
-      fi
-  script:
-    - |
-      echo "Platform Agents: Version Bump"
-      echo "================================="
-      
-      CURRENT_VERSION=$(cat current-version.txt)
-      BUMP_TYPE=${BUMP_TYPE:-patch}
-      
-      # Invoke platform agent via API using release-coordinator service account
-      RESPONSE=$(curl -s -X POST \
-        "${AGENT_ENDPOINT}" \
-        -H "Authorization: Bearer ${SERVICE_ACCOUNT_RELEASE_COORDINATOR_TOKEN:-${PLATFORM_AGENTS_API_TOKEN}}" \
-        -H "X-Service-Account: @release-coordinator" \
-        -H "Content-Type: application/json" \
-        -d "{
-          \"task\": \"bump-version\",
-          \"inputs\": {
-            \"bump_type\": \"${BUMP_TYPE}\",
-            \"current_version\": \"${CURRENT_VERSION}\",
-            \"target_branch\": \"${CI_COMMIT_REF_NAME}\",
-            \"project_id\": \"${CI_PROJECT_ID}\",
-            \"repository_url\": \"${CI_REPOSITORY_URL}\",
-            \"service_account\": \"@release-coordinator\"
-          }
-        }")
-      
-      echo "$RESPONSE" | jq '.'
-      
-      NEW_VERSION=$(echo "$RESPONSE" | jq -r '.outputs.new_version')
-      echo "NEW_VERSION=${NEW_VERSION}" >> version-bump.env
-      
-      echo "Version bump complete: ${CURRENT_VERSION} -> ${NEW_VERSION}"
-  artifacts:
-    reports:
-      dotenv: version-bump.env
-    expire_in: 1 day
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "schedule"
-    - if: $CI_MILESTONE_STATE == "closed"
-    - if: '$CI_PIPELINE_SOURCE == "web" && $VERSION_BUMP_REQUESTED == "true"'
-    - when: manual
-      allow_failure: true
+# DISABLED: platform_agents_version_bump - causing YAML parsing errors
+# platform_agents_version_bump:
+#   stage: build
+#   image: node:22-alpine
+#   needs:
+#     - job: duo:version-analysis
+#       artifacts: true
+#   extends: .platform_agent_base
+#   variables:
+#     PLATFORM_AGENT: release-coordinator
+#     AGENT_SERVICE_ACCOUNT: "@release-coordinator"
+#     AGENT_ENDPOINT: ${PLATFORM_AGENTS_API}/agents/release-coordinator/invoke
+#     VAST_AI_INSTANCE: ${VAST_AI_INSTANCE_TYPE:-RTX3090}
+#   before_script:
+#     - apk add --no-cache curl jq
+#     - |
+#       if [ "$VAST_AI_ENABLED" = "true" ]; then
+#         echo "Using Vast.ai for agent execution"
+#         export AGENT_ENDPOINT="${PLATFORM_AGENTS_API}/vast-ai/${VAST_AI_INSTANCE}/agents/release-manager/invoke"
+#       fi
+#   script:
+#     - |
+#       echo "Platform Agents: Version Bump"
+#       echo "================================="
+#       
+#       CURRENT_VERSION=$(cat current-version.txt)
+#       BUMP_TYPE=${BUMP_TYPE:-patch}
+#       
+#       # Invoke platform agent via API using release-coordinator service account
+#       RESPONSE=$(curl -s -X POST \
+#         "${AGENT_ENDPOINT}" \
+#         -H "Authorization: Bearer ${SERVICE_ACCOUNT_RELEASE_COORDINATOR_TOKEN:-${PLATFORM_AGENTS_API_TOKEN}}" \
+#         -H "X-Service-Account: @release-coordinator" \
+#         -H "Content-Type: application/json" \
+#         -d "{
+#           \"task\": \"bump-version\",
+#           \"inputs\": {
+#             \"bump_type\": \"${BUMP_TYPE}\",
+#             \"current_version\": \"${CURRENT_VERSION}\",
+#             \"target_branch\": \"${CI_COMMIT_REF_NAME}\",
+#             \"project_id\": \"${CI_PROJECT_ID}\",
+#             \"repository_url\": \"${CI_REPOSITORY_URL}\",
+#             \"service_account\": \"@release-coordinator\"
+#           }
+#         }")
+#       
+#       echo "$RESPONSE" | jq '.'
+#       
+#       NEW_VERSION=$(echo "$RESPONSE" | jq -r '.outputs.new_version')
+#       echo "NEW_VERSION=${NEW_VERSION}" >> version-bump.env
+#       
+#       echo "Version bump complete: ${CURRENT_VERSION} -> ${NEW_VERSION}"
+#   artifacts:
+#     reports:
+#       dotenv: version-bump.env
+#     expire_in: 1 day
+#   rules:
+#     - if: $CI_PIPELINE_SOURCE == "schedule"
+#     - if: $CI_MILESTONE_STATE == "closed"
+#     - if: '$CI_PIPELINE_SOURCE == "web" && $VERSION_BUMP_REQUESTED == "true"'
+#     - when: manual
+#       allow_failure: true
 
 # ============================================================================
 # DUO AGENT: MULTI-FILE SYNC
@@ -144,9 +145,9 @@ duo:multi-file-sync:
   stage: build
   image: node:22-alpine
   needs:
-    - job: platform_agents_version_bump
-      artifacts: true
-      optional: true
+    # - job: platform_agents_version_bump
+    #   artifacts: true
+    #   optional: true
     - job: duo:version-analysis
       artifacts: true
       optional: true
@@ -231,9 +232,9 @@ duo:create-version-mr:
     - job: duo:multi-file-sync
       artifacts: true
       optional: true
-    - job: platform_agents_version_bump
-      artifacts: true
-      optional: true
+    # - job: platform_agents_version_bump
+    #   artifacts: true
+    #   optional: true
   extends: .duo_agent_base
   variables:
     AGENT_NAME: version-automation-agent
