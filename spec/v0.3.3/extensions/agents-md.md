@@ -63,8 +63,9 @@ extensions:
             type: array
             items:
               $ref: "#/definitions/AgentsMdSection"
-            description: "Additional custom sections beyond the predefined ones. Use this array for any custom section names."
-        additionalProperties: false
+            description: "Additional custom sections"
+        additionalProperties:
+          $ref: "#/definitions/AgentsMdSection"
 
       sync:
         type: object
@@ -1213,6 +1214,6 @@ extensions:
 | Version | Changes |
 |---------|---------|
 | 0.3.3 | Initial extension specification |
-| 0.3.2 | Preliminary support (experimental) |
+| 0.3.3 | Preliminary support (experimental) |
 | 0.2.9 | Added agents_md extension |
 | 0.2.8 | Initial implementation |

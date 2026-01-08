@@ -1,11 +1,11 @@
 # OSSA Agent Manifest with agents.md Extension
-# Demonstrates monorepo support with agents.md sections
+# Demonstrates monorepo support with nested AGENTS.md files
 apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: monorepo-assistant
   version: 1.0.0
-  description: Multi-package monorepo coding agent with agents.md support
+  description: Multi-package monorepo coding agent with nested agents.md support
   labels:
     domain: development
     framework: agents-md
@@ -69,7 +69,7 @@ extensions:
   agents_md:
     enabled: true
     generate: true
-    file_path: AGENTS.md
+    output_path: AGENTS.md
 
     sections:
       dev_environment:
@@ -106,13 +106,12 @@ extensions:
           - Biome for linting and formatting
           - Run `pnpm lint` and `pnpm format` before committing
 
-      architecture:
-        enabled: true
-        title: "Package Structure"
-        custom: |
-          - `apps/` - Application packages (web, api, cli)
-          - `packages/` - Shared library packages
-          - `tooling/` - Build and development tools
+      custom:
+        - title: "Package Structure"
+          content: |
+            - `apps/` - Application packages (web, api, cli)
+            - `packages/` - Shared library packages
+            - `tooling/` - Build and development tools
 
     sync:
       on_manifest_change: true
@@ -123,6 +122,49 @@ extensions:
       tools_to_dev_environment: true
       constraints_to_testing: true
       autonomy_to_pr_instructions: true
+
+    # Nested AGENTS.md files for each package
+    nested_files:
+      - path: apps/web
+        inherit: true
+        sections:
+          dev_environment:
+            custom: |
+              - Next.js 14 application
+              - Run `pnpm -F web dev` to start dev server
+              - Uses App Router and Server Components
+          testing:
+            custom: |
+              - Playwright for E2E tests
+              - React Testing Library for component tests
+              - Run `pnpm -F web test:e2e` for E2E
+
+      - path: apps/api
+        inherit: true
+        sections:
+          dev_environment:
+            custom: |
+              - Hono API server
+              - Run `pnpm -F api dev` to start
+              - OpenAPI spec in `openapi.yaml`
+          testing:
+            custom: |
+              - Vitest for unit tests
+              - Integration tests require Docker
+              - Run `docker-compose up -d` first
+
+      - path: packages/ui
+        inherit: true
+        sections:
+          dev_environment:
+            custom: |
+              - Shared React component library
+              - Run `pnpm -F ui storybook` for component preview
+              - Uses Radix UI primitives
+          testing:
+            custom: |
+              - Storybook visual tests
+              - Run `pnpm -F ui test:visual`
 
   cursor:
     enabled: true

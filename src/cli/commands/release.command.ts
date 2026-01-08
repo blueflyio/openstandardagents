@@ -518,7 +518,7 @@ versionCommand
 
 versionCommand
   .command('sync')
-  .description('Sync version to all files with {{VERSION}} placeholders')
+  .description('Sync version to all files with 0.3.3 placeholders')
   .option('--dry-run', 'Show what would change without making changes')
   .option('--include-examples', 'Also sync version in example files')
   .action(async (options: { dryRun?: boolean; includeExamples?: boolean }) => {
@@ -561,7 +561,7 @@ versionCommand
         for (const file of files) {
           try {
             const content = fs.readFileSync(file, 'utf-8');
-            if (content.includes('{{VERSION}}')) {
+            if (content.includes('0.3.3')) {
               if (options.dryRun) {
                 console.log(chalk.yellow(`   Would update: ${file}`));
               } else {
@@ -605,12 +605,12 @@ versionCommand
 
       // Check package.json
       const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf-8'));
-      if (packageJson.version !== version && packageJson.version !== '{{VERSION}}') {
-        issues.push(`package.json has version ${packageJson.version}, expected ${version} or {{VERSION}}`);
+      if (packageJson.version !== version && packageJson.version !== '0.3.3') {
+        issues.push(`package.json has version ${packageJson.version}, expected ${version} or 0.3.3`);
       }
 
-      // Check for stray {{VERSION}} placeholders in built files
-      // Skip version utility files that intentionally reference {{VERSION}} to detect it
+      // Check for stray 0.3.3 placeholders in built files
+      // Skip version utility files that intentionally reference 0.3.3 to detect it
       const versionUtilityFiles = [
         'dist/utils/version.js',
         'dist/repositories/schema.repository.js',
@@ -618,13 +618,13 @@ versionCommand
       ];
       const builtFiles = await glob('dist/**/*.{js,json}', { nodir: true });
       for (const file of builtFiles) {
-        // Skip files that intentionally check for {{VERSION}} placeholder
+        // Skip files that intentionally check for 0.3.3 placeholder
         if (versionUtilityFiles.some(util => file.endsWith(util.replace('dist/', '')))) {
           continue;
         }
         const content = fs.readFileSync(file, 'utf-8');
-        if (content.includes('{{VERSION}}')) {
-          issues.push(`${file} contains unresolved {{VERSION}} placeholder`);
+        if (content.includes('0.3.3')) {
+          issues.push(`${file} contains unresolved 0.3.3 placeholder`);
         }
       }
 
@@ -679,9 +679,9 @@ versionCommand
       console.log(chalk.white(`      latest_tag:    ${latestTag}`));
 
       // Show if there are inconsistencies
-      const isPlaceholder = packageJson.version === '{{VERSION}}';
+      const isPlaceholder = packageJson.version === '0.3.3';
       if (isPlaceholder) {
-        console.log(chalk.green('\n   ✅ Using {{VERSION}} placeholder (correct for CI)'));
+        console.log(chalk.green('\n   ✅ Using 0.3.3 placeholder (correct for CI)'));
       } else if (packageJson.version !== config.current) {
         console.log(chalk.yellow(`\n   ⚠️  Version mismatch: package.json (${packageJson.version}) vs .version.json (${config.current})`));
       }

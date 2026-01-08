@@ -82,6 +82,69 @@ paths:
               schema:
                 $ref: '#/components/schemas/AgentsList'
 
+  /cli/llms-txt/generate:
+    post:
+      summary: "Generate llms.txt (CLI: ossa llms-txt generate)"
+      description: Generate llms.txt file from OSSA manifest
+      operationId: cliLlmsTxtGenerate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LlmsTxtGenerateRequest'
+      responses:
+        '200':
+          description: llms.txt generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LlmsTxtGenerateResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /cli/llms-txt/validate:
+    post:
+      summary: "Validate llms.txt (CLI: ossa llms-txt validate)"
+      description: Validate llms.txt file against OSSA manifest
+      operationId: cliLlmsTxtValidate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LlmsTxtValidateRequest'
+      responses:
+        '200':
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LlmsTxtValidateResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /cli/llms-txt/sync:
+    post:
+      summary: "Sync llms.txt (CLI: ossa llms-txt sync)"
+      description: Sync llms.txt with manifest changes
+      operationId: cliLlmsTxtSync
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LlmsTxtSyncRequest'
+      responses:
+        '200':
+          description: Sync completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LlmsTxtSyncResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
   /cli/agent/get:
     get:
       summary: "Get agent (CLI: ossa agent get)"
@@ -180,23 +243,9 @@ components:
           default: false
 
     AgentType:
-      type: string
-      enum:
-        - orchestrator
-        - worker
-        - specialist
-        - critic
-        - monitor
-        - gateway
-
+      $ref: '../schemas/common/agent.yaml#/components/schemas/AgentType'
     AgentStatus:
-      type: string
-      enum:
-        - registered
-        - active
-        - inactive
-        - suspended
-        - deprecated
+      $ref: '../schemas/common/agent.yaml#/components/schemas/AgentStatus'
 
     AgentResponse:
       $ref: '../agent-crud.yaml#/components/schemas/AgentResponse'
@@ -206,6 +255,99 @@ components:
 
     AgentUpdate:
       $ref: '../agent-crud.yaml#/components/schemas/AgentUpdate'
+
+    LlmsTxtGenerateRequest:
+      type: object
+      required:
+        - manifest
+      properties:
+        manifest:
+          type: string
+          description: Path to OSSA manifest file
+        output:
+          type: string
+          default: llms.txt
+          description: Output path for llms.txt file
+        verbose:
+          type: boolean
+          default: false
+          description: Verbose output
+
+    LlmsTxtGenerateResponse:
+      type: object
+      required:
+        - success
+        - output
+      properties:
+        success:
+          type: boolean
+        output:
+          type: string
+          description: Path to generated llms.txt file
+        content:
+          type: string
+          description: Generated llms.txt content (if verbose)
+
+    LlmsTxtValidateRequest:
+      type: object
+      required:
+        - llms_txt
+        - manifest
+      properties:
+        llms_txt:
+          type: string
+          description: Path to llms.txt file
+        manifest:
+          type: string
+          description: Path to OSSA manifest file
+        verbose:
+          type: boolean
+          default: false
+
+    LlmsTxtValidateResponse:
+      type: object
+      required:
+        - valid
+      properties:
+        valid:
+          type: boolean
+        warnings:
+          type: array
+          items:
+            type: string
+        details:
+          type: object
+          description: Detailed validation information (if verbose)
+
+    LlmsTxtSyncRequest:
+      type: object
+      required:
+        - manifest
+      properties:
+        manifest:
+          type: string
+          description: Path to OSSA manifest file
+        watch:
+          type: boolean
+          default: false
+          description: Watch for manifest changes and auto-sync
+        verbose:
+          type: boolean
+          default: false
+
+    LlmsTxtSyncResponse:
+      type: object
+      required:
+        - success
+      properties:
+        success:
+          type: boolean
+        output:
+          type: string
+          description: Path to synced llms.txt file
+        watching:
+          type: boolean
+          description: Whether watching mode is active
 
   responses:
     ValidationError:
@@ -218,11 +360,11 @@ components:
       $ref: '../agent-crud.yaml#/components/responses/Conflict'
 
 x-ossa-metadata:
-  version: 0.3.1
+      version: 0.3.3
   compliance:
     level: enterprise
     frameworks:
-      - OSSA v0.3.1
+      - OSSA v0.3.3
       - OpenAPI 3.1
       - RFC7807
   governance:

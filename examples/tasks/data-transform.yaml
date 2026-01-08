@@ -1,6 +1,6 @@
 # Example: Data Transform Task
 # A pure function task that transforms data between formats
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Task
 metadata:
   name: data-transform

@@ -245,7 +245,7 @@ The agent mesh consists of **8 specialized agents** working in coordination to p
 
 ## Agent Mesh Configuration
 
-**Location**: `.gitlab/agents/mesh-config.yaml`
+**Location**: `.gitlab/agents/config/mesh-config.yaml`
 
 The agent mesh configuration defines:
 
@@ -271,7 +271,7 @@ compliance-auditor → security-scanner (security compliance)
 
 ## Swarm Task Definitions
 
-**Location**: `.gitlab/agents/swarm-tasks.json`
+**Location**: `.gitlab/agents/config/swarm-tasks.json`
 
 Defines **10 coordinated tasks** for end-to-end deployment workflows:
 
@@ -330,7 +330,7 @@ The agent ecosystem is optimized for **elite DORA performance**:
 
 ```bash
 # 1. Deploy agent mesh configuration
-kubectl apply -f .gitlab/agents/mesh-config.yaml
+kubectl apply -f .gitlab/agents/config/mesh-config.yaml
 
 # 2. Deploy all agents
 for agent in security-scanner performance-optimizer db-migrator \
@@ -344,7 +344,7 @@ kubectl get agents -n agent-mesh-system
 istioctl proxy-status
 
 # 4. Deploy swarm tasks
-buildkit swarm spawn --tasks .gitlab/agents/swarm-tasks.json --runtime kubernetes
+buildkit swarm spawn --tasks .gitlab/agents/config/swarm-tasks.json --runtime kubernetes
 ```
 
 ---

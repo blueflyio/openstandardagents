@@ -1,4 +1,4 @@
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: example-agent-quick-wins
@@ -6,10 +6,11 @@ metadata:
   labels:
     app: example
     version: v1.0.0
+  annotations:
+    ossa.io/migration: v0.3.3-to-v0.3.3
+    ossa.io/migrated-date: 2026-01-07
 spec:
-  role: "Example agent demonstrating all quick-win capabilities"
-  
-  # 1. Health Monitoring Configuration
+  role: Example agent demonstrating all quick-win capabilities
   health:
     enabled: true
     endpoints:
@@ -22,8 +23,6 @@ spec:
       enabled: true
       max_restarts: 3
       restart_delay_seconds: 10
-  
-  # 2. Secrets Management
   secrets:
     provider: gitlab_vault
     injection:
@@ -39,8 +38,6 @@ spec:
     audit:
       enabled: true
       log_access: true
-  
-  # 3. LLM Configuration with Circuit Breaker (via retry)
   llm:
     provider: anthropic
     model: claude-sonnet-4
@@ -57,8 +54,6 @@ spec:
         timeout_ms: 60000
         half_open_max_calls: 3
         success_threshold: 2
-  
-  # 4. Error Handling with Aggregation
   error_handling:
     strategy: fail_fast
     aggregation:
@@ -74,8 +69,6 @@ spec:
           - timeout
           - rate_limit
           - validation
-  
-  # 5. State Management with Versioning & Conflict Resolution
   state:
     mode: long_running
     storage:
@@ -93,8 +86,6 @@ spec:
       enabled: true
       backup_interval_seconds: 300
       restore_on_startup: true
-  
-  # 6. Security Boundaries
   safety:
     content_filtering:
       enabled: true
@@ -115,8 +106,6 @@ spec:
       audit_logging:
         enabled: true
         retention_days: 90
-  
-  # 7. Rollback Configuration
   rollback:
     triggers:
       - health_check_failure
@@ -128,8 +117,6 @@ spec:
       notification_channels:
         - slack
         - email
-  
-  # 8. Testing Configuration (Optional)
   testing:
     framework: jest
     mock_llm:

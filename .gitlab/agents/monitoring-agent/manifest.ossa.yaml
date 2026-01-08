@@ -1,0 +1,271 @@
+apiVersion: ossa/v0.3.3
+kind: Agent
+metadata:
+  name: monitoring-agent
+  version: 1.0.0
+  description: |
+    Real-time monitoring and observability agent for Kubernetes workloads.
+    Analyzes metrics, detects anomalies, correlates alerts, tracks SLOs,
+    and triggers automated incident response workflows.
+  labels:
+    environment: production
+    team: sre
+    domain: observability
+    capability: monitoring
+    dora-metric: mttr
+    ossa-version: v0.3.0
+  annotations:
+    documentation: https://openstandardagents.org/docs/agents/monitoring-agent
+    support: ops@openstandardagents.org
+    runbook: https://openstandardagents.org/docs/runbooks/monitoring-agent
+    slo: 99.9% availability, p95 < 500ms
+    ossa.io/migration: v0.3.3-to-v0.3.3
+    ossa.io/migrated-date: 2026-01-07
+spec:
+  taxonomy:
+    domain: infrastructure
+    subdomain: incident-management
+    capability: monitoring
+  role: >
+    You are an expert SRE monitoring agent specializing in proactive incident
+    detection.
+
+
+    Your responsibilities:
+
+    1. Monitor Prometheus metrics for anomalies (CPU spikes, memory leaks, error
+    rates)
+
+    2. Correlate alerts to reduce noise and identify root causes
+
+    3. Track SLO/SLI metrics and calculate error budgets
+
+    4. Detect SLO violations and calculate burn rates
+
+    5. Analyze distributed traces for latency root cause analysis
+
+    6. Calculate DORA metrics (deployment frequency, lead time, MTTR, change
+    failure rate)
+
+    7. Trigger automated remediation (scale pods, restart services, page
+    on-call)
+
+    8. Create incident tickets with context and suggested runbooks
+
+
+    For each incident:
+
+    - Severity (SEV1/SEV2/SEV3/SEV4)
+
+    - Affected services and user impact
+
+    - Root cause hypothesis
+
+    - Suggested remediation
+
+    - Runbook link
+
+    - On-call escalation (if SEV1/SEV2)
+  llm:
+    provider: ${LLM_PROVIDER:-anthropic}
+    model: ${LLM_MODEL:-claude-sonnet}
+    temperature: 0.2
+    maxTokens: 6000
+    topP: 0.9
+    fallback_models:
+      - provider: ${LLM_FALLBACK_PROVIDER_1:-openai}
+        model: ${LLM_FALLBACK_MODEL_1:-gpt-4o}
+      - provider: ${LLM_FALLBACK_PROVIDER_2:-anthropic}
+        model: ${LLM_FALLBACK_MODEL_2:-claude-haiku}
+    retry_config:
+      max_attempts: 3
+      backoff_strategy: exponential
+    cost_tracking:
+      enabled: true
+      budget_alert_threshold: 40
+      cost_allocation_tags:
+        project: ossa-agents
+        team: sre
+        service: monitoring-agent
+  tools:
+    - type: http
+      name: prometheus-query
+      description: |
+        Query Prometheus for metrics, alerts, and time-series data.
+      endpoint: http://prometheus:9090/api/v1/query
+      config:
+        method: POST
+        timeout: 30
+        queryLanguage: promql
+    - type: http
+      name: jaeger-trace-search
+      description: |
+        Search distributed traces in Jaeger for latency analysis.
+      endpoint: http://jaeger-query:16686/api/traces
+      config:
+        method: GET
+        timeout: 15
+    - type: http
+      name: alertmanager-api
+      description: |
+        Query and manage alerts in Prometheus Alertmanager.
+      endpoint: http://alertmanager:9093/api/v2/alerts
+      config:
+        method: GET
+        timeout: 10
+    - type: http
+      name: grafana-api
+      description: |
+        Query Grafana for dashboard data and annotations.
+      endpoint: http://grafana:3000/api
+      config:
+        method: GET
+        timeout: 10
+      auth:
+        type: bearer
+        tokenPath: /var/secrets/grafana-token
+    - type: http
+      name: pagerduty-api
+      description: |
+        Create incidents and page on-call engineers via PagerDuty.
+      endpoint: https://api.pagerduty.com/incidents
+      config:
+        method: POST
+        timeout: 10
+      auth:
+        type: bearer
+        tokenPath: /var/secrets/pagerduty-token
+    - type: a2a
+      name: rollback-coordinator
+      description: |
+        Trigger automated rollback if critical metrics degrade.
+      endpoint: http://rollback-coordinator:8080/a2a
+      config:
+        protocol: json-rpc
+      auth:
+        type: mtls
+        certPath: /var/secrets/a2a-client-cert.pem
+  autonomy:
+    level: autonomous
+    approval_required: false
+    allowed_actions:
+      - query_prometheus_metrics
+      - search_distributed_traces
+      - create_incident_tickets
+      - page_oncall_engineers
+      - trigger_autoscaling
+      - generate_monitoring_reports
+    blocked_actions:
+      - trigger_rollback
+  constraints:
+    cost:
+      maxTokensPerDay: 400000
+      maxTokensPerRequest: 6000
+      maxCostPerDay: 40
+      currency: USD
+    performance:
+      maxLatencySeconds: 15
+      maxConcurrentRequests: 30
+      timeoutSeconds: 60
+    resources:
+      cpu: 1000m
+      memory: 2Gi
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+      endpoint: http://jaeger-collector:4318
+    metrics:
+      enabled: true
+      exporter: prometheus
+      endpoint: http://prometheus:9090/metrics
+      customMetrics:
+        - name: incidents_detected_total
+          type: counter
+          description: Total incidents detected
+          labels:
+            - severity
+            - service
+        - name: slo_violations_total
+          type: counter
+          description: Total SLO violations
+        - name: mttr_seconds
+          type: histogram
+          description: Mean time to recovery
+        - name: dora_deployment_frequency
+          type: gauge
+          description: Deployments per day
+    logging:
+      level: info
+      format: json
+  state:
+    backend: redis
+    config:
+      host: redis-cluster.default.svc.cluster.local
+      port: 6379
+      database: 5
+      ttl: 2592000
+      keyPrefix: "monitoring-agent:"
+  extensions:
+    kagent:
+      kubernetes:
+        namespace: observability-system
+        labels:
+          app: monitoring-agent
+          team: sre
+        resourceLimits:
+          cpu: 1000m
+          memory: 2Gi
+        serviceAccount: monitoring-agent-sa
+      guardrails:
+        requireApproval: false
+        allowedActions:
+          - prometheus:query:*
+          - alertmanager:read:*
+          - pagerduty:create:incident
+      a2aConfig:
+        enabled: true
+        protocol: json-rpc
+        endpoints:
+          - http://rollback-coordinator:8080/a2a
+          - http://performance-optimizer:8080/a2a
+        authentication:
+          type: mtls
+      meshIntegration:
+        enabled: true
+        istioIntegration: true
+        mtlsMode: STRICT
+extensions:
+  kagent:
+    api_version: kagent.dev/v1alpha2
+    kubernetes:
+      namespace: agent-system
+      labels:
+        app.kubernetes.io/name: monitoring-agent
+        app.kubernetes.io/part-of: ossa-showcase
+        openstandardagents.org/version: v0.3.0
+      resourceLimits:
+        cpu: "1"
+        memory: 2Gi
+    deployment:
+      replicas:
+        min: 1
+        max: 3
+      strategy: rolling-update
+    a2aConfig:
+      enabled: true
+      protocol: json-rpc
+    meshIntegration:
+      enabled: true
+      istioIntegration: true
+  gitlab_duo:
+    enabled: true
+    flow_execution: true
+    model: ${GITLAB_DUO_MODEL:-claude-sonnet-4.5-20250929}
+    knowledge_graph:
+      enabled: true
+      index_on_push: true
+  mcp:
+    enabled: true
+    server_type: stdio
+    server_name: monitoring-agent-mcp

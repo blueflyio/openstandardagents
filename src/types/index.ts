@@ -6,17 +6,17 @@
 import { ErrorObject } from 'ajv';
 
 // Export Task types (v0.3.0)
-export * from './task.js';
-export type { OssaTask, TaskSpec, RuntimeBinding } from './task.js';
-export { isOssaTask, createTaskManifest } from './task.js';
+export * from './task';
+export type { OssaTask, TaskSpec, RuntimeBinding } from './task';
+export { isOssaTask, createTaskManifest } from './task';
 
 // Export Workflow types (v0.3.0)
-export * from './workflow.js';
-export type { OssaWorkflow, WorkflowSpec, WorkflowStep } from './workflow.js';
-export { isOssaWorkflow, createWorkflowManifest, createStep, expr } from './workflow.js';
+export * from './workflow';
+export type { OssaWorkflow, WorkflowSpec, WorkflowStep } from './workflow';
+export { isOssaWorkflow, createWorkflowManifest, createStep, expr } from './workflow';
 
 // Export Messaging types (v0.3.0)
-export * from './messaging.js';
+export * from './messaging';
 export type {
   MessagingExtension,
   PublishedChannel,
@@ -25,81 +25,7 @@ export type {
   ReliabilityConfig,
   MessageEnvelope,
   RoutingRule,
-} from './messaging.js';
-
-// Export Identity types (v0.3.2)
-export * from './identity.js';
-export type {
-  IdentitySpec,
-  IdentityProvider,
-  ServiceAccount,
-  TokenSource,
-  AuthenticationConfig,
-  FallbackIdentity,
-  DORATracking,
-  SessionConfig,
-  ObservabilityIdentity,
-  IdentityCompliance,
-  IdentitySecurity,
-  GitLabIdentity,
-  GitLabServiceAccount,
-  GitLabTokenRef,
-  AnthropicIdentity,
-  AnthropicTokenRef,
-  IdentityShortcuts,
-} from './identity.js';
-
-// Export Personality types (v0.3.2)
-export * from './personality.js';
-export type {
-  PersonalitySpec,
-  TonePreset,
-  ToneConfig,
-  ExpertiseDomain,
-  ExpertiseEntry,
-  ExpertiseLevel,
-  BehavioralTraits,
-  CommunicationFormat,
-  StyleModifier,
-} from './personality.js';
-export {
-  isToneConfig,
-  isExpertiseEntry,
-  normalizeTone,
-  normalizeExpertise,
-  createDefaultPersonality,
-} from './personality.js';
-
-// Export Prompts types (v0.3.2)
-export * from './prompts.js';
-export type {
-  PromptsSpec,
-  Message,
-  MessageRole,
-  PromptExample,
-  ExampleCollection,
-  TemplateVariable,
-  PromptTemplate,
-  GreetingConfig,
-  SystemPromptConfig,
-  SystemPromptSection,
-} from './prompts.js';
-export {
-  isSystemPromptConfig,
-  isGreetingConfig,
-  isExampleCollectionArray,
-  normalizeSystemPrompt,
-  normalizeGreeting,
-  flattenExamples,
-  renderTemplate,
-  createDefaultPrompts,
-  buildSystemPrompt,
-} from './prompts.js';
-
-// Export Zod schemas for validation
-export * as IdentitySchemas from './identity.zod.js';
-export * as PersonalitySchemas from './personality.zod.js';
-export * as PromptsSchemas from './prompts.zod.js';
+} from './messaging';
 
 /**
  * Capability definition (OpenAPI-style operation)
@@ -306,6 +232,7 @@ export interface OssaAgent {
   };
   extensions?: {
     agents_md?: AgentsMdExtension;
+    llms_txt?: LlmsTxtExtension;
     cursor?: CursorExtension;
     [key: string]: unknown;
   };
@@ -338,6 +265,64 @@ export interface AgentsMdExtension {
     include_comments?: boolean;
   };
   cursor_integration?: boolean;
+}
+
+/**
+ * llms.txt section configuration
+ */
+export interface LlmsTxtSection {
+  enabled?: boolean;
+  source?: string;
+  custom?: string;
+  append?: string;
+  prepend?: string;
+  title?: string;
+  file_list?: string[];
+}
+
+/**
+ * llms.txt extension configuration
+ */
+export interface LlmsTxtExtension {
+  enabled?: boolean;
+  generate?: boolean;
+  file_path?: string;
+  auto_discover?: boolean;
+  format?: {
+    include_h1_title?: boolean;
+    include_blockquote?: boolean;
+    include_h2_sections?: boolean;
+    include_optional?: boolean;
+  };
+  sections?: {
+    core_specification?: LlmsTxtSection;
+    quick_start?: LlmsTxtSection;
+    cli_tools?: LlmsTxtSection;
+    sdks?: LlmsTxtSection;
+    examples?: LlmsTxtSection;
+    migration_guides?: LlmsTxtSection;
+    development?: LlmsTxtSection;
+    specification_versions?: LlmsTxtSection;
+    openapi_specifications?: LlmsTxtSection;
+    documentation?: LlmsTxtSection;
+    optional?: LlmsTxtSection;
+    custom?: LlmsTxtSection[];
+  };
+  sync?: {
+    on_manifest_change?: boolean;
+    include_comments?: boolean;
+    preserve_custom?: boolean;
+    watch?: boolean;
+  };
+  mapping?: {
+    metadata_to_h1?: boolean;
+    description_to_blockquote?: boolean;
+    spec_to_core_specification?: boolean;
+    tools_to_cli_tools?: boolean;
+    examples_to_examples?: boolean;
+    migrations_to_migration_guides?: boolean;
+  };
+  include_metadata?: boolean;
 }
 
 /**

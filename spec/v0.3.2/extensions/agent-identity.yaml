@@ -1,10 +1,10 @@
-# OSSA Agent Identity Extension v0.3.1
+# OSSA Agent Identity Extension v0.3.3
 # Comprehensive specification for agent identity, authentication, and attribution
 ---
 $schema: http://json-schema.org/draft-07/schema#
-$id: https://openstandardagents.org/schemas/v0.3.1/extensions/agent-identity.json
+$id: https://openstandardagents.org/schemas/v0.3.3/extensions/agent-identity.json
 title: OSSA Agent Identity Extension
-version: 0.3.1
+version: 0.3.3
 description: |
   The Agent Identity Extension enables OSSA agents to operate with authenticated
   identities across DevOps platforms (GitLab, GitHub, Azure DevOps, Bitbucket).

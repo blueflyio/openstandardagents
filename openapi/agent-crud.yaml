@@ -719,25 +719,9 @@ components:
           type: string
 
     AgentType:
-      type: string
-      enum:
-        - orchestrator
-        - worker
-        - specialist
-        - critic
-        - monitor
-        - gateway
-      description: Agent type classification
-
+      $ref: '../schemas/common/agent.yaml#/components/schemas/AgentType'
     AgentStatus:
-      type: string
-      enum:
-        - registered
-        - active
-        - inactive
-        - suspended
-        - deprecated
-      description: Current operational status of the agent
+      $ref: '../schemas/common/agent.yaml#/components/schemas/AgentStatus'
 
     AgentMetrics:
       type: object
@@ -759,45 +743,9 @@ components:
           format: date-time
           description: Timestamp of last activity
 
-    # Error Schemas (RFC7807)
+    # Error Schemas (RFC7807) - Using shared schema
     Problem:
-      type: object
-      description: RFC7807 Problem Details for HTTP APIs
-      required:
-        - type
-        - title
-        - status
-        - traceId
-      properties:
-        type:
-          type: string
-          format: uri
-          default: about:blank
-          description: URI reference identifying the problem type
-        title:
-          type: string
-          description: Short, human-readable summary
-        status:
-          type: integer
-          format: int32
-          description: HTTP status code
-        detail:
-          type: string
-          description: Human-readable explanation
-        instance:
-          type: string
-          format: uri
-          description: URI reference identifying the specific occurrence
-        traceId:
-          type: string
-          description: Unique trace ID for debugging
-        errors:
-          type: object
-          additionalProperties:
-            type: array
-            items:
-              type: string
-          description: Validation errors by field
+      $ref: '../schemas/common/errors.yaml#/components/schemas/Problem'
 
   responses:
     BadRequest:
@@ -1103,7 +1051,7 @@ tags:
     description: Agent lifecycle management (CRUD operations)
 
 x-ossa-metadata:
-  version: 0.3.0
+  version: 0.3.3
   compliance:
     level: enterprise
     frameworks:

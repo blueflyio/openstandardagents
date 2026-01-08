@@ -1,12 +1,3 @@
-# ============================================================================
-# OSSA Workflow: Content Publishing Pipeline
-# ============================================================================
-# Composes Tasks and Agents into an executable content publishing pipeline
-# Demonstrates step dependencies, conditional execution, and error handling
-#
-# @see https://openstandardagents.org/spec/v0.3.2/workflow
-# ============================================================================
-
 apiVersion: ossa/v0.3.3
 kind: Workflow
 metadata:
@@ -16,27 +7,26 @@ metadata:
     domain: content-management
     tier: tier_3_write_elevated
   annotations:
-    ossa.io/description: "End-to-end content publishing with review and approval"
-    ossa.io/category: "publishing"
-    ossa.io/compliance: "SOC2,GDPR"
-
+    ossa.io/description: End-to-end content publishing with review and approval
+    ossa.io/category: publishing
+    ossa.io/compliance: SOC2,GDPR
+    ossa.io/migration: v0.3.3-to-v0.3.3
+    ossa.io/migrated-date: 2026-01-07
 spec:
-  # Workflow triggers
   triggers:
     - type: webhook
       endpoint: /api/v1/publish
-      methods: [POST]
+      methods:
+        - POST
       authentication:
         type: bearer
         scope: publish:content
     - type: schedule
-      cron: "0 9 * * 1-5"  # Weekdays at 9am
-      timezone: "America/New_York"
+      cron: 0 9 * * 1-5
+      timezone: America/New_York
     - type: event
       source: cms
       event_type: content.ready_for_publish
-
-  # Input schema
   inputs:
     type: object
     required:
@@ -46,7 +36,11 @@ spec:
         type: string
       priority:
         type: string
-        enum: [low, normal, high, critical]
+        enum:
+          - low
+          - normal
+          - high
+          - critical
         default: normal
       skip_review:
         type: boolean
@@ -55,10 +49,13 @@ spec:
         type: array
         items:
           type: string
-          enum: [email, slack, teams, webhook]
-        default: [email]
-
-  # Output schema
+          enum:
+            - email
+            - slack
+            - teams
+            - webhook
+        default:
+          - email
   outputs:
     type: object
     properties:
@@ -73,39 +70,32 @@ spec:
         type: integer
       total_duration_ms:
         type: integer
-
-  # Workflow steps
   steps:
-    # Step 1: Validate content (Task - deterministic)
     - id: validate
-      name: "Validate Content"
+      name: Validate Content
       ref: tasks/validate-content
       kind: Task
       input:
-        content_id: "${{ inputs.content_id }}"
+        content_id: ${{ inputs.content_id }}
         strict: true
       on_failure: halt
-
-    # Step 2: AI Review (Agent - agentic, conditional)
     - id: review
-      name: "AI Content Review"
+      name: AI Content Review
       ref: agents/content-reviewer
       kind: Agent
-      condition: "${{ !inputs.skip_review }}"
+      condition: ${{ !inputs.skip_review }}
       input:
-        content: "${{ steps.validate.output.content }}"
-        guidelines: "brand-voice,accessibility,seo"
+        content: ${{ steps.validate.output.content }}
+        guidelines: brand-voice,accessibility,seo
       timeout_seconds: 120
       on_failure: continue
       output_mapping:
-        review_score: "${{ output.score }}"
-        suggestions: "${{ output.suggestions }}"
-
-    # Step 3: Human approval gate (conditional on review score)
+        review_score: ${{ output.score }}
+        suggestions: ${{ output.suggestions }}
     - id: approval
-      name: "Human Approval"
+      name: Human Approval
       type: approval
-      condition: "${{ steps.review.output.review_score < 0.8 }}"
+      condition: ${{ steps.review.output.review_score < 0.8 }}
       approvers:
         - role: content-manager
         - role: editor-in-chief
@@ -113,78 +103,71 @@ spec:
       timeout_hours: 24
       escalation:
         after_hours: 4
-        to: [senior-editor]
-
-    # Step 4: Publish content (Task - transactional)
+        to:
+          - senior-editor
     - id: publish
-      name: "Publish Content"
+      name: Publish Content
       ref: tasks/publish-content
       kind: Task
-      depends_on: [validate, review]
+      depends_on:
+        - validate
+        - review
       input:
-        content_id: "${{ inputs.content_id }}"
-        content_type: "${{ steps.validate.output.content_type }}"
+        content_id: ${{ inputs.content_id }}
+        content_type: ${{ steps.validate.output.content_type }}
         notify_subscribers: true
       on_failure: rollback
-
-    # Step 5: Send notifications (Task - batch)
     - id: notify
-      name: "Send Notifications"
+      name: Send Notifications
       ref: tasks/send-notifications
       kind: Task
-      depends_on: [publish]
+      depends_on:
+        - publish
       input:
-        channels: "${{ inputs.notify_channels }}"
+        channels: ${{ inputs.notify_channels }}
         message:
-          title: "New content published"
-          url: "${{ steps.publish.output.published_url }}"
-          priority: "${{ inputs.priority }}"
+          title: New content published
+          url: ${{ steps.publish.output.published_url }}
+          priority: ${{ inputs.priority }}
       on_failure: continue
-
-    # Step 6: Analytics tracking (parallel, fire-and-forget)
     - id: analytics
-      name: "Track Analytics"
+      name: Track Analytics
       ref: tasks/track-analytics
       kind: Task
-      depends_on: [publish]
+      depends_on:
+        - publish
       async: true
       input:
         event: content_published
         properties:
-          content_id: "${{ inputs.content_id }}"
-          published_at: "${{ steps.publish.output.published_at }}"
-
-  # Shared workflow context
+          content_id: ${{ inputs.content_id }}
+          published_at: ${{ steps.publish.output.published_at }}
   context:
     variables:
-      environment: "${{ env.ENVIRONMENT }}"
-      trace_id: "${{ uuid() }}"
+      environment: ${{ env.ENVIRONMENT }}
+      trace_id: ${{ uuid() }}
     secrets:
       - name: CMS_API_KEY
         ref: vault://secret/cms/api-key
       - name: NOTIFICATION_TOKEN
         ref: vault://secret/notifications/token
-
-  # Concurrency control
   concurrency:
-    group: "publish-${{ inputs.content_id }}"
+    group: publish-${{ inputs.content_id }}
     cancel_in_progress: false
-
-  # Error handling
   error_handling:
     on_failure: compensate
     compensation_steps:
       - id: rollback-publish
-        name: "Rollback Publication"
+        name: Rollback Publication
         ref: tasks/unpublish-content
         kind: Task
         input:
-          content_id: "${{ inputs.content_id }}"
+          content_id: ${{ inputs.content_id }}
       - id: notify-failure
-        name: "Notify Team"
+        name: Notify Team
         ref: tasks/send-alert
         kind: Task
         input:
           channel: ops-alerts
-          message: "Publishing workflow failed for ${{ inputs.content_id }}"
+          message: Publishing workflow failed for ${{ inputs.content_id }}
           severity: high

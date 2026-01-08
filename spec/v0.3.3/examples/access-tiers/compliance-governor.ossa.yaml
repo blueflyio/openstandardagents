@@ -1,13 +1,5 @@
-# =============================================================================
-# OSSA v0.3.2 - Tier 4 (Policy) Example: Compliance Governor
-# =============================================================================
-# Demonstrates separation of duties for policy-defining governor agents
-# ISOLATED: Can define policies but CANNOT execute - must delegate to Tier 3
-# =============================================================================
-
 apiVersion: ossa/v0.3.3
 kind: Agent
-
 metadata:
   name: compliance-governor
   version: 1.0.0
@@ -16,10 +8,11 @@ metadata:
     team: security
     access_tier: tier_4_policy
     domain: security
-
+  annotations:
+    ossa.io/migration: v0.3.3-to-v0.3.3
+    ossa.io/migrated-date: 2026-01-07
 spec:
   type: governor
-
   role: |
     You are a compliance governance agent responsible for defining and
     publishing security and compliance policies. You monitor policy adherence
@@ -33,14 +26,11 @@ spec:
 
     Your role is legislative, not executive. You define the rules;
     operators enforce them.
-
   llm:
     provider: anthropic
     model: claude-sonnet-4-20250514
-    temperature: 0.0
+    temperature: 0
     profile: safe
-
-  # Taxonomy Classification (v0.3.2+)
   taxonomy:
     domain: security
     subdomain: compliance
@@ -49,8 +39,6 @@ spec:
       - governance
       - quality
       - reliability
-
-  # Access Tier Configuration (v0.3.2+)
   access:
     tier: tier_4_policy
     permissions:
@@ -74,8 +62,6 @@ spec:
     audit_level: comprehensive
     requires_approval: false
     isolation: strict
-
-  # Separation of Duties (v0.3.2+)
   separation:
     role: governor
     conflicts_with:
@@ -91,8 +77,6 @@ spec:
       - deploy
       - merge
       - modify_production
-
-  # Delegation Configuration (v0.3.2+)
   delegation:
     enabled: true
     allowed_tiers:
@@ -106,7 +90,6 @@ spec:
       - audit_trail
       - violation_report
       - approval
-
   tools:
     - name: policy-reader
       type: mcp
@@ -119,12 +102,11 @@ spec:
         endpoint: https://api.compliance.local
         methods:
           - GET
-          - POST  # For publishing policies only
+          - POST
     - name: audit-logger
       type: mcp
       config:
         server: audit-mcp-server
-
   autonomy:
     level: autonomous
     allowed_actions:
@@ -139,7 +121,6 @@ spec:
       - merge
       - modify_infrastructure
       - remediate_directly
-
   compliance:
     frameworks:
       - SOC2
@@ -147,7 +128,6 @@ spec:
       - GDPR
     audit_logging: required
     pii_handling: redact
-
   safety:
     guardrails:
       enabled: true
@@ -157,7 +137,6 @@ spec:
         - no_execution
         - delegation_only
         - audit_all_actions
-
   observability:
     tracing:
       enabled: true
@@ -177,7 +156,6 @@ spec:
     logging:
       level: info
       format: json
-
   messaging:
     publishes:
       - channel: governance.policies
@@ -203,7 +181,11 @@ spec:
               type: string
             severity:
               type: string
-              enum: [critical, high, medium, low]
+              enum:
+                - critical
+                - high
+                - medium
+                - low
             remediation_required:
               type: boolean
             delegate_to:
