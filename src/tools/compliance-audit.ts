@@ -166,7 +166,8 @@ async function auditMergeRequestApprovals(projectId: string): Promise<Compliance
     const project = await gitlab.Projects.show(projectId);
 
     // Check if approvals are required (available in Free tier via project settings)
-    if (project.approvals_before_merge && project.approvals_before_merge > 0) {
+    const approvalsBeforeMerge = (project as any).approvals_before_merge;
+    if (approvalsBeforeMerge && typeof approvalsBeforeMerge === 'number' && approvalsBeforeMerge > 0) {
       checks.push(createCheck(
         category,
         'Approvals Required',
@@ -185,7 +186,7 @@ async function auditMergeRequestApprovals(projectId: string): Promise<Compliance
 
     // Try to get advanced approval rules (Premium/Ultimate feature)
     try {
-      const rules = await gitlab.ProjectApprovalRules.all(projectId);
+      const rules = await (gitlab as any).ProjectApprovalRules?.all(projectId);
       if (rules && rules.length > 0) {
         checks.push(createCheck(
           category,
