@@ -132,7 +132,7 @@ platform-agents:version-bump:
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"
     - if: $CI_MILESTONE_STATE == "closed"
-    - if: $CI_PIPELINE_SOURCE == "web" && $VERSION_BUMP_REQUESTED == "true"
+    - if: '$CI_PIPELINE_SOURCE == "web" && $VERSION_BUMP_REQUESTED == "true"'
     - when: manual
       allow_failure: true
 
