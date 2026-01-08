@@ -1,6 +1,6 @@
 apiVersion: ossa/v0.3.0
 
-kind: worker
+kind: Agent
 metadata:
   name: bot-ossa-validator
   namespace: openstandardagents.org
