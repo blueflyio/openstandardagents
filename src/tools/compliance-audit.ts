@@ -609,7 +609,7 @@ async function auditPipelineConfiguration(projectId: string): Promise<Compliance
     ));
 
     // Get recent pipelines
-    const pipelines = await gitlab.Pipelines.all(projectId, { per_page: 10 });
+    const pipelines = await gitlab.Pipelines.all(projectId, { perPage: 10 });
     if (pipelines && pipelines.length > 0) {
       const successCount = pipelines.filter((p: any) => p.status === 'success').length;
       const failCount = pipelines.filter((p: any) => p.status === 'failed').length;
@@ -672,7 +672,7 @@ async function runAudit(projectId: string): Promise<AuditReport> {
   console.log(`\nRunning GitLab Ultimate Compliance Audit\n`);
   console.log(`Project: ${projectId}`);
   console.log(`GitLab Host: ${GITLAB_HOST}`);
-  console.log(`Token: ${TOKEN.substring(0, 10)}...\n`);
+  console.log(`Token: ${TOKEN?.substring(0, 10) || 'NOT SET'}...\n`);
 
   // Get project info
   const project = await gitlab.Projects.show(projectId);

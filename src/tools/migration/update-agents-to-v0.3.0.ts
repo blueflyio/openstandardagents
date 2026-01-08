@@ -105,7 +105,6 @@ function updateAgentManifest(filePath: string): boolean {
     const updated = yaml.stringify(manifest, {
       indent: 2,
       lineWidth: 0,
-      sortKeys: false,
     });
 
     writeFileSync(filePath, updated, 'utf8');

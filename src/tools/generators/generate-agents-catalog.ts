@@ -26,13 +26,14 @@ function findAgents(): Agent[] {
       // Use safeLoad to prevent arbitrary code execution (CWE-502)
       const data = yaml.load(content, { schema: yaml.JSON_SCHEMA }) as Record<string, unknown>;
       
-      if (data?.agent) {
+      if (data?.agent && typeof data.agent === 'object' && data.agent !== null) {
+        const agent = data.agent as Record<string, unknown>;
         agents.push({
-          id: data.agent.id,
-          name: data.agent.name,
-          role: data.agent.role,
-          description: data.agent.description,
-          capabilities: data.agent.capabilities || [],
+          id: String(agent.id || ''),
+          name: String(agent.name || ''),
+          role: String(agent.role || ''),
+          description: agent.description ? String(agent.description) : undefined,
+          capabilities: Array.isArray(agent.capabilities) ? agent.capabilities as Array<{ name: string; description: string }> : [],
           path: relative(process.cwd(), manifestPath)
         });
       }

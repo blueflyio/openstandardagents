@@ -100,8 +100,7 @@ async function closeMR(mrId: number, reason: string) {
 
   try {
     // Add comment explaining closure
-    await gitlab.MergeRequestNotes.create(PROJECT_ID, mrId, {
-      body: `Closing this MR: ${reason}\n\nIf this work is still needed, please rebase and assign to the appropriate milestone.`,
+    await gitlab.MergeRequestNotes.create(PROJECT_ID, mrId, `Closing this MR: ${reason}\n\nIf this work is still needed, please rebase and assign to the appropriate milestone.`,
     });
 
     // Close the MR
