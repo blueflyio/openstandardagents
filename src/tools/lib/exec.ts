@@ -34,7 +34,7 @@ export function execCommand(command: string, options: ExecOptions = {}): string 
       stdio: ['pipe', 'pipe', 'pipe'],
       cwd,
     });
-    return typeof output === 'string' ? output : output.toString();
+    return typeof output === 'string' ? output : String(output);
   } catch (error) {
     if (error instanceof Error) {
       throw new Error(`Command failed: ${command}\n${error.message}`);
