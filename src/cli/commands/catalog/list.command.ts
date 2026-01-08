@@ -132,7 +132,7 @@ export function createListCommand(): Command {
         console.log('');
         console.log(
           chalk.yellow(
-            `Tip: Run 'buildkit agents catalog convert --all' to create Duo manifests`
+            `Tip: Run 'ossa catalog convert --all' to create Duo manifests`
           )
         );
       }
