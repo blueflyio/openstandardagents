@@ -8,7 +8,7 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import * as fs from 'fs';
 import * as yaml from 'yaml';
-import { CatalogConfig } from './config';
+import { CatalogConfig } from './config.js';
 
 export function createDiffCommand(): Command {
   return new Command('diff')
