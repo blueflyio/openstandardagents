@@ -43,6 +43,7 @@ import { syncCommand } from './commands/sync.command.js';
 import { testCommand } from './commands/test.command.js';
 import { validateCommand } from './commands/validate.command.js';
 import { workspaceCommand } from './commands/workspace.command.js';
+import { createCatalogCommand } from './commands/catalog/index.js';
 
 // Load package.json for version (lazy to avoid Jest module resolution issues)
 import * as fs from 'fs';
@@ -176,6 +177,9 @@ program.addCommand(agentCardCommand);
 
 // Extension development commands
 program.addCommand(extensionTeamCommand);
+
+// Catalog commands (GitLab Duo integration)
+program.addCommand(createCatalogCommand());
 
 // Parse arguments - MUST be after all commands are registered
 program.parse();
