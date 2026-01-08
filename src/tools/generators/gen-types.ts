@@ -9,9 +9,9 @@
 import { join } from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import { getCurrentVersion, getSchemaPath, getTypesOutputPath } from './lib/version.js';
-import { requireFile, writeFile } from './lib/file-ops.js';
-import { execCommand } from './lib/exec.js';
+import { getCurrentVersion, getSchemaPath, getTypesOutputPath } from '../lib/version.js';
+import { requireFile, writeFile } from '../lib/file-ops.js';
+import { execCommand } from '../lib/exec.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
