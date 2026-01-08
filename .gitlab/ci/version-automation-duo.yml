@@ -74,7 +74,7 @@ duo:version-analysis:
 # PLATFORM AGENTS INTEGRATION (via Vast.ai)
 # ============================================================================
 
-platform-agents:version-bump:
+platform_agents_version_bump:
   stage: build
   image: node:22-alpine
   needs:
@@ -144,7 +144,7 @@ duo:multi-file-sync:
   stage: build
   image: node:22-alpine
   needs:
-    - job: platform-agents:version-bump
+    - job: platform_agents_version_bump
       artifacts: true
       optional: true
     - job: duo:version-analysis
@@ -231,7 +231,7 @@ duo:create-version-mr:
     - job: duo:multi-file-sync
       artifacts: true
       optional: true
-    - job: platform-agents:version-bump
+    - job: platform_agents_version_bump
       artifacts: true
       optional: true
   extends: .duo_agent_base
