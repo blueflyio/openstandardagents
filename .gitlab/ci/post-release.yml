@@ -198,8 +198,9 @@ release-to-github:
 announce-release:
   stage: .post
   image: node:${NODE_VERSION}-alpine
-  needs: [release-to-github]
-  optional: true
+  needs:
+    - job: release-to-github
+      optional: true
   before_script:
     - apk add --no-cache curl jq
     - npm ci

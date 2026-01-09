@@ -52,10 +52,11 @@ include:
   - local: .gitlab/ci/mirror-jobs.yml
   # OSSA Agent Pipelines
   #- local: .gitlab/ci/seo-automation.yml
-  # Use canonical agents from platform-agents (pinned version)
-  - project: 'blueflyio/agent-platform/platform-agents'
-    ref: 'v0.1.4-dev8'
-    file: '/.gitlab/ci/agent-suite.yml'
+  # GitLab Components for agent pipelines (migrated from platform-agents)
+  # TODO: Publish agent-suite as GitLab Component to gitlab.com/components/
+  # - component: gitlab.com/blueflyio/components/agent-suite@v0.1.4
+  #   inputs:
+  #     agent_type: "ossa"
 
 stages:
   - sync
