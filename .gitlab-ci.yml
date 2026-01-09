@@ -59,12 +59,18 @@ include:
   #     agent_type: "ossa"
 
 stages:
+  - setup
   - sync
+  - version-detect
   - validate
+  - research
+  - design
+  - implement
   - test
   - build
   - security
   - quality
+  - rc-validation
   - deploy
   - release
   - mirror
