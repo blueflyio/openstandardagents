@@ -83,6 +83,33 @@
         },
         "llamaindex": {
           "$ref": "#/definitions/LlamaIndexExtension"
+        },
+        "vertexai": {
+          "$ref": "#/definitions/VertexAIExtension"
+        },
+        "langgraph": {
+          "$ref": "#/definitions/LangGraphExtension"
+        },
+        "haystack": {
+          "$ref": "#/definitions/HaystackExtension"
+        },
+        "pydantic_ai": {
+          "$ref": "#/definitions/PydanticAIExtension"
+        },
+        "smolagents": {
+          "$ref": "#/definitions/SmolagentsExtension"
+        },
+        "phidata": {
+          "$ref": "#/definitions/PhidataExtension"
+        },
+        "instructor": {
+          "$ref": "#/definitions/InstructorExtension"
+        },
+        "autogpt": {
+          "$ref": "#/definitions/AutoGPTExtension"
+        },
+        "metagpt": {
+          "$ref": "#/definitions/MetaGPTExtension"
         }
       },
       "additionalProperties": true
@@ -7844,6 +7871,1180 @@
               "type": "integer",
               "minimum": 1
             }
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "VertexAIExtension": {
+      "type": "object",
+      "description": "Google Vertex AI Agent Builder mapping configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "project_id": {
+          "type": "string",
+          "description": "GCP project ID"
+        },
+        "location": {
+          "type": "string",
+          "description": "GCP region",
+          "default": "us-central1"
+        },
+        "agent_id": {
+          "type": "string",
+          "description": "Existing Vertex AI Agent ID"
+        },
+        "display_name": {
+          "type": "string",
+          "description": "Agent display name (mapped from metadata.name)"
+        },
+        "default_language_code": {
+          "type": "string",
+          "default": "en"
+        },
+        "time_zone": {
+          "type": "string",
+          "default": "America/Los_Angeles"
+        },
+        "generative_settings": {
+          "type": "object",
+          "properties": {
+            "fallback_settings": {
+              "type": "object",
+              "properties": {
+                "selected_prompt": {
+                  "type": "string"
+                },
+                "prompt_templates": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "display_name": { "type": "string" },
+                      "prompt_text": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            },
+            "generative_safety_settings": {
+              "type": "object",
+              "properties": {
+                "banned_phrases": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                }
+              }
+            },
+            "knowledge_connector_settings": {
+              "type": "object",
+              "properties": {
+                "business": { "type": "string" },
+                "agent": { "type": "string" },
+                "agent_identity": { "type": "string" },
+                "disable_data_store_fallback": { "type": "boolean" }
+              }
+            },
+            "llm_model_settings": {
+              "type": "object",
+              "properties": {
+                "model": {
+                  "type": "string",
+                  "description": "Vertex AI model (mapped from spec.llm)"
+                },
+                "prompt_text": { "type": "string" }
+              }
+            }
+          }
+        },
+        "start_flow": {
+          "type": "string",
+          "description": "Starting flow reference"
+        },
+        "security_settings": {
+          "type": "string",
+          "description": "Security settings resource name"
+        },
+        "enable_stackdriver_logging": {
+          "type": "boolean",
+          "default": true
+        },
+        "enable_spell_correction": {
+          "type": "boolean",
+          "default": false
+        },
+        "locked": {
+          "type": "boolean",
+          "default": false
+        },
+        "advanced_settings": {
+          "type": "object",
+          "properties": {
+            "audio_export_gcs_destination": {
+              "type": "object",
+              "properties": {
+                "uri": { "type": "string" }
+              }
+            },
+            "speech_settings": {
+              "type": "object",
+              "properties": {
+                "endpointer_sensitivity": { "type": "integer" },
+                "no_speech_timeout": { "type": "string" },
+                "use_timeout_based_endpointing": { "type": "boolean" }
+              }
+            },
+            "logging_settings": {
+              "type": "object",
+              "properties": {
+                "enable_stackdriver_logging": { "type": "boolean" },
+                "enable_interaction_logging": { "type": "boolean" }
+              }
+            }
+          }
+        },
+        "git_integration_settings": {
+          "type": "object",
+          "properties": {
+            "github_settings": {
+              "type": "object",
+              "properties": {
+                "display_name": { "type": "string" },
+                "repository_uri": { "type": "string" },
+                "tracking_branch": { "type": "string" },
+                "branches": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "text_to_speech_settings": {
+          "type": "object",
+          "properties": {
+            "synthesize_speech_configs": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "voice": {
+                    "type": "object",
+                    "properties": {
+                      "name": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "LangGraphExtension": {
+      "type": "object",
+      "description": "LangGraph state machine and graph orchestration mapping",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "graph_type": {
+          "type": "string",
+          "enum": ["StateGraph", "MessageGraph", "CompiledGraph"],
+          "default": "StateGraph",
+          "description": "LangGraph graph type"
+        },
+        "state_schema": {
+          "type": "object",
+          "description": "TypedDict state schema definition",
+          "properties": {
+            "name": { "type": "string" },
+            "fields": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "type": { "type": "string" },
+                  "default": {},
+                  "reducer": {
+                    "type": "string",
+                    "enum": ["replace", "append", "merge"]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "nodes": {
+          "type": "array",
+          "description": "Graph nodes (mapped from workflow steps)",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "type": {
+                "type": "string",
+                "enum": ["function", "agent", "tool", "subgraph", "conditional"]
+              },
+              "function_ref": {
+                "type": "string",
+                "description": "Python function reference"
+              },
+              "agent_ref": {
+                "type": "string",
+                "description": "OSSA agent reference"
+              },
+              "retry_policy": {
+                "type": "object",
+                "properties": {
+                  "max_attempts": { "type": "integer" },
+                  "backoff_factor": { "type": "number" }
+                }
+              }
+            },
+            "required": ["name"]
+          }
+        },
+        "edges": {
+          "type": "array",
+          "description": "Graph edges defining flow",
+          "items": {
+            "type": "object",
+            "properties": {
+              "from": { "type": "string" },
+              "to": { "type": "string" },
+              "condition": {
+                "type": "string",
+                "description": "Conditional edge function reference"
+              }
+            },
+            "required": ["from", "to"]
+          }
+        },
+        "conditional_edges": {
+          "type": "array",
+          "description": "Conditional branching edges",
+          "items": {
+            "type": "object",
+            "properties": {
+              "from": { "type": "string" },
+              "path_map": {
+                "type": "object",
+                "additionalProperties": { "type": "string" }
+              },
+              "condition_function": { "type": "string" }
+            }
+          }
+        },
+        "entry_point": {
+          "type": "string",
+          "description": "Graph entry node"
+        },
+        "finish_point": {
+          "type": "string",
+          "description": "Graph finish node (END)"
+        },
+        "checkpointer": {
+          "type": "object",
+          "description": "State persistence configuration",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["memory", "sqlite", "postgres", "redis"]
+            },
+            "connection_string": { "type": "string" },
+            "thread_id_key": { "type": "string" }
+          }
+        },
+        "interrupt_before": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Nodes to interrupt before for human-in-the-loop"
+        },
+        "interrupt_after": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Nodes to interrupt after"
+        },
+        "recursion_limit": {
+          "type": "integer",
+          "default": 25,
+          "description": "Maximum recursion depth"
+        },
+        "debug": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "additionalProperties": true
+    },
+    "HaystackExtension": {
+      "type": "object",
+      "description": "deepset Haystack pipeline mapping configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "pipeline_type": {
+          "type": "string",
+          "enum": ["indexing", "query", "chat", "agent"],
+          "description": "Haystack pipeline type"
+        },
+        "components": {
+          "type": "array",
+          "description": "Pipeline components",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "type": {
+                "type": "string",
+                "description": "Haystack component class"
+              },
+              "init_parameters": {
+                "type": "object",
+                "description": "Component initialization parameters"
+              }
+            },
+            "required": ["name", "type"]
+          }
+        },
+        "connections": {
+          "type": "array",
+          "description": "Component connections",
+          "items": {
+            "type": "object",
+            "properties": {
+              "sender": { "type": "string" },
+              "sender_output": { "type": "string" },
+              "receiver": { "type": "string" },
+              "receiver_input": { "type": "string" }
+            },
+            "required": ["sender", "receiver"]
+          }
+        },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "max_runs_per_component": { "type": "integer" }
+          }
+        },
+        "document_store": {
+          "type": "object",
+          "description": "Document store configuration",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["InMemoryDocumentStore", "ElasticsearchDocumentStore", "OpenSearchDocumentStore", "PineconeDocumentStore", "QdrantDocumentStore", "WeaviateDocumentStore", "ChromaDocumentStore", "PgvectorDocumentStore"]
+            },
+            "connection_params": { "type": "object" }
+          }
+        },
+        "chat_generator": {
+          "type": "object",
+          "description": "Chat generator configuration (mapped from spec.llm)",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["OpenAIChatGenerator", "AnthropicChatGenerator", "AzureOpenAIChatGenerator", "HuggingFaceLocalChatGenerator", "HuggingFaceAPIChatGenerator", "OllamaChatGenerator", "GoogleAIGeminiChatGenerator", "CohereGenerator"]
+            },
+            "model": { "type": "string" },
+            "generation_kwargs": { "type": "object" }
+          }
+        },
+        "embedder": {
+          "type": "object",
+          "description": "Embedding model configuration",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["SentenceTransformersTextEmbedder", "OpenAITextEmbedder", "CohereTextEmbedder", "HuggingFaceAPITextEmbedder", "AzureOpenAITextEmbedder"]
+            },
+            "model": { "type": "string" }
+          }
+        },
+        "retriever": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["InMemoryEmbeddingRetriever", "InMemoryBM25Retriever", "ElasticsearchEmbeddingRetriever", "ElasticsearchBM25Retriever", "PineconeEmbeddingRetriever", "QdrantEmbeddingRetriever"]
+            },
+            "top_k": { "type": "integer", "default": 10 },
+            "filters": { "type": "object" }
+          }
+        },
+        "prompt_builder": {
+          "type": "object",
+          "properties": {
+            "template": { "type": "string" },
+            "required_variables": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "output_adapter": {
+          "type": "object",
+          "properties": {
+            "template": { "type": "string" },
+            "output_type": { "type": "string" }
+          }
+        },
+        "tools": {
+          "type": "array",
+          "description": "Haystack tools (mapped from spec.tools)",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "description": { "type": "string" },
+              "pipeline_ref": { "type": "string" },
+              "parameters": { "type": "object" }
+            }
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "PydanticAIExtension": {
+      "type": "object",
+      "description": "Pydantic AI agent mapping configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "agent_class": {
+          "type": "string",
+          "description": "Custom Agent class name"
+        },
+        "model": {
+          "type": "object",
+          "description": "Model configuration (mapped from spec.llm)",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["openai", "anthropic", "gemini", "groq", "mistral", "ollama", "test"],
+              "description": "Pydantic AI model provider"
+            },
+            "model_name": { "type": "string" },
+            "base_url": { "type": "string" },
+            "api_key_env": { "type": "string" }
+          }
+        },
+        "result_type": {
+          "type": "object",
+          "description": "Pydantic model for structured output",
+          "properties": {
+            "name": { "type": "string" },
+            "fields": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "type": { "type": "string" },
+                  "description": { "type": "string" },
+                  "default": {}
+                }
+              }
+            }
+          }
+        },
+        "deps_type": {
+          "type": "object",
+          "description": "Dependencies type for dependency injection",
+          "properties": {
+            "name": { "type": "string" },
+            "fields": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "type": { "type": "string" },
+                  "description": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "system_prompt": {
+          "type": "string",
+          "description": "System prompt (mapped from spec.role)"
+        },
+        "retries": {
+          "type": "integer",
+          "default": 1,
+          "description": "Default retry count"
+        },
+        "result_retries": {
+          "type": "integer",
+          "description": "Retries for result validation"
+        },
+        "end_strategy": {
+          "type": "string",
+          "enum": ["early", "exhaustive"],
+          "default": "early"
+        },
+        "tools": {
+          "type": "array",
+          "description": "Tool definitions (mapped from spec.tools)",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "description": { "type": "string" },
+              "function_ref": { "type": "string" },
+              "retries": { "type": "integer" },
+              "prepare_ref": { "type": "string" }
+            },
+            "required": ["name"]
+          }
+        },
+        "result_validators": {
+          "type": "array",
+          "description": "Result validation functions",
+          "items": {
+            "type": "object",
+            "properties": {
+              "function_ref": { "type": "string" }
+            }
+          }
+        },
+        "defer_model_check": {
+          "type": "boolean",
+          "default": false
+        },
+        "instrument": {
+          "type": "object",
+          "description": "Instrumentation configuration (mapped from spec.observability)",
+          "properties": {
+            "logfire": { "type": "boolean" },
+            "opentelemetry": { "type": "boolean" }
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "SmolagentsExtension": {
+      "type": "object",
+      "description": "HuggingFace Smolagents mapping configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "agent_type": {
+          "type": "string",
+          "enum": ["ToolCallingAgent", "CodeAgent", "ManagedAgent"],
+          "default": "ToolCallingAgent",
+          "description": "Smolagents agent type"
+        },
+        "model": {
+          "type": "object",
+          "description": "Model configuration (mapped from spec.llm)",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["HfApiModel", "TransformersModel", "LiteLLMModel", "OpenAIServerModel", "AzureOpenAIServerModel", "AmazonBedrockServerModel", "MLXModel"],
+              "description": "Smolagents model class"
+            },
+            "model_id": { "type": "string" },
+            "token_env": { "type": "string" },
+            "kwargs": { "type": "object" }
+          }
+        },
+        "tools": {
+          "type": "array",
+          "description": "Tool definitions (mapped from spec.tools)",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "description": { "type": "string" },
+              "type": {
+                "type": "string",
+                "enum": ["builtin", "custom", "hub", "langchain", "mcp", "space"]
+              },
+              "hub_repo_id": {
+                "type": "string",
+                "description": "HuggingFace Hub tool repo"
+              },
+              "function_ref": { "type": "string" },
+              "inputs": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "object",
+                  "properties": {
+                    "type": { "type": "string" },
+                    "description": { "type": "string" }
+                  }
+                }
+              },
+              "output_type": { "type": "string" }
+            },
+            "required": ["name"]
+          }
+        },
+        "builtin_tools": {
+          "type": "array",
+          "description": "Built-in smolagent tools to enable",
+          "items": {
+            "type": "string",
+            "enum": ["DuckDuckGoSearchTool", "VisitWebpageTool", "WikipediaSearchTool", "PythonInterpreterTool", "FinalAnswerTool", "UserInputTool", "SpeechToTextTool", "TextToSpeechTool", "TranslationTool", "ImageGenerationTool"]
+          }
+        },
+        "system_prompt": {
+          "type": "string",
+          "description": "System prompt (mapped from spec.role)"
+        },
+        "additional_authorized_imports": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Additional Python imports for CodeAgent"
+        },
+        "planning_interval": {
+          "type": "integer",
+          "description": "Steps between planning phases"
+        },
+        "max_steps": {
+          "type": "integer",
+          "default": 20
+        },
+        "verbosity_level": {
+          "type": "integer",
+          "enum": [0, 1, 2],
+          "default": 1
+        },
+        "grammar": {
+          "type": "object",
+          "description": "Output grammar constraints"
+        },
+        "managed_agents": {
+          "type": "array",
+          "description": "Sub-agents for ManagedAgent",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "agent_ref": {
+                "type": "string",
+                "description": "OSSA agent reference"
+              },
+              "description": { "type": "string" }
+            }
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "PhidataExtension": {
+      "type": "object",
+      "description": "Phidata agent mapping configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "agent_type": {
+          "type": "string",
+          "enum": ["Agent", "Assistant", "Team"],
+          "default": "Agent"
+        },
+        "model": {
+          "type": "object",
+          "description": "Model configuration (mapped from spec.llm)",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["OpenAIChat", "Anthropic", "Gemini", "Groq", "Cohere", "Ollama", "Together", "Mistral", "AWS Bedrock", "Azure"],
+              "description": "Phidata model class"
+            },
+            "id": { "type": "string" },
+            "api_key_env": { "type": "string" }
+          }
+        },
+        "instructions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Agent instructions (mapped from spec.role)"
+        },
+        "tools": {
+          "type": "array",
+          "description": "Tool definitions (mapped from spec.tools)",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "type": {
+                "type": "string",
+                "enum": ["builtin", "toolkit", "function"]
+              },
+              "toolkit_class": { "type": "string" },
+              "function_ref": { "type": "string" }
+            }
+          }
+        },
+        "builtin_tools": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["DuckDuckGo", "Newspaper4k", "Arxiv", "PubMed", "Wikipedia", "Exa", "Tavily", "Firecrawl", "Calculator", "File", "Shell", "Sleep", "Yfinance", "Email", "Apify", "Zendesk", "Jira", "Linear", "Slack", "Discord", "Zoom"]
+          }
+        },
+        "knowledge": {
+          "type": "object",
+          "description": "Knowledge base configuration",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["PDFKnowledgeBase", "PDFUrlKnowledgeBase", "TextKnowledgeBase", "JSONKnowledgeBase", "CSVKnowledgeBase", "DocxKnowledgeBase", "CombinedKnowledgeBase", "WebsiteKnowledgeBase", "WikipediaKnowledgeBase", "ArxivKnowledgeBase"]
+            },
+            "sources": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "vector_db": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": ["PgVector", "Pinecone", "Qdrant", "Chroma", "LanceDb", "Weaviate"]
+                },
+                "connection": { "type": "string" },
+                "collection": { "type": "string" }
+              }
+            }
+          }
+        },
+        "storage": {
+          "type": "object",
+          "description": "Session storage configuration",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["PostgresAgentStorage", "SqliteAgentStorage", "MongoAgentStorage", "S3AgentStorage", "YamlAgentStorage", "JsonAgentStorage"]
+            },
+            "connection": { "type": "string" },
+            "table_name": { "type": "string" }
+          }
+        },
+        "memory": {
+          "type": "object",
+          "description": "Memory configuration (mapped from spec.state)",
+          "properties": {
+            "db": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": ["PostgresMemoryDb", "SqliteMemoryDb"]
+                },
+                "connection": { "type": "string" }
+              }
+            },
+            "create_user_memories": { "type": "boolean" },
+            "create_session_summary": { "type": "boolean" }
+          }
+        },
+        "reasoning": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable reasoning mode"
+        },
+        "show_tool_calls": {
+          "type": "boolean",
+          "default": false
+        },
+        "markdown": {
+          "type": "boolean",
+          "default": true
+        },
+        "debug_mode": {
+          "type": "boolean",
+          "default": false
+        },
+        "team": {
+          "type": "object",
+          "description": "Team configuration for multi-agent",
+          "properties": {
+            "agents": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "agent_ref": { "type": "string" },
+                  "role": { "type": "string" }
+                }
+              }
+            },
+            "mode": {
+              "type": "string",
+              "enum": ["route", "collaborate", "coordinate"]
+            }
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "InstructorExtension": {
+      "type": "object",
+      "description": "Instructor structured output mapping configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "client": {
+          "type": "object",
+          "description": "Client configuration (mapped from spec.llm)",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["openai", "anthropic", "litellm", "cohere", "google", "vertexai", "mistral", "groq", "cerebras", "fireworks", "together", "ollama"],
+              "description": "Instructor client type"
+            },
+            "model": { "type": "string" },
+            "mode": {
+              "type": "string",
+              "enum": ["FUNCTIONS", "TOOLS", "JSON", "MD_JSON", "JSON_SCHEMA", "TOOLS_STRICT", "ANTHROPIC_TOOLS", "ANTHROPIC_JSON", "COHERE_TOOLS", "GEMINI_JSON", "GEMINI_TOOLS", "VERTEXAI_TOOLS", "VERTEXAI_JSON", "MISTRAL_TOOLS"],
+              "description": "Instructor mode for structured output"
+            }
+          }
+        },
+        "response_model": {
+          "type": "object",
+          "description": "Pydantic model for response validation",
+          "properties": {
+            "name": { "type": "string" },
+            "fields": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "type": { "type": "string" },
+                  "description": { "type": "string" },
+                  "default": {}
+                }
+              }
+            }
+          }
+        },
+        "max_retries": {
+          "type": "integer",
+          "default": 3,
+          "description": "Max retries for validation errors"
+        },
+        "validation_context": {
+          "type": "object",
+          "description": "Context passed to validators"
+        },
+        "strict": {
+          "type": "boolean",
+          "description": "Enable strict mode"
+        },
+        "hooks": {
+          "type": "object",
+          "description": "Lifecycle hooks",
+          "properties": {
+            "on_completion": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "on_parse": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "on_exception": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "iterable": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable streaming iterable response"
+        },
+        "partial": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable partial streaming"
+        },
+        "cache": {
+          "type": "object",
+          "description": "Caching configuration",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "type": {
+              "type": "string",
+              "enum": ["redis", "diskcache", "memory"]
+            },
+            "ttl": { "type": "integer" }
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "AutoGPTExtension": {
+      "type": "object",
+      "description": "AutoGPT autonomous agent mapping configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "ai_settings": {
+          "type": "object",
+          "description": "AI personality settings",
+          "properties": {
+            "ai_name": {
+              "type": "string",
+              "description": "Agent name (mapped from metadata.name)"
+            },
+            "ai_role": {
+              "type": "string",
+              "description": "Agent role (mapped from spec.role)"
+            },
+            "ai_goals": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Agent goals"
+            }
+          }
+        },
+        "llm": {
+          "type": "object",
+          "description": "LLM configuration (mapped from spec.llm)",
+          "properties": {
+            "provider": {
+              "type": "string",
+              "enum": ["openai", "anthropic", "groq", "llamafile"]
+            },
+            "model": { "type": "string" },
+            "api_key_env": { "type": "string" }
+          }
+        },
+        "commands": {
+          "type": "array",
+          "description": "Enabled commands (mapped from spec.tools)",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "enabled": { "type": "boolean", "default": true },
+              "category": {
+                "type": "string",
+                "enum": ["web_search", "web_browse", "file_operations", "code_execution", "system", "user_interaction"]
+              }
+            }
+          }
+        },
+        "builtin_commands": {
+          "type": "object",
+          "description": "Built-in command toggles",
+          "properties": {
+            "web_search": { "type": "boolean", "default": true },
+            "web_browse": { "type": "boolean", "default": true },
+            "read_file": { "type": "boolean", "default": true },
+            "write_file": { "type": "boolean", "default": true },
+            "execute_code": { "type": "boolean", "default": false },
+            "execute_shell": { "type": "boolean", "default": false },
+            "list_agents": { "type": "boolean", "default": true },
+            "start_agent": { "type": "boolean", "default": true },
+            "message_agent": { "type": "boolean", "default": true }
+          }
+        },
+        "memory": {
+          "type": "object",
+          "description": "Memory backend configuration",
+          "properties": {
+            "backend": {
+              "type": "string",
+              "enum": ["local", "pinecone", "redis", "milvus", "weaviate"]
+            },
+            "index": { "type": "string" }
+          }
+        },
+        "workspace": {
+          "type": "object",
+          "description": "Workspace configuration",
+          "properties": {
+            "restrict_to_workspace": { "type": "boolean", "default": true },
+            "workspace_path": { "type": "string" }
+          }
+        },
+        "continuous_mode": {
+          "type": "boolean",
+          "default": false,
+          "description": "Run without user confirmation"
+        },
+        "continuous_limit": {
+          "type": "integer",
+          "default": 0,
+          "description": "Max continuous iterations (0 = unlimited)"
+        },
+        "speak_mode": {
+          "type": "boolean",
+          "default": false
+        },
+        "debug_mode": {
+          "type": "boolean",
+          "default": false
+        },
+        "skip_reprompt": {
+          "type": "boolean",
+          "default": false
+        },
+        "temperature": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2,
+          "default": 0
+        },
+        "plugins": {
+          "type": "array",
+          "description": "AutoGPT plugins to load",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "enabled": { "type": "boolean" },
+              "config": { "type": "object" }
+            }
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "MetaGPTExtension": {
+      "type": "object",
+      "description": "MetaGPT multi-agent software team mapping configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "company": {
+          "type": "object",
+          "description": "Company/team configuration",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Company name"
+            },
+            "investment": {
+              "type": "number",
+              "description": "Budget in dollars"
+            },
+            "idea": {
+              "type": "string",
+              "description": "Product idea/requirement"
+            }
+          }
+        },
+        "team": {
+          "type": "object",
+          "description": "Team composition",
+          "properties": {
+            "roles": {
+              "type": "array",
+              "description": "Team roles (mapped from multi-agent spec)",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "role_type": {
+                    "type": "string",
+                    "enum": ["ProductManager", "Architect", "ProjectManager", "Engineer", "QAEngineer", "Researcher", "DataAnalyst", "Custom"],
+                    "description": "MetaGPT role type"
+                  },
+                  "goal": { "type": "string" },
+                  "constraints": { "type": "string" },
+                  "agent_ref": {
+                    "type": "string",
+                    "description": "OSSA agent reference for custom roles"
+                  }
+                },
+                "required": ["name", "role_type"]
+              }
+            },
+            "n_round": {
+              "type": "integer",
+              "default": 3,
+              "description": "Number of collaboration rounds"
+            }
+          }
+        },
+        "llm": {
+          "type": "object",
+          "description": "LLM configuration (mapped from spec.llm)",
+          "properties": {
+            "provider": {
+              "type": "string",
+              "enum": ["openai", "anthropic", "azure", "zhipuai", "ollama", "fireworks", "open_llm", "gemini", "ark", "qianfan", "dashscope", "spark", "moonshot"]
+            },
+            "model": { "type": "string" },
+            "api_key_env": { "type": "string" },
+            "base_url": { "type": "string" }
+          }
+        },
+        "environment": {
+          "type": "object",
+          "description": "Execution environment",
+          "properties": {
+            "workspace_path": { "type": "string" },
+            "git_reinit": { "type": "boolean", "default": true },
+            "inc": { "type": "boolean", "default": false },
+            "project_name": { "type": "string" },
+            "reqa_file": { "type": "string" }
+          }
+        },
+        "context": {
+          "type": "object",
+          "description": "Context configuration",
+          "properties": {
+            "max_budget": { "type": "number" },
+            "src_workspace": { "type": "string" },
+            "code_review": { "type": "boolean", "default": true }
+          }
+        },
+        "actions": {
+          "type": "object",
+          "description": "Action configuration",
+          "properties": {
+            "search_and_summarize": { "type": "boolean" },
+            "write_design": { "type": "boolean" },
+            "write_tasks": { "type": "boolean" },
+            "write_code": { "type": "boolean" },
+            "write_code_review": { "type": "boolean" },
+            "run_code": { "type": "boolean" },
+            "write_test": { "type": "boolean" },
+            "debug_error": { "type": "boolean" }
+          }
+        },
+        "repair": {
+          "type": "object",
+          "description": "Repair/debug configuration",
+          "properties": {
+            "enabled": { "type": "boolean", "default": true },
+            "max_auto_fix": { "type": "integer", "default": 3 }
+          }
+        },
+        "output": {
+          "type": "object",
+          "description": "Output configuration",
+          "properties": {
+            "code_path": { "type": "string" },
+            "docs_path": { "type": "string" },
+            "resources_path": { "type": "string" }
           }
         }
       },
