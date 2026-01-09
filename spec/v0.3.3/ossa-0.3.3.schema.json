@@ -7387,6 +7387,467 @@
         }
       },
       "additionalProperties": true
+    },
+    "BedrockAgentsExtension": {
+      "type": "object",
+      "description": "AWS Bedrock Agents extension configuration for deploying OSSA agents as Amazon Bedrock Agents",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable Bedrock Agents integration"
+        },
+        "agent_id": {
+          "type": "string",
+          "description": "Existing Bedrock Agent ID to use"
+        },
+        "agent_alias_id": {
+          "type": "string",
+          "description": "Bedrock Agent alias ID for versioning"
+        },
+        "foundation_model": {
+          "type": "string",
+          "description": "Bedrock foundation model ID (e.g., anthropic.claude-3-sonnet-20240229-v1:0)",
+          "examples": ["anthropic.claude-3-sonnet-20240229-v1:0", "anthropic.claude-3-haiku-20240307-v1:0"]
+        },
+        "instruction": {
+          "type": "string",
+          "description": "Agent instructions (mapped from spec.role if not provided)"
+        },
+        "idle_session_ttl_seconds": {
+          "type": "integer",
+          "minimum": 60,
+          "maximum": 3600,
+          "default": 600,
+          "description": "Session timeout in seconds"
+        },
+        "action_groups": {
+          "type": "array",
+          "description": "Bedrock action groups (mapped from spec.tools)",
+          "items": {
+            "type": "object",
+            "properties": {
+              "action_group_name": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "action_group_executor": {
+                "type": "object",
+                "properties": {
+                  "lambda": {
+                    "type": "string",
+                    "description": "Lambda ARN for action execution"
+                  }
+                }
+              },
+              "api_schema": {
+                "type": "object",
+                "description": "OpenAPI schema for action group"
+              },
+              "function_schema": {
+                "type": "object",
+                "description": "Function schema for action group"
+              }
+            },
+            "required": ["action_group_name"]
+          }
+        },
+        "knowledge_bases": {
+          "type": "array",
+          "description": "Knowledge base configurations for RAG",
+          "items": {
+            "type": "object",
+            "properties": {
+              "knowledge_base_id": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "retrieval_configuration": {
+                "type": "object",
+                "properties": {
+                  "vector_search_configuration": {
+                    "type": "object",
+                    "properties": {
+                      "number_of_results": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 100,
+                        "default": 5
+                      },
+                      "override_search_type": {
+                        "type": "string",
+                        "enum": ["HYBRID", "SEMANTIC"]
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "required": ["knowledge_base_id"]
+          }
+        },
+        "guardrail": {
+          "type": "object",
+          "description": "Bedrock Guardrail configuration (mapped from spec.safety)",
+          "properties": {
+            "guardrail_identifier": {
+              "type": "string"
+            },
+            "guardrail_version": {
+              "type": "string"
+            }
+          }
+        },
+        "memory_configuration": {
+          "type": "object",
+          "description": "Agent memory settings",
+          "properties": {
+            "enabled_memory_types": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["SESSION_SUMMARY"]
+              }
+            },
+            "storage_days": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 365,
+              "default": 30
+            }
+          }
+        },
+        "prompt_override_configuration": {
+          "type": "object",
+          "description": "Override default prompts",
+          "properties": {
+            "prompt_configurations": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "prompt_type": {
+                    "type": "string",
+                    "enum": ["PRE_PROCESSING", "ORCHESTRATION", "POST_PROCESSING", "KNOWLEDGE_BASE_RESPONSE_GENERATION"]
+                  },
+                  "prompt_state": {
+                    "type": "string",
+                    "enum": ["ENABLED", "DISABLED"]
+                  },
+                  "base_prompt_template": {
+                    "type": "string"
+                  },
+                  "inference_configuration": {
+                    "type": "object",
+                    "properties": {
+                      "temperature": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "top_p": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "top_k": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 500
+                      },
+                      "maximum_length": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 4096
+                      },
+                      "stop_sequences": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "LlamaIndexExtension": {
+      "type": "object",
+      "description": "LlamaIndex extension configuration for data-aware AI applications",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable LlamaIndex integration"
+        },
+        "agent_type": {
+          "type": "string",
+          "description": "LlamaIndex agent type",
+          "enum": ["openai", "react", "structured_planner", "function_calling", "multi_document", "sub_question"],
+          "default": "openai"
+        },
+        "llm": {
+          "type": "object",
+          "description": "LLM configuration (mapped from spec.llm)",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["openai", "anthropic", "huggingface", "azure_openai", "ollama", "bedrock"],
+              "description": "LLM provider type"
+            },
+            "model": {
+              "type": "string",
+              "description": "Model identifier"
+            },
+            "temperature": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 2
+            },
+            "max_tokens": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "additional_kwargs": {
+              "type": "object",
+              "description": "Additional LLM parameters"
+            }
+          }
+        },
+        "embed_model": {
+          "type": "object",
+          "description": "Embedding model configuration",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["openai", "huggingface", "cohere", "bedrock", "local"],
+              "description": "Embedding model type"
+            },
+            "model_name": {
+              "type": "string",
+              "description": "Embedding model name"
+            },
+            "embed_batch_size": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 10
+            }
+          }
+        },
+        "tools": {
+          "type": "array",
+          "description": "LlamaIndex tools (mapped from spec.tools)",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["function", "query_engine", "retriever", "custom"]
+              },
+              "name": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "fn_schema": {
+                "type": "object",
+                "description": "Function schema for tool"
+              },
+              "return_direct": {
+                "type": "boolean",
+                "default": false
+              }
+            },
+            "required": ["name"]
+          }
+        },
+        "index": {
+          "type": "object",
+          "description": "Index configuration for RAG",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["vector", "list", "tree", "keyword", "knowledge_graph", "document_summary"],
+              "default": "vector"
+            },
+            "vector_store": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": ["simple", "faiss", "chroma", "pinecone", "qdrant", "weaviate", "milvus"]
+                },
+                "connection_string": {
+                  "type": "string"
+                },
+                "collection_name": {
+                  "type": "string"
+                }
+              }
+            },
+            "storage_context": {
+              "type": "object",
+              "properties": {
+                "persist_dir": {
+                  "type": "string"
+                },
+                "docstore": {
+                  "type": "object"
+                },
+                "index_store": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "retriever": {
+          "type": "object",
+          "description": "Retriever configuration",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["vector_index", "bm25", "hybrid", "auto_merging", "recursive"]
+            },
+            "similarity_top_k": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 5
+            },
+            "node_postprocessors": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": ["similarity_cutoff", "keyword", "metadata", "cohere_rerank", "llm_rerank"]
+                  },
+                  "config": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "query_engine": {
+          "type": "object",
+          "description": "Query engine configuration",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["simple", "citation", "sub_question", "router", "multi_step", "flare"]
+            },
+            "response_mode": {
+              "type": "string",
+              "enum": ["refine", "compact", "tree_summarize", "simple_summarize", "accumulate", "compact_accumulate"],
+              "default": "compact"
+            },
+            "streaming": {
+              "type": "boolean",
+              "default": false
+            },
+            "response_synthesizer": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "text_qa_template": {
+                  "type": "string"
+                },
+                "refine_template": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "memory": {
+          "type": "object",
+          "description": "Chat memory configuration (mapped from spec.state)",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["buffer", "summary", "buffer_window", "entity"],
+              "default": "buffer"
+            },
+            "token_limit": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "chat_store": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": ["simple", "redis", "dynamodb"]
+                },
+                "connection_string": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "callbacks": {
+          "type": "object",
+          "description": "Callback configuration (mapped from spec.observability)",
+          "properties": {
+            "handlers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": ["llama_debug", "wandb", "arize_phoenix", "langfuse", "opentelemetry"]
+                  },
+                  "config": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "service_context": {
+          "type": "object",
+          "description": "Global service context configuration",
+          "properties": {
+            "chunk_size": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1024
+            },
+            "chunk_overlap": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 20
+            },
+            "context_window": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "num_output": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        }
+      },
+      "additionalProperties": true
     }
   }
 }

@@ -3,8 +3,7 @@
  * Following TDD principles
  */
 
-import { describe, it } from 'node:test';
-import assert from 'node:assert';
+import { describe, it, expect } from '@jest/globals';
 
 describe('ossa validate', () => {
   it('should validate OSSA manifest structure', () => {
@@ -17,14 +16,14 @@ describe('ossa validate', () => {
         version: '1.0.0'
       },
       spec: {
-        capabilities: []
+        role: 'Test agent'
       }
     };
 
-    assert.ok(validManifest.apiVersion === 'ossa/v0.3.3');
-    assert.ok(validManifest.kind === 'Agent');
-    assert.ok(validManifest.metadata.name);
-    assert.ok(validManifest.spec);
+    expect(validManifest.apiVersion).toBe('ossa/v0.3.3');
+    expect(validManifest.kind).toBe('Agent');
+    expect(validManifest.metadata.name).toBeTruthy();
+    expect(validManifest.spec).toBeDefined();
   });
 
   it('should reject invalid apiVersion', () => {
@@ -33,7 +32,7 @@ describe('ossa validate', () => {
       kind: 'Agent'
     };
 
-    assert.ok(invalidManifest.apiVersion !== 'ossa/v0.3.3');
+    expect(invalidManifest.apiVersion).not.toBe('ossa/v0.3.3');
   });
 
   it('should reject missing required fields', () => {
@@ -46,9 +45,9 @@ describe('ossa validate', () => {
     invalidManifests.forEach(manifest => {
       const isValid = manifest.apiVersion === 'ossa/v0.3.3' &&
                       manifest.kind === 'Agent' &&
-                      manifest.metadata?.name &&
-                      manifest.spec;
-      assert.ok(!isValid, 'Should reject invalid manifest');
+                      (manifest as any).metadata?.name &&
+                      (manifest as any).spec;
+      expect(isValid).toBeFalsy();
     });
   });
 });
