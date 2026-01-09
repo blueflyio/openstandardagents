@@ -3,8 +3,7 @@
  * Following TDD principles
  */
 
-import { describe, it } from 'node:test';
-import assert from 'node:assert';
+import { describe, it, expect } from '@jest/globals';
 
 describe('ossa init', () => {
   it('should create minimal template structure', () => {
@@ -15,7 +14,7 @@ describe('ossa init', () => {
     ];
 
     minimalFiles.forEach(file => {
-      assert.ok(file, `Should create ${file}`);
+      expect(file).toBeTruthy();
     });
   });
 
@@ -29,7 +28,7 @@ describe('ossa init', () => {
     ];
 
     fullFiles.forEach(file => {
-      assert.ok(file, `Should create ${file}`);
+      expect(file).toBeTruthy();
     });
   });
 
@@ -45,7 +44,7 @@ describe('ossa init', () => {
     ];
 
     enterpriseFiles.forEach(file => {
-      assert.ok(file, `Should create ${file}`);
+      expect(file).toBeTruthy();
     });
   });
 });

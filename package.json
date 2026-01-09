@@ -198,7 +198,7 @@
     "json-schema-to-zod": "^2.6.1",
     "prettier": "^3.6.2",
     "semantic-release": "^25.0.1",
-    "ts-jest": "^29.4.4",
+    "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"

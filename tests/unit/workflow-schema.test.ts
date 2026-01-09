@@ -14,7 +14,7 @@ describe('OSSA v0.3.0 Workflow Schema', () => {
 
   beforeAll(() => {
     // Load the v0.3.0 schema
-    const schemaPath = path.join(__dirname, '../../spec/v0.3.0/ossa-0.3.0.schema.json');
+    const schemaPath = path.join(__dirname, '../../spec/v0.3.3/ossa-0.3.3.schema.json');
     schema = JSON.parse(fs.readFileSync(schemaPath, 'utf-8'));
 
     // Setup AJV validator
@@ -26,7 +26,7 @@ describe('OSSA v0.3.0 Workflow Schema', () => {
   describe('kind: Workflow validation', () => {
     it('should validate a minimal Workflow manifest', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Workflow',
         metadata: {
           name: 'minimal-workflow',
@@ -47,7 +47,7 @@ describe('OSSA v0.3.0 Workflow Schema', () => {
 
     it('should validate a Workflow with triggers', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Workflow',
         metadata: {
           name: 'triggered-workflow',
@@ -86,7 +86,7 @@ describe('OSSA v0.3.0 Workflow Schema', () => {
 
     it('should validate a Workflow with mixed Task and Agent steps', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Workflow',
         metadata: {
           name: 'hybrid-workflow',
@@ -123,7 +123,7 @@ describe('OSSA v0.3.0 Workflow Schema', () => {
 
     it('should validate a Workflow with parallel steps', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Workflow',
         metadata: {
           name: 'parallel-workflow',
@@ -157,7 +157,7 @@ describe('OSSA v0.3.0 Workflow Schema', () => {
 
     it('should validate a Workflow with conditional branches', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Workflow',
         metadata: {
           name: 'conditional-workflow',
@@ -203,7 +203,7 @@ describe('OSSA v0.3.0 Workflow Schema', () => {
 
     it('should validate a Workflow with loop', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Workflow',
         metadata: {
           name: 'loop-workflow',
@@ -248,7 +248,7 @@ describe('OSSA v0.3.0 Workflow Schema', () => {
 
     it('should validate a Workflow with error handling', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Workflow',
         metadata: {
           name: 'error-handling-workflow',
@@ -286,7 +286,7 @@ describe('OSSA v0.3.0 Workflow Schema', () => {
 
     it('should validate a Workflow with concurrency control', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Workflow',
         metadata: {
           name: 'concurrent-workflow',
@@ -313,7 +313,7 @@ describe('OSSA v0.3.0 Workflow Schema', () => {
 
     it('should reject Workflow without steps', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Workflow',
         metadata: {
           name: 'invalid-workflow',
@@ -330,7 +330,7 @@ describe('OSSA v0.3.0 Workflow Schema', () => {
 
     it('should reject Workflow with empty steps array', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Workflow',
         metadata: {
           name: 'invalid-workflow',
@@ -349,7 +349,7 @@ describe('OSSA v0.3.0 Workflow Schema', () => {
   describe('TypeScript type guards', () => {
     it('isOssaWorkflow should return true for Workflow manifests', () => {
       const workflow = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Workflow',
         metadata: { name: 'test' },
         spec: { steps: [{ id: 'step-1' }] },
@@ -359,7 +359,7 @@ describe('OSSA v0.3.0 Workflow Schema', () => {
 
     it('isOssaWorkflow should return false for Task manifests', () => {
       const task = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Task',
         metadata: { name: 'test' },
         spec: { execution: { type: 'deterministic' } },

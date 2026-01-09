@@ -12,7 +12,7 @@ describe('MigrationService', () => {
   describe('migrate', () => {
     it('should handle k8s-style format', async () => {
       const input = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Agent',
         metadata: { name: 'test', version: '1.0.0' },
         spec: { role: 'test' },
