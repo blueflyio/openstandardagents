@@ -638,6 +638,12 @@
           "maxLength": 253,
           "description": "Resource identifier (DNS-1123 subdomain format for Kubernetes compatibility)"
         },
+        "namespace": {
+          "type": "string",
+          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$",
+          "maxLength": 63,
+          "description": "Logical grouping namespace (like Kubernetes namespace)"
+        },
         "version": {
           "type": "string",
           "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
@@ -1113,8 +1119,36 @@
         },
         "lifecycle": {
           "type": "object",
-          "description": "Agent lifecycle and environment management configuration",
+          "description": "Agent lifecycle, execution, and environment management configuration",
           "properties": {
+            "max_turns": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Maximum number of agentic turns/iterations"
+            },
+            "turn_timeout": {
+              "type": "string",
+              "pattern": "^[0-9]+(s|m|h)$",
+              "description": "Timeout per turn (e.g., '300s', '5m')"
+            },
+            "idle_timeout": {
+              "type": "string",
+              "pattern": "^[0-9]+(s|m|h)$",
+              "description": "Idle timeout before agent suspension (e.g., '30m')"
+            },
+            "checkpoint_interval": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Checkpoint state every N turns"
+            },
+            "phases": {
+              "type": "array",
+              "description": "Ordered lifecycle phases for turn execution",
+              "items": {
+                "type": "string",
+                "enum": ["init", "normalize", "resolve", "infer", "execute", "assemble", "emit"]
+              }
+            },
             "environments": {
               "type": "object",
               "description": "Environment-specific configurations",
@@ -3853,6 +3887,25 @@
       "type": "object",
       "description": "Agent-to-agent messaging configuration (v0.3.3+)",
       "properties": {
+        "mesh_endpoint": {
+          "type": "string",
+          "description": "Agent mesh endpoint URL for A2A communication"
+        },
+        "broker": {
+          "type": "object",
+          "description": "Message broker configuration",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["redis", "nats", "memory", "kafka"],
+              "description": "Broker type"
+            },
+            "url": {
+              "type": "string",
+              "description": "Broker connection URL"
+            }
+          }
+        },
         "publishes": {
           "type": "array",
           "description": "Channels this agent publishes to",
