@@ -110,6 +110,12 @@
         },
         "metagpt": {
           "$ref": "#/definitions/MetaGPTExtension"
+        },
+        "kubernetes": {
+          "$ref": "#/definitions/KubernetesExtension"
+        },
+        "kagent": {
+          "$ref": "#/definitions/KagentExtension"
         }
       },
       "additionalProperties": true
@@ -9045,6 +9051,602 @@
             "code_path": { "type": "string" },
             "docs_path": { "type": "string" },
             "resources_path": { "type": "string" }
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "KubernetesExtension": {
+      "type": "object",
+      "description": "Kubernetes deployment mapping configuration for OSSA agents. Supports kind, k3s, minikube, and production clusters.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "cluster": {
+          "type": "object",
+          "description": "Cluster configuration",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["kind", "k3s", "minikube", "eks", "gke", "aks", "openshift", "rancher", "custom"],
+              "description": "Kubernetes cluster type"
+            },
+            "name": {
+              "type": "string",
+              "description": "Cluster name (for kind: cluster name, for cloud: cluster identifier)"
+            },
+            "context": {
+              "type": "string",
+              "description": "kubectl context to use"
+            },
+            "kubeconfig": {
+              "type": "string",
+              "description": "Path to kubeconfig file or env var reference"
+            }
+          }
+        },
+        "namespace": {
+          "type": "object",
+          "description": "Namespace configuration",
+          "properties": {
+            "name": {
+              "type": "string",
+              "default": "ossa-agents",
+              "description": "Kubernetes namespace for agents"
+            },
+            "create": {
+              "type": "boolean",
+              "default": true,
+              "description": "Create namespace if it doesn't exist"
+            },
+            "labels": {
+              "type": "object",
+              "additionalProperties": { "type": "string" },
+              "description": "Labels to apply to namespace"
+            }
+          }
+        },
+        "deployment": {
+          "type": "object",
+          "description": "Deployment configuration",
+          "properties": {
+            "replicas": {
+              "type": "integer",
+              "default": 1,
+              "description": "Number of agent pod replicas"
+            },
+            "strategy": {
+              "type": "string",
+              "enum": ["RollingUpdate", "Recreate"],
+              "default": "RollingUpdate"
+            },
+            "image": {
+              "type": "object",
+              "properties": {
+                "repository": { "type": "string" },
+                "tag": { "type": "string" },
+                "pullPolicy": {
+                  "type": "string",
+                  "enum": ["Always", "IfNotPresent", "Never"],
+                  "default": "IfNotPresent"
+                }
+              }
+            },
+            "resources": {
+              "type": "object",
+              "description": "Resource requests and limits",
+              "properties": {
+                "requests": {
+                  "type": "object",
+                  "properties": {
+                    "cpu": { "type": "string" },
+                    "memory": { "type": "string" },
+                    "gpu": { "type": "string" }
+                  }
+                },
+                "limits": {
+                  "type": "object",
+                  "properties": {
+                    "cpu": { "type": "string" },
+                    "memory": { "type": "string" },
+                    "gpu": { "type": "string" }
+                  }
+                }
+              }
+            },
+            "nodeSelector": {
+              "type": "object",
+              "additionalProperties": { "type": "string" }
+            },
+            "tolerations": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "key": { "type": "string" },
+                  "operator": { "type": "string" },
+                  "value": { "type": "string" },
+                  "effect": { "type": "string" }
+                }
+              }
+            },
+            "affinity": {
+              "type": "object",
+              "description": "Pod affinity/anti-affinity rules"
+            }
+          }
+        },
+        "service": {
+          "type": "object",
+          "description": "Service configuration for agent networking",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["ClusterIP", "NodePort", "LoadBalancer"],
+              "default": "ClusterIP"
+            },
+            "port": {
+              "type": "integer",
+              "default": 8080
+            },
+            "targetPort": {
+              "type": "integer"
+            },
+            "annotations": {
+              "type": "object",
+              "additionalProperties": { "type": "string" }
+            }
+          }
+        },
+        "ingress": {
+          "type": "object",
+          "description": "Ingress configuration",
+          "properties": {
+            "enabled": { "type": "boolean", "default": false },
+            "className": { "type": "string" },
+            "host": { "type": "string" },
+            "path": { "type": "string", "default": "/" },
+            "tls": {
+              "type": "object",
+              "properties": {
+                "enabled": { "type": "boolean" },
+                "secretName": { "type": "string" }
+              }
+            }
+          }
+        },
+        "secrets": {
+          "type": "object",
+          "description": "Secret management for API keys and credentials",
+          "properties": {
+            "provider": {
+              "type": "string",
+              "enum": ["kubernetes", "vault", "aws-secrets-manager", "azure-keyvault", "gcp-secret-manager", "external-secrets"],
+              "default": "kubernetes"
+            },
+            "secretName": {
+              "type": "string",
+              "description": "Kubernetes secret name containing API keys"
+            },
+            "keys": {
+              "type": "array",
+              "description": "Secret keys to mount as environment variables",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "envVar": { "type": "string" },
+                  "secretKey": { "type": "string" }
+                },
+                "required": ["name", "envVar"]
+              }
+            }
+          }
+        },
+        "volumes": {
+          "type": "array",
+          "description": "Volume mounts for agent pods",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "type": {
+                "type": "string",
+                "enum": ["emptyDir", "configMap", "secret", "persistentVolumeClaim", "hostPath"]
+              },
+              "mountPath": { "type": "string" },
+              "source": { "type": "string" },
+              "readOnly": { "type": "boolean" }
+            },
+            "required": ["name", "type", "mountPath"]
+          }
+        },
+        "probes": {
+          "type": "object",
+          "description": "Health check probes",
+          "properties": {
+            "liveness": {
+              "type": "object",
+              "properties": {
+                "enabled": { "type": "boolean", "default": true },
+                "path": { "type": "string", "default": "/health" },
+                "initialDelaySeconds": { "type": "integer", "default": 30 },
+                "periodSeconds": { "type": "integer", "default": 10 }
+              }
+            },
+            "readiness": {
+              "type": "object",
+              "properties": {
+                "enabled": { "type": "boolean", "default": true },
+                "path": { "type": "string", "default": "/ready" },
+                "initialDelaySeconds": { "type": "integer", "default": 5 },
+                "periodSeconds": { "type": "integer", "default": 5 }
+              }
+            }
+          }
+        },
+        "serviceAccount": {
+          "type": "object",
+          "description": "Service account configuration",
+          "properties": {
+            "create": { "type": "boolean", "default": true },
+            "name": { "type": "string" },
+            "annotations": {
+              "type": "object",
+              "additionalProperties": { "type": "string" }
+            }
+          }
+        },
+        "rbac": {
+          "type": "object",
+          "description": "RBAC configuration for agent permissions",
+          "properties": {
+            "create": { "type": "boolean", "default": true },
+            "rules": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "apiGroups": { "type": "array", "items": { "type": "string" } },
+                  "resources": { "type": "array", "items": { "type": "string" } },
+                  "verbs": { "type": "array", "items": { "type": "string" } }
+                }
+              }
+            }
+          }
+        },
+        "helm": {
+          "type": "object",
+          "description": "Helm chart configuration for agent deployment",
+          "properties": {
+            "chart": { "type": "string" },
+            "version": { "type": "string" },
+            "repository": { "type": "string" },
+            "releaseName": { "type": "string" },
+            "values": {
+              "type": "object",
+              "description": "Helm values override"
+            },
+            "valuesFiles": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "KagentExtension": {
+      "type": "object",
+      "description": "kagent.dev Kubernetes-native AI agent orchestration mapping configuration. Enables declarative agent deployment on K8s clusters with CRD-based lifecycle management.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "apiVersion": {
+          "type": "string",
+          "default": "kagent.dev/v1alpha1",
+          "description": "kagent CRD API version"
+        },
+        "agent": {
+          "type": "object",
+          "description": "Agent CRD configuration",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Agent resource name (DNS-1123 subdomain)"
+            },
+            "namespace": {
+              "type": "string",
+              "default": "kagent-system",
+              "description": "Namespace for agent deployment"
+            },
+            "model": {
+              "type": "object",
+              "description": "Model configuration (mapped from spec.llm)",
+              "properties": {
+                "provider": {
+                  "type": "string",
+                  "enum": ["openai", "anthropic", "azure", "ollama", "litellm", "custom"],
+                  "description": "LLM provider"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "Model name"
+                },
+                "apiKeySecretRef": {
+                  "type": "object",
+                  "properties": {
+                    "name": { "type": "string" },
+                    "key": { "type": "string" }
+                  }
+                },
+                "endpoint": {
+                  "type": "string",
+                  "description": "Custom API endpoint"
+                }
+              }
+            },
+            "systemPrompt": {
+              "type": "string",
+              "description": "System prompt (mapped from spec.role or spec.prompts)"
+            },
+            "tools": {
+              "type": "array",
+              "description": "Tool references (mapped from spec.tools)",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "toolRef": {
+                    "type": "object",
+                    "properties": {
+                      "kind": { "type": "string" },
+                      "name": { "type": "string" }
+                    }
+                  },
+                  "mcpServer": {
+                    "type": "object",
+                    "properties": {
+                      "name": { "type": "string" },
+                      "namespace": { "type": "string" },
+                      "tools": {
+                        "type": "array",
+                        "items": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "mcpServers": {
+          "type": "array",
+          "description": "MCP server deployments (mapped from spec.tools where type=mcp)",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "image": { "type": "string" },
+              "command": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "env": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": { "type": "string" },
+                    "value": { "type": "string" },
+                    "valueFrom": {
+                      "type": "object",
+                      "properties": {
+                        "secretKeyRef": {
+                          "type": "object",
+                          "properties": {
+                            "name": { "type": "string" },
+                            "key": { "type": "string" }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "resources": {
+                "type": "object",
+                "properties": {
+                  "requests": {
+                    "type": "object",
+                    "properties": {
+                      "cpu": { "type": "string" },
+                      "memory": { "type": "string" }
+                    }
+                  },
+                  "limits": {
+                    "type": "object",
+                    "properties": {
+                      "cpu": { "type": "string" },
+                      "memory": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            },
+            "required": ["name", "image"]
+          }
+        },
+        "toolServer": {
+          "type": "object",
+          "description": "Custom tool server configuration",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "image": { "type": "string" },
+            "port": { "type": "integer", "default": 8080 },
+            "protocol": {
+              "type": "string",
+              "enum": ["http", "grpc", "mcp"]
+            }
+          }
+        },
+        "memory": {
+          "type": "object",
+          "description": "Memory/state management configuration (mapped from spec.state)",
+          "properties": {
+            "provider": {
+              "type": "string",
+              "enum": ["in-memory", "redis", "postgresql", "qdrant", "pinecone", "custom"]
+            },
+            "connectionSecretRef": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string" },
+                "key": { "type": "string" }
+              }
+            },
+            "ttlSeconds": { "type": "integer" },
+            "maxMessages": { "type": "integer" }
+          }
+        },
+        "team": {
+          "type": "object",
+          "description": "Multi-agent team configuration",
+          "properties": {
+            "name": { "type": "string" },
+            "participants": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "agentRef": {
+                    "type": "object",
+                    "properties": {
+                      "name": { "type": "string" },
+                      "namespace": { "type": "string" }
+                    }
+                  },
+                  "role": { "type": "string" }
+                }
+              }
+            },
+            "terminationCondition": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": ["MaxMessages", "TextMention", "External"]
+                },
+                "maxMessages": { "type": "integer" },
+                "text": { "type": "string" }
+              }
+            },
+            "selector": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": ["RoundRobin", "Random", "Selector"]
+                },
+                "selectorRef": {
+                  "type": "object",
+                  "properties": {
+                    "name": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "scaling": {
+          "type": "object",
+          "description": "Auto-scaling configuration",
+          "properties": {
+            "enabled": { "type": "boolean", "default": false },
+            "minReplicas": { "type": "integer", "default": 1 },
+            "maxReplicas": { "type": "integer", "default": 10 },
+            "metrics": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": ["cpu", "memory", "custom"]
+                  },
+                  "averageUtilization": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "observability": {
+          "type": "object",
+          "description": "Observability configuration (mapped from spec.observability)",
+          "properties": {
+            "logging": {
+              "type": "object",
+              "properties": {
+                "level": {
+                  "type": "string",
+                  "enum": ["debug", "info", "warn", "error"]
+                },
+                "format": {
+                  "type": "string",
+                  "enum": ["json", "text"]
+                }
+              }
+            },
+            "metrics": {
+              "type": "object",
+              "properties": {
+                "enabled": { "type": "boolean" },
+                "port": { "type": "integer", "default": 9090 },
+                "path": { "type": "string", "default": "/metrics" }
+              }
+            },
+            "tracing": {
+              "type": "object",
+              "properties": {
+                "enabled": { "type": "boolean" },
+                "endpoint": { "type": "string" },
+                "samplingRate": { "type": "number" }
+              }
+            }
+          }
+        },
+        "deployment": {
+          "type": "object",
+          "description": "Deployment overrides",
+          "properties": {
+            "annotations": {
+              "type": "object",
+              "additionalProperties": { "type": "string" }
+            },
+            "labels": {
+              "type": "object",
+              "additionalProperties": { "type": "string" }
+            },
+            "nodeSelector": {
+              "type": "object",
+              "additionalProperties": { "type": "string" }
+            },
+            "tolerations": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "key": { "type": "string" },
+                  "operator": { "type": "string" },
+                  "value": { "type": "string" },
+                  "effect": { "type": "string" }
+                }
+              }
+            }
           }
         }
       },
