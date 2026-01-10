@@ -26,6 +26,7 @@ import { MigrationService } from '../../services/migration.service.js';
 import { ValidationService } from '../../services/validation.service.js';
 import type { OssaAgent } from '../../types/index.js';
 import { getVersionInfo } from '../../utils/version.js';
+import { handleCommandError } from '../utils/index.js';
 
 export const migrateCommand = new Command('migrate')
   .argument('<source>', 'Path to manifest or directory to migrate')

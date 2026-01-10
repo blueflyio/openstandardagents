@@ -1,16 +1,26 @@
 /**
  * OSSA Contract Command
  * Cross-agent contract testing and validation
+ *
+ * SOLID Principles:
+ * - Uses shared manifest loading utilities (DRY)
+ * - Uses shared output utilities (DRY)
+ * - Single Responsibility: Only handles contract validation
  */
 
 import chalk from 'chalk';
 import { Command } from 'commander';
-import * as fs from 'fs';
 import * as path from 'path';
-import { glob } from 'glob';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { ContractValidator } from '../../services/validators/contract.validator.js';
+import {
+  outputJSON,
+  loadManifestsByGlob,
+  handleCommandError,
+  printPatternInfo,
+  exitNoManifestsFound,
+} from '../utils/index.js';
 
 /**
  * ossa contract validate <pattern>
@@ -36,34 +46,19 @@ const validateContractsCommand = new Command('validate')
     ) => {
       try {
         console.log(chalk.blue(`\n[CHECK] Validating agent contracts...`));
-        console.log(chalk.gray(`Pattern: ${pattern}\n`));
+        printPatternInfo(pattern, 0);
 
-        // Find all manifests
-        const files = await glob(pattern, { absolute: true });
-        if (files.length === 0) {
-          console.log(chalk.yellow('[WARN]  No agent manifests found matching pattern'));
-          process.exit(1);
+        // Load all manifests using shared utility
+        const { loaded, errors } = await loadManifestsByGlob(pattern, { verbose: options.verbose });
+
+        // Update count display
+        console.log(chalk.gray(`Found ${loaded.length + errors.length} manifests\n`));
+
+        if (loaded.length === 0) {
+          exitNoManifestsFound('matching pattern');
         }
 
-        console.log(chalk.gray(`Found ${files.length} manifests\n`));
-
-        // Load all manifests
-        const manifestRepo = container.get(ManifestRepository);
-        const manifests: any[] = [];
-
-        for (const file of files) {
-          try {
-            const manifest = await manifestRepo.load(file);
-            manifests.push(manifest);
-          } catch (error: any) {
-            console.log(chalk.yellow(`[WARN]  Skipping ${path.basename(file)}: ${error.message}`));
-          }
-        }
-
-        if (manifests.length === 0) {
-          console.log(chalk.red('[FAIL] No valid manifests found'));
-          process.exit(1);
-        }
+        const manifests = loaded.map((l) => l.manifest);
 
         // Validate contracts
         const validator = container.get(ContractValidator);
@@ -169,12 +164,8 @@ const validateContractsCommand = new Command('validate')
 
           process.exit(1);
         }
-      } catch (error: any) {
-        console.error(chalk.red(`\n[FAIL] Error: ${error.message}\n`));
-        if (options.verbose && error.stack) {
-          console.error(chalk.gray(error.stack));
-        }
-        process.exit(1);
+      } catch (error) {
+        handleCommandError(error, { verbose: options.verbose });
       }
     }
   );
@@ -265,12 +256,8 @@ const testContractCommand = new Command('test')
 
         process.exit(1);
       }
-    } catch (error: any) {
-      console.error(chalk.red(`\n[FAIL] Error: ${error.message}\n`));
-      if (options.verbose && error.stack) {
-        console.error(chalk.gray(error.stack));
-      }
-      process.exit(1);
+    } catch (error) {
+      handleCommandError(error, { verbose: options.verbose });
     }
   });
 
@@ -308,7 +295,7 @@ const breakingChangesCommand = new Command('breaking-changes')
 
         // Output results
         if (options.format === 'json') {
-          console.log(JSON.stringify(result, null, 2));
+          outputJSON(result);
           process.exit(result.hasBreakingChanges ? 1 : 0);
         }
 
@@ -368,12 +355,8 @@ const breakingChangesCommand = new Command('breaking-changes')
 
           process.exit(1);
         }
-      } catch (error: any) {
-        console.error(chalk.red(`\n[FAIL] Error: ${error.message}\n`));
-        if (options.verbose && error.stack) {
-          console.error(chalk.gray(error.stack));
-        }
-        process.exit(1);
+      } catch (error) {
+        handleCommandError(error, { verbose: options.verbose });
       }
     }
   );
@@ -398,7 +381,7 @@ const extractContractCommand = new Command('extract')
 
       // Output
       if (options.format === 'json') {
-        console.log(JSON.stringify(contract, null, 2));
+        outputJSON(contract);
       } else {
         console.log(chalk.blue(`\n[LIST] Contract for ${contract.name} v${contract.version}\n`));
 
@@ -457,9 +440,8 @@ const extractContractCommand = new Command('extract')
       }
 
       process.exit(0);
-    } catch (error: any) {
-      console.error(chalk.red(`\n[FAIL] Error: ${error.message}\n`));
-      process.exit(1);
+    } catch (error) {
+      handleCommandError(error);
     }
   });
 
