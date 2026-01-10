@@ -1,8 +1,12 @@
 package ossa
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 	"regexp"
+
+	"github.com/xeipuuv/gojsonschema"
 )
 
 // ValidationResult contains validation results.
@@ -15,11 +19,34 @@ type ValidationResult struct {
 // Validator validates OSSA manifests.
 type Validator struct {
 	schemaPath string
+	schema     *gojsonschema.Schema
 }
 
 // NewValidator creates a new validator.
+// If schemaPath is provided, loads JSON Schema for validation.
+// If empty, only structural validation is performed.
 func NewValidator(schemaPath string) *Validator {
-	return &Validator{schemaPath: schemaPath}
+	v := &Validator{schemaPath: schemaPath}
+	if schemaPath != "" {
+		v.loadSchema()
+	}
+	return v
+}
+
+func (v *Validator) loadSchema() {
+	if v.schemaPath == "" {
+		return
+	}
+	data, err := os.ReadFile(v.schemaPath)
+	if err != nil {
+		return
+	}
+	loader := gojsonschema.NewBytesLoader(data)
+	schema, err := gojsonschema.NewSchema(loader)
+	if err != nil {
+		return
+	}
+	v.schema = schema
 }
 
 // ValidKinds are the valid manifest kinds.
@@ -54,6 +81,20 @@ func (v *Validator) Validate(m *Manifest) *ValidationResult {
 
 	if m.Kind == KindAgent && m.Spec.Role == "" {
 		result.addWarning("Agent should have spec.role")
+	}
+
+	// JSON Schema validation if schema loaded
+	if v.schema != nil && result.Valid {
+		data, err := json.Marshal(m)
+		if err == nil {
+			docLoader := gojsonschema.NewBytesLoader(data)
+			schemaResult, err := v.schema.Validate(docLoader)
+			if err == nil && !schemaResult.Valid() {
+				for _, desc := range schemaResult.Errors() {
+					result.addError(fmt.Sprintf("Schema: %s", desc.Description()))
+				}
+			}
+		}
 	}
 
 	// Best practices
