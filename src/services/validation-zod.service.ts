@@ -54,12 +54,12 @@ function zodErrorToErrorObject(error: z.ZodError, path = ''): ErrorObject[] {
  * Load Zod schema for version
  * Falls back to basic schema if version-specific not found
  */
-async function loadZodSchema(version: string): Promise<z.ZodType<OssaAgent, z.ZodTypeDef, unknown>> {
+async function loadZodSchema(version: string): Promise<z.ZodType<unknown>> {
   // Use static import for v0.3.3 (current version)
   // TODO: Generate schemas for all versions and use dynamic loading
   try {
     const { OssaAgentSchema } = await import('../types/generated/ossa-0.3.3.zod.js');
-    return OssaAgentSchema as z.ZodType<OssaAgent, z.ZodTypeDef, unknown>;
+    return OssaAgentSchema as z.ZodType<unknown>;
   } catch {
     // Ultimate fallback - create minimal schema
     return z.object({
@@ -69,7 +69,7 @@ async function loadZodSchema(version: string): Promise<z.ZodType<OssaAgent, z.Zo
         name: z.string(),
       }).passthrough().optional(),
       spec: z.record(z.string(), z.unknown()).optional(),
-    }) as z.ZodType<OssaAgent, z.ZodTypeDef, unknown>;
+    });
   }
 }
 
@@ -168,7 +168,7 @@ export class ValidationZodService implements IValidationService {
         valid: result.success && platformResults.valid && messagingErrors.length === 0,
         errors: allErrors,
         warnings: allWarnings,
-        manifest: result.success && platformResults.valid ? result.data : undefined,
+        manifest: result.success && platformResults.valid ? (result.data as OssaAgent) : undefined,
       };
     } catch (error) {
       return {

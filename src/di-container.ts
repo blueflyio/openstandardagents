@@ -42,7 +42,8 @@ container.bind(SchemaRepository).toSelf().inSingletonScope();
 container.bind(ManifestRepository).toSelf().inSingletonScope();
 
 // Bind services - Use Zod-based validation (DRY, SOLID, ZOD, OPENAPI-FIRST)
-container.bind(ValidationService).to(ValidationZodService);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+container.bind(ValidationService).to(ValidationZodService as any);
 container.bind(GenerationService).toSelf();
 container.bind(MigrationService).toSelf();
 container.bind(AgentsMdService).toSelf();
@@ -82,7 +83,8 @@ export function resetContainer(): void {
   // Rebind all services
   container.bind(SchemaRepository).toSelf().inSingletonScope();
   container.bind(ManifestRepository).toSelf().inSingletonScope();
-  container.bind(ValidationService).to(ValidationZodService);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  container.bind(ValidationService).to(ValidationZodService as any);
   container.bind(GenerationService).toSelf();
   container.bind(MigrationService).toSelf();
   container.bind(AgentsMdService).toSelf();

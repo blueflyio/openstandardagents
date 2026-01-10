@@ -16,7 +16,7 @@ export const MetadataSchema = z.object({
   name: NameSchema,
   version: VersionSchema,
   description: z.string().optional(),
-  labels: z.record(z.string()).optional(),
+  labels: z.record(z.string(), z.string()).optional(),
 });
 
 export const LLMProviderSchema = z.enum([

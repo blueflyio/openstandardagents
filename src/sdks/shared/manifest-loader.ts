@@ -31,7 +31,7 @@ export class ManifestLoader {
    */
   static load<T extends ManifestBase = ManifestBase>(
     filePath: string,
-    schema: z.ZodSchema<T> | z.ZodTypeAny = z.any(),
+    schema?: z.ZodSchema<T>,
     options: ManifestLoaderOptions = {}
   ): T {
     const content = readFileSync(filePath, 'utf-8');
@@ -42,11 +42,11 @@ export class ManifestLoader {
       : JSON.parse(content);
 
     // Validate base structure
-    const base = ManifestBaseSchema.parse(parsed);
+    ManifestBaseSchema.parse(parsed);
 
     // Validate against specific schema if provided
-    if (options.validate !== false) {
-      return schema.parse(parsed);
+    if (options.validate !== false && schema) {
+      return schema.parse(parsed) as T;
     }
 
     return parsed as T;
