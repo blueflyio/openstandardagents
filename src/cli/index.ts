@@ -54,11 +54,13 @@ import { testCommand } from './commands/test.command.js';
 import { validateCommand } from './commands/validate.command.js';
 import { workspaceCommand } from './commands/workspace.command.js';
 
-// Extension system
+// Extension system (SOLID: Open/Closed via registry pattern)
 import {
   shouldLoadExtensions,
   getEnabledExtensions,
   createExtensionsCommand,
+  loadExtension,
+  getRegisteredExtensions,
   type OSSAExtension,
 } from './extensions/index.js';
 
@@ -203,6 +205,7 @@ program.addCommand(extensionTeamCommand);
 
 /**
  * Load and register platform-specific extensions
+ * Uses the extension registry pattern (Open/Closed Principle)
  */
 async function loadExtensions(): Promise<OSSAExtension[]> {
   const extensions: OSSAExtension[] = [];
@@ -212,24 +215,24 @@ async function loadExtensions(): Promise<OSSAExtension[]> {
   }
 
   const enabled = getEnabledExtensions();
+  const registered = getRegisteredExtensions();
 
   for (const extName of enabled) {
-    try {
-      if (extName === 'gitlab') {
-        const { loadGitLabExtension } = await import('./extensions/gitlab.extension.js');
-        const ext = await loadGitLabExtension();
-        extensions.push(ext);
-
-        // Register extension commands
-        for (const cmd of ext.commands) {
-          program.addCommand(cmd);
-        }
-      }
-      // Add more extensions here as needed
-    } catch (error) {
-      // Extension failed to load - continue without it
+    // Only load extensions that are registered
+    if (!registered.includes(extName)) {
       if (process.env.DEBUG) {
-        console.error(`Failed to load extension '${extName}':`, error);
+        console.warn(`Extension '${extName}' is not registered`);
+      }
+      continue;
+    }
+
+    const ext = await loadExtension(extName);
+    if (ext) {
+      extensions.push(ext);
+
+      // Register extension commands
+      for (const cmd of ext.commands) {
+        program.addCommand(cmd);
       }
     }
   }

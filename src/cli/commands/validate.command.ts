@@ -1,6 +1,10 @@
 /**
  * OSSA Validate Command
  * Validate OSSA agent manifest against JSON schema
+ *
+ * SOLID Principles:
+ * - Uses shared output utilities (DRY)
+ * - Single Responsibility: Only validates manifests
  */
 
 import chalk from 'chalk';
@@ -8,7 +12,13 @@ import { Command } from 'commander';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { ValidationService } from '../../services/validation.service.js';
-import { formatValidationErrors, formatErrorCompact } from '../utils/error-formatter.js';
+import {
+  formatValidationErrors,
+  formatErrorCompact,
+  isJSONOutput,
+  outputJSON,
+  printInfo,
+} from '../utils/index.js';
 import type { OssaAgent, SchemaVersion, ValidationResult } from '../../types/index.js';
 
 export const validateCommand = new Command('validate')
@@ -55,10 +65,10 @@ export const validateCommand = new Command('validate')
         }
 
         // Output results
-        if (options.output === 'json') {
-          // JSON output for machine consumption
+        if (isJSONOutput(options)) {
+          // JSON output for machine consumption (uses shared utility)
           const m = result.manifest as OssaAgent;
-          const jsonOutput = {
+          outputJSON({
             valid: result.valid,
             path,
             schemaVersion: options.schema || m?.apiVersion?.replace('ossa/', '') || 'auto',
@@ -76,8 +86,7 @@ export const validateCommand = new Command('validate')
                   apiVersion: m?.apiVersion,
                 }
               : undefined,
-          };
-          console.log(JSON.stringify(jsonOutput, null, 2));
+          });
           process.exit(result.valid ? 0 : 1);
         }
 

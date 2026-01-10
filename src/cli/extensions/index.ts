@@ -11,17 +11,90 @@
  *
  * This keeps the public OSSA CLI clean and platform-agnostic while
  * allowing internal/enterprise users to extend functionality.
+ *
+ * SOLID Principles:
+ * - Single Responsibility: Only handles extension management
+ * - Open/Closed: New extensions can be added without modifying this file
+ * - Interface Segregation: OSSAExtension defines minimal contract
+ * - Dependency Inversion: Extensions depend on abstract interface, not concrete implementations
  */
 
 import { Command } from 'commander';
 import chalk from 'chalk';
 
+// ============================================================================
+// Extension Interface (Interface Segregation Principle)
+// ============================================================================
+
+/**
+ * Extension metadata and commands
+ */
 export interface OSSAExtension {
   name: string;
   description: string;
   version: string;
   commands: Command[];
 }
+
+/**
+ * Extension loader function type
+ */
+export type ExtensionLoader = () => Promise<OSSAExtension>;
+
+// ============================================================================
+// Extension Registry (Open/Closed Principle)
+// ============================================================================
+
+/**
+ * Registry of available extensions
+ * New extensions can be registered without modifying existing code
+ */
+const extensionRegistry: Map<string, ExtensionLoader> = new Map();
+
+/**
+ * Register an extension loader
+ */
+export function registerExtension(name: string, loader: ExtensionLoader): void {
+  extensionRegistry.set(name, loader);
+}
+
+/**
+ * Get all registered extension names
+ */
+export function getRegisteredExtensions(): string[] {
+  return Array.from(extensionRegistry.keys());
+}
+
+/**
+ * Load a specific extension by name
+ */
+export async function loadExtension(name: string): Promise<OSSAExtension | undefined> {
+  const loader = extensionRegistry.get(name);
+  if (!loader) return undefined;
+
+  try {
+    return await loader();
+  } catch (error) {
+    if (process.env.DEBUG) {
+      console.error(`Failed to load extension '${name}':`, error);
+    }
+    return undefined;
+  }
+}
+
+// ============================================================================
+// Built-in Extension Registration
+// ============================================================================
+
+// Register GitLab extension (lazy loading)
+registerExtension('gitlab', async () => {
+  const { loadGitLabExtension } = await import('./gitlab.extension.js');
+  return loadGitLabExtension();
+});
+
+// Future extensions can be registered here:
+// registerExtension('github', async () => { ... });
+// registerExtension('aws', async () => { ... });
 
 /**
  * Check if extensions should be loaded
