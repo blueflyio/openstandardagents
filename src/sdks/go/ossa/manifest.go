@@ -53,9 +53,6 @@ func SaveManifest(manifest *Manifest, path string, format string) error {
 	switch format {
 	case "json":
 		data, err = json.MarshalIndent(manifest, "", "  ")
-	switch format {
-	case "json":
-		data, err = json.MarshalIndent(manifest, "", "  ")
 	case "yaml":
 		data, err = yaml.Marshal(manifest)
 	default:
