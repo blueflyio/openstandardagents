@@ -47,7 +47,7 @@ spec:
       # Determine agent_path if not provided
       if [ -z "${agent_path}" ]; then
         if [ -z "${agent_name}" ]; then
-          echo "ℹ️ No agent_name or agent_path specified, skipping agent execution"
+          echo "[INFO] No agent_name or agent_path specified, skipping agent execution"
           exit 0
         fi
         agent_path=".gitlab/agents/${agent_name}/manifest.ossa.yaml"
@@ -64,13 +64,13 @@ spec:
       
       # Validate agent manifest exists
       if [ ! -f "${agent_path}" ]; then
-        echo "❌ ERROR: Agent manifest not found: ${agent_path}"
+        echo "[FAIL] ERROR: Agent manifest not found: ${agent_path}"
         exit 1
       fi
 
       # Validate manifest against OSSA schema (auto-detected from apiVersion)
       if ! node dist/cli/index.js validate "${agent_path}"; then
-        echo "❌ ERROR: Agent manifest validation failed"
+        echo "[FAIL] ERROR: Agent manifest validation failed"
         exit 1
       fi
 

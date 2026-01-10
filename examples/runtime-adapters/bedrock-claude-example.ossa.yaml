@@ -1,465 +1,99 @@
-# ╔═══════════════════════════════════════════════════════════════════════════════╗
-# ║                                                                               ║
-# ║   ██████╗ ███████╗███████╗ █████╗     ██╗   ██╗ ██████╗    ██████╗  ██████╗   ║
-# ║  ██╔═══██╗██╔════╝██╔════╝██╔══██╗    ██║   ██║██╔═████╗   ╚════██╗██╔═████╗  ║
-# ║  ██║   ██║███████╗███████╗███████║    ██║   ██║██║██╔██║    █████╔╝██║██╔██║  ║
-# ║  ██║   ██║╚════██║╚════██║██╔══██║    ╚██╗ ██╔╝████╔╝██║    ╚═══██╗████╔╝██║  ║
-# ║  ╚██████╔╝███████║███████║██║  ██║     ╚████╔╝ ╚██████╔╝██╗██████╔╝╚██████╔╝  ║
-# ║   ╚═════╝ ╚══════╝╚══════╝╚═╝  ╚═╝      ╚═══╝   ╚═════╝ ╚═╝╚═════╝  ╚═════╝   ║
-# ║                                                                               ║
-# ║           AWS BEDROCK ADAPTER - CLAUDE ON AWS INFRASTRUCTURE                  ║
-# ║                                                                               ║
-# ╚═══════════════════════════════════════════════════════════════════════════════╝
-#
-# ┌─────────────────────────────────────────────────────────────────────────────────┐
-# │ WHAT YOU'LL LEARN                                                               │
-# ├─────────────────────────────────────────────────────────────────────────────────┤
-# │                                                                                 │
-# │  ✓ How to run OSSA agents on AWS Bedrock                                        │
-# │  ✓ Claude models on Bedrock (Sonnet, Haiku, Opus)                              │
-# │  ✓ Amazon Titan models                                                          │
-# │  ✓ AWS credentials configuration (profiles, regions)                            │
-# │  ✓ Streaming responses with InvokeModelWithResponseStream                       │
-# │  ✓ Tool calling via Bedrock Converse API                                        │
-# │  ✓ When to use Bedrock vs direct Anthropic API                                  │
-# │                                                                                 │
-# └─────────────────────────────────────────────────────────────────────────────────┘
-#
-# ┌─────────────────────────────────────────────────────────────────────────────────┐
-# │ WHY USE AWS BEDROCK?                                                            │
-# ├─────────────────────────────────────────────────────────────────────────────────┤
-# │                                                                                 │
-# │  Bedrock vs Direct Anthropic API:                                               │
-# │                                                                                 │
-# │  USE BEDROCK WHEN:                                                              │
-# │  ✓ You're already on AWS (use existing IAM, VPC, compliance)                    │
-# │  ✓ You need enterprise features (PrivateLink, VPC endpoints, CloudTrail)        │
-# │  ✓ You want unified billing across AWS services                                 │
-# │  ✓ You need compliance certifications (SOC2, HIPAA, FedRAMP via AWS)            │
-# │  ✓ You want to try multiple model providers (Claude, Titan, Llama, etc.)        │
-# │  ✓ You need AWS-specific integrations (SageMaker, Lambda, Step Functions)       │
-# │                                                                                 │
-# │  USE DIRECT ANTHROPIC API WHEN:                                                 │
-# │  ✓ You want latest Claude models first (Bedrock lags by weeks)                  │
-# │  ✓ You need lower latency (direct API is faster)                                │
-# │  ✓ You want simplicity (no AWS account required)                                │
-# │  ✓ You're not on AWS infrastructure                                             │
-# │                                                                                 │
-# │  KEY BENEFITS OF BEDROCK:                                                       │
-# │  • Enterprise security: VPC endpoints, PrivateLink, KMS encryption              │
-# │  • Compliance: Inherits AWS certifications (HIPAA BAA, FedRAMP, etc.)           │
-# │  • Multi-model: Switch between Claude, Titan, Llama without code changes        │
-# │  • AWS integration: Use with Lambda, Step Functions, EventBridge                │
-# │  • Consolidated billing: One AWS bill for all services                          │
-# │                                                                                 │
-# └─────────────────────────────────────────────────────────────────────────────────┘
-#
-# ┌─────────────────────────────────────────────────────────────────────────────────┐
-# │ SUPPORTED MODELS                                                                │
-# ├─────────────────────────────────────────────────────────────────────────────────┤
-# │                                                                                 │
-# │  CLAUDE 3.5 FAMILY (Anthropic)                                                  │
-# │  ─────────────────────────────────────────────────────────────────────────      │
-# │  • anthropic.claude-3-5-sonnet-20241022-v2:0                                    │
-# │    - Best balance of intelligence and speed                                     │
-# │    - 200K context window                                                        │
-# │    - Tool calling support via Converse API                                      │
-# │    - Streaming support                                                          │
-# │                                                                                 │
-# │  CLAUDE 3 FAMILY (Anthropic)                                                    │
-# │  ─────────────────────────────────────────────────────────────────────────      │
-# │  • anthropic.claude-3-opus-20240229-v1:0                                        │
-# │    - Most capable, best for complex tasks                                       │
-# │    - 200K context window                                                        │
-# │    - Higher cost, slower                                                        │
-# │                                                                                 │
-# │  • anthropic.claude-3-sonnet-20240229-v1:0                                      │
-# │    - Balanced intelligence and speed                                            │
-# │    - 200K context window                                                        │
-# │    - Good for most use cases                                                    │
-# │                                                                                 │
-# │  • anthropic.claude-3-haiku-20240307-v1:0                                       │
-# │    - Fastest, most affordable                                                   │
-# │    - 200K context window                                                        │
-# │    - Great for simple tasks, high volume                                        │
-# │                                                                                 │
-# │  AMAZON TITAN FAMILY (AWS)                                                      │
-# │  ─────────────────────────────────────────────────────────────────────────      │
-# │  • amazon.titan-text-premier-v1:0                                               │
-# │    - Advanced reasoning and generation                                          │
-# │    - 32K context window                                                         │
-# │    - Optimized for AWS infrastructure                                           │
-# │                                                                                 │
-# │  • amazon.titan-text-express-v1                                                 │
-# │    - Fast, cost-effective                                                       │
-# │    - 8K context window                                                          │
-# │    - Good for simple tasks                                                      │
-# │                                                                                 │
-# │  MODEL SELECTION GUIDE:                                                         │
-# │  ┌──────────────────────────────────────────────────────────────────┐          │
-# │  │ USE CASE                  RECOMMENDED MODEL                       │          │
-# │  ├──────────────────────────────────────────────────────────────────┤          │
-# │  │ Code review               Claude 3.5 Sonnet                       │          │
-# │  │ Complex reasoning         Claude 3 Opus                           │          │
-# │  │ High-volume chat          Claude 3 Haiku or Titan Express         │          │
-# │  │ AWS-native apps           Titan Premier                           │          │
-# │  │ Cost optimization         Claude 3 Haiku                          │          │
-# │  │ Latest capabilities       Claude 3.5 Sonnet                       │          │
-# │  └──────────────────────────────────────────────────────────────────┘          │
-# │                                                                                 │
-# └─────────────────────────────────────────────────────────────────────────────────┘
-#
-# ┌─────────────────────────────────────────────────────────────────────────────────┐
-# │ AWS CREDENTIALS SETUP                                                           │
-# ├─────────────────────────────────────────────────────────────────────────────────┤
-# │                                                                                 │
-# │  OPTION 1: AWS CLI Profiles (Recommended)                                       │
-# │  ──────────────────────────────────────────                                     │
-# │  1. Install AWS CLI: https://aws.amazon.com/cli/                                │
-# │                                                                                 │
-# │  2. Configure credentials:                                                      │
-# │     $ aws configure --profile bedrock                                           │
-# │     AWS Access Key ID: AKIA...                                                  │
-# │     AWS Secret Access Key: ...                                                  │
-# │     Default region: us-east-1                                                   │
-# │     Default output format: json                                                 │
-# │                                                                                 │
-# │  3. Verify Bedrock access:                                                      │
-# │     $ aws bedrock list-foundation-models --region us-east-1 --profile bedrock   │
-# │                                                                                 │
-# │  4. File locations:                                                             │
-# │     ~/.aws/credentials  (access keys)                                           │
-# │     ~/.aws/config       (regions, profiles)                                     │
-# │                                                                                 │
-# │  OPTION 2: Environment Variables                                                │
-# │  ────────────────────────────────────                                           │
-# │  $ export AWS_ACCESS_KEY_ID=AKIA...                                             │
-# │  $ export AWS_SECRET_ACCESS_KEY=...                                             │
-# │  $ export AWS_DEFAULT_REGION=us-east-1                                          │
-# │                                                                                 │
-# │  OPTION 3: IAM Roles (EC2, ECS, Lambda)                                         │
-# │  ───────────────────────────────────────                                        │
-# │  If running on AWS infrastructure, use IAM roles (no keys needed):              │
-# │  • EC2: Attach instance profile with bedrock:InvokeModel permission             │
-# │  • ECS: Use task role                                                           │
-# │  • Lambda: Use execution role                                                   │
-# │                                                                                 │
-# │  REQUIRED IAM PERMISSIONS:                                                      │
-# │  ───────────────────────────                                                    │
-# │  {                                                                              │
-# │    "Version": "2012-10-17",                                                     │
-# │    "Statement": [                                                               │
-# │      {                                                                          │
-# │        "Effect": "Allow",                                                       │
-# │        "Action": [                                                              │
-# │          "bedrock:InvokeModel",                                                 │
-# │          "bedrock:InvokeModelWithResponseStream"                                │
-# │        ],                                                                       │
-# │        "Resource": "arn:aws:bedrock:*::foundation-model/anthropic.claude-*"     │
-# │      }                                                                          │
-# │    ]                                                                            │
-# │  }                                                                              │
-# │                                                                                 │
-# │  BEDROCK AVAILABILITY BY REGION:                                                │
-# │  ────────────────────────────────                                               │
-# │  Claude models available in:                                                    │
-# │  • us-east-1 (N. Virginia) - Most models, lowest latency                        │
-# │  • us-west-2 (Oregon)                                                           │
-# │  • eu-west-1 (Ireland)                                                          │
-# │  • ap-northeast-1 (Tokyo)                                                       │
-# │  • ap-southeast-1 (Singapore)                                                   │
-# │                                                                                 │
-# │  Check latest: https://docs.aws.amazon.com/bedrock/latest/userguide/models-regions.html │
-# │                                                                                 │
-# └─────────────────────────────────────────────────────────────────────────────────┘
-#
-# ┌─────────────────────────────────────────────────────────────────────────────────┐
-# │ HOW TO RUN THIS EXAMPLE                                                         │
-# ├─────────────────────────────────────────────────────────────────────────────────┤
-# │                                                                                 │
-# │  STEP 1: Configure AWS credentials (see above)                                  │
-# │  ──────────────────────────────────────────────                                 │
-# │  $ aws configure --profile bedrock                                              │
-# │                                                                                 │
-# │  STEP 2: Validate the manifest                                                  │
-# │  ────────────────────────────                                                   │
-# │  $ ossa validate bedrock-claude-example.ossa.yaml                               │
-# │                                                                                 │
-# │  STEP 3: Run with Bedrock adapter                                               │
-# │  ───────────────────────────────                                                │
-# │  $ ossa run bedrock-claude-example.ossa.yaml \                                  │
-# │      --adapter bedrock \                                                        │
-# │      --interactive                                                              │
-# │                                                                                 │
-# │  STEP 4: Try it out                                                             │
-# │  ──────────────────                                                             │
-# │  > Tell me about AWS Bedrock                                                    │
-# │  > What models are available on Bedrock?                                        │
-# │  > Compare Claude Sonnet vs Haiku                                               │
-# │                                                                                 │
-# │  STEP 5: Monitor usage in AWS Console                                           │
-# │  ───────────────────────────────────────                                        │
-# │  • CloudWatch Logs: /aws/bedrock/modelinvocations                               │
-# │  • CloudTrail: bedrock:InvokeModel events                                       │
-# │  • Cost Explorer: Bedrock charges by tokens                                     │
-# │                                                                                 │
-# └─────────────────────────────────────────────────────────────────────────────────┘
-
-# ═══════════════════════════════════════════════════════════════════════════════════
-#                           THE ACTUAL MANIFEST STARTS HERE
-# ═══════════════════════════════════════════════════════════════════════════════════
-
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
-
 metadata:
   name: bedrock-assistant
   version: 1.0.0
-  description: |
-    AWS Bedrock-powered assistant running Claude 3.5 Sonnet.
+  description: 'AWS Bedrock-powered assistant running Claude 3.5 Sonnet.
+
     Demonstrates OSSA integration with AWS infrastructure.
 
+    '
   labels:
     provider: aws-bedrock
     model: claude-3.5-sonnet
     region: us-east-1
     runtime-adapter: bedrock
-
 spec:
-  # ────────────────────────────────────────────────────────────────────────────────
-  # ROLE
-  # ────────────────────────────────────────────────────────────────────────────────
-  role: |
-    You are a helpful AWS Bedrock assistant powered by Claude 3.5 Sonnet.
+  role: 'You are a helpful AWS Bedrock assistant powered by Claude 3.5 Sonnet.
+
 
     Your knowledge includes:
+
     - AWS Bedrock service features and capabilities
+
     - Available foundation models (Claude, Titan, Llama, etc.)
+
     - AWS infrastructure and security best practices
+
     - Cost optimization for Bedrock usage
 
+
     Communication style:
+
     - Be clear and concise
+
     - Provide examples when helpful
+
     - Explain AWS-specific concepts when relevant
+
     - Mention cost implications for production use
 
-  # ────────────────────────────────────────────────────────────────────────────────
-  # LLM CONFIGURATION (General)
-  # ────────────────────────────────────────────────────────────────────────────────
-  # These settings apply when NOT using Bedrock extension
-  # The bedrock extension below will override these for Bedrock runtime
-  # ────────────────────────────────────────────────────────────────────────────────
+    '
   llm:
     provider: anthropic
     model: claude-3-5-sonnet-20241022
     temperature: 0.7
     maxTokens: 4096
-
-# ══════════════════════════════════════════════════════════════════════════════════
-# BEDROCK EXTENSION
-# ══════════════════════════════════════════════════════════════════════════════════
-# This extension tells the OSSA runtime to use AWS Bedrock instead of direct API
-# ══════════════════════════════════════════════════════════════════════════════════
 extensions:
   bedrock:
-    # ──────────────────────────────────────────────────────────────────────────────
-    # REQUIRED: AWS Region
-    # ──────────────────────────────────────────────────────────────────────────────
-    # Claude models are available in: us-east-1, us-west-2, eu-west-1, ap-northeast-1
-    # Use the region closest to your infrastructure for lowest latency
-    # ──────────────────────────────────────────────────────────────────────────────
     region: us-east-1
-
-    # ──────────────────────────────────────────────────────────────────────────────
-    # OPTIONAL: AWS Profile
-    # ──────────────────────────────────────────────────────────────────────────────
-    # If you have multiple AWS profiles in ~/.aws/credentials, specify which to use
-    # If omitted, uses default credentials (env vars, instance profile, or default profile)
-    # ──────────────────────────────────────────────────────────────────────────────
     profile: bedrock
-
-    # ──────────────────────────────────────────────────────────────────────────────
-    # REQUIRED: Bedrock Model ID
-    # ──────────────────────────────────────────────────────────────────────────────
-    # Full model ID including provider and version
-    # Format: provider.model-version
-    #
-    # Claude 3.5 Sonnet (recommended):
     model_id: anthropic.claude-3-5-sonnet-20241022-v2:0
-    #
-    # Other options:
-    # model_id: anthropic.claude-3-opus-20240229-v1:0      # Most capable
-    # model_id: anthropic.claude-3-sonnet-20240229-v1:0    # Balanced
-    # model_id: anthropic.claude-3-haiku-20240307-v1:0     # Fastest/cheapest
-    # model_id: amazon.titan-text-premier-v1:0             # AWS Titan
-    # model_id: amazon.titan-text-express-v1               # AWS Titan Express
-    # ──────────────────────────────────────────────────────────────────────────────
+    system: 'You are running on AWS Bedrock using Claude 3.5 Sonnet.
 
-    # ──────────────────────────────────────────────────────────────────────────────
-    # OPTIONAL: System Prompt Override
-    # ──────────────────────────────────────────────────────────────────────────────
-    # If specified, overrides spec.role for Bedrock runtime
-    # Useful for Bedrock-specific instructions
-    # ──────────────────────────────────────────────────────────────────────────────
-    system: |
-      You are running on AWS Bedrock using Claude 3.5 Sonnet.
       Provide helpful, accurate responses with AWS best practices in mind.
 
-    # ──────────────────────────────────────────────────────────────────────────────
-    # OPTIONAL: Inference Configuration
-    # ──────────────────────────────────────────────────────────────────────────────
-    # Model parameters for Bedrock inference
-    # ──────────────────────────────────────────────────────────────────────────────
-
-    # Temperature: Controls randomness (0.0-1.0)
-    # Lower = more focused and deterministic
-    # Higher = more creative and varied
+      '
     temperature: 0.7
-
-    # Max tokens: Maximum response length
-    # Claude models support up to 8192 output tokens
     max_tokens: 4096
-
-    # Top P: Nucleus sampling (0.0-1.0)
-    # Alternative to temperature for controlling randomness
-    # 1.0 = consider all tokens, lower = only high-probability tokens
     top_p: 1.0
-
-    # Stop sequences: Strings that stop generation when encountered
-    # Useful for structured output or preventing unwanted patterns
     stop_sequences:
-      - "\n\nHuman:"
-      - "\n\nAssistant:"
+    - '
 
-    # ──────────────────────────────────────────────────────────────────────────────
-    # OPTIONAL: Tool Configuration (Converse API)
-    # ──────────────────────────────────────────────────────────────────────────────
-    # Bedrock supports tool calling via the Converse API
-    # Claude 3+ and Titan models support this feature
-    # Tools are defined using Bedrock's toolSpec format
-    # ──────────────────────────────────────────────────────────────────────────────
+
+      Human:'
+    - '
+
+
+      Assistant:'
     tools:
-      - name: get_weather
-        description: Get current weather for a location
-        inputSchema:
-          json:
-            type: object
-            properties:
-              location:
-                type: string
-                description: City name or zip code
-              units:
-                type: string
-                enum: [celsius, fahrenheit]
-                description: Temperature units
-            required:
-              - location
-
-      - name: calculate
-        description: Perform mathematical calculations
-        inputSchema:
-          json:
-            type: object
-            properties:
-              expression:
-                type: string
-                description: Mathematical expression to evaluate (e.g., "2 + 2")
-            required:
-              - expression
-
-# ═══════════════════════════════════════════════════════════════════════════════════
-# ADDITIONAL EXAMPLES
-# ═══════════════════════════════════════════════════════════════════════════════════
-#
-# EXAMPLE 1: Multi-region deployment
-# ────────────────────────────────────────────────────────────────────────────────────
-# Use different Bedrock regions for different environments:
-#
-# extensions:
-#   bedrock:
-#     region: ${AWS_REGION:-us-east-1}  # Use env var, default to us-east-1
-#     model_id: anthropic.claude-3-5-sonnet-20241022-v2:0
-#     profile: ${AWS_PROFILE:-default}
-#
-# Then deploy:
-# $ AWS_REGION=us-west-2 AWS_PROFILE=prod ossa run manifest.yaml
-# ────────────────────────────────────────────────────────────────────────────────────
-#
-# EXAMPLE 2: Cost optimization with Haiku
-# ────────────────────────────────────────────────────────────────────────────────────
-# For high-volume, simple tasks, use Claude Haiku:
-#
-# extensions:
-#   bedrock:
-#     region: us-east-1
-#     model_id: anthropic.claude-3-haiku-20240307-v1:0  # 5x cheaper than Sonnet
-#     max_tokens: 1024  # Limit output for cost control
-#     temperature: 0.3  # Lower for consistent, focused responses
-# ────────────────────────────────────────────────────────────────────────────────────
-#
-# EXAMPLE 3: AWS-native with Titan
-# ────────────────────────────────────────────────────────────────────────────────────
-# Use Amazon Titan for AWS-optimized experience:
-#
-# extensions:
-#   bedrock:
-#     region: us-east-1
-#     model_id: amazon.titan-text-premier-v1:0
-#     max_tokens: 3072  # Titan's max output
-#     temperature: 0.5
-# ────────────────────────────────────────────────────────────────────────────────────
-#
-# EXAMPLE 4: Streaming for long responses
-# ────────────────────────────────────────────────────────────────────────────────────
-# Enable streaming to show progress for long-running generations:
-#
-# $ ossa run manifest.yaml --adapter bedrock --stream
-#
-# The adapter automatically uses InvokeModelWithResponseStream for better UX
-# ────────────────────────────────────────────────────────────────────────────────────
-#
-# EXAMPLE 5: VPC endpoint for private deployment
-# ────────────────────────────────────────────────────────────────────────────────────
-# For enterprise security, use VPC endpoints (no internet access needed):
-#
-# 1. Create VPC endpoint for Bedrock:
-#    $ aws ec2 create-vpc-endpoint \
-#        --vpc-id vpc-xxx \
-#        --service-name com.amazonaws.us-east-1.bedrock-runtime \
-#        --subnet-ids subnet-xxx \
-#        --security-group-ids sg-xxx
-#
-# 2. Use instance profile (no credentials in code):
-#    extensions:
-#      bedrock:
-#        region: us-east-1
-#        model_id: anthropic.claude-3-5-sonnet-20241022-v2:0
-#        # No profile needed - uses instance role
-# ────────────────────────────────────────────────────────────────────────────────────
-#
-# ═══════════════════════════════════════════════════════════════════════════════════
-# COST OPTIMIZATION TIPS
-# ═══════════════════════════════════════════════════════════════════════════════════
-#
-# Bedrock pricing (as of 2024, us-east-1):
-# ┌──────────────────────────────────────────────────────────────────────┐
-# │ MODEL                INPUT (1M tokens)    OUTPUT (1M tokens)          │
-# ├──────────────────────────────────────────────────────────────────────┤
-# │ Claude 3.5 Sonnet    $3.00               $15.00                       │
-# │ Claude 3 Opus        $15.00              $75.00                       │
-# │ Claude 3 Sonnet      $3.00               $15.00                       │
-# │ Claude 3 Haiku       $0.25               $1.25                        │
-# │ Titan Premier        $0.50               $1.50                        │
-# │ Titan Express        $0.20               $0.60                        │
-# └──────────────────────────────────────────────────────────────────────┘
-#
-# Cost optimization strategies:
-# 1. Use Haiku for simple tasks (20x cheaper than Opus)
-# 2. Set max_tokens to minimum needed (avoid waste)
-# 3. Cache system prompts (Bedrock doesn't support this yet, coming soon)
-# 4. Use temperature=0 for deterministic tasks (faster, same result)
-# 5. Batch requests when possible (future Bedrock feature)
-# 6. Monitor costs with AWS Cost Explorer (tag Bedrock resources)
-#
-# ═══════════════════════════════════════════════════════════════════════════════════
+    - name: get_weather
+      description: Get current weather for a location
+      inputSchema:
+        json:
+          type: object
+          properties:
+            location:
+              type: string
+              description: City name or zip code
+            units:
+              type: string
+              enum:
+              - celsius
+              - fahrenheit
+              description: Temperature units
+          required:
+          - location
+      type: function
+    - name: calculate
+      description: Perform mathematical calculations
+      inputSchema:
+        json:
+          type: object
+          properties:
+            expression:
+              type: string
+              description: Mathematical expression to evaluate (e.g., "2 + 2")
+          required:
+          - expression
+      type: function

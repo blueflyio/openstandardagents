@@ -65,11 +65,11 @@ npm:fix-dist-tags:
       set -e
       PACKAGE_NAME="@bluefly/openstandardagents"
       
-      echo "📦 Current npm dist-tags:"
+      echo "[PKG] Current npm dist-tags:"
       npm view ${PACKAGE_NAME} dist-tags
       
       echo ""
-      echo "📋 Available versions:"
+      echo "[LIST] Available versions:"
       npm view ${PACKAGE_NAME} versions --json | tail -20
       
       # Get current latest
@@ -105,5 +105,5 @@ npm:fix-dist-tags:
       fi
       
       echo ""
-      echo "✅ Updated npm dist-tags:"
+      echo "[PASS] Updated npm dist-tags:"
       npm view ${PACKAGE_NAME} dist-tags

@@ -1,6 +1,6 @@
 # OSSA Power Agents
 
-10 optimized agents showcasing the full power of OSSA v0.3.2.
+10 optimized agents showcasing the full power of OSSA v0.3.3.
 
 ## Agents
 

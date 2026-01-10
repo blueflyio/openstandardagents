@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://openstandardagents.org/schemas/v0.3.2/manifest.json",
-  "title": "OSSA v0.3.2 Manifest Schema",
-  "description": "Open Standard for Scalable AI Agents (OSSA) v0.3.2 - Unified Task Schema with Access Tiers & Separation of Duties. Supports Agent (agentic loops with LLM), Task (deterministic workflow steps), and Workflow (composition of Tasks and Agents) kinds. Includes Agent-to-Agent Messaging Extension and Access Control Tiers for privilege separation.",
+  "$id": "https://openstandardagents.org/schemas/v0.3.3/manifest.json",
+  "title": "OSSA v0.3.3 Manifest Schema",
+  "description": "Open Standard for Scalable AI Agents (OSSA) v0.3.3 - Unified Task Schema with Access Tiers & Separation of Duties. Supports Agent (agentic loops with LLM), Task (deterministic workflow steps), and Workflow (composition of Tasks and Agents) kinds. Includes Agent-to-Agent Messaging Extension and Access Control Tiers for privilege separation.",
   "type": "object",
   "required": [
     "apiVersion",
@@ -13,9 +13,9 @@
     "apiVersion": {
       "type": "string",
       "pattern": "^ossa/v(0\\.3\\.[0-9]+(-[a-zA-Z0-9]+)?|0\\.2\\.[2-9](-dev)?|1)(\\.[0-9]+)?(-[a-zA-Z0-9]+)?$",
-      "description": "OSSA API version (v0.3.2+ supports Task and Workflow kinds)",
+      "description": "OSSA API version (v0.3.3+ supports Task and Workflow kinds)",
       "examples": [
-        "ossa/v0.3.2",
+        "ossa/v0.3.3",
         "ossa/v1",
         "ossa/v0.2.9"
       ]
@@ -41,6 +41,9 @@
       "properties": {
         "mcp": {
           "$ref": "#/definitions/MCPExtension"
+        },
+        "skills": {
+          "$ref": "#/definitions/SkillsExtension"
         }
       },
       "additionalProperties": true
@@ -112,7 +115,7 @@
   "definitions": {
     "AccessTier": {
       "type": "object",
-      "description": "Access tier configuration for separation of duties (v0.3.2+). Defines privilege levels and role separations for agents.",
+      "description": "Access tier configuration for separation of duties (v0.3.3+). Defines privilege levels and role separations for agents.",
       "required": ["tier"],
       "properties": {
         "tier": {
@@ -286,7 +289,7 @@
     },
     "TaxonomyClassification": {
       "type": "object",
-      "description": "Hierarchical taxonomy classification for agents (v0.3.2+). Links to taxonomy.yaml spec.",
+      "description": "Hierarchical taxonomy classification for agents (v0.3.3+). Links to taxonomy.yaml spec.",
       "required": ["domain"],
       "properties": {
         "domain": {
@@ -954,7 +957,7 @@
         },
         "messaging": {
           "$ref": "#/definitions/MessagingExtension",
-          "description": "Agent-to-agent messaging configuration (v0.3.2+)"
+          "description": "Agent-to-agent messaging configuration (v0.3.3+)"
         },
         "functions": {
           "type": "array",
@@ -965,28 +968,28 @@
         },
         "identity": {
           "$ref": "#/definitions/AgentIdentity",
-          "description": "Agent identity configuration including service accounts, authentication, and observability (v0.3.2+)"
+          "description": "Agent identity configuration including service accounts, authentication, and observability (v0.3.3+)"
         },
         "access": {
           "$ref": "#/definitions/AccessTier",
-          "description": "Access tier configuration for separation of duties (v0.3.2+). Defines privilege level and allowed operations."
+          "description": "Access tier configuration for separation of duties (v0.3.3+). Defines privilege level and allowed operations."
         },
         "separation": {
           "$ref": "#/definitions/SeparationOfDuties",
-          "description": "Role separation configuration to prevent conflicts of interest (v0.3.2+)"
+          "description": "Role separation configuration to prevent conflicts of interest (v0.3.3+)"
         },
         "delegation": {
           "$ref": "#/definitions/DelegationConfig",
-          "description": "Delegation configuration for multi-agent hierarchies (v0.3.2+)"
+          "description": "Delegation configuration for multi-agent hierarchies (v0.3.3+)"
         },
         "type": {
           "type": "string",
           "enum": ["analyzer", "worker", "operator", "supervisor", "orchestrator", "governor", "specialist", "critic"],
-          "description": "Agent type classification aligned with access tiers (v0.3.2+)"
+          "description": "Agent type classification aligned with access tiers (v0.3.3+)"
         },
         "taxonomy": {
           "$ref": "#/definitions/TaxonomyClassification",
-          "description": "Taxonomy classification for domain and cross-cutting concerns (v0.3.2+)"
+          "description": "Taxonomy classification for domain and cross-cutting concerns (v0.3.3+)"
         },
         "compliance": {
           "type": "object",
@@ -2591,6 +2594,74 @@
       },
       "additionalProperties": false
     },
+    "SkillsExtension": {
+      "type": "object",
+      "description": "Anthropic/AgentSkills.io compatibility extension - enables OSSA agents to be packaged as Skills",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable Skills format export/import for this agent"
+        },
+        "allowedTools": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Pre-approved tools list (maps to spec.capabilities). Matches Skills allowed-tools field."
+        },
+        "platforms": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "examples": ["Claude", "Claude Code", "Cursor", "Kiro"]
+          },
+          "description": "Compatible AI platforms/environments"
+        },
+        "license": {
+          "type": "string",
+          "description": "License for the skill (e.g., Apache-2.0, MIT, GPL-2.0-or-later)"
+        },
+        "progressiveDisclosure": {
+          "type": "object",
+          "description": "Token budget for progressive disclosure stages",
+          "properties": {
+            "metadataTokens": {
+              "type": "integer",
+              "default": 100,
+              "description": "Max tokens for metadata stage (name + description)"
+            },
+            "instructionsTokens": {
+              "type": "integer",
+              "default": 5000,
+              "description": "Max tokens for instructions stage (full SKILL.md body)"
+            }
+          }
+        },
+        "directories": {
+          "type": "object",
+          "description": "Skills directory structure mapping",
+          "properties": {
+            "scripts": {
+              "type": "string",
+              "default": "scripts/",
+              "description": "Path to executable scripts"
+            },
+            "references": {
+              "type": "string",
+              "default": "references/",
+              "description": "Path to on-demand documentation"
+            },
+            "assets": {
+              "type": "string",
+              "default": "assets/",
+              "description": "Path to static resources"
+            }
+          }
+        }
+      },
+      "additionalProperties": true
+    },
     "MCPTool": {
       "type": "object",
       "description": "MCP tool definition - actions/functions the agent can invoke",
@@ -2706,7 +2777,7 @@
     },
     "MessagingExtension": {
       "type": "object",
-      "description": "Agent-to-agent messaging configuration (v0.3.2+)",
+      "description": "Agent-to-agent messaging configuration (v0.3.3+)",
       "properties": {
         "publishes": {
           "type": "array",

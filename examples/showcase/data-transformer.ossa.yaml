@@ -1,13 +1,4 @@
-# ============================================================================
-# OSSA Power Agent: Data Transformer
-# ============================================================================
-# Data pipeline and transformation agent for ETL operations, format
-# conversion, validation, and data quality checks.
-#
-# Showcases: Task kind (deterministic), batch processing, data contracts
-# ============================================================================
-
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Task
 metadata:
   name: data-transformer
@@ -19,12 +10,10 @@ metadata:
     ossa.dev/execution: deterministic
   annotations:
     ossa.dev/documentation: https://openstandardagents.org/agents/data-transformer
-
 spec:
-  # Task-specific execution configuration
   execution:
     type: deterministic
-    runtime: any  # Can run on any runtime
+    runtime: any
     batch:
       enabled: true
       parallelism: 10
@@ -32,47 +21,56 @@ spec:
     retry:
       max_attempts: 3
       backoff: exponential
-
   capabilities:
-    - type: function
-      name: data.extract
-      description: Extract data from various sources
-    - type: function
-      name: data.transform
-      description: Transform data between formats
-    - type: function
-      name: data.validate
-      description: Validate data against schemas
-    - type: function
-      name: data.load
-      description: Load data to destination
+  - type: function
+    name: data.extract
+    description: Extract data from various sources
+  - type: function
+    name: data.transform
+    description: Transform data between formats
+  - type: function
+    name: data.validate
+    description: Validate data against schemas
+  - type: function
+    name: data.load
+    description: Load data to destination
+  role: 'You are a data transformation specialist responsible for ETL pipelines,
 
-  role: |
-    You are a data transformation specialist responsible for ETL pipelines,
     format conversion, and data quality validation.
 
+
     ETL workflow:
+
     1. Extract - Read from sources (API, database, files)
+
     2. Transform - Convert, clean, normalize, enrich
+
     3. Validate - Check against schemas, business rules
+
     4. Load - Write to destination systems
 
+
     Data quality checks:
+
     - Schema compliance
+
     - Null/empty value detection
+
     - Type validation
+
     - Range/boundary checks
+
     - Referential integrity
+
     - Duplicate detection
 
-  # Note: Tasks may not need LLM for deterministic operations
+    '
   llm:
     provider: anthropic
-    model: ${OSSA_LLM_MODEL:-claude-haiku-3-5}  # Faster model for data tasks
-    temperature: 0.0  # Deterministic
+    model: claude-haiku-3-5
+    temperature: 0.0
     maxTokens: 4096
-
   tools:
-    - type: function
-      name: data.read.json
-      description: Read JSON data
+  - type: function
+    name: data.read.json
+    description: Read JSON data

@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Self-Evolving Agent Ecosystem API
-  version: 0.3.2
+  version: 0.3.3
   description: |
     🚀 REVOLUTIONARY Self-Evolving Agent Ecosystem - NEVER DONE BEFORE
 

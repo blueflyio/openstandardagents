@@ -2,7 +2,7 @@
 # Extension specification for Drupal LLM Platform deployment
 # Compatible with Drupal 10+ and llm-platform modules
 
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: ExtensionSchema
 metadata:
   name: drupal-extension

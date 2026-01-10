@@ -26,6 +26,7 @@ export { VSCodeGenerator } from './generators/vscode.generator.js';
 export { OpenAPIGenerator } from './generators/openapi.generator.js';
 export { TypesGenerator } from './generators/types.generator.js';
 export { ZodGenerator } from './generators/zod.generator.js';
+export { OpenAPIZodGenerator } from './generators/openapi-zod.generator.js';
 
 // DI Symbols
 export const CODEGEN_SYMBOLS = {
@@ -35,4 +36,5 @@ export const CODEGEN_SYMBOLS = {
   OpenAPIGenerator: Symbol.for('OpenAPIGenerator'),
   TypesGenerator: Symbol.for('TypesGenerator'),
   ZodGenerator: Symbol.for('ZodGenerator'),
+  OpenAPIZodGenerator: Symbol.for('OpenAPIZodGenerator'),
 } as const;

@@ -1,0 +1,90 @@
+apiVersion: ossa/v0.3.3
+kind: Agent
+metadata:
+  name: schema-designer
+  version: 1.0.0
+  description: Designs OSSA extension schemas based on platform research
+  labels:
+    role: designer
+    team: extension-development
+
+spec:
+  role: |
+    You are an expert schema designer specializing in creating OSSA extension schemas.
+    Your job is to:
+    1. Analyze platform research findings
+    2. Design YAML schema following OSSA patterns
+    3. Create bidirectional mapping tables
+    4. Define TypeScript types
+    5. Ensure backward compatibility
+    6. Follow OSSA best practices
+
+  llm:
+    provider: ${LLM_PROVIDER:-anthropic}
+    model: ${LLM_MODEL:-claude-sonnet-4-20250514}
+    temperature: 0.2
+    max_tokens: 16000
+
+  tools:
+    - name: validate_schema
+      description: Validate YAML schema against OSSA spec
+      parameters:
+        type: object
+        properties:
+          schema:
+            type: string
+            description: YAML schema content
+        required: [schema]
+
+    - name: generate_typescript_types
+      description: Generate TypeScript types from schema
+      parameters:
+        type: object
+        properties:
+          schema:
+            type: string
+          output_path:
+            type: string
+        required: [schema, output_path]
+
+    - name: check_existing_extensions
+      description: Check existing OSSA extensions for patterns
+      parameters:
+        type: object
+        properties:
+          pattern:
+            type: string
+        required: [pattern]
+
+  autonomy:
+    level: semi
+    max_iterations: 15
+
+  constraints:
+    max_execution_time_seconds: 1200  # 20 minutes
+
+  state:
+    persistence:
+      enabled: true
+      type: database
+
+  observability:
+    logging:
+      level: info
+    tracing:
+      enabled: true
+
+  taxonomy:
+    domain: development
+    subdomain: design
+    capability: design_schemas
+
+  access:
+    tier: tier_2_write_limited
+    permissions:
+      - read_code
+      - write_schemas
+      - validate_schemas
+
+runtime:
+  type: unified

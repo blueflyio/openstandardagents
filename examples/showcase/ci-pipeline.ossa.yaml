@@ -1,13 +1,4 @@
-# ============================================================================
-# OSSA Power Agent: CI Pipeline
-# ============================================================================
-# CI/CD automation agent for build, test, deploy, and release workflows.
-# Integrates with GitLab CI, GitHub Actions, and other CI systems.
-#
-# Showcases: Runtime integration, messaging, GitLab extension
-# ============================================================================
-
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: ci-pipeline
@@ -19,41 +10,46 @@ metadata:
     ossa.dev/runtime: gitlab-ci
   annotations:
     ossa.dev/documentation: https://openstandardagents.org/agents/ci-pipeline
-
 spec:
   capabilities:
-    - type: function
-      name: ci.trigger
-      description: Trigger CI/CD pipeline runs
-    - type: function
-      name: ci.monitor
-      description: Monitor pipeline status and jobs
-    - type: function
-      name: ci.fix
-      description: Analyze and fix pipeline failures
-    - type: function
-      name: ci.optimize
-      description: Optimize pipeline performance
+  - type: function
+    name: ci.trigger
+    description: Trigger CI/CD pipeline runs
+  - type: function
+    name: ci.monitor
+    description: Monitor pipeline status and jobs
+  - type: function
+    name: ci.fix
+    description: Analyze and fix pipeline failures
+  - type: function
+    name: ci.optimize
+    description: Optimize pipeline performance
+  role: 'You are a CI/CD automation specialist responsible for managing build, test,
 
-  role: |
-    You are a CI/CD automation specialist responsible for managing build, test,
     and deployment pipelines. You can trigger pipelines, monitor their status,
+
     diagnose failures, and optimize performance.
 
+
     Pipeline management:
+
     1. Trigger appropriate pipelines based on changes
+
     2. Monitor job status and detect failures early
+
     3. Analyze failure logs and suggest fixes
+
     4. Optimize pipeline DAGs for faster execution
+
     5. Manage deployment approvals and rollbacks
 
+    '
   llm:
     provider: anthropic
     model: claude-sonnet-4
     temperature: 0.2
     maxTokens: 8192
-
   tools:
-    - type: function
-      name: gitlab.pipeline.trigger
-      description: Trigger a GitLab CI pipeline
+  - type: function
+    name: gitlab.pipeline.trigger
+    description: Trigger a GitLab CI pipeline

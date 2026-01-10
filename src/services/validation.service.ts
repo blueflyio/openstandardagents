@@ -99,11 +99,11 @@ export class ValidationService implements IValidationService {
         'spec' in manifest
       ) {
         const apiVersion = (manifest as { apiVersion: string }).apiVersion;
-        const spec = (manifest as { spec: any }).spec;
-        if (spec?.messaging) {
+        const spec = (manifest as { spec?: Record<string, unknown> }).spec;
+        if (spec && typeof spec === 'object' && 'messaging' in spec) {
           const messagingValidator = new MessagingValidator();
           const messagingValidationErrors = messagingValidator.validateMessagingExtension(
-            spec.messaging,
+            spec.messaging as Record<string, unknown>,
             apiVersion
           );
           // Convert ValidationError[] to ErrorObject[]

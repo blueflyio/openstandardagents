@@ -43,7 +43,7 @@ train:release-validation:
       npm run typecheck
       npm run lint || echo "Lint warnings (non-blocking in train)"
       
-      echo "✅ Release merge train validation passed"
+      echo "[PASS] Release merge train validation passed"
   allow_failure: false
 
 # Merge train validation for release → main
@@ -77,7 +77,7 @@ train:release-to-main:
         MILESTONE=$(echo "$MR_DATA" | jq -r '.milestone.title // empty' 2>/dev/null || echo "")
         
         if [ -n "$MILESTONE" ] && [ "$MILESTONE" != "null" ]; then
-          echo "✅ Milestone assigned: ${MILESTONE}"
+          echo "[PASS] Milestone assigned: ${MILESTONE}"
           
           # Check if milestone is closed
           MILESTONE_ID=$(echo "$MR_DATA" | jq -r '.milestone.id // empty' 2>/dev/null || echo "")
@@ -88,17 +88,17 @@ train:release-to-main:
             MILESTONE_STATE=$(echo "$MILESTONE_DATA" | jq -r '.state // "active"' 2>/dev/null || echo "active")
             
             if [ "$MILESTONE_STATE" = "closed" ]; then
-              echo "✅ Milestone is closed - ready for release"
+              echo "[PASS] Milestone is closed - ready for release"
             else
-              echo "⚠️  WARNING: Milestone is not closed"
+              echo "[WARN]  WARNING: Milestone is not closed"
               echo "   Release should only merge to main after milestone closure"
             fi
           fi
         else
-          echo "⚠️  WARNING: No milestone assigned to MR"
+          echo "[WARN]  WARNING: No milestone assigned to MR"
         fi
       else
-        echo "ℹ️  GITLAB_PUSH_TOKEN not set - skipping milestone validation"
+        echo "[INFO]  GITLAB_PUSH_TOKEN not set - skipping milestone validation"
       fi
       
       # Check version consistency
@@ -107,16 +107,16 @@ train:release-to-main:
         if [ -n "$CURRENT_VERSION" ]; then
           VERSION_MAJOR_MINOR=$(echo "$CURRENT_VERSION" | cut -d. -f1-2)
           if [ "$VERSION_MAJOR_MINOR" = "$RELEASE_VERSION" ]; then
-            echo "✅ Version matches release branch: ${CURRENT_VERSION}"
+            echo "[PASS] Version matches release branch: ${CURRENT_VERSION}"
           else
-            echo "⚠️  WARNING: Version mismatch"
+            echo "[WARN]  WARNING: Version mismatch"
             echo "   .version.json: ${CURRENT_VERSION}"
             echo "   Release branch: v${RELEASE_VERSION}.x"
           fi
         fi
       fi
       
-      echo "✅ Release → main merge train validation complete"
+      echo "[PASS] Release → main merge train validation complete"
   allow_failure: false
 
 # Notification when release merge train completes
@@ -132,7 +132,7 @@ train:release-merged:
       when: on_success
   script:
     - |
-      echo "✅ Release merged to main via merge train"
+      echo "[PASS] Release merged to main via merge train"
       echo "Release branch: ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME}"
       echo "MR: !${CI_MERGE_REQUEST_IID}"
       
@@ -144,7 +144,7 @@ train:release-merged:
         curl -sS --request POST \
           --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
           --header "Content-Type: application/json" \
-          --data "{\"body\": \"✅ **Release v${RELEASE_VERSION}.x merged to main**\n\nMerge train completed successfully. Release automation will now run.\"}" \
+          --data "{\"body\": \"[PASS] **Release v${RELEASE_VERSION}.x merged to main**\n\nMerge train completed successfully. Release automation will now run.\"}" \
           "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests/${CI_MERGE_REQUEST_IID}/notes" || true
       fi
   allow_failure: true

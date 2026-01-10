@@ -8,7 +8,7 @@
 # 3. Contract validation between consumer and provider
 # 4. Schema compatibility testing
 
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: data-consumer
@@ -106,7 +106,7 @@ spec:
 
     # Commands exposed by this consumer
     commands:
-      - name: process.batch
+      - name: process_batch
         description: Process a batch of data IDs
         inputSchema:
           type: object
