@@ -53,12 +53,14 @@ func SaveManifest(manifest *Manifest, path string, format string) error {
 	switch format {
 	case "json":
 		data, err = json.MarshalIndent(manifest, "", "  ")
+	switch format {
+	case "json":
+		data, err = json.MarshalIndent(manifest, "", "  ")
 	case "yaml":
 		data, err = yaml.Marshal(manifest)
 	default:
 		return fmt.Errorf("unsupported format: %s", format)
 	}
-
 	if err != nil {
 		return fmt.Errorf("failed to marshal manifest: %w", err)
 	}
