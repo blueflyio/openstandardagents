@@ -42,7 +42,7 @@
     "commands": {
       "build": "npm run build",
       "test": "npm test",
-      "validate": "npm run validate:power-suite",
+      "validate": "npm run validate:ossa-templates",
       "lint": "npm run lint"
     }
   },

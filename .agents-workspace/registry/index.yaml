@@ -14,8 +14,8 @@ metadata:
 
 agents:
   # Power Agents - 10 optimized agents showcasing OSSA capabilities
-  - project: power-agents
-    path: ./.agents/power
+  - project: ossa-templates
+    path: ./examples/ossa-templates
     agents:
       - name: code-assistant
         manifest: ./01-code-assistant.ossa.yaml
@@ -78,5 +78,5 @@ discovery:
 
 tags:
   - ossa-reference
-  - power-agents
+  - ossa-templates
   - specification

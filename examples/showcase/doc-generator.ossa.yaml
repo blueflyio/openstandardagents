@@ -6,7 +6,7 @@ metadata:
   description: Automated documentation generation agent
   labels:
     ossa.dev/category: documentation
-    ossa.dev/tier: power-agent
+    ossa.dev/tier: standard-example
   annotations:
     ossa.dev/documentation: https://openstandardagents.org/agents/doc-generator
 spec:
