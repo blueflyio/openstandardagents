@@ -1,5 +1,5 @@
 /**
- * OSSA v0.3.1 Messaging Extension - Channel Management
+ * OSSA v0.3.3 Messaging Extension - Channel Management
  * Manages message channels and their configuration
  */
 

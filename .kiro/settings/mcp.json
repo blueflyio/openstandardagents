@@ -7,7 +7,7 @@
         "@yoda.digital/gitlab-mcp-server"
       ],
       "env": {
-        "GITLAB_TOKEN": "glpat-L2hs2c9DugIGBBKYTHU3Vm86MQp1Oml4NzA0Cw.01.120ly0fym",
+        "GITLAB_TOKEN": "${GITLAB_TOKEN}",
         "GITLAB_URL": "https://gitlab.com"
       },
       "disabled": false

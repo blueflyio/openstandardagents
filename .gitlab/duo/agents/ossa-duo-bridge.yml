@@ -1,0 +1,66 @@
+# OSSA-Duo Bridge Agent
+# Bridges OSSA agents with GitLab Duo for bidirectional invocation
+#
+# This agent allows GitLab Duo to invoke OSSA agents via MCP
+# and OSSA agents to use GitLab Duo capabilities
+
+apiVersion: ossa/v0.3.0
+kind: Agent
+metadata:
+  name: ossa-duo-bridge
+  version: 0.2.9
+  labels:
+    category: integration
+    platform: gitlab-duo
+spec:
+  role: |
+    Bridge between OSSA Agent Mesh and GitLab Duo Agent Platform.
+    Enables bidirectional agent invocation and capability sharing.
+
+  model:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    temperature: 0.2
+
+  capabilities:
+    - invoke_ossa_agent
+    - invoke_duo_flow
+    - validate_manifest
+    - run_agent_mesh
+    - sync_agent_state
+
+  tools:
+    - type: mcp
+      server: gitlab-duo
+      capabilities:
+        - invoke_ossa_agent
+        - validate_manifest
+        - run_agent_mesh
+    - type: mcp
+      server: ossa-mesh
+      capabilities:
+        - invoke_duo_flow
+        - sync_state
+
+  extensions:
+    mcp:
+      enabled: true
+      server_type: sse
+      resources:
+        - uri: gitlab://duo/agents
+          description: "GitLab Duo registered agents"
+        - uri: ossa://mesh/agents
+          description: "OSSA Mesh available agents"
+
+  policy:
+    allowed_actions:
+      - read_file
+      - write_file
+      - execute_tool
+      - invoke_agent
+    rate_limits:
+      requests_per_minute: 60
+      max_concurrent: 5
+    audit:
+      enabled: true
+      log_level: info

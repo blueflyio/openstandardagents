@@ -26,21 +26,21 @@ create-dev-tag:release:
     - |
       #!/bin/bash
       set -e
-      
+
       echo "DEV TAG AUTOMATION FOR release/* BRANCHES"
       echo "=========================================="
       echo "Branch: ${CI_COMMIT_BRANCH}"
       echo "Commit: ${CI_COMMIT_SHA}"
       echo ""
-      
+
       # Extract major.minor from branch name (e.g., release/v0.3.x -> 0.3)
       BRANCH_VERSION=$(echo "$CI_COMMIT_BRANCH" | sed -n 's|^release/v\([0-9]\+\.[0-9]\+\).*|\1|p')
-      
+
       if [ -z "$BRANCH_VERSION" ]; then
         echo "Could not extract version from branch name: $CI_COMMIT_BRANCH"
         exit 0
       fi
-      
+
       echo "Branch version: $BRANCH_VERSION"
 
       # Fetch main branch tags
@@ -57,13 +57,13 @@ create-dev-tag:release:
         # Instead, increment to next patch version
         SAFETY_COUNTER=0
         while git tag -l "v${BASE_VERSION}" 2>/dev/null | grep -q "^v${BASE_VERSION}$"; do
-          echo "⚠️  Version v${BASE_VERSION} already released!"
+          echo "WARNING: Version v${BASE_VERSION} already released!"
           MAJOR_MINOR=$(echo "$BASE_VERSION" | cut -d. -f1-2)
           PATCH=$(echo "$BASE_VERSION" | cut -d. -f3)
           NEXT_PATCH=$((PATCH + 1))
           BASE_VERSION="${MAJOR_MINOR}.${NEXT_PATCH}"
           echo "→ Incrementing to v${BASE_VERSION} for dev tags"
-          
+
           SAFETY_COUNTER=$((SAFETY_COUNTER + 1))
           if [ $SAFETY_COUNTER -gt 100 ]; then
             echo "ERROR: Too many version increments, possible infinite loop"
@@ -85,10 +85,10 @@ create-dev-tag:release:
         fi
       fi
       echo "Dev tags will be: v${BASE_VERSION}-dev.*"
-      
+
       # Get latest dev tag for this version
       LATEST_DEV_TAG=$(git tag -l "v${BASE_VERSION}-dev*" 2>/dev/null | sort -V | tail -1 || echo "")
-      
+
       if [ -z "$LATEST_DEV_TAG" ]; then
         # First dev tag for this version
         NEXT_NUM=1
@@ -100,9 +100,9 @@ create-dev-tag:release:
         fi
         NEXT_NUM=$((CURRENT_NUM + 1))
       fi
-      
+
       NEW_TAG="v${BASE_VERSION}-dev.${NEXT_NUM}"
-      
+
       # Check if tag already exists for this commit
       EXISTING_TAG=$(git tag --points-at "$CI_COMMIT_SHA" | grep "^v${BASE_VERSION}-dev" || echo "")
       if [ -n "$EXISTING_TAG" ]; then
@@ -110,9 +110,9 @@ create-dev-tag:release:
         echo "DEV_TAG_NAME=$EXISTING_TAG" >> dev-tag.env
         exit 0
       fi
-      
+
       echo "Creating dev tag: $NEW_TAG"
-      
+
       # Create annotated tag
       git tag -a "$NEW_TAG" -m "Dev build ${NEXT_NUM} for ${CI_COMMIT_BRANCH}
 
@@ -121,9 +121,9 @@ create-dev-tag:release:
       - Dev iteration: ${NEXT_NUM}
       - Commit: ${CI_COMMIT_SHA:0:8}
       - Pipeline: ${CI_PIPELINE_URL}
-      
+
       This is a dev/pre-release tag and should not be used in production." "$CI_COMMIT_SHA"
-      
+
       # Push tag - show errors for debugging
       echo "Pushing tag $NEW_TAG..."
       echo "Remote URL (redacted): $(git remote get-url origin | sed 's/:[^@]*@/:***@/')"
@@ -143,6 +143,10 @@ create-dev-tag:release:
       dotenv: dev-tag.env
     expire_in: 1 week
   rules:
+    # Trigger on merge to release branch (MR merge event)
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^release\/v/ && $CI_MERGE_REQUEST_MERGE_RESULT == "merged"
+      when: on_success
+    # Also trigger on direct push to release branch
     - if: $CI_COMMIT_BRANCH =~ /^release\// && $CI_PIPELINE_SOURCE == "push"
       when: on_success
   allow_failure: false
@@ -163,37 +167,37 @@ detect-release-version:
     - |
       #!/bin/bash
       set -e
-      
+
       echo "VERSION DETECTION FOR release/* → main"
       echo "======================================"
-      
+
       # Extract major.minor from branch name (e.g., release/v0.3.x -> 0.3)
       BRANCH_VERSION=$(echo "$CI_COMMIT_BRANCH" | sed -n 's|^release/v\([0-9]\+\.[0-9]\+\).*|\1|p')
-      
+
       if [ -z "$BRANCH_VERSION" ]; then
         echo "ERROR: Could not extract version from branch: $CI_COMMIT_BRANCH"
         echo "RELEASE_VERSION=" > release-version.env
         echo "RELEASE_READY=false" >> release-version.env
         exit 0
       fi
-      
+
       echo "Branch version: ${BRANCH_VERSION}"
-      
+
       # Detect version from latest dev tags (dynamic based on branch)
-      # Find the highest version with dev tags (e.g., if we have v0.3.2-dev1, v0.3.2-dev2, use v0.3.2)
+      # Find the highest version with dev tags (e.g., if we have v0.3.3-dev1, v0.3.3-dev2, use v0.3.3)
       LATEST_DEV_TAG=$(git tag -l "v${BRANCH_VERSION}.*-dev*" 2>/dev/null | sort -V | tail -1 || echo "")
-      
+
       if [ -z "$LATEST_DEV_TAG" ]; then
         echo "No dev tags found"
         echo "RELEASE_VERSION=" > release-version.env
         echo "RELEASE_READY=false" >> release-version.env
         exit 0
       fi
-      
-      # Extract version from dev tag (e.g., v0.3.2-dev5 -> v0.3.2)
+
+      # Extract version from dev tag (e.g., v0.3.3-dev5 -> v0.3.3)
       BASE_VERSION=$(echo "$LATEST_DEV_TAG" | sed 's/-dev[0-9]*$//' | sed 's/^v//')
       RELEASE_VERSION="v${BASE_VERSION}"
-      
+
       # Check if final version tag already exists
       if git tag -l "$RELEASE_VERSION" | grep -q "^${RELEASE_VERSION}$"; then
         echo "Version ${RELEASE_VERSION} already released"
@@ -201,17 +205,17 @@ detect-release-version:
         echo "RELEASE_READY=false" >> release-version.env
         exit 0
       fi
-      
+
       if [ -z "$LATEST_DEV_TAG" ]; then
         echo "No dev tags found for v${BASE_VERSION}"
         echo "RELEASE_VERSION=" > release-version.env
         echo "RELEASE_READY=false" >> release-version.env
         exit 0
       fi
-      
+
       echo "Latest dev tag: $LATEST_DEV_TAG"
       echo "Ready for release: v${BASE_VERSION}"
-      
+
       echo "RELEASE_VERSION=v${BASE_VERSION}" > release-version.env
       echo "RELEASE_READY=true" >> release-version.env
       echo "LATEST_DEV_TAG=$LATEST_DEV_TAG" >> release-version.env
@@ -292,13 +296,13 @@ create-rc-tag:
 
       # Extract base version (e.g., v0.3.0-dev.48 -> 0.3.0)
       BASE_VERSION=$(echo "$LATEST_DEV_TAG" | sed 's/^v//' | sed 's/-dev.*//')
-      
+
       # Validate extracted version is valid semver
       if ! echo "$BASE_VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
         echo "ERROR: Invalid version format extracted: $BASE_VERSION"
         exit 1
       fi
-      
+
       echo "Base version: $BASE_VERSION"
 
       # Get next RC number
@@ -338,7 +342,7 @@ create-rc-tag:
 
       # Push tag
       if git push origin "$RC_TAG" 2>&1; then
-        echo "✅ Created RC tag: $RC_TAG"
+        echo "Created RC tag: $RC_TAG"
       else
         echo "Failed to push tag $RC_TAG"
         git tag -d "$RC_TAG" 2>/dev/null || true
@@ -372,7 +376,7 @@ sync-version-files:
     - |
       #!/bin/bash
       set -e
-      
+
       echo "SYNCING VERSION FILES AFTER PATCH DETERMINATION"
       echo "==============================================="
 
@@ -389,25 +393,25 @@ sync-version-files:
         echo "No dev tag version found, skipping version sync"
         exit 0
       fi
-      
+
       echo "Detected version: $DEV_TAG_VERSION"
       echo "Syncing all version files..."
-      
+
       # Set environment variable for CI version sync script
       export CI_DETERMINED_VERSION="$DEV_TAG_VERSION"
       export CI_BRANCH_VERSION=$(echo "$DEV_TAG_VERSION" | cut -d. -f1-2)
       export CI_PATCH_VERSION=$(echo "$DEV_TAG_VERSION" | cut -d. -f3)
-      
+
       # Run CI version sync
       npx tsx scripts/ci-version-sync.ts
-      
+
       # Commit version changes
       git config user.email "ci@bluefly.io"
       git config user.name "GitLab CI"
       git remote set-url origin https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
-      
+
       git add package.json .version.json README.md CHANGELOG.md 2>/dev/null || true
-      
+
       if git diff --staged --quiet; then
         echo "No version changes to commit"
       else
@@ -473,7 +477,7 @@ create-gitlab-release:
         }" \
         "https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/releases"
 
-      echo "✅ Created GitLab Release: https://gitlab.com/blueflyio/ossa/openstandardagents/-/releases/${CI_COMMIT_TAG}"
+      echo "Created GitLab Release: https://gitlab.com/blueflyio/ossa/openstandardagents/-/releases/${CI_COMMIT_TAG}"
   rules:
     - if: '$CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+(-RC|-dev[0-9]*)?$/'
       when: on_success

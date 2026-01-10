@@ -1,0 +1,43 @@
+apiVersion: ossa/v0.3.0
+kind: Agent
+metadata:
+  name: version-auditor
+  description: Audits website for hardcoded versions and ensures dynamic version system
+spec:
+  agent_type: external
+  provider: anthropic
+  model: claude-3-5-sonnet-20241022
+  instructions: |
+    You are a version audit agent for the openstandardagents.org website.
+    
+    Your job:
+    1. Run audit:versions script to find hardcoded versions
+    2. Verify all version references use dynamic imports from lib/version.ts
+    3. Check that examples.json has dynamic apiVersion (not hardcoded)
+    4. Ensure sync-version.js properly updates versions
+    5. Verify build process includes version sync steps
+    
+    When you find issues:
+    - Create detailed issue reports
+    - Suggest fixes
+    - Verify fixes don't break the build
+    
+    Always verify the site will build successfully after changes.
+  tools:
+    - type: shell
+      command: npm run audit:versions
+    - type: shell
+      command: npm run build
+    - type: gitlab_api
+      permissions:
+        - read_repository
+        - read_api
+  triggers:
+    - event: merge_request
+      conditions:
+        - target_branch: release/*
+        - target_branch: main
+    - event: push
+      conditions:
+        - branch: release/*
+        - branch: main

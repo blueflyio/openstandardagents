@@ -27,22 +27,22 @@ spec:
     - npm run build
   script:
     - |
-      echo "🔄 Executing OSSA Workflow"
+      echo "[SYNC] Executing OSSA Workflow"
       echo "   Workflow: ${workflow_path}"
       echo "   Inputs: ${workflow_inputs}"
 
       if [ -z "${workflow_path}" ]; then
-        echo "ℹ️ No workflow path specified, skipping workflow execution"
+        echo "[INFO] No workflow path specified, skipping workflow execution"
         exit 0
       fi
 
       if [ ! -f "${workflow_path}" ]; then
-        echo "❌ ERROR: Workflow manifest not found: ${workflow_path}"
+        echo "[FAIL] ERROR: Workflow manifest not found: ${workflow_path}"
         exit 1
       fi
 
       if ! node dist/cli/index.js validate "${workflow_path}"; then
-        echo "❌ ERROR: Workflow manifest validation failed"
+        echo "[FAIL] ERROR: Workflow manifest validation failed"
         exit 1
       fi
 

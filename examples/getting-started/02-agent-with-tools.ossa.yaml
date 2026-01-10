@@ -1,866 +1,229 @@
-# ╔═══════════════════════════════════════════════════════════════════════════════╗
-# ║                                                                               ║
-# ║   ██████╗ ███████╗███████╗ █████╗     ██╗   ██╗ ██████╗    ██████╗  ██████╗   ║
-# ║  ██╔═══██╗██╔════╝██╔════╝██╔══██╗    ██║   ██║██╔═████╗   ╚════██╗██╔═████╗  ║
-# ║  ██║   ██║███████╗███████╗███████║    ██║   ██║██║██╔██║    █████╔╝██║██╔██║  ║
-# ║  ██║   ██║╚════██║╚════██║██╔══██║    ╚██╗ ██╔╝████╔╝██║    ╚═══██╗████╔╝██║  ║
-# ║  ╚██████╔╝███████║███████║██║  ██║     ╚████╔╝ ╚██████╔╝██╗██████╔╝╚██████╔╝  ║
-# ║   ╚═════╝ ╚══════╝╚══════╝╚═╝  ╚═╝      ╚═══╝   ╚═════╝ ╚═╝╚═════╝  ╚═════╝   ║
-# ║                                                                               ║
-# ║               GETTING STARTED: 02 - AGENT WITH TOOLS                          ║
-# ║                                                                               ║
-# ╚═══════════════════════════════════════════════════════════════════════════════╝
-#
-# ┌─────────────────────────────────────────────────────────────────────────────────┐
-# │ WHAT YOU'LL LEARN                                                               │
-# ├─────────────────────────────────────────────────────────────────────────────────┤
-# │                                                                                 │
-# │  ✓ How to give agents TOOLS to interact with external systems                  │
-# │  ✓ MCP (Model Context Protocol) - the standard for agent tools                 │
-# │  ✓ Function tools - custom capabilities with JSON Schema                       │
-# │  ✓ How tools work: function calling → execution → result → LLM decision        │
-# │  ✓ Real example: GitHub API + filesystem + custom test runner                  │
-# │                                                                                 │
-# └─────────────────────────────────────────────────────────────────────────────────┘
-#
-# ┌─────────────────────────────────────────────────────────────────────────────────┐
-# │ WHAT ARE TOOLS?                                                                 │
-# ├─────────────────────────────────────────────────────────────────────────────────┤
-# │                                                                                 │
-# │  Tools are CAPABILITIES that extend what an agent can do beyond text.           │
-# │                                                                                 │
-# │  Without tools:  Agent can only READ and WRITE text                             │
-# │  With tools:     Agent can INTERACT with the real world                         │
-# │                                                                                 │
-# │  Think of tools like:                                                           │
-# │  • A human brain (LLM) + hands (tools) to manipulate the environment            │
-# │  • A smart assistant who can actually DO things, not just talk                  │
-# │                                                                                 │
-# │  Examples:                                                                      │
-# │  ┌───────────────────────────────────────────────────────────────────┐         │
-# │  │ TOOL TYPE          CAPABILITY                    EXAMPLE USE       │         │
-# │  ├───────────────────────────────────────────────────────────────────┤         │
-# │  │ MCP (GitHub)       Create PRs, issues, commits   Code review       │         │
-# │  │ MCP (Filesystem)   Read/write files              Edit config       │         │
-# │  │ MCP (Database)     Query PostgreSQL, MySQL       Analyze data      │         │
-# │  │ MCP (Slack)        Send messages, read channels  Notifications     │         │
-# │  │ Function           Custom logic in your runtime  Run tests         │         │
-# │  │ API                Call REST endpoints           Weather, stocks   │         │
-# │  └───────────────────────────────────────────────────────────────────┘         │
-# │                                                                                 │
-# └─────────────────────────────────────────────────────────────────────────────────┘
-#
-# ┌─────────────────────────────────────────────────────────────────────────────────┐
-# │ HOW TOOLS WORK: THE FUNCTION CALLING FLOW                                       │
-# ├─────────────────────────────────────────────────────────────────────────────────┤
-# │                                                                                 │
-# │  1. USER → "Create a PR for the new login feature"                              │
-# │                                                                                 │
-# │  2. LLM THINKS →                                                                │
-# │     "I need to use the github tool's create_pull_request function"              │
-# │                                                                                 │
-# │  3. LLM GENERATES FUNCTION CALL →                                               │
-# │     {                                                                           │
-# │       "tool": "github",                                                         │
-# │       "function": "create_pull_request",                                        │
-# │       "arguments": {                                                            │
-# │         "title": "Add new login feature",                                       │
-# │         "branch": "feature/login",                                              │
-# │         "base": "main"                                                          │
-# │       }                                                                         │
-# │     }                                                                           │
-# │                                                                                 │
-# │  4. RUNTIME EXECUTES → Calls GitHub API via MCP server                          │
-# │                                                                                 │
-# │  5. RUNTIME RETURNS RESULT →                                                    │
-# │     {                                                                           │
-# │       "pr_number": 42,                                                          │
-# │       "url": "https://github.com/org/repo/pull/42",                             │
-# │       "status": "open"                                                          │
-# │     }                                                                           │
-# │                                                                                 │
-# │  6. LLM SEES RESULT → Formulates response to user                               │
-# │                                                                                 │
-# │  7. AGENT → "I've created PR #42 for the login feature. It's ready for review!" │
-# │                                                                                 │
-# │  KEY INSIGHT:                                                                   │
-# │  The LLM DECIDES when to use tools. The runtime EXECUTES them.                  │
-# │  This is called "agentic behavior" - the agent chooses its own actions.         │
-# │                                                                                 │
-# └─────────────────────────────────────────────────────────────────────────────────┘
-#
-# ┌─────────────────────────────────────────────────────────────────────────────────┐
-# │ HOW TO RUN THIS EXAMPLE                                                         │
-# ├─────────────────────────────────────────────────────────────────────────────────┤
-# │                                                                                 │
-# │  STEP 1: Install MCP servers you'll use                                         │
-# │  ────────────────────────────────────────                                       │
-# │  MCP servers are published to npm. You don't need to install them globally -    │
-# │  the agent runtime will use npx to run them on-demand.                          │
-# │                                                                                 │
-# │  Available MCP servers:                                                         │
-# │  • @modelcontextprotocol/server-github     - GitHub API                         │
-# │  • @modelcontextprotocol/server-filesystem - File operations                    │
-# │  • @modelcontextprotocol/server-postgres   - PostgreSQL queries                 │
-# │  • @modelcontextprotocol/server-slack      - Slack integration                  │
-# │  • @modelcontextprotocol/server-memory     - Persistent memory                  │
-# │                                                                                 │
-# │  Find more: https://github.com/modelcontextprotocol/servers                     │
-# │                                                                                 │
-# │  STEP 2: Set required environment variables                                     │
-# │  ─────────────────────────────────────────                                      │
-# │  # LLM provider (from example 01)                                               │
-# │  $ export ANTHROPIC_API_KEY=sk-ant-...                                          │
-# │                                                                                 │
-# │  # GitHub tool authentication                                                   │
-# │  $ export GITHUB_TOKEN=ghp_...                                                  │
-# │  # Get token: https://github.com/settings/tokens                                │
-# │  # Required scopes: repo, read:user                                             │
-# │                                                                                 │
-# │  STEP 3: Validate the manifest                                                  │
-# │  ────────────────────────────                                                   │
-# │  $ ossa validate 02-agent-with-tools.ossa.yaml                                  │
-# │                                                                                 │
-# │  Expected output:                                                               │
-# │  ✓ Schema validation passed                                                     │
-# │  ✓ Tools configuration valid                                                    │
-# │  ✓ MCP server paths resolved                                                    │
-# │  ✓ Ready to run                                                                 │
-# │                                                                                 │
-# │  STEP 4: Run the agent interactively                                            │
-# │  ────────────────────────────────────                                           │
-# │  $ ossa run 02-agent-with-tools.ossa.yaml --interactive                         │
-# │                                                                                 │
-# │  Try these prompts:                                                             │
-# │                                                                                 │
-# │  > List files in /workspace                                                     │
-# │  Agent: [Uses filesystem tool to list directory]                                │
-# │         I found 15 files in /workspace: ...                                     │
-# │                                                                                 │
-# │  > Read the README.md file                                                      │
-# │  Agent: [Uses filesystem tool to read file]                                     │
-# │         The README contains: ...                                                │
-# │                                                                                 │
-# │  > What's my latest GitHub PR?                                                  │
-# │  Agent: [Uses GitHub tool to list pull requests]                                │
-# │         Your most recent PR is #42: "Add login feature" ...                     │
-# │                                                                                 │
-# │  > Run the tests                                                                │
-# │  Agent: [Uses run_tests function tool]                                          │
-# │         Tests passed: 47/47 ✓                                                   │
-# │                                                                                 │
-# │  STEP 5: Test MCP servers directly (debugging)                                  │
-# │  ─────────────────────────────────────────────                                  │
-# │  You can test MCP servers outside of OSSA:                                      │
-# │                                                                                 │
-# │  # List available tools in GitHub MCP server                                    │
-# │  $ npx @modelcontextprotocol/server-github list-tools                           │
-# │                                                                                 │
-# │  # Test a specific function                                                     │
-# │  $ npx @modelcontextprotocol/server-github call-tool \                          │
-# │      --tool get_pull_request \                                                  │
-# │      --args '{"repo":"owner/name","pr_number":42}'                              │
-# │                                                                                 │
-# │  STEP 6: Monitor tool usage (observability)                                     │
-# │  ──────────────────────────────────────────                                     │
-# │  $ ossa run 02-agent-with-tools.ossa.yaml \                                     │
-# │      --log-level debug \                                                        │
-# │      --trace-tools                                                              │
-# │                                                                                 │
-# │  Shows:                                                                         │
-# │  • Which tools the agent chooses to use                                         │
-# │  • Arguments passed to each tool                                                │
-# │  • Results returned                                                             │
-# │  • Decision-making process                                                      │
-# │                                                                                 │
-# └─────────────────────────────────────────────────────────────────────────────────┘
-#
-# ┌─────────────────────────────────────────────────────────────────────────────────┐
-# │ KEY CONCEPTS IN THIS EXAMPLE                                                    │
-# ├─────────────────────────────────────────────────────────────────────────────────┤
-# │                                                                                 │
-# │  1. MCP (Model Context Protocol)                                                │
-# │     ─────────────────────────────                                               │
-# │     An OPEN STANDARD for connecting LLMs to external tools.                     │
-# │     Like OpenAPI for REST APIs, but for agent tools.                            │
-# │                                                                                 │
-# │     MCP defines:                                                                │
-# │     • How to describe available tools (JSON Schema)                             │
-# │     • How to execute functions (standardized RPC)                               │
-# │     • How to handle errors and retries                                          │
-# │     • How to stream results (for long operations)                               │
-# │                                                                                 │
-# │     Why MCP?                                                                    │
-# │     • Write once, works with any LLM (Anthropic, OpenAI, Google, etc.)          │
-# │     • Rich ecosystem of pre-built servers (GitHub, Slack, DBs, etc.)            │
-# │     • Secure - tools run in separate processes with access controls             │
-# │     • Portable - same tool works across frameworks (LangChain, CrewAI, etc.)    │
-# │                                                                                 │
-# │  2. MCP Server Lifecycle                                                        │
-# │     ─────────────────────                                                       │
-# │     When you run the agent:                                                     │
-# │                                                                                 │
-# │     a) Runtime spawns MCP server process:                                       │
-# │        $ npx -y @modelcontextprotocol/server-github                             │
-# │                                                                                 │
-# │     b) Server connects via stdio/HTTP and reports available tools:              │
-# │        {                                                                        │
-# │          "tools": [                                                             │
-# │            {"name": "create_pull_request", ...},                                │
-# │            {"name": "get_pull_request", ...},                                   │
-# │            {"name": "create_issue", ...}                                        │
-# │          ]                                                                      │
-# │        }                                                                        │
-# │                                                                                 │
-# │     c) LLM receives tool descriptions in system prompt                          │
-# │                                                                                 │
-# │     d) When LLM calls a tool, runtime forwards request to MCP server            │
-# │                                                                                 │
-# │     e) MCP server executes (e.g., calls GitHub API), returns result             │
-# │                                                                                 │
-# │     f) Runtime passes result back to LLM for next decision                      │
-# │                                                                                 │
-# │  3. Function Tools (Custom Logic)                                               │
-# │     ──────────────────────────                                                  │
-# │     When no MCP server exists for your use case, write a function tool.         │
-# │                                                                                 │
-# │     Components:                                                                 │
-# │     • name: Unique identifier (e.g., "run_tests", "deploy_service")             │
-# │     • description: What it does (LLM uses this to decide when to call it)       │
-# │     • input_schema: JSON Schema defining valid arguments                        │
-# │     • implementation: Provided by the runtime (Python, Node.js, etc.)           │
-# │                                                                                 │
-# │     Example flow:                                                               │
-# │     1. LLM decides to call run_tests with {"test_path": "tests/unit/"}          │
-# │     2. Runtime validates arguments against input_schema                         │
-# │     3. Runtime executes your Python/Node.js function                            │
-# │     4. Function returns {"status": "passed", "count": 47}                       │
-# │     5. LLM sees result and responds to user                                     │
-# │                                                                                 │
-# │  4. Tool Selection (How LLM Chooses)                                            │
-# │     ─────────────────────────────────                                           │
-# │     The LLM chooses tools based on:                                             │
-# │                                                                                 │
-# │     • User's request: "Create a PR" → github tool                               │
-# │     • Tool descriptions: Detailed description helps LLM make right choice       │
-# │     • Context: Recent conversation, previous tool results                       │
-# │     • Constraints: Autonomy rules (see example 03)                              │
-# │                                                                                 │
-# │     Best practices:                                                             │
-# │     ✓ Write DETAILED tool descriptions (when, why, what it returns)             │
-# │     ✓ Use descriptive parameter names (repo_url vs url)                         │
-# │     ✓ Include examples in description: "Example: repo_url='owner/name'"         │
-# │     ✓ Specify constraints: "Only works for public repositories"                 │
-# │                                                                                 │
-# │  5. Tool Configuration Patterns                                                 │
-# │     ────────────────────────────                                                │
-# │                                                                                 │
-# │     MCP tool with environment variable:                                         │
-# │     ```yaml                                                                     │
-# │     - type: mcp                                                                 │
-# │       name: github                                                              │
-# │       config:                                                                   │
-# │         server: npx -y @modelcontextprotocol/server-github                      │
-# │         env:                                                                    │
-# │           GITHUB_TOKEN: ${GITHUB_TOKEN}  # From environment                     │
-# │     ```                                                                         │
-# │                                                                                 │
-# │     MCP tool with arguments:                                                    │
-# │     ```yaml                                                                     │
-# │     - type: mcp                                                                 │
-# │       name: filesystem                                                          │
-# │       config:                                                                   │
-# │         server: npx -y @modelcontextprotocol/server-filesystem                  │
-# │         args:                                                                   │
-# │           - /workspace           # Allowed root directory                       │
-# │           - --read-only false    # Enable writes                                │
-# │     ```                                                                         │
-# │                                                                                 │
-# │     Function tool with complex schema:                                          │
-# │     ```yaml                                                                     │
-# │     - type: function                                                            │
-# │       name: query_database                                                      │
-# │       description: Run SQL queries (SELECT only, no mutations)                  │
-# │       input_schema:                                                             │
-# │         type: object                                                            │
-# │         required: [query]                                                       │
-# │         properties:                                                             │
-# │           query:                                                                │
-# │             type: string                                                        │
-# │             description: SQL query to execute                                   │
-# │             pattern: "^SELECT.*"  # Enforce SELECT only                         │
-# │           limit:                                                                │
-# │             type: integer                                                       │
-# │             minimum: 1                                                          │
-# │             maximum: 1000                                                       │
-# │             default: 100                                                        │
-# │     ```                                                                         │
-# │                                                                                 │
-# └─────────────────────────────────────────────────────────────────────────────────┘
-#
-# ┌─────────────────────────────────────────────────────────────────────────────────┐
-# │ MCP SERVER DIRECTORY                                                            │
-# ├─────────────────────────────────────────────────────────────────────────────────┤
-# │                                                                                 │
-# │  Official MCP servers (maintained by Anthropic):                                │
-# │  https://github.com/modelcontextprotocol/servers                                │
-# │                                                                                 │
-# │  DEVELOPMENT TOOLS                                                              │
-# │  ────────────────────────────────────────────────────────────────────────       │
-# │  • server-github      - PRs, issues, commits, code search                       │
-# │  • server-gitlab      - GitLab API                                              │
-# │  • server-filesystem  - Read/write files (sandboxed)                            │
-# │  • server-git         - Git operations (clone, commit, branch)                  │
-# │                                                                                 │
-# │  DATA & DATABASES                                                               │
-# │  ────────────────────────────────────────────────────────────────────────       │
-# │  • server-postgres    - PostgreSQL queries                                      │
-# │  • server-sqlite      - SQLite databases                                        │
-# │  • server-mysql       - MySQL/MariaDB                                           │
-# │  • server-mongodb     - MongoDB collections                                     │
-# │                                                                                 │
-# │  COMMUNICATION                                                                  │
-# │  ────────────────────────────────────────────────────────────────────────       │
-# │  • server-slack       - Send messages, read channels                            │
-# │  • server-email       - Send emails (SMTP)                                      │
-# │  • server-discord     - Discord bot integration                                 │
-# │                                                                                 │
-# │  CLOUD PLATFORMS                                                                │
-# │  ────────────────────────────────────────────────────────────────────────       │
-# │  • server-aws         - S3, Lambda, EC2 operations                              │
-# │  • server-gcp         - Google Cloud Platform                                   │
-# │  • server-kubernetes  - K8s cluster management                                  │
-# │                                                                                 │
-# │  SPECIALIZED                                                                    │
-# │  ────────────────────────────────────────────────────────────────────────       │
-# │  • server-memory      - Persistent agent memory (RAG)                           │
-# │  • server-puppeteer   - Browser automation                                      │
-# │  • server-fetch       - HTTP requests with retries                              │
-# │  • server-youtube     - YouTube transcripts                                     │
-# │                                                                                 │
-# │  Community servers: Search npm for "mcp-server-*"                               │
-# │                                                                                 │
-# └─────────────────────────────────────────────────────────────────────────────────┘
-#
-# ┌─────────────────────────────────────────────────────────────────────────────────┐
-# │ WRITING YOUR OWN MCP SERVER                                                     │
-# ├─────────────────────────────────────────────────────────────────────────────────┤
-# │                                                                                 │
-# │  When to build a custom MCP server:                                             │
-# │  • You need to integrate a service without an existing MCP server               │
-# │  • You have complex business logic to expose                                    │
-# │  • You want to reuse the tool across multiple agents/frameworks                 │
-# │                                                                                 │
-# │  Quick start (TypeScript):                                                      │
-# │                                                                                 │
-# │  ```typescript                                                                  │
-# │  import { Server } from "@modelcontextprotocol/sdk/server/index.js";           │
-# │  import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"; │
-# │                                                                                 │
-# │  const server = new Server({                                                    │
-# │    name: "my-custom-server",                                                    │
-# │    version: "1.0.0"                                                             │
-# │  }, {                                                                           │
-# │    capabilities: { tools: {} }                                                  │
-# │  });                                                                            │
-# │                                                                                 │
-# │  // Define tools                                                                │
-# │  server.setRequestHandler(ListToolsRequestSchema, async () => ({                │
-# │    tools: [                                                                     │
-# │      {                                                                          │
-# │        name: "send_notification",                                               │
-# │        description: "Send a notification via internal system",                  │
-# │        inputSchema: {                                                           │
-# │          type: "object",                                                        │
-# │          properties: {                                                          │
-# │            message: { type: "string" },                                         │
-# │            priority: { type: "string", enum: ["low", "high"] }                  │
-# │          },                                                                     │
-# │          required: ["message"]                                                  │
-# │        }                                                                        │
-# │      }                                                                          │
-# │    ]                                                                            │
-# │  }));                                                                           │
-# │                                                                                 │
-# │  // Handle tool calls                                                           │
-# │  server.setRequestHandler(CallToolRequestSchema, async (request) => {           │
-# │    if (request.params.name === "send_notification") {                           │
-# │      const { message, priority } = request.params.arguments;                    │
-# │      // Your implementation here                                                │
-# │      await sendToInternalSystem(message, priority);                             │
-# │      return { content: [{ type: "text", text: "Notification sent!" }] };        │
-# │    }                                                                            │
-# │  });                                                                            │
-# │                                                                                 │
-# │  // Start server                                                                │
-# │  const transport = new StdioServerTransport();                                  │
-# │  await server.connect(transport);                                               │
-# │  ```                                                                            │
-# │                                                                                 │
-# │  Then use in OSSA:                                                              │
-# │  ```yaml                                                                        │
-# │  tools:                                                                         │
-# │    - type: mcp                                                                  │
-# │      name: my-custom-tool                                                       │
-# │      config:                                                                    │
-# │        server: node /path/to/my-mcp-server.js                                   │
-# │  ```                                                                            │
-# │                                                                                 │
-# │  SDK documentation: https://modelcontextprotocol.io/docs                        │
-# │                                                                                 │
-# └─────────────────────────────────────────────────────────────────────────────────┘
-#
-# ┌─────────────────────────────────────────────────────────────────────────────────┐
-# │ NEXT STEPS                                                                      │
-# ├─────────────────────────────────────────────────────────────────────────────────┤
-# │                                                                                 │
-# │  03-agent-with-safety.ossa.yaml                                                 │
-# │     CRITICAL for production: PII detection, rate limiting, content filtering    │
-# │     Learn: Guardrails, autonomy controls, compliance (SOC2, GDPR)               │
-# │                                                                                 │
-# │  04-agent-with-messaging.ossa.yaml                                              │
-# │     Multi-agent systems: Agents that communicate and coordinate                 │
-# │     Learn: Pub/sub, commands, event-driven architectures                        │
-# │                                                                                 │
-# │  05-workflow-composition.ossa.yaml                                              │
-# │     Orchestration: Compose agents and tasks into complex pipelines              │
-# │     Learn: DAGs, error handling, parallel execution                             │
-# │                                                                                 │
-# └─────────────────────────────────────────────────────────────────────────────────┘
-#
-# ═══════════════════════════════════════════════════════════════════════════════════
-#                           THE ACTUAL MANIFEST STARTS HERE
-# ═══════════════════════════════════════════════════════════════════════════════════
-
-# ──────────────────────────────────────────────────────────────────────────────────
-# API VERSION (Required)
-# ──────────────────────────────────────────────────────────────────────────────────
-# Same as example 01 - using OSSA v0.3.0
-# ──────────────────────────────────────────────────────────────────────────────────
-apiVersion: ossa/v0.3.2
-
-# ──────────────────────────────────────────────────────────────────────────────────
-# KIND (Required)
-# ──────────────────────────────────────────────────────────────────────────────────
-# Agent - because we want LLM-powered reasoning + tool use
-# (Tasks don't use LLMs, Workflows compose multiple agents/tasks)
-# ──────────────────────────────────────────────────────────────────────────────────
+apiVersion: ossa/v0.3.3
 kind: Agent
-
-# ──────────────────────────────────────────────────────────────────────────────────
-# METADATA (Required)
-# ──────────────────────────────────────────────────────────────────────────────────
 metadata:
-  # Descriptive name - indicates this agent can assist with code
   name: code-assistant
-
-  # Version 1.0.0 - production-ready with tools
   version: 1.0.0
+  description: 'Code review assistant with integrated tools for GitHub API, filesystem
 
-  # Human-readable description for documentation and registries
-  description: |
-    Code review assistant with integrated tools for GitHub API, filesystem
     operations, and test execution. Demonstrates MCP (Model Context Protocol)
+
     integration and custom function tools.
 
+
     Capabilities:
+
     - Read and analyze source code files
+
     - Create and manage GitHub pull requests
+
     - Run project test suites
+
     - Provide code quality feedback
 
-  # Labels for categorization
+    '
   labels:
-    difficulty: beginner       # Good intro to tools
-    tutorial: "02"             # Second in getting-started series
-    capability: code-review    # Primary use case
-    tools: mcp                 # Uses MCP servers
-
-# ──────────────────────────────────────────────────────────────────────────────────
-# SPEC (Agent Configuration)
-# ──────────────────────────────────────────────────────────────────────────────────
+    difficulty: beginner
+    tutorial: '02'
+    capability: code-review
+    tools: mcp
 spec:
-  # ────────────────────────────────────────────────────────────────────────────────
-  # ROLE (System Prompt)
-  # ────────────────────────────────────────────────────────────────────────────────
-  # Define the agent's expertise and behavioral guidelines
-  #
-  # IMPORTANT: When agents have tools, the role should explain:
-  # 1. What the agent can do (capabilities)
-  # 2. When to use tools vs pure reasoning
-  # 3. How to communicate tool usage to users (transparency)
-  # 4. Safety guidelines (e.g., "Always explain before destructive actions")
-  # ────────────────────────────────────────────────────────────────────────────────
-  role: |
-    You are an expert code review assistant with access to development tools.
+  role: 'You are an expert code review assistant with access to development tools.
+
 
     Your capabilities:
+
     1. **Code Analysis**: Read and analyze source code files using filesystem access
+
     2. **GitHub Integration**: Create PRs, review issues, examine commits
+
     3. **Testing**: Run project test suites and interpret results
+
     4. **Best Practices**: Provide feedback on code quality, patterns, and maintainability
 
+
     Working guidelines:
-    - **Transparency**: Always explain which tools you're using and why
-    - **Safety First**: Ask for confirmation before destructive operations (delete, force push)
+
+    - **Transparency**: Always explain which tools you''re using and why
+
+    - **Safety First**: Ask for confirmation before destructive operations (delete,
+    force push)
+
     - **Context Awareness**: Read relevant files before making recommendations
+
     - **Testing**: Run tests before suggesting code is ready to merge
+
     - **Incremental**: Start with simple analysis, go deeper if needed
 
+
     Communication style:
-    - Be clear about what you're checking: "Let me read the main.py file..."
+
+    - Be clear about what you''re checking: "Let me read the main.py file..."
+
     - Explain tool results: "The tests show 3 failures in the auth module..."
+
     - Provide actionable feedback: "Consider extracting this logic into a helper function"
+
     - Use markdown for code suggestions and structured output
 
+
     When reviewing code:
+
     1. First, understand the context (read related files, check recent commits)
+
     2. Run tests if available
+
     3. Analyze for common issues: security, performance, readability
+
     4. Provide specific, actionable suggestions
-    5. Highlight what's done well, not just problems
 
-  # ────────────────────────────────────────────────────────────────────────────────
-  # LLM CONFIGURATION
-  # ────────────────────────────────────────────────────────────────────────────────
-  # For code review, we want focused, deterministic behavior
-  # ────────────────────────────────────────────────────────────────────────────────
+    5. Highlight what''s done well, not just problems
+
+    '
   llm:
-    # Use environment variable for portability (same as example 01)
-    provider: ${LLM_PROVIDER:-anthropic}
-
-    # Default to Sonnet - good balance of speed and code understanding
-    # For faster/cheaper: claude-haiku
-    # For more complex analysis: claude-opus-4-20250514
-    model: ${LLM_MODEL:-claude-sonnet-4-20250514}
-
-    # Temperature 0.3 - lower than default (0.7) for more focused code analysis
-    # Code review benefits from consistency and precision
-    # Range guide for code tasks:
-    #   0.0-0.2: Code generation, security analysis (very focused)
-    #   0.2-0.4: Code review, refactoring suggestions (balanced)
-    #   0.4-0.7: Architecture discussions, brainstorming (creative)
+    provider: anthropic
+    model: claude-sonnet-4-20250514
     temperature: 0.3
-
-  # ────────────────────────────────────────────────────────────────────────────────
-  # TOOLS (The Main Feature of This Example!)
-  # ────────────────────────────────────────────────────────────────────────────────
-  # Tools extend the agent's capabilities beyond text generation.
-  # Each tool is described to the LLM, which decides when to use it.
-  #
-  # Tool types:
-  # • mcp      - Model Context Protocol server (standard, reusable)
-  # • function - Custom logic implemented by runtime
-  # • api      - REST API endpoint (OpenAPI spec)
-  #
-  # The LLM sees tool descriptions in its system prompt and can call them
-  # using structured function calling (supported by Claude, GPT-4, Gemini, etc.)
-  # ────────────────────────────────────────────────────────────────────────────────
   tools:
-    # ──────────────────────────────────────────────────────────────────────────────
-    # TOOL 1: GitHub MCP Server
-    # ──────────────────────────────────────────────────────────────────────────────
-    # Connects to the official GitHub MCP server maintained by Anthropic.
-    # Provides 20+ functions: create_pr, get_pr, create_issue, search_code, etc.
-    #
-    # How it works:
-    # 1. Runtime spawns: npx -y @modelcontextprotocol/server-github
-    # 2. MCP server connects via stdio and reports available functions
-    # 3. LLM sees descriptions like "create_pull_request: Create a new PR..."
-    # 4. When LLM calls a function, runtime forwards to MCP server
-    # 5. MCP server uses GitHub API (authenticated with GITHUB_TOKEN)
-    # 6. Result flows back: MCP server → runtime → LLM
-    # ──────────────────────────────────────────────────────────────────────────────
-    - type: mcp
+  - type: mcp
+    name: github
+    description: 'GitHub API access for repository operations. Provides functions
+      to:
 
-      # Tool name - used in logs and by LLM to reference this capability
-      # Convention: lowercase, descriptive (github, slack, database)
-      name: github
+      - Create, read, and update pull requests
 
-      # Description - helps LLM understand when to use this tool
-      # Be specific! Include what it CAN and CANNOT do.
-      description: |
-        GitHub API access for repository operations. Provides functions to:
-        - Create, read, and update pull requests
-        - Manage issues (create, comment, label, close)
-        - Search code and repositories
-        - Read file contents and directory structures
-        - View commit history and diffs
+      - Manage issues (create, comment, label, close)
 
-        Requires: GITHUB_TOKEN environment variable with repo scope.
-        Note: Cannot force push or delete repositories (safety constraints).
+      - Search code and repositories
 
-      # Configuration specific to this MCP server
-      config:
-        # server: Command to start the MCP server
-        # npx -y: Run without install prompt, auto-install if needed
-        # The server listens on stdio for commands from the runtime
-        server: npx -y @modelcontextprotocol/server-github
+      - Read file contents and directory structures
 
-        # Environment variables passed to the MCP server
-        # The GitHub server needs GITHUB_TOKEN for API authentication
-        env:
-          # ${GITHUB_TOKEN} - reads from your shell environment
-          # Get a token: https://github.com/settings/tokens
-          # Required scopes: repo (for private repos) or public_repo (public only)
-          GITHUB_TOKEN: ${GITHUB_TOKEN}
+      - View commit history and diffs
 
-        # Optional: Configure timeout for MCP operations
-        # Useful for slow APIs or large repo operations
-        # timeout_seconds: 30
 
-        # Optional: Restrict which GitHub functions are available
-        # By default, all functions are exposed. You can allowlist:
-        # allowed_functions:
-        #   - create_pull_request
-        #   - get_pull_request
-        #   - create_issue
-        # This is useful for security (prevent certain operations) or
-        # to simplify the LLM's choices (fewer options = better decisions)
+      Requires: GITHUB_TOKEN environment variable with repo scope.
 
-    # ──────────────────────────────────────────────────────────────────────────────
-    # TOOL 2: Filesystem MCP Server
-    # ──────────────────────────────────────────────────────────────────────────────
-    # Provides sandboxed file system access. The agent can read/write files
-    # within specified directories.
-    #
-    # Security note:
-    # The first argument (/workspace) defines the ROOT of accessible paths.
-    # The agent CANNOT access files outside this directory (sandboxing).
-    # This prevents accidental or malicious access to system files.
-    # ──────────────────────────────────────────────────────────────────────────────
-    - type: mcp
+      Note: Cannot force push or delete repositories (safety constraints).
 
-      name: filesystem
+      '
+    config:
+      server: npx -y @modelcontextprotocol/server-github
+      env:
+        GITHUB_TOKEN: ${GITHUB_TOKEN}
+  - type: mcp
+    name: filesystem
+    description: 'Read and write files within /workspace directory. Provides functions
+      to:
 
-      description: |
-        Read and write files within /workspace directory. Provides functions to:
-        - List directory contents (recursive and non-recursive)
-        - Read file contents (text and binary)
-        - Write/update files (create if not exists)
-        - Create directories
-        - Check file existence and metadata
+      - List directory contents (recursive and non-recursive)
 
-        Security: Sandboxed to /workspace - cannot access parent directories.
-        Use this to analyze code, read configs, save reports.
+      - Read file contents (text and binary)
 
-      config:
-        # MCP server for filesystem operations
-        server: npx -y @modelcontextprotocol/server-filesystem
+      - Write/update files (create if not exists)
 
-        # Arguments passed to the filesystem server
-        # First arg: Root directory (all operations are relative to this)
-        args:
-          - /workspace
-          # Optional: Enable/disable writes (default: writes enabled)
-          # Add this for read-only access:
-          # - --read-only true
+      - Create directories
 
-        # Optional: File type restrictions
-        # allowed_extensions:
-        #   - .py
-        #   - .js
-        #   - .md
-        #   - .yaml
-        # denied_extensions:
-        #   - .env    # Prevent reading secrets
-        #   - .key
-        #   - .pem
+      - Check file existence and metadata
 
-    # ──────────────────────────────────────────────────────────────────────────────
-    # TOOL 3: Custom Function Tool
-    # ──────────────────────────────────────────────────────────────────────────────
-    # Function tools let you expose runtime-specific logic to the agent.
-    # Unlike MCP (which spawns a separate process), functions run in your
-    # application runtime (Python, Node.js, Go, etc.).
-    #
-    # Use function tools when:
-    # • You need deep integration with your application logic
-    # • Performance is critical (no IPC overhead)
-    # • The functionality is unique to your use case (no reusable MCP server)
-    #
-    # Use MCP when:
-    # • You want to reuse the tool across multiple agents/frameworks
-    # • You're integrating a third-party service (GitHub, Slack, AWS, etc.)
-    # • You want process isolation for security
-    # ──────────────────────────────────────────────────────────────────────────────
-    - type: function
 
-      # Function name - unique identifier
-      # Convention: verb_noun (run_tests, deploy_service, send_email)
-      name: run_tests
+      Security: Sandboxed to /workspace - cannot access parent directories.
 
-      # Description for the LLM - be VERY specific about:
-      # • What the function does
-      # • When to use it (before merging? on demand?)
-      # • What it returns (exit code? detailed results?)
-      # • Any prerequisites (must install deps first? requires certain env?)
-      description: |
-        Execute the project's test suite and return results.
+      Use this to analyze code, read configs, save reports.
 
-        Behavior:
-        - Runs tests using the project's configured test runner (pytest, jest, etc.)
-        - If test_path is provided, runs only those tests (file or directory)
-        - If test_path is omitted, runs the full test suite
-        - Returns: pass/fail status, number of tests, execution time, failure details
+      '
+    config:
+      server: npx -y @modelcontextprotocol/server-filesystem
+      args:
+      - /workspace
+  - type: function
+    name: run_tests
+    description: 'Execute the project''s test suite and return results.
 
-        Use this:
-        - Before suggesting a PR is ready to merge
-        - After making code changes to verify nothing broke
-        - To verify a specific module works correctly
 
-        Prerequisites:
-        - Project dependencies must be installed (npm install, pip install, etc.)
-        - Test configuration must exist (pytest.ini, jest.config.js, etc.)
+      Behavior:
 
-      # Input schema - JSON Schema defining valid arguments
-      # The LLM generates arguments matching this schema when calling the function
-      # Runtime validates arguments before executing your function
-      input_schema:
-        type: object
+      - Runs tests using the project''s configured test runner (pytest, jest, etc.)
 
-        # Properties - available parameters
-        properties:
-          test_path:
-            type: string
-            description: |
-              Optional path to specific test file or directory.
-              Examples:
-              - "tests/unit/auth_test.py"     (single file)
-              - "tests/integration/"          (directory)
-              - "" or null                    (all tests)
+      - If test_path is provided, runs only those tests (file or directory)
 
-            # Optional: Pattern validation
-            # pattern: "^tests/.*"  # Must start with tests/
+      - If test_path is omitted, runs the full test suite
 
-          verbose:
-            type: boolean
-            description: |
-              If true, return detailed output for each test.
-              If false, return summary only (faster, less token usage).
-            default: false
+      - Returns: pass/fail status, number of tests, execution time, failure details
 
-          # You can add more parameters:
-          # coverage:
-          #   type: boolean
-          #   description: Generate code coverage report
-          # parallel:
-          #   type: boolean
-          #   description: Run tests in parallel (faster but may have side effects)
 
-        # Required parameters - must be provided when calling function
-        # Empty array = all parameters optional
-        required: []
+      Use this:
 
-        # Optional: Additional constraints
-        # additionalProperties: false  # Reject unknown properties
+      - Before suggesting a PR is ready to merge
 
-      # Output schema - what the function returns
-      # This helps the LLM understand the result structure
-      # (Not enforced by runtime, but good for documentation)
-      output_schema:
-        type: object
-        properties:
-          status:
-            type: string
-            enum: [passed, failed, error]
-            description: Overall test result
+      - After making code changes to verify nothing broke
 
-          total_tests:
-            type: integer
-            description: Number of tests executed
+      - To verify a specific module works correctly
 
-          passed_count:
-            type: integer
-            description: Number of passing tests
 
-          failed_count:
-            type: integer
-            description: Number of failing tests
+      Prerequisites:
 
-          duration_seconds:
-            type: number
-            description: Total execution time
+      - Project dependencies must be installed (npm install, pip install, etc.)
 
-          failures:
-            type: array
-            description: Details of failed tests (if any)
-            items:
-              type: object
-              properties:
-                test_name:
-                  type: string
-                error_message:
-                  type: string
-                file:
-                  type: string
-                line:
-                  type: integer
+      - Test configuration must exist (pytest.ini, jest.config.js, etc.)
 
-      # Implementation is provided by the RUNTIME, not in the manifest.
-      #
-      # Example Python runtime implementation:
-      # ```python
-      # async def run_tests(test_path: str = "", verbose: bool = False):
-      #     import subprocess
-      #     cmd = ["pytest"]
-      #     if test_path:
-      #         cmd.append(test_path)
-      #     if verbose:
-      #         cmd.append("-v")
-      #     result = subprocess.run(cmd, capture_output=True, text=True)
-      #     # Parse result and return structured data matching output_schema
-      #     return {
-      #         "status": "passed" if result.returncode == 0 else "failed",
-      #         "total_tests": parse_pytest_output(result.stdout),
-      #         ...
-      #     }
-      # ```
-      #
-      # Example Node.js runtime implementation:
-      # ```javascript
-      # async function run_tests({ test_path = "", verbose = false }) {
-      #     const { exec } = require('child_process');
-      #     const cmd = `jest ${test_path} ${verbose ? '--verbose' : ''}`;
-      #     const result = await execPromise(cmd);
-      #     return {
-      #         status: result.code === 0 ? 'passed' : 'failed',
-      #         total_tests: parseJestOutput(result.stdout),
-      #         ...
-      #     };
-      # }
-      # ```
+      '
+    input_schema:
+      type: object
+      properties:
+        test_path:
+          type: string
+          description: 'Optional path to specific test file or directory.
 
-# ═══════════════════════════════════════════════════════════════════════════════════
-# SUMMARY: WHAT WE BUILT
-# ═══════════════════════════════════════════════════════════════════════════════════
-#
-# This agent can:
-#   ✓ Understand natural language requests about code review
-#   ✓ Read files from /workspace using filesystem MCP server
-#   ✓ Interact with GitHub using github MCP server (PRs, issues, etc.)
-#   ✓ Run tests using custom function tool
-#   ✓ Reason about when and how to use each tool
-#   ✓ Combine multiple tools to complete complex tasks
-#
-# Example interaction flow:
-#   User:  "Review the latest PR and run tests"
-#   Agent: [Calls github.get_latest_pr()]
-#          "I found PR #42: 'Add login feature'. Let me check the code."
-#          [Calls filesystem.read_file("src/auth/login.py")]
-#          "The code looks good. Running tests to verify..."
-#          [Calls run_tests({ test_path: "tests/auth/" })]
-#          "All 12 tests passed! The PR is ready to merge."
-#
-# What we learned:
-#   → MCP servers provide reusable, standardized tools
-#   → Function tools provide custom runtime logic
-#   → Tools are described to the LLM, which chooses when to use them
-#   → The runtime handles tool execution and passes results back to the LLM
-#
-# Next example (03-agent-with-safety.ossa.yaml):
-#   → Production-ready safety: PII detection, rate limiting, guardrails
-#   → Autonomy controls: human-in-the-loop, approval workflows
-#   → Compliance: SOC2, GDPR, HIPAA considerations
-#
-# ═══════════════════════════════════════════════════════════════════════════════════
+            Examples:
+
+            - "tests/unit/auth_test.py"     (single file)
+
+            - "tests/integration/"          (directory)
+
+            - "" or null                    (all tests)
+
+            '
+        verbose:
+          type: boolean
+          description: 'If true, return detailed output for each test.
+
+            If false, return summary only (faster, less token usage).
+
+            '
+          default: false
+      required: []
+    output_schema:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - passed
+          - failed
+          - error
+          description: Overall test result
+        total_tests:
+          type: integer
+          description: Number of tests executed
+        passed_count:
+          type: integer
+          description: Number of passing tests
+        failed_count:
+          type: integer
+          description: Number of failing tests
+        duration_seconds:
+          type: number
+          description: Total execution time
+        failures:
+          type: array
+          description: Details of failed tests (if any)
+          items:
+            type: object
+            properties:
+              test_name:
+                type: string
+              error_message:
+                type: string
+              file:
+                type: string
+              line:
+                type: integer

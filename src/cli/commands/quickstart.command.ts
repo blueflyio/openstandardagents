@@ -106,7 +106,7 @@ interface QuickstartOptions {
  */
 function printHeader(): void {
   console.log();
-  console.log(chalk.cyan.bold('🚀 OSSA Quickstart'));
+  console.log(chalk.cyan.bold('[RUN] OSSA Quickstart'));
   console.log(chalk.cyan('══════════════════'));
   console.log();
   console.log(chalk.gray('Open Standard for Scalable AI Agents'));

@@ -9,6 +9,7 @@ import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { AgentsMdService } from '../../services/agents-md/agents-md.service.js';
 import type { OssaAgent } from '../../types/index.js';
+import { handleCommandError } from '../utils/index.js';
 
 export const agentsMdCommand = new Command('agents-md').description(
   'Generate, validate, and sync OpenAI agents.md files from OSSA manifests'
@@ -35,7 +36,7 @@ agentsMdCommand
       // Check if agents_md extension is enabled
       if (!manifest.extensions?.agents_md?.enabled) {
         console.error(chalk.red('Error: agents_md extension is not enabled in manifest'));
-        console.log(chalk.yellow('\n💡 Add the following to your manifest to enable:'));
+        console.log(chalk.yellow('\n[TIP] Add the following to your manifest to enable:'));
         console.log(
           chalk.gray(`
 extensions:
@@ -68,7 +69,7 @@ extensions:
         console.log(chalk.gray('─'.repeat(50)));
       }
 
-      console.log(chalk.yellow('\n💡 Next steps:'));
+      console.log(chalk.yellow('\n[TIP] Next steps:'));
       console.log(chalk.gray(`  1. Review the generated AGENTS.md file`));
       console.log(
         chalk.gray(
@@ -79,8 +80,7 @@ extensions:
 
       process.exit(0);
     } catch (error) {
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
-      process.exit(1);
+      handleCommandError(error);
     }
   });
 
@@ -114,7 +114,7 @@ agentsMdCommand
           console.log(chalk.yellow(`  ${index + 1}. ${warning}`));
         });
 
-        console.log(chalk.yellow('\n💡 Suggestion:'));
+        console.log(chalk.yellow('\n[TIP] Suggestion:'));
         console.log(
           chalk.gray(
             `  Regenerate AGENTS.md: ${chalk.white(`ossa agents-md generate ${manifestPath} -o ${agentsMdPath}`)}`
@@ -124,8 +124,7 @@ agentsMdCommand
         process.exit(1);
       }
     } catch (error) {
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
-      process.exit(1);
+      handleCommandError(error);
     }
   });
 
@@ -150,7 +149,7 @@ agentsMdCommand
       // Check if sync is enabled
       if (!manifest.extensions?.agents_md?.sync?.on_manifest_change) {
         console.error(chalk.red('Error: Sync on manifest change is not enabled'));
-        console.log(chalk.yellow('\n💡 Add the following to your manifest to enable:'));
+        console.log(chalk.yellow('\n[TIP] Add the following to your manifest to enable:'));
         console.log(
           chalk.gray(`
 extensions:
@@ -176,7 +175,6 @@ extensions:
         process.exit(0);
       }
     } catch (error) {
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
-      process.exit(1);
+      handleCommandError(error);
     }
   });

@@ -4,8 +4,8 @@
 # in a multi-agent security system. It implements the routing rules
 # for the security-scanner, dependency-healer, and incident-responder agents.
 
-apiVersion: ossa/v0.3.2
-kind: MessageRouting
+apiVersion: ossa/v0.3.3
+kind: Workflow
 metadata:
   name: security-workflow-routing
   version: 1.0.0
@@ -198,110 +198,3 @@ spec:
           "source_agent": "{{ .source }}",
           "target_agents": {{ .targets | toJson }}
         }
-
----
-# Additional MessageRouting for development/staging environment
-apiVersion: ossa/v0.3.2
-kind: MessageRouting
-metadata:
-  name: security-workflow-routing-dev
-  version: 1.0.0
-  description: Development environment routing with relaxed filters
-  labels:
-    domain: security
-    workflow: vulnerability-management
-    environment: development
-
-spec:
-  rules:
-    # In dev, route ALL vulnerabilities to incident responder for testing
-    - id: vuln-to-incident-all-dev
-      source: security-scanner
-      channel: security.vulnerabilities
-      targets:
-        - incident-responder
-      # No filter - all severities in dev
-      priority: normal
-      enabled: true
-
-    # Route to local monitoring instead of production
-    - id: vuln-to-local-monitor
-      source: security-scanner
-      channel: security.vulnerabilities
-      targets:
-        - local-monitoring
-      priority: low
-      enabled: true
-
-    # Disable audit logging in dev
-    - id: security-audit-all-dev
-      source: "*"
-      channel: "security.*"
-      targets:
-        - dev-logger
-      priority: low
-      enabled: false  # Disabled in dev
-
-  defaultRoute:
-    action: drop  # Drop unmatched in dev instead of DLQ
-
-  transforms:
-    # Add dev environment marker
-    mark_dev_environment:
-      type: jmespath
-      expression: |
-        merge(@, {environment: 'development', is_test: true})
-
----
-# MessageRouting for high-availability setup with multiple targets
-apiVersion: ossa/v0.3.2
-kind: MessageRouting
-metadata:
-  name: security-workflow-routing-ha
-  version: 1.0.0
-  description: High-availability routing with failover targets
-  labels:
-    domain: security
-    workflow: vulnerability-management
-    availability: high
-
-spec:
-  rules:
-    # Primary route with failover
-    - id: vuln-to-incident-ha
-      source: security-scanner
-      channel: security.vulnerabilities
-      targets:
-        - incident-responder-primary
-        - incident-responder-secondary  # Failover
-      filter:
-        fields:
-          severity: [critical]
-      priority: critical
-      enabled: true
-
-    # Geographic routing based on source
-    - id: vuln-to-regional-scanner-us
-      source: "dependency-healer-us-*"
-      channel: dependency.updates
-      targets:
-        - security-scanner-us-east
-        - security-scanner-us-west
-      priority: high
-      enabled: true
-
-    - id: vuln-to-regional-scanner-eu
-      source: "dependency-healer-eu-*"
-      channel: dependency.updates
-      targets:
-        - security-scanner-eu-west
-        - security-scanner-eu-central
-      priority: high
-      enabled: true
-
-  defaultRoute:
-    action: broadcast
-    targets:
-      - global-fallback-handler
-
-  transforms: {}

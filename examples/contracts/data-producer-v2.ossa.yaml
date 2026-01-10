@@ -11,7 +11,7 @@
 # Use this to test:
 #   ossa contract breaking-changes examples/contracts/data-producer.ossa.yaml examples/contracts/data-producer-v2.ossa.yaml
 
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: data-producer
@@ -103,7 +103,7 @@ spec:
 
     # CHANGE: "delete.data" command removed (BREAKING)
     commands:
-      - name: create.data
+      - name: create_data
         description: Create new data entry
         inputSchema:
           type: object
@@ -133,7 +133,7 @@ spec:
         idempotent: true
         async: false
 
-      - name: update.data
+      - name: update_data
         description: Update existing data entry
         inputSchema:
           type: object
@@ -156,7 +156,7 @@ spec:
         async: false
 
       # NEW: Added new command (non-breaking addition)
-      - name: validate.data
+      - name: validate_data
         description: Validate data entry
         inputSchema:
           type: object
