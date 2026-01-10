@@ -73,7 +73,11 @@ pnpm-workspace.yaml
 .cursor/memory/
 .cursor/hooks/
 .cursor/scripts/
-.kiro/specs/
+.kiro/
+.claude/
+
+# Agent runtime state (regenerated at runtime)
+.agents-workspace/
 
 # Released specs are immutable - do not track changes
 spec/v0.3.0/
