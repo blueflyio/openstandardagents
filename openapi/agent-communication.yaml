@@ -2,7 +2,7 @@ openapi: 3.1.0
 jsonSchemaDialect: https://spec.openapis.org/oas/3.1/dialect/base
 info:
   title: OSSA Agent Communication API
-  version: 0.3.2
+  version: 0.3.3
   description: |
     # OSSA Agent-to-Agent Communication Standards
 
@@ -1006,36 +1006,7 @@ components:
 
     # Error Schema (RFC7807)
     Problem:
-      type: object
-      description: RFC7807 Problem Details
-      required:
-        - type
-        - title
-        - status
-        - traceId
-      properties:
-        type:
-          type: string
-          format: uri
-          default: about:blank
-        title:
-          type: string
-        status:
-          type: integer
-          format: int32
-        detail:
-          type: string
-        instance:
-          type: string
-          format: uri
-        traceId:
-          type: string
-        errors:
-          type: object
-          additionalProperties:
-            type: array
-            items:
-              type: string
+      $ref: '../schemas/common/errors.yaml#/components/schemas/Problem'
 
   responses:
     HealthCheck:
@@ -1093,9 +1064,9 @@ tags:
     description: Service health and status
 
 x-ossa-metadata:
-  version: 0.3.2
+  version: 0.3.3
   compliance:
     level: standard
     frameworks:
-      - OSSA v0.3.2
+      - OSSA v0.3.3
       - OpenAPI 3.1

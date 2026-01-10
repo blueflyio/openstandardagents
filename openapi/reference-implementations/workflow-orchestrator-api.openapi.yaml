@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Workflow Orchestration Agent API
-  version: 0.3.2
+  version: 0.3.3
   description: |
     Advanced workflow orchestration agent that coordinates multi-step processes,
     manages agent swarms, and provides intelligent task routing.

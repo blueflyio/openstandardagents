@@ -1,0 +1,148 @@
+# ============================================================================
+# GitLab Duo Flow: Issue Consolidation and Completion
+# ============================================================================
+# Automatically consolidates related issues and completes them using agents
+# ============================================================================
+
+image: node:22-alpine
+injectGatewayToken: true
+
+variables:
+  PLATFORM_AGENTS_API: ${PLATFORM_AGENTS_API_URL:-https://api.blueflyagents.com}
+  SERVICE_ACCOUNT_ISSUE_LIFECYCLE_TOKEN: ${SERVICE_ACCOUNT_ISSUE_LIFECYCLE_TOKEN}
+  SERVICE_ACCOUNT_TASK_DISPATCHER_TOKEN: ${SERVICE_ACCOUNT_TASK_DISPATCHER_TOKEN}
+  SERVICE_ACCOUNT_CODE_QUALITY_TOKEN: ${SERVICE_ACCOUNT_CODE_QUALITY_TOKEN}
+
+commands:
+  - echo "Starting Issue Consolidation Flow"
+  - apk add --no-cache curl jq
+
+steps:
+  # ============================================================================
+  # PHASE 1: AUDIT ALL ISSUES
+  # ============================================================================
+  - id: audit_all_issues
+    tool: InvokePlatformAgent
+    with:
+      agent: issue-lifecycle-manager
+      service_account: "@issue-lifecycle-manager"
+      token: ${SERVICE_ACCOUNT_ISSUE_LIFECYCLE_TOKEN}
+      task: audit-all-issues
+      inputs:
+        project_id: ${CI_PROJECT_ID}
+        categorize: true
+        identify_duplicates: true
+        identify_related: true
+        suggest_consolidation: true
+    when: on_schedule
+    schedule:
+      cron: "0 0 * * *"  # Daily at midnight
+
+  # ============================================================================
+  # PHASE 2: CONSOLIDATE RELATED ISSUES
+  # ============================================================================
+  - id: consolidate_issues
+    tool: InvokePlatformAgent
+    with:
+      agent: issue-lifecycle-manager
+      service_account: "@issue-lifecycle-manager"
+      token: ${SERVICE_ACCOUNT_ISSUE_LIFECYCLE_TOKEN}
+      task: consolidate-related-issues
+      inputs:
+        project_id: ${CI_PROJECT_ID}
+        consolidation_strategy: "epic_or_milestone"
+        auto_create_epics: true
+        preserve_original_issues: true
+        link_as_related: true
+    needs:
+      - audit_all_issues
+    when: on_schedule
+    schedule:
+      cron: "0 1 * * *"  # Daily at 1 AM
+
+  # ============================================================================
+  # PHASE 3: PRIORITIZE BY IMPACT
+  # ============================================================================
+  - id: prioritize_issues
+    tool: InvokePlatformAgent
+    with:
+      agent: issue-lifecycle-manager
+      service_account: "@issue-lifecycle-manager"
+      token: ${SERVICE_ACCOUNT_ISSUE_LIFECYCLE_TOKEN}
+      task: prioritize-by-impact
+      inputs:
+        project_id: ${CI_PROJECT_ID}
+        factors:
+          - dependencies
+          - user_impact
+          - technical_debt
+          - security_risk
+        auto_label: true
+    needs:
+      - consolidate_issues
+    when: on_schedule
+    schedule:
+      cron: "0 2 * * *"  # Daily at 2 AM
+
+  # ============================================================================
+  # PHASE 4: AUTO-COMPLETE SIMPLE ISSUES
+  # ============================================================================
+  - id: auto_complete_simple
+    tool: InvokePlatformAgent
+    with:
+      agent: task-dispatcher
+      service_account: "@task-dispatcher"
+      token: ${SERVICE_ACCOUNT_TASK_DISPATCHER_TOKEN}
+      task: auto-complete-simple-issues
+      inputs:
+        project_id: ${CI_PROJECT_ID}
+        complexity_threshold: "low"
+        auto_create_mr: true
+        auto_merge_on_pass: false
+    when: on_schedule
+    schedule:
+      cron: "0 3 * * *"  # Daily at 3 AM
+
+  # ============================================================================
+  # PHASE 5: ASSIGN TO APPROPRIATE AGENTS
+  # ============================================================================
+  - id: assign_to_agents
+    tool: InvokePlatformAgent
+    with:
+      agent: task-dispatcher
+      service_account: "@task-dispatcher"
+      token: ${SERVICE_ACCOUNT_TASK_DISPATCHER_TOKEN}
+      task: assign-issues-to-agents
+      inputs:
+        project_id: ${CI_PROJECT_ID}
+        agent_mapping:
+          documentation: "@documentation-aggregator"
+          code_quality: "@code-quality-reviewer"
+          security: "@vulnerability-scanner"
+          ci_cd: "@pipeline-remediation"
+          version: "@release-coordinator"
+        auto_assign: true
+    needs:
+      - prioritize_issues
+    when: on_schedule
+    schedule:
+      cron: "0 4 * * *"  # Daily at 4 AM
+
+  # ============================================================================
+  # PHASE 6: TRACK PROGRESS
+  # ============================================================================
+  - id: track_progress
+    tool: InvokePlatformAgent
+    with:
+      agent: issue-lifecycle-manager
+      service_account: "@issue-lifecycle-manager"
+      token: ${SERVICE_ACCOUNT_ISSUE_LIFECYCLE_TOKEN}
+      task: track-issue-progress
+      inputs:
+        project_id: ${CI_PROJECT_ID}
+        update_milestones: true
+        create_progress_report: true
+        report_type: "gitlab_wiki"
+    when: on_schedule
+    schedule:
+      cron: "0 5 * * *"  # Daily at 5 AM

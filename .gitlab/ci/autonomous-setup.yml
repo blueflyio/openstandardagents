@@ -1,0 +1,111 @@
+# ============================================================================
+# Autonomous Framework Setup Job
+# ============================================================================
+# This job ACTUALLY sets up everything - runs automatically
+# ============================================================================
+
+variables:
+  GITLAB_URL: ${CI_SERVER_URL:-https://gitlab.com}
+  PLATFORM_AGENTS_API: ${PLATFORM_AGENTS_API_URL:-https://api.blueflyagents.com}
+
+autonomous:setup-complete:
+  stage: .pre
+  image: alpine:latest
+  needs: []
+  rules:
+    - if: $AUTONOMOUS_SETUP == "true"
+      when: always
+    - if: $CI_PIPELINE_SOURCE == "web"
+      when: manual
+      allow_failure: true
+  before_script:
+    - apk add --no-cache curl jq openssl
+  script:
+    - |
+      echo "Autonomous Framework Complete Setup"
+      echo "==================================="
+      echo ""
+      
+      TOKEN="${SERVICE_ACCOUNT_RELEASE_COORDINATOR_TOKEN:-${GITLAB_TOKEN}}"
+      PROJECT_ID="${CI_PROJECT_ID}"
+      
+      if [ -z "$TOKEN" ] || [ -z "$PROJECT_ID" ]; then
+        echo "ERROR: Token or project ID missing"
+        echo "Set SERVICE_ACCOUNT_RELEASE_COORDINATOR_TOKEN or GITLAB_TOKEN"
+        exit 1
+      fi
+      
+      # Step 1: Create CI/CD Variables via platform-agents
+      echo "Step 1: Creating CI/CD Variables..."
+      echo ""
+      
+      curl -X POST \
+        "${PLATFORM_AGENTS_API}/agents/release-coordinator/invoke" \
+        -H "Authorization: Bearer ${TOKEN}" \
+        -H "X-Service-Account: @release-coordinator" \
+        -H "Content-Type: application/json" \
+        -d "{
+          \"task\": \"setup-cicd-variables\",
+          \"inputs\": {
+            \"project_id\": ${PROJECT_ID},
+            \"variables\": [
+              {\"key\": \"AUTONOMOUS_MODE\", \"value\": \"enabled\"},
+              {\"key\": \"PLATFORM_AGENTS_API_URL\", \"value\": \"${PLATFORM_AGENTS_API}\"}
+            ]
+          }
+        }" | jq '.' || echo "Variable setup via agent (may need manual setup)"
+      
+      # Step 2: Create Webhook via platform-agents
+      echo ""
+      echo "Step 2: Creating Webhook..."
+      echo ""
+      
+      WEBHOOK_SECRET=$(openssl rand -hex 32)
+      WEBHOOK_URL="${PLATFORM_AGENTS_API}/api/webhooks/gitlab"
+      
+      curl -X POST \
+        "${PLATFORM_AGENTS_API}/agents/release-coordinator/invoke" \
+        -H "Authorization: Bearer ${TOKEN}" \
+        -H "X-Service-Account: @release-coordinator" \
+        -H "Content-Type: application/json" \
+        -d "{
+          \"task\": \"setup-webhook\",
+          \"inputs\": {
+            \"project_id\": ${PROJECT_ID},
+            \"url\": \"${WEBHOOK_URL}\",
+            \"secret\": \"${WEBHOOK_SECRET}\",
+            \"events\": [\"issues\", \"merge_requests\", \"milestones\", \"pipelines\", \"releases\"]
+          }
+        }" | jq '.' || echo "Webhook setup via agent (may need manual setup)"
+      
+      # Step 3: Create Pipeline Schedules via platform-agents
+      echo ""
+      echo "Step 3: Creating Pipeline Schedules..."
+      echo ""
+      
+      curl -X POST \
+        "${PLATFORM_AGENTS_API}/agents/release-coordinator/invoke" \
+        -H "Authorization: Bearer ${TOKEN}" \
+        -H "X-Service-Account: @release-coordinator" \
+        -H "Content-Type: application/json" \
+        -d "{
+          \"task\": \"setup-pipeline-schedules\",
+          \"inputs\": {
+            \"project_id\": ${PROJECT_ID},
+            \"schedules\": [
+              {\"description\": \"Autonomous issue triage\", \"cron\": \"0 4 * * *\"},
+              {\"description\": \"Autonomous code quality\", \"cron\": \"0 2 * * *\"},
+              {\"description\": \"Autonomous MR review\", \"cron\": \"0 * * * *\"},
+              {\"description\": \"Autonomous pipeline monitoring\", \"cron\": \"*/15 * * * *\"},
+              {\"description\": \"Weekly ecosystem analysis\", \"cron\": \"0 1 * * 1\"}
+            ]
+          }
+        }" | jq '.' || echo "Schedule setup via agent (may need manual setup)"
+      
+      echo ""
+      echo "Autonomous framework setup initiated"
+      echo "Check GitLab UI to verify:"
+      echo "  - CI/CD Variables: Settings → CI/CD → Variables"
+      echo "  - Webhooks: Settings → Webhooks"
+      echo "  - Schedules: CI/CD → Schedules"
+  allow_failure: true

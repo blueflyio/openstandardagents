@@ -1,5 +1,5 @@
 /**
- * OSSA v0.3.1 Messaging Extension - In-Memory Transport
+ * OSSA v0.3.3 Messaging Extension - In-Memory Transport
  * In-memory message broker for development and testing
  */
 

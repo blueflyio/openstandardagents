@@ -1,5 +1,5 @@
 /**
- * Tests for OSSA v0.3.1 Channel Management
+ * Tests for OSSA v0.3.3 Channel Management
  */
 
 import { describe, it, expect, beforeEach } from '@jest/globals';

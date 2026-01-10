@@ -1,0 +1,348 @@
+# GitLab Duo Agent Platform - Version Automation
+# Uses GitLab Ultimate Duo Agent Platform for intelligent version management
+# https://docs.gitlab.com/user/duo_agent_platform/
+
+variables:
+  # Use existing service accounts from platform-agents
+  SERVICE_ACCOUNT_RELEASE_COORDINATOR_TOKEN: ${SERVICE_ACCOUNT_RELEASE_COORDINATOR_TOKEN}
+  SERVICE_ACCOUNT_MR_REVIEWER_TOKEN: ${SERVICE_ACCOUNT_MR_REVIEWER_TOKEN}
+  SERVICE_ACCOUNT_CODE_QUALITY_TOKEN: ${SERVICE_ACCOUNT_CODE_QUALITY_TOKEN}
+  PLATFORM_AGENTS_API: ${PLATFORM_AGENTS_API_URL:-https://api.blueflyagents.com}
+  VAST_AI_ENABLED: ${VAST_AI_ENABLED:-false}
+
+# ============================================================================
+# DUO AGENT: VERSION DETECTION & ANALYSIS
+# ============================================================================
+
+duo:version-analysis:
+  stage: setup
+  image: node:22-alpine
+  needs: []
+  extends: .duo_agent_base
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_MILESTONE_STATE == "closed"
+    - when: manual
+      allow_failure: true
+  variables:
+    AGENT_NAME: version-automation-agent
+    AGENT_TASK: detect-version-sources
+    AGENT_INPUT: |
+      {
+        "search_patterns": [
+          "package.json",
+          ".version.json",
+          "**/package.json",
+          "**/*.md",
+          "**/*.yaml",
+          "**/*.yml",
+          "**/*.ts",
+          "**/*.js",
+          ".gitlab-ci.yml",
+          ".gitlab/**/*.yml"
+        ]
+      }
+  script:
+    - |
+      echo "GitLab Duo Agent: Version Analysis"
+      echo "======================================"
+      
+      # Invoke Duo Agent via API using release-coordinator service account
+      RESPONSE=$(curl -s -X POST \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/duo/agents/invoke" \
+        -H "PRIVATE-TOKEN: ${SERVICE_ACCOUNT_RELEASE_COORDINATOR_TOKEN:-${GITLAB_TOKEN}}" \
+        -H "X-Service-Account: @release-coordinator" \
+        -H "Content-Type: application/json" \
+        -d "${AGENT_INPUT}")
+      
+      echo "$RESPONSE" | jq '.'
+      
+      # Extract version sources
+      echo "$RESPONSE" | jq -r '.outputs.version_sources[]' > version-sources.txt
+      echo "$RESPONSE" | jq -r '.outputs.current_version' > current-version.txt
+      
+      echo "Version analysis complete"
+  artifacts:
+    reports:
+      dotenv: version-analysis.env
+    paths:
+      - version-sources.txt
+      - current-version.txt
+    expire_in: 1 day
+
+# ============================================================================
+# PLATFORM AGENTS INTEGRATION (via Vast.ai)
+# ============================================================================
+
+# DISABLED: platform_agents_version_bump - causing YAML parsing errors
+# platform_agents_version_bump:
+#   stage: build
+#   image: node:22-alpine
+#   needs:
+#     - job: duo:version-analysis
+#       artifacts: true
+#   extends: .platform_agent_base
+#   variables:
+#     PLATFORM_AGENT: release-coordinator
+#     AGENT_SERVICE_ACCOUNT: "@release-coordinator"
+#     AGENT_ENDPOINT: ${PLATFORM_AGENTS_API}/agents/release-coordinator/invoke
+#     VAST_AI_INSTANCE: ${VAST_AI_INSTANCE_TYPE:-RTX3090}
+#   before_script:
+#     - apk add --no-cache curl jq
+#     - |
+#       if [ "$VAST_AI_ENABLED" = "true" ]; then
+#         echo "Using Vast.ai for agent execution"
+#         export AGENT_ENDPOINT="${PLATFORM_AGENTS_API}/vast-ai/${VAST_AI_INSTANCE}/agents/release-manager/invoke"
+#       fi
+#   script:
+#     - |
+#       echo "Platform Agents: Version Bump"
+#       echo "================================="
+#       
+#       CURRENT_VERSION=$(cat current-version.txt)
+#       BUMP_TYPE=${BUMP_TYPE:-patch}
+#       
+#       # Invoke platform agent via API using release-coordinator service account
+#       RESPONSE=$(curl -s -X POST \
+#         "${AGENT_ENDPOINT}" \
+#         -H "Authorization: Bearer ${SERVICE_ACCOUNT_RELEASE_COORDINATOR_TOKEN:-${PLATFORM_AGENTS_API_TOKEN}}" \
+#         -H "X-Service-Account: @release-coordinator" \
+#         -H "Content-Type: application/json" \
+#         -d "{
+#           \"task\": \"bump-version\",
+#           \"inputs\": {
+#             \"bump_type\": \"${BUMP_TYPE}\",
+#             \"current_version\": \"${CURRENT_VERSION}\",
+#             \"target_branch\": \"${CI_COMMIT_REF_NAME}\",
+#             \"project_id\": \"${CI_PROJECT_ID}\",
+#             \"repository_url\": \"${CI_REPOSITORY_URL}\",
+#             \"service_account\": \"@release-coordinator\"
+#           }
+#         }")
+#       
+#       echo "$RESPONSE" | jq '.'
+#       
+#       NEW_VERSION=$(echo "$RESPONSE" | jq -r '.outputs.new_version')
+#       echo "NEW_VERSION=${NEW_VERSION}" >> version-bump.env
+#       
+#       echo "Version bump complete: ${CURRENT_VERSION} -> ${NEW_VERSION}"
+#   artifacts:
+#     reports:
+#       dotenv: version-bump.env
+#     expire_in: 1 day
+#   rules:
+#     - if: $CI_PIPELINE_SOURCE == "schedule"
+#     - if: $CI_MILESTONE_STATE == "closed"
+#     - if: '$CI_PIPELINE_SOURCE == "web" && $VERSION_BUMP_REQUESTED == "true"'
+#     - when: manual
+#       allow_failure: true
+
+# ============================================================================
+# DUO AGENT: MULTI-FILE SYNC
+# ============================================================================
+
+duo:multi-file-sync:
+  stage: build
+  image: node:22-alpine
+  needs:
+    # - job: platform_agents_version_bump
+    #   artifacts: true
+    #   optional: true
+    - job: duo:version-analysis
+      artifacts: true
+      optional: true
+  extends: .duo_agent_base
+  variables:
+    AGENT_NAME: version-automation-agent
+    AGENT_TASK: sync-all-files
+  before_script:
+    - apk add --no-cache curl jq git
+    - git config user.email "ci@bluefly.io"
+    - git config user.name "GitLab CI"
+    - git fetch origin ${CI_COMMIT_REF_NAME}
+    - git checkout ${CI_COMMIT_REF_NAME}
+  script:
+    - |
+      echo "GitLab Duo Agent: Multi-File Sync"
+      echo "===================================="
+      
+      # Load version-bump.env if available
+      if [ -f "version-bump.env" ]; then
+        source version-bump.env
+      else
+        echo "WARNING: version-bump.env not found, using fallback"
+        NEW_VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "0.3.3")
+      fi
+      
+      # Load version sources if available
+      if [ -f "version-sources.txt" ]; then
+        VERSION_SOURCES=$(cat version-sources.txt | jq -s '.')
+      else
+        VERSION_SOURCES="[]"
+      fi
+      
+      # Invoke Duo Agent for file sync using release-coordinator service account
+      RESPONSE=$(curl -s -X POST \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/duo/agents/invoke" \
+        -H "PRIVATE-TOKEN: ${SERVICE_ACCOUNT_RELEASE_COORDINATOR_TOKEN:-${GITLAB_TOKEN}}" \
+        -H "X-Service-Account: @release-coordinator" \
+        -H "Content-Type: application/json" \
+        -d "{
+          \"task\": \"sync-all-files\",
+          \"inputs\": {
+            \"new_version\": \"${NEW_VERSION}\",
+            \"version_sources\": ${VERSION_SOURCES},
+            \"dry_run\": false
+          }
+        }")
+      
+      echo "$RESPONSE" | jq '.'
+      
+      # Extract updated files
+      echo "$RESPONSE" | jq -r '.outputs.updated_files[]' > updated-files.txt
+      
+      # Show diff
+      echo ""
+      echo "Files to be updated:"
+      cat updated-files.txt
+      
+      echo ""
+      echo "Git diff:"
+      git diff --stat || true
+      
+      echo "File sync complete"
+  artifacts:
+    paths:
+      - updated-files.txt
+    expire_in: 1 day
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_MILESTONE_STATE == "closed"
+    - when: manual
+      allow_failure: true
+
+# ============================================================================
+# DUO AGENT: CREATE MERGE REQUEST
+# ============================================================================
+
+duo:create-version-mr:
+  stage: deploy
+  image: node:22-alpine
+  needs:
+    - job: duo:multi-file-sync
+      artifacts: true
+      optional: true
+    # - job: platform_agents_version_bump
+    #   artifacts: true
+    #   optional: true
+  extends: .duo_agent_base
+  variables:
+    AGENT_NAME: version-automation-agent
+    AGENT_TASK: create-version-mr
+  before_script:
+    - apk add --no-cache curl jq git
+    - git config user.email "ci@bluefly.io"
+    - git config user.name "GitLab CI"
+  script:
+    - |
+      echo "GitLab Duo Agent: Create Version MR"
+      echo "======================================"
+      
+      # Load version from artifacts if available
+      if [ -f "version-bump.env" ]; then
+        source version-bump.env
+      else
+        # Fallback: detect from package.json
+        NEW_VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "0.3.3")
+      fi
+      
+      UPDATED_FILES=$(cat updated-files.txt 2>/dev/null | tr '\n' ',' | sed 's/,$//' || echo "package.json,.version.json")
+      
+      # Create branch for version bump
+      BRANCH_NAME="chore/version-bump-${NEW_VERSION}"
+      git checkout -b "${BRANCH_NAME}"
+      
+      # Commit changes (if any)
+      if [ -n "$(git status --porcelain)" ]; then
+        git add -A
+        git commit -m "chore: bump version to ${NEW_VERSION}
+
+        Automated version bump via GitLab Duo Agent Platform
+        
+        Updated files:
+        ${UPDATED_FILES}
+        
+        Triggered by: ${CI_PIPELINE_SOURCE}
+        Milestone: ${CI_MILESTONE_TITLE:-N/A}"
+        
+        git push -u origin "${BRANCH_NAME}"
+        
+        # Invoke Duo Agent to create MR using release-coordinator service account
+        RESPONSE=$(curl -s -X POST \
+          "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests" \
+          -H "PRIVATE-TOKEN: ${SERVICE_ACCOUNT_RELEASE_COORDINATOR_TOKEN:-${GITLAB_TOKEN}}" \
+          -H "X-Service-Account: @release-coordinator" \
+          -H "Content-Type: application/json" \
+          -d "{
+            \"source_branch\": \"${BRANCH_NAME}\",
+            \"target_branch\": \"${CI_DEFAULT_BRANCH}\",
+            \"title\": \"chore: bump version to ${NEW_VERSION}\",
+            \"description\": \"Automated version bump to ${NEW_VERSION}\\n\\nUpdated files: ${UPDATED_FILES}\\n\\nTriggered by: ${CI_PIPELINE_SOURCE}\\nMilestone: ${CI_MILESTONE_TITLE:-N/A}\\n\\nService Account: @release-coordinator\",
+            \"assignee_id\": ${CI_SERVICE_ACCOUNT_RELEASE_COORDINATOR_ID:-null}
+          }")
+        
+        echo "$RESPONSE" | jq '.'
+        
+        # Parse MR response - GitLab API returns iid, not id
+        MR_IID=$(echo "$RESPONSE" | jq -r '.iid // empty')
+        if [ -n "$MR_IID" ] && [ "$MR_IID" != "null" ]; then
+          MR_URL="${CI_PROJECT_URL}/-/merge_requests/${MR_IID}"
+          echo "Merge request created: ${MR_URL}"
+        else
+          # Check for error
+          ERROR_MSG=$(echo "$RESPONSE" | jq -r '.message // .error // .error_description // empty' 2>/dev/null)
+          if [ -n "$ERROR_MSG" ] && [ "$ERROR_MSG" != "null" ]; then
+            echo "Failed to create MR: ${ERROR_MSG}"
+          else
+            echo "WARNING: MR creation response did not include IID"
+            echo "Response: $RESPONSE"
+          fi
+        fi
+      else
+        echo "No changes to commit"
+      fi
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_MILESTONE_STATE == "closed"
+    - when: manual
+      allow_failure: true
+
+# ============================================================================
+# BASE TEMPLATES
+# ============================================================================
+
+.duo_agent_base:
+  tags:
+    - saas-linux-small-amd64
+  timeout: 30m
+  before_script:
+    - apk add --no-cache curl jq
+    - |
+      # Use service account token if available, fallback to GitLab token
+      if [ -z "${SERVICE_ACCOUNT_RELEASE_COORDINATOR_TOKEN}" ] && [ -z "${GITLAB_TOKEN}" ]; then
+        echo "WARNING: No service account token or GitLab token set"
+        echo "Using SERVICE_ACCOUNT_RELEASE_COORDINATOR_TOKEN or GITLAB_TOKEN"
+      fi
+
+.platform_agent_base:
+  tags:
+    - saas-linux-small-amd64
+  timeout: 30m
+  before_script:
+    - apk add --no-cache curl jq
+    - |
+      # Use service account token if available, fallback to API token
+      if [ -z "${SERVICE_ACCOUNT_RELEASE_COORDINATOR_TOKEN}" ] && [ -z "${PLATFORM_AGENTS_API_TOKEN}" ]; then
+        echo "WARNING: No service account token or API token set"
+        echo "Using SERVICE_ACCOUNT_RELEASE_COORDINATOR_TOKEN or PLATFORM_AGENTS_API_TOKEN"
+      fi

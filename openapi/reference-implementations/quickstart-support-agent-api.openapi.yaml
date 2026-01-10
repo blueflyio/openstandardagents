@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Customer Support Agent API
-  version: 0.3.2
+  version: 0.3.3
   description: |
     A helpful customer support agent that answers questions and helps with orders.
     Demonstrates OSSA quickstart patterns for production-ready agents.
@@ -15,7 +15,7 @@ x-ossa-metadata:
       - OpenAPI 3.1
 
 x-ossa:
-  version: 0.3.2
+  version: 0.3.3
   agent:
     id: support-agent
     type: specialist

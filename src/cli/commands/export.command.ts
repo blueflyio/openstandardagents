@@ -10,6 +10,7 @@ import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { GenerationService } from '../../services/generation.service.js';
 import type { OssaAgent } from '../../types/index.js';
+import { handleCommandError } from '../utils/index.js';
 
 export const exportCommand = new Command('export')
   .argument('<path>', 'Path to OSSA manifest')
@@ -76,8 +77,7 @@ export const exportCommand = new Command('export')
 
         process.exit(0);
       } catch (error) {
-        console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
-        process.exit(1);
+        handleCommandError(error);
       }
     }
   );

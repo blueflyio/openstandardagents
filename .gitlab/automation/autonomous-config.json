@@ -1,0 +1,174 @@
+{
+  "autonomous_framework": {
+    "version": "1.0.0",
+    "description": "Autonomous framework maintenance using OSSA-certified agents",
+    "service_accounts": {
+      "release-coordinator": {
+        "token_var": "SERVICE_ACCOUNT_RELEASE_COORDINATOR_TOKEN",
+        "purpose": "Version and release management",
+        "capabilities": [
+          "version-bump",
+          "create-release",
+          "milestone-management"
+        ]
+      },
+      "mr-reviewer": {
+        "token_var": "SERVICE_ACCOUNT_MR_REVIEWER_TOKEN",
+        "purpose": "MR review and management",
+        "capabilities": [
+          "review-mr",
+          "auto-approve",
+          "auto-rebase"
+        ]
+      },
+      "code-quality-reviewer": {
+        "token_var": "SERVICE_ACCOUNT_CODE_QUALITY_TOKEN",
+        "purpose": "Code quality and fixes",
+        "capabilities": [
+          "code-review",
+          "auto-fix",
+          "create-fix-mrs"
+        ]
+      },
+      "issue-lifecycle-manager": {
+        "token_var": "SERVICE_ACCOUNT_ISSUE_LIFECYCLE_TOKEN",
+        "purpose": "Issue triage and management",
+        "capabilities": [
+          "triage-issues",
+          "auto-assign",
+          "auto-label"
+        ]
+      },
+      "documentation-aggregator": {
+        "token_var": "SERVICE_ACCOUNT_DOCUMENTATION_TOKEN",
+        "purpose": "Documentation sync",
+        "capabilities": [
+          "sync-docs",
+          "validate-docs",
+          "update-wiki"
+        ]
+      },
+      "pipeline-remediation": {
+        "token_var": "SERVICE_ACCOUNT_PIPELINE_REMEDIATION_TOKEN",
+        "purpose": "Pipeline fixes",
+        "capabilities": [
+          "fix-pipelines",
+          "analyze-failures",
+          "create-fix-mrs"
+        ]
+      },
+      "task-dispatcher": {
+        "token_var": "SERVICE_ACCOUNT_TASK_DISPATCHER_TOKEN",
+        "purpose": "Task orchestration",
+        "capabilities": [
+          "coordinate-tasks",
+          "ecosystem-analysis",
+          "improvement-planning"
+        ]
+      },
+      "vuln-scanner": {
+        "token_var": "SERVICE_ACCOUNT_VULN_SCANNER_TOKEN",
+        "purpose": "Security scanning",
+        "capabilities": [
+          "security-scan",
+          "dependency-audit",
+          "auto-remediate"
+        ]
+      }
+    },
+    "scheduled_tasks": {
+      "daily": [
+        {
+          "name": "Daily Issue Scan",
+          "cron": "0 4 * * *",
+          "agent": "issue-lifecycle-manager",
+          "task": "scan-all-issues"
+        },
+        {
+          "name": "Daily Code Quality",
+          "cron": "0 2 * * *",
+          "agent": "code-quality-reviewer",
+          "task": "full-codebase-review"
+        },
+        {
+          "name": "Daily Documentation",
+          "cron": "0 4 * * *",
+          "agent": "documentation-aggregator",
+          "task": "sync-and-validate"
+        }
+      ],
+      "hourly": [
+        {
+          "name": "Hourly MR Review",
+          "cron": "0 * * * *",
+          "agent": "mr-reviewer",
+          "task": "review-all-open-mrs"
+        },
+        {
+          "name": "Hourly Pipeline Monitor",
+          "cron": "*/15 * * * *",
+          "agent": "pipeline-remediation",
+          "task": "monitor-all-pipelines"
+        }
+      ],
+      "weekly": [
+        {
+          "name": "Weekly Ecosystem Analysis",
+          "cron": "0 1 * * 1",
+          "agent": "task-dispatcher",
+          "task": "ecosystem-analysis"
+        },
+        {
+          "name": "Weekly Version Check",
+          "cron": "0 3 * * 1",
+          "agent": "release-coordinator",
+          "task": "check-version-opportunities"
+        }
+      ]
+    },
+    "webhook_events": {
+      "issue": {
+        "events": ["open", "update", "close"],
+        "agent": "issue-lifecycle-manager",
+        "tasks": ["triage-new-issue", "update-issue-state", "close-resolved"]
+      },
+      "merge_request": {
+        "events": ["open", "update", "merge"],
+        "agent": "mr-reviewer",
+        "tasks": ["review-new-mr", "update-mr-review", "auto-approve-safe"]
+      },
+      "milestone": {
+        "events": ["close"],
+        "agent": "release-coordinator",
+        "tasks": ["milestone-closed-release"]
+      },
+      "pipeline": {
+        "events": ["failed"],
+        "agent": "pipeline-remediation",
+        "tasks": ["fix-failed-pipeline"]
+      }
+    },
+    "autonomous_flows": [
+      {
+        "name": "autonomous-framework-orchestration",
+        "file": ".gitlab/flows/autonomous-framework-orchestration.yaml",
+        "description": "Complete autonomous framework orchestration"
+      },
+      {
+        "name": "continuous-improvement",
+        "file": ".gitlab/flows/continuous-improvement-flow.yaml",
+        "description": "Continuous improvement flow"
+      },
+      {
+        "name": "self-healing",
+        "file": ".gitlab/flows/self-healing-flow.yaml",
+        "description": "Self-healing framework flow"
+      },
+      {
+        "name": "full-autonomous-cycle",
+        "file": ".gitlab/flows/full-autonomous-cycle.yaml",
+        "description": "Full autonomous cycle from issue to release"
+      }
+    ]
+  }
+}

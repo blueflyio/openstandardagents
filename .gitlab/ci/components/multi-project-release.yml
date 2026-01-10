@@ -102,7 +102,7 @@ multi-release:calculate-order:
       #!/bin/bash
       set -e
 
-      echo "🔍 Multi-Project Release Orchestration"
+      echo "[CHECK] Multi-Project Release Orchestration"
       echo "======================================"
       echo ""
       echo "Configuration:"
@@ -115,36 +115,36 @@ multi-release:calculate-order:
 
       # Discover agent manifests
       if [ "$[[ inputs.manifest_files | length ]]" -gt 0 ]; then
-        echo "📋 Using explicit manifest list..."
+        echo "[LIST] Using explicit manifest list..."
         MANIFESTS='$[[ inputs.manifest_files | join(" ") ]]'
       else
-        echo "🔍 Discovering manifests using pattern: ${MANIFEST_PATTERN}"
+        echo "[CHECK] Discovering manifests using pattern: ${MANIFEST_PATTERN}"
 
         # Use find to get manifest files
         MANIFESTS=$(find . -path "./node_modules" -prune -o -path "${MANIFEST_PATTERN}" -print 2>/dev/null || true)
 
         if [ -z "$MANIFESTS" ]; then
-          echo "⚠️  No manifests found matching pattern: ${MANIFEST_PATTERN}"
+          echo "[WARN]  No manifests found matching pattern: ${MANIFEST_PATTERN}"
           exit 1
         fi
       fi
 
       MANIFEST_COUNT=$(echo "$MANIFESTS" | wc -l | tr -d ' ')
-      echo "📦 Found ${MANIFEST_COUNT} agent manifests"
+      echo "[PKG] Found ${MANIFEST_COUNT} agent manifests"
       echo ""
 
       # Calculate deployment order using ossa dependencies
-      echo "🔄 Calculating deployment order..."
+      echo "[SYNC] Calculating deployment order..."
       ossa dependencies deploy-order "${MANIFEST_PATTERN}" --format json > deployment-order.json
 
       if [ ! -f deployment-order.json ] || [ ! -s deployment-order.json ]; then
-        echo "❌ Failed to calculate deployment order"
+        echo "[FAIL] Failed to calculate deployment order"
         exit 1
       fi
 
       # Display deployment order
       echo ""
-      echo "✅ Deployment Order Calculated:"
+      echo "[PASS] Deployment Order Calculated:"
       echo ""
 
       TOTAL_BATCHES=$(jq -r '.total_batches' deployment-order.json)
@@ -169,7 +169,7 @@ multi-release:calculate-order:
       cat deployment-order.json
 
       # Generate child pipeline configuration
-      echo "📝 Generating child pipeline configurations..."
+      echo "[NOTE] Generating child pipeline configurations..."
 
       cat > child-pipelines.yml << 'EOF'
       # Generated Child Pipeline Configuration
@@ -231,7 +231,7 @@ multi-release:calculate-order:
         BATCH_INDEX=$((BATCH_INDEX + 1))
       done
 
-      echo "✅ Child pipeline configuration generated"
+      echo "[PASS] Child pipeline configuration generated"
 
   artifacts:
     reports:
@@ -263,12 +263,12 @@ multi-release:execute-batches:
       #!/bin/bash
       set -e
 
-      echo "🚀 Executing Multi-Project Release"
+      echo "[RUN] Executing Multi-Project Release"
       echo "==================================="
       echo ""
 
       if [ ! -f deployment-order.json ]; then
-        echo "❌ Deployment order not found"
+        echo "[FAIL] Deployment order not found"
         exit 1
       fi
 
@@ -300,7 +300,7 @@ multi-release:execute-batches:
 
         # Release agents in batch
         for agent in $AGENTS; do
-          echo "📦 Releasing: ${agent}"
+          echo "[PKG] Releasing: ${agent}"
 
           if [ "$[[ inputs.dry_run ]]" = "true" ]; then
             echo "   [DRY RUN] Would trigger release for ${agent}"
@@ -319,7 +319,7 @@ multi-release:execute-batches:
             | jq -r '.id // empty')
 
           if [ -z "$PIPELINE_ID" ]; then
-            echo "   ❌ Failed to trigger pipeline for ${agent}"
+            echo "   [FAIL] Failed to trigger pipeline for ${agent}"
             FAILED_AGENTS+=("${agent}")
             BATCH_FAILED=true
 
@@ -346,11 +346,11 @@ multi-release:execute-batches:
                 | jq -r '.status')
 
               if [ "$STATUS" = "success" ]; then
-                echo "   ✅ Release completed: ${agent}"
+                echo "   [PASS] Release completed: ${agent}"
                 RELEASED_AGENTS+=("${agent}")
                 break
               elif [ "$STATUS" = "failed" ] || [ "$STATUS" = "canceled" ]; then
-                echo "   ❌ Release failed: ${agent} (status: ${STATUS})"
+                echo "   [FAIL] Release failed: ${agent} (status: ${STATUS})"
                 FAILED_AGENTS+=("${agent}")
                 BATCH_FAILED=true
 
@@ -366,7 +366,7 @@ multi-release:execute-batches:
             done
 
             if [ $ELAPSED -ge $((TIMEOUT * 60)) ]; then
-              echo "   ⏱️  Timeout: ${agent}"
+              echo "   [TIME]  Timeout: ${agent}"
               FAILED_AGENTS+=("${agent}")
               BATCH_FAILED=true
             fi
@@ -394,11 +394,11 @@ multi-release:execute-batches:
                 | jq -r '.status')
 
               if [ "$STATUS" = "success" ]; then
-                echo "   ✅ ${agent}"
+                echo "   [PASS] ${agent}"
                 RELEASED_AGENTS+=("${agent}")
                 break
               elif [ "$STATUS" = "failed" ] || [ "$STATUS" = "canceled" ]; then
-                echo "   ❌ ${agent} (status: ${STATUS})"
+                echo "   [FAIL] ${agent} (status: ${STATUS})"
                 FAILED_AGENTS+=("${agent}")
                 BATCH_FAILED=true
                 break
@@ -424,7 +424,7 @@ multi-release:execute-batches:
         # Inter-batch delay
         if [ $BATCH_NUM -lt $TOTAL_BATCHES ] && [ "$BATCH_FAILED" = "false" ]; then
           echo ""
-          echo "⏸️  Waiting $[[ inputs.batch_delay ]]s before next batch..."
+          echo "[PAUSE]  Waiting $[[ inputs.batch_delay ]]s before next batch..."
           sleep $[[ inputs.batch_delay ]]
         fi
 
@@ -459,7 +459,7 @@ multi-release:execute-batches:
 
       # Trigger rollback if needed
       if [ "${RELEASE_STATUS}" = "failed" ] && [ "$[[ inputs.enable_rollback ]]" = "true" ]; then
-        echo "🔄 Initiating rollback..."
+        echo "[SYNC] Initiating rollback..."
         echo "TRIGGER_ROLLBACK=true" >> release.env
       fi
 
@@ -474,10 +474,10 @@ multi-release:execute-batches:
 
       # Exit with appropriate code
       if [ "${RELEASE_STATUS}" = "failed" ]; then
-        echo "❌ Multi-project release failed"
+        echo "[FAIL] Multi-project release failed"
         exit 1
       else
-        echo "✅ Multi-project release completed successfully"
+        echo "[PASS] Multi-project release completed successfully"
         exit 0
       fi
 
@@ -514,18 +514,18 @@ multi-release:rollback:
       set -e
 
       if [ "${TRIGGER_ROLLBACK}" != "true" ]; then
-        echo "ℹ️  No rollback needed"
+        echo "[INFO]  No rollback needed"
         exit 0
       fi
 
-      echo "🔄 Multi-Project Rollback"
+      echo "[SYNC] Multi-Project Rollback"
       echo "========================="
       echo ""
       echo "Rollback Strategy: $[[ inputs.rollback_strategy ]]"
       echo ""
 
       if [ ! -f deployment-order.json ] || [ ! -f .release-state/release-log.json ]; then
-        echo "❌ Missing release state files"
+        echo "[FAIL] Missing release state files"
         exit 1
       fi
 
@@ -555,7 +555,7 @@ multi-release:rollback:
           ;;
 
         batch)
-          echo "📦 Batch rollback: reverting last successful batch only"
+          echo "[PKG] Batch rollback: reverting last successful batch only"
 
           LAST_BATCH=$(echo "$COMPLETED_BATCHES" | tail -1)
           AGENTS=$(jq -r ".batches[] | select(.batch_id == ${LAST_BATCH}) | .agents[]" deployment-order.json)
@@ -573,12 +573,12 @@ multi-release:rollback:
           ;;
 
         none)
-          echo "🚫 Rollback disabled"
+          echo "[BLOCK] Rollback disabled"
           ;;
       esac
 
       echo ""
-      echo "✅ Rollback initiated"
+      echo "[PASS] Rollback initiated"
 
   rules:
     - if: $CI_PIPELINE_SOURCE == "parent_pipeline"

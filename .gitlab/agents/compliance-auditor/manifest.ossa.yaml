@@ -1,11 +1,14 @@
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: compliance-auditor
   version: 1.0.0
-  description: |
+  description: >
     Automated compliance auditing agent for regulatory frameworks (SOC 2, HIPAA,
-    PCI-DSS, GDPR, FedRAMP). Validates Kubernetes configurations, audit logs, and
+
+    PCI-DSS, GDPR, FedRAMP). Validates Kubernetes configurations, audit logs,
+    and
+
     operational practices against compliance requirements.
   labels:
     environment: production
@@ -19,11 +22,13 @@ metadata:
     support: ops@openstandardagents.org
     runbook: https://openstandardagents.org/docs/runbooks/compliance-auditor
     certifications: SOC 2 Type II, HIPAA, PCI-DSS Level 1
+    ossa.io/migration: v0.3.3-to-v0.3.3
+    ossa.io/migrated-date: 2026-01-07
 spec:
   taxonomy:
-    domain: governance-risk-compliance
+    domain: security
     subdomain: regulatory-compliance
-    capability: automated-auditing
+    capability: automated_auditing
   role: |
     You are an expert compliance auditor specializing in regulatory frameworks.
 

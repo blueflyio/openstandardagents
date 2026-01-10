@@ -192,7 +192,7 @@ Automated compliance auditing for regulatory frameworks.
 
 The agent mesh provides multi-agent coordination through:
 
-**Configuration**: [`.gitlab/agents/mesh-config.yaml`](https://github.com/blueflyio/openstandardagents/blob/main/.gitlab/agents/mesh-config.yaml)
+**Configuration**: [`.gitlab/agents/config/mesh-config.yaml`](https://github.com/blueflyio/openstandardagents/blob/main/.gitlab/agents/config/mesh-config.yaml)
 
 - **Service Discovery**: All 8 agents registered with health check endpoints
 - **A2A Protocol**: JSON-RPC 2.0 over HTTP with mTLS authentication
@@ -215,7 +215,7 @@ compliance-auditor → security-scanner (security compliance)
 
 ## Swarm Orchestration
 
-**Configuration**: [`.gitlab/agents/swarm-tasks.json`](https://github.com/blueflyio/openstandardagents/blob/main/.gitlab/agents/swarm-tasks.json)
+**Configuration**: [`.gitlab/agents/config/swarm-tasks.json`](https://github.com/blueflyio/openstandardagents/blob/main/.gitlab/agents/config/swarm-tasks.json)
 
 Defines **10 coordinated tasks** for end-to-end deployment workflows:
 
@@ -291,7 +291,7 @@ The agent ecosystem achieves **elite DORA performance**:
 
 ```bash
 # 1. Deploy agent mesh configuration
-kubectl apply -f .gitlab/agents/mesh-config.yaml
+kubectl apply -f .gitlab/agents/config/mesh-config.yaml
 
 # 2. Deploy all agents
 for agent in security-scanner performance-optimizer db-migrator \
@@ -305,7 +305,7 @@ kubectl get agents -n agent-mesh-system
 istioctl proxy-status
 
 # 4. Deploy swarm tasks
-buildkit swarm spawn --tasks .gitlab/agents/swarm-tasks.json --runtime kubernetes
+buildkit swarm spawn --tasks .gitlab/agents/config/swarm-tasks.json --runtime kubernetes
 ```
 
 ---

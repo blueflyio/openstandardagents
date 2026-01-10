@@ -207,7 +207,7 @@ export class OSSAComplianceBot {
   }
 
   private generateMarkdownReport(report: ComplianceReport): string {
-    const status = report.compliant ? '✅ COMPLIANT' : '❌ NON-COMPLIANT';
+    const status = report.compliant ? '[PASS] COMPLIANT' : '[FAIL] NON-COMPLIANT';
     
     return `# OSSA Compliance Report
 

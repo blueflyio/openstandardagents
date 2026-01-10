@@ -17,6 +17,7 @@ import * as path from 'path';
 import * as yaml from 'yaml';
 import { glob } from 'glob';
 import { getApiVersion, getVersion } from '../../utils/version.js';
+import { outputJSON, handleCommandError } from '../utils/index.js';
 
 export const workspaceCommand = new Command('workspace')
   .description('Manage .agents-workspace/ (two-tier architecture governance)');
@@ -170,8 +171,7 @@ Global conventions and standards that apply to all agents in this workspace.
 
       process.exit(0);
     } catch (error) {
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
-      process.exit(1);
+      handleCommandError(error);
     }
   });
 
@@ -196,7 +196,7 @@ workspaceCommand
       const registry = yaml.parse(content);
 
       if (options.json) {
-        console.log(JSON.stringify(registry, null, 2));
+        outputJSON(registry);
         process.exit(0);
       }
 
@@ -229,8 +229,7 @@ workspaceCommand
       console.log(chalk.gray(`Total: ${agents.length} project(s)`));
       process.exit(0);
     } catch (error) {
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
-      process.exit(1);
+      handleCommandError(error);
     }
   });
 
@@ -362,8 +361,7 @@ workspaceCommand
       console.log(chalk.green('✓ Registry updated'));
       process.exit(0);
     } catch (error) {
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
-      process.exit(1);
+      handleCommandError(error);
     }
   });
 
@@ -395,7 +393,7 @@ policyCommand
       const policy = yaml.parse(content);
 
       if (options.json) {
-        console.log(JSON.stringify(policy, null, 2));
+        outputJSON(policy);
         process.exit(0);
       }
 
@@ -431,8 +429,7 @@ policyCommand
 
       process.exit(0);
     } catch (error) {
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
-      process.exit(1);
+      handleCommandError(error);
     }
   });
 
@@ -538,8 +535,7 @@ policyCommand
 
       process.exit(errors.length > 0 ? 1 : 0);
     } catch (error) {
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
-      process.exit(1);
+      handleCommandError(error);
     }
   });
 

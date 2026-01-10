@@ -11,7 +11,7 @@ graph TD
     A[OSSA Specification v0.3.0] --> B[MR #397: Task/Workflow Basics]
     B --> C[#133: Enhanced Task/Workflow Schema v0.3.0]
     C --> D[#132: Messaging Extension v0.3.0]
-    D --> E[#126: Symfony Messenger Adapter v0.3.2]
+    D --> E[#126: Symfony Messenger Adapter v0.3.3]
     E --> F[API Normalizer Integration v0.1.x]
     F --> G[#96: Knowledge Sources v0.3.3]
     G --> H[Epic #9: Unified Task Schema v0.4.0]
@@ -232,7 +232,7 @@ While following the critical path, these can be done in parallel:
 - Messaging extension
 - 10+ examples
 
-### v0.3.2 Milestone
+### v0.3.3 Milestone
 **Required:**
 - ✅ v0.3.0
 - ⚪ #126
@@ -245,7 +245,7 @@ While following the critical path, these can be done in parallel:
 
 ### v0.3.3 Milestone
 **Required:**
-- ✅ v0.3.2
+- ✅ v0.3.3
 - ⚪ #96
 
 **Deliverables:**

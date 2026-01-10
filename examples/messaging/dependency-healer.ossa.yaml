@@ -3,7 +3,7 @@
 # This agent monitors dependencies, detects outdated packages, and coordinates
 # updates while communicating with security scanners via OSSA messaging.
 
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: dependency-healer
@@ -311,7 +311,7 @@ spec:
         channel: dependency.dlq
         retentionDays: 14
       ordering:
-        guarantee: per-channel
+        guarantee: per-source
         timeoutSeconds: 600
 
   autonomy:

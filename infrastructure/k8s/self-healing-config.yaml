@@ -1,0 +1,57 @@
+# Self-Healing Configuration for Website Runners
+
+apiVersion: v1
+kind: PodDisruptionBudget
+metadata:
+  name: gitlab-runner-pdb
+  namespace: gitlab-runner
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: gitlab-runner
+      component: autoscaler
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gitlab-runner-self-healer
+  namespace: gitlab-runner
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gitlab-runner
+      component: self-healer
+  template:
+    metadata:
+      labels:
+        app: gitlab-runner
+        component: self-healer
+    spec:
+      serviceAccountName: gitlab-runner
+      containers:
+      - name: self-healer
+        image: bitnami/kubectl:latest
+        command:
+        - /bin/sh
+        - -c
+        - |
+          while true; do
+            STUCK_PODS=$(kubectl get pods -n gitlab-runner -l app=gitlab-runner --field-selector=status.phase!=Running,status.phase!=Succeeded --no-headers 2>/dev/null | awk '{print $1}' || echo "")
+            if [ -n "$STUCK_PODS" ]; then
+              echo "$STUCK_PODS" | xargs -I {} kubectl delete pod {} -n gitlab-runner --grace-period=30 || true
+            fi
+            READY=$(kubectl get deployment gitlab-runner-autoscaler -n gitlab-runner -o jsonpath='{.status.readyReplicas}' 2>/dev/null || echo "0")
+            if [ "$READY" -eq 0 ]; then
+              kubectl rollout restart deployment/gitlab-runner-autoscaler -n gitlab-runner || true
+            fi
+            sleep 120
+          done
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi

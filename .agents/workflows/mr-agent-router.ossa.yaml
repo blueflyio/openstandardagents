@@ -1,7 +1,7 @@
 # OSSA Agent Router Configuration
 # Routes MR comments and events to appropriate agents
 
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.3
 kind: Workflow
 metadata:
   name: mr-agent-router
@@ -238,7 +238,7 @@ spec:
 # Agent Command Mapping Reference
 # Used by the router to match commands to agents
 
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.3
 kind: Task
 metadata:
   name: command-mapping

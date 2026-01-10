@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: OSSA Server-Sent Events (SSE) API
-  version: 0.3.2
+  version: 0.3.3
   description: |
     OpenAPI extension for Server-Sent Events streams in OSSA.
     Defines SSE endpoints for unidirectional server-to-client event streaming.

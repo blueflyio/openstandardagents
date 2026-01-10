@@ -291,7 +291,7 @@ $ ossa install blueflyio/k8s-security-scanner
 ⬇️  Downloading k8s-security-scanner@1.2.0...
 ✓ Checksum verified
 📦 Resolving dependencies...
-✓ @ossa/runtime@0.3.2
+✓ @ossa/runtime@0.3.3
 ✓ kubernetes-tools@1.28.4
 ✅ Installed k8s-security-scanner@1.2.0
 

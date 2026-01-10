@@ -3,44 +3,66 @@
 /**
  * OSSA CLI - Open Standard for Scalable AI Agents
  * Main CLI entry point
+ *
+ * This CLI contains ONLY platform-agnostic OSSA commands.
+ * Platform-specific commands (GitLab, GitHub) are available via extensions.
+ *
+ * To enable extensions:
+ *   export OSSA_EXTENSIONS=true
+ *   export OSSA_EXTENSIONS_LIST=gitlab
+ *
+ * Or create .ossa-extensions.json:
+ *   { "enabled": true, "extensions": ["gitlab"] }
  */
 
-import 'reflect-metadata';
 import { program } from 'commander';
-import { validateCommand } from './commands/validate.command.js';
-import { generateCommand } from './commands/generate.command.js';
-import { migrateCommand } from './commands/migrate.command.js';
-import { initCommand } from './commands/init.command.js';
-import { exportCommand } from './commands/export.command.js';
-import { importCommand } from './commands/import.command.js';
-import { schemaCommand } from './commands/schema.command.js';
-import { runCommand } from './commands/run.command.js';
-import { gitlabAgentCommand } from './commands/gitlab-agent.command.js';
-import { releaseCommandGroup } from './commands/release.command.js';
-import { setupCommand } from './commands/setup.command.js';
-import { syncCommand } from './commands/sync.command.js';
+import 'reflect-metadata';
+
+// Core OSSA commands (platform-agnostic)
+import { agentCardCommand } from './commands/agent-card.command.js';
 import { agentsMdCommand } from './commands/agents-md.command.js';
-import { quickstartCommand } from './commands/quickstart.command.js';
-import { dependenciesCommand } from './commands/dependencies.command.js';
+import { agentsCommandGroup } from './commands/agents.command.js';
 import { contractCommand } from './commands/contract.command.js';
-import { publishCommand } from './commands/publish.command.js';
-import { searchCommand } from './commands/search.command.js';
-import { installCommand } from './commands/install.command.js';
-import { infoCommand } from './commands/info.command.js';
+import { dependenciesCommand } from './commands/dependencies.command.js';
 import { deployGroup } from './commands/deploy.command.js';
-import { testCommand } from './commands/test.command.js';
 import {
   deployCommand,
-  statusCommand,
   rollbackCommand,
+  statusCommand,
   stopCommand,
 } from './commands/deploy.js';
-import { lintCommand } from './commands/lint.command.js';
 import { diffCommand } from './commands/diff.command.js';
-import { agentsCommandGroup } from './commands/agents.command.js';
-import { workspaceCommand } from './commands/workspace.command.js';
+import { exportCommand } from './commands/export.command.js';
+import { extensionTeamCommand } from './commands/extension-team.command.js';
+import { generateCommand } from './commands/generate.command.js';
+import { importCommand } from './commands/import.command.js';
+import { infoCommand } from './commands/info.command.js';
+import { initCommand } from './commands/init.command.js';
+import { installCommand } from './commands/install.command.js';
+import { lintCommand } from './commands/lint.command.js';
+import { llmsTxtCommand } from './commands/llms-txt.command.js';
+import { migrateCommand } from './commands/migrate.command.js';
+import { publishCommand } from './commands/publish.command.js';
+import { quickstartCommand } from './commands/quickstart.command.js';
 import { registryCommand } from './commands/registry.command.js';
-import { agentCardCommand } from './commands/agent-card.command.js';
+import { releaseCommandGroup } from './commands/release.command.js';
+import { runCommand } from './commands/run.command.js';
+import { schemaCommand } from './commands/schema.command.js';
+import { searchCommand } from './commands/search.command.js';
+import { setupCommand } from './commands/setup.command.js';
+import { testCommand } from './commands/test.command.js';
+import { validateCommand } from './commands/validate.command.js';
+import { workspaceCommand } from './commands/workspace.command.js';
+
+// Extension system (SOLID: Open/Closed via registry pattern)
+import {
+  shouldLoadExtensions,
+  getEnabledExtensions,
+  createExtensionsCommand,
+  loadExtension,
+  getRegisteredExtensions,
+  type OSSAExtension,
+} from './extensions/index.js';
 
 // Load package.json for version (lazy to avoid Jest module resolution issues)
 import * as fs from 'fs';
@@ -128,7 +150,10 @@ program
   .description('OSSA CLI - Open Standard for Scalable AI Agents (The OpenAPI for AI Agents)')
   .version(getVersion());
 
-// Register commands
+// ============================================================================
+// Register Core OSSA Commands (Platform-Agnostic)
+// ============================================================================
+
 program.addCommand(quickstartCommand); // First for discoverability
 program.addCommand(validateCommand);
 program.addCommand(dependenciesCommand);
@@ -140,11 +165,10 @@ program.addCommand(exportCommand);
 program.addCommand(importCommand);
 program.addCommand(schemaCommand);
 program.addCommand(runCommand);
-program.addCommand(gitlabAgentCommand);
 program.addCommand(releaseCommandGroup);
 program.addCommand(setupCommand);
-program.addCommand(syncCommand);
 program.addCommand(agentsMdCommand);
+program.addCommand(llmsTxtCommand);
 
 // Registry commands
 program.addCommand(publishCommand);
@@ -152,18 +176,19 @@ program.addCommand(searchCommand);
 program.addCommand(installCommand);
 program.addCommand(infoCommand);
 
-// Register new enhanced deploy commands
+// Deploy commands
 program.addCommand(deployCommand);
 program.addCommand(statusCommand);
 program.addCommand(rollbackCommand);
 program.addCommand(stopCommand);
+program.addCommand(deployGroup); // Legacy compatibility
 
-// Register legacy deploy group for backward compatibility
-program.addCommand(deployGroup);
-
+// Quality commands
 program.addCommand(testCommand);
 program.addCommand(lintCommand);
 program.addCommand(diffCommand);
+
+// Agent management
 program.addCommand(agentsCommandGroup);
 
 // Two-tier architecture commands
@@ -171,5 +196,67 @@ program.addCommand(workspaceCommand);
 program.addCommand(registryCommand);
 program.addCommand(agentCardCommand);
 
-// Parse arguments - MUST be after all commands are registered
-program.parse();
+// Extension development commands
+program.addCommand(extensionTeamCommand);
+
+// ============================================================================
+// Extension Loading
+// ============================================================================
+
+/**
+ * Load and register platform-specific extensions
+ * Uses the extension registry pattern (Open/Closed Principle)
+ */
+async function loadExtensions(): Promise<OSSAExtension[]> {
+  const extensions: OSSAExtension[] = [];
+
+  if (!shouldLoadExtensions()) {
+    return extensions;
+  }
+
+  const enabled = getEnabledExtensions();
+  const registered = getRegisteredExtensions();
+
+  for (const extName of enabled) {
+    // Only load extensions that are registered
+    if (!registered.includes(extName)) {
+      if (process.env.DEBUG) {
+        console.warn(`Extension '${extName}' is not registered`);
+      }
+      continue;
+    }
+
+    const ext = await loadExtension(extName);
+    if (ext) {
+      extensions.push(ext);
+
+      // Register extension commands
+      for (const cmd of ext.commands) {
+        program.addCommand(cmd);
+      }
+    }
+  }
+
+  return extensions;
+}
+
+// ============================================================================
+// Main Entry Point
+// ============================================================================
+
+async function main() {
+  // Load extensions if enabled
+  const extensions = await loadExtensions();
+
+  // Add extensions command (always available to show extension status)
+  program.addCommand(createExtensionsCommand(extensions));
+
+  // Parse arguments - MUST be after all commands are registered
+  program.parse();
+}
+
+// Run CLI
+main().catch((error) => {
+  console.error('CLI Error:', error);
+  process.exit(1);
+});

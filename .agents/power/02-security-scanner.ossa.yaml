@@ -1,13 +1,4 @@
-# ============================================================================
-# OSSA Power Agent: Security Scanner
-# ============================================================================
-# Comprehensive security analysis agent with vulnerability scanning,
-# dependency audit, secret detection, and compliance checking.
-#
-# Showcases: Safety policies, constraints, access tiers
-# ============================================================================
-
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: security-scanner
@@ -19,87 +10,94 @@ metadata:
     ossa.dev/access-tier: elevated
   annotations:
     ossa.dev/documentation: https://openstandardagents.org/agents/security-scanner
-
 spec:
   capabilities:
-    - name: security.scan
-      description: Scan codebase for security vulnerabilities
-    - name: security.audit
-      description: Audit dependencies for known CVEs
-    - name: security.secrets
-      description: Detect exposed secrets and credentials
-    - name: security.compliance
-      description: Check compliance against security policies
+  - name: security.scan
+    description: Scan codebase for security vulnerabilities
+  - name: security.audit
+    description: Audit dependencies for known CVEs
+  - name: security.secrets
+    description: Detect exposed secrets and credentials
+  - name: security.compliance
+    description: Check compliance against security policies
+  role: 'You are a security specialist agent responsible for identifying vulnerabilities,
 
-  role: |
-    You are a security specialist agent responsible for identifying vulnerabilities,
     auditing dependencies, detecting secrets, and ensuring compliance with security
+
     policies.
 
+
     Security scanning process:
+
     1. Static analysis for common vulnerability patterns (OWASP Top 10)
+
     2. Dependency vulnerability scanning (CVE database)
+
     3. Secret detection (API keys, tokens, credentials)
+
     4. Configuration security review
+
     5. Compliance policy validation
 
+
     Always provide:
+
     - Severity classification (Critical, High, Medium, Low)
+
     - Affected file and line number
+
     - Remediation guidance
+
     - References to CVEs or security advisories
 
+    '
   llm:
     provider: ${OSSA_LLM_PROVIDER:-anthropic}
     model: ${OSSA_LLM_MODEL:-claude-sonnet-4}
-    temperature: 0.1  # Low temperature for consistent security analysis
+    temperature: 0.1
     maxTokens: ${OSSA_LLM_MAX_TOKENS:-16384}
-
   tools:
-    - name: scan.sast
-      description: Run static application security testing
-      handler:
-        runtime: docker
-        image: returntocorp/semgrep:latest
-        command: ["semgrep", "--config=auto"]
-
-    - name: scan.dependencies
-      description: Scan dependencies for vulnerabilities
-      handler:
-        runtime: docker
-        image: aquasec/trivy:latest
-        command: ["trivy", "fs", "."]
-
-    - name: scan.secrets
-      description: Detect secrets in codebase
-      handler:
-        runtime: docker
-        image: trufflesecurity/trufflehog:latest
-        command: ["filesystem", "."]
-
-    - name: report.generate
-      description: Generate security report
-      handler:
-        runtime: local
-        capability: report.generate
-
+  - name: scan.sast
+    description: Run static application security testing
+    handler:
+      runtime: docker
+      image: returntocorp/semgrep:latest
+      command:
+      - semgrep
+      - --config=auto
+    type: function
+  - name: scan.dependencies
+    description: Scan dependencies for vulnerabilities
+    handler:
+      runtime: docker
+      image: aquasec/trivy:latest
+      command:
+      - trivy
+      - fs
+      - .
+    type: function
+  - name: scan.secrets
+    description: Detect secrets in codebase
+    handler:
+      runtime: docker
+      image: trufflesecurity/trufflehog:latest
+      command:
+      - filesystem
+      - .
+    type: function
+  - name: report.generate
+    description: Generate security report
+    handler:
+      runtime: local
+      capability: report.generate
+    type: function
   safety:
     constraints:
-      - Never expose actual secret values in reports
-      - Redact sensitive information before logging
-      - Rate limit external vulnerability database queries
+    - Never expose actual secret values in reports
+    - Redact sensitive information before logging
+    - Rate limit external vulnerability database queries
     policies:
-      - policy: no-secret-exposure
-        description: All detected secrets must be redacted in output
-      - policy: audit-logging
-        description: All scans must be logged for compliance
-
-  identity:
-    access_tier: elevated
-    permissions:
-      - security.scan.read
-      - security.report.write
-      - security.config.read
-    audit:
-      enabled: true
-      retention_days: 90
+    - policy: no-secret-exposure
+      description: All detected secrets must be redacted in output
+    - policy: audit-logging
+      description: All scans must be logged for compliance
