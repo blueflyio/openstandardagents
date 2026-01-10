@@ -10,6 +10,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
 import { z } from 'zod';
+import { handleCommandError } from '../utils/index.js';
 
 /**
  * Zod Schema for Setup Options
@@ -350,8 +351,7 @@ const branchProtectionSubcommand = new Command('branch-protection')
         console.error(chalk.red('Validation error:'), error.issues);
         process.exit(1);
       }
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : error);
-      process.exit(1);
+      handleCommandError(error);
     }
   });
 
@@ -373,8 +373,7 @@ const releaseAutomationSubcommand = new Command('release-automation')
         console.error(chalk.red('Validation error:'), error.issues);
         process.exit(1);
       }
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : error);
-      process.exit(1);
+      handleCommandError(error);
     }
   });
 

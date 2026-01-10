@@ -1,16 +1,20 @@
 /**
  * OSSA Diff Command
  * Compare OSSA agent manifests between files or git references
+ *
+ * SOLID Principles:
+ * - Uses shared output utilities (DRY)
+ * - Single Responsibility: Only handles diffing
  */
 
 import chalk from 'chalk';
 import { Command } from 'commander';
 import * as fs from 'fs';
-import * as path from 'path';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { GitService } from '../../services/git.service.js';
 import type { OssaAgent } from '../../types/index.js';
+import { outputJSON, handleCommandError } from '../utils/index.js';
 
 interface DiffResult {
   breaking: boolean;
@@ -149,12 +153,11 @@ export const diffCommand = new Command('diff')
 
         // Output results
         if (options.format === 'json') {
-          const output = JSON.stringify(result, null, 2);
           if (options.output) {
-            fs.writeFileSync(options.output, output);
+            fs.writeFileSync(options.output, JSON.stringify(result, null, 2));
             console.log(chalk.green(`Results written to ${options.output}`));
           } else {
-            console.log(output);
+            outputJSON(result);
           }
         } else {
           console.log(chalk.blue(`\nComparing manifests:`));
@@ -198,12 +201,8 @@ export const diffCommand = new Command('diff')
         }
 
         process.exit(result.breaking ? 1 : 0);
-      } catch (error: any) {
-        console.error(chalk.red('[ERROR]'), error.message);
-        if (error.stack) {
-          console.error(chalk.gray(error.stack));
-        }
-        process.exit(1);
+      } catch (error) {
+        handleCommandError(error);
       }
     }
   );

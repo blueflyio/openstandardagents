@@ -1,17 +1,26 @@
 /**
  * OSSA Dependencies Command
  * Validate agent dependencies, detect conflicts, and generate dependency graphs
+ *
+ * SOLID Principles:
+ * - Uses shared manifest loading utilities (DRY)
+ * - Uses shared output utilities (DRY)
+ * - Single Responsibility: Only handles dependency validation
  */
 
 import chalk from 'chalk';
 import { Command } from 'commander';
 import * as fs from 'fs';
-import * as path from 'path';
-import { glob } from 'glob';
 import { container } from '../../di-container.js';
-import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { DependenciesValidator } from '../../services/validators/dependencies.validator.js';
 import type { AgentManifest } from '../../services/validators/dependencies.validator.js';
+import {
+  outputJSON,
+  loadManifestsByGlob,
+  handleCommandError,
+  printPatternInfo,
+  exitNoManifestsFound,
+} from '../utils/index.js';
 
 /**
  * ossa validate-dependencies <pattern>
@@ -24,34 +33,19 @@ const validateDependenciesCommand = new Command('validate')
   .action(async (pattern: string, options: { verbose?: boolean }) => {
     try {
       console.log(chalk.blue(`\n[CHECK] Validating agent dependencies...`));
-      console.log(chalk.gray(`Pattern: ${pattern}\n`));
+      printPatternInfo(pattern, 0);
 
-      // Find all manifests
-      const files = await glob(pattern, { absolute: true });
-      if (files.length === 0) {
-        console.log(chalk.yellow('[WARN]  No agent manifests found matching pattern'));
-        process.exit(1);
+      // Load all manifests using shared utility
+      const { loaded, errors } = await loadManifestsByGlob<AgentManifest>(pattern, { verbose: options.verbose });
+
+      // Update pattern info with actual count
+      console.log(chalk.gray(`Found ${loaded.length + errors.length} manifests\n`));
+
+      if (loaded.length === 0) {
+        exitNoManifestsFound('matching pattern');
       }
 
-      console.log(chalk.gray(`Found ${files.length} manifests\n`));
-
-      // Load all manifests
-      const manifestRepo = container.get(ManifestRepository);
-      const manifests: AgentManifest[] = [];
-
-      for (const file of files) {
-        try {
-          const manifest = await manifestRepo.load(file);
-          manifests.push(manifest as AgentManifest);
-        } catch (error: any) {
-          console.log(chalk.yellow(`[WARN]  Skipping ${path.basename(file)}: ${error.message}`));
-        }
-      }
-
-      if (manifests.length === 0) {
-        console.log(chalk.red('[FAIL] No valid manifests found'));
-        process.exit(1);
-      }
+      const manifests = loaded.map((l) => l.manifest);
 
       // Validate dependencies
       const validator = container.get(DependenciesValidator);
@@ -112,12 +106,8 @@ const validateDependenciesCommand = new Command('validate')
 
         process.exit(1);
       }
-    } catch (error: any) {
-      console.error(chalk.red(`\n[FAIL] Error: ${error.message}\n`));
-      if (options.verbose && error.stack) {
-        console.error(chalk.gray(error.stack));
-      }
-      process.exit(1);
+    } catch (error) {
+      handleCommandError(error, { verbose: options.verbose });
     }
   });
 
@@ -132,19 +122,9 @@ const checkConflictsCommand = new Command('check-conflicts')
     try {
       console.log(chalk.blue(`\n[CHECK] Checking for version conflicts...\n`));
 
-      // Load manifests
-      const files = await glob(pattern, { absolute: true });
-      const manifestRepo = container.get(ManifestRepository);
-      const manifests: AgentManifest[] = [];
-
-      for (const file of files) {
-        try {
-          const manifest = await manifestRepo.load(file);
-          manifests.push(manifest as AgentManifest);
-        } catch {
-          // Skip invalid manifests
-        }
-      }
+      // Load manifests using shared utility
+      const { loaded } = await loadManifestsByGlob<AgentManifest>(pattern, { silent: true });
+      const manifests = loaded.map((l) => l.manifest);
 
       // Check conflicts
       const validator = container.get(DependenciesValidator);
@@ -164,9 +144,8 @@ const checkConflictsCommand = new Command('check-conflicts')
         }
         process.exit(1);
       }
-    } catch (error: any) {
-      console.error(chalk.red(`\n[FAIL] Error: ${error.message}\n`));
-      process.exit(1);
+    } catch (error) {
+      handleCommandError(error);
     }
   });
 
@@ -181,24 +160,14 @@ const graphCommand = new Command('graph')
   .description('Generate dependency graph visualization')
   .action(async (pattern: string, options: { output?: string; format?: string }) => {
     try {
-      // Load manifests
-      const files = await glob(pattern, { absolute: true });
-      const manifestRepo = container.get(ManifestRepository);
-      const manifests: AgentManifest[] = [];
+      // Load manifests using shared utility
+      const { loaded } = await loadManifestsByGlob<AgentManifest>(pattern, { silent: true });
 
-      for (const file of files) {
-        try {
-          const manifest = await manifestRepo.load(file);
-          manifests.push(manifest as AgentManifest);
-        } catch {
-          // Skip invalid manifests
-        }
+      if (loaded.length === 0) {
+        exitNoManifestsFound();
       }
 
-      if (manifests.length === 0) {
-        console.log(chalk.red('[FAIL] No valid manifests found'));
-        process.exit(1);
-      }
+      const manifests = loaded.map((l) => l.manifest);
 
       // Generate graph
       const validator = container.get(DependenciesValidator);
@@ -206,12 +175,12 @@ const graphCommand = new Command('graph')
 
       if (options.format === 'json') {
         // Generate JSON format
-        const graph: any = {
+        const graph = {
           nodes: manifests.map((m) => ({
             id: m.metadata.name,
             version: m.metadata.version || 'unknown',
           })),
-          edges: [],
+          edges: [] as Array<{ from: string; to: string; version?: string; required?: boolean }>,
         };
 
         for (const manifest of manifests) {
@@ -226,27 +195,30 @@ const graphCommand = new Command('graph')
           }
         }
 
-        output = JSON.stringify(graph, null, 2);
-      } else {
-        // Generate DOT format
-        output = validator.generateDependencyGraph(manifests);
+        if (options.output) {
+          fs.writeFileSync(options.output, JSON.stringify(graph, null, 2), 'utf-8');
+          console.log(chalk.green(`\n[PASS] Dependency graph written to ${options.output}`));
+        } else {
+          outputJSON(graph);
+        }
+        process.exit(0);
       }
 
-      // Output
+      // DOT format
+      output = validator.generateDependencyGraph(manifests);
+
+      // Output DOT format
       if (options.output) {
         fs.writeFileSync(options.output, output, 'utf-8');
         console.log(chalk.green(`\n[PASS] Dependency graph written to ${options.output}`));
-        if (options.format === 'dot') {
-          console.log(chalk.gray(`\nGenerate PNG: dot -Tpng ${options.output} -o graph.png\n`));
-        }
+        console.log(chalk.gray(`\nGenerate PNG: dot -Tpng ${options.output} -o graph.png\n`));
       } else {
         console.log(output);
       }
 
       process.exit(0);
-    } catch (error: any) {
-      console.error(chalk.red(`\n[FAIL] Error: ${error.message}\n`));
-      process.exit(1);
+    } catch (error) {
+      handleCommandError(error);
     }
   });
 
@@ -262,24 +234,14 @@ const deployOrderCommand = new Command('deploy-order')
     try {
       console.log(chalk.blue(`\n[CHECK] Calculating deployment order...\n`));
 
-      // Load manifests
-      const files = await glob(pattern, { absolute: true });
-      const manifestRepo = container.get(ManifestRepository);
-      const manifests: AgentManifest[] = [];
+      // Load manifests using shared utility
+      const { loaded } = await loadManifestsByGlob<AgentManifest>(pattern, { silent: true });
 
-      for (const file of files) {
-        try {
-          const manifest = await manifestRepo.load(file);
-          manifests.push(manifest as AgentManifest);
-        } catch {
-          // Skip invalid manifests
-        }
+      if (loaded.length === 0) {
+        exitNoManifestsFound();
       }
 
-      if (manifests.length === 0) {
-        console.log(chalk.red('[FAIL] No valid manifests found'));
-        process.exit(1);
-      }
+      const manifests = loaded.map((l) => l.manifest);
 
       // Calculate deployment order
       const validator = container.get(DependenciesValidator);
@@ -287,7 +249,7 @@ const deployOrderCommand = new Command('deploy-order')
 
       // Output
       if (options.format === 'json') {
-        const output = {
+        outputJSON({
           batches: batches.map((batch, i) => ({
             batch_id: i + 1,
             parallel: batch.length > 1,
@@ -295,8 +257,7 @@ const deployOrderCommand = new Command('deploy-order')
           })),
           total_agents: manifests.length,
           total_batches: batches.length,
-        };
-        console.log(JSON.stringify(output, null, 2));
+        });
       } else {
         console.log(chalk.green(`[PASS] Deployment order (${batches.length} batches):\n`));
         for (let i = 0; i < batches.length; i++) {
@@ -313,9 +274,8 @@ const deployOrderCommand = new Command('deploy-order')
       }
 
       process.exit(0);
-    } catch (error: any) {
-      console.error(chalk.red(`\n[FAIL] Error: ${error.message}\n`));
-      process.exit(1);
+    } catch (error) {
+      handleCommandError(error);
     }
   });
 

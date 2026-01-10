@@ -8,6 +8,10 @@
  *   ossa registry discover   - Auto-discover agents in workspace
  *   ossa registry export     - Export registry as JSON/YAML
  *   ossa registry validate   - Validate all registered agents
+ *
+ * SOLID Principles:
+ * - Uses shared output utilities (DRY)
+ * - Single Responsibility: Only handles registry operations
  */
 
 import { Command } from 'commander';
@@ -16,6 +20,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'yaml';
 import { glob } from 'glob';
+import { outputJSON, handleCommandError } from '../utils/index.js';
 
 interface AgentEntry {
   name: string;
@@ -89,7 +94,7 @@ registryCommand
 
       // Output format
       if (options.json) {
-        console.log(JSON.stringify(agents, null, 2));
+        outputJSON(agents);
         process.exit(0);
       }
 
@@ -140,8 +145,7 @@ registryCommand
 
       process.exit(0);
     } catch (error) {
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
-      process.exit(1);
+      handleCommandError(error);
     }
   });
 
@@ -227,8 +231,7 @@ registryCommand
 
       process.exit(0);
     } catch (error) {
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
-      process.exit(1);
+      handleCommandError(error);
     }
   });
 
@@ -264,8 +267,7 @@ registryCommand
 
       process.exit(0);
     } catch (error) {
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
-      process.exit(1);
+      handleCommandError(error);
     }
   });
 
@@ -404,8 +406,7 @@ registryCommand
 
       process.exit(0);
     } catch (error) {
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
-      process.exit(1);
+      handleCommandError(error);
     }
   });
 
@@ -483,8 +484,7 @@ registryCommand
 
       process.exit(1);
     } catch (error) {
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
-      process.exit(1);
+      handleCommandError(error);
     }
   });
 

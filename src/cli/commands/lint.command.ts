@@ -1,15 +1,25 @@
 /**
  * OSSA Lint Command
  * Lint OSSA agent manifests against best practices
+ *
+ * SOLID Principles:
+ * - Uses shared output utilities (DRY)
+ * - Uses shared manifest loading utilities (DRY)
+ * - Single Responsibility: Only handles linting
  */
 
 import chalk from 'chalk';
 import { Command } from 'commander';
 import * as fs from 'fs';
-import * as path from 'path';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import type { OssaAgent } from '../../types/index.js';
+import {
+  outputJSON,
+  printSummary,
+  findManifestFilesFromPaths,
+  handleCommandError,
+} from '../utils/index.js';
 
 interface LintRule {
   id: string;
@@ -172,51 +182,8 @@ export const lintCommand = new Command('lint')
         const manifestRepo = container.get(ManifestRepository);
         const maxWarnings = parseInt(options.maxWarnings || '0', 10);
 
-        // Determine files to lint
-        const filesToLint: string[] = [];
-        if (paths.length === 0) {
-          // Default: find all .ossa.yaml and .ossa.yml files in current directory
-          const cwd = process.cwd();
-          const findFiles = (dir: string): void => {
-            const entries = fs.readdirSync(dir, { withFileTypes: true });
-            for (const entry of entries) {
-              const fullPath = path.join(dir, entry.name);
-              if (entry.isDirectory() && entry.name !== 'node_modules' && entry.name !== 'dist') {
-                findFiles(fullPath);
-              } else if (
-                entry.isFile() &&
-                (entry.name.endsWith('.ossa.yaml') || entry.name.endsWith('.ossa.yml'))
-              ) {
-                filesToLint.push(fullPath);
-              }
-            }
-          };
-          findFiles(cwd);
-        } else {
-          // Use provided paths
-          for (const p of paths) {
-            if (fs.existsSync(p) && fs.statSync(p).isDirectory()) {
-              // Recursively find .ossa.yaml files
-              const findFiles = (dir: string): void => {
-                const entries = fs.readdirSync(dir, { withFileTypes: true });
-                for (const entry of entries) {
-                  const fullPath = path.join(dir, entry.name);
-                  if (entry.isDirectory() && entry.name !== 'node_modules' && entry.name !== 'dist') {
-                    findFiles(fullPath);
-                  } else if (
-                    entry.isFile() &&
-                    (entry.name.endsWith('.ossa.yaml') || entry.name.endsWith('.ossa.yml'))
-                  ) {
-                    filesToLint.push(fullPath);
-                  }
-                }
-              };
-              findFiles(p);
-            } else {
-              filesToLint.push(p);
-            }
-          }
-        }
+        // Determine files to lint (using shared utility)
+        const filesToLint = findManifestFilesFromPaths(paths);
 
         if (filesToLint.length === 0) {
           console.log(chalk.yellow('No OSSA manifest files found'));
@@ -276,12 +243,11 @@ export const lintCommand = new Command('lint')
             infos: infos.length,
             results: allIssues,
           };
-          const jsonStr = JSON.stringify(output, null, 2);
           if (options.output) {
-            fs.writeFileSync(options.output, jsonStr);
+            fs.writeFileSync(options.output, JSON.stringify(output, null, 2));
             console.log(chalk.green(`Results written to ${options.output}`));
           } else {
-            console.log(jsonStr);
+            outputJSON(output);
           }
         } else if (options.format === 'sarif') {
           // SARIF format for CI integration
@@ -315,12 +281,11 @@ export const lintCommand = new Command('lint')
               },
             ],
           };
-          const jsonStr = JSON.stringify(sarif, null, 2);
           if (options.output) {
-            fs.writeFileSync(options.output, jsonStr);
+            fs.writeFileSync(options.output, JSON.stringify(sarif, null, 2));
             console.log(chalk.green(`SARIF results written to ${options.output}`));
           } else {
-            console.log(jsonStr);
+            outputJSON(sarif);
           }
         } else {
           // Default format
@@ -371,12 +336,8 @@ export const lintCommand = new Command('lint')
           process.exit(1);
         }
         process.exit(0);
-      } catch (error: any) {
-        console.error(chalk.red('[ERROR]'), error.message);
-        if (error.stack) {
-          console.error(chalk.gray(error.stack));
-        }
-        process.exit(1);
+      } catch (error) {
+        handleCommandError(error);
       }
     }
   );

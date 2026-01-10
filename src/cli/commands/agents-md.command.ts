@@ -9,6 +9,7 @@ import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { AgentsMdService } from '../../services/agents-md/agents-md.service.js';
 import type { OssaAgent } from '../../types/index.js';
+import { handleCommandError } from '../utils/index.js';
 
 export const agentsMdCommand = new Command('agents-md').description(
   'Generate, validate, and sync OpenAI agents.md files from OSSA manifests'
@@ -79,8 +80,7 @@ extensions:
 
       process.exit(0);
     } catch (error) {
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
-      process.exit(1);
+      handleCommandError(error);
     }
   });
 
@@ -124,8 +124,7 @@ agentsMdCommand
         process.exit(1);
       }
     } catch (error) {
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
-      process.exit(1);
+      handleCommandError(error);
     }
   });
 
@@ -176,7 +175,6 @@ extensions:
         process.exit(0);
       }
     } catch (error) {
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
-      process.exit(1);
+      handleCommandError(error);
     }
   });

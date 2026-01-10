@@ -9,6 +9,7 @@ import * as fs from 'fs';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { GenerationService } from '../../services/generation.service.js';
+import { handleCommandError } from '../utils/index.js';
 
 export const importCommand = new Command('import')
   .argument('<path>', 'Path to platform-specific agent file')
@@ -51,7 +52,6 @@ export const importCommand = new Command('import')
 
       process.exit(0);
     } catch (error) {
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
-      process.exit(1);
+      handleCommandError(error);
     }
   });
