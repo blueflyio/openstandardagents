@@ -1,5 +1,5 @@
 apiVersion: ossa/v0.3.3
-kind: Task
+kind: Agent
 metadata:
   name: data-transformer
   version: 1.0.0
