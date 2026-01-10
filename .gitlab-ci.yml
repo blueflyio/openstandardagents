@@ -44,7 +44,7 @@ validate:examples:
     - if: $CI_COMMIT_BRANCH =~ /^release/
     - if: $CI_COMMIT_BRANCH == "main"
 
-validate:power-agents:
+validate:ossa-templates:
   stage: validate
   image: node:${NODE_VERSION}-alpine
   before_script:
@@ -52,11 +52,11 @@ validate:power-agents:
   script:
     - echo "🔍 Validating power agent manifests..."
     - |
-      for f in .agents/power/*.ossa.yaml; do
+      for f in examples/ossa-templates/*.ossa.yaml; do
         echo "Validating $f..."
         npx ajv-cli validate -s spec/v0.3.3/ossa-0.3.3.schema.json --strict=false --allow-union-types -d "$f"
       done
-    - echo "✅ All power agents valid"
+    - echo "✅ All OSSA template examples valid"
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH =~ /^release/

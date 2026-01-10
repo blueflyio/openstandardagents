@@ -6,7 +6,7 @@ metadata:
   description: Automated test generation agent
   labels:
     ossa.dev/category: testing
-    ossa.dev/tier: power-agent
+    ossa.dev/tier: standard-example
   annotations:
     ossa.dev/documentation: https://openstandardagents.org/agents/test-generator
 spec:
