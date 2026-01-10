@@ -8,50 +8,29 @@
  * - gitlab-release tag create/list/show/delete
  * - gitlab-release milestone create/list/show
  * - gitlab-release increment-dev
+ *
+ * SOLID Principles:
+ * - Uses shared GitLab config (DRY)
+ * - Uses shared output utilities (DRY)
+ * - Single Responsibility per command
  */
 
 import { Command } from 'commander';
 import chalk from 'chalk';
-import { z } from 'zod';
 import { TagService, MilestoneService } from '../../services/release-automation/index.js';
 import type {
   CreateTagRequest,
   CreateMilestoneRequest,
 } from '../../services/release-automation/schemas/release.schema.js';
+import { loadGitLabConfig, type GitLabConfig } from '../utils/gitlab-config.js';
+import { isJSONOutput, outputJSON, printSuccess, printError, printKeyValue } from '../utils/output.js';
 
 // ============================================================================
-// Zod Schemas for CLI Input
+// Helper: Get GitLab Config (uses shared utility)
 // ============================================================================
 
-const GitLabConfigSchema = z.object({
-  token: z.string().min(1, 'GitLab token is required'),
-  projectId: z.union([z.string(), z.number()]).optional(),
-  apiUrl: z.string().url().optional(),
-});
-
-// ============================================================================
-// Helper: Get GitLab Config
-// ============================================================================
-
-function getGitLabConfig(): z.infer<typeof GitLabConfigSchema> {
-  const token =
-    process.env.SERVICE_ACCOUNT_OSSA_TOKEN ||
-    process.env.SERVICE_ACCOUNT_VERSION_MANAGER_TOKEN ||
-    process.env.GITLAB_TOKEN ||
-    process.env.CI_JOB_TOKEN ||
-    '';
-
-  if (!token) {
-    throw new Error(
-      'GitLab token required. Set one of: SERVICE_ACCOUNT_OSSA_TOKEN, GITLAB_TOKEN, or CI_JOB_TOKEN'
-    );
-  }
-
-  return GitLabConfigSchema.parse({
-    token,
-    projectId: process.env.CI_PROJECT_ID || process.env.GITLAB_PROJECT_ID,
-    apiUrl: process.env.CI_API_V4_URL || process.env.GITLAB_API_URL,
-  });
+function getGitLabConfig(): GitLabConfig {
+  return loadGitLabConfig();
 }
 
 // ============================================================================
