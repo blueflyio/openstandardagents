@@ -37,7 +37,7 @@ describe('MessagingValidator', () => {
         ],
       };
 
-      const errors = validator.validateMessagingExtension(messaging, 'ossa/v0.3.0');
+      const errors = validator.validateMessagingExtension(messaging, 'ossa/v0.3.3');
       expect(errors).toHaveLength(0);
     });
 
@@ -51,7 +51,7 @@ describe('MessagingValidator', () => {
         ],
       };
 
-      const errors = validator.validateMessagingExtension(messaging, 'ossa/v0.3.0');
+      const errors = validator.validateMessagingExtension(messaging, 'ossa/v0.3.3');
       expect(errors.length).toBeGreaterThan(0);
       expect(errors[0].path).toContain('channel');
     });
@@ -66,7 +66,7 @@ describe('MessagingValidator', () => {
         ],
       };
 
-      const errors = validator.validateMessagingExtension(messaging, 'ossa/v0.3.0');
+      const errors = validator.validateMessagingExtension(messaging, 'ossa/v0.3.3');
       expect(errors.length).toBeGreaterThan(0);
       expect(errors[0].message).toContain('reserved prefixes');
     });
@@ -81,7 +81,7 @@ describe('MessagingValidator', () => {
         ],
       };
 
-      const errors = validator.validateMessagingExtension(messaging, 'ossa/v0.3.0');
+      const errors = validator.validateMessagingExtension(messaging, 'ossa/v0.3.3');
       expect(errors.length).toBeGreaterThan(0);
       expect(errors[0].path).toContain('name');
     });
@@ -96,7 +96,7 @@ describe('MessagingValidator', () => {
         ],
       };
 
-      const errors = validator.validateMessagingExtension(messaging, 'ossa/v0.3.0');
+      const errors = validator.validateMessagingExtension(messaging, 'ossa/v0.3.3');
       expect(errors.length).toBeGreaterThan(0);
     });
 
@@ -111,7 +111,7 @@ describe('MessagingValidator', () => {
         ],
       };
 
-      const errors = validator.validateMessagingExtension(messaging, 'ossa/v0.3.0');
+      const errors = validator.validateMessagingExtension(messaging, 'ossa/v0.3.3');
       expect(errors.length).toBeGreaterThan(0);
       expect(errors[0].message).toContain('timeoutSeconds');
     });
@@ -138,7 +138,7 @@ describe('MessagingValidator', () => {
         },
       };
 
-      const errors = validator.validateMessagingExtension(messaging, 'ossa/v0.3.0');
+      const errors = validator.validateMessagingExtension(messaging, 'ossa/v0.3.3');
       expect(errors.length).toBeGreaterThan(0);
     });
   });

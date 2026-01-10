@@ -241,7 +241,7 @@ detect:milestone-and-tags:
       cp -f milestone-version.env release-version.env
 
       echo ""
-      echo "📋 Summary:"
+      echo "[LIST] Summary:"
       cat milestone-version.env
   artifacts:
     reports:

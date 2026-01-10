@@ -11,6 +11,7 @@ import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { ValidationService } from '../../services/validation.service.js';
 import { OpenAIAdapter } from '../../services/runtime/openai.adapter.js';
 import { formatValidationErrors, formatErrorCompact } from '../utils/error-formatter.js';
+import { handleCommandError } from '../utils/index.js';
 // SchemaVersion not used in this file
 
 export const runCommand = new Command('run')

@@ -8,7 +8,7 @@
 # 3. Test schema compatibility with consumer agents
 # 4. Detect breaking changes between versions
 
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: data-producer
@@ -108,7 +108,7 @@ spec:
 
     # Commands exposed by this agent
     commands:
-      - name: create.data
+      - name: create_data
         description: Create new data entry
         inputSchema:
           type: object
@@ -133,7 +133,7 @@ spec:
         idempotent: true
         async: false
 
-      - name: update.data
+      - name: update_data
         description: Update existing data entry
         inputSchema:
           type: object
@@ -155,7 +155,7 @@ spec:
         idempotent: true
         async: false
 
-      - name: delete.data
+      - name: delete_data
         description: Delete data entry
         inputSchema:
           type: object

@@ -1,13 +1,4 @@
-# ============================================================================
-# OSSA Power Agent: Doc Generator
-# ============================================================================
-# Documentation generation agent for API docs, READMEs, changelogs,
-# and technical documentation.
-#
-# Showcases: Multi-provider LLM, template system
-# ============================================================================
-
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: doc-generator
@@ -18,51 +9,58 @@ metadata:
     ossa.dev/tier: power-agent
   annotations:
     ossa.dev/documentation: https://openstandardagents.org/agents/doc-generator
-
 spec:
   capabilities:
-    - type: function
-      name: docs.api
-      description: Generate API documentation from code
-    - type: function
-      name: docs.readme
-      description: Generate or update README files
-    - type: function
-      name: docs.changelog
-      description: Generate changelog from commits
-    - type: function
-      name: docs.technical
-      description: Generate technical documentation
+  - type: function
+    name: docs.api
+    description: Generate API documentation from code
+  - type: function
+    name: docs.readme
+    description: Generate or update README files
+  - type: function
+    name: docs.changelog
+    description: Generate changelog from commits
+  - type: function
+    name: docs.technical
+    description: Generate technical documentation
+  role: 'You are a technical documentation specialist responsible for generating
 
-  role: |
-    You are a technical documentation specialist responsible for generating
     and maintaining project documentation.
 
+
     Documentation types:
+
     1. API Documentation - Generate from code, OpenAPI specs, or schemas
+
     2. README - Project overview, installation, usage, examples
+
     3. Changelog - Semantic versioning, conventional commits
+
     4. Technical Docs - Architecture, design decisions, guides
 
+
     Always:
+
     - Use clear, concise language
+
     - Include code examples where appropriate
+
     - Follow project documentation conventions
+
     - Keep documentation in sync with code
 
+    '
   llm:
     provider: anthropic
     model: claude-sonnet-4
     temperature: 0.5
     maxTokens: 16384
-    # Fallback providers for high availability
     fallback:
-      - provider: openai
-        model: gpt-4o
-      - provider: google
-        model: gemini-2.0-flash
-
+    - provider: openai
+      model: gpt-4o
+    - provider: google
+      model: gemini-2.0-flash
   tools:
-    - type: function
-      name: code.analyze
-      description: Analyze code structure for documentation
+  - type: function
+    name: code.analyze
+    description: Analyze code structure for documentation

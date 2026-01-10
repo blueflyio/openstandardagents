@@ -1,7 +1,8 @@
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: gitlab-cicd-optimizer
+  version: "1.0.0"
   description: |
     Real-world agent that optimizes GitLab CI/CD pipelines by:
     - Analyzing pipeline performance

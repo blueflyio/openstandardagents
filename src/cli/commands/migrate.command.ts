@@ -26,6 +26,7 @@ import { MigrationService } from '../../services/migration.service.js';
 import { ValidationService } from '../../services/validation.service.js';
 import type { OssaAgent } from '../../types/index.js';
 import { getVersionInfo } from '../../utils/version.js';
+import { handleCommandError } from '../utils/index.js';
 
 export const migrateCommand = new Command('migrate')
   .argument('<source>', 'Path to manifest or directory to migrate')
@@ -87,7 +88,7 @@ export const migrateCommand = new Command('migrate')
         // Show migration summary if requested
         if (options.summary || options.verbose) {
           const summary = migrationService.getMigrationSummary(legacyManifest, migratedManifest);
-          console.log(chalk.cyan('\n📋 Migration Summary:'));
+          console.log(chalk.cyan('\n[LIST] Migration Summary:'));
           console.log(chalk.gray(`  From: ${summary.sourceVersion}`));
           console.log(chalk.gray(`  To: ${summary.targetVersion}`));
           if (summary.addedFeatures.length > 0) {
@@ -97,7 +98,7 @@ export const migrateCommand = new Command('migrate')
             });
           }
           if (summary.changes.length > 0) {
-            console.log(chalk.blue('\n  🔄 Changes:'));
+            console.log(chalk.blue('\n  [SYNC] Changes:'));
             summary.changes.forEach((change) => {
               console.log(chalk.blue(`    • ${change}`));
             });
@@ -117,7 +118,7 @@ export const migrateCommand = new Command('migrate')
         }
 
         if (options.dryRun) {
-          console.log(chalk.yellow('\n🔍 Dry Run - No files written'));
+          console.log(chalk.yellow('\n[CHECK] Dry Run - No files written'));
           console.log(chalk.gray('\nMigrated Manifest Preview:'));
           console.log(chalk.white(JSON.stringify(migratedManifest, null, 2)));
         } else {
@@ -164,7 +165,7 @@ export const migrateCommand = new Command('migrate')
             });
           }
 
-          console.log(chalk.yellow('\n💡 Next steps:'));
+          console.log(chalk.yellow('\n[TIP] Next steps:'));
           console.log(chalk.gray('  1. Review the migrated manifest'));
           console.log(chalk.gray(`  2. Validate: ${chalk.white(`ossa validate ${outputPath}`)}`));
           console.log(chalk.gray(`  3. Update capabilities to OpenAPI-style operations`));

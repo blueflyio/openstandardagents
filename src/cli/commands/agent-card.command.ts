@@ -5,6 +5,10 @@
  *   ossa agent-card generate   - Generate agent-card.json from manifest
  *   ossa agent-card validate   - Validate agent-card.json
  *   ossa agent-card serve      - Serve agent card at /.well-known/agent-card.json
+ *
+ * SOLID Principles:
+ * - Uses shared output utilities (DRY)
+ * - Single Responsibility: Only handles agent card operations
  */
 
 import { Command } from 'commander';
@@ -14,6 +18,7 @@ import * as path from 'path';
 import * as yaml from 'yaml';
 import { glob } from 'glob';
 import { getVersion } from '../../utils/version.js';
+import { outputJSON, handleCommandError } from '../utils/index.js';
 
 interface A2AAgentCard {
   protocolVersion: string;
@@ -216,8 +221,7 @@ agentCardCommand
 
       process.exit(0);
     } catch (error) {
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
-      process.exit(1);
+      handleCommandError(error);
     }
   });
 
@@ -306,8 +310,7 @@ agentCardCommand
 
       process.exit(errors.length > 0 ? 1 : 0);
     } catch (error) {
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
-      process.exit(1);
+      handleCommandError(error);
     }
   });
 
@@ -333,12 +336,11 @@ agentCardCommand
       if (options?.yaml) {
         console.log(yaml.stringify(card));
       } else {
-        console.log(JSON.stringify(card, null, 2));
+        outputJSON(card);
       }
 
       process.exit(0);
     } catch (error) {
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
-      process.exit(1);
+      handleCommandError(error);
     }
   });

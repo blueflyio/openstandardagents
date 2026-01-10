@@ -9,7 +9,7 @@ describe('VercelAIValidator', () => {
   beforeEach(() => {
     validator = new VercelAIValidator();
     baseManifest = {
-      apiVersion: 'ossa/v0.3.0',
+      apiVersion: 'ossa/v0.3.3',
       kind: 'Agent',
       metadata: {
         name: 'test-agent',

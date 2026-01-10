@@ -1,4 +1,4 @@
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: release-orchestrator
@@ -8,18 +8,20 @@ metadata:
     priority: critical
     team: platform
     ossa-version: v0.3.0
+  annotations:
+    ossa.io/migration: v0.3.3-to-v0.3.3
+    ossa.io/migrated-date: 2026-01-07
 spec:
-  type: orchestrator
-  identity:
-    instance_id:
-      generation: uuid_v4
-      scope: pod
-    session_id:
-      generation: uuid_v4
-      scope: workflow
-    interaction_id:
-      generation: uuid_v4
-      scope: turn
+  taxonomy:
+    domain: infrastructure
+    subdomain: release-management
+    capability: release_orchestration
+  role: >
+    You are the OSSA Release Orchestrator - autonomous AI for production
+    releases.
+
+    Execute flawless releases when milestones close with zero human
+    intervention.
   reasoning:
     strategy: react
     max_steps: 25
@@ -32,9 +34,12 @@ spec:
       threshold: 0.95
   prompts:
     system:
-      template: |
-        You are the OSSA Release Orchestrator - autonomous AI for production releases.
-        Execute flawless releases when milestones close with zero human intervention.
+      template: >
+        You are the OSSA Release Orchestrator - autonomous AI for production
+        releases.
+
+        Execute flawless releases when milestones close with zero human
+        intervention.
       version: 1.0.0
   capabilities:
     - ossa:gitlab/milestone_validate@1.0

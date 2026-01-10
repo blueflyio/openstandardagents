@@ -57,14 +57,14 @@ webhook:validate:
 
       # Validate webhook source
       if [ "$CI_PIPELINE_SOURCE" != "trigger" ] && [ -z "$WEBHOOK_EVENT_TYPE" ]; then
-        echo "❌ ERROR: Invalid webhook trigger"
+        echo "[FAIL] ERROR: Invalid webhook trigger"
         echo "   Expected: CI_PIPELINE_SOURCE=trigger or WEBHOOK_EVENT_TYPE set"
         exit 1
       fi
 
       # Validate required variables for event processing
       if [ -z "$WEBHOOK_OBJECT_KIND" ] && [ -z "$WEBHOOK_EVENT_TYPE" ]; then
-        echo "⚠️  WARNING: No event type detected, using default routing"
+        echo "[WARN]  WARNING: No event type detected, using default routing"
         echo "WEBHOOK_EVENT_TYPE=generic" >> webhook.env
       else
         EVENT_TYPE="${WEBHOOK_OBJECT_KIND:-$WEBHOOK_EVENT_TYPE}"
@@ -82,7 +82,7 @@ webhook:validate:
         echo "WEBHOOK_PROJECT_ID=${CI_PROJECT_ID}" >> webhook.env
       fi
 
-      echo "✅ Webhook validated successfully"
+      echo "[PASS] Webhook validated successfully"
       echo ""
       cat webhook.env
   artifacts:
@@ -123,7 +123,7 @@ agent:router:
 
       case "${WEBHOOK_EVENT_TYPE:-${WEBHOOK_OBJECT_KIND}}" in
         "issue"|"issue_hook")
-          echo "📋 Issue event detected"
+          echo "[LIST] Issue event detected"
           case "${WEBHOOK_ACTION}" in
             "open"|"reopen")
               AGENTS_TO_RUN="issue-triage"
@@ -184,7 +184,7 @@ agent:router:
           ;;
 
         "pipeline"|"pipeline_hook")
-          echo "🔄 Pipeline event detected"
+          echo "[SYNC] Pipeline event detected"
           if [ "${WEBHOOK_PIPELINE_STATUS}" = "failed" ]; then
             AGENTS_TO_RUN="mr-manager"
             echo "   → Pipeline failed, routing to: mr-manager for handling"
@@ -208,11 +208,11 @@ agent:router:
 
       if [ -z "$AGENTS_TO_RUN" ]; then
         echo ""
-        echo "ℹ️  No agents to execute for this event"
+        echo "[INFO]  No agents to execute for this event"
         echo "AGENT_EXECUTION_REQUIRED=false" >> routing.env
       else
         echo ""
-        echo "✅ Routing complete"
+        echo "[PASS] Routing complete"
         echo "   Agents to execute: ${AGENTS_TO_RUN}"
         echo "AGENT_EXECUTION_REQUIRED=true" >> routing.env
       fi
@@ -260,16 +260,16 @@ agent:issue-triage:
 
       # Validate manifest exists
       if [ ! -f "${MANIFEST_PATH}" ]; then
-        echo "❌ ERROR: Manifest not found: ${MANIFEST_PATH}"
+        echo "[FAIL] ERROR: Manifest not found: ${MANIFEST_PATH}"
         exit 1
       fi
 
       # Validate manifest against OSSA schema (auto-detected from apiVersion)
-      echo "📋 Validating OSSA manifest..."
+      echo "[LIST] Validating OSSA manifest..."
       if node dist/cli/index.js validate "${MANIFEST_PATH}"; then
-        echo "✅ Manifest validation passed"
+        echo "[PASS] Manifest validation passed"
       else
-        echo "❌ ERROR: Manifest validation failed"
+        echo "[FAIL] ERROR: Manifest validation failed"
         exit 1
       fi
 
@@ -278,7 +278,7 @@ agent:issue-triage:
 
       # Execute agent
       echo ""
-      echo "🚀 Executing Issue Triage Agent..."
+      echo "[RUN] Executing Issue Triage Agent..."
       echo ""
 
       # Create agent execution context
@@ -308,7 +308,7 @@ agent:issue-triage:
 
       if [ $AGENT_EXIT_CODE -eq 0 ]; then
         echo ""
-        echo "✅ Issue Triage Agent completed successfully"
+        echo "[PASS] Issue Triage Agent completed successfully"
 
         if [ -f /tmp/agent-result.json ]; then
           echo ""
@@ -317,7 +317,7 @@ agent:issue-triage:
         fi
       else
         echo ""
-        echo "❌ Issue Triage Agent failed with exit code: ${AGENT_EXIT_CODE}"
+        echo "[FAIL] Issue Triage Agent failed with exit code: ${AGENT_EXIT_CODE}"
         exit $AGENT_EXIT_CODE
       fi
   artifacts:
@@ -364,16 +364,16 @@ agent:mr-manager:
 
       # Validate manifest exists
       if [ ! -f "${MANIFEST_PATH}" ]; then
-        echo "❌ ERROR: Manifest not found: ${MANIFEST_PATH}"
+        echo "[FAIL] ERROR: Manifest not found: ${MANIFEST_PATH}"
         exit 1
       fi
 
       # Validate manifest against OSSA schema (auto-detected from apiVersion)
-      echo "📋 Validating OSSA manifest..."
+      echo "[LIST] Validating OSSA manifest..."
       if node dist/cli/index.js validate "${MANIFEST_PATH}"; then
-        echo "✅ Manifest validation passed"
+        echo "[PASS] Manifest validation passed"
       else
-        echo "❌ ERROR: Manifest validation failed"
+        echo "[FAIL] ERROR: Manifest validation failed"
         exit 1
       fi
 
@@ -382,7 +382,7 @@ agent:mr-manager:
 
       # Execute agent
       echo ""
-      echo "🚀 Executing MR Manager Agent..."
+      echo "[RUN] Executing MR Manager Agent..."
       echo ""
 
       # Create agent execution context
@@ -413,7 +413,7 @@ agent:mr-manager:
 
       if [ $AGENT_EXIT_CODE -eq 0 ]; then
         echo ""
-        echo "✅ MR Manager Agent completed successfully"
+        echo "[PASS] MR Manager Agent completed successfully"
 
         if [ -f /tmp/agent-result.json ]; then
           echo ""
@@ -422,7 +422,7 @@ agent:mr-manager:
         fi
       else
         echo ""
-        echo "❌ MR Manager Agent failed with exit code: ${AGENT_EXIT_CODE}"
+        echo "[FAIL] MR Manager Agent failed with exit code: ${AGENT_EXIT_CODE}"
         exit $AGENT_EXIT_CODE
       fi
   artifacts:
@@ -467,10 +467,10 @@ agent:report:
 
       # Check agent execution status
       if [ -f agent-output.log ]; then
-        echo "📊 Agent execution logs available"
+        echo "[STATS] Agent execution logs available"
       fi
 
-      echo "✅ Agent pipeline complete"
+      echo "[PASS] Agent pipeline complete"
   allow_failure: true
 
 # ============================================================================
@@ -501,13 +501,13 @@ manual:triage-issue:
     - npm run build --silent
   script:
     - |
-      echo "🏷️  Manual Issue Triage"
+      echo "[TAG]  Manual Issue Triage"
       echo ""
       echo "Project ID: ${MANUAL_PROJECT_ID:-$CI_PROJECT_ID}"
       echo "Issue IID: ${MANUAL_ISSUE_IID:-not specified}"
 
       if [ -z "$MANUAL_ISSUE_IID" ]; then
-        echo "❌ ERROR: MANUAL_ISSUE_IID variable required"
+        echo "[FAIL] ERROR: MANUAL_ISSUE_IID variable required"
         echo "   Set via: Run pipeline → Variables → MANUAL_ISSUE_IID=123"
         exit 1
       fi

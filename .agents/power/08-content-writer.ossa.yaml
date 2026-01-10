@@ -7,7 +7,7 @@
 # Showcases: Drupal extension, async processing (Messenger), ECA integration
 # ============================================================================
 
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: content-writer
@@ -52,35 +52,41 @@ spec:
     - Follow brand voice guidelines
 
   llm:
-    provider: ${OSSA_LLM_PROVIDER:-anthropic}
-    model: ${OSSA_LLM_MODEL:-claude-sonnet-4}
+    provider: anthropic
+    model: claude-sonnet-4
     temperature: 0.7
+
   tools:
-  tools:
-    - name: drupal.node.create
-      description: Create Drupal content node
+    - type: function
+      name: drupal.node.create
+      description: Create content node in Drupal
       handler:
         runtime: drupal
         capability: node.create
-    - name: drupal.node.update
+
+    - type: function
+      name: drupal.node.update
       description: Update existing content node
       handler:
         runtime: drupal
         capability: node.update
 
-    - name: drupal.media.search
+    - type: function
+      name: drupal.media.search
       description: Search media library
       handler:
         runtime: drupal
         capability: media.search
 
-    - name: drupal.taxonomy.suggest
+    - type: function
+      name: drupal.taxonomy.suggest
       description: Suggest taxonomy terms
       handler:
         runtime: drupal
         capability: taxonomy.suggest
 
-    - name: seo.analyze
+    - type: function
+      name: seo.analyze
       description: Analyze content for SEO
       handler:
         runtime: local

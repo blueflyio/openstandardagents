@@ -1,829 +1,392 @@
-# ╔═══════════════════════════════════════════════════════════════════════════════╗
-# ║                                                                               ║
-# ║   ██████╗ ███████╗███████╗ █████╗     ██╗   ██╗ ██████╗    ██████╗  ██████╗   ║
-# ║  ██╔═══██╗██╔════╝██╔════╝██╔══██╗    ██║   ██║██╔═████╗   ╚════██╗██╔═████╗  ║
-# ║  ██║   ██║███████╗███████╗███████║    ██║   ██║██║██╔██║    █████╔╝██║██╔██║  ║
-# ║  ██║   ██║╚════██║╚════██║██╔══██║    ╚██╗ ██╔╝████╔╝██║    ╚═══██╗████╔╝██║  ║
-# ║  ╚██████╔╝███████║███████║██║  ██║     ╚████╔╝ ╚██████╔╝██╗██████╔╝╚██████╔╝  ║
-# ║   ╚═════╝ ╚══════╝╚══════╝╚═╝  ╚═╝      ╚═══╝   ╚═════╝ ╚═╝╚═════╝  ╚═════╝   ║
-# ║                                                                               ║
-# ║          GETTING STARTED: 04 - AGENT-TO-AGENT MESSAGING (A2A)                ║
-# ║                                                                               ║
-# ╚═══════════════════════════════════════════════════════════════════════════════╝
-#
-# ┌─────────────────────────────────────────────────────────────────────────────────┐
-# │ WHAT YOU'LL LEARN                                                               │
-# ├─────────────────────────────────────────────────────────────────────────────────┤
-# │                                                                                 │
-# │  ✓ Agent-to-Agent (A2A) messaging - the foundation of multi-agent systems      │
-# │  ✓ Pub/Sub pattern - agents publish events, others subscribe and react         │
-# │  ✓ Commands - RPC-style request/response between agents                        │
-# │  ✓ Message schemas - JSON Schema for type-safe communication                   │
-# │  ✓ Reliability guarantees - at-least-once, exactly-once delivery               │
-# │  ✓ Dead letter queues - handling failed messages gracefully                    │
-# │  ✓ Channel naming conventions - organizing message flow                        │
-# │  ✓ Real example: Security scanner publishing vulnerabilities                   │
-# │                                                                                 │
-# └─────────────────────────────────────────────────────────────────────────────────┘
-#
-# ┌─────────────────────────────────────────────────────────────────────────────────┐
-# │ WHY AGENT-TO-AGENT MESSAGING?                                                   │
-# ├─────────────────────────────────────────────────────────────────────────────────┤
-# │                                                                                 │
-# │  Single agents are limited. Multi-agent systems can:                            │
-# │  • Specialize: Each agent is an expert in one domain                            │
-# │  • Scale: Distribute work across multiple agents                                │
-# │  • Coordinate: Agents collaborate to solve complex problems                     │
-# │  • React: Event-driven architecture for real-time workflows                     │
-# │                                                                                 │
-# │  Example: Automated Security Pipeline                                           │
-# │  ┌────────────────────────────────────────────────────────────────┐            │
-# │  │                                                                 │            │
-# │  │  1. Scanner Agent                                               │            │
-# │  │     └─> Scans code for vulnerabilities                          │            │
-# │  │     └─> PUBLISHES to: security.vulnerabilities                  │            │
-# │  │                                                                 │            │
-# │  │  2. Remediation Agent                                           │            │
-# │  │     └─> SUBSCRIBES to: security.vulnerabilities                 │            │
-# │  │     └─> Creates patches for critical issues                     │            │
-# │  │     └─> PUBLISHES to: code.patches                              │            │
-# │  │                                                                 │            │
-# │  │  3. Review Agent                                                │            │
-# │  │     └─> SUBSCRIBES to: code.patches                             │            │
-# │  │     └─> Reviews patches for safety                              │            │
-# │  │     └─> PUBLISHES to: github.pull_requests                      │            │
-# │  │                                                                 │            │
-# │  │  4. Notification Agent                                          │            │
-# │  │     └─> SUBSCRIBES to: security.vulnerabilities                 │            │
-# │  │     └─> Alerts security team via Slack                          │            │
-# │  │                                                                 │            │
-# │  └────────────────────────────────────────────────────────────────┘            │
-# │                                                                                 │
-# │  This is EVENT-DRIVEN ARCHITECTURE for agents!                                  │
-# │                                                                                 │
-# └─────────────────────────────────────────────────────────────────────────────────┘
-#
-# ┌─────────────────────────────────────────────────────────────────────────────────┐
-# │ PUB/SUB VS COMMANDS: WHEN TO USE EACH                                           │
-# ├─────────────────────────────────────────────────────────────────────────────────┤
-# │                                                                                 │
-# │  PUB/SUB (Publish/Subscribe)                                                    │
-# │  ───────────────────────────                                                    │
-# │  • One-to-many: One publisher → many subscribers                                │
-# │  • Asynchronous: Publisher doesn't wait for subscribers                         │
-# │  • Decoupled: Publisher doesn't know who's listening                            │
-# │  • Use for: Events, notifications, broadcasting state changes                   │
-# │                                                                                 │
-# │  Example:                                                                       │
-# │  Scanner publishes security.vulnerabilities                                     │
-# │  → Remediation Agent subscribes                                                 │
-# │  → Notification Agent subscribes                                                │
-# │  → Metrics Agent subscribes                                                     │
-# │  Scanner doesn't know/care who's listening                                      │
-# │                                                                                 │
-# │  COMMANDS (Request/Response)                                                    │
-# │  ───────────────────────────                                                    │
-# │  • One-to-one: Caller → specific agent                                          │
-# │  • Synchronous: Caller waits for response                                       │
-# │  • Coupled: Caller explicitly invokes target agent                              │
-# │  • Use for: RPC, querying, requesting specific actions                          │
-# │                                                                                 │
-# │  Example:                                                                       │
-# │  Orchestrator calls Scanner.scan_repository(url="...")                          │
-# │  → Scanner executes scan                                                        │
-# │  → Scanner returns {scan_id, status, findings_count}                            │
-# │  → Orchestrator waits for response                                              │
-# │                                                                                 │
-# │  WHEN TO USE WHAT:                                                              │
-# │  ┌──────────────────────┬──────────────────────────────────────────┐           │
-# │  │ SCENARIO             │ PATTERN                                   │           │
-# │  ├──────────────────────┼──────────────────────────────────────────┤           │
-# │  │ Broadcasting events  │ Pub/Sub                                   │           │
-# │  │ Loose coupling       │ Pub/Sub                                   │           │
-# │  │ Unknown subscribers  │ Pub/Sub                                   │           │
-# │  │ Need response        │ Command                                   │           │
-# │  │ Invoke specific logic│ Command                                   │           │
-# │  │ Synchronous flow     │ Command                                   │           │
-# │  └──────────────────────┴──────────────────────────────────────────┘           │
-# │                                                                                 │
-# └─────────────────────────────────────────────────────────────────────────────────┘
-#
-# ┌─────────────────────────────────────────────────────────────────────────────────┐
-# │ MESSAGE RELIABILITY: DELIVERY GUARANTEES                                        │
-# ├─────────────────────────────────────────────────────────────────────────────────┤
-# │                                                                                 │
-# │  AT-MOST-ONCE (Fire and Forget)                                                 │
-# │  ──────────────────────────────────                                             │
-# │  • Message sent once, no retries                                                │
-# │  • Fast, but may lose messages                                                  │
-# │  • Use for: Non-critical notifications, metrics                                 │
-# │                                                                                 │
-# │  Flow:                                                                          │
-# │  1. Agent publishes message                                                     │
-# │  2. Message sent to broker                                                      │
-# │  3. Done (no confirmation)                                                      │
-# │                                                                                 │
-# │  AT-LEAST-ONCE (Retry Until Success)                                            │
-# │  ────────────────────────────────────                                           │
-# │  • Message retried until acknowledged                                           │
-# │  • Reliable, but may deliver duplicates                                         │
-# │  • Use for: Most production systems (RECOMMENDED)                               │
-# │                                                                                 │
-# │  Flow:                                                                          │
-# │  1. Agent publishes message                                                     │
-# │  2. Broker stores message                                                       │
-# │  3. Subscriber receives message                                                 │
-# │  4. Subscriber processes message                                                │
-# │  5. Subscriber sends ACK                                                        │
-# │  6. If no ACK: retry after delay                                                │
-# │                                                                                 │
-# │  Idempotency required! Subscribers must handle duplicates:                      │
-# │  • Use message IDs to detect dupes                                              │
-# │  • Make operations idempotent (running twice = same result)                     │
-# │                                                                                 │
-# │  EXACTLY-ONCE (Guaranteed Delivery)                                             │
-# │  ───────────────────────────────────                                            │
-# │  • Message delivered exactly once (no duplicates)                               │
-# │  • Slow, complex, requires distributed transactions                             │
-# │  • Use for: Financial transactions, critical data                               │
-# │                                                                                 │
-# │  Flow:                                                                          │
-# │  1. Agent publishes with unique transaction ID                                  │
-# │  2. Broker deduplicates based on transaction ID                                 │
-# │  3. Subscriber processes with 2-phase commit                                    │
-# │  4. Transaction committed across broker + subscriber                            │
-# │                                                                                 │
-# │  OSSA RECOMMENDATION:                                                           │
-# │  Use at-least-once with idempotent subscribers (best balance)                   │
-# │                                                                                 │
-# └─────────────────────────────────────────────────────────────────────────────────┘
-#
-# ┌─────────────────────────────────────────────────────────────────────────────────┐
-# │ DEAD LETTER QUEUES (DLQ): HANDLING FAILURES                                     │
-# ├─────────────────────────────────────────────────────────────────────────────────┤
-# │                                                                                 │
-# │  What happens when a subscriber repeatedly fails to process a message?          │
-# │  Without DLQ: Message retries forever, blocking the queue                       │
-# │  With DLQ: Failed messages moved to separate queue for investigation            │
-# │                                                                                 │
-# │  DLQ Flow:                                                                      │
-# │  ┌──────────────────────────────────────────────────────────────┐              │
-# │  │                                                               │              │
-# │  │  1. Message published to channel                             │              │
-# │  │  2. Subscriber tries to process                              │              │
-# │  │  3. Processing fails (exception, timeout, etc.)              │              │
-# │  │  4. Message redelivered (attempt 2/3)                        │              │
-# │  │  5. Processing fails again                                   │              │
-# │  │  6. Message redelivered (attempt 3/3)                        │              │
-# │  │  7. Processing fails again                                   │              │
-# │  │  8. Max retries exceeded                                     │              │
-# │  │  9. Message moved to Dead Letter Queue                       │              │
-# │  │  10. Alert sent to ops team                                  │              │
-# │  │                                                               │              │
-# │  └──────────────────────────────────────────────────────────────┘              │
-# │                                                                                 │
-# │  DLQ Configuration:                                                             │
-# │  • max_retries: How many times to retry (e.g., 3)                               │
-# │  • backoff_multiplier: Delay between retries (exponential)                      │
-# │    - Attempt 1: immediate                                                       │
-# │    - Attempt 2: 2 seconds                                                       │
-# │    - Attempt 3: 4 seconds                                                       │
-# │    - Attempt 4: 8 seconds                                                       │
-# │                                                                                 │
-# │  DLQ Operations:                                                                │
-# │  • Inspect failed messages (debug why they failed)                              │
-# │  • Fix subscriber bug                                                           │
-# │  • Replay messages from DLQ (try again)                                         │
-# │  • Discard messages (if truly invalid)                                          │
-# │                                                                                 │
-# │  Common DLQ scenarios:                                                          │
-# │  • Malformed message (invalid JSON)                                             │
-# │  • Subscriber bug (code exception)                                              │
-# │  • External service down (database, API)                                        │
-# │  • Resource exhaustion (out of memory)                                          │
-# │                                                                                 │
-# └─────────────────────────────────────────────────────────────────────────────────┘
-#
-# ┌─────────────────────────────────────────────────────────────────────────────────┐
-# │ CHANNEL NAMING CONVENTIONS                                                      │
-# ├─────────────────────────────────────────────────────────────────────────────────┤
-# │                                                                                 │
-# │  Good channel names are hierarchical and descriptive:                           │
-# │                                                                                 │
-# │  Pattern: <domain>.<entity>.<event>                                             │
-# │                                                                                 │
-# │  Examples:                                                                      │
-# │  ✓ security.vulnerabilities             → Security domain, vulnerability events│
-# │  ✓ security.scan.completed               → Security domain, scan completion    │
-# │  ✓ code.pr.opened                        → Code domain, PR opened              │
-# │  ✓ code.pr.merged                        → Code domain, PR merged              │
-# │  ✓ ci.build.completed                    → CI domain, build completion         │
-# │  ✓ deployment.production.success         → Deployment domain, prod success     │
-# │                                                                                 │
-# │  Bad examples:                                                                  │
-# │  ✗ updates                                → Too vague                           │
-# │  ✗ myChannel                              → Not descriptive                     │
-# │  ✗ SECURITY_VULNS                         → Use lowercase                       │
-# │  ✗ security-vulnerabilities               → Use dots, not hyphens              │
-# │                                                                                 │
-# │  Wildcard subscriptions (supported):                                            │
-# │  • security.*                → All security events                              │
-# │  • *.pr.*                    → All PR events across domains                     │
-# │  • security.vulnerabilities.critical  → Only critical vulnerabilities           │
-# │                                                                                 │
-# └─────────────────────────────────────────────────────────────────────────────────┘
-#
-# ┌─────────────────────────────────────────────────────────────────────────────────┐
-# │ HOW TO RUN THIS EXAMPLE                                                         │
-# ├─────────────────────────────────────────────────────────────────────────────────┤
-# │                                                                                 │
-# │  STEP 1: Start a message broker                                                 │
-# │  ─────────────────────────────                                                  │
-# │  OSSA uses standard message brokers (NATS, RabbitMQ, Redis, Kafka)              │
-# │                                                                                 │
-# │  Option A: NATS (recommended for development):                                  │
-# │  $ docker run -p 4222:4222 nats:latest                                          │
-# │                                                                                 │
-# │  Option B: RabbitMQ:                                                            │
-# │  $ docker run -p 5672:5672 rabbitmq:latest                                      │
-# │                                                                                 │
-# │  Option C: Redis:                                                               │
-# │  $ docker run -p 6379:6379 redis:latest                                         │
-# │                                                                                 │
-# │  STEP 2: Set environment variables                                              │
-# │  ────────────────────────────────                                               │
-# │  $ export ANTHROPIC_API_KEY=sk-ant-...                                          │
-# │  $ export MESSAGE_BROKER_URL=nats://localhost:4222                              │
-# │  $ export GITHUB_TOKEN=ghp_...  # For GitHub MCP tool                           │
-# │                                                                                 │
-# │  STEP 3: Start the security scanner agent                                       │
-# │  ───────────────────────────────────────                                        │
-# │  $ ossa run 04-agent-with-messaging.ossa.yaml --daemon                          │
-# │                                                                                 │
-# │  The agent will:                                                                │
-# │  • Connect to message broker                                                    │
-# │  • Subscribe to: dependency.updates, ci.build.completed                         │
-# │  • Register commands: scan_repository, get_scan_status                          │
-# │  • Wait for messages                                                            │
-# │                                                                                 │
-# │  STEP 4: Trigger a scan via command                                             │
-# │  ─────────────────────────────────────                                          │
-# │  $ ossa command security-scanner scan_repository \                              │
-# │      --args '{"repo_url":"https://github.com/myorg/myrepo","priority":"urgent"}'│
-# │                                                                                 │
-# │  Response:                                                                      │
-# │  {                                                                              │
-# │    "scan_id": "550e8400-e29b-41d4-a716-446655440000",                           │
-# │    "status": "started"                                                          │
-# │  }                                                                              │
-# │                                                                                 │
-# │  STEP 5: Monitor published events                                               │
-# │  ────────────────────────────────                                               │
-# │  $ ossa subscribe security.vulnerabilities                                      │
-# │                                                                                 │
-# │  You'll see vulnerability events as they're published:                          │
-# │  {                                                                              │
-# │    "severity": "critical",                                                      │
-# │    "title": "SQL Injection in auth module",                                     │
-# │    "cve_id": "CVE-2024-1234",                                                   │
-# │    "affected_file": "src/auth/login.py",                                        │
-# │    "remediation": "Update to version 2.1.0"                                     │
-# │  }                                                                              │
-# │                                                                                 │
-# │  STEP 6: Create a subscriber agent                                              │
-# │  ───────────────────────────────────                                            │
-# │  Create a second agent that subscribes to security.vulnerabilities:             │
-# │                                                                                 │
-# │  ```yaml                                                                        │
-# │  # remediation-agent.ossa.yaml                                                  │
-# │  apiVersion: ossa/v0.3.2                                                        │
-# │  kind: Agent                                                                    │
-# │  metadata:                                                                      │
-# │    name: remediation-agent                                                      │
-# │  spec:                                                                          │
-# │    role: "Fix security vulnerabilities"                                         │
-# │    messaging:                                                                   │
-# │      subscribes:                                                                │
-# │        - channel: security.vulnerabilities                                      │
-# │          handler: on_vulnerability_found                                        │
-# │  ```                                                                            │
-# │                                                                                 │
-# │  Run it:                                                                        │
-# │  $ ossa run remediation-agent.ossa.yaml --daemon                                │
-# │                                                                                 │
-# │  Now when scanner publishes vulnerabilities, remediation agent reacts!          │
-# │                                                                                 │
-# └─────────────────────────────────────────────────────────────────────────────────┘
-#
-# ═══════════════════════════════════════════════════════════════════════════════════
-#                           THE ACTUAL MANIFEST STARTS HERE
-# ═══════════════════════════════════════════════════════════════════════════════════
-
-# ──────────────────────────────────────────────────────────────────────────────────
-# API VERSION & KIND
-# ──────────────────────────────────────────────────────────────────────────────────
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
-
-# ──────────────────────────────────────────────────────────────────────────────────
-# METADATA
-# ──────────────────────────────────────────────────────────────────────────────────
 metadata:
   name: security-scanner
   version: 1.0.0
+  description: 'Security scanning agent demonstrating Agent-to-Agent (A2A) messaging.
 
-  description: |
-    Security scanning agent demonstrating Agent-to-Agent (A2A) messaging.
 
     PUBLISHES TO:
+
     • security.vulnerabilities - Vulnerability findings
+
     • security.scan.completed - Scan completion notifications
 
+
     SUBSCRIBES TO:
+
     • dependency.updates - Trigger scan when dependencies change
+
     • ci.build.completed - Trigger scan after successful builds
 
+
     COMMANDS:
+
     • scan_repository - On-demand security scan
+
     • get_scan_status - Query scan progress
 
+
     This agent demonstrates:
+
     - Pub/sub pattern for event broadcasting
+
     - Command pattern for RPC-style invocation
+
     - JSON Schema message validation
+
     - At-least-once delivery with dead letter queue
+
     - Message filtering based on payload
 
+    '
   labels:
     difficulty: intermediate
-    tutorial: "04"
+    tutorial: '04'
     capability: security
     pattern: multi-agent
-
-# ──────────────────────────────────────────────────────────────────────────────────
-# SPEC
-# ──────────────────────────────────────────────────────────────────────────────────
 spec:
-  # ────────────────────────────────────────────────────────────────────────────────
-  # ROLE (System Prompt)
-  # ────────────────────────────────────────────────────────────────────────────────
-  role: |
-    You are a security scanner agent in a multi-agent system.
+  role: 'You are a security scanner agent in a multi-agent system.
+
 
     Your responsibilities:
+
     1. Scan code repositories for security vulnerabilities
+
     2. Publish findings to security.vulnerabilities channel for other agents
+
     3. React to dependency update notifications by triggering scans
+
     4. Respond to on-demand scan requests via commands
 
+
     Communication guidelines:
-    - Publish vulnerability events immediately when found (don't batch)
+
+    - Publish vulnerability events immediately when found (don''t batch)
+
     - Include complete context in each message (scan_id, repo, severity)
+
     - Log all message publications for audit trail
+
     - Handle duplicate messages gracefully (idempotency)
 
+
     When publishing vulnerabilities:
+
     - Set severity accurately (critical/high/medium/low)
+
     - Include CVE ID if available
+
     - Provide clear remediation steps
+
     - Reference the specific file and line number
 
-  # ────────────────────────────────────────────────────────────────────────────────
-  # LLM CONFIGURATION
-  # ────────────────────────────────────────────────────────────────────────────────
+    '
   llm:
-    provider: ${LLM_PROVIDER:-anthropic}
-    model: ${LLM_MODEL:-claude-sonnet-4-20250514}
-
-    # Low temperature for consistent security analysis
+    provider: anthropic
+    model: claude-sonnet-4-20250514
     temperature: 0.2
-
-  # ────────────────────────────────────────────────────────────────────────────────
-  # TOOLS
-  # ────────────────────────────────────────────────────────────────────────────────
   tools:
-    # GitHub API for repository access
-    - type: mcp
-      name: github
-      description: GitHub API for repository access
-      config:
-        server: npx -y @modelcontextprotocol/server-github
-        env:
-          GITHUB_TOKEN: ${GITHUB_TOKEN}
+  - type: mcp
+    name: github
+    description: GitHub API for repository access
+    config:
+      server: npx -y @modelcontextprotocol/server-github
+      env:
+        GITHUB_TOKEN: ${GITHUB_TOKEN}
+  - type: function
+    name: run_security_scan
+    description: 'Execute security analysis on a codebase.
 
-    # Custom security scanner function
-    - type: function
-      name: run_security_scan
-      description: |
-        Execute security analysis on a codebase.
-        Scans for: SQL injection, XSS, CSRF, dependency vulnerabilities,
-        hardcoded secrets, authentication issues.
+      Scans for: SQL injection, XSS, CSRF, dependency vulnerabilities,
+
+      hardcoded secrets, authentication issues.
+
+      '
+    input_schema:
+      type: object
+      required:
+      - repo_url
+      properties:
+        repo_url:
+          type: string
+          description: Repository URL to scan
+        scan_type:
+          type: string
+          enum:
+          - quick
+          - full
+          - dependency
+          default: quick
+          description: '• quick: Fast scan, common issues only (5-10 minutes)
+
+            • full: Comprehensive scan, all rules (30-60 minutes)
+
+            • dependency: Dependency vulnerabilities only (2-5 minutes)
+
+            '
+  messaging:
+    publishes:
+    - channel: security.vulnerabilities
+      description: Security vulnerabilities found during scans
+      schema:
+        type: object
+        required:
+        - severity
+        - title
+        - affected_file
+        - scan_id
+        properties:
+          severity:
+            type: string
+            enum:
+            - critical
+            - high
+            - medium
+            - low
+            - info
+            description: 'Severity level following CVSS guidelines:
+
+              • critical: CVSS 9.0-10.0, immediate action required
+
+              • high: CVSS 7.0-8.9, fix urgently
+
+              • medium: CVSS 4.0-6.9, fix soon
+
+              • low: CVSS 0.1-3.9, fix eventually
+
+              • info: CVSS 0.0, informational only
+
+              '
+          title:
+            type: string
+            minLength: 10
+            maxLength: 200
+            description: Brief, descriptive vulnerability title
+          cve_id:
+            type: string
+            pattern: ^CVE-\d{4}-\d{4,}$
+            description: CVE identifier if available (e.g., CVE-2024-1234)
+          affected_file:
+            type: string
+            description: File path where vulnerability was found
+          line_number:
+            type: integer
+            minimum: 1
+            description: Line number in file (if applicable)
+          description:
+            type: string
+            description: Detailed explanation of the vulnerability
+          remediation:
+            type: string
+            description: How to fix the vulnerability
+          scan_id:
+            type: string
+            format: uuid
+            description: UUID of the scan that found this vulnerability
+          repo_url:
+            type: string
+            format: uri
+            description: Repository where vulnerability was found
+          found_at:
+            type: string
+            format: date-time
+            description: Timestamp when vulnerability was detected
+    - channel: security.scan.completed
+      description: Notification when a security scan completes
+      schema:
+        type: object
+        required:
+        - scan_id
+        - repo_url
+        - status
+        properties:
+          scan_id:
+            type: string
+            format: uuid
+            description: UUID of the completed scan
+          repo_url:
+            type: string
+            format: uri
+            description: Repository that was scanned
+          status:
+            type: string
+            enum:
+            - completed
+            - failed
+            - partial
+            description: '• completed: Scan finished successfully
+
+              • failed: Scan encountered fatal error
+
+              • partial: Scan completed with warnings/skipped files
+
+              '
+          duration_seconds:
+            type: integer
+            minimum: 0
+            description: How long the scan took
+          findings_count:
+            type: object
+            description: Count of findings by severity
+            properties:
+              critical:
+                type: integer
+              high:
+                type: integer
+              medium:
+                type: integer
+              low:
+                type: integer
+              info:
+                type: integer
+          files_scanned:
+            type: integer
+            minimum: 0
+            description: Number of files analyzed
+          completed_at:
+            type: string
+            format: date-time
+            description: Scan completion timestamp
+    subscribes:
+    - channel: dependency.updates
+      description: Listen for dependency update notifications
+      handler: on_dependency_update
+      filter:
+        severity:
+          $in:
+          - critical
+          - high
+    - channel: ci.build.completed
+      description: Trigger security scan when builds complete
+      handler: on_build_completed
+      filter:
+        build_status:
+          $eq: success
+    commands:
+    - name: scan_repository
+      description: Trigger a security scan of a repository
       input_schema:
         type: object
-        required: [repo_url]
+        required:
+        - repo_url
         properties:
           repo_url:
             type: string
+            format: uri
             description: Repository URL to scan
+            example: https://github.com/myorg/myrepo
+          priority:
+            type: string
+            enum:
+            - urgent
+            - normal
+            - low
+            default: normal
+            description: '• urgent: Queue jump, scan immediately (SLA: 5 minutes)
+
+              • normal: Standard queue (SLA: 30 minutes)
+
+              • low: Background scan (SLA: 4 hours)
+
+              '
           scan_type:
             type: string
-            enum: [quick, full, dependency]
+            enum:
+            - quick
+            - full
+            - dependency
             default: quick
-            description: |
-              • quick: Fast scan, common issues only (5-10 minutes)
-              • full: Comprehensive scan, all rules (30-60 minutes)
-              • dependency: Dependency vulnerabilities only (2-5 minutes)
-
-  # ────────────────────────────────────────────────────────────────────────────────
-  # MESSAGING CONFIGURATION (v0.3.0 Feature)
-  # ────────────────────────────────────────────────────────────────────────────────
-  # Define how this agent communicates with other agents
-  # ────────────────────────────────────────────────────────────────────────────────
-  messaging:
-    # ──────────────────────────────────────────────────────────────────────────────
-    # CHANNELS THIS AGENT PUBLISHES TO
-    # ──────────────────────────────────────────────────────────────────────────────
-    # Other agents subscribe to these channels to receive events
-    # ──────────────────────────────────────────────────────────────────────────────
-    publishes:
-      # Channel 1: Individual vulnerability findings
-      - channel: security.vulnerabilities
-        description: Security vulnerabilities found during scans
-
-        # Message schema - validates outgoing messages
-        # Subscribers can rely on this structure
-        schema:
-          type: object
-          required: [severity, title, affected_file, scan_id]
-          properties:
-            severity:
+            description: Type of scan to perform
+          notify_channels:
+            type: array
+            description: Additional channels to notify (beyond security.vulnerabilities)
+            items:
               type: string
-              enum: [critical, high, medium, low, info]
-              description: |
-                Severity level following CVSS guidelines:
-                • critical: CVSS 9.0-10.0, immediate action required
-                • high: CVSS 7.0-8.9, fix urgently
-                • medium: CVSS 4.0-6.9, fix soon
-                • low: CVSS 0.1-3.9, fix eventually
-                • info: CVSS 0.0, informational only
-
-            title:
-              type: string
-              minLength: 10
-              maxLength: 200
-              description: Brief, descriptive vulnerability title
-
-            cve_id:
-              type: string
-              pattern: "^CVE-\\d{4}-\\d{4,}$"
-              description: CVE identifier if available (e.g., CVE-2024-1234)
-
-            affected_file:
-              type: string
-              description: File path where vulnerability was found
-
-            line_number:
-              type: integer
-              minimum: 1
-              description: Line number in file (if applicable)
-
-            description:
-              type: string
-              description: Detailed explanation of the vulnerability
-
-            remediation:
-              type: string
-              description: How to fix the vulnerability
-
-            scan_id:
-              type: string
-              format: uuid
-              description: UUID of the scan that found this vulnerability
-
-            repo_url:
-              type: string
-              format: uri
-              description: Repository where vulnerability was found
-
-            found_at:
-              type: string
-              format: date-time
-              description: Timestamp when vulnerability was detected
-
-        # Optional: Message retention
-        # retention_hours: 168  # Keep messages for 7 days
-
-        # Optional: Message priority
-        # priority: high  # High-priority messages delivered first
-
-      # Channel 2: Scan completion notifications
-      - channel: security.scan.completed
-        description: Notification when a security scan completes
-
-        schema:
-          type: object
-          required: [scan_id, repo_url, status]
-          properties:
-            scan_id:
-              type: string
-              format: uuid
-              description: UUID of the completed scan
-
-            repo_url:
-              type: string
-              format: uri
-              description: Repository that was scanned
-
-            status:
-              type: string
-              enum: [completed, failed, partial]
-              description: |
-                • completed: Scan finished successfully
-                • failed: Scan encountered fatal error
-                • partial: Scan completed with warnings/skipped files
-
-            duration_seconds:
-              type: integer
-              minimum: 0
-              description: How long the scan took
-
-            findings_count:
-              type: object
-              description: Count of findings by severity
-              properties:
-                critical:
-                  type: integer
-                high:
-                  type: integer
-                medium:
-                  type: integer
-                low:
-                  type: integer
-                info:
-                  type: integer
-
-            files_scanned:
-              type: integer
-              minimum: 0
-              description: Number of files analyzed
-
-            completed_at:
-              type: string
-              format: date-time
-              description: Scan completion timestamp
-
-    # ──────────────────────────────────────────────────────────────────────────────
-    # CHANNELS THIS AGENT SUBSCRIBES TO
-    # ──────────────────────────────────────────────────────────────────────────────
-    # Agent is invoked when messages arrive on these channels
-    # ──────────────────────────────────────────────────────────────────────────────
-    subscribes:
-      # Subscription 1: Dependency update notifications
-      - channel: dependency.updates
-        description: Listen for dependency update notifications
-
-        # Handler function name - maps to agent's internal logic
-        # When message arrives, agent's on_dependency_update() is called
-        handler: on_dependency_update
-
-        # Message filter - only process subset of messages
-        # Filters are evaluated BEFORE message is delivered to agent
-        # This saves LLM calls for irrelevant messages
-        filter:
-          # JSONPath-style filtering
-          # Only process critical/high severity updates
-          severity:
-            $in: [critical, high]
-
-          # Alternative filter syntax examples:
-          # package_name:
-          #   $regex: "^django.*"  # Only Django packages
-          # affected_versions:
-          #   $contains: "2.1.0"   # Only if affects version 2.1.0
-
-        # Optional: Batch processing
-        # batch:
-        #   max_size: 10          # Process up to 10 messages at once
-        #   timeout_seconds: 5    # Or batch after 5 seconds
-
-      # Subscription 2: CI build completion
-      - channel: ci.build.completed
-        description: Trigger security scan when builds complete
-
-        handler: on_build_completed
-
-        # Only scan successful builds (ignore failures)
-        filter:
-          build_status:
-            $eq: "success"
-
-        # Optional: Subscription priority
-        # priority: high  # Process these messages first
-
-    # ──────────────────────────────────────────────────────────────────────────────
-    # COMMANDS THIS AGENT ACCEPTS
-    # ──────────────────────────────────────────────────────────────────────────────
-    # RPC-style request/response operations
-    # Other agents/systems can invoke these commands and get responses
-    # ──────────────────────────────────────────────────────────────────────────────
-    commands:
-      # Command 1: Trigger on-demand security scan
-      - name: scan_repository
-        description: Trigger a security scan of a repository
-
-        # Input schema - validates incoming command arguments
-        input_schema:
-          type: object
-          required: [repo_url]
-          properties:
-            repo_url:
-              type: string
-              format: uri
-              description: Repository URL to scan
-              example: "https://github.com/myorg/myrepo"
-
-            priority:
-              type: string
-              enum: [urgent, normal, low]
-              default: normal
-              description: |
-                • urgent: Queue jump, scan immediately (SLA: 5 minutes)
-                • normal: Standard queue (SLA: 30 minutes)
-                • low: Background scan (SLA: 4 hours)
-
-            scan_type:
-              type: string
-              enum: [quick, full, dependency]
-              default: quick
-              description: Type of scan to perform
-
-            notify_channels:
-              type: array
-              description: Additional channels to notify (beyond security.vulnerabilities)
-              items:
-                type: string
-              example: ["slack:security-team", "email:security@company.com"]
-
-        # Output schema - what the command returns
-        # Caller receives this structured response
-        output_schema:
-          type: object
-          required: [scan_id, status]
-          properties:
-            scan_id:
-              type: string
-              format: uuid
-              description: Unique scan identifier (use to query status later)
-
-            status:
-              type: string
-              enum: [queued, started, completed, failed]
-              description: Current scan status
-
-            estimated_completion:
-              type: string
-              format: date-time
-              description: When scan is expected to complete
-
-            queue_position:
-              type: integer
-              minimum: 0
-              description: Position in scan queue (if status=queued)
-
-        # Optional: Command timeout
-        # timeout_seconds: 300  # 5 minutes max
-
-      # Command 2: Query scan status
-      - name: get_scan_status
-        description: Get status of an ongoing or completed scan
-
-        input_schema:
-          type: object
-          required: [scan_id]
-          properties:
-            scan_id:
-              type: string
-              format: uuid
-              description: Scan ID returned from scan_repository command
-
-        output_schema:
-          type: object
-          properties:
-            scan_id:
-              type: string
-              format: uuid
-
-            status:
-              type: string
-              enum: [queued, started, completed, failed]
-
-            progress_percent:
-              type: number
-              minimum: 0
-              maximum: 100
-              description: Scan progress (0-100)
-
-            files_scanned:
-              type: integer
-              description: Files analyzed so far
-
-            findings_count:
-              type: object
-              description: Vulnerabilities found so far
-              properties:
-                critical:
-                  type: integer
-                high:
-                  type: integer
-                medium:
-                  type: integer
-
-            started_at:
-              type: string
-              format: date-time
-
-            completed_at:
-              type: string
-              format: date-time
-              description: Only present if status=completed or failed
-
-    # ──────────────────────────────────────────────────────────────────────────────
-    # MESSAGE RELIABILITY CONFIGURATION
-    # ──────────────────────────────────────────────────────────────────────────────
-    # Controls delivery guarantees and failure handling
-    # ──────────────────────────────────────────────────────────────────────────────
+            example:
+            - slack:security-team
+            - email:security@company.com
+      output_schema:
+        type: object
+        required:
+        - scan_id
+        - status
+        properties:
+          scan_id:
+            type: string
+            format: uuid
+            description: Unique scan identifier (use to query status later)
+          status:
+            type: string
+            enum:
+            - queued
+            - started
+            - completed
+            - failed
+            description: Current scan status
+          estimated_completion:
+            type: string
+            format: date-time
+            description: When scan is expected to complete
+          queue_position:
+            type: integer
+            minimum: 0
+            description: Position in scan queue (if status=queued)
+    - name: get_scan_status
+      description: Get status of an ongoing or completed scan
+      input_schema:
+        type: object
+        required:
+        - scan_id
+        properties:
+          scan_id:
+            type: string
+            format: uuid
+            description: Scan ID returned from scan_repository command
+      output_schema:
+        type: object
+        properties:
+          scan_id:
+            type: string
+            format: uuid
+          status:
+            type: string
+            enum:
+            - queued
+            - started
+            - completed
+            - failed
+          progress_percent:
+            type: number
+            minimum: 0
+            maximum: 100
+            description: Scan progress (0-100)
+          files_scanned:
+            type: integer
+            description: Files analyzed so far
+          findings_count:
+            type: object
+            description: Vulnerabilities found so far
+            properties:
+              critical:
+                type: integer
+              high:
+                type: integer
+              medium:
+                type: integer
+          started_at:
+            type: string
+            format: date-time
+          completed_at:
+            type: string
+            format: date-time
+            description: Only present if status=completed or failed
     reliability:
-      # Delivery guarantee
-      # ┌──────────────────┬────────────────────────────────────────────────────┐
-      # │ MODE             │ GUARANTEE                                          │
-      # ├──────────────────┼────────────────────────────────────────────────────┤
-      # │ at_most_once     │ Fast, may lose messages                            │
-      # │ at_least_once    │ Reliable, may have duplicates (RECOMMENDED)        │
-      # │ exactly_once     │ Slow, no duplicates, requires transactions         │
-      # └──────────────────┴────────────────────────────────────────────────────┘
       delivery: at_least_once
-
-      # Message ordering
-      # Determines if messages are processed in order
       ordering:
-        # Ordering mode
-        # • global: All messages across all channels ordered
-        # • per_channel: Messages within each channel ordered
-        # • none: No ordering guarantees (fastest)
         mode: per_channel
-
-        # Optional: Ordering key
-        # Messages with same key processed in order
-        # key_field: scan_id  # Order by scan_id
-
-      # Dead Letter Queue (DLQ) - handles failed messages
       dead_letter_queue:
         enabled: true
-
-        # Maximum retry attempts before moving to DLQ
-        # Example: 3 attempts = original + 2 retries
         max_retries: 3
-
-        # Exponential backoff multiplier
-        # Attempt 1: immediate
-        # Attempt 2: 2 seconds (base_delay * multiplier^1)
-        # Attempt 3: 4 seconds (base_delay * multiplier^2)
-        # Attempt 4: 8 seconds (base_delay * multiplier^3)
         backoff_multiplier: 2
-
-        # Base delay for first retry (seconds)
         base_delay_seconds: 2
-
-        # Optional: DLQ message retention
-        # dlq_retention_hours: 168  # Keep failed messages for 7 days
-
-        # Optional: DLQ alerting
-        # dlq_alert_threshold: 10  # Alert if >10 messages in DLQ
-
-# ═══════════════════════════════════════════════════════════════════════════════════
-# SUMMARY: AGENT-TO-AGENT MESSAGING
-# ═══════════════════════════════════════════════════════════════════════════════════
-#
-# This agent demonstrates:
-#   ✓ Publishing events to channels (pub/sub pattern)
-#   ✓ Subscribing to events from other agents
-#   ✓ Accepting commands (RPC pattern)
-#   ✓ JSON Schema message validation
-#   ✓ Message filtering (only process relevant messages)
-#   ✓ At-least-once delivery with retries
-#   ✓ Dead letter queue for failed messages
-#   ✓ Per-channel message ordering
-#
-# Multi-agent architecture:
-#   → Decouple agents (loose coupling)
-#   → Scale independently (horizontal scaling)
-#   → Event-driven workflows (react to changes)
-#   → Fault tolerance (retries, DLQ)
-#
-# Next example (05-workflow-composition.ossa.yaml):
-#   → Orchestrate multiple agents into workflows
-#   → DAGs (directed acyclic graphs)
-#   → Parallel execution
-#   → Error handling and compensation
-#
-# ═══════════════════════════════════════════════════════════════════════════════════

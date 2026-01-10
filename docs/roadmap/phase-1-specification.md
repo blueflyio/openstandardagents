@@ -191,7 +191,7 @@ spec:
 ### 5. JSON Schema Updates
 
 **Files to update:**
-- `spec/v0.3.0/ossa-0.3.1.schema.json`
+- `spec/v0.3.0/ossa-0.3.3.schema.json`
 - Add `Task` enhancements
 - Add `Workflow` enhancements
 - Add `MessagingExtension` definitions

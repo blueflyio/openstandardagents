@@ -9,7 +9,7 @@ Educational Focus: Show migration paths and breaking changes
 
 ## Version Migration
 
-### Current Version: 0.3.2
+### Current Version: 0.3.3
 
 ## Upgrading to v0.3.x
 
@@ -32,7 +32,7 @@ Educational Focus: Show migration paths and breaking changes
 
 ```bash
 # 1. Update OSSA CLI
-npm install -g @bluefly/openstandardagents@0.3.2
+npm install -g @bluefly/openstandardagents@0.3.3
 
 # 2. Run automated migration
 ossa migrate agents/*.yaml --to v0.3.0
@@ -45,7 +45,7 @@ ossa validate agents/*.yaml
 # After:  apiVersion: ossa/v0.3.0
 ```
 
-### From v0.3.0 to v0.3.1
+### From v0.3.0 to v0.3.3
 
 **Breaking Changes:**
 - None
@@ -59,13 +59,13 @@ ossa validate agents/*.yaml
 
 ```bash
 # Update apiVersion
-sed -i 's/ossa\/v0.3.0/ossa\/v0.3.1/' agents/*.yaml
+sed -i 's/ossa\/v0.3.0/ossa\/v0.3.3/' agents/*.yaml
 
 # Validate
 ossa validate agents/*.yaml
 ```
 
-### From v0.3.1 to v0.3.2
+### From v0.3.3 to v0.3.3
 
 **Breaking Changes:**
 - None
@@ -80,21 +80,21 @@ ossa validate agents/*.yaml
 
 ```bash
 # Update apiVersion
-sed -i 's/ossa\/v0.3.1/ossa\/v0.3.2/' agents/*.yaml
+sed -i 's/ossa\/v0.3.3/ossa\/v0.3.3/' agents/*.yaml
 
 # Or use CLI
-ossa migrate agents/*.yaml --to v0.3.2
+ossa migrate agents/*.yaml --to v0.3.3
 
 # Validate
 ossa validate agents/*.yaml
 ```
 
-## v0.3.2 Schema Requirements
+## v0.3.3 Schema Requirements
 
 ### Required Fields
 
 ```yaml
-apiVersion: ossa/v0.3.2          # Required - exact format
+apiVersion: ossa/v0.3.3          # Required - exact format
 kind: Agent                       # Required - Agent, Task, or Workflow
 metadata:
   name: kebab-case-name          # Required - lowercase with hyphens
@@ -197,13 +197,13 @@ spec:
 
 ```bash
 # Migrate single file
-ossa migrate agent.yaml --to v0.3.2
+ossa migrate agent.yaml --to v0.3.3
 
 # Migrate directory
-ossa migrate agents/ --to v0.3.2 --recursive
+ossa migrate agents/ --to v0.3.3 --recursive
 
 # Dry run (preview changes)
-ossa migrate agent.yaml --to v0.3.2 --dry-run
+ossa migrate agent.yaml --to v0.3.3 --dry-run
 
 # Show what would change
 ossa diff agent.yaml agent.yaml.bak
@@ -213,8 +213,8 @@ ossa diff agent.yaml agent.yaml.bak
 
 | OSSA Version | Node.js | TypeScript | Status |
 |--------------|---------|------------|--------|
-| 0.3.2 | >=20.0.0 | >=5.0.0 | Current |
-| 0.3.1 | >=20.0.0 | >=5.0.0 | Supported |
+| 0.3.3 | >=20.0.0 | >=5.0.0 | Current |
+| 0.3.3 | >=20.0.0 | >=5.0.0 | Supported |
 | 0.3.0 | >=18.0.0 | >=5.0.0 | Supported |
 | 0.2.9 | >=18.0.0 | >=5.0.0 | Deprecated |
 | 0.2.x | >=16.0.0 | >=4.5.0 | Unsupported |
@@ -232,10 +232,10 @@ ValidationError: apiVersion must match pattern 'ossa/v\d+\.\d+\.\d+'
 ```yaml
 # Before (wrong)
 apiVersion: ossa.ai/v1
-apiVersion: ossa.ai/v0.3.2
+apiVersion: ossa.ai/v0.3.3
 
 # After (correct)
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 ```
 
 ### Issue: Missing type on capabilities/tools
@@ -275,7 +275,7 @@ spec:
 - **Documentation**: [openstandardagents.org](https://openstandardagents.org)
 - **CLI Help**: `ossa migrate --help`
 - **Issues**: [GitLab Issues](https://gitlab.com/blueflyio/ossa/openstandardagents/-/issues)
-- **Spec**: [spec/v0.3.2/](https://gitlab.com/blueflyio/ossa/openstandardagents/-/tree/main/spec/v0.3.2)
+- **Spec**: [spec/v0.3.3/](https://gitlab.com/blueflyio/ossa/openstandardagents/-/tree/main/spec/v0.3.3)
 
 ---
 

@@ -1,9 +1,9 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://openstandardagents.org/schemas/v0.3.2/extensions/openapi/ossa-openapi-extensions.json",
+  "$id": "https://openstandardagents.org/schemas/v0.3.3/extensions/openapi/ossa-openapi-extensions.json",
   "title": "OSSA OpenAPI Extensions Schema",
   "description": "JSON Schema for validating OpenAPI 3.x documents that use OSSA (Open Standard for Scalable AI Agents) extensions. This schema defines all OSSA-specific vendor extensions (x-ossa-*) that can be added to OpenAPI specifications to enable agent-aware APIs.",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "type": "object",
   "properties": {
     "openapi": {
@@ -42,7 +42,7 @@
           "type": "string",
           "pattern": "^(0\\.[0-9]+\\.[0-9]+|[1-9][0-9]*\\.[0-9]+\\.[0-9]+)(-[a-zA-Z0-9.-]+)?(\\+[a-zA-Z0-9.-]+)?$",
           "description": "OSSA specification version (semver format)",
-          "examples": ["0.3.2", "1.0.0", "0.3.2-beta.1"]
+          "examples": ["0.3.3", "1.0.0", "0.3.3-beta.1"]
         },
         "compliance": {
           "type": "object",
@@ -136,7 +136,7 @@
       "additionalProperties": false,
       "examples": [
         {
-          "version": "0.3.2",
+          "version": "0.3.3",
           "compliance": {
             "level": "standard",
             "frameworks": ["SOC2", "GDPR"]
@@ -231,12 +231,12 @@
       "additionalProperties": false,
       "examples": [
         {
-          "version": "0.3.2",
+          "version": "0.3.3",
           "agent": {
             "id": "code-reviewer-agent",
             "type": "specialist",
             "compliance": {
-              "standards": ["OSSA-0.3.2", "SOC2-Type2"],
+              "standards": ["OSSA-0.3.3", "SOC2-Type2"],
               "validated": true,
               "validatedAt": "2025-01-15T10:30:00Z"
             }
@@ -728,7 +728,7 @@
         "description": "API for automated code review agent"
       },
       "x-ossa-metadata": {
-        "version": "0.3.2",
+        "version": "0.3.3",
         "compliance": {
           "level": "standard",
           "frameworks": ["SOC2"]
@@ -744,12 +744,12 @@
         }
       },
       "x-ossa": {
-        "version": "0.3.2",
+        "version": "0.3.3",
         "agent": {
           "id": "code-reviewer",
           "type": "specialist",
           "compliance": {
-            "standards": ["OSSA-0.3.2"],
+            "standards": ["OSSA-0.3.3"],
             "validated": true
           }
         }

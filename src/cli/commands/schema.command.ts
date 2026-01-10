@@ -1,6 +1,10 @@
 /**
  * OSSA Schema Command
  * View and explore the OSSA schema
+ *
+ * SOLID Principles:
+ * - Uses shared output utilities (DRY)
+ * - Single Responsibility: Only handles schema operations
  */
 
 import chalk from 'chalk';
@@ -9,8 +13,7 @@ import * as fs from 'fs';
 import { container } from '../../di-container.js';
 import { SchemaRepository } from '../../repositories/schema.repository.js';
 import { getVersion } from '../../utils/version.js';
-
-// __dirname not used in this file
+import { outputJSON, handleCommandError } from '../utils/index.js';
 
 export const schemaCommand = new Command('schema')
   .option(
@@ -37,7 +40,7 @@ export const schemaCommand = new Command('schema')
         }
 
         if (options?.json) {
-          console.log(JSON.stringify(schema, null, 2));
+          outputJSON(schema);
           process.exit(0);
         }
 
@@ -56,7 +59,7 @@ export const schemaCommand = new Command('schema')
               process.exit(1);
             }
           }
-          console.log(JSON.stringify(current, null, 2));
+          outputJSON(current);
           process.exit(0);
         }
 
@@ -83,8 +86,7 @@ export const schemaCommand = new Command('schema')
 
         process.exit(0);
       } catch (error) {
-        console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
-        process.exit(1);
+        handleCommandError(error);
       }
     }
   );
