@@ -1,131 +1,83 @@
 package ossa
 
 import (
-	"embed"
-	"encoding/json"
 	"fmt"
-
-	"github.com/xeipuuv/gojsonschema"
+	"regexp"
 )
 
-//go:embed schema/*.json
-var schemaFS embed.FS
+// ValidationResult contains validation results.
+type ValidationResult struct {
+	Valid    bool
+	Errors   []string
+	Warnings []string
+}
 
-// Validator validates OSSA manifests against the JSON Schema
+// Validator validates OSSA manifests.
 type Validator struct {
-	schema *gojsonschema.Schema
+	schemaPath string
 }
 
-// NewValidator creates a new validator with the embedded OSSA schema
-func NewValidator() (*Validator, error) {
-	schemaData, err := schemaFS.ReadFile("schema/ossa-0.3.3.schema.json")
-	if err != nil {
-		return nil, fmt.Errorf("failed to load embedded schema: %w", err)
-	}
-
-	schemaLoader := gojsonschema.NewBytesLoader(schemaData)
-	schema, err := gojsonschema.NewSchema(schemaLoader)
-	if err != nil {
-		return nil, fmt.Errorf("failed to compile schema: %w", err)
-	}
-
-	return &Validator{schema: schema}, nil
+// NewValidator creates a new validator.
+func NewValidator(schemaPath string) *Validator {
+	return &Validator{schemaPath: schemaPath}
 }
 
-// NewValidatorFromPath creates a validator from a schema file path
-func NewValidatorFromPath(schemaPath string) (*Validator, error) {
-	schemaLoader := gojsonschema.NewReferenceLoader("file://" + schemaPath)
-	schema, err := gojsonschema.NewSchema(schemaLoader)
-	if err != nil {
-		return nil, fmt.Errorf("failed to compile schema from %s: %w", schemaPath, err)
-	}
-
-	return &Validator{schema: schema}, nil
+// ValidKinds are the valid manifest kinds.
+var ValidKinds = map[Kind]bool{
+	KindAgent:    true,
+	KindTask:     true,
+	KindWorkflow: true,
 }
 
-// Validate validates a manifest against the OSSA schema
-func (v *Validator) Validate(manifest *Manifest) (*ValidationResult, error) {
-	// Convert manifest to JSON for validation
-	jsonData, err := json.Marshal(manifest)
-	if err != nil {
-		return nil, fmt.Errorf("failed to serialize manifest: %w", err)
+var apiVersionPattern = regexp.MustCompile(`^ossa/v\d+\.\d+\.\d+$`)
+
+// Validate validates a manifest.
+func (v *Validator) Validate(m *Manifest) *ValidationResult {
+	result := &ValidationResult{Valid: true}
+
+	// Required fields
+	if m.APIVersion == "" {
+		result.addError("Missing apiVersion")
+	} else if !apiVersionPattern.MatchString(m.APIVersion) {
+		result.addError(fmt.Sprintf("Invalid apiVersion: %s", m.APIVersion))
 	}
 
-	documentLoader := gojsonschema.NewBytesLoader(jsonData)
-	result, err := v.schema.Validate(documentLoader)
-	if err != nil {
-		return nil, fmt.Errorf("validation failed: %w", err)
+	if m.Kind == "" {
+		result.addError("Missing kind")
+	} else if !ValidKinds[m.Kind] {
+		result.addError(fmt.Sprintf("Invalid kind: %s", m.Kind))
 	}
 
-	vr := &ValidationResult{
-		Valid:  result.Valid(),
-		Errors: make([]ValidationError, 0),
+	if m.Metadata.Name == "" {
+		result.addError("Missing metadata.name")
 	}
 
-	for _, err := range result.Errors() {
-		vr.Errors = append(vr.Errors, ValidationError{
-			Path:    err.Context().String(),
-			Message: err.Description(),
-		})
+	if m.Kind == KindAgent && m.Spec.Role == "" {
+		result.addWarning("Agent should have spec.role")
 	}
 
-	return vr, nil
+	// Best practices
+	if m.Spec.LLM == nil {
+		result.addWarning("Best practice: Specify LLM configuration")
+	}
+
+	if len(m.Spec.Tools) == 0 {
+		result.addWarning("Best practice: Define tools/capabilities")
+	}
+
+	return result
 }
 
-// ValidateFile validates a manifest file against the OSSA schema
-func (v *Validator) ValidateFile(path string) (*ValidationResult, error) {
-	manifest, err := LoadManifest(path)
-	if err != nil {
-		return nil, err
-	}
-
-	return v.Validate(manifest)
+func (r *ValidationResult) addError(msg string) {
+	r.Valid = false
+	r.Errors = append(r.Errors, msg)
 }
 
-// ValidateManifest is a convenience function that validates without explicit Validator creation
-func ValidateManifest(manifest *Manifest, schemaPath string) (*ValidationResult, error) {
-	var v *Validator
-	var err error
-
-	if schemaPath != "" {
-		v, err = NewValidatorFromPath(schemaPath)
-	} else {
-		v, err = NewValidator()
-	}
-
-	if err != nil {
-		return nil, err
-	}
-
-	return v.Validate(manifest)
+func (r *ValidationResult) addWarning(msg string) {
+	r.Warnings = append(r.Warnings, msg)
 }
 
-// ValidateFile is a convenience function that validates a file
-func ValidateFile(path string, schemaPath string) (*ValidationResult, error) {
-	manifest, err := LoadManifest(path)
-	if err != nil {
-		return nil, err
-	}
-
-	return ValidateManifest(manifest, schemaPath)
-}
-
-// Quick validation helpers
-
-// IsValid returns true if the manifest is valid
-func (vr *ValidationResult) IsValid() bool {
-	return vr.Valid
-}
-
-// ErrorCount returns the number of validation errors
-func (vr *ValidationResult) ErrorCount() int {
-	return len(vr.Errors)
-}
-
-// FirstError returns the first validation error, or nil if valid
-func (vr *ValidationResult) FirstError() *ValidationError {
-	if len(vr.Errors) == 0 {
-		return nil
-	}
-	return &vr.Errors[0]
+// ValidateManifest validates a manifest (convenience function).
+func ValidateManifest(m *Manifest) *ValidationResult {
+	return NewValidator("").Validate(m)
 }

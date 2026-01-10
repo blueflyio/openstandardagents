@@ -1,15 +1,15 @@
-// Package ossa provides types and utilities for working with OSSA manifests.
-// OSSA (Open Standard for Scalable AI Agents) is a JSON Schema specification
-// for defining AI agents, tasks, and workflows.
+// Package ossa provides types and utilities for OSSA manifests.
 package ossa
 
-// Version is the SDK version
-const Version = "0.3.3"
+// Manifest represents an OSSA manifest.
+type Manifest struct {
+	APIVersion string   `json:"apiVersion" yaml:"apiVersion"`
+	Kind       Kind     `json:"kind" yaml:"kind"`
+	Metadata   Metadata `json:"metadata" yaml:"metadata"`
+	Spec       Spec     `json:"spec" yaml:"spec"`
+}
 
-// OSSAVersion is the OSSA specification version this SDK supports
-const OSSAVersion = "v0.3.3"
-
-// Kind represents the type of OSSA manifest
+// Kind represents the manifest kind.
 type Kind string
 
 const (
@@ -18,142 +18,69 @@ const (
 	KindWorkflow Kind = "Workflow"
 )
 
-// AccessTier represents the agent's permission level
-type AccessTier string
-
-const (
-	TierRead          AccessTier = "tier_1_read"
-	TierWriteLimited  AccessTier = "tier_2_write_limited"
-	TierWriteElevated AccessTier = "tier_3_write_elevated"
-	TierPolicy        AccessTier = "tier_4_policy"
-	// Shorthand versions
-	TierReadShort     AccessTier = "read"
-	TierLimitedShort  AccessTier = "limited"
-	TierElevatedShort AccessTier = "elevated"
-	TierPolicyShort   AccessTier = "policy"
-)
-
-// Manifest represents a complete OSSA manifest
-type Manifest struct {
-	APIVersion string   `yaml:"apiVersion" json:"apiVersion"`
-	Kind       Kind     `yaml:"kind" json:"kind"`
-	Metadata   Metadata `yaml:"metadata" json:"metadata"`
-	Spec       Spec     `yaml:"spec" json:"spec"`
-}
-
-// Metadata contains manifest metadata
+// Metadata contains manifest metadata.
 type Metadata struct {
-	Name        string            `yaml:"name" json:"name"`
-	Version     string            `yaml:"version,omitempty" json:"version,omitempty"`
-	Namespace   string            `yaml:"namespace,omitempty" json:"namespace,omitempty"`
-	Description string            `yaml:"description,omitempty" json:"description,omitempty"`
-	Labels      map[string]string `yaml:"labels,omitempty" json:"labels,omitempty"`
-	Annotations map[string]string `yaml:"annotations,omitempty" json:"annotations,omitempty"`
+	Name        string            `json:"name" yaml:"name"`
+	Version     string            `json:"version,omitempty" yaml:"version,omitempty"`
+	Description string            `json:"description,omitempty" yaml:"description,omitempty"`
+	Labels      map[string]string `json:"labels,omitempty" yaml:"labels,omitempty"`
+	Annotations map[string]string `json:"annotations,omitempty" yaml:"annotations,omitempty"`
 }
 
-// Spec contains the agent/task/workflow specification
+// Spec contains the agent specification.
 type Spec struct {
-	// Common fields
-	Role        string      `yaml:"role,omitempty" json:"role,omitempty"`
-	Tools       []Tool      `yaml:"tools,omitempty" json:"tools,omitempty"`
-	LLM         *LLMConfig  `yaml:"llm,omitempty" json:"llm,omitempty"`
-	Safety      *Safety     `yaml:"safety,omitempty" json:"safety,omitempty"`
-	AccessTier  AccessTier  `yaml:"access_tier,omitempty" json:"access_tier,omitempty"`
-	Identity    *Identity   `yaml:"identity,omitempty" json:"identity,omitempty"`
-
-	// Agent-specific
-	Capabilities []Capability `yaml:"capabilities,omitempty" json:"capabilities,omitempty"`
-
-	// Task-specific
-	Steps []TaskStep `yaml:"steps,omitempty" json:"steps,omitempty"`
-
-	// Workflow-specific
-	Agents []WorkflowAgent `yaml:"agents,omitempty" json:"agents,omitempty"`
+	Role         string           `json:"role" yaml:"role"`
+	LLM          *LLMConfig       `json:"llm,omitempty" yaml:"llm,omitempty"`
+	Tools        []ToolConfig     `json:"tools,omitempty" yaml:"tools,omitempty"`
+	Autonomy     *AutonomyConfig  `json:"autonomy,omitempty" yaml:"autonomy,omitempty"`
+	Constraints  *Constraints     `json:"constraints,omitempty" yaml:"constraints,omitempty"`
 }
 
-// Tool represents a tool/function the agent can use
-type Tool struct {
-	Name        string                 `yaml:"name" json:"name"`
-	Description string                 `yaml:"description,omitempty" json:"description,omitempty"`
-	Handler     *ToolHandler           `yaml:"handler,omitempty" json:"handler,omitempty"`
-	Parameters  map[string]interface{} `yaml:"parameters,omitempty" json:"parameters,omitempty"`
-}
-
-// ToolHandler defines how a tool is executed
-type ToolHandler struct {
-	Runtime    string `yaml:"runtime,omitempty" json:"runtime,omitempty"`
-	Capability string `yaml:"capability,omitempty" json:"capability,omitempty"`
-	Endpoint   string `yaml:"endpoint,omitempty" json:"endpoint,omitempty"`
-	Method     string `yaml:"method,omitempty" json:"method,omitempty"`
-}
-
-// LLMConfig contains LLM provider configuration
+// LLMConfig contains LLM configuration.
 type LLMConfig struct {
-	Provider    string  `yaml:"provider" json:"provider"`
-	Model       string  `yaml:"model" json:"model"`
-	Temperature float64 `yaml:"temperature,omitempty" json:"temperature,omitempty"`
-	MaxTokens   int     `yaml:"max_tokens,omitempty" json:"max_tokens,omitempty"`
+	Provider    string  `json:"provider" yaml:"provider"`
+	Model       string  `json:"model" yaml:"model"`
+	Temperature float64 `json:"temperature,omitempty" yaml:"temperature,omitempty"`
+	MaxTokens   int     `json:"maxTokens,omitempty" yaml:"maxTokens,omitempty"`
+	TopP        float64 `json:"topP,omitempty" yaml:"topP,omitempty"`
 }
 
-// Safety contains safety and guardrail configuration
-type Safety struct {
-	Guardrails  *Guardrails `yaml:"guardrails,omitempty" json:"guardrails,omitempty"`
-	PIIHandling string      `yaml:"pii_handling,omitempty" json:"pii_handling,omitempty"`
+// ToolConfig contains tool configuration.
+type ToolConfig struct {
+	Type         string                 `json:"type" yaml:"type"`
+	Name         string                 `json:"name,omitempty" yaml:"name,omitempty"`
+	Server       string                 `json:"server,omitempty" yaml:"server,omitempty"`
+	Namespace    string                 `json:"namespace,omitempty" yaml:"namespace,omitempty"`
+	Endpoint     string                 `json:"endpoint,omitempty" yaml:"endpoint,omitempty"`
+	Capabilities []string               `json:"capabilities,omitempty" yaml:"capabilities,omitempty"`
+	Config       map[string]interface{} `json:"config,omitempty" yaml:"config,omitempty"`
 }
 
-// Guardrails defines operational safety limits
-type Guardrails struct {
-	MaxActionsPerMinute     int      `yaml:"max_actions_per_minute,omitempty" json:"max_actions_per_minute,omitempty"`
-	RequireHumanApprovalFor []string `yaml:"require_human_approval_for,omitempty" json:"require_human_approval_for,omitempty"`
-	BlockedActions          []string `yaml:"blocked_actions,omitempty" json:"blocked_actions,omitempty"`
-	AuditAllActions         bool     `yaml:"audit_all_actions,omitempty" json:"audit_all_actions,omitempty"`
+// AutonomyConfig contains autonomy settings.
+type AutonomyConfig struct {
+	Level            string   `json:"level,omitempty" yaml:"level,omitempty"`
+	ApprovalRequired bool     `json:"approvalRequired,omitempty" yaml:"approvalRequired,omitempty"`
+	AllowedActions   []string `json:"allowedActions,omitempty" yaml:"allowedActions,omitempty"`
+	BlockedActions   []string `json:"blockedActions,omitempty" yaml:"blockedActions,omitempty"`
 }
 
-// Identity contains agent identity configuration
-type Identity struct {
-	Provider       string          `yaml:"provider,omitempty" json:"provider,omitempty"`
-	ServiceAccount *ServiceAccount `yaml:"service_account,omitempty" json:"service_account,omitempty"`
-	AccessTier     AccessTier      `yaml:"access_tier,omitempty" json:"access_tier,omitempty"`
+// Constraints contains agent constraints.
+type Constraints struct {
+	Cost        *CostConstraints        `json:"cost,omitempty" yaml:"cost,omitempty"`
+	Performance *PerformanceConstraints `json:"performance,omitempty" yaml:"performance,omitempty"`
 }
 
-// ServiceAccount defines the agent's service account
-type ServiceAccount struct {
-	ID          string   `yaml:"id,omitempty" json:"id,omitempty"`
-	Username    string   `yaml:"username,omitempty" json:"username,omitempty"`
-	Email       string   `yaml:"email,omitempty" json:"email,omitempty"`
-	DisplayName string   `yaml:"display_name,omitempty" json:"display_name,omitempty"`
-	Roles       []string `yaml:"roles,omitempty" json:"roles,omitempty"`
+// CostConstraints contains cost constraints.
+type CostConstraints struct {
+	MaxTokensPerDay     int     `json:"maxTokensPerDay,omitempty" yaml:"maxTokensPerDay,omitempty"`
+	MaxTokensPerRequest int     `json:"maxTokensPerRequest,omitempty" yaml:"maxTokensPerRequest,omitempty"`
+	MaxCostPerDay       float64 `json:"maxCostPerDay,omitempty" yaml:"maxCostPerDay,omitempty"`
+	Currency            string  `json:"currency,omitempty" yaml:"currency,omitempty"`
 }
 
-// Capability defines what an agent can do
-type Capability struct {
-	Name        string `yaml:"name" json:"name"`
-	Description string `yaml:"description,omitempty" json:"description,omitempty"`
-}
-
-// TaskStep defines a step in a Task
-type TaskStep struct {
-	Name        string                 `yaml:"name" json:"name"`
-	Description string                 `yaml:"description,omitempty" json:"description,omitempty"`
-	Action      string                 `yaml:"action,omitempty" json:"action,omitempty"`
-	Parameters  map[string]interface{} `yaml:"parameters,omitempty" json:"parameters,omitempty"`
-}
-
-// WorkflowAgent defines an agent reference in a workflow
-type WorkflowAgent struct {
-	Name string `yaml:"name" json:"name"`
-	Ref  string `yaml:"ref,omitempty" json:"ref,omitempty"`
-	Role string `yaml:"role,omitempty" json:"role,omitempty"`
-}
-
-// ValidationResult contains the result of manifest validation
-type ValidationResult struct {
-	Valid  bool              `json:"valid"`
-	Errors []ValidationError `json:"errors,omitempty"`
-}
-
-// ValidationError represents a single validation error
-type ValidationError struct {
-	Path    string `json:"path"`
-	Message string `json:"message"`
+// PerformanceConstraints contains performance constraints.
+type PerformanceConstraints struct {
+	MaxLatencySeconds     float64 `json:"maxLatencySeconds,omitempty" yaml:"maxLatencySeconds,omitempty"`
+	MaxConcurrentRequests int     `json:"maxConcurrentRequests,omitempty" yaml:"maxConcurrentRequests,omitempty"`
+	TimeoutSeconds        int     `json:"timeoutSeconds,omitempty" yaml:"timeoutSeconds,omitempty"`
 }

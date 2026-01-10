@@ -131,9 +131,9 @@ function convertOssaToDuo(
       version: metadata.version || '0.1.0',
       capabilities: capabilities.map((cap) => ({ name: cap })),
       // Map OSSA fields to Duo equivalents
-      ...(spec.model && { model: spec.model }),
-      ...(spec.temperature && { temperature: spec.temperature }),
-      ...(spec.maxTokens && { maxTokens: spec.maxTokens }),
+      ...(spec.model ? { model: spec.model } : {}),
+      ...(spec.temperature ? { temperature: spec.temperature } : {}),
+      ...(spec.maxTokens ? { maxTokens: spec.maxTokens } : {}),
     },
   };
 }
