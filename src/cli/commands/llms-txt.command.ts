@@ -9,6 +9,7 @@ import { container } from '../../di-container.js'
 import { ManifestRepository } from '../../repositories/manifest.repository.js'
 import { LlmsTxtService } from '../../services/llms-txt/llms-txt.service.js'
 import type { OssaAgent } from '../../types/index.js'
+import { handleCommandError } from '../utils/index.js'
 
 export const llmsTxtCommand = new Command('llms-txt')
   .description('Generate, validate, and sync llms.txt files from OSSA manifests')
@@ -67,8 +68,7 @@ extensions:
       console.log(chalk.gray(`  2. Validate: ossa llms-txt validate ${options.output} ${manifestPath}`))
       console.log(chalk.gray(`  3. Commit both manifest and llms.txt`))
     } catch (error) {
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error))
-      process.exit(1)
+      handleCommandError(error)
     }
   })
 
@@ -103,8 +103,7 @@ llmsTxtCommand
         console.log(chalk.gray(JSON.stringify(result, null, 2)))
       }
     } catch (error) {
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error))
-      process.exit(1)
+      handleCommandError(error)
     }
   })
 
@@ -132,7 +131,6 @@ llmsTxtCommand
         process.exit(0)
       }
     } catch (error) {
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error))
-      process.exit(1)
+      handleCommandError(error)
     }
   })
