@@ -144,10 +144,8 @@ async function announceRelease() {
   
   // 1. Create announcement issue
   const projectId = process.env.CI_PROJECT_ID!;
-  await gitlab.Issues.create(projectId, {
-    title: `🎉 Release ${version} Announcement`,
-    description: `
-## Release ${version} is now available!
+  const issueTitle = `🎉 Release ${version} Announcement`;
+  const issueDescription = `## Release ${version} is now available!
 
 ### 📦 Installation
 \`\`\`bash
@@ -161,8 +159,10 @@ npm install openstandardagents@${version}
 - [Changelog](https://openstandardagents.org/docs/changelog)
 
 ### 📣 Share
-Please help spread the word about this release!
-    `,
+Please help spread the word about this release!`;
+
+  await gitlab.Issues.create(projectId, issueTitle, {
+    description: issueDescription,
     labels: 'announcement,release',
   });
   
