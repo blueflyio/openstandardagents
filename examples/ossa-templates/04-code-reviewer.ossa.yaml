@@ -6,7 +6,7 @@ metadata:
   description: Automated code review agent with quality analysis
   labels:
     ossa.dev/category: development
-    ossa.dev/tier: power-agent
+    ossa.dev/tier: standard-example
     ossa.dev/access-tier: standard
   annotations:
     ossa.dev/documentation: https://openstandardagents.org/agents/code-reviewer

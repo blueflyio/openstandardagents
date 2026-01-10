@@ -6,7 +6,7 @@ metadata:
   description: Multi-agent workflow orchestration and coordination
   labels:
     ossa.dev/category: orchestration
-    ossa.dev/tier: power-agent
+    ossa.dev/tier: standard-example
   annotations:
     ossa.dev/documentation: https://openstandardagents.org/agents/workflow-orchestrator
 spec:
