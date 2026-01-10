@@ -1,165 +1,103 @@
-"""
-JSON Schema validation for OSSA manifests.
+"""OSSA Validator - Validate OSSA manifests against the schema."""
 
-This module provides validation against the official OSSA JSON schemas,
-ensuring manifests conform to the specification.
-"""
-
-import json
+import re
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional, Union
 
-import jsonschema
-from jsonschema import Draft7Validator
+import yaml
 
-from .exceptions import SchemaNotFoundError, SchemaValidationError
+from .exceptions import ValidationError
 
 
-class SchemaValidator:
-    """Validates OSSA manifests against JSON schemas."""
+@dataclass
+class ValidationResult:
+    """Validation result."""
+    valid: bool
+    errors: list[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
 
-    # Built-in schema URLs for common versions
-    SCHEMA_URLS = {
-        "v0.3.0": "https://openstandardagents.org/schemas/v0.3.0/manifest.json",
-        "v0.2.5": "https://openstandardagents.org/schemas/v0.2.5/manifest.json",
-        "v0.2.2": "https://openstandardagents.org/schemas/v0.2.2/manifest.json",
-    }
+    def __bool__(self) -> bool:
+        return self.valid
 
-    def __init__(self, schema_path: Optional[Path] = None) -> None:
-        """
-        Initialize the schema validator.
+    def raise_if_invalid(self) -> None:
+        if not self.valid:
+            raise ValidationError(f"Validation failed: {'; '.join(self.errors)}")
 
-        Args:
-            schema_path: Optional path to local schema directory.
-                        If not provided, uses built-in schema URLs.
-        """
-        self.schema_path = schema_path
-        self._schema_cache: Dict[str, Dict[str, Any]] = {}
 
-    def load_schema(self, version: str) -> Dict[str, Any]:
-        """
-        Load JSON schema for a specific OSSA version.
+class Validator:
+    """OSSA Manifest Validator."""
 
-        Args:
-            version: OSSA version (e.g., 'v0.3.0')
+    VALID_KINDS = {"Agent", "Task", "Workflow"}
+    VALID_API_VERSION_PATTERN = r"^ossa/v\d+\.\d+\.\d+$"
 
-        Returns:
-            Parsed JSON schema dictionary
+    def __init__(self, schema_path: Optional[Union[str, Path]] = None):
+        self._schema: Optional[dict[str, Any]] = None
+        if schema_path:
+            self._load_schema(Path(schema_path))
 
-        Raises:
-            SchemaNotFoundError: If schema cannot be found
-        """
-        if version in self._schema_cache:
-            return self._schema_cache[version]
+    def _load_schema(self, path: Path) -> None:
+        if not path.exists():
+            return
+        content = path.read_text(encoding="utf-8")
+        if path.suffix in (".yaml", ".yml"):
+            self._schema = yaml.safe_load(content)
+        else:
+            import json
+            self._schema = json.loads(content)
 
-        # Try loading from local path first
-        if self.schema_path:
-            schema_file = self.schema_path / f"ossa-{version}.schema.json"
-            if schema_file.exists():
-                with open(schema_file) as f:
-                    schema = json.load(f)
-                    self._schema_cache[version] = schema
-                    return schema
+    def validate(self, manifest: Any) -> ValidationResult:
+        """Validate a manifest."""
+        errors: list[str] = []
+        warnings: list[str] = []
 
-        # Try loading from built-in URLs
-        if version in self.SCHEMA_URLS:
+        if hasattr(manifest, "to_dict"):
+            data = manifest.to_dict()
+        elif isinstance(manifest, dict):
+            data = manifest
+        else:
+            return ValidationResult(valid=False, errors=["Manifest must be a dict or Manifest object"])
+
+        # Required fields
+        if not data.get("apiVersion"):
+            errors.append("Missing apiVersion")
+        elif not re.match(self.VALID_API_VERSION_PATTERN, data["apiVersion"]):
+            errors.append(f"Invalid apiVersion: {data['apiVersion']}")
+
+        if not data.get("kind"):
+            errors.append("Missing kind")
+        elif data["kind"] not in self.VALID_KINDS:
+            errors.append(f"Invalid kind: {data['kind']}")
+
+        if not data.get("metadata"):
+            errors.append("Missing metadata")
+        elif not data["metadata"].get("name"):
+            errors.append("Missing metadata.name")
+
+        if not data.get("spec"):
+            errors.append("Missing spec")
+        elif data.get("kind") == "Agent" and not data["spec"].get("role"):
+            warnings.append("Agent should have spec.role")
+
+        # JSON Schema validation
+        if self._schema and not errors:
             try:
-                import requests
-
-                response = requests.get(self.SCHEMA_URLS[version])
-                response.raise_for_status()
-                schema = response.json()
-                self._schema_cache[version] = schema
-                return schema
+                import jsonschema
+                jsonschema.validate(data, self._schema)
             except Exception as e:
-                raise SchemaNotFoundError(version) from e
+                errors.append(f"Schema validation: {e}")
 
-        raise SchemaNotFoundError(version)
+        # Best practice warnings
+        if data.get("spec"):
+            spec = data["spec"]
+            if not spec.get("llm"):
+                warnings.append("Best practice: Specify LLM configuration")
+            if not spec.get("tools"):
+                warnings.append("Best practice: Define tools/capabilities")
 
-    def validate(self, manifest: Dict[str, Any]) -> List[str]:
-        """
-        Validate a manifest against its schema.
-
-        Args:
-            manifest: Parsed manifest dictionary
-
-        Returns:
-            List of validation error messages (empty if valid)
-
-        Raises:
-            SchemaNotFoundError: If schema for manifest version not found
-        """
-        # Extract version from apiVersion field
-        api_version = manifest.get("apiVersion", "")
-        if not api_version.startswith("ossa/"):
-            return [f"Invalid apiVersion format: {api_version}"]
-
-        version = api_version.replace("ossa/", "")
-
-        # Load appropriate schema
-        try:
-            schema = self.load_schema(version)
-        except SchemaNotFoundError:
-            # Try to find closest version
-            closest = self._find_closest_version(version)
-            if closest:
-                schema = self.load_schema(closest)
-            else:
-                return [f"No schema available for version {version}"]
-
-        # Validate against schema
-        validator = Draft7Validator(schema)
-        errors = []
-
-        for error in sorted(validator.iter_errors(manifest), key=str):
-            path = ".".join(str(p) for p in error.path) if error.path else "root"
-            errors.append(f"{path}: {error.message}")
-
-        return errors
-
-    def _find_closest_version(self, version: str) -> Optional[str]:
-        """
-        Find the closest available schema version.
-
-        Args:
-            version: Requested version
-
-        Returns:
-            Closest available version or None
-        """
-        # Extract major.minor from version
-        try:
-            parts = version.lstrip("v").split(".")
-            major, minor = int(parts[0]), int(parts[1])
-
-            # Find closest version
-            available = sorted(self.SCHEMA_URLS.keys(), reverse=True)
-            for avail in available:
-                avail_parts = avail.lstrip("v").split(".")
-                avail_major, avail_minor = int(avail_parts[0]), int(avail_parts[1])
-
-                if avail_major == major and avail_minor <= minor:
-                    return avail
-
-        except (ValueError, IndexError):
-            pass
-
-        return None
+        return ValidationResult(valid=len(errors) == 0, errors=errors, warnings=warnings)
 
 
-def validate_manifest(manifest: Dict[str, Any], schema_path: Optional[Path] = None) -> List[str]:
-    """
-    Validate a manifest against OSSA JSON schema.
-
-    Args:
-        manifest: Parsed manifest dictionary
-        schema_path: Optional path to local schema directory
-
-    Returns:
-        List of validation error messages (empty if valid)
-
-    Raises:
-        SchemaNotFoundError: If schema cannot be found
-    """
-    validator = SchemaValidator(schema_path)
-    return validator.validate(manifest)
+def validate_manifest(manifest: Any) -> ValidationResult:
+    """Validate a manifest - convenience function."""
+    return Validator().validate(manifest)

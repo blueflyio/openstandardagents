@@ -13,7 +13,7 @@ export const OSSAKindSchema = z.enum(['Agent', 'Task', 'Workflow']);
 export const ToolSchema = z.object({
   name: z.string(),
   description: z.string(),
-  parameters: z.record(z.unknown()).optional(),
+  parameters: z.record(z.string(), z.unknown()).optional(),
 });
 
 export const AutonomySchema = z.object({
@@ -28,7 +28,7 @@ export const StateConfigSchema = z.object({
     type: z.enum(['memory', 'database', 'file']).optional(),
     provider: z.string().optional(),
   }),
-  schema: z.record(z.unknown()).optional(),
+  schema: z.record(z.string(), z.unknown()).optional(),
 });
 
 export type OSSAKind = z.infer<typeof OSSAKindSchema>;

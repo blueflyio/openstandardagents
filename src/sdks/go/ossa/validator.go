@@ -1,131 +1,124 @@
 package ossa
 
 import (
-	"embed"
 	"encoding/json"
 	"fmt"
+	"os"
+	"regexp"
 
 	"github.com/xeipuuv/gojsonschema"
 )
 
-//go:embed schema/*.json
-var schemaFS embed.FS
+// ValidationResult contains validation results.
+type ValidationResult struct {
+	Valid    bool
+	Errors   []string
+	Warnings []string
+}
 
-// Validator validates OSSA manifests against the JSON Schema
+// Validator validates OSSA manifests.
 type Validator struct {
-	schema *gojsonschema.Schema
+	schemaPath string
+	schema     *gojsonschema.Schema
 }
 
-// NewValidator creates a new validator with the embedded OSSA schema
-func NewValidator() (*Validator, error) {
-	schemaData, err := schemaFS.ReadFile("schema/ossa-0.3.3.schema.json")
-	if err != nil {
-		return nil, fmt.Errorf("failed to load embedded schema: %w", err)
-	}
-
-	schemaLoader := gojsonschema.NewBytesLoader(schemaData)
-	schema, err := gojsonschema.NewSchema(schemaLoader)
-	if err != nil {
-		return nil, fmt.Errorf("failed to compile schema: %w", err)
-	}
-
-	return &Validator{schema: schema}, nil
-}
-
-// NewValidatorFromPath creates a validator from a schema file path
-func NewValidatorFromPath(schemaPath string) (*Validator, error) {
-	schemaLoader := gojsonschema.NewReferenceLoader("file://" + schemaPath)
-	schema, err := gojsonschema.NewSchema(schemaLoader)
-	if err != nil {
-		return nil, fmt.Errorf("failed to compile schema from %s: %w", schemaPath, err)
-	}
-
-	return &Validator{schema: schema}, nil
-}
-
-// Validate validates a manifest against the OSSA schema
-func (v *Validator) Validate(manifest *Manifest) (*ValidationResult, error) {
-	// Convert manifest to JSON for validation
-	jsonData, err := json.Marshal(manifest)
-	if err != nil {
-		return nil, fmt.Errorf("failed to serialize manifest: %w", err)
-	}
-
-	documentLoader := gojsonschema.NewBytesLoader(jsonData)
-	result, err := v.schema.Validate(documentLoader)
-	if err != nil {
-		return nil, fmt.Errorf("validation failed: %w", err)
-	}
-
-	vr := &ValidationResult{
-		Valid:  result.Valid(),
-		Errors: make([]ValidationError, 0),
-	}
-
-	for _, err := range result.Errors() {
-		vr.Errors = append(vr.Errors, ValidationError{
-			Path:    err.Context().String(),
-			Message: err.Description(),
-		})
-	}
-
-	return vr, nil
-}
-
-// ValidateFile validates a manifest file against the OSSA schema
-func (v *Validator) ValidateFile(path string) (*ValidationResult, error) {
-	manifest, err := LoadManifest(path)
-	if err != nil {
-		return nil, err
-	}
-
-	return v.Validate(manifest)
-}
-
-// ValidateManifest is a convenience function that validates without explicit Validator creation
-func ValidateManifest(manifest *Manifest, schemaPath string) (*ValidationResult, error) {
-	var v *Validator
-	var err error
-
+// NewValidator creates a new validator.
+// If schemaPath is provided, loads JSON Schema for validation.
+// If empty, only structural validation is performed.
+func NewValidator(schemaPath string) *Validator {
+	v := &Validator{schemaPath: schemaPath}
 	if schemaPath != "" {
-		v, err = NewValidatorFromPath(schemaPath)
-	} else {
-		v, err = NewValidator()
+		v.loadSchema()
 	}
+	return v
+}
 
+func (v *Validator) loadSchema() {
+	if v.schemaPath == "" {
+		return
+	}
+	data, err := os.ReadFile(v.schemaPath)
 	if err != nil {
-		return nil, err
+		return
 	}
-
-	return v.Validate(manifest)
-}
-
-// ValidateFile is a convenience function that validates a file
-func ValidateFile(path string, schemaPath string) (*ValidationResult, error) {
-	manifest, err := LoadManifest(path)
+	loader := gojsonschema.NewBytesLoader(data)
+	schema, err := gojsonschema.NewSchema(loader)
 	if err != nil {
-		return nil, err
+		return
+	}
+	v.schema = schema
+}
+
+// ValidKinds are the valid manifest kinds.
+var ValidKinds = map[Kind]bool{
+	KindAgent:    true,
+	KindTask:     true,
+	KindWorkflow: true,
+}
+
+var apiVersionPattern = regexp.MustCompile(`^ossa/v\d+\.\d+\.\d+$`)
+
+// Validate validates a manifest.
+func (v *Validator) Validate(m *Manifest) *ValidationResult {
+	result := &ValidationResult{Valid: true}
+
+	// Required fields
+	if m.APIVersion == "" {
+		result.addError("Missing apiVersion")
+	} else if !apiVersionPattern.MatchString(m.APIVersion) {
+		result.addError(fmt.Sprintf("Invalid apiVersion: %s", m.APIVersion))
 	}
 
-	return ValidateManifest(manifest, schemaPath)
-}
-
-// Quick validation helpers
-
-// IsValid returns true if the manifest is valid
-func (vr *ValidationResult) IsValid() bool {
-	return vr.Valid
-}
-
-// ErrorCount returns the number of validation errors
-func (vr *ValidationResult) ErrorCount() int {
-	return len(vr.Errors)
-}
-
-// FirstError returns the first validation error, or nil if valid
-func (vr *ValidationResult) FirstError() *ValidationError {
-	if len(vr.Errors) == 0 {
-		return nil
+	if m.Kind == "" {
+		result.addError("Missing kind")
+	} else if !ValidKinds[m.Kind] {
+		result.addError(fmt.Sprintf("Invalid kind: %s", m.Kind))
 	}
-	return &vr.Errors[0]
+
+	if m.Metadata.Name == "" {
+		result.addError("Missing metadata.name")
+	}
+
+	if m.Kind == KindAgent && m.Spec.Role == "" {
+		result.addWarning("Agent should have spec.role")
+	}
+
+	// JSON Schema validation if schema loaded
+	if v.schema != nil && result.Valid {
+		data, err := json.Marshal(m)
+		if err == nil {
+			docLoader := gojsonschema.NewBytesLoader(data)
+			schemaResult, err := v.schema.Validate(docLoader)
+			if err == nil && !schemaResult.Valid() {
+				for _, desc := range schemaResult.Errors() {
+					result.addError(fmt.Sprintf("Schema: %s", desc.Description()))
+				}
+			}
+		}
+	}
+
+	// Best practices
+	if m.Spec.LLM == nil {
+		result.addWarning("Best practice: Specify LLM configuration")
+	}
+
+	if len(m.Spec.Tools) == 0 {
+		result.addWarning("Best practice: Define tools/capabilities")
+	}
+
+	return result
+}
+
+func (r *ValidationResult) addError(msg string) {
+	r.Valid = false
+	r.Errors = append(r.Errors, msg)
+}
+
+func (r *ValidationResult) addWarning(msg string) {
+	r.Warnings = append(r.Warnings, msg)
+}
+
+// ValidateManifest validates a manifest (convenience function).
+func ValidateManifest(m *Manifest) *ValidationResult {
+	return NewValidator("").Validate(m)
 }
