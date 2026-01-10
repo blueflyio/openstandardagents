@@ -21,6 +21,7 @@ import { GenerationService } from '../../services/generation.service.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { CodegenService, type GeneratorType } from '../../services/codegen/index.js';
 import type { AgentTemplate, OssaAgent } from '../../types/index.js';
+import { handleCommandError } from '../utils/index.js';
 
 export const generateCommand = new Command('generate')
   .description('Generate code, types, schemas, and manifests');
@@ -58,8 +59,7 @@ generateCommand
       console.log(`Saved to: ${chalk.cyan(options.output)}`);
       process.exit(0);
     } catch (error) {
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
-      process.exit(1);
+      handleCommandError(error);
     }
   });
 
@@ -166,8 +166,7 @@ generateCommand
 
       process.exit(0);
     } catch (error) {
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
-      process.exit(1);
+      handleCommandError(error);
     }
   });
 
@@ -208,8 +207,7 @@ generateCommand
       console.log(chalk.yellow('Run `ossa generate sync` to fix version drift'));
       process.exit(1);
     } catch (error) {
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
-      process.exit(1);
+      handleCommandError(error);
     }
   });
 
@@ -277,7 +275,6 @@ async function runGenerator(type: GeneratorType, dryRun = false): Promise<void> 
     console.log(chalk.green('✓ Generation complete'));
     process.exit(0);
   } catch (error) {
-    console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
-    process.exit(1);
+    handleCommandError(error);
   }
 }
