@@ -144,7 +144,8 @@ async function announceRelease() {
   
   // 1. Create announcement issue
   const projectId = process.env.CI_PROJECT_ID!;
-  await gitlab.Issues.create(projectId, `🎉 Release ${version} Announcement`, {
+  await gitlab.Issues.create(projectId, {
+    title: `🎉 Release ${version} Announcement`,
     description: `
 ## Release ${version} is now available!
 
