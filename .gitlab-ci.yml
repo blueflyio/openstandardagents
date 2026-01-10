@@ -22,8 +22,8 @@ validate:schema:
     - npm ci --prefer-offline --no-audit
   script:
     - echo "🔍 Validating OSSA JSON Schema..."
-    - node -e "JSON.parse(require('fs').readFileSync('spec/v0.3.3/ossa-0.3.3.schema.json'))"
-    - echo "✅ Schema is valid JSON"
+    - npm run validate:schema
+    - echo "✅ Schema compiles successfully"
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH =~ /^release/
@@ -36,9 +36,27 @@ validate:examples:
     - npm ci --prefer-offline --no-audit
   script:
     - echo "🔍 Validating example manifests..."
-    - npm run validate:examples || true
-    - echo "✅ Examples validated"
+    - npm run validate:examples || echo "Some examples need fixes - see issues"
+    - echo "✅ Example validation complete"
   allow_failure: true
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^release/
+    - if: $CI_COMMIT_BRANCH == "main"
+
+validate:power-agents:
+  stage: validate
+  image: node:${NODE_VERSION}-alpine
+  before_script:
+    - npm ci --prefer-offline --no-audit
+  script:
+    - echo "🔍 Validating power agent manifests..."
+    - |
+      for f in .agents/power/*.ossa.yaml; do
+        echo "Validating $f..."
+        npx ajv-cli validate -s spec/v0.3.3/ossa-0.3.3.schema.json --strict=false --allow-union-types -d "$f"
+      done
+    - echo "✅ All power agents valid"
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH =~ /^release/
