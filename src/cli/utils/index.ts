@@ -35,6 +35,23 @@ export {
 // Error formatting
 export { formatValidationErrors, formatErrorCompact } from './error-formatter.js';
 
+// Manifest loading utilities
+export {
+  type ManifestLoadResult,
+  type ManifestLoadError,
+  type LoadManifestsResult,
+  type FindFilesOptions,
+  findManifestFiles,
+  findManifestFilesFromPaths,
+  findManifestsByGlob,
+  loadManifest,
+  loadManifests,
+  loadManifestsByGlob,
+  handleCommandError,
+  exitNoManifestsFound,
+  printPatternInfo,
+} from './manifest-loader.js';
+
 // GitLab configuration
 export {
   type GitLabConfig,
