@@ -24,18 +24,20 @@ validate:ossa:
     - |
       FAILED=0
       for file in $(find examples -name "*.ossa.yaml" -o -name "*.ossa.yml"); do
-        if node dist/cli/index.js validate "$file" 2>&1 | grep -q "✓"; then
+        if node dist/cli/index.js validate "$file" >/dev/null 2>&1; then
           echo "✓ $file"
         else
-          echo "✗ $file"
+          echo "✗ FAILED: $file"
+          node dist/cli/index.js validate "$file" 2>&1 || true
           FAILED=$((FAILED + 1))
         fi
       done
       for file in $(find .agents/power -name "*.ossa.yaml" 2>/dev/null); do
-        if node dist/cli/index.js validate "$file" 2>&1 | grep -q "✓"; then
+        if node dist/cli/index.js validate "$file" >/dev/null 2>&1; then
           echo "✓ $file"
         else
-          echo "✗ $file"
+          echo "✗ FAILED: $file"
+          node dist/cli/index.js validate "$file" 2>&1 || true
           FAILED=$((FAILED + 1))
         fi
       done
