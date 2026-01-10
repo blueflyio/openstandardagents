@@ -6,7 +6,7 @@ metadata:
   description: OSSA compliance validation and policy enforcement agent
   labels:
     ossa.dev/category: compliance
-    ossa.dev/tier: power-agent
+    ossa.dev/tier: standard-example
   annotations:
     ossa.dev/documentation: https://openstandardagents.org/agents/compliance-validator
 spec:

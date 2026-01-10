@@ -6,7 +6,7 @@ metadata:
   description: Data transformation and ETL pipeline agent
   labels:
     ossa.dev/category: data
-    ossa.dev/tier: power-agent
+    ossa.dev/tier: standard-example
     ossa.dev/execution: deterministic
   annotations:
     ossa.dev/documentation: https://openstandardagents.org/agents/data-transformer
