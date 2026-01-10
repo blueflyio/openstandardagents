@@ -1,12 +1,3 @@
-# ============================================================================
-# OSSA Power Agent: Data Transformer
-# ============================================================================
-# Data pipeline and transformation agent for ETL operations, format
-# conversion, validation, and data quality checks.
-#
-# Showcases: Task kind (deterministic), batch processing, data contracts
-# ============================================================================
-
 apiVersion: ossa/v0.3.3
 kind: Task
 metadata:
@@ -19,12 +10,10 @@ metadata:
     ossa.dev/execution: deterministic
   annotations:
     ossa.dev/documentation: https://openstandardagents.org/agents/data-transformer
-
 spec:
-  # Task-specific execution configuration
   execution:
     type: deterministic
-    runtime: any  # Can run on any runtime
+    runtime: any
     batch:
       enabled: true
       parallelism: 10
@@ -32,101 +21,121 @@ spec:
     retry:
       max_attempts: 3
       backoff: exponential
-
   capabilities:
-    - name: data.extract
-      description: Extract data from various sources
-    - name: data.transform
-      description: Transform data between formats
-    - name: data.validate
-      description: Validate data against schemas
-    - name: data.load
-      description: Load data to destination
+  - name: data.extract
+    description: Extract data from various sources
+  - name: data.transform
+    description: Transform data between formats
+  - name: data.validate
+    description: Validate data against schemas
+  - name: data.load
+    description: Load data to destination
+  role: 'You are a data transformation specialist responsible for ETL pipelines,
 
-  role: |
-    You are a data transformation specialist responsible for ETL pipelines,
     format conversion, and data quality validation.
 
+
     ETL workflow:
+
     1. Extract - Read from sources (API, database, files)
+
     2. Transform - Convert, clean, normalize, enrich
+
     3. Validate - Check against schemas, business rules
+
     4. Load - Write to destination systems
 
+
     Data quality checks:
+
     - Schema compliance
+
     - Null/empty value detection
+
     - Type validation
+
     - Range/boundary checks
+
     - Referential integrity
+
     - Duplicate detection
 
-  # Note: Tasks may not need LLM for deterministic operations
+    '
   llm:
     provider: ${OSSA_LLM_PROVIDER:-anthropic}
-    model: ${OSSA_LLM_MODEL:-claude-haiku-3-5}  # Faster model for data tasks
-    temperature: 0.0  # Deterministic
+    model: ${OSSA_LLM_MODEL:-claude-haiku-3-5}
+    temperature: 0.0
     maxTokens: ${OSSA_LLM_MAX_TOKENS:-4096}
-
   tools:
-    - name: data.read.json
-      description: Read JSON data
-      handler:
-        runtime: local
-        capability: fs.read.json
-
-    - name: data.read.csv
-      description: Read CSV data
-      handler:
-        runtime: local
-        capability: fs.read.csv
-
-    - name: data.read.yaml
-      description: Read YAML data
-      handler:
-        runtime: local
-        capability: fs.read.yaml
-
-    - name: data.write
-      description: Write data to file
-      handler:
-        runtime: local
-        capability: fs.write
-
-    - name: data.validate
-      description: Validate against JSON Schema
-      handler:
-        runtime: local
-        capability: jsonschema.validate
-
-    - name: db.query
-      description: Query database
-      handler:
-        runtime: local
-        capability: db.query
-
-  # Input/output contracts for deterministic execution
+  - name: data.read.json
+    description: Read JSON data
+    handler:
+      runtime: local
+      capability: fs.read.json
+    type: function
+  - name: data.read.csv
+    description: Read CSV data
+    handler:
+      runtime: local
+      capability: fs.read.csv
+    type: function
+  - name: data.read.yaml
+    description: Read YAML data
+    handler:
+      runtime: local
+      capability: fs.read.yaml
+    type: function
+  - name: data.write
+    description: Write data to file
+    handler:
+      runtime: local
+      capability: fs.write
+    type: function
+  - name: data.validate
+    description: Validate against JSON Schema
+    handler:
+      runtime: local
+      capability: jsonschema.validate
+    type: function
+  - name: db.query
+    description: Query database
+    handler:
+      runtime: local
+      capability: db.query
+    type: function
   input:
     type: object
-    required: [source, destination]
+    required:
+    - source
+    - destination
     properties:
       source:
         type: object
         properties:
           type:
             type: string
-            enum: [file, api, database]
+            enum:
+            - file
+            - api
+            - database
           path:
             type: string
           format:
             type: string
-            enum: [json, csv, yaml, xml]
+            enum:
+            - json
+            - csv
+            - yaml
+            - xml
       destination:
         type: object
         properties:
           type:
             type: string
-            enum: [file, api, database]
+            enum:
+            - file
+            - api
+            - database
           path:
             type: string
           format:
@@ -140,10 +149,14 @@ spec:
               type: string
             operation:
               type: string
-              enum: [rename, map, filter, aggregate, join]
+              enum:
+              - rename
+              - map
+              - filter
+              - aggregate
+              - join
             config:
               type: object
-
   output:
     type: object
     properties:
@@ -164,11 +177,10 @@ spec:
               type: string
       duration_ms:
         type: integer
-
   contracts:
     provides:
-      - name: data-transformation
-        version: "1.0"
-        schema:
-          input: ${spec.input}
-          output: ${spec.output}
+    - name: data-transformation
+      version: '1.0'
+      schema:
+        input: ${spec.input}
+        output: ${spec.output}

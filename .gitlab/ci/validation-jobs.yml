@@ -20,9 +20,31 @@ validate:ossa:
   script:
     - npm ci --legacy-peer-deps
     - npm run build
-    - echo "Validating example manifests..."
-    - node dist/cli/index.js validate examples/getting-started/hello-world-complete.ossa.yaml || echo "WARNING Validation warnings (non-blocking)"
-  allow_failure: true
+    - echo "Validating all OSSA manifests..."
+    - |
+      FAILED=0
+      for file in $(find examples -name "*.ossa.yaml" -o -name "*.ossa.yml"); do
+        if node dist/cli/index.js validate "$file" 2>&1 | grep -q "✓"; then
+          echo "✓ $file"
+        else
+          echo "✗ $file"
+          FAILED=$((FAILED + 1))
+        fi
+      done
+      for file in $(find .agents/power -name "*.ossa.yaml" 2>/dev/null); do
+        if node dist/cli/index.js validate "$file" 2>&1 | grep -q "✓"; then
+          echo "✓ $file"
+        else
+          echo "✗ $file"
+          FAILED=$((FAILED + 1))
+        fi
+      done
+      if [ $FAILED -gt 0 ]; then
+        echo "ERROR: $FAILED manifests failed validation"
+        exit 1
+      fi
+      echo "All OSSA manifests valid"
+  allow_failure: false
   rules:
     - when: always
 

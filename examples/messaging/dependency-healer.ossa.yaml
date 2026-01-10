@@ -311,7 +311,7 @@ spec:
         channel: dependency.dlq
         retentionDays: 14
       ordering:
-        guarantee: per-channel
+        guarantee: per-source
         timeoutSeconds: 600
 
   autonomy:

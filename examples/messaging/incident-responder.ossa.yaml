@@ -15,7 +15,7 @@ metadata:
     criticality: high
   annotations:
     ossa.openstandardagents.org/category: incident-response
-    ossa.openstandardagents.org/on-call: true
+    ossa.openstandardagents.org/on-call: "true"
     ossa.openstandardagents.org/sla: 15m
 
 spec:

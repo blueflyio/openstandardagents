@@ -106,7 +106,7 @@ spec:
 
     # Commands exposed by this consumer
     commands:
-      - name: process.batch
+      - name: process_batch
         description: Process a batch of data IDs
         inputSchema:
           type: object
