@@ -45,7 +45,7 @@ const DuoManifestSchema = z.object({
   metadata: z.object({
     name: z.string().min(1),
     namespace: z.string().optional(),
-    labels: z.record(z.string()).optional(),
+    labels: z.record(z.string(), z.string()).optional(),
   }),
   spec: z
     .object({
@@ -108,7 +108,7 @@ export function createValidateCommand(): Command {
             } catch (err) {
               if (err instanceof z.ZodError) {
                 errors.push(
-                  `OSSA: ${err.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`
+                  `OSSA: ${err.issues.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`
                 );
               } else {
                 errors.push(`OSSA: ${err}`);
@@ -132,7 +132,7 @@ export function createValidateCommand(): Command {
             } catch (err) {
               if (err instanceof z.ZodError) {
                 errors.push(
-                  `Duo: ${err.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`
+                  `Duo: ${err.issues.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`
                 );
               } else {
                 errors.push(`Duo: ${err}`);

@@ -181,6 +181,16 @@ export interface OssaAgent {
         };
       };
     };
+    dependencies?: {
+      agents?: Array<{
+        name: string;
+        version?: string;
+        contract?: {
+          channels?: string[];
+          commands?: string[];
+        };
+      }>;
+    };
     environments?: Record<
       string,
       {

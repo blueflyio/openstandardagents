@@ -34,14 +34,14 @@ const PlatformSchema = z.object({
   name: z.string().min(1).max(100),
   priority: PlatformPrioritySchema,
   deadline: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Must be YYYY-MM-DD format'),
-  requirements: z.record(z.unknown()).optional().default({}),
+  requirements: z.record(z.string(), z.unknown()).optional().default({}),
 });
 
 const WorkflowInputSchema = z.object({
   platform: z.string(),
   priority: PlatformPrioritySchema,
   deadline: z.string(),
-  requirements: z.record(z.unknown()).optional().default({}),
+  requirements: z.record(z.string(), z.unknown()).optional().default({}),
 });
 
 type Platform = z.infer<typeof PlatformSchema>;
@@ -65,17 +65,17 @@ export interface IExtensionTeamKickoffService {
 @injectable()
 export class ExtensionTeamKickoffService implements IExtensionTeamKickoffService {
   private readonly CRITICAL_PLATFORMS: Platform[] = [
-    { name: 'vertex-ai', priority: 'critical', deadline: '2026-02-01' },
-    { name: 'dialogflow', priority: 'critical', deadline: '2026-02-01' },
-    { name: 'autogpt', priority: 'critical', deadline: '2026-02-15' },
-    { name: 'n8n', priority: 'critical', deadline: '2026-02-15' },
+    { name: 'vertex-ai', priority: 'critical', deadline: '2026-02-01', requirements: {} },
+    { name: 'dialogflow', priority: 'critical', deadline: '2026-02-01', requirements: {} },
+    { name: 'autogpt', priority: 'critical', deadline: '2026-02-15', requirements: {} },
+    { name: 'n8n', priority: 'critical', deadline: '2026-02-15', requirements: {} },
   ];
 
   private readonly HIGH_PRIORITY_PLATFORMS: Platform[] = [
-    { name: 'dspy', priority: 'high', deadline: '2026-03-01' },
-    { name: 'babyagi', priority: 'high', deadline: '2026-03-01' },
-    { name: 'zapier', priority: 'high', deadline: '2026-03-15' },
-    { name: 'salesforce-einstein', priority: 'high', deadline: '2026-03-15' },
+    { name: 'dspy', priority: 'high', deadline: '2026-03-01', requirements: {} },
+    { name: 'babyagi', priority: 'high', deadline: '2026-03-01', requirements: {} },
+    { name: 'zapier', priority: 'high', deadline: '2026-03-15', requirements: {} },
+    { name: 'salesforce-einstein', priority: 'high', deadline: '2026-03-15', requirements: {} },
   ];
 
   private readonly WORKFLOWS_DIR = '.gitlab/agents/workflows';

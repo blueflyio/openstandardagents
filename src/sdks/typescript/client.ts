@@ -47,7 +47,7 @@ export class OSSASDKClient {
     errors: string[];
     warnings: string[];
   } {
-    return this.manifestService.validate(manifest, this.options.strict);
+    return this.manifestService.validate(manifest);
   }
 
   /**

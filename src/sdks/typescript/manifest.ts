@@ -4,85 +4,58 @@
  * SOLID: Single Responsibility - Manifest CRUD operations
  * CRUD: Create, Read, Update, Delete manifests
  * DRY: Uses shared loader and validator
- * Zod: Runtime validation
  */
 
-import { writeFileSync } from 'fs';
-import { stringify } from 'yaml';
-import { z } from 'zod';
-import { ManifestLoader, type ManifestBase } from '../shared/manifest-loader.js';
-import { SchemaValidator } from '../shared/schema-validator.js';
-import type {
-  AgentManifest,
-  TaskManifest,
-  WorkflowManifest,
-  OSSAManifest,
-} from './types.js';
-import {
-  AgentManifestSchema,
-  TaskManifestSchema,
-  WorkflowManifestSchema,
-} from './types.js';
+import { readFileSync, writeFileSync } from 'fs';
+import { parse, stringify } from 'yaml';
+import type { OSSAManifest } from './types.js';
 
 export class ManifestService {
-  private loader: ManifestLoader;
-  private validator: SchemaValidator;
-
-  constructor() {
-    this.loader = new ManifestLoader();
-    this.validator = new SchemaValidator();
-  }
-
   /**
    * Load manifest from file
    * CRUD: Read
    */
   load(filePath: string): OSSAManifest {
-    // Load without validation first to determine kind
-    const rawContent = ManifestLoader.load(filePath, z.any() as z.ZodTypeAny, { validate: false });
+    const content = readFileSync(filePath, 'utf-8');
+    const parsed = filePath.endsWith('.json')
+      ? JSON.parse(content)
+      : parse(content);
 
-    // Determine schema based on kind
-    const schema =
-      rawContent.kind === 'Agent'
-        ? AgentManifestSchema
-        : rawContent.kind === 'Task'
-        ? TaskManifestSchema
-        : WorkflowManifestSchema;
-
-    // Validate and return typed manifest
-    return schema.parse(rawContent);
+    return parsed as OSSAManifest;
   }
 
   /**
-   * Validate manifest
+   * Validate manifest structure
    * CRUD: Read (validation)
    */
-  validate(manifest: OSSAManifest, strict = false): {
+  validate(manifest: OSSAManifest): {
     valid: boolean;
     errors: string[];
     warnings: string[];
   } {
-    const schema =
-      manifest.kind === 'Agent'
-        ? AgentManifestSchema
-        : manifest.kind === 'Task'
-        ? TaskManifestSchema
-        : WorkflowManifestSchema;
+    const errors: string[] = [];
+    const warnings: string[] = [];
 
-    const result = this.validator.validateZod(manifest, schema, strict);
+    // Required fields
+    if (!manifest.apiVersion) errors.push('Missing apiVersion');
+    if (!manifest.kind) errors.push('Missing kind');
+    if (!manifest.metadata) errors.push('Missing metadata');
+    if (!manifest.spec) errors.push('Missing spec');
 
-    if (result.valid) {
-      return {
-        valid: true,
-        errors: [],
-        warnings: [],
-      };
+    // Kind validation
+    if (manifest.kind && !['Agent', 'Task', 'Workflow'].includes(manifest.kind)) {
+      errors.push(`Invalid kind: ${manifest.kind}`);
+    }
+
+    // Metadata validation
+    if (manifest.metadata && !manifest.metadata.name) {
+      errors.push('Missing metadata.name');
     }
 
     return {
-      valid: false,
-      errors: result.errors || [],
-      warnings: [],
+      valid: errors.length === 0,
+      errors,
+      warnings,
     };
   }
 
@@ -92,7 +65,7 @@ export class ManifestService {
    */
   save(manifest: OSSAManifest, filePath: string, format: 'yaml' | 'json' = 'yaml'): void {
     // Validate before saving
-    const validation = this.validate(manifest, true);
+    const validation = this.validate(manifest);
     if (!validation.valid) {
       throw new Error(`Invalid manifest: ${validation.errors.join(', ')}`);
     }

@@ -119,8 +119,8 @@ export class SchemaValidator {
       };
     }
 
-    const errors = result.error.errors.map(
-      (err) => `${err.path.join('.')}: ${err.message}`
+    const errors = result.error.issues.map(
+      (issue) => `${issue.path.join('.')}: ${issue.message}`
     );
 
     return {

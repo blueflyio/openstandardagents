@@ -1,13 +1,23 @@
 /**
- * OSSA SDKs - Unified SDK Architecture
+ * OSSA SDK - TypeScript SDK for OSSA manifests
  *
- * SOLID: Single Responsibility per SDK, Open/Closed for extensibility
- * DRY: Shared validation, type generation, and utilities
- * Zod: Runtime validation for all SDKs
- * OpenAPI: SDK contracts defined in openapi/
- * CRUD: Create/Read/Update/Delete operations for manifests
+ * Provides:
+ * - Type-safe manifest handling
+ * - Schema validation with Zod
+ * - YAML parsing and serialization
+ * - CLI integration
+ *
+ * Note: Python SDK is in ./python/ as separate pip package
+ * Note: Go SDK is in ./go/ as separate Go module
  */
 
+// Export TypeScript SDK
 export * from './typescript/index.js';
-export * from './python/index.js';
-export * from './shared/index.js';
+
+// Export shared utilities (avoiding name conflicts)
+export {
+  ManifestLoader,
+  SchemaValidator,
+  loadManifest,
+  validateManifest,
+} from './shared/index.js';
