@@ -57,6 +57,7 @@ test:unit:
   extends: .node-setup
   stage: test
   script:
+    - npm run build
     - npm run test
   artifacts:
     when: always
