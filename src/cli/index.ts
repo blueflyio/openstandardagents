@@ -3,10 +3,22 @@
 /**
  * OSSA CLI - Open Standard for Scalable AI Agents
  * Main CLI entry point
+ *
+ * This CLI contains ONLY platform-agnostic OSSA commands.
+ * Platform-specific commands (GitLab, GitHub) are available via extensions.
+ *
+ * To enable extensions:
+ *   export OSSA_EXTENSIONS=true
+ *   export OSSA_EXTENSIONS_LIST=gitlab
+ *
+ * Or create .ossa-extensions.json:
+ *   { "enabled": true, "extensions": ["gitlab"] }
  */
 
 import { program } from 'commander';
 import 'reflect-metadata';
+
+// Core OSSA commands (platform-agnostic)
 import { agentCardCommand } from './commands/agent-card.command.js';
 import { agentsMdCommand } from './commands/agents-md.command.js';
 import { agentsCommandGroup } from './commands/agents.command.js';
@@ -23,7 +35,6 @@ import { diffCommand } from './commands/diff.command.js';
 import { exportCommand } from './commands/export.command.js';
 import { extensionTeamCommand } from './commands/extension-team.command.js';
 import { generateCommand } from './commands/generate.command.js';
-import { gitlabAgentCommand } from './commands/gitlab-agent.command.js';
 import { importCommand } from './commands/import.command.js';
 import { infoCommand } from './commands/info.command.js';
 import { initCommand } from './commands/init.command.js';
@@ -39,11 +50,17 @@ import { runCommand } from './commands/run.command.js';
 import { schemaCommand } from './commands/schema.command.js';
 import { searchCommand } from './commands/search.command.js';
 import { setupCommand } from './commands/setup.command.js';
-import { syncCommand } from './commands/sync.command.js';
 import { testCommand } from './commands/test.command.js';
 import { validateCommand } from './commands/validate.command.js';
 import { workspaceCommand } from './commands/workspace.command.js';
-import { createCatalogCommand } from './commands/catalog/index.js';
+
+// Extension system
+import {
+  shouldLoadExtensions,
+  getEnabledExtensions,
+  createExtensionsCommand,
+  type OSSAExtension,
+} from './extensions/index.js';
 
 // Load package.json for version (lazy to avoid Jest module resolution issues)
 import * as fs from 'fs';
@@ -131,7 +148,10 @@ program
   .description('OSSA CLI - Open Standard for Scalable AI Agents (The OpenAPI for AI Agents)')
   .version(getVersion());
 
-// Register commands
+// ============================================================================
+// Register Core OSSA Commands (Platform-Agnostic)
+// ============================================================================
+
 program.addCommand(quickstartCommand); // First for discoverability
 program.addCommand(validateCommand);
 program.addCommand(dependenciesCommand);
@@ -143,10 +163,8 @@ program.addCommand(exportCommand);
 program.addCommand(importCommand);
 program.addCommand(schemaCommand);
 program.addCommand(runCommand);
-program.addCommand(gitlabAgentCommand);
 program.addCommand(releaseCommandGroup);
 program.addCommand(setupCommand);
-program.addCommand(syncCommand);
 program.addCommand(agentsMdCommand);
 program.addCommand(llmsTxtCommand);
 
@@ -156,18 +174,19 @@ program.addCommand(searchCommand);
 program.addCommand(installCommand);
 program.addCommand(infoCommand);
 
-// Register new enhanced deploy commands
+// Deploy commands
 program.addCommand(deployCommand);
 program.addCommand(statusCommand);
 program.addCommand(rollbackCommand);
 program.addCommand(stopCommand);
+program.addCommand(deployGroup); // Legacy compatibility
 
-// Register legacy deploy group for backward compatibility
-program.addCommand(deployGroup);
-
+// Quality commands
 program.addCommand(testCommand);
 program.addCommand(lintCommand);
 program.addCommand(diffCommand);
+
+// Agent management
 program.addCommand(agentsCommandGroup);
 
 // Two-tier architecture commands
@@ -178,8 +197,63 @@ program.addCommand(agentCardCommand);
 // Extension development commands
 program.addCommand(extensionTeamCommand);
 
-// Catalog commands (GitLab Duo integration)
-program.addCommand(createCatalogCommand());
+// ============================================================================
+// Extension Loading
+// ============================================================================
 
-// Parse arguments - MUST be after all commands are registered
-program.parse();
+/**
+ * Load and register platform-specific extensions
+ */
+async function loadExtensions(): Promise<OSSAExtension[]> {
+  const extensions: OSSAExtension[] = [];
+
+  if (!shouldLoadExtensions()) {
+    return extensions;
+  }
+
+  const enabled = getEnabledExtensions();
+
+  for (const extName of enabled) {
+    try {
+      if (extName === 'gitlab') {
+        const { loadGitLabExtension } = await import('./extensions/gitlab.extension.js');
+        const ext = await loadGitLabExtension();
+        extensions.push(ext);
+
+        // Register extension commands
+        for (const cmd of ext.commands) {
+          program.addCommand(cmd);
+        }
+      }
+      // Add more extensions here as needed
+    } catch (error) {
+      // Extension failed to load - continue without it
+      if (process.env.DEBUG) {
+        console.error(`Failed to load extension '${extName}':`, error);
+      }
+    }
+  }
+
+  return extensions;
+}
+
+// ============================================================================
+// Main Entry Point
+// ============================================================================
+
+async function main() {
+  // Load extensions if enabled
+  const extensions = await loadExtensions();
+
+  // Add extensions command (always available to show extension status)
+  program.addCommand(createExtensionsCommand(extensions));
+
+  // Parse arguments - MUST be after all commands are registered
+  program.parse();
+}
+
+// Run CLI
+main().catch((error) => {
+  console.error('CLI Error:', error);
+  process.exit(1);
+});
