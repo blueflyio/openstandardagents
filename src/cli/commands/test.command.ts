@@ -8,39 +8,85 @@ export const testCommand = new Command('test')
   .argument('<path>', 'Path to agent manifest')
   .option('--test-id <id>', 'Run specific test by ID')
   .option('--verbose', 'Verbose output')
+  .option('--output <format>', 'Output format (json|text)', 'text')
   .description('Run agent tests')
-  .action(async (manifestPath: string, options: { testId?: string; verbose?: boolean }) => {
+  .action(async (manifestPath: string, options: { testId?: string; verbose?: boolean; output?: string }) => {
+    const testResults: Array<{ id: string; type: string; passed: boolean; error?: string }> = [];
+
     try {
       const manifestRepo = container.get(ManifestRepository);
       const validationService = container.get(ValidationService);
-      console.log(chalk.blue(`Loading agent: ${manifestPath}`));
+
+      if (options.output !== 'json') {
+        console.log(chalk.blue(`Loading agent: ${manifestPath}`));
+      }
+
       const manifest: any = await manifestRepo.load(manifestPath);
       const result = await validationService.validate(manifest);
+
       if (!result.valid) {
-        console.error(chalk.red('✗ Agent validation failed'));
-        result.errors.forEach((error) => console.error(chalk.red(`  - ${error}`)));
+        if (options.output === 'json') {
+          console.log(JSON.stringify({
+            success: false,
+            path: manifestPath,
+            error: 'Agent validation failed',
+            validationErrors: result.errors,
+          }, null, 2));
+        } else {
+          console.error(chalk.red('✗ Agent validation failed'));
+          result.errors.forEach((error) => console.error(chalk.red(`  - ${error}`)));
+        }
         process.exit(1);
       }
+
       const agentName = manifest.metadata.name;
       const tests = manifest.spec?.tests || [];
+
       if (tests.length === 0) {
-        console.log(chalk.yellow(`No tests defined for ${agentName}`));
+        if (options.output === 'json') {
+          console.log(JSON.stringify({
+            success: true,
+            path: manifestPath,
+            agent: agentName,
+            tests: [],
+            summary: { passed: 0, failed: 0, total: 0 },
+          }, null, 2));
+        } else {
+          console.log(chalk.yellow(`No tests defined for ${agentName}`));
+        }
         return;
       }
+
       const testsToRun = options.testId ? tests.filter((t: any) => t.id === options.testId) : tests;
+
       if (testsToRun.length === 0) {
-        console.error(chalk.red(`✗ Test "${options.testId}" not found`));
+        if (options.output === 'json') {
+          console.log(JSON.stringify({
+            success: false,
+            path: manifestPath,
+            error: `Test "${options.testId}" not found`,
+          }, null, 2));
+        } else {
+          console.error(chalk.red(`✗ Test "${options.testId}" not found`));
+        }
         process.exit(1);
       }
-      console.log(chalk.blue(`\nRunning ${testsToRun.length} test(s)...\n`));
+
+      if (options.output !== 'json') {
+        console.log(chalk.blue(`\nRunning ${testsToRun.length} test(s)...\n`));
+      }
+
       let passed = 0;
       let failed = 0;
+
       for (const test of testsToRun) {
         const testId = test.id || 'unnamed';
         const testType = test.type || 'unit';
-        if (options.verbose) {
+
+        if (options.verbose && options.output !== 'json') {
           console.log(chalk.cyan(`[${testType}] ${testId}`));
         }
+
         try {
           if (test.assertions) {
             for (const assertion of test.assertions) {
@@ -54,30 +100,55 @@ export const testCommand = new Command('test')
             }
           }
           passed++;
-          if (options.verbose) {
+          testResults.push({ id: testId, type: testType, passed: true });
+
+          if (options.verbose && options.output !== 'json') {
             console.log(chalk.green(`  ✓ Passed\n`));
           }
         } catch (error) {
           failed++;
-          console.log(
-            chalk.red(`  ✗ Failed: ${error instanceof Error ? error.message : String(error)}\n`)
-          );
+          const errorMsg = error instanceof Error ? error.message : String(error);
+          testResults.push({ id: testId, type: testType, passed: false, error: errorMsg });
+
+          if (options.output !== 'json') {
+            console.log(chalk.red(`  ✗ Failed: ${errorMsg}\n`));
+          }
         }
       }
-      console.log(chalk.cyan.bold('\nTest Results\n'));
-      console.log(chalk.green(`  Passed: ${passed}`));
-      if (failed > 0) {
-        console.log(chalk.red(`  Failed: ${failed}`));
+
+      if (options.output === 'json') {
+        console.log(JSON.stringify({
+          success: failed === 0,
+          path: manifestPath,
+          agent: agentName,
+          tests: testResults,
+          summary: { passed, failed, total: passed + failed },
+        }, null, 2));
+      } else {
+        console.log(chalk.cyan.bold('\nTest Results\n'));
+        console.log(chalk.green(`  Passed: ${passed}`));
+        if (failed > 0) {
+          console.log(chalk.red(`  Failed: ${failed}`));
+        }
+        console.log(chalk.white(`  Total:  ${passed + failed}\n`));
       }
-      console.log(chalk.white(`  Total:  ${passed + failed}\n`));
+
       if (failed > 0) {
         process.exit(1);
       }
     } catch (error) {
-      console.error(
-        chalk.red('✗ Test execution failed:'),
-        error instanceof Error ? error.message : String(error)
-      );
+      const errorMsg = error instanceof Error ? error.message : String(error);
+
+      if (options.output === 'json') {
+        console.log(JSON.stringify({
+          success: false,
+          path: manifestPath,
+          error: errorMsg,
+          tests: testResults,
+        }, null, 2));
+      } else {
+        console.error(chalk.red('✗ Test execution failed:'), errorMsg);
+      }
       process.exit(1);
     }
   });

@@ -20,6 +20,7 @@ export const validateCommand = new Command('validate')
   .option('--openapi', 'Validate as OpenAPI specification with OSSA extensions')
   .option('--check-messaging', 'Validate messaging extension (v0.3.0+)')
   .option('-v, --verbose', 'Verbose output with detailed information')
+  .option('--output <format>', 'Output format (json|text)', 'text')
   .description('Validate OSSA agent manifest or OpenAPI spec against JSON schema')
   .action(
     async (
@@ -29,6 +30,7 @@ export const validateCommand = new Command('validate')
         openapi?: boolean;
         checkMessaging?: boolean;
         verbose?: boolean;
+        output?: string;
       }
     ) => {
       try {
@@ -53,6 +55,32 @@ export const validateCommand = new Command('validate')
         }
 
         // Output results
+        if (options.output === 'json') {
+          // JSON output for machine consumption
+          const m = result.manifest as OssaAgent;
+          const jsonOutput = {
+            valid: result.valid,
+            path,
+            schemaVersion: options.schema || m?.apiVersion?.replace('ossa/', '') || 'auto',
+            errors: result.errors.map((e: any) => ({
+              path: e.instancePath || e.path || '',
+              message: e.message || String(e),
+              keyword: e.keyword || 'validation',
+            })),
+            warnings: result.warnings || [],
+            manifest: result.valid
+              ? {
+                  name: m?.metadata?.name || m?.agent?.name,
+                  version: m?.metadata?.version || m?.agent?.version,
+                  kind: m?.kind || 'Agent',
+                  apiVersion: m?.apiVersion,
+                }
+              : undefined,
+          };
+          console.log(JSON.stringify(jsonOutput, null, 2));
+          process.exit(result.valid ? 0 : 1);
+        }
+
         if (result.valid) {
           if (options.openapi) {
             console.log(chalk.green('✓ OpenAPI spec is valid with OSSA extensions'));
