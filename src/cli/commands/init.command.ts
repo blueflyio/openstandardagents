@@ -9,6 +9,7 @@ import * as fs from 'fs';
 import readline from 'readline';
 import type { OssaAgent } from '../../types/index.js';
 import { getApiVersion } from '../../utils/version.js';
+import { handleCommandError } from '../utils/index.js';
 
 const rl = readline.createInterface({
   input: process.stdin,

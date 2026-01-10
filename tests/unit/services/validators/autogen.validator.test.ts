@@ -11,7 +11,7 @@ describe('AutoGenValidator', () => {
   describe('validate', () => {
     it('should validate manifest without autogen extension', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.2.8',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Agent',
         metadata: { name: 'test', version: '1.0.0' },
         spec: { role: 'assistant' },
@@ -22,7 +22,7 @@ describe('AutoGenValidator', () => {
 
     it('should validate with disabled autogen', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.2.8',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Agent',
         metadata: { name: 'test', version: '1.0.0' },
         spec: { role: 'assistant' },
@@ -34,7 +34,7 @@ describe('AutoGenValidator', () => {
 
     it('should validate with valid autogen config', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.2.8',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Agent',
         metadata: { name: 'test', version: '1.0.0' },
         spec: { role: 'assistant' },

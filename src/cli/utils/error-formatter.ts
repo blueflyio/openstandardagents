@@ -178,7 +178,7 @@ function formatError(error: ErrorObject, index: number, manifest?: unknown): str
       // Check for common typos
       if (COMMON_TYPOS[missingProp]) {
         const typos = COMMON_TYPOS[missingProp];
-        lines.push(chalk.yellow(`   💡 Did you mean one of these?`));
+        lines.push(chalk.yellow(`   [TIP] Did you mean one of these?`));
         typos.forEach((typo) => {
           lines.push(chalk.yellow(`      • ${typo}`));
         });
@@ -204,11 +204,11 @@ function formatError(error: ErrorObject, index: number, manifest?: unknown): str
 
       // Helpful suggestion
       if (expectedType === 'array' && actualType === 'string') {
-        lines.push(chalk.yellow(`   💡 This field expects an array. Try:`));
+        lines.push(chalk.yellow(`   [TIP] This field expects an array. Try:`));
         lines.push(chalk.yellow(`      ${fieldName}: [${JSON.stringify(actualValue)}]`));
         lines.push('');
       } else if (expectedType === 'string' && actualType === 'array') {
-        lines.push(chalk.yellow(`   💡 This field expects a single value, not an array`));
+        lines.push(chalk.yellow(`   [TIP] This field expects a single value, not an array`));
         lines.push('');
       }
       break;
@@ -223,7 +223,7 @@ function formatError(error: ErrorObject, index: number, manifest?: unknown): str
       // Special handling for apiVersion pattern
       if (fieldName === 'apiVersion') {
         lines.push(
-          chalk.yellow(`   💡 apiVersion should follow format: ${chalk.bold('ossa/v0.3.0')}`)
+          chalk.yellow(`   [TIP] apiVersion should follow format: ${chalk.bold('ossa/v0.3.0')}`)
         );
         lines.push(chalk.yellow(`      Your value: ${JSON.stringify(actualValue)}`));
         lines.push('');
@@ -240,7 +240,7 @@ function formatError(error: ErrorObject, index: number, manifest?: unknown): str
       const knownFields = Object.keys(COMMON_TYPOS);
       const suggestion = findClosestMatch(additionalProp, knownFields);
       if (suggestion) {
-        lines.push(chalk.yellow(`   💡 Did you mean "${chalk.bold(suggestion)}"?`));
+        lines.push(chalk.yellow(`   [TIP] Did you mean "${chalk.bold(suggestion)}"?`));
         lines.push('');
       }
       break;
@@ -293,7 +293,7 @@ export function formatValidationErrors(errors: ErrorObject[], manifest?: unknown
   // Footer with helpful tips
   lines.push(chalk.gray('─'.repeat(70)));
   lines.push('');
-  lines.push(chalk.cyan('💡 Common fixes:'));
+  lines.push(chalk.cyan('[TIP] Common fixes:'));
   lines.push(chalk.cyan('   • Check spelling of field names (case-sensitive)'));
   lines.push(chalk.cyan('   • Verify apiVersion format: ossa/v0.3.0'));
   lines.push(chalk.cyan('   • Use --verbose for detailed error information'));

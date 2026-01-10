@@ -27,5 +27,5 @@
     "types": ["node", "jest"]
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "coverage", "cli"]
+  "exclude": ["node_modules", "dist", "coverage", "cli", "src/types/generated/openapi/*.zod.ts", "src/tools/**"]
 }

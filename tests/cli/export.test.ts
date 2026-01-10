@@ -15,7 +15,7 @@ describe('Export Adapters', () => {
 
   beforeEach(() => {
     testManifest = {
-      apiVersion: 'ossa/v0.3.0',
+      apiVersion: 'ossa/v0.3.3',
       kind: 'Agent',
       metadata: {
         name: 'test-agent',
@@ -303,7 +303,7 @@ describe('Export Adapters', () => {
   describe('Error Handling', () => {
     it('should handle missing metadata gracefully', () => {
       const noMetadata: OssaAgent = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Agent',
         spec: {
           role: 'Test',
@@ -319,7 +319,7 @@ describe('Export Adapters', () => {
 
     it('should handle missing spec gracefully', () => {
       const noSpec: OssaAgent = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Agent',
         metadata: {
           name: 'test',

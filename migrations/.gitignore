@@ -1,0 +1,7 @@
+# Migration state file (tracked in git for CI/CD)
+# .migration-state.json
+
+# Temporary migration files
+*.tmp
+*.bak
+*.backup

@@ -11,7 +11,7 @@ export function createGitHubSyncCommand(): Command {
     .action(async (number: string) => {
       const service = createService();
       const mr = await service.syncPR(parseInt(number));
-      console.log(`✅ Created GitLab MR: ${mr.web_url}`);
+      console.log(`[PASS] Created GitLab MR: ${mr.web_url}`);
     });
 
   cmd
@@ -21,7 +21,7 @@ export function createGitHubSyncCommand(): Command {
     .action(async (options) => {
       const service = createService();
       const mr = await service.batchSyncPRs({ author: options.author });
-      console.log(`✅ Created batch MR: ${mr.web_url}`);
+      console.log(`[PASS] Created batch MR: ${mr.web_url}`);
     });
 
   cmd

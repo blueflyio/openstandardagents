@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Decision Arbitration Judge Agent API
-  version: 0.3.2
+  version: 0.3.3
   description: |
     Ultimate decision-making agent for conflict resolution and final arbitration.
     Makes decisions, resolves disputes, and prioritizes requests.

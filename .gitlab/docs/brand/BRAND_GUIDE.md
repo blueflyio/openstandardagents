@@ -398,7 +398,7 @@ Use **Dracula** or **Nord** theme for consistency.
 
 ```yaml
 # OSSA Manifest Example
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: example-agent
