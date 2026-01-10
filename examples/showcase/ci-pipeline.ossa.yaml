@@ -6,7 +6,7 @@ metadata:
   description: CI/CD automation agent for pipeline management
   labels:
     ossa.dev/category: devops
-    ossa.dev/tier: power-agent
+    ossa.dev/tier: standard-example
     ossa.dev/runtime: gitlab-ci
   annotations:
     ossa.dev/documentation: https://openstandardagents.org/agents/ci-pipeline

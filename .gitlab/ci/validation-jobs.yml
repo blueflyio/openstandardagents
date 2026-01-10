@@ -32,7 +32,7 @@ validate:ossa:
           FAILED=$((FAILED + 1))
         fi
       done
-      for file in $(find .agents/power -name "*.ossa.yaml" 2>/dev/null); do
+      for file in $(find examples/ossa-templates -name "*.ossa.yaml" 2>/dev/null); do
         if node dist/cli/index.js validate "$file" >/dev/null 2>&1; then
           echo "✓ $file"
         else
