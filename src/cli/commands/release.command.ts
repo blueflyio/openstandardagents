@@ -13,6 +13,7 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import { z } from 'zod';
+import { outputJSON } from '../utils/index.js';
 
 // ============================================================================
 // Version Subcommands - Consolidates ALL version management
@@ -461,7 +462,7 @@ changelogCommand
       }
 
       if (options.output === 'json') {
-        console.log(JSON.stringify({ range, entries: grouped }, null, 2));
+        outputJSON({ range, entries: grouped });
         return;
       }
 
