@@ -10,6 +10,7 @@ import * as fs from 'fs';
 import * as yaml from 'yaml';
 import { ListOptionsSchema, type ListOptions } from './schemas.js';
 import { CatalogConfig } from './config.js';
+import { outputJSON } from '../../utils/index.js';
 
 interface AgentStatus {
   id: string;
@@ -76,7 +77,7 @@ export function createListCommand(): Command {
 
       // Output based on format
       if (options.format === 'json') {
-        console.log(JSON.stringify({ agents: filteredStatuses }, null, 2));
+        outputJSON({ agents: filteredStatuses });
         return;
       }
 
