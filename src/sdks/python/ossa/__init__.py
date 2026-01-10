@@ -17,8 +17,8 @@ Quick Start:
 For more examples, see: https://openstandardagents.org/docs/sdks/python
 """
 
-__version__ = "0.3.0"
-__ossa_version__ = "v0.3.0"
+__version__ = "0.3.3"
+__ossa_version__ = "v0.3.3"
 
 # Core functionality
 from .manifest import export_manifest, load_manifest, validate_manifest
