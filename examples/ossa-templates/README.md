@@ -1,11 +1,11 @@
-# OSSA Power Agents
+# OSSA Specification Templates
 
-10 optimized agents showcasing the full power of OSSA v0.3.3.
+10 OSSA v0.3.3 manifest templates showcasing the full specification.
 
-## Agents
+## Templates
 
-| # | Agent | Kind | Category | Features Showcased |
-|---|-------|------|----------|-------------------|
+| # | Template | Kind | Category | Features Showcased |
+|---|----------|------|----------|-------------------|
 | 01 | **code-assistant** | Agent | Development | IDE extensions, tool use, LLM config |
 | 02 | **security-scanner** | Agent | Security | Safety policies, constraints, access tiers |
 | 03 | **ci-pipeline** | Agent | DevOps | Runtime integration, messaging, GitLab extension |
@@ -15,11 +15,11 @@
 | 07 | **workflow-orchestrator** | Workflow | Orchestration | Multi-agent composition, state management |
 | 08 | **content-writer** | Agent | Content | Drupal extension, async processing |
 | 09 | **test-generator** | Agent | Testing | Code analysis, multi-language |
-| 10 | **data-transformer** | Task | Data | Deterministic execution, batch processing |
+| 10 | **data-transformer** | Agent | Data | Deterministic execution, batch processing |
 
 ## OSSA Kinds Demonstrated
 
-- **Agent** - AI-powered agents with LLM inference
+- **Agent** - AI agents with LLM inference
 - **Workflow** - Multi-agent orchestration
 - **Task** - Deterministic, non-agentic operations
 
@@ -74,7 +74,7 @@ extensions:
 
 ### 5. Deterministic Tasks (data-transformer)
 ```yaml
-kind: Task
+kind: Agent
 spec:
   execution:
     type: deterministic
@@ -86,10 +86,10 @@ spec:
 ## Usage
 
 ```bash
-# Validate all power agents
-ossa validate .agents/power/*.ossa.yaml
+# Validate all OSSA templates
+ossa validate examples/ossa-templates/*.ossa.yaml
 
-# Generate agent from power agent template
+# Generate agent from template
 ossa generate agent security-scanner -o my-scanner.ossa.yaml
 ```
 

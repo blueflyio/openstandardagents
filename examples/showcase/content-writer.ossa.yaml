@@ -6,7 +6,7 @@ metadata:
   description: CMS content generation agent with Drupal integration
   labels:
     ossa.dev/category: content
-    ossa.dev/tier: power-agent
+    ossa.dev/tier: standard-example
     ossa.dev/runtime: drupal
   annotations:
     ossa.dev/documentation: https://openstandardagents.org/agents/content-writer
