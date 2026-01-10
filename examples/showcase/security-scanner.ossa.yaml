@@ -1,12 +1,3 @@
-# ============================================================================
-# OSSA Power Agent: Security Scanner
-# ============================================================================
-# Comprehensive security analysis agent with vulnerability scanning,
-# dependency audit, secret detection, and compliance checking.
-#
-# Showcases: Safety policies, constraints, access tiers
-# ============================================================================
-
 apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
@@ -19,47 +10,57 @@ metadata:
     ossa.dev/access-tier: elevated
   annotations:
     ossa.dev/documentation: https://openstandardagents.org/agents/security-scanner
-
 spec:
   capabilities:
-    - type: function
-      name: security.scan
-      description: Scan codebase for security vulnerabilities
-    - type: function
-      name: security.audit
-      description: Audit dependencies for known CVEs
-    - type: function
-      name: security.secrets
-      description: Detect exposed secrets and credentials
-    - type: function
-      name: security.compliance
-      description: Check compliance against security policies
+  - type: function
+    name: security.scan
+    description: Scan codebase for security vulnerabilities
+  - type: function
+    name: security.audit
+    description: Audit dependencies for known CVEs
+  - type: function
+    name: security.secrets
+    description: Detect exposed secrets and credentials
+  - type: function
+    name: security.compliance
+    description: Check compliance against security policies
+  role: 'You are a security specialist agent responsible for identifying vulnerabilities,
 
-  role: |
-    You are a security specialist agent responsible for identifying vulnerabilities,
     auditing dependencies, detecting secrets, and ensuring compliance with security
+
     policies.
 
+
     Security scanning process:
+
     1. Static analysis for common vulnerability patterns (OWASP Top 10)
+
     2. Dependency vulnerability scanning (CVE database)
+
     3. Secret detection (API keys, tokens, credentials)
+
     4. Configuration security review
+
     5. Compliance policy validation
 
+
     Always provide:
+
     - Severity classification (Critical, High, Medium, Low)
+
     - Affected file and line number
+
     - Remediation guidance
+
     - References to CVEs or security advisories
 
+    '
   llm:
     provider: anthropic
     model: claude-sonnet-4
-    temperature: 0.1  # Low temperature for consistent security analysis
+    temperature: 0.1
     maxTokens: 16384
-
   tools:
-    - type: function
-      name: scan.sast
-      description: Run static application security testing
+  - type: function
+    name: scan.sast
+    description: Run static application security testing

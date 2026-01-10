@@ -1,12 +1,3 @@
-# ============================================================================
-# OSSA Power Agent: Code Reviewer
-# ============================================================================
-# Automated code review agent for pull/merge requests with quality checks,
-# style enforcement, and constructive feedback.
-#
-# Showcases: Identity, access tiers, contracts
-# ============================================================================
-
 apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
@@ -19,108 +10,107 @@ metadata:
     ossa.dev/access-tier: standard
   annotations:
     ossa.dev/documentation: https://openstandardagents.org/agents/code-reviewer
-
 spec:
   capabilities:
-    - name: review.analyze
-      description: Analyze code changes for issues
-    - name: review.comment
-      description: Add review comments on specific lines
-    - name: review.approve
-      description: Approve merge requests (requires elevated access)
-    - name: review.request-changes
-      description: Request changes with specific feedback
+  - name: review.analyze
+    description: Analyze code changes for issues
+  - name: review.comment
+    description: Add review comments on specific lines
+  - name: review.approve
+    description: Approve merge requests (requires elevated access)
+  - name: review.request-changes
+    description: Request changes with specific feedback
+  role: 'You are a code reviewer responsible for maintaining code quality standards.
 
-  role: |
-    You are a code reviewer responsible for maintaining code quality standards.
     Review merge requests for:
 
+
     1. Code correctness and potential bugs
+
     2. Security vulnerabilities
+
     3. Performance implications
+
     4. Code style and conventions
+
     5. Test coverage
+
     6. Documentation completeness
 
+
     Provide constructive, actionable feedback. Be specific about issues and
+
     suggest concrete improvements. Acknowledge good patterns and practices.
 
+    '
   llm:
     provider: ${OSSA_LLM_PROVIDER:-anthropic}
     model: ${OSSA_LLM_MODEL:-claude-sonnet-4}
     temperature: 0.3
     maxTokens: ${OSSA_LLM_MAX_TOKENS:-16384}
-
   tools:
-    - name: mr.diff
-      description: Get merge request diff
-      handler:
-        runtime: api
-        endpoint: ${GITLAB_API_URL}/projects/${CI_PROJECT_ID}/merge_requests/${MR_IID}/diffs
-        method: GET
-
-    - name: mr.comment
-      description: Add comment to merge request
-      handler:
-        runtime: api
-        endpoint: ${GITLAB_API_URL}/projects/${CI_PROJECT_ID}/merge_requests/${MR_IID}/discussions
-        method: POST
-
-    - name: mr.approve
-      description: Approve merge request
-      handler:
-        runtime: api
-        endpoint: ${GITLAB_API_URL}/projects/${CI_PROJECT_ID}/merge_requests/${MR_IID}/approve
-        method: POST
-
-    - name: lint.check
-      description: Run linting tools
-      handler:
-        runtime: docker
-        image: node:20-alpine
-        command: ["npx", "eslint", "--format=json"]
-
-  identity:
-    access_tier: standard
-    permissions:
-      - merge_request.read
-      - merge_request.comment
-      - code.read
-    elevated_permissions:
-      - merge_request.approve
-      - merge_request.merge
-    audit:
-      enabled: true
-      retention_days: 30
-
+  - name: mr.diff
+    description: Get merge request diff
+    handler:
+      runtime: api
+      endpoint: ${GITLAB_API_URL}/projects/${CI_PROJECT_ID}/merge_requests/${MR_IID}/diffs
+      method: GET
+    type: function
+  - name: mr.comment
+    description: Add comment to merge request
+    handler:
+      runtime: api
+      endpoint: ${GITLAB_API_URL}/projects/${CI_PROJECT_ID}/merge_requests/${MR_IID}/discussions
+      method: POST
+    type: function
+  - name: mr.approve
+    description: Approve merge request
+    handler:
+      runtime: api
+      endpoint: ${GITLAB_API_URL}/projects/${CI_PROJECT_ID}/merge_requests/${MR_IID}/approve
+      method: POST
+    type: function
+  - name: lint.check
+    description: Run linting tools
+    handler:
+      runtime: docker
+      image: node:20-alpine
+      command:
+      - npx
+      - eslint
+      - --format=json
+    type: function
   contracts:
     provides:
-      - name: code-review
-        version: "1.0"
-        schema:
-          input:
-            type: object
-            properties:
-              mr_iid:
-                type: integer
-                description: Merge request IID
-              project_id:
-                type: integer
-                description: GitLab project ID
-          output:
-            type: object
-            properties:
-              status:
-                type: string
-                enum: [approved, changes_requested, commented]
-              comments:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    file:
-                      type: string
-                    line:
-                      type: integer
-                    comment:
-                      type: string
+    - name: code-review
+      version: '1.0'
+      schema:
+        input:
+          type: object
+          properties:
+            mr_iid:
+              type: integer
+              description: Merge request IID
+            project_id:
+              type: integer
+              description: GitLab project ID
+        output:
+          type: object
+          properties:
+            status:
+              type: string
+              enum:
+              - approved
+              - changes_requested
+              - commented
+            comments:
+              type: array
+              items:
+                type: object
+                properties:
+                  file:
+                    type: string
+                  line:
+                    type: integer
+                  comment:
+                    type: string
