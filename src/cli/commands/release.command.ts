@@ -1,382 +1,18 @@
 /**
  * OSSA Release Command Group
- * CRUD operations for release automation (tags, milestones, deployments)
- * Uses Zod validation and existing release automation services
+ *
+ * OSSA-native version management commands (platform-agnostic).
+ * GitLab-specific commands (tag, milestone) have been moved to the
+ * GitLab extension at: src/cli/extensions/gitlab-release.commands.ts
+ *
+ * This file contains ONLY the version management commands which work
+ * with local files (.version.json, package.json) and don't require
+ * any external API access.
  */
 
 import { Command } from 'commander';
 import chalk from 'chalk';
 import { z } from 'zod';
-import { TagService, MilestoneService } from '../../services/release-automation/index.js';
-import type {
-  CreateTagRequest,
-  CreateMilestoneRequest,
-} from '../../services/release-automation/schemas/release.schema.js';
-
-// ============================================================================
-// Zod Schemas for CLI Input
-// ============================================================================
-
-const GitLabConfigSchema = z.object({
-  token: z.string().min(1, 'GitLab token is required'),
-  projectId: z.union([z.string(), z.number()]).optional(),
-  apiUrl: z.string().url().optional(),
-});
-
-// ============================================================================
-// Helper: Get GitLab Config
-// ============================================================================
-
-function getGitLabConfig(): z.infer<typeof GitLabConfigSchema> {
-  const token =
-    process.env.SERVICE_ACCOUNT_OSSA_TOKEN ||
-    process.env.SERVICE_ACCOUNT_VERSION_MANAGER_TOKEN ||
-    process.env.GITLAB_TOKEN ||
-    process.env.CI_JOB_TOKEN ||
-    '';
-
-  if (!token) {
-    throw new Error(
-      'GitLab token required. Set one of: SERVICE_ACCOUNT_OSSA_TOKEN, GITLAB_TOKEN, or CI_JOB_TOKEN'
-    );
-  }
-
-  return GitLabConfigSchema.parse({
-    token,
-    projectId: process.env.CI_PROJECT_ID || process.env.GITLAB_PROJECT_ID,
-    apiUrl: process.env.CI_API_V4_URL || process.env.GITLAB_API_URL,
-  });
-}
-
-// ============================================================================
-// Tag Subcommands
-// ============================================================================
-
-const tagCommand = new Command('tag')
-  .description('Manage Git tags (dev, rc, release)')
-  .alias('tags');
-
-tagCommand
-  .command('create')
-  .description('Create a new tag')
-  .requiredOption('-n, --name <name>', 'Tag name (e.g., v0.2.5-dev.1)')
-  .requiredOption('-r, --ref <ref>', 'Git ref (branch, commit SHA)')
-  .option('-m, --message <message>', 'Tag message')
-  .action(async (options: { name: string; ref: string; message?: string }) => {
-    try {
-      const config = getGitLabConfig();
-      const tagService = new TagService(config.token, config.projectId);
-
-      const tagRequest: CreateTagRequest = {
-        name: options.name,
-        ref: options.ref,
-        message: options.message || `Tag ${options.name}`,
-      };
-
-      const tag = await tagService.create(tagRequest);
-
-      console.log(chalk.green('[PASS] Tag created successfully!'));
-      console.log(chalk.cyan(`   Name: ${tag.name}`));
-      console.log(chalk.cyan(`   Type: ${tag.type}`));
-      console.log(chalk.cyan(`   Version: ${tag.version}`));
-      console.log(chalk.cyan(`   Commit: ${tag.commitSha.substring(0, 8)}`));
-    } catch (error) {
-      console.error(chalk.red('[FAIL] Failed to create tag:'), error);
-      process.exit(1);
-    }
-  });
-
-tagCommand
-  .command('list')
-  .description('List tags with filtering')
-  .option('-t, --type <type>', 'Filter by type (dev, rc, release, all)', 'all')
-  .option('-v, --version <version>', 'Filter by version')
-  .option('-p, --page <page>', 'Page number', '1')
-  .option('--per-page <count>', 'Items per page', '20')
-  .action(async (options: { type: string; version?: string; page: string; perPage: string }) => {
-    try {
-      const config = getGitLabConfig();
-      const tagService = new TagService(config.token, config.projectId);
-
-      const result = await tagService.list({
-        type: options.type as 'dev' | 'rc' | 'release' | 'all',
-        version: options.version,
-        page: parseInt(options.page, 10),
-        perPage: parseInt(options.perPage, 10),
-      });
-
-      console.log(chalk.blue(`[LIST] Tags (${result.pagination.total} total):\n`));
-
-      if (result.items.length === 0) {
-        console.log(chalk.yellow('   No tags found'));
-        return;
-      }
-
-      result.items.forEach((tag) => {
-        const typeColor =
-          tag.type === 'release' ? chalk.green : tag.type === 'rc' ? chalk.yellow : chalk.cyan;
-        console.log(
-          `   ${typeColor(tag.name.padEnd(25))} ${chalk.gray(tag.type.padEnd(6))} ${chalk.gray(tag.commitSha.substring(0, 8))}`
-        );
-      });
-
-      console.log(
-        chalk.gray(`\n   Page ${result.pagination.page} of ${result.pagination.totalPages}`)
-      );
-    } catch (error) {
-      console.error(chalk.red('[FAIL] Failed to list tags:'), error);
-      process.exit(1);
-    }
-  });
-
-tagCommand
-  .command('show')
-  .description('Show tag details')
-  .argument('<name>', 'Tag name')
-  .action(async (name: string) => {
-    try {
-      const config = getGitLabConfig();
-      const tagService = new TagService(config.token, config.projectId);
-
-      const tag = await tagService.read(name);
-
-      if (!tag) {
-        console.error(chalk.red(`[FAIL] Tag not found: ${name}`));
-        process.exit(1);
-      }
-
-      console.log(chalk.blue(`[LIST] Tag: ${tag.name}\n`));
-      console.log(chalk.cyan(`   Type: ${tag.type}`));
-      console.log(chalk.cyan(`   Version: ${tag.version}`));
-      console.log(chalk.cyan(`   Commit: ${tag.commitSha}`));
-      console.log(chalk.cyan(`   Ref: ${tag.ref}`));
-      console.log(chalk.cyan(`   Message: ${tag.message || '(none)'}`));
-      console.log(chalk.cyan(`   Created: ${tag.createdAt}`));
-    } catch (error) {
-      console.error(chalk.red('[FAIL] Failed to show tag:'), error);
-      process.exit(1);
-    }
-  });
-
-tagCommand
-  .command('delete')
-  .description('Delete a tag')
-  .argument('<name>', 'Tag name')
-  .option('-f, --force', 'Force deletion without confirmation')
-  .action(async (name: string, options: { force?: boolean }) => {
-    try {
-      if (!options.force) {
-        console.log(chalk.yellow(`[WARN]  This will delete tag: ${name}`));
-        console.log(chalk.yellow('   Use --force to skip confirmation'));
-        process.exit(1);
-      }
-
-      const config = getGitLabConfig();
-      const tagService = new TagService(config.token, config.projectId);
-
-      await tagService.delete(name);
-
-      console.log(chalk.green(`[PASS] Tag deleted: ${name}`));
-    } catch (error) {
-      console.error(chalk.red('[FAIL] Failed to delete tag:'), error);
-      process.exit(1);
-    }
-  });
-
-// ============================================================================
-// Milestone Subcommands
-// ============================================================================
-
-const milestoneCommand = new Command('milestone')
-  .description('Manage milestones')
-  .alias('milestones')
-  .alias('ms');
-
-milestoneCommand
-  .command('create')
-  .description('Create a new milestone')
-  .requiredOption('-t, --title <title>', 'Milestone title (e.g., v0.2.5)')
-  .option('-d, --description <desc>', 'Milestone description')
-  .option('--due-date <date>', 'Due date (YYYY-MM-DD)')
-  .option('--start-date <date>', 'Start date (YYYY-MM-DD)')
-  .action(
-    async (options: {
-      title: string;
-      description?: string;
-      dueDate?: string;
-      startDate?: string;
-    }) => {
-      try {
-        const config = getGitLabConfig();
-        const milestoneService = new MilestoneService(config.token, config.projectId);
-
-        const milestoneRequest: CreateMilestoneRequest = {
-          title: options.title,
-          description: options.description,
-          dueDate: options.dueDate || undefined,
-          startDate: options.startDate || undefined,
-        };
-
-        const milestone = await milestoneService.create(milestoneRequest);
-
-        console.log(chalk.green('[PASS] Milestone created successfully!'));
-        console.log(chalk.cyan(`   ID: ${milestone.id}`));
-        console.log(chalk.cyan(`   Title: ${milestone.title}`));
-        console.log(chalk.cyan(`   State: ${milestone.state}`));
-        if (milestone.dueDate) {
-          console.log(chalk.cyan(`   Due: ${milestone.dueDate}`));
-        }
-        console.log(
-          chalk.cyan(
-            `   Issues: ${milestone.statistics.closedIssues}/${milestone.statistics.totalIssues} closed`
-          )
-        );
-      } catch (error) {
-        console.error(chalk.red('[FAIL] Failed to create milestone:'), error);
-        process.exit(1);
-      }
-    }
-  );
-
-milestoneCommand
-  .command('list')
-  .description('List milestones')
-  .option('-s, --state <state>', 'Filter by state (active, closed)')
-  .option('-p, --page <page>', 'Page number', '1')
-  .option('--per-page <count>', 'Items per page', '20')
-  .action(async (options: { state?: string; page: string; perPage: string }) => {
-    try {
-      const config = getGitLabConfig();
-      const milestoneService = new MilestoneService(config.token, config.projectId);
-
-      const result = await milestoneService.list({
-        state: options.state as 'active' | 'closed' | undefined,
-        page: parseInt(options.page, 10),
-        perPage: parseInt(options.perPage, 10),
-      });
-
-      console.log(chalk.blue(`[LIST] Milestones (${result.pagination.total} total):\n`));
-
-      if (result.items.length === 0) {
-        console.log(chalk.yellow('   No milestones found'));
-        return;
-      }
-
-      result.items.forEach((ms) => {
-        const stateColor = ms.state === 'closed' ? chalk.green : chalk.yellow;
-        const progress = `${ms.statistics.closedIssues}/${ms.statistics.totalIssues}`;
-        console.log(
-          `   ${chalk.cyan(ms.title.padEnd(20))} ${stateColor(ms.state.padEnd(8))} ${chalk.gray(progress)}`
-        );
-      });
-
-      console.log(
-        chalk.gray(`\n   Page ${result.pagination.page} of ${result.pagination.totalPages}`)
-      );
-    } catch (error) {
-      console.error(chalk.red('[FAIL] Failed to list milestones:'), error);
-      process.exit(1);
-    }
-  });
-
-milestoneCommand
-  .command('show')
-  .description('Show milestone details')
-  .argument('<id>', 'Milestone ID')
-  .action(async (id: string) => {
-    try {
-      const config = getGitLabConfig();
-      const milestoneService = new MilestoneService(config.token, config.projectId);
-
-      const milestone = await milestoneService.read(parseInt(id, 10));
-
-      if (!milestone) {
-        console.error(chalk.red(`[FAIL] Milestone not found: ${id}`));
-        process.exit(1);
-      }
-
-      console.log(chalk.blue(`[LIST] Milestone: ${milestone.title}\n`));
-      console.log(chalk.cyan(`   ID: ${milestone.id}`));
-      console.log(chalk.cyan(`   State: ${milestone.state}`));
-      if (milestone.description) {
-        console.log(chalk.cyan(`   Description: ${milestone.description}`));
-      }
-      if (milestone.dueDate) {
-        console.log(chalk.cyan(`   Due Date: ${milestone.dueDate}`));
-      }
-      if (milestone.startDate) {
-        console.log(chalk.cyan(`   Start Date: ${milestone.startDate}`));
-      }
-      console.log(
-        chalk.cyan(
-          `   Issues: ${milestone.statistics.closedIssues}/${milestone.statistics.totalIssues} closed`
-        )
-      );
-      console.log(chalk.cyan(`   Created: ${milestone.createdAt}`));
-      console.log(chalk.cyan(`   Updated: ${milestone.updatedAt}`));
-    } catch (error) {
-      console.error(chalk.red('[FAIL] Failed to show milestone:'), error);
-      process.exit(1);
-    }
-  });
-
-// ============================================================================
-// Release Subcommands
-// ============================================================================
-
-const releaseCommand = new Command('release')
-  .description('Release automation commands')
-  .alias('rel');
-
-releaseCommand
-  .command('increment-dev')
-  .description('Increment dev tag version')
-  .option('-b, --base-version <version>', 'Base version (e.g., 0.2.5)')
-  .option('-r, --ref <ref>', 'Git ref to tag', 'development')
-  .action(async (options: { baseVersion?: string; ref: string }) => {
-    try {
-      const config = getGitLabConfig();
-      const tagService = new TagService(config.token, config.projectId);
-
-      // Get current version from package.json if not provided
-      let baseVersion = options.baseVersion;
-      if (!baseVersion) {
-        const fs = await import('fs');
-        const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf-8'));
-        baseVersion = packageJson.version.split('-dev.')[0];
-      }
-
-      // Find latest dev tag
-      const tags = await tagService.list({
-        type: 'dev',
-        version: baseVersion,
-        page: 1,
-        perPage: 100,
-      });
-
-      let nextNum = 0;
-      if (tags.items.length > 0) {
-        const latest = tags.items[0];
-        const match = latest.name.match(/-dev\.(\d+)$/);
-        if (match) {
-          nextNum = parseInt(match[1], 10) + 1;
-        }
-      }
-
-      const tagName = `v${baseVersion}-dev.${nextNum}`;
-
-      const tag = await tagService.create({
-        name: tagName,
-        ref: options.ref,
-        message: `Auto-incremented dev tag ${nextNum}`,
-      });
-
-      console.log(chalk.green(`[PASS] Created dev tag: ${tag.name}`));
-    } catch (error) {
-      console.error(chalk.red('[FAIL] Failed to increment dev tag:'), error);
-      process.exit(1);
-    }
-  });
 
 // ============================================================================
 // Version Subcommands - Consolidates ALL version management
@@ -742,12 +378,133 @@ versionCommand
   });
 
 // ============================================================================
-// Main Release Command Group
+// Changelog Subcommand (OSSA-native)
+// ============================================================================
+
+const changelogCommand = new Command('changelog')
+  .description('Generate changelog from conventional commits')
+  .alias('cl');
+
+changelogCommand
+  .command('generate')
+  .description('Generate changelog from git history')
+  .option('--from <ref>', 'Starting ref (tag or commit)')
+  .option('--to <ref>', 'Ending ref (default: HEAD)', 'HEAD')
+  .option('--format <format>', 'Output format (markdown|json)', 'markdown')
+  .option('--output <format>', 'Output format (json|text)', 'text')
+  .action(async (options: { from?: string; to: string; format: string; output: string }) => {
+    try {
+      const { execSync } = await import('child_process');
+
+      // Get latest tag if --from not specified
+      let fromRef = options.from;
+      if (!fromRef) {
+        try {
+          fromRef = execSync('git describe --tags --abbrev=0 2>/dev/null', { encoding: 'utf-8' }).trim();
+        } catch {
+          fromRef = ''; // No tags, use all commits
+        }
+      }
+
+      const range = fromRef ? `${fromRef}..${options.to}` : options.to;
+
+      // Get commits with conventional commit format
+      const logFormat = '%H|%s|%b|%an|%aI';
+      const rawLog = execSync(`git log ${range} --pretty=format:"${logFormat}" 2>/dev/null || true`, {
+        encoding: 'utf-8',
+      });
+
+      if (!rawLog.trim()) {
+        console.log(chalk.yellow('No commits found in range'));
+        return;
+      }
+
+      // Parse commits
+      interface ChangelogEntry {
+        hash: string;
+        type: string;
+        scope?: string;
+        breaking: boolean;
+        subject: string;
+        body: string;
+        author: string;
+        date: string;
+      }
+
+      const entries: ChangelogEntry[] = [];
+      const lines = rawLog.split('\n').filter((l) => l.trim());
+
+      for (const line of lines) {
+        const [hash, subject, body, author, date] = line.split('|');
+        const match = subject.match(/^(\w+)(?:\(([^)]+)\))?(!)?:\s*(.+)$/);
+
+        if (match) {
+          entries.push({
+            hash: hash.substring(0, 8),
+            type: match[1],
+            scope: match[2] || undefined,
+            breaking: match[3] === '!',
+            subject: match[4],
+            body: body || '',
+            author,
+            date,
+          });
+        }
+      }
+
+      // Group by type
+      const grouped: Record<string, ChangelogEntry[]> = {};
+      for (const entry of entries) {
+        const key = entry.type;
+        if (!grouped[key]) grouped[key] = [];
+        grouped[key].push(entry);
+      }
+
+      if (options.output === 'json') {
+        console.log(JSON.stringify({ range, entries: grouped }, null, 2));
+        return;
+      }
+
+      // Output markdown
+      const typeLabels: Record<string, string> = {
+        feat: '✨ Features',
+        fix: '🐛 Bug Fixes',
+        docs: '📚 Documentation',
+        style: '💄 Styles',
+        refactor: '♻️ Refactoring',
+        perf: '⚡ Performance',
+        test: '✅ Tests',
+        build: '🔧 Build',
+        ci: '👷 CI/CD',
+        chore: '🔨 Chores',
+      };
+
+      console.log(chalk.blue(`\n# Changelog (${range || 'all'})\n`));
+
+      for (const [type, items] of Object.entries(grouped)) {
+        const label = typeLabels[type] || `${type.charAt(0).toUpperCase()}${type.slice(1)}`;
+        console.log(chalk.cyan(`\n## ${label}\n`));
+
+        for (const item of items) {
+          const scope = item.scope ? chalk.gray(`(${item.scope})`) : '';
+          const breaking = item.breaking ? chalk.red('[BREAKING]') : '';
+          console.log(`- ${breaking}${scope} ${item.subject} ${chalk.gray(`(${item.hash})`)}`);
+        }
+      }
+    } catch (error) {
+      console.error(chalk.red('[FAIL] Failed to generate changelog:'), error);
+      process.exit(1);
+    }
+  });
+
+// ============================================================================
+// Main Release Command Group (OSSA-native only)
+//
+// Note: GitLab-specific commands (tag, milestone) are available via the
+// GitLab extension. Enable with: OSSA_EXTENSIONS=true
 // ============================================================================
 
 export const releaseCommandGroup = new Command('release')
-  .description('Release automation (version, tags, milestones)')
+  .description('Version management (bump, sync, check, changelog)')
   .addCommand(versionCommand)
-  .addCommand(tagCommand)
-  .addCommand(milestoneCommand)
-  .addCommand(releaseCommand);
+  .addCommand(changelogCommand);
