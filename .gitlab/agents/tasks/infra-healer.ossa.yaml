@@ -1,14 +1,16 @@
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: infra-healer
-  version: "1.0.0"
+  version: 1.0.0
   description: Autonomous infrastructure healing and optimization
   labels:
     environment: production
     purpose: infrastructure-healing
     team: platform
-
+  annotations:
+    ossa.io/migration: v0.3.3-to-v0.3.3
+    ossa.io/migrated-date: 2026-01-07
 spec:
   role: |
     You are an infrastructure healer agent.
@@ -46,13 +48,11 @@ spec:
     - Require approval for destructive actions
     - Log all healing actions for audit
     - Create issue if uncertain about fix
-
   llm:
     provider: anthropic
     model: claude-3-5-sonnet-20241022
     temperature: 0.2
     max_tokens: 4000
-
   capabilities:
     - name: monitor_infrastructure
       description: Check infrastructure health status
@@ -72,7 +72,6 @@ spec:
       description: Rotate expired credentials
     - name: create_issue
       description: Create issue for manual intervention
-
   safety:
     input_validation:
       max_length: 100000
@@ -82,11 +81,9 @@ spec:
     approval_required:
       - delete_data
       - modify_production
-
   constraints:
-    max_cost_per_run: 2.00
+    max_cost_per_run: 2
     timeout_seconds: 600
-
   dependencies:
     - type: service
       name: gitlab-api
@@ -100,7 +97,6 @@ spec:
       name: kubectl
       version: latest
       optional: true
-
   observability:
     tracing:
       enabled: true
@@ -115,7 +111,6 @@ spec:
       custom_labels:
         agent_type: infra-healer
         environment: production
-
   lifecycle:
     state: active
     maturity: stable

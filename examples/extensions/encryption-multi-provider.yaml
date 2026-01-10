@@ -1,4 +1,4 @@
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: secure-agent
@@ -28,7 +28,7 @@ spec:
         interval_days: 90
         
 ---
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: vault-encrypted-agent
@@ -57,7 +57,7 @@ spec:
         - "*"  # Encrypt all fields
       
 ---
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: gcp-kms-agent
@@ -86,7 +86,7 @@ spec:
         - pii_fields
       
 ---
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: azure-keyvault-agent

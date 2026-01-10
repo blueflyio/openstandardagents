@@ -16,7 +16,7 @@ describe('ContractValidator', () => {
   describe('validateAgentContract', () => {
     it('should return valid for agent with valid contract', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Agent',
         metadata: { name: 'test-agent', version: '1.0.0' },
         spec: {
@@ -66,7 +66,7 @@ describe('ContractValidator', () => {
 
     it('should detect missing published events at runtime', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Agent',
         metadata: { name: 'test-agent' },
         spec: {
@@ -93,7 +93,7 @@ describe('ContractValidator', () => {
 
     it('should warn about undeclared published events', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Agent',
         metadata: { name: 'test-agent' },
         spec: {
@@ -114,7 +114,7 @@ describe('ContractValidator', () => {
 
     it('should detect missing commands at runtime', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Agent',
         metadata: { name: 'test-agent' },
         spec: {
@@ -141,7 +141,7 @@ describe('ContractValidator', () => {
 
     it('should detect invalid event schemas', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Agent',
         metadata: { name: 'test-agent' },
         spec: {
@@ -173,7 +173,7 @@ describe('ContractValidator', () => {
 
     it('should warn about missing schemas', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Agent',
         metadata: { name: 'test-agent' },
         spec: {
@@ -202,7 +202,7 @@ describe('ContractValidator', () => {
 
     it('should handle agent with no messaging configuration', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Agent',
         metadata: { name: 'test-agent' },
         spec: {},
@@ -219,7 +219,7 @@ describe('ContractValidator', () => {
   describe('testContractBetweenAgents', () => {
     it('should validate compatible contracts', () => {
       const consumer = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Agent',
         metadata: { name: 'consumer' },
         spec: {
@@ -240,7 +240,7 @@ describe('ContractValidator', () => {
       };
 
       const provider = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Agent',
         metadata: { name: 'provider' },
         spec: {
@@ -270,7 +270,7 @@ describe('ContractValidator', () => {
 
     it('should detect missing published channels', () => {
       const consumer = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Agent',
         metadata: { name: 'consumer' },
         spec: {
@@ -285,7 +285,7 @@ describe('ContractValidator', () => {
       };
 
       const provider = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Agent',
         metadata: { name: 'provider' },
         spec: {
@@ -308,7 +308,7 @@ describe('ContractValidator', () => {
 
     it('should detect schema incompatibility', () => {
       const consumer = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Agent',
         metadata: { name: 'consumer' },
         spec: {
@@ -330,7 +330,7 @@ describe('ContractValidator', () => {
       };
 
       const provider = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Agent',
         metadata: { name: 'provider' },
         spec: {
@@ -359,7 +359,7 @@ describe('ContractValidator', () => {
 
     it('should detect missing expected commands', () => {
       const consumer = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Agent',
         metadata: { name: 'consumer' },
         spec: {
@@ -382,7 +382,7 @@ describe('ContractValidator', () => {
       };
 
       const provider = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Agent',
         metadata: { name: 'provider' },
         spec: {
@@ -406,14 +406,14 @@ describe('ContractValidator', () => {
 
     it('should handle agents with no messaging configuration', () => {
       const consumer = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Agent',
         metadata: { name: 'consumer' },
         spec: {},
       };
 
       const provider = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Agent',
         metadata: { name: 'provider' },
         spec: {},
@@ -429,7 +429,7 @@ describe('ContractValidator', () => {
   describe('detectBreakingChanges', () => {
     it('should detect no breaking changes for compatible versions', () => {
       const oldManifest = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Agent',
         metadata: { name: 'test-agent', version: '1.0.0' },
         spec: {
@@ -487,7 +487,7 @@ describe('ContractValidator', () => {
 
     it('should detect removed event as breaking change', () => {
       const oldManifest = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Agent',
         metadata: { name: 'test-agent', version: '1.0.0' },
         spec: {
@@ -522,7 +522,7 @@ describe('ContractValidator', () => {
 
     it('should detect removed command as breaking change', () => {
       const oldManifest = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Agent',
         metadata: { name: 'test-agent', version: '1.0.0' },
         spec: {
@@ -556,7 +556,7 @@ describe('ContractValidator', () => {
 
     it('should detect incompatible schema change as breaking', () => {
       const oldManifest = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Agent',
         metadata: { name: 'test-agent', version: '1.0.0' },
         spec: {
@@ -604,7 +604,7 @@ describe('ContractValidator', () => {
 
     it('should detect new required field as breaking change', () => {
       const oldManifest = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Agent',
         metadata: { name: 'test-agent', version: '1.0.0' },
         spec: {
@@ -655,14 +655,14 @@ describe('ContractValidator', () => {
 
     it('should throw error when comparing different agents', () => {
       const manifest1 = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Agent',
         metadata: { name: 'agent-a', version: '1.0.0' },
         spec: {},
       };
 
       const manifest2 = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Agent',
         metadata: { name: 'agent-b', version: '1.0.0' },
         spec: {},
@@ -675,7 +675,7 @@ describe('ContractValidator', () => {
 
     it('should summarize breaking changes correctly', () => {
       const oldManifest = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Agent',
         metadata: { name: 'test-agent', version: '1.0.0' },
         spec: {
@@ -730,7 +730,7 @@ describe('ContractValidator', () => {
   describe('extractContract', () => {
     it('should extract complete contract', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Agent',
         metadata: { name: 'test-agent', version: '1.0.0' },
         spec: {
@@ -770,7 +770,7 @@ describe('ContractValidator', () => {
 
     it('should handle agent with no messaging', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: 'ossa/v0.3.3',
         kind: 'Agent',
         metadata: { name: 'test-agent', version: '1.0.0' },
         spec: {},
@@ -789,7 +789,7 @@ describe('ContractValidator', () => {
     it('should validate multiple agents', () => {
       const manifests = [
         {
-          apiVersion: 'ossa/v0.3.0',
+          apiVersion: 'ossa/v0.3.3',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -804,7 +804,7 @@ describe('ContractValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.0',
+          apiVersion: 'ossa/v0.3.3',
           kind: 'Agent',
           metadata: { name: 'agent-b' },
           spec: {
@@ -828,7 +828,7 @@ describe('ContractValidator', () => {
     it('should aggregate errors from multiple agents', () => {
       const manifests = [
         {
-          apiVersion: 'ossa/v0.3.0',
+          apiVersion: 'ossa/v0.3.3',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -843,7 +843,7 @@ describe('ContractValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.0',
+          apiVersion: 'ossa/v0.3.3',
           kind: 'Agent',
           metadata: { name: 'agent-b' },
           spec: {

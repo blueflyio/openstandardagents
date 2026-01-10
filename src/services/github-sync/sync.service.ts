@@ -100,7 +100,7 @@ ${prList}
   }
 
   private buildPRComment(mr: GitLabMR): string {
-    return `✅ **Synced to GitLab**
+    return `[PASS] **Synced to GitLab**
 
 This PR has been synced to our internal GitLab for review and testing.
 
@@ -113,7 +113,7 @@ Once merged on GitLab, changes will automatically sync back here and this PR wil
   }
 
   private buildBatchPRComment(mr: GitLabMR): string {
-    return `🤖 **Batched for Review**
+    return `[BOT] **Batched for Review**
 
 This PR has been batched with other updates for testing on GitLab.
 

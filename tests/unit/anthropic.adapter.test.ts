@@ -11,7 +11,7 @@ describe('AnthropicAdapter', () => {
 
   beforeEach(() => {
     manifest = {
-      apiVersion: 'ossa/v0.3.0',
+      apiVersion: 'ossa/v0.3.3',
       kind: 'Agent',
       metadata: {
         name: 'test-agent',

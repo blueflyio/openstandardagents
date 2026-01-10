@@ -68,7 +68,7 @@ Just as OpenAPI standardized REST API contracts, OSSA v0.4.0 will standardize ag
 
 | Issue | Title | Version | Phase | Status |
 |-------|-------|---------|-------|--------|
-| [#126](https://gitlab.com/blueflyio/openstandardagents/-/issues/126) | Symfony Messenger Adapter | v0.3.2 | 2 | ⚪ Closed |
+| [#126](https://gitlab.com/blueflyio/openstandardagents/-/issues/126) | Symfony Messenger Adapter | v0.3.3 | 2 | ⚪ Closed |
 | TBD | API Normalizer OSSA Integration | v0.1.x | 2-3 | ⚪ Not Started |
 
 ---

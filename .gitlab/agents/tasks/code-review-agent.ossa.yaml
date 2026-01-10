@@ -1,14 +1,16 @@
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: code-review-agent
-  version: "1.0.0"
+  version: 1.0.0
   description: Automated code review for OSSA manifests and TypeScript code
   labels:
     environment: ci
     purpose: code-quality
     team: platform
-
+  annotations:
+    ossa.io/migration: v0.3.3-to-v0.3.3
+    ossa.io/migrated-date: 2026-01-07
 spec:
   role: |
     You are a code review expert for OSSA specifications and TypeScript.
@@ -21,13 +23,11 @@ spec:
     6. Test coverage for new code
 
     Provide constructive feedback with specific line numbers and suggestions.
-
   llm:
     provider: anthropic
     model: claude-3-5-sonnet-20241022
     temperature: 0.3
     max_tokens: 4000
-
   capabilities:
     - name: get_mr_changes
       description: Get file changes in a merge request
@@ -37,7 +37,6 @@ spec:
       description: Validate OSSA schema compliance
     - name: check_tests
       description: Check test coverage for changes
-
   safety:
     input_validation:
       max_length: 50000
@@ -49,11 +48,9 @@ spec:
     output_validation:
       require_citations: true
       max_tokens: 4000
-
   constraints:
-    max_cost_per_run: 2.00
+    max_cost_per_run: 2
     timeout_seconds: 300
-
   observability:
     tracing:
       enabled: true

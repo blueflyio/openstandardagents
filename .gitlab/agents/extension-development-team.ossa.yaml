@@ -1,0 +1,227 @@
+apiVersion: ossa/v0.3.3
+kind: Workflow
+metadata:
+  name: extension-development-team
+  version: 1.0.0
+  description: Multi-agent team to build OSSA extensions for all missing platforms ASAP
+  labels:
+    team: extension-development
+    priority: critical
+    deadline: 2026-Q1
+
+spec:
+  triggers:
+    - type: schedule
+      schedule: "0 */4 * * *"  # Every 4 hours
+    - type: webhook
+      endpoint: /webhooks/extension-request
+
+  inputs:
+    type: object
+    properties:
+      platform:
+        type: string
+        description: Platform name to build extension for
+      priority:
+        type: string
+        enum: [critical, high, medium, low]
+        default: critical
+      deadline:
+        type: string
+        format: date
+      requirements:
+        type: object
+        description: Platform-specific requirements
+
+  steps:
+    # OSSA-Specific: Research Agent - Analyzes platform architecture for OSSA compatibility
+    - id: research
+      name: Platform Research Agent
+      kind: Agent
+      ref: ./examples/platform-researcher.ossa.yaml
+      input:
+        platform: "${{ workflow.input.platform }}"
+        requirements: "${{ workflow.input.requirements }}"
+        ossa_spec_version: "v0.3.3"
+      output:
+        to: research_findings
+
+    # OSSA-Specific: Schema Designer - Designs OSSA extension schema
+    - id: design-schema
+      name: Schema Design Agent
+      kind: Agent
+      ref: ./examples/schema-designer.ossa.yaml
+      depends_on:
+        - research
+      input:
+        platform: "${{ workflow.input.platform }}"
+        research: "${{ steps.research.output }}"
+        ossa_spec_version: "v0.3.3"
+      output:
+        to: schema_design
+
+    # OSSA-Specific: Code Generator - Generates OSSA extension TypeScript/Zod code
+    - id: generate-code
+      name: Code Generation Agent
+      kind: Agent
+      ref: ./examples/code-generator.ossa.yaml
+      depends_on:
+        - design-schema
+      input:
+        platform: "${{ workflow.input.platform }}"
+        schema: "${{ steps.design-schema.output }}"
+        ossa_spec_version: "v0.3.3"
+      output:
+        to: generated_code
+
+    # Use Platform-Agents: Documentation Aggregator
+    # NOTE: This step is executed via CI/CD job that calls platform-agents/documentation-aggregator
+    # The workflow orchestrates, but actual execution happens in .gitlab/ci/extension-development.yml
+    - id: write-docs
+      name: Documentation Agent
+      kind: Task
+      inline:
+        description: Aggregate documentation using platform-agents/documentation-aggregator
+        executor: platform-agents
+        agent_name: documentation-aggregator
+      depends_on:
+        - design-schema
+      input:
+        type: ossa-extension
+        platform: "${{ workflow.input.platform }}"
+        schema: "${{ steps.design-schema.output }}"
+        research: "${{ steps.research.output }}"
+        template: ossa-extension-guide
+      output:
+        to: documentation
+
+    # OSSA-Specific: Test Generator - Creates OSSA extension test suite
+    - id: generate-tests
+      name: Test Generation Agent
+      kind: Agent
+      ref: ./examples/test-generator.ossa.yaml
+      depends_on:
+        - generate-code
+      input:
+        platform: "${{ workflow.input.platform }}"
+        code: "${{ steps.generate-code.output }}"
+        schema: "${{ steps.design-schema.output }}"
+        ossa_spec_version: "v0.3.3"
+      output:
+        to: test_suite
+
+    # Use Platform-Agents: Manifest Validator
+    # NOTE: This step is executed via CI/CD job that calls platform-agents/manifest-validator
+    - id: validate
+      name: Validation Agent
+      kind: Task
+      inline:
+        description: Validate extension using platform-agents/manifest-validator
+        executor: platform-agents
+        agent_name: manifest-validator
+      depends_on:
+        - generate-code
+        - write-docs
+        - generate-tests
+      input:
+        manifest_type: ossa-extension
+        schema_version: v0.3.3
+        platform: "${{ workflow.input.platform }}"
+        code: "${{ steps.generate-code.output }}"
+        docs: "${{ steps.write-docs.output }}"
+        tests: "${{ steps.generate-tests.output }}"
+        validation_rules:
+          - schema_compliance
+          - test_coverage_95_percent
+          - documentation_completeness
+          - bidirectional_mapping_accuracy
+      output:
+        to: validation_results
+
+    # Use Platform-Agents: Merge Request Reviewer (creates MRs)
+    # NOTE: This step is executed via CI/CD job that calls platform-agents/merge-request-reviewer
+    - id: create-pr
+      name: PR Creation Agent
+      kind: Task
+      inline:
+        description: Create merge request using platform-agents/merge-request-reviewer
+        executor: platform-agents
+        agent_name: merge-request-reviewer
+      depends_on:
+        - validate
+      condition: "${{ steps.validate.output.valid == true }}"
+      input:
+        action: create
+        title: "feat(extensions): Add ${{ workflow.input.platform }} extension"
+        description: |
+          Adds OSSA extension for ${{ workflow.input.platform }} platform.
+
+          Generated by extension-development-team workflow.
+
+          Includes:
+          - Extension schema
+          - TypeScript types and Zod validators
+          - Runtime adapter
+          - Documentation
+          - Test suite
+        source_branch: "extension/${{ workflow.input.platform }}"
+        target_branch: development
+        labels:
+          - extension
+          - "${{ workflow.input.platform }}"
+          - "${{ workflow.input.priority }}"
+        reviewers:
+          - @blueflyio/ossa-maintainers
+        files:
+          - "${{ steps.generate-code.output.files }}"
+          - "${{ steps.write-docs.output.files }}"
+          - "${{ steps.generate-tests.output.files }}"
+        validation: "${{ steps.validate.output }}"
+
+  concurrency:
+    max_parallel: 5  # Build 5 extensions in parallel
+
+  error_handling:
+    on_failure: retry
+    max_retries: 3
+    retry_delay_seconds: 300
+    on_retry_exhausted: notify
+    notification:
+      channels: [slack, email]
+      recipients:
+        - team-lead@bluefly.io
+
+  observability:
+    tracing:
+      enabled: true
+      sample_rate: 1.0
+    metrics:
+      enabled: true
+      custom_labels:
+        team: extension-development
+    logging:
+      level: debug
+      structured: true
+
+extensions:
+  crewai:
+    crew_name: extension-development-team
+    process_type: sequential
+    delegation_enabled: true
+    verbose: true
+    memory_config:
+      enabled: true
+      short_term:
+        provider: rag
+      long_term:
+        provider: rag
+        storage:
+          type: chroma
+          connection: "${CHROMA_DB_URL}"
+    callbacks:
+      on_step:
+        otel_export: true
+      on_task:
+        otel_export: true
+      on_crew_end:
+        include_final_output: true

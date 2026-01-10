@@ -87,7 +87,7 @@ gitops:
 
 **Orchestration via Agent**:
 ```yaml
-# .gitlab/agents/mesh-config.yaml
+# .gitlab/agents/config/mesh-config.yaml
 agents:
   - name: version-manager
     endpoint: version-manager.ossa-agents.svc.cluster.local
@@ -222,7 +222,7 @@ done
 ### 4. Configure Agent Mesh
 ```bash
 # Apply mesh configuration
-kubectl apply -f .gitlab/agents/mesh-config.yaml
+kubectl apply -f .gitlab/agents/config/mesh-config.yaml
 
 # Verify mesh
 kubectl get pods -n ossa-agents

@@ -398,8 +398,8 @@ export class DependenciesValidator {
           // Use ContractValidator for detailed schema validation if available
           if (this.contractValidator) {
             const contractResult = this.contractValidator.testContractBetweenAgents(
-              manifest,
-              targetAgent
+              manifest as unknown as import('../../types/index.js').OssaAgent,
+              targetAgent as unknown as import('../../types/index.js').OssaAgent
             );
             for (const error of contractResult.errors) {
               violations.push({
