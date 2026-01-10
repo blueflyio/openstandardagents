@@ -72,7 +72,7 @@ extensions:
     workflow_engine: eca
 ```
 
-### 5. Deterministic Tasks (data-transformer)
+### 5. Deterministic Execution (data-transformer)
 ```yaml
 kind: Agent
 spec:
