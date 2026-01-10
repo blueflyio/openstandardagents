@@ -6,7 +6,7 @@ metadata:
   description: Universal AI coding assistant for all major IDEs
   labels:
     ossa.dev/category: development
-    ossa.dev/tier: power-agent
+    ossa.dev/tier: standard-example
     ossa.dev/ide: universal
   annotations:
     ossa.dev/documentation: https://openstandardagents.org/agents/code-assistant

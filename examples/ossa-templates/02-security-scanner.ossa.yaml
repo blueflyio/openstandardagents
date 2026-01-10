@@ -6,7 +6,7 @@ metadata:
   description: Security analysis agent with vulnerability and compliance scanning
   labels:
     ossa.dev/category: security
-    ossa.dev/tier: power-agent
+    ossa.dev/tier: standard-example
     ossa.dev/access-tier: elevated
   annotations:
     ossa.dev/documentation: https://openstandardagents.org/agents/security-scanner

@@ -622,9 +622,14 @@
               }
             }
           }
+        },
+        "access_tier": {
+          "type": "string",
+          "enum": ["tier_1_read", "tier_2_write_limited", "tier_3_write_elevated", "tier_4_policy", "read", "limited", "elevated", "policy"],
+          "description": "Access tier - supports both full names (tier_1_read) and shorthand (read, limited, elevated, policy)"
         }
       },
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "Metadata": {
       "type": "object",
@@ -994,17 +999,27 @@
           "description": "Structured prompts configuration (alternative to role)",
           "properties": {
             "system": {
-              "type": "object",
-              "properties": {
-                "template": {
+              "oneOf": [
+                {
                   "type": "string",
-                  "description": "System prompt template"
+                  "description": "System prompt template (shorthand format)"
                 },
-                "version": {
-                  "type": "string",
-                  "description": "Prompt version"
+                {
+                  "type": "object",
+                  "description": "System prompt with metadata (verbose format)",
+                  "properties": {
+                    "template": {
+                      "type": "string",
+                      "description": "System prompt template"
+                    },
+                    "version": {
+                      "type": "string",
+                      "description": "Prompt version"
+                    }
+                  }
                 }
-              }
+              ],
+              "description": "System prompt - can be string (shorthand) or object with template/version"
             }
           },
           "additionalProperties": true
@@ -1894,15 +1909,18 @@
           "description": "Model identifier (e.g., gpt-4o, claude-sonnet-4.5-20250929)"
         },
         "temperature": {
-          "type": "number",
-          "minimum": 0,
-          "maximum": 2,
-          "description": "Sampling temperature for response generation"
+          "oneOf": [
+            { "type": "number", "minimum": 0, "maximum": 2 },
+            { "type": "string", "pattern": "^[$]\\{[A-Za-z_][A-Za-z0-9_]*(?::-[0-9.]+)?\\}$" }
+          ],
+          "description": "Sampling temperature for response generation (supports env var substitution)"
         },
         "maxTokens": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "Maximum tokens in response"
+          "oneOf": [
+            { "type": "integer", "minimum": 1 },
+            { "type": "string", "pattern": "^[$]\\{[A-Za-z_][A-Za-z0-9_]*(?::-[0-9]+)?\\}$" }
+          ],
+          "description": "Maximum tokens in response (supports env var substitution)"
         },
         "fallback_models": {
           "type": "array",
@@ -2068,6 +2086,11 @@
           "minimum": 0,
           "description": "Alert threshold in dollars for budget monitoring"
         },
+        "budget_limit_usd": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Hard budget limit in USD"
+        },
         "cost_allocation_tags": {
           "type": "object",
           "additionalProperties": {
@@ -2076,13 +2099,11 @@
           "description": "Tags for cost allocation and chargeback (e.g., project, team, service)"
         }
       },
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "Tool": {
       "type": "object",
-      "required": [
-        "type"
-      ],
+      "required": ["type"],
       "properties": {
         "type": {
           "type": "string",
@@ -2108,7 +2129,21 @@
           "description": "Tool/trigger type: mcp (Model Context Protocol), kubernetes (K8s API), http (HTTP endpoints), api (REST APIs), grpc (gRPC), function (local), a2a (agent-to-agent), webhook (event triggers), schedule (cron triggers), pipeline (CI/CD events), workflow (status changes), artifact (file outputs), git-commit (commit outputs), ci-status (pipeline status), comment (MR/issue comments), library (reusable logic), custom"
         },
         "name": {
-          "type": "string"
+          "type": "string",
+          "description": "Tool name/identifier"
+        },
+        "description": {
+          "type": "string",
+          "description": "Tool description"
+        },
+        "handler": {
+          "type": "object",
+          "description": "Tool handler configuration",
+          "properties": {
+            "runtime": { "type": "string" },
+            "capability": { "type": "string" }
+          },
+          "additionalProperties": true
         },
         "capabilities": {
           "type": "array",
@@ -2329,11 +2364,17 @@
           "description": "Compute resource constraints (Kubernetes-style)",
           "properties": {
             "cpu": {
-              "type": "string",
-              "description": "CPU limit (e.g., '1', '500m')"
+              "oneOf": [
+                { "type": "string" },
+                { "type": "number" }
+              ],
+              "description": "CPU limit (e.g., '1', '500m', 1)"
             },
             "memory": {
-              "type": "string",
+              "oneOf": [
+                { "type": "string" },
+                { "type": "number" }
+              ],
               "description": "Memory limit (e.g., '2Gi', '512Mi')"
             }
           },
@@ -3887,6 +3928,29 @@
       "type": "object",
       "description": "Agent-to-agent messaging configuration (v0.3.3+)",
       "properties": {
+        "transport": {
+          "type": "string",
+          "enum": ["redis", "nats", "memory", "kafka", "amqp"],
+          "description": "Message transport type (shorthand for broker.type)"
+        },
+        "queues": {
+          "type": "array",
+          "description": "Queue definitions for messaging",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Queue name"
+              },
+              "description": {
+                "type": "string",
+                "description": "Human-readable description"
+              }
+            },
+            "required": ["name"]
+          }
+        },
         "mesh_endpoint": {
           "type": "string",
           "description": "Agent mesh endpoint URL for A2A communication"
@@ -3932,7 +3996,7 @@
           "description": "Message reliability configuration"
         }
       },
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "PublishedChannel": {
       "type": "object",
