@@ -111,8 +111,8 @@ release:semantic:
         echo "Add NPM_TOKEN in Settings > CI/CD > Variables"
         exit 1
       fi
-      if [ -z "$GITLAB_TOKEN" ]; then
-        echo "❌ ERROR: GITLAB_TOKEN not set"
+      if [ -z "$GITLAB_PUSH_TOKEN" ]; then
+        echo "❌ ERROR: GITLAB_PUSH_TOKEN not set"
         exit 1
       fi
       echo "✅ Required tokens configured"
