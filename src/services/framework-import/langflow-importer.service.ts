@@ -20,7 +20,7 @@ const LangflowFlowSchema = z.object({
       type: z.string(),
       data: z.object({
         type: z.string(),
-        node: z.record(z.unknown()),
+        node: z.record(z.string(), z.unknown()),
       }),
       position: z.object({
         x: z.number(),
@@ -154,6 +154,7 @@ export class LangflowImporterService {
     const steps = nodes
       .filter(n => ['Agent', 'AgentInitializer', 'Tool', 'Chain'].includes(n.data.type))
       .map((node, index) => ({
+        id: node.id,
         name: node.id.toLowerCase().replace(/-/g, '_'),
         ref: `agents/${node.id}`,
         kind: node.data.type === 'Agent' || node.data.type === 'AgentInitializer' ? 'Agent' : 'Task',

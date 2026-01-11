@@ -13,7 +13,7 @@ import {
   VersionReleaseRequest,
   VersionReleaseResponse,
   VersionConfigSchema,
-} from '../schemas/version.schema.js';
+} from '../schemas/version.schema';
 
 export class VersionReleaseService {
   private readonly rootDir: string;

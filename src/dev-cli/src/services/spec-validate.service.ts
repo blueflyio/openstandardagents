@@ -7,7 +7,7 @@
 
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
-import { SpecValidateRequest, SpecValidateResponse } from '../schemas/spec.schema.js';
+import { SpecValidateRequest, SpecValidateResponse } from '../schemas/spec.schema';
 
 export class SpecValidateService {
   private readonly rootDir: string;

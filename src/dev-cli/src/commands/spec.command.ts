@@ -68,7 +68,7 @@ specCommand
 
     const service = new SpecValidateService();
     try {
-      const result = await service.validate({ specPath });
+      const result = await service.validate({ specPath, strict: false });
 
       if (result.valid) {
         console.log(chalk.green('✅ Spec is valid!'));

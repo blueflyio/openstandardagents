@@ -7,7 +7,7 @@
 
 import { Command } from 'commander';
 import chalk from 'chalk';
-import { VersionAuditService } from '../services/version-audit.service.js';
+import { VersionAuditService } from '../../services/version-audit.service.js';
 import { VersionReleaseService } from '../services/version-release.service.js';
 import { VersionValidateService } from '../services/version-validate.service.js';
 import { VersionSyncService } from '../services/version-sync.service.js';
@@ -74,7 +74,7 @@ versionCommand
         console.log(chalk.gray('All files use {{VERSION}} placeholder.'));
       } else {
         console.log(chalk.yellow(`\n⚠️  Found ${result.total} hardcoded version(s):\n`));
-        result.files.forEach(file => {
+        result.files.forEach((file: { path: string; line: number; content: string; suggested: string }) => {
           console.log(chalk.red(`  ${file.path}:${file.line}`));
           console.log(chalk.gray(`    Current: ${file.content}`));
           console.log(chalk.green(`    Suggested: ${file.suggested}`));
@@ -110,11 +110,11 @@ versionCommand
         console.log(chalk.green('✅ All version references are consistent!'));
         if (result.warnings.length > 0) {
           console.log(chalk.yellow('\n⚠️  Warnings:'));
-          result.warnings.forEach(warn => console.log(chalk.yellow(`  • ${warn}`)));
+          result.warnings.forEach((warn: string) => console.log(chalk.yellow(`  • ${warn}`)));
         }
       } else {
         console.error(chalk.red('\n❌ Version validation failed:\n'));
-        result.errors.forEach(err => console.error(chalk.red(`  • ${err}`)));
+        result.errors.forEach((err: string) => console.error(chalk.red(`  • ${err}`)));
         process.exit(1);
       }
     } catch (error) {
@@ -144,7 +144,7 @@ versionCommand
         console.log(chalk.green(`\n✅ Synced ${result.filesUpdated} file(s)`));
         if (result.files.length > 0) {
           console.log(chalk.gray('\nFiles updated:'));
-          result.files.forEach(file => console.log(chalk.gray(`  • ${file}`)));
+          result.files.forEach((file: string) => console.log(chalk.gray(`  • ${file}`)));
         }
       } else {
         console.error(chalk.red('\n❌ Sync failed'));

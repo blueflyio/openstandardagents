@@ -19,14 +19,14 @@ export const OpenTelemetryExtensionSchema = z.object({
     enabled: z.boolean().default(true),
     exporter: z.enum(['otlp', 'jaeger', 'zipkin', 'console', 'none']).default('otlp'),
     endpoint: z.string().url().optional(),
-    headers: z.record(z.string()).optional(),
+    headers: z.record(z.string(), z.string()).optional(),
     sample_rate: z.number().min(0).max(1).default(1.0),
   }).optional(),
   metrics: z.object({
     enabled: z.boolean().default(true),
     exporter: z.enum(['otlp', 'prometheus', 'console', 'none']).default('otlp'),
     endpoint: z.string().url().optional(),
-    headers: z.record(z.string()).optional(),
+    headers: z.record(z.string(), z.string()).optional(),
     collection_interval_seconds: z.number().min(1).default(60),
   }).optional(),
   logs: z.object({
@@ -35,7 +35,7 @@ export const OpenTelemetryExtensionSchema = z.object({
     endpoint: z.string().url().optional(),
     level: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).default('info'),
   }).optional(),
-  resource_attributes: z.record(z.string()).optional(),
+  resource_attributes: z.record(z.string(), z.string()).optional(),
   instrumentation: z.object({
     http: z.boolean().default(true),
     express: z.boolean().default(true),
@@ -43,7 +43,7 @@ export const OpenTelemetryExtensionSchema = z.object({
     redis: z.boolean().default(false),
     postgres: z.boolean().default(false),
   }).optional(),
-  span_attributes: z.record(z.string()).optional(),
+  span_attributes: z.record(z.string(), z.string()).optional(),
   langsmith: z.object({
     enabled: z.boolean().default(false),
     api_key_env: z.string().default('LANGSMITH_API_KEY'),
@@ -92,18 +92,16 @@ export class OpenTelemetryAdapter {
       };
     }
 
-    // Dynamic import OpenTelemetry SDK
+    // Dynamic import OpenTelemetry SDK (optional dependencies)
+    // @ts-ignore - Optional dependency, may not be installed
     const { NodeSDK } = await import('@opentelemetry/sdk-node');
+    // @ts-ignore - Optional dependency, may not be installed
     const { Resource } = await import('@opentelemetry/resources');
-    const {
-      SEMRESATTRS_SERVICE_NAME,
-      SEMRESATTRS_SERVICE_VERSION,
-    } = await import('@opentelemetry/semantic-conventions');
 
-    // Build resource attributes
+    // Build resource attributes (using standard semantic convention attribute names)
     const resourceAttributes: Record<string, string> = {
-      [SEMRESATTRS_SERVICE_NAME]: config.service_name || agentMetadata.name,
-      [SEMRESATTRS_SERVICE_VERSION]: config.service_version || agentMetadata.version,
+      'service.name': config.service_name || agentMetadata.name,
+      'service.version': config.service_version || agentMetadata.version,
       ...(config.resource_attributes || {}),
     };
 
@@ -128,6 +126,7 @@ export class OpenTelemetryAdapter {
     sdk.start();
 
     // Get tracer and meter
+    // @ts-ignore - Optional dependency, may not be installed
     const { trace, metrics } = await import('@opentelemetry/api');
     const tracer = trace.getTracer(
       config.service_name || agentMetadata.name,
@@ -152,6 +151,7 @@ export class OpenTelemetryAdapter {
   private async createTraceExporter(config: NonNullable<OpenTelemetryExtension['traces']>) {
     switch (config.exporter) {
       case 'otlp': {
+        // @ts-ignore - Optional dependency, may not be installed
         const { OTLPTraceExporter } = await import('@opentelemetry/exporter-trace-otlp-http');
         return new OTLPTraceExporter({
           url: config.endpoint || 'http://localhost:4318/v1/traces',
@@ -159,18 +159,21 @@ export class OpenTelemetryAdapter {
         });
       }
       case 'jaeger': {
+        // @ts-ignore - Optional dependency, may not be installed
         const { JaegerExporter } = await import('@opentelemetry/exporter-jaeger');
         return new JaegerExporter({
           endpoint: config.endpoint || 'http://localhost:14268/api/traces',
         });
       }
       case 'zipkin': {
+        // @ts-ignore - Optional dependency, may not be installed
         const { ZipkinExporter } = await import('@opentelemetry/exporter-zipkin');
         return new ZipkinExporter({
           url: config.endpoint || 'http://localhost:9411/api/v2/spans',
         });
       }
       case 'console': {
+        // @ts-ignore - Optional dependency, may not be installed
         const { ConsoleSpanExporter } = await import('@opentelemetry/sdk-trace-base');
         return new ConsoleSpanExporter();
       }
@@ -185,6 +188,7 @@ export class OpenTelemetryAdapter {
   private async createMetricExporter(config: NonNullable<OpenTelemetryExtension['metrics']>) {
     switch (config.exporter) {
       case 'otlp': {
+        // @ts-ignore - Optional dependency, may not be installed
         const { OTLPMetricExporter } = await import('@opentelemetry/exporter-metrics-otlp-http');
         return new OTLPMetricExporter({
           url: config.endpoint || 'http://localhost:4318/v1/metrics',
@@ -192,6 +196,7 @@ export class OpenTelemetryAdapter {
         });
       }
       case 'prometheus': {
+        // @ts-ignore - Optional dependency, may not be installed
         const { PrometheusExporter } = await import('@opentelemetry/exporter-prometheus');
         return new PrometheusExporter({
           port: 9090,

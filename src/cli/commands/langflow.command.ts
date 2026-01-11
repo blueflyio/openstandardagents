@@ -37,11 +37,11 @@ langflowCommand
       const manifest = await importer.importFromFile(flowFile);
 
       // Write to output file
-      const { dump } = await import('yaml');
-      writeFileSync(options.output, dump(manifest));
+      const yaml = await import('yaml');
+      writeFileSync(options.output, yaml.stringify(manifest));
 
       console.log(chalk.green(`\n✅ Imported Langflow flow to: ${options.output}`));
-      console.log(chalk.gray(`\nManifest: ${manifest.metadata.name} (${manifest.kind})`));
+      console.log(chalk.gray(`\nManifest: ${manifest.metadata?.name || 'unknown'} (${manifest.kind})`));
     } catch (error) {
       console.error(chalk.red(`\n❌ Error: ${error instanceof Error ? error.message : String(error)}`));
       process.exit(1);

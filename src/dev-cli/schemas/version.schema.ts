@@ -36,7 +36,7 @@ export const VersionValidateResponseSchema = z.object({
   valid: z.boolean(),
   errors: z.array(z.string()),
   warnings: z.array(z.string()),
-  details: z.record(z.string()).optional(),
+  details: z.record(z.string(), z.string()).optional(),
 });
 
 export type VersionValidateResponse = z.infer<typeof VersionValidateResponseSchema>;

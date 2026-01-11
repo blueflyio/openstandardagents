@@ -8,7 +8,7 @@
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
-import { SpecGenerateRequest, SpecGenerateResponse } from '../schemas/spec.schema.js';
+import { SpecGenerateRequest, SpecGenerateResponse } from '../schemas/spec.schema';
 
 export class SpecGenerateService {
   private readonly rootDir: string;

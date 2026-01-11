@@ -23,7 +23,7 @@ const LangChainConfigSchema = z.object({
   })).optional(),
   memory: z.object({
     type: z.string(),
-    config: z.record(z.unknown()).optional(),
+    config: z.record(z.string(), z.unknown()).optional(),
   }).optional(),
 });
 
