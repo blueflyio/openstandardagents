@@ -110,7 +110,7 @@
     "validate:schema": "npx ajv-cli compile -s spec/v$(node -p \"require('./.version.json').current\")/ossa-$(node -p \"require('./.version.json').current\").schema.json --strict=false --allow-union-types",
     "validate:manifest": "npx ajv-cli validate -s spec/v$(node -p \"require('./.version.json').current\")/ossa-$(node -p \"require('./.version.json').current\").schema.json --strict=false --allow-union-types -d",
     "validate:examples": "find examples -name '*.ossa.yaml' -o -name '*.ossa.yml' | head -20 | xargs -I {} npm run validate:manifest -- {}",
-    "validate:power": "tsx bin/validate-ossa.ts",
+    "validate:power": "tsx src/tools/validation/validate-ossa.ts",
     "validate:openapi": "tsx src/tools/validation/validate-openapi-extensions.ts",
     "// VERSION MANAGEMENT (via ossa CLI - single source of truth)": "",
     "version:status": "node dist/cli/index.js release version status",
