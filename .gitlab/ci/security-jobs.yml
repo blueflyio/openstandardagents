@@ -43,3 +43,4 @@ sast_iac:
   allow_failure: false
   tags:
     - saas-linux-small-amd64
+  extends: .sast_iac_base
