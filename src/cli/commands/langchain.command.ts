@@ -112,6 +112,7 @@ langchainCommand
       });
 
       console.log(chalk.gray('Executing agent via LangChain...'));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = await runtime.execute(manifest as any, inputs);
 
       console.log(chalk.green('\n✅ Execution complete:'));

@@ -95,6 +95,7 @@ export class LangflowRuntime {
    * Get flow_id from manifest extensions
    */
   private getFlowId(manifest: OssaAgent): string | null {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const extensions = (manifest as any).extensions;
     if (!extensions?.langflow?.flow_id) {
       return null;
@@ -109,6 +110,7 @@ export class LangflowRuntime {
     inputs: Record<string, unknown>,
     manifest: OssaAgent
   ): Partial<LangflowRunRequest> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const extensions = (manifest as any).extensions?.langflow;
     const inputMapping = extensions?.input_mapping;
 
@@ -118,7 +120,9 @@ export class LangflowRuntime {
       for (const [ossaField, mapping] of Object.entries(inputMapping.field_mappings)) {
         if (inputs[ossaField] !== undefined) {
           // Map to Langflow component parameter
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const componentId = (mapping as any).component;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const parameter = (mapping as any).parameter;
           if (!mapped[componentId]) {
             mapped[componentId] = {};
@@ -146,6 +150,7 @@ export class LangflowRuntime {
     response: LangflowRunResponse,
     manifest: OssaAgent
   ): Record<string, unknown> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const extensions = (manifest as any).extensions?.langflow;
     const outputMapping = extensions?.output_mapping;
 
@@ -156,7 +161,9 @@ export class LangflowRuntime {
     if (outputMapping?.field_mappings) {
       const mapped: Record<string, unknown> = {};
       for (const [ossaField, mapping] of Object.entries(outputMapping.field_mappings)) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const componentId = (mapping as any).component;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const outputField = (mapping as any).output_field || 'message';
         const componentOutput = outputs[componentId] as Record<string, unknown> | undefined;
         if (componentOutput && componentOutput[outputField] !== undefined) {

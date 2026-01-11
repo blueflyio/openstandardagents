@@ -16,7 +16,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'yaml';
 import { glob } from 'glob';
-import { getApiVersion, getVersion } from '../../utils/version.js';
+import { getVersion } from '../../utils/version.js';
 import { outputJSON, handleCommandError } from '../utils/index.js';
 
 export const workspaceCommand = new Command('workspace')

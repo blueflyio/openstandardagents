@@ -1,6 +1,6 @@
 #!/usr/bin/env tsx
 export class CIPipelineBot {
-  async orchestratePipeline(config: any): Promise<{ success: boolean }> {
+  async orchestratePipeline(_config: unknown): Promise<{ success: boolean }> {
     return { success: true };
   }
 }

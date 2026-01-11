@@ -65,11 +65,21 @@ export const OpenTelemetryExtensionSchema = z.object({
 
 export type OpenTelemetryExtension = z.infer<typeof OpenTelemetryExtensionSchema>;
 
+// OpenTelemetry types (optional dependency - may not be installed)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type OpenTelemetryTracer = any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type OpenTelemetryMeter = any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type OpenTelemetryLogger = any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type OpenTelemetrySDK = any;
+
 export interface TelemetryInstance {
-  tracer: any; // OpenTelemetry Tracer
-  meter: any; // OpenTelemetry Meter
-  logger: any; // OpenTelemetry Logger
-  sdk: any; // OpenTelemetry SDK instance
+  tracer: OpenTelemetryTracer | null;
+  meter: OpenTelemetryMeter | null;
+  logger: OpenTelemetryLogger | null;
+  sdk: OpenTelemetrySDK | null;
 }
 
 export class OpenTelemetryAdapter {
@@ -113,6 +123,7 @@ export class OpenTelemetryAdapter {
       : undefined;
 
     // Metric exporter is prepared but not yet used (TODO: implement metricReader)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const _metricExporter = config.metrics?.enabled && config.metrics.exporter !== 'none'
       ? await this.createMetricExporter(config.metrics)
       : undefined;
@@ -229,7 +240,7 @@ export class OpenTelemetryAdapter {
   /**
    * Create span for LLM call
    */
-  createLLMSpan(parentSpan: any, provider: string, model: string) {
+  createLLMSpan(parentSpan: OpenTelemetryTracer | null, provider: string, model: string) {
     if (!this.instance?.tracer) return null;
 
     return this.instance.tracer.startSpan('llm.call', {
@@ -244,7 +255,7 @@ export class OpenTelemetryAdapter {
   /**
    * Create span for tool invocation
    */
-  createToolSpan(parentSpan: any, toolName: string) {
+  createToolSpan(parentSpan: OpenTelemetryTracer | null, toolName: string) {
     if (!this.instance?.tracer) return null;
 
     return this.instance.tracer.startSpan('tool.invoke', {

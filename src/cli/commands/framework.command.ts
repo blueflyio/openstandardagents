@@ -29,12 +29,12 @@ frameworkCommand
     if (langflowFiles.length > 0) {
       detected.push('langflow');
       console.log(chalk.green('✅ Langflow detected:'));
-      langflowFiles.slice(0, 5).forEach(file => console.log(chalk.gray(`   ${file}`)));
+      langflowFiles.slice(0, 5).forEach((file: string) => console.log(chalk.gray(`   ${file}`)));
     }
 
     // Check for LangChain
     const langchainFiles = await glob('**/*langchain*.{py,json,yaml,yml}', { ignore: ['node_modules/**'] });
-    const hasLangchainImport = langchainFiles.some(file => {
+    const hasLangchainImport = langchainFiles.some((file: string) => {
       try {
         const content = readFileSync(file, 'utf-8');
         return content.includes('from langchain') || content.includes('import langchain');
@@ -45,12 +45,12 @@ frameworkCommand
     if (hasLangchainImport || langchainFiles.length > 0) {
       detected.push('langchain');
       console.log(chalk.green('\n✅ LangChain detected:'));
-      langchainFiles.slice(0, 5).forEach(file => console.log(chalk.gray(`   ${file}`)));
+      langchainFiles.slice(0, 5).forEach((file: string) => console.log(chalk.gray(`   ${file}`)));
     }
 
     // Check for CrewAI
     const crewaiFiles = await glob('**/*crewai*.{py,json,yaml,yml}', { ignore: ['node_modules/**'] });
-    const hasCrewaiImport = crewaiFiles.some(file => {
+    const hasCrewaiImport = crewaiFiles.some((file: string) => {
       try {
         const content = readFileSync(file, 'utf-8');
         return content.includes('from crewai') || content.includes('import crewai');
@@ -61,7 +61,7 @@ frameworkCommand
     if (hasCrewaiImport || crewaiFiles.length > 0) {
       detected.push('crewai');
       console.log(chalk.green('\n✅ CrewAI detected:'));
-      crewaiFiles.slice(0, 5).forEach(file => console.log(chalk.gray(`   ${file}`)));
+      crewaiFiles.slice(0, 5).forEach((file: string) => console.log(chalk.gray(`   ${file}`)));
     }
 
     // Check for requirements.txt / pyproject.toml
@@ -160,8 +160,10 @@ async function generateExampleManifest(framework: string) {
   };
 
   // Add framework-specific extensions
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const manifestWithExtensions = baseManifest as any;
   if (framework === 'langflow') {
-    (baseManifest as any).extensions = {
+    manifestWithExtensions.extensions = {
       langflow: {
         flow_id: 'example-flow-id',
         api_endpoint: {
@@ -171,18 +173,18 @@ async function generateExampleManifest(framework: string) {
       },
     };
   } else if (framework === 'langchain') {
-    (baseManifest as any).extensions = {
+    manifestWithExtensions.extensions = {
       langchain: {
         agent_type: 'zero-shot-react-description',
       },
     };
   } else if (framework === 'crewai') {
-    (baseManifest as any).extensions = {
+    manifestWithExtensions.extensions = {
       crewai: {
         agent_type: 'custom',
       },
     };
   }
 
-  return baseManifest;
+  return manifestWithExtensions;
 }
