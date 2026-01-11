@@ -54,6 +54,11 @@ import { testCommand } from './commands/test.command.js';
 import { validateCommand } from './commands/validate.command.js';
 import { workspaceCommand } from './commands/workspace.command.js';
 
+// Framework integration commands
+import { langflowCommand } from './commands/langflow.command.js';
+import { langchainCommand } from './commands/langchain.command.js';
+import { frameworkCommand } from './commands/framework.command.js';
+
 // Extension system (SOLID: Open/Closed via registry pattern)
 import {
   shouldLoadExtensions,
@@ -198,6 +203,11 @@ program.addCommand(agentCardCommand);
 
 // Extension development commands
 program.addCommand(extensionTeamCommand);
+
+// Framework integration commands
+program.addCommand(langflowCommand);
+program.addCommand(langchainCommand);
+program.addCommand(frameworkCommand);
 
 // ============================================================================
 // Extension Loading
