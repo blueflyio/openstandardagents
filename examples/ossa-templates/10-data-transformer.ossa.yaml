@@ -14,23 +14,18 @@ spec:
   execution:
     type: deterministic
     runtime: any
-    batch:
-      enabled: true
-      parallelism: 10
-      chunk_size: 1000
+  capabilities:
+  - data.extract
+  - data.transform
+  - data.validate
+  - data.load
+  batch:
+    enabled: true
+    parallelism: 10
+    chunk_size: 1000
     retry:
       max_attempts: 3
-      backoff: exponential
-  capabilities:
-  - name: data.extract
-    description: Extract data from various sources
-  - name: data.transform
-    description: Transform data between formats
-  - name: data.validate
-    description: Validate data against schemas
-  - name: data.load
-    description: Load data to destination
-  tools:
+      backoff_strategy: exponential
   - name: data.read.json
     description: Read JSON data
     handler:
