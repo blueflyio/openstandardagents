@@ -35,6 +35,7 @@ secret_detection:
     - saas-linux-small-amd64
 
 # Infrastructure as Code scanning (for .gitlab-ci.yml, Kubernetes, etc.)
+# Note: Template provides the job definition, we only override rules
 sast_iac:
   stage: security
   rules:
@@ -43,4 +44,5 @@ sast_iac:
   allow_failure: false
   tags:
     - saas-linux-small-amd64
-  extends: .sast_iac_base
+  script:
+    - /analyzer run
