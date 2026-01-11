@@ -140,8 +140,8 @@ test:lint:
     - apk add --no-cache curl jq
     - test -f build.env && . build.env || echo "No build.env found (using defaults)"
   script:
-    - npm run lint || echo "WARNING: Lint warnings"
-    - npm run typecheck || echo "WARNING: Typecheck warnings"
+    - 'npm run lint || echo "WARNING: Lint warnings"'
+    - 'npm run typecheck || echo "WARNING: Typecheck warnings"'
   artifacts:
     reports:
       codequality: gl-code-quality-report.json
@@ -169,7 +169,7 @@ test:security:
     - apk add --no-cache curl jq
     - test -f build.env && . build.env || echo "No build.env found (using defaults)"
   script:
-    - npm audit --production || echo "WARNING: Security vulnerabilities found"
+    - 'npm audit --production || echo "WARNING: Security vulnerabilities found"'
   allow_failure: true
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
