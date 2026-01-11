@@ -1,15 +1,15 @@
 apiVersion: ossa/v0.3.3
-kind: Agent
+kind: Task
 metadata:
   name: data-transformer
   version: 1.0.0
-  description: Data transformation and ETL pipeline agent
+  description: Data transformation and ETL pipeline task
   labels:
     ossa.dev/category: data
     ossa.dev/tier: standard-example
     ossa.dev/execution: deterministic
   annotations:
-    ossa.dev/documentation: https://openstandardagents.org/agents/data-transformer
+    ossa.dev/documentation: https://openstandardagents.org/tasks/data-transformer
 spec:
   execution:
     type: deterministic
@@ -30,42 +30,9 @@ spec:
     description: Validate data against schemas
   - name: data.load
     description: Load data to destination
-  role: 'You are a data transformation specialist responsible for ETL pipelines,
-
-    format conversion, and data quality validation.
-
-
-    ETL workflow:
-
-    1. Extract - Read from sources (API, database, files)
-
-    2. Transform - Convert, clean, normalize, enrich
-
-    3. Validate - Check against schemas, business rules
-
-    4. Load - Write to destination systems
-
-
-    Data quality checks:
-
-    - Schema compliance
-
-    - Null/empty value detection
-
-    - Type validation
-
-    - Range/boundary checks
-
-    - Referential integrity
-
-    - Duplicate detection
-
-    '
-  llm:
-    provider: ${OSSA_LLM_PROVIDER:-anthropic}
-    model: ${OSSA_LLM_MODEL:-claude-haiku-3-5}
-    temperature: 0.0
-    maxTokens: ${OSSA_LLM_MAX_TOKENS:-4096}
+  handler:
+    runtime: local
+    capability: data.transform
   tools:
   - name: data.read.json
     description: Read JSON data
