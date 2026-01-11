@@ -15,11 +15,23 @@ validate:node:
 
 validate:ossa:
   stage: validate
-  needs: []
   image: node:${NODE_VERSION}-alpine
+  tags:
+    - saas-linux-small-amd64
+  extends:
+    - .npm-cache-readonly
+  dependencies:
+    - build:dist
+  needs:
+    - job: build:dist
+      artifacts: true
+      optional: false
+  before_script:
+    - apk add --no-cache curl jq
+    - test -f build.env && . build.env || echo "No build.env found (using defaults)"
+    # Use build artifacts - no npm ci or build needed!
+    - echo "Using build artifacts from build:dist job"
   script:
-    - npm ci --legacy-peer-deps
-    - npm run build
     - echo "Validating all OSSA manifests..."
     - |
       FAILED=0
@@ -139,12 +151,23 @@ check:ds-store:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
 
 validate:version-sync:
-  needs: []
   stage: validate
   image: node:${NODE_VERSION}-alpine
+  tags:
+    - saas-linux-small-amd64
+  extends:
+    - .npm-cache-readonly
+  dependencies:
+    - build:dist
+  needs:
+    - job: build:dist
+      artifacts: true
+      optional: false
+  before_script:
+    - apk add --no-cache curl jq
+    - test -f build.env && . build.env || echo "No build.env found (using defaults)"
+    - echo "Using build artifacts from build:dist job"
   script:
-    - npm ci --legacy-peer-deps
-    - npm run build
     - echo "Checking version consistency..."
     - npm run version:check
   allow_failure: false
@@ -190,12 +213,22 @@ validate:version-sync:
 #   extends: .version-consistency-check
 
 validate:scripts-version:
-  needs: []
   stage: validate
   image: node:${NODE_VERSION}-alpine
+  tags:
+    - saas-linux-small-amd64
+  extends:
+    - .npm-cache-readonly
+  dependencies:
+    - build:dist
+  needs:
+    - job: build:dist
+      artifacts: true
+      optional: false
   before_script:
     - apk add --no-cache curl jq
-    - npm ci --legacy-peer-deps
+    - test -f build.env && . build.env || echo "No build.env found (using defaults)"
+    - echo "Using build artifacts from build:dist job"
   script:
     - |
       echo "Validating npm scripts use dynamic version..."
@@ -239,12 +272,22 @@ validate:scripts-version:
       when: always
 
 validate:docs-consistency:
-  needs: []
   stage: validate
   image: node:${NODE_VERSION}-alpine
+  tags:
+    - saas-linux-small-amd64
+  extends:
+    - .npm-cache-readonly
+  dependencies:
+    - build:dist
+  needs:
+    - job: build:dist
+      artifacts: true
+      optional: false
   before_script:
     - apk add --no-cache curl jq
-    - npm ci --legacy-peer-deps
+    - test -f build.env && . build.env || echo "No build.env found (using defaults)"
+    - echo "Using build artifacts from build:dist job"
   script:
     - |
       echo "Pre-Release Documentation Validation"
