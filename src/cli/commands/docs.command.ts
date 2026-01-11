@@ -294,6 +294,7 @@ export const docsCommand = new Command('docs')
           console.error(chalk.red(`Unknown format: ${options.format}`));
           console.log(chalk.blue('Available formats: markdown, html, openapi, catalog'));
           process.exit(1);
+          return; // TypeScript control flow
         }
 
         const outputPath = path.join(outputDir, filename);

@@ -107,7 +107,9 @@ export function shouldLoadExtensions(): boolean {
 
   // Check for .ossa-extensions.json
   try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const fs = require('fs');
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const path = require('path');
     const configPath = path.join(process.cwd(), '.ossa-extensions.json');
     if (fs.existsSync(configPath)) {
@@ -133,7 +135,9 @@ export function getEnabledExtensions(): string[] {
 
   // Check config file
   try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const fs = require('fs');
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const path = require('path');
     const configPath = path.join(process.cwd(), '.ossa-extensions.json');
     if (fs.existsSync(configPath)) {
