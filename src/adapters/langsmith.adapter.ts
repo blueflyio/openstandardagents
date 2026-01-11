@@ -66,6 +66,7 @@ export class LangSmithAdapter {
         headers: {
           'x-api-key': apiKey,
         },
+        collection_interval_seconds: 60,
       },
       resource_attributes: {
         'langsmith.project': config.project_name || agentMetadata.name,

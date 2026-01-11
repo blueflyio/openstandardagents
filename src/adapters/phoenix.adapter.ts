@@ -65,14 +65,12 @@ export class PhoenixAdapter {
         headers: {
           'Authorization': `Bearer ${apiKey}`,
         },
+        collection_interval_seconds: 60,
       },
       logs: {
         enabled: true,
         exporter: 'otlp',
         endpoint: config.endpoint || 'https://phoenix.arize.com',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-        },
         level: 'info',
       },
     };

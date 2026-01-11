@@ -15,7 +15,7 @@ const LangflowRunRequestSchema = z.object({
   input_value: z.string(),
   input_type: z.enum(['chat', 'text', 'any']).default('chat'),
   output_type: z.enum(['chat', 'text', 'any']).default('chat'),
-  tweaks: z.record(z.unknown()).optional(),
+  tweaks: z.record(z.string(), z.unknown()).optional(),
   stream: z.boolean().default(false),
   session_id: z.string().uuid().optional(),
 });
@@ -23,8 +23,8 @@ const LangflowRunRequestSchema = z.object({
 const LangflowRunResponseSchema = z.object({
   outputs: z.array(z.object({
     outputs: z.array(z.object({
-      results: z.record(z.unknown()),
-      artifacts: z.record(z.unknown()).optional(),
+      results: z.record(z.string(), z.unknown()),
+      artifacts: z.record(z.string(), z.unknown()).optional(),
     })),
   })),
   session_id: z.string().uuid().optional(),
@@ -158,8 +158,9 @@ export class LangflowRuntime {
       for (const [ossaField, mapping] of Object.entries(outputMapping.field_mappings)) {
         const componentId = (mapping as any).component;
         const outputField = (mapping as any).output_field || 'message';
-        if (outputs[componentId]?.[outputField] !== undefined) {
-          mapped[ossaField] = outputs[componentId][outputField];
+        const componentOutput = outputs[componentId] as Record<string, unknown> | undefined;
+        if (componentOutput && componentOutput[outputField] !== undefined) {
+          mapped[ossaField] = componentOutput[outputField];
         }
       }
       return mapped;

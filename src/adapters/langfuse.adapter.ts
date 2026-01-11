@@ -71,6 +71,7 @@ export class LangfuseAdapter {
           'x-langfuse-public-key': publicKey,
           'x-langfuse-secret-key': secretKey,
         },
+        collection_interval_seconds: 60,
       },
     };
 

@@ -111,11 +111,11 @@ frameworkCommand
       // Create example OSSA agent
       if (options.example) {
         const exampleManifest = await generateExampleManifest(framework);
-        const { dump } = await import('yaml');
+        const yaml = await import('yaml');
         const outputPath = `examples/${framework}-example.ossa.yaml`;
         const { writeFileSync, mkdirSync } = await import('fs');
         mkdirSync('examples', { recursive: true });
-        writeFileSync(outputPath, dump(exampleManifest));
+        writeFileSync(outputPath, yaml.stringify(exampleManifest));
 
         console.log(chalk.green(`\n✅ Created example: ${outputPath}`));
       }

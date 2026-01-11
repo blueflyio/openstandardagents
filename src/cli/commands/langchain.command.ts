@@ -45,11 +45,11 @@ langchainCommand
       }
 
       // Write to output file
-      const { dump } = await import('yaml');
-      writeFileSync(options.output, dump(manifest));
+      const yaml = await import('yaml');
+      writeFileSync(options.output, yaml.stringify(manifest));
 
       console.log(chalk.green(`\n✅ Converted LangChain agent to: ${options.output}`));
-      console.log(chalk.gray(`\nAgent: ${manifest.metadata.name}`));
+      console.log(chalk.gray(`\nAgent: ${manifest.metadata?.name || 'unknown'}`));
     } catch (error) {
       console.error(chalk.red(`\n❌ Error: ${error instanceof Error ? error.message : String(error)}`));
       process.exit(1);
