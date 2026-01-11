@@ -280,6 +280,7 @@ extensions:
       enabled: true
       exporter: otlp
       endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4317}"
+      endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4317}"
     phoenix:
       enabled: true
       api_key_env: "PHOENIX_API_KEY"
