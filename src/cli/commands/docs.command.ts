@@ -15,7 +15,7 @@ function generateMarkdown(manifests: Array<{ path: string; manifest: OssaAgent }
   let md = '# OSSA Agent Documentation\n\n';
   md += `Generated from ${manifests.length} agent manifest(s)\n\n`;
 
-  for (const { manifest, path: filePath } of manifests) {
+  for (const { manifest } of manifests) {
     const name = manifest.metadata?.name || manifest.agent?.name || 'Unknown';
     const version = manifest.metadata?.version || manifest.agent?.version || 'Unknown';
     const description = manifest.metadata?.description || manifest.agent?.description || '';

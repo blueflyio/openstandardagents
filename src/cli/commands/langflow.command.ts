@@ -66,6 +66,7 @@ langflowCommand
     try {
       const content = readFileSync(manifestFile, 'utf-8');
       const manifest = parse(content);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const flowJson = LangflowAdapter.toJSON(manifest as any);
 
       writeFileSync(options.output, flowJson);

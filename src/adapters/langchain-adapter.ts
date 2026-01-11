@@ -35,11 +35,10 @@ export class LangChainAdapter {
    */
   static toLangChain(manifest: OssaAgent): LangChainAgent {
     const spec = manifest.spec || { role: '' };
-    const metadata = manifest.metadata || { name: 'unknown-agent' };
     const tools = spec.tools || [];
 
     // Convert OSSA tools to LangChain tools format
-    const langchainTools = tools.map((tool: any) => ({
+    const langchainTools = tools.map((tool: { name?: string; description?: string; input_schema?: Record<string, unknown>; parameters?: Record<string, unknown> }) => ({
       name: tool.name || 'unknown',
       description: tool.description || '',
       parameters: tool.input_schema || tool.parameters || {},

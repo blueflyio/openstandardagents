@@ -17,7 +17,6 @@ import {
   formatErrorCompact,
   isJSONOutput,
   outputJSON,
-  printInfo,
 } from '../utils/index.js';
 import type { OssaAgent, SchemaVersion, ValidationResult } from '../../types/index.js';
 

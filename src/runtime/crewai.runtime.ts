@@ -54,6 +54,7 @@ export class CrewAIRuntime {
   /**
    * Generate CrewAI Python code
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private generateCrewAICode(crew: any, inputs: Record<string, unknown>): string {
     const inputJson = JSON.stringify(inputs);
     return `
@@ -66,7 +67,7 @@ llm = OpenAI(model_name="${crew.agents[0]?.llm?.model || 'gpt-4'}")
 
 # Create agents
 agents = []
-${crew.agents.map((agent: any, i: number) => `
+${crew.agents.map((agent: { role: string; goal: string; backstory: string; verbose: boolean }, i: number) => `
 agent_${i} = Agent(
     role="${agent.role}",
     goal="${agent.goal}",
@@ -79,7 +80,7 @@ agents.append(agent_${i})
 
 # Create tasks
 tasks = []
-${crew.tasks.map((task: any, i: number) => `
+${crew.tasks.map((task: { description: string; expected_output: string; agent?: string }, i: number) => `
 task_${i} = Task(
     description="${task.description}",
     expected_output="${task.expected_output}",
