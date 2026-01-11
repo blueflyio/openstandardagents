@@ -1,6 +1,6 @@
 # OSSA Developer CLI
 
-**Separate from npm package** - Only for developers working on OSSA itself.
+**Production tool in `src/`** - Separate from npm package, only for developers working on OSSA itself.
 
 ## Purpose
 
