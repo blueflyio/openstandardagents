@@ -195,6 +195,20 @@ release:semantic:
     - echo "Running semantic-release..."
     - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
     - |
+      # Check if v0.3.3 tag exists but package not published
+      if git tag -l | grep -q "^v0.3.3$"; then
+        CURRENT_VERSION=$(node -p "require('./package.json').version")
+        if [ "$CURRENT_VERSION" = "0.3.3" ]; then
+          NPM_VERSION=$(npm view @bluefly/openstandardagents@0.3.3 version 2>&1 || echo "NOT_FOUND")
+          if echo "$NPM_VERSION" | grep -q "NOT_FOUND\|E404"; then
+            echo "Tag v0.3.3 exists but package not published. Publishing manually..."
+            npm publish --access public
+            echo "Published v0.3.3 to npmjs.org"
+            exit 0
+          fi
+        fi
+      fi
+    - |
       if [ -n "$GITHUB_TOKEN" ]; then
         export GITHUB_TOKEN
       fi
