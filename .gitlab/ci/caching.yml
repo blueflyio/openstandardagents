@@ -4,12 +4,6 @@
 # Reusable cache templates for npm, build artifacts, and test results
 # Reduces pipeline time by 60-75% through intelligent caching
 
-variables:
-  npm_config_cache: "$CI_PROJECT_DIR/.npm"
-  FF_USE_FASTZIP: "true"
-  ARTIFACT_COMPRESSION_LEVEL: fast
-  CACHE_COMPRESSION_LEVEL: fast
-
 # Base npm cache template - pull-push for build jobs
 .npm-cache:
   cache:
