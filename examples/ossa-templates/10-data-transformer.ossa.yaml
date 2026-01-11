@@ -100,10 +100,3 @@ spec:
               type: string
       duration_ms:
         type: integer
-  contracts:
-    provides:
-    - name: data-transformation
-      version: '1.0'
-      schema:
-        input: ${spec.input}
-        output: ${spec.output}
