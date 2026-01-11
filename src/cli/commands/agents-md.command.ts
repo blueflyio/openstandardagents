@@ -91,7 +91,7 @@ agentsMdCommand
   .argument('<manifest>', 'Path to OSSA manifest file')
   .option('-v, --verbose', 'Verbose output')
   .description('Validate AGENTS.md against OSSA manifest')
-  .action(async (agentsMdPath: string, manifestPath: string, options: { verbose?: boolean }) => {
+  .action(async (agentsMdPath: string, manifestPath: string, _options: { verbose?: boolean }) => {
     try {
       console.log(chalk.blue(`Validating ${agentsMdPath}...`));
 

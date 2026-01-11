@@ -1,6 +1,8 @@
-# Open Standard for Scalable AI Agents (OSSA)
+# Open Standard for Software Agents (OSSA)
 
-> **OSSA** is a vendor-neutral, open specification for defining, deploying, and orchestrating AI agents across platforms. Think OpenAPI for REST APIs, but for AI agents.
+> **OSSA** is a vendor-neutral, open specification standard for defining software agents. **The OpenAPI for agents.**
+
+> OSSA is a **specification standard**, not a framework. It defines contracts and metadata for production agent systems (security, governance, portability), not orchestration algorithms or runtime behavior.
 
 > 💡 **For AI Coding Agents**: See [AGENTS.md](AGENTS.md) for setup, code style, and development guidelines. See [llms.txt](llms.txt) for LLM-friendly project overview.
 
@@ -10,7 +12,12 @@
 
 ## 🌟 What is OSSA?
 
-OSSA provides a standardized YAML schema for defining AI agents, their capabilities, triggers, and lifecycle management. It enables:
+OSSA provides a standardized YAML schema for defining software agents, their capabilities, triggers, and lifecycle management. It defines **contracts and metadata** for production agent systems, enabling:
+
+**Scope:**
+- **Standardized metadata** for security, governance, and portability
+- **Vendor-neutral contracts** that work across platforms
+- **Specification standard** (like OpenAPI) - not a framework or runtime
 
 - **Vendor-neutral agent definitions** - Write once, deploy anywhere
 - **Multi-platform compatibility** - Works with LangChain, LangFlow, CrewAI, AutoGen, and more

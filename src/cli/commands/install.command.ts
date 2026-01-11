@@ -28,7 +28,9 @@ export const installCommand = new Command('install')
           headers: { 'PRIVATE-TOKEN': token },
         }
       );
-      const release = response.data;
+      // Response data contains release info but not used in this flow
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const _release = response.data;
       const outputDir = options.output || './agents';
       await fs.mkdir(outputDir, { recursive: true });
       const outputPath = path.join(outputDir, `${agentName.replace('@ossa/', '')}.yaml`);
