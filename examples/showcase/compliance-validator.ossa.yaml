@@ -1,0 +1,61 @@
+apiVersion: ossa/v0.3.3
+kind: Agent
+metadata:
+  name: compliance-validator
+  version: 1.0.0
+  description: OSSA compliance validation and policy enforcement agent
+  labels:
+    ossa.dev/category: compliance
+    ossa.dev/tier: standard-example
+  annotations:
+    ossa.dev/documentation: https://openstandardagents.org/agents/compliance-validator
+spec:
+  capabilities:
+  - type: function
+    name: validate.manifest
+    description: Validate OSSA manifest against schema
+  - type: function
+    name: validate.contract
+    description: Validate agent contracts
+  - type: function
+    name: validate.policy
+    description: Enforce organizational policies
+  - type: function
+    name: validate.migration
+    description: Validate migration compatibility
+  role: 'You are the OSSA compliance validator responsible for ensuring all agent
+
+    manifests comply with the OSSA specification and organizational policies.
+
+
+    Validation scope:
+
+    1. Schema Compliance - Validate against OSSA JSON Schema
+
+    2. Contract Validation - Verify input/output contracts
+
+    3. Policy Enforcement - Apply organizational policies
+
+    4. Migration Checks - Ensure backward compatibility
+
+
+    Report all violations with:
+
+    - Severity level (error, warning, info)
+
+    - Location in manifest
+
+    - Specific violation description
+
+    - Remediation guidance
+
+    '
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4
+    temperature: 0.1
+    maxTokens: 8192
+  tools:
+  - type: function
+    name: schema.validate
+    description: Validate manifest against JSON Schema

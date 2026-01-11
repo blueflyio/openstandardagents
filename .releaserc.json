@@ -1,0 +1,226 @@
+{
+  "repositoryUrl": "https://github.com/blueflyio/openstandardagents.git",
+  "branches": [
+    "main",
+    {
+      "name": "release/v+([0-9]).+([0-9]).x",
+      "prerelease": false
+    },
+    {
+      "name": "development",
+      "prerelease": "dev"
+    },
+    {
+      "name": "hotfix/+([0-9]).+([0-9]).+([0-9])",
+      "prerelease": "dev"
+    }
+  ],
+  "plugins": [
+    [
+      "@semantic-release/commit-analyzer",
+      {
+        "preset": "conventionalcommits",
+        "releaseRules": [
+          {
+            "type": "feat",
+            "release": "minor"
+          },
+          {
+            "type": "fix",
+            "release": "patch"
+          },
+          {
+            "type": "perf",
+            "release": "patch"
+          },
+          {
+            "type": "revert",
+            "release": "patch"
+          },
+          {
+            "type": "docs",
+            "release": "patch"
+          },
+          {
+            "type": "chore",
+            "release": false
+          },
+          {
+            "type": "refactor",
+            "release": "patch"
+          },
+          {
+            "type": "test",
+            "release": false
+          },
+          {
+            "type": "build",
+            "release": false
+          },
+          {
+            "type": "ci",
+            "release": false
+          },
+          {
+            "breaking": true,
+            "release": "major"
+          }
+        ],
+        "parserOpts": {
+          "noteKeywords": [
+            "BREAKING CHANGE",
+            "BREAKING CHANGES",
+            "BREAKING"
+          ]
+        }
+      }
+    ],
+    [
+      "@semantic-release/release-notes-generator",
+      {
+        "preset": "conventionalcommits",
+        "presetConfig": {
+          "types": [
+            {
+              "type": "feat",
+              "section": "Added",
+              "hidden": false
+            },
+            {
+              "type": "fix",
+              "section": "Fixed",
+              "hidden": false
+            },
+            {
+              "type": "perf",
+              "section": "Changed",
+              "hidden": false
+            },
+            {
+              "type": "revert",
+              "section": "Removed",
+              "hidden": false
+            },
+            {
+              "type": "docs",
+              "section": "Changed",
+              "hidden": false
+            },
+            {
+              "type": "refactor",
+              "section": "Changed",
+              "hidden": false
+            },
+            {
+              "type": "deprecate",
+              "section": "Deprecated",
+              "hidden": false
+            },
+            {
+              "type": "security",
+              "section": "Security",
+              "hidden": false
+            },
+            {
+              "type": "test",
+              "section": "Changed",
+              "hidden": true
+            },
+            {
+              "type": "build",
+              "section": "Changed",
+              "hidden": true
+            },
+            {
+              "type": "ci",
+              "section": "Changed",
+              "hidden": true
+            },
+            {
+              "type": "chore",
+              "section": "Changed",
+              "hidden": true
+            }
+          ]
+        }
+      }
+    ],
+    [
+      "@semantic-release/changelog",
+      {
+        "changelogFile": "CHANGELOG.md",
+        "changelogTitle": "# Changelog\n\nAll notable changes to OSSA (Open Standard for Scalable AI Agents) will be documented in this file.\n\nThe format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),\nand this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)."
+      }
+    ],
+    [
+      "@semantic-release/exec",
+      {
+        "prepareCmd": "node dist/cli/index.js release version sync --include-examples || bash .gitlab/scripts/sync-version-placeholders.sh ${nextRelease.version}"
+      }
+    ],
+    [
+      "@semantic-release/npm",
+      {
+        "npmPublish": true,
+        "tarballDir": "dist"
+      }
+    ],
+    [
+      "@semantic-release/gitlab",
+      {
+        "gitlabUrl": "https://gitlab.com",
+        "assets": [
+          {
+            "path": "dist/*.tgz",
+            "label": "Distribution Package"
+          },
+          {
+            "path": "CHANGELOG.md",
+            "label": "Changelog"
+          }
+        ],
+        "successComment": "\ud83c\udf89 This ${issue.pull_request ? 'MR is included' : 'issue has been resolved'} in version ${nextRelease.version}\n\nThe release is available on:\n- [npm package](https://www.npmjs.com/package/@bluefly/openstandardagents)\n- [GitLab release](${releases[0].url})\n- [GitHub release](https://github.com/blueflyio/openstandardagents/releases/tag/v${nextRelease.version})\n- [Documentation](https://openstandardagents.org)\n\nYour **${issue.pull_request ? 'merge request' : 'issue'}** is included in this release!"
+      }
+    ],
+    [
+      "@semantic-release/github",
+      {
+        "assets": [
+          {
+            "path": "dist/*.tgz",
+            "label": "OSSA npm package (${nextRelease.gitTag})"
+          },
+          {
+            "path": "spec/v${nextRelease.version.split('.')[0]}.${nextRelease.version.split('.')[1]}.${nextRelease.version.split('.')[2]}/ossa-${nextRelease.version.split('.')[0]}.${nextRelease.version.split('.')[1]}.${nextRelease.version.split('.')[2]}.schema.json",
+            "label": "OSSA ${nextRelease.version} JSON Schema"
+          },
+          {
+            "path": "CHANGELOG.md",
+            "label": "Changelog"
+          }
+        ],
+        "successComment": false,
+        "releasedLabels": false,
+        "addReleases": "bottom"
+      }
+    ],
+    [
+      "@semantic-release/git",
+      {
+        "assets": [
+          "CHANGELOG.md",
+          "package.json",
+          "package-lock.json",
+          "README.md",
+          ".version.json",
+          ".wiki-config.json",
+          "spec/**/*.yaml",
+          "spec/**/*.json",
+          ".gitlab/**/*.yaml",
+          ".gitlab/**/*.yml"
+        ],
+        "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+      }
+    ]
+  ]
+}

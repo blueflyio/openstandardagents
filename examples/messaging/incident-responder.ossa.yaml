@@ -1,0 +1,477 @@
+# OSSA v0.3.0 Example: Incident Responder Agent with Messaging
+#
+# This agent receives security incidents from multiple sources and coordinates
+# response activities across teams via OSSA messaging.
+
+apiVersion: ossa/v0.3.3
+kind: Agent
+metadata:
+  name: incident-responder
+  version: 1.0.0
+  description: Coordinates security incident response and escalation
+  labels:
+    domain: security
+    tier: response
+    criticality: high
+  annotations:
+    ossa.openstandardagents.org/category: incident-response
+    ossa.openstandardagents.org/on-call: "true"
+    ossa.openstandardagents.org/sla: 15m
+
+spec:
+  role: |
+    You are a security incident response coordinator. Your responsibilities:
+    1. Receive and triage security incidents from multiple sources
+    2. Assess severity and business impact
+    3. Coordinate response activities across teams
+    4. Track incident lifecycle from detection to resolution
+    5. Generate incident reports and post-mortems
+
+    Response priorities:
+    - Critical: Immediate response required, potential data breach
+    - High: Respond within 1 hour, active exploitation
+    - Medium: Respond within 4 hours, vulnerability with no active exploit
+    - Low: Respond within 24 hours, informational
+
+    For each incident:
+    - Create incident ticket with unique ID
+    - Notify appropriate teams based on severity
+    - Track all response activities
+    - Document timeline and actions taken
+    - Close with resolution summary
+
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    temperature: 0
+    maxTokens: 8192
+
+  tools:
+    - type: mcp
+      name: incident-tracker
+      capabilities:
+        - name: create_incident
+          description: Create a new incident ticket
+          input_schema:
+            type: object
+            properties:
+              title:
+                type: string
+              severity:
+                type: string
+              description:
+                type: string
+              source:
+                type: string
+        - name: update_incident
+          description: Update incident status or details
+          input_schema:
+            type: object
+            properties:
+              incident_id:
+                type: string
+              status:
+                type: string
+              notes:
+                type: string
+        - name: close_incident
+          description: Close an incident with resolution
+          input_schema:
+            type: object
+            properties:
+              incident_id:
+                type: string
+              resolution:
+                type: string
+              root_cause:
+                type: string
+
+    - type: http
+      name: pagerduty
+      capabilities:
+        - name: create_alert
+          description: Create PagerDuty alert for on-call team
+          input_schema:
+            type: object
+            properties:
+              service_id:
+                type: string
+              severity:
+                type: string
+              summary:
+                type: string
+
+  messaging:
+    # Channels this agent publishes to
+    publishes:
+      - channel: incident.response.triggered
+        description: Notifications when incident response is initiated
+        schema:
+          type: object
+          required:
+            - incident_id
+            - severity
+            - status
+          properties:
+            incident_id:
+              type: string
+              description: Unique incident identifier
+            severity:
+              type: string
+              enum: [low, medium, high, critical]
+            status:
+              type: string
+              enum: [new, triaging, investigating, mitigating, resolved, closed]
+            title:
+              type: string
+            description:
+              type: string
+            source_channel:
+              type: string
+              description: Original channel that reported the incident
+            source_message_id:
+              type: string
+            affected_systems:
+              type: array
+              items:
+                type: string
+            assigned_team:
+              type: string
+            escalation_level:
+              type: integer
+              minimum: 1
+              maximum: 5
+            timeline:
+              type: array
+              items:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                    format: date-time
+                  action:
+                    type: string
+                  actor:
+                    type: string
+        examples:
+          - incident_id: "INC-2024-001234"
+            severity: "critical"
+            status: "investigating"
+            title: "Critical vulnerability detected in production dependencies"
+            description: "CVE-2024-1234 found in lodash@4.17.20, active exploitation reported"
+            source_channel: "security.vulnerabilities"
+            source_message_id: "msg-abc123"
+            affected_systems: ["api-gateway", "user-service", "payment-service"]
+            assigned_team: "security-ops"
+            escalation_level: 2
+            timeline:
+              - timestamp: "2024-12-10T15:30:00Z"
+                action: "Incident created"
+                actor: "incident-responder"
+              - timestamp: "2024-12-10T15:31:00Z"
+                action: "Escalated to security-ops"
+                actor: "incident-responder"
+
+      - channel: incident.notification
+        description: Human-readable notifications for teams
+        schema:
+          type: object
+          required:
+            - incident_id
+            - message
+            - channel
+          properties:
+            incident_id:
+              type: string
+            message:
+              type: string
+              description: Human-readable notification message
+            channel:
+              type: string
+              enum: [slack, email, pagerduty, teams]
+            recipients:
+              type: array
+              items:
+                type: string
+            urgency:
+              type: string
+              enum: [low, high]
+            actions:
+              type: array
+              items:
+                type: object
+                properties:
+                  label:
+                    type: string
+                  url:
+                    type: string
+
+      - channel: incident.resolved
+        description: Notifications when incidents are resolved
+        schema:
+          type: object
+          required:
+            - incident_id
+            - resolution
+          properties:
+            incident_id:
+              type: string
+            resolution:
+              type: string
+              description: How the incident was resolved
+            root_cause:
+              type: string
+            time_to_detect:
+              type: integer
+              description: Seconds from occurrence to detection
+            time_to_resolve:
+              type: integer
+              description: Seconds from detection to resolution
+            lessons_learned:
+              type: array
+              items:
+                type: string
+            follow_up_actions:
+              type: array
+              items:
+                type: object
+                properties:
+                  action:
+                    type: string
+                  owner:
+                    type: string
+                  due_date:
+                    type: string
+                    format: date
+
+    # Channels this agent subscribes to
+    subscribes:
+      - channel: security.vulnerabilities
+        description: Vulnerability findings that may require incident response
+        handler: triage_vulnerability
+        filter:
+          fields:
+            severity: [critical]
+          expression: "${{ message.exploit_available == true }}"
+        priority: critical
+        maxConcurrency: 50
+
+      - channel: security.scan.completed
+        description: Security scan completions for tracking
+        handler: process_scan_completion
+        filter:
+          expression: "${{ message.summary.critical > 0 }}"
+        priority: high
+        maxConcurrency: 20
+
+      - channel: monitoring.alert.fired
+        description: Monitoring alerts that may indicate security issues
+        handler: process_monitoring_alert
+        filter:
+          fields:
+            category: [security, anomaly, intrusion]
+        priority: high
+        maxConcurrency: 30
+
+      - channel: compliance.violation
+        description: Compliance violations requiring response
+        handler: process_compliance_violation
+        priority: high
+        maxConcurrency: 10
+
+    # Commands this agent accepts
+    commands:
+      - name: create_incident
+        description: Manually create a security incident
+        inputSchema:
+          type: object
+          required:
+            - title
+            - severity
+          properties:
+            title:
+              type: string
+            severity:
+              type: string
+              enum: [low, medium, high, critical]
+            description:
+              type: string
+            affected_systems:
+              type: array
+              items:
+                type: string
+            source:
+              type: string
+              default: manual
+        outputSchema:
+          type: object
+          properties:
+            incident_id:
+              type: string
+            status:
+              type: string
+            assigned_team:
+              type: string
+            created_at:
+              type: string
+              format: date-time
+        timeoutSeconds: 30
+
+      - name: escalate_incident
+        description: Escalate an existing incident
+        inputSchema:
+          type: object
+          required:
+            - incident_id
+            - reason
+          properties:
+            incident_id:
+              type: string
+            reason:
+              type: string
+            new_severity:
+              type: string
+              enum: [medium, high, critical]
+        outputSchema:
+          type: object
+          properties:
+            incident_id:
+              type: string
+            new_escalation_level:
+              type: integer
+            notified_teams:
+              type: array
+              items:
+                type: string
+        timeoutSeconds: 30
+
+      - name: resolve_incident
+        description: Resolve and close an incident
+        inputSchema:
+          type: object
+          required:
+            - incident_id
+            - resolution
+          properties:
+            incident_id:
+              type: string
+            resolution:
+              type: string
+            root_cause:
+              type: string
+            lessons_learned:
+              type: array
+              items:
+                type: string
+        outputSchema:
+          type: object
+          properties:
+            incident_id:
+              type: string
+            status:
+              type: string
+            time_to_resolve:
+              type: integer
+            report_url:
+              type: string
+        timeoutSeconds: 60
+
+      - name: get_incident_status
+        description: Get current status of an incident
+        inputSchema:
+          type: object
+          required:
+            - incident_id
+          properties:
+            incident_id:
+              type: string
+        outputSchema:
+          type: object
+          properties:
+            incident_id:
+              type: string
+            status:
+              type: string
+            severity:
+              type: string
+            assigned_team:
+              type: string
+            timeline:
+              type: array
+            last_updated:
+              type: string
+              format: date-time
+        timeoutSeconds: 10
+        idempotent: true
+
+    # Reliability configuration - critical for incident response
+    reliability:
+      deliveryGuarantee: exactly-once
+      retry:
+        maxAttempts: 5
+        backoff:
+          strategy: exponential
+          initialDelayMs: 500
+          maxDelayMs: 10000
+          multiplier: 2
+      dlq:
+        enabled: true
+        channel: incident.dlq
+        retentionDays: 90
+      ordering:
+        guarantee: global
+        timeoutSeconds: 60
+      acknowledgment:
+        mode: manual
+        timeoutSeconds: 30
+
+  autonomy:
+    level: autonomous
+    approval_required: false
+    allowed_actions:
+      - create_incidents
+      - escalate_incidents
+      - notify_teams
+      - update_status
+      - generate_reports
+    blocked_actions:
+      - resolve_critical_without_approval
+      - delete_incidents
+      - modify_audit_logs
+
+  constraints:
+    cost:
+      maxTokensPerDay: 200000
+      maxTokensPerRequest: 16000
+    performance:
+      maxLatencySeconds: 5
+      maxConcurrentRequests: 100
+      timeoutSeconds: 60
+
+  state:
+    mode: long_running
+    storage:
+      type: rdbms
+      retention: 365d
+
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+    metrics:
+      enabled: true
+      exporter: prometheus
+    logging:
+      level: debug
+      format: json
+
+  safety:
+    content_filtering:
+      enabled: true
+      categories:
+        - pii
+        - credentials
+        - sensitive_data
+    guardrails:
+      enabled: true
+      max_tool_calls: 100

@@ -1,0 +1,59 @@
+# ============================================================================
+# GitLab CI Component: OSSA Workflow Execution
+# ============================================================================
+# Reusable component for executing OSSA v0.3.0 Workflow manifests
+# ============================================================================
+
+spec:
+  inputs:
+    workflow_path:
+      description: "Path to workflow manifest file"
+      type: string
+      default: ""
+    workflow_inputs:
+      description: "JSON string of workflow inputs"
+      type: string
+      default: "{}"
+    k8s_namespace:
+      description: "Kubernetes namespace"
+      type: string
+      default: "workflow-system"
+
+.ossa_workflow_base:
+  image: node:22-alpine
+  before_script:
+    - apk add --no-cache git curl jq bash
+    - npm ci --legacy-peer-deps
+    - npm run build
+  script:
+    - |
+      echo "[SYNC] Executing OSSA Workflow"
+      echo "   Workflow: ${workflow_path}"
+      echo "   Inputs: ${workflow_inputs}"
+
+      if [ -z "${workflow_path}" ]; then
+        echo "[INFO] No workflow path specified, skipping workflow execution"
+        exit 0
+      fi
+
+      if [ ! -f "${workflow_path}" ]; then
+        echo "[FAIL] ERROR: Workflow manifest not found: ${workflow_path}"
+        exit 1
+      fi
+
+      if ! node dist/cli/index.js validate "${workflow_path}"; then
+        echo "[FAIL] ERROR: Workflow manifest validation failed"
+        exit 1
+      fi
+
+      node dist/cli/index.js workflow execute "${workflow_path}" --inputs "${workflow_inputs}"
+
+ossa:workflow:
+  extends: .ossa_workflow_base
+  variables:
+    workflow_path: ""
+    workflow_inputs: "{}"
+  rules:
+    - if: $workflow_path
+      when: on_success
+    - when: never

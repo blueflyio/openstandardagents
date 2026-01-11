@@ -1,0 +1,57 @@
+# Self-Evolving OSSA Standard - Autonomous Agent Workflows
+# Agents continuously research, propose, and implement improvements
+
+stages:
+  - research
+  - propose
+  - implement
+  - release
+
+research:ecosystem-monitoring:
+  stage: research
+  image: node:20
+  script:
+    - npm install -g @bluefly/openstandardagents
+    - ossa run .gitlab/agents/research-agent/manifest.ossa.yaml --runtime anthropic --message "Research latest agent frameworks and identify OSSA gaps"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_PIPELINE_SOURCE == "web"
+  when: manual
+  allow_failure: true
+
+propose:create-improvement-issues:
+  stage: propose
+  image: node:20
+  script:
+    - npm install -g @bluefly/openstandardagents
+    - ossa run .gitlab/agents/research-agent/manifest.ossa.yaml --runtime anthropic --message "Analyze research findings and create GitLab issues for OSSA improvements"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_PIPELINE_SOURCE == "web"
+  when: manual
+  allow_failure: true
+
+release:auto-release:
+  stage: release
+  image: node:20
+  script:
+    - npm install -g @bluefly/openstandardagents
+    - ossa run .gitlab/agents/release-automation/manifest.ossa.yaml --runtime anthropic --message "Check for closed milestones and create releases"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "webhook"
+      variables:
+        - $CI_WEBHOOK_EVENT == "milestone"
+  allow_failure: false
+
+implement:schema-evolution:
+  stage: implement
+  image: node:20
+  script:
+    - npm install -g @bluefly/openstandardagents
+    - ossa run .gitlab/agents/schema-evolution/manifest.ossa.yaml --runtime anthropic --message "Review approved schema issues and update OSSA schema"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "webhook"
+      variables:
+        - $CI_WEBHOOK_EVENT == "issue"
+  when: manual
+  allow_failure: true

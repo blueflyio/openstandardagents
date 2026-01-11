@@ -1,0 +1,149 @@
+openapi: 3.1.0
+info:
+  title: CrewAI Research Agent API
+  version: 0.3.3
+  description: |
+    CrewAI research agent for multi-agent collaboration.
+    Specializes in gathering comprehensive information on assigned topics.
+
+x-ossa-metadata:
+  version: 0.2.5-RC
+  compliance:
+    level: basic
+    frameworks:
+      - OSSA
+      - OpenAPI 3.1
+      - CrewAI
+
+x-ossa:
+  version: 0.2.5-RC
+  agent:
+    id: research-agent
+    type: worker
+    compliance:
+      standards:
+        - openapi-first
+      validated: true
+      validatedAt: "2024-01-15T10:00:00Z"
+
+servers:
+  - url: http://localhost:3000
+    description: Local development
+
+tags:
+  - name: research
+    description: Research operations
+  - name: collaboration
+    description: Multi-agent collaboration operations
+
+paths:
+  /research:
+    post:
+      summary: Conduct research
+      description: Gather comprehensive information on assigned research topic
+      operationId: conductResearch
+      tags: [research]
+      x-ossa-capability: research
+      x-ossa-autonomy:
+        level: autonomous
+        approval_required: false
+      x-ossa-llm:
+        provider: openai
+        model: gpt-4
+        temperature: 0.3
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [topic]
+              properties:
+                topic:
+                  type: string
+                  description: Research topic
+                depth:
+                  type: string
+                  enum: [shallow, medium, deep]
+                  default: medium
+                sources:
+                  type: array
+                  items:
+                    type: string
+                  description: Preferred sources
+      responses:
+        '200':
+          description: Research completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  topic:
+                    type: string
+                  findings:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        source:
+                          type: string
+                        content:
+                          type: string
+                        relevance:
+                          type: number
+                  summary:
+                    type: string
+                  sources:
+                    type: array
+                    items:
+                      type: string
+
+  /collaborate:
+    post:
+      summary: Collaborate with other agents
+      description: Coordinate with other CrewAI agents for collaborative tasks
+      operationId: collaborate
+      tags: [collaboration]
+      x-ossa-capability: collaborate
+      x-ossa-autonomy:
+        level: autonomous
+        approval_required: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [task, agents]
+              properties:
+                task:
+                  type: string
+                  description: Collaborative task
+                agents:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      agent_id:
+                        type: string
+                      role:
+                        type: string
+      responses:
+        '200':
+          description: Collaboration initiated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  collaboration_id:
+                    type: string
+                  status:
+                    type: string
+                    enum: [initiated, in_progress, completed]
+                  agents:
+                    type: array
+                    items:
+                      type: object
+
