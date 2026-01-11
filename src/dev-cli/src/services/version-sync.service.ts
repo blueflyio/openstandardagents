@@ -8,7 +8,7 @@
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { glob } from 'glob';
-import { VersionSyncRequest, VersionSyncResponse, VersionConfigSchema, VERSION_PLACEHOLDER_PATTERN } from '../schemas/version.schema';
+import { VersionSyncRequest, VersionSyncResponse, VersionConfigSchema, VERSION_PLACEHOLDER_PATTERN } from '../schemas/version.schema.js';
 
 export class VersionSyncService {
   private readonly rootDir: string;

@@ -6,7 +6,7 @@
 import * as fs from 'fs';
 import { injectable } from 'inversify';
 import * as path from 'path';
-import type { ISchemaRepository, SchemaVersion } from '../types/index';
+import type { ISchemaRepository, SchemaVersion } from '../types/index.js';
 
 @injectable()
 export class SchemaRepository implements ISchemaRepository {

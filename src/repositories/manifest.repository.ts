@@ -7,7 +7,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { stringify as stringifyYaml } from 'yaml';
 import { injectable } from 'inversify';
-import type { IManifestRepository, OssaAgent } from '../types/index';
+import type { IManifestRepository, OssaAgent } from '../types/index.js';
 import { validateFilePath } from '../utils/path-validator.js';
 import { safeParseYAML } from '../utils/yaml-parser.js';
 

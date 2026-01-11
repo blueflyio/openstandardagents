@@ -7,7 +7,7 @@
 
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
-import { VersionValidateResponse, VersionConfigSchema } from '../schemas/version.schema';
+import { VersionValidateResponse, VersionConfigSchema } from '../schemas/version.schema.js';
 
 export class VersionValidateService {
   private readonly rootDir: string;
