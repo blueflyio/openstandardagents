@@ -1,4 +1,4 @@
-# Open Standard for Scalable AI Agents (OSSA)
+# Open Standard for Software Agents (OSSA) - The OpenAPI for agents
 
 > OSSA is a vendor-neutral, open specification for defining, deploying, and orchestrating AI agents across platforms. Think OpenAPI for REST APIs, but for AI agents. This repository contains the complete specification, CLI tools, SDKs, and 100+ reference examples.
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * OSSA CLI - Open Standard for Scalable AI Agents
+ * OSSA CLI - Open Standard for Software Agents (The OpenAPI for agents)
  * Main CLI entry point
  *
  * This CLI contains ONLY platform-agnostic OSSA commands.
@@ -147,7 +147,7 @@ function getVersion(): string {
 
 program
   .name('ossa')
-  .description('OSSA CLI - Open Standard for Scalable AI Agents (The OpenAPI for AI Agents)')
+  .description('OSSA CLI - Open Standard for Software Agents (The OpenAPI for agents)')
   .version(getVersion());
 
 // ============================================================================

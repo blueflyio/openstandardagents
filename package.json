@@ -40,7 +40,7 @@
       "require": "./dist/mesh/index.js"
     }
   },
-  "description": "OSSA - Open Standard for Scalable AI Agents. A specification standard for AI agents (like OpenAPI for REST APIs). NOT a framework.",
+  "description": "OSSA - Open Standard for Software Agents. The OpenAPI for agents. A specification standard (not a framework) that defines contracts/metadata for production agent systems.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
