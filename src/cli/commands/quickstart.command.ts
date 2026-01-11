@@ -54,7 +54,7 @@ spec:
   # The agent's persona (system prompt)
   role: |
     You are a friendly and helpful AI assistant created with OSSA
-    (Open Standard for Scalable AI Agents).
+    (Open Standard for Software Agents - The OpenAPI for agents).
 
     Your purpose:
     • Answer questions clearly and accurately
@@ -109,7 +109,7 @@ function printHeader(): void {
   console.log(chalk.cyan.bold('[RUN] OSSA Quickstart'));
   console.log(chalk.cyan('══════════════════'));
   console.log();
-  console.log(chalk.gray('Open Standard for Scalable AI Agents'));
+  console.log(chalk.gray('Open Standard for Software Agents - The OpenAPI for agents'));
   console.log(chalk.gray('Get running in 60 seconds...'));
   console.log();
 }
