@@ -156,11 +156,8 @@ validate:version-sync:
     - npm run build
   script:
     - echo "Checking version consistency..."
-    - |
-      npm run version:check || {
-        echo "WARNING: Version check found issues (non-blocking for release branches with resolved versions)"
-        exit 0
-      }
+    - npm run version:check
+    - echo "Version check completed"
   allow_failure: true
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
