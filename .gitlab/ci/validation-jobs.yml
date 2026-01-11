@@ -19,18 +19,11 @@ validate:ossa:
   tags:
     - saas-linux-small-amd64
   extends:
-    - .npm-cache-readonly
-  dependencies:
-    - build:dist
-  needs:
-    - job: build:dist
-      artifacts: true
-      optional: false
+    - .npm-cache
   before_script:
     - apk add --no-cache curl jq
-    - test -f build.env && . build.env || echo "No build.env found (using defaults)"
-    # Use build artifacts - no npm ci or build needed!
-    - echo "Using build artifacts from build:dist job"
+    - npm ci --prefer-offline --no-audit
+    - npm run build
   script:
     - echo "Validating all OSSA manifests..."
     - |
