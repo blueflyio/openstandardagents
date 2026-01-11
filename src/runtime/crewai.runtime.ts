@@ -16,11 +16,9 @@ export interface CrewAIRuntimeConfig {
 
 export class CrewAIRuntime {
   private config: CrewAIRuntimeConfig;
-  private adapter: CrewAIAdapter;
 
   constructor(config: CrewAIRuntimeConfig = {}) {
     this.config = config;
-    this.adapter = new CrewAIAdapter();
   }
 
   /**

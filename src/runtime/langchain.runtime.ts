@@ -17,11 +17,9 @@ export interface LangChainRuntimeConfig {
 
 export class LangChainRuntime {
   private config: LangChainRuntimeConfig;
-  private adapter: LangChainAdapter;
 
   constructor(config: LangChainRuntimeConfig = {}) {
     this.config = config;
-    this.adapter = new LangChainAdapter();
   }
 
   /**

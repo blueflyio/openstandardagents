@@ -9,7 +9,7 @@
 import { z } from 'zod';
 import axios from 'axios';
 import type { OssaAgent } from '../types/index.js';
-import { LangflowAdapter } from '../adapters/langflow-adapter.js';
+// LangflowAdapter is used for format conversion, not needed for runtime execution
 
 const LangflowRunRequestSchema = z.object({
   input_value: z.string(),
@@ -42,11 +42,9 @@ export interface LangflowRuntimeConfig {
 
 export class LangflowRuntime {
   private config: LangflowRuntimeConfig;
-  private adapter: LangflowAdapter;
 
   constructor(config: LangflowRuntimeConfig) {
     this.config = config;
-    this.adapter = new LangflowAdapter();
   }
 
   /**
