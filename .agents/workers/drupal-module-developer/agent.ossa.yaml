@@ -9,7 +9,7 @@ metadata:
     generation and best practices.
 
   labels:
-    ossa-version: v0.3.0
+    ossa-version: v0.3.3
     platform: drupal
     provider: blueflyio
     category: worker
@@ -319,3 +319,23 @@ spec:
         base_url: http://localhost:3000
         health: /health
         metrics: /metrics
+
+extensions:
+  langchain:
+    agent_type: "zero-shot-react-description"
+    memory:
+      type: "conversation_buffer"
+  opentelemetry:
+    enabled: true
+    service_name: "drupal-module-developer"
+    traces:
+      enabled: true
+      exporter: otlp
+      endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4317}"
+    metrics:
+      enabled: true
+      exporter: otlp
+    langsmith:
+      enabled: true
+      api_key_env: "LANGSMITH_API_KEY"
+      project_name: "drupal-agents"

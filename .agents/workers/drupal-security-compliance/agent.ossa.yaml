@@ -9,7 +9,7 @@ metadata:
     enterprise security requirements.
 
   labels:
-    ossa-version: v0.3.0
+    ossa-version: v0.3.3
     platform: drupal
     provider: blueflyio
     category: worker
@@ -267,3 +267,26 @@ spec:
         base_url: http://localhost:3000
         health: /health
         metrics: /metrics
+
+extensions:
+  opentelemetry:
+    enabled: true
+    service_name: "drupal-security-compliance"
+    traces:
+      enabled: true
+      exporter: otlp
+      endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4317}"
+    metrics:
+      enabled: true
+      exporter: otlp
+    phoenix:
+      enabled: true
+      api_key_env: "PHOENIX_API_KEY"
+    langfuse:
+      enabled: true
+      public_key_env: "LANGFUSE_PUBLIC_KEY"
+      secret_key_env: "LANGFUSE_SECRET_KEY"
+    resource_attributes:
+      agent.id: "drupal-security-compliance"
+      domain: "security"
+      compliance: "fedramp,soc2"
