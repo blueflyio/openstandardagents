@@ -26,42 +26,6 @@ spec:
     retry:
       max_attempts: 3
       backoff_strategy: exponential
-  - name: data.read.json
-    description: Read JSON data
-    handler:
-      runtime: local
-      capability: fs.read.json
-    type: function
-  - name: data.read.csv
-    description: Read CSV data
-    handler:
-      runtime: local
-      capability: fs.read.csv
-    type: function
-  - name: data.read.yaml
-    description: Read YAML data
-    handler:
-      runtime: local
-      capability: fs.read.yaml
-    type: function
-  - name: data.write
-    description: Write data to file
-    handler:
-      runtime: local
-      capability: fs.write
-    type: function
-  - name: data.validate
-    description: Validate against JSON Schema
-    handler:
-      runtime: local
-      capability: jsonschema.validate
-    type: function
-  - name: db.query
-    description: Query database
-    handler:
-      runtime: local
-      capability: db.query
-    type: function
   input:
     type: object
     required:
