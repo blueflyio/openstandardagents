@@ -149,17 +149,11 @@ validate:version-sync:
   tags:
     - saas-linux-small-amd64
   extends:
-    - .npm-cache-readonly
-  dependencies:
-    - build:dist
-  needs:
-    - job: build:dist
-      artifacts: true
-      optional: false
+    - .npm-cache
   before_script:
     - apk add --no-cache curl jq
-    - test -f build.env && . build.env || echo "No build.env found (using defaults)"
-    - echo "Using build artifacts from build:dist job"
+    - npm ci --prefer-offline --no-audit
+    - npm run build
   script:
     - echo "Checking version consistency..."
     - npm run version:check
@@ -211,17 +205,11 @@ validate:scripts-version:
   tags:
     - saas-linux-small-amd64
   extends:
-    - .npm-cache-readonly
-  dependencies:
-    - build:dist
-  needs:
-    - job: build:dist
-      artifacts: true
-      optional: false
+    - .npm-cache
   before_script:
     - apk add --no-cache curl jq
-    - test -f build.env && . build.env || echo "No build.env found (using defaults)"
-    - echo "Using build artifacts from build:dist job"
+    - npm ci --prefer-offline --no-audit
+    - npm run build
   script:
     - |
       echo "Validating npm scripts use dynamic version..."
@@ -270,17 +258,11 @@ validate:docs-consistency:
   tags:
     - saas-linux-small-amd64
   extends:
-    - .npm-cache-readonly
-  dependencies:
-    - build:dist
-  needs:
-    - job: build:dist
-      artifacts: true
-      optional: false
+    - .npm-cache
   before_script:
     - apk add --no-cache curl jq
-    - test -f build.env && . build.env || echo "No build.env found (using defaults)"
-    - echo "Using build artifacts from build:dist job"
+    - npm ci --prefer-offline --no-audit
+    - npm run build
   script:
     - |
       echo "Pre-Release Documentation Validation"
