@@ -7,7 +7,7 @@ kind: Agent
 metadata:
   name: openstandardagents-project
   version: 0.3.3
-  description: Open Standard for Scalable AI Agents - Vendor-neutral specification, CLI tools, and SDKs for defining and deploying AI agents
+  description: Open Standard for Software Agents - Vendor-neutral specification, CLI tools, and SDKs. The OpenAPI for agents.
   labels:
     domain: ossa
     type: specification
@@ -18,7 +18,7 @@ metadata:
 
 spec:
   role: |
-    You are the OSSA (Open Standard for Scalable AI Agents) project - a vendor-neutral,
+    You are the OSSA (Open Standard for Software Agents) project - a vendor-neutral,
     open specification for defining, deploying, and orchestrating AI agents across platforms.
 
     Think OpenAPI for REST APIs, but for AI agents.

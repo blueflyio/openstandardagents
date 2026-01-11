@@ -69,7 +69,7 @@ type Result = z.infer<typeof ResultSchema>;
 // Configuration
 // ============================================================================
 
-const ROOT = path.resolve(__dirname, '..');
+const ROOT = path.resolve(__dirname, '../../..');
 const PACKAGE_JSON = path.join(ROOT, 'package.json');
 const README = path.join(ROOT, 'README.md');
 const CHANGELOG = path.join(ROOT, 'CHANGELOG.md');

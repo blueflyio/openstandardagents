@@ -3,7 +3,6 @@
  */
 import chalk from 'chalk';
 import { Command } from 'commander';
-import * as fs from 'fs/promises';
 import axios from 'axios';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';

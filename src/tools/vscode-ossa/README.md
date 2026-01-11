@@ -1,6 +1,6 @@
 # OSSA Language Support for VS Code
 
-Official Visual Studio Code extension for **OSSA (Open Standard for Scalable AI Agents)** - the OpenAPI of AI Agents.
+Official Visual Studio Code extension for **OSSA (Open Standard for Software Agents)** - The OpenAPI for agents.
 
 ## Features
 

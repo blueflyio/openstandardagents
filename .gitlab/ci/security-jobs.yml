@@ -1,0 +1,48 @@
+# ============================================================================
+# SECURITY JOBS - GitLab Ultimate Security Scanning
+# ============================================================================
+# SAST, Dependency Scanning, Secret Detection
+# Only run on MRs and release/main branches (not on feature branch pushes)
+
+# Override SAST job rules for proper triggering
+sast:
+  stage: security
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^(main|release)/
+  allow_failure: false
+  tags:
+    - saas-linux-small-amd64
+
+# Override Dependency Scanning rules
+dependency_scanning:
+  stage: security
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^(main|release)/
+  allow_failure: false
+  tags:
+    - saas-linux-small-amd64
+
+# Override Secret Detection rules
+secret_detection:
+  stage: security
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^(main|release)/
+  allow_failure: false
+  tags:
+    - saas-linux-small-amd64
+
+# Infrastructure as Code scanning (for .gitlab-ci.yml, Kubernetes, etc.)
+# Note: Template provides the job definition, we only override rules
+sast_iac:
+  stage: security
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^(main|release)/
+  allow_failure: false
+  tags:
+    - saas-linux-small-amd64
+  script:
+    - /analyzer run

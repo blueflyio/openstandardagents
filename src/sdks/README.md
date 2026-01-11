@@ -1,6 +1,6 @@
 # OSSA SDKs
 
-Official Software Development Kits for the Open Standard for Scalable AI Agents (OSSA).
+Official Software Development Kits for the Open Standard for Software Agents (OSSA) - The OpenAPI for agents.
 
 ## Architecture
 

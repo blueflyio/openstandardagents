@@ -23,7 +23,7 @@ import type {
   CreateMilestoneRequest,
 } from '../../services/release-automation/schemas/release.schema.js';
 import { loadGitLabConfig, type GitLabConfig } from '../utils/gitlab-config.js';
-import { isJSONOutput, outputJSON, printSuccess, printError, printKeyValue } from '../utils/output.js';
+import { printSuccess, printError, printKeyValue } from '../utils/output.js';
 
 // ============================================================================
 // Helper: Get GitLab Config (uses shared utility)

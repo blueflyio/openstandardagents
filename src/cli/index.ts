@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * OSSA CLI - Open Standard for Scalable AI Agents
+ * OSSA CLI - Open Standard for Software Agents (The OpenAPI for agents)
  * Main CLI entry point
  *
  * This CLI contains ONLY platform-agnostic OSSA commands.
@@ -53,6 +53,11 @@ import { setupCommand } from './commands/setup.command.js';
 import { testCommand } from './commands/test.command.js';
 import { validateCommand } from './commands/validate.command.js';
 import { workspaceCommand } from './commands/workspace.command.js';
+
+// Framework integration commands
+import { langflowCommand } from './commands/langflow.command.js';
+import { langchainCommand } from './commands/langchain.command.js';
+import { frameworkCommand } from './commands/framework.command.js';
 
 // Extension system (SOLID: Open/Closed via registry pattern)
 import {
@@ -147,7 +152,7 @@ function getVersion(): string {
 
 program
   .name('ossa')
-  .description('OSSA CLI - Open Standard for Scalable AI Agents (The OpenAPI for AI Agents)')
+  .description('OSSA CLI - Open Standard for Software Agents (The OpenAPI for agents)')
   .version(getVersion());
 
 // ============================================================================
@@ -198,6 +203,11 @@ program.addCommand(agentCardCommand);
 
 // Extension development commands
 program.addCommand(extensionTeamCommand);
+
+// Framework integration commands
+program.addCommand(langflowCommand);
+program.addCommand(langchainCommand);
+program.addCommand(frameworkCommand);
 
 // ============================================================================
 // Extension Loading

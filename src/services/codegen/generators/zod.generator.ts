@@ -56,10 +56,11 @@ export class ZodGenerator implements Generator {
       // Generate Zod using json-schema-to-zod
       let output: string;
       try {
-        output = execSync(
+        const result = execSync(
           `npx json-schema-to-zod -s "${schemaPath}" -n OssaSchema`,
           { encoding: 'utf8', cwd: process.cwd() }
         );
+        output = result;
       } catch {
         // Fallback: generate basic Zod schema manually
         output = this.generateBasicZodSchema(schema, version);
