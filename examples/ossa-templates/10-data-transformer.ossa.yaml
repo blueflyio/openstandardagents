@@ -30,9 +30,6 @@ spec:
     description: Validate data against schemas
   - name: data.load
     description: Load data to destination
-  handler:
-    runtime: local
-    capability: data.transform
   tools:
   - name: data.read.json
     description: Read JSON data
