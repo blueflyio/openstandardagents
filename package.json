@@ -2,7 +2,7 @@
   "name": "@bluefly/openstandardagents",
   "version": "0.3.3",
   "exports": {
-    "./schema": "./spec/v0.3.3/ossa-0.3.3.schema.json",
+    "./schema": "./spec/v{{VERSION}}/ossa-{{VERSION}}.schema.json",
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
@@ -107,8 +107,8 @@
     "quality:fix": "npm run lint:fix && npm run format",
     "// VALIDATION": "",
     "validate": "npm run validate:schema && npm run validate:examples",
-    "validate:schema": "npx ajv-cli compile -s spec/v0.3.3/ossa-0.3.3.schema.json --strict=false --allow-union-types",
-    "validate:manifest": "npx ajv-cli validate -s spec/v0.3.3/ossa-0.3.3.schema.json --strict=false --allow-union-types -d",
+    "validate:schema": "npx ajv-cli compile -s spec/v$(node -p \"require('./.version.json').current\")/ossa-$(node -p \"require('./.version.json').current\").schema.json --strict=false --allow-union-types",
+    "validate:manifest": "npx ajv-cli validate -s spec/v$(node -p \"require('./.version.json').current\")/ossa-$(node -p \"require('./.version.json').current\").schema.json --strict=false --allow-union-types -d",
     "validate:examples": "find examples -name '*.ossa.yaml' -o -name '*.ossa.yml' | head -20 | xargs -I {} npm run validate:manifest -- {}",
     "validate:power": "tsx bin/validate-ossa.ts",
     "validate:openapi": "tsx scripts/validate-openapi-extensions.ts",
