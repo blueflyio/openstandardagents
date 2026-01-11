@@ -165,7 +165,7 @@ export class VersionAuditService {
       if (!existsSync(fullPath)) continue;
 
       try {
-        let content = readFileSync(fullPath, 'utf-8');
+        const content = readFileSync(fullPath, 'utf-8');
         const lines = content.split('\n');
         let changed = false;
 

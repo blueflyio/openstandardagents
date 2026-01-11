@@ -93,9 +93,9 @@ export class OpenTelemetryAdapter {
     }
 
     // Dynamic import OpenTelemetry SDK (optional dependencies)
-    // @ts-ignore - Optional dependency, may not be installed
+    // @ts-expect-error - Optional dependency, may not be installed
     const { NodeSDK } = await import('@opentelemetry/sdk-node');
-    // @ts-ignore - Optional dependency, may not be installed
+    // @ts-expect-error - Optional dependency, may not be installed
     const { Resource } = await import('@opentelemetry/resources');
 
     // Build resource attributes (using standard semantic convention attribute names)
@@ -112,7 +112,8 @@ export class OpenTelemetryAdapter {
       ? await this.createTraceExporter(config.traces)
       : undefined;
 
-    const metricExporter = config.metrics?.enabled && config.metrics.exporter !== 'none'
+    // Metric exporter is prepared but not yet used (TODO: implement metricReader)
+    const _metricExporter = config.metrics?.enabled && config.metrics.exporter !== 'none'
       ? await this.createMetricExporter(config.metrics)
       : undefined;
 
@@ -126,8 +127,8 @@ export class OpenTelemetryAdapter {
     sdk.start();
 
     // Get tracer and meter
-    // @ts-ignore - Optional dependency, may not be installed
-    const { trace, metrics } = await import('@opentelemetry/api');
+    // @ts-expect-error - Optional dependency, may not be installed
+    const { trace } = await import('@opentelemetry/api');
     const tracer = trace.getTracer(
       config.service_name || agentMetadata.name,
       config.service_version || agentMetadata.version
@@ -151,7 +152,7 @@ export class OpenTelemetryAdapter {
   private async createTraceExporter(config: NonNullable<OpenTelemetryExtension['traces']>) {
     switch (config.exporter) {
       case 'otlp': {
-        // @ts-ignore - Optional dependency, may not be installed
+        // @ts-expect-error - Optional dependency, may not be installed
         const { OTLPTraceExporter } = await import('@opentelemetry/exporter-trace-otlp-http');
         return new OTLPTraceExporter({
           url: config.endpoint || 'http://localhost:4318/v1/traces',
@@ -159,21 +160,21 @@ export class OpenTelemetryAdapter {
         });
       }
       case 'jaeger': {
-        // @ts-ignore - Optional dependency, may not be installed
+        // @ts-expect-error - Optional dependency, may not be installed
         const { JaegerExporter } = await import('@opentelemetry/exporter-jaeger');
         return new JaegerExporter({
           endpoint: config.endpoint || 'http://localhost:14268/api/traces',
         });
       }
       case 'zipkin': {
-        // @ts-ignore - Optional dependency, may not be installed
+        // @ts-expect-error - Optional dependency, may not be installed
         const { ZipkinExporter } = await import('@opentelemetry/exporter-zipkin');
         return new ZipkinExporter({
           url: config.endpoint || 'http://localhost:9411/api/v2/spans',
         });
       }
       case 'console': {
-        // @ts-ignore - Optional dependency, may not be installed
+        // @ts-expect-error - Optional dependency, may not be installed
         const { ConsoleSpanExporter } = await import('@opentelemetry/sdk-trace-base');
         return new ConsoleSpanExporter();
       }
@@ -188,7 +189,7 @@ export class OpenTelemetryAdapter {
   private async createMetricExporter(config: NonNullable<OpenTelemetryExtension['metrics']>) {
     switch (config.exporter) {
       case 'otlp': {
-        // @ts-ignore - Optional dependency, may not be installed
+        // @ts-expect-error - Optional dependency, may not be installed
         const { OTLPMetricExporter } = await import('@opentelemetry/exporter-metrics-otlp-http');
         return new OTLPMetricExporter({
           url: config.endpoint || 'http://localhost:4318/v1/metrics',
@@ -196,7 +197,7 @@ export class OpenTelemetryAdapter {
         });
       }
       case 'prometheus': {
-        // @ts-ignore - Optional dependency, may not be installed
+        // @ts-expect-error - Optional dependency, may not be installed
         const { PrometheusExporter } = await import('@opentelemetry/exporter-prometheus');
         return new PrometheusExporter({
           port: 9090,
@@ -257,7 +258,7 @@ export class OpenTelemetryAdapter {
   /**
    * Record metric
    */
-  recordMetric(name: string, value: number, attributes?: Record<string, string>) {
+  recordMetric(_name: string, _value: number, _attributes?: Record<string, string>) {
     // TODO: Implement metric recording
   }
 
