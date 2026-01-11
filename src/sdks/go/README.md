@@ -1,6 +1,6 @@
 # OSSA Go SDK
 
-Go SDK for Open Standard for Scalable AI Agents (OSSA).
+Go SDK for Open Standard for Software Agents (OSSA) - The OpenAPI for agents.
 
 ## Installation
 
