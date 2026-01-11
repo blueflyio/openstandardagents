@@ -7,12 +7,11 @@
 
 import { Command } from 'commander';
 import chalk from 'chalk';
-import { existsSync, writeFileSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { parse } from 'yaml';
 import { LangChainImporterService } from '../../services/framework-import/langchain-importer.service.js';
 import { LangChainAdapter } from '../../adapters/langchain-adapter.js';
 import { LangChainRuntime } from '../../runtime/langchain.runtime.js';
-import { readFileSync } from 'fs';
-import { parse } from 'yaml';
 
 export const langchainCommand = new Command('langchain')
   .alias('lc')
@@ -73,7 +72,8 @@ langchainCommand
     }
 
     try {
-      const manifest = await loadManifest(manifestFile);
+      const content = readFileSync(manifestFile, 'utf-8');
+      const manifest = parse(content);
       const pythonCode = LangChainAdapter.toPythonCode(manifest as any);
 
       writeFileSync(options.output, pythonCode);
@@ -103,7 +103,8 @@ langchainCommand
     }
 
     try {
-      const manifest = await loadManifest(manifestFile);
+      const content = readFileSync(manifestFile, 'utf-8');
+      const manifest = parse(content);
       const inputs = JSON.parse(options.input);
 
       const runtime = new LangChainRuntime({

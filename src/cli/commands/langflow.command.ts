@@ -8,11 +8,10 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { parse } from 'yaml';
 import { LangflowImporterService } from '../../services/framework-import/langflow-importer.service.js';
 import { LangflowAdapter } from '../../adapters/langflow-adapter.js';
 import { LangflowRuntime } from '../../runtime/langflow.runtime.js';
-import { readFileSync } from 'fs';
-import { parse } from 'yaml';
 
 export const langflowCommand = new Command('langflow')
   .alias('lf')
@@ -65,7 +64,8 @@ langflowCommand
     }
 
     try {
-      const manifest = await loadManifest(manifestFile);
+      const content = readFileSync(manifestFile, 'utf-8');
+      const manifest = parse(content);
       const flowJson = LangflowAdapter.toJSON(manifest as any);
 
       writeFileSync(options.output, flowJson);
@@ -96,7 +96,8 @@ langflowCommand
     }
 
     try {
-      const manifest = await loadManifest(manifestFile);
+      const content = readFileSync(manifestFile, 'utf-8');
+      const manifest = parse(content);
       const inputs = JSON.parse(options.input);
 
       // Get flow_id from extensions
