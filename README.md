@@ -21,6 +21,8 @@ OSSA provides a standardized YAML schema for defining software agents, their cap
 
 - **Vendor-neutral agent definitions** - Write once, deploy anywhere
 - **Multi-platform compatibility** - Works with LangChain, LangFlow, CrewAI, AutoGen, and more
+- **Framework integrations** - Import/export from popular AI frameworks
+- **Observability support** - Built-in adapters for Phoenix/Arize, Langfuse, LangSmith, and OpenTelemetry
 - **GitLab Duo Platform integration** - Native support for GitLab's AI agent ecosystem
 - **Kubernetes-native deployment** - GitOps-ready agent manifests
 - **Type-safe SDKs** - TypeScript and Python SDKs with full validation
@@ -100,14 +102,15 @@ if (validation.valid) {
 ```
 openstandardagents/
 ├── spec/              # OSSA specification schemas
-│   ├── v0.3.3/       # Latest version
-│   └── v0.3.3/       # Previous versions
+│   └── v0.3.3/       # Latest version (v0.3.3)
 ├── src/              # TypeScript source code
-│   ├── cli/          # CLI commands
-│   ├── services/     # Core services
+│   ├── cli/          # CLI commands (validate, generate, migrate, etc.)
+│   ├── dev-cli/      # Developer CLI (version, spec, workflow commands)
+│   ├── services/     # Core services (validation, generation, migration)
+│   ├── adapters/     # Observability adapters (Phoenix, Langfuse, LangSmith, OpenTelemetry)
 │   ├── tools/        # Development tools
 │   └── sdks/         # SDK implementations
-├── examples/         # Reference examples
+├── examples/         # 100+ reference examples
 ├── openapi/          # OpenAPI specifications
 ├── tests/            # Test suite
 └── docs/             # Documentation
@@ -156,6 +159,17 @@ npm run generate:all             # Generate everything
 npm run migrate                  # Migrate manifests to latest version
 npm run migrate:check            # Check which files need migration
 
+# Framework Integration
+ossa langflow <file>             # Import/export LangFlow workflows
+ossa langchain <file>            # Import/export LangChain chains
+ossa framework <file>            # Import from any supported framework
+
+# Developer CLI (for contributors)
+ossa-dev version sync            # Sync version across all files
+ossa-dev version release         # Release new version
+ossa-dev spec generate           # Generate spec from source
+ossa-dev spec validate           # Validate generated spec
+
 # Documentation
 npm run docs:generate            # Generate documentation
 ```
@@ -188,8 +202,11 @@ Please read [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) before contributing.
 ### Tools
 
 - **CLI** - Command-line tool for validation, generation, and migration
+- **Developer CLI** - Version management and spec generation tools
 - **TypeScript SDK** - Type-safe client library
 - **Python SDK** - Python client library (coming soon)
+- **Framework Integrations** - Import/export from LangChain, LangFlow, CrewAI, AutoGen
+- **Observability Adapters** - Phoenix/Arize, Langfuse, LangSmith, OpenTelemetry support
 
 ### Examples
 
@@ -202,6 +219,8 @@ Please read [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) before contributing.
 - **Website**: https://openstandardagents.org
 - **npm Package**: https://www.npmjs.com/package/@bluefly/openstandardagents
 - **GitLab**: https://gitlab.com/blueflyio/ossa/openstandardagents
+- **GitHub Mirror**: https://github.com/blueflyio/openstandardagents
+- **Discord**: https://discord.gg/ZZqad3v4
 - **Issues**: https://gitlab.com/blueflyio/ossa/openstandardagents/-/issues
 - **Discussions**: https://gitlab.com/blueflyio/ossa/openstandardagents/-/issues
 
