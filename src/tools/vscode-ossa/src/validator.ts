@@ -143,7 +143,7 @@ export class OSSAValidator {
   private findLineForPath(document: vscode.TextDocument, path: string): number {
     // Simple implementation - find the line containing the path key
     const pathParts = path.split('/').filter(p => p);
-    if (pathParts.length === 0) return 0;
+    if (pathParts.length === 0) {return 0;}
 
     const lastKey = pathParts[pathParts.length - 1];
     const text = document.getText();

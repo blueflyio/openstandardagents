@@ -156,7 +156,7 @@ create-dev-tag:release:
 # ============================================================================
 
 detect-release-version:
-  stage: version-detect
+  stage: .pre
   image: alpine:latest
   tags:
     - saas-linux-small-amd64
@@ -362,7 +362,7 @@ create-rc-tag:
 # ============================================================================
 
 sync-version-files:
-  stage: version-detect
+  stage: .pre
   image: node:${NODE_VERSION}-alpine
   tags:
     - saas-linux-small-amd64

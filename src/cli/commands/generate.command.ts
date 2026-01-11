@@ -20,7 +20,7 @@ import { container } from '../../di-container.js';
 import { GenerationService } from '../../services/generation.service.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { CodegenService, type GeneratorType } from '../../services/codegen/index.js';
-import type { AgentTemplate, OssaAgent } from '../../types/index.js';
+import type { AgentTemplate } from '../../types/index.js';
 import { handleCommandError } from '../utils/index.js';
 
 export const generateCommand = new Command('generate')

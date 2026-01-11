@@ -16,7 +16,6 @@ import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import type { OssaAgent } from '../../types/index.js';
 import {
   outputJSON,
-  printSummary,
   findManifestFilesFromPaths,
   handleCommandError,
 } from '../utils/index.js';
