@@ -153,7 +153,6 @@ validate:ossa-templates:
 # RELEASE JOBS (Semantic Release)
 # =============================================================================
 
-<<<<<<< HEAD
 # REMOVED: release:publish-v0.3.3 - replaced by automated promote-rc-to-stable → publish-npm:stable
 # The new workflow is fully automated:
 # 1. promote-rc-to-stable creates stable tag on main
@@ -162,79 +161,6 @@ validate:ossa-templates:
 # 4. sync-github:stable syncs to GitHub
 
 release:semantic:
-=======
-release:publish-v0.3.3:
->>>>>>> release/v0.3.x
-  stage: release
-  image: node:${NODE_VERSION}
-  tags:
-    - saas-linux-small-amd64
-<<<<<<< HEAD
-  variables:
-    GIT_AUTHOR_NAME: "OSSA Release Bot"
-    GIT_AUTHOR_EMAIL: "release-bot@openstandardagents.org"
-    GIT_COMMITTER_NAME: "OSSA Release Bot"
-    GIT_COMMITTER_EMAIL: "release-bot@openstandardagents.org"
-    GITLAB_TOKEN: ${CI_DEPLOY_OSSA}
-=======
->>>>>>> release/v0.3.x
-  extends:
-    - .npm-cache
-  before_script:
-    - npm ci
-    - npm run build
-    - |
-      if [ -z "$NPM_TOKEN" ]; then
-        echo "ERROR: NPM_TOKEN not set in CI/CD variables"
-<<<<<<< HEAD
-        echo "Add NPM_TOKEN in Settings > CI/CD > Variables"
-        echo "For npmjs.org, use: npmjs.com > Access Tokens > Generate Token (Automation type)"
-        exit 1
-      fi
-      if [ -z "$CI_DEPLOY_OSSA" ]; then
-        echo "ERROR: CI_DEPLOY_OSSA not set"
-        exit 1
-      fi
-      if [ -z "$GITHUB_TOKEN" ]; then
-        echo "WARNING: GITHUB_TOKEN not set - GitHub releases will be skipped"
-        echo "Add GITHUB_TOKEN in Settings > CI/CD > Variables"
-        echo "Create token at: https://github.com/settings/tokens (repo scope)"
-      else
-        echo "GitHub token configured"
-      fi
-      echo "Required tokens configured"
-  script:
-=======
-        exit 1
-      fi
-      echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
-  script:
-    - |
-      # Publish v0.3.3 if tag exists but package not published
-      if git tag -l | grep -q "^v0.3.3$"; then
-        CURRENT_VERSION=$(node -p "require('./package.json').version")
-        echo "Tag v0.3.3 exists, package.json version: $CURRENT_VERSION"
-        if [ "$CURRENT_VERSION" = "0.3.3" ]; then
-          echo "Checking if v0.3.3 is published on npm..."
-          if ! npm view @bluefly/openstandardagents@0.3.3 version >/dev/null 2>&1; then
-            echo "v0.3.3 not found on npm. Publishing..."
-            npm publish --access public
-            echo "✅ Published v0.3.3 to npmjs.org"
-          else
-            echo "v0.3.3 already published on npm. Skipping."
-          fi
-        else
-          echo "Version mismatch: expected 0.3.3, got $CURRENT_VERSION"
-        fi
-      else
-        echo "Tag v0.3.3 not found. Skipping manual publish."
-      fi
-  rules:
-    - if: $CI_COMMIT_BRANCH =~ /^release\/v[0-9]+\.[0-9]+\.x$/ && $CI_PIPELINE_SOURCE == "push"
-      when: on_success
-  allow_failure: false
-
-release:semantic:
   stage: release
   image: node:${NODE_VERSION}
   tags:
@@ -270,7 +196,6 @@ release:semantic:
       fi
       echo "Required tokens configured"
   script:
->>>>>>> release/v0.3.x
     - echo "Running semantic-release..."
     - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
     - |
@@ -282,12 +207,6 @@ release:semantic:
     - if: $CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"
       when: on_success
     - if: $CI_COMMIT_BRANCH =~ /^release\/v[0-9]+\.[0-9]+\.x$/ && $CI_PIPELINE_SOURCE == "push"
-<<<<<<< HEAD
       when: on_success
   # NOTE: Removed 'environment: production' which was causing job to be manual
   # due to GitLab's production tier environment protection rules
-=======
-  environment:
-    name: production
-    url: https://www.npmjs.com/package/@bluefly/openstandardagents
->>>>>>> release/v0.3.x
