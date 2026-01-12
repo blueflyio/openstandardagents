@@ -128,9 +128,9 @@ publish-npm:stable:
   image: node:${NODE_VERSION}
   tags:
     - saas-linux-small-amd64
-  needs:
-    - job: promote-rc-to-stable
-      artifacts: true
+  # NOTE: Cannot use needs: promote-rc-to-stable because tag pipelines are separate from branch pipelines
+  # When stable tag is pushed, it triggers a new pipeline where promote-rc-to-stable doesn't exist
+  # This job runs independently when stable tag is pushed
   extends:
     - .npm-cache
   before_script:
@@ -150,15 +150,13 @@ publish-npm:stable:
       echo "AUTOMATED NPM PUBLISH"
       echo "====================="
 
-      # Source stable tag info
-      if [ -f stable-tag.env ]; then
-        . stable-tag.env
-      else
-        echo "ERROR: stable-tag.env not found"
+      # Extract version from tag (tag pipelines don't have stable-tag.env from promote job)
+      if [ -z "$CI_COMMIT_TAG" ]; then
+        echo "ERROR: CI_COMMIT_TAG not set"
         exit 1
       fi
 
-      VERSION="${STABLE_TAG#v}"
+      VERSION="${CI_COMMIT_TAG#v}"
       echo "Publishing version: ${VERSION}"
 
       # Verify version matches package.json
@@ -197,6 +195,7 @@ create-gitlab-release:stable:
   needs:
     - job: publish-npm:stable
       artifacts: false
+      optional: false
   before_script:
     - apk add --no-cache git bash curl jq
   script:
