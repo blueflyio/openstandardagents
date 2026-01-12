@@ -22,6 +22,7 @@ import 'reflect-metadata';
 import { agentCardCommand } from './commands/agent-card.command.js';
 import { agentsMdCommand } from './commands/agents-md.command.js';
 import { agentsCommandGroup } from './commands/agents.command.js';
+import { complianceCommand } from './commands/compliance.command.js';
 import { contractCommand } from './commands/contract.command.js';
 import { dependenciesCommand } from './commands/dependencies.command.js';
 import { deployGroup } from './commands/deploy.command.js';
@@ -163,6 +164,7 @@ program
 
 program.addCommand(quickstartCommand); // First for discoverability
 program.addCommand(validateCommand);
+program.addCommand(complianceCommand);
 program.addCommand(dependenciesCommand);
 program.addCommand(contractCommand);
 program.addCommand(generateCommand);
