@@ -625,7 +625,7 @@ workspaceCommand
           });
 
           // Check registry structure
-          if (registry.apiVersion && registry.kind === 'AgentRegistry') {
+          if (registry.apiVersion && registry.kind === getDefaultRegistryKind()) {
             auditResults.push({
               category: 'Registry',
               check: 'Registry Schema',
@@ -970,20 +970,23 @@ workspaceCommand
           const registry = yaml.parse(content);
 
           // Validate registry schema
+          const expectedAPIVersion = getDefaultOSSAAPIVersion();
+          const expectedRegistryKind = getDefaultRegistryKind();
+          
           if (!registry.apiVersion) {
             validationResults.push({
               category: 'Registry',
               check: 'Registry Schema',
               status: 'fail',
               message: 'Registry missing apiVersion field',
-              details: 'Add apiVersion: ossa.dev/v1',
+              details: `Add apiVersion: ${expectedAPIVersion}`,
             });
-          } else if (registry.apiVersion !== 'ossa.dev/v1') {
+          } else if (registry.apiVersion !== expectedAPIVersion) {
             validationResults.push({
               category: 'Registry',
               check: 'Registry Schema',
               status: 'warning',
-              message: `Registry apiVersion is ${registry.apiVersion}, expected ossa.dev/v1`,
+              message: `Registry apiVersion is ${registry.apiVersion}, expected ${expectedAPIVersion}`,
             });
           } else {
             validationResults.push({
@@ -994,13 +997,13 @@ workspaceCommand
             });
           }
 
-          if (registry.kind !== 'AgentRegistry') {
+          if (registry.kind !== expectedRegistryKind) {
             validationResults.push({
               category: 'Registry',
               check: 'Registry Kind',
               status: 'fail',
-              message: `Registry kind is ${registry.kind || 'missing'}, expected AgentRegistry`,
-              details: 'Set kind: AgentRegistry',
+              message: `Registry kind is ${registry.kind || 'missing'}, expected ${expectedRegistryKind}`,
+              details: `Set kind: ${expectedRegistryKind}`,
             });
           } else {
             validationResults.push({
@@ -1073,13 +1076,15 @@ workspaceCommand
           const policy = yaml.parse(content);
 
           // Validate policy schema
+          const expectedPolicyKind = getDefaultPolicyKind();
+          
           if (!policy.apiVersion) {
             validationResults.push({
               category: 'Policies',
               check: 'Policy Schema',
               status: 'fail',
               message: 'Policy missing apiVersion field',
-              details: 'Add apiVersion: ossa.dev/v1',
+              details: `Add apiVersion: ${expectedAPIVersion}`,
             });
           } else {
             validationResults.push({
@@ -1090,12 +1095,12 @@ workspaceCommand
             });
           }
 
-          if (policy.kind !== 'ToolPolicy') {
+          if (policy.kind !== expectedPolicyKind) {
             validationResults.push({
               category: 'Policies',
               check: 'Policy Kind',
               status: 'warning',
-              message: `Policy kind is ${policy.kind || 'missing'}, expected ToolPolicy`,
+              message: `Policy kind is ${policy.kind || 'missing'}, expected ${expectedPolicyKind}`,
             });
           } else {
             validationResults.push({
