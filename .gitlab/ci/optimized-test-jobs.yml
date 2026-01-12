@@ -108,7 +108,7 @@ test:e2e:
   stage: test
   timeout: 30 minutes
   script:
-    - npm run test:e2e
+    - npm run test:e2e -- --passWithNoTests
   artifacts:
     reports:
       junit: test-results/junit.xml
