@@ -199,3 +199,59 @@ export function getSemanticVersionRegex(): RegExp {
 export function getMaxDNS1123Length(): number {
   return parseInt(process.env.OSSA_MAX_DNS1123_LENGTH || '63', 10);
 }
+
+/**
+ * Get default agent discovery patterns
+ * Can be overridden via OSSA_DISCOVERY_PATTERNS env var (comma-separated)
+ */
+export function getDefaultDiscoveryPatterns(): string[] {
+  const envPatterns = process.env.OSSA_DISCOVERY_PATTERNS;
+  if (envPatterns) {
+    return envPatterns.split(',').map(p => p.trim()).filter(Boolean);
+  }
+  const outputDir = getDefaultOutputDir();
+  return [
+    `${outputDir}/**/*.ossa.yaml`,
+    `${outputDir}/**/manifest.ossa.yaml`,
+  ];
+}
+
+/**
+ * Get default discovery strategy
+ * Can be overridden via OSSA_DISCOVERY_STRATEGY env var
+ */
+export function getDefaultDiscoveryStrategy(): string {
+  return process.env.OSSA_DISCOVERY_STRATEGY || 'filesystem';
+}
+
+/**
+ * Get default discovery refresh mode
+ * Can be overridden via OSSA_DISCOVERY_REFRESH env var
+ */
+export function getDefaultDiscoveryRefresh(): string {
+  return process.env.OSSA_DISCOVERY_REFRESH || 'on-demand';
+}
+
+/**
+ * Get default registry kind
+ * Can be overridden via OSSA_REGISTRY_KIND env var
+ */
+export function getDefaultRegistryKind(): string {
+  return process.env.OSSA_REGISTRY_KIND || 'AgentRegistry';
+}
+
+/**
+ * Get default policy kind
+ * Can be overridden via OSSA_POLICY_KIND env var
+ */
+export function getDefaultPolicyKind(): string {
+  return process.env.OSSA_POLICY_KIND || 'ToolPolicy';
+}
+
+/**
+ * Get default API version for OSSA resources
+ * Can be overridden via OSSA_API_VERSION env var
+ */
+export function getDefaultOSSAAPIVersion(): string {
+  return process.env.OSSA_API_VERSION || 'ossa.dev/v1';
+}
