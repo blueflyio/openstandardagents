@@ -1,0 +1,115 @@
+openapi: 3.1.0
+info:
+  title: GitHub Sync API
+  version: 0.3.3
+  description: API for syncing GitHub PRs to GitLab
+
+servers:
+  - url: http://localhost:3000
+    description: Development
+
+paths:
+  /sync/pr/{number}:
+    post:
+      summary: Sync GitHub PR to GitLab
+      operationId: syncPR
+      tags: [Sync]
+      parameters:
+        - name: number
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: MR created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GitLabMR'
+
+  /sync/batch:
+    post:
+      summary: Batch sync PRs
+      operationId: batchSync
+      tags: [Sync]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                author:
+                  type: string
+                  example: app/dependabot
+      responses:
+        '200':
+          description: Batch MR created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GitLabMR'
+
+  /sync/list:
+    get:
+      summary: List syncable PRs
+      operationId: listPRs
+      tags: [Sync]
+      parameters:
+        - name: author
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of PRs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GitHubPR'
+
+components:
+  schemas:
+    GitHubPR:
+      type: object
+      required: [number, title, author, state]
+      properties:
+        number:
+          type: integer
+        title:
+          type: string
+        body:
+          type: string
+          nullable: true
+        author:
+          type: object
+          properties:
+            login:
+              type: string
+        state:
+          type: string
+          enum: [open, closed]
+
+    GitLabMR:
+      type: object
+      required: [iid, title, source_branch, target_branch, state, web_url]
+      properties:
+        iid:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        source_branch:
+          type: string
+        target_branch:
+          type: string
+        state:
+          type: string
+          enum: [opened, closed, merged]
+        web_url:
+          type: string
+          format: uri

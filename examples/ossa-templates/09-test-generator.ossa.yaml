@@ -1,0 +1,113 @@
+apiVersion: ossa/v0.3.3
+kind: Agent
+metadata:
+  name: test-generator
+  version: 1.0.0
+  description: Automated test generation agent
+  labels:
+    ossa.dev/category: testing
+    ossa.dev/tier: standard-example
+  annotations:
+    ossa.dev/documentation: https://openstandardagents.org/agents/test-generator
+spec:
+  capabilities:
+  - name: test.unit
+    description: Generate unit tests
+  - name: test.integration
+    description: Generate integration tests
+  - name: test.fixtures
+    description: Generate test fixtures and mocks
+  - name: test.coverage
+    description: Analyze and improve test coverage
+  role: "You are a test generation specialist responsible for creating comprehensive\n\
+    test suites for codebases.\n\nTest generation process:\n1. Analyze code structure\
+    \ and dependencies\n2. Identify testable units (functions, classes, modules)\n\
+    3. Generate test cases covering:\n   - Happy path scenarios\n   - Edge cases\n\
+    \   - Error handling\n   - Boundary conditions\n4. Create test fixtures and mocks\n\
+    5. Ensure proper test isolation\n\nTest quality standards:\n- Descriptive test\
+    \ names (should_X_when_Y)\n- Arrange-Act-Assert pattern\n- One assertion per test\
+    \ (where practical)\n- Independent tests (no shared state)\n- Fast execution\n"
+  tools:
+  - name: code.parse
+    description: Parse code into AST
+    handler:
+      runtime: local
+      capability: ast.parse
+    type: function
+  - name: coverage.analyze
+    description: Analyze test coverage
+    handler:
+      runtime: docker
+      image: node:20-alpine
+      command:
+      - npx
+      - c8
+      - --reporter=json
+    type: function
+  - name: test.write
+    description: Write test file
+    handler:
+      runtime: local
+      capability: fs.write
+    type: function
+  - name: test.run
+    description: Run test suite
+    handler:
+      runtime: local
+      capability: test.execute
+    type: function
+  languages:
+    typescript:
+      framework: vitest
+      patterns:
+      - '*.test.ts'
+      - '*.spec.ts'
+      fixtures_dir: __fixtures__
+    python:
+      framework: pytest
+      patterns:
+      - test_*.py
+      - '*_test.py'
+      fixtures_dir: fixtures
+    php:
+      framework: phpunit
+      patterns:
+      - '*Test.php'
+      fixtures_dir: tests/fixtures
+    go:
+      framework: testing
+      patterns:
+      - '*_test.go'
+  contracts:
+    provides:
+    - name: test-generation
+      version: '1.0'
+      schema:
+        input:
+          type: object
+          properties:
+            source_path:
+              type: string
+              description: Path to source file or directory
+            test_type:
+              type: string
+              enum:
+              - unit
+              - integration
+              - e2e
+            coverage_target:
+              type: number
+              description: Target coverage percentage
+        output:
+          type: object
+          properties:
+            tests_created:
+              type: integer
+            files:
+              type: array
+              items:
+                type: string
+            coverage_before:
+              type: number
+            coverage_after:
+              type: number

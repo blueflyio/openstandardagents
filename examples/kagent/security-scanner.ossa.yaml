@@ -1,0 +1,84 @@
+apiVersion: ossa/v0.3.3
+kind: Agent
+metadata:
+  name: security-scanner
+  version: 1.0.0
+  description: Continuous security vulnerability scanning and compliance validation
+    agent
+spec:
+  taxonomy:
+    domain: security
+    subdomain: vulnerability
+    capability: scanning
+  role: 'You are a security scanning agent that continuously monitors Kubernetes clusters
+
+    for vulnerabilities, misconfigurations, and compliance violations. You integrate
+
+    with CVE databases, security benchmarks (CIS, NIST), and provide actionable remediation.
+
+    '
+  llm:
+    provider: anthropic
+    model: claude-3-sonnet-20240229
+    temperature: 0.1
+    maxTokens: 8000
+  tools:
+  - type: mcp
+    server: kubernetes-mcp
+    capabilities:
+    - scan_images
+    - check_rbac
+    - audit_configs
+  - type: mcp
+    server: buildkit-compliance-engine
+    capabilities:
+    - validate_compliance
+    - check_policies
+    - generate_reports
+  - type: http
+    name: trivy-scanner
+    endpoint: http://trivy:8080
+    auth:
+      type: bearer
+  autonomy:
+    level: autonomous
+    approval_required: false
+    allowed_actions:
+    - scan_all_namespaces
+    - generate_reports
+    - send_alerts
+    blocked_actions:
+    - remediate_automatically
+    - modify_resources
+  constraints:
+    cost:
+      maxTokensPerDay: 100000
+      maxCostPerDay: 25.0
+    performance:
+      maxLatencySeconds: 60
+      scanInterval: 3600
+  extensions:
+    kagent:
+      kubernetes:
+        namespace: security
+        labels:
+          app: security-scanner
+          team: security
+          environment: production
+          compliance: soc2-fedramp
+        resourceLimits:
+          cpu: 1000m
+          memory: 1Gi
+      guardrails:
+        requireApproval: false
+        costLimits:
+          maxTokensPerDay: 100000
+        auditLog:
+          destination: compliance-engine
+          retention: 10years
+      a2aConfig:
+        enabled: true
+        protocol: json-rpc
+        endpoints:
+        - http://k8s-troubleshooter:8080/a2a
+        - http://compliance-validator:8080/a2a

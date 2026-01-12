@@ -1,0 +1,59 @@
+apiVersion: ossa/v0.3.3
+kind: Agent
+metadata:
+  name: rag-agent
+  description: Agent with multiple knowledge source integrations
+spec:
+  model:
+    provider: openai
+    name: gpt-4
+  capabilities:
+    - semantic_search
+    - context_retrieval
+extensions:
+  knowledge_sources:
+    - name: airweave-docs
+      provider: airweave
+      config:
+        api_url: https://api.airweave.ai/v1
+        collection_id: technical-docs
+        embedding_model: text-embedding-3-large
+      auth:
+        type: bearer
+        token_env: AIRWEAVE_API_KEY
+      search:
+        default_strategy: hybrid
+        top_k: 10
+        min_score: 0.7
+        rerank: true
+    
+    - name: langchain-kb
+      provider: langchain
+      config:
+        retriever_type: multi_query
+        vectorstore: pinecone
+        index_name: knowledge-base
+        namespace: production
+        embedding_model: text-embedding-ada-002
+      auth:
+        type: api_key
+        key_env: PINECONE_API_KEY
+      search:
+        default_strategy: semantic
+        top_k: 5
+    
+    - name: llamaindex-corpus
+      provider: llamaindex
+      config:
+        api_url: https://llamaindex.example.com
+        index_name: main-corpus
+      auth:
+        type: bearer
+        token_env: LLAMAINDEX_TOKEN
+      search:
+        default_strategy: neural
+        top_k: 8
+        filters:
+          - field: category
+            operator: in
+            values: [technical, reference]

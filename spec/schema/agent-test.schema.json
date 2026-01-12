@@ -1,0 +1,117 @@
+{
+  "$id": "https://ossa.dev/schema/agent-test.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "OSSA AgentTest Resource",
+  "description": "Test definition for OSSA agents",
+  "type": "object",
+  "properties": {
+    "apiVersion": {
+      "type": "string",
+      "const": "ossa/v0.3.0"
+    },
+    "kind": {
+      "type": "string",
+      "const": "AgentTest"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "version": { "type": "string" },
+        "description": { "type": "string" }
+      },
+      "required": ["name"]
+    },
+    "spec": {
+      "type": "object",
+      "properties": {
+        "target": {
+          "type": "object",
+          "description": "Target agent to test",
+          "properties": {
+            "agent": { "type": "string", "description": "Agent name or path" },
+            "version": { "type": "string", "description": "Agent version to test" }
+          },
+          "required": ["agent"]
+        },
+        "scenarios": {
+          "type": "array",
+          "description": "Test scenarios",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "description": { "type": "string" },
+              "input": {
+                "type": "object",
+                "description": "Input to provide to the agent"
+              },
+              "expected": {
+                "type": "object",
+                "properties": {
+                  "output": { "type": "object" },
+                  "tools_called": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  },
+                  "max_latency_ms": { "type": "integer" },
+                  "max_tokens": { "type": "integer" },
+                  "max_turns": { "type": "integer" }
+                }
+              },
+              "assertions": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": ["contains", "equals", "matches", "tool_called", "not_contains", "json_path"]
+                    },
+                    "path": { "type": "string" },
+                    "value": {},
+                    "message": { "type": "string" }
+                  },
+                  "required": ["type"]
+                }
+              },
+              "mocks": {
+                "type": "object",
+                "description": "Mock tool responses",
+                "additionalProperties": true
+              }
+            },
+            "required": ["name", "input"]
+          }
+        },
+        "config": {
+          "type": "object",
+          "properties": {
+            "timeout_seconds": { "type": "integer", "default": 60 },
+            "retries": { "type": "integer", "default": 0 },
+            "parallel": { "type": "boolean", "default": false },
+            "fail_fast": { "type": "boolean", "default": true },
+            "record": { "type": "boolean", "default": false, "description": "Record interactions for replay" }
+          }
+        },
+        "setup": {
+          "type": "object",
+          "description": "Test setup configuration",
+          "properties": {
+            "env": { "type": "object", "additionalProperties": { "type": "string" } },
+            "fixtures": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "teardown": {
+          "type": "object",
+          "description": "Test teardown configuration",
+          "properties": {
+            "cleanup": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      },
+      "required": ["target", "scenarios"]
+    }
+  },
+  "required": ["apiVersion", "kind", "metadata", "spec"]
+}
