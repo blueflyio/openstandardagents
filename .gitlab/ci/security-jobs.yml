@@ -1,4 +1,5 @@
 # ============================================================================
+<<<<<<< HEAD
 # SECURITY JOBS - Real Security Gates (No allow_failure)
 # ============================================================================
 # Deterministic Node security gates that block merges on real findings
@@ -9,11 +10,20 @@ include:
 
 # Secret scanning using grep patterns (deterministic, reproducible)
 # Fails on real secret patterns found in source code
+=======
+# SECURITY JOBS - Additional Security Checks
+# ============================================================================
+# Additional security scanning beyond npm audit (which is in test:security).
+# Runs on MRs and release/main branches.
+
+# Check for secrets in code (using grep patterns)
+>>>>>>> release/v0.3.x
 security:secrets-check:
   stage: security
   image: node:${NODE_VERSION}-alpine
   tags:
     - saas-linux-small-amd64
+<<<<<<< HEAD
   extends:
     - .rules:fast
   script:
@@ -37,6 +47,27 @@ security:secrets-check:
 
 # License compliance check
 # Warns on problematic licenses, fails on policy violations
+=======
+  script:
+    - echo "Checking for potential secrets in code..."
+    - |
+      # Check for common secret patterns
+      PATTERNS="(api[_-]?key|secret|password|token|credential|private[_-]?key)\\s*[=:]\\s*['\"][^'\"]+['\"]"
+      if grep -rniE "$PATTERNS" --include="*.ts" --include="*.js" --include="*.json" src/ 2>/dev/null | grep -v "test" | grep -v "mock" | grep -v "example"; then
+        echo "WARNING: Potential secrets found in source code!"
+        echo "Please review the above lines and ensure no real secrets are committed."
+        exit 1
+      else
+        echo "✅ No potential secrets detected in source code"
+      fi
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
+    - if: $CI_COMMIT_BRANCH == "main"
+  allow_failure: true
+
+# License compliance check
+>>>>>>> release/v0.3.x
 security:license-check:
   stage: security
   image: node:${NODE_VERSION}-alpine
@@ -44,6 +75,7 @@ security:license-check:
     - saas-linux-small-amd64
   extends:
     - .npm-cache-readonly
+<<<<<<< HEAD
     - .rules:fast
   before_script:
     - npm ci --prefer-offline --no-audit
@@ -78,3 +110,15 @@ security:license-check:
       - license-report.txt
     expire_in: 7 days
   allow_failure: false
+=======
+  before_script:
+    - npm ci --prefer-offline --no-audit
+  script:
+    - echo "Checking dependency licenses..."
+    - npx license-checker --summary --production || echo "license-checker not available"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
+    - if: $CI_COMMIT_BRANCH == "main"
+  allow_failure: true
+>>>>>>> release/v0.3.x
