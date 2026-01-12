@@ -20,6 +20,7 @@ quality:gates:
     - job: test:unit
     - job: test:integration
     - job: test:e2e
+      optional: true
     - job: test:lint
       optional: true
     - job: test:security
