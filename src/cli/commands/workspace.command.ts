@@ -1076,6 +1076,7 @@ workspaceCommand
           const policy = yaml.parse(content);
 
           // Validate policy schema
+          const expectedPolicyAPIVersion = getDefaultOSSAAPIVersion();
           const expectedPolicyKind = getDefaultPolicyKind();
           
           if (!policy.apiVersion) {
@@ -1084,7 +1085,7 @@ workspaceCommand
               check: 'Policy Schema',
               status: 'fail',
               message: 'Policy missing apiVersion field',
-              details: `Add apiVersion: ${expectedAPIVersion}`,
+              details: `Add apiVersion: ${expectedPolicyAPIVersion}`,
             });
           } else {
             validationResults.push({
