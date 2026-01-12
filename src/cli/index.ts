@@ -51,6 +51,7 @@ import { schemaCommand } from './commands/schema.command.js';
 import { scaffoldCommand } from './commands/scaffold.command.js';
 import { searchCommand } from './commands/search.command.js';
 import { setupCommand } from './commands/setup.command.js';
+import { standardizeCommand } from './commands/standardize.command.js';
 import { testCommand } from './commands/test.command.js';
 import { validateCommand } from './commands/validate.command.js';
 import { workspaceCommand } from './commands/workspace.command.js';
@@ -193,6 +194,7 @@ program.addCommand(deployGroup); // Legacy compatibility
 // Quality commands
 program.addCommand(testCommand);
 program.addCommand(lintCommand);
+program.addCommand(standardizeCommand);
 program.addCommand(diffCommand);
 
 // Agent management
