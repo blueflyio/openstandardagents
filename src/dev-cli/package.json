@@ -1,0 +1,29 @@
+{
+  "name": "@ossa/dev-cli",
+  "version": "1.0.0",
+  "description": "OSSA Developer CLI - Version management and spec generation (production tool, separate from npm package)",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "ossa-dev": "./bin/ossa-dev.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts"
+  },
+  "dependencies": {
+    "commander": "^11.1.0",
+    "zod": "^4.1.11",
+    "glob": "^11.0.3",
+    "chalk": "^5.6.2",
+    "semver": "^7.7.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.19",
+    "@types/semver": "^7.7.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}

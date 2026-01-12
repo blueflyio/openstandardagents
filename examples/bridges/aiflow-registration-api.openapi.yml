@@ -1,0 +1,439 @@
+openapi: 3.1.0
+info:
+  title: AIFlow Agent Registration API
+  version: 1.0.0
+  description: |
+    OpenAPI specification for AIFlow agent registration with BuildKit.
+    This API allows AIFlow agents to register, heartbeat, and deregister
+    from the agent-buildkit registry with full OSSA compliance.
+
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Local development
+  - url: http://buildkit.agent-buildkit.orb.local/api/v1
+    description: Production
+
+tags:
+  - name: registration
+    description: Agent registration operations
+  - name: health
+    description: Health and status monitoring
+
+paths:
+  /agents/register:
+    post:
+      tags: [registration]
+      summary: Register AIFlow agent with BuildKit
+      operationId: registerAgent
+      description: |
+        Registers an AIFlow agent instance with the BuildKit registry.
+        Includes OSSA manifest validation and health check configuration.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentRegistrationRequest'
+            examples:
+              aiflow-social-agent:
+                $ref: '#/components/examples/SocialAgentRegistration'
+      responses:
+        '201':
+          description: Agent successfully registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentRegistrationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /agents/{agentId}/heartbeat:
+    post:
+      tags: [registration]
+      summary: Send agent heartbeat
+      operationId: agentHeartbeat
+      description: |
+        Updates agent's last-seen timestamp and health status.
+        Should be called every 30 seconds to maintain registration.
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HeartbeatRequest'
+      responses:
+        '200':
+          description: Heartbeat acknowledged
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HeartbeatResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /agents/{agentId}:
+    get:
+      tags: [registration]
+      summary: Get agent details
+      operationId: getAgent
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+      responses:
+        '200':
+          description: Agent details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentDetails'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [registration]
+      summary: Deregister agent
+      operationId: deregisterAgent
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+      responses:
+        '204':
+          description: Agent successfully deregistered
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /agents:
+    get:
+      tags: [registration]
+      summary: List registered agents
+      operationId: listAgents
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [healthy, unhealthy, unknown]
+        - name: tags
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        '200':
+          description: List of registered agents
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  agents:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AgentSummary'
+                  total:
+                    type: integer
+                  healthy:
+                    type: integer
+                  unhealthy:
+                    type: integer
+
+  /registry/stats:
+    get:
+      tags: [registration]
+      summary: Get registry statistics
+      operationId: getRegistryStats
+      responses:
+        '200':
+          description: Registry statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistryStats'
+
+components:
+  parameters:
+    AgentId:
+      name: agentId
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: '^[a-z0-9-]+$'
+      description: Unique agent identifier
+      example: social-agent-aiflow-abc123
+
+  schemas:
+    AgentRegistrationRequest:
+      type: object
+      required:
+        - agent_id
+        - name
+        - version
+        - base_url
+        - ossa_manifest
+      properties:
+        agent_id:
+          type: string
+          pattern: '^[a-z0-9-]+$'
+          description: Unique agent identifier
+          example: social-agent-aiflow
+        name:
+          type: string
+          description: Human-readable agent name
+          example: AIFlow Social Agent
+        version:
+          type: string
+          pattern: '^\d+\.\d+\.\d+$'
+          example: 1.0.0
+        base_url:
+          type: string
+          format: uri
+          description: Base URL for agent API
+          example: http://aiflow-agent:8000
+        health_endpoint:
+          type: string
+          default: /health
+          example: /health
+        metrics_endpoint:
+          type: string
+          default: /metrics
+          example: /metrics
+        ossa_manifest:
+          type: object
+          description: Full OSSA manifest (validated on registration)
+          additionalProperties: true
+        capabilities:
+          type: array
+          items:
+            type: string
+          example: [generate_post, generate_response]
+        tags:
+          type: array
+          items:
+            type: string
+          example: [social, aiflow, personality]
+        metadata:
+          type: object
+          additionalProperties: true
+          description: Additional agent metadata
+        phoenix_project:
+          type: string
+          default: aiflow-social-agents
+          description: Phoenix project name for tracing
+
+    AgentRegistrationResponse:
+      type: object
+      properties:
+        agent_id:
+          type: string
+        instance_id:
+          type: string
+          description: Unique instance ID generated by registry
+        registered_at:
+          type: string
+          format: date-time
+        health_check_interval:
+          type: integer
+          description: Recommended heartbeat interval in seconds
+          example: 30
+        registry_url:
+          type: string
+          format: uri
+        phoenix_trace_url:
+          type: string
+          format: uri
+          description: URL to view traces in Phoenix
+        status:
+          type: string
+          enum: [registered, validating]
+
+    HeartbeatRequest:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+        metrics:
+          type: object
+          properties:
+            requests_total:
+              type: integer
+            requests_failed:
+              type: integer
+            avg_response_time_ms:
+              type: number
+            active_tasks:
+              type: integer
+        metadata:
+          type: object
+          additionalProperties: true
+
+    HeartbeatResponse:
+      type: object
+      properties:
+        acknowledged:
+          type: boolean
+        next_heartbeat:
+          type: string
+          format: date-time
+        registry_status:
+          type: string
+          enum: [active, expiring, expired]
+
+    AgentDetails:
+      type: object
+      properties:
+        agent_id:
+          type: string
+        instance_id:
+          type: string
+        name:
+          type: string
+        version:
+          type: string
+        base_url:
+          type: string
+        status:
+          type: string
+          enum: [healthy, unhealthy, unknown]
+        registered_at:
+          type: string
+          format: date-time
+        last_heartbeat:
+          type: string
+          format: date-time
+        health_check_failures:
+          type: integer
+        capabilities:
+          type: array
+          items:
+            type: string
+        tags:
+          type: array
+          items:
+            type: string
+        metrics:
+          type: object
+        phoenix_traces:
+          type: object
+          properties:
+            project:
+              type: string
+            trace_count:
+              type: integer
+            view_url:
+              type: string
+
+    AgentSummary:
+      type: object
+      properties:
+        agent_id:
+          type: string
+        name:
+          type: string
+        version:
+          type: string
+        status:
+          type: string
+        last_heartbeat:
+          type: string
+          format: date-time
+        capabilities:
+          type: array
+          items:
+            type: string
+
+    RegistryStats:
+      type: object
+      properties:
+        total_agents:
+          type: integer
+        healthy_agents:
+          type: integer
+        unhealthy_agents:
+          type: integer
+        by_type:
+          type: object
+          additionalProperties:
+            type: integer
+        uptime_seconds:
+          type: integer
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        code:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+
+  responses:
+    BadRequest:
+      description: Bad request - invalid input
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFound:
+      description: Agent not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    Conflict:
+      description: Agent already registered
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  examples:
+    SocialAgentRegistration:
+      summary: AIFlow Social Agent Registration
+      value:
+        agent_id: social-agent-aiflow
+        name: AIFlow Social Agent
+        version: 1.0.0
+        base_url: http://aiflow-agent:8000
+        health_endpoint: /health
+        metrics_endpoint: /metrics
+        capabilities:
+          - generate_post
+          - generate_response
+        tags:
+          - social
+          - aiflow
+          - personality
+          - twitter
+        phoenix_project: aiflow-social-agents
+        ossa_manifest:
+          ossaVersion: '1.0'
+          agent:
+            id: social-agent-aiflow
+            name: AIFlow Social Agent
+            version: 1.0.0
+            role: chat
+
