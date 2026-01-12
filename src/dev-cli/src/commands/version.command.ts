@@ -54,34 +54,6 @@ versionCommand
       process.exit(1);
     }
   });
-    console.log(chalk.gray('=====================\n'));
-
-    const service = new VersionAuditService();
-    try {
-      const result = await service.audit(options.fix);
-
-      if (result.total === 0) {
-        console.log(chalk.green('✅ No hardcoded versions found!'));
-        console.log(chalk.gray('All files use {{VERSION}} placeholder.'));
-      } else {
-        console.log(chalk.yellow(`\n⚠️  Found ${result.total} hardcoded version(s):\n`));
-        result.files.forEach((file: { path: string; line: number; content: string; suggested: string }) => {
-          console.log(chalk.red(`  ${file.path}:${file.line}`));
-          console.log(chalk.gray(`    Current: ${file.content}`));
-          console.log(chalk.green(`    Suggested: ${file.suggested}`));
-          console.log('');
-        });
-
-        if (options.fix) {
-          console.log(chalk.green(`\n✅ Fixed ${result.fixed} file(s)`));
-        } else {
-          console.log(chalk.yellow('\n💡 Run with --fix to automatically replace hardcoded versions'));
-        }
-      }
-    } catch (error) {
-      console.error(chalk.red(`\n❌ Error: ${error instanceof Error ? error.message : String(error)}`));
-      process.exit(1);
-    }
 
 // version:validate - Validate version consistency
 versionCommand
