@@ -552,3 +552,331 @@ workspaceCommand
       await discover.parseAsync(['discover'], { from: 'user' });
     }
   });
+
+// ============================================================================
+// Subcommand: workspace audit
+// ============================================================================
+workspaceCommand
+  .command('audit')
+  .description('Comprehensive workspace audit')
+  .option('--json', 'Output as JSON')
+  .option('--strict', 'Fail on warnings')
+  .action(async (options) => {
+    try {
+      const cwd = process.cwd();
+      const workspaceDir = path.resolve(cwd, '.agents-workspace');
+
+      console.log(chalk.blue('Running workspace audit...'));
+      console.log(chalk.gray('─'.repeat(50)));
+
+      const auditResults: Array<{
+        category: string;
+        check: string;
+        status: 'pass' | 'fail' | 'warning' | 'info';
+        message: string;
+        remediation?: string;
+      }> = [];
+
+      // Check 1: Workspace structure exists
+      if (!fs.existsSync(workspaceDir)) {
+        auditResults.push({
+          category: 'Structure',
+          check: 'Workspace Directory',
+          status: 'fail',
+          message: '.agents-workspace/ directory does not exist',
+          remediation: 'Run `ossa workspace init` to create workspace structure',
+        });
+      } else {
+        auditResults.push({
+          category: 'Structure',
+          check: 'Workspace Directory',
+          status: 'pass',
+          message: '.agents-workspace/ directory exists',
+        });
+
+        // Check required subdirectories
+        const requiredDirs = ['registry', 'policies', 'orchestration', 'shared-context', 'logs'];
+        for (const dir of requiredDirs) {
+          const dirPath = path.join(workspaceDir, dir);
+          if (fs.existsSync(dirPath)) {
+            auditResults.push({
+              category: 'Structure',
+              check: `${dir}/ Directory`,
+              status: 'pass',
+              message: `${dir}/ directory exists`,
+            });
+          } else {
+            auditResults.push({
+              category: 'Structure',
+              check: `${dir}/ Directory`,
+              status: 'warning',
+              message: `${dir}/ directory missing`,
+              remediation: `Create ${dir}/ directory: mkdir -p .agents-workspace/${dir}`,
+            });
+          }
+        }
+      }
+
+      // Check 2: Registry exists and is valid
+      const registryPath = path.resolve(workspaceDir, 'registry/index.yaml');
+      if (fs.existsSync(registryPath)) {
+        try {
+          const content = fs.readFileSync(registryPath, 'utf-8');
+          const registry = yaml.parse(content);
+
+          auditResults.push({
+            category: 'Registry',
+            check: 'Registry File',
+            status: 'pass',
+            message: 'registry/index.yaml exists and is valid YAML',
+          });
+
+          // Check registry structure
+          if (registry.apiVersion && registry.kind === 'AgentRegistry') {
+            auditResults.push({
+              category: 'Registry',
+              check: 'Registry Schema',
+              status: 'pass',
+              message: 'Registry follows OSSA schema',
+            });
+          } else {
+            auditResults.push({
+              category: 'Registry',
+              check: 'Registry Schema',
+              status: 'warning',
+              message: 'Registry may not follow OSSA schema',
+              remediation: 'Ensure registry has apiVersion and kind: AgentRegistry',
+            });
+          }
+
+          // Check agent count
+          const agentCount = Array.isArray(registry.agents) ? registry.agents.length : 0;
+          if (agentCount > 0) {
+            auditResults.push({
+              category: 'Registry',
+              check: 'Agent Discovery',
+              status: 'pass',
+              message: `Registry contains ${agentCount} agent(s)`,
+            });
+          } else {
+            auditResults.push({
+              category: 'Registry',
+              check: 'Agent Discovery',
+              status: 'warning',
+              message: 'Registry is empty',
+              remediation: 'Run `ossa workspace discover` to find agents',
+            });
+          }
+        } catch (error: any) {
+          auditResults.push({
+            category: 'Registry',
+            check: 'Registry File',
+            status: 'fail',
+            message: `Failed to parse registry: ${error.message}`,
+            remediation: 'Check YAML syntax in registry/index.yaml',
+          });
+        }
+      } else {
+        auditResults.push({
+          category: 'Registry',
+          check: 'Registry File',
+          status: 'fail',
+          message: 'registry/index.yaml does not exist',
+          remediation: 'Run `ossa workspace init` to create registry',
+        });
+      }
+
+      // Check 3: Policies exist
+      const policyPath = path.resolve(workspaceDir, 'policies/tool-allowlist.yaml');
+      if (fs.existsSync(policyPath)) {
+        try {
+          const content = fs.readFileSync(policyPath, 'utf-8');
+          const policy = yaml.parse(content);
+
+          auditResults.push({
+            category: 'Policies',
+            check: 'Policy File',
+            status: 'pass',
+            message: 'policies/tool-allowlist.yaml exists and is valid',
+          });
+
+          // Check policy structure
+          if (policy.spec?.mcp_servers) {
+            const allowed = policy.spec.mcp_servers.allowed || [];
+            const denied = policy.spec.mcp_servers.denied || [];
+
+            if (allowed.length > 0) {
+              auditResults.push({
+                category: 'Policies',
+                check: 'Allowed Tools',
+                status: 'pass',
+                message: `${allowed.length} allowed MCP server(s) configured`,
+              });
+            } else {
+              auditResults.push({
+                category: 'Policies',
+                check: 'Allowed Tools',
+                status: 'warning',
+                message: 'No allowed MCP servers configured',
+                remediation: 'Add allowed MCP servers to policies/tool-allowlist.yaml',
+              });
+            }
+
+            if (denied.length > 0) {
+              auditResults.push({
+                category: 'Policies',
+                check: 'Denied Tools',
+                status: 'pass',
+                message: `${denied.length} denied pattern(s) configured`,
+              });
+            }
+          }
+        } catch (error: any) {
+          auditResults.push({
+            category: 'Policies',
+            check: 'Policy File',
+            status: 'fail',
+            message: `Failed to parse policy: ${error.message}`,
+            remediation: 'Check YAML syntax in policies/tool-allowlist.yaml',
+          });
+        }
+      } else {
+        auditResults.push({
+          category: 'Policies',
+          check: 'Policy File',
+          status: 'warning',
+          message: 'policies/tool-allowlist.yaml does not exist',
+          remediation: 'Run `ossa workspace init` to create default policy',
+        });
+      }
+
+      // Check 4: Discover agents and validate manifests
+      const patterns = [
+        '**/.agents/manifest.ossa.yaml',
+        '**/.agents/*.ossa.yaml',
+      ];
+
+      const foundManifests: string[] = [];
+      for (const pattern of patterns) {
+        const files = await glob(pattern, {
+          cwd,
+          ignore: ['node_modules/**', '**/node_modules/**', 'dist/**', '.agents-workspace/**'],
+          maxDepth: 5,
+        });
+        foundManifests.push(...files);
+      }
+
+      if (foundManifests.length > 0) {
+        auditResults.push({
+          category: 'Agents',
+          check: 'Agent Discovery',
+          status: 'pass',
+          message: `Found ${foundManifests.length} agent manifest(s)`,
+        });
+
+        // Validate each manifest
+        let validCount = 0;
+        let invalidCount = 0;
+
+        for (const manifestFile of foundManifests.slice(0, 10)) {
+          try {
+            const fullPath = path.resolve(cwd, manifestFile);
+            const content = fs.readFileSync(fullPath, 'utf-8');
+            const manifest = yaml.parse(content);
+
+            if (manifest?.metadata?.name && manifest?.apiVersion) {
+              validCount++;
+            } else {
+              invalidCount++;
+            }
+          } catch {
+            invalidCount++;
+          }
+        }
+
+        if (invalidCount === 0) {
+          auditResults.push({
+            category: 'Agents',
+            check: 'Manifest Validation',
+            status: 'pass',
+            message: `All ${validCount} checked manifest(s) are valid`,
+          });
+        } else {
+          auditResults.push({
+            category: 'Agents',
+            check: 'Manifest Validation',
+            status: 'warning',
+            message: `${invalidCount} of ${validCount + invalidCount} manifest(s) have issues`,
+            remediation: 'Run `ossa validate` on each manifest to fix issues',
+          });
+        }
+      } else {
+        auditResults.push({
+          category: 'Agents',
+          check: 'Agent Discovery',
+          status: 'warning',
+          message: 'No agent manifests found',
+          remediation: 'Create agents with `ossa agent init` or `ossa generate`',
+        });
+      }
+
+      // Calculate summary
+      const summary = {
+        total: auditResults.length,
+        passed: auditResults.filter(r => r.status === 'pass').length,
+        failed: auditResults.filter(r => r.status === 'fail').length,
+        warnings: auditResults.filter(r => r.status === 'warning').length,
+        info: auditResults.filter(r => r.status === 'info').length,
+      };
+
+      // Output results
+      if (options.json) {
+        outputJSON({
+          workspace: workspaceDir,
+          auditDate: new Date().toISOString(),
+          summary,
+          results: auditResults,
+        });
+        process.exit(0);
+      }
+
+      // Group by category
+      const categories = [...new Set(auditResults.map(r => r.category))];
+
+      for (const category of categories) {
+        console.log(`\n${chalk.cyan(category)}`);
+        const categoryResults = auditResults.filter(r => r.category === category);
+
+        for (const result of categoryResults) {
+          const icon =
+            result.status === 'pass' ? chalk.green('✓') :
+            result.status === 'fail' ? chalk.red('✗') :
+            result.status === 'warning' ? chalk.yellow('⚠') :
+            chalk.blue('ℹ');
+
+          console.log(`  ${icon} ${result.check}`);
+          console.log(chalk.gray(`    ${result.message}`));
+          if (result.remediation) {
+            console.log(chalk.gray(`    💡 ${result.remediation}`));
+          }
+        }
+      }
+
+      console.log('\n' + chalk.gray('─'.repeat(50)));
+      console.log(chalk.blue('Summary:'));
+      console.log(chalk.green(`  ✓ Passed: ${summary.passed}`));
+      if (summary.failed > 0) {
+        console.log(chalk.red(`  ✗ Failed: ${summary.failed}`));
+      }
+      if (summary.warnings > 0) {
+        console.log(chalk.yellow(`  ⚠ Warnings: ${summary.warnings}`));
+      }
+      console.log(chalk.gray(`  Total: ${summary.total}`));
+
+      // Exit code
+      const exitCode = summary.failed > 0 || (options.strict && summary.warnings > 0) ? 1 : 0;
+      process.exit(exitCode);
+    } catch (error) {
+      handleCommandError(error);
+    }
+  });
