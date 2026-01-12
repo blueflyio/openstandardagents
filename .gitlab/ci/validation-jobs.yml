@@ -143,7 +143,9 @@ check:ds-store:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
 
-validate:version-sync:
+# REMOVED: validate:version-sync - sync-versions.ts was deleted in DRY consolidation
+# Version sync is now handled by ossa-dev CLI (src/dev-cli/src/services/version-sync.service.ts)
+# validate:version-sync:
   stage: validate
   image: node:${NODE_VERSION}-alpine
   tags:
