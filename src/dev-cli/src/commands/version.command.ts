@@ -82,7 +82,6 @@ versionCommand
       console.error(chalk.red(`\n❌ Error: ${error instanceof Error ? error.message : String(error)}`));
       process.exit(1);
     }
-  });
 
 // version:validate - Validate version consistency
 versionCommand
