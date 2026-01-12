@@ -221,7 +221,8 @@ export const complianceCommand = new Command('compliance')
 
           allResults.push({ file, badges });
         } catch (error: unknown) {
-          console.log(chalk.red(`✗ Failed to check ${file}: ${error.message}`));
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          console.log(chalk.red(`✗ Failed to check ${file}: ${errorMessage}`));
         }
       }
 
