@@ -122,15 +122,19 @@ export const scaffoldCommand = new Command('scaffold')
         },
       };
 
-      // Add type-specific configuration
+      // Add type-specific configuration via tools
       if (options?.type === 'orchestrator') {
-        manifest.spec.capabilities = [
-          { name: 'orchestration', description: 'Multi-agent workflow coordination' },
-        ];
+        manifest.spec.tools = manifest.spec.tools || [];
+        manifest.spec.tools.push({
+          type: 'capability',
+          name: 'orchestration',
+        });
       } else if (options?.type === 'judge') {
-        manifest.spec.capabilities = [
-          { name: 'evaluation', description: 'Agent output evaluation and scoring' },
-        ];
+        manifest.spec.tools = manifest.spec.tools || [];
+        manifest.spec.tools.push({
+          type: 'capability',
+          name: 'evaluation',
+        });
       }
 
       // Save manifest
