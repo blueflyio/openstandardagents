@@ -10,7 +10,6 @@
 
 import { ValidationService } from '../services/validation.service.js';
 import { readFileSync, existsSync } from 'node:fs';
-import { join } from 'path';
 import { parse as parseYaml } from 'yaml';
 import type { ValidationResult } from '../types/index.js';
 import type { ErrorObject } from 'ajv';

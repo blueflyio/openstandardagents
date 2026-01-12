@@ -1,7 +1,7 @@
 /**
  * OSSA TypeScript SDK
  *
- * TypeScript SDK for Open Standard for Scalable AI Agents (OSSA).
+ * TypeScript SDK for Open Standard for Software Agents (OSSA) - The OpenAPI for agents.
  * Provides types, validation, and utilities for working with OSSA manifests.
  *
  * @example

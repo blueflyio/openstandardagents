@@ -5,7 +5,6 @@
 
 import { Command } from 'commander';
 import * as fs from 'fs';
-import * as path from 'path';
 import chalk from 'chalk';
 
 const AGENT_TEMPLATE = `# ╔═══════════════════════════════════════════════════════════════════════════════╗
@@ -54,7 +53,7 @@ spec:
   # The agent's persona (system prompt)
   role: |
     You are a friendly and helpful AI assistant created with OSSA
-    (Open Standard for Scalable AI Agents).
+    (Open Standard for Software Agents - The OpenAPI for agents).
 
     Your purpose:
     • Answer questions clearly and accurately
@@ -109,7 +108,7 @@ function printHeader(): void {
   console.log(chalk.cyan.bold('[RUN] OSSA Quickstart'));
   console.log(chalk.cyan('══════════════════'));
   console.log();
-  console.log(chalk.gray('Open Standard for Scalable AI Agents'));
+  console.log(chalk.gray('Open Standard for Software Agents - The OpenAPI for agents'));
   console.log(chalk.gray('Get running in 60 seconds...'));
   console.log();
 }
@@ -144,12 +143,6 @@ function printWarning(message: string): void {
   console.log(chalk.yellow('     ⚠'), message);
 }
 
-/**
- * Prints error message
- */
-function printError(message: string): void {
-  console.log(chalk.red('     ✗'), message);
-}
 
 /**
  * Prints a box around text
@@ -265,7 +258,7 @@ async function handleQuickstart(options: QuickstartOptions): Promise<void> {
 
     // Step 1: Check environment
     printStep(1, 3, 'Checking environment...');
-    const { hasKey, provider } = checkApiKeys();
+    const { provider } = checkApiKeys();
     const detectedProvider = options.provider || provider;
 
     // Step 2: Create agent

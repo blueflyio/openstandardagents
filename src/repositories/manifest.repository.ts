@@ -7,7 +7,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { stringify as stringifyYaml } from 'yaml';
 import { injectable } from 'inversify';
-import type { IManifestRepository, OssaAgent } from '../types/index';
+import type { IManifestRepository, OssaAgent } from '../types/index.js';
 import { validateFilePath } from '../utils/path-validator.js';
 import { safeParseYAML } from '../utils/yaml-parser.js';
 
@@ -60,18 +60,19 @@ export class ManifestRepository implements IManifestRepository {
 
     let content: string;
 
+    if (ext === '.json') {
+      content = JSON.stringify(manifest, null, 2);
+    } else if (ext === '.yaml' || ext === '.yml') {
+      content = stringifyYaml(manifest, {
+        indent: 2,
+        lineWidth: 0,
+        minContentWidth: 0,
+      });
+    } else {
+      throw new Error(`Unsupported file format: ${ext}. Must be .json, .yaml, or .yml`);
+    }
+
     try {
-      if (ext === '.json') {
-        content = JSON.stringify(manifest, null, 2);
-      } else if (ext === '.yaml' || ext === '.yml') {
-        content = stringifyYaml(manifest, {
-          indent: 2,
-          lineWidth: 0,
-          minContentWidth: 0,
-        });
-      } else {
-        throw new Error(`Unsupported file format: ${ext}. Must be .json, .yaml, or .yml`);
-      }
 
       fs.writeFileSync(resolvedPath, content, 'utf-8');
     } catch (error) {

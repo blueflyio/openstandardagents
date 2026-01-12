@@ -1,6 +1,6 @@
 # Contributing to OSSA
 
-Thank you for your interest in contributing to OSSA! This document provides guidelines and instructions for contributing to the Open Standard for Scalable AI Agents.
+Thank you for your interest in contributing to OSSA! This document provides guidelines and instructions for contributing to the Open Standard for Software Agents (OSSA) - The OpenAPI for agents.
 
 ## 🌟 Code of Conduct
 

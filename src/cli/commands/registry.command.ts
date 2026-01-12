@@ -281,7 +281,6 @@ registryCommand
   .option('--dry-run', 'Show what would be discovered')
   .action(async (options) => {
     // Import and call workspace discover
-    const { exec } = await import('child_process');
     const args = ['workspace', 'discover'];
     if (options.dryRun) args.push('--dry-run');
     if (options.depth) args.push('--depth', options.depth);
