@@ -28,7 +28,7 @@ extensionTeamCommand
   .description('Spawn agent teams for extension development')
   .argument('[platform]', 'Specific platform to spawn (optional, defaults to all critical)')
   .option('--priority <priority>', 'Filter by priority', 'critical')
-  .action(async (platform?: string, options?: { priority?: string }) => {
+  .action(async (platform?: string, _options?: { priority?: string }) => {
     try {
       const service = container.get<ExtensionTeamKickoffService>(
         ExtensionTeamKickoffService
@@ -68,7 +68,7 @@ extensionTeamCommand
 
         console.log(chalk.bold('\n🤖 Spawning agent teams...\n'));
 
-        const spawned = await service.spawnCriticalPlatforms();
+        await service.spawnCriticalPlatforms();
 
         console.log(chalk.green('\n✅ All critical agent teams spawned!'));
         console.log(chalk.bold('\n📊 Next Steps:'));
@@ -123,9 +123,10 @@ extensionTeamCommand
   .command('status')
   .description('Check extension team status')
   .option('--platform <platform>', 'Check specific platform status')
-  .action(async (options?: { platform?: string }) => {
+  .action(async (_options?: { platform?: string }) => {
     try {
-      const service = container.get<ExtensionTeamKickoffService>(
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const _service = container.get<ExtensionTeamKickoffService>(
         ExtensionTeamKickoffService
       );
 

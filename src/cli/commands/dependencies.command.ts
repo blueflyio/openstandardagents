@@ -171,7 +171,6 @@ const graphCommand = new Command('graph')
 
       // Generate graph
       const validator = container.get(DependenciesValidator);
-      let output: string;
 
       if (options.format === 'json') {
         // Generate JSON format
@@ -205,7 +204,7 @@ const graphCommand = new Command('graph')
       }
 
       // DOT format
-      output = validator.generateDependencyGraph(manifests);
+      const output = validator.generateDependencyGraph(manifests);
 
       // Output DOT format
       if (options.output) {

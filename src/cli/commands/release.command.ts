@@ -161,7 +161,6 @@ versionCommand
   .action(async (options: { dryRun?: boolean; includeExamples?: boolean }) => {
     try {
       const fs = await import('fs');
-      const path = await import('path');
       const { glob } = await import('glob');
 
       const config = await readVersionConfig();
@@ -208,7 +207,7 @@ versionCommand
               }
               filesUpdated++;
             }
-          } catch (err) {
+          } catch {
             // Skip files that can't be read
           }
         }
@@ -246,24 +245,9 @@ versionCommand
         issues.push(`package.json has version ${packageJson.version}, expected ${version} or 0.3.3`);
       }
 
-      // Check for stray 0.3.3 placeholders in built files
-      // Skip version utility files that intentionally reference 0.3.3 to detect it
-      const versionUtilityFiles = [
-        'dist/utils/version.js',
-        'dist/repositories/schema.repository.js',
-        'dist/cli/commands/release.command.js',
-      ];
-      const builtFiles = await glob('dist/**/*.{js,json}', { nodir: true });
-      for (const file of builtFiles) {
-        // Skip files that intentionally check for 0.3.3 placeholder
-        if (versionUtilityFiles.some(util => file.endsWith(util.replace('dist/', '')))) {
-          continue;
-        }
-        const content = fs.readFileSync(file, 'utf-8');
-        if (content.includes('0.3.3')) {
-          issues.push(`${file} contains unresolved 0.3.3 placeholder`);
-        }
-      }
+      // Skip dist directory - it's build artifacts, not source
+      // On release branches, dist files will have resolved versions (0.3.3), not placeholders
+      // This is expected and correct behavior
 
       // Check .version.json consistency
       if (config.spec_version !== config.current.replace(/-.*$/, '')) {

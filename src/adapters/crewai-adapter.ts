@@ -50,7 +50,7 @@ export class CrewAIAdapter {
     const { role, goal, backstory } = this.parseRoleText(roleText, metadata.description);
 
     // Convert OSSA tools to CrewAI tool names
-    const crewaiTools = tools.map((tool: any) => tool.name || 'unknown_tool');
+    const crewaiTools = tools.map((tool: { name?: string }) => tool.name || 'unknown_tool');
 
     return {
       agent_type: 'custom',
@@ -198,7 +198,6 @@ if __name__ == "__main__":
    * Convert OSSA workflow to CrewAI crew with multiple agents
    */
   static workflowToCrew(manifest: OssaAgent): CrewAICrew {
-    const spec = manifest.spec || {};
     const metadata = manifest.metadata || { name: 'unknown-crew' };
 
     // For a single agent manifest, create a simple crew
