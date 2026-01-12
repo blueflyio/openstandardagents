@@ -193,7 +193,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/WorkflowResponse'
 
-<<<<<<< HEAD
   /release/verify:
     post:
       operationId: releaseVerify
@@ -249,8 +248,6 @@ paths:
         '500':
           $ref: '#/components/responses/InternalError'
 
-=======
->>>>>>> release/v0.3.x
 components:
   schemas:
     VersionReleaseRequest:
@@ -472,7 +469,6 @@ components:
                 type: boolean
                 default: false
 
-<<<<<<< HEAD
     ReleaseVerifyRequest:
       type: object
       properties:
@@ -845,8 +841,6 @@ components:
         message:
           type: string
 
-=======
->>>>>>> release/v0.3.x
   responses:
     BadRequest:
       description: Bad request
