@@ -5,8 +5,9 @@
 
 import { describe, it, expect } from '@jest/globals';
 import { execSync } from 'child_process';
-import { existsSync } from 'fs';
+import { existsSync, writeFileSync, unlinkSync } from 'fs';
 import { join, resolve } from 'path';
+import * as yaml from 'yaml';
 
 describe('E2E Smoke Tests', () => {
   const projectRoot = join(__dirname, '../..');
@@ -48,9 +49,9 @@ describe('E2E Smoke Tests', () => {
     };
 
     const manifestPath = join(projectRoot, 'tests/e2e/test-manifest.ossa.yaml');
-    require('fs').writeFileSync(
+    writeFileSync(
       manifestPath,
-      require('yaml').stringify(minimalManifest)
+      yaml.stringify(minimalManifest)
     );
 
     try {
@@ -84,7 +85,7 @@ describe('E2E Smoke Tests', () => {
       expect(result).toBeTruthy();
     } finally {
       if (existsSync(manifestPath)) {
-        require('fs').unlinkSync(manifestPath);
+        unlinkSync(manifestPath);
       }
     }
   });
