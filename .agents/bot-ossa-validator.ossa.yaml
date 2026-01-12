@@ -1,0 +1,217 @@
+apiVersion: ossa/v0.3.3
+
+kind: Agent
+metadata:
+  name: bot-ossa-validator
+  namespace: openstandardagents.org
+  version: 1.0.0
+  title: OSSA Validator Agent
+  description: >-
+    Validates OSSA manifests against the schema specification.
+    Ensures compliance with OSSA v0.3.0 standards and best practices.
+  labels:
+    component: validation
+    domain: ossa
+    tier: automation
+  annotations:
+    maintainer: devops@bluefly.io
+    documentation: https://gitlab.com/blueflyio/ossa/openstandardagents.org/-/wikis/agents/ossa-validator
+    service-account: bot-ossa-validator
+
+spec:
+  capabilities:
+    - schema-validation
+    - manifest-linting
+    - compliance-checking
+    - migration-assistance
+
+  llm:
+    model:
+      primary: claude-sonnet-4-20250514
+      fallback:
+        - claude-3-5-sonnet-20241022
+    execution_profile: quality
+    token_limits:
+      max_input: 50000
+      max_output: 4096
+
+  safety:
+    content_filtering:
+      enabled: true
+    guardrails:
+      - id: schema-compliance
+        description: All manifests must validate against OSSA schema
+        action: block
+
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+    metrics:
+      enabled: true
+      custom:
+        - name: validations_run
+          type: counter
+        - name: validation_errors
+          type: counter
+        - name: schemas_checked
+          type: histogram
+    logging:
+      level: info
+
+  tools:
+    - name: ossa-cli
+      type: builtin
+      config:
+        commands:
+          - validate
+          - lint
+          - migrate
+          - diff
+    - name: json-schema
+      type: builtin
+      config:
+        draft: 2020-12
+    - name: gitlab-api
+      type: mcp
+      config:
+        server: gitlab-mcp
+        operations:
+          - get_file_content
+          - post_mr_comment
+          - get_mr_changes
+
+  commands:
+    validate:
+      description: Validate OSSA manifest against schema
+      parameters:
+        strict:
+          type: boolean
+          default: false
+          description: Enable strict validation mode
+        version:
+          type: string
+          default: "0.3.0"
+          description: OSSA schema version to validate against
+        path:
+          type: string
+          description: Path to manifest file
+      handler: |
+        Validate the OSSA manifest(s) against the schema:
+        1. Schema compliance check
+        2. Required fields validation
+        3. Type checking
+        4. Enum value validation
+        5. Cross-reference validation
+
+        Report findings as:
+        - ❌ ERROR: Schema violations (blocking)
+        - ⚠️ WARNING: Best practice issues
+        - ℹ️ INFO: Suggestions for improvement
+
+    lint:
+      description: Lint OSSA manifest for style and best practices
+      handler: |
+        Check manifest for:
+        1. Naming conventions
+        2. Description quality
+        3. Label consistency
+        4. Documentation completeness
+        5. Security configuration
+
+    diff:
+      description: Show schema differences between versions
+      parameters:
+        from_version:
+          type: string
+        to_version:
+          type: string
+      handler: |
+        Compare OSSA schema versions and highlight:
+        1. New required fields
+        2. Deprecated fields
+        3. Type changes
+        4. Migration requirements
+
+    migrate:
+      description: Suggest migration path for outdated manifests
+      parameters:
+        target_version:
+          type: string
+          default: "0.3.0"
+      handler: |
+        Analyze manifest and provide migration guidance:
+        1. Identify outdated fields
+        2. Suggest new required fields
+        3. Provide migration snippets
+        4. Warn about breaking changes
+
+  triggers:
+    - type: webhook
+      source: gitlab
+      events:
+        - merge_request.opened
+        - merge_request.updated
+      filter:
+        changes_include:
+          - "**/*.ossa.yaml"
+          - "**/*.ossa.yml"
+          - ".agents/**/*"
+          - ".gitlab/agents/**/*"
+          - "spec/**/*"
+
+  outputs:
+    schema:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              path:
+                type: string
+              message:
+                type: string
+              severity:
+                type: string
+                enum: [error, warning, info]
+        warnings:
+          type: array
+          items:
+            type: string
+        schema_version:
+          type: string
+        manifest_version:
+          type: string
+
+extensions:
+  opentelemetry:
+    enabled: true
+    service_name: "bot-ossa-validator"
+    service_version: "1.0.0"
+    traces:
+      enabled: true
+      exporter: otlp
+      endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4317}"
+      sample_rate: 1.0
+    metrics:
+      enabled: true
+      exporter: otlp
+      endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4317}"
+      collection_interval_seconds: 60
+    logs:
+      enabled: true
+      exporter: otlp
+      endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4317}"
+      level: info
+    langsmith:
+      enabled: true
+      api_key_env: "LANGSMITH_API_KEY"
+      project_name: "ossa-validator"
+    resource_attributes:
+      agent.id: "bot-ossa-validator"
+      agent.version: "1.0.0"
+      framework: "ossa"

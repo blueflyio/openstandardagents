@@ -1,0 +1,50 @@
+# =============================================================================
+# GitLab Agent for Kubernetes (agentk) - Local Development Configuration
+# =============================================================================
+#
+# This agent runs on local OrbStack K8s and auto-syncs k8s/ manifests
+# whenever changes are pushed to main.
+#
+# Agent Namespace: gitlab-agent-ossa-local
+# Target Namespace: ossa-website
+#
+# Documentation: https://docs.gitlab.com/ee/user/clusters/agent/gitops.html
+# =============================================================================
+
+gitops:
+  manifest_projects:
+    # Sync k8s/ manifests to local cluster
+    - id: blueflyio/ossa/openstandardagents.org
+      default_namespace: ossa-website
+      paths:
+        - glob: 'k8s/**/*.yaml'
+      reconcile_timeout: 300s
+      dry_run_strategy: none
+      prune: true
+      prune_propagation_policy: foreground
+      inventory_policy: must_match
+
+ci_access:
+  projects:
+    - id: blueflyio/ossa/openstandardagents.org
+      default_namespace: ossa-website
+      access_as:
+        ci_job: {}
+      environments:
+        - production
+        - staging
+        - review
+
+observability:
+  logging:
+    level: debug
+    grpc_level: warn
+  metrics:
+    enabled: true
+    exporter: prometheus
+
+user_access:
+  access_as:
+    agent: {}
+  projects:
+    - id: blueflyio/ossa/openstandardagents.org

@@ -1,0 +1,463 @@
+# Example: FlowDrop Visual Workflow to OSSA Workflow Mapping
+# Demonstrates how Drupal FlowDrop diagrams map to OSSA Workflows
+apiVersion: ossa/v0.3.3
+kind: Workflow
+metadata:
+  name: flowdrop-user-registration
+  version: 1.0.0
+  description: User registration flow (FlowDrop diagram mapping)
+  labels:
+    runtime: drupal
+    engine: flowdrop
+    domain: user-management
+  annotations:
+    drupal.ossa.io/flowdrop-diagram: user_registration_v3
+    drupal.ossa.io/flowdrop-version: "3.0"
+    drupal.ossa.io/visual-editor: /admin/flowdrop/user_registration_v3
+
+spec:
+  # FlowDrop Start Node → OSSA Triggers
+  triggers:
+    - type: webhook
+      path: /flowdrop/register
+      method: POST
+      auth:
+        type: none  # Public registration
+    - type: api
+      endpoint: /api/user/register
+      method: POST
+
+  # FlowDrop Input Fields → OSSA Input Schema
+  inputs:
+    type: object
+    properties:
+      email:
+        type: string
+        format: email
+        description: User email address
+      username:
+        type: string
+        minLength: 3
+        maxLength: 60
+        pattern: "^[a-zA-Z0-9_]+$"
+      password:
+        type: string
+        minLength: 8
+        description: User password (will be hashed)
+      first_name:
+        type: string
+      last_name:
+        type: string
+      newsletter_opt_in:
+        type: boolean
+        default: false
+      terms_accepted:
+        type: boolean
+    required:
+      - email
+      - username
+      - password
+      - terms_accepted
+
+  # FlowDrop End Node → OSSA Output
+  outputs:
+    type: object
+    properties:
+      user_id:
+        type: integer
+      status:
+        type: string
+        enum: [created, pending_verification, failed]
+      verification_sent:
+        type: boolean
+      welcome_email_sent:
+        type: boolean
+      errors:
+        type: array
+        items:
+          type: object
+          properties:
+            field:
+              type: string
+            message:
+              type: string
+
+  # FlowDrop Nodes → OSSA Workflow Steps
+  steps:
+    # FlowDrop: Validate Node
+    - id: validate_input
+      kind: Task
+      name: Validate registration data
+      inline:
+        execution:
+          type: deterministic
+          runtime: drupal
+          entrypoint: "Drupal\\flowdrop\\NodeHandler\\ValidateNode::execute"
+        input:
+          type: object
+          properties:
+            schema:
+              type: object
+            data:
+              type: object
+        output:
+          type: object
+          properties:
+            valid:
+              type: boolean
+            errors:
+              type: array
+      input:
+        data:
+          email: "${{ workflow.input.email }}"
+          username: "${{ workflow.input.username }}"
+          terms_accepted: "${{ workflow.input.terms_accepted }}"
+
+    # FlowDrop: Condition Node (Terms Check)
+    - id: check_terms
+      kind: Task
+      name: Verify terms accepted
+      inline:
+        execution:
+          type: deterministic
+        output:
+          type: object
+          properties:
+            proceed:
+              type: boolean
+            error:
+              type: string
+      input:
+        terms_accepted: "${{ workflow.input.terms_accepted }}"
+      depends_on:
+        - validate_input
+
+    # FlowDrop: Database Query Node
+    - id: check_email_exists
+      kind: Task
+      name: Check if email already exists
+      condition: "${{ steps.check_terms.output.proceed == true }}"
+      inline:
+        execution:
+          type: deterministic
+          runtime: drupal
+          entrypoint: "Drupal\\flowdrop\\NodeHandler\\DatabaseQuery::execute"
+        input:
+          type: object
+          properties:
+            query:
+              type: string
+            parameters:
+              type: object
+        output:
+          type: object
+          properties:
+            exists:
+              type: boolean
+            user_id:
+              type: integer
+      input:
+        query: "SELECT uid FROM users_field_data WHERE mail = :email"
+        parameters:
+          email: "${{ workflow.input.email }}"
+      depends_on:
+        - check_terms
+
+    # FlowDrop: Database Query Node (Username)
+    - id: check_username_exists
+      kind: Task
+      name: Check if username already exists
+      condition: "${{ steps.check_terms.output.proceed == true }}"
+      inline:
+        execution:
+          type: deterministic
+          runtime: drupal
+          entrypoint: "Drupal\\flowdrop\\NodeHandler\\DatabaseQuery::execute"
+      input:
+        query: "SELECT uid FROM users_field_data WHERE name = :username"
+        parameters:
+          username: "${{ workflow.input.username }}"
+      depends_on:
+        - check_terms
+
+    # FlowDrop: Decision Node (Duplicate Check)
+    - id: check_duplicates
+      kind: Task
+      name: Evaluate duplicate check results
+      inline:
+        execution:
+          type: deterministic
+        output:
+          type: object
+          properties:
+            can_proceed:
+              type: boolean
+            duplicate_field:
+              type: string
+      input:
+        email_exists: "${{ steps.check_email_exists.output.exists }}"
+        username_exists: "${{ steps.check_username_exists.output.exists }}"
+      depends_on:
+        - check_email_exists
+        - check_username_exists
+
+    # FlowDrop: Error Response Node
+    - id: return_duplicate_error
+      kind: Task
+      name: Return duplicate error
+      condition: "${{ steps.check_duplicates.output.can_proceed == false }}"
+      inline:
+        execution:
+          type: deterministic
+        output:
+          type: object
+          properties:
+            status:
+              type: string
+            errors:
+              type: array
+      input:
+        duplicate_field: "${{ steps.check_duplicates.output.duplicate_field }}"
+      depends_on:
+        - check_duplicates
+
+    # FlowDrop: Create Entity Node
+    - id: create_user
+      kind: Task
+      name: Create user account
+      condition: "${{ steps.check_duplicates.output.can_proceed == true }}"
+      inline:
+        execution:
+          type: deterministic
+          runtime: drupal
+          entrypoint: "Drupal\\flowdrop\\NodeHandler\\CreateEntity::execute"
+        input:
+          type: object
+          properties:
+            entity_type:
+              type: string
+            bundle:
+              type: string
+            values:
+              type: object
+        output:
+          type: object
+          properties:
+            entity_id:
+              type: integer
+            uuid:
+              type: string
+      input:
+        entity_type: user
+        values:
+          name: "${{ workflow.input.username }}"
+          mail: "${{ workflow.input.email }}"
+          pass: "${{ workflow.input.password }}"
+          status: 0  # Blocked until verified
+          field_first_name: "${{ workflow.input.first_name }}"
+          field_last_name: "${{ workflow.input.last_name }}"
+          field_newsletter: "${{ workflow.input.newsletter_opt_in }}"
+      depends_on:
+        - check_duplicates
+
+    # FlowDrop: Generate Token Node
+    - id: generate_verification_token
+      kind: Task
+      name: Generate email verification token
+      condition: "${{ steps.create_user.output.entity_id > 0 }}"
+      inline:
+        execution:
+          type: deterministic
+          runtime: drupal
+          entrypoint: "Drupal\\flowdrop\\NodeHandler\\TokenGenerator::execute"
+        output:
+          type: object
+          properties:
+            token:
+              type: string
+            expires_at:
+              type: string
+      input:
+        user_id: "${{ steps.create_user.output.entity_id }}"
+        token_type: email_verification
+        expiry_hours: 24
+      depends_on:
+        - create_user
+
+    # FlowDrop: Send Email Node (Verification)
+    - id: send_verification_email
+      kind: Task
+      name: Send verification email
+      ref: ./tasks/send-email.yaml
+      input:
+        to: "${{ workflow.input.email }}"
+        template: email_verification
+        variables:
+          username: "${{ workflow.input.username }}"
+          verification_url: "https://example.com/verify?token=${{ steps.generate_verification_token.output.token }}"
+          expires_at: "${{ steps.generate_verification_token.output.expires_at }}"
+      depends_on:
+        - generate_verification_token
+
+    # FlowDrop: Send Email Node (Welcome) - Parallel
+    - id: send_welcome_email
+      kind: Task
+      name: Send welcome email
+      ref: ./tasks/send-email.yaml
+      input:
+        to: "${{ workflow.input.email }}"
+        template: welcome_new_user
+        variables:
+          username: "${{ workflow.input.username }}"
+          first_name: "${{ workflow.input.first_name }}"
+      depends_on:
+        - create_user
+      # Runs in parallel with verification email
+
+    # FlowDrop: Webhook Node (Optional: CRM Integration)
+    - id: sync_to_crm
+      kind: Task
+      name: Sync to CRM
+      condition: "${{ workflow.input.newsletter_opt_in == true }}"
+      inline:
+        execution:
+          type: deterministic
+          runtime: drupal
+          entrypoint: "Drupal\\flowdrop\\NodeHandler\\WebhookCall::execute"
+        input:
+          type: object
+          properties:
+            url:
+              type: string
+            method:
+              type: string
+            headers:
+              type: object
+            body:
+              type: object
+      input:
+        url: "${CRM_WEBHOOK_URL}"
+        method: POST
+        headers:
+          Content-Type: application/json
+          Authorization: "Bearer ${CRM_API_KEY}"
+        body:
+          email: "${{ workflow.input.email }}"
+          first_name: "${{ workflow.input.first_name }}"
+          last_name: "${{ workflow.input.last_name }}"
+          source: drupal_registration
+      depends_on:
+        - create_user
+
+    # FlowDrop: Log Node
+    - id: log_registration
+      kind: Task
+      name: Log successful registration
+      inline:
+        execution:
+          type: deterministic
+          runtime: drupal
+          entrypoint: "Drupal\\flowdrop\\NodeHandler\\LogMessage::execute"
+      input:
+        level: info
+        message: "User registered: ${{ workflow.input.username }} (${{ workflow.input.email }})"
+        context:
+          user_id: "${{ steps.create_user.output.entity_id }}"
+          newsletter: "${{ workflow.input.newsletter_opt_in }}"
+      depends_on:
+        - send_verification_email
+        - send_welcome_email
+
+    # FlowDrop: End Node
+    - id: return_success
+      kind: Task
+      name: Return success response
+      inline:
+        execution:
+          type: deterministic
+        output:
+          type: object
+          properties:
+            user_id:
+              type: integer
+            status:
+              type: string
+            verification_sent:
+              type: boolean
+            welcome_email_sent:
+              type: boolean
+      input:
+        user_id: "${{ steps.create_user.output.entity_id }}"
+        verification_sent: "${{ steps.send_verification_email.output.sent }}"
+        welcome_sent: "${{ steps.send_welcome_email.output.sent }}"
+      depends_on:
+        - log_registration
+
+  # Error handling
+  error_handling:
+    on_failure: rollback
+    rollback_steps:
+      - id: delete_partial_user
+        kind: Task
+        name: Delete partially created user
+        inline:
+          execution:
+            type: deterministic
+            runtime: drupal
+            entrypoint: "Drupal\\flowdrop\\NodeHandler\\DeleteEntity::execute"
+        input:
+          entity_type: user
+          entity_id: "${{ steps.create_user.output.entity_id }}"
+        condition: "${{ steps.create_user.status == 'completed' }}"
+
+  timeout_seconds: 60
+
+  observability:
+    logging:
+      level: info
+    metrics:
+      enabled: true
+      custom_labels:
+        registration_source: webhook
+        newsletter_opt_in: "${{ workflow.input.newsletter_opt_in }}"
+
+# Drupal FlowDrop-specific runtime bindings
+runtime:
+  type: drupal
+  bindings:
+    flowdrop:
+      diagram_id: user_registration_v3
+      visual_editor_path: /admin/flowdrop/user_registration_v3
+
+      # FlowDrop node type mappings
+      node_handlers:
+        validate:
+          class: "Drupal\\flowdrop\\NodeHandler\\ValidateNode"
+        database_query:
+          class: "Drupal\\flowdrop\\NodeHandler\\DatabaseQuery"
+        create_entity:
+          class: "Drupal\\flowdrop\\NodeHandler\\CreateEntity"
+        send_email:
+          class: "Drupal\\flowdrop\\NodeHandler\\SendEmail"
+        webhook:
+          class: "Drupal\\flowdrop\\NodeHandler\\WebhookCall"
+        decision:
+          class: "Drupal\\flowdrop\\NodeHandler\\DecisionNode"
+        log:
+          class: "Drupal\\flowdrop\\NodeHandler\\LogMessage"
+
+      # Canvas position metadata (for visual editor sync)
+      canvas:
+        validate_input: { x: 100, y: 50 }
+        check_terms: { x: 100, y: 150 }
+        check_email_exists: { x: 50, y: 250 }
+        check_username_exists: { x: 200, y: 250 }
+        check_duplicates: { x: 125, y: 350 }
+        create_user: { x: 200, y: 450 }
+        return_duplicate_error: { x: 50, y: 450 }
+        generate_verification_token: { x: 200, y: 550 }
+        send_verification_email: { x: 150, y: 650 }
+        send_welcome_email: { x: 300, y: 550 }
+        sync_to_crm: { x: 400, y: 550 }
+        log_registration: { x: 200, y: 750 }
+        return_success: { x: 200, y: 850 }

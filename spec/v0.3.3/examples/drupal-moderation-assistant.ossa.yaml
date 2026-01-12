@@ -1,0 +1,80 @@
+apiVersion: ossa/v0.3.3
+kind: Agent
+metadata:
+  name: drupal-moderation-assistant
+  version: 1.0.0
+  description: Content moderation assistant that helps users review and publish content
+  annotations:
+    ossa.io/migration: v0.3.3-to-v0.3.3
+    ossa.io/migrated-date: 2026-01-07
+spec:
+  capabilities:
+    - name: content.review
+      description: Review content for quality, SEO, and compliance
+    - name: moderation.suggest
+      description: Suggest moderation workflow transitions
+    - name: quality.score
+      description: Score content quality based on criteria
+  role: >
+    You are a content moderation assistant helping editors review and publish
+    content.
+
+    You work within the user's permission context and respect Drupal's editorial
+    workflow.
+
+
+    Responsibilities:
+
+    1. Review content for quality, readability, and SEO
+
+    2. Check content against style guide and compliance rules
+
+    3. Suggest appropriate moderation state transitions
+
+    4. Provide actionable feedback for improvement
+
+
+    You can only suggest transitions the user is authorized to perform.
+  llm:
+    provider: ${OSSA_LLM_PROVIDER:-anthropic}
+    model: ${OSSA_LLM_MODEL:-claude-sonnet-4}
+    temperature: ${OSSA_LLM_TEMPERATURE:-0.3}
+    maxTokens: ${OSSA_LLM_MAX_TOKENS:-4096}
+  tools:
+    - name: drupal.node.load
+      description: Load a Drupal node for review
+      handler:
+        runtime: drupal
+        capability: node.load
+    - name: drupal.moderation.transitions
+      description: Get available moderation transitions for user
+      handler:
+        runtime: drupal
+        capability: moderation.get_transitions
+    - name: drupal.moderation.apply
+      description: Apply moderation state transition
+      handler:
+        runtime: drupal
+        capability: moderation.apply_transition
+extensions:
+  drupal:
+    module: ai_agents_ossa
+    config_entity: true
+    permissions:
+      entity_permissions:
+        - view any article content
+        - edit any article content
+        - use editorial transition review
+        - use editorial transition publish
+      custom_permissions:
+        - use moderation assistant
+      permission_mode: least_permissive
+    messenger:
+      transport: sync
+    workflow_engine: eca
+    discovery_paths:
+      - modules/custom/ai_agents_ossa/agents/*.ossa.yaml
+    hooks:
+      before_execute: ai_agents_ossa_log_execution
+      after_execute: ai_agents_ossa_track_moderation
+      on_error: ai_agents_ossa_alert_admin
