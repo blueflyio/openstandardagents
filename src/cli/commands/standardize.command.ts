@@ -100,14 +100,24 @@ export const standardizeCommand = new Command('standardize')
           const fixes: StandardizationFix[] = [];
 
           // Fix 1: Hardcoded model names
-          if (manifest.spec?.llm?.model && !manifest.spec.llm.model.includes('${')) {
-            const oldModel = manifest.spec.llm.model;
+          const currentModel = safeGet<string>(manifest.spec?.llm, 'model', (v): v is string => typeof v === 'string');
+          if (currentModel && !currentModel.includes('${')) {
+            const oldModel = currentModel;
+            
             // Create environment variable pattern for YAML
-            // The template literal \${...} produces the literal string ${...} in JavaScript
-            // When saved to YAML via ManifestRepository.save(), the yaml library will
-            // automatically quote strings containing $, {, }, : to ensure proper YAML syntax
-            // The resulting YAML will have: model: "${LLM_MODEL:-gpt-4}" (properly quoted)
+            // Template literal syntax: \${ escapes the $ so it becomes literal ${ in the string
+            // The ${oldModel} part is interpolated, resulting in: ${LLM_MODEL:-gpt-4}
+            // When saved via ManifestRepository.save(), the yaml library uses
+            // defaultStringType: 'QUOTE_DOUBLE' which ensures strings containing special
+            // characters ($, {, }, :) are automatically quoted in the YAML output.
+            // Final YAML output: model: "${LLM_MODEL:-gpt-4}" (safely quoted)
             const newModel = `\${LLM_MODEL:-${oldModel}}`;
+            
+            // Verify the template literal produces the expected string format
+            // This runtime validation ensures the pattern is correct before saving
+            if (!newModel.startsWith('${') || !newModel.includes(':-')) {
+              throw new Error(`Failed to generate valid environment variable pattern: ${newModel}`);
+            }
             
             fixes.push({
               rule: 'no-hardcoded-models',
@@ -121,7 +131,16 @@ export const standardizeCommand = new Command('standardize')
             if (!options?.dryRun) {
               // Set the model value - ManifestRepository.save() uses yaml.stringify with
               // defaultStringType: 'QUOTE_DOUBLE' to ensure proper YAML quoting
-              manifest.spec.llm.model = newModel;
+              // This guarantees that strings with special characters are quoted correctly
+              if (!manifest.spec) {
+                Object.assign(manifest, { spec: {} });
+              }
+              if (!manifest.spec.llm || typeof manifest.spec.llm !== 'object') {
+                Object.assign(manifest.spec, { llm: {} });
+              }
+              if (manifest.spec.llm && typeof manifest.spec.llm === 'object') {
+                Object.assign(manifest.spec.llm, { model: newModel });
+              }
               fixes[fixes.length - 1].applied = true;
             }
           }
