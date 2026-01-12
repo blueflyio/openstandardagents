@@ -34,6 +34,7 @@ include:
   - local: .gitlab/ci/security-jobs.yml
   - local: .gitlab/ci/quality-gates.yml
   - local: .gitlab/ci/release-workflow.yml
+  - local: .gitlab/ci/release-promote.yml
   - local: .gitlab/ci/merge-train-optimized.yml
 
 # =============================================================================
@@ -152,47 +153,12 @@ validate:ossa-templates:
 # RELEASE JOBS (Semantic Release)
 # =============================================================================
 
-release:publish-v0.3.3:
-  stage: release
-  image: node:${NODE_VERSION}
-  tags:
-    - saas-linux-small-amd64
-  extends:
-    - .npm-cache
-  before_script:
-    - npm ci
-    - npm run build
-    - |
-      if [ -z "$NPM_TOKEN" ]; then
-        echo "ERROR: NPM_TOKEN not set in CI/CD variables"
-        exit 1
-      fi
-      echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
-  script:
-    - |
-      # Publish v0.3.3 if tag exists but package not published
-      if git tag -l | grep -q "^v0.3.3$"; then
-        CURRENT_VERSION=$(node -p "require('./package.json').version")
-        echo "Tag v0.3.3 exists, package.json version: $CURRENT_VERSION"
-        if [ "$CURRENT_VERSION" = "0.3.3" ]; then
-          echo "Checking if v0.3.3 is published on npm..."
-          if ! npm view @bluefly/openstandardagents@0.3.3 version >/dev/null 2>&1; then
-            echo "v0.3.3 not found on npm. Publishing..."
-            npm publish --access public
-            echo "✅ Published v0.3.3 to npmjs.org"
-          else
-            echo "v0.3.3 already published on npm. Skipping."
-          fi
-        else
-          echo "Version mismatch: expected 0.3.3, got $CURRENT_VERSION"
-        fi
-      else
-        echo "Tag v0.3.3 not found. Skipping manual publish."
-      fi
-  rules:
-    - if: $CI_COMMIT_BRANCH =~ /^release\/v[0-9]+\.[0-9]+\.x$/ && $CI_PIPELINE_SOURCE == "push"
-      when: on_success
-  allow_failure: false
+# REMOVED: release:publish-v0.3.3 - replaced by automated promote-rc-to-stable → publish-npm:stable
+# The new workflow is fully automated:
+# 1. promote-rc-to-stable creates stable tag on main
+# 2. publish-npm:stable publishes to npmjs.org
+# 3. create-gitlab-release:stable creates GitLab release
+# 4. sync-github:stable syncs to GitHub
 
 release:semantic:
   stage: release

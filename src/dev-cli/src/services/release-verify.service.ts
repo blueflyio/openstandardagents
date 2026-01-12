@@ -50,13 +50,9 @@ export class ReleaseVerifyService {
    * @param request - Verification request (validated with Zod)
    * @returns Verification result (validated with Zod)
    */
-  async verify(request: ReleaseVerifyRequest = {}): Promise<ReleaseVerifyResponse> {
+  async verify(request: Partial<ReleaseVerifyRequest> = {}): Promise<ReleaseVerifyResponse> {
     // Validate input with Zod (with defaults)
-    const validatedRequest = ReleaseVerifyRequestSchema.parse({
-      version: request.version,
-      skipBuildTests: request.skipBuildTests ?? false,
-      skipCIConfig: request.skipCIConfig ?? false,
-    });
+    const validatedRequest = ReleaseVerifyRequestSchema.parse(request);
 
     const errors: string[] = [];
     const warnings: string[] = [];
