@@ -1,0 +1,236 @@
+apiVersion: ossa/v0.3.3
+kind: Agent
+metadata:
+  name: rag-documentation-assistant
+  version: "1.0.0"
+  description: |
+    Production RAG agent that answers questions about your codebase using:
+    - Vector embeddings of documentation
+    - Semantic search across code comments
+    - Context-aware responses with citations
+    - Automatic knowledge base updates on commits
+  labels:
+    use-case: documentation-qa
+    pattern: rag
+    tier: production
+spec:
+  role: assistant
+  capabilities:
+    - vector-search
+    - llm-generation
+    - document-processing
+  
+  # Knowledge sources (OSSA v0.3.0 extension)
+  extensions:
+    knowledge_sources:
+      - name: codebase-docs
+        type: vector_store
+        provider: qdrant
+        config:
+          collection: "documentation"
+          embedding_model: "text-embedding-3-small"
+          endpoint: "${env.QDRANT_URL}"
+      - name: api-specs
+        type: structured
+        provider: openapi
+        config:
+          specs:
+            - path: "./openapi.yaml"
+            - url: "https://api.example.com/openapi.json"
+  
+  # Trigger on Slack mention or API call
+  triggers:
+    - type: webhook
+      source: slack
+      events: [app_mention]
+    - type: api
+      endpoint: /ask
+      method: POST
+  
+  # Input: User question
+  inputs:
+    - name: question
+      type: string
+      required: true
+      description: "User's question about the codebase"
+    - name: context
+      type: object
+      required: false
+      schema:
+        user_id: string
+        channel_id: string
+        thread_ts: string
+  
+  # RAG pipeline tasks
+  tasks:
+    - name: retrieve-context
+      description: Find relevant documentation chunks
+      steps:
+        - name: embed-question
+          action: llm
+          provider: openai
+          model: text-embedding-3-small
+          input: "${inputs.question}"
+          output_var: question_embedding
+        
+        - name: vector-search
+          action: vector_search
+          source: codebase-docs
+          query: "${outputs.question_embedding}"
+          top_k: 5
+          min_score: 0.7
+          output_var: relevant_docs
+        
+        - name: rerank-results
+          action: rerank
+          model: cohere-rerank-v3
+          query: "${inputs.question}"
+          documents: "${outputs.relevant_docs}"
+          top_n: 3
+          output_var: top_docs
+    
+    - name: generate-answer
+      description: Generate contextual answer with citations
+      steps:
+        - name: build-prompt
+          action: template
+          template: |
+            You are a helpful documentation assistant. Answer the user's question using ONLY the provided context.
+            If the context doesn't contain the answer, say so clearly.
+            
+            Context:
+            {% for doc in context.top_docs %}
+            [Source: ${doc.metadata.file}:${doc.metadata.line}]
+            ${doc.content}
+            
+            {% endfor %}
+            
+            Question: ${inputs.question}
+            
+            Answer with citations in the format [1], [2], etc.
+          output_var: prompt
+        
+        - name: call-llm
+          action: llm
+          provider: openai
+          model: gpt-4-turbo
+          temperature: 0.3
+          max_tokens: 500
+          messages:
+            - role: system
+              content: "You are a precise documentation assistant."
+            - role: user
+              content: "${outputs.prompt}"
+          output_var: answer
+        
+        - name: format-response
+          action: template
+          template: |
+            ${outputs.answer}
+            
+            ---
+            **Sources:**
+            {% for doc in context.top_docs %}
+            [${loop.index}] `${doc.metadata.file}` (line ${doc.metadata.line})
+            {% endfor %}
+          output_var: formatted_answer
+    
+    - name: respond
+      description: Send answer back to user
+      steps:
+        - name: post-to-slack
+          action: http
+          method: POST
+          url: "https://slack.com/api/chat.postMessage"
+          headers:
+            Authorization: "Bearer ${env.SLACK_BOT_TOKEN}"
+          body:
+            channel: "${inputs.context.channel_id}"
+            thread_ts: "${inputs.context.thread_ts}"
+            text: "${outputs.formatted_answer}"
+          condition: "${inputs.context.channel_id != null}"
+        
+        - name: return-api-response
+          action: return
+          value:
+            answer: "${outputs.formatted_answer}"
+            sources: "${outputs.top_docs}"
+            confidence: "${outputs.top_docs[0].score}"
+  
+  # Background task: Update knowledge base on commits
+  background_tasks:
+    - name: update-knowledge-base
+      schedule: "*/30 * * * *"  # Every 30 minutes
+      steps:
+        - name: fetch-recent-commits
+          action: http
+          method: GET
+          url: "https://gitlab.com/api/v4/projects/${env.PROJECT_ID}/repository/commits"
+          headers:
+            PRIVATE-TOKEN: "${env.GITLAB_TOKEN}"
+          params:
+            since: "${now() - 30m}"
+        
+        - name: extract-changed-docs
+          action: filter
+          input: "${outputs.commits}"
+          condition: "file.path.endsWith('.md') or file.path.endsWith('.rst')"
+        
+        - name: process-and-embed
+          action: foreach
+          items: "${outputs.changed_docs}"
+          steps:
+            - name: fetch-content
+              action: http
+              method: GET
+              url: "https://gitlab.com/api/v4/projects/${env.PROJECT_ID}/repository/files/${item.path}/raw"
+            
+            - name: chunk-document
+              action: chunk
+              content: "${outputs.content}"
+              chunk_size: 500
+              overlap: 50
+            
+            - name: embed-chunks
+              action: llm
+              provider: openai
+              model: text-embedding-3-small
+              input: "${outputs.chunks}"
+            
+            - name: upsert-vectors
+              action: vector_store
+              operation: upsert
+              collection: codebase-docs
+              vectors: "${outputs.embeddings}"
+              metadata:
+                file: "${item.path}"
+                commit: "${item.commit_id}"
+                updated_at: "${now()}"
+  
+  # Outputs
+  outputs:
+    - name: answer
+      type: string
+      description: "Generated answer with citations"
+    - name: sources
+      type: array
+      description: "Source documents used"
+    - name: confidence
+      type: float
+      description: "Confidence score (0-1)"
+  
+  # Observability
+  observability:
+    tracing:
+      enabled: true
+      provider: opentelemetry
+    metrics:
+      - name: questions_answered
+        type: counter
+        labels: [user_id, confidence_bucket]
+      - name: retrieval_latency
+        type: histogram
+      - name: generation_latency
+        type: histogram
+      - name: knowledge_base_size
+        type: gauge
