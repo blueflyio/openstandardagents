@@ -1,0 +1,409 @@
+apiVersion: ossa/v0.3.3
+kind: Agent
+metadata:
+  name: meta-orchestrator
+  version: 1.0.0
+  description: Master orchestrator agent that manages all other OSSA agents, routes work, monitors health, and coordinates multi-agent workflows
+  labels:
+    ossa-version: v0.3.0
+    domain: orchestration
+    category: orchestrator
+    wave: all
+    priority: P0
+  annotations:
+    managed_agents: "12"
+    gitlab_duo: /automate/ossa-agents
+
+spec:
+  taxonomy:
+    domain: orchestration
+    subdomain: agent-management
+    capability: coordination
+
+  role: |
+    You are the Meta-Orchestrator, the master controller for all OSSA agents.
+
+    Your responsibilities:
+    1. Route incoming work to appropriate specialist agents based on content type
+    2. Monitor health of all 12 managed agents
+    3. Heal failed or degraded agents
+    4. Coordinate multi-agent workflows across bot waves
+    5. Optimize execution by parallelizing where possible
+    6. Handle A2A (agent-to-agent) messaging
+
+    ## Routing Logic
+    - drupal files → drupal-local → drupal-prod
+    - typescript files → ts-local → ts-prod
+    - gitlab CI files → gitlab-lib-local → gitlab-lib-ci
+    - ML/AI files → ml-local → ml-prod
+    - infrastructure → infra-prod
+    - OSSA manifests → ossa-local
+    - documentation → wiki-aggregator
+    - native code → native-local
+    - unknown → analyze file patterns and route accordingly
+
+    ## Bot Waves
+    Wave 1 (Compilation): ts-local, gitlab-lib-local, drupal-local, ml-local, ossa-local
+    Wave 2 (Production): ts-prod, drupal-prod, infra-prod, ml-prod, gitlab-lib-ci
+    Wave 3 (Review): wiki-aggregator, security-healer, quality agents
+    Wave 4 (Release): release-agent, semantic-versioning, changelog
+    Wave 5 (Docs): wiki-aggregator, orchestrator
+
+  llm:
+    provider: ${LLM_PROVIDER:-anthropic}
+    model: ${LLM_MODEL:-claude-sonnet-4}
+    temperature: 0.3
+    maxTokens: 8192
+
+    fallback_models:
+      - provider: ${LLM_FALLBACK_PROVIDER_1:-openai}
+        model: ${LLM_FALLBACK_MODEL_1:-gpt-4o}
+
+    retry_config:
+      max_attempts: 5
+      backoff_strategy: exponential
+
+    cost_tracking:
+      enabled: true
+      budget_alert_threshold: 200.00
+      cost_allocation_tags:
+        platform: orchestration
+        team: platform-agents
+
+  identity:
+    instance_id:
+      generation: uuid_v4
+      scope: pod
+    session_id:
+      generation: uuid_v4
+      scope: workflow
+    interaction_id:
+      generation: uuid_v4
+      scope: turn
+    propagation:
+      trace_context: w3c
+      baggage: true
+      inherit_session: true
+
+  tools:
+    - name: spawn_agents
+      description: Spawn one or more OSSA agents to handle tasks
+      source:
+        type: mcp
+        uri: mcp://agent-mesh/spawn
+      input:
+        type: object
+        required:
+          - agent_ids
+        properties:
+          agent_ids:
+            type: array
+            items:
+              type: string
+            description: List of agent IDs to spawn
+          parallel:
+            type: boolean
+            default: false
+          input:
+            type: object
+            description: Input to pass to spawned agents
+          timeout_ms:
+            type: integer
+            default: 300000
+
+    - name: monitor_agents
+      description: Get health status of managed agents
+      source:
+        type: mcp
+        uri: mcp://agent-mesh/health
+      input:
+        type: object
+        properties:
+          agent_ids:
+            type: array
+            items:
+              type: string
+            description: Specific agents to check (empty = all)
+          include_metrics:
+            type: boolean
+            default: true
+
+    - name: heal_agents
+      description: Restart or repair failed agents
+      source:
+        type: mcp
+        uri: mcp://agent-mesh/heal
+      input:
+        type: object
+        required:
+          - agent_id
+          - action
+        properties:
+          agent_id:
+            type: string
+          action:
+            type: string
+            enum: [restart, repair, scale_up, scale_down, update_config]
+          config:
+            type: object
+
+    - name: optimize_workflows
+      description: Analyze and optimize multi-agent workflow execution
+      source:
+        type: mcp
+        uri: mcp://agent-mesh/optimize
+      input:
+        type: object
+        required:
+          - workflow_id
+        properties:
+          workflow_id:
+            type: string
+          optimization_goals:
+            type: array
+            items:
+              type: string
+              enum: [latency, cost, reliability, parallelism]
+
+    - name: route_issues
+      description: Route GitLab issues to appropriate agents based on labels and content
+      source:
+        type: mcp
+        uri: mcp://gitlab/route
+      input:
+        type: object
+        required:
+          - issue_iid
+        properties:
+          issue_iid:
+            type: integer
+          project_id:
+            type: string
+          override_agent:
+            type: string
+            description: Force routing to specific agent
+
+    - name: coordinate_waves
+      description: Execute agents in wave-based coordination
+      source:
+        type: mcp
+        uri: mcp://agent-mesh/waves
+      input:
+        type: object
+        required:
+          - waves
+        properties:
+          waves:
+            type: array
+            items:
+              type: object
+              properties:
+                wave_number:
+                  type: integer
+                agent_ids:
+                  type: array
+                  items:
+                    type: string
+                wait_for_completion:
+                  type: boolean
+                  default: true
+
+    - name: a2a_send
+      description: Send message to another agent via A2A protocol
+      source:
+        type: mcp
+        uri: mcp://agent-mesh/a2a/send
+      input:
+        type: object
+        required:
+          - target_agent
+          - message
+        properties:
+          target_agent:
+            type: string
+          message:
+            type: object
+          correlation_id:
+            type: string
+          reply_to:
+            type: string
+
+    - name: a2a_broadcast
+      description: Broadcast message to multiple agents
+      source:
+        type: mcp
+        uri: mcp://agent-mesh/a2a/broadcast
+      input:
+        type: object
+        required:
+          - message
+        properties:
+          target_agents:
+            type: array
+            items:
+              type: string
+            description: Empty = broadcast to all
+          message:
+            type: object
+          message_type:
+            type: string
+            enum: [info, warning, command, query]
+
+  autonomy:
+    level: autonomous
+    approval_required:
+      - heal_agents
+      - scale operations
+    escalation:
+      enabled: true
+      triggers:
+        - multiple_agent_failures
+        - workflow_stuck
+        - resource_exhaustion
+      target: platform-team
+
+  constraints:
+    max_tokens_per_turn: 16000
+    max_turns: 100
+    timeout_seconds: 1800
+
+  observability:
+    tracing:
+      enabled: true
+      provider: otel
+      sampling_rate: 1.0
+    metrics:
+      enabled: true
+      custom:
+        - name: agents_spawned
+          type: counter
+          labels: [agent_id, wave]
+        - name: agent_health_status
+          type: gauge
+          labels: [agent_id, status]
+        - name: workflow_duration_seconds
+          type: histogram
+          labels: [workflow_type]
+        - name: routing_decisions
+          type: counter
+          labels: [source_type, target_agent]
+        - name: a2a_messages
+          type: counter
+          labels: [source, target, message_type]
+    logging:
+      level: info
+      structured: true
+
+  reliability:
+    retry:
+      max_attempts: 5
+      initial_delay_ms: 1000
+      max_delay_ms: 60000
+      backoff_multiplier: 2
+    circuit_breaker:
+      enabled: true
+      failure_threshold: 10
+      reset_timeout_ms: 120000
+    fallback:
+      enabled: true
+      strategy: degrade_gracefully
+
+  state:
+    mode: persistent
+    storage:
+      type: redis
+      ttl_seconds: 86400
+    managed_state:
+      - agent_health_cache
+      - workflow_state
+      - routing_cache
+
+  collaboration:
+    protocols:
+      - a2a
+    managed_agents:
+      - wiki-aggregator
+      - ts-prod
+      - ts-local
+      - ossa-local
+      - native-local
+      - ml-prod
+      - ml-local
+      - infra-prod
+      - gitlab-lib-ci
+      - gitlab-lib-local
+      - drupal-prod
+      - drupal-local
+    delegation:
+      allowed_targets: all
+      timeout_ms: 600000
+
+  deployment:
+    strategy: rolling
+    lifecycle:
+      startup_probe:
+        enabled: true
+        initial_delay_seconds: 10
+      liveness_probe:
+        enabled: true
+        period_seconds: 30
+      readiness_probe:
+        enabled: true
+        period_seconds: 10
+
+  reasoning:
+    strategy: react
+    max_steps: 20
+    trace_enabled: true
+    export_format: otel
+
+extensions:
+  gitlab:
+    triggers:
+      - event: status_change
+        status: "*"
+      - event: merge
+        branches: [main, development]
+      - event: security_alert
+      - event: schedule
+        cron: "*/5 * * * *"
+    custom_fields:
+      agent_assigned: meta-orchestrator
+      bot_wave: coordinator
+    duo_platform:
+      route: /automate/ossa-agents
+      registry_endpoint: /automate/ossa-agents/:id
+      execution_ui: /automate/ossa-agents/:id/execute
+
+  workflows:
+    on_merge_to_main:
+      - spawn: wiki-aggregator
+        wait: true
+      - spawn: architecture-healer
+        wait: true
+      - spawn: service-discovery
+        wait: true
+      - spawn: test-generator
+        wait: false
+
+    on_security_alert:
+      - spawn: security-healer
+        input:
+          priority: critical
+      - condition: severity == critical
+        action: create_incident
+      - notify: slack
+
+    on_architecture_drift:
+      - spawn: architecture-healer
+        wait: true
+      - spawn: spec-healer
+        wait: true
+      - action: create_mr
+
+  kubernetes:
+    deployment_type: long_running
+    replicas: 2
+    resources:
+      cpu: 2
+      memory: 4Gi

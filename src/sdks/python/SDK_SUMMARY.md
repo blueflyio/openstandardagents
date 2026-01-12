@@ -9,7 +9,7 @@
 
 ## What Was Built
 
-A complete, production-ready Python SDK for the Open Standard for Scalable AI Agents (OSSA) v0.3.0 specification.
+A complete, production-ready Python SDK for the Open Standard for Software Agents (OSSA) v0.3.0 specification - The OpenAPI for agents.
 
 ### Core Features
 
