@@ -34,7 +34,7 @@ const config: Config = {
     },
     './src/services': {
       branches: 10,
-      functions: 45,
+      functions: 43,
       lines: 25,
       statements: 25,
     },

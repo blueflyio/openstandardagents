@@ -336,7 +336,6 @@ extensions:
       enabled: true
       exporter: otlp
       endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4317}"
-      endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4317}"
     langsmith:
       enabled: true
       api_key_env: "LANGSMITH_API_KEY"
