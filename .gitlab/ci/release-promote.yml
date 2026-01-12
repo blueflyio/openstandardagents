@@ -32,16 +32,22 @@ promote-rc-to-stable:
       echo "==============================="
       echo "Branch: ${CI_COMMIT_BRANCH}"
       echo "Commit: ${CI_COMMIT_SHA}"
+      echo "Tag: ${CI_COMMIT_TAG}"
       echo ""
 
-      # Read version from .version.json (single source of truth)
-      if [ ! -f .version.json ]; then
-        echo "ERROR: .version.json not found"
+      # Determine version to promote
+      if [ -n "$CI_COMMIT_TAG" ] && echo "$CI_COMMIT_TAG" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+$'; then
+        # Triggered by RC tag push - extract version from tag
+        BASE_VERSION=$(echo "$CI_COMMIT_TAG" | sed 's/^v//' | sed 's/-rc\.[0-9]*$//')
+        echo "Version from RC tag: ${BASE_VERSION}"
+      elif [ -f .version.json ]; then
+        # Read version from .version.json (single source of truth)
+        BASE_VERSION=$(jq -r '.current' .version.json)
+        echo "Version from .version.json: ${BASE_VERSION}"
+      else
+        echo "ERROR: Cannot determine version - no .version.json and not triggered by RC tag"
         exit 1
       fi
-
-      BASE_VERSION=$(jq -r '.current' .version.json)
-      echo "Version from .version.json: ${BASE_VERSION}"
 
       # Validate version format
       if ! echo "$BASE_VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
@@ -105,8 +111,11 @@ promote-rc-to-stable:
       dotenv: stable-tag.env
     expire_in: 1 week
   rules:
-    # Run on main branch after quality gates pass
+    # Run on main branch after quality gates pass (auto-promote when RC exists)
     - if: $CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"
+      when: on_success
+    # Also run when RC tag is pushed (immediate promotion if ready)
+    - if: $CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+$/
       when: on_success
   allow_failure: false
 
