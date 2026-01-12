@@ -231,7 +231,7 @@ kind: Agent
 metadata:
   name: openstandardagents-project
   version: 0.3.3
-  description: Open Standard for Scalable AI Agents - Vendor-neutral specification, CLI tools, and SDKs
+  description: Open Standard for Software Agents - Vendor-neutral specification, CLI tools, and SDKs
 
 spec:
   role: OSSA project agent

@@ -113,8 +113,8 @@ interface CatalogAgent {
  * List agents from GitLab Catalog
  */
 async function listCatalogAgents(
-  token: string,
-  apiUrl: string
+  _token: string,
+  _apiUrl: string
 ): Promise<CatalogAgent[]> {
   // TODO: Implement actual GitLab Catalog API call
   // For now, return empty array

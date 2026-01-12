@@ -105,7 +105,7 @@ export class LangflowAdapter {
               value: 'llm-1',
             },
             tools: {
-              value: tools.map((t: any, i: number) => `tool-${i + 1}`),
+              value: tools.map((_t: unknown, i: number) => `tool-${i + 1}`),
             },
           },
         },
@@ -116,7 +116,7 @@ export class LangflowAdapter {
     nodes.push(agentNode);
 
     // Create tool nodes
-    tools.forEach((tool: any, index: number) => {
+    tools.forEach((tool: { name?: string; description?: string }, index: number) => {
       const toolNode: LangflowNode = {
         id: `tool-${index + 1}`,
         data: {
