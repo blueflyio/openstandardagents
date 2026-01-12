@@ -1,0 +1,171 @@
+# Contract Testing Example: Data Consumer Agent
+# This agent demonstrates contract testing by depending on the data-producer agent
+# and subscribing to its events.
+#
+# This example shows:
+# 1. Declaring dependencies with explicit contracts
+# 2. Subscribing to published events
+# 3. Contract validation between consumer and provider
+# 4. Schema compatibility testing
+
+apiVersion: ossa/v0.3.3
+kind: Agent
+metadata:
+  name: data-consumer
+  version: 1.0.0
+  description: Example agent that consumes data events for contract testing
+  labels:
+    team: platform
+    environment: development
+    example: contract-testing
+
+spec:
+  role: Data consumer that processes incoming data events
+
+  # Dependencies with contract expectations
+  dependencies:
+    agents:
+      - name: data-producer
+        version: ^1.0.0
+        required: true
+        reason: Requires data events to process
+        # Contract expectations - what this agent expects from data-producer
+        contract:
+          publishes:
+            - data.created
+            - data.updated
+          commands:
+            - create.data
+            - update.data
+
+  # Messaging configuration
+  messaging:
+    # Subscribe to events from data-producer
+    subscribes:
+      - channel: data.created
+        description: Process newly created data
+        schema:
+          type: object
+          properties:
+            id:
+              type: string
+            timestamp:
+              type: string
+              format: date-time
+            payload:
+              type: object
+          required: [id, timestamp, payload]
+        handler: handlers/processCreated
+        priority: high
+        maxConcurrency: 10
+
+      - channel: data.updated
+        description: Process data updates
+        schema:
+          type: object
+          properties:
+            id:
+              type: string
+            timestamp:
+              type: string
+              format: date-time
+            changes:
+              type: array
+          required: [id, timestamp, changes]
+        handler: handlers/processUpdated
+        priority: normal
+        maxConcurrency: 5
+
+    # Events this consumer publishes after processing
+    publishes:
+      - channel: data.processed
+        description: Emitted after successfully processing data
+        contentType: application/json
+        schema:
+          type: object
+          properties:
+            originalId:
+              type: string
+              description: ID of the original data event
+            processedAt:
+              type: string
+              format: date-time
+            status:
+              type: string
+              enum: [success, failed, partial]
+            result:
+              type: object
+          required: [originalId, processedAt, status]
+        examples:
+          - originalId: "data-123"
+            processedAt: "2025-12-13T10:05:00Z"
+            status: success
+            result:
+              recordsProcessed: 1
+              duration: 500
+
+    # Commands exposed by this consumer
+    commands:
+      - name: process_batch
+        description: Process a batch of data IDs
+        inputSchema:
+          type: object
+          properties:
+            ids:
+              type: array
+              items:
+                type: string
+              minItems: 1
+              maxItems: 100
+            priority:
+              type: string
+              enum: [low, normal, high, urgent]
+          required: [ids]
+        outputSchema:
+          type: object
+          properties:
+            batchId:
+              type: string
+            accepted:
+              type: integer
+            rejected:
+              type: integer
+            estimatedCompletionTime:
+              type: string
+              format: date-time
+          required: [batchId, accepted, rejected]
+        timeoutSeconds: 60
+        idempotent: false
+        async: true
+
+  # Observability
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+      endpoint: http://jaeger:4318
+    metrics:
+      enabled: true
+      exporter: prometheus
+      endpoint: http://prometheus:9090
+    logging:
+      level: info
+      format: json
+
+# Contract Testing Scenarios:
+#
+# 1. Test contract between consumer and producer:
+#    ossa contract test examples/contracts/data-consumer.ossa.yaml examples/contracts/data-producer.ossa.yaml
+#
+# Expected Results:
+# - PASS: data-producer publishes "data.created" (consumer subscribes)
+# - PASS: data-producer publishes "data.updated" (consumer subscribes)
+# - PASS: data-producer exposes "create.data" command (consumer expects)
+# - PASS: data-producer exposes "update.data" command (consumer expects)
+# - PASS: Schema compatibility check passes
+#
+# 2. Validate both agents together:
+#    ossa contract validate "examples/contracts/data-*.ossa.yaml"
+#
+# 3. Validate dependencies across all agents:
+#    ossa dependencies validate "examples/contracts/*.ossa.yaml"

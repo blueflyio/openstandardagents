@@ -1,0 +1,192 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openstandardagents.org/schemas/v0.3.3/messaging/delivery-receipt.json",
+  "title": "OSSA Delivery Receipt Schema",
+  "description": "Schema for message delivery receipts in OSSA v0.3.3",
+  "type": "object",
+  "required": [
+    "messageId",
+    "status",
+    "timestamp"
+  ],
+  "properties": {
+    "messageId": {
+      "type": "string",
+      "description": "Original message ID",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "receiptId": {
+      "type": "string",
+      "description": "Unique receipt identifier (UUID v4)",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "accepted",
+        "delivered",
+        "acknowledged",
+        "processed",
+        "failed",
+        "rejected",
+        "expired"
+      ],
+      "description": "Delivery status"
+    },
+    "timestamp": {
+      "type": "string",
+      "description": "Receipt timestamp (ISO 8601 UTC)",
+      "format": "date-time"
+    },
+    "subscriber": {
+      "type": "string",
+      "description": "Subscriber agent ID",
+      "pattern": "^ossa://agents/[a-z0-9-]+$",
+      "examples": [
+        "ossa://agents/code-reviewer"
+      ]
+    },
+    "channel": {
+      "type": "string",
+      "description": "Channel where message was delivered",
+      "pattern": "^agents\\.([a-z0-9-]+\\.)+[a-z0-9-]+$"
+    },
+    "deliveryAttempt": {
+      "type": "integer",
+      "description": "Delivery attempt number (1-based)",
+      "minimum": 1
+    },
+    "processingTime": {
+      "type": "integer",
+      "description": "Message processing time in milliseconds",
+      "minimum": 0
+    },
+    "error": {
+      "$ref": "#/definitions/DeliveryError",
+      "description": "Error details (only present when status is failed or rejected)"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional receipt metadata",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "DeliveryError": {
+      "type": "object",
+      "required": [
+        "code",
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "Error code",
+          "examples": [
+            "TIMEOUT",
+            "HANDLER_ERROR",
+            "VALIDATION_FAILED",
+            "SUBSCRIBER_UNAVAILABLE"
+          ]
+        },
+        "message": {
+          "type": "string",
+          "description": "Human-readable error message",
+          "maxLength": 512
+        },
+        "details": {
+          "type": "object",
+          "description": "Additional error details",
+          "additionalProperties": true
+        },
+        "stackTrace": {
+          "type": "string",
+          "description": "Stack trace (only in development/debug mode)",
+          "maxLength": 4096
+        },
+        "retryable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether delivery can be retried"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "examples": [
+    {
+      "messageId": "550e8400-e29b-41d4-a716-446655440000",
+      "receiptId": "660f9511-f3ac-52e5-b827-557766551111",
+      "status": "acknowledged",
+      "timestamp": "2025-12-18T14:32:16.234Z",
+      "subscriber": "ossa://agents/code-reviewer",
+      "channel": "agents.tasks.assigned",
+      "deliveryAttempt": 1,
+      "processingTime": 1234,
+      "metadata": {
+        "handlerName": "handleTaskAssigned",
+        "queueTime": 45
+      }
+    },
+    {
+      "messageId": "770e8400-e29b-41d4-a716-446655440001",
+      "receiptId": "880f9511-f3ac-52e5-b827-557766551112",
+      "status": "failed",
+      "timestamp": "2025-12-18T14:35:00.567Z",
+      "subscriber": "ossa://agents/code-reviewer",
+      "channel": "agents.tasks.assigned",
+      "deliveryAttempt": 3,
+      "processingTime": 30000,
+      "error": {
+        "code": "TIMEOUT",
+        "message": "Handler exceeded 30s timeout",
+        "details": {
+          "timeout": 30000,
+          "actualDuration": 30124
+        },
+        "retryable": true
+      }
+    },
+    {
+      "messageId": "990e8400-e29b-41d4-a716-446655440002",
+      "receiptId": "aa0f9511-f3ac-52e5-b827-557766551113",
+      "status": "rejected",
+      "timestamp": "2025-12-18T14:40:00.890Z",
+      "subscriber": "ossa://agents/code-reviewer",
+      "channel": "agents.tasks.assigned",
+      "deliveryAttempt": 1,
+      "processingTime": 15,
+      "error": {
+        "code": "VALIDATION_FAILED",
+        "message": "Message payload failed schema validation",
+        "details": {
+          "schemaErrors": [
+            {
+              "field": "payload.taskId",
+              "error": "Required field missing"
+            }
+          ]
+        },
+        "retryable": false
+      }
+    },
+    {
+      "messageId": "bb0e8400-e29b-41d4-a716-446655440003",
+      "receiptId": "cc0f9511-f3ac-52e5-b827-557766551114",
+      "status": "expired",
+      "timestamp": "2025-12-18T15:32:15.123Z",
+      "channel": "agents.tasks.assigned",
+      "deliveryAttempt": 0,
+      "error": {
+        "code": "TTL_EXPIRED",
+        "message": "Message exceeded time-to-live",
+        "details": {
+          "ttl": 3600,
+          "messageAge": 3605
+        },
+        "retryable": false
+      }
+    }
+  ]
+}
