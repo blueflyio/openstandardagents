@@ -1,27 +1,46 @@
 # ============================================================================
-# STAGE 4 - QUALITY GATES
+# QUALITY GATES - Fast/Full Split Model
 # ============================================================================
+# Fast gate: runs on all pushes (feature branches included)
+# Full gate: runs only on MRs, main, and release/* branches
+# This ensures gates never reference missing jobs
 
-quality:gates:
+include:
+  - local: .gitlab/ci/rules.yml
+
+# Fast quality gate - runs on all branch pushes and MRs
+# Requires: test:unit, test:lint, test:security (all use .rules:fast)
+quality:gates:fast:
   stage: quality
   image: node:${NODE_VERSION}-alpine
   tags:
     - saas-linux-small-amd64
-  script:
-    - echo "Quality gates - all tests must pass"
-  # Run only when test jobs run (MR, release/*, main)
-  # This ensures quality:gates doesn't fail on feature branch pushes
-  # where test:unit/integration/e2e don't run
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH =~ /^release\//
-    - if: $CI_COMMIT_BRANCH == "main"
+  extends:
+    - .rules:fast
   needs:
     - job: test:unit
+    - job: test:lint
+    - job: test:security
+  script:
+    - echo "Fast quality gates passed"
+    - echo "All required tests (unit, lint, security) completed successfully"
+
+# Full quality gate - runs only on MRs, main, and release/* branches
+# Requires: test:unit, test:lint, test:security, test:integration, test:e2e
+# All use .rules:full (except unit/lint/security which also use .rules:fast)
+quality:gates:full:
+  stage: quality
+  image: node:${NODE_VERSION}-alpine
+  tags:
+    - saas-linux-small-amd64
+  extends:
+    - .rules:full
+  needs:
+    - job: test:unit
+    - job: test:lint
+    - job: test:security
     - job: test:integration
     - job: test:e2e
-    - job: test:lint
-      optional: true
-    - job: test:security
-      optional: true
-
+  script:
+    - echo "Full quality gates passed"
+    - echo "All required tests (unit, lint, security, integration, e2e) completed successfully"

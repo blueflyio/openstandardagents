@@ -27,6 +27,7 @@ include:
   # - test:security (npm audit) in optimized-test-jobs.yml
   # - security-jobs.yml for additional security checks
   - local: .gitlab/ci/caching.yml
+  - local: .gitlab/ci/rules.yml
   - local: .gitlab/ci/build-jobs.yml
   - local: .gitlab/ci/validation-jobs.yml
   - local: .gitlab/ci/optimized-test-jobs.yml
