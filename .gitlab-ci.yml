@@ -20,12 +20,17 @@
 
 include:
   # ============================================================================
+  # GitLab Security Templates
+  # ============================================================================
+  # Security scanning templates - configured in security-jobs.yml
+  - template: Jobs/SAST.gitlab-ci.yml
+  - template: Jobs/Dependency-Scanning.gitlab-ci.yml
+  - template: Jobs/Secret-Detection.gitlab-ci.yml
+  - template: Jobs/SAST-IaC.gitlab-ci.yml
+  
+  # ============================================================================
   # Local CI Configuration Files (Organized by Concern)
   # ============================================================================
-  # NOTE: GitLab SAST/Dependency-Scanning templates removed - they include
-  # placeholder jobs that fail by design. Security scanning handled by:
-  # - test:security (npm audit) in optimized-test-jobs.yml
-  # - security-jobs.yml for additional security checks
   - local: .gitlab/ci/caching.yml
   - local: .gitlab/ci/build-jobs.yml
   - local: .gitlab/ci/validation-jobs.yml
