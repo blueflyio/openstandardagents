@@ -1,0 +1,90 @@
+# Enhanced Liveness Probe Configuration
+# Advanced health checking and recovery
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: runner-liveness-probe
+  namespace: gitlab-runner
+data:
+  liveness-probe.sh: |
+    #!/bin/sh
+    # Enhanced liveness probe with detailed health checks
+    
+    HEALTHY=true
+    ERRORS=""
+    
+    # Check runner process
+    if ! pgrep -f "gitlab-runner.*run" > /dev/null; then
+      HEALTHY=false
+      ERRORS="${ERRORS}Runner process not running; "
+    fi
+    
+    # Check metrics endpoint
+    if ! curl -f -s http://localhost:8093/metrics > /dev/null 2>&1; then
+      HEALTHY=false
+      ERRORS="${ERRORS}Metrics endpoint not responding; "
+    fi
+    
+    # Check disk space (if available)
+    if command -v df > /dev/null; then
+      DISK_USAGE=$(df / | tail -1 | awk '{print $5}' | sed 's/%//')
+      if [ "$DISK_USAGE" -gt 90 ]; then
+        HEALTHY=false
+        ERRORS="${ERRORS}Disk usage ${DISK_USAGE}% (threshold: 90%); "
+      fi
+    fi
+    
+    # Check memory (if available)
+    if [ -f /proc/meminfo ]; then
+      MEM_AVAIL=$(grep MemAvailable /proc/meminfo | awk '{print $2}')
+      if [ "$MEM_AVAIL" -lt 100000 ]; then
+        HEALTHY=false
+        ERRORS="${ERRORS}Low memory: ${MEM_AVAIL}KB; "
+      fi
+    fi
+    
+    if [ "$HEALTHY" = "false" ]; then
+      echo "Health check failed: $ERRORS"
+      exit 1
+    fi
+    
+    exit 0
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gitlab-runner-self-healing
+  namespace: gitlab-runner
+data:
+  health-check.sh: |
+    #!/bin/sh
+    if ! pgrep -f "gitlab-runner.*run" > /dev/null; then
+      exit 1
+    fi
+    if ! curl -f http://localhost:8093/metrics > /dev/null 2>&1; then
+      exit 1
+    fi
+    exit 0
+  liveness-probe.sh: |
+    #!/bin/sh
+    HEALTHY=true
+    ERRORS=""
+    
+    if ! pgrep -f "gitlab-runner.*run" > /dev/null; then
+      HEALTHY=false
+      ERRORS="${ERRORS}Runner process not running; "
+    fi
+    
+    if ! curl -f -s http://localhost:8093/metrics > /dev/null 2>&1; then
+      HEALTHY=false
+      ERRORS="${ERRORS}Metrics endpoint not responding; "
+    fi
+    
+    if [ "$HEALTHY" = "false" ]; then
+      echo "Health check failed: $ERRORS"
+      exit 1
+    fi
+    
+    exit 0

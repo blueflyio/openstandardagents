@@ -1,0 +1,41 @@
+apiVersion: v0.3.0
+kind: Agent
+metadata:
+  name: coordinator-agent
+  version: 1.0.0
+  description: Multi-agent coordinator for orchestrating complex tasks across specialized agents
+  labels:
+    type: coordinator
+    domain: orchestration
+    tier: production
+spec:
+  role: Coordinate and delegate tasks across multiple specialized agents
+  llm:
+    provider: anthropic
+    model: claude-3-5-sonnet-20241022
+    temperature: 0.5
+    maxTokens: 4000
+  autonomy:
+    level: autonomous
+    approval_required: false
+    allowed_actions:
+      - delegate_task
+      - aggregate_results
+      - route_request
+  constraints:
+    performance:
+      maxLatencySeconds: 30
+      maxConcurrentRequests: 20
+      timeoutSeconds: 120
+    cost:
+      maxTokensPerDay: 200000
+  observability:
+    tracing:
+      enabled: true
+      exporter: jaeger
+    metrics:
+      enabled: true
+      exporter: prometheus
+    logging:
+      level: debug
+      format: json

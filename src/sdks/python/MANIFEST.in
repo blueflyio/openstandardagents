@@ -1,0 +1,15 @@
+# Include the README and license
+include README.md
+include LICENSE
+
+# Include the py.typed marker for type checking support
+include ossa/py.typed
+
+# Include package data
+recursive-include ossa *.py
+recursive-include tests *.py
+
+# Exclude unnecessary files
+global-exclude __pycache__
+global-exclude *.py[cod]
+global-exclude .DS_Store

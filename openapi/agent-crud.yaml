@@ -1,0 +1,1072 @@
+openapi: 3.1.0
+jsonSchemaDialect: https://spec.openapis.org/oas/3.1/dialect/base
+info:
+  title: OSSA Agent CRUD API
+  version: 0.3.3
+  description: |
+    # OSSA Agent CRUD Operations API
+
+    Complete Create, Read, Update, Delete (CRUD) operations for OSSA v0.3.0 compliant agents.
+
+    ## Features
+    - **Create**: Register new agents with full manifest validation
+    - **Read**: List and retrieve agent details
+    - **Update**: Modify existing agent configurations
+    - **Delete**: Unregister agents from the platform
+    - **Standards Compliance**: Full OSSA v0.3.0 and RFC7807 error handling
+
+  contact:
+    name: Bluefly.io LLM Platform Team
+    url: https://github.com/blueflyio/openstandardagents
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.llm.bluefly.io/ossa/v1
+    description: Production server
+  - url: https://api-dev.llm.bluefly.io/ossa/v1
+    description: Development server
+  - url: http://localhost:3000
+    description: Local development
+
+security:
+  - ApiKeyAuth: []
+  - BearerAuth: []
+  - OAuth2: [read, write, admin]
+
+paths:
+  /agents:
+    get:
+      summary: List agents
+      description: Retrieve a paginated list of all registered agents with optional filtering
+      tags: [Agents]
+      operationId: listAgents
+      parameters:
+        - $ref: '#/components/parameters/Search'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+        - name: type
+          in: query
+          description: Filter by agent type
+          schema:
+            $ref: '#/components/schemas/AgentType'
+        - name: status
+          in: query
+          description: Filter by agent status
+          schema:
+            $ref: '#/components/schemas/AgentStatus'
+        - name: domain
+          in: query
+          description: Filter by domain label
+          schema:
+            type: string
+        - name: capability
+          in: query
+          description: Filter by capability label
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of agents successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentsList'
+              examples:
+                default:
+                  $ref: '#/components/examples/AgentsListExample'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      summary: Create agent
+      description: Register a new agent with the platform
+      tags: [Agents]
+      operationId: createAgent
+      requestBody:
+        required: true
+        description: Agent creation request with full manifest
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentCreate'
+            examples:
+              worker:
+                $ref: '#/components/examples/CreateWorkerAgentExample'
+              orchestrator:
+                $ref: '#/components/examples/CreateOrchestratorAgentExample'
+      responses:
+        '201':
+          description: Agent successfully created
+          headers:
+            Location:
+              description: URL of the created agent
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentResponse'
+              examples:
+                default:
+                  $ref: '#/components/examples/AgentResponseExample'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /agents/{id}:
+    get:
+      summary: Get agent
+      description: Retrieve detailed information about a specific agent
+      tags: [Agents]
+      operationId: getAgent
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+      responses:
+        '200':
+          description: Agent details successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentResponse'
+              examples:
+                default:
+                  $ref: '#/components/examples/AgentResponseExample'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    put:
+      summary: Update agent
+      description: Update an existing agent's configuration
+      tags: [Agents]
+      operationId: updateAgent
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+      requestBody:
+        required: true
+        description: Updated agent configuration
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentUpdate'
+            examples:
+              partial:
+                $ref: '#/components/examples/UpdateAgentExample'
+      responses:
+        '200':
+          description: Agent successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentResponse'
+              examples:
+                default:
+                  $ref: '#/components/examples/AgentResponseExample'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      summary: Delete agent
+      description: Unregister and remove an agent from the platform
+      tags: [Agents]
+      operationId: deleteAgent
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+      responses:
+        '204':
+          description: Agent successfully deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Conflict - Agent is currently in use
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    OAuth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.llm.bluefly.io/oauth/authorize
+          tokenUrl: https://auth.llm.bluefly.io/oauth/token
+          scopes:
+            read: Read access to agents
+            write: Write access to create and update agents
+            admin: Full administrative access
+
+  parameters:
+    AgentId:
+      name: id
+      in: path
+      required: true
+      description: Unique identifier for the agent (UUID v4)
+      schema:
+        type: string
+        format: uuid
+      example: 550e8400-e29b-41d4-a716-446655440000
+
+    Search:
+      name: search
+      in: query
+      description: Search query to filter agents by name or description
+      schema:
+        type: string
+      example: security
+
+    Limit:
+      name: limit
+      in: query
+      description: Maximum number of results to return
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+      example: 20
+
+    Offset:
+      name: offset
+      in: query
+      description: Number of results to skip for pagination
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+      example: 0
+
+  schemas:
+    # Request Schemas
+    AgentCreate:
+      type: object
+      required:
+        - apiVersion
+        - kind
+        - metadata
+        - spec
+      properties:
+        apiVersion:
+          type: string
+          const: ossa/v0.3.3
+          description: OSSA specification version
+        kind:
+          type: string
+          const: Agent
+          description: Resource type identifier
+        metadata:
+          $ref: '#/components/schemas/AgentMetadata'
+        spec:
+          $ref: '#/components/schemas/AgentSpec'
+
+    AgentUpdate:
+      type: object
+      description: Partial update of agent configuration. Only provided fields will be updated.
+      properties:
+        metadata:
+          type: object
+          properties:
+            description:
+              type: string
+            labels:
+              type: object
+              additionalProperties:
+                type: string
+        spec:
+          type: object
+          properties:
+            llm:
+              $ref: '#/components/schemas/LLMConfig'
+            runtime:
+              $ref: '#/components/schemas/RuntimeConfig'
+            capabilities:
+              type: array
+              items:
+                $ref: '#/components/schemas/Capability'
+
+    # Response Schemas
+    AgentResponse:
+      type: object
+      required:
+        - id
+        - apiVersion
+        - kind
+        - metadata
+        - spec
+        - status
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the agent
+        apiVersion:
+          type: string
+          const: ossa/v0.3.3
+        kind:
+          type: string
+          const: Agent
+        metadata:
+          $ref: '#/components/schemas/AgentMetadata'
+        spec:
+          $ref: '#/components/schemas/AgentSpec'
+        status:
+          $ref: '#/components/schemas/AgentStatus'
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the agent was created
+        updatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the agent was last updated
+        createdBy:
+          type: string
+          description: User or system that created the agent
+        metrics:
+          $ref: '#/components/schemas/AgentMetrics'
+
+    AgentsList:
+      type: object
+      required:
+        - agents
+        - total
+        - limit
+        - offset
+      properties:
+        agents:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentResponse'
+        total:
+          type: integer
+          description: Total number of agents matching the query
+        limit:
+          type: integer
+          description: Maximum number of results returned
+        offset:
+          type: integer
+          description: Number of results skipped
+
+    # Core Agent Schemas
+    AgentMetadata:
+      type: object
+      required:
+        - name
+        - version
+      properties:
+        name:
+          type: string
+          pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+          minLength: 1
+          maxLength: 63
+          description: Agent name (DNS label format)
+          example: security-scanner
+        version:
+          type: string
+          pattern: '^\d+\.\d+\.\d+(-[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)*)?(\+[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)*)?$'
+          description: Semantic version (full semver spec including pre-release and build metadata)
+          example: 1.0.0
+        description:
+          type: string
+          description: Human-readable description of the agent
+          example: Security vulnerability scanner for code repositories
+        labels:
+          type: object
+          additionalProperties:
+            type: string
+          description: Key-value labels for categorization
+          example:
+            domain: security
+            capability: scanning
+            runtime: kubernetes
+
+    AgentSpec:
+      type: object
+      required:
+        - llm
+        - runtime
+        - capabilities
+      properties:
+        llm:
+          $ref: '#/components/schemas/LLMConfig'
+        execution_profile:
+          $ref: '#/components/schemas/ExecutionProfile'
+        runtime:
+          $ref: '#/components/schemas/RuntimeConfig'
+        capabilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Capability'
+          minItems: 1
+        functions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Function'
+        extensions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Extension'
+        role:
+          type: string
+          description: Agent's primary role
+        taxonomy:
+          $ref: '#/components/schemas/Taxonomy'
+        tools:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tool'
+        knowledge_graph:
+          $ref: '#/components/schemas/KnowledgeGraph'
+
+    LLMConfig:
+      type: object
+      required:
+        - provider
+        - model
+      properties:
+        provider:
+          type: string
+          description: LLM provider (supports env var substitution)
+          example: anthropic
+        model:
+          type: string
+          description: Model identifier
+          example: claude-sonnet-4
+        profile:
+          type: string
+          enum: [fast, balanced, deep, safe]
+          default: balanced
+          description: Execution profile for A2A compatibility
+        temperature:
+          type: number
+          minimum: 0
+          maximum: 2
+          default: 0.1
+        maxTokens:
+          type: integer
+          minimum: 1
+          maximum: 200000
+          default: 16000
+        topP:
+          type: number
+          minimum: 0
+          maximum: 1
+          default: 0.9
+        fallback_models:
+          type: array
+          items:
+            $ref: '#/components/schemas/FallbackModel'
+        retry_config:
+          $ref: '#/components/schemas/RetryConfig'
+
+    FallbackModel:
+      type: object
+      required:
+        - provider
+        - model
+        - condition
+      properties:
+        provider:
+          type: string
+        model:
+          type: string
+        condition:
+          type: string
+          enum: [on_error, on_rate_limit, on_timeout]
+
+    RetryConfig:
+      type: object
+      properties:
+        max_attempts:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 3
+        backoff_strategy:
+          type: string
+          enum: [linear, exponential, fibonacci]
+          default: exponential
+
+    ExecutionProfile:
+      type: object
+      properties:
+        default:
+          type: string
+          enum: [fast, balanced, deep, safe]
+        profiles:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ProfileConfig'
+
+    ProfileConfig:
+      type: object
+      properties:
+        maxTokens:
+          type: integer
+        temperature:
+          type: number
+        reasoning_enabled:
+          type: boolean
+        validation_required:
+          type: boolean
+        audit_log:
+          type: boolean
+        description:
+          type: string
+
+    RuntimeConfig:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum: [unified, kubernetes, docker, serverless, local]
+          description: Runtime environment type
+        supports:
+          type: array
+          items:
+            type: string
+            enum: [google-a2a, gitlab-duo, ossa-mesh, mcp, local-execution]
+        scheduling:
+          $ref: '#/components/schemas/SchedulingConfig'
+        resource_limits:
+          $ref: '#/components/schemas/ResourceLimits'
+
+    SchedulingConfig:
+      type: object
+      properties:
+        strategy:
+          type: string
+          enum: [fair, priority, round-robin]
+          default: fair
+        priority:
+          type: string
+          enum: [low, normal, high, critical]
+          default: normal
+        max_concurrent:
+          type: integer
+          minimum: 1
+          default: 10
+        timeout_seconds:
+          type: integer
+          minimum: 1
+          default: 300
+
+    ResourceLimits:
+      type: object
+      properties:
+        memory_mb:
+          type: integer
+          minimum: 128
+          default: 512
+        cpu_millicores:
+          type: integer
+          minimum: 100
+          default: 500
+
+    Capability:
+      type: object
+      required:
+        - name
+        - type
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum: [action, query, monitor, transform]
+        runtime:
+          type: string
+          enum: [llm, code, hybrid]
+        description:
+          type: string
+        input_schema:
+          type: object
+          description: JSON Schema for capability input
+
+    Function:
+      type: object
+      required:
+        - name
+        - description
+        - parameters
+      properties:
+        name:
+          type: string
+          pattern: '^[a-z_][a-z0-9_]*$'
+        description:
+          type: string
+        parameters:
+          type: object
+          description: OpenAI-style function parameters (JSON Schema)
+        returns:
+          type: object
+          description: Return value schema
+
+    Extension:
+      type: object
+      required:
+        - type
+        - name
+        - endpoint
+      properties:
+        type:
+          type: string
+          enum: [http, mcp, grpc, websocket]
+        name:
+          type: string
+        endpoint:
+          type: string
+          format: uri
+        credentials_ref:
+          type: string
+          description: Reference to credential in secrets manager
+
+    Taxonomy:
+      type: object
+      properties:
+        domain:
+          type: string
+        subdomain:
+          type: string
+        capability:
+          type: string
+
+    Tool:
+      type: object
+      required:
+        - name
+        - source
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        source:
+          $ref: '#/components/schemas/ToolSource'
+
+    ToolSource:
+      type: object
+      required:
+        - type
+        - uri
+      properties:
+        type:
+          type: string
+          enum: [mcp, http, grpc]
+        uri:
+          type: string
+          format: uri
+
+    KnowledgeGraph:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+          default: false
+        provider:
+          type: string
+          enum: [neo4j, memgraph, dgraph]
+        connection:
+          $ref: '#/components/schemas/GraphConnection'
+
+    GraphConnection:
+      type: object
+      properties:
+        endpoint:
+          type: string
+          format: uri
+        credentials_ref:
+          type: string
+
+    AgentType:
+      $ref: '../schemas/common/agent.yaml#/components/schemas/AgentType'
+    AgentStatus:
+      $ref: '../schemas/common/agent.yaml#/components/schemas/AgentStatus'
+
+    AgentMetrics:
+      type: object
+      properties:
+        requestCount:
+          type: integer
+          description: Total number of requests processed
+        errorCount:
+          type: integer
+          description: Total number of errors encountered
+        averageResponseTime:
+          type: number
+          description: Average response time in milliseconds
+        uptime:
+          type: integer
+          description: Uptime in seconds
+        lastActive:
+          type: string
+          format: date-time
+          description: Timestamp of last activity
+
+    # Error Schemas (RFC7807) - Using shared schema
+    Problem:
+      $ref: '../schemas/common/errors.yaml#/components/schemas/Problem'
+
+  responses:
+    BadRequest:
+      description: Bad request - Invalid input parameters
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: https://api.llm.bluefly.io/problems/bad-request
+            title: Bad Request
+            status: 400
+            detail: Invalid query parameter 'limit' - must be between 1 and 100
+            traceId: 550e8400-e29b-41d4-a716-446655440000
+
+    ValidationError:
+      description: Validation error - Request body failed validation
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: https://api.llm.bluefly.io/problems/validation-error
+            title: Validation Error
+            status: 400
+            detail: Agent manifest validation failed
+            traceId: 550e8400-e29b-41d4-a716-446655440001
+            errors:
+              metadata.name:
+                - Must match pattern '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+              spec.capabilities:
+                - Must contain at least one capability
+
+    Unauthorized:
+      description: Unauthorized - Authentication required
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: https://api.llm.bluefly.io/problems/unauthorized
+            title: Unauthorized
+            status: 401
+            detail: Valid authentication credentials required
+            traceId: 550e8400-e29b-41d4-a716-446655440002
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: https://api.llm.bluefly.io/problems/not-found
+            title: Not Found
+            status: 404
+            detail: Agent with ID 550e8400-e29b-41d4-a716-446655440000 not found
+            traceId: 550e8400-e29b-41d4-a716-446655440003
+
+    Conflict:
+      description: Conflict - Resource already exists or constraint violation
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: https://api.llm.bluefly.io/problems/conflict
+            title: Conflict
+            status: 409
+            detail: Agent with name 'security-scanner' already exists in version 1.0.0
+            traceId: 550e8400-e29b-41d4-a716-446655440004
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: https://api.llm.bluefly.io/problems/internal-error
+            title: Internal Server Error
+            status: 500
+            detail: An unexpected error occurred while processing your request
+            traceId: 550e8400-e29b-41d4-a716-446655440005
+
+  examples:
+    CreateWorkerAgentExample:
+      summary: Create a worker agent
+      value:
+        apiVersion: ossa/v0.3.3
+        kind: Agent
+        metadata:
+          name: security-scanner
+          version: 1.0.0
+          description: Security vulnerability scanner for code repositories
+          labels:
+            domain: security
+            capability: scanning
+            runtime: kubernetes
+        spec:
+          llm:
+            provider: anthropic
+            model: claude-sonnet-4
+            profile: balanced
+            temperature: 0.1
+            maxTokens: 16000
+          runtime:
+            type: kubernetes
+            supports:
+              - ossa-mesh
+              - mcp
+            scheduling:
+              strategy: fair
+              priority: normal
+              max_concurrent: 10
+              timeout_seconds: 300
+            resource_limits:
+              memory_mb: 512
+              cpu_millicores: 500
+          capabilities:
+            - name: security_scan
+              type: action
+              runtime: llm
+              description: Run security analysis on code
+              input_schema:
+                type: object
+                required: [path]
+                properties:
+                  path:
+                    type: string
+                  severity:
+                    type: string
+                    enum: [low, medium, high, critical]
+
+    CreateOrchestratorAgentExample:
+      summary: Create an orchestrator agent
+      value:
+        apiVersion: ossa/v0.3.3
+        kind: Agent
+        metadata:
+          name: workflow-orchestrator
+          version: 2.1.0
+          description: Coordinates multi-agent workflows
+          labels:
+            domain: orchestration
+            capability: coordination
+            runtime: kubernetes
+        spec:
+          llm:
+            provider: anthropic
+            model: claude-opus-4
+            profile: deep
+            temperature: 0.2
+            maxTokens: 32000
+          runtime:
+            type: kubernetes
+            supports:
+              - google-a2a
+              - gitlab-duo
+              - ossa-mesh
+            scheduling:
+              strategy: priority
+              priority: high
+              max_concurrent: 50
+              timeout_seconds: 600
+            resource_limits:
+              memory_mb: 2048
+              cpu_millicores: 2000
+          capabilities:
+            - name: coordinate_workflow
+              type: action
+              runtime: llm
+              description: Coordinate execution of multi-agent workflows
+
+    UpdateAgentExample:
+      summary: Partial update of agent configuration
+      value:
+        metadata:
+          description: Enhanced security scanner with SAST capabilities
+          labels:
+            domain: security
+            capability: sast-scanning
+        spec:
+          llm:
+            temperature: 0.05
+            maxTokens: 20000
+
+    AgentResponseExample:
+      summary: Complete agent response
+      value:
+        id: 550e8400-e29b-41d4-a716-446655440000
+        apiVersion: ossa/v0.3.3
+        kind: Agent
+        metadata:
+          name: security-scanner
+          version: 1.0.0
+          description: Security vulnerability scanner for code repositories
+          labels:
+            domain: security
+            capability: scanning
+            runtime: kubernetes
+        spec:
+          llm:
+            provider: anthropic
+            model: claude-sonnet-4
+            profile: balanced
+            temperature: 0.1
+            maxTokens: 16000
+          runtime:
+            type: kubernetes
+            supports:
+              - ossa-mesh
+              - mcp
+            scheduling:
+              strategy: fair
+              priority: normal
+              max_concurrent: 10
+              timeout_seconds: 300
+            resource_limits:
+              memory_mb: 512
+              cpu_millicores: 500
+          capabilities:
+            - name: security_scan
+              type: action
+              runtime: llm
+              description: Run security analysis on code
+              input_schema:
+                type: object
+                required: [path]
+                properties:
+                  path:
+                    type: string
+                  severity:
+                    type: string
+                    enum: [low, medium, high, critical]
+        status: active
+        createdAt: '2025-12-18T10:30:00Z'
+        updatedAt: '2025-12-18T10:30:00Z'
+        createdBy: user@example.com
+        metrics:
+          requestCount: 1247
+          errorCount: 12
+          averageResponseTime: 234.5
+          uptime: 864000
+          lastActive: '2025-12-18T14:25:00Z'
+
+    AgentsListExample:
+      summary: List of agents with pagination
+      value:
+        agents:
+          - id: 550e8400-e29b-41d4-a716-446655440000
+            apiVersion: ossa/v0.3.3
+            kind: Agent
+            metadata:
+              name: security-scanner
+              version: 1.0.0
+              description: Security vulnerability scanner
+              labels:
+                domain: security
+                capability: scanning
+            spec:
+              llm:
+                provider: anthropic
+                model: claude-sonnet-4
+              runtime:
+                type: kubernetes
+              capabilities:
+                - name: security_scan
+                  type: action
+                  runtime: llm
+            status: active
+            createdAt: '2025-12-18T10:30:00Z'
+            updatedAt: '2025-12-18T10:30:00Z'
+          - id: 660e8400-e29b-41d4-a716-446655440001
+            apiVersion: ossa/v0.3.3
+            kind: Agent
+            metadata:
+              name: code-reviewer
+              version: 1.2.0
+              description: Automated code review agent
+              labels:
+                domain: development
+                capability: review
+            spec:
+              llm:
+                provider: openai
+                model: gpt-4o
+              runtime:
+                type: kubernetes
+              capabilities:
+                - name: review_code
+                  type: action
+                  runtime: llm
+            status: active
+            createdAt: '2025-12-17T14:20:00Z'
+            updatedAt: '2025-12-18T09:15:00Z'
+        total: 42
+        limit: 20
+        offset: 0
+
+tags:
+  - name: Agents
+    description: Agent lifecycle management (CRUD operations)
+
+x-ossa-metadata:
+  version: 0.3.3
+  compliance:
+    level: enterprise
+    frameworks:
+      - OSSA v0.3.0
+      - OpenAPI 3.1
+      - RFC7807
+  governance:
+    approved: true
+    approvedBy: Platform Team
+    approvalDate: 2025-12-18
+  security:
+    classification: public
+    authentication: required
+    encryption: tls1.3
+  observability:
+    tracing: true
+    metrics: true
+    logging: true

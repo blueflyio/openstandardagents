@@ -1,0 +1,96 @@
+# ============================================================================
+# GitLab CI Component: OSSA Agent Execution
+# ============================================================================
+# Reusable component for running OSSA agents in GitLab CI/CD pipelines
+# Supports all agent types with KAgent and GitLab Duo integration
+# ============================================================================
+
+spec:
+  inputs:
+    agent_name:
+      description: "Name of the OSSA agent to execute"
+      type: string
+      default: ""
+    agent_path:
+      description: "Path to agent manifest file"
+      type: string
+      default: ""
+    task:
+      description: "Specific task to execute (optional)"
+      type: string
+      default: ""
+    inputs:
+      description: "JSON string of inputs to pass to agent"
+      type: string
+      default: "{}"
+    k8s_namespace:
+      description: "Kubernetes namespace for agent execution"
+      type: string
+      default: "agent-system"
+    image:
+      description: "Container image for agent execution"
+      type: string
+      default: "node:22-alpine"
+    node_version:
+      description: "Node.js version"
+      type: string
+      default: "22"
+
+.ossa_agent_base:
+  image: node:22-alpine
+  before_script:
+    - apk add --no-cache git curl jq bash
+    - npm ci --legacy-peer-deps
+    - npm run build
+  script:
+    - |
+      # Determine agent_path if not provided
+      if [ -z "${agent_path}" ]; then
+        if [ -z "${agent_name}" ]; then
+          echo "[INFO] No agent_name or agent_path specified, skipping agent execution"
+          exit 0
+        fi
+        agent_path=".gitlab/agents/${agent_name}/manifest.ossa.yaml"
+      fi
+      
+      echo "INFO: Executing OSSA Agent: ${agent_name:-$(basename $(dirname ${agent_path}))}"
+      echo "   Manifest: ${agent_path}"
+      echo "   Task: ${task:-default}"
+      echo "   Inputs: ${inputs}"
+      
+      # Use GITLAB_TOKEN from job variables (set to service account token),
+      # fallback to service account tokens, then CI_JOB_TOKEN
+      export GITLAB_TOKEN="${GITLAB_TOKEN:-${SERVICE_ACCOUNT_VERSION_MANAGER_TOKEN:-${SERVICE_ACCOUNT_DEPLOYMENT_TOKEN:-${SERVICE_ACCOUNT_SECURITY_TOKEN:-${CI_JOB_TOKEN}}}}}"
+      
+      # Validate agent manifest exists
+      if [ ! -f "${agent_path}" ]; then
+        echo "[FAIL] ERROR: Agent manifest not found: ${agent_path}"
+        exit 1
+      fi
+
+      # Validate manifest against OSSA schema (auto-detected from apiVersion)
+      if ! node dist/cli/index.js validate "${agent_path}"; then
+        echo "[FAIL] ERROR: Agent manifest validation failed"
+        exit 1
+      fi
+
+      # Execute agent
+      # Note: task and inputs are defined in the agent manifest, not passed as CLI args
+      node dist/cli/index.js run "${agent_path}"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: on_success
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: on_success
+
+ossa:agent:
+  extends: .ossa_agent_base
+  variables:
+    agent_name: ""
+    agent_path: ""
+    task: ""
+    inputs: "{}"
+  rules:
+    - if: $agent_name || $agent_path
+      when: on_success
+    - when: never

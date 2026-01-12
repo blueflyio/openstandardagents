@@ -1,0 +1,63 @@
+# ============================================================================
+# GitLab Duo Flow: Self-Healing Framework
+# ============================================================================
+# Autonomous self-healing using existing agents
+# ============================================================================
+
+image: node:22-alpine
+injectGatewayToken: true
+
+variables:
+  PLATFORM_AGENTS_API: ${PLATFORM_AGENTS_API_URL:-https://api.blueflyagents.com}
+
+commands:
+  - echo "Starting Self-Healing Flow"
+  - apk add --no-cache curl jq
+
+steps:
+  - id: detect_issues
+    tool: InvokePlatformAgent
+    with:
+      agent: pipeline-remediation
+      service_account: @pipeline-remediation
+      token: ${SERVICE_ACCOUNT_PIPELINE_REMEDIATION_TOKEN}
+      task: detect-issues
+      inputs:
+        project_id: ${CI_PROJECT_ID}
+        pipeline_id: ${CI_PIPELINE_ID}
+        check_types:
+          - pipeline_failures
+          - test_failures
+          - lint_errors
+          - type_errors
+          - dependency_issues
+
+  - id: auto_fix_pipeline
+    tool: InvokePlatformAgent
+    with:
+      agent: pipeline-remediation
+      service_account: @pipeline-remediation
+      token: ${SERVICE_ACCOUNT_PIPELINE_REMEDIATION_TOKEN}
+      task: auto-fix
+      inputs:
+        project_id: ${CI_PROJECT_ID}
+        pipeline_id: ${CI_PIPELINE_ID}
+        create_mr: true
+        auto_merge: false
+    condition: ${detect_issues.output.has_fixable_issues} == true
+    needs:
+      - detect_issues
+
+  - id: fix_code_issues
+    tool: InvokePlatformAgent
+    with:
+      agent: code-quality-reviewer
+      service_account: @code-quality-reviewer
+      token: ${SERVICE_ACCOUNT_CODE_QUALITY_TOKEN}
+      task: auto-fix-issues
+      inputs:
+        project_id: ${CI_PROJECT_ID}
+        create_mr: true
+    condition: ${detect_issues.output.has_code_issues} == true
+    needs:
+      - detect_issues
