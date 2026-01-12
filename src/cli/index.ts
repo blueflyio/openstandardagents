@@ -22,6 +22,7 @@ import 'reflect-metadata';
 import { agentCardCommand } from './commands/agent-card.command.js';
 import { agentsMdCommand } from './commands/agents-md.command.js';
 import { agentsCommandGroup } from './commands/agents.command.js';
+import { complianceCommand } from './commands/compliance.command.js';
 import { contractCommand } from './commands/contract.command.js';
 import { dependenciesCommand } from './commands/dependencies.command.js';
 import { deployGroup } from './commands/deploy.command.js';
@@ -47,8 +48,10 @@ import { quickstartCommand } from './commands/quickstart.command.js';
 import { registryCommand } from './commands/registry.command.js';
 import { runCommand } from './commands/run.command.js';
 import { schemaCommand } from './commands/schema.command.js';
+import { scaffoldCommand } from './commands/scaffold.command.js';
 import { searchCommand } from './commands/search.command.js';
 import { setupCommand } from './commands/setup.command.js';
+import { standardizeCommand } from './commands/standardize.command.js';
 import { testCommand } from './commands/test.command.js';
 import { validateCommand } from './commands/validate.command.js';
 import { workspaceCommand } from './commands/workspace.command.js';
@@ -163,11 +166,13 @@ program
 
 program.addCommand(quickstartCommand); // First for discoverability
 program.addCommand(validateCommand);
+program.addCommand(complianceCommand);
 program.addCommand(dependenciesCommand);
 program.addCommand(contractCommand);
 program.addCommand(generateCommand);
 program.addCommand(migrateCommand);
 program.addCommand(initCommand);
+program.addCommand(scaffoldCommand);
 program.addCommand(exportCommand);
 program.addCommand(importCommand);
 program.addCommand(schemaCommand);
@@ -192,6 +197,7 @@ program.addCommand(deployGroup); // Legacy compatibility
 // Quality commands
 program.addCommand(testCommand);
 program.addCommand(lintCommand);
+program.addCommand(standardizeCommand);
 program.addCommand(diffCommand);
 
 // Agent management
