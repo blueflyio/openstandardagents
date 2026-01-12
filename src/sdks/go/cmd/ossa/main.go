@@ -18,7 +18,7 @@ var (
 func main() {
 	rootCmd := &cobra.Command{
 		Use:     "ossa",
-		Short:   "OSSA CLI - Open Standard for Scalable AI Agents",
+		Short:   "OSSA CLI - Open Standard for Software Agents (The OpenAPI for agents)",
 		Long:    `OSSA CLI validates and manages AI agent manifests.\n\nVersion: ` + ossa.Version + ` (OSSA ` + ossa.OSSAVersion + `)`,
 		Version: ossa.Version,
 	}
