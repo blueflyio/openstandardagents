@@ -145,34 +145,7 @@ check:ds-store:
 
 # REMOVED: validate:version-sync - sync-versions.ts was deleted in DRY consolidation
 # Version sync is now handled by ossa-dev CLI (src/dev-cli/src/services/version-sync.service.ts)
-# validate:version-sync:
-  stage: validate
-  image: node:${NODE_VERSION}-alpine
-  tags:
-    - saas-linux-small-amd64
-  extends:
-    - .npm-cache
-  before_script:
-    - apk add --no-cache curl jq
-    - npm ci --prefer-offline --no-audit
-    - npm run build
-  script:
-    - echo "Checking version consistency..."
-    - npm run version:check
-    - echo "Version check completed"
-  allow_failure: true
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      when: always
-    - if: $CI_COMMIT_BRANCH =~ /^release\/v/
-      when: always
-    - if: $CI_COMMIT_BRANCH == "main"
-      when: always
-    - changes:
-      - package.json
-      - README.md
-      - spec/**/*
-      when: always
+# Use: npm run version:sync (uses ossa-dev CLI)
 
 # ============================================================================
 # VERSION MANAGEMENT VIA GITLAB AGENTS (Dogfooding)
@@ -255,45 +228,7 @@ validate:scripts-version:
       - src/tools/**/*
       when: always
 
-validate:docs-consistency:
-  stage: validate
-  image: node:${NODE_VERSION}-alpine
-  tags:
-    - saas-linux-small-amd64
-  extends:
-    - .npm-cache
-  before_script:
-    - apk add --no-cache curl jq
-    - npm ci --prefer-offline --no-audit
-    - npm run build
-  script:
-    - |
-      echo "Pre-Release Documentation Validation"
-      echo "========================================"
-
-      VERSION=$(jq -r '.current' .version.json)
-      echo "Release version: v${VERSION}"
-
-      if ! npx tsx src/tools/version/sync-versions.ts --check; then
-        echo ""
-        echo "ERROR: Documentation is out of sync!"
-        echo ""
-        echo "FIX REQUIRED:"
-        echo "1. Run locally: npx tsx src/tools/version/sync-versions.ts --fix"
-        echo "2. Commit the changes"
-        echo "3. Push and re-run pipeline"
-        exit 1
-      fi
-
-      echo "ALL DOCUMENTATION CONSISTENCY CHECKS PASSED"
-  allow_failure: false
-  rules:
-    - if: $CI_COMMIT_BRANCH == "main"
-      when: always
-    - if: $CI_COMMIT_BRANCH =~ /^release\/v/
-      when: always
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
-      when: always
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^release\/v/
-      when: always
+# REMOVED: validate:docs-consistency - sync-versions.ts was deleted in DRY consolidation
+# Documentation consistency is now handled by ossa-dev CLI
+# Use: npm run version:sync (uses ossa-dev CLI)
 
