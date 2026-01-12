@@ -84,7 +84,6 @@ versionCommand
     }
   });
 
->>>>>>> release/v0.3.x
 // version:validate - Validate version consistency
 versionCommand
   .command('validate')
