@@ -76,27 +76,13 @@ test:unit:
       - coverage/
       - test-results/
     expire_in: 7 days
-<<<<<<< HEAD
   allow_failure: false
 
 # Integration tests - only on MRs and release/main (uses .rules:full)
 test:integration:
-  extends: 
+  extends:
     - .test-job-base
     - .rules:full
-=======
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH =~ /^release\//
-    - if: $CI_COMMIT_BRANCH == "main"
-    - if: $CI_MERGE_REQUEST_EVENT_TYPE == "merge_train"
-      when: never  # Skip in merge train (already passed in MR pipeline)
-  allow_failure: false
-
-# Integration tests - only on MRs and release/main
-test:integration:
-  extends: .test-job-base
->>>>>>> release/v0.3.x
   stage: test
   timeout: 20 minutes
   script:
@@ -107,28 +93,14 @@ test:integration:
     paths:
       - test-results/
     expire_in: 7 days
-<<<<<<< HEAD
   allow_failure: false
 
 # E2E tests - only on MRs targeting release/main (uses .rules:full)
 # NOTE: Requires real E2E tests (see tests/e2e/smoke.spec.ts)
 test:e2e:
-  extends: 
+  extends:
     - .test-job-base
     - .rules:full
-=======
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH =~ /^release\//
-    - if: $CI_COMMIT_BRANCH == "main"
-    - if: $CI_MERGE_REQUEST_EVENT_TYPE == "merge_train"
-      when: never
-  allow_failure: false
-
-# E2E tests - only on MRs targeting release/main
-test:e2e:
-  extends: .test-job-base
->>>>>>> release/v0.3.x
   stage: test
   timeout: 30 minutes
   script:
@@ -149,10 +121,7 @@ test:lint:
     - saas-linux-small-amd64
   extends:
     - .npm-cache-readonly
-<<<<<<< HEAD
     - .rules:fast
-=======
->>>>>>> release/v0.3.x
   dependencies:
     - build:dist
   needs:
@@ -181,10 +150,7 @@ test:security:
     - saas-linux-small-amd64
   extends:
     - .npm-cache-readonly
-<<<<<<< HEAD
     - .rules:fast
-=======
->>>>>>> release/v0.3.x
   dependencies:
     - build:dist
   needs:
