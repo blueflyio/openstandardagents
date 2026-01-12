@@ -7,10 +7,6 @@
 
 import { Command } from 'commander';
 import chalk from 'chalk';
-<<<<<<< HEAD
-=======
-import { VersionAuditService } from '../../services/version-audit.service.js';
->>>>>>> release/v0.3.x
 import { VersionReleaseService } from '../services/version-release.service.js';
 import { VersionValidateService } from '../services/version-validate.service.js';
 import { VersionSyncService } from '../services/version-sync.service.js';
@@ -58,16 +54,6 @@ versionCommand
       process.exit(1);
     }
   });
-
-<<<<<<< HEAD
-=======
-// version:audit - Find hardcoded versions
-versionCommand
-  .command('audit')
-  .description('Audit for hardcoded versions (not using {{VERSION}} placeholder)')
-  .option('--fix', 'Automatically replace hardcoded versions with {{VERSION}}', false)
-  .action(async (options: { fix: boolean }) => {
-    console.log(chalk.blue('🔍 OSSA Version Audit'));
     console.log(chalk.gray('=====================\n'));
 
     const service = new VersionAuditService();

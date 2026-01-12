@@ -27,20 +27,14 @@ include:
   # - test:security (npm audit) in optimized-test-jobs.yml
   # - security-jobs.yml for additional security checks
   - local: .gitlab/ci/caching.yml
-<<<<<<< HEAD
   - local: .gitlab/ci/rules.yml
-=======
->>>>>>> release/v0.3.x
   - local: .gitlab/ci/build-jobs.yml
   - local: .gitlab/ci/validation-jobs.yml
   - local: .gitlab/ci/optimized-test-jobs.yml
   - local: .gitlab/ci/security-jobs.yml
   - local: .gitlab/ci/quality-gates.yml
   - local: .gitlab/ci/release-workflow.yml
-<<<<<<< HEAD
   - local: .gitlab/ci/release-promote.yml
-=======
->>>>>>> release/v0.3.x
   - local: .gitlab/ci/merge-train-optimized.yml
 
 # =============================================================================
