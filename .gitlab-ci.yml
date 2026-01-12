@@ -20,17 +20,12 @@
 
 include:
   # ============================================================================
-  # GitLab Ultimate Security Templates (FREE with Ultimate)
-  # ============================================================================
-  - template: Jobs/SAST.gitlab-ci.yml
-  - template: Jobs/Dependency-Scanning.gitlab-ci.yml
-  - template: Jobs/Secret-Detection.gitlab-ci.yml
-  - template: Jobs/SAST-IaC.gitlab-ci.yml
-  - template: Code-Quality.gitlab-ci.yml
-
-  # ============================================================================
   # Local CI Configuration Files (Organized by Concern)
   # ============================================================================
+  # NOTE: GitLab SAST/Dependency-Scanning templates removed - they include
+  # placeholder jobs that fail by design. Security scanning handled by:
+  # - test:security (npm audit) in optimized-test-jobs.yml
+  # - security-jobs.yml for additional security checks
   - local: .gitlab/ci/caching.yml
   - local: .gitlab/ci/build-jobs.yml
   - local: .gitlab/ci/validation-jobs.yml
@@ -86,41 +81,6 @@ variables:
   
   # Observability export configuration (from group variable)
   GITLAB_OBSERVABILITY_EXPORT: "${GITLAB_OBSERVABILITY_EXPORT:-traces,metrics,logs}"
-
-# =============================================================================
-# SECURITY SCANNING OVERRIDES (GitLab Ultimate Templates)
-# =============================================================================
-# These jobs are included from GitLab templates but need allow_failure: true
-# since they're not fully configured for this project yet.
-# TODO: Properly configure SAST for TypeScript scanning
-
-sast:
-  allow_failure: true
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH =~ /^release\//
-    - if: $CI_COMMIT_BRANCH == "main"
-
-sast_iac:
-  allow_failure: true
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH =~ /^release\//
-    - if: $CI_COMMIT_BRANCH == "main"
-
-dependency_scanning:
-  allow_failure: true
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH =~ /^release\//
-    - if: $CI_COMMIT_BRANCH == "main"
-
-secret_detection:
-  allow_failure: true
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH =~ /^release\//
-    - if: $CI_COMMIT_BRANCH == "main"
 
 # =============================================================================
 # VALIDATION JOBS (Quick checks - run early)
