@@ -595,7 +595,7 @@ workspaceCommand
         });
 
         // Check required subdirectories
-        const requiredDirs = ['registry', 'policies', 'orchestration', 'shared-context', 'logs'];
+        const requiredDirs = getRequiredWorkspaceDirs();
         for (const dir of requiredDirs) {
           const dirPath = path.join(workspaceDir, dir);
           if (fs.existsSync(dirPath)) {
@@ -618,7 +618,7 @@ workspaceCommand
       }
 
       // Check 2: Registry exists and is valid
-      const registryPath = path.resolve(workspaceDir, 'registry/index.yaml');
+      const registryPath = path.resolve(workspaceDir, getWorkspaceRegistryPath());
       if (fs.existsSync(registryPath)) {
         try {
           const content = fs.readFileSync(registryPath, 'utf-8');
@@ -687,7 +687,7 @@ workspaceCommand
       }
 
       // Check 3: Policies exist
-      const policyPath = path.resolve(workspaceDir, 'policies/tool-allowlist.yaml');
+      const policyPath = path.resolve(workspaceDir, getWorkspacePolicyPath());
       if (fs.existsSync(policyPath)) {
         try {
           const content = fs.readFileSync(policyPath, 'utf-8');

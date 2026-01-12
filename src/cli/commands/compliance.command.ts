@@ -22,6 +22,10 @@ import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { ValidationService } from '../../services/validation.service.js';
 import {
+  getDNS1123Regex,
+  getSemanticVersionRegex,
+} from '../../config/defaults.js';
+import {
   findManifestFilesFromPaths,
   handleCommandError,
   outputJSON,
@@ -165,13 +169,13 @@ export const complianceCommand = new Command('compliance')
             let practiceStatus: 'pass' | 'fail' | 'warning' = 'pass';
 
             // Check DNS-1123 name format
-            if (manifest.metadata?.name && !/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/.test(manifest.metadata.name)) {
+            if (manifest.metadata?.name && !getDNS1123Regex().test(manifest.metadata.name)) {
               practiceIssues.push('Agent name not DNS-1123 compliant');
               practiceStatus = 'warning';
             }
 
             // Check version format
-            if (manifest.metadata?.version && !/^\d+\.\d+\.\d+/.test(manifest.metadata.version)) {
+            if (manifest.metadata?.version && !getSemanticVersionRegex().test(manifest.metadata.version)) {
               practiceIssues.push('Version not semantic versioning');
               practiceStatus = 'warning';
             }
