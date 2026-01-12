@@ -15,6 +15,7 @@ sast:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH =~ /^(main|release)/
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
   allow_failure: false
   tags:
     - saas-linux-small-amd64
@@ -24,6 +25,7 @@ dependency_scanning:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH =~ /^(main|release)/
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
   allow_failure: false
   tags:
     - saas-linux-small-amd64
@@ -33,6 +35,7 @@ sast_iac:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH =~ /^(main|release)/
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
   allow_failure: false
   tags:
     - saas-linux-small-amd64
