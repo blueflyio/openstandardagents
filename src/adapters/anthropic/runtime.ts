@@ -12,9 +12,6 @@ import type { ToolHandler } from './tools.js';
 import {
   convertToAnthropicMessages,
   createTextMessage,
-  extractText,
-  hasToolUse,
-  extractToolUses,
   mergeMessages,
 } from './messages.js';
 import type { OssaMessage } from './messages.js';
@@ -384,7 +381,7 @@ export class AnthropicAdapter {
   /**
    * Update configuration
    */
-  updateConfig(config: Partial<AnthropicConfig>): void {
+  updateConfig(_config: Partial<AnthropicConfig>): void {
     // Config updates require recreating client - not implemented
     // TODO: Implement config update by recreating client
   }

@@ -1,0 +1,300 @@
+apiVersion: ossa/v0.3.3
+kind: Agent
+metadata:
+  name: security-healer
+  version: 1.0.0
+  description: Security scanning and remediation agent with automated patching, SBOM generation, and compliance reporting
+  labels:
+    ossa-version: v0.3.0
+    domain: security
+    category: healer
+    wave: "3"
+    priority: P0
+  annotations:
+    compliance: fedramp,soc2,iso42001
+    autodevops: sast,dast,secret-detection,container-scanning,dependency-scanning
+
+spec:
+  taxonomy:
+    domain: security
+    subdomain: vulnerability-management
+    capability: remediation
+
+  role: |
+    You are a Security Healer agent responsible for:
+    1. Scanning code for vulnerabilities (SAST, DAST, secrets, containers)
+    2. Applying automated patches for known CVEs
+    3. Verifying security fixes
+    4. Creating security incidents for critical findings
+    5. Generating Software Bill of Materials (SBOM)
+
+    You integrate with GitLab Ultimate's AutoDevOps security features and
+    block merges for CVSS ≥7.0 vulnerabilities.
+
+  llm:
+    provider: ${LLM_PROVIDER:-anthropic}
+    model: ${LLM_MODEL:-claude-sonnet-4}
+    temperature: 0.2
+    maxTokens: 8192
+
+    fallback_models:
+      - provider: ${LLM_FALLBACK_PROVIDER_1:-openai}
+        model: ${LLM_FALLBACK_MODEL_1:-gpt-4o}
+
+    retry_config:
+      max_attempts: 3
+      backoff_strategy: exponential
+
+    cost_tracking:
+      enabled: true
+      budget_alert_threshold: 100.00
+      cost_allocation_tags:
+        platform: security
+        team: security-agents
+
+  identity:
+    instance_id:
+      generation: uuid_v4
+      scope: pod
+    session_id:
+      generation: uuid_v4
+      scope: workflow
+    interaction_id:
+      generation: uuid_v4
+      scope: turn
+    propagation:
+      trace_context: w3c
+      baggage: true
+
+  tools:
+    - name: scan_vulnerabilities
+      description: Run comprehensive security scans (SAST, DAST, secrets, containers, dependencies)
+      source:
+        type: mcp
+        uri: mcp://security-scanner/scan
+      input:
+        type: object
+        required:
+          - scan_type
+          - target
+        properties:
+          scan_type:
+            type: string
+            enum:
+              - sast
+              - dast
+              - secrets
+              - containers
+              - dependencies
+              - all
+          target:
+            type: string
+            description: Path, URL, or container image to scan
+          severity_threshold:
+            type: string
+            enum: [critical, high, medium, low, info]
+            default: medium
+      output:
+        type: object
+        properties:
+          findings:
+            type: array
+          summary:
+            type: object
+
+    - name: apply_patches
+      description: Apply security patches for known CVEs
+      source:
+        type: mcp
+        uri: mcp://security-scanner/patch
+      input:
+        type: object
+        required:
+          - cve_ids
+        properties:
+          cve_ids:
+            type: array
+            items:
+              type: string
+          auto_commit:
+            type: boolean
+            default: false
+          dry_run:
+            type: boolean
+            default: true
+
+    - name: verify_fixes
+      description: Verify that security fixes resolve the vulnerability
+      source:
+        type: mcp
+        uri: mcp://security-scanner/verify
+      input:
+        type: object
+        required:
+          - fix_id
+        properties:
+          fix_id:
+            type: string
+          rerun_scan:
+            type: boolean
+            default: true
+
+    - name: create_incidents
+      description: Create security incidents in GitLab for critical findings
+      source:
+        type: mcp
+        uri: mcp://gitlab/incidents
+      input:
+        type: object
+        required:
+          - title
+          - severity
+        properties:
+          title:
+            type: string
+          severity:
+            type: string
+            enum: [critical, high, medium, low]
+          description:
+            type: string
+          cve_ids:
+            type: array
+            items:
+              type: string
+          assignees:
+            type: array
+            items:
+              type: string
+
+    - name: generate_sbom
+      description: Generate Software Bill of Materials in CycloneDX or SPDX format
+      source:
+        type: mcp
+        uri: mcp://security-scanner/sbom
+      input:
+        type: object
+        required:
+          - format
+        properties:
+          format:
+            type: string
+            enum: [cyclonedx, spdx]
+            default: cyclonedx
+          include_dev:
+            type: boolean
+            default: false
+
+    - name: block_merge
+      description: Block or unblock MR based on security findings
+      source:
+        type: mcp
+        uri: mcp://gitlab/mr-approval
+      input:
+        type: object
+        required:
+          - mr_iid
+          - action
+        properties:
+          mr_iid:
+            type: integer
+          action:
+            type: string
+            enum: [block, unblock]
+          reason:
+            type: string
+
+  autonomy:
+    level: assisted
+    approval_required:
+      - apply_patches
+      - create_incidents
+      - block_merge
+    escalation:
+      enabled: true
+      triggers:
+        - cvss_critical
+        - zero_day
+        - data_breach_risk
+      target: security-team
+
+  constraints:
+    max_tokens_per_turn: 16000
+    max_turns: 30
+    timeout_seconds: 600
+
+  observability:
+    tracing:
+      enabled: true
+      provider: otel
+      sampling_rate: 1.0
+    metrics:
+      enabled: true
+      custom:
+        - name: vulnerabilities_found
+          type: counter
+          labels: [severity, scan_type]
+        - name: patches_applied
+          type: counter
+        - name: incidents_created
+          type: counter
+          labels: [severity]
+        - name: scan_duration_seconds
+          type: histogram
+    logging:
+      level: info
+      structured: true
+
+  reliability:
+    retry:
+      max_attempts: 3
+      initial_delay_ms: 1000
+      max_delay_ms: 30000
+      backoff_multiplier: 2
+    circuit_breaker:
+      enabled: true
+      failure_threshold: 5
+      reset_timeout_ms: 60000
+    fallback:
+      enabled: true
+      strategy: skip_and_report
+
+  safety:
+    content_filtering:
+      enabled: true
+      block_secrets: true
+    output_filtering:
+      redact_secrets: true
+      redact_pii: true
+
+  collaboration:
+    protocols:
+      - a2a
+    delegation:
+      allowed_targets:
+        - meta-orchestrator
+        - spec-healer
+      timeout_ms: 300000
+
+  compliance:
+    profiles:
+      - fedramp-moderate
+      - soc2-type2
+    audit:
+      enabled: true
+      retention_days: 2555
+
+extensions:
+  gitlab:
+    triggers:
+      - event: commit
+        branches: ["*"]
+      - event: cve_alert
+      - event: schedule
+        cron: "0 2 * * *"
+      - event: status_change
+        status: Validation
+    custom_fields:
+      agent_assigned: security-healer
+    merge_blocking:
+      enabled: true
+      condition: cvss >= 7.0

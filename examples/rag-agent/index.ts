@@ -68,7 +68,7 @@ export async function createRagAgent(): Promise<OssaAgent> {
   await vectorStore.index([
     {
       id: 'doc1',
-      content: 'OSSA (Open Standard for Scalable AI Agents) is a specification standard for AI agents, similar to OpenAPI for REST APIs.',
+      content: 'OSSA (Open Standard for Software Agents) is a specification standard for software agents - The OpenAPI for agents.',
       metadata: { category: 'documentation' }
     },
     {

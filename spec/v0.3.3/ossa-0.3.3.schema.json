@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://openstandardagents.org/schemas/v0.3.3/manifest.json",
   "title": "OSSA v0.3.3 Manifest Schema",
-  "description": "Open Standard for Scalable AI Agents (OSSA) v0.3.3 - Unified Task Schema with Access Tiers & Separation of Duties. Supports Agent (agentic loops with LLM), Task (deterministic workflow steps), and Workflow (composition of Tasks and Agents) kinds. Includes Agent-to-Agent Messaging Extension and Access Control Tiers for privilege separation.",
+  "description": "Open Standard for Software Agents (OSSA) v0.3.3 - The OpenAPI for agents. A specification standard (not a framework) that defines contracts/metadata for production agent systems. Unified Task Schema with Access Tiers & Separation of Duties. Supports Agent (agentic loops with LLM), Task (deterministic workflow steps), and Workflow (composition of Tasks and Agents) kinds. Includes Agent-to-Agent Messaging Extension and Access Control Tiers for privilege separation.",
   "type": "object",
   "required": [
     "apiVersion",

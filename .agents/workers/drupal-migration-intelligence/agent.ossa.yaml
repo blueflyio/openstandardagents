@@ -9,7 +9,7 @@ metadata:
     with automated assessment and planning.
 
   labels:
-    ossa-version: v0.3.0
+    ossa-version: v0.3.3
     platform: drupal
     provider: blueflyio
     category: worker

@@ -87,7 +87,7 @@ export class OpenAPIAdapter {
     const schemas: Record<string, OpenAPISchema> = {};
 
     // Convert each tool to an OpenAPI operation
-    tools.forEach((tool: any, index: number) => {
+    tools.forEach((tool: { name?: string; description?: string; input_schema?: Record<string, unknown>; parameters?: Record<string, unknown>; output_schema?: Record<string, unknown>; auth?: { type: string } }, index: number) => {
       const toolName = tool.name || `tool_${index + 1}`;
       const path = `/tools/${toolName}`;
 
@@ -263,37 +263,42 @@ export class OpenAPIAdapter {
   /**
    * Normalize schema to OpenAPI format
    */
-  private static normalizeSchema(schema: any): OpenAPISchema {
-    if (typeof schema === 'string') {
+  private static normalizeSchema(schema: unknown): OpenAPISchema {
+    let parsedSchema: Record<string, unknown> | string = schema as Record<string, unknown> | string;
+    
+    if (typeof parsedSchema === 'string') {
       try {
-        schema = JSON.parse(schema);
+        parsedSchema = JSON.parse(parsedSchema) as Record<string, unknown>;
       } catch {
         return { type: 'object' };
       }
     }
 
-    if (!schema || typeof schema !== 'object') {
+    if (!parsedSchema || typeof parsedSchema !== 'object') {
       return { type: 'object' };
     }
 
+    const schemaObj = parsedSchema as Record<string, unknown>;
+
     // If it's already a valid OpenAPI schema, return it
-    if (schema.type || schema.properties || schema.$ref) {
-      return schema;
+    if (schemaObj.type || schemaObj.properties || schemaObj.$ref) {
+      return schemaObj as OpenAPISchema;
     }
 
     // Try to infer schema from object structure
     const properties: Record<string, OpenAPISchema> = {};
     const required: string[] = [];
 
-    Object.keys(schema).forEach((key) => {
-      const value = schema[key];
-      if (value && typeof value === 'object') {
-        if (value.type) {
-          properties[key] = value;
+    Object.keys(schemaObj).forEach((key) => {
+      const value = schemaObj[key];
+      if (value && typeof value === 'object' && value !== null) {
+        const valueObj = value as Record<string, unknown>;
+        if (valueObj.type) {
+          properties[key] = valueObj as OpenAPISchema;
         } else {
           properties[key] = this.inferType(value);
         }
-        if (value.required === true) {
+        if (valueObj.required === true) {
           required.push(key);
         }
       } else {
@@ -316,7 +321,7 @@ export class OpenAPIAdapter {
   /**
    * Infer OpenAPI type from value
    */
-  private static inferType(value: any): OpenAPISchema {
+  private static inferType(value: unknown): OpenAPISchema {
     if (value === null || value === undefined) {
       return { type: 'string' };
     }
@@ -341,7 +346,7 @@ export class OpenAPIAdapter {
         if (typeof value === 'object' && value !== null) {
           return { type: 'object' };
         }
-        return this.normalizeSchema(value);
+        return this.normalizeSchema(value as Record<string, unknown>);
       default:
         return { type: 'string' };
     }
@@ -359,22 +364,23 @@ export class OpenAPIAdapter {
   /**
    * Simple object to YAML converter (basic implementation)
    */
-  private static objectToYAML(obj: any, indent = 0): string {
+  private static objectToYAML(obj: unknown, indent = 0): string {
     const spaces = '  '.repeat(indent);
     let yaml = '';
 
     if (Array.isArray(obj)) {
       obj.forEach((item) => {
         yaml += `${spaces}- `;
-        if (typeof item === 'object') {
+        if (typeof item === 'object' && item !== null) {
           yaml += '\n' + this.objectToYAML(item, indent + 1);
         } else {
           yaml += `${JSON.stringify(item)}\n`;
         }
       });
-    } else if (obj && typeof obj === 'object') {
-      Object.keys(obj).forEach((key) => {
-        const value = obj[key];
+    } else if (obj && typeof obj === 'object' && obj !== null) {
+      const objRecord = obj as Record<string, unknown>;
+      Object.keys(objRecord).forEach((key) => {
+        const value = objRecord[key];
         yaml += `${spaces}${key}:`;
 
         if (value === null || value === undefined) {

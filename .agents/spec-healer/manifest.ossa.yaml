@@ -351,35 +351,29 @@ spec:
       retention_days: 365
 
 extensions:
-  schema_validation:
+  opentelemetry:
     enabled: true
-    schema_base_path: spec/
-    implementation_path: src/types/
-    versions:
-      - v0.2.9
-      - v0.3.0
-    auto_validate_on_commit: true
-
-  gitlab:
-    triggers:
-      - event: commit
-        branches: ["release/*", "main"]
-        paths: ["spec/**/*.json", "spec/**/*.yaml"]
-      - event: merge_request
-        status: Validation
-      - event: schedule
-        cron: "0 0 * * 0"  # Weekly validation
-    custom_fields:
-      agent_assigned: spec-healer
-    merge_blocking:
+    service_name: "spec-healer"
+    service_version: "0.1.0"
+    traces:
       enabled: true
-      condition: validation_failed
-
-  performance:
-    cache:
+      exporter: otlp
+      endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4317}"
+      sample_rate: 1.0
+    metrics:
       enabled: true
-      ttl_seconds: 3600
-      strategy: lru
-    parallelization:
+      exporter: otlp
+      endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4317}"
+    logs:
       enabled: true
-      max_workers: 4
+      exporter: otlp
+      endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4317}"
+      level: info
+    phoenix:
+      enabled: true
+      api_key_env: "PHOENIX_API_KEY"
+    resource_attributes:
+      agent.id: "spec-healer"
+      agent.version: "0.1.0"
+      framework: "ossa"
+      domain: "specification"
