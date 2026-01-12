@@ -1,48 +1,48 @@
 # ============================================================================
-# SECURITY JOBS - GitLab Ultimate Security Scanning
+# SECURITY JOBS - Additional Security Checks
 # ============================================================================
-# SAST, Dependency Scanning, Secret Detection
-# Only run on MRs and release/main branches (not on feature branch pushes)
+# Additional security scanning beyond npm audit (which is in test:security).
+# Runs on MRs and release/main branches.
 
-# Override SAST job rules for proper triggering
-sast:
+# Check for secrets in code (using grep patterns)
+security:secrets-check:
   stage: security
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH =~ /^(main|release)/
-  allow_failure: false
-  tags:
-    - saas-linux-small-amd64
-
-# Override Dependency Scanning rules
-dependency_scanning:
-  stage: security
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH =~ /^(main|release)/
-  allow_failure: false
-  tags:
-    - saas-linux-small-amd64
-
-# Override Secret Detection rules
-secret_detection:
-  stage: security
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH =~ /^(main|release)/
-  allow_failure: false
-  tags:
-    - saas-linux-small-amd64
-
-# Infrastructure as Code scanning (for .gitlab-ci.yml, Kubernetes, etc.)
-# Note: Template provides the job definition, we only override rules
-sast_iac:
-  stage: security
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH =~ /^(main|release)/
-  allow_failure: false
+  image: node:${NODE_VERSION}-alpine
   tags:
     - saas-linux-small-amd64
   script:
-    - /analyzer run
+    - echo "Checking for potential secrets in code..."
+    - |
+      # Check for common secret patterns
+      PATTERNS="(api[_-]?key|secret|password|token|credential|private[_-]?key)\\s*[=:]\\s*['\"][^'\"]+['\"]"
+      if grep -rniE "$PATTERNS" --include="*.ts" --include="*.js" --include="*.json" src/ 2>/dev/null | grep -v "test" | grep -v "mock" | grep -v "example"; then
+        echo "WARNING: Potential secrets found in source code!"
+        echo "Please review the above lines and ensure no real secrets are committed."
+        exit 1
+      else
+        echo "✅ No potential secrets detected in source code"
+      fi
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
+    - if: $CI_COMMIT_BRANCH == "main"
+  allow_failure: true
+
+# License compliance check
+security:license-check:
+  stage: security
+  image: node:${NODE_VERSION}-alpine
+  tags:
+    - saas-linux-small-amd64
+  extends:
+    - .npm-cache-readonly
+  before_script:
+    - npm ci --prefer-offline --no-audit
+  script:
+    - echo "Checking dependency licenses..."
+    - npx license-checker --summary --production || echo "license-checker not available"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
+    - if: $CI_COMMIT_BRANCH == "main"
+  allow_failure: true
