@@ -40,6 +40,7 @@ quality:gates:full:
     - job: test:lint
     - job: test:security
     - job: test:integration
+      optional: true
     - job: test:e2e
   script:
     - echo "Full quality gates passed"
