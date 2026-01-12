@@ -140,8 +140,9 @@ export const standardizeCommand = new Command('standardize')
             });
 
             if (!options?.dryRun) {
-              // Type-safe assignment - apiVersion is a required field in OssaAgent
-              (manifest as OssaAgent & { apiVersion: string }).apiVersion = newApiVersion;
+              // Type-safe assignment - apiVersion is optional in OssaAgent interface but required in practice
+              // We're adding it, so we can safely assign
+              Object.assign(manifest, { apiVersion: newApiVersion });
               fixes[fixes.length - 1].applied = true;
             }
           }
@@ -160,8 +161,9 @@ export const standardizeCommand = new Command('standardize')
             });
 
             if (!options?.dryRun) {
-              // Type-safe assignment - kind is a required field in OssaAgent
-              (manifest as OssaAgent & { kind: string }).kind = defaultKind;
+              // Type-safe assignment - kind is optional in OssaAgent interface but required in practice
+              // We're adding it, so we can safely assign
+              Object.assign(manifest, { kind: defaultKind });
               fixes[fixes.length - 1].applied = true;
             }
           }
@@ -182,14 +184,13 @@ export const standardizeCommand = new Command('standardize')
             if (!options?.dryRun) {
               // Ensure metadata exists and is an object
               if (!manifest.metadata || typeof manifest.metadata !== 'object') {
-                (manifest as OssaAgent & { metadata: Record<string, unknown> }).metadata = {
-                  name: manifest.metadata?.name || '',
-                };
+                const existingName = safeGet<string>(manifest.metadata, 'name', (v): v is string => typeof v === 'string') || '';
+                Object.assign(manifest, { metadata: { name: existingName } });
               }
               
-              // Type-safe assignment
+              // Type-safe assignment - metadata is guaranteed to exist and be an object at this point
               if (manifest.metadata && typeof manifest.metadata === 'object') {
-                (manifest.metadata as Record<string, unknown>).version = defaultVersion;
+                Object.assign(manifest.metadata, { version: defaultVersion });
               }
               fixes[fixes.length - 1].applied = true;
             }
@@ -246,12 +247,12 @@ export const standardizeCommand = new Command('standardize')
             if (!options?.dryRun) {
               // Ensure spec exists and is an object
               if (!manifest.spec || typeof manifest.spec !== 'object') {
-                (manifest as OssaAgent & { spec: Record<string, unknown> }).spec = {};
+                Object.assign(manifest, { spec: {} });
               }
               
-              // Type-safe assignment
+              // Type-safe assignment - spec is guaranteed to exist and be an object at this point
               if (manifest.spec && typeof manifest.spec === 'object') {
-                (manifest.spec as Record<string, unknown>).role = defaultRole;
+                Object.assign(manifest.spec, { role: defaultRole });
               }
               fixes[fixes.length - 1].applied = true;
             }
