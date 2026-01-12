@@ -34,7 +34,11 @@ const config: Config = {
     },
     './src/services': {
       branches: 10,
+<<<<<<< HEAD
+      functions: 43,
+=======
       functions: 43,  // TODO: Increase to 80% - see issue for test coverage improvement
+>>>>>>> origin/release/v0.3.x
       lines: 25,
       statements: 25,
     },
