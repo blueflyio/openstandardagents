@@ -48,7 +48,7 @@ export class ManifestRepository implements IManifestRepository {
    * @param filePath - Path to save manifest
    * @param manifest - OSSA agent manifest
    */
-  async save(filePath: string, manifest: OssaAgent): Promise<void> {
+  async save(filePath: string, manifest: OssaAgent, options?: { quoteStrings?: boolean }): Promise<void> {
     const resolvedPath = path.resolve(filePath);
     const ext = path.extname(resolvedPath).toLowerCase();
 
