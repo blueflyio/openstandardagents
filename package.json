@@ -156,7 +156,7 @@
     "@anthropic-ai/sdk": "^0.71.0",
     "@aws-sdk/client-bedrock-runtime": "^3.955.0",
     "@gitbeaker/node": "^35.8.1",
-    "@google/generative-ai": "^0.21.0",
+    "@google/generative-ai": "^0.24.1",
     "@octokit/rest": "^20.0.0",
     "@qdrant/js-client-rest": "^1.9.0",
     "ajv": "^8.12.0",
