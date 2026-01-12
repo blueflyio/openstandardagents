@@ -19,7 +19,9 @@ quality:gates:
   needs:
     - job: test:unit
     - job: test:integration
+      optional: true
     - job: test:e2e
+      optional: true
     - job: test:lint
       optional: true
     - job: test:security
