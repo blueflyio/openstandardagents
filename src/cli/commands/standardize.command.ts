@@ -85,6 +85,7 @@ export const standardizeCommand = new Command('standardize')
           // Fix 1: Hardcoded model names
           if (manifest.spec?.llm?.model && !manifest.spec.llm.model.includes('${')) {
             const oldModel = manifest.spec.llm.model;
+            // Use proper YAML string format for environment variable substitution
             const newModel = `\${LLM_MODEL:-${oldModel}}`;
             
             fixes.push({
@@ -159,11 +160,19 @@ export const standardizeCommand = new Command('standardize')
           // Fix 5: Invalid agent name format (DNS-1123)
           if (manifest.metadata?.name && !/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/.test(manifest.metadata.name)) {
             const oldName = manifest.metadata.name;
-            const newName = oldName
+            let newName = oldName
               .toLowerCase()
               .replace(/[^a-z0-9-]/g, '-')
               .replace(/^-+|-+$/g, '')
               .substring(0, 63);
+            
+            // Ensure name doesn't start or end with hyphen after substring
+            newName = newName.replace(/^-+|-+$/g, '');
+            
+            // Ensure name is not empty
+            if (!newName) {
+              newName = 'agent';
+            }
 
             fixes.push({
               rule: 'invalid-name-format',

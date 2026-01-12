@@ -104,7 +104,8 @@ export const complianceCommand = new Command('compliance')
             // Check for API keys in tools
             if (manifest.spec?.tools) {
               for (const tool of manifest.spec.tools) {
-                if ((tool as any).auth?.apiKey && typeof (tool as any).auth.apiKey === 'string') {
+                if (tool && typeof tool === 'object' && 'auth' in tool && 
+                    (tool as any).auth?.apiKey && typeof (tool as any).auth.apiKey === 'string') {
                   securityIssues.push('Hardcoded API key in tool configuration');
                   securityStatus = 'fail';
                 }
@@ -137,7 +138,7 @@ export const complianceCommand = new Command('compliance')
 
             if (manifest.spec?.tools && manifest.spec.tools.length > 0) {
               for (const tool of manifest.spec.tools) {
-                if (!(tool as any).description) {
+                if (tool && typeof tool === 'object' && !(tool as any).description) {
                   docIssues.push(`Tool ${(tool as any).name || 'unnamed'} missing description`);
                   docStatus = 'warning';
                 }
