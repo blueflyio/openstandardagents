@@ -6,7 +6,7 @@
 import { describe, it, expect } from '@jest/globals';
 import { execSync } from 'child_process';
 import { existsSync } from 'fs';
-import { join } from 'path';
+import { join, resolve } from 'path';
 
 describe('E2E Smoke Tests', () => {
   const projectRoot = join(__dirname, '../..');
@@ -54,6 +54,16 @@ describe('E2E Smoke Tests', () => {
     );
 
     try {
+      // Validate manifest path to prevent command injection
+      const relativePath = manifestPath.replace(projectRoot + '/', '');
+      if (!/^[a-zA-Z0-9/._-]+$/.test(relativePath)) {
+        throw new Error(`Invalid manifest path format: ${relativePath}`);
+      }
+      // Ensure path is within project root
+      const resolvedPath = resolve(projectRoot, relativePath);
+      if (!resolvedPath.startsWith(resolve(projectRoot))) {
+        throw new Error(`Manifest path outside project root: ${relativePath}`);
+      }
       const result = execSync(`node bin/ossa validate ${manifestPath}`, {
         cwd: projectRoot,
         encoding: 'utf-8',
