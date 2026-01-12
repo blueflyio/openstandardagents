@@ -11,6 +11,7 @@ include:
 # Fails on real secret patterns found in source code
 security:secrets-check:
   stage: security
+  image: node:${NODE_VERSION}-alpine
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH == "main"
@@ -18,6 +19,23 @@ security:secrets-check:
   allow_failure: false
   tags:
     - saas-linux-small-amd64
+  script:
+    - echo "Scanning for potential secrets in code..."
+    - |
+      # Check for common secret patterns
+      PATTERNS="(api[_-]?key|secret|password|token|credential|private[_-]?key)\\s*[=:]\\s*['\"][^'\"]+['\"]"
+      FOUND=$(grep -rniE "$PATTERNS" --include="*.ts" --include="*.js" --include="*.json" --include="*.yaml" --include="*.yml" src/ .gitlab/ 2>/dev/null | grep -v "test" | grep -v "mock" | grep -v "example" | grep -v "node_modules" || true)
+      
+      if [ -n "$FOUND" ]; then
+        echo "ERROR: Potential secrets found in source code!"
+        echo "$FOUND"
+        echo ""
+        echo "Please review the above lines and ensure no real secrets are committed."
+        echo "If these are false positives, add them to .gitignore or exclude patterns."
+        exit 1
+      else
+        echo "No potential secrets detected in source code"
+      fi
 
 # Override Dependency Scanning rules
 dependency_scanning:
