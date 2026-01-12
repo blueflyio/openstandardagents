@@ -615,7 +615,21 @@ workspaceCommand
       if (fs.existsSync(registryPath)) {
         try {
           const content = fs.readFileSync(registryPath, 'utf-8');
-          const registry = yaml.parse(content);
+          const parsedRegistry = yaml.parse(content);
+          
+          // Type guard validation
+          if (!isAgentRegistry(parsedRegistry)) {
+            auditResults.push({
+              category: 'Registry',
+              check: 'Registry File',
+              status: 'fail',
+              message: 'Registry file does not match expected structure',
+              remediation: 'Check registry file structure and schema',
+            });
+            continue;
+          }
+          
+          const registry = parsedRegistry;
 
           auditResults.push({
             category: 'Registry',
@@ -625,7 +639,10 @@ workspaceCommand
           });
 
           // Check registry structure
-          if (registry.apiVersion && registry.kind === getDefaultRegistryKind()) {
+          const registryApiVersion = safeGet<string>(registry, 'apiVersion', (v): v is string => typeof v === 'string');
+          const registryKind = safeGet<string>(registry, 'kind', (v): v is string => typeof v === 'string');
+          
+          if (registryApiVersion && registryKind === getDefaultRegistryKind()) {
             auditResults.push({
               category: 'Registry',
               check: 'Registry Schema',
@@ -643,7 +660,8 @@ workspaceCommand
           }
 
           // Check agent count
-          const agentCount = Array.isArray(registry.agents) ? registry.agents.length : 0;
+          const agents = safeGetArray(registry.agents);
+          const agentCount = agents.length;
           if (agentCount > 0) {
             auditResults.push({
               category: 'Registry',
@@ -684,7 +702,21 @@ workspaceCommand
       if (fs.existsSync(policyPath)) {
         try {
           const content = fs.readFileSync(policyPath, 'utf-8');
-          const policy = yaml.parse(content);
+          const parsedPolicy = yaml.parse(content);
+          
+          // Type guard validation
+          if (!isToolPolicy(parsedPolicy)) {
+            auditResults.push({
+              category: 'Policies',
+              check: 'Policy File',
+              status: 'fail',
+              message: 'Policy file does not match expected structure',
+              remediation: 'Check policy file structure and schema',
+            });
+            continue;
+          }
+          
+          const policy = parsedPolicy;
 
           auditResults.push({
             category: 'Policies',
@@ -694,9 +726,12 @@ workspaceCommand
           });
 
           // Check policy structure
-          if (policy.spec?.mcp_servers) {
-            const allowed = policy.spec.mcp_servers.allowed || [];
-            const denied = policy.spec.mcp_servers.denied || [];
+          const policySpec = safeGet<Record<string, unknown>>(policy, 'spec', (v): v is Record<string, unknown> => typeof v === 'object' && v !== null);
+          const mcpServers = safeGet<Record<string, unknown>>(policySpec, 'mcp_servers', (v): v is Record<string, unknown> => typeof v === 'object' && v !== null);
+          
+          if (mcpServers) {
+            const allowed = safeGetArray(mcpServers.allowed);
+            const denied = safeGetArray(mcpServers.denied);
 
             if (allowed.length > 0) {
               auditResults.push({
@@ -967,7 +1002,21 @@ workspaceCommand
       if (fs.existsSync(registryPath)) {
         try {
           const content = fs.readFileSync(registryPath, 'utf-8');
-          const registry = yaml.parse(content);
+          const parsedRegistry = yaml.parse(content);
+          
+          // Type guard validation
+          if (!isAgentRegistry(parsedRegistry)) {
+            validationResults.push({
+              category: 'Registry',
+              check: 'Registry File',
+              status: 'fail',
+              message: 'Registry file does not match expected structure',
+              details: 'Check registry file structure and schema',
+            });
+            continue;
+          }
+          
+          const registry = parsedRegistry;
 
           // Validate registry schema
           const expectedAPIVersion = getDefaultOSSAAPIVersion();
@@ -997,12 +1046,13 @@ workspaceCommand
             });
           }
 
-          if (registry.kind !== expectedRegistryKind) {
+          const registryKind = safeGet<string>(registry, 'kind', (v): v is string => typeof v === 'string');
+          if (registryKind !== expectedRegistryKind) {
             validationResults.push({
               category: 'Registry',
               check: 'Registry Kind',
               status: 'fail',
-              message: `Registry kind is ${registry.kind || 'missing'}, expected ${expectedRegistryKind}`,
+              message: `Registry kind is ${registryKind || 'missing'}, expected ${expectedRegistryKind}`,
               details: `Set kind: ${expectedRegistryKind}`,
             });
           } else {
@@ -1014,26 +1064,19 @@ workspaceCommand
             });
           }
 
-          if (!Array.isArray(registry.agents)) {
-            validationResults.push({
-              category: 'Registry',
-              check: 'Registry Agents Array',
-              status: 'fail',
-              message: 'Registry agents field must be an array',
-              details: 'Set agents: []',
-            });
-          } else {
-            validationResults.push({
-              category: 'Registry',
-              check: 'Registry Agents Array',
-              status: 'pass',
-              message: `Registry contains ${registry.agents.length} agent(s)`,
-            });
-          }
+          const agents = safeGetArray(registry.agents);
+          validationResults.push({
+            category: 'Registry',
+            check: 'Registry Agents Array',
+            status: 'pass',
+            message: `Registry contains ${agents.length} agent(s)`,
+          });
 
           // Validate discovery configuration
-          if (registry.discovery) {
-            if (!registry.discovery.strategy) {
+          const discovery = safeGet<Record<string, unknown>>(registry, 'discovery', (v): v is Record<string, unknown> => typeof v === 'object' && v !== null);
+          if (discovery) {
+            const strategy = safeGet<string>(discovery, 'strategy', (v): v is string => typeof v === 'string');
+            if (!strategy) {
               validationResults.push({
                 category: 'Registry',
                 check: 'Discovery Strategy',
@@ -1045,7 +1088,7 @@ workspaceCommand
                 category: 'Registry',
                 check: 'Discovery Strategy',
                 status: 'pass',
-                message: `Discovery strategy: ${registry.discovery.strategy}`,
+                message: `Discovery strategy: ${strategy}`,
               });
             }
           }
@@ -1073,13 +1116,28 @@ workspaceCommand
       if (fs.existsSync(policyPath)) {
         try {
           const content = fs.readFileSync(policyPath, 'utf-8');
-          const policy = yaml.parse(content);
+          const parsedPolicy = yaml.parse(content);
+          
+          // Type guard validation
+          if (!isToolPolicy(parsedPolicy)) {
+            validationResults.push({
+              category: 'Policies',
+              check: 'Policy File',
+              status: 'fail',
+              message: 'Policy file does not match expected structure',
+              details: 'Check policy file structure and schema',
+            });
+            continue;
+          }
+          
+          const policy = parsedPolicy;
 
           // Validate policy schema
           const expectedPolicyAPIVersion = getDefaultOSSAAPIVersion();
           const expectedPolicyKind = getDefaultPolicyKind();
           
-          if (!policy.apiVersion) {
+          const policyApiVersion = safeGet<string>(policy, 'apiVersion', (v): v is string => typeof v === 'string');
+          if (!policyApiVersion) {
             validationResults.push({
               category: 'Policies',
               check: 'Policy Schema',
@@ -1096,12 +1154,13 @@ workspaceCommand
             });
           }
 
-          if (policy.kind !== expectedPolicyKind) {
+          const policyKind = safeGet<string>(policy, 'kind', (v): v is string => typeof v === 'string');
+          if (policyKind !== expectedPolicyKind) {
             validationResults.push({
               category: 'Policies',
               check: 'Policy Kind',
               status: 'warning',
-              message: `Policy kind is ${policy.kind || 'missing'}, expected ${expectedPolicyKind}`,
+              message: `Policy kind is ${policyKind || 'missing'}, expected ${expectedPolicyKind}`,
             });
           } else {
             validationResults.push({
@@ -1112,7 +1171,8 @@ workspaceCommand
             });
           }
 
-          if (!policy.spec) {
+          const policySpec = safeGet<Record<string, unknown>>(policy, 'spec', (v): v is Record<string, unknown> => typeof v === 'object' && v !== null);
+          if (!policySpec) {
             validationResults.push({
               category: 'Policies',
               check: 'Policy Spec',
@@ -1128,9 +1188,10 @@ workspaceCommand
               message: 'Policy spec exists',
             });
 
-            if (policy.spec.mcp_servers) {
-              const allowed = policy.spec.mcp_servers.allowed || [];
-              const denied = policy.spec.mcp_servers.denied || [];
+            const mcpServers = safeGet<Record<string, unknown>>(policySpec, 'mcp_servers', (v): v is Record<string, unknown> => typeof v === 'object' && v !== null);
+            if (mcpServers) {
+              const allowed = safeGetArray(mcpServers.allowed);
+              const denied = safeGetArray(mcpServers.denied);
 
               if (allowed.length === 0 && denied.length === 0) {
                 validationResults.push({
