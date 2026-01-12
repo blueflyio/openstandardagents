@@ -880,3 +880,364 @@ workspaceCommand
       handleCommandError(error);
     }
   });
+
+// ============================================================================
+// Subcommand: workspace validate
+// ============================================================================
+workspaceCommand
+  .command('validate')
+  .description('Validate workspace structure and configuration')
+  .option('--json', 'Output as JSON')
+  .option('--strict', 'Fail on warnings')
+  .action(async (options) => {
+    try {
+      const cwd = process.cwd();
+      const workspaceDir = path.resolve(cwd, '.agents-workspace');
+
+      console.log(chalk.blue('Validating workspace structure...'));
+      console.log(chalk.gray('─'.repeat(50)));
+
+      const validationResults: Array<{
+        category: string;
+        check: string;
+        status: 'pass' | 'fail' | 'warning';
+        message: string;
+        details?: string;
+      }> = [];
+
+      // Validate 1: Workspace directory structure
+      if (!fs.existsSync(workspaceDir)) {
+        validationResults.push({
+          category: 'Structure',
+          check: 'Workspace Directory',
+          status: 'fail',
+          message: '.agents-workspace/ directory does not exist',
+          details: 'Run `ossa workspace init` to create workspace',
+        });
+      } else {
+        validationResults.push({
+          category: 'Structure',
+          check: 'Workspace Directory',
+          status: 'pass',
+          message: '.agents-workspace/ directory exists',
+        });
+
+        // Validate required subdirectories
+        const requiredDirs = [
+          { name: 'registry', required: true },
+          { name: 'policies', required: true },
+          { name: 'orchestration', required: false },
+          { name: 'shared-context', required: false },
+          { name: 'logs', required: false },
+        ];
+
+        for (const dir of requiredDirs) {
+          const dirPath = path.join(workspaceDir, dir.name);
+          if (fs.existsSync(dirPath)) {
+            const stats = fs.statSync(dirPath);
+            if (stats.isDirectory()) {
+              validationResults.push({
+                category: 'Structure',
+                check: `${dir.name}/ Directory`,
+                status: 'pass',
+                message: `${dir.name}/ exists and is a directory`,
+              });
+            } else {
+              validationResults.push({
+                category: 'Structure',
+                check: `${dir.name}/ Directory`,
+                status: 'fail',
+                message: `${dir.name}/ exists but is not a directory`,
+              });
+            }
+          } else if (dir.required) {
+            validationResults.push({
+              category: 'Structure',
+              check: `${dir.name}/ Directory`,
+              status: 'fail',
+              message: `Required directory ${dir.name}/ is missing`,
+              details: `Create: mkdir -p .agents-workspace/${dir.name}`,
+            });
+          } else {
+            validationResults.push({
+              category: 'Structure',
+              check: `${dir.name}/ Directory`,
+              status: 'warning',
+              message: `Optional directory ${dir.name}/ is missing`,
+            });
+          }
+        }
+      }
+
+      // Validate 2: Registry file structure
+      const registryPath = path.resolve(workspaceDir, 'registry/index.yaml');
+      if (fs.existsSync(registryPath)) {
+        try {
+          const content = fs.readFileSync(registryPath, 'utf-8');
+          const registry = yaml.parse(content);
+
+          // Validate registry schema
+          if (!registry.apiVersion) {
+            validationResults.push({
+              category: 'Registry',
+              check: 'Registry Schema',
+              status: 'fail',
+              message: 'Registry missing apiVersion field',
+              details: 'Add apiVersion: ossa.dev/v1',
+            });
+          } else if (registry.apiVersion !== 'ossa.dev/v1') {
+            validationResults.push({
+              category: 'Registry',
+              check: 'Registry Schema',
+              status: 'warning',
+              message: `Registry apiVersion is ${registry.apiVersion}, expected ossa.dev/v1`,
+            });
+          } else {
+            validationResults.push({
+              category: 'Registry',
+              check: 'Registry Schema',
+              status: 'pass',
+              message: 'Registry apiVersion is valid',
+            });
+          }
+
+          if (registry.kind !== 'AgentRegistry') {
+            validationResults.push({
+              category: 'Registry',
+              check: 'Registry Kind',
+              status: 'fail',
+              message: `Registry kind is ${registry.kind || 'missing'}, expected AgentRegistry`,
+              details: 'Set kind: AgentRegistry',
+            });
+          } else {
+            validationResults.push({
+              category: 'Registry',
+              check: 'Registry Kind',
+              status: 'pass',
+              message: 'Registry kind is valid',
+            });
+          }
+
+          if (!Array.isArray(registry.agents)) {
+            validationResults.push({
+              category: 'Registry',
+              check: 'Registry Agents Array',
+              status: 'fail',
+              message: 'Registry agents field must be an array',
+              details: 'Set agents: []',
+            });
+          } else {
+            validationResults.push({
+              category: 'Registry',
+              check: 'Registry Agents Array',
+              status: 'pass',
+              message: `Registry contains ${registry.agents.length} agent(s)`,
+            });
+          }
+
+          // Validate discovery configuration
+          if (registry.discovery) {
+            if (!registry.discovery.strategy) {
+              validationResults.push({
+                category: 'Registry',
+                check: 'Discovery Strategy',
+                status: 'warning',
+                message: 'Discovery strategy not specified',
+              });
+            } else {
+              validationResults.push({
+                category: 'Registry',
+                check: 'Discovery Strategy',
+                status: 'pass',
+                message: `Discovery strategy: ${registry.discovery.strategy}`,
+              });
+            }
+          }
+        } catch (error: any) {
+          validationResults.push({
+            category: 'Registry',
+            check: 'Registry File',
+            status: 'fail',
+            message: `Failed to parse registry: ${error.message}`,
+            details: 'Check YAML syntax',
+          });
+        }
+      } else {
+        validationResults.push({
+          category: 'Registry',
+          check: 'Registry File',
+          status: 'fail',
+          message: 'registry/index.yaml does not exist',
+          details: 'Run `ossa workspace init` to create registry',
+        });
+      }
+
+      // Validate 3: Policy file structure
+      const policyPath = path.resolve(workspaceDir, 'policies/tool-allowlist.yaml');
+      if (fs.existsSync(policyPath)) {
+        try {
+          const content = fs.readFileSync(policyPath, 'utf-8');
+          const policy = yaml.parse(content);
+
+          // Validate policy schema
+          if (!policy.apiVersion) {
+            validationResults.push({
+              category: 'Policies',
+              check: 'Policy Schema',
+              status: 'fail',
+              message: 'Policy missing apiVersion field',
+              details: 'Add apiVersion: ossa.dev/v1',
+            });
+          } else {
+            validationResults.push({
+              category: 'Policies',
+              check: 'Policy Schema',
+              status: 'pass',
+              message: 'Policy apiVersion is valid',
+            });
+          }
+
+          if (policy.kind !== 'ToolPolicy') {
+            validationResults.push({
+              category: 'Policies',
+              check: 'Policy Kind',
+              status: 'warning',
+              message: `Policy kind is ${policy.kind || 'missing'}, expected ToolPolicy`,
+            });
+          } else {
+            validationResults.push({
+              category: 'Policies',
+              check: 'Policy Kind',
+              status: 'pass',
+              message: 'Policy kind is valid',
+            });
+          }
+
+          if (!policy.spec) {
+            validationResults.push({
+              category: 'Policies',
+              check: 'Policy Spec',
+              status: 'fail',
+              message: 'Policy missing spec field',
+              details: 'Add spec: { mcp_servers: { allowed: [], denied: [] } }',
+            });
+          } else {
+            validationResults.push({
+              category: 'Policies',
+              check: 'Policy Spec',
+              status: 'pass',
+              message: 'Policy spec exists',
+            });
+
+            if (policy.spec.mcp_servers) {
+              const allowed = policy.spec.mcp_servers.allowed || [];
+              const denied = policy.spec.mcp_servers.denied || [];
+
+              if (allowed.length === 0 && denied.length === 0) {
+                validationResults.push({
+                  category: 'Policies',
+                  check: 'Policy Configuration',
+                  status: 'warning',
+                  message: 'Policy has no allowed or denied MCP servers configured',
+                });
+              } else {
+                validationResults.push({
+                  category: 'Policies',
+                  check: 'Policy Configuration',
+                  status: 'pass',
+                  message: `Policy configured: ${allowed.length} allowed, ${denied.length} denied`,
+                });
+              }
+            } else {
+              validationResults.push({
+                category: 'Policies',
+                check: 'Policy MCP Servers',
+                status: 'warning',
+                message: 'Policy missing mcp_servers configuration',
+              });
+            }
+          }
+        } catch (error: any) {
+          validationResults.push({
+            category: 'Policies',
+            check: 'Policy File',
+            status: 'fail',
+            message: `Failed to parse policy: ${error.message}`,
+            details: 'Check YAML syntax',
+          });
+        }
+      } else {
+        validationResults.push({
+          category: 'Policies',
+          check: 'Policy File',
+          status: 'warning',
+          message: 'policies/tool-allowlist.yaml does not exist',
+          details: 'Run `ossa workspace init` to create default policy',
+        });
+      }
+
+      // Calculate summary
+      const summary = {
+        total: validationResults.length,
+        passed: validationResults.filter(r => r.status === 'pass').length,
+        failed: validationResults.filter(r => r.status === 'fail').length,
+        warnings: validationResults.filter(r => r.status === 'warning').length,
+      };
+
+      // Output results
+      if (options.json) {
+        outputJSON({
+          workspace: workspaceDir,
+          validationDate: new Date().toISOString(),
+          summary,
+          results: validationResults,
+          valid: summary.failed === 0,
+        });
+        process.exit(summary.failed > 0 || (options.strict && summary.warnings > 0) ? 1 : 0);
+      }
+
+      // Group by category
+      const categories = [...new Set(validationResults.map(r => r.category))];
+
+      for (const category of categories) {
+        console.log(`\n${chalk.cyan(category)}`);
+        const categoryResults = validationResults.filter(r => r.category === category);
+
+        for (const result of categoryResults) {
+          const icon =
+            result.status === 'pass' ? chalk.green('✓') :
+            result.status === 'fail' ? chalk.red('✗') :
+            chalk.yellow('⚠');
+
+          console.log(`  ${icon} ${result.check}`);
+          console.log(chalk.gray(`    ${result.message}`));
+          if (result.details) {
+            console.log(chalk.gray(`    💡 ${result.details}`));
+          }
+        }
+      }
+
+      console.log('\n' + chalk.gray('─'.repeat(50)));
+      console.log(chalk.blue('Validation Summary:'));
+      console.log(chalk.green(`  ✓ Passed: ${summary.passed}`));
+      if (summary.failed > 0) {
+        console.log(chalk.red(`  ✗ Failed: ${summary.failed}`));
+      }
+      if (summary.warnings > 0) {
+        console.log(chalk.yellow(`  ⚠ Warnings: ${summary.warnings}`));
+      }
+      console.log(chalk.gray(`  Total: ${summary.total}`));
+
+      if (summary.failed === 0) {
+        console.log(chalk.green('\n✓ Workspace structure is valid'));
+      } else {
+        console.log(chalk.red('\n✗ Workspace structure has validation errors'));
+      }
+
+      // Exit code
+      const exitCode = summary.failed > 0 || (options.strict && summary.warnings > 0) ? 1 : 0;
+      process.exit(exitCode);
+    } catch (error) {
+      handleCommandError(error);
+    }
+  });
