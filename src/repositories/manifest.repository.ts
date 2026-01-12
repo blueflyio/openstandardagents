@@ -63,10 +63,16 @@ export class ManifestRepository implements IManifestRepository {
     if (ext === '.json') {
       content = JSON.stringify(manifest, null, 2);
     } else if (ext === '.yaml' || ext === '.yml') {
+      // Use YAML stringify with options that ensure proper handling of strings with special characters
+      // Environment variable patterns like ${VAR:-default} need to be preserved correctly
+      // The yaml library will automatically quote strings containing $, {, }, : when needed
       content = stringifyYaml(manifest, {
         indent: 2,
         lineWidth: 0,
         minContentWidth: 0,
+        // Use 'QUOTE_DOUBLE' to ensure strings with special chars are quoted
+        // This prevents YAML parsers from misinterpreting ${VAR:-default} patterns
+        defaultStringType: 'QUOTE_DOUBLE' as any,
       });
     } else {
       throw new Error(`Unsupported file format: ${ext}. Must be .json, .yaml, or .yml`);
