@@ -25,6 +25,19 @@ import { GenerationService } from '../../services/generation.service.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { getApiVersion } from '../../utils/version.js';
 import { handleCommandError } from '../utils/index.js';
+import {
+  getDefaultAgentVersion,
+  getDefaultAgentType,
+  getDefaultLLMProvider,
+  getDefaultLLMModel,
+  getDefaultAgentKind,
+  getDefaultScaffoldName,
+  getDefaultOutputDir,
+  getDefaultRoleTemplate,
+  getDefaultDescriptionTemplate,
+  getAgentTypeConfigs,
+  getDNS1123Regex,
+} from '../../config/defaults.js';
 import type { OssaAgent } from '../../types/index.js';
 
 export const scaffoldCommand = new Command('scaffold')
@@ -32,8 +45,8 @@ export const scaffoldCommand = new Command('scaffold')
   .argument('[name]', 'Agent name/identifier')
   .option('-d, --description <desc>', 'Agent description')
   .option('-r, --role <role>', 'Agent role/system prompt')
-  .option('-t, --type <type>', 'Agent type (worker, orchestrator, judge, etc.)', 'worker')
-  .option('-o, --output <dir>', 'Output directory', '.agents')
+  .option('-t, --type <type>', 'Agent type (worker, orchestrator, judge, etc.)', getDefaultAgentType())
+  .option('-o, --output <dir>', 'Output directory', getDefaultOutputDir())
   .option('--with-prompts', 'Create prompts/ directory')
   .option('--with-tools', 'Create tools/ directory')
   .option('--with-readme', 'Create README.md')
@@ -50,13 +63,13 @@ export const scaffoldCommand = new Command('scaffold')
   }) => {
     try {
       const cwd = process.cwd();
-      const outputDir = path.resolve(cwd, options?.output || '.agents');
+      const outputDir = path.resolve(cwd, options?.output || getDefaultOutputDir());
 
       // Get agent name
       let agentName = name;
       if (!agentName) {
         if (options?.yes) {
-          agentName = 'my-agent';
+          agentName = getDefaultScaffoldName();
         } else {
           const readline = await import('readline');
           const rl = readline.createInterface({
@@ -77,7 +90,7 @@ export const scaffoldCommand = new Command('scaffold')
       }
 
       // Validate agent name (DNS-1123)
-      if (!/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/.test(agentName)) {
+      if (!getDNS1123Regex().test(agentName)) {
         console.log(chalk.red('✗ Agent name must be DNS-1123 compliant (lowercase alphanumeric with hyphens)'));
         process.exit(1);
       }
@@ -104,36 +117,34 @@ export const scaffoldCommand = new Command('scaffold')
       const manifestRepo = container.get(ManifestRepository);
 
       // Generate manifest
+      const agentType = options?.type || getDefaultAgentType();
+      const typeConfigs = getAgentTypeConfigs();
+      const typeConfig = typeConfigs[agentType] || typeConfigs[getDefaultAgentType()];
+
       const manifest: OssaAgent = {
         apiVersion: getApiVersion(),
-        kind: 'Agent',
+        kind: getDefaultAgentKind(),
         metadata: {
           name: agentName,
-          version: '1.0.0',
-          description: options?.description || `${agentName} - OSSA-compliant agent`,
+          version: getDefaultAgentVersion(),
+          description: options?.description || getDefaultDescriptionTemplate(agentName),
         },
         spec: {
-          role: options?.role || `You are ${agentName}, a helpful AI agent.`,
+          role: options?.role || getDefaultRoleTemplate(agentName),
           llm: {
-            provider: 'openai',
-            model: '${LLM_MODEL:-gpt-4}',
+            provider: getDefaultLLMProvider(),
+            model: getDefaultLLMModel(),
           },
           tools: [],
         },
       };
 
       // Add type-specific configuration via tools
-      if (options?.type === 'orchestrator') {
+      if (typeConfig.capabilityName) {
         manifest.spec.tools = manifest.spec.tools || [];
         manifest.spec.tools.push({
           type: 'capability',
-          name: 'orchestration',
-        });
-      } else if (options?.type === 'judge') {
-        manifest.spec.tools = manifest.spec.tools || [];
-        manifest.spec.tools.push({
-          type: 'capability',
-          name: 'evaluation',
+          name: typeConfig.capabilityName,
         });
       }
 
@@ -169,7 +180,7 @@ export const scaffoldCommand = new Command('scaffold')
         const readmePath = path.join(agentDir, 'README.md');
         const readmeContent = `# ${agentName}
 
-${options?.description || `${agentName} - OSSA-compliant agent`}
+${options?.description || getDefaultDescriptionTemplate(agentName)}
 
 ## Overview
 
@@ -179,7 +190,7 @@ This agent is defined using the OSSA (Open Standard for Scalable AI Agents) spec
 
 - **Manifest**: \`manifest.ossa.yaml\`
 - **Version**: ${manifest.metadata.version}
-- **Type**: ${options?.type || 'worker'}
+- **Type**: ${agentType}
 
 ## Usage
 

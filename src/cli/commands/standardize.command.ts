@@ -25,6 +25,14 @@ import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { ValidationService } from '../../services/validation.service.js';
 import { getApiVersion } from '../../utils/version.js';
 import {
+  getDefaultAgentVersion,
+  getDefaultAgentKind,
+  getDefaultAgentNameFallback,
+  getDefaultRoleTemplate,
+  getDNS1123Regex,
+  getMaxDNS1123Length,
+} from '../../config/defaults.js';
+import {
   findManifestFilesFromPaths,
   handleCommandError,
   outputJSON,
@@ -122,29 +130,31 @@ export const standardizeCommand = new Command('standardize')
 
           // Fix 3: Missing kind
           if (!manifest.kind) {
+            const defaultKind = getDefaultAgentKind();
             fixes.push({
               rule: 'missing-kind',
               message: 'Add kind field',
               path: 'kind',
               oldValue: undefined,
-              newValue: 'Agent',
+              newValue: defaultKind,
               applied: false,
             });
 
             if (!options?.dryRun) {
-              (manifest as any).kind = 'Agent';
+              (manifest as any).kind = defaultKind;
               fixes[fixes.length - 1].applied = true;
             }
           }
 
           // Fix 4: Missing metadata.version
           if (!manifest.metadata?.version) {
+            const defaultVersion = getDefaultAgentVersion();
             fixes.push({
               rule: 'missing-version',
               message: 'Add metadata.version field',
               path: 'metadata.version',
               oldValue: undefined,
-              newValue: '1.0.0',
+              newValue: defaultVersion,
               applied: false,
             });
 
@@ -152,26 +162,27 @@ export const standardizeCommand = new Command('standardize')
               if (!manifest.metadata) {
                 (manifest as any).metadata = {};
               }
-              manifest.metadata.version = '1.0.0';
+              manifest.metadata.version = defaultVersion;
               fixes[fixes.length - 1].applied = true;
             }
           }
 
           // Fix 5: Invalid agent name format (DNS-1123)
-          if (manifest.metadata?.name && !/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/.test(manifest.metadata.name)) {
+          if (manifest.metadata?.name && !getDNS1123Regex().test(manifest.metadata.name)) {
             const oldName = manifest.metadata.name;
+            const maxLength = getMaxDNS1123Length();
             let newName = oldName
               .toLowerCase()
               .replace(/[^a-z0-9-]/g, '-')
               .replace(/^-+|-+$/g, '')
-              .substring(0, 63);
+              .substring(0, maxLength);
             
             // Ensure name doesn't start or end with hyphen after substring
             newName = newName.replace(/^-+|-+$/g, '');
             
             // Ensure name is not empty
             if (!newName) {
-              newName = 'agent';
+              newName = getDefaultAgentNameFallback();
             }
 
             fixes.push({
@@ -191,9 +202,7 @@ export const standardizeCommand = new Command('standardize')
 
           // Fix 6: Missing spec.role
           if (!manifest.spec?.role) {
-            const defaultRole = manifest.metadata?.name
-              ? `You are ${manifest.metadata.name}, a helpful AI agent.`
-              : 'You are a helpful AI agent.';
+            const defaultRole = getDefaultRoleTemplate(manifest.metadata?.name);
 
             fixes.push({
               rule: 'missing-role',
