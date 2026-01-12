@@ -84,8 +84,8 @@ export type CIConfigState = z.infer<typeof CIConfigStateSchema>;
 
 export const ReleaseVerifyRequestSchema = z.object({
   version: z.string().optional(),
-  skipBuildTests: z.boolean().default(false),
-  skipCIConfig: z.boolean().default(false),
+  skipBuildTests: z.boolean().optional().default(false),
+  skipCIConfig: z.boolean().optional().default(false),
 });
 
 export type ReleaseVerifyRequest = z.infer<typeof ReleaseVerifyRequestSchema>;
