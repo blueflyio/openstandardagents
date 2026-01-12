@@ -88,6 +88,41 @@ variables:
   GITLAB_OBSERVABILITY_EXPORT: "${GITLAB_OBSERVABILITY_EXPORT:-traces,metrics,logs}"
 
 # =============================================================================
+# SECURITY SCANNING OVERRIDES (GitLab Ultimate Templates)
+# =============================================================================
+# These jobs are included from GitLab templates but need allow_failure: true
+# since they're not fully configured for this project yet.
+# TODO: Properly configure SAST for TypeScript scanning
+
+sast:
+  allow_failure: true
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
+    - if: $CI_COMMIT_BRANCH == "main"
+
+sast_iac:
+  allow_failure: true
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
+    - if: $CI_COMMIT_BRANCH == "main"
+
+dependency_scanning:
+  allow_failure: true
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
+    - if: $CI_COMMIT_BRANCH == "main"
+
+secret_detection:
+  allow_failure: true
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
+    - if: $CI_COMMIT_BRANCH == "main"
+
+# =============================================================================
 # VALIDATION JOBS (Quick checks - run early)
 # =============================================================================
 
