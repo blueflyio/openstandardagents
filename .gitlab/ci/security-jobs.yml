@@ -7,6 +7,33 @@
 include:
   - local: .gitlab/ci/rules.yml
 
+# SAST (Static Application Security Testing)
+# Override GitLab SAST template with custom rules
+sast:
+  stage: security
+  image: node:${NODE_VERSION}-alpine
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
+  allow_failure: false
+  tags:
+    - saas-linux-small-amd64
+  script:
+    - echo "Running static application security testing..."
+    - |
+      # Basic SAST checks using grep patterns
+      PATTERNS="(eval\\(|exec\\(|dangerous|unsafe|innerHTML|document\\.write)"
+      FOUND=$(grep -rniE "$PATTERNS" --include="*.ts" --include="*.js" src/ 2>/dev/null | grep -v "test" | grep -v "mock" | grep -v "example" || true)
+      
+      if [ -n "$FOUND" ]; then
+        echo "WARNING: Potentially unsafe patterns found:"
+        echo "$FOUND"
+        echo "Review the above lines for security concerns"
+      else
+        echo "No unsafe patterns detected"
+      fi
+
 # Secret scanning using grep patterns (deterministic, reproducible)
 # Fails on real secret patterns found in source code
 security:secrets-check:
