@@ -26,6 +26,13 @@ import {
   getSemanticVersionRegex,
 } from '../../config/defaults.js';
 import {
+  isOssaAgent,
+  isToolWithAuth,
+  isToolWithDescription,
+  safeGet,
+  safeGetArray,
+} from '../../utils/type-guards.js';
+import {
   findManifestFilesFromPaths,
   handleCommandError,
   outputJSON,
@@ -73,7 +80,15 @@ export const complianceCommand = new Command('compliance')
 
       for (const file of manifestFiles) {
         try {
-          const manifest = await manifestRepo.load(file);
+          const loadedManifest = await manifestRepo.load(file);
+          
+          // Type guard validation before processing
+          if (!isOssaAgent(loadedManifest)) {
+            console.log(chalk.yellow(`⚠ Skipping ${file}: Invalid OSSA manifest structure`));
+            continue;
+          }
+
+          const manifest = loadedManifest;
           const badges: ComplianceBadge[] = [];
 
           // Badge 1: OSSA Schema Compliance
@@ -100,19 +115,19 @@ export const complianceCommand = new Command('compliance')
             let securityStatus: 'pass' | 'fail' | 'warning' = 'pass';
 
             // Check for hardcoded secrets
-            if (manifest.spec?.llm?.model && !manifest.spec.llm.model.includes('${')) {
+            const model = safeGet<string>(manifest.spec?.llm, 'model', (v): v is string => typeof v === 'string');
+            if (model && !model.includes('${')) {
               securityIssues.push('Hardcoded model name (should use environment variable)');
               securityStatus = 'warning';
             }
 
             // Check for API keys in tools
-            if (manifest.spec?.tools) {
-              for (const tool of manifest.spec.tools) {
-                if (tool && typeof tool === 'object' && 'auth' in tool && 
-                    (tool as any).auth?.apiKey && typeof (tool as any).auth.apiKey === 'string') {
-                  securityIssues.push('Hardcoded API key in tool configuration');
-                  securityStatus = 'fail';
-                }
+            const tools = safeGetArray(manifest.spec?.tools, isToolWithAuth);
+            for (const tool of tools) {
+              const apiKey = safeGet<string>(tool.auth, 'apiKey', (v): v is string => typeof v === 'string');
+              if (apiKey) {
+                securityIssues.push('Hardcoded API key in tool configuration');
+                securityStatus = 'fail';
               }
             }
 
@@ -135,17 +150,19 @@ export const complianceCommand = new Command('compliance')
             const docIssues: string[] = [];
             let docStatus: 'pass' | 'fail' | 'warning' = 'pass';
 
-            if (!manifest.metadata?.description) {
+            const description = safeGet<string>(manifest.metadata, 'description', (v): v is string => typeof v === 'string');
+            if (!description) {
               docIssues.push('Missing description');
               docStatus = 'warning';
             }
 
-            if (manifest.spec?.tools && manifest.spec.tools.length > 0) {
-              for (const tool of manifest.spec.tools) {
-                if (tool && typeof tool === 'object' && !(tool as any).description) {
-                  docIssues.push(`Tool ${(tool as any).name || 'unnamed'} missing description`);
-                  docStatus = 'warning';
-                }
+            const tools = safeGetArray(manifest.spec?.tools, isToolWithDescription);
+            for (const tool of tools) {
+              const description = safeGet<string>(tool, 'description', (v): v is string => typeof v === 'string');
+              if (!description) {
+                const toolName = safeGet<string>(tool, 'name', (v): v is string => typeof v === 'string') || 'unnamed';
+                docIssues.push(`Tool ${toolName} missing description`);
+                docStatus = 'warning';
               }
             }
 
@@ -169,19 +186,22 @@ export const complianceCommand = new Command('compliance')
             let practiceStatus: 'pass' | 'fail' | 'warning' = 'pass';
 
             // Check DNS-1123 name format
-            if (manifest.metadata?.name && !getDNS1123Regex().test(manifest.metadata.name)) {
+            const agentName = safeGet<string>(manifest.metadata, 'name', (v): v is string => typeof v === 'string');
+            if (agentName && !getDNS1123Regex().test(agentName)) {
               practiceIssues.push('Agent name not DNS-1123 compliant');
               practiceStatus = 'warning';
             }
 
             // Check version format
-            if (manifest.metadata?.version && !getSemanticVersionRegex().test(manifest.metadata.version)) {
+            const version = safeGet<string>(manifest.metadata, 'version', (v): v is string => typeof v === 'string');
+            if (version && !getSemanticVersionRegex().test(version)) {
               practiceIssues.push('Version not semantic versioning');
               practiceStatus = 'warning';
             }
 
             // Check for required role
-            if (!manifest.spec?.role) {
+            const role = safeGet<string>(manifest.spec, 'role', (v): v is string => typeof v === 'string');
+            if (!role) {
               practiceIssues.push('Missing spec.role');
               practiceStatus = 'fail';
             }

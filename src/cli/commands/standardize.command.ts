@@ -32,6 +32,7 @@ import {
   getDNS1123Regex,
   getMaxDNS1123Length,
 } from '../../config/defaults.js';
+import { isOssaAgent, safeGet } from '../../utils/type-guards.js';
 import {
   findManifestFilesFromPaths,
   handleCommandError,
@@ -87,7 +88,15 @@ export const standardizeCommand = new Command('standardize')
 
       for (const file of manifestFiles) {
         try {
-          const manifest = await manifestRepo.load(file);
+          const loadedManifest = await manifestRepo.load(file);
+          
+          // Type guard validation before processing
+          if (!isOssaAgent(loadedManifest)) {
+            console.log(chalk.yellow(`⚠ Skipping ${file}: Invalid OSSA manifest structure`));
+            continue;
+          }
+
+          const manifest = loadedManifest;
           const fixes: StandardizationFix[] = [];
 
           // Fix 1: Hardcoded model names
@@ -118,24 +127,28 @@ export const standardizeCommand = new Command('standardize')
           }
 
           // Fix 2: Missing apiVersion
-          if (!manifest.apiVersion) {
+          const currentApiVersion = safeGet<string>(manifest, 'apiVersion', (v): v is string => typeof v === 'string');
+          if (!currentApiVersion) {
+            const newApiVersion = getApiVersion();
             fixes.push({
               rule: 'missing-apiVersion',
               message: 'Add apiVersion field',
               path: 'apiVersion',
               oldValue: undefined,
-              newValue: getApiVersion(),
+              newValue: newApiVersion,
               applied: false,
             });
 
             if (!options?.dryRun) {
-              (manifest as any).apiVersion = getApiVersion();
+              // Type-safe assignment - apiVersion is a required field in OssaAgent
+              (manifest as OssaAgent & { apiVersion: string }).apiVersion = newApiVersion;
               fixes[fixes.length - 1].applied = true;
             }
           }
 
           // Fix 3: Missing kind
-          if (!manifest.kind) {
+          const currentKind = safeGet<string>(manifest, 'kind', (v): v is string => typeof v === 'string');
+          if (!currentKind) {
             const defaultKind = getDefaultAgentKind();
             fixes.push({
               rule: 'missing-kind',
@@ -147,13 +160,15 @@ export const standardizeCommand = new Command('standardize')
             });
 
             if (!options?.dryRun) {
-              (manifest as any).kind = defaultKind;
+              // Type-safe assignment - kind is a required field in OssaAgent
+              (manifest as OssaAgent & { kind: string }).kind = defaultKind;
               fixes[fixes.length - 1].applied = true;
             }
           }
 
           // Fix 4: Missing metadata.version
-          if (!manifest.metadata?.version) {
+          const currentVersion = safeGet<string>(manifest.metadata, 'version', (v): v is string => typeof v === 'string');
+          if (!currentVersion) {
             const defaultVersion = getDefaultAgentVersion();
             fixes.push({
               rule: 'missing-version',
@@ -165,10 +180,17 @@ export const standardizeCommand = new Command('standardize')
             });
 
             if (!options?.dryRun) {
-              if (!manifest.metadata) {
-                (manifest as any).metadata = {};
+              // Ensure metadata exists and is an object
+              if (!manifest.metadata || typeof manifest.metadata !== 'object') {
+                (manifest as OssaAgent & { metadata: Record<string, unknown> }).metadata = {
+                  name: manifest.metadata?.name || '',
+                };
               }
-              manifest.metadata.version = defaultVersion;
+              
+              // Type-safe assignment
+              if (manifest.metadata && typeof manifest.metadata === 'object') {
+                (manifest.metadata as Record<string, unknown>).version = defaultVersion;
+              }
               fixes[fixes.length - 1].applied = true;
             }
           }
@@ -207,8 +229,10 @@ export const standardizeCommand = new Command('standardize')
           }
 
           // Fix 6: Missing spec.role
-          if (!manifest.spec?.role) {
-            const defaultRole = getDefaultRoleTemplate(manifest.metadata?.name);
+          const currentRole = safeGet<string>(manifest.spec, 'role', (v): v is string => typeof v === 'string');
+          if (!currentRole) {
+            const agentName = safeGet<string>(manifest.metadata, 'name', (v): v is string => typeof v === 'string');
+            const defaultRole = getDefaultRoleTemplate(agentName);
 
             fixes.push({
               rule: 'missing-role',
@@ -220,10 +244,15 @@ export const standardizeCommand = new Command('standardize')
             });
 
             if (!options?.dryRun) {
-              if (!manifest.spec) {
-                (manifest as any).spec = {};
+              // Ensure spec exists and is an object
+              if (!manifest.spec || typeof manifest.spec !== 'object') {
+                (manifest as OssaAgent & { spec: Record<string, unknown> }).spec = {};
               }
-              manifest.spec.role = defaultRole;
+              
+              // Type-safe assignment
+              if (manifest.spec && typeof manifest.spec === 'object') {
+                (manifest.spec as Record<string, unknown>).role = defaultRole;
+              }
               fixes[fixes.length - 1].applied = true;
             }
           }
