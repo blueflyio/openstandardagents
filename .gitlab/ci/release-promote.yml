@@ -173,7 +173,12 @@ publish-npm:stable:
       fi
 
       # Check if already published (package name is hardcoded, safe)
-      if npm view @bluefly/openstandardagents@${VERSION} version >/dev/null 2>&1; then
+      # Validate VERSION before using in command (prevent command injection)
+      if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+        echo "ERROR: Invalid version format: $VERSION"
+        exit 1
+      fi
+      if npm view "@bluefly/openstandardagents@${VERSION}" version >/dev/null 2>&1; then
         echo "Version ${VERSION} already published to npm - skipping"
         exit 0
       fi
@@ -184,6 +189,7 @@ publish-npm:stable:
 
       echo "✅ Published ${VERSION} to npmjs.org"
       echo "Verify: npm view @bluefly/openstandardagents@${VERSION}"
+      # VERSION already validated above
   rules:
     - if: $CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/ && $CI_COMMIT_TAG !~ /-rc|-dev/
       when: on_success
