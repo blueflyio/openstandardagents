@@ -18,6 +18,19 @@ import * as yaml from 'yaml';
 import { glob } from 'glob';
 import { getVersion } from '../../utils/version.js';
 import { outputJSON, handleCommandError } from '../utils/index.js';
+import {
+  getDefaultWorkspaceDir,
+  getRequiredWorkspaceDirs,
+  getWorkspaceRegistryPath,
+  getWorkspacePolicyPath,
+  getDefaultOSSAAPIVersion,
+  getDefaultRegistryKind,
+  getDefaultPolicyKind,
+  getDefaultAgentVersion,
+  getDefaultDiscoveryStrategy,
+  getDefaultDiscoveryRefresh,
+  getDefaultDiscoveryPatterns,
+} from '../../config/defaults.js';
 
 export const workspaceCommand = new Command('workspace')
   .description('Manage .agents-workspace/ (two-tier architecture governance)');
@@ -75,7 +88,7 @@ workspaceCommand
       console.log(chalk.gray(`  Created ${getWorkspaceRegistryPath()}`));
 
       // Create policy file
-      const policyPath = path.join(workspaceDir, getWorkspacePolicyPath());
+      const policyFilePath = path.join(workspaceDir, getWorkspacePolicyPath());
       const policyContent = yaml.stringify({
         apiVersion: getDefaultOSSAAPIVersion(),
         kind: getDefaultPolicyKind(),
