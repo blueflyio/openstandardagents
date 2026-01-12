@@ -55,9 +55,6 @@ import { standardizeCommand } from './commands/standardize.command.js';
 import { testCommand } from './commands/test.command.js';
 import { validateCommand } from './commands/validate.command.js';
 import { workspaceCommand } from './commands/workspace.command.js';
-import { scaffoldCommand } from './commands/scaffold.command.js';
-import { standardizeCommand } from './commands/standardize.command.js';
-import { complianceCommand } from './commands/compliance.command.js';
 
 // Framework integration commands
 import { langflowCommand } from './commands/langflow.command.js';
@@ -198,6 +195,7 @@ program.addCommand(deployGroup); // Legacy compatibility
 program.addCommand(testCommand);
 program.addCommand(lintCommand);
 program.addCommand(standardizeCommand);
+program.addCommand(complianceCommand);
 program.addCommand(diffCommand);
 
 // Agent management
@@ -208,10 +206,6 @@ program.addCommand(workspaceCommand);
 program.addCommand(registryCommand);
 program.addCommand(agentCardCommand);
 
-// Workspace management commands
-program.addCommand(scaffoldCommand);
-program.addCommand(standardizeCommand);
-program.addCommand(complianceCommand);
 
 // Extension development commands
 program.addCommand(extensionTeamCommand);
