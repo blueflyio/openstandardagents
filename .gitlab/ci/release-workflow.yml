@@ -21,7 +21,7 @@ create-dev-tag:release:
     - git config user.email "ci@bluefly.io"
     - git config user.name "GitLab CI"
     - git fetch --tags --force || true
-    - git remote set-url origin https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
+    - git remote set-url origin https://oauth2:${CI_DEPLOY_OSSA}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
   script:
     - |
       #!/bin/bash
@@ -243,7 +243,7 @@ create-rc-tag:
     - git config user.email "ci@bluefly.io"
     - git config user.name "GitLab CI"
     - git fetch --tags --force || true
-    - git remote set-url origin https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
+    - git remote set-url origin https://oauth2:${CI_DEPLOY_OSSA}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
   script:
     - |
       #!/bin/bash
@@ -408,7 +408,7 @@ sync-version-files:
       # Commit version changes
       git config user.email "ci@bluefly.io"
       git config user.name "GitLab CI"
-      git remote set-url origin https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
+      git remote set-url origin https://oauth2:${CI_DEPLOY_OSSA}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
 
       git add package.json .version.json README.md CHANGELOG.md 2>/dev/null || true
 
@@ -468,7 +468,7 @@ create-gitlab-release:
 
       # Create release using GitLab API
       curl --fail --request POST \
-        --header "PRIVATE-TOKEN: ${GITLAB_PUSH_TOKEN}" \
+        --header "PRIVATE-TOKEN: ${CI_DEPLOY_OSSA}" \
         --header "Content-Type: application/json" \
         --data "{
           \"tag_name\": \"${CI_COMMIT_TAG}\",
