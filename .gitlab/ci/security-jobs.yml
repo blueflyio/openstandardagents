@@ -4,6 +4,43 @@
 # Additional security scanning beyond npm audit (which is in test:security).
 # Runs on MRs and release/main branches.
 
+# ============================================================================
+# GitLab Security Template Job Overrides
+# ============================================================================
+# These jobs extend GitLab's security templates without overriding scripts.
+# Only configure rules, tags, and allow_failure settings.
+
+sast:
+  stage: security
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^(main|release)/
+  allow_failure: false
+  tags:
+    - saas-linux-small-amd64
+
+dependency_scanning:
+  stage: security
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^(main|release)/
+  allow_failure: false
+  tags:
+    - saas-linux-small-amd64
+
+sast_iac:
+  stage: security
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^(main|release)/
+  allow_failure: false
+  tags:
+    - saas-linux-small-amd64
+
+# ============================================================================
+# Custom Security Checks
+# ============================================================================
+
 # Check for secrets in code (using grep patterns)
 security:secrets-check:
   stage: security
