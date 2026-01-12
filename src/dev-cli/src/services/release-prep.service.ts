@@ -321,16 +321,42 @@ export class ReleasePrepService {
         canPublish = false;
       }
 
-      // Check if version already exists on npm
+      // Validate package name format to prevent command injection (single validation point - DRY)
+      // NPM package name rules: scoped packages must be @scope/name, alphanumeric + - . _ ~
+      if (!/^@[a-z0-9-~][a-z0-9-._~]*\/[a-z0-9-~][a-z0-9-._~]*$/.test(packageName)) {
+        errors.push(`Invalid package name format: ${packageName} (must be scoped: @scope/name)`);
+        canPublish = false;
+        return NPMValidationSchema.parse({
+          ready: false,
+          versionExists: false,
+          canPublish: false,
+          tokenConfigured,
+          registryAccessible: false,
+          packageName,
+          errors,
+          warnings,
+        });
+      }
+
+      // Validate version format to prevent command injection
+      // Semantic versioning: major.minor.patch[-pre-release]
+      if (!/^[0-9]+\.[0-9]+\.[0-9]+(-[a-z0-9-]+(\.[0-9]+)?)?$/.test(version)) {
+        errors.push(`Invalid version format: ${version} (must be semantic version)`);
+        canPublish = false;
+        return NPMValidationSchema.parse({
+          ready: false,
+          versionExists: false,
+          canPublish: false,
+          tokenConfigured,
+          registryAccessible: false,
+          packageName,
+          errors,
+          warnings,
+        });
+      }
+
+      // Check if version already exists on npm (packageName and version validated above)
       try {
-        // Validate package name format to prevent command injection
-        if (!/^[@a-z0-9-~][a-z0-9-._~]*\/[a-z0-9-~][a-z0-9-._~]*$/.test(packageName)) {
-          throw new Error(`Invalid package name format: ${packageName}`);
-        }
-        // Validate version format to prevent command injection
-        if (!/^[0-9]+\.[0-9]+\.[0-9]+(-[a-z0-9-]+)?$/.test(version)) {
-          throw new Error(`Invalid version format: ${version}`);
-        }
         const npmViewOutput = execSync(`npm view ${packageName}@${version} version`, {
           encoding: 'utf-8',
           stdio: 'pipe',
@@ -347,13 +373,8 @@ export class ReleasePrepService {
         versionExists = false;
       }
 
-      // Check current published version
+      // Check current published version (packageName validated above)
       try {
-        // Package name already validated above
-        // Validate package name format to prevent command injection
-        if (!/^[@a-z0-9-~][a-z0-9-._~]*\/[a-z0-9-~][a-z0-9-._~]*$/.test(packageName)) {
-          throw new Error(`Invalid package name format: ${packageName}`);
-        }
         currentPublishedVersion = execSync(`npm view ${packageName} version`, {
           encoding: 'utf-8',
           stdio: 'pipe',

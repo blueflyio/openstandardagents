@@ -55,16 +55,28 @@ describe('E2E Smoke Tests', () => {
 
     try {
       // Validate manifest path to prevent command injection
-      const relativePath = manifestPath.replace(projectRoot + '/', '');
-      if (!/^[a-zA-Z0-9/._-]+$/.test(relativePath)) {
-        throw new Error(`Invalid manifest path format: ${relativePath}`);
+      // 1. Ensure path is absolute and within project root
+      const resolvedPath = resolve(manifestPath);
+      const resolvedRoot = resolve(projectRoot);
+      if (!resolvedPath.startsWith(resolvedRoot)) {
+        throw new Error(`Manifest path outside project root: ${manifestPath}`);
       }
-      // Ensure path is within project root
-      const resolvedPath = resolve(projectRoot, relativePath);
-      if (!resolvedPath.startsWith(resolve(projectRoot))) {
-        throw new Error(`Manifest path outside project root: ${relativePath}`);
+      
+      // 2. Validate relative path contains only safe characters (no shell metacharacters)
+      const relativePath = manifestPath.replace(projectRoot + '/', '').replace(projectRoot + '\\', '');
+      // Allow alphanumeric, forward/backward slashes, dots, hyphens, underscores
+      // Reject: spaces, quotes, semicolons, pipes, redirects, etc.
+      if (!/^[a-zA-Z0-9/\\._-]+$/.test(relativePath)) {
+        throw new Error(`Invalid manifest path format: ${relativePath} (contains unsafe characters)`);
       }
-      const result = execSync(`node bin/ossa validate ${manifestPath}`, {
+      
+      // 3. Ensure no path traversal attempts
+      if (relativePath.includes('..')) {
+        throw new Error(`Invalid manifest path: ${relativePath} (path traversal detected)`);
+      }
+      
+      // 4. Use resolved absolute path in command (safer than relative)
+      const result = execSync(`node bin/ossa validate "${resolvedPath}"`, {
         cwd: projectRoot,
         encoding: 'utf-8',
         stdio: 'pipe',
