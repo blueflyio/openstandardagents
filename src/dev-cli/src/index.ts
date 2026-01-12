@@ -17,7 +17,10 @@ import chalk from 'chalk';
 import { versionCommand } from './commands/version.command.js';
 import { specCommand } from './commands/spec.command.js';
 import { workflowCommand } from './commands/workflow.command.js';
+<<<<<<< HEAD
 import { releaseCommand } from './commands/release.command.js';
+=======
+>>>>>>> release/v0.3.x
 
 const program = new Command();
 
@@ -30,7 +33,10 @@ program
 program.addCommand(versionCommand);
 program.addCommand(specCommand);
 program.addCommand(workflowCommand);
+<<<<<<< HEAD
 program.addCommand(releaseCommand);
+=======
+>>>>>>> release/v0.3.x
 
 // Error handling
 program.configureOutput({

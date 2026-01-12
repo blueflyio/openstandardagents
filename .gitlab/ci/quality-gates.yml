@@ -15,8 +15,20 @@ quality:gates:fast:
   image: node:${NODE_VERSION}-alpine
   tags:
     - saas-linux-small-amd64
+<<<<<<< HEAD
   extends:
     - .rules:fast
+=======
+  script:
+    - echo "Quality gates - all tests must pass"
+  # Run only when test jobs run (MR, release/*, main)
+  # This ensures quality:gates doesn't fail on feature branch pushes
+  # where test:unit/integration/e2e don't run
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
+    - if: $CI_COMMIT_BRANCH == "main"
+>>>>>>> release/v0.3.x
   needs:
     - job: test:unit
     - job: test:lint

@@ -323,6 +323,14 @@ export class ReleasePrepService {
 
       // Check if version already exists on npm
       try {
+        // Validate package name format to prevent command injection
+        if (!/^[@a-z0-9-~][a-z0-9-._~]*\/[a-z0-9-~][a-z0-9-._~]*$/.test(packageName)) {
+          throw new Error(`Invalid package name format: ${packageName}`);
+        }
+        // Validate version format to prevent command injection
+        if (!/^[0-9]+\.[0-9]+\.[0-9]+(-[a-z0-9-]+)?$/.test(version)) {
+          throw new Error(`Invalid version format: ${version}`);
+        }
         const npmViewOutput = execSync(`npm view ${packageName}@${version} version`, {
           encoding: 'utf-8',
           stdio: 'pipe',
@@ -341,6 +349,11 @@ export class ReleasePrepService {
 
       // Check current published version
       try {
+        // Package name already validated above
+        // Validate package name format to prevent command injection
+        if (!/^[@a-z0-9-~][a-z0-9-._~]*\/[a-z0-9-~][a-z0-9-._~]*$/.test(packageName)) {
+          throw new Error(`Invalid package name format: ${packageName}`);
+        }
         currentPublishedVersion = execSync(`npm view ${packageName} version`, {
           encoding: 'utf-8',
           stdio: 'pipe',

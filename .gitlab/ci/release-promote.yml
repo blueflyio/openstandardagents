@@ -166,7 +166,13 @@ publish-npm:stable:
         exit 1
       fi
 
-      # Check if already published
+      # Validate version format to prevent command injection
+      if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+        echo "ERROR: Invalid version format: $VERSION"
+        exit 1
+      fi
+
+      # Check if already published (package name is hardcoded, safe)
       if npm view @bluefly/openstandardagents@${VERSION} version >/dev/null 2>&1; then
         echo "Version ${VERSION} already published to npm - skipping"
         exit 0
