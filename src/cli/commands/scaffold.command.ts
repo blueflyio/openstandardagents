@@ -116,7 +116,7 @@ export const scaffoldCommand = new Command('scaffold')
           role: options?.role || `You are ${agentName}, a helpful AI agent.`,
           llm: {
             provider: 'openai',
-            model: 'gpt-4',
+            model: '${LLM_MODEL:-gpt-4}',
           },
           tools: [],
         },
@@ -163,8 +163,9 @@ export const scaffoldCommand = new Command('scaffold')
         console.log(chalk.gray(`  Created tools/`));
       }
 
-      // Create README
-      if (options?.withReadme !== false) {
+      // Create README (default: true, unless explicitly disabled)
+      const shouldCreateReadme = options?.withReadme !== undefined ? options.withReadme : true;
+      if (shouldCreateReadme) {
         const readmePath = path.join(agentDir, 'README.md');
         const readmeContent = `# ${agentName}
 
