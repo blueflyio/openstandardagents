@@ -48,7 +48,7 @@ export class ManifestRepository implements IManifestRepository {
    * @param filePath - Path to save manifest
    * @param manifest - OSSA agent manifest
    */
-  async save(filePath: string, manifest: OssaAgent, options?: { quoteStrings?: boolean }): Promise<void> {
+  async save(filePath: string, manifest: OssaAgent): Promise<void> {
     const resolvedPath = path.resolve(filePath);
     const ext = path.extname(resolvedPath).toLowerCase();
 
@@ -65,7 +65,6 @@ export class ManifestRepository implements IManifestRepository {
     } else if (ext === '.yaml' || ext === '.yml') {
       // Use YAML stringify with options that ensure proper handling of strings with special characters
       // Environment variable patterns like ${VAR:-default} need to be preserved correctly
-      // The yaml library will automatically quote strings containing $, {, }, : when needed
       content = stringifyYaml(manifest, {
         indent: 2,
         lineWidth: 0,
