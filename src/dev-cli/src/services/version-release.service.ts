@@ -5,36 +5,32 @@
  * SOLID: Single Responsibility - Release workflow only
  */
 
-import { readFileSync, writeFileSync, existsSync } from 'fs';
-import { join } from 'path';
 import { execSync } from 'child_process';
 import semver from 'semver';
-import {
+import type {
   VersionReleaseRequest,
   VersionReleaseResponse,
-  VersionConfigSchema,
 } from '../schemas/version.schema.js';
+import { VersionDetectionService } from './version-detection.service.js';
 
 export class VersionReleaseService {
   private readonly rootDir: string;
+  private readonly versionDetection: VersionDetectionService;
 
   constructor(rootDir: string = process.cwd()) {
     this.rootDir = rootDir;
+    this.versionDetection = new VersionDetectionService(rootDir);
   }
 
   /**
    * Release a new version (ONE command to release)
-   * CRUD: Update operation (updates .version.json and all files)
+   * CRUD: Update operation (creates git tag, updates .version.json dynamically)
+   * DYNAMIC: Reads current version from git tags, updates .version.json
    */
   async release(request: VersionReleaseRequest): Promise<VersionReleaseResponse> {
-    const versionFile = join(this.rootDir, '.version.json');
-    
-    if (!existsSync(versionFile)) {
-      throw new Error('.version.json not found. Run from project root.');
-    }
-
-    const config = VersionConfigSchema.parse(JSON.parse(readFileSync(versionFile, 'utf-8')));
-    const oldVersion = config.current;
+    // Detect current version from git tags (DYNAMIC) and update .version.json
+    const versionInfo = await this.versionDetection.detectVersion();
+    const oldVersion = versionInfo.current;
     const newVersion = semver.inc(oldVersion, request.bumpType) || oldVersion;
 
     if (request.dryRun) {
