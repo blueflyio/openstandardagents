@@ -43,7 +43,7 @@ export class VersionSyncService {
         let content = readFileSync(filePath, 'utf-8');
         const original = content;
 
-        // Replace {{VERSION}} with actual version
+        // Replace version placeholders with actual version
         content = content.replace(VERSION_PLACEHOLDER_PATTERN, version);
 
         if (content !== original) {
@@ -64,7 +64,7 @@ export class VersionSyncService {
   }
 
   /**
-   * Find all files with {{VERSION}} placeholder
+   * Find all files with version placeholder
    */
   private async findFilesWithPlaceholders(): Promise<string[]> {
     const patterns = [
