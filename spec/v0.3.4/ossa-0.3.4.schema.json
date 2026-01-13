@@ -1073,6 +1073,22 @@
           "$ref": "#/definitions/WebNativeIntegration",
           "description": "Web-native protocol integration - WebSocket, WebRTC, SSE, Web Push (v0.3.4+)"
         },
+        "moe_metrics": {
+          "$ref": "#/definitions/MOEMetrics",
+          "description": "MOE metrics tracking - historical quality scores, trends, performance analytics (v0.3.4+)"
+        },
+        "cost_optimization": {
+          "$ref": "#/definitions/CostOptimization",
+          "description": "Cost optimization strategies - model tiering, caching, batching, token optimization (v0.3.4+)"
+        },
+        "security_threat_model": {
+          "$ref": "#/definitions/SecurityThreatModel",
+          "description": "Security threat modeling and mitigation strategies (v0.3.4+)"
+        },
+        "advanced_capabilities": {
+          "$ref": "#/definitions/AdvancedCapabilities",
+          "description": "Advanced capabilities - multi-modal, reasoning, planning, tool use (v0.3.4+)"
+        },
         "messaging": {
           "$ref": "#/definitions/MessagingExtension",
           "description": "Agent-to-agent messaging configuration (v0.3.4+)"
@@ -10550,6 +10566,606 @@
             "scope": {
               "type": "string",
               "description": "Service worker scope"
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "MOEMetrics": {
+      "type": "object",
+      "description": "Model Output Evaluation metrics tracking - historical quality scores, trends, and performance analytics (v0.3.4+)",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable MOE metrics collection"
+        },
+        "storage": {
+          "type": "object",
+          "description": "Metrics storage configuration",
+          "properties": {
+            "backend": {
+              "type": "string",
+              "enum": ["in_memory", "database", "time_series_db", "object_storage"],
+              "default": "in_memory"
+            },
+            "retention_days": {
+              "type": "integer",
+              "default": 90,
+              "minimum": 1
+            },
+            "aggregation": {
+              "type": "object",
+              "properties": {
+                "window": {
+                  "type": "string",
+                  "enum": ["hour", "day", "week", "month"],
+                  "default": "day"
+                },
+                "metrics": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": ["avg_quality_score", "success_rate", "correction_rate", "latency_p50", "latency_p99", "cost_per_output"]
+                  }
+                }
+              },
+              "additionalProperties": true
+            }
+          },
+          "additionalProperties": true
+        },
+        "alerting": {
+          "type": "object",
+          "description": "Alert configuration for quality degradation",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "thresholds": {
+              "type": "object",
+              "properties": {
+                "quality_score_min": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1,
+                  "default": 0.7
+                },
+                "success_rate_min": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1,
+                  "default": 0.9
+                },
+                "correction_rate_max": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1,
+                  "default": 0.3
+                }
+              },
+              "additionalProperties": true
+            },
+            "channels": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["webhook", "email", "slack", "pagerduty", "sns"]
+              }
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "CostOptimization": {
+      "type": "object",
+      "description": "Cost optimization strategies for LLM usage - model selection, caching, batching, token optimization (v0.3.4+)",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable cost optimization"
+        },
+        "strategies": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["model_tiering", "response_caching", "request_batching", "token_optimization", "fallback_models", "streaming_optimization"]
+          },
+          "description": "Active cost optimization strategies"
+        },
+        "model_tiering": {
+          "type": "object",
+          "description": "Automatic model selection based on task complexity",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "tiers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "tier": {
+                    "type": "string",
+                    "enum": ["simple", "moderate", "complex", "critical"]
+                  },
+                  "models": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "cost_per_1k_tokens": {
+                    "type": "number",
+                    "minimum": 0
+                  }
+                },
+                "required": ["tier", "models"],
+                "additionalProperties": true
+              }
+            },
+            "selection_criteria": {
+              "type": "object",
+              "properties": {
+                "complexity_estimator": {
+                  "type": "string",
+                  "enum": ["token_count", "semantic_analysis", "heuristic", "ml_classifier"]
+                },
+                "fallback_on_failure": {
+                  "type": "boolean",
+                  "default": true
+                }
+              },
+              "additionalProperties": true
+            }
+          },
+          "additionalProperties": true
+        },
+        "caching": {
+          "type": "object",
+          "description": "Response caching configuration",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "backend": {
+              "type": "string",
+              "enum": ["memory", "redis", "memcached", "database"],
+              "default": "memory"
+            },
+            "ttl_seconds": {
+              "type": "integer",
+              "default": 3600,
+              "minimum": 1
+            },
+            "key_strategy": {
+              "type": "string",
+              "enum": ["exact_match", "semantic_similarity", "hybrid"],
+              "default": "exact_match"
+            },
+            "similarity_threshold": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "default": 0.95,
+              "description": "Minimum similarity for cache hit (semantic_similarity mode)"
+            }
+          },
+          "additionalProperties": true
+        },
+        "batching": {
+          "type": "object",
+          "description": "Request batching for parallel processing",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "max_batch_size": {
+              "type": "integer",
+              "default": 10,
+              "minimum": 2
+            },
+            "max_wait_ms": {
+              "type": "integer",
+              "default": 100,
+              "minimum": 0
+            },
+            "priority_handling": {
+              "type": "string",
+              "enum": ["fifo", "priority_queue", "deadline_based"],
+              "default": "fifo"
+            }
+          },
+          "additionalProperties": true
+        },
+        "token_optimization": {
+          "type": "object",
+          "description": "Token usage optimization",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "max_input_tokens": {
+              "type": "integer",
+              "description": "Maximum input tokens per request"
+            },
+            "compression": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "method": {
+                  "type": "string",
+                  "enum": ["summarization", "extraction", "structured_format"]
+                }
+              },
+              "additionalProperties": true
+            },
+            "context_window_management": {
+              "type": "object",
+              "properties": {
+                "strategy": {
+                  "type": "string",
+                  "enum": ["sliding_window", "summarization", "relevance_filtering"]
+                },
+                "max_context_tokens": {
+                  "type": "integer"
+                }
+              },
+              "additionalProperties": true
+            }
+          },
+          "additionalProperties": true
+        },
+        "budget": {
+          "type": "object",
+          "description": "Cost budget and limits",
+          "properties": {
+            "daily_limit_usd": {
+              "type": "number",
+              "minimum": 0
+            },
+            "monthly_limit_usd": {
+              "type": "number",
+              "minimum": 0
+            },
+            "alert_threshold_percent": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100,
+              "default": 80
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "SecurityThreatModel": {
+      "type": "object",
+      "description": "Security threat modeling and mitigation strategies for agent systems (v0.3.4+)",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable threat modeling"
+        },
+        "threats": {
+          "type": "array",
+          "description": "Identified threats and mitigations",
+          "items": {
+            "type": "object",
+            "properties": {
+              "threat_id": {
+                "type": "string",
+                "description": "Unique threat identifier"
+              },
+              "category": {
+                "type": "string",
+                "enum": ["prompt_injection", "data_exfiltration", "unauthorized_access", "model_poisoning", "adversarial_inputs", "supply_chain", "insider_threat", "dos"]
+              },
+              "severity": {
+                "type": "string",
+                "enum": ["critical", "high", "medium", "low"],
+                "default": "medium"
+              },
+              "likelihood": {
+                "type": "string",
+                "enum": ["very_high", "high", "medium", "low", "very_low"],
+                "default": "medium"
+              },
+              "mitigations": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": ["input_sanitization", "output_validation", "rate_limiting", "authentication", "authorization", "encryption", "audit_logging", "anomaly_detection", "sandboxing", "content_filtering"]
+                }
+              },
+              "status": {
+                "type": "string",
+                "enum": ["identified", "mitigated", "monitored", "accepted"],
+                "default": "identified"
+              }
+            },
+            "required": ["threat_id", "category"],
+            "additionalProperties": true
+          }
+        },
+        "mitigation_policies": {
+          "type": "object",
+          "description": "Active mitigation policies",
+          "properties": {
+            "input_sanitization": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "rules": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "additionalProperties": true
+            },
+            "output_validation": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "schema_validation": {
+                  "type": "boolean",
+                  "default": true
+                }
+              },
+              "additionalProperties": true
+            },
+            "rate_limiting": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "requests_per_minute": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "burst_size": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "additionalProperties": true
+            },
+            "anomaly_detection": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "models": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": ["statistical", "ml_based", "rule_based"]
+                  }
+                },
+                "alert_on_detection": {
+                  "type": "boolean",
+                  "default": true
+                }
+              },
+              "additionalProperties": true
+            }
+          },
+          "additionalProperties": true
+        },
+        "compliance": {
+          "type": "object",
+          "description": "Compliance requirements",
+          "properties": {
+            "frameworks": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["SOC2", "GDPR", "HIPAA", "PCI_DSS", "ISO27001", "NIST"]
+              }
+            },
+            "audit_requirements": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "AdvancedCapabilities": {
+      "type": "object",
+      "description": "Advanced agent capabilities - multi-modal, reasoning, planning, tool use (v0.3.4+)",
+      "properties": {
+        "multimodal": {
+          "type": "object",
+          "description": "Multi-modal input/output support",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "modalities": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["text", "image", "audio", "video", "code", "structured_data"]
+              },
+              "minItems": 1
+            },
+            "processing": {
+              "type": "object",
+              "properties": {
+                "parallel": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Process modalities in parallel"
+                },
+                "fusion_strategy": {
+                  "type": "string",
+                  "enum": ["early_fusion", "late_fusion", "hybrid"],
+                  "default": "late_fusion"
+                }
+              },
+              "additionalProperties": true
+            }
+          },
+          "additionalProperties": true
+        },
+        "reasoning": {
+          "type": "object",
+          "description": "Advanced reasoning capabilities",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "modes": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["chain_of_thought", "tree_of_thoughts", "self_consistency", "reflexion", "reAct"]
+              }
+            },
+            "max_iterations": {
+              "type": "integer",
+              "default": 5,
+              "minimum": 1
+            },
+            "verification": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "method": {
+                  "type": "string",
+                  "enum": ["self_check", "external_validator", "consensus"]
+                }
+              },
+              "additionalProperties": true
+            }
+          },
+          "additionalProperties": true
+        },
+        "planning": {
+          "type": "object",
+          "description": "Task planning and decomposition",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "strategy": {
+              "type": "string",
+              "enum": ["hierarchical", "sequential", "parallel", "adaptive"],
+              "default": "hierarchical"
+            },
+            "lookahead": {
+              "type": "integer",
+              "default": 3,
+              "minimum": 1,
+              "description": "Planning horizon (steps ahead)"
+            },
+            "replanning": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "triggers": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": ["task_failure", "context_change", "new_information", "deadline_approaching"]
+                  }
+                }
+              },
+              "additionalProperties": true
+            }
+          },
+          "additionalProperties": true
+        },
+        "tool_use": {
+          "type": "object",
+          "description": "Advanced tool use and composition",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "parallel_execution": {
+              "type": "boolean",
+              "default": false,
+              "description": "Execute independent tools in parallel"
+            },
+            "tool_chaining": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "max_chain_length": {
+                  "type": "integer",
+                  "default": 5,
+                  "minimum": 1
+                },
+                "validation": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Validate tool outputs before chaining"
+                }
+              },
+              "additionalProperties": true
+            },
+            "tool_selection": {
+              "type": "object",
+              "properties": {
+                "strategy": {
+                  "type": "string",
+                  "enum": ["llm_choice", "rule_based", "ml_classifier", "hybrid"],
+                  "default": "llm_choice"
+                },
+                "confidence_threshold": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1,
+                  "default": 0.7
+                }
+              },
+              "additionalProperties": true
             }
           },
           "additionalProperties": true
