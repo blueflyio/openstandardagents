@@ -42,27 +42,23 @@ export class VersionReleaseService {
         success: true,
         oldVersion,
         newVersion,
-        changes: [`Would update .version.json: ${oldVersion} → ${newVersion}`],
+        changes: [
+          `Would create git tag: v${newVersion}`,
+          `Would update .version.json dynamically: ${oldVersion} → ${newVersion}`,
+          `Would sync all files: ${oldVersion} → ${newVersion}`,
+        ],
         nextSteps: [
           'Run without --dry-run to actually release',
         ],
       };
     }
 
-    // Update .version.json
-    config.current = newVersion;
-    config.spec_version = newVersion;
-    config.spec_path = `spec/v${newVersion}`;
-    config.schema_file = `ossa-${newVersion}.schema.json`;
-    
-    writeFileSync(versionFile, JSON.stringify(config, null, 2) + '\n');
+    const changes: string[] = [];
 
-    const changes: string[] = [`Updated .version.json: ${oldVersion} → ${newVersion}`];
-
-    // Sync all files (replace {{VERSION}} with actual version)
+    // Sync all files (replace version placeholders)
     try {
       execSync('npm run version:sync', { cwd: this.rootDir, stdio: 'inherit' });
-      changes.push('Synced {{VERSION}} placeholders in all files');
+      changes.push(`Synced version placeholders: ${oldVersion} → ${newVersion}`);
     } catch (error) {
       // Continue even if sync fails
     }
@@ -77,10 +73,26 @@ export class VersionReleaseService {
       }
     }
 
+    // Create git tag for new version
+    try {
+      execSync(`git tag -a v${newVersion} -m "Release v${newVersion}"`, {
+        cwd: this.rootDir,
+        stdio: 'inherit',
+      });
+      changes.push(`Created git tag: v${newVersion}`);
+    } catch (error) {
+      changes.push(`Tag creation skipped (may already exist)`);
+    }
+
+    // Update .version.json dynamically (will be updated on next detectVersion call)
+    await this.versionDetection.detectVersion();
+    changes.push(`Updated .version.json dynamically: ${oldVersion} → ${newVersion}`);
+
     const nextSteps = [
       'Review changes: git diff',
       'Commit: git add . && git commit -m "chore: release v' + newVersion + '"',
-      'Push: git push',
+      'Push tags: git push origin v' + newVersion,
+      'Push branch: git push',
       'CI will handle publishing to npm and creating GitLab release',
     ];
 
