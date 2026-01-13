@@ -1,0 +1,165 @@
+# OSSA v0.3.3 - Unified Agent Schema
+# Universal agent platform: OSSA + GitLab Duo + Google A2A + MCP
+# Zero hardcoded models, runtime-agnostic, infrastructure-driven
+
+apiVersion: ossa/v0.3.3
+kind: Agent
+
+metadata:
+  name: string
+  version: string  # semver
+  description: string
+  labels:
+    domain: string
+    capability: string
+    runtime: string
+
+spec:
+  # ============================================
+  # UNIFIED LLM CONFIGURATION
+  # No hardcoded models, runtime-configurable
+  # ============================================
+  llm:
+    provider: ${LLM_PROVIDER:-anthropic}
+    model: ${LLM_MODEL:-claude-sonnet}
+    profile: ${LLM_PROFILE:-balanced}  # NEW: A2A compatible
+    temperature: ${LLM_TEMPERATURE:-0.1}
+    maxTokens: ${LLM_MAX_TOKENS:-16000}
+    topP: ${LLM_TOP_P:-0.9}
+
+    fallback_models:
+      - provider: ${LLM_FALLBACK_PROVIDER_1:-openai}
+        model: ${LLM_FALLBACK_MODEL_1:-gpt-4o}
+        condition: on_error
+      - provider: ${LLM_FALLBACK_PROVIDER_2:-google}
+        model: ${LLM_FALLBACK_MODEL_2:-gemini-2.0-flash}
+        condition: on_rate_limit
+
+    retry_config:
+      max_attempts: ${LLM_RETRY_ATTEMPTS:-3}
+      backoff_strategy: ${LLM_BACKOFF_STRATEGY:-exponential}
+
+  # ============================================
+  # EXECUTION PROFILES (Google A2A)
+  # Task-specific optimization
+  # ============================================
+  execution_profile:
+    default: ${LLM_PROFILE:-balanced}
+    profiles:
+      fast:
+        maxTokens: 4000
+        temperature: 0.0
+        description: "Quick responses for triage"
+      balanced:
+        maxTokens: 16000
+        temperature: 0.1
+        description: "General agent operations"
+      deep:
+        maxTokens: 32000
+        temperature: 0.2
+        reasoning_enabled: true
+        description: "Deep analysis and reasoning"
+      safe:
+        temperature: 0.0
+        validation_required: true
+        audit_log: true
+        description: "Compliance and security"
+
+  # ============================================
+  # RUNTIME DECLARATION (Multi-platform)
+  # ============================================
+  runtime:
+    type: ${AGENT_RUNTIME:-unified}
+    supports:
+      - google-a2a
+      - gitlab-duo
+      - ossa-mesh
+      - mcp
+      - local-execution
+    scheduling:
+      strategy: ${AGENT_SCHEDULING:-fair}
+      priority: ${AGENT_PRIORITY:-normal}
+      max_concurrent: ${AGENT_MAX_CONCURRENT:-10}
+      timeout_seconds: ${AGENT_TIMEOUT:-300}
+    resource_limits:
+      memory_mb: ${AGENT_MEMORY_MB:-512}
+      cpu_millicores: ${AGENT_CPU_MILLICORES:-500}
+
+  # ============================================
+  # CAPABILITIES (A2A/Duo compatible)
+  # ============================================
+  capabilities:
+    - name: ${CAPABILITY_SCAN:-security_scan}
+      type: action
+      runtime: llm
+      description: "Run security analysis"
+      input_schema:
+        type: object
+        required: [path]
+        properties:
+          path:
+            type: string
+          severity:
+            type: string
+            enum: [low, medium, high, critical]
+
+  # ============================================
+  # FUNCTIONS (A2A format)
+  # OpenAI-style function calling
+  # ============================================
+  functions:
+    - name: scan_security
+      description: "Run OSSA security analysis"
+      parameters:
+        type: object
+        properties:
+          path:
+            type: string
+            description: "Path to scan"
+          severity:
+            type: string
+            enum: [low, medium, high, critical]
+        required: [path]
+      returns:
+        type: object
+        properties:
+          findings:
+            type: array
+          score:
+            type: number
+
+  # ============================================
+  # EXTENSIONS (A2A compatible)
+  # ============================================
+  extensions:
+    - type: http
+      name: ossa-mesh
+      endpoint: ${OSSA_MESH_URL}
+      credentials_ref: OSSA_MESH_TOKEN
+    - type: mcp
+      name: gitlab-mcp
+      endpoint: ${GITLAB_MCP_URL}
+      credentials_ref: GITLAB_TOKEN
+
+  # ============================================
+  # EXISTING OSSA FEATURES
+  # ============================================
+  role: string
+  taxonomy:
+    domain: string
+    subdomain: string
+    capability: string
+
+  tools:
+    - name: string
+      description: string
+      source:
+        type: mcp
+        uri: string
+
+  knowledge_graph:
+    enabled: boolean
+    provider: string
+    connection:
+      endpoint: string
+      credentials_ref: string

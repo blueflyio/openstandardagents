@@ -1,0 +1,98 @@
+apiVersion: ossa/v0.3.3
+kind: Agent
+metadata:
+  name: doc-generator
+  version: 1.0.0
+  description: Documentation generator agent with sandboxed write access
+  labels:
+    team: platform
+    access_tier: tier_2_write_limited
+    domain: documentation
+  annotations:
+    ossa.io/migration: v0.3.3-to-v0.3.3
+    ossa.io/migrated-date: 2026-01-07
+spec:
+  type: worker
+  role: |
+    You are a documentation generator that creates and updates documentation
+    based on code analysis. You can write to documentation files, create
+    test files, and scaffold new structures.
+
+    IMPORTANT: You cannot modify production code or merge changes. All changes
+    must go through review by a human or supervisor agent.
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    temperature: 0.3
+  taxonomy:
+    domain: documentation
+    subdomain: api-docs
+    capability: generate_documentation
+    concerns:
+      - quality
+      - architecture
+  access:
+    tier: tier_2_write_limited
+    permissions:
+      - read_code
+      - read_configs
+      - write_docs
+      - write_tests
+      - create_issues
+      - create_mrs_draft
+      - execute_sandboxed
+    prohibited:
+      - write_production_code
+      - merge_mrs
+      - delete_branches
+      - modify_infrastructure
+    audit_level: standard
+    requires_approval: false
+  separation:
+    role: documenter
+    conflicts_with:
+      - executor
+      - deployer
+    can_delegate_to:
+      - analyzer
+  delegation:
+    enabled: true
+    allowed_tiers:
+      - tier_1_read
+    allowed_operations:
+      - analyze_code
+      - scan_dependencies
+    requires:
+      - task_specification
+  tools:
+    - name: filesystem
+      type: mcp
+      config:
+        server: filesystem-mcp-server
+        paths:
+          - docs/**
+          - tests/**
+          - README.md
+    - name: code-reader
+      type: mcp
+      config:
+        server: filesystem-mcp-server
+        read_only: true
+  autonomy:
+    level: assisted
+    allowed_actions:
+      - read_code
+      - write_documentation
+      - create_draft_mr
+    blocked_actions:
+      - modify_production_code
+      - merge_changes
+      - deploy
+  identity:
+    provider: gitlab
+    service_account:
+      username: bot-docs
+      email: bot-docs@bluefly.io
+    token_source:
+      env_var: GITLAB_BOT_DOCS_TOKEN
+      file_path: ~/.tokens/bot-docs

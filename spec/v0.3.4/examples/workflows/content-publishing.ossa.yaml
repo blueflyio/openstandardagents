@@ -1,0 +1,173 @@
+apiVersion: ossa/v0.3.3
+kind: Workflow
+metadata:
+  name: content-publishing-pipeline
+  version: 1.0.0
+  labels:
+    domain: content-management
+    tier: tier_3_write_elevated
+  annotations:
+    ossa.io/description: End-to-end content publishing with review and approval
+    ossa.io/category: publishing
+    ossa.io/compliance: SOC2,GDPR
+    ossa.io/migration: v0.3.3-to-v0.3.3
+    ossa.io/migrated-date: 2026-01-07
+spec:
+  triggers:
+    - type: webhook
+      endpoint: /api/v1/publish
+      methods:
+        - POST
+      authentication:
+        type: bearer
+        scope: publish:content
+    - type: schedule
+      cron: 0 9 * * 1-5
+      timezone: America/New_York
+    - type: event
+      source: cms
+      event_type: content.ready_for_publish
+  inputs:
+    type: object
+    required:
+      - content_id
+    properties:
+      content_id:
+        type: string
+      priority:
+        type: string
+        enum:
+          - low
+          - normal
+          - high
+          - critical
+        default: normal
+      skip_review:
+        type: boolean
+        default: false
+      notify_channels:
+        type: array
+        items:
+          type: string
+          enum:
+            - email
+            - slack
+            - teams
+            - webhook
+        default:
+          - email
+  outputs:
+    type: object
+    properties:
+      published_url:
+        type: string
+        format: uri
+      review_comments:
+        type: array
+        items:
+          type: string
+      notifications_sent:
+        type: integer
+      total_duration_ms:
+        type: integer
+  steps:
+    - id: validate
+      name: Validate Content
+      ref: tasks/validate-content
+      kind: Task
+      input:
+        content_id: ${{ inputs.content_id }}
+        strict: true
+      on_failure: halt
+    - id: review
+      name: AI Content Review
+      ref: agents/content-reviewer
+      kind: Agent
+      condition: ${{ !inputs.skip_review }}
+      input:
+        content: ${{ steps.validate.output.content }}
+        guidelines: brand-voice,accessibility,seo
+      timeout_seconds: 120
+      on_failure: continue
+      output_mapping:
+        review_score: ${{ output.score }}
+        suggestions: ${{ output.suggestions }}
+    - id: approval
+      name: Human Approval
+      type: approval
+      condition: ${{ steps.review.output.review_score < 0.8 }}
+      approvers:
+        - role: content-manager
+        - role: editor-in-chief
+      require: 1
+      timeout_hours: 24
+      escalation:
+        after_hours: 4
+        to:
+          - senior-editor
+    - id: publish
+      name: Publish Content
+      ref: tasks/publish-content
+      kind: Task
+      depends_on:
+        - validate
+        - review
+      input:
+        content_id: ${{ inputs.content_id }}
+        content_type: ${{ steps.validate.output.content_type }}
+        notify_subscribers: true
+      on_failure: rollback
+    - id: notify
+      name: Send Notifications
+      ref: tasks/send-notifications
+      kind: Task
+      depends_on:
+        - publish
+      input:
+        channels: ${{ inputs.notify_channels }}
+        message:
+          title: New content published
+          url: ${{ steps.publish.output.published_url }}
+          priority: ${{ inputs.priority }}
+      on_failure: continue
+    - id: analytics
+      name: Track Analytics
+      ref: tasks/track-analytics
+      kind: Task
+      depends_on:
+        - publish
+      async: true
+      input:
+        event: content_published
+        properties:
+          content_id: ${{ inputs.content_id }}
+          published_at: ${{ steps.publish.output.published_at }}
+  context:
+    variables:
+      environment: ${{ env.ENVIRONMENT }}
+      trace_id: ${{ uuid() }}
+    secrets:
+      - name: CMS_API_KEY
+        ref: vault://secret/cms/api-key
+      - name: NOTIFICATION_TOKEN
+        ref: vault://secret/notifications/token
+  concurrency:
+    group: publish-${{ inputs.content_id }}
+    cancel_in_progress: false
+  error_handling:
+    on_failure: compensate
+    compensation_steps:
+      - id: rollback-publish
+        name: Rollback Publication
+        ref: tasks/unpublish-content
+        kind: Task
+        input:
+          content_id: ${{ inputs.content_id }}
+      - id: notify-failure
+        name: Notify Team
+        ref: tasks/send-alert
+        kind: Task
+        input:
+          channel: ops-alerts
+          message: Publishing workflow failed for ${{ inputs.content_id }}
+          severity: high
