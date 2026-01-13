@@ -1,0 +1,594 @@
+# OSSA Agent Identity Extension v0.3.4
+# Comprehensive specification for agent identity, authentication, and attribution
+---
+$schema: http://json-schema.org/draft-07/schema#
+$id: https://openstandardagents.org/schemas/v0.3.4/extensions/agent-identity.json
+title: OSSA Agent Identity Extension
+version: 0.3.4
+description: |
+  The Agent Identity Extension enables OSSA agents to operate with authenticated
+  identities across DevOps platforms (GitLab, GitHub, Azure DevOps, Bitbucket).
+
+  Key capabilities:
+  - Service account integration with automatic git attribution
+  - Pattern-based auto-detection of agent identity from working directory
+  - Token management with secure storage and rotation policies
+  - DORA metrics tracking for agent performance measurement
+  - Session management for Claude Code and similar AI assistants
+  - Multi-provider identity federation for complex environments
+  - Compliance and audit logging integration
+
+# Schema Definition
+definitions:
+  AgentIdentity:
+    type: object
+    description: Complete agent identity configuration
+    properties:
+      # Primary provider configuration
+      provider:
+        type: string
+        enum:
+          - gitlab
+          - github
+          - azure-devops
+          - bitbucket
+          - generic
+        description: Primary identity provider type
+
+      # Service account configuration
+      service_account:
+        $ref: "#/definitions/ServiceAccount"
+
+      # Authentication configuration
+      authentication:
+        $ref: "#/definitions/AuthenticationConfig"
+
+      # Token source configuration
+      token_source:
+        $ref: "#/definitions/TokenSource"
+
+      # Auto-detection patterns
+      patterns:
+        type: array
+        items:
+          type: string
+        description: |
+          Glob patterns for auto-detection based on working directory.
+          Uses picomatch syntax. Patterns are matched against absolute paths.
+          Examples: "*/agent-buildkit", "*/common_npm/*", "**/drupal-modules/*"
+
+      # Fallback identity chain
+      fallback:
+        type: array
+        items:
+          $ref: "#/definitions/FallbackIdentity"
+        description: |
+          Fallback identity chain. If primary identity cannot be resolved,
+          attempts each fallback in order until one succeeds.
+
+      # DORA metrics tracking
+      dora_tracking:
+        $ref: "#/definitions/DORATracking"
+
+      # Session management (Claude Code integration)
+      session:
+        $ref: "#/definitions/SessionConfig"
+
+      # Observability/OpenTelemetry identity
+      observability:
+        $ref: "#/definitions/ObservabilityIdentity"
+
+      # Compliance requirements
+      compliance:
+        $ref: "#/definitions/IdentityCompliance"
+
+      # Security policies
+      security:
+        $ref: "#/definitions/IdentitySecurity"
+
+  ServiceAccount:
+    type: object
+    description: Service account details for automated operations
+    required:
+      - username
+      - email
+    properties:
+      id:
+        oneOf:
+          - type: integer
+          - type: string
+        description: Provider-specific account ID (numeric for GitLab, string for others)
+      username:
+        type: string
+        pattern: "^[a-z0-9_-]+$"
+        minLength: 1
+        maxLength: 64
+        description: Service account username
+      email:
+        type: string
+        format: email
+        description: Service account email for git attribution
+      display_name:
+        type: string
+        description: Human-readable display name
+      avatar_url:
+        type: string
+        format: uri
+        description: Avatar URL for the service account
+      created_at:
+        type: string
+        format: date-time
+        description: When the service account was created
+      roles:
+        type: array
+        items:
+          type: string
+          enum:
+            - developer
+            - maintainer
+            - owner
+            - reporter
+            - guest
+        description: Roles assigned to this service account
+
+  AuthenticationConfig:
+    type: object
+    description: Authentication method configuration
+    properties:
+      method:
+        type: string
+        enum:
+          - personal_access_token
+          - project_access_token
+          - group_access_token
+          - deploy_token
+          - oauth2
+          - ssh_key
+          - mtls
+          - github_app
+          - azure_service_principal
+        default: personal_access_token
+        description: Authentication method type
+      scopes:
+        type: array
+        items:
+          type: string
+        description: |
+          Required token scopes. Provider-specific.
+          GitLab: api, read_user, read_repository, write_repository
+          GitHub: repo, user, admin:org
+      auto_refresh:
+        type: boolean
+        default: false
+        description: Automatically refresh token before expiry
+      expiry_warning_days:
+        type: integer
+        default: 7
+        minimum: 1
+        maximum: 90
+        description: Days before expiry to warn about token rotation
+      rotation_policy:
+        type: object
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          interval_days:
+            type: integer
+            default: 90
+            minimum: 7
+            maximum: 365
+          notify_on_rotation:
+            type: boolean
+            default: true
+        description: Token rotation policy configuration
+
+  TokenSource:
+    type: object
+    description: Token/credential source configuration with priority order
+    properties:
+      env_var:
+        type: string
+        pattern: "^[A-Z][A-Z0-9_]*$"
+        description: |
+          Environment variable name containing the token.
+          Highest priority - checked first.
+      file_path:
+        type: string
+        description: |
+          Path to token file. Supports ~ expansion.
+          Second priority - checked if env_var not set.
+      vault:
+        type: object
+        properties:
+          path:
+            type: string
+            description: Vault secret path (e.g., secret/data/gitlab-token)
+          key:
+            type: string
+            default: value
+            description: Key within the Vault secret
+          role:
+            type: string
+            description: Vault role for authentication
+        description: |
+          HashiCorp Vault configuration.
+          Third priority - checked if file_path not available.
+      kubernetes_secret:
+        type: object
+        properties:
+          name:
+            type: string
+            description: Secret name
+          namespace:
+            type: string
+            description: Kubernetes namespace
+          key:
+            type: string
+            default: token
+            description: Key within the secret
+        description: |
+          Kubernetes secret configuration for cloud-native deployments.
+          Fourth priority.
+      gcp_secret_manager:
+        type: object
+        properties:
+          project:
+            type: string
+            description: GCP project ID
+          secret:
+            type: string
+            description: Secret name
+          version:
+            type: string
+            default: latest
+            description: Secret version
+        description: GCP Secret Manager configuration
+      aws_secrets_manager:
+        type: object
+        properties:
+          region:
+            type: string
+            description: AWS region
+          secret_id:
+            type: string
+            description: Secret ARN or name
+          key:
+            type: string
+            description: JSON key within the secret
+        description: AWS Secrets Manager configuration
+      azure_key_vault:
+        type: object
+        properties:
+          vault_url:
+            type: string
+            format: uri
+            description: Azure Key Vault URL
+          secret_name:
+            type: string
+            description: Secret name
+        description: Azure Key Vault configuration
+
+  FallbackIdentity:
+    type: object
+    description: Fallback identity configuration
+    required:
+      - provider
+      - service_account
+    properties:
+      provider:
+        type: string
+        enum:
+          - gitlab
+          - github
+          - azure-devops
+          - bitbucket
+          - generic
+      service_account:
+        $ref: "#/definitions/ServiceAccount"
+      token_source:
+        $ref: "#/definitions/TokenSource"
+      condition:
+        type: object
+        description: Conditions under which this fallback is used
+        properties:
+          pattern_match:
+            type: array
+            items:
+              type: string
+            description: Only use this fallback for these patterns
+          platform_unavailable:
+            type: boolean
+            description: Use when primary platform is unavailable
+
+  DORATracking:
+    type: object
+    description: DORA metrics tracking configuration
+    properties:
+      enabled:
+        type: boolean
+        default: false
+        description: Enable DORA metrics tracking for this agent
+      metrics:
+        type: array
+        items:
+          type: string
+          enum:
+            - deployment_frequency
+            - lead_time
+            - change_failure_rate
+            - mttr
+        uniqueItems: true
+        description: DORA metrics to track
+      labels:
+        type: object
+        additionalProperties:
+          type: string
+        description: Additional labels to add to all metrics
+      prometheus:
+        type: object
+        properties:
+          push_gateway:
+            type: string
+            format: uri
+            description: Prometheus Pushgateway URL
+          job_name:
+            type: string
+            description: Prometheus job name
+        description: Prometheus-specific configuration
+      classifications:
+        type: object
+        description: DORA classification thresholds
+        properties:
+          deployment_frequency:
+            type: object
+            properties:
+              elite:
+                type: string
+                description: "Threshold for Elite (e.g., 'multiple_per_day')"
+              high:
+                type: string
+              medium:
+                type: string
+              low:
+                type: string
+          lead_time:
+            type: object
+            properties:
+              elite:
+                type: string
+                description: "Threshold in hours (e.g., '1')"
+              high:
+                type: string
+              medium:
+                type: string
+              low:
+                type: string
+
+  SessionConfig:
+    type: object
+    description: Session management for Claude Code integration
+    properties:
+      init_on_start:
+        type: boolean
+        default: true
+        description: Initialize identity when session starts
+      propagate_to_subprocesses:
+        type: boolean
+        default: true
+        description: Propagate identity env vars to spawned processes
+      git_attribution:
+        type: boolean
+        default: true
+        description: Configure git author/committer from identity
+      heartbeat_interval:
+        type: integer
+        default: 300
+        minimum: 30
+        maximum: 3600
+        description: Heartbeat interval in seconds for session tracking
+      timeout:
+        type: integer
+        default: 3600
+        minimum: 60
+        maximum: 86400
+        description: Session timeout in seconds
+      hooks:
+        type: object
+        properties:
+          pre_prompt_submit:
+            type: boolean
+            default: true
+            description: Hook into Claude Code pre-prompt-submit
+          post_session:
+            type: boolean
+            default: false
+            description: Execute cleanup on session end
+        description: Claude Code hook integration
+
+  ObservabilityIdentity:
+    type: object
+    description: OpenTelemetry service identity for distributed tracing
+    properties:
+      service_name:
+        type: string
+        description: Service name for OpenTelemetry traces
+      service_namespace:
+        type: string
+        description: Service namespace (e.g., production, staging)
+      service_version:
+        type: string
+        pattern: "^[0-9]+\\.[0-9]+\\.[0-9]+(-[a-zA-Z0-9.]+)?$"
+        description: Service version (semver)
+      service_instance_id:
+        type: string
+        description: Unique instance identifier
+      resource_attributes:
+        type: object
+        additionalProperties:
+          type: string
+        description: Additional OpenTelemetry resource attributes
+
+  IdentityCompliance:
+    type: object
+    description: Compliance requirements for identity management
+    properties:
+      require_mfa:
+        type: boolean
+        default: false
+        description: Require MFA for service account authentication
+      ip_allowlist:
+        type: array
+        items:
+          type: string
+        description: IP addresses/ranges allowed for this identity
+      audit_logging:
+        type: string
+        enum:
+          - required
+          - optional
+          - disabled
+        default: optional
+        description: Audit logging requirement level
+      data_residency:
+        type: string
+        description: Required data residency region
+      frameworks:
+        type: array
+        items:
+          type: string
+          enum:
+            - SOC2
+            - HIPAA
+            - GDPR
+            - FedRAMP
+            - PCI-DSS
+            - ISO27001
+        description: Applicable compliance frameworks
+
+  IdentitySecurity:
+    type: object
+    description: Security policies for identity management
+    properties:
+      token_encryption:
+        type: string
+        enum:
+          - none
+          - at_rest
+          - in_transit
+          - both
+        default: both
+        description: Token encryption requirements
+      minimum_token_length:
+        type: integer
+        default: 32
+        description: Minimum token length in characters
+      prohibited_actions:
+        type: array
+        items:
+          type: string
+        description: Actions this identity is prohibited from performing
+      required_approvals:
+        type: object
+        description: Actions requiring human approval
+        properties:
+          force_push:
+            type: boolean
+            default: true
+          delete_protected_branch:
+            type: boolean
+            default: true
+          modify_ci_config:
+            type: boolean
+            default: false
+      rate_limits:
+        type: object
+        properties:
+          requests_per_minute:
+            type: integer
+            default: 60
+          requests_per_hour:
+            type: integer
+            default: 1000
+          git_operations_per_hour:
+            type: integer
+            default: 100
+        description: Rate limiting configuration
+
+# Example configurations
+examples:
+  gitlab_service_account:
+    provider: gitlab
+    service_account:
+      id: 31840529
+      username: bot-ts-local
+      email: bot-ts-local@bluefly.io
+      roles:
+        - developer
+    authentication:
+      method: project_access_token
+      scopes:
+        - api
+        - read_repository
+        - write_repository
+      expiry_warning_days: 14
+    token_source:
+      env_var: GITLAB_BOT_TS_TOKEN
+      file_path: ~/.tokens/bot-ts-local
+    patterns:
+      - "*/common_npm/*"
+      - "*/agent-buildkit"
+      - "*/agent-studio"
+    dora_tracking:
+      enabled: true
+      metrics:
+        - deployment_frequency
+        - lead_time
+        - change_failure_rate
+        - mttr
+    session:
+      init_on_start: true
+      propagate_to_subprocesses: true
+      git_attribution: true
+    observability:
+      service_name: bot-ts-local
+      service_namespace: development
+      service_version: "1.0.0"
+
+  github_actions_bot:
+    provider: github
+    service_account:
+      username: github-actions[bot]
+      email: github-actions[bot]@users.noreply.github.com
+    authentication:
+      method: github_app
+    token_source:
+      env_var: GITHUB_TOKEN
+    patterns:
+      - "*/actions/workflows/*"
+    security:
+      prohibited_actions:
+        - force_push
+        - delete_branch
+
+  multi_provider_agent:
+    provider: gitlab
+    service_account:
+      id: 31840529
+      username: bot-ci-local
+      email: bot-ci-local@bluefly.io
+    fallback:
+      - provider: github
+        service_account:
+          username: bot-ci
+          email: bot-ci@company.com
+        token_source:
+          env_var: GITHUB_FALLBACK_TOKEN
+        condition:
+          platform_unavailable: true
+    compliance:
+      require_mfa: true
+      audit_logging: required
+      frameworks:
+        - SOC2
+        - GDPR
