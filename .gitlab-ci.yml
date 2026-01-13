@@ -38,6 +38,24 @@ include:
   - local: .gitlab/ci/merge-train-optimized.yml
 
 # =============================================================================
+# PIPELINE DEDUPLICATION
+# =============================================================================
+# Prevent duplicate pipelines - only run pipelines for valid sources
+# GitLab will automatically cancel older pipelines for the same ref
+workflow:
+  rules:
+    # Allow pipelines for pushes (GitLab handles deduplication)
+    - if: $CI_PIPELINE_SOURCE == "push"
+    # Allow pipelines for merge requests
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    # Allow scheduled pipelines
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    # Allow API/web triggered pipelines
+    - if: $CI_PIPELINE_SOURCE == "api" || $CI_PIPELINE_SOURCE == "web"
+    # Block everything else
+    - when: never
+
+# =============================================================================
 # PIPELINE STAGES
 # =============================================================================
 stages:
