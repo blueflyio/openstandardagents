@@ -109,6 +109,7 @@ security:secret-detection:
 # Custom job (not overriding GitLab template)
 security:sast-iac:
   stage: security
+  image: node:${NODE_VERSION}-alpine
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH == "main"
