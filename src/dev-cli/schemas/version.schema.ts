@@ -103,7 +103,7 @@ export type VersionConfig = z.infer<typeof VersionConfigSchema>;
 export const SEMVER_PATTERN = /^(\d+)\.(\d+)\.(\d+)(?:-([a-zA-Z0-9.]+))?$/;
 
 /**
- * Pattern for matching {{VERSION}} placeholder
+ * Pattern for matching 0.3.4 placeholder
  */
 export const VERSION_PLACEHOLDER_PATTERN = /\{\{VERSION\}\}/g;
 
