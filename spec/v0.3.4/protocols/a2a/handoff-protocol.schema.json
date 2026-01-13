@@ -1,0 +1,248 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openstandardagents.org/schemas/v0.3.4/protocols/a2a/handoff-protocol.json",
+  "title": "Agent Handoff Protocol",
+  "description": "Protocol for task delegation and handoff between agents in AG2 swarm topologies",
+  "type": "object",
+  "properties": {
+    "handoff_config": {
+      "$ref": "#/definitions/HandoffConfig"
+    },
+    "handoff_rules": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/HandoffRule"
+      },
+      "description": "Rules defining when and how to handoff tasks"
+    }
+  },
+  "definitions": {
+    "HandoffConfig": {
+      "type": "object",
+      "description": "Global configuration for agent handoffs",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether handoff is enabled"
+        },
+        "strategy": {
+          "type": "string",
+          "enum": ["capability_match", "load_balance", "round_robin", "priority", "custom"],
+          "default": "capability_match",
+          "description": "Handoff selection strategy"
+        },
+        "timeout_ms": {
+          "type": "integer",
+          "minimum": 1000,
+          "default": 30000,
+          "description": "Handoff timeout"
+        },
+        "max_retries": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 3,
+          "description": "Maximum handoff retry attempts"
+        },
+        "retry_delay_ms": {
+          "type": "integer",
+          "minimum": 100,
+          "default": 1000,
+          "description": "Delay between retries"
+        },
+        "context_transfer": {
+          "$ref": "#/definitions/ContextTransfer"
+        },
+        "acknowledgment_required": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether target agent must acknowledge handoff"
+        },
+        "track_handoff_chain": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to track complete handoff history"
+        }
+      }
+    },
+    "HandoffRule": {
+      "type": "object",
+      "required": ["id", "from", "to", "condition"],
+      "description": "Rule defining handoff conditions and targets",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique handoff rule identifier"
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable rule name"
+        },
+        "from": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^agent://[a-z0-9]([-a-z0-9]*[a-z0-9])?$",
+          "description": "Source agent URI"
+        },
+        "to": {
+          "oneOf": [
+            {
+              "type": "string",
+              "format": "uri",
+              "pattern": "^agent://[a-z0-9]([-a-z0-9]*[a-z0-9])?$",
+              "description": "Target agent URI"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uri",
+                "pattern": "^agent://[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+              },
+              "description": "Array of candidate target agents"
+            }
+          ],
+          "description": "Target agent(s) for handoff"
+        },
+        "condition": {
+          "$ref": "#/definitions/HandoffCondition"
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1,
+          "description": "Rule evaluation priority (higher = evaluated first)"
+        },
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether rule is active"
+        },
+        "context_filter": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Context keys to transfer during handoff"
+        },
+        "message_template": {
+          "type": "string",
+          "description": "Template for handoff message"
+        },
+        "metadata": {
+          "type": "object",
+          "description": "Additional rule metadata",
+          "additionalProperties": true
+        }
+      }
+    },
+    "HandoffCondition": {
+      "type": "object",
+      "description": "Conditions that trigger a handoff",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "capability_required",
+            "task_complete",
+            "error",
+            "timeout",
+            "explicit_request",
+            "load_threshold",
+            "custom"
+          ],
+          "description": "Condition type"
+        },
+        "capability": {
+          "type": "string",
+          "description": "Required capability that triggers handoff"
+        },
+        "error_codes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Error codes that trigger handoff"
+        },
+        "timeout_ms": {
+          "type": "integer",
+          "minimum": 1000,
+          "description": "Timeout that triggers handoff"
+        },
+        "load_threshold": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Load percentage threshold (0-1)"
+        },
+        "expression": {
+          "type": "string",
+          "description": "Custom condition expression"
+        },
+        "context_match": {
+          "type": "object",
+          "description": "Context conditions that must match",
+          "additionalProperties": true
+        }
+      }
+    },
+    "ContextTransfer": {
+      "type": "object",
+      "description": "Configuration for transferring context during handoff",
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["full", "summary", "minimal", "selective", "none"],
+          "default": "selective",
+          "description": "How much context to transfer"
+        },
+        "include_history": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to include conversation history"
+        },
+        "max_history_length": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Maximum history messages to transfer"
+        },
+        "include_artifacts": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to transfer artifacts/attachments"
+        },
+        "include_state": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to transfer agent state"
+        },
+        "compression_enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to compress context data"
+        },
+        "encryption_enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to encrypt context data"
+        },
+        "summary_method": {
+          "type": "string",
+          "enum": ["last_msg", "llm_summarize", "extractive", "none"],
+          "description": "Method for summarizing context"
+        },
+        "summary_prompt": {
+          "type": "string",
+          "description": "Custom prompt for LLM summarization"
+        },
+        "selective_keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Specific context keys to transfer in selective mode"
+        }
+      }
+    }
+  }
+}

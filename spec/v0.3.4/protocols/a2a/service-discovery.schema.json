@@ -1,0 +1,441 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openstandardagents.org/schemas/v0.3.4/protocols/a2a/service-discovery.json",
+  "title": "Agent Service Discovery",
+  "description": "Service discovery metadata for agent-to-agent interoperability and dynamic agent registration",
+  "type": "object",
+  "properties": {
+    "discovery_config": {
+      "$ref": "#/definitions/DiscoveryConfig"
+    },
+    "service_registry": {
+      "$ref": "#/definitions/ServiceRegistry"
+    },
+    "agent_advertisement": {
+      "$ref": "#/definitions/AgentAdvertisement"
+    }
+  },
+  "definitions": {
+    "DiscoveryConfig": {
+      "type": "object",
+      "description": "Configuration for service discovery mechanisms",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether service discovery is enabled"
+        },
+        "mechanism": {
+          "type": "string",
+          "enum": ["dns", "consul", "etcd", "kubernetes", "registry", "multicast", "custom"],
+          "default": "registry",
+          "description": "Service discovery mechanism"
+        },
+        "registry_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL of service registry"
+        },
+        "refresh_interval_ms": {
+          "type": "integer",
+          "minimum": 1000,
+          "default": 30000,
+          "description": "How often to refresh service list"
+        },
+        "health_check_enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to perform health checks"
+        },
+        "health_check_interval_ms": {
+          "type": "integer",
+          "minimum": 1000,
+          "default": 10000,
+          "description": "Health check interval"
+        },
+        "ttl_ms": {
+          "type": "integer",
+          "minimum": 1000,
+          "default": 60000,
+          "description": "Time-to-live for service registrations"
+        },
+        "namespace": {
+          "type": "string",
+          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$",
+          "description": "Namespace for service isolation"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Tags for service filtering"
+        }
+      }
+    },
+    "ServiceRegistry": {
+      "type": "object",
+      "description": "Central registry of available agent services",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["centralized", "distributed", "hybrid"],
+          "default": "centralized",
+          "description": "Registry architecture"
+        },
+        "endpoints": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          },
+          "description": "Registry endpoint URLs"
+        },
+        "authentication": {
+          "$ref": "#/definitions/RegistryAuthentication"
+        },
+        "cache_enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to cache registry responses"
+        },
+        "cache_ttl_ms": {
+          "type": "integer",
+          "minimum": 1000,
+          "default": 60000,
+          "description": "Cache TTL"
+        },
+        "query_filters": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/QueryFilter"
+          },
+          "description": "Filters for querying services"
+        }
+      }
+    },
+    "RegistryAuthentication": {
+      "type": "object",
+      "description": "Authentication for service registry access",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["none", "basic", "bearer", "mtls", "api_key", "oauth2"],
+          "default": "none",
+          "description": "Authentication type"
+        },
+        "credentials_env": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]*$",
+          "description": "Environment variable containing credentials"
+        },
+        "token_env": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]*$",
+          "description": "Environment variable containing token"
+        },
+        "cert_path": {
+          "type": "string",
+          "description": "Path to client certificate (for mTLS)"
+        },
+        "key_path": {
+          "type": "string",
+          "description": "Path to client key (for mTLS)"
+        }
+      }
+    },
+    "QueryFilter": {
+      "type": "object",
+      "description": "Filter for querying agent services",
+      "required": ["field"],
+      "properties": {
+        "field": {
+          "type": "string",
+          "description": "Field to filter on (e.g., 'capabilities', 'status', 'version')"
+        },
+        "operator": {
+          "type": "string",
+          "enum": ["eq", "ne", "contains", "matches", "in"],
+          "default": "eq",
+          "description": "Filter operator"
+        },
+        "value": {
+          "description": "Filter value",
+          "oneOf": [
+            {"type": "string"},
+            {"type": "array", "items": {"type": "string"}}
+          ]
+        }
+      }
+    },
+    "AgentAdvertisement": {
+      "type": "object",
+      "required": ["agent_id", "capabilities", "endpoints"],
+      "description": "Agent service advertisement for discovery",
+      "properties": {
+        "agent_id": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^agent://[a-z0-9]([-a-z0-9]*[a-z0-9])?$",
+          "description": "Unique agent identifier"
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable agent name"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+(-[a-zA-Z0-9]+)?$",
+          "description": "Agent version (semver)"
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Capability"
+          },
+          "description": "Agent capabilities"
+        },
+        "endpoints": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ServiceEndpoint"
+          },
+          "description": "Service endpoints"
+        },
+        "protocols": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["http", "grpc", "websocket", "sse", "mqtt", "amqp"]
+          },
+          "description": "Supported communication protocols"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["available", "busy", "maintenance", "unavailable"],
+          "default": "available",
+          "description": "Agent availability status"
+        },
+        "load": {
+          "$ref": "#/definitions/LoadMetrics"
+        },
+        "health": {
+          "$ref": "#/definitions/HealthStatus"
+        },
+        "metadata": {
+          "type": "object",
+          "description": "Additional metadata",
+          "properties": {
+            "owner": {
+              "type": "string"
+            },
+            "team": {
+              "type": "string"
+            },
+            "environment": {
+              "type": "string",
+              "enum": ["development", "staging", "production"]
+            },
+            "region": {
+              "type": "string"
+            },
+            "zone": {
+              "type": "string"
+            },
+            "cost_per_request": {
+              "type": "number",
+              "minimum": 0
+            }
+          },
+          "additionalProperties": true
+        },
+        "registration_time": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When agent was registered"
+        },
+        "last_heartbeat": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last heartbeat timestamp"
+        }
+      }
+    },
+    "Capability": {
+      "type": "object",
+      "required": ["name"],
+      "description": "Agent capability descriptor",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Capability name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Capability description"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+(-[a-zA-Z0-9]+)?$",
+          "description": "Capability version"
+        },
+        "input_schema": {
+          "type": "object",
+          "description": "JSON Schema for capability input"
+        },
+        "output_schema": {
+          "type": "object",
+          "description": "JSON Schema for capability output"
+        },
+        "async": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether capability is asynchronous"
+        },
+        "max_concurrent": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum concurrent executions"
+        },
+        "avg_duration_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Average execution duration"
+        },
+        "cost_estimate": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Estimated cost per execution"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Capability tags for discovery"
+        }
+      }
+    },
+    "ServiceEndpoint": {
+      "type": "object",
+      "required": ["protocol", "url"],
+      "description": "Agent service endpoint",
+      "properties": {
+        "protocol": {
+          "type": "string",
+          "enum": ["http", "https", "grpc", "grpcs", "ws", "wss", "sse", "mqtt", "amqp"],
+          "description": "Endpoint protocol"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Endpoint URL"
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535,
+          "description": "Service port"
+        },
+        "path": {
+          "type": "string",
+          "description": "API path"
+        },
+        "auth_required": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether endpoint requires authentication"
+        },
+        "tls_enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether TLS is enabled"
+        },
+        "rate_limit": {
+          "type": "object",
+          "properties": {
+            "requests_per_minute": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "requests_per_hour": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        }
+      }
+    },
+    "LoadMetrics": {
+      "type": "object",
+      "description": "Current agent load metrics",
+      "properties": {
+        "cpu_percent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "CPU usage percentage"
+        },
+        "memory_percent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Memory usage percentage"
+        },
+        "active_requests": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of active requests"
+        },
+        "queue_depth": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Request queue depth"
+        },
+        "avg_response_time_ms": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Average response time"
+        }
+      }
+    },
+    "HealthStatus": {
+      "type": "object",
+      "description": "Agent health status",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["healthy", "degraded", "unhealthy"],
+          "description": "Overall health status"
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string",
+                "enum": ["pass", "warn", "fail"]
+              },
+              "message": {
+                "type": "string"
+              },
+              "timestamp": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        },
+        "last_check": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last health check timestamp"
+        }
+      }
+    }
+  }
+}
