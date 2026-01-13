@@ -1,0 +1,239 @@
+# ============================================================================
+# OSSA Cross-Tier Delegation Protocol (Reference)
+# ============================================================================
+# Defines how agents delegate tasks across access tiers while maintaining
+# separation of duties and audit compliance.
+#
+# NOTE: This is a reference specification, not an OSSA manifest.
+# It documents the delegation protocol for implementation guidance.
+#
+# @see https://openstandardagents.org/spec/v0.3.4/access-tiers
+# ============================================================================
+
+# Specification metadata
+name: cross-tier-delegation
+version: 1.0.0
+description: "Protocol for delegating tasks between agents of different access tiers"
+
+# Delegation Matrix
+# =================
+# Defines which tiers can delegate to which other tiers
+# Key: source tier, Value: allowed target tiers
+
+delegation_matrix:
+  tier_1_read:
+    can_delegate_to:
+      - tier_1_read  # Peer delegation OK
+    cannot_delegate_to:
+      - tier_2_write_limited
+      - tier_3_write_elevated
+      - tier_4_policy
+    reason: "Read-only agents cannot initiate write operations"
+
+  tier_2_write_limited:
+    can_delegate_to:
+      - tier_1_read  # Can request analysis
+      - tier_2_write_limited  # Peer delegation OK
+    cannot_delegate_to:
+      - tier_3_write_elevated  # Cannot escalate privileges
+      - tier_4_policy  # Cannot influence policy
+    reason: "Limited write agents cannot escalate to elevated or policy tiers"
+
+  tier_3_write_elevated:
+    can_delegate_to:
+      - tier_1_read  # Can request analysis
+      - tier_2_write_limited  # Can request documentation
+      - tier_3_write_elevated  # Peer delegation with approval
+    cannot_delegate_to:
+      - tier_4_policy  # Executor/Governor separation
+    reason: "Operators cannot influence policy definitions"
+
+  tier_4_policy:
+    can_delegate_to:
+      - tier_1_read  # Can request compliance audits
+      - tier_4_policy  # Peer delegation for policy review
+    cannot_delegate_to:
+      - tier_2_write_limited  # Governor/Executor separation
+      - tier_3_write_elevated  # Governor/Executor separation
+    execution_only_via: "tier_3_write_elevated with approval chain"
+    reason: "Policy tier enforces separation - execution through operators only"
+
+# Delegation Request Schema
+delegation_request:
+  type: object
+  required:
+    - request_id
+    - source_agent
+    - target_agent
+    - task
+    - justification
+  properties:
+    request_id:
+      type: string
+      format: uuid
+      description: "Unique delegation request identifier"
+
+    source_agent:
+      type: object
+      required:
+        - agent_id
+        - tier
+      properties:
+        agent_id:
+          type: string
+        tier:
+          type: string
+          enum: [tier_1_read, tier_2_write_limited, tier_3_write_elevated, tier_4_policy]
+        session_id:
+          type: string
+
+    target_agent:
+      type: object
+      required:
+        - agent_id
+        - tier
+      properties:
+        agent_id:
+          type: string
+        tier:
+          type: string
+        capabilities_required:
+          type: array
+          items:
+            type: string
+
+    task:
+      type: object
+      required:
+        - type
+        - payload
+      properties:
+        type:
+          type: string
+          description: "Task type identifier"
+        payload:
+          type: object
+          description: "Task-specific payload"
+        timeout_seconds:
+          type: integer
+          default: 300
+        priority:
+          type: string
+          enum: [low, normal, high, critical]
+          default: normal
+
+    justification:
+      type: string
+      minLength: 10
+      description: "Reason for delegation (required for audit)"
+
+    context:
+      type: object
+      properties:
+        parent_request_id:
+          type: string
+          description: "Parent request if this is a sub-delegation"
+        trace_id:
+          type: string
+          description: "Distributed tracing ID"
+        workflow_id:
+          type: string
+          description: "Associated workflow if any"
+
+# Delegation Response Schema
+delegation_response:
+  type: object
+  required:
+    - request_id
+    - status
+    - timestamp
+  properties:
+    request_id:
+      type: string
+      format: uuid
+
+    status:
+      type: string
+      enum:
+        - accepted  # Delegation accepted, processing
+        - completed  # Task completed successfully
+        - rejected  # Delegation denied (tier violation, etc.)
+        - failed  # Task execution failed
+        - timeout  # Task timed out
+        - cancelled  # Delegation cancelled by source
+
+    error:
+      type: object
+      properties:
+        code:
+          type: string
+          enum:
+            - TIER_VIOLATION  # Delegation matrix violation
+            - CAPABILITY_MISSING  # Target lacks required capability
+            - APPROVAL_REQUIRED  # Needs human approval
+            - APPROVAL_DENIED  # Human rejected delegation
+            - TARGET_UNAVAILABLE  # Target agent not available
+            - EXECUTION_ERROR  # Task execution failed
+            - TIMEOUT  # Task exceeded timeout
+            - RESOURCE_EXHAUSTED  # Rate limit or quota exceeded
+        message:
+          type: string
+
+# Approval Chains for Elevated Delegations
+approval_chains:
+  standard:
+    description: "Standard approval for tier_3 operations"
+    approvers:
+      - role: team-lead
+      - role: security-reviewer
+    require: 1
+    timeout_hours: 4
+
+  elevated:
+    description: "Elevated approval for sensitive operations"
+    approvers:
+      - role: security-lead
+      - role: compliance-officer
+      - role: engineering-manager
+    require: 2
+    timeout_hours: 8
+    escalation:
+      after_hours: 2
+      to: [cto, ciso]
+
+  critical:
+    description: "Critical approval for production changes"
+    approvers:
+      - role: sre-lead
+      - role: security-lead
+      - role: release-manager
+    require: 2
+    timeout_hours: 24
+
+# Audit Requirements by Tier Combination
+audit_requirements:
+  tier_1_to_tier_1:
+    level: standard
+    retention_days: 30
+
+  tier_2_to_tier_1:
+    level: standard
+    retention_days: 30
+
+  tier_3_to_any:
+    level: detailed
+    retention_days: 90
+
+  tier_4_to_any:
+    level: comprehensive
+    retention_days: 365
+
+# Rate Limiting
+rate_limits:
+  per_source_agent:
+    requests_per_minute: 60
+    requests_per_hour: 1000
+
+  per_target_agent:
+    concurrent_delegations: 10
+    queue_depth: 50

@@ -1,0 +1,216 @@
+apiVersion: ossa/v0.3.4
+kind: Agent
+metadata:
+  name: compliance-governor
+  version: 1.0.0
+  description: Compliance policy governor - defines policies, cannot execute
+  labels:
+    team: security
+    access_tier: tier_4_policy
+    domain: security
+  annotations:
+    ossa.io/migration: v0.3.4-to-v0.3.4
+    ossa.io/migrated-date: 2026-01-07
+spec:
+  type: governor
+  role: |
+    You are a compliance governance agent responsible for defining and
+    publishing security and compliance policies. You monitor policy adherence
+    and report violations.
+
+    CRITICAL ISOLATION RULES:
+    - You CANNOT execute remediation actions directly
+    - You CANNOT modify code or infrastructure
+    - You MUST delegate execution to tier_3_write_elevated operators
+    - You define WHAT should happen, not HOW to do it
+
+    Your role is legislative, not executive. You define the rules;
+    operators enforce them.
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    temperature: 0
+    profile: safe
+  taxonomy:
+    domain: security
+    subdomain: compliance
+    capability: define_policies
+    concerns:
+      - governance
+      - quality
+      - reliability
+  access:
+    tier: tier_4_policy
+    permissions:
+      - read_code
+      - read_configs
+      - read_metrics
+      - read_logs
+      - read_issues
+      - read_mrs
+      - define_policies
+      - publish_policies
+      - audit_compliance
+      - report_violations
+    prohibited:
+      - execute_*
+      - write_code
+      - modify_infrastructure
+      - remediate_direct
+      - deploy
+      - merge_mrs
+    audit_level: comprehensive
+    requires_approval: false
+    isolation: strict
+  separation:
+    role: governor
+    conflicts_with:
+      - operator
+      - executor
+      - deployer
+      - remediator
+      - enforcer
+    can_delegate_to:
+      - operator
+    prohibited_actions:
+      - execute
+      - deploy
+      - merge
+      - modify_production
+  delegation:
+    enabled: true
+    allowed_tiers:
+      - tier_3_write_elevated
+    allowed_operations:
+      - remediate_violations
+      - apply_policies
+      - execute_fixes
+    requires:
+      - delegation_token
+      - audit_trail
+      - violation_report
+      - approval
+  tools:
+    - name: policy-reader
+      type: mcp
+      config:
+        server: policy-mcp-server
+        read_only: true
+    - name: compliance-api
+      type: api
+      config:
+        endpoint: https://api.compliance.local
+        methods:
+          - GET
+          - POST
+    - name: audit-logger
+      type: mcp
+      config:
+        server: audit-mcp-server
+  autonomy:
+    level: autonomous
+    allowed_actions:
+      - define_policy
+      - publish_policy
+      - audit_compliance
+      - generate_violation_report
+      - delegate_remediation
+    blocked_actions:
+      - execute_any_modification
+      - deploy
+      - merge
+      - modify_infrastructure
+      - remediate_directly
+  compliance:
+    frameworks:
+      - SOC2
+      - ISO27001
+      - GDPR
+    audit_logging: required
+    pii_handling: redact
+  safety:
+    guardrails:
+      enabled: true
+      max_tool_calls: 20
+      max_execution_time_seconds: 600
+      policies:
+        - no_execution
+        - delegation_only
+        - audit_all_actions
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+    metrics:
+      enabled: true
+      customMetrics:
+        - name: policies_defined
+          type: counter
+          description: Total policies defined
+        - name: violations_detected
+          type: counter
+          description: Compliance violations detected
+        - name: delegations_issued
+          type: counter
+          description: Remediation delegations to operators
+    logging:
+      level: info
+      format: json
+  messaging:
+    publishes:
+      - channel: governance.policies
+        description: Published compliance policies
+        schema:
+          type: object
+          properties:
+            policy_id:
+              type: string
+            version:
+              type: string
+            effective_date:
+              type: string
+              format: date
+      - channel: governance.violations
+        description: Detected policy violations for remediation
+        schema:
+          type: object
+          properties:
+            violation_id:
+              type: string
+            policy_id:
+              type: string
+            severity:
+              type: string
+              enum:
+                - critical
+                - high
+                - medium
+                - low
+            remediation_required:
+              type: boolean
+            delegate_to:
+              type: string
+              description: Target operator agent for remediation
+    commands:
+      - name: audit_project
+        description: Run compliance audit on a project
+        inputSchema:
+          type: object
+          properties:
+            project_id:
+              type: string
+            frameworks:
+              type: array
+              items:
+                type: string
+          required:
+            - project_id
+        outputSchema:
+          type: object
+          properties:
+            compliant:
+              type: boolean
+            violations:
+              type: array
+            recommendations:
+              type: array

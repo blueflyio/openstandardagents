@@ -1,0 +1,324 @@
+# ============================================================================
+# OSSA Service Ports Configuration (Reference)
+# ============================================================================
+# Defines standard port allocations for OSSA agent mesh services.
+# Use this reference when deploying agents to avoid port conflicts.
+#
+# NOTE: This is a reference configuration, not an OSSA manifest.
+# It documents recommended port allocations for infrastructure guidance.
+#
+# @see https://openstandardagents.org/spec/v0.3.4/infrastructure
+# ============================================================================
+
+# Configuration metadata
+name: service-ports
+version: 1.0.0
+description: "Standard service port allocations for OSSA deployments"
+
+# Port Range Allocations
+# =======================
+# 3000-3099: Agent HTTP APIs
+# 3100-3199: Agent WebSocket endpoints
+# 3200-3299: Agent gRPC endpoints
+# 4000-4099: Orchestrator services
+# 5000-5099: Data services (databases, caches)
+# 6000-6099: Message queues and brokers
+# 7000-7099: Observability (metrics, tracing, logs)
+# 8000-8099: Gateway and ingress
+# 9000-9099: Health and admin endpoints
+
+spec:
+  port_ranges:
+    agent_http:
+      start: 3000
+      end: 3099
+      protocol: HTTP/HTTPS
+      description: "Agent REST APIs"
+
+    agent_websocket:
+      start: 3100
+      end: 3199
+      protocol: WS/WSS
+      description: "Agent WebSocket for real-time communication"
+
+    agent_grpc:
+      start: 3200
+      end: 3299
+      protocol: gRPC
+      description: "Agent gRPC for high-performance RPC"
+
+    orchestrator:
+      start: 4000
+      end: 4099
+      protocol: HTTP/gRPC
+      description: "Orchestrator and supervisor services"
+
+    data:
+      start: 5000
+      end: 5099
+      protocol: varies
+      description: "Database and storage services"
+
+    messaging:
+      start: 6000
+      end: 6099
+      protocol: varies
+      description: "Message queues and event buses"
+
+    observability:
+      start: 7000
+      end: 7099
+      protocol: HTTP
+      description: "Metrics, tracing, and logging"
+
+    gateway:
+      start: 8000
+      end: 8099
+      protocol: HTTP/HTTPS
+      description: "API gateways and ingress controllers"
+
+    admin:
+      start: 9000
+      end: 9099
+      protocol: HTTP
+      description: "Health checks and admin endpoints"
+
+  services:
+    # Agent Services (3000-3099)
+    agent_gateway:
+      port: 3000
+      protocol: HTTP
+      description: "Unified agent gateway API"
+      health_endpoint: /health
+
+    worker_agent:
+      port: 3001
+      protocol: HTTP
+      description: "Worker agent API"
+      health_endpoint: /health
+
+    reviewer_agent:
+      port: 3002
+      protocol: HTTP
+      description: "Code review agent API"
+      health_endpoint: /health
+
+    security_scanner:
+      port: 3003
+      protocol: HTTP
+      description: "Security scanning agent"
+      health_endpoint: /health
+
+    doc_generator:
+      port: 3004
+      protocol: HTTP
+      description: "Documentation generator agent"
+      health_endpoint: /health
+
+    deployment_operator:
+      port: 3005
+      protocol: HTTP
+      description: "Deployment operator agent"
+      health_endpoint: /health
+
+    compliance_governor:
+      port: 3006
+      protocol: HTTP
+      description: "Compliance policy engine"
+      health_endpoint: /health
+
+    # WebSocket Endpoints (3100-3199)
+    agent_mesh_ws:
+      port: 3100
+      protocol: WebSocket
+      description: "Agent mesh real-time communication"
+
+    event_stream:
+      port: 3101
+      protocol: WebSocket
+      description: "Event streaming for UI"
+
+    # gRPC Endpoints (3200-3299)
+    agent_grpc:
+      port: 3200
+      protocol: gRPC
+      description: "High-performance agent communication"
+
+    tool_executor_grpc:
+      port: 3201
+      protocol: gRPC
+      description: "Tool execution service"
+
+    # Orchestrator Services (4000-4099)
+    meta_orchestrator:
+      port: 4000
+      protocol: HTTP
+      description: "Meta orchestrator API"
+      health_endpoint: /health
+
+    task_scheduler:
+      port: 4001
+      protocol: HTTP
+      description: "Task scheduling service"
+
+    workflow_engine:
+      port: 4002
+      protocol: HTTP
+      description: "Workflow execution engine"
+
+    swarm_coordinator:
+      port: 4003
+      protocol: HTTP
+      description: "Multi-agent swarm coordination"
+
+    # Data Services (5000-5099)
+    postgres:
+      port: 5432
+      protocol: PostgreSQL
+      description: "Primary PostgreSQL database"
+      note: "Standard PostgreSQL port"
+
+    mongodb:
+      port: 27017
+      protocol: MongoDB
+      description: "MongoDB document store"
+      note: "Standard MongoDB port"
+
+    redis:
+      port: 6379
+      protocol: Redis
+      description: "Redis cache and session store"
+      note: "Standard Redis port"
+
+    qdrant:
+      port: 6333
+      protocol: HTTP
+      description: "Qdrant vector database"
+      grpc_port: 6334
+
+    neo4j:
+      port: 7474
+      protocol: HTTP
+      description: "Neo4j graph database"
+      bolt_port: 7687
+
+    # Message Queue Services (6000-6099)
+    nats:
+      port: 4222
+      protocol: NATS
+      description: "NATS messaging"
+      note: "Standard NATS port"
+
+    kafka:
+      port: 9092
+      protocol: Kafka
+      description: "Apache Kafka"
+      note: "Standard Kafka port"
+
+    rabbitmq:
+      port: 5672
+      protocol: AMQP
+      description: "RabbitMQ message broker"
+      management_port: 15672
+
+    # Observability Services (7000-7099)
+    prometheus:
+      port: 9090
+      protocol: HTTP
+      description: "Prometheus metrics"
+      note: "Standard Prometheus port"
+
+    grafana:
+      port: 3000
+      protocol: HTTP
+      description: "Grafana dashboards"
+      note: "Runs in separate namespace"
+
+    jaeger:
+      port: 16686
+      protocol: HTTP
+      description: "Jaeger tracing UI"
+      collector_port: 14268
+
+    phoenix:
+      port: 6006
+      protocol: HTTP
+      description: "Phoenix LLM observability"
+
+    loki:
+      port: 3100
+      protocol: HTTP
+      description: "Loki log aggregation"
+      note: "Runs in observability namespace"
+
+    # Gateway Services (8000-8099)
+    api_gateway:
+      port: 8000
+      protocol: HTTP
+      description: "Main API gateway"
+      https_port: 8443
+
+    admin_gateway:
+      port: 8001
+      protocol: HTTP
+      description: "Admin API gateway"
+
+    # Health/Admin (9000-9099)
+    health_aggregator:
+      port: 9000
+      protocol: HTTP
+      description: "Aggregated health checks"
+
+    metrics_exporter:
+      port: 9001
+      protocol: HTTP
+      description: "Prometheus metrics exporter"
+
+  # Inter-service dependencies
+  dependencies:
+    agent_gateway:
+      requires:
+        - redis
+        - postgres
+      optional:
+        - jaeger
+        - prometheus
+
+    worker_agent:
+      requires:
+        - agent_gateway
+        - redis
+      optional:
+        - qdrant
+
+    meta_orchestrator:
+      requires:
+        - postgres
+        - redis
+        - nats
+      optional:
+        - neo4j
+
+    workflow_engine:
+      requires:
+        - postgres
+        - task_scheduler
+      optional:
+        - kafka
+
+  # Network policies
+  network_policies:
+    agent_to_agent:
+      protocol: gRPC
+      ports: [3200-3299]
+      encryption: mTLS
+
+    agent_to_data:
+      protocol: varies
+      ports: [5432, 6379, 6333, 27017, 7687]
+      encryption: TLS
+
+    external_ingress:
+      protocol: HTTPS
+      ports: [8443]
+      authentication: bearer/mTLS
