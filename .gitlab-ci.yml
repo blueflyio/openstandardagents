@@ -183,6 +183,10 @@ release:semantic:
   image: node:${NODE_VERSION}
   tags:
     - saas-linux-small-amd64
+  environment:
+    name: production
+    # Required for npm Trusted Publishers OIDC authentication
+    # If environment protection is enabled, ensure this job can deploy to production
   variables:
     GIT_AUTHOR_NAME: "OSSA Release Bot"
     GIT_AUTHOR_EMAIL: "release-bot@openstandardagents.org"
@@ -195,11 +199,45 @@ release:semantic:
     - npm ci
     - npm run build
     - |
+      # Check for npm trusted publishers (OIDC) - preferred method
+      # If GitLab supports OIDC for npm, this will be used automatically
+      # Otherwise, fall back to NPM_TOKEN
       if [ -z "$NPM_TOKEN" ]; then
-        echo "ERROR: NPM_TOKEN not set in CI/CD variables"
-        echo "Add NPM_TOKEN in Settings > CI/CD > Variables"
-        echo "For npmjs.org, use: npmjs.com > Access Tokens > Generate Token (Automation type)"
-        exit 1
+        echo "WARNING: NPM_TOKEN not set"
+        echo ""
+        echo "OPTION 1: Use npm Trusted Publishers (OIDC) - RECOMMENDED"
+        echo "  Configure at: https://www.npmjs.com/settings/blueflyio/trusted-publishers"
+        echo "  Add GitLab CI/CD as trusted publisher (if supported)"
+        echo "  No token needed - uses OIDC authentication"
+        echo ""
+        echo "OPTION 2: Use npm token (fallback if OIDC not available)"
+        echo "  Create token using npm CLI:"
+        echo "    npm token create"
+        echo "    (creates granular publish token)"
+        echo ""
+        echo "  OR create Automation token via web:"
+        echo "    https://www.npmjs.com/settings/blueflyio/tokens"
+        echo ""
+        echo "  Then add to GitLab CI/CD variables:"
+        echo "    Settings > CI/CD > Variables > NPM_TOKEN"
+        echo "    Token must start with 'npm_' (classic tokens revoked Dec 9, 2025)"
+        echo ""
+        echo "Attempting publish without token (will use OIDC if configured)..."
+      else
+        # Validate token format (must start with npm_)
+        if [[ ! "$NPM_TOKEN" =~ ^npm_ ]]; then
+          echo "ERROR: NPM_TOKEN format invalid - must start with 'npm_'"
+          echo "Classic tokens were revoked on Dec 9, 2025"
+          echo ""
+          echo "Create new token using npm CLI:"
+          echo "  npm token create"
+          echo "  (creates granular publish token)"
+          echo ""
+          echo "OR configure npm Trusted Publishers (OIDC):"
+          echo "  https://www.npmjs.com/settings/blueflyio/trusted-publishers"
+          exit 1
+        fi
+        echo "NPM_TOKEN configured (token-based auth)"
       fi
       if [ -z "$CI_DEPLOY_OSSA" ]; then
         echo "ERROR: CI_DEPLOY_OSSA not set"
@@ -215,7 +253,19 @@ release:semantic:
       echo "Required tokens configured"
   script:
     - echo "Running semantic-release..."
-    - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+    # Configure npm auth: prefer OIDC (trusted publishers), fallback to token
+    - |
+      if [ -n "$NPM_TOKEN" ]; then
+        echo "Using token-based authentication (fallback)"
+        echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+      else
+        echo "Using OIDC authentication (npm Trusted Publishers)"
+        echo "Trusted publisher should be configured at:"
+        echo "  https://www.npmjs.com/package/@bluefly/openstandardagents/access"
+        echo ""
+        echo "npm will automatically use OIDC if trusted publisher is configured"
+        echo "No .npmrc token needed - OIDC handles authentication"
+      fi
     - |
       if [ -n "$GITHUB_TOKEN" ]; then
         export GITHUB_TOKEN
