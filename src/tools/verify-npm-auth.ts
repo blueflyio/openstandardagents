@@ -87,10 +87,13 @@ async function verifyToken() {
       console.error('ERROR: Token is invalid or expired');
       console.error('');
       console.error('Solution:');
-      console.error('  1. Go to: https://www.npmjs.com/settings/blueflyio/tokens');
-      console.error('  2. Generate a new token:');
-      console.error('     - Type: "Granular Access Token" with "publish" scope');
-      console.error('     - OR: "Automation" token (simpler)');
+      console.error('  1. Create new token using npm CLI (recommended):');
+      console.error('     npm token create');
+      console.error('     (creates granular publish token)');
+      console.error('');
+      console.error('  2. OR create Automation token via web:');
+      console.error('     https://www.npmjs.com/settings/blueflyio/tokens');
+      console.error('');
       console.error('  3. Copy the new token (starts with npm_)');
       console.error('  4. Update NPM_TOKEN in GitLab CI/CD variables');
     } else if (err.stderr?.includes('403') || err.stderr?.includes('Forbidden')) {
