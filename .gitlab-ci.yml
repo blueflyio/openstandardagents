@@ -198,7 +198,18 @@ release:semantic:
       if [ -z "$NPM_TOKEN" ]; then
         echo "ERROR: NPM_TOKEN not set in CI/CD variables"
         echo "Add NPM_TOKEN in Settings > CI/CD > Variables"
-        echo "For npmjs.org, use: npmjs.com > Access Tokens > Generate Token (Automation type)"
+        echo "For npmjs.org, use: https://www.npmjs.com/settings/[org]/tokens"
+        echo "  - Generate 'Granular Access Token' with 'publish' scope"
+        echo "  - OR: Generate 'Automation' token (full access)"
+        echo "  - Token must start with 'npm_' (new format, not classic)"
+        exit 1
+      fi
+      # Validate token format (must start with npm_)
+      if [[ ! "$NPM_TOKEN" =~ ^npm_ ]]; then
+        echo "ERROR: NPM_TOKEN format invalid - must start with 'npm_'"
+        echo "Classic tokens were revoked on Dec 9, 2025"
+        echo "Create new token at: https://www.npmjs.com/settings/[org]/tokens"
+        echo "  Use 'Granular Access Token' or 'Automation' token type"
         exit 1
       fi
       if [ -z "$CI_DEPLOY_OSSA" ]; then
