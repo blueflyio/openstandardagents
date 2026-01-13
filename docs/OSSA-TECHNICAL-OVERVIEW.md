@@ -1,6 +1,6 @@
 # OSSA Technical Overview
 
-**Open Standard for Scalable Agents** | Spec Version: 0.3.3 | Schema: JSON Schema Draft-07
+**Open Standard for Scalable Agents** | Spec Version: 0.3.4 | Schema: JSON Schema Draft-07
 
 ---
 
@@ -9,7 +9,7 @@
 OSSA is a **specification standard** (like OpenAPI for REST APIs). It defines agent manifests - NOT runtime behavior.
 
 ```yaml
-apiVersion: ossa/v0.3.3
+apiVersion: ossa/v0.3.4
 kind: Agent | Task | Workflow
 metadata:
   name: string
@@ -142,7 +142,7 @@ ossa conformance agent.ossa.yaml --tier standard
 ossa export agent.ossa.yaml --to cursor | langchain | openai
 ```
 
-Schema location: `spec/v0.3.3/ossa-0.3.3.schema.json`
+Schema location: `spec/v0.3.4/ossa-0.3.4.schema.json`
 
 ---
 
@@ -185,17 +185,17 @@ Channel format: `domain.entity.event` (e.g., `infrastructure.deployment.complete
 **Repo:** `gitlab.com/blueflyio/ossa/openstandardagents`
 
 ### Add Framework Extension
-1. Create schema: `spec/v0.3.3/extensions/your-framework.schema.json`
+1. Create schema: `spec/v0.3.4/extensions/your-framework.schema.json`
 2. Add to main schema `definitions` + `extensions.properties`
 3. Create example: `examples/your-framework/agent.ossa.yaml`
 4. Add adapter: `src/adapters/your-framework-adapter.ts`
 5. Add tests: `tests/integration/your-framework.test.ts`
 
 ### Fix/Extend Core Schema
-1. Edit: `spec/v0.3.3/ossa-0.3.3.schema.json`
+1. Edit: `spec/v0.3.4/ossa-0.3.4.schema.json`
 2. Update types: `src/types/index.ts`
 3. Run: `npm run validate:schema && npm test`
-4. Document in: `spec/v0.3.3/UNIFIED-SCHEMA.md`
+4. Document in: `spec/v0.3.4/UNIFIED-SCHEMA.md`
 
 ### Governance Docs
 Wiki: `gitlab.com/blueflyio/ossa/openstandardagents/-/wikis`
@@ -205,8 +205,8 @@ Wiki: `gitlab.com/blueflyio/ossa/openstandardagents/-/wikis`
 ## Key Files
 
 ```
-spec/v0.3.3/
-├── ossa-0.3.3.schema.json    # THE schema (9,656 lines)
+spec/v0.3.4/
+├── ossa-0.3.4.schema.json    # THE schema (9,656 lines)
 ├── taxonomy.yaml             # Domain/type/concern definitions
 ├── access_tiers.yaml         # Tier permissions matrix
 └── examples/                 # Reference manifests

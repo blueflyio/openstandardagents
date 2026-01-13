@@ -8,7 +8,7 @@
 # 3. Test schema compatibility with consumer agents
 # 4. Detect breaking changes between versions
 
-apiVersion: ossa/v0.3.3
+apiVersion: ossa/v0.3.4
 kind: Agent
 metadata:
   name: data-producer
