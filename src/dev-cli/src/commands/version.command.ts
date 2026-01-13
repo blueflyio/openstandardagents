@@ -7,7 +7,6 @@
 
 import { Command } from 'commander';
 import chalk from 'chalk';
-import { VersionAuditService } from '../../services/version-audit.service.js';
 import { VersionReleaseService } from '../services/version-release.service.js';
 import { VersionValidateService } from '../services/version-validate.service.js';
 import { VersionSyncService } from '../services/version-sync.service.js';
@@ -49,43 +48,6 @@ versionCommand
       } else {
         console.error(chalk.red('\n❌ Release failed'));
         process.exit(1);
-      }
-    } catch (error) {
-      console.error(chalk.red(`\n❌ Error: ${error instanceof Error ? error.message : String(error)}`));
-      process.exit(1);
-    }
-  });
-
-// version:audit - Find hardcoded versions
-versionCommand
-  .command('audit')
-  .description('Audit for hardcoded versions (not using {{VERSION}} placeholder)')
-  .option('--fix', 'Automatically replace hardcoded versions with {{VERSION}}', false)
-  .action(async (options: { fix: boolean }) => {
-    console.log(chalk.blue('🔍 OSSA Version Audit'));
-    console.log(chalk.gray('=====================\n'));
-
-    const service = new VersionAuditService();
-    try {
-      const result = await service.audit(options.fix);
-
-      if (result.total === 0) {
-        console.log(chalk.green('✅ No hardcoded versions found!'));
-        console.log(chalk.gray('All files use {{VERSION}} placeholder.'));
-      } else {
-        console.log(chalk.yellow(`\n⚠️  Found ${result.total} hardcoded version(s):\n`));
-        result.files.forEach((file: { path: string; line: number; content: string; suggested: string }) => {
-          console.log(chalk.red(`  ${file.path}:${file.line}`));
-          console.log(chalk.gray(`    Current: ${file.content}`));
-          console.log(chalk.green(`    Suggested: ${file.suggested}`));
-          console.log('');
-        });
-
-        if (options.fix) {
-          console.log(chalk.green(`\n✅ Fixed ${result.fixed} file(s)`));
-        } else {
-          console.log(chalk.yellow('\n💡 Run with --fix to automatically replace hardcoded versions'));
-        }
       }
     } catch (error) {
       console.error(chalk.red(`\n❌ Error: ${error instanceof Error ? error.message : String(error)}`));
