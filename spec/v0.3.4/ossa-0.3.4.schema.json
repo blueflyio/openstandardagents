@@ -25,9 +25,10 @@
       "enum": [
         "Agent",
         "Task",
-        "Workflow"
+        "Workflow",
+        "AgentRegistry"
       ],
-      "description": "Resource type: Agent (agentic loops), Task (deterministic steps), or Workflow (composition)"
+      "description": "Resource type: Agent (agentic loops), Task (deterministic steps), Workflow (composition), or AgentRegistry (discovery and registration) (v0.3.4+)"
     },
     "metadata": {
       "$ref": "#/definitions/Metadata"
@@ -1055,6 +1056,22 @@
         "output_quality": {
           "$ref": "#/definitions/ModelOutputEvaluation",
           "description": "Model Output Editing/Evaluation (MOE) configuration for output validation, quality scoring, and auto-correction (v0.3.4+)"
+        },
+        "discovery": {
+          "$ref": "#/definitions/AgentDiscovery",
+          "description": "Agent discovery configuration for finding other agents (v0.3.4+)"
+        },
+        "communication": {
+          "$ref": "#/definitions/AgentCommunication",
+          "description": "Agent communication protocol configuration - standard message format and routing (v0.3.4+)"
+        },
+        "lifecycle_management": {
+          "$ref": "#/definitions/AgentLifecycle",
+          "description": "Agent lifecycle management - hooks, health checks, graceful shutdown (v0.3.4+)"
+        },
+        "web_integration": {
+          "$ref": "#/definitions/WebNativeIntegration",
+          "description": "Web-native protocol integration - WebSocket, WebRTC, SSE, Web Push (v0.3.4+)"
         },
         "messaging": {
           "$ref": "#/definitions/MessagingExtension",
@@ -10133,6 +10150,406 @@
               "type": "boolean",
               "default": false,
               "description": "Improve quality scoring based on feedback"
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "AgentRegistry": {
+      "type": "object",
+      "description": "Agent Registry for discovery and registration - enables agents to find each other dynamically (v0.3.4+)",
+      "required": ["registry_type", "discovery_protocols"],
+      "properties": {
+        "registry_type": {
+          "type": "string",
+          "enum": ["distributed", "centralized", "hybrid"],
+          "description": "Registry architecture type"
+        },
+        "discovery_protocols": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["mDNS", "DNS_SRV", "HTTP_Registry", "Blockchain", "Kubernetes_Service"]
+          },
+          "minItems": 1,
+          "description": "Discovery protocols supported"
+        },
+        "endpoint": {
+          "type": "string",
+          "format": "uri",
+          "description": "Registry endpoint URL (for centralized/hybrid)"
+        },
+        "agents": {
+          "type": "array",
+          "description": "Registered agents in this registry",
+          "items": {
+            "$ref": "#/definitions/RegisteredAgent"
+          }
+        },
+        "capability_index": {
+          "type": "object",
+          "description": "Capability-based index for fast lookup",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "ttl_seconds": {
+          "type": "integer",
+          "default": 300,
+          "description": "Time-to-live for agent registrations"
+        }
+      },
+      "additionalProperties": true
+    },
+    "RegisteredAgent": {
+      "type": "object",
+      "description": "Agent registration entry in registry",
+      "required": ["agent_id", "endpoint", "capabilities"],
+      "properties": {
+        "agent_id": {
+          "type": "string",
+          "description": "Unique agent identifier (DID format: did:agent:namespace:name:version)"
+        },
+        "endpoint": {
+          "type": "string",
+          "format": "uri",
+          "description": "Agent endpoint URL"
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Agent capabilities for discovery"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "inactive", "maintenance", "deprecated"],
+          "default": "active"
+        },
+        "last_seen": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last heartbeat timestamp"
+        },
+        "metadata": {
+          "type": "object",
+          "description": "Additional agent metadata",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "AgentDiscovery": {
+      "type": "object",
+      "description": "Agent discovery configuration for finding other agents",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable agent discovery"
+        },
+        "registry_endpoints": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          },
+          "description": "Registry endpoints to query"
+        },
+        "discovery_protocols": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["mDNS", "DNS_SRV", "HTTP_Registry", "Blockchain", "Kubernetes_Service"]
+          },
+          "description": "Protocols to use for discovery"
+        },
+        "cache_ttl_seconds": {
+          "type": "integer",
+          "default": 60,
+          "description": "Discovery result cache TTL"
+        },
+        "fallback_strategy": {
+          "type": "string",
+          "enum": ["fail", "use_cache", "static_config"],
+          "default": "use_cache",
+          "description": "Strategy when discovery fails"
+        }
+      },
+      "additionalProperties": true
+    },
+    "AgentLifecycle": {
+      "type": "object",
+      "description": "Agent lifecycle management configuration - hooks, health checks, graceful shutdown (v0.3.4+)",
+      "properties": {
+        "hooks": {
+          "type": "object",
+          "description": "Lifecycle hooks",
+          "properties": {
+            "pre_start": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["validate_configuration", "check_dependencies", "initialize_resources", "load_state"]
+              },
+              "description": "Actions before agent starts"
+            },
+            "post_start": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["register_with_registry", "start_health_checks", "begin_monitoring", "warm_cache"]
+              },
+              "description": "Actions after agent starts"
+            },
+            "pre_stop": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["finish_active_tasks", "deregister_from_registry", "save_state", "close_connections"]
+              },
+              "description": "Actions before agent stops"
+            },
+            "post_stop": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["cleanup_resources", "flush_logs", "notify_dependents"]
+              },
+              "description": "Actions after agent stops"
+            }
+          },
+          "additionalProperties": true
+        },
+        "health": {
+          "type": "object",
+          "description": "Health check configuration",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "endpoints": {
+              "type": "object",
+              "properties": {
+                "liveness": {
+                  "type": "string",
+                  "default": "/health/live"
+                },
+                "readiness": {
+                  "type": "string",
+                  "default": "/health/ready"
+                },
+                "startup": {
+                  "type": "string",
+                  "default": "/health/startup"
+                }
+              },
+              "additionalProperties": true
+            },
+            "interval_seconds": {
+              "type": "integer",
+              "default": 30,
+              "minimum": 5
+            },
+            "timeout_seconds": {
+              "type": "integer",
+              "default": 5,
+              "minimum": 1
+            },
+            "failure_threshold": {
+              "type": "integer",
+              "default": 3,
+              "minimum": 1
+            }
+          },
+          "additionalProperties": true
+        },
+        "graceful_shutdown": {
+          "type": "object",
+          "description": "Graceful shutdown configuration",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "timeout_seconds": {
+              "type": "integer",
+              "default": 30,
+              "minimum": 1
+            },
+            "drain_connections": {
+              "type": "boolean",
+              "default": true,
+              "description": "Drain active connections before shutdown"
+            },
+            "wait_for_tasks": {
+              "type": "boolean",
+              "default": true,
+              "description": "Wait for active tasks to complete"
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "AgentCommunication": {
+      "type": "object",
+      "description": "Agent communication protocol configuration - standard message format and routing (v0.3.4+)",
+      "properties": {
+        "protocols": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["A2A", "MCP", "HTTP_REST", "gRPC", "WebSocket", "Message_Queue", "WebRTC", "Server_Sent_Events"]
+          },
+          "minItems": 1,
+          "description": "Supported communication protocols"
+        },
+        "message_format": {
+          "type": "object",
+          "description": "Standard message format",
+          "properties": {
+            "standard": {
+              "type": "string",
+              "default": "OSSA_Message_v1",
+              "description": "Message format standard version"
+            },
+            "encoding": {
+              "type": "string",
+              "enum": ["JSON", "MessagePack", "Protobuf"],
+              "default": "JSON"
+            },
+            "schema_ref": {
+              "type": "string",
+              "format": "uri",
+              "description": "Reference to message schema"
+            }
+          },
+          "additionalProperties": true
+        },
+        "routing": {
+          "type": "object",
+          "description": "Message routing configuration",
+          "properties": {
+            "strategy": {
+              "type": "string",
+              "enum": ["capability_based", "direct", "broadcast", "multicast"],
+              "default": "capability_based"
+            },
+            "discovery": {
+              "type": "string",
+              "enum": ["automatic", "manual", "hybrid"],
+              "default": "automatic"
+            },
+            "fallback": {
+              "type": "string",
+              "enum": ["registry_lookup", "fail", "cache"],
+              "default": "registry_lookup"
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "WebNativeIntegration": {
+      "type": "object",
+      "description": "Web-native protocol integration for first-class web citizen agents (v0.3.4+)",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable web-native protocol support"
+        },
+        "protocols": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["HTTP_REST", "WebSocket", "WebRTC", "Server_Sent_Events", "Web_Push", "Service_Worker"]
+          },
+          "minItems": 1,
+          "description": "Web protocols to support"
+        },
+        "endpoints": {
+          "type": "array",
+          "description": "Protocol-specific endpoints",
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "description": "Endpoint path"
+              },
+              "method": {
+                "type": "string",
+                "enum": ["GET", "POST", "PUT", "DELETE", "PATCH"],
+                "description": "HTTP method (for HTTP_REST)"
+              },
+              "protocol": {
+                "type": "string",
+                "enum": ["HTTP_REST", "WebSocket", "WebRTC", "Server_Sent_Events", "Web_Push"],
+                "description": "Protocol type"
+              },
+              "events": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Event types (for WebSocket/SSE)"
+              }
+            },
+            "required": ["path", "protocol"],
+            "additionalProperties": true
+          }
+        },
+        "cors": {
+          "type": "object",
+          "description": "CORS configuration for web access",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "allowed_origins": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Allowed CORS origins"
+            },
+            "allowed_methods": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
+              }
+            }
+          },
+          "additionalProperties": true
+        },
+        "service_worker": {
+          "type": "object",
+          "description": "Service Worker integration for offline support",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "script_path": {
+              "type": "string",
+              "description": "Path to service worker script"
+            },
+            "scope": {
+              "type": "string",
+              "description": "Service worker scope"
             }
           },
           "additionalProperties": true
