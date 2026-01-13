@@ -49,11 +49,15 @@ describe('E2E Smoke Tests', () => {
     };
 
     const manifestPath = join(projectRoot, 'tests/e2e/test-manifest.ossa.yaml');
-    writeFileSync(
-      manifestPath,
-      yaml.stringify(minimalManifest)
-    );
 
+    try {
+      writeFileSync(
+        manifestPath,
+        yaml.stringify(minimalManifest)
+      );
+    } catch (error) {
+      throw new Error(`Failed to create test manifest: ${error instanceof Error ? error.message : String(error)}`);
+    }
     try {
       // Validate manifest path to prevent command injection
       // 1. Ensure path is absolute and within project root

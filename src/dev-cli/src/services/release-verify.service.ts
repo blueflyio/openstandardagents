@@ -131,8 +131,9 @@ export class ReleaseVerifyService {
         cwd: this.rootDir,
       }).trim();
 
-      if (!remoteUrl.includes('gitlab.com/blueflyio/ossa/openstandardagents')) {
-        checks.push({
+
+      const expectedRepo = process.env.EXPECTED_REPO_URL || 'gitlab.com/blueflyio/ossa/openstandardagents';
+      if (!remoteUrl.includes(expectedRepo)) {
           name: 'Repository Identity',
           passed: false,
           message: 'Remote URL does not match expected GitLab repository',
