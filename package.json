@@ -141,7 +141,9 @@
     "// RELEASE & PUBLISH": "",
     "prerelease": "npm run quality && npm run test && npm run validate",
     "prepublishOnly": "npm run build:clean && npm run test && npm run lint",
-    "release:check": "npm run prerelease && echo '✅ Ready for release'"
+    "release:check": "npm run prerelease && echo '✅ Ready for release'",
+    "release:verify": "tsx src/dev-cli/src/index.ts release verify",
+    "release:prep": "tsx src/dev-cli/src/index.ts release prep v0.3.3"
   },
   "keywords": [
     "ossa",
