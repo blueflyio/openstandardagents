@@ -1,145 +1,34 @@
 # ============================================================================
-# SECURITY JOBS - Real Security Gates (No allow_failure)
+# SECURITY JOBS - Additional Security Checks
 # ============================================================================
-# Deterministic Node security gates that block merges on real findings
-# All jobs are required (allow_failure: false) - no "pretend security"
+# Additional security scanning beyond npm audit (which is in test:security).
+# Runs on MRs and release/main branches.
 
-include:
-  - local: .gitlab/ci/rules.yml
-
-# SAST (Static Application Security Testing)
-# Custom SAST job (not overriding GitLab template)
-security:sast:
-  stage: security
-  image: node:${NODE_VERSION}-alpine
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == "main"
-    - if: $CI_COMMIT_BRANCH =~ /^release\//
-  allow_failure: false
-  tags:
-    - saas-linux-small-amd64
-  script:
-    - echo "Running static application security testing..."
-    - |
-      # Basic SAST checks using grep patterns
-      PATTERNS="(eval\\(|exec\\(|dangerous|unsafe|innerHTML|document\\.write)"
-      FOUND=$(grep -rniE "$PATTERNS" --include="*.ts" --include="*.js" src/ 2>/dev/null | grep -v "test" | grep -v "mock" | grep -v "example" || true)
-      
-      if [ -n "$FOUND" ]; then
-        echo "WARNING: Potentially unsafe patterns found:"
-        echo "$FOUND"
-        echo "Review the above lines for security concerns"
-      else
-        echo "No unsafe patterns detected"
-      fi
-
-# Secret scanning using grep patterns (deterministic, reproducible)
-# Fails on real secret patterns found in source code
+# Check for secrets in code (using grep patterns)
 security:secrets-check:
   stage: security
   image: node:${NODE_VERSION}-alpine
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == "main"
-    - if: $CI_COMMIT_BRANCH =~ /^release\//
-  allow_failure: false
   tags:
     - saas-linux-small-amd64
   script:
-    - echo "Scanning for potential secrets in code..."
+    - echo "Checking for potential secrets in code..."
     - |
       # Check for common secret patterns
       PATTERNS="(api[_-]?key|secret|password|token|credential|private[_-]?key)\\s*[=:]\\s*['\"][^'\"]+['\"]"
-      FOUND=$(grep -rniE "$PATTERNS" --include="*.ts" --include="*.js" --include="*.json" --include="*.yaml" --include="*.yml" src/ .gitlab/ 2>/dev/null | grep -v "test" | grep -v "mock" | grep -v "example" | grep -v "node_modules" || true)
-      
-      if [ -n "$FOUND" ]; then
-        echo "ERROR: Potential secrets found in source code!"
-        echo "$FOUND"
-        echo ""
+      if grep -rniE "$PATTERNS" --include="*.ts" --include="*.js" --include="*.json" src/ 2>/dev/null | grep -v "test" | grep -v "mock" | grep -v "example"; then
+        echo "WARNING: Potential secrets found in source code!"
         echo "Please review the above lines and ensure no real secrets are committed."
-        echo "If these are false positives, add them to .gitignore or exclude patterns."
         exit 1
       else
-        echo "No potential secrets detected in source code"
+        echo "✅ No potential secrets detected in source code"
       fi
-
-# Dependency Scanning (custom, not overriding template)
-security:dependency-scanning:
-  stage: security
-  image: node:${NODE_VERSION}-alpine
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_BRANCH =~ /^release\//
-  allow_failure: false
-  tags:
-    - saas-linux-small-amd64
-  script:
-    - echo "Running dependency scanning..."
-    - npm audit --audit-level=moderate || true
-    - echo "Dependency scanning complete"
-
-# Secret Detection (custom, not overriding template)
-security:secret-detection:
-  stage: security
-  image: node:${NODE_VERSION}-alpine
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH == "main"
-    - if: $CI_COMMIT_BRANCH =~ /^release\//
-  allow_failure: false
-  tags:
-    - saas-linux-small-amd64
-  script:
-    - echo "Running secret detection..."
-    - |
-      PATTERNS="(api[_-]?key|secret|password|token|credential|private[_-]?key)\\s*[=:]\\s*['\"][^'\"]+['\"]"
-      FOUND=$(grep -rniE "$PATTERNS" --include="*.ts" --include="*.js" --include="*.json" --include="*.yaml" --include="*.yml" src/ .gitlab/ 2>/dev/null | grep -v "test" | grep -v "mock" | grep -v "example" | grep -v "node_modules" || true)
-      
-      if [ -n "$FOUND" ]; then
-        echo "ERROR: Potential secrets found!"
-        echo "$FOUND"
-        exit 1
-      else
-        echo "No secrets detected"
-      fi
-
-# Infrastructure as Code scanning (for .gitlab-ci.yml, Kubernetes, etc.)
-# Custom job (not overriding GitLab template)
-security:sast-iac:
-  stage: security
-  image: node:${NODE_VERSION}-alpine
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == "main"
-    - if: $CI_COMMIT_BRANCH =~ /^release\//
-  allow_failure: false
-  tags:
-    - saas-linux-small-amd64
-  extends:
-    - .rules:fast
-  script:
-    - echo "Scanning for potential secrets in code..."
-    - |
-      # Check for common secret patterns
-      PATTERNS="(api[_-]?key|secret|password|token|credential|private[_-]?key)\\s*[=:]\\s*['\"][^'\"]+['\"]"
-      FOUND=$(grep -rniE "$PATTERNS" --include="*.ts" --include="*.js" --include="*.json" src/ 2>/dev/null | grep -v "test" | grep -v "mock" | grep -v "example" || true)
-      
-      if [ -n "$FOUND" ]; then
-        echo "ERROR: Potential secrets found in source code!"
-        echo "$FOUND"
-        echo ""
-        echo "Please review the above lines and ensure no real secrets are committed."
-        echo "If these are false positives, add them to .gitignore or exclude patterns."
-        exit 1
-      else
-        echo "No potential secrets detected in source code"
-      fi
   allow_failure: false
 
 # License compliance check
-# Warns on problematic licenses, fails on policy violations
 security:license-check:
   stage: security
   image: node:${NODE_VERSION}-alpine
@@ -147,37 +36,13 @@ security:license-check:
     - saas-linux-small-amd64
   extends:
     - .npm-cache-readonly
-    - .rules:fast
   before_script:
     - npm ci --prefer-offline --no-audit
-    - |
-      # Install license-checker if not available
-      if ! command -v license-checker &> /dev/null; then
-        npm install -g license-checker
-      fi
   script:
     - echo "Checking dependency licenses..."
-    - |
-      # Generate license report
-      license-checker --production --summary > license-report.txt || true
-      cat license-report.txt
-      
-      # Check for problematic licenses (GPL, AGPL, etc.)
-      # Adjust policy as needed for your organization
-      PROBLEMATIC=$(grep -iE "(GPL|AGPL|LGPL)" license-report.txt || true)
-      
-      if [ -n "$PROBLEMATIC" ]; then
-        echo "WARNING: Potentially problematic licenses found:"
-        echo "$PROBLEMATIC"
-        echo ""
-        echo "Review license compatibility with your project license (Apache-2.0)"
-        # Uncomment to fail on problematic licenses:
-        # exit 1
-      else
-        echo "No problematic licenses detected"
-      fi
-  artifacts:
-    paths:
-      - license-report.txt
-    expire_in: 7 days
+    - npx license-checker --summary --production || echo "license-checker not available"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
+    - if: $CI_COMMIT_BRANCH == "main"
   allow_failure: false

@@ -17,6 +17,7 @@
 
 import { Command } from 'commander';
 import chalk from 'chalk';
+import * as fs from 'fs';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { ValidationService } from '../../services/validation.service.js';
@@ -37,6 +38,7 @@ import {
   outputJSON,
   isJSONOutput,
 } from '../utils/index.js';
+import type { OssaAgent } from '../../types/index.js';
 
 interface ComplianceBadge {
   name: string;
@@ -220,9 +222,8 @@ export const complianceCommand = new Command('compliance')
           }
 
           allResults.push({ file, badges });
-        } catch (error: unknown) {
-          const errorMessage = error instanceof Error ? error.message : String(error);
-          console.log(chalk.red(`✗ Failed to check ${file}: ${errorMessage}`));
+        } catch (error: any) {
+          console.log(chalk.red(`✗ Failed to check ${file}: ${error.message}`));
         }
       }
 
