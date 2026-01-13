@@ -154,6 +154,7 @@ test:lint:
 
 # Security audit - npm audit (uses .rules:fast)
 # NOTE: This is a real security gate - no allow_failure
+# NOTE: Does not depend on build:dist - npm audit only needs package.json/package-lock.json
 test:security:
   stage: test
   image: node:${NODE_VERSION}-alpine
@@ -162,14 +163,9 @@ test:security:
   extends:
     - .npm-cache-readonly
     - .rules:fast
-  dependencies:
-    - build:dist
-  needs:
-    - job: build:dist
-      artifacts: true
   before_script:
     - apk add --no-cache curl jq
-    - test -f build.env && . build.env || echo "No build.env found (using defaults)"
+    - npm ci --prefer-offline --no-audit
   script:
     - echo "Running npm audit on production dependencies..."
     - npm audit --production --audit-level=high
