@@ -39,19 +39,20 @@ import { generateCommand } from './commands/generate.command.js';
 import { importCommand } from './commands/import.command.js';
 import { infoCommand } from './commands/info.command.js';
 import { initCommand } from './commands/init.command.js';
+import { scaffoldCommand } from './commands/scaffold.command.js';
 import { installCommand } from './commands/install.command.js';
 import { lintCommand } from './commands/lint.command.js';
+import { standardizeCommand } from './commands/standardize.command.js';
 import { llmsTxtCommand } from './commands/llms-txt.command.js';
 import { migrateCommand } from './commands/migrate.command.js';
 import { publishCommand } from './commands/publish.command.js';
 import { quickstartCommand } from './commands/quickstart.command.js';
 import { registryCommand } from './commands/registry.command.js';
+import { releaseCommandGroup } from './commands/release.command.js';
 import { runCommand } from './commands/run.command.js';
 import { schemaCommand } from './commands/schema.command.js';
-import { scaffoldCommand } from './commands/scaffold.command.js';
 import { searchCommand } from './commands/search.command.js';
 import { setupCommand } from './commands/setup.command.js';
-import { standardizeCommand } from './commands/standardize.command.js';
 import { testCommand } from './commands/test.command.js';
 import { validateCommand } from './commands/validate.command.js';
 import { workspaceCommand } from './commands/workspace.command.js';
@@ -174,6 +175,7 @@ program.addCommand(exportCommand);
 program.addCommand(importCommand);
 program.addCommand(schemaCommand);
 program.addCommand(runCommand);
+program.addCommand(releaseCommandGroup);
 program.addCommand(setupCommand);
 program.addCommand(agentsMdCommand);
 program.addCommand(llmsTxtCommand);
@@ -195,7 +197,6 @@ program.addCommand(deployGroup); // Legacy compatibility
 program.addCommand(testCommand);
 program.addCommand(lintCommand);
 program.addCommand(standardizeCommand);
-program.addCommand(complianceCommand);
 program.addCommand(diffCommand);
 
 // Agent management
@@ -205,7 +206,6 @@ program.addCommand(agentsCommandGroup);
 program.addCommand(workspaceCommand);
 program.addCommand(registryCommand);
 program.addCommand(agentCardCommand);
-
 
 // Extension development commands
 program.addCommand(extensionTeamCommand);
