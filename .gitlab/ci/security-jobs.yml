@@ -8,8 +8,8 @@ include:
   - local: .gitlab/ci/rules.yml
 
 # SAST (Static Application Security Testing)
-# Override GitLab SAST template with custom rules
-sast:
+# Custom SAST job (not overriding GitLab template)
+security:sast:
   stage: security
   image: node:${NODE_VERSION}-alpine
   rules:
@@ -64,8 +64,8 @@ security:secrets-check:
         echo "No potential secrets detected in source code"
       fi
 
-# Override Dependency Scanning rules
-dependency_scanning:
+# Dependency Scanning (custom, not overriding template)
+security:dependency-scanning:
   stage: security
   image: node:${NODE_VERSION}-alpine
   rules:
@@ -80,8 +80,8 @@ dependency_scanning:
     - npm audit --audit-level=moderate || true
     - echo "Dependency scanning complete"
 
-# Override Secret Detection rules
-secret_detection:
+# Secret Detection (custom, not overriding template)
+security:secret-detection:
   stage: security
   image: node:${NODE_VERSION}-alpine
   rules:
@@ -106,8 +106,8 @@ secret_detection:
       fi
 
 # Infrastructure as Code scanning (for .gitlab-ci.yml, Kubernetes, etc.)
-# Note: Template provides the job definition, we only override rules
-sast_iac:
+# Custom job (not overriding GitLab template)
+security:sast-iac:
   stage: security
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
