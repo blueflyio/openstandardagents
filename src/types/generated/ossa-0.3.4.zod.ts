@@ -11,7 +11,8 @@ import { z } from 'zod';
 
 
 // Basic OSSA schema - manual generation fallback
-export const OssaApiVersionSchema = z.literal('ossa/v0.3.4');
+// Accept v0.3.4 with optional prerelease suffix (e.g., -dev.1, -rc.1)
+export const OssaApiVersionSchema = z.string().regex(/^ossa\/v0\.3\.4(-[a-zA-Z0-9.-]+)?$/);
 
 export const OssaMetadataSchema = z.object({
   name: z.string(),
