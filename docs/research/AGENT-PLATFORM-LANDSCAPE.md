@@ -329,7 +329,7 @@ The AI agent landscape is fragmented with **no standardization**. Every company 
 - [Wikipedia - AI Agent](https://en.wikipedia.org/wiki/AI_agent)
 - [Agentic List 2026](https://www.agentconference.com/agenticlist)
 - [First Page Sage - Top AI Agents](https://firstpagesage.com/seo-blog/the-top-ai-agents-by-market-share/)
-- [OSSA Extensions Directory](../spec/v0.3.3/extensions/)
+- [OSSA Extensions Directory](../spec/v0.3.4/extensions/)
 
 ---
 

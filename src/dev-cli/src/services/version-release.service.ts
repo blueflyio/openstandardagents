@@ -5,36 +5,32 @@
  * SOLID: Single Responsibility - Release workflow only
  */
 
-import { readFileSync, writeFileSync, existsSync } from 'fs';
-import { join } from 'path';
 import { execSync } from 'child_process';
 import semver from 'semver';
 import {
   VersionReleaseRequest,
   VersionReleaseResponse,
-  VersionConfigSchema,
 } from '../schemas/version.schema.js';
+import { VersionDetectionService } from './version-detection.service.js';
 
 export class VersionReleaseService {
   private readonly rootDir: string;
+  private readonly versionDetection: VersionDetectionService;
 
   constructor(rootDir: string = process.cwd()) {
     this.rootDir = rootDir;
+    this.versionDetection = new VersionDetectionService(rootDir);
   }
 
   /**
    * Release a new version (ONE command to release)
-   * CRUD: Update operation (updates .version.json and all files)
+   * CRUD: Update operation (creates git tag, updates files)
+   * DYNAMIC: Reads current version from git tags, not static file
    */
   async release(request: VersionReleaseRequest): Promise<VersionReleaseResponse> {
-    const versionFile = join(this.rootDir, '.version.json');
-    
-    if (!existsSync(versionFile)) {
-      throw new Error('.version.json not found. Run from project root.');
-    }
-
-    const config = VersionConfigSchema.parse(JSON.parse(readFileSync(versionFile, 'utf-8')));
-    const oldVersion = config.current;
+    // Detect current version from git tags (DYNAMIC)
+    const versionInfo = await this.versionDetection.detectVersion();
+    const oldVersion = versionInfo.current;
     const newVersion = semver.inc(oldVersion, request.bumpType) || oldVersion;
 
     if (request.dryRun) {
@@ -42,27 +38,22 @@ export class VersionReleaseService {
         success: true,
         oldVersion,
         newVersion,
-        changes: [`Would update .version.json: ${oldVersion} → ${newVersion}`],
+        changes: [
+          `Would create git tag: v${newVersion}`,
+          `Would sync all files: ${oldVersion} → ${newVersion}`,
+        ],
         nextSteps: [
           'Run without --dry-run to actually release',
         ],
       };
     }
 
-    // Update .version.json
-    config.current = newVersion;
-    config.spec_version = newVersion;
-    config.spec_path = `spec/v${newVersion}`;
-    config.schema_file = `ossa-${newVersion}.schema.json`;
-    
-    writeFileSync(versionFile, JSON.stringify(config, null, 2) + '\n');
+    const changes: string[] = [];
 
-    const changes: string[] = [`Updated .version.json: ${oldVersion} → ${newVersion}`];
-
-    // Sync all files (replace {{VERSION}} with actual version)
+    // Sync all files (replace 0.3.4 with actual version)
     try {
       execSync('npm run version:sync', { cwd: this.rootDir, stdio: 'inherit' });
-      changes.push('Synced {{VERSION}} placeholders in all files');
+      changes.push('Synced 0.3.4 placeholders in all files');
     } catch (error) {
       // Continue even if sync fails
     }
@@ -77,10 +68,22 @@ export class VersionReleaseService {
       }
     }
 
+    // Create git tag for new version
+    try {
+      execSync(`git tag -a v${newVersion} -m "Release v${newVersion}"`, {
+        cwd: this.rootDir,
+        stdio: 'inherit',
+      });
+      changes.push(`Created git tag: v${newVersion}`);
+    } catch (error) {
+      changes.push(`Tag creation skipped (may already exist)`);
+    }
+
     const nextSteps = [
       'Review changes: git diff',
       'Commit: git add . && git commit -m "chore: release v' + newVersion + '"',
-      'Push: git push',
+      'Push tags: git push origin v' + newVersion,
+      'Push branch: git push',
       'CI will handle publishing to npm and creating GitLab release',
     ];
 
