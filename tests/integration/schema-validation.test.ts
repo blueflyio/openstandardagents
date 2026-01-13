@@ -161,6 +161,10 @@ describe('Schema Validation Integration', () => {
     };
 
     const result = await validationService.validate(manifest, CURRENT_SCHEMA_VERSION);
+    if (result.valid) {
+      console.error('Test failed: validation should have caught errors');
+      console.error('Result:', JSON.stringify(result, null, 2));
+    }
     expect(result.valid).toBe(false);
     expect(result.errors.length).toBeGreaterThan(0);
   });
