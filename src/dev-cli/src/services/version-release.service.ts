@@ -84,7 +84,7 @@ export class VersionReleaseService {
       changes.push(`Tag creation skipped (may already exist)`);
     }
 
-    // Update .version.json dynamically (will be updated on next detectVersion call)
+    // Update .version.json dynamically (detectVersion updates it from git tags)
     await this.versionDetection.detectVersion();
     changes.push(`Updated .version.json dynamically: ${oldVersion} → ${newVersion}`);
 
