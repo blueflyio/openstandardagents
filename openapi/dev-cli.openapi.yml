@@ -193,6 +193,61 @@ paths:
               schema:
                 $ref: '#/components/schemas/WorkflowResponse'
 
+  /release/verify:
+    post:
+      operationId: releaseVerify
+      summary: Verify release readiness
+      description: |
+        Validates repository state, versions, tags, and CI configuration
+        before any release operations. This is a CRUD Read operation - it
+        validates state but does not modify anything.
+      tags:
+        - Release Management
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReleaseVerifyRequest'
+      responses:
+        '200':
+          description: Verification results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReleaseVerifyResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /release/prep:
+    post:
+      operationId: releasePrep
+      summary: Prepare release - comprehensive validation
+      description: |
+        Comprehensive pre-release validation for GitLab, GitHub, and npmjs.
+        Validates all platforms before release. This is a CRUD Read operation.
+      tags:
+        - Release Management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReleasePrepRequest'
+      responses:
+        '200':
+          description: Preparation results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReleasePrepResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
 components:
   schemas:
     VersionReleaseRequest:
@@ -413,6 +468,378 @@ components:
               optional:
                 type: boolean
                 default: false
+
+    ReleaseVerifyRequest:
+      type: object
+      properties:
+        version:
+          type: string
+          description: Version to verify (defaults to current version)
+        skipBuildTests:
+          type: boolean
+          default: false
+          description: Skip build and test validation
+        skipCIConfig:
+          type: boolean
+          default: false
+          description: Skip CI configuration validation
+
+    ReleaseVerifyResponse:
+      type: object
+      required:
+        - ready
+        - version
+        - versionTag
+        - repository
+        - versionState
+        - tagState
+        - errors
+        - warnings
+        - nextSteps
+      properties:
+        ready:
+          type: boolean
+          description: Whether repository is ready for release
+        version:
+          type: string
+          description: Current version from .version.json
+        versionTag:
+          type: string
+          description: Version tag (e.g., v0.3.3)
+        repository:
+          $ref: '#/components/schemas/RepositoryState'
+        versionState:
+          $ref: '#/components/schemas/VersionState'
+        tagState:
+          $ref: '#/components/schemas/TagState'
+        ciConfig:
+          $ref: '#/components/schemas/CIConfigState'
+          description: CI configuration state (optional if skipCIConfig=true)
+        errors:
+          type: array
+          items:
+            type: string
+          description: List of errors preventing release
+        warnings:
+          type: array
+          items:
+            type: string
+          description: List of warnings (non-blocking)
+        nextSteps:
+          type: array
+          items:
+            type: string
+          description: Next steps to complete release
+
+    RepositoryState:
+      type: object
+      required:
+        - remoteUrl
+        - currentBranch
+        - isClean
+        - checks
+      properties:
+        remoteUrl:
+          type: string
+        currentBranch:
+          type: string
+        isClean:
+          type: boolean
+        checks:
+          type: array
+          items:
+            $ref: '#/components/schemas/RepositoryCheck'
+
+    RepositoryCheck:
+      type: object
+      required:
+        - name
+        - passed
+        - message
+      properties:
+        name:
+          type: string
+        passed:
+          type: boolean
+        message:
+          type: string
+
+    VersionState:
+      type: object
+      required:
+        - versionFromJson
+        - packageVersion
+        - versionTag
+        - isSynced
+        - checks
+      properties:
+        versionFromJson:
+          type: string
+        packageVersion:
+          type: string
+        versionTag:
+          type: string
+        isSynced:
+          type: boolean
+        checks:
+          type: array
+          items:
+            $ref: '#/components/schemas/RepositoryCheck'
+
+    TagState:
+      type: object
+      required:
+        - versionTag
+        - stableTagExists
+        - rcTags
+        - devTags
+        - checks
+      properties:
+        versionTag:
+          type: string
+        stableTagExists:
+          type: boolean
+        rcTags:
+          type: array
+          items:
+            type: string
+        devTags:
+          type: array
+          items:
+            type: string
+        checks:
+          type: array
+          items:
+            $ref: '#/components/schemas/RepositoryCheck'
+
+    CIConfigState:
+      type: object
+      required:
+        - files
+        - checks
+      properties:
+        files:
+          type: array
+          items:
+            $ref: '#/components/schemas/CIConfigCheck'
+        checks:
+          type: array
+          items:
+            $ref: '#/components/schemas/RepositoryCheck'
+
+    CIConfigCheck:
+      type: object
+      required:
+        - filePath
+        - exists
+      properties:
+        filePath:
+          type: string
+        exists:
+          type: boolean
+        hasFastGate:
+          type: boolean
+        hasFullGate:
+          type: boolean
+        checks:
+          type: array
+          items:
+            $ref: '#/components/schemas/RepositoryCheck'
+
+    ReleasePrepRequest:
+      type: object
+      required:
+        - version
+      properties:
+        version:
+          type: string
+          description: Version to prepare (e.g., 0.3.3)
+        dryRun:
+          type: boolean
+          default: false
+          description: Dry run mode (validate only, no changes)
+        skipGitHub:
+          type: boolean
+          default: false
+          description: Skip GitHub validation
+        skipNPM:
+          type: boolean
+          default: false
+          description: Skip NPM validation
+
+    ReleasePrepResponse:
+      type: object
+      required:
+        - ready
+        - version
+        - versionTag
+        - gitlab
+        - allErrors
+        - allWarnings
+        - checklist
+        - nextSteps
+        - rollbackPlan
+      properties:
+        ready:
+          type: boolean
+          description: Whether release is ready
+        version:
+          type: string
+        versionTag:
+          type: string
+        gitlab:
+          $ref: '#/components/schemas/GitLabValidation'
+        github:
+          $ref: '#/components/schemas/GitHubValidation'
+        npm:
+          $ref: '#/components/schemas/NPMValidation'
+        allErrors:
+          type: array
+          items:
+            type: string
+        allWarnings:
+          type: array
+          items:
+            type: string
+        checklist:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChecklistItem'
+        nextSteps:
+          type: array
+          items:
+            type: string
+        rollbackPlan:
+          type: array
+          items:
+            type: string
+
+    GitLabValidation:
+      type: object
+      required:
+        - ready
+        - remoteUrl
+        - branch
+        - tagExists
+        - tagCanBeCreated
+        - releaseCanBeCreated
+        - protectedTagRules
+        - ciTokenConfigured
+        - errors
+        - warnings
+      properties:
+        ready:
+          type: boolean
+        remoteUrl:
+          type: string
+        branch:
+          type: string
+        tagExists:
+          type: boolean
+        tagCanBeCreated:
+          type: boolean
+        releaseCanBeCreated:
+          type: boolean
+        protectedTagRules:
+          type: object
+          properties:
+            pattern:
+              type: string
+            allowed:
+              type: boolean
+        ciTokenConfigured:
+          type: boolean
+        errors:
+          type: array
+          items:
+            type: string
+        warnings:
+          type: array
+          items:
+            type: string
+
+    GitHubValidation:
+      type: object
+      required:
+        - ready
+        - remoteConfigured
+        - mirrorEnabled
+        - tokenConfigured
+        - releaseCanBeCreated
+        - errors
+        - warnings
+      properties:
+        ready:
+          type: boolean
+        remoteConfigured:
+          type: boolean
+        mirrorEnabled:
+          type: boolean
+        tokenConfigured:
+          type: boolean
+        releaseCanBeCreated:
+          type: boolean
+        errors:
+          type: array
+          items:
+            type: string
+        warnings:
+          type: array
+          items:
+            type: string
+
+    NPMValidation:
+      type: object
+      required:
+        - ready
+        - versionExists
+        - canPublish
+        - tokenConfigured
+        - registryAccessible
+        - packageName
+        - errors
+        - warnings
+      properties:
+        ready:
+          type: boolean
+        versionExists:
+          type: boolean
+        canPublish:
+          type: boolean
+        tokenConfigured:
+          type: boolean
+        registryAccessible:
+          type: boolean
+        packageName:
+          type: string
+        currentPublishedVersion:
+          type: string
+        errors:
+          type: array
+          items:
+            type: string
+        warnings:
+          type: array
+          items:
+            type: string
+
+    ChecklistItem:
+      type: object
+      required:
+        - category
+        - item
+        - status
+        - message
+      properties:
+        category:
+          type: string
+        item:
+          type: string
+        status:
+          type: string
+          enum: [pass, fail, warning, skip]
+        message:
+          type: string
 
   responses:
     BadRequest:
