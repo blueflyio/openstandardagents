@@ -267,6 +267,10 @@ release:semantic:
         echo "No .npmrc token needed - OIDC handles authentication"
       fi
     - |
+      # Fetch latest tags and commits to ensure semantic-release has correct git state
+      git fetch --tags --prune origin
+      git fetch origin ${CI_COMMIT_REF_NAME}:${CI_COMMIT_REF_NAME} || true
+    - |
       if [ -n "$GITHUB_TOKEN" ]; then
         export GITHUB_TOKEN
       fi
