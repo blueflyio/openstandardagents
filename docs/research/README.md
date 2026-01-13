@@ -243,9 +243,9 @@ The AI agent industry is **highly fragmented**:
 
 ## References
 
-- [OSSA Extensions Directory](../../spec/v0.3.3/extensions/)
-- [OSSA Specification](../../spec/v0.3.3/ossa-0.3.3.schema.json)
-- [Extension Development Guide](../../spec/v0.3.3/extensions/README.md)
+- [OSSA Extensions Directory](../../spec/v0.3.4/extensions/)
+- [OSSA Specification](../../spec/v0.3.4/ossa-0.3.4.schema.json)
+- [Extension Development Guide](../../spec/v0.3.4/extensions/README.md)
 - [AI Agents Directory](https://aiagentsdirectory.com/categories)
 - [Agentic List 2026](https://www.agentconference.com/agenticlist)
 

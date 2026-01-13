@@ -1,6 +1,6 @@
 # Example: OSSA Workflow executed via Symfony Messenger
 # Demonstrates multi-step workflow with async Task orchestration
-apiVersion: ossa/v0.3.3
+apiVersion: ossa/v0.3.4
 kind: Workflow
 metadata:
   name: user-onboarding-symfony

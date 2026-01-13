@@ -1,6 +1,6 @@
 # Example: Maestro Business Process to OSSA Workflow Mapping
 # Demonstrates how Drupal Maestro templates map to OSSA Workflows
-apiVersion: ossa/v0.3.3
+apiVersion: ossa/v0.3.4
 kind: Workflow
 metadata:
   name: maestro-content-approval

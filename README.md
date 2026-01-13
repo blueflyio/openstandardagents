@@ -164,7 +164,7 @@ if (validation.valid) {
 ```
 openstandardagents/
 ├── spec/              # OSSA specification schemas
-│   └── v0.3.3/       # Latest version (v0.3.3)
+│   └── v0.3.4/       # Latest version (v0.3.4)
 ├── src/              # TypeScript source code
 │   ├── cli/          # CLI commands (validate, generate, migrate, etc.)
 │   ├── dev-cli/      # Developer CLI (version, spec, workflow commands)
