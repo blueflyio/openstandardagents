@@ -1,0 +1,926 @@
+# OSSA v0.3.4 - Agent Runtime Specification
+# Defines agent lifecycle, control signals, execution model, and network isolation
+#
+# Related schemas:
+#   - ../schemas/runtime.yaml (runtime declaration/binding)
+#   - ./memory-model.yaml (memory provider interface)
+
+$schema: http://json-schema.org/draft-07/schema#
+$id: https://openstandardagents.org/schemas/v0.3.4/runtime/runtime.yaml
+
+title: OSSA Agent Runtime Specification
+description: |
+  Comprehensive runtime specification for OSSA agents defining:
+  - Agent Lifecycle: init -> plan -> act -> reflect -> terminate
+  - Standard Control Signals: tool_call, delegation, halt, error
+  - Execution Model with timeout and sandbox boundaries
+  - Network Isolation Model for secure multi-agent deployments
+
+type: object
+required:
+  - apiVersion
+  - kind
+  - lifecycle
+
+properties:
+  apiVersion:
+    type: string
+    const: ossa/v0.3.4
+    description: Runtime specification version
+
+  kind:
+    type: string
+    const: RuntimeSpec
+    description: Resource type for runtime specification
+
+  # ============================================
+  # AGENT LIFECYCLE
+  # Standard 5-phase lifecycle for all agents
+  # ============================================
+  lifecycle:
+    type: object
+    description: |
+      Agent lifecycle defines the standard phases an agent goes through
+      during execution. All compliant runtimes MUST implement these phases.
+    required:
+      - phases
+      - transitions
+    properties:
+      phases:
+        type: object
+        description: Lifecycle phase definitions
+        required:
+          - init
+          - plan
+          - act
+          - reflect
+          - terminate
+        properties:
+          init:
+            $ref: '#/definitions/LifecyclePhase'
+            description: |
+              Initialization phase where the agent:
+              - Loads configuration and credentials
+              - Establishes connections to tools/services
+              - Validates input parameters
+              - Sets up logging and telemetry
+            default:
+              name: init
+              timeout_seconds: 30
+              retry_policy:
+                max_attempts: 3
+                backoff: exponential
+              required_signals:
+                - ready
+              failure_signals:
+                - init_error
+
+          plan:
+            $ref: '#/definitions/LifecyclePhase'
+            description: |
+              Planning phase where the agent:
+              - Analyzes the task/goal
+              - Retrieves relevant context from memory
+              - Generates execution plan
+              - Determines required tools and delegations
+            default:
+              name: plan
+              timeout_seconds: 60
+              retry_policy:
+                max_attempts: 2
+                backoff: linear
+              required_signals:
+                - plan_ready
+              failure_signals:
+                - plan_error
+
+          act:
+            $ref: '#/definitions/LifecyclePhase'
+            description: |
+              Action phase where the agent:
+              - Executes planned steps
+              - Makes tool calls
+              - Delegates to sub-agents
+              - Produces artifacts/outputs
+            default:
+              name: act
+              timeout_seconds: 300
+              retry_policy:
+                max_attempts: 3
+                backoff: exponential
+              required_signals:
+                - action_complete
+              failure_signals:
+                - action_error
+                - timeout
+
+          reflect:
+            $ref: '#/definitions/LifecyclePhase'
+            description: |
+              Reflection phase where the agent:
+              - Evaluates action results
+              - Updates memory with learnings
+              - Determines if goal is achieved
+              - Decides on iteration or termination
+            default:
+              name: reflect
+              timeout_seconds: 30
+              retry_policy:
+                max_attempts: 1
+                backoff: constant
+              required_signals:
+                - reflection_complete
+              failure_signals:
+                - reflection_error
+
+          terminate:
+            $ref: '#/definitions/LifecyclePhase'
+            description: |
+              Termination phase where the agent:
+              - Finalizes outputs
+              - Persists state to long-term memory
+              - Releases resources
+              - Emits completion telemetry
+            default:
+              name: terminate
+              timeout_seconds: 15
+              retry_policy:
+                max_attempts: 1
+                backoff: constant
+              required_signals:
+                - terminated
+              failure_signals:
+                - termination_error
+
+      transitions:
+        type: array
+        description: Valid lifecycle phase transitions
+        items:
+          $ref: '#/definitions/PhaseTransition'
+        default:
+          - from: init
+            to: plan
+            condition: ready
+          - from: plan
+            to: act
+            condition: plan_ready
+          - from: act
+            to: reflect
+            condition: action_complete
+          - from: reflect
+            to: act
+            condition: iteration_needed
+          - from: reflect
+            to: terminate
+            condition: goal_achieved
+          - from: any
+            to: terminate
+            condition: halt_signal
+          - from: any
+            to: terminate
+            condition: error_unrecoverable
+
+      max_iterations:
+        type: integer
+        description: Maximum plan-act-reflect cycles before forced termination
+        default: 10
+        minimum: 1
+        maximum: 100
+
+      total_timeout_seconds:
+        type: integer
+        description: Maximum total execution time across all phases
+        default: 3600
+        minimum: 60
+        maximum: 86400
+
+  # ============================================
+  # CONTROL SIGNALS
+  # Standard signals for agent control flow
+  # ============================================
+  control_signals:
+    type: object
+    description: |
+      Control signals define the standard communication primitives
+      between agents, runtimes, and external systems.
+    properties:
+      tool_call:
+        $ref: '#/definitions/ControlSignal'
+        description: Signal to invoke an external tool or capability
+        default:
+          type: tool_call
+          async: true
+          timeout_seconds: 60
+          schema:
+            type: object
+            required:
+              - tool_name
+              - parameters
+            properties:
+              tool_name:
+                type: string
+              parameters:
+                type: object
+              correlation_id:
+                type: string
+                format: uuid
+
+      delegation:
+        $ref: '#/definitions/ControlSignal'
+        description: Signal to delegate work to another agent
+        default:
+          type: delegation
+          async: true
+          timeout_seconds: 300
+          schema:
+            type: object
+            required:
+              - target_agent
+              - task
+            properties:
+              target_agent:
+                type: string
+                description: Agent ID or capability query
+              task:
+                type: object
+                description: Task specification for delegate
+              context:
+                type: object
+                description: Context to pass to delegate
+              callback:
+                type: string
+                description: Callback endpoint for results
+
+      halt:
+        $ref: '#/definitions/ControlSignal'
+        description: Signal to immediately stop agent execution
+        default:
+          type: halt
+          async: false
+          timeout_seconds: 5
+          schema:
+            type: object
+            required:
+              - reason
+            properties:
+              reason:
+                type: string
+                enum:
+                  - user_interrupt
+                  - resource_limit
+                  - policy_violation
+                  - external_signal
+                  - parent_termination
+              graceful:
+                type: boolean
+                default: true
+                description: Allow cleanup before termination
+              message:
+                type: string
+
+      error:
+        $ref: '#/definitions/ControlSignal'
+        description: Signal indicating an error condition
+        default:
+          type: error
+          async: false
+          timeout_seconds: 5
+          schema:
+            type: object
+            required:
+              - error_code
+              - message
+            properties:
+              error_code:
+                type: string
+                enum:
+                  - INIT_FAILED
+                  - PLAN_FAILED
+                  - ACTION_FAILED
+                  - TOOL_ERROR
+                  - DELEGATION_ERROR
+                  - TIMEOUT
+                  - RESOURCE_EXHAUSTED
+                  - PERMISSION_DENIED
+                  - INVALID_STATE
+                  - NETWORK_ERROR
+              message:
+                type: string
+              recoverable:
+                type: boolean
+                default: false
+              details:
+                type: object
+              stack_trace:
+                type: string
+
+      ready:
+        $ref: '#/definitions/ControlSignal'
+        description: Signal indicating agent is ready for work
+        default:
+          type: ready
+          async: false
+          timeout_seconds: 1
+          schema:
+            type: object
+            properties:
+              capabilities:
+                type: array
+                items:
+                  type: string
+              version:
+                type: string
+
+      heartbeat:
+        $ref: '#/definitions/ControlSignal'
+        description: Periodic signal indicating agent liveness
+        default:
+          type: heartbeat
+          async: false
+          timeout_seconds: 1
+          interval_seconds: 30
+          schema:
+            type: object
+            properties:
+              timestamp:
+                type: string
+                format: date-time
+              phase:
+                type: string
+              metrics:
+                type: object
+
+  # ============================================
+  # EXECUTION MODEL
+  # Timeout and sandbox boundaries
+  # ============================================
+  execution:
+    type: object
+    description: |
+      Execution model defines runtime constraints including timeouts,
+      resource limits, and sandbox boundaries.
+    properties:
+      timeout:
+        type: object
+        description: Timeout configuration at multiple levels
+        properties:
+          default_seconds:
+            type: integer
+            description: Default timeout for operations
+            default: 300
+            minimum: 1
+            maximum: 3600
+
+          llm_call_seconds:
+            type: integer
+            description: Timeout for LLM API calls
+            default: 60
+            minimum: 5
+            maximum: 300
+
+          tool_call_seconds:
+            type: integer
+            description: Timeout for tool invocations
+            default: 60
+            minimum: 1
+            maximum: 600
+
+          delegation_seconds:
+            type: integer
+            description: Timeout for agent delegations
+            default: 300
+            minimum: 30
+            maximum: 3600
+
+          phase_multiplier:
+            type: number
+            description: Multiplier for phase-specific timeouts
+            default: 1.0
+            minimum: 0.1
+            maximum: 10.0
+
+      sandbox:
+        type: object
+        description: Sandbox configuration for isolated execution
+        properties:
+          enabled:
+            type: boolean
+            default: true
+            description: Enable sandboxed execution
+
+          type:
+            type: string
+            description: Sandbox implementation type
+            enum:
+              - container
+              - vm
+              - wasm
+              - process
+              - none
+            default: container
+
+          filesystem:
+            type: object
+            description: Filesystem access restrictions
+            properties:
+              read_paths:
+                type: array
+                items:
+                  type: string
+                description: Allowed read paths
+                default: []
+              write_paths:
+                type: array
+                items:
+                  type: string
+                description: Allowed write paths
+                default: []
+              deny_paths:
+                type: array
+                items:
+                  type: string
+                description: Explicitly denied paths
+                default:
+                  - /etc/passwd
+                  - /etc/shadow
+                  - ~/.ssh
+                  - ~/.aws
+
+          capabilities:
+            type: array
+            description: Linux capabilities to grant
+            items:
+              type: string
+              enum:
+                - CAP_NET_BIND_SERVICE
+                - CAP_SYS_PTRACE
+                - CAP_DAC_OVERRIDE
+            default: []
+
+          syscall_filter:
+            type: string
+            description: Seccomp profile for syscall filtering
+            enum:
+              - strict
+              - default
+              - permissive
+            default: default
+
+      resource_limits:
+        type: object
+        description: Resource constraints for execution
+        properties:
+          memory_mb:
+            type: integer
+            description: Maximum memory in megabytes
+            default: 512
+            minimum: 64
+            maximum: 16384
+
+          cpu_millicores:
+            type: integer
+            description: CPU limit in millicores
+            default: 1000
+            minimum: 100
+            maximum: 8000
+
+          gpu_memory_mb:
+            type: integer
+            description: GPU memory limit in megabytes
+            default: 0
+            minimum: 0
+
+          max_open_files:
+            type: integer
+            description: Maximum open file descriptors
+            default: 256
+            minimum: 16
+            maximum: 65536
+
+          max_processes:
+            type: integer
+            description: Maximum child processes
+            default: 10
+            minimum: 1
+            maximum: 100
+
+          max_network_connections:
+            type: integer
+            description: Maximum concurrent network connections
+            default: 50
+            minimum: 1
+            maximum: 1000
+
+  # ============================================
+  # NETWORK ISOLATION MODEL
+  # Secure multi-agent network boundaries
+  # ============================================
+  network_isolation:
+    type: object
+    description: |
+      Network isolation model for secure multi-agent deployments.
+      Defines network boundaries, allowed communications, and security policies.
+    properties:
+      enabled:
+        type: boolean
+        default: true
+        description: Enable network isolation
+
+      mode:
+        type: string
+        description: Network isolation mode
+        enum:
+          - strict
+          - namespace
+          - mesh
+          - none
+        default: namespace
+
+      namespace:
+        type: string
+        description: Network namespace identifier
+        pattern: ^[a-z][a-z0-9-]*$
+
+      policies:
+        type: array
+        description: Network policies defining allowed traffic
+        items:
+          $ref: '#/definitions/NetworkPolicy'
+
+      egress:
+        type: object
+        description: Outbound traffic rules
+        properties:
+          allowed_domains:
+            type: array
+            description: Allowed outbound domains
+            items:
+              type: string
+            examples:
+              - api.openai.com
+              - api.anthropic.com
+              - '*.googleapis.com'
+
+          blocked_domains:
+            type: array
+            description: Blocked outbound domains
+            items:
+              type: string
+            default: []
+
+          allowed_ports:
+            type: array
+            description: Allowed outbound ports
+            items:
+              type: integer
+            default:
+              - 443
+              - 80
+
+          rate_limit:
+            type: object
+            description: Egress rate limiting
+            properties:
+              requests_per_second:
+                type: integer
+                default: 100
+              bytes_per_second:
+                type: integer
+                default: 10485760
+
+      ingress:
+        type: object
+        description: Inbound traffic rules
+        properties:
+          allowed_sources:
+            type: array
+            description: Allowed source CIDRs or agent IDs
+            items:
+              type: string
+
+          allowed_ports:
+            type: array
+            description: Allowed inbound ports
+            items:
+              type: integer
+            default:
+              - 8080
+              - 8443
+
+          require_mtls:
+            type: boolean
+            default: true
+            description: Require mutual TLS for inbound connections
+
+      agent_mesh:
+        type: object
+        description: Agent-to-agent communication mesh configuration
+        properties:
+          enabled:
+            type: boolean
+            default: true
+
+          discovery:
+            type: string
+            description: Service discovery mechanism
+            enum:
+              - dns
+              - consul
+              - kubernetes
+              - static
+            default: kubernetes
+
+          encryption:
+            type: string
+            description: Mesh traffic encryption
+            enum:
+              - none
+              - tls
+              - mtls
+              - wireguard
+            default: mtls
+
+          allowed_agents:
+            type: array
+            description: Agent IDs allowed to communicate
+            items:
+              type: string
+
+          denied_agents:
+            type: array
+            description: Agent IDs explicitly denied
+            items:
+              type: string
+            default: []
+
+# ============================================
+# DEFINITIONS
+# Reusable schema components
+# ============================================
+definitions:
+  LifecyclePhase:
+    type: object
+    required:
+      - name
+    properties:
+      name:
+        type: string
+        description: Phase identifier
+
+      timeout_seconds:
+        type: integer
+        description: Phase timeout in seconds
+        minimum: 1
+        maximum: 3600
+
+      retry_policy:
+        type: object
+        properties:
+          max_attempts:
+            type: integer
+            default: 3
+            minimum: 1
+            maximum: 10
+          backoff:
+            type: string
+            enum:
+              - exponential
+              - linear
+              - constant
+            default: exponential
+          initial_delay_ms:
+            type: integer
+            default: 1000
+          max_delay_ms:
+            type: integer
+            default: 30000
+
+      required_signals:
+        type: array
+        description: Signals that must be emitted to complete phase
+        items:
+          type: string
+
+      failure_signals:
+        type: array
+        description: Signals indicating phase failure
+        items:
+          type: string
+
+      hooks:
+        type: object
+        description: Lifecycle hooks for phase events
+        properties:
+          on_enter:
+            type: string
+            description: Hook called when entering phase
+          on_exit:
+            type: string
+            description: Hook called when exiting phase
+          on_error:
+            type: string
+            description: Hook called on phase error
+
+  PhaseTransition:
+    type: object
+    required:
+      - from
+      - to
+      - condition
+    properties:
+      from:
+        type: string
+        description: Source phase (or 'any' for wildcard)
+
+      to:
+        type: string
+        description: Target phase
+
+      condition:
+        type: string
+        description: Condition triggering transition
+
+      guard:
+        type: string
+        description: Optional guard expression
+
+      priority:
+        type: integer
+        description: Transition priority (higher = preferred)
+        default: 0
+
+  ControlSignal:
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        type: string
+        description: Signal type identifier
+
+      async:
+        type: boolean
+        description: Whether signal is asynchronous
+        default: true
+
+      timeout_seconds:
+        type: integer
+        description: Signal handling timeout
+        minimum: 1
+        maximum: 3600
+
+      interval_seconds:
+        type: integer
+        description: Interval for periodic signals
+        minimum: 1
+
+      schema:
+        type: object
+        description: JSON Schema for signal payload
+
+      priority:
+        type: string
+        description: Signal priority level
+        enum:
+          - critical
+          - high
+          - normal
+          - low
+        default: normal
+
+  NetworkPolicy:
+    type: object
+    required:
+      - name
+      - type
+    properties:
+      name:
+        type: string
+        description: Policy name
+        pattern: ^[a-z][a-z0-9-]*$
+
+      type:
+        type: string
+        description: Policy type
+        enum:
+          - allow
+          - deny
+          - rate_limit
+
+      priority:
+        type: integer
+        description: Policy evaluation priority
+        default: 100
+
+      selectors:
+        type: object
+        description: Traffic selectors
+        properties:
+          source_agents:
+            type: array
+            items:
+              type: string
+          target_agents:
+            type: array
+            items:
+              type: string
+          source_cidrs:
+            type: array
+            items:
+              type: string
+          target_ports:
+            type: array
+            items:
+              type: integer
+
+      action:
+        type: object
+        description: Policy action configuration
+        properties:
+          log:
+            type: boolean
+            default: true
+          alert:
+            type: boolean
+            default: false
+          rate_limit:
+            type: object
+            properties:
+              requests_per_second:
+                type: integer
+              burst:
+                type: integer
+
+examples:
+  - apiVersion: ossa/v0.3.4
+    kind: RuntimeSpec
+    lifecycle:
+      phases:
+        init:
+          name: init
+          timeout_seconds: 30
+        plan:
+          name: plan
+          timeout_seconds: 60
+        act:
+          name: act
+          timeout_seconds: 300
+        reflect:
+          name: reflect
+          timeout_seconds: 30
+        terminate:
+          name: terminate
+          timeout_seconds: 15
+      transitions:
+        - from: init
+          to: plan
+          condition: ready
+        - from: plan
+          to: act
+          condition: plan_ready
+        - from: act
+          to: reflect
+          condition: action_complete
+        - from: reflect
+          to: terminate
+          condition: goal_achieved
+      max_iterations: 10
+    control_signals:
+      tool_call:
+        type: tool_call
+        async: true
+        timeout_seconds: 60
+      delegation:
+        type: delegation
+        async: true
+        timeout_seconds: 300
+      halt:
+        type: halt
+        async: false
+        timeout_seconds: 5
+      error:
+        type: error
+        async: false
+    execution:
+      timeout:
+        default_seconds: 300
+        llm_call_seconds: 60
+        tool_call_seconds: 60
+      sandbox:
+        enabled: true
+        type: container
+      resource_limits:
+        memory_mb: 512
+        cpu_millicores: 1000
+    network_isolation:
+      enabled: true
+      mode: namespace
+      egress:
+        allowed_domains:
+          - api.openai.com
+          - api.anthropic.com
+        allowed_ports:
+          - 443
+      agent_mesh:
+        enabled: true
+        encryption: mtls

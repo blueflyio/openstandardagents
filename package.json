@@ -1,8 +1,8 @@
 {
   "name": "@bluefly/openstandardagents",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "exports": {
-    "./schema": "./spec/v0.3.3/ossa-0.3.3.schema.json",
+    "./schema": "./spec/v0.3.4/ossa-0.3.4.schema.json",
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",

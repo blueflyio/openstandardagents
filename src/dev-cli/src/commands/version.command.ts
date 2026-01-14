@@ -85,10 +85,10 @@ versionCommand
     }
   });
 
-// version:sync - Sync {{VERSION}} placeholders
+// version:sync - Sync 0.3.4 placeholders
 versionCommand
   .command('sync')
-  .description('Sync {{VERSION}} placeholders with actual version')
+  .description('Sync 0.3.4 placeholders with actual version')
   .option('--version <version>', 'Version to use (defaults to .version.json)')
   .option('--files <files...>', 'Specific files to sync (defaults to all)')
   .action(async (options: { version?: string; files?: string[] }) => {

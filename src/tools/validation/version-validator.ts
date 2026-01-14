@@ -31,7 +31,7 @@ export class VersionValidator {
 
     // Skip .version.json - it's the SOURCE OF TRUTH for versions
     // It should contain actual version numbers, not placeholders
-    // The version-sync script reads from .version.json and replaces {{VERSION}} in other files
+    // The version-sync script reads from .version.json and replaces 0.3.4 in other files
 
     // Check other files
     await this.validateOtherFiles();
@@ -46,17 +46,17 @@ export class VersionValidator {
     const content = readFileSync('package.json', 'utf-8');
     const pkg = JSON.parse(content);
 
-    // Check version field - must use {{VERSION}} placeholder
+    // Check version field - must use 0.3.4 placeholder
     if (pkg.version && typeof pkg.version === 'string' && /^\d+\.\d+\.\d+/.test(pkg.version)) {
       this.messages.push('ERROR: Hardcoded version detected in package.json');
       this.messages.push('');
-      this.messages.push('package.json MUST use {{VERSION}} placeholder for dynamic versioning.');
-      this.messages.push('The version-sync CI job will replace {{VERSION}} with the actual version.');
+      this.messages.push('package.json MUST use 0.3.4 placeholder for dynamic versioning.');
+      this.messages.push('The version-sync CI job will replace 0.3.4 with the actual version.');
       this.messages.push('');
       this.messages.push(`Current version line: "${pkg.version}"`);
       this.messages.push('');
       this.messages.push('Change it to:');
-      this.messages.push('  "version": "{{VERSION}}",');
+      this.messages.push('  "version": "0.3.4",');
       this.messages.push('');
       this.errors++;
     }
@@ -67,12 +67,12 @@ export class VersionValidator {
       if (typeof schemaPath === 'string' && /\/v\d+\.\d+\.\d+/.test(schemaPath)) {
         this.messages.push('ERROR: Hardcoded version in schema path detected');
         this.messages.push('');
-        this.messages.push('Schema path MUST use {{VERSION}} placeholder.');
+        this.messages.push('Schema path MUST use 0.3.4 placeholder.');
         this.messages.push('');
         this.messages.push(`Current schema line: "${schemaPath}"`);
         this.messages.push('');
         this.messages.push('Change it to:');
-        this.messages.push('    "./schema": "./spec/v{{VERSION}}/ossa-{{VERSION}}.schema.json",');
+        this.messages.push('    "./schema": "./spec/v0.3.4/ossa-0.3.4.schema.json",');
         this.messages.push('');
         this.errors++;
       }
@@ -89,7 +89,7 @@ export class VersionValidator {
     ) {
       this.messages.push('ERROR: Hardcoded version detected in .version.json');
       this.messages.push('');
-      this.messages.push('.version.json MUST use {{VERSION}} placeholder.');
+      this.messages.push('.version.json MUST use 0.3.4 placeholder.');
       this.messages.push('');
       this.errors++;
     }
@@ -115,8 +115,8 @@ export class VersionValidator {
 
         const content = readFileSync(file, 'utf-8');
 
-        // Skip if file already uses {{VERSION}} placeholder
-        if (content.includes('{{VERSION}}')) continue;
+        // Skip if file already uses 0.3.4 placeholder
+        if (content.includes('0.3.4')) continue;
 
         // Skip examples and comments
         if (
@@ -131,7 +131,7 @@ export class VersionValidator {
         // Check for hardcoded version patterns
         if (/\b(version|VERSION)\b.*\d+\.\d+\.\d+/.test(content)) {
           this.messages.push(`WARNING: Possible hardcoded version in ${file}`);
-          this.messages.push('  Consider using {{VERSION}} placeholder if this is a version reference');
+          this.messages.push('  Consider using 0.3.4 placeholder if this is a version reference');
           this.messages.push('');
         }
       }
@@ -150,8 +150,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       console.log('');
       console.log(`❌ BLOCKED: ${result.errors} hardcoded version(s) detected`);
       console.log('');
-      console.log('All versions MUST use {{VERSION}} placeholder for dynamic CI replacement.');
-      console.log('The version-sync CI job will replace {{VERSION}} with the actual version during build.');
+      console.log('All versions MUST use 0.3.4 placeholder for dynamic CI replacement.');
+      console.log('The version-sync CI job will replace 0.3.4 with the actual version during build.');
       process.exit(1);
     }
 

@@ -1,7 +1,7 @@
 /**
  * Version Audit Service
  * 
- * Finds all hardcoded versions (not using {{VERSION}} placeholder).
+ * Finds all hardcoded versions (not using 0.3.4 placeholder).
  * SOLID: Single Responsibility - Audit version usage
  * DRY: Reuses Zod schemas from schemas/version.schema.ts
  */
@@ -89,7 +89,7 @@ export class VersionAuditService {
       const lines = content.split('\n');
 
       lines.forEach((line, index) => {
-        // Skip if line already uses {{VERSION}} placeholder
+        // Skip if line already uses 0.3.4 placeholder
         if (VERSION_PLACEHOLDER_PATTERN.test(line)) {
           return;
         }
@@ -118,7 +118,7 @@ export class VersionAuditService {
             path: relativePath,
             line: index + 1,
             content: line.trim(),
-            suggested: line.replace(version, '{{VERSION}}'),
+            suggested: line.replace(version, '0.3.4'),
           });
         }
       });
@@ -146,7 +146,7 @@ export class VersionAuditService {
   }
 
   /**
-   * Fix files by replacing hardcoded versions with {{VERSION}}
+   * Fix files by replacing hardcoded versions with 0.3.4
    */
   private async fixFiles(files: HardcodedVersionFile[]): Promise<number> {
     const filesToFix = new Map<string, HardcodedVersionFile[]>();
