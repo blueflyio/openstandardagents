@@ -1,6 +1,3 @@
-# OSSA Agent Router Configuration
-# Routes MR comments and events to appropriate agents
-
 apiVersion: ossa/v0.3.5
 kind: Workflow
 metadata:
@@ -11,34 +8,29 @@ metadata:
     domain: gitlab
     capability: routing
     environment: production
-
 spec:
   triggers:
-    - type: webhook
-      source: gitlab
-      events:
-        - merge_request
-        - note
-      filter:
-        expression: "${{ event.object_attributes.action in ['open', 'update', 'reopen'] || event.object_kind == 'note' }}"
-
-
-  # v0.3.5: Completion Signals
+  - type: webhook
+    source: gitlab
+    events:
+    - merge_request
+    - note
+    filter:
+      expression: ${{ event.object_attributes.action in ['open', 'update', 'reopen'] || event.object_kind == 'note' }}
   completion:
     default_signal: complete
     signals:
-      - signal: continue
-        condition: "steps_remaining > 0"
-        priority: 1
-      - signal: blocked
-        condition: "step_failures > 2"
-        priority: 2
-      - signal: escalate
-        condition: "workflow_timeout_approaching == true"
-        priority: 3
+    - signal: continue
+      condition: steps_remaining > 0
+      priority: 1
+    - signal: blocked
+      condition: step_failures > 2
+      priority: 2
+    - signal: escalate
+      condition: workflow_timeout_approaching == true
+      priority: 3
     max_iterations: 50
     timeout_seconds: 1800
-
   inputs:
     type: object
     properties:
@@ -49,199 +41,169 @@ spec:
         type: integer
       merge_request_iid:
         type: integer
-
   steps:
-    # ==========================================================================
-    # Step 1: Parse event and extract agent commands
-    # ==========================================================================
-    - id: parse-event
-      name: Parse GitLab Event
-      kind: Task
-      ref: tasks/gitlab-event-parser.ossa.yaml
+  - id: parse-event
+    name: Parse GitLab Event
+    kind: Task
+    ref: tasks/gitlab-event-parser.ossa.yaml
+    input:
+      event: ${{ workflow.input.event }}
+    output:
+      event_type: string
+      commands: array
+      mentions: array
+      file_changes: array
+      labels: array
+  - id: route-mentions
+    name: Route Agent Mentions
+    kind: Conditional
+    condition: ${{ steps.parse-event.output.mentions | length > 0 }}
+    steps:
+    - id: invoke-mentioned-agents
+      name: Invoke Mentioned Agents
+      kind: Loop
+      loop:
+        over: ${{ steps.parse-event.output.mentions }}
+        as: mention
+        parallelism: 5
+      steps:
+      - id: dispatch-to-agent
+        name: Dispatch to Agent
+        kind: Agent
+        ref: .agents/${{ item.mention.agent }}/manifest.ossa.yaml
+        input:
+          command: ${{ item.mention.command }}
+          context:
+            project_id: ${{ workflow.input.project_id }}
+            mr_iid: ${{ workflow.input.merge_request_iid }}
+            event: ${{ workflow.input.event }}
+  - id: auto-dispatch
+    name: Auto-Dispatch by File Type
+    kind: Conditional
+    condition: ${{ steps.parse-event.output.event_type == 'merge_request' }}
+    steps:
+    - id: ossa-files-check
+      name: Check OSSA Files
+      kind: Conditional
+      condition: ${{ steps.parse-event.output.file_changes | selectattr('path', 'match', '.*\.ossa\.yaml$') | list | length > 0 }}
+      steps:
+      - id: invoke-ossa-validator
+        kind: Agent
+        ref: .agents/ossa-validator/manifest.ossa.yaml
+        input:
+          command: validate --strict
+          files: ${{ steps.parse-event.output.file_changes | selectattr('path', 'match', '.*\.ossa\.yaml$') | list }}
+    - id: drupal-files-check
+      name: Check Drupal Files
+      kind: Conditional
+      condition: ${{ steps.parse-event.output.file_changes | selectattr('path', 'match', 'web/(modules|themes|profiles)/.*') | list | length > 0 }}
+      steps:
+      - id: invoke-drupal-standards
+        kind: Agent
+        ref: .agents/drupal-standards/manifest.ossa.yaml
+        input:
+          command: check --full
+          files: ${{ steps.parse-event.output.file_changes | selectattr('path', 'match', 'web/(modules|themes|profiles)/.*') | list }}
+    - id: ci-files-check
+      name: Check CI Files
+      kind: Conditional
+      condition: ${{ steps.parse-event.output.file_changes | selectattr('path', 'match', '.*\.gitlab-ci.*\.yml$|\.gitlab/ci/.*') | list | length > 0 }}
+      steps:
+      - id: invoke-ci-fixer
+        kind: Agent
+        ref: .agents/gitlab-ci-fixer/manifest.ossa.yaml
+        input:
+          command: validate
+          files: ${{ steps.parse-event.output.file_changes | selectattr('path', 'match', '.*\.gitlab-ci.*') | list }}
+    - id: recipe-files-check
+      name: Check Recipe Files
+      kind: Conditional
+      condition: ${{ steps.parse-event.output.file_changes | selectattr('path', 'match', 'recipes/.*') | list | length > 0 }}
+      steps:
+      - id: invoke-recipe-scaffolder
+        kind: Agent
+        ref: .agents/drupal-recipe-scaffolder/manifest.ossa.yaml
+        input:
+          command: validate
+          files: ${{ steps.parse-event.output.file_changes | selectattr('path', 'match', 'recipes/.*') | list }}
+    - id: config-files-check
+      name: Check Config Files
+      kind: Conditional
+      condition: ${{ steps.parse-event.output.file_changes | selectattr('path', 'match', 'config/.*\.yml$') | list | length > 0 }}
+      steps:
+      - id: invoke-config-auditor
+        kind: Agent
+        ref: .agents/config-auditor/manifest.ossa.yaml
+        input:
+          command: audit
+          files: ${{ steps.parse-event.output.file_changes | selectattr('path', 'match', 'config/.*') | list }}
+  - id: standard-review
+    name: Standard MR Review
+    kind: Conditional
+    condition: ${{ 'hotfix' not in steps.parse-event.output.labels }}
+    steps:
+    - id: invoke-mr-reviewer
+      kind: Agent
+      ref: .agents/mr-reviewer/manifest.ossa.yaml
       input:
-        event: "${{ workflow.input.event }}"
-      output:
-        event_type: string
-        commands: array
-        mentions: array
-        file_changes: array
-        labels: array
-
-    # ==========================================================================
-    # Step 2: Route based on explicit agent mentions
-    # ==========================================================================
-    - id: route-mentions
-      name: Route Agent Mentions
-      kind: Conditional
-      condition: "${{ steps.parse-event.output.mentions | length > 0 }}"
-      steps:
-        - id: invoke-mentioned-agents
-          name: Invoke Mentioned Agents
-          kind: Loop
-          loop:
-            over: "${{ steps.parse-event.output.mentions }}"
-            as: mention
-            parallelism: 5
-          steps:
-            - id: dispatch-to-agent
-              name: Dispatch to Agent
-              kind: Agent
-              ref: ".agents/${{ item.mention.agent }}/manifest.ossa.yaml"
-              input:
-                command: "${{ item.mention.command }}"
-                context:
-                  project_id: "${{ workflow.input.project_id }}"
-                  mr_iid: "${{ workflow.input.merge_request_iid }}"
-                  event: "${{ workflow.input.event }}"
-
-    # ==========================================================================
-    # Step 3: Auto-dispatch based on file changes
-    # ==========================================================================
-    - id: auto-dispatch
-      name: Auto-Dispatch by File Type
-      kind: Conditional
-      condition: "${{ steps.parse-event.output.event_type == 'merge_request' }}"
-      steps:
-        # OSSA files → OSSA Validator
-        - id: ossa-files-check
-          name: Check OSSA Files
-          kind: Conditional
-          condition: "${{ steps.parse-event.output.file_changes | selectattr('path', 'match', '.*\\.ossa\\.yaml$') | list | length > 0 }}"
-          steps:
-            - id: invoke-ossa-validator
-              kind: Agent
-              ref: .agents/ossa-validator/manifest.ossa.yaml
-              input:
-                command: "validate --strict"
-                files: "${{ steps.parse-event.output.file_changes | selectattr('path', 'match', '.*\\.ossa\\.yaml$') | list }}"
-
-        # Drupal files → Drupal Standards
-        - id: drupal-files-check
-          name: Check Drupal Files
-          kind: Conditional
-          condition: "${{ steps.parse-event.output.file_changes | selectattr('path', 'match', 'web/(modules|themes|profiles)/.*') | list | length > 0 }}"
-          steps:
-            - id: invoke-drupal-standards
-              kind: Agent
-              ref: .agents/drupal-standards/manifest.ossa.yaml
-              input:
-                command: "check --full"
-                files: "${{ steps.parse-event.output.file_changes | selectattr('path', 'match', 'web/(modules|themes|profiles)/.*') | list }}"
-
-        # CI files → CI Fixer
-        - id: ci-files-check
-          name: Check CI Files
-          kind: Conditional
-          condition: "${{ steps.parse-event.output.file_changes | selectattr('path', 'match', '.*\\.gitlab-ci.*\\.yml$|\\.gitlab/ci/.*') | list | length > 0 }}"
-          steps:
-            - id: invoke-ci-fixer
-              kind: Agent
-              ref: .agents/gitlab-ci-fixer/manifest.ossa.yaml
-              input:
-                command: "validate"
-                files: "${{ steps.parse-event.output.file_changes | selectattr('path', 'match', '.*\\.gitlab-ci.*') | list }}"
-
-        # Recipe files → Recipe Scaffolder
-        - id: recipe-files-check
-          name: Check Recipe Files
-          kind: Conditional
-          condition: "${{ steps.parse-event.output.file_changes | selectattr('path', 'match', 'recipes/.*') | list | length > 0 }}"
-          steps:
-            - id: invoke-recipe-scaffolder
-              kind: Agent
-              ref: .agents/drupal-recipe-scaffolder/manifest.ossa.yaml
-              input:
-                command: "validate"
-                files: "${{ steps.parse-event.output.file_changes | selectattr('path', 'match', 'recipes/.*') | list }}"
-
-        # Config files → Config Auditor
-        - id: config-files-check
-          name: Check Config Files
-          kind: Conditional
-          condition: "${{ steps.parse-event.output.file_changes | selectattr('path', 'match', 'config/.*\\.yml$') | list | length > 0 }}"
-          steps:
-            - id: invoke-config-auditor
-              kind: Agent
-              ref: .agents/config-auditor/manifest.ossa.yaml
-              input:
-                command: "audit"
-                files: "${{ steps.parse-event.output.file_changes | selectattr('path', 'match', 'config/.*') | list }}"
-
-    # ==========================================================================
-    # Step 4: Always invoke MR Reviewer (unless hotfix)
-    # ==========================================================================
-    - id: standard-review
-      name: Standard MR Review
-      kind: Conditional
-      condition: "${{ 'hotfix' not in steps.parse-event.output.labels }}"
-      steps:
-        - id: invoke-mr-reviewer
-          kind: Agent
-          ref: .agents/mr-reviewer/manifest.ossa.yaml
-          input:
-            command: "review full"
-            context:
-              project_id: "${{ workflow.input.project_id }}"
-              mr_iid: "${{ workflow.input.merge_request_iid }}"
-
-    # ==========================================================================
-    # Step 5: Hotfix expedited processing
-    # ==========================================================================
-    - id: hotfix-review
-      name: Hotfix Expedited Review
-      kind: Conditional
-      condition: "${{ 'hotfix' in steps.parse-event.output.labels }}"
-      steps:
-        - id: invoke-mr-reviewer-urgent
-          kind: Agent
-          ref: .agents/mr-reviewer/manifest.ossa.yaml
-          input:
-            command: "review urgent --security"
-            priority: critical
-            context:
-              project_id: "${{ workflow.input.project_id }}"
-              mr_iid: "${{ workflow.input.merge_request_iid }}"
-              hotfix: true
-
-    # ==========================================================================
-    # Step 6: Aggregate and respond
-    # ==========================================================================
-    - id: aggregate-responses
-      name: Aggregate Agent Responses
-      kind: Task
-      ref: tasks/response-aggregator.ossa.yaml
+        command: review full
+        context:
+          project_id: ${{ workflow.input.project_id }}
+          mr_iid: ${{ workflow.input.merge_request_iid }}
+  - id: hotfix-review
+    name: Hotfix Expedited Review
+    kind: Conditional
+    condition: ${{ 'hotfix' in steps.parse-event.output.labels }}
+    steps:
+    - id: invoke-mr-reviewer-urgent
+      kind: Agent
+      ref: .agents/mr-reviewer/manifest.ossa.yaml
       input:
-        responses: "${{ steps.*.output }}"
-      output:
-        summary: string
-        blocking_issues: array
-        warnings: array
+        command: review urgent --security
+        priority: critical
+        context:
+          project_id: ${{ workflow.input.project_id }}
+          mr_iid: ${{ workflow.input.merge_request_iid }}
+          hotfix: true
+  - id: aggregate-responses
+    name: Aggregate Agent Responses
+    kind: Task
+    ref: tasks/response-aggregator.ossa.yaml
+    input:
+      responses: ${{ steps.*.output }}
+    output:
+      summary: string
+      blocking_issues: array
+      warnings: array
+  - id: post-comment
+    name: Post Summary Comment
+    kind: Task
+    ref: tasks/gitlab-comment.ossa.yaml
+    input:
+      project_id: ${{ workflow.input.project_id }}
+      mr_iid: ${{ workflow.input.merge_request_iid }}
+      body: '## 🤖 Agent Review Summary
 
-    - id: post-comment
-      name: Post Summary Comment
-      kind: Task
-      ref: tasks/gitlab-comment.ossa.yaml
-      input:
-        project_id: "${{ workflow.input.project_id }}"
-        mr_iid: "${{ workflow.input.merge_request_iid }}"
-        body: |
-          ## 🤖 Agent Review Summary
-          
-          ${{ steps.aggregate-responses.output.summary }}
-          
-          ### Blocking Issues (${{ steps.aggregate-responses.output.blocking_issues | length }})
-          ${{ steps.aggregate-responses.output.blocking_issues | join('\n') }}
-          
-          ### Warnings (${{ steps.aggregate-responses.output.warnings | length }})
-          ${{ steps.aggregate-responses.output.warnings | join('\n') }}
 
+        ${{ steps.aggregate-responses.output.summary }}
+
+
+        ### Blocking Issues (${{ steps.aggregate-responses.output.blocking_issues | length }})
+
+        ${{ steps.aggregate-responses.output.blocking_issues | join(''\n'') }}
+
+
+        ### Warnings (${{ steps.aggregate-responses.output.warnings | length }})
+
+        ${{ steps.aggregate-responses.output.warnings | join(''\n'') }}
+
+        '
   error_handling:
     on_failure: notify
     notification:
       channels:
-        - slack
+      - slack
       template: agent-router-failure
-
   observability:
     tracing:
       enabled: true
@@ -250,8 +212,86 @@ spec:
       enabled: true
       custom_labels:
         workflow: mr-agent-router
+extensions:
+  experts:
+    registry:
+    - id: deep-routing-expert
+      name: Deep Routing Expert
+      model:
+        provider: anthropic
+        model: claude-opus-4-5-20251101
+      specializations:
+      - deep_routing_analysis
+      - complex_problem_solving
+      cost_tier: premium
+      capabilities:
+        extended_thinking: true
+        max_tokens: 200000
+        reasoning_depth: deep
+    - id: standard-routing-expert
+      name: Standard Routing Expert
+      model:
+        provider: anthropic
+        model: claude-sonnet-4-20250514
+      specializations:
+      - routing_optimization
+      - standard_analysis
+      cost_tier: standard
+      capabilities:
+        max_tokens: 16384
+        reasoning_depth: balanced
+    - id: quick-routing-expert
+      name: Quick Routing Expert
+      model:
+        provider: google
+        model: gemini-2.0-flash
+      specializations:
+      - quick_routing_scan
+      - basic_analysis
+      cost_tier: economy
+      capabilities:
+        max_tokens: 8192
+        reasoning_depth: fast
+    selection_strategy: agent_controlled
+  bat:
+    selection_criteria:
+    - dimension: routing_complexity
+      required: true
+      options:
+      - value: complex
+        technologies:
+        - claude-opus
+        - gpt-4-turbo
+        cost_tier: premium
+        use_case: Complex routing tasks
+      - value: standard
+        technologies:
+        - claude-sonnet
+        - gpt-4o
+        cost_tier: standard
+        use_case: Standard routing tasks
+      - value: simple
+        technologies:
+        - gemini-flash
+        - claude-haiku
+        cost_tier: economy
+        use_case: Quick routing checks
+  feedback:
+    learning:
+      enabled: true
+      strategy: reinforcement
+      data_sources:
+      - routing_outcomes
+      - validation_results
+  infrastructure:
+  - type: agent_mesh
+    endpoint: mesh.blueflyagents.com:3005
+    capabilities:
+    - agent_coordination
+    - routing_tracking
 
 ---
+
 # Agent Command Mapping Reference
 # Used by the router to match commands to agents
 
