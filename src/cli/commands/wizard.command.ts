@@ -573,9 +573,14 @@ export const wizardCommand = new Command('wizard')
         );
 
         if (codeTypes.length > 0) {
-          // Initialize code_compliance if not exists
-          if (!(agent.spec as any).code_compliance) {
-            (agent.spec as any).code_compliance = {
+          // Initialize extensions if not exists
+          if (!agent.extensions) {
+            agent.extensions = {};
+          }
+          
+          // Initialize code_compliance extension if not exists
+          if (!(agent.extensions as any).code_compliance) {
+            (agent.extensions as any).code_compliance = {
               enabled: true,
               mandatory_sources: [],
               enforcement_hooks: {
@@ -645,35 +650,38 @@ export const wizardCommand = new Command('wizard')
               const coverageValue = parseFloat(minCoverage);
               const validCoverage = isNaN(coverageValue) ? 0.8 : Math.max(0, Math.min(1, coverageValue));
 
-              (agent.spec as any).mandatory_knowledge_sources = [
-                {
-                  source_id: 'react-best-practices',
-                  enforcement_level: enforcementLevel,
-                  triggers: triggers,
-                  query_conditions: {
-                    before_write: true,
-                    before_review: true,
-                    on_optimization: true
-                  },
-                  validation_rules: {
-                    require_references: requireReferences,
-                    block_on_critical: enforcementLevel === 'block',
-                    warn_on_high: true,
-                    min_coverage: validCoverage
-                  },
-                  tool_injection: {
-                    tool_name: 'query_react_best_practices',
-                    mcp_server: 'agent-brain',
-                    auto_inject: true
-                  },
-                  tracking: {
-                    track_queries: true,
-                    track_applications: true,
-                    track_violations: true,
-                    store_in_graph: true
-                  }
+              // Use extensions.mandatory_knowledge_sources (OSSA extension pattern)
+              if (!(agent.extensions as any).mandatory_knowledge_sources) {
+                (agent.extensions as any).mandatory_knowledge_sources = [];
+              }
+              
+              (agent.extensions as any).mandatory_knowledge_sources.push({
+                source_id: 'react-best-practices',
+                enforcement_level: enforcementLevel,
+                triggers: triggers,
+                query_conditions: {
+                  before_write: true,
+                  before_review: true,
+                  on_optimization: true
+                },
+                validation_rules: {
+                  require_references: requireReferences,
+                  block_on_critical: enforcementLevel === 'block',
+                  warn_on_high: true,
+                  min_coverage: validCoverage
+                },
+                tool_injection: {
+                  tool_name: 'query_react_best_practices',
+                  mcp_server: 'agent-brain',
+                  auto_inject: true
+                },
+                tracking: {
+                  track_queries: true,
+                  track_applications: true,
+                  track_violations: true,
+                  store_in_graph: true
                 }
-              ];
+              });
 
               printInfo(`✓ React Best Practices knowledge base enabled`);
               printInfo(`  Enforcement: ${enforcementLevel}`);
@@ -687,12 +695,15 @@ export const wizardCommand = new Command('wizard')
               );
               
               if (enableKGInit) {
-                (agent.spec as any).mandatory_knowledge_sources[0].knowledge_graph = {
-                  initialize_on_startup: true,
-                  neo4j_uri: process.env.NEO4J_URI || 'bolt://localhost:7687',
-                  auto_track: true
-                };
-                printInfo(`  Knowledge Graph: Will initialize schema on agent startup`);
+                const sources = (agent.extensions as any).mandatory_knowledge_sources || [];
+                if (sources.length > 0) {
+                  sources[0].knowledge_graph = {
+                    initialize_on_startup: true,
+                    neo4j_uri: process.env.NEO4J_URI || 'bolt://localhost:7687',
+                    auto_track: true
+                  };
+                  printInfo(`  Knowledge Graph: Will initialize schema on agent startup`);
+                }
               }
             }
           }
@@ -705,8 +716,10 @@ export const wizardCommand = new Command('wizard')
             );
 
             if (enableDrupalStandards) {
-              (agent.spec as any).mandatory_knowledge_sources = (agent.spec as any).mandatory_knowledge_sources || [];
-              (agent.spec as any).mandatory_knowledge_sources.push({
+              if (!(agent.extensions as any).mandatory_knowledge_sources) {
+                (agent.extensions as any).mandatory_knowledge_sources = [];
+              }
+              (agent.extensions as any).mandatory_knowledge_sources.push({
                 source_id: 'drupal-standards',
                 enforcement_level: 'validate',
                 triggers: ['**/*.php', '**/*.module', '**/*.inc'],
@@ -762,9 +775,9 @@ export const wizardCommand = new Command('wizard')
               true
             );
 
-            const requireReferences = (agent.spec as any).mandatory_knowledge_sources?.[0]?.validation_rules?.require_references || false;
+            const requireReferences = (agent.extensions as any).mandatory_knowledge_sources?.[0]?.validation_rules?.require_references || false;
 
-            (agent.spec as any).code_compliance.enforcement_hooks = {
+            (agent.extensions as any).code_compliance.enforcement_hooks = {
               pre_write: {
                 enabled: true,
                 action: 'query'
