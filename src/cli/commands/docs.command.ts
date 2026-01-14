@@ -11,14 +11,18 @@ import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import type { OssaAgent } from '../../types/index.js';
 
-function generateMarkdown(manifests: Array<{ path: string; manifest: OssaAgent }>): string {
+function generateMarkdown(
+  manifests: Array<{ path: string; manifest: OssaAgent }>
+): string {
   let md = '# OSSA Agent Documentation\n\n';
   md += `Generated from ${manifests.length} agent manifest(s)\n\n`;
 
   for (const { manifest } of manifests) {
     const name = manifest.metadata?.name || manifest.agent?.name || 'Unknown';
-    const version = manifest.metadata?.version || manifest.agent?.version || 'Unknown';
-    const description = manifest.metadata?.description || manifest.agent?.description || '';
+    const version =
+      manifest.metadata?.version || manifest.agent?.version || 'Unknown';
+    const description =
+      manifest.metadata?.description || manifest.agent?.description || '';
 
     md += `## ${name}\n\n`;
     md += `**Version:** ${version}\n\n`;
@@ -72,7 +76,9 @@ function generateMarkdown(manifests: Array<{ path: string; manifest: OssaAgent }
   return md;
 }
 
-function generateHTML(manifests: Array<{ path: string; manifest: OssaAgent }>): string {
+function generateHTML(
+  manifests: Array<{ path: string; manifest: OssaAgent }>
+): string {
   let html = `<!DOCTYPE html>
 <html>
 <head>
@@ -103,8 +109,10 @@ function generateHTML(manifests: Array<{ path: string; manifest: OssaAgent }>): 
 
   for (const { manifest } of manifests) {
     const name = manifest.metadata?.name || manifest.agent?.name || 'Unknown';
-    const version = manifest.metadata?.version || manifest.agent?.version || 'Unknown';
-    const description = manifest.metadata?.description || manifest.agent?.description || '';
+    const version =
+      manifest.metadata?.version || manifest.agent?.version || 'Unknown';
+    const description =
+      manifest.metadata?.description || manifest.agent?.description || '';
 
     html += `  <h2 id="${name.toLowerCase().replace(/\s+/g, '-')}">${name}</h2>\n`;
     html += `  <p><strong>Version:</strong> ${version}</p>\n`;
@@ -149,7 +157,9 @@ function generateHTML(manifests: Array<{ path: string; manifest: OssaAgent }>): 
   return html;
 }
 
-function generateOpenAPI(manifests: Array<{ path: string; manifest: OssaAgent }>): any {
+function generateOpenAPI(
+  manifests: Array<{ path: string; manifest: OssaAgent }>
+): any {
   const openapi: any = {
     openapi: '3.1.0',
     info: {
@@ -164,7 +174,8 @@ function generateOpenAPI(manifests: Array<{ path: string; manifest: OssaAgent }>
   };
 
   for (const { manifest } of manifests) {
-    const agentName = manifest.metadata?.name || manifest.agent?.name || 'agent';
+    const agentName =
+      manifest.metadata?.name || manifest.agent?.name || 'agent';
     const capabilities = manifest.agent?.capabilities || [];
 
     for (const cap of capabilities) {
@@ -197,14 +208,17 @@ function generateOpenAPI(manifests: Array<{ path: string; manifest: OssaAgent }>
   return openapi;
 }
 
-function generateCatalog(manifests: Array<{ path: string; manifest: OssaAgent }>): any {
+function generateCatalog(
+  manifests: Array<{ path: string; manifest: OssaAgent }>
+): any {
   return {
     version: '0.3.0',
     generated: new Date().toISOString(),
     agents: manifests.map(({ manifest, path: filePath }) => ({
       name: manifest.metadata?.name || manifest.agent?.name,
       version: manifest.metadata?.version || manifest.agent?.version,
-      description: manifest.metadata?.description || manifest.agent?.description,
+      description:
+        manifest.metadata?.description || manifest.agent?.description,
       role: manifest.spec?.role || manifest.agent?.role,
       source: filePath,
       capabilities: (manifest.agent?.capabilities || []).map((cap: any) => ({
@@ -217,7 +231,11 @@ function generateCatalog(manifests: Array<{ path: string; manifest: OssaAgent }>
 
 export const docsCommand = new Command('docs')
   .argument('<path>', 'Path to OSSA manifest or directory')
-  .option('-f, --format <format>', 'Output format (markdown, html, openapi, catalog)', 'markdown')
+  .option(
+    '-f, --format <format>',
+    'Output format (markdown, html, openapi, catalog)',
+    'markdown'
+  )
   .option('-o, --output <dir>', 'Output directory', '.')
   .option('--catalog', 'Generate agent catalog JSON')
   .description('Generate documentation from OSSA agent manifests')
@@ -240,17 +258,24 @@ export const docsCommand = new Command('docs')
             const entries = fs.readdirSync(dir, { withFileTypes: true });
             for (const entry of entries) {
               const fullPath = path.join(dir, entry.name);
-              if (entry.isDirectory() && entry.name !== 'node_modules' && entry.name !== 'dist') {
+              if (
+                entry.isDirectory() &&
+                entry.name !== 'node_modules' &&
+                entry.name !== 'dist'
+              ) {
                 await findManifests(fullPath);
               } else if (
                 entry.isFile() &&
-                (entry.name.endsWith('.ossa.yaml') || entry.name.endsWith('.ossa.yml'))
+                (entry.name.endsWith('.ossa.yaml') ||
+                  entry.name.endsWith('.ossa.yml'))
               ) {
                 try {
                   const manifest = await manifestRepo.load(fullPath);
                   manifests.push({ path: fullPath, manifest });
                 } catch (error: any) {
-                  console.warn(chalk.yellow(`Failed to load ${fullPath}: ${error.message}`));
+                  console.warn(
+                    chalk.yellow(`Failed to load ${fullPath}: ${error.message}`)
+                  );
                 }
               }
             }
@@ -271,7 +296,11 @@ export const docsCommand = new Command('docs')
           fs.mkdirSync(outputDir, { recursive: true });
         }
 
-        console.log(chalk.blue(`Generating ${options.format} documentation from ${manifests.length} manifest(s)...`));
+        console.log(
+          chalk.blue(
+            `Generating ${options.format} documentation from ${manifests.length} manifest(s)...`
+          )
+        );
 
         let output: string;
         let filename: string;
@@ -292,7 +321,9 @@ export const docsCommand = new Command('docs')
           filename = 'catalog.json';
         } else {
           console.error(chalk.red(`Unknown format: ${options.format}`));
-          console.log(chalk.blue('Available formats: markdown, html, openapi, catalog'));
+          console.log(
+            chalk.blue('Available formats: markdown, html, openapi, catalog')
+          );
           process.exit(1);
           return; // TypeScript control flow
         }

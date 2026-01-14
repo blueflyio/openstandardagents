@@ -18,7 +18,13 @@
  */
 
 // Main service
-export { CodegenService, type GeneratorType, type GenerateResult, type DriftReport, type Generator } from './codegen.service.js';
+export {
+  CodegenService,
+  type GeneratorType,
+  type GenerateResult,
+  type DriftReport,
+  type Generator,
+} from './codegen.service.js';
 
 // Generators
 export { ManifestGenerator } from './generators/manifest.generator.js';

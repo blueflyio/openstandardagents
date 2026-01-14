@@ -163,9 +163,10 @@ export function mergeConfig(
 /**
  * Validate configuration
  */
-export function validateConfig(
-  config: Required<AnthropicConfig>
-): { valid: boolean; errors: string[] } {
+export function validateConfig(config: Required<AnthropicConfig>): {
+  valid: boolean;
+  errors: string[];
+} {
   const errors: string[] = [];
 
   // Validate API key
@@ -230,8 +231,11 @@ export function getRecommendedModel(options: {
   speed?: 'fast' | 'balanced' | 'quality';
   budget?: 'low' | 'medium' | 'high';
 }): AnthropicModel {
-  const { complexity = 'medium', speed = 'balanced', budget = 'medium' } =
-    options;
+  const {
+    complexity = 'medium',
+    speed = 'balanced',
+    budget = 'medium',
+  } = options;
 
   // High complexity always needs Opus
   if (complexity === 'high') {

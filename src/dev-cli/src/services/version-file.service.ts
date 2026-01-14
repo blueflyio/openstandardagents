@@ -1,13 +1,16 @@
 /**
  * Version File Service
- * 
+ *
  * SOLID: Single Responsibility - .version.json file management only
  * DRY: Centralizes .version.json operations
- * 
+ *
  * Separated from VersionDetectionService to follow Single Responsibility Principle.
  */
 
-import { VersionConfigSchema, type VersionConfig } from '../schemas/version.schema.js';
+import {
+  VersionConfigSchema,
+  type VersionConfig,
+} from '../schemas/version.schema.js';
 import { FileService } from './file.service.js';
 
 export class VersionFileService {
@@ -27,7 +30,10 @@ export class VersionFileService {
     }
 
     try {
-      return this.fileService.readJson(this.versionFilePath, VersionConfigSchema);
+      return this.fileService.readJson(
+        this.versionFilePath,
+        VersionConfigSchema
+      );
     } catch {
       return this.getDefaultConfig();
     }

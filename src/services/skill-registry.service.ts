@@ -1,9 +1,9 @@
 /**
  * Skill Registry Service
- * 
+ *
  * Implements Vercel agent-skills pattern for OSSA platform.
  * Provides context-aware skill discovery and activation.
- * 
+ *
  * @see https://agentskills.io/
  * @see https://github.com/vercel-labs/agent-skills
  */
@@ -21,7 +21,9 @@ const SkillMetadataSchema = z.object({
   name: z.string(),
   description: z.string(),
   priority: z.number().min(0).max(100).default(50),
-  contexts: z.array(z.enum(['development', 'production', 'review', 'testing'])).default(['development']),
+  contexts: z
+    .array(z.enum(['development', 'production', 'review', 'testing']))
+    .default(['development']),
   enabled: z.boolean().default(true),
   path: z.string(),
   manifest: z.any(), // OSSA manifest
@@ -51,7 +53,7 @@ export interface SkillMatch {
 
 /**
  * Skill Registry Service
- * 
+ *
  * Manages skill discovery, registration, and context-based matching.
  */
 export class SkillRegistry {
@@ -67,12 +69,13 @@ export class SkillRegistry {
       return;
     }
 
-    this.skillPaths = skillPaths.length > 0 
-      ? skillPaths 
-      : [
-          resolve(process.cwd(), 'examples/agent-skills'),
-          resolve(process.cwd(), 'examples/ossa-templates'),
-        ];
+    this.skillPaths =
+      skillPaths.length > 0
+        ? skillPaths
+        : [
+            resolve(process.cwd(), 'examples/agent-skills'),
+            resolve(process.cwd(), 'examples/ossa-templates'),
+          ];
 
     await this.discoverSkills();
     this.initialized = true;
@@ -121,13 +124,15 @@ export class SkillRegistry {
   /**
    * Register a skill from Vercel format SKILL.md file
    */
-  private static async registerFromSkillMd(filePath: string): Promise<SkillMetadata> {
+  private static async registerFromSkillMd(
+    filePath: string
+  ): Promise<SkillMetadata> {
     if (!existsSync(filePath)) {
       throw new Error(`Skill file not found: ${filePath}`);
     }
 
     const content = readFileSync(filePath, 'utf-8');
-    
+
     // Parse frontmatter
     const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n/);
     if (!frontmatterMatch) {
@@ -195,14 +200,27 @@ export class SkillRegistry {
     for (const pattern of keywordPatterns) {
       const match = content.match(pattern);
       if (match) {
-        const items = match[1].split(',').map(s => s.trim().replace(/['"]/g, ''));
+        const items = match[1]
+          .split(',')
+          .map((s) => s.trim().replace(/['"]/g, ''));
         keywords.push(...items);
       }
     }
 
     // Default keywords for React best practices
-    if (content.toLowerCase().includes('react') || content.toLowerCase().includes('performance')) {
-      keywords.push('performance', 'optimize', 'slow', 'bundle', 'waterfall', 'react', 'next.js');
+    if (
+      content.toLowerCase().includes('react') ||
+      content.toLowerCase().includes('performance')
+    ) {
+      keywords.push(
+        'performance',
+        'optimize',
+        'slow',
+        'bundle',
+        'waterfall',
+        'react',
+        'next.js'
+      );
     }
 
     return [...new Set(keywords)];
@@ -213,14 +231,29 @@ export class SkillRegistry {
    */
   private static extractFilePatterns(content: string): string[] {
     const patterns: string[] = [];
-    
-    if (content.toLowerCase().includes('react') || content.toLowerCase().includes('tsx') || content.toLowerCase().includes('jsx')) {
-      patterns.push('**/*.{tsx,jsx}', '**/components/**', '**/app/**', '**/pages/**');
+
+    if (
+      content.toLowerCase().includes('react') ||
+      content.toLowerCase().includes('tsx') ||
+      content.toLowerCase().includes('jsx')
+    ) {
+      patterns.push(
+        '**/*.{tsx,jsx}',
+        '**/components/**',
+        '**/app/**',
+        '**/pages/**'
+      );
     }
-    if (content.toLowerCase().includes('typescript') || content.toLowerCase().includes('.ts')) {
+    if (
+      content.toLowerCase().includes('typescript') ||
+      content.toLowerCase().includes('.ts')
+    ) {
       patterns.push('**/*.ts');
     }
-    if (content.toLowerCase().includes('javascript') || content.toLowerCase().includes('.js')) {
+    if (
+      content.toLowerCase().includes('javascript') ||
+      content.toLowerCase().includes('.js')
+    ) {
       patterns.push('**/*.js');
     }
 
@@ -234,9 +267,9 @@ export class SkillRegistry {
     const frameworks: string[] = [];
     const frameworkMap: Record<string, string[]> = {
       'next.js': ['next.js', 'next'],
-      'react': ['react'],
-      'remix': ['remix'],
-      'gatsby': ['gatsby'],
+      react: ['react'],
+      remix: ['remix'],
+      gatsby: ['gatsby'],
     };
 
     const contentLower = content.toLowerCase();
@@ -258,7 +291,7 @@ export class SkillRegistry {
     }
 
     const content = readFileSync(filePath, 'utf-8');
-    const manifest = parseYaml(content) as any;
+    const manifest = parseYaml(content);
 
     if (!manifest.metadata?.name) {
       throw new Error(`Invalid OSSA manifest: missing metadata.name`);
@@ -267,11 +300,13 @@ export class SkillRegistry {
     const skill: SkillMetadata = {
       name: manifest.metadata.name,
       description: manifest.metadata.description || '',
-      priority: manifest.metadata.labels?.['skill.priority'] 
-        ? parseInt(manifest.metadata.labels['skill.priority']) 
+      priority: manifest.metadata.labels?.['skill.priority']
+        ? parseInt(manifest.metadata.labels['skill.priority'])
         : 50,
       contexts: manifest.metadata.labels?.['skill.contexts']
-        ? manifest.metadata.labels['skill.contexts'].split(',').map((c: string) => c.trim())
+        ? manifest.metadata.labels['skill.contexts']
+            .split(',')
+            .map((c: string) => c.trim())
         : ['development'],
       enabled: manifest.metadata.labels?.['skill.enabled'] !== 'false',
       path: filePath,
@@ -288,28 +323,34 @@ export class SkillRegistry {
   /**
    * Register a skill manually
    */
-  static register(skill: Partial<SkillMetadata> & { path: string; manifest: any }): SkillMetadata {
+  static register(
+    skill: Partial<SkillMetadata> & { path: string; manifest: any }
+  ): SkillMetadata {
     // Parse contexts from manifest labels if not provided
     let contexts = skill.contexts;
     if (!contexts && skill.manifest.metadata?.labels?.['skill.contexts']) {
       const contextsStr = skill.manifest.metadata.labels['skill.contexts'];
-      contexts = typeof contextsStr === 'string' 
-        ? contextsStr.split(',').map((c: string) => c.trim())
-        : Array.isArray(contextsStr) 
-          ? contextsStr 
-          : ['development'];
+      contexts =
+        typeof contextsStr === 'string'
+          ? contextsStr.split(',').map((c: string) => c.trim())
+          : Array.isArray(contextsStr)
+            ? contextsStr
+            : ['development'];
     }
-    
+
     const fullSkill: SkillMetadata = {
       name: skill.name || skill.manifest.metadata?.name || 'unknown',
-      description: skill.description || skill.manifest.metadata?.description || '',
-      priority: skill.priority ?? 
-        (skill.manifest.metadata?.labels?.['skill.priority'] 
-          ? parseInt(skill.manifest.metadata.labels['skill.priority']) 
+      description:
+        skill.description || skill.manifest.metadata?.description || '',
+      priority:
+        skill.priority ??
+        (skill.manifest.metadata?.labels?.['skill.priority']
+          ? parseInt(skill.manifest.metadata.labels['skill.priority'])
           : 50),
       contexts: contexts || ['development'],
-      enabled: skill.enabled ?? 
-        (skill.manifest.metadata?.labels?.['skill.enabled'] !== 'false'),
+      enabled:
+        skill.enabled ??
+        skill.manifest.metadata?.labels?.['skill.enabled'] !== 'false',
       path: skill.path,
       manifest: skill.manifest,
     };
@@ -354,7 +395,10 @@ export class SkillRegistry {
   /**
    * Evaluate a single skill match
    */
-  private static evaluateMatch(skill: SkillMetadata, context: SkillMatchContext): SkillMatch {
+  private static evaluateMatch(
+    skill: SkillMetadata,
+    context: SkillMatchContext
+  ): SkillMatch {
     let confidence = 0;
     const reasons: string[] = [];
 
@@ -364,7 +408,7 @@ export class SkillRegistry {
     // Keyword matching
     if (context.userInput && triggers.keywords) {
       const inputLower = context.userInput.toLowerCase();
-      const matchedKeywords = triggers.keywords.filter((kw: string) => 
+      const matchedKeywords = triggers.keywords.filter((kw: string) =>
         inputLower.includes(kw.toLowerCase())
       );
       if (matchedKeywords.length > 0) {
@@ -392,12 +436,14 @@ export class SkillRegistry {
 
     // Framework matching
     if (context.framework && triggers.frameworks) {
-      const frameworks = Array.isArray(triggers.frameworks) 
-        ? triggers.frameworks 
+      const frameworks = Array.isArray(triggers.frameworks)
+        ? triggers.frameworks
         : [triggers.frameworks];
-      if (frameworks.some((f: string) => 
-        context.framework?.toLowerCase().includes(f.toLowerCase())
-      )) {
+      if (
+        frameworks.some((f: string) =>
+          context.framework?.toLowerCase().includes(f.toLowerCase())
+        )
+      ) {
         confidence += 0.3;
         reasons.push(`Matched framework: ${context.framework}`);
       }
@@ -408,9 +454,11 @@ export class SkillRegistry {
       const projectTypes = Array.isArray(triggers.project_types)
         ? triggers.project_types
         : [triggers.project_types];
-      if (projectTypes.some((pt: string) =>
-        context.projectType?.toLowerCase().includes(pt.toLowerCase())
-      )) {
+      if (
+        projectTypes.some((pt: string) =>
+          context.projectType?.toLowerCase().includes(pt.toLowerCase())
+        )
+      ) {
         confidence += 0.2;
         reasons.push(`Matched project type: ${context.projectType}`);
       }
@@ -418,7 +466,7 @@ export class SkillRegistry {
 
     // Explicit keyword matching (from context)
     if (context.keywords && triggers.keywords) {
-      const matched = context.keywords.filter(kw =>
+      const matched = context.keywords.filter((kw) =>
         triggers.keywords.some((tk: string) =>
           kw.toLowerCase().includes(tk.toLowerCase())
         )
@@ -434,7 +482,7 @@ export class SkillRegistry {
       const capabilities = Array.isArray(manifest.spec.capabilities)
         ? manifest.spec.capabilities.map((c: any) => c.name || c)
         : [];
-      
+
       if (context.userInput) {
         const inputLower = context.userInput.toLowerCase();
         const matchedCaps = capabilities.filter((cap: string) =>
@@ -466,7 +514,7 @@ export class SkillRegistry {
       .replace(/\*\*/g, '.*')
       .replace(/\*/g, '[^/]*')
       .replace(/\?/g, '.');
-    
+
     const regex = new RegExp(`^${regexPattern}$`);
     return regex.test(file);
   }
@@ -520,8 +568,10 @@ export class SkillRegistry {
   /**
    * Get skills by context
    */
-  static getByContext(context: 'development' | 'production' | 'review' | 'testing'): SkillMetadata[] {
-    return Array.from(this.skills.values()).filter(skill =>
+  static getByContext(
+    context: 'development' | 'production' | 'review' | 'testing'
+  ): SkillMetadata[] {
+    return Array.from(this.skills.values()).filter((skill) =>
       skill.contexts.includes(context)
     );
   }
@@ -534,6 +584,6 @@ export class SkillRegistry {
     threshold: number = 0.5
   ): Promise<SkillMatch[]> {
     const matches = await this.match(context);
-    return matches.filter(m => m.confidence >= threshold);
+    return matches.filter((m) => m.confidence >= threshold);
   }
 }

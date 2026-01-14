@@ -14,7 +14,11 @@ import { injectable } from 'inversify';
 import * as fs from 'fs';
 import * as path from 'path';
 import { glob } from 'glob';
-import type { Generator, GenerateResult, DriftReport } from '../codegen.service.js';
+import type {
+  Generator,
+  GenerateResult,
+  DriftReport,
+} from '../codegen.service.js';
 import { getVersion, getApiVersion } from '../../../utils/version.js';
 
 // Domain configuration
@@ -45,12 +49,19 @@ export class OpenAPIGenerator implements Generator {
 
     for (const file of files) {
       try {
-        const updated = await this.updateOpenAPISpec(file, version, apiVersion, dryRun);
+        const updated = await this.updateOpenAPISpec(
+          file,
+          version,
+          apiVersion,
+          dryRun
+        );
         if (updated) {
           result.filesUpdated++;
         }
       } catch (error) {
-        result.errors.push(`${file}: ${error instanceof Error ? error.message : String(error)}`);
+        result.errors.push(
+          `${file}: ${error instanceof Error ? error.message : String(error)}`
+        );
       }
     }
 
@@ -78,7 +89,10 @@ export class OpenAPIGenerator implements Generator {
   /**
    * Check for version drift
    */
-  async checkDrift(version: string, apiVersion: string): Promise<DriftReport['filesWithOldVersion']> {
+  async checkDrift(
+    version: string,
+    apiVersion: string
+  ): Promise<DriftReport['filesWithOldVersion']> {
     const drift: DriftReport['filesWithOldVersion'] = [];
     const files = await this.listTargetFiles();
 

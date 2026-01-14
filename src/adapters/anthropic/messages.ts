@@ -3,7 +3,11 @@
  * Convert between OSSA and Anthropic message formats
  */
 
-import type { MessageParam, TextBlock, ToolUseBlock } from '@anthropic-ai/sdk/resources/messages';
+import type {
+  MessageParam,
+  TextBlock,
+  ToolUseBlock,
+} from '@anthropic-ai/sdk/resources/messages';
 
 /**
  * OSSA message format
@@ -20,8 +24,18 @@ export interface OssaMessage {
 export type OssaMessageContent =
   | { type: 'text'; text: string }
   | { type: 'image'; source: string; mediaType?: string }
-  | { type: 'tool_use'; id: string; name: string; input: Record<string, unknown> }
-  | { type: 'tool_result'; tool_use_id: string; content: string; is_error?: boolean };
+  | {
+      type: 'tool_use';
+      id: string;
+      name: string;
+      input: Record<string, unknown>;
+    }
+  | {
+      type: 'tool_result';
+      tool_use_id: string;
+      content: string;
+      is_error?: boolean;
+    };
 
 /**
  * Anthropic content block types
@@ -31,9 +45,10 @@ export type AnthropicContentBlock = TextBlock | ToolUseBlock;
 /**
  * Convert OSSA messages to Anthropic format
  */
-export function convertToAnthropicMessages(
-  messages: OssaMessage[]
-): { system?: string; messages: MessageParam[] } {
+export function convertToAnthropicMessages(messages: OssaMessage[]): {
+  system?: string;
+  messages: MessageParam[];
+} {
   // Extract system message if present
   let system: string | undefined;
   const conversationMessages: OssaMessage[] = [];
@@ -46,7 +61,9 @@ export function convertToAnthropicMessages(
       } else {
         // Extract text from content blocks
         const textBlocks = msg.content.filter((b) => b.type === 'text');
-        const text = textBlocks.map((b) => (b as { text: string }).text).join('\n');
+        const text = textBlocks
+          .map((b) => (b as { text: string }).text)
+          .join('\n');
         system = system ? `${system}\n\n${text}` : text;
       }
     } else {
@@ -66,9 +83,26 @@ export function convertToAnthropicMessages(
     // Convert content blocks
     const content: Array<
       | { type: 'text'; text: string }
-      | { type: 'image'; source: { type: 'base64'; media_type: 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp'; data: string } }
-      | { type: 'tool_use'; id: string; name: string; input: Record<string, unknown> }
-      | { type: 'tool_result'; tool_use_id: string; content: string; is_error?: boolean }
+      | {
+          type: 'image';
+          source: {
+            type: 'base64';
+            media_type: 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp';
+            data: string;
+          };
+        }
+      | {
+          type: 'tool_use';
+          id: string;
+          name: string;
+          input: Record<string, unknown>;
+        }
+      | {
+          type: 'tool_result';
+          tool_use_id: string;
+          content: string;
+          is_error?: boolean;
+        }
     > = [];
 
     for (const block of msg.content) {
@@ -84,7 +118,12 @@ export function convertToAnthropicMessages(
           type: 'image',
           source: {
             type: 'base64',
-            media_type: (block.mediaType || mediaType.split(':')[1].split(';')[0]) as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp',
+            media_type: (block.mediaType ||
+              mediaType.split(':')[1].split(';')[0]) as
+              | 'image/jpeg'
+              | 'image/png'
+              | 'image/gif'
+              | 'image/webp',
             data: data || block.source,
           },
         });
@@ -148,7 +187,8 @@ export function convertFromAnthropicMessage(
       content.push({
         type: 'image',
         source,
-        mediaType: block.source.type === 'base64' ? block.source.media_type : undefined,
+        mediaType:
+          block.source.type === 'base64' ? block.source.media_type : undefined,
       });
     } else if (block.type === 'tool_use') {
       content.push({
@@ -161,7 +201,10 @@ export function convertFromAnthropicMessage(
       content.push({
         type: 'tool_result',
         tool_use_id: block.tool_use_id,
-        content: typeof block.content === 'string' ? block.content : JSON.stringify(block.content),
+        content:
+          typeof block.content === 'string'
+            ? block.content
+            : JSON.stringify(block.content),
         is_error: block.is_error,
       });
     }
@@ -176,7 +219,10 @@ export function convertFromAnthropicMessage(
 /**
  * Create a text message
  */
-export function createTextMessage(role: 'user' | 'assistant', text: string): OssaMessage {
+export function createTextMessage(
+  role: 'user' | 'assistant',
+  text: string
+): OssaMessage {
   return {
     role,
     content: text,
@@ -273,7 +319,11 @@ export function extractToolUses(
   return message.content
     .filter((block) => block.type === 'tool_use')
     .map((block) => {
-      const toolUse = block as { id: string; name: string; input: Record<string, unknown> };
+      const toolUse = block as {
+        id: string;
+        name: string;
+        input: Record<string, unknown>;
+      };
       return {
         id: toolUse.id,
         name: toolUse.name,
@@ -285,7 +335,10 @@ export function extractToolUses(
 /**
  * Validate message format
  */
-export function validateMessage(message: OssaMessage): { valid: boolean; errors: string[] } {
+export function validateMessage(message: OssaMessage): {
+  valid: boolean;
+  errors: string[];
+} {
   const errors: string[] = [];
 
   // Validate role
@@ -313,7 +366,11 @@ export function validateMessage(message: OssaMessage): { valid: boolean; errors:
       }
 
       if (block.type === 'tool_use') {
-        const toolUse = block as { id?: string; name?: string; input?: unknown };
+        const toolUse = block as {
+          id?: string;
+          name?: string;
+          input?: unknown;
+        };
         if (!toolUse.id) errors.push('Tool use block missing id');
         if (!toolUse.name) errors.push('Tool use block missing name');
         if (!toolUse.input) errors.push('Tool use block missing input');
@@ -321,8 +378,10 @@ export function validateMessage(message: OssaMessage): { valid: boolean; errors:
 
       if (block.type === 'tool_result') {
         const toolResult = block as { tool_use_id?: string; content?: string };
-        if (!toolResult.tool_use_id) errors.push('Tool result block missing tool_use_id');
-        if (!toolResult.content) errors.push('Tool result block missing content');
+        if (!toolResult.tool_use_id)
+          errors.push('Tool result block missing tool_use_id');
+        if (!toolResult.content)
+          errors.push('Tool result block missing content');
       }
     }
   } else {
@@ -349,19 +408,24 @@ export function mergeMessages(messages: OssaMessage[]): OssaMessage[] {
 
     if (current.role === next.role && current.role !== 'system') {
       // Merge content
-      if (typeof current.content === 'string' && typeof next.content === 'string') {
+      if (
+        typeof current.content === 'string' &&
+        typeof next.content === 'string'
+      ) {
         current = {
           ...current,
           content: `${current.content}\n\n${next.content}`,
         };
       } else {
         // Convert to array format
-        const currentBlocks = typeof current.content === 'string'
-          ? [{ type: 'text' as const, text: current.content }]
-          : current.content;
-        const nextBlocks = typeof next.content === 'string'
-          ? [{ type: 'text' as const, text: next.content }]
-          : next.content;
+        const currentBlocks =
+          typeof current.content === 'string'
+            ? [{ type: 'text' as const, text: current.content }]
+            : current.content;
+        const nextBlocks =
+          typeof next.content === 'string'
+            ? [{ type: 'text' as const, text: next.content }]
+            : next.content;
 
         current = {
           ...current,

@@ -1,6 +1,6 @@
 /**
  * Version Sync Service
- * 
+ *
  * Syncs 0.3.4 placeholders with actual version from git tags (DYNAMIC)
  * SOLID: Single Responsibility - Sync only
  * DRY: Single source of truth (git tags)
@@ -9,7 +9,11 @@
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { glob } from 'glob';
-import { VersionSyncRequest, VersionSyncResponse, VERSION_PLACEHOLDER_PATTERN } from '../schemas/version.schema.js';
+import {
+  VersionSyncRequest,
+  VersionSyncResponse,
+  VERSION_PLACEHOLDER_PATTERN,
+} from '../schemas/version.schema.js';
 import { VersionDetectionService } from './version-detection.service.js';
 
 export class VersionSyncService {
@@ -31,7 +35,8 @@ export class VersionSyncService {
     const versionInfo = await this.versionDetection.detectVersion();
     const version = request.version || versionInfo.current;
 
-    const filesToSync = request.files || await this.findFilesWithPlaceholders();
+    const filesToSync =
+      request.files || (await this.findFilesWithPlaceholders());
     const updatedFiles: string[] = [];
     let filesUpdated = 0;
 

@@ -108,7 +108,9 @@ function printHeader(): void {
   console.log(chalk.cyan.bold('[RUN] OSSA Quickstart'));
   console.log(chalk.cyan('══════════════════'));
   console.log();
-  console.log(chalk.gray('Open Standard for Software Agents - The OpenAPI for agents'));
+  console.log(
+    chalk.gray('Open Standard for Software Agents - The OpenAPI for agents')
+  );
   console.log(chalk.gray('Get running in 60 seconds...'));
   console.log();
 }
@@ -143,7 +145,6 @@ function printWarning(message: string): void {
   console.log(chalk.yellow('     ⚠'), message);
 }
 
-
 /**
  * Prints a box around text
  */
@@ -173,7 +174,9 @@ function checkApiKeys(): { hasKey: boolean; provider: string } {
 
   printWarning('No LLM API key detected');
   printInfo('Set one of: ANTHROPIC_API_KEY, OPENAI_API_KEY, GOOGLE_API_KEY');
-  printInfo(`Or use Ollama for local models (free): ${chalk.cyan('https://ollama.ai')}`);
+  printInfo(
+    `Or use Ollama for local models (free): ${chalk.cyan('https://ollama.ai')}`
+  );
 
   return { hasKey: false, provider: 'anthropic' };
 }
@@ -206,15 +209,21 @@ function showSuccessMessage(agentFile: string, provider: string): void {
   switch (provider) {
     case 'anthropic':
       console.log(`     ${chalk.cyan('export ANTHROPIC_API_KEY=sk-ant-...')}`);
-      console.log(`     ${chalk.gray('Get key: https://console.anthropic.com')}`);
+      console.log(
+        `     ${chalk.gray('Get key: https://console.anthropic.com')}`
+      );
       break;
     case 'openai':
       console.log(`     ${chalk.cyan('export OPENAI_API_KEY=sk-...')}`);
-      console.log(`     ${chalk.gray('Get key: https://platform.openai.com/api-keys')}`);
+      console.log(
+        `     ${chalk.gray('Get key: https://platform.openai.com/api-keys')}`
+      );
       break;
     default:
       console.log(`     ${chalk.cyan('export ANTHROPIC_API_KEY=sk-ant-...')}`);
-      console.log(`     ${chalk.gray('Or use: OPENAI_API_KEY, GOOGLE_API_KEY')}`);
+      console.log(
+        `     ${chalk.gray('Or use: OPENAI_API_KEY, GOOGLE_API_KEY')}`
+      );
   }
   console.log();
 
@@ -239,7 +248,9 @@ function showSuccessMessage(agentFile: string, provider: string): void {
   console.log(
     `     ${chalk.gray('GitHub:   ')}${chalk.cyan('https://github.com/blueflyio/openstandardagents')}`
   );
-  console.log(`     ${chalk.gray('Discord:  ')}${chalk.cyan('https://discord.gg/ossa')}`);
+  console.log(
+    `     ${chalk.gray('Discord:  ')}${chalk.cyan('https://discord.gg/ossa')}`
+  );
   console.log();
 
   printBox('');
@@ -286,8 +297,14 @@ async function handleQuickstart(options: QuickstartOptions): Promise<void> {
  * Register the quickstart command
  */
 export const quickstartCommand = new Command('quickstart')
-  .description('Get started with OSSA in 60 seconds - creates a sample agent and guides you')
+  .description(
+    'Get started with OSSA in 60 seconds - creates a sample agent and guides you'
+  )
   .option('-o, --output <file>', 'Output file path', 'my-first-agent.ossa.yaml')
-  .option('-p, --provider <provider>', 'LLM provider (anthropic, openai, google)', 'anthropic')
+  .option(
+    '-p, --provider <provider>',
+    'LLM provider (anthropic, openai, google)',
+    'anthropic'
+  )
   .option('-m, --model <model>', 'LLM model name')
   .action(handleQuickstart);

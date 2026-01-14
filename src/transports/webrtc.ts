@@ -47,7 +47,11 @@ export interface WebRTCMessage<T = unknown> {
 /**
  * Signaling message types
  */
-export type SignalingMessageType = 'offer' | 'answer' | 'ice-candidate' | 'error';
+export type SignalingMessageType =
+  | 'offer'
+  | 'answer'
+  | 'ice-candidate'
+  | 'error';
 
 /**
  * Signaling message
@@ -101,11 +105,14 @@ export class WebRTCTransport extends EventEmitter {
   private config: Required<WebRTCTransportConfig>;
   private heartbeatTimer?: NodeJS.Timeout;
   private chunks = new Map<string, { parts: string[]; received: number }>();
-  private pendingResponses = new Map<string, {
-    resolve: (value: unknown) => void;
-    reject: (error: Error) => void;
-    timeout: NodeJS.Timeout;
-  }>();
+  private pendingResponses = new Map<
+    string,
+    {
+      resolve: (value: unknown) => void;
+      reject: (error: Error) => void;
+      timeout: NodeJS.Timeout;
+    }
+  >();
 
   constructor(config: WebRTCTransportConfig) {
     super();
@@ -132,7 +139,8 @@ export class WebRTCTransport extends EventEmitter {
    */
   async createOffer(): Promise<void> {
     this.createPeerConnection();
-    if (!this.peerConnection) throw new Error('Failed to create peer connection');
+    if (!this.peerConnection)
+      throw new Error('Failed to create peer connection');
     this.createDataChannels();
 
     const offer = await this.peerConnection.createOffer();
@@ -152,7 +160,8 @@ export class WebRTCTransport extends EventEmitter {
    */
   async handleOffer(sdp: string): Promise<void> {
     this.createPeerConnection();
-    if (!this.peerConnection) throw new Error('Failed to create peer connection');
+    if (!this.peerConnection)
+      throw new Error('Failed to create peer connection');
 
     await this.peerConnection.setRemoteDescription({
       type: 'offer',
@@ -298,10 +307,15 @@ export class WebRTCTransport extends EventEmitter {
         timeout,
       });
 
-      this.send(channel, 'capability_call', {
-        capability,
-        input,
-      }, { correlationId }).catch(reject);
+      this.send(
+        channel,
+        'capability_call',
+        {
+          capability,
+          input,
+        },
+        { correlationId }
+      ).catch(reject);
     });
   }
 
@@ -356,10 +370,16 @@ export class WebRTCTransport extends EventEmitter {
           this.startHeartbeat();
           // Open all data channels when connection is established
           this.dataChannels.forEach((channel) => {
-            if (channel.readyState === 'connecting' || channel.readyState === 'closed') {
+            if (
+              channel.readyState === 'connecting' ||
+              channel.readyState === 'closed'
+            ) {
               // Channel will open automatically, but ensure handlers are set
               setTimeout(() => {
-                if (channel.readyState === 'connecting' && (channel as any).onopen) {
+                if (
+                  channel.readyState === 'connecting' &&
+                  (channel as any).onopen
+                ) {
                   try {
                     (channel as any).readyState = 'open';
                     (channel as any).onopen();
@@ -396,9 +416,11 @@ export class WebRTCTransport extends EventEmitter {
    * Create data channels
    */
   private createDataChannels(): void {
-    if (!this.peerConnection) throw new Error('Peer connection not initialized');
+    if (!this.peerConnection)
+      throw new Error('Peer connection not initialized');
     this.config.channels.forEach((channelConfig) => {
-      if (!this.peerConnection) throw new Error('Peer connection not initialized');
+      if (!this.peerConnection)
+        throw new Error('Peer connection not initialized');
       const channel = this.peerConnection.createDataChannel(
         channelConfig.label,
         {
@@ -422,7 +444,10 @@ export class WebRTCTransport extends EventEmitter {
     this.dataChannels.set(channel.label, channel);
 
     // If connection is already established, trigger channel open
-    if (this.peerConnection?.connectionState === 'connected' && channel.readyState === 'connecting') {
+    if (
+      this.peerConnection?.connectionState === 'connected' &&
+      channel.readyState === 'connecting'
+    ) {
       setTimeout(() => {
         if (channel.readyState === 'connecting' && channel.onopen) {
           try {
@@ -489,7 +514,9 @@ export class WebRTCTransport extends EventEmitter {
         break;
 
       case 'capability_response': {
-        const pending = this.pendingResponses.get(message.metadata.correlationId!);
+        const pending = this.pendingResponses.get(
+          message.metadata.correlationId!
+        );
         if (pending) {
           pending.resolve(message.payload);
           this.pendingResponses.delete(message.metadata.correlationId!);
@@ -520,7 +547,10 @@ export class WebRTCTransport extends EventEmitter {
     const messageId = randomUUID();
 
     for (let i = 0; i < totalChunks; i++) {
-      const chunk = data.slice(i * this.config.chunkSize, (i + 1) * this.config.chunkSize);
+      const chunk = data.slice(
+        i * this.config.chunkSize,
+        (i + 1) * this.config.chunkSize
+      );
 
       const chunkMessage: WebRTCMessage<string> = {
         ...message,

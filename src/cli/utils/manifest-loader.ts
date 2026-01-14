@@ -151,12 +151,17 @@ export async function loadManifests<T = OssaAgent>(
       const manifest = (await manifestRepo.load(filePath)) as T;
       loaded.push({ path: filePath, manifest });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       errors.push({ path: filePath, error: errorMessage });
 
       if (!options.silent) {
         if (options.verbose) {
-          console.log(chalk.yellow(`[WARN]  Skipping ${path.basename(filePath)}: ${errorMessage}`));
+          console.log(
+            chalk.yellow(
+              `[WARN]  Skipping ${path.basename(filePath)}: ${errorMessage}`
+            )
+          );
         }
       }
     }

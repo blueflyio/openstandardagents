@@ -1,6 +1,6 @@
 /**
  * Version Management Commands
- * 
+ *
  * SOLID: Single Responsibility - Version management only
  * DRY: Reuses Zod schemas from schemas/version.schema.ts
  */
@@ -22,38 +22,55 @@ versionCommand
   .alias('rel')
   .description('Release a new version (one command to release)')
   .argument('[bumpType]', 'Version bump type (patch, minor, major)', 'patch')
-  .option('--dry-run', 'Dry run mode (don\'t actually change files)', false)
+  .option('--dry-run', "Dry run mode (don't actually change files)", false)
   .option('--skip-validation', 'Skip validation after bump', false)
-  .action(async (bumpType: string, options: { dryRun: boolean; skipValidation: boolean }) => {
-    console.log(chalk.blue('🚀 OSSA Version Release'));
-    console.log(chalk.gray('========================\n'));
+  .action(
+    async (
+      bumpType: string,
+      options: { dryRun: boolean; skipValidation: boolean }
+    ) => {
+      console.log(chalk.blue('🚀 OSSA Version Release'));
+      console.log(chalk.gray('========================\n'));
 
-    const service = new VersionReleaseService();
-    try {
-      const result = await service.release({
-        bumpType: bumpType as 'patch' | 'minor' | 'major',
-        dryRun: options.dryRun,
-        skipValidation: options.skipValidation,
-      });
+      const service = new VersionReleaseService();
+      try {
+        const result = await service.release({
+          bumpType: bumpType as 'patch' | 'minor' | 'major',
+          dryRun: options.dryRun,
+          skipValidation: options.skipValidation,
+        });
 
-      if (result.success) {
-        console.log(chalk.green(`\n✅ Release prepared: ${result.oldVersion} → ${result.newVersion}`));
-        console.log(chalk.gray(`\nFiles changed: ${result.changes.length}`));
-        result.changes.forEach(change => console.log(chalk.gray(`  • ${change}`)));
+        if (result.success) {
+          console.log(
+            chalk.green(
+              `\n✅ Release prepared: ${result.oldVersion} → ${result.newVersion}`
+            )
+          );
+          console.log(chalk.gray(`\nFiles changed: ${result.changes.length}`));
+          result.changes.forEach((change) =>
+            console.log(chalk.gray(`  • ${change}`))
+          );
 
-        if (result.nextSteps.length > 0) {
-          console.log(chalk.yellow('\n📋 Next steps:'));
-          result.nextSteps.forEach(step => console.log(chalk.yellow(`  • ${step}`)));
+          if (result.nextSteps.length > 0) {
+            console.log(chalk.yellow('\n📋 Next steps:'));
+            result.nextSteps.forEach((step) =>
+              console.log(chalk.yellow(`  • ${step}`))
+            );
+          }
+        } else {
+          console.error(chalk.red('\n❌ Release failed'));
+          process.exit(1);
         }
-      } else {
-        console.error(chalk.red('\n❌ Release failed'));
+      } catch (error) {
+        console.error(
+          chalk.red(
+            `\n❌ Error: ${error instanceof Error ? error.message : String(error)}`
+          )
+        );
         process.exit(1);
       }
-    } catch (error) {
-      console.error(chalk.red(`\n❌ Error: ${error instanceof Error ? error.message : String(error)}`));
-      process.exit(1);
     }
-  });
+  );
 
 // version:validate - Validate version consistency
 versionCommand
@@ -72,15 +89,23 @@ versionCommand
         console.log(chalk.green('✅ All version references are consistent!'));
         if (result.warnings.length > 0) {
           console.log(chalk.yellow('\n⚠️  Warnings:'));
-          result.warnings.forEach((warn: string) => console.log(chalk.yellow(`  • ${warn}`)));
+          result.warnings.forEach((warn: string) =>
+            console.log(chalk.yellow(`  • ${warn}`))
+          );
         }
       } else {
         console.error(chalk.red('\n❌ Version validation failed:\n'));
-        result.errors.forEach((err: string) => console.error(chalk.red(`  • ${err}`)));
+        result.errors.forEach((err: string) =>
+          console.error(chalk.red(`  • ${err}`))
+        );
         process.exit(1);
       }
     } catch (error) {
-      console.error(chalk.red(`\n❌ Error: ${error instanceof Error ? error.message : String(error)}`));
+      console.error(
+        chalk.red(
+          `\n❌ Error: ${error instanceof Error ? error.message : String(error)}`
+        )
+      );
       process.exit(1);
     }
   });
@@ -106,14 +131,20 @@ versionCommand
         console.log(chalk.green(`\n✅ Synced ${result.filesUpdated} file(s)`));
         if (result.files.length > 0) {
           console.log(chalk.gray('\nFiles updated:'));
-          result.files.forEach((file: string) => console.log(chalk.gray(`  • ${file}`)));
+          result.files.forEach((file: string) =>
+            console.log(chalk.gray(`  • ${file}`))
+          );
         }
       } else {
         console.error(chalk.red('\n❌ Sync failed'));
         process.exit(1);
       }
     } catch (error) {
-      console.error(chalk.red(`\n❌ Error: ${error instanceof Error ? error.message : String(error)}`));
+      console.error(
+        chalk.red(
+          `\n❌ Error: ${error instanceof Error ? error.message : String(error)}`
+        )
+      );
       process.exit(1);
     }
   });

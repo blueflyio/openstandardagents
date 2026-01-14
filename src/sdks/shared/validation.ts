@@ -10,7 +10,11 @@ import { z } from 'zod';
 
 export const ApiVersionSchema = z.string().regex(/^ossa\/v\d+\.\d+\.\d+$/);
 export const VersionSchema = z.string().regex(/^\d+\.\d+\.\d+(-.*)?$/);
-export const NameSchema = z.string().min(1).max(100).regex(/^[a-z0-9-]+$/);
+export const NameSchema = z
+  .string()
+  .min(1)
+  .max(100)
+  .regex(/^[a-z0-9-]+$/);
 
 export const MetadataSchema = z.object({
   name: NameSchema,

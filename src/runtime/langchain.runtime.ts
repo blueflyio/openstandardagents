@@ -1,6 +1,6 @@
 /**
  * LangChain Runtime Bridge
- * 
+ *
  * Executes OSSA agents via LangChain.
  * SOLID: Single Responsibility - LangChain execution only
  * DRY: Reuses LangChainAdapter for format conversion
@@ -25,10 +25,13 @@ export class LangChainRuntime {
   /**
    * Execute OSSA agent via LangChain
    * CRUD: Create operation (executes agent)
-   * 
+   *
    * This generates Python code and executes it via subprocess
    */
-  async execute(manifest: OssaAgent, inputs: Record<string, unknown>): Promise<Record<string, unknown>> {
+  async execute(
+    manifest: OssaAgent,
+    inputs: Record<string, unknown>
+  ): Promise<Record<string, unknown>> {
     // Convert OSSA manifest to LangChain Python code
     const pythonCode = LangChainAdapter.toPythonCode(manifest);
 
@@ -53,14 +56,19 @@ export class LangChainRuntime {
       // Parse result
       return this.parseExecutionResult(result);
     } catch (error) {
-      throw new Error(`LangChain execution failed: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `LangChain execution failed: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
   /**
    * Wrap Python code with execution logic
    */
-  private wrapExecutionCode(code: string, inputs: Record<string, unknown>): string {
+  private wrapExecutionCode(
+    code: string,
+    inputs: Record<string, unknown>
+  ): string {
     const inputJson = JSON.stringify(inputs);
     return `
 ${code}

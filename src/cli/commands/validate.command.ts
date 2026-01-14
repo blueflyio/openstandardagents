@@ -18,7 +18,11 @@ import {
   isJSONOutput,
   outputJSON,
 } from '../utils/index.js';
-import type { OssaAgent, SchemaVersion, ValidationResult } from '../../types/index.js';
+import type {
+  OssaAgent,
+  SchemaVersion,
+  ValidationResult,
+} from '../../types/index.js';
 
 export const validateCommand = new Command('validate')
   .argument('<path>', 'Path to OSSA manifest or OpenAPI spec (YAML or JSON)')
@@ -30,7 +34,9 @@ export const validateCommand = new Command('validate')
   .option('--check-messaging', 'Validate messaging extension (v0.3.0+)')
   .option('-v, --verbose', 'Verbose output with detailed information')
   .option('--output <format>', 'Output format (json|text)', 'text')
-  .description('Validate OSSA agent manifest or OpenAPI spec against JSON schema')
+  .description(
+    'Validate OSSA agent manifest or OpenAPI spec against JSON schema'
+  )
   .action(
     async (
       path: string,
@@ -49,7 +55,9 @@ export const validateCommand = new Command('validate')
 
         // Load file
         if (options.openapi) {
-          console.log(chalk.blue(`Validating OpenAPI spec with OSSA extensions: ${path}`));
+          console.log(
+            chalk.blue(`Validating OpenAPI spec with OSSA extensions: ${path}`)
+          );
         } else {
           console.log(chalk.blue(`Validating OSSA agent: ${path}`));
         }
@@ -60,7 +68,10 @@ export const validateCommand = new Command('validate')
         if (options.openapi) {
           result = await validationService.validateOpenAPIExtensions(manifest);
         } else {
-          result = await validationService.validate(manifest, options.schema as SchemaVersion);
+          result = await validationService.validate(
+            manifest,
+            options.schema as SchemaVersion
+          );
         }
 
         // Output results
@@ -70,7 +81,8 @@ export const validateCommand = new Command('validate')
           outputJSON({
             valid: result.valid,
             path,
-            schemaVersion: options.schema || m?.apiVersion?.replace('ossa/', '') || 'auto',
+            schemaVersion:
+              options.schema || m?.apiVersion?.replace('ossa/', '') || 'auto',
             errors: result.errors.map((e: any) => ({
               path: e.instancePath || e.path || '',
               message: e.message || String(e),
@@ -91,21 +103,31 @@ export const validateCommand = new Command('validate')
 
         if (result.valid) {
           if (options.openapi) {
-            console.log(chalk.green('✓ OpenAPI spec is valid with OSSA extensions'));
+            console.log(
+              chalk.green('✓ OpenAPI spec is valid with OSSA extensions')
+            );
           } else {
             // Extract version from result manifest or use provided option
             const m = result.manifest as OssaAgent;
             const detectedVersion =
-              m?.apiVersion?.replace('ossa/', '') || options.schema || 'unknown';
-            console.log(chalk.green('✓ Agent manifest is valid OSSA ' + detectedVersion));
+              m?.apiVersion?.replace('ossa/', '') ||
+              options.schema ||
+              'unknown';
+            console.log(
+              chalk.green('✓ Agent manifest is valid OSSA ' + detectedVersion)
+            );
           }
 
           if (options.verbose && result.manifest) {
             console.log(chalk.gray('\nAgent Details:'));
-            const m = result.manifest as OssaAgent;
+            const m = result.manifest;
             if (m.apiVersion) {
-              console.log(`  Name: ${chalk.cyan(m.metadata?.name || 'unknown')}`);
-              console.log(`  Version: ${chalk.cyan(m.metadata?.version || 'unknown')}`);
+              console.log(
+                `  Name: ${chalk.cyan(m.metadata?.name || 'unknown')}`
+              );
+              console.log(
+                `  Version: ${chalk.cyan(m.metadata?.version || 'unknown')}`
+              );
               console.log(`  Role: ${chalk.cyan(m.spec?.role || 'unknown')}`);
             } else if (m.agent) {
               console.log(`  ID: ${chalk.cyan(m.agent.id)}`);
@@ -143,14 +165,18 @@ export const validateCommand = new Command('validate')
                 });
               }
               if (m.spec.messaging.commands) {
-                console.log(`  Commands: ${chalk.cyan(m.spec.messaging.commands.length)}`);
+                console.log(
+                  `  Commands: ${chalk.cyan(m.spec.messaging.commands.length)}`
+                );
                 m.spec.messaging.commands.forEach((cmd: any) => {
                   console.log(`    - ${chalk.cyan(cmd.name)}`);
                 });
               }
             }
             if (m.agent?.capabilities) {
-              console.log(`  Capabilities: ${chalk.cyan(m.agent.capabilities.length)}`);
+              console.log(
+                `  Capabilities: ${chalk.cyan(m.agent.capabilities.length)}`
+              );
             }
             if (m.agent?.runtime) {
               console.log(`  Runtime: ${chalk.cyan(m.agent.runtime.type)}`);
@@ -185,18 +211,27 @@ export const validateCommand = new Command('validate')
           } else {
             // Compact error messages
             console.error(chalk.red.bold('\n✗ Validation Failed'));
-            console.error(chalk.red(`Found ${result.errors.length} error(s):\n`));
+            console.error(
+              chalk.red(`Found ${result.errors.length} error(s):\n`)
+            );
             result.errors.forEach((error, index) => {
               console.error(formatErrorCompact(error, index, manifest));
             });
-            console.error(chalk.gray('\nUse --verbose for detailed error information'));
-            console.error(chalk.blue('📚 Docs: https://openstandardagents.org/docs\n'));
+            console.error(
+              chalk.gray('\nUse --verbose for detailed error information')
+            );
+            console.error(
+              chalk.blue('📚 Docs: https://openstandardagents.org/docs\n')
+            );
           }
 
           process.exit(1);
         }
       } catch (error) {
-        console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
+        console.error(
+          chalk.red('Error:'),
+          error instanceof Error ? error.message : String(error)
+        );
 
         if (options.verbose && error instanceof Error) {
           console.error(chalk.gray(error.stack));

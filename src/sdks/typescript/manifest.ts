@@ -43,7 +43,10 @@ export class ManifestService {
     if (!manifest.spec) errors.push('Missing spec');
 
     // Kind validation
-    if (manifest.kind && !['Agent', 'Task', 'Workflow'].includes(manifest.kind)) {
+    if (
+      manifest.kind &&
+      !['Agent', 'Task', 'Workflow'].includes(manifest.kind)
+    ) {
       errors.push(`Invalid kind: ${manifest.kind}`);
     }
 
@@ -63,7 +66,11 @@ export class ManifestService {
    * Save manifest to file
    * CRUD: Create/Update
    */
-  save(manifest: OSSAManifest, filePath: string, format: 'yaml' | 'json' = 'yaml'): void {
+  save(
+    manifest: OSSAManifest,
+    filePath: string,
+    format: 'yaml' | 'json' = 'yaml'
+  ): void {
     // Validate before saving
     const validation = this.validate(manifest);
     if (!validation.valid) {
@@ -71,7 +78,9 @@ export class ManifestService {
     }
 
     const content =
-      format === 'yaml' ? stringify(manifest) : JSON.stringify(manifest, null, 2);
+      format === 'yaml'
+        ? stringify(manifest)
+        : JSON.stringify(manifest, null, 2);
 
     writeFileSync(filePath, content, 'utf-8');
   }
@@ -80,7 +89,10 @@ export class ManifestService {
    * Export manifest to different format
    * CRUD: Read
    */
-  export(manifest: OSSAManifest, format: 'yaml' | 'json' | 'typescript'): string {
+  export(
+    manifest: OSSAManifest,
+    format: 'yaml' | 'json' | 'typescript'
+  ): string {
     switch (format) {
       case 'yaml':
         return stringify(manifest);

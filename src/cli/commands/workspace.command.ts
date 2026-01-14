@@ -32,8 +32,9 @@ import {
   getDefaultDiscoveryPatterns,
 } from '../../config/defaults.js';
 
-export const workspaceCommand = new Command('workspace')
-  .description('Manage .agents-workspace/ (two-tier architecture governance)');
+export const workspaceCommand = new Command('workspace').description(
+  'Manage .agents-workspace/ (two-tier architecture governance)'
+);
 
 // ============================================================================
 // Subcommand: workspace init
@@ -45,7 +46,10 @@ workspaceCommand
   .option('--name <name>', 'Workspace name', 'my-workspace')
   .action(async (options) => {
     try {
-      const workspaceDir = path.resolve(process.cwd(), getDefaultWorkspaceDir());
+      const workspaceDir = path.resolve(
+        process.cwd(),
+        getDefaultWorkspaceDir()
+      );
 
       if (fs.existsSync(workspaceDir) && !options.force) {
         console.log(chalk.yellow('⚠ .agents-workspace/ already exists'));
@@ -171,9 +175,19 @@ Global conventions and standards that apply to all agents in this workspace.
       console.log(chalk.green('✓ Workspace initialized'));
       console.log('');
       console.log(chalk.blue('Next steps:'));
-      console.log(chalk.gray('  1. Run `ossa workspace discover` to find project agents'));
-      console.log(chalk.gray('  2. Edit policies/tool-allowlist.yaml to configure allowed tools'));
-      console.log(chalk.gray('  3. Run `ossa agent init` in each project to create .agents/'));
+      console.log(
+        chalk.gray('  1. Run `ossa workspace discover` to find project agents')
+      );
+      console.log(
+        chalk.gray(
+          '  2. Edit policies/tool-allowlist.yaml to configure allowed tools'
+        )
+      );
+      console.log(
+        chalk.gray(
+          '  3. Run `ossa agent init` in each project to create .agents/'
+        )
+      );
 
       process.exit(0);
     } catch (error) {
@@ -190,7 +204,11 @@ workspaceCommand
   .option('--json', 'Output as JSON')
   .action(async (options) => {
     try {
-      const registryPath = path.resolve(process.cwd(), getDefaultWorkspaceDir(), getWorkspaceRegistryPath());
+      const registryPath = path.resolve(
+        process.cwd(),
+        getDefaultWorkspaceDir(),
+        getWorkspaceRegistryPath()
+      );
 
       if (!fs.existsSync(registryPath)) {
         console.log(chalk.yellow('⚠ No workspace registry found'));
@@ -206,13 +224,17 @@ workspaceCommand
         process.exit(0);
       }
 
-      console.log(chalk.blue(`Workspace: ${registry.metadata?.name || 'unnamed'}`));
+      console.log(
+        chalk.blue(`Workspace: ${registry.metadata?.name || 'unnamed'}`)
+      );
       console.log(chalk.gray('─'.repeat(50)));
 
       const agents = registry.agents || [];
       if (agents.length === 0) {
         console.log(chalk.yellow('No agents registered'));
-        console.log(chalk.gray('  Run `ossa workspace discover` to find agents'));
+        console.log(
+          chalk.gray('  Run `ossa workspace discover` to find agents')
+        );
       } else {
         for (const project of agents) {
           console.log(`\n${chalk.cyan(project.project || project.name)}`);
@@ -222,11 +244,17 @@ workspaceCommand
             for (const agent of project.agents) {
               console.log(`  • ${agent.name}`);
               if (agent.capabilities) {
-                console.log(chalk.gray(`    Capabilities: ${agent.capabilities.join(', ')}`));
+                console.log(
+                  chalk.gray(
+                    `    Capabilities: ${agent.capabilities.join(', ')}`
+                  )
+                );
               }
             }
           } else if (project.capabilities) {
-            console.log(chalk.gray(`  Capabilities: ${project.capabilities.join(', ')}`));
+            console.log(
+              chalk.gray(`  Capabilities: ${project.capabilities.join(', ')}`)
+            );
           }
         }
       }
@@ -246,7 +274,10 @@ workspaceCommand
   .command('discover')
   .description('Auto-discover project agents in workspace')
   .option('--depth <number>', 'Max directory depth to search', '3')
-  .option('--dry-run', 'Show what would be discovered without updating registry')
+  .option(
+    '--dry-run',
+    'Show what would be discovered without updating registry'
+  )
   .action(async (options) => {
     try {
       const cwd = process.cwd();
@@ -274,7 +305,12 @@ workspaceCommand
       for (const pattern of patterns) {
         const files = await glob(pattern, {
           cwd,
-          ignore: ['node_modules/**', '**/node_modules/**', 'dist/**', `${getDefaultWorkspaceDir()}/**`],
+          ignore: [
+            'node_modules/**',
+            '**/node_modules/**',
+            'dist/**',
+            `${getDefaultWorkspaceDir()}/**`,
+          ],
           maxDepth: parseInt(options.depth, 10),
         });
 
@@ -290,7 +326,7 @@ workspaceCommand
           const relativePath = path.dirname(path.relative(cwd, fullPath));
 
           // Find or create project entry
-          let projectEntry = found.find(p => p.path === relativePath);
+          let projectEntry = found.find((p) => p.path === relativePath);
           if (!projectEntry) {
             projectEntry = {
               project: projectName,
@@ -328,15 +364,18 @@ workspaceCommand
       }
 
       console.log(chalk.gray('─'.repeat(50)));
-      console.log(`Found ${chalk.cyan(found.length)} project(s) with agents:\n`);
+      console.log(
+        `Found ${chalk.cyan(found.length)} project(s) with agents:\n`
+      );
 
       for (const project of found) {
         console.log(chalk.cyan(project.project));
         console.log(chalk.gray(`  Path: ${project.path}`));
         for (const agent of project.agents) {
-          const kindBadge = agent.kind && agent.kind !== 'Agent'
-            ? chalk.yellow(` [${agent.kind}]`)
-            : '';
+          const kindBadge =
+            agent.kind && agent.kind !== 'Agent'
+              ? chalk.yellow(` [${agent.kind}]`)
+              : '';
           console.log(`  • ${agent.name}${kindBadge}`);
         }
         console.log('');
@@ -348,7 +387,11 @@ workspaceCommand
       }
 
       // Update registry
-      const registryPath = path.resolve(cwd, getDefaultWorkspaceDir(), getWorkspaceRegistryPath());
+      const registryPath = path.resolve(
+        cwd,
+        getDefaultWorkspaceDir(),
+        getWorkspaceRegistryPath()
+      );
       if (!fs.existsSync(path.dirname(registryPath))) {
         console.log(chalk.yellow('⚠ No workspace found'));
         console.log(chalk.gray('  Run `ossa workspace init` first'));
@@ -412,11 +455,17 @@ policyCommand
       console.log(chalk.green('\nAllowed MCP Servers:'));
       for (const server of allowed) {
         const trustColor =
-          server.trust === 'high' ? chalk.green :
-          server.trust === 'medium' ? chalk.yellow :
-          chalk.red;
-        console.log(`  ${chalk.cyan(server.name)} ${trustColor(`[${server.trust}]`)}`);
-        console.log(chalk.gray(`    Scope: ${(server.scope || []).join(', ')}`));
+          server.trust === 'high'
+            ? chalk.green
+            : server.trust === 'medium'
+              ? chalk.yellow
+              : chalk.red;
+        console.log(
+          `  ${chalk.cyan(server.name)} ${trustColor(`[${server.trust}]`)}`
+        );
+        console.log(
+          chalk.gray(`    Scope: ${(server.scope || []).join(', ')}`)
+        );
       }
 
       console.log(chalk.red('\nDenied Patterns:'));
@@ -478,7 +527,9 @@ policyCommand
       const policy = yaml.parse(fs.readFileSync(policyPath, 'utf-8'));
       const manifest = yaml.parse(fs.readFileSync(manifestPath, 'utf-8'));
 
-      console.log(chalk.blue(`Checking: ${manifest.metadata?.name || project}`));
+      console.log(
+        chalk.blue(`Checking: ${manifest.metadata?.name || project}`)
+      );
       console.log(chalk.gray('─'.repeat(50)));
 
       const errors: string[] = [];
@@ -500,7 +551,9 @@ policyCommand
         for (const pattern of deniedPatterns) {
           const regex = new RegExp(pattern.replace('*', '.*'));
           if (regex.test(toolName)) {
-            errors.push(`Tool "${toolName}" matches denied pattern "${pattern}"`);
+            errors.push(
+              `Tool "${toolName}" matches denied pattern "${pattern}"`
+            );
           }
         }
 
@@ -514,11 +567,16 @@ policyCommand
       const globalNever = policy.spec?.boundaries?.global_never || [];
       const agentBoundaries = manifest.spec?.boundaries || {};
 
-      for (const boundary of [...(agentBoundaries.read || []), ...(agentBoundaries.write || [])]) {
+      for (const boundary of [
+        ...(agentBoundaries.read || []),
+        ...(agentBoundaries.write || []),
+      ]) {
         for (const never of globalNever) {
           // Simple glob match
           if (boundary.includes(never.replace('**/', '').replace('*', ''))) {
-            errors.push(`Boundary "${boundary}" conflicts with global_never "${never}"`);
+            errors.push(
+              `Boundary "${boundary}" conflicts with global_never "${never}"`
+            );
           }
         }
       }
@@ -531,12 +589,12 @@ policyCommand
 
       if (errors.length > 0) {
         console.log(chalk.red(`\n✗ Errors (${errors.length}):`));
-        errors.forEach(e => console.log(`  ${chalk.red('•')} ${e}`));
+        errors.forEach((e) => console.log(`  ${chalk.red('•')} ${e}`));
       }
 
       if (warnings.length > 0) {
         console.log(chalk.yellow(`\n⚠ Warnings (${warnings.length}):`));
-        warnings.forEach(w => console.log(`  ${chalk.yellow('•')} ${w}`));
+        warnings.forEach((w) => console.log(`  ${chalk.yellow('•')} ${w}`));
       }
 
       process.exit(errors.length > 0 ? 1 : 0);
@@ -553,7 +611,9 @@ workspaceCommand
   .description('Sync workspace registry with discovered agents')
   .action(async () => {
     // Just run discover without dry-run
-    const discover = workspaceCommand.commands.find(c => c.name() === 'discover');
+    const discover = workspaceCommand.commands.find(
+      (c) => c.name() === 'discover'
+    );
     if (discover) {
       await discover.parseAsync(['discover'], { from: 'user' });
     }

@@ -85,7 +85,10 @@ export class ClaudeAdapter {
   /**
    * Execute a tool call
    */
-  private async executeTool(name: string, input: Record<string, unknown>): Promise<string> {
+  private async executeTool(
+    name: string,
+    input: Record<string, unknown>
+  ): Promise<string> {
     const tool = this.mapper.getTool(name);
     if (!tool) {
       return JSON.stringify({
@@ -152,7 +155,9 @@ export class ClaudeAdapter {
       });
 
       if (options?.verbose) {
-        console.log(`  Model: ${response.model}, Stop: ${response.stop_reason}`);
+        console.log(
+          `  Model: ${response.model}, Stop: ${response.stop_reason}`
+        );
         console.log(
           `  Tokens: ${response.usage.input_tokens} in, ${response.usage.output_tokens} out`
         );
@@ -165,7 +170,9 @@ export class ClaudeAdapter {
       });
 
       // Check if we need to execute tools
-      const toolUses = response.content.filter((block) => block.type === 'tool_use');
+      const toolUses = response.content.filter(
+        (block) => block.type === 'tool_use'
+      );
 
       if (toolUses.length > 0) {
         if (options?.verbose) {
@@ -185,13 +192,20 @@ export class ClaudeAdapter {
           const { id, name, input } = toolUse;
 
           if (options?.verbose) {
-            console.log(`    → ${name}(${JSON.stringify(input).substring(0, 100)}...)`);
+            console.log(
+              `    → ${name}(${JSON.stringify(input).substring(0, 100)}...)`
+            );
           }
 
-          const result = await this.executeTool(name, input as Record<string, unknown>);
+          const result = await this.executeTool(
+            name,
+            input as Record<string, unknown>
+          );
 
           if (options?.verbose) {
-            console.log(`    ← ${result.substring(0, 100)}${result.length > 100 ? '...' : ''}`);
+            console.log(
+              `    ← ${result.substring(0, 100)}${result.length > 100 ? '...' : ''}`
+            );
           }
 
           toolResults.push({
@@ -212,10 +226,14 @@ export class ClaudeAdapter {
       }
 
       // Check if we have a text response
-      const textBlocks = response.content.filter((block) => block.type === 'text');
+      const textBlocks = response.content.filter(
+        (block) => block.type === 'text'
+      );
 
       if (textBlocks.length > 0) {
-        return textBlocks.map((block) => (block.type === 'text' ? block.text : '')).join('\n');
+        return textBlocks
+          .map((block) => (block.type === 'text' ? block.text : ''))
+          .join('\n');
       }
 
       // No text and no tool calls - unexpected
@@ -224,7 +242,10 @@ export class ClaudeAdapter {
       }
 
       // Max tokens or stop sequence reached
-      if (response.stop_reason === 'max_tokens' || response.stop_reason === 'stop_sequence') {
+      if (
+        response.stop_reason === 'max_tokens' ||
+        response.stop_reason === 'stop_sequence'
+      ) {
         return '[Response truncated due to length limit]';
       }
     }
@@ -259,7 +280,10 @@ export class ClaudeAdapter {
     // Return async generator
     return (async function* () {
       for await (const chunk of stream) {
-        if (chunk.type === 'content_block_delta' && chunk.delta.type === 'text_delta') {
+        if (
+          chunk.type === 'content_block_delta' &&
+          chunk.delta.type === 'text_delta'
+        ) {
           yield chunk.delta.text;
         }
       }
@@ -327,7 +351,10 @@ export class ClaudeAdapter {
   /**
    * Create a Claude adapter from a manifest file
    */
-  static async fromFile(manifestPath: string, apiKey?: string): Promise<ClaudeAdapter> {
+  static async fromFile(
+    manifestPath: string,
+    apiKey?: string
+  ): Promise<ClaudeAdapter> {
     const fs = await import('fs/promises');
     const manifestContent = await fs.readFile(manifestPath, 'utf-8');
     const manifest = JSON.parse(manifestContent) as OssaManifestWithAnthropic;
@@ -341,7 +368,10 @@ export class ClaudeAdapter {
   /**
    * Create a Claude adapter from a manifest object
    */
-  static fromManifest(manifest: OssaManifestWithAnthropic, apiKey?: string): ClaudeAdapter {
+  static fromManifest(
+    manifest: OssaManifestWithAnthropic,
+    apiKey?: string
+  ): ClaudeAdapter {
     return new ClaudeAdapter({
       manifest,
       apiKey,

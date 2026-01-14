@@ -33,7 +33,10 @@ export {
 } from './output.js';
 
 // Error formatting
-export { formatValidationErrors, formatErrorCompact } from './error-formatter.js';
+export {
+  formatValidationErrors,
+  formatErrorCompact,
+} from './error-formatter.js';
 
 // Manifest loading utilities
 export {

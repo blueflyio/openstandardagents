@@ -37,7 +37,14 @@ export interface DriftReport {
   }>;
 }
 
-export type GeneratorType = 'types' | 'zod' | 'openapi-zod' | 'manifests' | 'vscode' | 'openapi' | 'all';
+export type GeneratorType =
+  | 'types'
+  | 'zod'
+  | 'openapi-zod'
+  | 'manifests'
+  | 'vscode'
+  | 'openapi'
+  | 'all';
 
 @injectable()
 export class CodegenService {
@@ -47,7 +54,8 @@ export class CodegenService {
     @inject(OpenAPIGenerator) private openapiGenerator: OpenAPIGenerator,
     @inject(TypesGenerator) private typesGenerator: TypesGenerator,
     @inject(ZodGenerator) private zodGenerator: ZodGenerator,
-    @inject(OpenAPIZodGenerator) private openapiZodGenerator: OpenAPIZodGenerator,
+    @inject(OpenAPIZodGenerator)
+    private openapiZodGenerator: OpenAPIZodGenerator
   ) {}
 
   /**
@@ -63,7 +71,10 @@ export class CodegenService {
   /**
    * CRUD: CREATE/UPDATE - Generate files
    */
-  async generate(type: GeneratorType, dryRun = false): Promise<GenerateResult[]> {
+  async generate(
+    type: GeneratorType,
+    dryRun = false
+  ): Promise<GenerateResult[]> {
     const results: GenerateResult[] = [];
     const generators = this.getGenerators(type);
 
@@ -149,5 +160,8 @@ export interface Generator {
   name: string;
   generate(dryRun: boolean): Promise<GenerateResult>;
   listTargetFiles(): Promise<string[]>;
-  checkDrift(version: string, apiVersion: string): Promise<DriftReport['filesWithOldVersion']>;
+  checkDrift(
+    version: string,
+    apiVersion: string
+  ): Promise<DriftReport['filesWithOldVersion']>;
 }

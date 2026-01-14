@@ -1,12 +1,12 @@
 /**
  * Type Guards for OSSA Manifests
- * 
+ *
  * Provides type-safe runtime validation for OSSA manifest structures.
  * Prevents runtime errors from unsafe type casting.
- * 
+ *
  * DRY: Single source of truth for type checking
  * SOLID: Type validation separated from business logic
- * 
+ *
  * @module utils/type-guards
  */
 
@@ -69,13 +69,15 @@ export function isTool(value: unknown): value is Record<string, unknown> {
 /**
  * Type guard for tool with auth property
  */
-export function isToolWithAuth(value: unknown): value is Record<string, unknown> & { auth?: Record<string, unknown> } {
+export function isToolWithAuth(
+  value: unknown
+): value is Record<string, unknown> & { auth?: Record<string, unknown> } {
   if (!isTool(value)) {
     return false;
   }
 
-  const tool = value as Record<string, unknown>;
-  
+  const tool = value;
+
   // If auth exists, it must be an object
   if ('auth' in tool && (tool.auth === null || typeof tool.auth !== 'object')) {
     return false;
@@ -87,19 +89,29 @@ export function isToolWithAuth(value: unknown): value is Record<string, unknown>
 /**
  * Type guard for tool with description property
  */
-export function isToolWithDescription(value: unknown): value is Record<string, unknown> & { description?: string; name?: string } {
+export function isToolWithDescription(
+  value: unknown
+): value is Record<string, unknown> & { description?: string; name?: string } {
   if (!isTool(value)) {
     return false;
   }
 
-  const tool = value as Record<string, unknown>;
-  
+  const tool = value;
+
   // Description and name should be strings if present
-  if ('description' in tool && tool.description !== undefined && typeof tool.description !== 'string') {
+  if (
+    'description' in tool &&
+    tool.description !== undefined &&
+    typeof tool.description !== 'string'
+  ) {
     return false;
   }
 
-  if ('name' in tool && tool.name !== undefined && typeof tool.name !== 'string') {
+  if (
+    'name' in tool &&
+    tool.name !== undefined &&
+    typeof tool.name !== 'string'
+  ) {
     return false;
   }
 
@@ -109,7 +121,10 @@ export function isToolWithDescription(value: unknown): value is Record<string, u
 /**
  * Type guard for registry object
  */
-export function isAgentRegistry(value: unknown): value is Record<string, unknown> & {
+export function isAgentRegistry(value: unknown): value is Record<
+  string,
+  unknown
+> & {
   apiVersion?: string;
   kind?: string;
   agents?: unknown[];
@@ -122,22 +137,38 @@ export function isAgentRegistry(value: unknown): value is Record<string, unknown
   const registry = value as Record<string, unknown>;
 
   // apiVersion should be string if present
-  if ('apiVersion' in registry && registry.apiVersion !== undefined && typeof registry.apiVersion !== 'string') {
+  if (
+    'apiVersion' in registry &&
+    registry.apiVersion !== undefined &&
+    typeof registry.apiVersion !== 'string'
+  ) {
     return false;
   }
 
   // kind should be string if present
-  if ('kind' in registry && registry.kind !== undefined && typeof registry.kind !== 'string') {
+  if (
+    'kind' in registry &&
+    registry.kind !== undefined &&
+    typeof registry.kind !== 'string'
+  ) {
     return false;
   }
 
   // agents should be array if present
-  if ('agents' in registry && registry.agents !== undefined && !Array.isArray(registry.agents)) {
+  if (
+    'agents' in registry &&
+    registry.agents !== undefined &&
+    !Array.isArray(registry.agents)
+  ) {
     return false;
   }
 
   // discovery should be object if present
-  if ('discovery' in registry && registry.discovery !== undefined && typeof registry.discovery !== 'object') {
+  if (
+    'discovery' in registry &&
+    registry.discovery !== undefined &&
+    typeof registry.discovery !== 'object'
+  ) {
     return false;
   }
 
@@ -147,7 +178,10 @@ export function isAgentRegistry(value: unknown): value is Record<string, unknown
 /**
  * Type guard for policy object
  */
-export function isToolPolicy(value: unknown): value is Record<string, unknown> & {
+export function isToolPolicy(value: unknown): value is Record<
+  string,
+  unknown
+> & {
   apiVersion?: string;
   kind?: string;
   spec?: Record<string, unknown>;
@@ -159,17 +193,29 @@ export function isToolPolicy(value: unknown): value is Record<string, unknown> &
   const policy = value as Record<string, unknown>;
 
   // apiVersion should be string if present
-  if ('apiVersion' in policy && policy.apiVersion !== undefined && typeof policy.apiVersion !== 'string') {
+  if (
+    'apiVersion' in policy &&
+    policy.apiVersion !== undefined &&
+    typeof policy.apiVersion !== 'string'
+  ) {
     return false;
   }
 
   // kind should be string if present
-  if ('kind' in policy && policy.kind !== undefined && typeof policy.kind !== 'string') {
+  if (
+    'kind' in policy &&
+    policy.kind !== undefined &&
+    typeof policy.kind !== 'string'
+  ) {
     return false;
   }
 
   // spec should be object if present
-  if ('spec' in policy && policy.spec !== undefined && typeof policy.spec !== 'object') {
+  if (
+    'spec' in policy &&
+    policy.spec !== undefined &&
+    typeof policy.spec !== 'object'
+  ) {
     return false;
   }
 
@@ -179,7 +225,11 @@ export function isToolPolicy(value: unknown): value is Record<string, unknown> &
 /**
  * Safe property access with type checking
  */
-export function safeGet<T>(obj: unknown, path: string, typeGuard?: (value: unknown) => value is T): T | undefined {
+export function safeGet<T>(
+  obj: unknown,
+  path: string,
+  typeGuard?: (value: unknown) => value is T
+): T | undefined {
   if (!obj || typeof obj !== 'object') {
     return undefined;
   }
@@ -188,7 +238,11 @@ export function safeGet<T>(obj: unknown, path: string, typeGuard?: (value: unkno
   let current: unknown = obj;
 
   for (const key of keys) {
-    if (current === null || current === undefined || typeof current !== 'object') {
+    if (
+      current === null ||
+      current === undefined ||
+      typeof current !== 'object'
+    ) {
       return undefined;
     }
 
@@ -210,7 +264,10 @@ export function safeGet<T>(obj: unknown, path: string, typeGuard?: (value: unkno
 /**
  * Safe array access with type checking
  */
-export function safeGetArray<T>(value: unknown, typeGuard?: (item: unknown) => item is T): T[] {
+export function safeGetArray<T>(
+  value: unknown,
+  typeGuard?: (item: unknown) => item is T
+): T[] {
   if (!Array.isArray(value)) {
     return [];
   }
