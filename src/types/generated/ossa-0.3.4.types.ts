@@ -20,7 +20,7 @@ export type OSSAV032ManifestSchema = {
   /**
    * Resource type: Agent (agentic loops), Task (deterministic steps), or Workflow (composition)
    */
-  kind: "Agent" | "Task" | "Workflow";
+  kind: 'Agent' | 'Task' | 'Workflow';
   metadata: Metadata;
   /**
    * Specification varies based on kind
@@ -76,7 +76,7 @@ export interface MCPExtension {
   /**
    * MCP server transport mechanism
    */
-  server_type?: "stdio" | "http" | "sse";
+  server_type?: 'stdio' | 'http' | 'sse';
   /**
    * Name of the MCP server
    */
@@ -114,7 +114,14 @@ export interface MCPTool {
  * JSON Schema for tool input parameters (snake_case)
  */
 export interface JSONSchemaDefinition {
-  type?: "object" | "array" | "string" | "number" | "integer" | "boolean" | "null";
+  type?:
+    | 'object'
+    | 'array'
+    | 'string'
+    | 'number'
+    | 'integer'
+    | 'boolean'
+    | 'null';
   properties?: {
     [k: string]: unknown;
   };
@@ -134,7 +141,14 @@ export interface JSONSchemaDefinition {
  * JSON Schema for tool input parameters (camelCase - MCP SDK convention)
  */
 export interface JSONSchemaDefinition1 {
-  type?: "object" | "array" | "string" | "number" | "integer" | "boolean" | "null";
+  type?:
+    | 'object'
+    | 'array'
+    | 'string'
+    | 'number'
+    | 'integer'
+    | 'boolean'
+    | 'null';
   properties?: {
     [k: string]: unknown;
   };
@@ -219,32 +233,32 @@ export interface RuntimeBinding {
    * Primary runtime type
    */
   type?:
-    | "unified"
-    | "google-a2a"
-    | "gitlab-duo"
-    | "ossa-mesh"
-    | "mcp"
-    | "local"
-    | "drupal"
-    | "symfony_messenger"
-    | "kagent"
-    | "temporal"
-    | "node";
+    | 'unified'
+    | 'google-a2a'
+    | 'gitlab-duo'
+    | 'ossa-mesh'
+    | 'mcp'
+    | 'local'
+    | 'drupal'
+    | 'symfony_messenger'
+    | 'kagent'
+    | 'temporal'
+    | 'node';
   /**
    * List of compatible runtimes
    */
   supports?: (
-    | "google-a2a"
-    | "gitlab-duo"
-    | "ossa-mesh"
-    | "mcp"
-    | "local-execution"
-    | "kubernetes"
-    | "serverless"
-    | "lambda"
-    | "cloudflare-workers"
-    | "drupal"
-    | "symfony"
+    | 'google-a2a'
+    | 'gitlab-duo'
+    | 'ossa-mesh'
+    | 'mcp'
+    | 'local-execution'
+    | 'kubernetes'
+    | 'serverless'
+    | 'lambda'
+    | 'cloudflare-workers'
+    | 'drupal'
+    | 'symfony'
   )[];
   /**
    * Message transport for async runtimes
@@ -290,11 +304,11 @@ export interface SchedulingConfig {
   /**
    * Scheduling strategy
    */
-  strategy?: "fair" | "priority" | "deadline" | "cost-optimized";
+  strategy?: 'fair' | 'priority' | 'deadline' | 'cost-optimized';
   /**
    * Execution priority
    */
-  priority?: "critical" | "high" | "normal" | "low" | "background";
+  priority?: 'critical' | 'high' | 'normal' | 'low' | 'background';
   /**
    * Maximum concurrent executions
    */
@@ -332,7 +346,7 @@ export interface RuntimeExtension {
   /**
    * Extension protocol type
    */
-  type: "http" | "grpc" | "mcp" | "websocket" | "kafka" | "pubsub";
+  type: 'http' | 'grpc' | 'mcp' | 'websocket' | 'kafka' | 'pubsub';
   /**
    * Extension name
    */
@@ -365,7 +379,7 @@ export interface KubernetesConfig {
   /**
    * Network family (KAS pattern: tcp, tcp4, tcp6)
    */
-  network_family?: "tcp" | "tcp4" | "tcp6";
+  network_family?: 'tcp' | 'tcp4' | 'tcp6';
   /**
    * Health check endpoint URL
    */

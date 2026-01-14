@@ -92,7 +92,10 @@ export function outputError<T>(
 /**
  * Create a success result
  */
-export function success<T>(data: T, metadata?: Record<string, unknown>): CLIResult<T> {
+export function success<T>(
+  data: T,
+  metadata?: Record<string, unknown>
+): CLIResult<T> {
   return {
     success: true,
     data,
@@ -117,7 +120,10 @@ export function error(
 /**
  * Create a result with warnings
  */
-export function withWarnings<T>(result: CLIResult<T>, warnings: string[]): CLIResult<T> {
+export function withWarnings<T>(
+  result: CLIResult<T>,
+  warnings: string[]
+): CLIResult<T> {
   return {
     ...result,
     warnings,
@@ -166,7 +172,10 @@ export function printInfo(message: string): void {
 /**
  * Print a key-value pair
  */
-export function printKeyValue(key: string, value: string | number | boolean): void {
+export function printKeyValue(
+  key: string,
+  value: string | number | boolean
+): void {
   console.log(`  ${chalk.gray(key + ':')} ${chalk.white(String(value))}`);
 }
 
@@ -230,10 +239,12 @@ export function printTable(
   rows: string[][],
   options: { columnWidths?: number[] } = {}
 ): void {
-  const widths = options.columnWidths || headers.map((h, i) => {
-    const maxRowWidth = Math.max(...rows.map((r) => (r[i] || '').length));
-    return Math.max(h.length, maxRowWidth);
-  });
+  const widths =
+    options.columnWidths ||
+    headers.map((h, i) => {
+      const maxRowWidth = Math.max(...rows.map((r) => (r[i] || '').length));
+      return Math.max(h.length, maxRowWidth);
+    });
 
   // Print header
   const headerLine = headers.map((h, i) => h.padEnd(widths[i])).join('  ');
@@ -242,7 +253,9 @@ export function printTable(
 
   // Print rows
   rows.forEach((row) => {
-    const line = row.map((cell, i) => (cell || '').padEnd(widths[i])).join('  ');
+    const line = row
+      .map((cell, i) => (cell || '').padEnd(widths[i]))
+      .join('  ');
     console.log(line);
   });
 }
@@ -262,7 +275,11 @@ export function printStep(step: number, total: number, message: string): void {
 /**
  * Print completion summary
  */
-export function printSummary(stats: { passed?: number; failed?: number; total?: number }): void {
+export function printSummary(stats: {
+  passed?: number;
+  failed?: number;
+  total?: number;
+}): void {
   console.log(chalk.cyan.bold('\nSummary\n'));
   if (stats.passed !== undefined) {
     console.log(chalk.green(`  Passed: ${stats.passed}`));

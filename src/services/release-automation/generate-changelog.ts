@@ -31,9 +31,9 @@ interface MilestoneData {
 
 // CI_SERVER_HOST is just 'gitlab.com' without protocol - ensure we have the full URL
 const gitlabHost = process.env.CI_SERVER_HOST
-  ? (process.env.CI_SERVER_HOST.startsWith('http')
-      ? process.env.CI_SERVER_HOST
-      : `https://${process.env.CI_SERVER_HOST}`)
+  ? process.env.CI_SERVER_HOST.startsWith('http')
+    ? process.env.CI_SERVER_HOST
+    : `https://${process.env.CI_SERVER_HOST}`
   : 'https://gitlab.com';
 
 const gitlab = new Gitlab({
@@ -48,19 +48,23 @@ const projectId = process.env.CI_PROJECT_ID!;
  */
 function categorizeIssue(issue: Issue): string {
   const title = issue.title.toLowerCase();
-  const labels = issue.labels.map(l => l.toLowerCase());
+  const labels = issue.labels.map((l) => l.toLowerCase());
 
   // Check labels first
-  if (labels.some(l => l.includes('breaking'))) return 'breaking';
-  if (labels.some(l => l.includes('feature') || l.includes('enhancement'))) return 'features';
-  if (labels.some(l => l.includes('bug') || l.includes('fix'))) return 'fixes';
-  if (labels.some(l => l.includes('security'))) return 'security';
-  if (labels.some(l => l.includes('performance'))) return 'performance';
-  if (labels.some(l => l.includes('documentation') || l.includes('docs'))) return 'documentation';
-  if (labels.some(l => l.includes('deprecation'))) return 'deprecations';
+  if (labels.some((l) => l.includes('breaking'))) return 'breaking';
+  if (labels.some((l) => l.includes('feature') || l.includes('enhancement')))
+    return 'features';
+  if (labels.some((l) => l.includes('bug') || l.includes('fix')))
+    return 'fixes';
+  if (labels.some((l) => l.includes('security'))) return 'security';
+  if (labels.some((l) => l.includes('performance'))) return 'performance';
+  if (labels.some((l) => l.includes('documentation') || l.includes('docs')))
+    return 'documentation';
+  if (labels.some((l) => l.includes('deprecation'))) return 'deprecations';
 
   // Check title patterns
-  if (title.startsWith('feat:') || title.startsWith('feature:')) return 'features';
+  if (title.startsWith('feat:') || title.startsWith('feature:'))
+    return 'features';
   if (title.startsWith('fix:')) return 'fixes';
   if (title.startsWith('docs:')) return 'documentation';
   if (title.startsWith('perf:')) return 'performance';
@@ -108,14 +112,14 @@ function getCategoryTitle(category: string): string {
  */
 async function fetchMilestoneIssues(milestoneId: number): Promise<Issue[]> {
   try {
-    const issues = await gitlab.Issues.all({
+    const issues = (await gitlab.Issues.all({
       projectId,
       milestoneId: milestoneId.toString(),
       state: 'closed',
       perPage: 100,
-    }) as any[];
+    })) as any[];
 
-    return issues.map(issue => ({
+    return issues.map((issue) => ({
       iid: issue.iid,
       title: issue.title,
       labels: issue.labels || [],
@@ -132,9 +136,14 @@ async function fetchMilestoneIssues(milestoneId: number): Promise<Issue[]> {
 /**
  * Fetch milestone data
  */
-async function fetchMilestone(milestoneId: number): Promise<MilestoneData | null> {
+async function fetchMilestone(
+  milestoneId: number
+): Promise<MilestoneData | null> {
   try {
-    const milestone = await gitlab.ProjectMilestones.show(projectId, milestoneId) as any;
+    const milestone = (await gitlab.ProjectMilestones.show(
+      projectId,
+      milestoneId
+    )) as any;
     return {
       id: milestone.id,
       title: milestone.title,
@@ -161,7 +170,7 @@ function generateChangelog(
 
   // Group issues by category
   const categorized: Record<string, Issue[]> = {};
-  issues.forEach(issue => {
+  issues.forEach((issue) => {
     const category = categorizeIssue(issue);
     if (!categorized[category]) {
       categorized[category] = [];
@@ -192,15 +201,18 @@ function generateChangelog(
   changelog += `## What's Changed\n\n`;
 
   // Generate sections for each category
-  categoryOrder.forEach(category => {
+  categoryOrder.forEach((category) => {
     if (categorized[category] && categorized[category].length > 0) {
       const emoji = getCategoryEmoji(category);
       const title = getCategoryTitle(category);
       changelog += `### ${emoji} ${title}\n\n`;
 
-      categorized[category].forEach(issue => {
+      categorized[category].forEach((issue) => {
         const cleanTitle = issue.title
-          .replace(/^(feat|fix|docs|perf|security|chore|refactor|test|build|ci):\s*/i, '')
+          .replace(
+            /^(feat|fix|docs|perf|security|chore|refactor|test|build|ci):\s*/i,
+            ''
+          )
           .trim();
         changelog += `- ${cleanTitle} ([#${issue.iid}](${issue.web_url}))\n`;
       });
@@ -213,7 +225,7 @@ function generateChangelog(
   changelog += `## Statistics\n\n`;
   changelog += `- **Total Issues Closed:** ${issues.length}\n`;
 
-  const contributors = new Set(issues.map(i => i.author.username));
+  const contributors = new Set(issues.map((i) => i.author.username));
   changelog += `- **Contributors:** ${contributors.size}\n`;
 
   if (milestone.due_date) {
@@ -225,9 +237,11 @@ function generateChangelog(
   if (contributors.size > 0) {
     changelog += `## Contributors\n\n`;
     changelog += `Thanks to all contributors who made this release possible:\n\n`;
-    Array.from(contributors).sort().forEach(username => {
-      changelog += `- @${username}\n`;
-    });
+    Array.from(contributors)
+      .sort()
+      .forEach((username) => {
+        changelog += `- @${username}\n`;
+      });
     changelog += `\n`;
   }
 
@@ -250,7 +264,7 @@ function getPreviousVersion(version: string): string {
       .toString()
       .trim()
       .split('\n')
-      .filter(tag => tag.startsWith('v') && tag !== `v${version}`);
+      .filter((tag) => tag.startsWith('v') && tag !== `v${version}`);
 
     return tags[0] || '0.0.0';
   } catch (error) {
@@ -263,7 +277,8 @@ function getPreviousVersion(version: string): string {
  */
 async function main() {
   const milestoneId = process.env.MILESTONE_ID || process.env.CI_MILESTONE_ID;
-  const version = process.env.RELEASE_VERSION || process.env.CI_COMMIT_TAG?.replace(/^v/, '');
+  const version =
+    process.env.RELEASE_VERSION || process.env.CI_COMMIT_TAG?.replace(/^v/, '');
   const outputPath = process.env.CHANGELOG_OUTPUT || './RELEASE_NOTES.md';
 
   if (!milestoneId) {

@@ -78,7 +78,9 @@ export class ChannelManager implements IChannelManager {
    * Get channels by type
    */
   async getByType(type: 'direct' | 'topic' | 'broadcast'): Promise<Channel[]> {
-    return Array.from(this.channels.values()).filter((channel) => channel.type === type);
+    return Array.from(this.channels.values()).filter(
+      (channel) => channel.type === type
+    );
   }
 
   /**
@@ -92,7 +94,9 @@ export class ChannelManager implements IChannelManager {
 
     const regex = new RegExp(`^${regexPattern}$`);
 
-    return Array.from(this.channels.values()).filter((channel) => regex.test(channel.name));
+    return Array.from(this.channels.values()).filter((channel) =>
+      regex.test(channel.name)
+    );
   }
 
   /**
@@ -119,26 +123,35 @@ export class ChannelManager implements IChannelManager {
       case 'direct':
         // Direct channels should follow: agents.{agent-id}.{message-type}
         if (!channel.name.match(/^agents\.[a-z0-9-]+\.[a-z0-9-]+$/)) {
-          throw new Error(`Direct channel must follow format agents.{agent-id}.{message-type}: ${channel.name}`);
+          throw new Error(
+            `Direct channel must follow format agents.{agent-id}.{message-type}: ${channel.name}`
+          );
         }
         break;
       case 'topic':
         // Topic channels should follow: agents.{topic}.{event-type}
         if (!channel.name.match(/^agents\.[a-z0-9-]+\.[a-z0-9-]+$/)) {
-          throw new Error(`Topic channel must follow format agents.{topic}.{event-type}: ${channel.name}`);
+          throw new Error(
+            `Topic channel must follow format agents.{topic}.{event-type}: ${channel.name}`
+          );
         }
         break;
       case 'broadcast':
         // Broadcast channels should follow: agents.broadcast.{event-type}
         if (!channel.name.startsWith('agents.broadcast.')) {
-          throw new Error(`Broadcast channel must start with agents.broadcast.: ${channel.name}`);
+          throw new Error(
+            `Broadcast channel must start with agents.broadcast.: ${channel.name}`
+          );
         }
         break;
     }
 
     // Validate QoS settings
     if (channel.qos) {
-      if (channel.qos.maxRetries && (channel.qos.maxRetries < 0 || channel.qos.maxRetries > 100)) {
+      if (
+        channel.qos.maxRetries &&
+        (channel.qos.maxRetries < 0 || channel.qos.maxRetries > 100)
+      ) {
         throw new Error('maxRetries must be between 0 and 100');
       }
     }
@@ -146,20 +159,31 @@ export class ChannelManager implements IChannelManager {
     // Validate config settings
     if (channel.config) {
       if (channel.config.maxMessageSize) {
-        if (channel.config.maxMessageSize < 1024 || channel.config.maxMessageSize > 10485760) {
+        if (
+          channel.config.maxMessageSize < 1024 ||
+          channel.config.maxMessageSize > 10485760
+        ) {
           throw new Error('maxMessageSize must be between 1KB and 10MB');
         }
       }
 
       if (channel.config.maxSubscribers) {
-        if (channel.config.maxSubscribers < 1 || channel.config.maxSubscribers > 10000) {
+        if (
+          channel.config.maxSubscribers < 1 ||
+          channel.config.maxSubscribers > 10000
+        ) {
           throw new Error('maxSubscribers must be between 1 and 10000');
         }
       }
 
       if (channel.config.messageRetention !== undefined) {
-        if (channel.config.messageRetention < 0 || channel.config.messageRetention > 2592000) {
-          throw new Error('messageRetention must be between 0 and 2592000 seconds (30 days)');
+        if (
+          channel.config.messageRetention < 0 ||
+          channel.config.messageRetention > 2592000
+        ) {
+          throw new Error(
+            'messageRetention must be between 0 and 2592000 seconds (30 days)'
+          );
         }
       }
     }
@@ -180,7 +204,11 @@ export class ChannelFactory {
   /**
    * Create a direct channel
    */
-  static createDirect(agentId: string, messageType: string, config?: Partial<Channel>): Channel {
+  static createDirect(
+    agentId: string,
+    messageType: string,
+    config?: Partial<Channel>
+  ): Channel {
     return {
       name: `agents.${agentId}.${messageType}`,
       type: 'direct',
@@ -191,7 +219,11 @@ export class ChannelFactory {
   /**
    * Create a topic channel
    */
-  static createTopic(topic: string, eventType: string, config?: Partial<Channel>): Channel {
+  static createTopic(
+    topic: string,
+    eventType: string,
+    config?: Partial<Channel>
+  ): Channel {
     return {
       name: `agents.${topic}.${eventType}`,
       type: 'topic',
@@ -202,7 +234,10 @@ export class ChannelFactory {
   /**
    * Create a broadcast channel
    */
-  static createBroadcast(eventType: string, config?: Partial<Channel>): Channel {
+  static createBroadcast(
+    eventType: string,
+    config?: Partial<Channel>
+  ): Channel {
     return {
       name: `agents.broadcast.${eventType}`,
       type: 'broadcast',

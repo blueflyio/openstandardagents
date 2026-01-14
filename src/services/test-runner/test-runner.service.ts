@@ -16,7 +16,9 @@ export interface TestResult {
 export class TestRunnerService {
   async runTests(manifest: OssaAgent, testId?: string): Promise<TestResult[]> {
     const tests = (manifest.spec as { tests?: unknown[] }).tests || [];
-    const testsToRun = testId ? tests.filter((t: unknown) => (t as { id?: string })?.id === testId) : tests;
+    const testsToRun = testId
+      ? tests.filter((t: unknown) => (t as { id?: string })?.id === testId)
+      : tests;
 
     if (testsToRun.length === 0) {
       return [];
@@ -56,7 +58,9 @@ export class TestRunnerService {
     } else if ((test as { type?: string })?.type === 'e2e') {
       await this.runE2ETest(test, manifest);
     } else {
-      throw new Error(`Unknown test type: ${(test as { type?: string })?.type}`);
+      throw new Error(
+        `Unknown test type: ${(test as { type?: string })?.type}`
+      );
     }
   }
 
@@ -66,7 +70,10 @@ export class TestRunnerService {
       for (const assertion of testTyped.assertions) {
         if ((assertion as { type?: string })?.type === 'equals') {
           const assertionActual = (assertion as { actual?: string })?.actual;
-          const actual = this.evaluateExpression(assertionActual || '', manifest);
+          const actual = this.evaluateExpression(
+            assertionActual || '',
+            manifest
+          );
           const expected = (assertion as { expected?: unknown })?.expected;
           if (actual !== expected) {
             throw new Error(`Expected ${expected}, got ${actual}`);
@@ -76,7 +83,10 @@ export class TestRunnerService {
     }
   }
 
-  private async runIntegrationTest(test: unknown, manifest: OssaAgent): Promise<void> {
+  private async runIntegrationTest(
+    test: unknown,
+    manifest: OssaAgent
+  ): Promise<void> {
     await this.runUnitTest(test, manifest);
   }
 
@@ -89,7 +99,10 @@ export class TestRunnerService {
       const path = expr.split('.').slice(1);
       let value: unknown = manifest.metadata;
       for (const key of path) {
-        value = value && typeof value === 'object' ? (value as { [key: string]: unknown })[key] : undefined;
+        value =
+          value && typeof value === 'object'
+            ? (value as { [key: string]: unknown })[key]
+            : undefined;
       }
       return value;
     }
@@ -97,7 +110,10 @@ export class TestRunnerService {
       const path = expr.split('.').slice(1);
       let value: unknown = manifest.spec;
       for (const key of path) {
-        value = value && typeof value === 'object' ? (value as { [key: string]: unknown })[key] : undefined;
+        value =
+          value && typeof value === 'object'
+            ? (value as { [key: string]: unknown })[key]
+            : undefined;
       }
       return value;
     }

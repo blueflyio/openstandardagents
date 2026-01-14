@@ -129,11 +129,14 @@ export class WebSocketTransport extends EventEmitter {
   private pongTimer?: NodeJS.Timeout;
   private missedPongs = 0;
   private messageQueue: WebSocketEvent[] = [];
-  private pendingAcks = new Map<string, {
-    resolve: () => void;
-    reject: (error: Error) => void;
-    timeout: NodeJS.Timeout;
-  }>();
+  private pendingAcks = new Map<
+    string,
+    {
+      resolve: () => void;
+      reject: (error: Error) => void;
+      timeout: NodeJS.Timeout;
+    }
+  >();
 
   constructor(config: WebSocketTransportConfig) {
     super();
@@ -210,7 +213,7 @@ export class WebSocketTransport extends EventEmitter {
       reject(new Error('Connection closed'));
     });
     this.pendingAcks.clear();
-    
+
     // Small delay to ensure all timer callbacks have completed
     await new Promise((resolve) => setTimeout(resolve, 10));
   }
@@ -307,14 +310,18 @@ export class WebSocketTransport extends EventEmitter {
 
       this.on('message', replyHandler);
 
-      this.send<CapabilityCallPayload>('capability_call', {
-        capability,
-        input,
-      }, {
-        correlationId,
-        replyTo: this.config.agentId,
-        priority: options?.priority,
-      }).catch(reject);
+      this.send<CapabilityCallPayload>(
+        'capability_call',
+        {
+          capability,
+          input,
+        },
+        {
+          correlationId,
+          replyTo: this.config.agentId,
+          priority: options?.priority,
+        }
+      ).catch(reject);
     });
   }
 
@@ -384,7 +391,10 @@ export class WebSocketTransport extends EventEmitter {
     this.stopKeepalive();
     this.emit('disconnected', event);
 
-    if (this.config.reconnect?.enabled && this.reconnectAttempt < (this.config.reconnect?.maxAttempts || 10)) {
+    if (
+      this.config.reconnect?.enabled &&
+      this.reconnectAttempt < (this.config.reconnect?.maxAttempts || 10)
+    ) {
       this.scheduleReconnect();
     }
   }
@@ -444,7 +454,9 @@ export class WebSocketTransport extends EventEmitter {
     const data = JSON.stringify(event);
 
     if (data.length > this.config.maxMessageSize) {
-      throw new Error(`Message size ${data.length} exceeds limit ${this.config.maxMessageSize}`);
+      throw new Error(
+        `Message size ${data.length} exceeds limit ${this.config.maxMessageSize}`
+      );
     }
 
     this.ws!.send(data);
@@ -460,7 +472,7 @@ export class WebSocketTransport extends EventEmitter {
       if (!this.keepaliveActive || !this.isConnected()) {
         return;
       }
-      
+
       if (this.missedPongs >= (this.config.keepalive?.maxMissedPongs || 3)) {
         if (this.listenerCount('error') > 0) {
           this.emit('error', new Error('Keepalive timeout'));
@@ -500,7 +512,7 @@ export class WebSocketTransport extends EventEmitter {
   private stopKeepalive(): void {
     // Set flag to false FIRST to prevent any queued callbacks from executing
     this.keepaliveActive = false;
-    
+
     if (this.pingTimer) {
       clearInterval(this.pingTimer);
       this.pingTimer = undefined;
@@ -510,7 +522,7 @@ export class WebSocketTransport extends EventEmitter {
       clearTimeout(this.pongTimer);
       this.pongTimer = undefined;
     }
-    
+
     // Reset missed pongs counter
     this.missedPongs = 0;
   }

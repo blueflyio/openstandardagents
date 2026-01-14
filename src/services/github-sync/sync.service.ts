@@ -15,7 +15,10 @@ export class GitHubSyncService {
       validated.github.repo
     );
 
-    this.gitlab = new GitLabClient(validated.gitlab.token, validated.gitlab.projectId);
+    this.gitlab = new GitLabClient(
+      validated.gitlab.token,
+      validated.gitlab.projectId
+    );
   }
 
   /**
@@ -61,7 +64,9 @@ export class GitHubSyncService {
 
     // Comment on all PRs
     await Promise.all(
-      prs.map((pr) => this.github.createComment(pr.number, this.buildBatchPRComment(mr)))
+      prs.map((pr) =>
+        this.github.createComment(pr.number, this.buildBatchPRComment(mr))
+      )
     );
 
     return mr;

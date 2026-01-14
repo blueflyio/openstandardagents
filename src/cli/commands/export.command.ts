@@ -23,7 +23,10 @@ export const exportCommand = new Command('export')
   .option('--all', 'Export to all supported platforms')
   .description('Export OSSA agent manifest to platform-specific format')
   .action(
-    async (manifestPath: string, options?: { to?: string; output?: string; all?: boolean }) => {
+    async (
+      manifestPath: string,
+      options?: { to?: string; output?: string; all?: boolean }
+    ) => {
       try {
         const manifestRepo = container.get(ManifestRepository);
         const generationService = container.get(GenerationService);
@@ -49,7 +52,7 @@ export const exportCommand = new Command('export')
         for (const platform of platforms) {
           try {
             const exported = await generationService.exportToPlatform(
-              manifest as OssaAgent,
+              manifest,
               platform as
                 | 'cursor'
                 | 'openai'
@@ -63,7 +66,8 @@ export const exportCommand = new Command('export')
                 | 'vercel-ai'
             );
             const outputPath = options?.output || `${platform}-agent.json`;
-            const finalPath = platforms.length > 1 ? `${platform}-${outputPath}` : outputPath;
+            const finalPath =
+              platforms.length > 1 ? `${platform}-${outputPath}` : outputPath;
 
             fs.writeFileSync(finalPath, JSON.stringify(exported, null, 2));
             console.log(chalk.green(`✓ Exported to ${platform}: ${finalPath}`));

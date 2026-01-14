@@ -1,9 +1,9 @@
 /**
  * File Service
- * 
+ *
  * SOLID: Single Responsibility - File I/O operations only
  * DRY: Centralizes all file system operations
- * 
+ *
  * Abstraction for file operations to eliminate duplication across services.
  */
 
@@ -23,7 +23,7 @@ export class FileService {
    */
   readJson<T>(filePath: string, schema: z.ZodSchema<T>): T {
     const fullPath = join(this.rootDir, filePath);
-    
+
     if (!existsSync(fullPath)) {
       throw new Error(`File not found: ${filePath}`);
     }
@@ -36,7 +36,9 @@ export class FileService {
       if (error instanceof z.ZodError) {
         throw new Error(`Invalid JSON schema in ${filePath}: ${error.message}`);
       }
-      throw new Error(`Failed to read JSON file ${filePath}: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to read JSON file ${filePath}: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
@@ -45,7 +47,7 @@ export class FileService {
    */
   readJsonUnsafe(filePath: string): unknown {
     const fullPath = join(this.rootDir, filePath);
-    
+
     if (!existsSync(fullPath)) {
       throw new Error(`File not found: ${filePath}`);
     }
@@ -54,7 +56,9 @@ export class FileService {
       const content = readFileSync(fullPath, 'utf-8');
       return JSON.parse(content);
     } catch (error) {
-      throw new Error(`Failed to read JSON file ${filePath}: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to read JSON file ${filePath}: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
@@ -82,7 +86,7 @@ export class FileService {
    */
   readText(filePath: string): string {
     const fullPath = join(this.rootDir, filePath);
-    
+
     if (!existsSync(fullPath)) {
       throw new Error(`File not found: ${filePath}`);
     }
@@ -90,7 +94,9 @@ export class FileService {
     try {
       return readFileSync(fullPath, 'utf-8');
     } catch (error) {
-      throw new Error(`Failed to read file ${filePath}: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to read file ${filePath}: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 

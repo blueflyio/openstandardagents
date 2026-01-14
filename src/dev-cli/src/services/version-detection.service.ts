@@ -1,6 +1,6 @@
 /**
  * Version Detection Service
- * 
+ *
  * DYNAMIC: Detects version from git tags and updates .version.json
  * SOLID: Single Responsibility - Version detection only
  * DRY: Single source of truth (git tags) → updates .version.json
@@ -37,9 +37,9 @@ export class VersionDetectionService {
   async detectVersion(): Promise<VersionInfo> {
     // Fetch all tags
     try {
-      execSync('git fetch --tags --prune origin', { 
-        cwd: this.rootDir, 
-        stdio: 'ignore' 
+      execSync('git fetch --tags --prune origin', {
+        cwd: this.rootDir,
+        stdio: 'ignore',
       });
     } catch {
       // Continue if fetch fails
@@ -49,10 +49,10 @@ export class VersionDetectionService {
     const allTags = this.getAllVersionTags();
     const latestStable = this.getLatestStableTag(allTags);
     const latestTag = allTags[0] || latestStable;
-    
+
     // Determine current version from branch or latest tag
     const current = this.determineCurrentVersion(latestStable, latestTag);
-    
+
     const spec_version = current;
     const spec_path = `spec/v${spec_version}`;
     const schema_file = `ossa-${spec_version}.schema.json`;
@@ -78,7 +78,7 @@ export class VersionDetectionService {
    */
   private updateVersionFile(info: VersionInfo): void {
     let config;
-    
+
     if (existsSync(this.versionFile)) {
       try {
         const content = readFileSync(this.versionFile, 'utf-8');
@@ -128,7 +128,7 @@ export class VersionDetectionService {
         .trim()
         .split('\n')
         .filter(Boolean)
-        .map(tag => tag.trim());
+        .map((tag) => tag.trim());
 
       // Sort by version (newest first)
       return tags.sort((a, b) => {
@@ -137,7 +137,7 @@ export class VersionDetectionService {
         try {
           const aSemver = aVersion.split('.').map(Number);
           const bSemver = bVersion.split('.').map(Number);
-          
+
           for (let i = 0; i < 3; i++) {
             if (aSemver[i] > bSemver[i]) return -1;
             if (aSemver[i] < bSemver[i]) return 1;
@@ -156,7 +156,7 @@ export class VersionDetectionService {
    * Get latest stable tag (not -dev, -rc, etc.)
    */
   private getLatestStableTag(tags: string[]): string | null {
-    const stable = tags.find(tag => {
+    const stable = tags.find((tag) => {
       const version = tag.replace(/^v/, '');
       return !version.includes('-') && /^\d+\.\d+\.\d+$/.test(version);
     });
@@ -221,10 +221,12 @@ export class VersionDetectionService {
         .trim()
         .split('\n')
         .filter(Boolean)
-        .map(tag => tag.trim())
-        .filter(tag => {
+        .map((tag) => tag.trim())
+        .filter((tag) => {
           const version = tag.replace(/^v/, '');
-          return /^\d+\.\d+\.\d+$/.test(version) && version.startsWith(minorVersion);
+          return (
+            /^\d+\.\d+\.\d+$/.test(version) && version.startsWith(minorVersion)
+          );
         });
 
       if (tags.length === 0) return null;

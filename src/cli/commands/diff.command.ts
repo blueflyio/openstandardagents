@@ -29,7 +29,10 @@ interface DiffResult {
 
 function deepDiff(obj1: any, obj2: any, prefix = ''): DiffResult['changes'] {
   const changes: DiffResult['changes'] = [];
-  const allKeys = new Set([...Object.keys(obj1 || {}), ...Object.keys(obj2 || {})]);
+  const allKeys = new Set([
+    ...Object.keys(obj1 || {}),
+    ...Object.keys(obj2 || {}),
+  ]);
 
   for (const key of allKeys) {
     const path = prefix ? `${prefix}.${key}` : key;
@@ -50,7 +53,14 @@ function deepDiff(obj1: any, obj2: any, prefix = ''): DiffResult['changes'] {
         oldValue: val1,
         message: `Removed: ${path}`,
       });
-    } else if (typeof val1 === 'object' && typeof val2 === 'object' && val1 !== null && val2 !== null && !Array.isArray(val1) && !Array.isArray(val2)) {
+    } else if (
+      typeof val1 === 'object' &&
+      typeof val2 === 'object' &&
+      val1 !== null &&
+      val2 !== null &&
+      !Array.isArray(val1) &&
+      !Array.isArray(val2)
+    ) {
       changes.push(...deepDiff(val1, val2, path));
     } else if (JSON.stringify(val1) !== JSON.stringify(val2)) {
       changes.push({
@@ -69,16 +79,25 @@ function deepDiff(obj1: any, obj2: any, prefix = ''): DiffResult['changes'] {
 function isBreakingChange(change: DiffResult['changes'][0]): boolean {
   // Breaking changes: removed fields, modified required fields, type changes
   if (change.type === 'removed') return true;
-  if (change.path.includes('metadata.name') || change.path.includes('metadata.version')) return true;
+  if (
+    change.path.includes('metadata.name') ||
+    change.path.includes('metadata.version')
+  )
+    return true;
   if (change.path.includes('spec.role')) return true;
   if (change.path.includes('apiVersion')) return true;
   return false;
 }
 
-
 export const diffCommand = new Command('diff')
-  .argument('<path1>', 'First manifest path or git ref (e.g., main:path/to/file.yaml)')
-  .argument('[path2]', 'Second manifest path or git ref (default: current file)')
+  .argument(
+    '<path1>',
+    'First manifest path or git ref (e.g., main:path/to/file.yaml)'
+  )
+  .argument(
+    '[path2]',
+    'Second manifest path or git ref (default: current file)'
+  )
   .option('--breaking-only', 'Show only breaking changes')
   .option('--format <format>', 'Output format (default, json)', 'default')
   .option('-o, --output <file>', 'Output file (for json format)')
@@ -107,11 +126,16 @@ export const diffCommand = new Command('diff')
         const gitRef1 = gitService.parseRefString(path1);
         if (gitRef1) {
           try {
-            manifest1 = gitService.loadManifestFromRef(gitRef1.ref, gitRef1.filePath);
+            manifest1 = gitService.loadManifestFromRef(
+              gitRef1.ref,
+              gitRef1.filePath
+            );
             filePath1 = `${gitRef1.ref}:${gitRef1.filePath}`;
           } catch (error) {
             console.error(
-              chalk.red(`Failed to load ${path1} from git: ${error instanceof Error ? error.message : String(error)}`)
+              chalk.red(
+                `Failed to load ${path1} from git: ${error instanceof Error ? error.message : String(error)}`
+              )
             );
             process.exit(1);
           }
@@ -125,11 +149,16 @@ export const diffCommand = new Command('diff')
           const gitRef2 = gitService.parseRefString(path2);
           if (gitRef2) {
             try {
-              manifest2 = gitService.loadManifestFromRef(gitRef2.ref, gitRef2.filePath);
+              manifest2 = gitService.loadManifestFromRef(
+                gitRef2.ref,
+                gitRef2.filePath
+              );
               filePath2 = `${gitRef2.ref}:${gitRef2.filePath}`;
             } catch (error) {
               console.error(
-                chalk.red(`Failed to load ${path2} from git: ${error instanceof Error ? error.message : String(error)}`)
+                chalk.red(
+                  `Failed to load ${path2} from git: ${error instanceof Error ? error.message : String(error)}`
+                )
               );
               process.exit(1);
             }
@@ -168,10 +197,16 @@ export const diffCommand = new Command('diff')
             console.log(chalk.green('No differences found'));
           } else {
             if (result.breaking) {
-              console.log(chalk.red(`[WARN]  ${breakingChanges.length} breaking change(s) detected\n`));
+              console.log(
+                chalk.red(
+                  `[WARN]  ${breakingChanges.length} breaking change(s) detected\n`
+                )
+              );
             }
 
-            console.log(chalk.blue(`Found ${result.changes.length} change(s):\n`));
+            console.log(
+              chalk.blue(`Found ${result.changes.length} change(s):\n`)
+            );
 
             for (const change of result.changes) {
               const color =
@@ -180,22 +215,44 @@ export const diffCommand = new Command('diff')
                   : change.type === 'removed'
                     ? chalk.red
                     : chalk.yellow;
-              const icon = change.type === 'added' ? '+' : change.type === 'removed' ? '-' : '~';
-              const breaking = isBreakingChange(change) ? chalk.red(' [BREAKING]') : '';
+              const icon =
+                change.type === 'added'
+                  ? '+'
+                  : change.type === 'removed'
+                    ? '-'
+                    : '~';
+              const breaking = isBreakingChange(change)
+                ? chalk.red(' [BREAKING]')
+                : '';
 
               console.log(color(`${icon} ${change.message}${breaking}`));
-              if (change.oldValue !== undefined && change.newValue !== undefined) {
-                console.log(chalk.gray(`    Old: ${JSON.stringify(change.oldValue)}`));
-                console.log(chalk.gray(`    New: ${JSON.stringify(change.newValue)}`));
+              if (
+                change.oldValue !== undefined &&
+                change.newValue !== undefined
+              ) {
+                console.log(
+                  chalk.gray(`    Old: ${JSON.stringify(change.oldValue)}`)
+                );
+                console.log(
+                  chalk.gray(`    New: ${JSON.stringify(change.newValue)}`)
+                );
               } else if (change.oldValue !== undefined) {
-                console.log(chalk.gray(`    Value: ${JSON.stringify(change.oldValue)}`));
+                console.log(
+                  chalk.gray(`    Value: ${JSON.stringify(change.oldValue)}`)
+                );
               } else if (change.newValue !== undefined) {
-                console.log(chalk.gray(`    Value: ${JSON.stringify(change.newValue)}`));
+                console.log(
+                  chalk.gray(`    Value: ${JSON.stringify(change.newValue)}`)
+                );
               }
             }
 
             if (result.breaking) {
-              console.log(chalk.red(`\n[WARN]  Breaking changes detected - migration may be required`));
+              console.log(
+                chalk.red(
+                  `\n[WARN]  Breaking changes detected - migration may be required`
+                )
+              );
             }
           }
         }

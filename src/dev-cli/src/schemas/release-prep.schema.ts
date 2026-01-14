@@ -1,9 +1,9 @@
 /**
  * Release Preparation Schema
- * 
+ *
  * Comprehensive validation schemas for v0.3.3 release
  * Validates GitLab, GitHub, and npmjs readiness
- * 
+ *
  * SOLID: Single Responsibility - Release preparation validation only
  * DRY: Single source of truth for release validation
  */
@@ -80,12 +80,14 @@ export const ReleasePrepResponseSchema = z.object({
   npm: NPMValidationSchema.optional(),
   allErrors: z.array(z.string()),
   allWarnings: z.array(z.string()),
-  checklist: z.array(z.object({
-    category: z.string(),
-    item: z.string(),
-    status: z.enum(['pass', 'fail', 'warning', 'skip']),
-    message: z.string(),
-  })),
+  checklist: z.array(
+    z.object({
+      category: z.string(),
+      item: z.string(),
+      status: z.enum(['pass', 'fail', 'warning', 'skip']),
+      message: z.string(),
+    })
+  ),
   nextSteps: z.array(z.string()),
   rollbackPlan: z.array(z.string()),
 });

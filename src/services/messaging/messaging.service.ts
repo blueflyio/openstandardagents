@@ -201,7 +201,7 @@ export class MessagingService {
       ttlSeconds?: number;
       correlationId?: string;
       headers?: Record<string, string>;
-    } = {},
+    } = {}
   ): Promise<string> {
     if (!this.started) {
       throw new Error('Messaging service not started');
@@ -211,7 +211,7 @@ export class MessagingService {
     const publishedChannel = this.publishedChannels.get(channel);
     if (!publishedChannel && this.enableValidation) {
       throw new Error(
-        `Channel '${channel}' not registered for publishing by agent '${this.agentId}'`,
+        `Channel '${channel}' not registered for publishing by agent '${this.agentId}'`
       );
     }
 
@@ -220,7 +220,7 @@ export class MessagingService {
       const result = this.validateMessage(channel, payload);
       if (!result.valid) {
         throw new Error(
-          `Message validation failed for channel '${channel}': ${JSON.stringify(result.errors)}`,
+          `Message validation failed for channel '${channel}': ${JSON.stringify(result.errors)}`
         );
       }
     }
@@ -266,7 +266,7 @@ export class MessagingService {
       };
       priority?: MessagePriority;
       maxConcurrency?: number;
-    } = {},
+    } = {}
   ): Promise<string> {
     if (!this.started) {
       throw new Error('Messaging service not started');
@@ -274,11 +274,11 @@ export class MessagingService {
 
     // Check if subscription is declared in manifest
     const declaredSub = this.messaging?.subscribes?.find(
-      (s) => s.channel === channel,
+      (s) => s.channel === channel
     );
     if (!declaredSub && this.enableValidation) {
       console.warn(
-        `[MessagingService] Channel '${channel}' not declared in manifest for agent '${this.agentId}'`,
+        `[MessagingService] Channel '${channel}' not declared in manifest for agent '${this.agentId}'`
       );
     }
 
@@ -293,7 +293,7 @@ export class MessagingService {
           if (!result.valid) {
             console.error(
               `[MessagingService] Message validation failed:`,
-              result.errors,
+              result.errors
             );
             return; // Skip invalid messages
           }
@@ -311,7 +311,7 @@ export class MessagingService {
       } catch (error) {
         console.error(
           `[MessagingService] Error handling message ${message.id}:`,
-          error,
+          error
         );
 
         if (this.enableMetrics) {
@@ -323,11 +323,15 @@ export class MessagingService {
     };
 
     // Subscribe via broker
-    const subscriptionId = await this.broker.subscribe(channel, wrappedHandler, {
-      filter: options.filter,
-      priority: options.priority,
-      maxConcurrency: options.maxConcurrency || 10,
-    });
+    const subscriptionId = await this.broker.subscribe(
+      channel,
+      wrappedHandler,
+      {
+        filter: options.filter,
+        priority: options.priority,
+        maxConcurrency: options.maxConcurrency || 10,
+      }
+    );
 
     // Track subscription
     const activeSubscription: ActiveSubscription = {
@@ -374,7 +378,7 @@ export class MessagingService {
     options: {
       timeoutSeconds?: number;
       correlationId?: string;
-    } = {},
+    } = {}
   ): Promise<Record<string, unknown>> {
     if (!this.started) {
       throw new Error('Messaging service not started');
@@ -393,8 +397,8 @@ export class MessagingService {
           this.unsubscribe(subscriptionId).catch(() => {});
           reject(
             new Error(
-              `Command '${commandName}' to agent '${targetAgentId}' timed out`,
-            ),
+              `Command '${commandName}' to agent '${targetAgentId}' timed out`
+            )
           );
         }, timeoutMs);
 
@@ -412,7 +416,7 @@ export class MessagingService {
             subscriptionId = id;
           })
           .catch(reject);
-      },
+      }
     );
 
     // Send command
@@ -432,7 +436,9 @@ export class MessagingService {
    */
   async registerCommandHandler(
     commandName: string,
-    handler: (input: Record<string, unknown>) => Promise<Record<string, unknown>>,
+    handler: (
+      input: Record<string, unknown>
+    ) => Promise<Record<string, unknown>>
   ): Promise<void> {
     if (!this.started) {
       throw new Error('Messaging service not started');
@@ -441,13 +447,12 @@ export class MessagingService {
     const commandChannel = `agent.${this.agentId}.commands.${commandName}`;
 
     const wrappedHandler: MessageHandler = async (message: MessageEnvelope) => {
-      const responseChannel =
-        message.metadata?.headers?.['x-response-channel'];
+      const responseChannel = message.metadata?.headers?.['x-response-channel'];
       const correlationId = message.metadata?.correlationId;
 
       if (!responseChannel || !correlationId) {
         console.error(
-          `[MessagingService] Invalid command message, missing response channel or correlation ID`,
+          `[MessagingService] Invalid command message, missing response channel or correlation ID`
         );
         return;
       }
@@ -462,7 +467,7 @@ export class MessagingService {
       } catch (error) {
         console.error(
           `[MessagingService] Error executing command '${commandName}':`,
-          error,
+          error
         );
 
         // Send error response
@@ -476,7 +481,7 @@ export class MessagingService {
           },
           {
             correlationId,
-          },
+          }
         );
       }
     };
@@ -524,7 +529,7 @@ export class MessagingService {
    * Register a published channel from manifest
    */
   private async registerPublishedChannel(
-    channel: PublishedChannel,
+    channel: PublishedChannel
   ): Promise<void> {
     this.publishedChannels.set(channel.channel, channel);
 
@@ -552,7 +557,9 @@ export class MessagingService {
   /**
    * Register a subscription from manifest
    */
-  private async registerSubscription(subscription: Subscription): Promise<void> {
+  private async registerSubscription(
+    subscription: Subscription
+  ): Promise<void> {
     // Compile schema validator
     if (subscription.schema && this.enableValidation) {
       const validator = this.ajv.compile(subscription.schema);
@@ -594,7 +601,7 @@ export class MessagingService {
    */
   private validateMessage(
     channel: string,
-    payload: Record<string, unknown>,
+    payload: Record<string, unknown>
   ): ValidationResult {
     const validator = this.schemaValidators.get(channel);
     if (!validator) {
