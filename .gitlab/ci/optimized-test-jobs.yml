@@ -21,10 +21,18 @@ include:
   needs:
     - job: build:dist
       artifacts: true
+      optional: true
   before_script:
     - apk add --no-cache curl jq
     - test -f build.env && . build.env || echo "No build.env found (using defaults)"
-    - echo "Using build artifacts from build:dist job"
+    - |
+      if [ ! -d "node_modules" ] || [ ! -d "dist" ]; then
+        echo "build:dist artifacts not available, running npm ci and build..."
+        npm ci --prefer-offline --no-audit
+        npm run build
+      else
+        echo "Using build artifacts from build:dist job"
+      fi
 
 # Quick validation for feature branch pushes (fast feedback)
 # NOTE: Does NOT extend .test-job-base - doesn't need build artifacts for typecheck/lint
@@ -135,9 +143,18 @@ test:lint:
   needs:
     - job: build:dist
       artifacts: true
+      optional: true
   before_script:
     - apk add --no-cache curl jq
     - test -f build.env && . build.env || echo "No build.env found (using defaults)"
+    - |
+      if [ ! -d "node_modules" ] || [ ! -d "dist" ]; then
+        echo "build:dist artifacts not available, running npm ci and build..."
+        npm ci --prefer-offline --no-audit
+        npm run build
+      else
+        echo "Using build artifacts from build:dist job"
+      fi
   script:
     - |
       set +e

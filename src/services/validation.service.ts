@@ -267,10 +267,8 @@ export class ValidationService implements IValidationService {
    * @returns Array of validation results
    */
   async validateMany(manifests: unknown[], version?: SchemaVersion): Promise<ValidationResult[]> {
-    // Use dynamic version detection if not provided
-    if (!version) {
-      version = this.schemaRepository.getCurrentVersion();
-    }
+    // If version is provided, use it for all manifests
+    // Otherwise, let each manifest's validation auto-detect from its apiVersion field
     return Promise.all(manifests.map((manifest) => this.validate(manifest, version)));
   }
 

@@ -55,10 +55,12 @@ function zodErrorToErrorObject(error: z.ZodError, path = ''): ErrorObject[] {
  * Falls back to basic schema if version-specific not found
  */
 async function loadZodSchema(version: string): Promise<z.ZodType<unknown>> {
-  // Use static import for v0.3.3 (current version)
-  // TODO: Generate schemas for all versions and use dynamic loading
+  // Normalize version (strip -dev suffix and prerelease identifiers)
+  const normalizedVersion = version.replace(/-.*$/, '');
+
+  // Try to load the version-specific Zod schema
   try {
-    const { OssaAgentSchema } = await import('../types/generated/ossa-0.3.3.zod.js');
+    const { OssaAgentSchema } = await import(`../types/generated/ossa-${normalizedVersion}.zod.js`);
     return OssaAgentSchema as z.ZodType<unknown>;
   } catch {
     // Ultimate fallback - create minimal schema
@@ -69,7 +71,7 @@ async function loadZodSchema(version: string): Promise<z.ZodType<unknown>> {
         name: z.string(),
       }).passthrough().optional(),
       spec: z.record(z.string(), z.unknown()).optional(),
-    });
+    }).passthrough();
   }
 }
 
