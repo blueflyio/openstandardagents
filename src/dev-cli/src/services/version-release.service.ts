@@ -80,13 +80,10 @@ export class VersionReleaseService {
       changes.push(`Tag creation skipped (may already exist)`);
     }
 
-<<<<<<< HEAD
     // Update .version.json dynamically (detectVersion updates it from git tags)
     await this.versionDetection.detectVersion();
     changes.push(`Updated .version.json dynamically: ${oldVersion} → ${newVersion}`);
 
-=======
->>>>>>> origin/release/v0.3.x
     const nextSteps = [
       'Review changes: git diff',
       'Commit: git add . && git commit -m "chore: release v' + newVersion + '"',
