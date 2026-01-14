@@ -1,0 +1,612 @@
+apiVersion: ossa/v0.3.5
+kind: Agent
+metadata:
+  name: meta-orchestrator
+  version: 1.0.0
+  description: Master orchestrator agent that manages all other OSSA agents, routes work, monitors health, and coordinates
+    multi-agent workflows
+  labels:
+    ossa-version: v0.3.5
+    domain: orchestration
+    category: orchestrator
+    wave: all
+    priority: P0
+  annotations:
+    managed_agents: '12'
+    gitlab_duo: /automate/ossa-agents
+spec:
+  taxonomy:
+    domain: orchestration
+    subdomain: agent-management
+    capability: coordination
+  role: 'You are the Meta-Orchestrator, the master controller for all OSSA agents.
+
+
+    Your responsibilities:
+
+    1. Route incoming work to appropriate specialist agents based on content type
+
+    2. Monitor health of all 12 managed agents
+
+    3. Heal failed or degraded agents
+
+    4. Coordinate multi-agent workflows across bot waves
+
+    5. Optimize execution by parallelizing where possible
+
+    6. Handle A2A (agent-to-agent) messaging
+
+
+    ## Routing Logic
+
+    - drupal files → drupal-local → drupal-prod
+
+    - typescript files → ts-local → ts-prod
+
+    - gitlab CI files → gitlab-lib-local → gitlab-lib-ci
+
+    - ML/AI files → ml-local → ml-prod
+
+    - infrastructure → infra-prod
+
+    - OSSA manifests → ossa-local
+
+    - documentation → wiki-aggregator
+
+    - native code → native-local
+
+    - unknown → analyze file patterns and route accordingly
+
+
+    ## Bot Waves
+
+    Wave 1 (Compilation): ts-local, gitlab-lib-local, drupal-local, ml-local, ossa-local
+
+    Wave 2 (Production): ts-prod, drupal-prod, infra-prod, ml-prod, gitlab-lib-ci
+
+    Wave 3 (Review): wiki-aggregator, security-healer, quality agents
+
+    Wave 4 (Release): release-agent, semantic-versioning, changelog
+
+    Wave 5 (Docs): wiki-aggregator, orchestrator
+
+    '
+  llm:
+    provider: ${LLM_PROVIDER:-anthropic}
+    model: ${LLM_MODEL:-claude-sonnet-4}
+    temperature: 0.3
+    maxTokens: 8192
+    fallback_models:
+    - provider: ${LLM_FALLBACK_PROVIDER_1:-openai}
+      model: ${LLM_FALLBACK_MODEL_1:-gpt-4o}
+    retry_config:
+      max_attempts: 5
+      backoff_strategy: exponential
+    cost_tracking:
+      enabled: true
+      budget_alert_threshold: 200.0
+      cost_allocation_tags:
+        platform: orchestration
+        team: platform-agents
+  identity:
+    instance_id:
+      generation: uuid_v4
+      scope: pod
+    session_id:
+      generation: uuid_v4
+      scope: workflow
+    interaction_id:
+      generation: uuid_v4
+      scope: turn
+    propagation:
+      trace_context: w3c
+      baggage: true
+      inherit_session: true
+  tools:
+  - name: spawn_agents
+    description: Spawn one or more OSSA agents to handle tasks
+    source:
+      type: mcp
+      uri: mcp://agent-mesh/spawn
+    input:
+      type: object
+      required:
+      - agent_ids
+      properties:
+        agent_ids:
+          type: array
+          items:
+            type: string
+          description: List of agent IDs to spawn
+        parallel:
+          type: boolean
+          default: false
+        input:
+          type: object
+          description: Input to pass to spawned agents
+        timeout_ms:
+          type: integer
+          default: 300000
+  - name: monitor_agents
+    description: Get health status of managed agents
+    source:
+      type: mcp
+      uri: mcp://agent-mesh/health
+    input:
+      type: object
+      properties:
+        agent_ids:
+          type: array
+          items:
+            type: string
+          description: Specific agents to check (empty = all)
+        include_metrics:
+          type: boolean
+          default: true
+  - name: heal_agents
+    description: Restart or repair failed agents
+    source:
+      type: mcp
+      uri: mcp://agent-mesh/heal
+    input:
+      type: object
+      required:
+      - agent_id
+      - action
+      properties:
+        agent_id:
+          type: string
+        action:
+          type: string
+          enum:
+          - restart
+          - repair
+          - scale_up
+          - scale_down
+          - update_config
+        config:
+          type: object
+  - name: optimize_workflows
+    description: Analyze and optimize multi-agent workflow execution
+    source:
+      type: mcp
+      uri: mcp://agent-mesh/optimize
+    input:
+      type: object
+      required:
+      - workflow_id
+      properties:
+        workflow_id:
+          type: string
+        optimization_goals:
+          type: array
+          items:
+            type: string
+            enum:
+            - latency
+            - cost
+            - reliability
+            - parallelism
+  - name: route_issues
+    description: Route GitLab issues to appropriate agents based on labels and content
+    source:
+      type: mcp
+      uri: mcp://gitlab/route
+    input:
+      type: object
+      required:
+      - issue_iid
+      properties:
+        issue_iid:
+          type: integer
+        project_id:
+          type: string
+        override_agent:
+          type: string
+          description: Force routing to specific agent
+  - name: coordinate_waves
+    description: Execute agents in wave-based coordination
+    source:
+      type: mcp
+      uri: mcp://agent-mesh/waves
+    input:
+      type: object
+      required:
+      - waves
+      properties:
+        waves:
+          type: array
+          items:
+            type: object
+            properties:
+              wave_number:
+                type: integer
+              agent_ids:
+                type: array
+                items:
+                  type: string
+              wait_for_completion:
+                type: boolean
+                default: true
+  - name: a2a_send
+    description: Send message to another agent via A2A protocol
+    source:
+      type: mcp
+      uri: mcp://agent-mesh/a2a/send
+    input:
+      type: object
+      required:
+      - target_agent
+      - message
+      properties:
+        target_agent:
+          type: string
+        message:
+          type: object
+        correlation_id:
+          type: string
+        reply_to:
+          type: string
+  - name: a2a_broadcast
+    description: Broadcast message to multiple agents
+    source:
+      type: mcp
+      uri: mcp://agent-mesh/a2a/broadcast
+    input:
+      type: object
+      required:
+      - message
+      properties:
+        target_agents:
+          type: array
+          items:
+            type: string
+          description: Empty = broadcast to all
+        message:
+          type: object
+        message_type:
+          type: string
+          enum:
+          - info
+          - warning
+          - command
+          - query
+  autonomy:
+    level: autonomous
+    approval_required:
+    - heal_agents
+    - scale operations
+    escalation:
+      enabled: true
+      triggers:
+      - multiple_agent_failures
+      - workflow_stuck
+      - resource_exhaustion
+      target: platform-team
+  constraints:
+    max_tokens_per_turn: 16000
+    max_turns: 100
+    timeout_seconds: 1800
+  observability:
+    tracing:
+      enabled: true
+      provider: otel
+      sampling_rate: 1.0
+    metrics:
+      enabled: true
+      custom:
+      - name: agents_spawned
+        type: counter
+        labels:
+        - agent_id
+        - wave
+      - name: agent_health_status
+        type: gauge
+        labels:
+        - agent_id
+        - status
+      - name: workflow_duration_seconds
+        type: histogram
+        labels:
+        - workflow_type
+      - name: routing_decisions
+        type: counter
+        labels:
+        - source_type
+        - target_agent
+      - name: a2a_messages
+        type: counter
+        labels:
+        - source
+        - target
+        - message_type
+    logging:
+      level: info
+      structured: true
+  reliability:
+    retry:
+      max_attempts: 5
+      initial_delay_ms: 1000
+      max_delay_ms: 60000
+      backoff_multiplier: 2
+    circuit_breaker:
+      enabled: true
+      failure_threshold: 10
+      reset_timeout_ms: 120000
+    fallback:
+      enabled: true
+      strategy: degrade_gracefully
+  state:
+    mode: persistent
+    storage:
+      type: redis
+      ttl_seconds: 86400
+    managed_state:
+    - agent_health_cache
+    - workflow_state
+    - routing_cache
+  collaboration:
+    protocols:
+    - a2a
+    managed_agents:
+    - wiki-aggregator
+    - ts-prod
+    - ts-local
+    - ossa-local
+    - native-local
+    - ml-prod
+    - ml-local
+    - infra-prod
+    - gitlab-lib-ci
+    - gitlab-lib-local
+    - drupal-prod
+    - drupal-local
+    delegation:
+      allowed_targets: all
+      timeout_ms: 600000
+    communication:
+      a2a:
+        enabled: true
+        mesh_endpoint: mesh.blueflyagents.com:3005
+        completion_signals: true
+        checkpoint_sync: true
+  deployment:
+    strategy: rolling
+    lifecycle:
+      startup_probe:
+        enabled: true
+        initial_delay_seconds: 10
+      liveness_probe:
+        enabled: true
+        period_seconds: 30
+      readiness_probe:
+        enabled: true
+        period_seconds: 10
+  reasoning:
+    strategy: react
+    max_steps: 20
+    trace_enabled: true
+    export_format: otel
+  completion:
+    default_signal: complete
+    signals:
+    - signal: continue
+      condition: agents_spawned < max_parallel_agents
+      priority: 1
+    - signal: blocked
+      condition: agent_health_failures > 3
+      priority: 2
+    - signal: escalate
+      condition: workflow_stuck == true || resource_exhaustion == true
+      priority: 3
+    - signal: checkpoint
+      condition: workflow_duration_seconds > 300
+      priority: 4
+    max_iterations: 100
+    timeout_seconds: 1800
+  checkpointing:
+    enabled: true
+    interval: iteration
+    interval_value: 10
+    retention:
+      days: 7
+      max_checkpoints: 50
+    storage:
+      backend: agent-brain
+      location: s3://checkpoints/@meta-orchestrator/{session_id}
+  infrastructure:
+  - type: synology_nas
+    hostname: blueflynas.tailcf98b3.ts.net
+    capabilities:
+    - store_checkpoints
+    - manage_state
+    - artifact_storage
+    access:
+      tier: tier_2_write_limited
+  - type: agent_mesh
+    endpoint: mesh.blueflyagents.com:3005
+    capabilities:
+    - agent_discovery
+    - a2a_communication
+    - capability_advertisement
+extensions:
+  gitlab:
+    triggers:
+    - event: status_change
+      status: '*'
+    - event: merge
+      branches:
+      - main
+      - development
+    - event: security_alert
+    - event: schedule
+      cron: '*/5 * * * *'
+    custom_fields:
+      agent_assigned: meta-orchestrator
+      bot_wave: coordinator
+    duo_platform:
+      route: /automate/ossa-agents
+      registry_endpoint: /automate/ossa-agents/:id
+      execution_ui: /automate/ossa-agents/:id/execute
+  workflows:
+    on_merge_to_main:
+    - spawn: wiki-aggregator
+      wait: true
+    - spawn: architecture-healer
+      wait: true
+    - spawn: service-discovery
+      wait: true
+    - spawn: test-generator
+      wait: false
+    on_security_alert:
+    - spawn: security-healer
+      input:
+        priority: critical
+    - condition: severity == critical
+      action: create_incident
+    - notify: slack
+    on_architecture_drift:
+    - spawn: architecture-healer
+      wait: true
+    - spawn: spec-healer
+      wait: true
+    - action: create_mr
+  kubernetes:
+    deployment_type: long_running
+    replicas: 2
+    resources:
+      cpu: 2
+      memory: 4Gi
+  experts:
+    registry:
+    - id: routing-expert
+      name: Intelligent Routing Expert
+      model:
+        provider: anthropic
+        model: claude-opus-4-5-20251101
+      specializations:
+      - intelligent_routing
+      - agent_selection
+      - workflow_optimization
+      cost_tier: premium
+      capabilities:
+        extended_thinking: true
+        max_tokens: 200000
+        reasoning_depth: deep
+    - id: monitoring-expert
+      name: Health Monitoring Expert
+      model:
+        provider: anthropic
+        model: claude-sonnet-4-20250514
+      specializations:
+      - health_monitoring
+      - anomaly_detection
+      - performance_analysis
+      cost_tier: standard
+      capabilities:
+        max_tokens: 16384
+        reasoning_depth: balanced
+    - id: coordination-expert
+      name: High-Volume Coordination Expert
+      model:
+        provider: google
+        model: gemini-2.0-flash
+      specializations:
+      - high_volume_coordination
+      - quick_routing_decisions
+      - cost_sensitive_operations
+      cost_tier: economy
+      capabilities:
+        max_tokens: 8192
+        reasoning_depth: fast
+    selection_strategy: agent_controlled
+    tools:
+    - name: list_experts
+      description: Discover available expert models for routing and coordination
+    - name: invoke_expert
+      description: Delegate routing or coordination task to specialized expert
+    - name: get_expert_history
+      description: Review past expert invocations for learning
+  bat:
+    selection_criteria:
+    - dimension: routing_complexity
+      required: true
+      options:
+      - value: complex
+        technologies:
+        - claude-opus
+        - gpt-4-turbo
+        cost_tier: premium
+      - value: standard
+        technologies:
+        - claude-sonnet
+        - gpt-4o
+        cost_tier: standard
+      - value: simple
+        technologies:
+        - gemini-flash
+        - claude-haiku
+        cost_tier: economy
+  moe:
+    primary:
+      metric: routing_accuracy
+      description: Accuracy of routing decisions
+      target: 0.95
+      measurement:
+        type: ratio
+        numerator: correct_routing_decisions
+        denominator: total_routing_decisions
+        collection:
+          source: agent-tracer
+          interval: real_time
+    secondary:
+    - metric: workflow_completion_time_p95
+      description: 95th percentile workflow completion time
+      target: 300
+      unit: seconds
+    - metric: agent_health_score
+      description: Overall agent health score
+      target: 0.98
+      unit: ratio
+    operational:
+    - metric: uptime
+      description: Orchestrator availability
+      target: 0.999
+      unit: ratio
+    - metric: cost_per_workflow
+      description: Average cost per workflow
+      target: 0.5
+      unit: usd
+    tracking:
+      enabled: true
+      collection_interval: 60s
+      retention_days: 90
+  capabilities:
+    discovery:
+      enabled: true
+      registry: agent-mesh
+      refresh_interval: 60s
+    tools:
+    - name: list_capabilities
+      description: Discover available agent capabilities in the mesh
+    - name: register_capability
+      description: Register orchestrator capabilities for discovery
+  feedback:
+    tools:
+    - name: record_feedback
+      description: Record feedback on routing decisions and workflow outcomes
+    - name: get_feedback_summary
+      description: Get aggregate feedback for routing optimization
+    - name: suggest_improvements
+      description: Get improvement suggestions based on feedback
+    learning:
+      enabled: true
+      strategy: reinforcement
+      data_sources:
+      - routing_outcomes
+      - workflow_completion_signals
+      - expert_selection_outcomes
+      model_fine_tuning:
+        enabled: true
+        schedule: weekly
+        target_model: models/orchestration

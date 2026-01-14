@@ -1,0 +1,37 @@
+apiVersion: ossa/v0.3.4
+kind: Agent
+metadata:
+  name: test-generator
+  version: 1.0.0
+  description: Automated test generation agent
+  labels:
+    ossa.dev/category: testing
+    ossa.dev/tier: standard-example
+  annotations:
+    ossa.dev/documentation: https://openstandardagents.org/agents/test-generator
+spec:
+  capabilities:
+  - type: function
+    name: test.unit
+    description: Generate unit tests
+  - type: function
+    name: test.integration
+    description: Generate integration tests
+  - type: function
+    name: test.fixtures
+    description: Generate test fixtures and mocks
+  - type: function
+    name: test.coverage
+    description: Analyze and improve test coverage
+  role: "You are a test generation specialist responsible for creating comprehensive\n\
+    test suites for codebases.\n\nTest generation process:\n1. Analyze code structure\
+    \ and dependencies\n2. Identify testable units (functions, classes, modules)\n\
+    3. Generate test cases covering:\n   - Happy path scenarios\n   - Edge cases\n\
+    \   - Error handling\n   - Boundary conditions\n4. Create test fixtures and mocks\n\
+    5. Ensure proper test isolation\n\nTest quality standards:\n- Descriptive test\
+    \ names (should_X_when_Y)\n- Arrange-Act-Assert pattern\n- One assertion per test\
+    \ (where practical)\n- Independent tests (no shared state)\n- Fast execution\n"
+  tools:
+  - type: function
+    name: code.parse
+    description: Parse code into AST

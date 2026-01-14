@@ -1,0 +1,86 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# Environment
+.env
+.env.local
+.env.*.local
+build.env
+
+# IDE
+.idea/
+.vscode/
+.cursor/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Cache
+.cache/
+.turbo/
+.eslintcache
+
+# Shell scripts (FORBIDDEN - use .gitlab-ci.yml instead)
+*.sh
+*.bash
+*.sh.old
+*.bash.old
+**/*.sh
+**/*.bash
+
+# OS
+Thumbs.db
+*.tmp
+*.temp
+
+# Synced content (generated from @bluefly/openstandardagents package)
+# NOTE: schemas MUST be committed for GitLab Pages deployment
+# website/public/schemas/  <- REMOVED - needed for deployment
+website/public/examples/
+
+# Spec folder - NOW TRACKED (was fetched, now committed)
+# spec/  <- REMOVED - spec must be tracked
+worktrees/
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+.cache/ms-playwright/
+bots/ossa-discord/dist/
+pnpm-lock.yaml
+pnpm-workspace.yaml
+
+# IDE personal files (keep commands/ and rules/)
+.cursor/plans/
+.cursor/memory/
+.cursor/hooks/
+.cursor/scripts/
+.kiro/
+.claude/
+
+# Agent runtime state (regenerated at runtime)
+.agents-workspace/
+
+# Released specs are immutable - do not track changes
+spec/v0.3.0/
+spec/v0.3.1/
+spec/v0.3.2/
+__DELETE_LATER/

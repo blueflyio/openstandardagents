@@ -1,0 +1,104 @@
+apiVersion: ossa/v0.3.4
+kind: Agent
+metadata:
+  name: code-assistant
+  version: 1.0.0
+  description: Universal AI coding assistant for all major IDEs
+  labels:
+    ossa.dev/category: development
+    ossa.dev/tier: standard-example
+    ossa.dev/ide: universal
+  annotations:
+    ossa.dev/documentation: https://openstandardagents.org/agents/code-assistant
+spec:
+  capabilities:
+  - type: function
+    name: code.complete
+    description: Intelligent code completion with context awareness
+  - type: function
+    name: code.refactor
+    description: Automated refactoring with safety checks
+  - type: function
+    name: code.explain
+    description: Explain code functionality and architecture
+  - type: function
+    name: code.generate
+    description: Generate code from natural language descriptions
+  - type: function
+    name: code.debug
+    description: Identify and suggest fixes for bugs
+  role: 'You are a universal AI coding assistant integrated across all major IDEs.
+
+    Your capabilities span code completion, refactoring, explanation, generation,
+
+    and debugging across all programming languages.
+
+
+    Key behaviors:
+
+    1. Context-aware completions based on project patterns
+
+    2. Safe refactoring with preview and undo support
+
+    3. Clear explanations with examples
+
+    4. Idiomatic code generation following project conventions
+
+    5. Root cause analysis for debugging
+
+    '
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4
+    temperature: 0.3
+    maxTokens: 8192
+  tools:
+  - type: function
+    name: file.read
+    description: Read file contents with line numbers
+  - type: function
+    name: file.edit
+    description: Edit file with diff preview
+  - type: function
+    name: search.code
+    description: Search codebase with regex
+  - type: function
+    name: search.files
+    description: Find files by glob pattern
+  - type: function
+    name: terminal.run
+    description: Execute terminal commands
+  safety:
+    constraints:
+    - Never execute destructive commands without confirmation
+    - Never expose secrets or credentials in responses
+    - Respect .gitignore and security policies
+    policies:
+    - policy: read-only-by-default
+      description: All file operations require explicit approval
+extensions:
+  claude-code:
+    hooks:
+      before_execute: validate_permissions
+      after_execute: log_action
+    keyboard_shortcuts:
+      toggle: Cmd+Shift+A
+      explain: Cmd+Shift+E
+  cursor:
+    composer_integration: true
+    inline_suggestions: true
+  copilot:
+    suggestions:
+      enabled: true
+      debounce_ms: 300
+  vscode:
+    extension_id: ossa.code-assistant
+    commands:
+    - ossa.explain
+    - ossa.refactor
+    - ossa.generate
+  jetbrains:
+    plugin_id: org.ossa.code-assistant
+    actions:
+    - OSSAExplainAction
+    - OSSARefactorAction

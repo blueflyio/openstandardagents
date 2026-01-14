@@ -1,0 +1,117 @@
+# Changelog
+
+All notable changes to OSSA will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.3.4] - 2026-01-13
+
+### Added
+
+- **BAT (Browser Automation Testing)**: E2E testing, visual regression, performance testing configuration
+- **MOE (Model Output Evaluation)**: Output validation, quality scoring, auto-correction, context enrichment
+- **Dynamic Version Detection**: Version now derived from git tags (not static .version.json)
+- **Browser Automation Tool Type**: Added `browser-automation` tool type for Playwright/Selenium/Cypress
+- **Testing Capabilities**: Added testing, browser_automation, output_evaluation capability types to taxonomy
+- **AG2 Swarm Topology Support**: Comprehensive swarm topology patterns for multi-agent orchestration
+  - Sequential, fan-out, fan-in, hierarchical, mesh, hub-and-spoke, pipeline, and dynamic topologies
+  - Speaker selection strategies and transition rules
+  - Termination conditions and orchestration modes
+- **AG2 Group Chat Extension**: Multi-agent group chat configuration schemas
+  - Round-robin, auto, manual, and random speaker selection
+  - Conversation termination conditions
+  - Message history management
+  - Context variables and shared state
+- **AG2 Nested Chat Support**: Hierarchical conversation patterns
+  - Trigger conditions for nested conversations
+  - Context propagation strategies (full, summary, selective)
+  - Result aggregation modes
+  - Carryover configuration for context transfer
+- **Human-in-the-Loop Protocols**:
+  - Intervention points schema defining when human authorization is required
+  - Human input modes (ALWAYS, NEVER, TERMINATE)
+  - Multi-step approval workflows with escalation policies
+  - Notification channels and timeout handling
+- **Agent-to-Agent Interoperability**:
+  - Service discovery with health checks and registry integration
+  - Handoff protocol for task delegation between agents
+  - Capability advertisement for agent discovery
+  - Load balancing and capability matching
+- **State Management & Memory Portability**:
+  - Context serialization for save/restore operations
+  - Memory portability between runtimes (working, long-term, episodic, semantic, procedural)
+  - Teachability configuration for agent learning
+  - Vector store support for semantic search
+- **New Top-level Schema Properties**:
+  - `orchestration`: Swarm topology and group chat configuration
+  - `hitl`: Human-in-the-loop configuration
+  - `a2a`: Agent-to-agent interoperability
+  - `state_management`: Context and memory configuration
+- **Example Manifests**: Three complete AG2 integration examples
+  - Hierarchical software development swarm
+  - Group chat research team
+  - Fan-out data processing pipeline
+
+### Changed
+
+- **Version Management**: `.version.json` is now DEPRECATED - version comes from git tags dynamically
+- **Version Services**: All version services now use `VersionDetectionService` to read from git tags
+- Updated main schema to v0.3.4 with AG2 integration support
+- Updated package.json exports to include all new AG2 schemas
+
+### Fixed
+
+- Fixed test validation for platform extensions
+- Fixed cross-platform compatibility validation
+
+## [0.3.3] - 2025-01-11
+
+### Added
+
+- **Skills Compatibility Extension**: New extension for cross-platform agent skill compatibility
+- **llms.txt Extension**: Full support for llmstxt.org standard with bidirectional sync
+- **AGENTS.md Extension**: Complete agents.md integration with OpenAI agents.md format
+- **Migration System Fix**: Fixed version placeholder handling in migration detection
+- **OpenAPI Compliance**: All CLI commands now defined in OpenAPI specifications
+- **Zod Validation**: Complete runtime validation with Zod schemas
+- **CRUD Operations**: Full Create/Read/Update/Delete for all resources
+- **TypeScript SDK**: Rebuilt SDK following SOLID, DRY, Zod, OpenAPI principles
+- **Extension Development Tools**: TypeScript-based extension team management
+
+### Fixed
+
+- Fixed migration detection breaking when package.json contains 0.3.4 placeholder
+- Fixed version comparison logic to handle template placeholders correctly
+- Removed all shell scripts, replaced with TypeScript implementations
+- Fixed CI/CD configuration for proper Docker image usage
+- Fixed hardcoded version detection and validation
+
+### Changed
+
+- Migrated all shell scripts to TypeScript (project compliance)
+- Reorganized SDK structure into src/sdks/
+- Enhanced version management with proper placeholder handling
+- Improved error messages and validation feedback
+
+### Fixed (Previous)
+
+- Install git before using git commands in sync:auto
+- Remove all release jobs, auto-deploy pages on main
+- Update OSSA_VERSION to 0.3.3 on main
+- Update versions.json to 0.3.3 on main
+- Add rebase before push in sync:auto job to handle concurrent commits
+- Install git before using git commands in sync:auto job
+- Allow changelog:generate to fail until push token configured
+- Only run changelog:generate on release branches
+- Auto-deploy pages on main instead of manual
+- Remove resource_group for auto pages deploy
+- Remove environment block from pages job
+- Add missing documentation files from framework website
+- Add all automation documentation files from framework website
+
+### Merge
+
+- Sync main into release/v0.3.x for clean deploy
+
+<!-- generated by git-cliff -->

@@ -1,0 +1,99 @@
+apiVersion: ossa/v0.3.4
+kind: Agent
+metadata:
+  name: bedrock-assistant
+  version: 1.0.0
+  description: 'AWS Bedrock-powered assistant running Claude 3.5 Sonnet.
+
+    Demonstrates OSSA integration with AWS infrastructure.
+
+    '
+  labels:
+    provider: aws-bedrock
+    model: claude-3.5-sonnet
+    region: us-east-1
+    runtime-adapter: bedrock
+spec:
+  role: 'You are a helpful AWS Bedrock assistant powered by Claude 3.5 Sonnet.
+
+
+    Your knowledge includes:
+
+    - AWS Bedrock service features and capabilities
+
+    - Available foundation models (Claude, Titan, Llama, etc.)
+
+    - AWS infrastructure and security best practices
+
+    - Cost optimization for Bedrock usage
+
+
+    Communication style:
+
+    - Be clear and concise
+
+    - Provide examples when helpful
+
+    - Explain AWS-specific concepts when relevant
+
+    - Mention cost implications for production use
+
+    '
+  llm:
+    provider: anthropic
+    model: claude-3-5-sonnet-20241022
+    temperature: 0.7
+    maxTokens: 4096
+extensions:
+  bedrock:
+    region: us-east-1
+    profile: bedrock
+    model_id: anthropic.claude-3-5-sonnet-20241022-v2:0
+    system: 'You are running on AWS Bedrock using Claude 3.5 Sonnet.
+
+      Provide helpful, accurate responses with AWS best practices in mind.
+
+      '
+    temperature: 0.7
+    max_tokens: 4096
+    top_p: 1.0
+    stop_sequences:
+    - '
+
+
+      Human:'
+    - '
+
+
+      Assistant:'
+    tools:
+    - name: get_weather
+      description: Get current weather for a location
+      inputSchema:
+        json:
+          type: object
+          properties:
+            location:
+              type: string
+              description: City name or zip code
+            units:
+              type: string
+              enum:
+              - celsius
+              - fahrenheit
+              description: Temperature units
+          required:
+          - location
+      type: function
+    - name: calculate
+      description: Perform mathematical calculations
+      inputSchema:
+        json:
+          type: object
+          properties:
+            expression:
+              type: string
+              description: Mathematical expression to evaluate (e.g., "2 + 2")
+          required:
+          - expression
+      type: function

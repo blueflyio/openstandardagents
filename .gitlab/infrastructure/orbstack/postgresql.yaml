@@ -1,0 +1,109 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgresql
+  namespace: databases
+spec:
+  serviceName: postgresql
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgresql
+  template:
+    metadata:
+      labels:
+        app: postgresql
+    spec:
+      containers:
+      - name: postgresql
+        image: postgres:16-alpine
+        ports:
+        - containerPort: 5432
+          name: postgresql
+        env:
+        - name: POSTGRES_PASSWORD
+          value: "localdev123"
+        - name: POSTGRES_USER
+          value: "postgres"
+        - name: POSTGRES_DB
+          value: "postgres"
+        - name: PGDATA
+          value: "/var/lib/postgresql/data/pgdata"
+        volumeMounts:
+        - name: postgresql-data
+          mountPath: /var/lib/postgresql/data
+        livenessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - postgres
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - postgres
+          initialDelaySeconds: 5
+          periodSeconds: 5
+  volumeClaimTemplates:
+  - metadata:
+      name: postgresql-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql
+  namespace: databases
+spec:
+  selector:
+    app: postgresql
+  ports:
+  - port: 5432
+    targetPort: 5432
+  clusterIP: None
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: postgresql-init-databases
+  namespace: databases
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: init-databases
+        image: postgres:16-alpine
+        command:
+        - /bin/sh
+        - -c
+        - |
+          until pg_isready -h postgresql -U postgres; do
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+
+          psql -h postgresql -U postgres -tc "SELECT 1 FROM pg_database WHERE datname = 'llm_platform'" | grep -q 1 || \
+            psql -h postgresql -U postgres -c "CREATE DATABASE llm_platform;"
+
+          psql -h postgresql -U postgres -tc "SELECT 1 FROM pg_database WHERE datname = 'rfp_automation'" | grep -q 1 || \
+            psql -h postgresql -U postgres -c "CREATE DATABASE rfp_automation;"
+
+          psql -h postgresql -U postgres -tc "SELECT 1 FROM pg_database WHERE datname = 'agent_studio'" | grep -q 1 || \
+            psql -h postgresql -U postgres -c "CREATE DATABASE agent_studio;"
+
+          psql -h postgresql -U postgres -tc "SELECT 1 FROM pg_database WHERE datname = 'temporal'" | grep -q 1 || \
+            psql -h postgresql -U postgres -c "CREATE DATABASE temporal;"
+
+          echo "All databases created successfully"
+        env:
+        - name: PGPASSWORD
+          value: "localdev123"

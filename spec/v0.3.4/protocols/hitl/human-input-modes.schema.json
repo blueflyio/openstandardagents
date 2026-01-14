@@ -1,0 +1,260 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openstandardagents.org/schemas/v0.3.4/protocols/hitl/human-input-modes.json",
+  "title": "Human Input Modes",
+  "description": "Configuration for different modes of human interaction with agents (ALWAYS, NEVER, TERMINATE)",
+  "type": "object",
+  "required": ["mode"],
+  "properties": {
+    "mode": {
+      "type": "string",
+      "enum": ["ALWAYS", "NEVER", "TERMINATE"],
+      "description": "Human input mode - ALWAYS: request input on every turn, NEVER: fully autonomous, TERMINATE: only request input when terminating"
+    },
+    "prompt_prefix": {
+      "type": "string",
+      "default": "Provide feedback to the agent:",
+      "description": "Text shown to human when requesting input"
+    },
+    "input_timeout_ms": {
+      "type": "integer",
+      "minimum": 1000,
+      "description": "Maximum time to wait for human input"
+    },
+    "allow_empty_input": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether to allow empty responses (pressing Enter)"
+    },
+    "input_validation": {
+      "$ref": "#/definitions/InputValidation"
+    },
+    "default_response": {
+      "type": "string",
+      "description": "Default response if timeout occurs"
+    },
+    "ui_config": {
+      "$ref": "#/definitions/UIConfig"
+    },
+    "always_mode_config": {
+      "$ref": "#/definitions/AlwaysModeConfig"
+    },
+    "terminate_mode_config": {
+      "$ref": "#/definitions/TerminateModeConfig"
+    },
+    "never_mode_config": {
+      "$ref": "#/definitions/NeverModeConfig"
+    }
+  },
+  "definitions": {
+    "InputValidation": {
+      "type": "object",
+      "description": "Validation rules for human input",
+      "properties": {
+        "required": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether input is required (cannot be empty)"
+        },
+        "min_length": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Minimum input length"
+        },
+        "max_length": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum input length"
+        },
+        "pattern": {
+          "type": "string",
+          "format": "regex",
+          "description": "Regex pattern input must match"
+        },
+        "allowed_values": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Whitelist of allowed values"
+        },
+        "error_message": {
+          "type": "string",
+          "description": "Custom error message for validation failures"
+        }
+      }
+    },
+    "UIConfig": {
+      "type": "object",
+      "description": "UI configuration for human input interface",
+      "properties": {
+        "input_type": {
+          "type": "string",
+          "enum": ["text", "textarea", "select", "radio", "checkbox", "custom"],
+          "default": "text",
+          "description": "Type of input widget"
+        },
+        "placeholder": {
+          "type": "string",
+          "description": "Placeholder text for input field"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              }
+            }
+          },
+          "description": "Options for select/radio/checkbox inputs"
+        },
+        "show_context": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to show conversation context"
+        },
+        "context_lines": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 5,
+          "description": "Number of previous messages to show"
+        },
+        "enable_markdown": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to render markdown in messages"
+        },
+        "custom_css": {
+          "type": "string",
+          "description": "Custom CSS for input interface"
+        }
+      }
+    },
+    "AlwaysModeConfig": {
+      "type": "object",
+      "description": "Configuration specific to ALWAYS mode",
+      "properties": {
+        "request_on_actions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Specific actions to request input for (empty = all actions)"
+        },
+        "skip_on_confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Skip human input if agent confidence above this threshold"
+        },
+        "batch_mode": {
+          "type": "boolean",
+          "default": false,
+          "description": "Collect multiple decisions before requesting input"
+        },
+        "batch_size": {
+          "type": "integer",
+          "minimum": 2,
+          "default": 5,
+          "description": "Number of decisions to batch"
+        }
+      }
+    },
+    "TerminateModeConfig": {
+      "type": "object",
+      "description": "Configuration specific to TERMINATE mode",
+      "properties": {
+        "termination_keywords": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": ["TERMINATE", "DONE", "FINISHED"],
+          "description": "Keywords that trigger termination and human input"
+        },
+        "case_sensitive": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether keyword matching is case-sensitive"
+        },
+        "require_confirmation": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to require explicit confirmation before terminating"
+        },
+        "auto_terminate_conditions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AutoTerminateCondition"
+          },
+          "description": "Conditions that auto-terminate without human input"
+        }
+      }
+    },
+    "NeverModeConfig": {
+      "type": "object",
+      "description": "Configuration specific to NEVER mode",
+      "properties": {
+        "emergency_override": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether humans can override and provide input anyway"
+        },
+        "monitoring_enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to log actions for later review"
+        },
+        "alert_on_errors": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to alert humans on errors (but not block execution)"
+        },
+        "alert_channels": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["email", "slack", "webhook", "sms"]
+          },
+          "description": "Channels for non-blocking alerts"
+        }
+      }
+    },
+    "AutoTerminateCondition": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["max_rounds", "timeout", "success_criteria", "error_threshold"],
+          "description": "Type of auto-termination condition"
+        },
+        "max_rounds": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum conversation rounds before auto-terminate"
+        },
+        "timeout_ms": {
+          "type": "integer",
+          "minimum": 1000,
+          "description": "Timeout before auto-terminate"
+        },
+        "success_pattern": {
+          "type": "string",
+          "format": "regex",
+          "description": "Pattern indicating successful completion"
+        },
+        "error_threshold": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number of errors before auto-terminate"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,81 @@
+# Open Standard for Software Agents (OSSA) - The OpenAPI for agents
+
+> OSSA is a vendor-neutral, open specification standard for defining software agents. **The OpenAPI for agents.**
+
+> OSSA is a **specification standard**, not a framework. It defines contracts and metadata for production agent systems (security, governance, portability), not orchestration algorithms or runtime behavior.
+
+This repository contains the complete specification, CLI tools, SDKs, and 100+ reference examples. OSSA provides standardized YAML schemas for defining software agents, their capabilities, triggers, and lifecycle management. It enables vendor-neutral agent definitions that work across LangChain, LangFlow, CrewAI, AutoGen, and other platforms.
+
+## Core Specification
+
+- [OSSA Schema v0.3.3](https://openstandardagents.org/schemas/v0.3.3/ossa-0.3.3.schema.json): Complete JSON Schema for agent definitions
+- [OpenAPI Specifications](openapi/): API definitions for agent communication and discovery
+- [Specification Documentation](spec/v0.3.3/): Complete specification with examples and guides
+
+## Quick Start
+
+- [Installation Guide](README.md#-quick-start): Install via npm and create your first agent
+- [Quick Start Guide](docs/QUICKSTART.md): Get started in 5 minutes
+- [API Reference](docs/api-reference/): Complete API documentation
+- [Examples Directory](examples/): 100+ reference implementations
+
+## CLI Tools
+
+- [CLI Commands](bin/ossa): Command-line tool for validation, generation, and migration
+- [CLI Documentation](docs/api-reference/endpoints.md): Complete CLI reference
+- [Validation Guide](docs/guides/getting-started.md): How to validate OSSA manifests
+
+## SDKs
+
+- [TypeScript SDK](src/sdks/typescript/): Type-safe client library with full validation
+- [Python SDK](sdks/python/): Python client library (Pydantic models, CLI, validation)
+- [SDK Documentation](src/sdks/README.md): SDK usage and examples
+
+## Examples
+
+- [Agent Manifests](examples/agent-manifests/): Basic agent definitions
+- [Platform Adapters](examples/adapters/): Integrations with LangChain, CrewAI, etc.
+- [Multi-Agent Workflows](examples/multi-agent/): Complex orchestration examples
+- [Reference Implementations](examples/reference-implementations/): Production-ready patterns
+
+## Migration Guides
+
+- [Migration System](migrations/README.md): How to migrate between OSSA versions
+- [v0.3.2 to v0.3.3](migrations/guides/MIGRATION-v0.3.2-to-v0.3.3.md): Skills Compatibility Extension
+- [Migration Runner](migrations/index.ts): Automated migration tool
+
+## Development
+
+- [Contributing Guide](CONTRIBUTING.md): How to contribute to OSSA
+- [Code of Conduct](CODE_OF_CONDUCT.md): Community standards
+- [Security Policy](SECURITY.md): How to report vulnerabilities
+- [Development Setup](README.md#-development): Setup instructions
+
+## Specification Versions
+
+- [v0.3.3](spec/v0.3.3/): Latest version with Skills Compatibility Extension
+- [v0.3.2](spec/v0.3.2/): Previous stable version
+- [v0.3.1](spec/v0.3.1/): Legacy version
+- [Schema Index](spec/): All specification versions
+
+## OpenAPI Specifications
+
+- [Agent CRUD](openapi/agent-crud.yaml): Create, read, update, delete agents
+- [Agent Discovery](openapi/agent-discovery.yaml): Discover and query agents
+- [Agent Communication](openapi/agent-communication.yaml): Agent-to-agent messaging
+- [Agent Identity](openapi/agent-identity.yaml): Identity and authentication
+- [CLI Commands](openapi/cli-commands.openapi.yaml): CLI API specification
+
+## Documentation
+
+- [Implementation Summary](docs/IMPLEMENTATION-SUMMARY.md): Architecture overview
+- [Unified Agent Platform](docs/UNIFIED-AGENT-PLATFORM.md): Platform integration guide
+- [GitLab Integration](docs/integrations/gitlab-ultimate-observability.md): GitLab Duo Platform integration
+- [Research](docs/research/): AI agent landscape research and comparisons
+
+## Optional
+
+- [Roadmap](docs/roadmap/): Future plans and milestones
+- [Whitepaper](docs/whitepaper/): Technical deep-dives
+- [Infrastructure](infrastructure/): Kubernetes and deployment configs
+- [GitLab CI/CD](.gitlab-ci.yml): CI/CD pipeline configuration

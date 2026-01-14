@@ -1,0 +1,102 @@
+# OSSA Runner Health Monitoring and Self-Healing
+# Monitors runner health and automatically recovers from failures
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gitlab-runner-health-monitor
+  namespace: gitlab-runner
+  labels:
+    app: gitlab-runner
+    component: health-monitor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gitlab-runner
+      component: health-monitor
+  template:
+    metadata:
+      labels:
+        app: gitlab-runner
+        component: health-monitor
+    spec:
+      serviceAccountName: gitlab-runner
+      containers:
+      - name: health-monitor
+        image: bitnami/kubectl:latest
+        command:
+        - /bin/sh
+        - -c
+        - |
+          while true; do
+            echo "Checking runner health..."
+            
+            # Check runner pods
+            FAILED_PODS=$(kubectl get pods -n gitlab-runner -l app=gitlab-runner --field-selector=status.phase!=Running,status.phase!=Succeeded --no-headers 2>/dev/null | wc -l || echo "0")
+            
+            if [ "$FAILED_PODS" -gt 0 ]; then
+              echo "Found $FAILED_PODS failed pods, triggering recovery..."
+              kubectl delete pods -n gitlab-runner -l app=gitlab-runner --field-selector=status.phase!=Running,status.phase!=Succeeded || true
+            fi
+            
+            # Check HPA status
+            HPA_READY=$(kubectl get hpa gitlab-runner-autoscaler -n gitlab-runner -o jsonpath='{.status.conditions[?(@.type=="AbleToScale")].status}' 2>/dev/null || echo "Unknown")
+            if [ "$HPA_READY" != "True" ]; then
+              echo "HPA not ready, checking deployment..."
+              kubectl rollout restart deployment/gitlab-runner-autoscaler -n gitlab-runner || true
+            fi
+            
+            # Check runner connectivity
+            RUNNER_COUNT=$(kubectl get pods -n gitlab-runner -l app=gitlab-runner,component=autoscaler --no-headers 2>/dev/null | grep Running | wc -l || echo "0")
+            if [ "$RUNNER_COUNT" -eq 0 ]; then
+              echo "No runners available, scaling up..."
+              kubectl scale deployment/gitlab-runner-autoscaler --replicas=1 -n gitlab-runner || true
+            fi
+            
+            sleep 60
+          done
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gitlab-runner-health
+  namespace: gitlab-runner
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: gitlab-runner-health
+  namespace: gitlab-runner
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "watch", "delete"]
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["get", "list", "watch", "patch", "update"]
+- apiGroups: ["autoscaling"]
+  resources: ["horizontalpodautoscalers"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: gitlab-runner-health
+  namespace: gitlab-runner
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: gitlab-runner-health
+subjects:
+- kind: ServiceAccount
+  name: gitlab-runner-health
+  namespace: gitlab-runner
+EOFSELFHEAL

@@ -1,0 +1,198 @@
+apiVersion: ossa/v0.3.4
+kind: Agent
+metadata:
+  name: data-processing-pipeline
+  namespace: examples
+  labels:
+    framework: ag2
+    pattern: fan-out
+    domain: data-engineering
+  annotations:
+    description: Fan-out topology for parallel data processing with aggregation
+    example: AG2 fan-out pattern with dynamic worker allocation
+
+spec:
+  role: data-processor
+  goal: "Process large datasets in parallel and aggregate results"
+  capabilities:
+    - data_ingestion
+    - parallel_processing
+    - data_transformation
+    - aggregation
+    - quality_assurance
+
+orchestration:
+  swarm_topology:
+    topology_type: fan_out
+    fan_out:
+      source: agent://data-coordinator
+      workers:
+        - agent://processor-1
+        - agent://processor-2
+        - agent://processor-3
+        - agent://processor-4
+      aggregation_mode: all
+      timeout_ms: 300000
+    orchestration_mode: auto
+    max_rounds: 10
+    termination_condition:
+      timeout_ms: 600000
+      success_criteria:
+        all_workers_complete: true
+        quality_threshold: 0.95
+
+  group_chat:
+    participants:
+      - agent://data-coordinator
+      - agent://processor-1
+      - agent://processor-2
+      - agent://processor-3
+      - agent://processor-4
+      - agent://aggregator
+    manager: agent://data-coordinator
+    max_round: 10
+    speaker_selection_method: manual
+    allow_repeat_speaker: true
+    context_variables:
+      total_records: 0
+      processed_records: 0
+      failed_records: 0
+      batch_size: 1000
+
+hitl:
+  enabled: true
+  human_input_mode: TERMINATE
+  intervention_points:
+    - id: processing_failure
+      name: High Failure Rate Alert
+      trigger:
+        type: on_threshold
+        threshold:
+          metric: error_rate
+          operator: gt
+          value: 0.1
+          window_ms: 60000
+      mode: ALWAYS
+      required_approvers:
+        - data-team-lead
+      notification_channels:
+        - pagerduty
+        - slack
+      priority: critical
+      timeout_ms: 300000
+
+    - id: quality_validation
+      name: Data Quality Check
+      trigger:
+        type: after_action
+        action_name: aggregate_results
+      mode: CONDITIONAL
+      conditional_logic:
+        rules:
+          - field: quality_score
+            operator: lt
+            value: 0.95
+        operator: AND
+      priority: high
+
+a2a:
+  service_discovery:
+    enabled: true
+    mechanism: kubernetes
+    namespace: data-processing
+    health_check_enabled: true
+    health_check_interval_ms: 10000
+
+  handoff_protocol:
+    enabled: true
+    strategy: load_balance
+    timeout_ms: 30000
+    max_retries: 3
+    context_transfer:
+      mode: minimal
+      include_history: false
+      include_state: true
+    handoff_rules:
+      - id: worker-overflow
+        from: agent://data-coordinator
+        to:
+          - agent://processor-1
+          - agent://processor-2
+          - agent://processor-3
+          - agent://processor-4
+        condition:
+          type: load_threshold
+          load_threshold: 0.8
+        priority: 1
+
+      - id: aggregation
+        from:
+          - agent://processor-1
+          - agent://processor-2
+          - agent://processor-3
+          - agent://processor-4
+        to: agent://aggregator
+        condition:
+          type: task_complete
+        priority: 1
+
+  capability_advertisement:
+    agent_id: agent://data-processing-pipeline
+    name: Parallel Data Processing Pipeline
+    capabilities:
+      - id: batch_processing
+        name: Batch Data Processing
+        type: action
+        description: Process large datasets in parallel batches
+        parameters:
+          schema:
+            type: object
+            required:
+              - data_source
+              - batch_size
+            properties:
+              data_source:
+                type: string
+                format: uri
+              batch_size:
+                type: integer
+                minimum: 100
+                maximum: 10000
+              transformation_rules:
+                type: array
+        returns:
+          schema:
+            type: object
+            properties:
+              total_processed:
+                type: integer
+              success_count:
+                type: integer
+              failure_count:
+                type: integer
+              quality_score:
+                type: number
+        async: true
+        max_concurrent: 4
+        avg_duration_ms: 120000
+
+state_management:
+  context_serialization:
+    format: msgpack
+    compression: brotli
+    checkpoint_enabled: true
+    checkpoint_interval_ms: 60000
+
+  memory_portability:
+    enabled: true
+    snapshot_on_error: true
+    retention_days: 7
+
+  teachability:
+    enabled: true
+    learning_modes:
+      - feedback
+      - heuristic
+    memory_persistence: persistent
+    confidence_threshold: 0.85
+    conflict_resolution: highest_confidence

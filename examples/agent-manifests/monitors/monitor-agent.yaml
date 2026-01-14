@@ -1,0 +1,122 @@
+apiVersion: ossa/v0.3.4
+kind: Agent
+metadata:
+  name: system-performance-monitor
+  version: v1.3.0
+  description: "Real-time monitoring agent for system health, performance, and resource utilization"
+  author: "monitoring-team"
+  labels:
+    environment: production
+    classification: internal
+    role: monitor
+    complexity: standard
+spec:
+  type: monitor
+  subtype: performance-monitor
+  capabilities:
+    domains:
+      - system-monitoring
+      - performance-tracking
+      - resource-monitoring
+      - health-checking
+      - alerting
+      - metrics-collection
+    operations:
+      - collect-metrics
+      - check-health
+      - detect-anomalies
+      - generate-alerts
+      - track-performance
+      - analyze-trends
+    patterns:
+      - observer-pattern
+      - event-driven
+      - time-series
+      - threshold-based
+      - anomaly-detection
+      - aggregation
+  protocols:
+    supported:
+      - name: rest
+        version: "1.1"
+        endpoint: "https://monitor.platform.com/api/v1"
+        authentication:
+          type: bearer-token
+          scopes: ["monitor.read", "metrics.collect", "alerts.send"]
+        tls: true
+      - name: prometheus
+        version: "1.0"
+        endpoint: "http://monitor.platform.com:9090/metrics"
+        authentication:
+          type: none
+      - name: websocket
+        version: "1.0"
+        endpoint: "wss://events.platform.com/monitor"
+        authentication:
+          type: jwt
+      - name: snmp
+        version: "2c"
+        endpoint: "udp://devices.platform.com:161"
+        authentication:
+          type: community-string
+  monitoring:
+    collectionInterval: 30000
+    retentionPeriod: "30d"
+    maxMetricsPerSecond: 10000
+    aggregationWindow: 300000
+    alertingEnabled: true
+    thresholds:
+      cpu:
+        warning: 70
+        critical: 90
+      memory:
+        warning: 80
+        critical: 95
+      disk:
+        warning: 85
+        critical: 95
+      network:
+        warning: 80
+        critical: 95
+  detection:
+    anomalyDetection: true
+    baselineWindow: "7d"
+    sensitivityLevel: medium
+    machinelearning: true
+    algorithms:
+      - statistical-analysis
+      - trend-detection
+      - seasonal-decomposition
+      - isolation-forest
+  alerting:
+    channels:
+      - email
+      - slack
+      - webhook
+      - sms
+    escalationPolicy:
+      - level: warning
+        delay: 300
+      - level: critical
+        delay: 60
+    suppressionRules:
+      - duplicateWindow: 3600
+      - maintenanceMode: true
+  performance:
+    throughput:
+      metricsPerSecond: 1000
+      maxConcurrentChecks: 100
+    latency:
+      collectionLatency: 10
+      alertingLatency: 5
+      p95: 50
+      p99: 100
+  monitoring:
+    selfMonitoring: true
+    healthChecks: true
+    performanceMetrics: true
+    errorTracking: true
+    alerting:
+      collectionFailureThreshold: 5
+      alertingFailureThreshold: 3
+      latencyThreshold: 1000

@@ -1,0 +1,200 @@
+# OSSA v0.3.0 Example: Message Routing Configuration
+#
+# This MessageRouting resource defines how messages flow between agents
+# in a multi-agent security system. It implements the routing rules
+# for the security-scanner, dependency-healer, and incident-responder agents.
+
+apiVersion: ossa/v0.3.4
+kind: Workflow
+metadata:
+  name: security-workflow-routing
+  version: 1.0.0
+  description: Message routing rules for the security agent workflow
+  labels:
+    domain: security
+    workflow: vulnerability-management
+  annotations:
+    ossa.openstandardagents.org/category: routing
+    ossa.openstandardagents.org/environment: production
+
+spec:
+  # Routing rules define message flow between agents
+  rules:
+    # Rule 1: Route vulnerability findings to incident responder (critical only)
+    - id: vuln-to-incident-critical
+      source: security-scanner
+      channel: security.vulnerabilities
+      targets:
+        - incident-responder
+      filter:
+        fields:
+          severity: [critical]
+        expression: "${{ message.exploit_available == true }}"
+      priority: critical
+      enabled: true
+
+    # Rule 2: Route all high/critical vulnerabilities to monitoring
+    - id: vuln-to-monitoring
+      source: security-scanner
+      channel: security.vulnerabilities
+      targets:
+        - monitoring-agent
+        - compliance-auditor
+      filter:
+        fields:
+          severity: [high, critical]
+      priority: high
+      enabled: true
+
+    # Rule 3: Route dependency updates to security scanner for scanning
+    - id: deps-to-scanner
+      source: dependency-healer
+      channel: dependency.updates
+      targets:
+        - security-scanner
+      filter:
+        fields:
+          security_related: [true]
+          severity: [high, critical]
+      transform: extract_package_info
+      priority: high
+      enabled: true
+
+    # Rule 4: Route all dependency updates to changelog analyzer
+    - id: deps-to-analyzer
+      source: dependency-healer
+      channel: dependency.updates
+      targets:
+        - changelog-analyzer
+      filter:
+        fields:
+          update_type: [major]
+      priority: normal
+      enabled: true
+
+    # Rule 5: Route incident notifications to notification service
+    - id: incident-to-notifications
+      source: incident-responder
+      channel: incident.response.triggered
+      targets:
+        - notification-service
+        - audit-logger
+      priority: critical
+      enabled: true
+
+    # Rule 6: Route incident resolutions for reporting
+    - id: incident-resolved-to-reports
+      source: incident-responder
+      channel: incident.resolved
+      targets:
+        - report-generator
+        - metrics-collector
+      priority: normal
+      enabled: true
+
+    # Rule 7: Wildcard route - all security.* to audit logger
+    - id: security-audit-all
+      source: "*"
+      channel: "security.*"
+      targets:
+        - audit-logger
+      priority: low
+      enabled: true
+
+    # Rule 8: Route scan completions back to dependency healer
+    - id: scan-complete-to-healer
+      source: security-scanner
+      channel: security.scan.completed
+      targets:
+        - dependency-healer
+      filter:
+        expression: "${{ message.summary.vulnerabilities_found > 0 }}"
+      priority: normal
+      enabled: true
+
+    # Rule 9: Route compliance violations to incident responder
+    - id: compliance-to-incident
+      source: compliance-auditor
+      channel: compliance.violation
+      targets:
+        - incident-responder
+      filter:
+        fields:
+          severity: [high, critical]
+      priority: high
+      enabled: true
+
+    # Rule 10: Dead letter handling - route DLQ to alert system
+    - id: dlq-to-alerts
+      source: "*"
+      channel: "*.dlq"
+      targets:
+        - alert-manager
+      priority: high
+      enabled: true
+
+  # Default routing when no rules match
+  defaultRoute:
+    action: dlq
+    targets: []
+
+  # Named message transformations
+  transforms:
+    # Extract minimal package info for security scanning
+    extract_package_info:
+      type: jmespath
+      expression: |
+        {
+          package: package,
+          version: available_version,
+          ecosystem: ecosystem,
+          security_related: security_related,
+          priority: severity
+        }
+      outputSchema:
+        type: object
+        properties:
+          package:
+            type: string
+          version:
+            type: string
+          ecosystem:
+            type: string
+          security_related:
+            type: boolean
+          priority:
+            type: string
+
+    # Extract critical fields for incident creation
+    extract_critical_fields:
+      type: jmespath
+      expression: |
+        {
+          id: vulnerability_id,
+          severity: severity,
+          cve: cve_id,
+          package: affected_package,
+          exploit: exploit_available,
+          remediation: remediation
+        }
+
+    # Anonymize sensitive data for logging
+    anonymize_for_audit:
+      type: jsonata
+      expression: |
+        $merge([
+          $,
+          {"payload": $sift(payload, function($v, $k) { $k != "credentials" and $k != "tokens" })}
+        ])
+
+    # Enrich with metadata for reporting
+    enrich_for_report:
+      type: template
+      expression: |
+        {
+          "original": {{ . | toJson }},
+          "enriched_at": "{{ now | date \"2006-01-02T15:04:05Z07:00\" }}",
+          "routing_rule": "{{ .routing_rule_id }}",
+          "source_agent": "{{ .source }}",
+          "target_agents": {{ .targets | toJson }}
+        }

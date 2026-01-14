@@ -1,0 +1,115 @@
+apiVersion: ossa/v0.3.4
+kind: Agent
+metadata:
+  name: workflow-orchestrator
+  version: 1.0.0
+  description: 'Orchestrates multi-agent workflows by coordinating specialized worker
+    agents.
+
+    Manages workflow state, handles failures, and aggregates results.
+
+    '
+spec:
+  role: 'You are a workflow orchestrator. Your job is to:
+
+    1. Break down complex tasks into subtasks
+
+    2. Delegate subtasks to appropriate worker agents
+
+    3. Monitor progress and handle failures
+
+    4. Aggregate results from worker agents
+
+    5. Provide final output to the user
+
+
+    Always coordinate clearly, handle errors gracefully, and provide status updates.
+
+    '
+  llm:
+    provider: openai
+    model: gpt-4
+    temperature: 0.3
+  tools:
+  - type: http
+    name: invoke_research_agent
+    description: 'Delegate research tasks to the specialized research agent.
+
+      Returns comprehensive research results on the requested topic.
+
+      '
+    endpoint: http://research-agent:8080/api/v1/research
+    config:
+      method: POST
+      timeout: 60
+    auth:
+      type: bearer
+      credentials: ORCHESTRATOR_TOKEN
+  - type: http
+    name: invoke_analysis_agent
+    description: 'Delegate analysis tasks to the specialized analysis agent.
+
+      Analyzes data and provides insights.
+
+      '
+    endpoint: http://analysis-agent:8080/api/v1/analyze
+    config:
+      method: POST
+      timeout: 30
+    auth:
+      type: bearer
+      credentials: ORCHESTRATOR_TOKEN
+  - type: http
+    name: invoke_writing_agent
+    description: 'Delegate writing tasks to the specialized writing agent.
+
+      Creates well-structured content based on research and analysis.
+
+      '
+    endpoint: http://writing-agent:8080/api/v1/write
+    config:
+      method: POST
+      timeout: 45
+    auth:
+      type: bearer
+      credentials: ORCHESTRATOR_TOKEN
+  - type: http
+    name: check_agent_status
+    description: 'Check the status and health of worker agents.
+
+      Returns availability, current load, and capability status.
+
+      '
+    endpoint: http://agent-registry:8080/api/v1/agents/status
+    config:
+      method: GET
+      timeout: 5
+  autonomy:
+    level: autonomous
+    approval_required: false
+    allowed_actions:
+    - invoke_research_agent
+    - invoke_analysis_agent
+    - invoke_writing_agent
+    - check_agent_status
+  constraints:
+    cost:
+      maxTokensPerDay: 500000
+      maxCostPerDay: 50.0
+      currency: USD
+    performance:
+      maxLatencySeconds: 120
+      maxConcurrentRequests: 5
+      timeoutSeconds: 180
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+      endpoint: http://jaeger:4318
+    metrics:
+      enabled: true
+      exporter: prometheus
+      endpoint: http://prometheus:9090/metrics
+    logging:
+      level: info
+      format: json

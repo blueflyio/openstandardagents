@@ -1,0 +1,82 @@
+# Example: Data Transform Task
+# A pure function task that transforms data between formats
+apiVersion: ossa/v0.3.4
+kind: Task
+metadata:
+  name: data-transform
+  version: 1.0.0
+  description: Transforms data from one format to another
+  labels:
+    domain: data-processing
+    type: pure-function
+
+spec:
+  execution:
+    type: deterministic  # Pure function - same input always produces same output
+    runtime: node
+    entrypoint: "src/transforms/index.ts:transform"
+    timeout_seconds: 30
+
+  capabilities:
+    - transform_data
+    - validate_schema
+
+  input:
+    type: object
+    properties:
+      source_format:
+        type: string
+        enum: [json, xml, csv, yaml]
+      target_format:
+        type: string
+        enum: [json, xml, csv, yaml]
+      data:
+        description: Input data to transform
+      schema:
+        type: object
+        description: Optional JSON Schema for validation
+    required:
+      - source_format
+      - target_format
+      - data
+
+  output:
+    type: object
+    properties:
+      transformed_data:
+        description: Transformed output data
+      metadata:
+        type: object
+        properties:
+          source_records:
+            type: integer
+          output_records:
+            type: integer
+          transform_time_ms:
+            type: number
+
+  preconditions:
+    - expression: "${{ input.source_format != input.target_format }}"
+      error_message: "Source and target formats must be different"
+
+  error_handling:
+    on_error: fail
+    error_mapping:
+      INVALID_SOURCE_DATA: fail
+      SCHEMA_VALIDATION_ERROR: fail
+      TRANSFORM_ERROR: retry
+
+  observability:
+    metrics:
+      enabled: true
+      custom_labels:
+        source_format: "${{ input.source_format }}"
+        target_format: "${{ input.target_format }}"
+
+runtime:
+  type: node
+  bindings:
+    transform_data:
+      handler: "transforms/handlers/dataTransform"
+    validate_schema:
+      handler: "transforms/handlers/schemaValidator"

@@ -1,0 +1,42 @@
+apiVersion: ossa/v0.3.4
+kind: Agent
+metadata:
+  name: conditional-router
+  version: 1.0.0
+  description: Router agent that conditionally routes to specialist agents
+spec:
+  role: Router that analyzes requests and routes to appropriate specialist
+  llm:
+    provider: openai
+    model: gpt-4o-mini
+  tools:
+  - type: function
+    name: route_to_code_specialist
+    description: Route coding questions to code specialist agent
+    parameters:
+      type: object
+      properties:
+        question:
+          type: string
+      required:
+      - question
+  - type: function
+    name: route_to_data_specialist
+    description: Route data questions to data specialist agent
+    parameters:
+      type: object
+      properties:
+        question:
+          type: string
+      required:
+      - question
+  - type: function
+    name: route_to_general_assistant
+    description: Route general questions to general assistant
+    parameters:
+      type: object
+      properties:
+        question:
+          type: string
+      required:
+      - question
