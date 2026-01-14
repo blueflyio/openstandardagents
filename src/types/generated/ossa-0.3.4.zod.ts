@@ -24,7 +24,7 @@ export const OssaMetadataSchema = z.object({
 
 export const OssaAgentSchema = z.object({
   apiVersion: OssaApiVersionSchema,
-  kind: z.enum(['Agent', 'Task', 'Workflow']),
+  kind: z.enum(['Agent', 'Task', 'Workflow', 'AgentRegistry']),
   metadata: OssaMetadataSchema,
   spec: z.record(z.string(), z.unknown()),
 });
