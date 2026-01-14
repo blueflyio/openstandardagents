@@ -62,6 +62,68 @@ spec:
       endpoint: /chat
 ```
 
+### AG2 Multi-Agent Swarm (v0.3.4+)
+
+OSSA v0.3.4 adds first-class support for AG2 (AutoGen) swarm topologies:
+
+```yaml
+# ag2-swarm.ossa.yaml
+apiVersion: ossa/v0.3.4
+kind: Agent
+metadata:
+  name: software-dev-swarm
+  labels:
+    framework: ag2
+    pattern: hierarchical
+
+orchestration:
+  swarm_topology:
+    topology_type: hierarchical
+    hierarchical:
+      root: agent://supervisor
+      levels:
+        - agents:
+            - uri: agent://tech-lead
+              children:
+                - agent://coder
+                - agent://reviewer
+    speaker_selection_strategy:
+      method: capability_match
+
+  group_chat:
+    participants:
+      - agent://supervisor
+      - agent://tech-lead
+      - agent://coder
+      - agent://reviewer
+    manager: agent://supervisor
+    max_round: 20
+
+hitl:
+  enabled: true
+  human_input_mode: TERMINATE
+  intervention_points:
+    - id: code_review
+      trigger:
+        type: on_decision
+      mode: ALWAYS
+
+a2a:
+  service_discovery:
+    enabled: true
+  handoff_protocol:
+    strategy: capability_match
+
+state_management:
+  teachability:
+    enabled: true
+    learning_modes:
+      - feedback
+      - observation
+```
+
+See [examples/ag2/](spec/v0.3.4/examples/ag2/) for complete examples.
+
 ### Validate Your Agent
 
 ```bash

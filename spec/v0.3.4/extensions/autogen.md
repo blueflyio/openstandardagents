@@ -1,8 +1,8 @@
-# Microsoft AutoGen Extension for OSSA v0.3.4
+# Microsoft AutoGen Extension for OSSA v0.3.3
 
 ## Overview
 
-The `extensions.autogen` schema provides comprehensive bidirectional mapping between Microsoft AutoGen's multi-agent conversation framework and OSSA v0.3.4 manifests. This extension enables seamless interoperability between AutoGen agent patterns and OSSA's standardized agent specifications.
+The `extensions.autogen` schema provides comprehensive bidirectional mapping between Microsoft AutoGen's multi-agent conversation framework and OSSA v0.3.3 manifests. This extension enables seamless interoperability between AutoGen agent patterns and OSSA's standardized agent specifications.
 
 AutoGen is Microsoft's open-source framework for building AI agents that can converse with each other to solve tasks. It supports conversable agents, group chats, code execution, function calling, and nested agent architectures.
 
@@ -12,7 +12,7 @@ AutoGen is Microsoft's open-source framework for building AI agents that can con
 extensions:
   autogen:
     type: object
-    description: "Microsoft AutoGen multi-agent framework extension for OSSA v0.3.4"
+    description: "Microsoft AutoGen multi-agent framework extension for OSSA v0.3.3"
     properties:
       agent_type:
         type: string
@@ -360,7 +360,7 @@ extensions:
 An OSSA agent mapped to AutoGen's AssistantAgent:
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: code-assistant
@@ -399,7 +399,7 @@ extensions:
 An OSSA agent with human-in-the-loop and code execution:
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: code-executor
@@ -445,7 +445,7 @@ extensions:
 An OSSA Workflow implementing AutoGen GroupChat:
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Workflow
 metadata:
   name: research-team
@@ -497,7 +497,7 @@ extensions:
 An OSSA agent with registered tools/functions:
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: data-analyst
@@ -563,7 +563,7 @@ extensions:
 An OSSA agent that delegates to specialized sub-agents:
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: project-coordinator
@@ -611,7 +611,7 @@ extensions:
 An OSSA agent that learns from interactions:
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: learning-assistant
@@ -652,7 +652,7 @@ extensions:
 Advanced group chat with custom routing:
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Workflow
 metadata:
   name: review-pipeline
@@ -755,7 +755,7 @@ def ossa_to_autogen(manifest_path: str):
 def autogen_to_ossa(agent, version: str = "1.0.0") -> dict:
     """Convert AutoGen agent to OSSA manifest."""
     manifest = {
-        'apiVersion': 'ossa/v0.3.4',
+        'apiVersion': 'ossa/v0.3.3',
         'kind': 'Agent',
         'metadata': {
             'name': agent.name.lower().replace(' ', '-'),
@@ -1118,7 +1118,7 @@ for name, agent in specialists.items():
 
 - [Microsoft AutoGen Documentation](https://microsoft.github.io/autogen/)
 - [AutoGen GitHub Repository](https://github.com/microsoft/autogen)
-- [OSSA v0.3.4 Schema](../ossa-0.3.4.schema.json)
+- [OSSA v0.3.3 Schema](../ossa-0.3.3.schema.json)
 - [Agent-to-Agent Messaging Extension](./agent-identity.yaml)
 - [Drupal Extension](./drupal.md)
 - [MCP Extension](#/definitions/MCPExtension)

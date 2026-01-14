@@ -1,4 +1,4 @@
-# LlamaIndex Extension for OSSA v0.3.4
+# LlamaIndex Extension for OSSA v0.3.3
 
 ## Overview
 
@@ -20,7 +20,7 @@ This extension supports:
 extensions:
   llamaindex:
     type: object
-    description: "LlamaIndex framework extension for OSSA v0.3.4"
+    description: "LlamaIndex framework extension for OSSA v0.3.3"
     properties:
       agent_type:
         type: string
@@ -595,7 +595,7 @@ extensions:
 ### 1. RAG Agent with Vector Index
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: rag-researcher
@@ -715,7 +715,7 @@ runtime:
 ### 2. Multi-Tool OpenAI Agent
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: research-assistant
@@ -804,7 +804,7 @@ extensions:
 ### 3. Query Engine as Task
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Task
 metadata:
   name: document-qa
@@ -893,7 +893,7 @@ runtime:
 ### 4. LlamaIndex Workflow
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Workflow
 metadata:
   name: research-workflow
@@ -1032,7 +1032,7 @@ extensions:
 ### 5. Knowledge Graph Agent
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: kg-analyst
@@ -1379,7 +1379,7 @@ adapter.cleanup_storage(
 openapi: 3.1.0
 info:
   title: OSSA LlamaIndex Extension API
-  version: 0.3.4
+  version: 0.3.3
 
 paths:
   /api/v1/agents/{agent_id}/llamaindex/index:
@@ -1514,6 +1514,6 @@ components:
 
 - [LlamaIndex Documentation](https://docs.llamaindex.ai/)
 - [LlamaIndex Workflows](https://docs.llamaindex.ai/en/stable/module_guides/observability/observability/)
-- [OSSA v0.3.4 Specification](../UNIFIED-SCHEMA.md)
+- [OSSA v0.3.3 Specification](../UNIFIED-SCHEMA.md)
 - [MCP Extension](./mcp.md)
 - [Drupal Extension](./drupal.md)

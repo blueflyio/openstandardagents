@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://openstandardagents.org/schemas/v0.3.4/messaging/delivery-receipt.json",
+  "$id": "https://openstandardagents.org/schemas/v0.3.3/messaging/delivery-receipt.json",
   "title": "OSSA Delivery Receipt Schema",
-  "description": "Schema for message delivery receipts in OSSA v0.3.4",
+  "description": "Schema for message delivery receipts in OSSA v0.3.3",
   "type": "object",
   "required": [
     "messageId",

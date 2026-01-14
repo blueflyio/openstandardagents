@@ -1,4 +1,4 @@
-# OSSA v0.3.4 - Agent Runtime Specification
+# OSSA v0.3.3 - Agent Runtime Specification
 # Defines agent lifecycle, control signals, execution model, and network isolation
 #
 # Related schemas:
@@ -6,7 +6,7 @@
 #   - ./memory-model.yaml (memory provider interface)
 
 $schema: http://json-schema.org/draft-07/schema#
-$id: https://openstandardagents.org/schemas/v0.3.4/runtime/runtime.yaml
+$id: https://openstandardagents.org/schemas/v0.3.3/runtime/runtime.yaml
 
 title: OSSA Agent Runtime Specification
 description: |
@@ -25,7 +25,7 @@ required:
 properties:
   apiVersion:
     type: string
-    const: ossa/v0.3.4
+    const: ossa/v0.3.3
     description: Runtime specification version
 
   kind:
@@ -852,7 +852,7 @@ definitions:
                 type: integer
 
 examples:
-  - apiVersion: ossa/v0.3.4
+  - apiVersion: ossa/v0.3.3
     kind: RuntimeSpec
     lifecycle:
       phases:

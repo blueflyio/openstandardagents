@@ -1,4 +1,4 @@
-# LangFlow Extension for OSSA v0.3.4
+# LangFlow Extension for OSSA v0.3.3
 
 ## Overview
 
@@ -320,7 +320,7 @@ extensions:
 ### 1. Basic Chat Agent with LangFlow Backend
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: langflow-chat-agent
@@ -424,7 +424,7 @@ extensions:
 ### 2. RAG Workflow with LangFlow
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Workflow
 metadata:
   name: langflow-rag-workflow
@@ -578,7 +578,7 @@ extensions:
 ### 3. Multi-Agent Orchestration via LangFlow
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Workflow
 metadata:
   name: langflow-multi-agent
@@ -694,7 +694,7 @@ extensions:
 ### 4. Task with LangFlow Component Binding
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Task
 metadata:
   name: langflow-embedding-task
@@ -1052,4 +1052,4 @@ async function ossaToLangflow(
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 1.0.0 | 2024-12-31 | Initial release for OSSA v0.3.4 |
+| 1.0.0 | 2024-12-31 | Initial release for OSSA v0.3.3 |

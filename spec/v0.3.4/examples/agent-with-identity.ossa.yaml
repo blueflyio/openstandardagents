@@ -1,4 +1,4 @@
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: typescript-worker
@@ -8,7 +8,7 @@ metadata:
     team: platform
     tier: development
   annotations:
-    ossa.io/migration: v0.3.4-to-v0.3.4
+    ossa.io/migration: v0.3.3-to-v0.3.3
     ossa.io/migrated-date: 2026-01-07
 spec:
   role: |

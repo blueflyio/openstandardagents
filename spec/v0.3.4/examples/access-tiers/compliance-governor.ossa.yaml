@@ -1,4 +1,4 @@
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: compliance-governor
@@ -9,7 +9,7 @@ metadata:
     access_tier: tier_4_policy
     domain: security
   annotations:
-    ossa.io/migration: v0.3.4-to-v0.3.4
+    ossa.io/migration: v0.3.3-to-v0.3.3
     ossa.io/migrated-date: 2026-01-07
 spec:
   type: governor

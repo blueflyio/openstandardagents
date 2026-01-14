@@ -1,4 +1,4 @@
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Task
 metadata:
   name: transform-csv-to-json
@@ -10,7 +10,7 @@ metadata:
     ossa.io/description: Transform CSV data to structured JSON
     ossa.io/category: data-transformation
     ossa.io/idempotent: "true"
-    ossa.io/migration: v0.3.4-to-v0.3.4
+    ossa.io/migration: v0.3.3-to-v0.3.3
     ossa.io/migrated-date: 2026-01-07
 spec:
   execution:

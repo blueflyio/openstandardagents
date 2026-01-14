@@ -1,12 +1,12 @@
-# OSSA Agent Taxonomy Schema v0.3.4
+# OSSA Agent Taxonomy Schema v0.3.3
 # Comprehensive hierarchical classification for AI agents
 # Aligned with OSSA spec roles, multi-agent patterns, and industry standards
 
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Taxonomy
 metadata:
   name: agent-taxonomy
-  version: "0.3.4"
+  version: "0.3.3"
   description: |
     Formal agent taxonomy with hierarchical domains, cross-cutting capabilities,
     autonomy levels, and multi-agent orchestration patterns. Designed for
@@ -126,15 +126,10 @@ spec:
             - unit          # Unit test generation and maintenance
             - integration   # API, service integration testing
             - e2e           # Playwright, Cypress, Selenium
-            - browser-automation # BAT - Browser automation testing (Playwright/Selenium)
-            - visual-regression # Visual diff testing, screenshot comparison
             - performance   # Load testing, benchmarking
             - security      # DAST, penetration testing
             - accessibility # Automated a11y testing
             - contract      # API contract testing, Pact
-            - output-quality # MOE - Model output quality evaluation
-            - output-validation # MOE - Output schema and format validation
-            - auto-correction # MOE - Automatic output correction
 
         debugging:
           description: Error analysis, root cause identification, and fixes

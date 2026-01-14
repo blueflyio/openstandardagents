@@ -1,6 +1,6 @@
-# Amazon Bedrock Agents Extension for OSSA v0.3.4
+# Amazon Bedrock Agents Extension for OSSA v0.3.3
 
-**Version:** 0.3.4
+**Version:** 0.3.3
 **Status:** Stable
 **Last Updated:** 2025-12-31
 
@@ -608,7 +608,7 @@ extensions:
 ### Basic Bedrock Agent
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: customer-support-agent
@@ -760,7 +760,7 @@ extensions:
 ### RAG-Enabled Research Agent
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: research-assistant
@@ -836,7 +836,7 @@ extensions:
 ### Code Generation Agent with Interpreter
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: code-assistant
@@ -900,7 +900,7 @@ extensions:
 ### Multi-Agent Supervisor with Return Control
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: workflow-supervisor
@@ -1280,7 +1280,7 @@ async function exportAgentToOSSA(agentId: string): Promise<OSSAManifest> {
   const { agent } = await client.send(new GetAgentCommand({ agentId }));
 
   return {
-    apiVersion: 'ossa/v0.3.4',
+    apiVersion: 'ossa/v0.3.3',
     kind: 'Agent',
     metadata: {
       name: agent!.agentName!.toLowerCase().replace(/[^a-z0-9-]/g, '-'),
@@ -1316,5 +1316,5 @@ async function exportAgentToOSSA(agentId: string): Promise<OSSAManifest> {
 - [Bedrock Agents API Reference](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent_CreateAgent.html)
 - [Bedrock Knowledge Bases](https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base.html)
 - [Bedrock Guardrails](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails.html)
-- [OSSA Manifest Schema](../ossa-0.3.4.schema.json)
+- [OSSA Manifest Schema](../ossa-0.3.3.schema.json)
 - [MCP Extension](../../extensions/manifest-extensions.md)

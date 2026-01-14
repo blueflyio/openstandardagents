@@ -1,8 +1,8 @@
-# CrewAI Extension for OSSA v0.3.4
+# CrewAI Extension for OSSA v0.3.3
 
 ## Overview
 
-The `extensions.crewai` schema provides comprehensive bidirectional mapping between CrewAI's multi-agent orchestration framework and OSSA v0.3.4 specifications. This extension enables:
+The `extensions.crewai` schema provides comprehensive bidirectional mapping between CrewAI's multi-agent orchestration framework and OSSA v0.3.3 specifications. This extension enables:
 
 - Converting CrewAI crews to OSSA Workflows with multiple agents
 - Mapping CrewAI agent roles to OSSA Agent taxonomy
@@ -600,7 +600,7 @@ crew = Crew(
 Equivalent OSSA Workflow:
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Workflow
 metadata:
   name: ai-research-crew
@@ -716,7 +716,7 @@ extensions:
 ### Example 2: Researcher Agent Manifest
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: researcher
@@ -811,7 +811,7 @@ runtime:
 ### Example 3: Hierarchical Crew Pattern
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Workflow
 metadata:
   name: content-production-crew
@@ -1299,7 +1299,7 @@ export type CrewAITask = z.infer<typeof CrewAITaskSchema>;
 openapi: 3.1.0
 info:
   title: OSSA CrewAI Extension API
-  version: 0.3.4
+  version: 0.3.3
 
 paths:
   /api/v1/crewai/crews:
@@ -1569,7 +1569,7 @@ components:
 ## Related
 
 - [CrewAI Documentation](https://docs.crewai.com/)
-- [OSSA v0.3.4 Specification](../ossa-0.3.4.schema.json)
+- [OSSA v0.3.3 Specification](../ossa-0.3.3.schema.json)
 - [OSSA Workflow Kind](../UNIFIED-SCHEMA.md)
 - [Agent Taxonomy](../taxonomy.yaml)
 - [Delegation Configuration](../access_tiers.yaml)

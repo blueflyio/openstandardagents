@@ -18,7 +18,7 @@ ws.onopen = () => {
     type: 'register',
     agentId: 'agent://example.com/my-agent',
     capabilities: ['process_data', 'analyze_content'],
-    version: 'ossa/v0.3.4'
+    version: 'ossa/v0.3.3'
   }));
 };
 ```
@@ -352,7 +352,7 @@ ws.send(JSON.stringify({
 
 - WebSocket protocol version: RFC 6455
 - Minimum TLS version: 1.2
-- Supported subprotocols: `ossa.v0.3.4`
+- Supported subprotocols: `ossa.v0.3.3`
 - JSON payload encoding: UTF-8
 
 ## References

@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://openstandardagents.org/schemas/v0.3.4/messaging/message.json",
+  "$id": "https://openstandardagents.org/schemas/v0.3.3/messaging/message.json",
   "title": "OSSA Message Schema",
-  "description": "Schema for Agent-to-Agent messages in OSSA v0.3.4",
+  "description": "Schema for Agent-to-Agent messages in OSSA v0.3.3",
   "type": "object",
   "required": [
     "id",
@@ -141,7 +141,7 @@
           "examples": [
             {
               "traceparent": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01",
-              "user-agent": "OSSA/0.3.4"
+              "user-agent": "OSSA/0.3.3"
             }
           ]
         }

@@ -1,11 +1,11 @@
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: drupal-content-writer
   version: 1.0.0
   description: Autonomous content generation agent for Drupal with background processing
   annotations:
-    ossa.io/migration: v0.3.4-to-v0.3.4
+    ossa.io/migration: v0.3.3-to-v0.3.3
     ossa.io/migrated-date: 2026-01-07
 spec:
   capabilities:

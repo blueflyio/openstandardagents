@@ -1,4 +1,4 @@
-# OpenTelemetry Extension for OSSA v0.3.4
+# OpenTelemetry Extension for OSSA v0.3.3
 
 ## Overview
 
@@ -248,7 +248,7 @@ OSSA agents create these standard spans:
 ## Example Manifest
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: observability-enabled-agent
