@@ -155,8 +155,12 @@ export const wizardCommand = new Command('wizard')
       const agent: Partial<OssaAgent> = {
         apiVersion: getApiVersion(),
         kind: 'Agent',
-        metadata: {},
-        spec: {},
+        metadata: {
+          name: '', // Will be set in step 1
+        },
+        spec: {
+          role: '', // Will be set in step 2
+        },
       };
 
       // ========================================================================
@@ -400,7 +404,7 @@ export const wizardCommand = new Command('wizard')
         }
 
         if (Object.keys(safety).length > 0) {
-          agent.spec.safety = safety;
+          (agent.spec as any).safety = safety;
         }
       }
 
@@ -567,7 +571,7 @@ export const wizardCommand = new Command('wizard')
       console.log(chalk.green('✓ Version:'), agent.metadata?.version);
       console.log(chalk.green('✓ LLM:'), `${agent.spec.llm?.provider}/${agent.spec.llm?.model}`);
       console.log(chalk.green('✓ Tools:'), agent.spec.tools?.length || 0);
-      console.log(chalk.green('✓ Safety Controls:'), agent.spec.safety ? 'Yes' : 'No');
+      console.log(chalk.green('✓ Safety Controls:'), (agent.spec as any).safety ? 'Yes' : 'No');
       console.log(chalk.green('✓ Autonomy:'), agent.spec.autonomy?.level || 'Not configured');
       console.log(chalk.green('✓ Observability:'), agent.spec.observability ? 'Yes' : 'No');
       console.log(chalk.green('✓ Extensions:'), agent.extensions ? Object.keys(agent.extensions).length : 0);
