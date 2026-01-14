@@ -1,4 +1,4 @@
-apiVersion: ossa/v0.3.3
+apiVersion: ossa/v0.3.5
 kind: Agent
 metadata:
   name: spec-healer
@@ -7,40 +7,46 @@ metadata:
   labels:
     category: healer
     domain: specification
-    wave: "3"
+    wave: '3'
     priority: P1
   annotations:
     ossa.dev/maintainer: blueflyio
     ossa.dev/stability: beta
     ossa.dev/purpose: schema-validation,spec-consistency,backward-compatibility
-
 spec:
   taxonomy:
     domain: specification
     subdomain: schema-validation
     capability: consistency-maintenance
+  role: 'You are a spec-healer agent responsible for maintaining OSSA specification consistency.
 
-  role: |
-    You are a spec-healer agent responsible for maintaining OSSA specification consistency.
 
     Your core responsibilities:
+
     1. Validate JSON Schema definitions for correctness and completeness
+
     2. Detect inconsistencies between specification and implementation
+
     3. Identify missing schema components and required fields
+
     4. Ensure backward compatibility across spec versions
+
     5. Generate schema migration guides for version upgrades
+
     6. Verify schema examples match their definitions
 
+
     You work proactively to prevent specification drift and maintain
+
     the integrity of the OSSA standard across all versions.
 
+    '
   llm:
     provider: anthropic
     model: claude-sonnet-4-20250514
     parameters:
       temperature: 0.1
       max_tokens: 8000
-
   identity:
     instance_id:
       generation: uuid_v4
@@ -54,241 +60,253 @@ spec:
     propagation:
       trace_context: w3c
       baggage: true
-
   tools:
-    - name: validate_json_schema
-      description: Validates JSON Schema definitions for syntactic and semantic correctness
-      source:
-        type: mcp
-        uri: mcp://schema-validator/validate
-      input:
-        type: object
-        required:
-          - schema_path
-        properties:
-          schema_path:
+  - name: validate_json_schema
+    description: Validates JSON Schema definitions for syntactic and semantic correctness
+    source:
+      type: mcp
+      uri: mcp://schema-validator/validate
+    input:
+      type: object
+      required:
+      - schema_path
+      properties:
+        schema_path:
+          type: string
+          description: Path to the JSON Schema file
+        strict_mode:
+          type: boolean
+          default: true
+          description: Enable strict validation rules
+        check_examples:
+          type: boolean
+          default: true
+          description: Validate that examples match schema
+    output:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              path:
+                type: string
+              message:
+                type: string
+              severity:
+                type: string
+                enum:
+                - error
+                - warning
+                - info
+  - name: compare_spec_impl
+    description: Compares specification with TypeScript implementation to detect drift
+    source:
+      type: mcp
+      uri: mcp://schema-validator/compare
+    input:
+      type: object
+      required:
+      - spec_version
+      properties:
+        spec_version:
+          type: string
+          description: Specification version to validate (e.g., v0.3.0)
+        implementation_path:
+          type: string
+          default: src/types/
+          description: Path to TypeScript implementation
+        check_coverage:
+          type: boolean
+          default: true
+          description: Check if all schema properties are implemented
+    output:
+      type: object
+      properties:
+        inconsistencies:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                enum:
+                - missing
+                - mismatch
+                - extra
+              spec_path:
+                type: string
+              impl_path:
+                type: string
+              description:
+                type: string
+        coverage_percentage:
+          type: number
+  - name: check_backward_compat
+    description: Checks for backward compatibility issues between spec versions
+    source:
+      type: mcp
+      uri: mcp://schema-validator/compatibility
+    input:
+      type: object
+      required:
+      - old_version
+      - new_version
+      properties:
+        old_version:
+          type: string
+          description: Previous specification version
+        new_version:
+          type: string
+          description: New specification version
+        allow_additions:
+          type: boolean
+          default: true
+          description: Allow new optional fields
+        allow_deprecations:
+          type: boolean
+          default: true
+          description: Allow field deprecations
+    output:
+      type: object
+      properties:
+        compatible:
+          type: boolean
+        breaking_changes:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                enum:
+                - removed_field
+                - changed_type
+                - added_required
+                - enum_removed
+              path:
+                type: string
+              description:
+                type: string
+              severity:
+                type: string
+                enum:
+                - major
+                - minor
+                - patch
+  - name: generate_migration
+    description: Generates migration guide for schema changes between versions
+    source:
+      type: mcp
+      uri: mcp://schema-validator/migrate
+    input:
+      type: object
+      required:
+      - from_version
+      - to_version
+      properties:
+        from_version:
+          type: string
+        to_version:
+          type: string
+        output_format:
+          type: string
+          enum:
+          - markdown
+          - json
+          - yaml
+          default: markdown
+        include_examples:
+          type: boolean
+          default: true
+    output:
+      type: object
+      properties:
+        migration_guide:
+          type: string
+        automated_steps:
+          type: array
+          items:
+            type: object
+            properties:
+              action:
+                type: string
+              path:
+                type: string
+              old_value:
+                type: string
+              new_value:
+                type: string
+  - name: read_file
+    description: Read files from the filesystem
+    source:
+      type: mcp
+      uri: mcp://filesystem/read
+    input:
+      type: object
+      required:
+      - path
+      properties:
+        path:
+          type: string
+  - name: list_directory
+    description: List directory contents
+    source:
+      type: mcp
+      uri: mcp://filesystem/list
+    input:
+      type: object
+      required:
+      - path
+      properties:
+        path:
+          type: string
+  - name: create_gitlab_issue
+    description: Create GitLab issue for specification inconsistencies
+    source:
+      type: mcp
+      uri: mcp://gitlab/issues
+    input:
+      type: object
+      required:
+      - title
+      - description
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        labels:
+          type: array
+          items:
             type: string
-            description: Path to the JSON Schema file
-          strict_mode:
-            type: boolean
-            default: true
-            description: Enable strict validation rules
-          check_examples:
-            type: boolean
-            default: true
-            description: Validate that examples match schema
-      output:
-        type: object
-        properties:
-          valid:
-            type: boolean
-          errors:
-            type: array
-            items:
-              type: object
-              properties:
-                path:
-                  type: string
-                message:
-                  type: string
-                severity:
-                  type: string
-                  enum: [error, warning, info]
-
-    - name: compare_spec_impl
-      description: Compares specification with TypeScript implementation to detect drift
-      source:
-        type: mcp
-        uri: mcp://schema-validator/compare
-      input:
-        type: object
-        required:
-          - spec_version
-        properties:
-          spec_version:
-            type: string
-            description: Specification version to validate (e.g., v0.3.0)
-          implementation_path:
-            type: string
-            default: src/types/
-            description: Path to TypeScript implementation
-          check_coverage:
-            type: boolean
-            default: true
-            description: Check if all schema properties are implemented
-      output:
-        type: object
-        properties:
-          inconsistencies:
-            type: array
-            items:
-              type: object
-              properties:
-                type:
-                  type: string
-                  enum: [missing, mismatch, extra]
-                spec_path:
-                  type: string
-                impl_path:
-                  type: string
-                description:
-                  type: string
-          coverage_percentage:
-            type: number
-
-    - name: check_backward_compat
-      description: Checks for backward compatibility issues between spec versions
-      source:
-        type: mcp
-        uri: mcp://schema-validator/compatibility
-      input:
-        type: object
-        required:
-          - old_version
-          - new_version
-        properties:
-          old_version:
-            type: string
-            description: Previous specification version
-          new_version:
-            type: string
-            description: New specification version
-          allow_additions:
-            type: boolean
-            default: true
-            description: Allow new optional fields
-          allow_deprecations:
-            type: boolean
-            default: true
-            description: Allow field deprecations
-      output:
-        type: object
-        properties:
-          compatible:
-            type: boolean
-          breaking_changes:
-            type: array
-            items:
-              type: object
-              properties:
-                type:
-                  type: string
-                  enum: [removed_field, changed_type, added_required, enum_removed]
-                path:
-                  type: string
-                description:
-                  type: string
-                severity:
-                  type: string
-                  enum: [major, minor, patch]
-
-    - name: generate_migration
-      description: Generates migration guide for schema changes between versions
-      source:
-        type: mcp
-        uri: mcp://schema-validator/migrate
-      input:
-        type: object
-        required:
-          - from_version
-          - to_version
-        properties:
-          from_version:
-            type: string
-          to_version:
-            type: string
-          output_format:
-            type: string
-            enum: [markdown, json, yaml]
-            default: markdown
-          include_examples:
-            type: boolean
-            default: true
-      output:
-        type: object
-        properties:
-          migration_guide:
-            type: string
-          automated_steps:
-            type: array
-            items:
-              type: object
-              properties:
-                action:
-                  type: string
-                path:
-                  type: string
-                old_value:
-                  type: string
-                new_value:
-                  type: string
-
-    - name: read_file
-      description: Read files from the filesystem
-      source:
-        type: mcp
-        uri: mcp://filesystem/read
-      input:
-        type: object
-        required:
-          - path
-        properties:
-          path:
-            type: string
-
-    - name: list_directory
-      description: List directory contents
-      source:
-        type: mcp
-        uri: mcp://filesystem/list
-      input:
-        type: object
-        required:
-          - path
-        properties:
-          path:
-            type: string
-
-    - name: create_gitlab_issue
-      description: Create GitLab issue for specification inconsistencies
-      source:
-        type: mcp
-        uri: mcp://gitlab/issues
-      input:
-        type: object
-        required:
-          - title
-          - description
-        properties:
-          title:
-            type: string
-          description:
-            type: string
-          labels:
-            type: array
-            items:
-              type: string
-            default: ["spec-healer", "schema-validation"]
-          severity:
-            type: string
-            enum: [critical, high, medium, low]
-
+          default:
+          - spec-healer
+          - schema-validation
+        severity:
+          type: string
+          enum:
+          - critical
+          - high
+          - medium
+          - low
   autonomy:
     level: advisory
     approval_required:
-      - create_gitlab_issue
+    - create_gitlab_issue
     escalation:
       enabled: true
       triggers:
-        - breaking_change_detected
-        - multiple_validation_failures
+      - breaking_change_detected
+      - multiple_validation_failures
       target: spec-maintainers
-
   constraints:
     max_tokens_per_turn: 16000
     max_turns: 30
     timeout_seconds: 300
-
   observability:
     tracing:
       enabled: true
@@ -297,21 +315,25 @@ spec:
     metrics:
       enabled: true
       custom:
-        - name: schemas_validated
-          type: counter
-          labels: [version, result]
-        - name: inconsistencies_found
-          type: counter
-          labels: [type, severity]
-        - name: backward_compat_checks
-          type: counter
-          labels: [compatible]
-        - name: validation_duration_seconds
-          type: histogram
+      - name: schemas_validated
+        type: counter
+        labels:
+        - version
+        - result
+      - name: inconsistencies_found
+        type: counter
+        labels:
+        - type
+        - severity
+      - name: backward_compat_checks
+        type: counter
+        labels:
+        - compatible
+      - name: validation_duration_seconds
+        type: histogram
     logging:
       level: info
       structured: true
-
   reliability:
     retry:
       max_attempts: 3
@@ -325,7 +347,6 @@ spec:
     fallback:
       enabled: true
       strategy: report_and_continue
-
   safety:
     content_filtering:
       enabled: true
@@ -333,47 +354,112 @@ spec:
     output_filtering:
       redact_secrets: false
       redact_pii: false
-
   collaboration:
     protocols:
-      - a2a
+    - a2a
     delegation:
       allowed_targets:
-        - meta-orchestrator
-        - security-healer
+      - meta-orchestrator
+      - security-healer
       timeout_ms: 300000
-
   compliance:
     profiles:
-      - ossa-standard
+    - ossa-standard
     audit:
       enabled: true
       retention_days: 365
-
+  completion:
+    default_signal: complete
+    signals:
+    - signal: continue
+      condition: inconsistencies_found > 0
+      priority: 1
+    - signal: blocked
+      condition: breaking_changes_detected == true
+      priority: 2
+    - signal: checkpoint
+      condition: validation_count % 10 == 0
+      priority: 3
+    max_iterations: 30
+    timeout_seconds: 300
+  checkpointing:
+    enabled: true
+    interval: iteration
+    interval_value: 10
+    retention:
+      days: 7
+      max_checkpoints: 20
+    storage:
+      backend: agent-brain
+      location: s3://checkpoints/@spec-healer/{session_id}
 extensions:
   opentelemetry:
     enabled: true
-    service_name: "spec-healer"
-    service_version: "0.1.0"
+    service_name: spec-healer
+    service_version: 0.1.0
     traces:
       enabled: true
       exporter: otlp
-      endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4317}"
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4317}
       sample_rate: 1.0
     metrics:
       enabled: true
       exporter: otlp
-      endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4317}"
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4317}
     logs:
       enabled: true
       exporter: otlp
-      endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4317}"
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4317}
       level: info
     phoenix:
       enabled: true
-      api_key_env: "PHOENIX_API_KEY"
+      api_key_env: PHOENIX_API_KEY
     resource_attributes:
-      agent.id: "spec-healer"
-      agent.version: "0.1.0"
-      framework: "ossa"
-      domain: "specification"
+      agent.id: spec-healer
+      agent.version: 0.1.0
+      framework: ossa
+      domain: specification
+  experts:
+    registry:
+    - id: schema-expert
+      name: Schema Validation Expert
+      model:
+        provider: anthropic
+        model: claude-opus-4-5-20251101
+      specializations:
+      - schema_validation
+      - json_schema
+      - complex_validation
+      cost_tier: premium
+    - id: compatibility-expert
+      name: Backward Compatibility Expert
+      model:
+        provider: anthropic
+        model: claude-sonnet-4-20250514
+      specializations:
+      - backward_compatibility
+      - migration_analysis
+      cost_tier: standard
+    - id: quick-check-expert
+      name: Quick Consistency Check Expert
+      model:
+        provider: google
+        model: gemini-2.0-flash
+      specializations:
+      - quick_checks
+      - basic_consistency
+      cost_tier: economy
+    selection_strategy: agent_controlled
+  moe:
+    primary:
+      metric: consistency_score
+      target: 0.95
+      measurement:
+        type: ratio
+        numerator: consistent_specs
+        denominator: total_specs
+  capabilities:
+    discovery:
+      enabled: true
+      registry: agent-mesh
+      refresh_interval: 60s
