@@ -1,0 +1,294 @@
+apiVersion: ossa/v0.3.5
+kind: Agent
+metadata:
+  name: forward-thinking-reviewer
+  version: 1.0.0
+  description: "Next-generation MR reviewer with MoE, completion signals, and checkpointing"
+spec:
+  # Core Agent Configuration
+  identity:
+    id: "@forward-thinking-reviewer"
+    display_name: "Forward Thinking MR Reviewer"
+    tier: worker
+  
+  # LLM Configuration with MoE
+  llm:
+    provider: ${LLM_PROVIDER:-anthropic}
+    model: ${LLM_MODEL:-claude-sonnet}
+    profile: balanced
+    fallback_models:
+      - provider: ${LLM_FALLBACK_PROVIDER_1:-openai}
+        model: ${LLM_FALLBACK_MODEL_1:-gpt-4o}
+
+  # Completion Signals
+  completion:
+    default_signal: complete
+    signals:
+      - signal: continue
+        condition: "iteration_count < max_iterations"
+        priority: 1
+      - signal: blocked
+        condition: "confidence < 0.5"
+        priority: 2
+      - signal: escalate
+        condition: "error_count > 3"
+        priority: 3
+      - signal: checkpoint
+        condition: "iteration_count % 5 == 0"
+        priority: 4
+    max_iterations: 20
+    timeout_seconds: 600
+
+  # Session Checkpointing
+  checkpointing:
+    enabled: true
+    interval: iteration
+    interval_value: 5
+    retention:
+      days: 30
+      max_checkpoints: 100
+    storage:
+      backend: agent-brain
+      location: s3://checkpoints/@forward-thinking-reviewer/{session_id}
+
+  # Mixture of Experts
+  extensions:
+    experts:
+      registry:
+        - id: reasoning-expert
+          name: "Complex Reasoning Expert"
+          model:
+            provider: anthropic
+            model: claude-opus-4-5-20251101
+          specializations:
+            - complex_reasoning
+            - planning
+            - multi_step_analysis
+          cost_tier: premium
+          capabilities:
+            extended_thinking: true
+            max_tokens: 200000
+            reasoning_depth: deep
+          availability:
+            regions: [us-east-1, eu-west-1]
+            fallback: code-expert
+
+        - id: code-expert
+          name: "Code Generation Expert"
+          model:
+            provider: anthropic
+            model: claude-sonnet-4-20250514
+          specializations:
+            - code_generation
+            - code_review
+            - debugging
+          cost_tier: standard
+          capabilities:
+            max_tokens: 16384
+            reasoning_depth: balanced
+
+        - id: speed-expert
+          name: "High-Volume Expert"
+          model:
+            provider: google
+            model: gemini-2.0-flash
+          specializations:
+            - quick_responses
+            - high_volume
+            - cost_sensitive
+          cost_tier: economy
+          capabilities:
+            max_tokens: 8192
+            reasoning_depth: fast
+
+      selection_strategy: agent_controlled
+
+      tools:
+        - name: list_experts
+          description: "Discover available expert models and their capabilities"
+        - name: invoke_expert
+          description: "Delegate task to specialized expert model"
+        - name: get_expert_history
+          description: "Review past expert invocations for learning"
+
+    # BAT Framework
+    bat:
+      selection_criteria:
+        - dimension: reasoning_depth
+          required: true
+          options:
+            - value: deep
+              technologies: [claude-opus, gpt-4-turbo]
+              cost_tier: premium
+            - value: balanced
+              technologies: [claude-sonnet, gpt-4o]
+              cost_tier: standard
+            - value: fast
+              technologies: [gemini-flash, claude-haiku]
+              cost_tier: economy
+
+        - dimension: cost_sensitivity
+          required: true
+          options:
+            - value: high
+              prefer: [gemini-flash, claude-haiku]
+              max_cost_per_task: 0.10
+            - value: medium
+              prefer: [claude-sonnet, gpt-4o]
+              max_cost_per_task: 0.50
+            - value: low
+              prefer: [claude-opus, gpt-4-turbo]
+              max_cost_per_task: 2.00
+
+      tools:
+        - name: select_technology
+          description: "Select best available technology for a task"
+
+    # MOE Metrics
+    moe:
+      primary:
+        metric: review_accuracy
+        description: "Core review accuracy metric"
+        target: 0.95
+        measurement:
+          type: ratio
+          numerator: approved_reviews_without_issues
+          denominator: total_reviews
+        collection:
+          source: agent-tracer
+          interval: real_time
+
+      secondary:
+        - metric: review_latency_p95
+          description: "95th percentile review latency"
+          target: 600
+          unit: seconds
+          measurement:
+            type: percentile
+            value: 95
+            field: duration_ms
+
+        - metric: user_satisfaction
+          description: "User satisfaction score"
+          target: 4.5
+          unit: rating
+          scale: [1, 5]
+
+      operational:
+        - metric: uptime
+          description: "Agent availability"
+          target: 0.999
+          unit: ratio
+
+        - metric: cost_per_review
+          description: "Average cost per review"
+          target: 0.25
+          unit: usd
+
+      tracking:
+        enabled: true
+        collection_interval: 60s
+        retention_days: 90
+        dashboards:
+          - gitlab_observability
+          - agent_studio_ui
+        alerts:
+          - condition: "primary_metric < target * 0.9"
+            severity: warning
+          - condition: "primary_metric < target * 0.8"
+            severity: critical
+
+    # Capability Discovery
+    capabilities:
+      discovery:
+        enabled: true
+        registry: agent-mesh
+        refresh_interval: 60s
+
+      tools:
+        - name: list_capabilities
+          description: "Discover available capabilities in the environment"
+        - name: register_capability
+          description: "Register a new capability for discovery"
+
+    # Feedback Loops
+    feedback:
+      tools:
+        - name: record_feedback
+          description: "Record feedback on action or result"
+        - name: get_feedback_summary
+          description: "Get aggregate feedback for analysis"
+        - name: suggest_improvements
+          description: "Get improvement suggestions based on feedback"
+
+      learning:
+        enabled: true
+        strategy: reinforcement
+        data_sources:
+          - feedback_ratings
+          - completion_signals
+          - expert_selection_outcomes
+        model_fine_tuning:
+          enabled: true
+          schedule: monthly
+          target_model: models/orchestration
+
+  # Tools with checkpoint support
+  tools:
+    - name: checkpoint_session
+      description: "Save current session state for resumption"
+      parameters:
+        type: object
+        properties:
+          reason:
+            type: string
+
+    - name: resume_session
+      description: "Resume from a previous checkpoint"
+      parameters:
+        type: object
+        required: [checkpoint_id]
+        properties:
+          checkpoint_id:
+            type: string
+            format: uuid
+
+    - name: review_merge_request
+      description: "Review a GitLab merge request"
+      parameters:
+        type: object
+        required: [project_id, mr_iid]
+        properties:
+          project_id:
+            type: integer
+          mr_iid:
+            type: integer
+          use_expert:
+            type: string
+            description: "Expert ID to use (optional)"
+
+  # Access Tier
+  access_tier:
+    tier: tier_2_write_limited
+    permissions:
+      - gitlab:read
+      - gitlab:write_comments
+      - gitlab:read_code
+
+  # A2A Communication
+  communication:
+    a2a:
+      enabled: true
+      mesh_endpoint: mesh.blueflyagents.com:3005
+      completion_signals: true
+      checkpoint_sync: true
+
+  # Infrastructure Awareness
+  infrastructure:
+    - type: synology_nas
+      hostname: blueflynas.tailcf98b3.ts.net
+      capabilities:
+        - store_artifact
+        - manage_checkpoints
+      access:
+        tier: tier_2_write_limited

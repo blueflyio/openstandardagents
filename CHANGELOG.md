@@ -70,7 +70,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fixed migration detection breaking when package.json contains {{VERSION}} placeholder
+- Fixed migration detection breaking when package.json contains 0.3.4 placeholder
 - Fixed version comparison logic to handle template placeholders correctly
 - Removed all shell scripts, replaced with TypeScript implementations
 - Fixed CI/CD configuration for proper Docker image usage

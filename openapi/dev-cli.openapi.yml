@@ -50,7 +50,7 @@ paths:
       summary: Validate version consistency
       description: |
         Validates that all version references are consistent.
-        Checks .version.json, package.json, and all files with {{VERSION}}.
+        Checks .version.json, package.json, and all files with 0.3.4.
       tags:
         - Version Management
       responses:
@@ -68,7 +68,7 @@ paths:
       operationId: versionAudit
       summary: Audit for hardcoded versions
       description: |
-        Finds all hardcoded versions (not using {{VERSION}} placeholder).
+        Finds all hardcoded versions (not using 0.3.4 placeholder).
         Returns list of files that need to be updated.
       tags:
         - Version Management
@@ -78,7 +78,7 @@ paths:
           schema:
             type: boolean
             default: false
-          description: Automatically replace hardcoded versions with {{VERSION}}
+          description: Automatically replace hardcoded versions with 0.3.4
       responses:
         '200':
           description: Audit results
@@ -90,9 +90,9 @@ paths:
   /version/sync:
     post:
       operationId: versionSync
-      summary: Sync {{VERSION}} placeholders
+      summary: Sync 0.3.4 placeholders
       description: |
-        Replaces {{VERSION}} placeholders with actual version from .version.json.
+        Replaces 0.3.4 placeholders with actual version from .version.json.
         Used during build/CI.
       tags:
         - Version Management
@@ -348,7 +348,7 @@ components:
           description: Line with hardcoded version
         suggested:
           type: string
-          description: Suggested replacement with {{VERSION}}
+          description: Suggested replacement with 0.3.4
 
     VersionSyncRequest:
       type: object

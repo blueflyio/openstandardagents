@@ -1,35 +1,35 @@
 /**
  * Version Sync Service
  * 
- * Syncs {{VERSION}} placeholders with actual version from .version.json
+ * Syncs 0.3.4 placeholders with actual version from git tags (DYNAMIC)
  * SOLID: Single Responsibility - Sync only
+ * DRY: Single source of truth (git tags)
  */
 
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { glob } from 'glob';
-import { VersionSyncRequest, VersionSyncResponse, VersionConfigSchema, VERSION_PLACEHOLDER_PATTERN } from '../schemas/version.schema.js';
+import { VersionSyncRequest, VersionSyncResponse, VERSION_PLACEHOLDER_PATTERN } from '../schemas/version.schema.js';
+import { VersionDetectionService } from './version-detection.service.js';
 
 export class VersionSyncService {
   private readonly rootDir: string;
+  private readonly versionDetection: VersionDetectionService;
 
   constructor(rootDir: string = process.cwd()) {
     this.rootDir = rootDir;
+    this.versionDetection = new VersionDetectionService(rootDir);
   }
 
   /**
-   * Sync {{VERSION}} placeholders
+   * Sync 0.3.4 placeholders
    * CRUD: Update operation (updates files)
+   * DYNAMIC: Reads version from git tags, not static file
    */
   async sync(request: VersionSyncRequest): Promise<VersionSyncResponse> {
-    const versionFile = join(this.rootDir, '.version.json');
-    
-    if (!existsSync(versionFile)) {
-      throw new Error('.version.json not found. Run from project root.');
-    }
-
-    const config = VersionConfigSchema.parse(JSON.parse(readFileSync(versionFile, 'utf-8')));
-    const version = request.version || config.current;
+    // Detect version from git tags (DYNAMIC)
+    const versionInfo = await this.versionDetection.detectVersion();
+    const version = request.version || versionInfo.current;
 
     const filesToSync = request.files || await this.findFilesWithPlaceholders();
     const updatedFiles: string[] = [];
@@ -43,7 +43,7 @@ export class VersionSyncService {
         let content = readFileSync(filePath, 'utf-8');
         const original = content;
 
-        // Replace {{VERSION}} with actual version
+        // Replace 0.3.4 with actual version
         content = content.replace(VERSION_PLACEHOLDER_PATTERN, version);
 
         if (content !== original) {
@@ -64,7 +64,7 @@ export class VersionSyncService {
   }
 
   /**
-   * Find all files with {{VERSION}} placeholder
+   * Find all files with 0.3.4 placeholder
    */
   private async findFilesWithPlaceholders(): Promise<string[]> {
     const patterns = [
