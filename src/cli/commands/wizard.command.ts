@@ -885,6 +885,7 @@ export const wizardCommand = new Command('wizard')
       console.log(chalk.gray(`  2. Validate: ossa validate ${outputPath}`));
       console.log(chalk.gray(`  3. Test: ossa run ${outputPath}`));
       let stepNum = 4;
+      const mandatorySources = (agent.extensions as any)?.mandatory_knowledge_sources || [];
       if (mandatorySources.length > 0) {
         console.log(chalk.gray(`  ${stepNum}. Knowledge base tools are auto-injected and ready to use`));
         stepNum++;
