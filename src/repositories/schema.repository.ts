@@ -79,7 +79,9 @@ export class SchemaRepository implements ISchemaRepository {
 
     // Load schema from filesystem
     if (!fs.existsSync(schemaPath)) {
-      throw new Error(`Schema not found for version ${version} at ${schemaPath}`);
+      throw new Error(
+        `Schema not found for version ${version} at ${schemaPath}`
+      );
     }
 
     const schemaContent = fs.readFileSync(schemaPath, 'utf-8');
@@ -225,7 +227,9 @@ export class SchemaRepository implements ISchemaRepository {
       const packageJsonPath = path.join(current, 'package.json');
       if (fs.existsSync(packageJsonPath)) {
         try {
-          const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
+          const packageJson = JSON.parse(
+            fs.readFileSync(packageJsonPath, 'utf-8')
+          );
           if (packageJson.name === '@bluefly/openstandardagents') {
             // Found OSSA package - check for spec directory
             if (this.hasSpecDirectory(current)) {

@@ -13,13 +13,20 @@ export class LangGraphValidator {
     const errors: ErrorObject[] = [];
     const warnings: string[] = [];
 
-    const langgraphExt = manifest.extensions?.langgraph as Record<string, unknown> | undefined;
-    if (!langgraphExt || (langgraphExt.enabled as boolean | undefined) === false) {
+    const langgraphExt = manifest.extensions?.langgraph as
+      | Record<string, unknown>
+      | undefined;
+    if (
+      !langgraphExt ||
+      (langgraphExt.enabled as boolean | undefined) === false
+    ) {
       return { valid: true, errors: [], warnings: [] };
     }
 
     // Validate graph_config if provided
-    const graphConfig = langgraphExt.graph_config as Record<string, unknown> | undefined;
+    const graphConfig = langgraphExt.graph_config as
+      | Record<string, unknown>
+      | undefined;
     if (graphConfig) {
       if (typeof graphConfig !== 'object') {
         errors.push({
@@ -61,7 +68,9 @@ export class LangGraphValidator {
     }
 
     // Validate checkpoint_config if provided
-    const checkpointConfig = langgraphExt.checkpoint_config as Record<string, unknown> | undefined;
+    const checkpointConfig = langgraphExt.checkpoint_config as
+      | Record<string, unknown>
+      | undefined;
     if (checkpointConfig) {
       if (typeof checkpointConfig !== 'object') {
         errors.push({
@@ -89,7 +98,9 @@ export class LangGraphValidator {
     }
 
     // Validate interrupt_before if provided
-    const interruptBefore = langgraphExt.interrupt_before as unknown[] | undefined;
+    const interruptBefore = langgraphExt.interrupt_before as
+      | unknown[]
+      | undefined;
     if (interruptBefore && !Array.isArray(interruptBefore)) {
       errors.push({
         instancePath: '/extensions/langgraph/interrupt_before',
@@ -101,7 +112,9 @@ export class LangGraphValidator {
     }
 
     // Validate interrupt_after if provided
-    const interruptAfter = langgraphExt.interrupt_after as unknown[] | undefined;
+    const interruptAfter = langgraphExt.interrupt_after as
+      | unknown[]
+      | undefined;
     if (interruptAfter && !Array.isArray(interruptAfter)) {
       errors.push({
         instancePath: '/extensions/langgraph/interrupt_after',
@@ -114,11 +127,15 @@ export class LangGraphValidator {
 
     // Warnings
     if (!graphConfig) {
-      warnings.push('Best practice: Define graph_config for LangGraph state machine');
+      warnings.push(
+        'Best practice: Define graph_config for LangGraph state machine'
+      );
     }
 
     if (!checkpointConfig) {
-      warnings.push('Best practice: Configure checkpoint_config for state persistence');
+      warnings.push(
+        'Best practice: Configure checkpoint_config for state persistence'
+      );
     }
 
     return {

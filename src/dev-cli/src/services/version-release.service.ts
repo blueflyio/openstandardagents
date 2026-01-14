@@ -1,6 +1,6 @@
 /**
  * Version Release Service
- * 
+ *
  * ONE command to release - Bumps version, syncs all files, validates
  * SOLID: Single Responsibility - Release workflow only
  */
@@ -27,7 +27,9 @@ export class VersionReleaseService {
    * CRUD: Update operation (creates git tag, updates .version.json dynamically)
    * DYNAMIC: Reads current version from git tags, updates .version.json
    */
-  async release(request: VersionReleaseRequest): Promise<VersionReleaseResponse> {
+  async release(
+    request: VersionReleaseRequest
+  ): Promise<VersionReleaseResponse> {
     // Detect current version from git tags (DYNAMIC) and update .version.json
     const versionInfo = await this.versionDetection.detectVersion();
     const oldVersion = versionInfo.current;
@@ -43,9 +45,7 @@ export class VersionReleaseService {
           `Would update .version.json dynamically: ${oldVersion} → ${newVersion}`,
           `Would sync all files: ${oldVersion} → ${newVersion}`,
         ],
-        nextSteps: [
-          'Run without --dry-run to actually release',
-        ],
+        nextSteps: ['Run without --dry-run to actually release'],
       };
     }
 
@@ -54,7 +54,9 @@ export class VersionReleaseService {
     // Sync all files (replace version placeholders)
     try {
       execSync('npm run version:sync', { cwd: this.rootDir, stdio: 'inherit' });
-      changes.push(`Synced version placeholders: ${oldVersion} → ${newVersion}`);
+      changes.push(
+        `Synced version placeholders: ${oldVersion} → ${newVersion}`
+      );
     } catch (error) {
       // Continue even if sync fails
     }
@@ -62,7 +64,10 @@ export class VersionReleaseService {
     // Validate if requested
     if (!request.skipValidation) {
       try {
-        execSync('npm run version:validate', { cwd: this.rootDir, stdio: 'inherit' });
+        execSync('npm run version:validate', {
+          cwd: this.rootDir,
+          stdio: 'inherit',
+        });
         changes.push('Validated version consistency');
       } catch (error) {
         // Validation failed, but continue
@@ -82,7 +87,9 @@ export class VersionReleaseService {
 
     // Update .version.json dynamically (detectVersion updates it from git tags)
     await this.versionDetection.detectVersion();
-    changes.push(`Updated .version.json dynamically: ${oldVersion} → ${newVersion}`);
+    changes.push(
+      `Updated .version.json dynamically: ${oldVersion} → ${newVersion}`
+    );
 
     const nextSteps = [
       'Review changes: git diff',

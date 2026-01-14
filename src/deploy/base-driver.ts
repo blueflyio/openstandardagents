@@ -22,7 +22,10 @@ export abstract class BaseDeploymentDriver implements IDeploymentDriver {
   /**
    * Generate a unique instance ID
    */
-  protected generateInstanceId(manifest: OssaAgent, config: DeploymentConfig): string {
+  protected generateInstanceId(
+    manifest: OssaAgent,
+    config: DeploymentConfig
+  ): string {
     const name = manifest.metadata?.name || 'agent';
     const version = config.version || manifest.metadata?.version || '1.0.0';
     const timestamp = Date.now();

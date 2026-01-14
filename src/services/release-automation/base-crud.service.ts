@@ -47,9 +47,12 @@ export interface ICrudService<T, CreateInput, UpdateInput, FilterInput> {
  * Base CRUD Service Implementation
  * DRY: Provides common CRUD operations
  */
-export abstract class BaseCrudService<T, CreateInput, UpdateInput, FilterInput>
-  implements ICrudService<T, CreateInput, UpdateInput, FilterInput>
-{
+export abstract class BaseCrudService<
+  T,
+  CreateInput,
+  UpdateInput,
+  FilterInput,
+> implements ICrudService<T, CreateInput, UpdateInput, FilterInput> {
   protected abstract createSchema: z.ZodSchema<CreateInput>;
   protected abstract updateSchema: z.ZodSchema<UpdateInput> | z.ZodNever;
   protected abstract filterSchema: z.ZodSchema<FilterInput>;
@@ -140,7 +143,9 @@ export abstract class BaseCrudService<T, CreateInput, UpdateInput, FilterInput>
         path: e.path.join('.'),
         message: e.message,
       }));
-      throw new Error(`Validation failed: ${details.map((d) => d.message).join(', ')}`);
+      throw new Error(
+        `Validation failed: ${details.map((d) => d.message).join(', ')}`
+      );
     }
     throw error;
   }

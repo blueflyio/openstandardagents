@@ -126,7 +126,8 @@ export class AgentMeshClient {
     this.discovery = config.discovery;
     this.transport = config.transport || new HttpTransport();
     this.router = config.router || new DefaultMessageRouter();
-    this.subscriptionManager = config.subscriptionManager || new DefaultSubscriptionManager();
+    this.subscriptionManager =
+      config.subscriptionManager || new DefaultSubscriptionManager();
     this.reliability = config.reliability || this.getDefaultReliability();
     this.messageQueue = new MessagePriorityQueue();
     this.stats = new RoutingStatsCollector();
@@ -291,7 +292,10 @@ export class AgentMeshClient {
         typeof message.payload === 'object' &&
         message.payload !== null
       ) {
-        const payload = message.payload as { command?: string; input?: unknown };
+        const payload = message.payload as {
+          command?: string;
+          input?: unknown;
+        };
         if (payload.command && this.commands.has(payload.command)) {
           const handler = this.commands.get(payload.command)!;
           const result = await handler(payload.input);
@@ -402,9 +406,12 @@ export class AgentMeshClient {
 
     try {
       // Check TTL
-      const messageAge = (Date.now() - new Date(message.timestamp).getTime()) / 1000;
+      const messageAge =
+        (Date.now() - new Date(message.timestamp).getTime()) / 1000;
       if (message.ttl && messageAge > message.ttl) {
-        console.warn(`Message ${message.id} expired (age: ${messageAge}s, ttl: ${message.ttl}s)`);
+        console.warn(
+          `Message ${message.id} expired (age: ${messageAge}s, ttl: ${message.ttl}s)`
+        );
         return;
       }
 
@@ -429,7 +436,10 @@ export class AgentMeshClient {
     }
   }
 
-  private async sendWithRetry(destination: string, message: MessageEnvelope): Promise<void> {
+  private async sendWithRetry(
+    destination: string,
+    message: MessageEnvelope
+  ): Promise<void> {
     const maxAttempts = this.reliability.retry.maxAttempts;
     let attempt = 0;
     let lastError: Error | undefined;
@@ -443,7 +453,10 @@ export class AgentMeshClient {
         }
 
         // Send the message
-        const endpoint = agent.endpoints.http || agent.endpoints.grpc || agent.endpoints.websocket;
+        const endpoint =
+          agent.endpoints.http ||
+          agent.endpoints.grpc ||
+          agent.endpoints.websocket;
         if (!endpoint) {
           throw new Error(`No endpoint available for agent: ${destination}`);
         }
@@ -462,13 +475,16 @@ export class AgentMeshClient {
       }
     }
 
-    throw new Error(`Failed to send message after ${maxAttempts} attempts: ${lastError?.message}`);
+    throw new Error(
+      `Failed to send message after ${maxAttempts} attempts: ${lastError?.message}`
+    );
   }
 
   private calculateBackoff(attempt: number, policy: RetryPolicy): number {
     switch (policy.backoff) {
       case 'exponential': {
-        const delay = policy.initialDelayMs * Math.pow(policy.multiplier || 2, attempt - 1);
+        const delay =
+          policy.initialDelayMs * Math.pow(policy.multiplier || 2, attempt - 1);
         return Math.min(delay, policy.maxDelayMs);
       }
       case 'linear':
@@ -479,7 +495,10 @@ export class AgentMeshClient {
     }
   }
 
-  private async sendToDLQ(message: MessageEnvelope, error: unknown): Promise<void> {
+  private async sendToDLQ(
+    message: MessageEnvelope,
+    error: unknown
+  ): Promise<void> {
     if (!this.reliability.dlq?.channel) {
       return;
     }

@@ -11,7 +11,11 @@ import { injectable } from 'inversify';
 import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
-import type { Generator, GenerateResult, DriftReport } from '../codegen.service.js';
+import type {
+  Generator,
+  GenerateResult,
+  DriftReport,
+} from '../codegen.service.js';
 import { getVersion } from '../../../utils/version.js';
 
 @injectable()
@@ -86,7 +90,9 @@ import { z } from 'zod';
         result.filesCreated = 1;
       }
     } catch (error) {
-      result.errors.push(error instanceof Error ? error.message : String(error));
+      result.errors.push(
+        error instanceof Error ? error.message : String(error)
+      );
     }
 
     return result;
@@ -110,7 +116,10 @@ import { z } from 'zod';
   /**
    * Generate basic Zod schema when json-schema-to-zod fails
    */
-  private generateBasicZodSchema(schema: Record<string, unknown>, version: string): string {
+  private generateBasicZodSchema(
+    schema: Record<string, unknown>,
+    version: string
+  ): string {
     return `
 // Basic OSSA schema - manual generation fallback
 export const OssaApiVersionSchema = z.literal('ossa/v${version}');
@@ -136,10 +145,16 @@ export type OssaMetadata = z.infer<typeof OssaMetadataSchema>;
   }
 
   private getSchemaPath(version: string): string {
-    return path.join(process.cwd(), `spec/v${version}/ossa-${version}.schema.json`);
+    return path.join(
+      process.cwd(),
+      `spec/v${version}/ossa-${version}.schema.json`
+    );
   }
 
   private getOutputPath(version: string): string {
-    return path.join(process.cwd(), `src/types/generated/ossa-${version}.zod.ts`);
+    return path.join(
+      process.cwd(),
+      `src/types/generated/ossa-${version}.zod.ts`
+    );
   }
 }

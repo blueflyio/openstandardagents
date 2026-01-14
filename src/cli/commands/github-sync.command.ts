@@ -48,7 +48,8 @@ function createService(): GitHubSyncService {
       token: process.env.GITHUB_TOKEN || '',
     },
     gitlab: {
-      projectId: process.env.GITLAB_PROJECT_ID || 'blueflyio%2Fopenstandardagents',
+      projectId:
+        process.env.GITLAB_PROJECT_ID || 'blueflyio%2Fopenstandardagents',
       token: process.env.GITLAB_TOKEN || '',
     },
   };

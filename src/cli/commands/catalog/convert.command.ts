@@ -19,7 +19,7 @@ export function createConvertCommand(): Command {
     .option('-n, --dry-run', 'Show what would be converted')
     .option('-o, --output <path>', 'Output directory')
     .action(async (opts) => {
-      const options = ConvertOptionsSchema.parse(opts) as ConvertOptions;
+      const options = ConvertOptionsSchema.parse(opts);
       const config = new CatalogConfig();
 
       const agentIds = config.resolveAgentIds(options.agent, options.all);

@@ -35,25 +35,34 @@ export const serveCommand = new Command('serve')
         // Load manifest(s)
         const manifests: Array<{ path: string; manifest: OssaAgent }> = [];
         const stat = fs.statSync(manifestPath);
-        
+
         if (stat.isDirectory()) {
           // Find all .ossa.yaml files in directory
           const findManifests = async (dir: string): Promise<void> => {
             const entries = fs.readdirSync(dir, { withFileTypes: true });
             for (const entry of entries) {
               const fullPath = path.join(dir, entry.name);
-              if (entry.isDirectory() && entry.name !== 'node_modules' && entry.name !== 'dist') {
+              if (
+                entry.isDirectory() &&
+                entry.name !== 'node_modules' &&
+                entry.name !== 'dist'
+              ) {
                 await findManifests(fullPath);
               } else if (
                 entry.isFile() &&
-                (entry.name.endsWith('.ossa.yaml') || entry.name.endsWith('.ossa.yml'))
+                (entry.name.endsWith('.ossa.yaml') ||
+                  entry.name.endsWith('.ossa.yml'))
               ) {
                 try {
                   const manifest = await manifestRepo.load(fullPath);
                   manifests.push({ path: fullPath, manifest });
                 } catch (error: any) {
                   if (options.verbose) {
-                    console.warn(chalk.yellow(`Failed to load ${fullPath}: ${error.message}`));
+                    console.warn(
+                      chalk.yellow(
+                        `Failed to load ${fullPath}: ${error.message}`
+                      )
+                    );
                   }
                 }
               }
@@ -71,8 +80,12 @@ export const serveCommand = new Command('serve')
           process.exit(1);
         }
 
-        console.log(chalk.blue(`\nStarting OSSA development server on port ${port}...`));
-        console.log(chalk.gray(`Loaded ${manifests.length} agent manifest(s)\n`));
+        console.log(
+          chalk.blue(`\nStarting OSSA development server on port ${port}...`)
+        );
+        console.log(
+          chalk.gray(`Loaded ${manifests.length} agent manifest(s)\n`)
+        );
 
         // Create simple HTTP server
         const http = await import('http');
@@ -187,7 +200,9 @@ export const serveCommand = new Command('serve')
           }
 
           // Agent capability endpoints
-          const agentMatch = pathname.match(/^\/agents\/([^/]+)\/capabilities\/([^/]+)$/);
+          const agentMatch = pathname.match(
+            /^\/agents\/([^/]+)\/capabilities\/([^/]+)$/
+          );
           if (agentMatch && req.method === 'POST') {
             const [, agentName, capabilityName] = agentMatch;
             const agentData = manifests.find(
@@ -209,7 +224,7 @@ export const serveCommand = new Command('serve')
             req.on('end', () => {
               try {
                 const input = body ? JSON.parse(body) : {};
-                
+
                 if (options.verbose) {
                   console.log(
                     chalk.gray(
@@ -225,7 +240,10 @@ export const serveCommand = new Command('serve')
                   capability: capabilityName,
                   input,
                   output: options.mockLlm
-                    ? { message: 'Mock LLM response - use real API keys for actual execution' }
+                    ? {
+                        message:
+                          'Mock LLM response - use real API keys for actual execution',
+                      }
                     : { message: 'Capability executed (mock mode)' },
                   timestamp: new Date().toISOString(),
                 };
@@ -246,16 +264,24 @@ export const serveCommand = new Command('serve')
         });
 
         server.listen(port, () => {
-          console.log(chalk.green(`\n✓ Server running at http://localhost:${port}`));
+          console.log(
+            chalk.green(`\n✓ Server running at http://localhost:${port}`)
+          );
           console.log(chalk.blue(`\nAvailable endpoints:`));
           console.log(`  GET  /health          - Health check`);
           console.log(`  GET  /docs            - OpenAPI spec`);
           console.log(`  GET  /openapi.json    - OpenAPI spec (JSON)`);
-          console.log(`  POST /agents/:name/capabilities/:cap - Execute capability`);
+          console.log(
+            `  POST /agents/:name/capabilities/:cap - Execute capability`
+          );
           console.log(chalk.gray(`\nPress Ctrl+C to stop\n`));
 
           if (options.watch) {
-            console.log(chalk.yellow('Watch mode enabled - reloading on manifest changes...'));
+            console.log(
+              chalk.yellow(
+                'Watch mode enabled - reloading on manifest changes...'
+              )
+            );
             // Simple file watcher
             const watchPaths = manifests.map((m) => m.path);
             for (const watchPath of watchPaths) {

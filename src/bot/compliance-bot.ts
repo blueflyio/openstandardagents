@@ -1,10 +1,10 @@
 #!/usr/bin/env tsx
 /**
  * OSSA Compliance Bot
- * 
+ *
  * Validates agent manifests against OSSA specification
  * Provides comprehensive compliance checking and reporting
- * 
+ *
  * Refs: #283
  */
 
@@ -46,7 +46,9 @@ export class OSSAComplianceBot {
   /**
    * Validate single agent manifest
    */
-  async validateManifest(options: ComplianceCheckOptions): Promise<ComplianceReport> {
+  async validateManifest(
+    options: ComplianceCheckOptions
+  ): Promise<ComplianceReport> {
     const { manifestPath, ossaVersion, checkLevel = 'standard' } = options;
 
     if (!existsSync(manifestPath)) {
@@ -62,11 +64,16 @@ export class OSSAComplianceBot {
     );
 
     const issues = this.categorizeIssues(validationResult, checkLevel);
-    const recommendations = this.generateRecommendations(validationResult, checkLevel);
+    const recommendations = this.generateRecommendations(
+      validationResult,
+      checkLevel
+    );
 
     return {
       manifestPath,
-      compliant: validationResult.valid && issues.filter(i => i.severity === 'error').length === 0,
+      compliant:
+        validationResult.valid &&
+        issues.filter((i) => i.severity === 'error').length === 0,
       ossaVersion: ossaVersion || this.detectOSSAVersion(manifest),
       validationResult,
       issues,
@@ -86,25 +93,36 @@ export class OSSAComplianceBot {
 
     for (const path of manifestPaths) {
       try {
-        const report = await this.validateManifest({ manifestPath: path, ossaVersion });
+        const report = await this.validateManifest({
+          manifestPath: path,
+          ossaVersion,
+        });
         results.push(report);
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
         results.push({
           manifestPath: path,
           compliant: false,
           ossaVersion: ossaVersion || 'unknown',
           validationResult: {
             valid: false,
-            errors: [{ message: `Failed to validate: ${errorMessage}`, instancePath: '' } as ErrorObject],
+            errors: [
+              {
+                message: `Failed to validate: ${errorMessage}`,
+                instancePath: '',
+              } as ErrorObject,
+            ],
             warnings: [],
           },
-          issues: [{
-            severity: 'error',
-            field: 'validation',
-            message: `Validation failed: ${errorMessage}`,
-            fixable: false,
-          }],
+          issues: [
+            {
+              severity: 'error',
+              field: 'validation',
+              message: `Validation failed: ${errorMessage}`,
+              fixable: false,
+            },
+          ],
           recommendations: [],
           timestamp: new Date().toISOString(),
         });
@@ -117,7 +135,10 @@ export class OSSAComplianceBot {
   /**
    * Generate compliance report in specified format
    */
-  generateReport(report: ComplianceReport, format: 'json' | 'markdown' | 'html' = 'markdown'): string {
+  generateReport(
+    report: ComplianceReport,
+    format: 'json' | 'markdown' | 'html' = 'markdown'
+  ): string {
     switch (format) {
       case 'json':
         return JSON.stringify(report, null, 2);
@@ -146,7 +167,7 @@ export class OSSAComplianceBot {
 
     if (checkLevel === 'standard' || checkLevel === 'enterprise') {
       // Warnings are strings in ValidationResult, not ErrorObjects
-      result.warnings.forEach(warning => {
+      result.warnings.forEach((warning) => {
         issues.push({
           severity: 'warning',
           field: 'unknown',
@@ -190,8 +211,11 @@ export class OSSAComplianceBot {
       /invalid format/i,
       /must be one of/i,
     ];
-    const message = typeof error === 'object' && error !== null && 'message' in error ? String(error.message) : String(error);
-    return fixablePatterns.some(pattern => pattern.test(message));
+    const message =
+      typeof error === 'object' && error !== null && 'message' in error
+        ? String(error.message)
+        : String(error);
+    return fixablePatterns.some((pattern) => pattern.test(message));
   }
 
   private escapeHtml(text: string): string {
@@ -202,12 +226,14 @@ export class OSSAComplianceBot {
       '"': '&quot;',
       "'": '&#039;',
     };
-    return text.replace(/[&<>"']/g, char => map[char]);
+    return text.replace(/[&<>"']/g, (char) => map[char]);
   }
 
   private generateMarkdownReport(report: ComplianceReport): string {
-    const status = report.compliant ? '[PASS] COMPLIANT' : '[FAIL] NON-COMPLIANT';
-    
+    const status = report.compliant
+      ? '[PASS] COMPLIANT'
+      : '[FAIL] NON-COMPLIANT';
+
     return `# OSSA Compliance Report
 
 **Status**: ${status}
@@ -218,16 +244,20 @@ export class OSSAComplianceBot {
 ## Issues
 
 ${report.issues.length === 0 ? 'No issues found.' : ''}
-${report.issues.map(issue => `
+${report.issues
+  .map(
+    (issue) => `
 ### ${issue.severity.toUpperCase()}: ${issue.field}
 - **Message**: ${issue.message}
 - **Fixable**: ${issue.fixable ? 'Yes' : 'No'}
-`).join('\n')}
+`
+  )
+  .join('\n')}
 
 ## Recommendations
 
 ${report.recommendations.length === 0 ? 'No recommendations.' : ''}
-${report.recommendations.map(rec => `- ${rec}`).join('\n')}
+${report.recommendations.map((rec) => `- ${rec}`).join('\n')}
 `;
   }
 
@@ -252,12 +282,16 @@ ${report.recommendations.map(rec => `- ${rec}`).join('\n')}
   <p><strong>Manifest:</strong> ${this.escapeHtml(report.manifestPath)}</p>
   <p><strong>OSSA Version:</strong> ${report.ossaVersion}</p>
   <h2>Issues</h2>
-  ${report.issues.map(issue => `
+  ${report.issues
+    .map(
+      (issue) => `
     <div class="${issue.severity}">
       <strong>${issue.severity.toUpperCase()}</strong>: ${issue.field}<br>
       ${this.escapeHtml(issue.message)}
     </div>
-  `).join('')}
+  `
+    )
+    .join('')}
 </body>
 </html>`;
   }

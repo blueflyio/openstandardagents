@@ -13,14 +13,22 @@ export class LlamaIndexValidator {
     const errors: ErrorObject[] = [];
     const warnings: string[] = [];
 
-    const llamaindexExt = manifest.extensions?.llamaindex as Record<string, unknown> | undefined;
-    if (!llamaindexExt || (llamaindexExt.enabled as boolean | undefined) === false) {
+    const llamaindexExt = manifest.extensions?.llamaindex as
+      | Record<string, unknown>
+      | undefined;
+    if (
+      !llamaindexExt ||
+      (llamaindexExt.enabled as boolean | undefined) === false
+    ) {
       return { valid: true, errors: [], warnings: [] };
     }
 
     // Validate agent_type
     const validTypes = ['query_engine', 'chat_engine', 'retriever', 'custom'];
-    if (llamaindexExt.agent_type && !validTypes.includes(llamaindexExt.agent_type as string)) {
+    if (
+      llamaindexExt.agent_type &&
+      !validTypes.includes(llamaindexExt.agent_type as string)
+    ) {
       errors.push({
         instancePath: '/extensions/llamaindex/agent_type',
         schemaPath: '',
@@ -31,7 +39,9 @@ export class LlamaIndexValidator {
     }
 
     // Validate index_config if provided
-    const indexConfig = llamaindexExt.index_config as Record<string, unknown> | undefined;
+    const indexConfig = llamaindexExt.index_config as
+      | Record<string, unknown>
+      | undefined;
     if (indexConfig) {
       if (typeof indexConfig !== 'object') {
         errors.push({
@@ -87,7 +97,13 @@ export class LlamaIndexValidator {
     // Validate response_mode if provided
     const responseMode = llamaindexExt.response_mode as string | undefined;
     if (responseMode) {
-      const validModes = ['default', 'compact', 'tree_summarize', 'refine', 'simple_summarize'];
+      const validModes = [
+        'default',
+        'compact',
+        'tree_summarize',
+        'refine',
+        'simple_summarize',
+      ];
       if (!validModes.includes(responseMode)) {
         errors.push({
           instancePath: '/extensions/llamaindex/response_mode',
@@ -101,11 +117,18 @@ export class LlamaIndexValidator {
 
     // Warnings
     if (!indexConfig) {
-      warnings.push('Best practice: Configure index_config for LlamaIndex agents');
+      warnings.push(
+        'Best practice: Configure index_config for LlamaIndex agents'
+      );
     }
 
-    if ((llamaindexExt.agent_type as string | undefined) === 'query_engine' && !similarityTopK) {
-      warnings.push('Best practice: Set similarity_top_k for query engine agents');
+    if (
+      (llamaindexExt.agent_type as string | undefined) === 'query_engine' &&
+      !similarityTopK
+    ) {
+      warnings.push(
+        'Best practice: Set similarity_top_k for query engine agents'
+      );
     }
 
     return {

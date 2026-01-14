@@ -16,7 +16,12 @@
 /**
  * Supported identity providers
  */
-export type IdentityProvider = 'gitlab' | 'github' | 'azure-devops' | 'bitbucket' | 'generic';
+export type IdentityProvider =
+  | 'gitlab'
+  | 'github'
+  | 'azure-devops'
+  | 'bitbucket'
+  | 'generic';
 
 /**
  * Authentication method types
@@ -35,7 +40,12 @@ export type AuthenticationMethod =
 /**
  * Service account roles (provider-agnostic)
  */
-export type ServiceAccountRole = 'developer' | 'maintainer' | 'owner' | 'reporter' | 'guest';
+export type ServiceAccountRole =
+  | 'developer'
+  | 'maintainer'
+  | 'owner'
+  | 'reporter'
+  | 'guest';
 
 /**
  * Token encryption levels
@@ -271,7 +281,11 @@ export interface FallbackIdentity {
 /**
  * DORA metric types
  */
-export type DORAMetric = 'deployment_frequency' | 'lead_time' | 'change_failure_rate' | 'mttr';
+export type DORAMetric =
+  | 'deployment_frequency'
+  | 'lead_time'
+  | 'change_failure_rate'
+  | 'mttr';
 
 /**
  * Prometheus configuration for DORA tracking

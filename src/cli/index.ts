@@ -140,7 +140,9 @@ function getVersion(): string {
       const dirs = fs
         .readdirSync(specDir)
         .filter((d: string) => d.startsWith('v'))
-        .sort((a: string, b: string) => b.localeCompare(a, undefined, { numeric: true }));
+        .sort((a: string, b: string) =>
+          b.localeCompare(a, undefined, { numeric: true })
+        );
       if (dirs.length > 0) {
         return dirs[0].slice(1); // Remove 'v' prefix
       }
@@ -150,12 +152,16 @@ function getVersion(): string {
   }
 
   // Should never reach here if package.json exists
-  throw new Error('Unable to determine OSSA version. Ensure package.json exists.');
+  throw new Error(
+    'Unable to determine OSSA version. Ensure package.json exists.'
+  );
 }
 
 program
   .name('ossa')
-  .description('OSSA CLI - Open Standard for Software Agents (The OpenAPI for agents)')
+  .description(
+    'OSSA CLI - Open Standard for Software Agents (The OpenAPI for agents)'
+  )
   .version(getVersion());
 
 // ============================================================================

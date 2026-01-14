@@ -1,9 +1,9 @@
 /**
  * Git Service
- * 
+ *
  * SOLID: Single Responsibility - Git operations only
  * DRY: Centralizes all git command execution
- * 
+ *
  * Abstraction for git operations to eliminate duplication across services.
  */
 
@@ -58,10 +58,10 @@ export class GitService {
         .trim()
         .split('\n')
         .filter(Boolean)
-        .map(tag => tag.trim());
+        .map((tag) => tag.trim());
 
       return tags
-        .map(tag => {
+        .map((tag) => {
           const version = tag.replace(/^v/, '');
           return {
             name: tag,
@@ -75,7 +75,7 @@ export class GitService {
           // Sort by version (newest first)
           const aParts = a.version.split(/[.-]/).map(Number);
           const bParts = b.version.split(/[.-]/).map(Number);
-          
+
           for (let i = 0; i < Math.max(aParts.length, bParts.length); i++) {
             const aVal = aParts[i] ?? 0;
             const bVal = bParts[i] ?? 0;
@@ -94,7 +94,7 @@ export class GitService {
    */
   async getLatestStableTag(): Promise<GitTag | null> {
     const tags = await this.getAllVersionTags();
-    return tags.find(tag => tag.isStable) || null;
+    return tags.find((tag) => tag.isStable) || null;
   }
 
   /**
@@ -117,9 +117,9 @@ export class GitService {
         .trim()
         .split('\n')
         .filter(Boolean)
-        .map(tag => tag.trim());
+        .map((tag) => tag.trim());
 
-      return tags.map(tag => {
+      return tags.map((tag) => {
         const version = tag.replace(/^v/, '');
         return {
           name: tag,
