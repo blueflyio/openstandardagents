@@ -85,7 +85,8 @@ spec:
       max_checkpoints: 50
 
   tools:
-    - name: analyze_bundle
+    - type: mcp
+      name: analyze_bundle
       description: Analyze bundle size and identify optimization opportunities
       source:
         type: mcp
@@ -96,7 +97,8 @@ spec:
           project_path: { type: string }
           output_format: { type: string, enum: [json, html, text], default: "json" }
 
-    - name: detect_waterfalls
+    - type: mcp
+      name: detect_waterfalls
       description: Detect sequential data fetching patterns (waterfalls)
       source:
         type: mcp
@@ -107,7 +109,8 @@ spec:
           files: { type: array, items: { type: string } }
           framework: { type: string }
 
-    - name: optimize_imports
+    - type: mcp
+      name: optimize_imports
       description: Convert barrel imports to direct imports
       source:
         type: mcp
@@ -118,7 +121,8 @@ spec:
           file_path: { type: string }
           dry_run: { type: boolean, default: false }
 
-    - name: analyze_re_renders
+    - type: mcp
+      name: analyze_re_renders
       description: Analyze component re-render patterns
       source:
         type: mcp
@@ -129,7 +133,8 @@ spec:
           component_path: { type: string }
           trace_file: { type: string, required: false }
 
-    - name: suggest_memoization
+    - type: mcp
+      name: suggest_memoization
       description: Suggest memoization opportunities
       source:
         type: mcp
@@ -140,7 +145,8 @@ spec:
           file_path: { type: string }
           component_name: { type: string, required: false }
 
-    - name: check_image_optimization
+    - type: mcp
+      name: check_image_optimization
       description: Check image optimization opportunities
       source:
         type: mcp
