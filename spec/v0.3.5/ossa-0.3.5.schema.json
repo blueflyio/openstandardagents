@@ -13157,9 +13157,358 @@
           "items": {
             "$ref": "#/definitions/InfrastructureSubstrate"
           }
+        },
+        "knowledge_sources": {
+          "type": "array",
+          "description": "Optional knowledge sources for RAG and context retrieval",
+          "items": {
+            "$ref": "#/definitions/KnowledgeSource"
+          }
+        },
+        "mandatory_knowledge_sources": {
+          "type": "array",
+          "description": "Platform-enforced knowledge sources that ALL agents must use. These are automatically injected by the runtime and cannot be disabled.",
+          "items": {
+            "$ref": "#/definitions/MandatoryKnowledgeSource"
+          },
+          "default": []
+        },
+        "code_compliance": {
+          "$ref": "#/definitions/CodeCompliance",
+          "description": "Code quality and best practices enforcement configuration. Defines which knowledge bases must be queried when working with specific code types."
         }
       },
       "additionalProperties": true
+    },
+    "KnowledgeSource": {
+      "type": "object",
+      "description": "Knowledge source configuration for RAG and context retrieval",
+      "required": ["name", "provider"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Unique identifier for this knowledge source"
+        },
+        "provider": {
+          "type": "string",
+          "enum": [
+            "qdrant",
+            "pinecone",
+            "weaviate",
+            "airweave",
+            "langchain",
+            "llamaindex",
+            "custom"
+          ],
+          "description": "Knowledge source provider"
+        },
+        "config": {
+          "type": "object",
+          "description": "Provider-specific configuration",
+          "additionalProperties": true
+        },
+        "auth": {
+          "type": "object",
+          "description": "Authentication configuration",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["bearer", "api_key", "oauth", "none"]
+            },
+            "token_env": {
+              "type": "string",
+              "description": "Environment variable name for token"
+            }
+          },
+          "additionalProperties": true
+        },
+        "search": {
+          "type": "object",
+          "description": "Search configuration",
+          "properties": {
+            "default_strategy": {
+              "type": "string",
+              "enum": ["semantic", "hybrid", "neural", "keyword"]
+            },
+            "top_k": {
+              "type": "integer",
+              "default": 10,
+              "minimum": 1,
+              "maximum": 100
+            },
+            "min_score": {
+              "type": "number",
+              "default": 0.7,
+              "minimum": 0,
+              "maximum": 1
+            },
+            "rerank": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          "additionalProperties": true
+        },
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether this knowledge source is enabled"
+        }
+      },
+      "additionalProperties": true
+    },
+    "MandatoryKnowledgeSource": {
+      "type": "object",
+      "description": "Platform-enforced knowledge source that cannot be disabled",
+      "required": ["source_id", "enforcement_level"],
+      "properties": {
+        "source_id": {
+          "type": "string",
+          "description": "Identifier for the mandatory knowledge source (e.g., 'react-best-practices', 'typescript-standards')",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "enforcement_level": {
+          "type": "string",
+          "enum": ["query", "validate", "block"],
+          "description": "Enforcement level: query (must query before coding), validate (validate after coding), block (block on violations)"
+        },
+        "triggers": {
+          "type": "array",
+          "description": "File patterns that trigger this knowledge source",
+          "items": {
+            "type": "string",
+            "description": "Glob pattern (e.g., '**/*.tsx', '**/*.jsx')"
+          },
+          "minItems": 1
+        },
+        "query_conditions": {
+          "type": "object",
+          "description": "Conditions for when to query this knowledge source",
+          "properties": {
+            "before_write": {
+              "type": "boolean",
+              "default": true,
+              "description": "Query before writing code"
+            },
+            "before_review": {
+              "type": "boolean",
+              "default": true,
+              "description": "Query before code review"
+            },
+            "on_optimization": {
+              "type": "boolean",
+              "default": true,
+              "description": "Query when optimizing code"
+            }
+          },
+          "additionalProperties": false
+        },
+        "validation_rules": {
+          "type": "object",
+          "description": "Validation rules for this knowledge source",
+          "properties": {
+            "require_references": {
+              "type": "boolean",
+              "default": true,
+              "description": "Require rule references in code comments"
+            },
+            "block_on_critical": {
+              "type": "boolean",
+              "default": true,
+              "description": "Block commits/merges on CRITICAL rule violations"
+            },
+            "warn_on_high": {
+              "type": "boolean",
+              "default": true,
+              "description": "Warn on HIGH impact rule violations"
+            },
+            "min_coverage": {
+              "type": "number",
+              "default": 0.8,
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Minimum rule reference coverage (0-1)"
+            }
+          },
+          "additionalProperties": false
+        },
+        "tool_injection": {
+          "type": "object",
+          "description": "Tool injection configuration",
+          "properties": {
+            "tool_name": {
+              "type": "string",
+              "description": "Name of tool to inject (e.g., 'query_react_best_practices')"
+            },
+            "mcp_server": {
+              "type": "string",
+              "description": "MCP server that provides this tool"
+            },
+            "auto_inject": {
+              "type": "boolean",
+              "default": true,
+              "description": "Automatically inject tool into agent"
+            }
+          },
+          "additionalProperties": false
+        },
+        "tracking": {
+          "type": "object",
+          "description": "Tracking configuration",
+          "properties": {
+            "track_queries": {
+              "type": "boolean",
+              "default": true
+            },
+            "track_applications": {
+              "type": "boolean",
+              "default": true
+            },
+            "track_violations": {
+              "type": "boolean",
+              "default": true
+            },
+            "store_in_graph": {
+              "type": "boolean",
+              "default": true
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "CodeCompliance": {
+      "type": "object",
+      "description": "Code quality and best practices enforcement configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable code compliance enforcement"
+        },
+        "mandatory_sources": {
+          "type": "array",
+          "description": "Mandatory knowledge sources for code compliance",
+          "items": {
+            "$ref": "#/definitions/MandatoryKnowledgeSource"
+          }
+        },
+        "enforcement_hooks": {
+          "type": "object",
+          "description": "Enforcement hooks at different stages",
+          "properties": {
+            "pre_write": {
+              "type": "object",
+              "description": "Hook before writing code",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "action": {
+                  "type": "string",
+                  "enum": ["query", "warn", "block"],
+                  "default": "query"
+                }
+              },
+              "additionalProperties": false
+            },
+            "pre_commit": {
+              "type": "object",
+              "description": "Hook before commit",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "action": {
+                  "type": "string",
+                  "enum": ["validate", "warn", "block"],
+                  "default": "block"
+                },
+                "check_critical": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "check_references": {
+                  "type": "boolean",
+                  "default": true
+                }
+              },
+              "additionalProperties": false
+            },
+            "pre_merge": {
+              "type": "object",
+              "description": "Hook before merge",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "action": {
+                  "type": "string",
+                  "enum": ["validate", "warn", "block"],
+                  "default": "block"
+                },
+                "require_approval": {
+                  "type": "boolean",
+                  "default": true
+                }
+              },
+              "additionalProperties": false
+            },
+            "build": {
+              "type": "object",
+              "description": "Build-time validation",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "fail_on_violations": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "generate_report": {
+                  "type": "boolean",
+                  "default": true
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "tracking": {
+          "type": "object",
+          "description": "Tracking and analytics configuration",
+          "properties": {
+            "track_queries": {
+              "type": "boolean",
+              "default": true,
+              "description": "Track all knowledge base queries"
+            },
+            "track_applications": {
+              "type": "boolean",
+              "default": true,
+              "description": "Track rule applications"
+            },
+            "track_violations": {
+              "type": "boolean",
+              "default": true,
+              "description": "Track rule violations"
+            },
+            "store_in_graph": {
+              "type": "boolean",
+              "default": true,
+              "description": "Store tracking data in knowledge graph"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
     }
   }
 }
