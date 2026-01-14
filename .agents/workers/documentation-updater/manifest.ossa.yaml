@@ -1,0 +1,50 @@
+apiVersion: ossa/v0.3.5
+kind: Agent
+metadata:
+  name: documentation-updater
+  version: 1.0.0
+  description: Specialized agent for documentation updater tasks
+  labels:
+    ossa-version: v0.3.5
+    domain: platform
+    tier: worker
+    priority: P0
+
+spec:
+  taxonomy:
+    domain: platform
+    subdomain: automation
+    capability: documentation_updater
+
+  role: |
+    You are the documentation-updater, responsible for documentation updater tasks.
+    Follow OSSA v0.3.5 spec. NO scripts folders. NO .sh files.
+
+  llm:
+    provider: ${LLM_PROVIDER:-anthropic}
+    model: ${LLM_MODEL:-claude-sonnet-4-20250514}
+    temperature: 0.1
+    maxTokens: 16384
+
+  completion:
+    default_signal: complete
+    max_iterations: 20
+
+  checkpointing:
+    enabled: true
+    interval: iteration
+    interval_value: 5
+
+extensions:
+  experts:
+    registry:
+      - id: documentation-updater-expert
+        name: "documentation updater Expert"
+        model:
+          provider: anthropic
+          model: claude-sonnet-4-20250514
+        cost_tier: standard
+
+  infrastructure:
+    - type: agent_mesh
+      endpoint: mesh.blueflyagents.com:3005
