@@ -24,7 +24,7 @@ spec:
   taxonomy:
     domain: frontend
     subdomain: performance
-    capability: react-optimization
+    capability: react_optimization
 
   role: |
     You are a React Performance Expert specializing in identifying and fixing performance bottlenecks
