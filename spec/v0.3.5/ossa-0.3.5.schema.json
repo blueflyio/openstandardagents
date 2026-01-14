@@ -117,25 +117,6 @@
         },
         "kagent": {
           "$ref": "#/definitions/KagentExtension"
-        },
-        "knowledge_sources": {
-          "type": "array",
-          "description": "Optional knowledge sources for RAG and context retrieval",
-          "items": {
-            "$ref": "#/definitions/KnowledgeSource"
-          }
-        },
-        "mandatory_knowledge_sources": {
-          "type": "array",
-          "description": "Platform-enforced knowledge sources that ALL agents must use. These are automatically injected by the runtime and cannot be disabled.",
-          "items": {
-            "$ref": "#/definitions/MandatoryKnowledgeSource"
-          },
-          "default": []
-        },
-        "code_compliance": {
-          "$ref": "#/definitions/CodeCompliance",
-          "description": "Code quality and best practices enforcement configuration. Defines which knowledge bases must be queried when working with specific code types."
         }
       },
       "additionalProperties": true
@@ -1308,6 +1289,25 @@
           "items": {
             "$ref": "#/definitions/Tool"
           }
+        },
+        "knowledge_sources": {
+          "type": "array",
+          "description": "Optional knowledge sources for RAG and context retrieval",
+          "items": {
+            "$ref": "#/definitions/KnowledgeSource"
+          }
+        },
+        "mandatory_knowledge_sources": {
+          "type": "array",
+          "description": "Platform-enforced knowledge sources that ALL agents must use. These are automatically injected by the runtime and cannot be disabled.",
+          "items": {
+            "$ref": "#/definitions/MandatoryKnowledgeSource"
+          },
+          "default": []
+        },
+        "code_compliance": {
+          "$ref": "#/definitions/CodeCompliance",
+          "description": "Code quality and best practices enforcement configuration. Defines which knowledge bases must be queried when working with specific code types."
         },
         "autonomy": {
           "$ref": "#/definitions/Autonomy"
