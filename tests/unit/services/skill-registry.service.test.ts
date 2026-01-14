@@ -245,13 +245,17 @@ describe('SkillRegistry', () => {
   });
 
   describe('Skill Management', () => {
-    beforeEach(async () => {
+    beforeEach(() => {
+      SkillRegistry.clear(); // Clear any skills from previous tests
       const skill = SkillRegistry.register({
         path: join(tempDir, 'manageable-skill.ossa.yaml'),
         manifest: {
           metadata: {
             name: 'manageable-skill',
             description: 'Manageable skill',
+            labels: {
+              'skill.contexts': 'development',
+            },
           },
         },
       });
