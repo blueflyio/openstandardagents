@@ -1,0 +1,265 @@
+apiVersion: ossa/v0.3.5
+kind: Agent
+metadata:
+  name: typescript-type-safety-expert
+  version: 1.0.0
+  description: TypeScript Type Safety Expert - Eliminates any types, enforces strict null checks, ensures type safety
+  labels:
+    ossa-version: v0.3.5
+    domain: typescript
+    category: type-safety
+    tier: worker
+    priority: P0
+    skill.priority: '90'
+    skill.contexts: development,review
+spec:
+  taxonomy:
+    domain: typescript
+    subdomain: type-safety
+    capability: type_safety_enforcement
+  role: 'You are the TypeScript Type Safety Expert, enforcing strict type safety across codebases.
+
+
+    Your mission:
+
+    1. Eliminate all ''any'' types (use ''unknown'' with type guards)
+
+    2. Enforce strict null checks (strictNullChecks: true)
+
+    3. Ensure explicit return types on all functions
+
+    4. Validate type definitions match runtime behavior
+
+    5. Prevent type assertions without validation
+
+    6. Ensure proper generic constraints
+
+
+    Priority Rules:
+
+    - CRITICAL: No ''any'' types allowed
+
+    - CRITICAL: Strict null checks required
+
+    - HIGH: Explicit return types
+
+    - HIGH: Type guards for narrowing
+
+    - MEDIUM: Generic constraints
+
+    - LOW: Type inference optimization'
+  llm:
+    provider: ${LLM_PROVIDER:-anthropic}
+    model: ${LLM_MODEL:-claude-sonnet-4-20250514}
+    temperature: 0.1
+    maxTokens: 16384
+  runtime:
+    triggers:
+      keywords:
+      - typescript
+      - type
+      - any
+      - strict
+      - 'null'
+      - type-safe
+      - tsconfig
+      file_patterns:
+      - '**/*.ts'
+      - '**/*.tsx'
+      - tsconfig.json
+      frameworks:
+      - typescript
+      - next.js
+      - react
+    activation:
+      automatic: true
+      confidence_threshold: 0.7
+extensions:
+  experts:
+    registry:
+    - id: deep-analysis-expert
+      name: Deep Performance Analysis Expert
+      model:
+        provider: anthropic
+        model: claude-opus-4-5-20251101
+      specializations:
+      - typescript_type_safety
+      - strict_typing
+      - type_elimination
+      cost_tier: premium
+      capabilities:
+        extended_thinking: true
+        max_tokens: 200000
+        reasoning_depth: deep
+    - id: standard-analysis-expert
+      name: Standard Performance Expert
+      model:
+        provider: anthropic
+        model: claude-sonnet-4-20250514
+      specializations:
+      - typescript_type_safety
+      - strict_typing
+      - type_elimination
+      cost_tier: standard
+      capabilities:
+        max_tokens: 16384
+        reasoning_depth: balanced
+    - id: quick-scan-expert
+      name: Quick Performance Scan Expert
+      model:
+        provider: google
+        model: gemini-2.0-flash
+      specializations:
+      - typescript_type_safety
+      - strict_typing
+      - type_elimination
+      cost_tier: economy
+      capabilities:
+        max_tokens: 8192
+        reasoning_depth: fast
+    selection_strategy: agent_controlled
+  bat:
+    selection_criteria:
+    - dimension: analysis_complexity
+      required: true
+      options:
+      - value: complex
+        technologies:
+        - claude-opus
+        - gpt-4-turbo
+        cost_tier: premium
+        use_case: Deep bundle analysis, complex optimization strategies
+      - value: standard
+        technologies:
+        - claude-sonnet
+        - gpt-4o
+        cost_tier: standard
+        use_case: Standard performance analysis, common optimizations
+      - value: simple
+        technologies:
+        - gemini-flash
+        - claude-haiku
+        cost_tier: economy
+        use_case: Quick scans, obvious issues, high-volume checks
+  moe:
+    primary:
+      metric: performance_improvement_percentage
+      description: Percentage improvement in key performance metrics
+      target: 30.0
+      measurement:
+        type: percentage
+        numerator: performance_gain
+        denominator: baseline_performance
+        collection:
+          source: performance-monitor
+          interval: real_time
+    secondary:
+    - metric: bundle_size_reduction
+      description: Reduction in bundle size
+      target: 30.0
+      unit: percentage
+    - metric: render_time_improvement
+      description: Improvement in render time
+      target: 20.0
+      unit: percentage
+    - metric: optimization_accuracy
+      description: Accuracy of optimization recommendations
+      target: 0.85
+      unit: ratio
+  capabilities:
+    discovery:
+      enabled: true
+      registry: agent-mesh
+      refresh_interval: 60s
+  feedback:
+    tools:
+    - name: record_feedback
+      description: Record feedback on optimization effectiveness
+    - name: get_feedback_summary
+      description: Get aggregate feedback for improvement
+    learning:
+      enabled: true
+      strategy: reinforcement
+      data_sources:
+      - optimization_outcomes
+      - performance_metrics
+      - user_feedback
+  infrastructure:
+  - type: agent_mesh
+    endpoint: mesh.blueflyagents.com:3005
+    capabilities:
+    - performance_monitoring
+    - code_analysis
+  runtime:
+    triggers:
+      keywords:
+      - performance
+      - optimize
+      - slow
+      - bundle
+      - waterfall
+      - re-render
+      - memoization
+      - lazy
+      - code-splitting
+      - bundle size
+      - cold start
+      - render performance
+      file_patterns:
+      - '**/*.{tsx,jsx}'
+      - '**/components/**'
+      - '**/app/**'
+      - '**/pages/**'
+      - '**/*.react.{ts,tsx,js,jsx}'
+      frameworks:
+      - next.js
+      - react
+      - remix
+      - gatsby
+      - vite
+      project_types:
+      - react-app
+      - next-app
+      - remix-app
+    activation:
+      automatic: true
+      confidence_threshold: 0.7
+      priority_threshold: 80
+  gitlab:
+    triggers:
+    - event: merge_request
+      filter:
+        labels:
+        - performance
+        - optimization
+        files:
+        - '**/*.{tsx,jsx}'
+    - event: webhook
+      path: /react-performance-expert/analyze
+    custom_fields:
+      performance_impact: estimated
+      optimizations_applied: boolean
+      bundle_size_change: number
+  opentelemetry:
+    enabled: true
+    service_name: react-performance-expert
+    service_version: 1.0.0
+    traces:
+      enabled: true
+      exporter: otlp
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4317}
+      sample_rate: 1.0
+    metrics:
+      enabled: true
+      exporter: otlp
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4317}
+    logs:
+      enabled: true
+      exporter: otlp
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4317}
+      level: info
+    resource_attributes:
+      agent.id: react-performance-expert
+      agent.version: 1.0.0
+      framework: ossa
+      domain: frontend-performance
