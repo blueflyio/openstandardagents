@@ -831,8 +831,8 @@ export const wizardCommand = new Command('wizard')
       console.log(chalk.green('✓ Observability:'), agent.spec.observability ? 'Yes' : 'No');
       console.log(chalk.green('✓ Extensions:'), agent.extensions ? Object.keys(agent.extensions).length : 0);
 
-      // Knowledge Sources Summary
-      const mandatorySources = (agent.spec as any).mandatory_knowledge_sources || [];
+      // Knowledge Sources Summary (from extensions)
+      const mandatorySources = (agent.extensions as any)?.mandatory_knowledge_sources || [];
       console.log(chalk.green('✓ Mandatory Knowledge Sources:'), mandatorySources.length);
       if (mandatorySources.length > 0) {
         mandatorySources.forEach((source: any) => {
@@ -843,8 +843,8 @@ export const wizardCommand = new Command('wizard')
         });
       }
 
-      // Code Compliance Summary
-      const codeCompliance = (agent.spec as any).code_compliance;
+      // Code Compliance Summary (from extensions)
+      const codeCompliance = (agent.extensions as any)?.code_compliance;
       console.log(chalk.green('✓ Code Compliance:'), codeCompliance?.enabled ? 'Yes' : 'No');
       if (codeCompliance?.enabled && codeCompliance.enforcement_hooks) {
         console.log(chalk.gray(`    Pre-commit: ${codeCompliance.enforcement_hooks.pre_commit?.action || 'not configured'}`));

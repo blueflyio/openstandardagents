@@ -32,18 +32,6 @@ describe('SkillRegistryService', () => {
         provider: 'anthropic',
         model: 'claude-sonnet-4',
         temperature: 0.2
-      },
-      tools: []
-    },
-    runtime: {
-      triggers: {
-        keywords: ['performance', 'optimize', 'slow', 'bundle'],
-        file_patterns: ['**/*.tsx', '**/*.jsx', '**/components/**/*.ts'],
-        frameworks: ['next.js', 'react']
-      },
-      activation: {
-        automatic: true,
-        confidence_threshold: 0.7
       }
     }
   };
