@@ -679,6 +679,21 @@ export const wizardCommand = new Command('wizard')
               printInfo(`  Enforcement: ${enforcementLevel}`);
               printInfo(`  Triggers: ${triggers.join(', ')}`);
               printInfo(`  Tool: query_react_best_practices (auto-injected)`);
+              printInfo(`  Knowledge Graph: All queries, applications, and violations will be tracked in Neo4j`);
+              
+              const enableKGInit = await askYesNo(
+                'Initialize knowledge graph schema on agent startup? (Requires Neo4j connection)',
+                false
+              );
+              
+              if (enableKGInit) {
+                (agent.spec as any).mandatory_knowledge_sources[0].knowledge_graph = {
+                  initialize_on_startup: true,
+                  neo4j_uri: process.env.NEO4J_URI || 'bolt://localhost:7687',
+                  auto_track: true
+                };
+                printInfo(`  Knowledge Graph: Will initialize schema on agent startup`);
+              }
             }
           }
 
@@ -824,6 +839,20 @@ export const wizardCommand = new Command('wizard')
         const buildAction = codeCompliance.enforcement_hooks.build?.fail_on_violations ? 'Fail on violations' : 'Warn only';
         console.log(chalk.gray(`    Build validation: ${buildAction}`));
       }
+      
+      // Knowledge Graph Summary
+      const hasKG = mandatorySources.some((s: any) => s.tracking?.store_in_graph || s.knowledge_graph);
+      if (hasKG) {
+        console.log(chalk.green('✓ Knowledge Graph Tracking:'), 'Enabled');
+        mandatorySources.forEach((source: any) => {
+          if (source.tracking?.store_in_graph || source.knowledge_graph) {
+            console.log(chalk.gray(`    ${source.source_id}: All interactions tracked in Neo4j`));
+            if (source.knowledge_graph?.initialize_on_startup) {
+              console.log(chalk.gray(`      Schema initialization: Enabled`));
+            }
+          }
+        });
+      }
 
       console.log(chalk.green('✓ Output:'), outputPath);
       console.log('');
@@ -842,11 +871,19 @@ export const wizardCommand = new Command('wizard')
       console.log(chalk.gray(`  1. Review: ${outputPath}`));
       console.log(chalk.gray(`  2. Validate: ossa validate ${outputPath}`));
       console.log(chalk.gray(`  3. Test: ossa run ${outputPath}`));
+      let stepNum = 4;
       if (mandatorySources.length > 0) {
-        console.log(chalk.gray(`  4. Knowledge base tools are auto-injected and ready to use`));
+        console.log(chalk.gray(`  ${stepNum}. Knowledge base tools are auto-injected and ready to use`));
+        stepNum++;
+        const hasKG = mandatorySources.some((s: any) => s.tracking?.store_in_graph || s.knowledge_graph);
+        if (hasKG) {
+          console.log(chalk.gray(`  ${stepNum}. Knowledge Graph: Ensure Neo4j is running and accessible`));
+          console.log(chalk.gray(`     Set NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD environment variables`));
+          console.log(chalk.gray(`     All agent queries, applications, and violations will be tracked`));
+          stepNum++;
+        }
       }
       if (useDirectory) {
-        const stepNum = mandatorySources.length > 0 ? '5' : '4';
         console.log(chalk.gray(`  ${stepNum}. Register: ossa workspace discover`));
       }
 
