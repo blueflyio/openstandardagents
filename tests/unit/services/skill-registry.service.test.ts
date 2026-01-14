@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
-import { SkillRegistry, SkillMatchContext } from './skill-registry.service';
+import { SkillRegistry, SkillMatchContext } from '../../../src/services/skill-registry.service';
 import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
