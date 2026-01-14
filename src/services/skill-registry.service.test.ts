@@ -23,11 +23,11 @@ describe('SkillRegistryService', () => {
       }
     },
     spec: {
-      capabilities: [
+      role: 'Performance expert',
+      tools: [
         { name: 'performance.analyze', description: 'Analyze performance' },
         { name: 'bundle.optimize', description: 'Optimize bundle' }
       ],
-      role: 'Performance expert',
       llm: {
         provider: 'anthropic',
         model: 'claude-sonnet-4',
@@ -66,7 +66,7 @@ describe('SkillRegistryService', () => {
 
       expect(registered.id).toBe('react-performance-expert');
       expect(registered.triggers.keywords).toContain('performance');
-      expect(registered.capabilities).toHaveLength(2);
+      expect(registered.capabilities).toHaveLength(2); // Extracted from tools
     });
 
     it('should throw error for invalid manifest', async () => {
