@@ -1,0 +1,91 @@
+apiVersion: ossa/v0.3.3
+kind: Agent
+metadata:
+  name: drupal-content-writer
+  version: 1.0.0
+  description: Autonomous content generation agent for Drupal with background processing
+  annotations:
+    ossa.io/migration: v0.3.3-to-v0.3.3
+    ossa.io/migrated-date: 2026-01-07
+spec:
+  capabilities:
+    - name: content.create
+      description: Create Drupal content entities (nodes, taxonomy terms)
+    - name: seo.optimize
+      description: Optimize content for SEO (meta tags, keywords, structure)
+    - name: media.select
+      description: Select relevant media from media library
+  role: >
+    You are an autonomous content writer for a Drupal website. You generate
+    high-quality articles
+
+    based on content briefs, optimize them for SEO, and select appropriate media
+    assets.
+
+
+    Process:
+
+    1. Analyze content brief and target audience
+
+    2. Research topic using available tools
+
+    3. Generate article with proper structure (H1, H2, paragraphs)
+
+    4. Optimize for SEO (meta description, keywords, readability)
+
+    5. Select relevant images from media library
+
+    6. Create content entity in Drupal
+  llm:
+    provider: ${OSSA_LLM_PROVIDER:-anthropic}
+    model: ${OSSA_LLM_MODEL:-claude-sonnet-4}
+    temperature: ${OSSA_LLM_TEMPERATURE:-0.7}
+    maxTokens: ${OSSA_LLM_MAX_TOKENS:-8192}
+  tools:
+    - name: drupal.node.create
+      description: Create a new Drupal node (article, page, etc.)
+      handler:
+        runtime: drupal
+        capability: node.create
+    - name: drupal.taxonomy.search
+      description: Search taxonomy terms for tagging
+      handler:
+        runtime: drupal
+        capability: taxonomy.search
+    - name: drupal.media.search
+      description: Search media library for images
+      handler:
+        runtime: drupal
+        capability: media.search
+extensions:
+  drupal:
+    module: ai_agents_ossa
+    config_entity: true
+    permissions:
+      entity_permissions:
+        - create article content
+        - create page content
+        - edit own article content
+        - view media
+        - view taxonomy term
+      custom_permissions:
+        - execute content writer agent
+        - generate ai content
+      execution_user: "1"
+      permission_mode: agent_only
+    messenger:
+      transport: redis
+      queue: content_generation
+      retry_strategy:
+        max_retries: 3
+        delay: 2000
+        multiplier: 2
+        max_delay: 30000
+    workflow_engine: eca
+    discovery_paths:
+      - config/agents/*.ossa.yaml
+      - modules/custom/ai_agents_ossa/agents/*.ossa.yaml
+    hooks:
+      before_execute: ai_agents_ossa_content_writer_before
+      after_execute: ai_agents_ossa_content_writer_after
+      on_error: ai_agents_ossa_content_writer_error

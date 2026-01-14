@@ -1,0 +1,137 @@
+apiVersion: ossa/v0.3.3
+kind: Task
+metadata:
+  name: transform-csv-to-json
+  version: 1.0.0
+  labels:
+    domain: data-engineering
+    tier: tier_1_read
+  annotations:
+    ossa.io/description: Transform CSV data to structured JSON
+    ossa.io/category: data-transformation
+    ossa.io/idempotent: "true"
+    ossa.io/migration: v0.3.3-to-v0.3.3
+    ossa.io/migrated-date: 2026-01-07
+spec:
+  execution:
+    type: idempotent
+    runtime: any
+    entrypoint: transform
+    timeout_seconds: 300
+  capabilities:
+    - read_file
+    - parse_csv
+    - write_json
+    - validate_schema
+  input:
+    type: object
+    required:
+      - source_path
+      - target_path
+      - schema
+    properties:
+      source_path:
+        type: string
+        description: Path to source CSV file
+      target_path:
+        type: string
+        description: Path to output JSON file
+      schema:
+        type: object
+        description: JSON Schema for validation
+        properties:
+          columns:
+            type: array
+            items:
+              type: object
+              properties:
+                name:
+                  type: string
+                type:
+                  type: string
+                  enum:
+                    - string
+                    - integer
+                    - number
+                    - boolean
+                    - date
+                required:
+                  type: boolean
+      options:
+        type: object
+        properties:
+          delimiter:
+            type: string
+            default: ","
+          skip_header:
+            type: boolean
+            default: true
+          null_value:
+            type: string
+            default: ""
+          batch_size:
+            type: integer
+            default: 1000
+  output:
+    type: object
+    required:
+      - success
+      - records_processed
+    properties:
+      success:
+        type: boolean
+      records_processed:
+        type: integer
+        minimum: 0
+      records_failed:
+        type: integer
+        minimum: 0
+      output_path:
+        type: string
+      checksum:
+        type: string
+        description: SHA256 of output file
+      processing_time_ms:
+        type: integer
+  batch:
+    enabled: true
+    parallelism: 10
+    retry: 3
+    backoff_seconds: 5
+  error_handling:
+    on_failure: continue
+    retryable_errors:
+      - IO_ERROR
+      - MEMORY_LIMIT
+    fatal_errors:
+      - SCHEMA_MISMATCH
+      - INVALID_FORMAT
+runtime:
+  python:
+    read_file:
+      module: pathlib
+      class: Path
+      method: read_text
+    parse_csv:
+      module: csv
+      function: DictReader
+    write_json:
+      module: json
+      function: dump
+    validate_schema:
+      module: jsonschema
+      function: validate
+  node:
+    read_file:
+      module: fs/promises
+      function: readFile
+    parse_csv:
+      module: csv-parse
+      function: parse
+    write_json:
+      module: fs/promises
+      function: writeFile
+    validate_schema:
+      module: ajv
+      class: Ajv
+      method: validate

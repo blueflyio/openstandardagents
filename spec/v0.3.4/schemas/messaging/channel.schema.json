@@ -1,0 +1,245 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openstandardagents.org/schemas/v0.3.3/messaging/channel.json",
+  "title": "OSSA Channel Schema",
+  "description": "Schema for message channel configuration in OSSA v0.3.3",
+  "type": "object",
+  "required": [
+    "name",
+    "type"
+  ],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Channel name (must follow naming conventions)",
+      "pattern": "^agents\\.([a-z0-9-]+\\.)+[a-z0-9-]+$",
+      "minLength": 3,
+      "maxLength": 256,
+      "examples": [
+        "agents.tasks.assigned",
+        "agents.code-reviewer.completed",
+        "agents.broadcast.shutdown"
+      ]
+    },
+    "type": {
+      "type": "string",
+      "enum": ["direct", "topic", "broadcast"],
+      "description": "Channel type determining routing behavior"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable channel description",
+      "maxLength": 512
+    },
+    "schema": {
+      "type": "string",
+      "description": "JSON Schema reference for message validation",
+      "format": "uri-reference",
+      "examples": [
+        "TaskAssigned",
+        "https://ossa.dev/schemas/messaging/TaskCompleted.schema.json"
+      ]
+    },
+    "qos": {
+      "$ref": "#/definitions/ChannelQoS",
+      "description": "Default quality of service for this channel"
+    },
+    "config": {
+      "$ref": "#/definitions/ChannelConfig",
+      "description": "Channel-specific configuration"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Custom metadata for channel management",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "ChannelQoS": {
+      "type": "object",
+      "description": "Default quality of service settings for channel",
+      "properties": {
+        "deliveryMode": {
+          "type": "string",
+          "enum": ["at-most-once", "at-least-once", "exactly-once"],
+          "default": "at-least-once"
+        },
+        "persistent": {
+          "type": "boolean",
+          "default": true,
+          "description": "Messages persist to disk"
+        },
+        "ordered": {
+          "type": "boolean",
+          "default": true,
+          "description": "Maintain message order"
+        },
+        "maxRetries": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "default": 3,
+          "description": "Maximum delivery retry attempts"
+        },
+        "retryBackoff": {
+          "type": "string",
+          "enum": ["none", "linear", "exponential"],
+          "default": "exponential",
+          "description": "Retry backoff strategy"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ChannelConfig": {
+      "type": "object",
+      "description": "Channel configuration options",
+      "properties": {
+        "maxMessageSize": {
+          "type": "integer",
+          "minimum": 1024,
+          "maximum": 10485760,
+          "default": 1048576,
+          "description": "Maximum message size in bytes (default: 1MB)"
+        },
+        "maxSubscribers": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000,
+          "default": 1000,
+          "description": "Maximum concurrent subscribers"
+        },
+        "messageRetention": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2592000,
+          "default": 86400,
+          "description": "Message retention period in seconds (default: 24 hours, 0 = no retention)"
+        },
+        "deadLetterQueue": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable dead letter queue for failed messages"
+        },
+        "dlqChannel": {
+          "type": "string",
+          "description": "Custom DLQ channel name (default: {channel}.dlq)",
+          "pattern": "^agents\\.([a-z0-9-]+\\.)+[a-z0-9-]+$"
+        },
+        "rateLimiting": {
+          "type": "object",
+          "description": "Rate limiting configuration",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "maxMessagesPerSecond": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000
+            },
+            "burstSize": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            }
+          },
+          "additionalProperties": false
+        },
+        "encryption": {
+          "type": "object",
+          "description": "Channel-level encryption settings",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "algorithm": {
+              "type": "string",
+              "enum": ["AES-256-GCM", "ChaCha20-Poly1305"],
+              "default": "AES-256-GCM"
+            },
+            "keyRef": {
+              "type": "string",
+              "description": "Reference to encryption key in secret store"
+            }
+          },
+          "required": ["enabled"],
+          "if": {
+            "properties": {
+              "enabled": { "const": true }
+            }
+          },
+          "then": {
+            "required": ["keyRef"]
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "examples": [
+    {
+      "name": "agents.tasks.assigned",
+      "type": "topic",
+      "description": "Task assignment notifications",
+      "schema": "TaskAssigned",
+      "qos": {
+        "deliveryMode": "at-least-once",
+        "persistent": true,
+        "ordered": true,
+        "maxRetries": 5,
+        "retryBackoff": "exponential"
+      },
+      "config": {
+        "maxMessageSize": 1048576,
+        "maxSubscribers": 100,
+        "messageRetention": 86400,
+        "deadLetterQueue": true,
+        "rateLimiting": {
+          "enabled": true,
+          "maxMessagesPerSecond": 1000,
+          "burstSize": 100
+        }
+      }
+    },
+    {
+      "name": "agents.code-reviewer.tasks",
+      "type": "direct",
+      "description": "Direct task assignments to code-reviewer agent",
+      "schema": "ReviewTask",
+      "qos": {
+        "deliveryMode": "exactly-once",
+        "persistent": true,
+        "ordered": true
+      },
+      "config": {
+        "maxMessageSize": 524288,
+        "messageRetention": 3600,
+        "encryption": {
+          "enabled": true,
+          "algorithm": "AES-256-GCM",
+          "keyRef": "messaging-encryption-key"
+        }
+      }
+    },
+    {
+      "name": "agents.broadcast.shutdown",
+      "type": "broadcast",
+      "description": "System-wide shutdown notification",
+      "schema": "SystemShutdown",
+      "qos": {
+        "deliveryMode": "at-most-once",
+        "persistent": false,
+        "ordered": false
+      },
+      "config": {
+        "maxMessageSize": 4096,
+        "messageRetention": 0,
+        "deadLetterQueue": false
+      }
+    }
+  ]
+}

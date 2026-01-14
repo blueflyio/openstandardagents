@@ -1,6 +1,6 @@
 # Example: Publish Content Task
 # A deterministic task that publishes content - no AI required
-apiVersion: ossa/v0.3.3
+apiVersion: ossa/v0.3.4
 kind: Task
 metadata:
   name: publish-content

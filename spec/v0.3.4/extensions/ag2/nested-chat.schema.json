@@ -1,0 +1,198 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openstandardagents.org/schemas/v0.3.4/extensions/ag2/nested-chat.json",
+  "title": "AG2 Nested Chat Extension",
+  "description": "AG2 (AutoGen) nested conversation patterns where agents can trigger sub-conversations with other agents",
+  "type": "object",
+  "properties": {
+    "nested_chats": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/NestedChatConfig"
+      },
+      "description": "Nested conversation configurations"
+    },
+    "max_nesting_depth": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10,
+      "default": 3,
+      "description": "Maximum nesting levels to prevent infinite recursion"
+    },
+    "context_propagation": {
+      "type": "string",
+      "enum": ["full", "summary", "none", "selective"],
+      "default": "summary",
+      "description": "How parent context is passed to nested conversations"
+    },
+    "result_aggregation": {
+      "type": "string",
+      "enum": ["replace", "append", "merge", "custom"],
+      "default": "append",
+      "description": "How nested conversation results are integrated"
+    }
+  },
+  "definitions": {
+    "NestedChatConfig": {
+      "type": "object",
+      "required": ["trigger", "participants"],
+      "properties": {
+        "trigger": {
+          "$ref": "#/definitions/TriggerCondition"
+        },
+        "participants": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "string",
+            "format": "uri",
+            "pattern": "^agent://[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+          },
+          "description": "Agents participating in nested conversation"
+        },
+        "initiator": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^agent://[a-z0-9]([-a-z0-9]*[a-z0-9])?$",
+          "description": "Agent that initiates nested chat"
+        },
+        "max_turns": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50,
+          "default": 5,
+          "description": "Maximum turns in nested conversation"
+        },
+        "summary_method": {
+          "type": "string",
+          "enum": ["last_msg", "reflection_with_llm", "custom", "none"],
+          "default": "last_msg",
+          "description": "How to summarize nested conversation results"
+        },
+        "summary_prompt": {
+          "type": "string",
+          "description": "Custom prompt for generating summary"
+        },
+        "carryover": {
+          "$ref": "#/definitions/CarryoverConfig"
+        },
+        "silent": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to suppress nested chat output in parent conversation"
+        },
+        "message": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "description": "Dynamic message generation config",
+              "properties": {
+                "template": {
+                  "type": "string"
+                },
+                "context_keys": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          ],
+          "description": "Initial message for nested conversation"
+        },
+        "position": {
+          "type": "integer",
+          "description": "Position in message queue (for ordering nested chats)"
+        }
+      }
+    },
+    "TriggerCondition": {
+      "type": "object",
+      "description": "Conditions that trigger nested conversation",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "message_pattern",
+            "function_call",
+            "agent_name",
+            "keyword",
+            "context_state",
+            "always"
+          ],
+          "description": "Trigger type"
+        },
+        "pattern": {
+          "type": "string",
+          "description": "Regex pattern for message matching"
+        },
+        "function_name": {
+          "type": "string",
+          "description": "Function name that triggers nested chat"
+        },
+        "agent_name": {
+          "type": "string",
+          "description": "Agent name that triggers nested chat"
+        },
+        "keyword": {
+          "type": "string",
+          "description": "Keyword that triggers nested chat"
+        },
+        "context_condition": {
+          "type": "object",
+          "description": "Context state conditions",
+          "additionalProperties": true
+        },
+        "custom_function": {
+          "type": "string",
+          "description": "Custom trigger function reference"
+        }
+      }
+    },
+    "CarryoverConfig": {
+      "type": "object",
+      "description": "Configuration for carrying context between nested conversations",
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["full_history", "summary", "context_variables", "custom"],
+          "default": "summary",
+          "description": "What to carry over to nested conversation"
+        },
+        "summary_args": {
+          "type": "object",
+          "description": "Arguments for summary generation",
+          "properties": {
+            "summary_method": {
+              "type": "string",
+              "enum": ["last_msg", "reflection_with_llm", "custom"]
+            },
+            "summary_prompt": {
+              "type": "string"
+            }
+          }
+        },
+        "context_keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Specific context variables to carry over"
+        },
+        "max_history_length": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Maximum message history length to carry"
+        },
+        "custom_function": {
+          "type": "string",
+          "description": "Custom carryover function reference"
+        }
+      }
+    }
+  }
+}
