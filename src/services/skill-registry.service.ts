@@ -289,12 +289,27 @@ export class SkillRegistry {
    * Register a skill manually
    */
   static register(skill: Partial<SkillMetadata> & { path: string; manifest: any }): SkillMetadata {
+    // Parse contexts from manifest labels if not provided
+    let contexts = skill.contexts;
+    if (!contexts && skill.manifest.metadata?.labels?.['skill.contexts']) {
+      const contextsStr = skill.manifest.metadata.labels['skill.contexts'];
+      contexts = typeof contextsStr === 'string' 
+        ? contextsStr.split(',').map((c: string) => c.trim())
+        : Array.isArray(contextsStr) 
+          ? contextsStr 
+          : ['development'];
+    }
+    
     const fullSkill: SkillMetadata = {
       name: skill.name || skill.manifest.metadata?.name || 'unknown',
       description: skill.description || skill.manifest.metadata?.description || '',
-      priority: skill.priority ?? 50,
-      contexts: skill.contexts || ['development'],
-      enabled: skill.enabled ?? true,
+      priority: skill.priority ?? 
+        (skill.manifest.metadata?.labels?.['skill.priority'] 
+          ? parseInt(skill.manifest.metadata.labels['skill.priority']) 
+          : 50),
+      contexts: contexts || ['development'],
+      enabled: skill.enabled ?? 
+        (skill.manifest.metadata?.labels?.['skill.enabled'] !== 'false'),
       path: skill.path,
       manifest: skill.manifest,
     };
