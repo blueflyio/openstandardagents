@@ -5,6 +5,26 @@ All notable changes to OSSA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.4] - 2026-01-13
+
+### Added
+
+- **BAT (Browser Automation Testing)**: E2E testing, visual regression, performance testing configuration
+- **MOE (Model Output Evaluation)**: Output validation, quality scoring, auto-correction, context enrichment
+- **Dynamic Version Detection**: Version now derived from git tags (not static .version.json)
+- **Browser Automation Tool Type**: Added `browser-automation` tool type for Playwright/Selenium/Cypress
+- **Testing Capabilities**: Added testing, browser_automation, output_evaluation capability types to taxonomy
+
+### Changed
+
+- **Version Management**: `.version.json` is now DEPRECATED - version comes from git tags dynamically
+- **Version Services**: All version services now use `VersionDetectionService` to read from git tags
+
+### Fixed
+
+- Fixed test validation for platform extensions
+- Fixed cross-platform compatibility validation
+
 ## [0.3.3] - 2025-01-11
 
 ### Added
@@ -21,7 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fixed migration detection breaking when package.json contains {{VERSION}} placeholder
+- Fixed migration detection breaking when package.json contains 0.3.4 placeholder
 - Fixed version comparison logic to handle template placeholders correctly
 - Removed all shell scripts, replaced with TypeScript implementations
 - Fixed CI/CD configuration for proper Docker image usage

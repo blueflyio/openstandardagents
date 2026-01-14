@@ -1,0 +1,375 @@
+# =============================================================================
+# OSSA v0.3.4 - Access Tiers & Separation of Duties Specification
+# =============================================================================
+# Defines privilege levels, role separations, and access controls for agents
+# Issue: https://gitlab.com/blueflyio/openstandardagents/-/issues/363
+# =============================================================================
+
+apiVersion: ossa/v0.3.4
+kind: AccessTierSpec
+version: "1.0.0"
+
+# =============================================================================
+# ACCESS TIERS
+# Hierarchical privilege levels - every agent must declare exactly one tier
+# Lower tier number = more restricted permissions
+# =============================================================================
+tiers:
+  tier_1_read:
+    name: "Read Only (Analyzers)"
+    level: 1
+    description: "Agents that analyze, audit, scan - cannot modify state"
+    permissions:
+      - read_code
+      - read_configs
+      - read_metrics
+      - read_logs
+      - read_issues
+      - read_mrs
+      - execute_queries  # Read-only queries
+    prohibited:
+      - write_*
+      - delete_*
+      - execute_commands
+      - modify_infrastructure
+    typical_roles:
+      - analyzer
+      - auditor
+      - scanner
+      - reviewer
+      - monitor
+    examples:
+      - security-scanner
+      - code-analyzer
+      - compliance-auditor
+      - cost-reporter
+      - health-monitor
+    requires_approval: false
+    audit_level: standard
+
+  tier_2_write_limited:
+    name: "Write Limited (Workers)"
+    level: 2
+    description: "Agents that create/modify in sandboxed areas only"
+    permissions:
+      - read_*
+      - write_docs
+      - write_tests
+      - write_scaffolds
+      - write_configs_draft
+      - create_issues
+      - create_mrs_draft
+      - execute_sandboxed
+    prohibited:
+      - write_production_code
+      - merge_mrs
+      - delete_branches
+      - modify_infrastructure
+      - modify_secrets
+    typical_roles:
+      - generator
+      - scaffolder
+      - documenter
+      - test_writer
+    examples:
+      - doc-generator
+      - test-generator
+      - module-scaffolder
+      - changelog-generator
+    requires_approval: false
+    audit_level: standard
+
+  tier_3_write_elevated:
+    name: "Write Elevated (Operators)"
+    level: 3
+    description: "Agents that modify production systems with approval chains"
+    permissions:
+      - read_*
+      - write_*
+      - execute_deployments
+      - modify_pipelines
+      - merge_mrs  # With approval
+      - modify_configs
+      - execute_commands  # Non-destructive
+    prohibited:
+      - delete_production
+      - modify_secrets_direct
+      - bypass_approvals
+      - force_push
+    typical_roles:
+      - deployer
+      - operator
+      - executor
+      - maintainer
+    examples:
+      - deployment-agent
+      - gitlab-cicd-agent
+      - incident-responder
+      - infrastructure-operator
+    requires_approval: true
+    approval_chain:
+      - type: human_or_governor
+        timeout_minutes: 30
+    audit_level: detailed
+
+  tier_4_policy:
+    name: "Policy (Governors)"
+    level: 4
+    description: "Agents that define and enforce policies - ISOLATED from execution"
+    permissions:
+      - read_*
+      - define_policies
+      - publish_policies
+      - audit_compliance
+      - report_violations
+    prohibited:
+      - execute_*
+      - write_code
+      - modify_infrastructure
+      - remediate_direct  # Must delegate to Tier 3
+    typical_roles:
+      - governor
+      - policy_definer
+      - compliance_officer
+    examples:
+      - compliance-policy-engine
+      - security-policy-manager
+      - cost-governance-agent
+    requires_approval: false
+    isolation: strict
+    audit_level: comprehensive
+
+# =============================================================================
+# ROLE SEPARATION RULES
+# Defines which roles can coexist and which must be separated
+# =============================================================================
+separation_rules:
+  # Critics cannot execute
+  critic_executor_separation:
+    name: "Critic-Executor Separation"
+    description: "Agents that review/critique cannot also approve/execute"
+    conflicting_roles:
+      - [reviewer, approver]
+      - [critic, executor]
+      - [auditor, remediator]
+    enforcement: strict
+    rationale: "Prevents conflict of interest in quality gates"
+
+  # Governors cannot execute
+  governor_executor_separation:
+    name: "Governor-Executor Separation"
+    description: "Policy-defining agents cannot execute policies"
+    conflicting_roles:
+      - [policy_definer, enforcer]
+      - [governor, operator]
+      - [rule_maker, rule_executor]
+    enforcement: strict
+    rationale: "Separation of legislative and executive functions"
+
+  # Readers and writers should be separate for sensitive domains
+  read_write_separation:
+    name: "Read-Write Separation (Sensitive)"
+    description: "In security/compliance domains, readers cannot write"
+    applies_to_domains:
+      - security
+      - compliance
+      - secrets
+    conflicting_roles:
+      - [reader, writer]
+      - [scanner, remediator]
+    enforcement: recommended
+    exceptions:
+      - domain: development
+        reason: "Dev workflows need read-write for productivity"
+
+  # Production isolation
+  production_isolation:
+    name: "Production Isolation"
+    description: "Agents modifying production must have explicit elevation"
+    environments:
+      - production
+      - staging  # Optional
+    required_tier: tier_3_write_elevated
+    enforcement: strict
+    rationale: "Production changes require elevated privileges and audit"
+
+# =============================================================================
+# APPROVAL CHAINS
+# Defines approval workflows for privileged operations
+# =============================================================================
+approval_chains:
+  standard:
+    name: "Standard Approval"
+    description: "Single human or governor approval"
+    steps:
+      - type: human_or_governor
+        required: 1
+        timeout_minutes: 60
+
+  elevated:
+    name: "Elevated Approval"
+    description: "Human approval required for critical operations"
+    steps:
+      - type: governor
+        required: 1
+        timeout_minutes: 15
+      - type: human
+        required: 1
+        timeout_minutes: 120
+
+  critical:
+    name: "Critical Approval"
+    description: "Multi-party approval for production changes"
+    steps:
+      - type: automated_checks
+        required: all
+        checks:
+          - security_scan
+          - compliance_check
+          - rollback_plan_exists
+      - type: governor
+        required: 1
+        timeout_minutes: 15
+      - type: human
+        required: 2  # Two human approvers
+        timeout_minutes: 240
+
+# =============================================================================
+# DELEGATION RULES
+# How higher-tier agents can delegate to lower-tier agents
+# =============================================================================
+delegation:
+  rules:
+    # Tier 4 can delegate enforcement to Tier 3
+    - from_tier: tier_4_policy
+      to_tier: tier_3_write_elevated
+      operations:
+        - remediate_violations
+        - apply_policies
+      requires:
+        - delegation_token
+        - audit_trail
+        - violation_report
+
+    # Tier 3 can delegate read operations to Tier 1
+    - from_tier: tier_3_write_elevated
+      to_tier: tier_1_read
+      operations:
+        - gather_information
+        - run_analysis
+        - generate_reports
+      requires:
+        - task_specification
+
+    # Tier 2 can delegate read operations to Tier 1
+    - from_tier: tier_2_write_limited
+      to_tier: tier_1_read
+      operations:
+        - analyze_code
+        - scan_dependencies
+      requires:
+        - task_specification
+
+  prohibited_delegations:
+    # Lower tiers cannot elevate themselves
+    - from: [tier_1_read, tier_2_write_limited]
+      to: [tier_3_write_elevated, tier_4_policy]
+      reason: "Privilege escalation not permitted"
+
+    # Governors cannot delegate policy definition
+    - from: tier_4_policy
+      operation: define_policies
+      reason: "Policy definition cannot be delegated"
+
+# =============================================================================
+# AUDIT REQUIREMENTS BY TIER
+# =============================================================================
+audit:
+  standard:
+    retention_days: 30
+    includes:
+      - agent_id
+      - operation
+      - timestamp
+      - result
+
+  detailed:
+    retention_days: 90
+    includes:
+      - agent_id
+      - operation
+      - timestamp
+      - result
+      - input_summary
+      - affected_resources
+      - approval_chain
+
+  comprehensive:
+    retention_days: 365
+    includes:
+      - agent_id
+      - operation
+      - timestamp
+      - result
+      - full_input
+      - full_output
+      - affected_resources
+      - approval_chain
+      - policy_version
+      - compliance_status
+
+# =============================================================================
+# USAGE IN AGENT MANIFESTS
+# =============================================================================
+# Example usage in OSSA agent manifest:
+#
+# metadata:
+#   name: security-scanner
+#   labels:
+#     access_tier: tier_1_read
+#
+# spec:
+#   access:
+#     tier: tier_1_read
+#     permissions:
+#       - read_code
+#       - read_configs
+#       - execute_queries
+#     prohibited:
+#       - write_*
+#     audit_level: standard
+#
+#   separation:
+#     role: analyzer
+#     conflicts_with:
+#       - executor
+#       - remediator
+#
+# =============================================================================
+# VALIDATION RULES
+# =============================================================================
+validation:
+  rules:
+    - name: valid-tier
+      description: "Access tier must be from approved list"
+      severity: error
+
+    - name: role-separation
+      description: "Conflicting roles must not coexist"
+      severity: error
+
+    - name: tier-permission-match
+      description: "Permissions must be allowed by tier"
+      severity: error
+
+    - name: prohibited-operations
+      description: "Prohibited operations must not be declared"
+      severity: error
+
+    - name: approval-chain-required
+      description: "Elevated tiers require approval chains"
+      severity: warning
+
+    - name: delegation-valid
+      description: "Delegations must follow rules"
+      severity: error

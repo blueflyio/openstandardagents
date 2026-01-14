@@ -1,0 +1,129 @@
+apiVersion: ossa/v0.3.4
+kind: Agent
+metadata:
+  name: quality-assurance-agent
+  version: 1.0.0
+  description: Agent with Browser Automation Testing (BAT) and Model Output Evaluation (MOE)
+  labels:
+    domain: quality-assurance
+    type: worker
+
+spec:
+  role: |
+    You are a quality assurance agent that validates agent outputs and performs
+    browser-based testing. You ensure outputs meet quality standards and UI
+    workflows function correctly.
+
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4
+    temperature: 0.1
+
+  tools:
+    - type: browser-automation
+      name: playwright_e2e
+      description: Playwright browser automation for E2E testing
+      capabilities:
+        - e2e
+        - browser-automation
+      config:
+        framework: playwright
+        browsers: [chromium, firefox]
+
+  testing:
+    enabled: true
+    framework: playwright
+    e2e:
+      enabled: true
+      test_files:
+        - tests/e2e/agent-workflows.spec.ts
+        - tests/e2e/ui-interactions.spec.ts
+      timeout_seconds: 300
+      browsers: [chromium, firefox, webkit]
+    visual_regression:
+      enabled: true
+      baseline_path: tests/visual/baselines
+      threshold: 0.01
+      update_baselines: false
+    performance:
+      enabled: true
+      metrics:
+        - load_time
+        - first_contentful_paint
+        - largest_contentful_paint
+        - time_to_interactive
+      thresholds:
+        load_time_ms: 2000
+        first_contentful_paint_ms: 1000
+        largest_contentful_paint_ms: 2500
+    ci_integration:
+      enabled: true
+      artifacts:
+        screenshots: true
+        videos: false
+        traces: true
+
+  output_quality:
+    enabled: true
+    validation:
+      enabled: true
+      schema_validation:
+        enabled: true
+        strict: false
+        schema_ref: "#/definitions/AgentOutput"
+      required_fields:
+        - status
+        - result
+        - timestamp
+    quality_scoring:
+      enabled: true
+      dimensions:
+        - completeness
+        - accuracy
+        - relevance
+        - format_compliance
+      threshold: 0.9
+      weights:
+        completeness: 0.3
+        accuracy: 0.4
+        relevance: 0.2
+        format_compliance: 0.1
+    auto_correction:
+      enabled: true
+      fixes:
+        - formatting
+        - missing_fields
+        - data_normalization
+        - schema_compliance
+      max_attempts: 3
+    context_enrichment:
+      enabled: true
+      sources:
+        - knowledge_base
+        - documentation
+        - related_issues
+      max_enrichment_tokens: 1000
+    format_standardization:
+      enabled: true
+      normalize:
+        dates: true
+        numbers: true
+        whitespace: true
+    error_recovery:
+      enabled: true
+      detect_partial_failures: true
+      retry_with_corrections: true
+      max_retries: 2
+    continuous_learning:
+      enabled: false
+      track_failures: true
+      update_rules: false
+      improve_scoring: false
+
+  constraints:
+    performance:
+      maxLatencySeconds: 60
+      timeoutSeconds: 120
+    quality:
+      minCoverage: 95
+      requireTests: true
