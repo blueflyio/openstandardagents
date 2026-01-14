@@ -421,7 +421,7 @@ export class LlmsTxtService {
     } else {
       lines.push('- [Roadmap](docs/roadmap/): Future plans and milestones')
       lines.push('- [Whitepaper](docs/whitepaper/): Technical deep-dives')
-      lines.push('- [Infrastructure](infrastructure/): Kubernetes and deployment configs')
+      lines.push('- [Infrastructure](.gitlab/infrastructure/): Kubernetes and deployment configs')
       lines.push('- [GitLab CI/CD](.gitlab-ci.yml): CI/CD pipeline configuration')
     }
 

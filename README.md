@@ -4,7 +4,7 @@
 
 > OSSA is a **specification standard**, not a framework. It defines contracts and metadata for production agent systems (security, governance, portability), not orchestration algorithms or runtime behavior.
 
-> 💡 **For AI Coding Agents**: See [AGENTS.md](AGENTS.md) for setup, code style, and development guidelines. See [llms.txt](llms.txt) for LLM-friendly project overview.
+> 💡 **For AI Coding Agents**: See [AGENTS.md](docs/governance/AGENTS.md) for setup, code style, and development guidelines. See [llms.txt](docs/llms.txt) for LLM-friendly project overview.
 
 [![npm version](https://img.shields.io/npm/v/@bluefly/openstandardagents)](https://www.npmjs.com/package/@bluefly/openstandardagents)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
@@ -238,7 +238,7 @@ npm run docs:generate            # Generate documentation
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+We welcome contributions! Please see [CONTRIBUTING.md](docs/governance/CONTRIBUTING.md) for guidelines.
 
 ### Quick Contribution Guide
 
@@ -251,7 +251,7 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guid
 
 ### Code of Conduct
 
-Please read [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) before contributing.
+Please read [CODE_OF_CONDUCT.md](docs/governance/CODE_OF_CONDUCT.md) before contributing.
 
 ## 📦 What's Included
 
