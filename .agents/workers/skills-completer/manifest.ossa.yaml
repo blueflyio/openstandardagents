@@ -1,0 +1,50 @@
+apiVersion: ossa/v0.3.5
+kind: Agent
+metadata:
+  name: skills-completer
+  version: 1.0.0
+  description: Specialized agent for skills completer tasks
+  labels:
+    ossa-version: v0.3.5
+    domain: platform
+    tier: worker
+    priority: P0
+
+spec:
+  taxonomy:
+    domain: platform
+    subdomain: automation
+    capability: skills_completer
+
+  role: |
+    You are the skills-completer, responsible for skills completer tasks.
+    Follow OSSA v0.3.5 spec. NO scripts folders. NO .sh files.
+
+  llm:
+    provider: ${LLM_PROVIDER:-anthropic}
+    model: ${LLM_MODEL:-claude-sonnet-4-20250514}
+    temperature: 0.1
+    maxTokens: 16384
+
+  completion:
+    default_signal: complete
+    max_iterations: 20
+
+  checkpointing:
+    enabled: true
+    interval: iteration
+    interval_value: 5
+
+extensions:
+  experts:
+    registry:
+      - id: skills-completer-expert
+        name: "skills completer Expert"
+        model:
+          provider: anthropic
+          model: claude-sonnet-4-20250514
+        cost_tier: standard
+
+  infrastructure:
+    - type: agent_mesh
+      endpoint: mesh.blueflyagents.com:3005
