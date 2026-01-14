@@ -100,8 +100,8 @@ export class SkillRegistryService {
       frameworks: runtime?.triggers?.frameworks || []
     };
 
-    // Extract capabilities
-    const capabilities = ossaManifest.spec?.capabilities || [];
+    // Extract capabilities from tools (capabilities not in v0.3.4 spec)
+    const capabilities = ossaManifest.spec?.tools?.map((t: any) => t.name || t).filter(Boolean) || [];
 
     const registeredSkill: RegisteredSkill = {
       id: skillId,
