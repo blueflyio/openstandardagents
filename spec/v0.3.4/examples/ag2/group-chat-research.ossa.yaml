@@ -1,0 +1,198 @@
+apiVersion: ossa/v0.3.4
+kind: Agent
+metadata:
+  name: research-team
+  namespace: examples
+  labels:
+    framework: ag2
+    pattern: group-chat
+    domain: research
+  annotations:
+    description: Multi-agent group chat for collaborative research
+    example: AG2 group chat with round-robin speaker selection
+
+spec:
+  role: researcher
+  goal: "Conduct comprehensive research with multiple specialized agents"
+  capabilities:
+    - web_search
+    - data_analysis
+    - synthesis
+    - fact_checking
+    - report_generation
+
+orchestration:
+  swarm_topology:
+    topology_type: mesh
+    mesh:
+      agents:
+        - agent://research-coordinator
+        - agent://web-researcher
+        - agent://data-analyst
+        - agent://fact-checker
+        - agent://writer
+      broadcast_mode: false
+      consensus_required: true
+      consensus_threshold: 0.75
+    orchestration_mode: round_robin
+    max_rounds: 15
+
+  group_chat:
+    participants:
+      - agent://research-coordinator
+      - agent://web-researcher
+      - agent://data-analyst
+      - agent://fact-checker
+      - agent://writer
+    manager: agent://research-coordinator
+    max_round: 15
+    speaker_selection_method: round_robin
+    allow_repeat_speaker: false
+    transitions:
+      agent://research-coordinator:
+        - agent://web-researcher
+        - agent://data-analyst
+      agent://web-researcher:
+        - agent://fact-checker
+        - agent://data-analyst
+      agent://data-analyst:
+        - agent://fact-checker
+        - agent://writer
+      agent://fact-checker:
+        - agent://writer
+        - agent://research-coordinator
+      agent://writer:
+        - agent://research-coordinator
+    conversation_termination:
+      type: consensus
+      consensus_threshold: 0.75
+      max_rounds: 15
+      timeout_ms: 900000
+    context_variables:
+      research_topic: ""
+      findings: []
+      sources: []
+    summary_method: reflection_with_llm
+    summary_prompt: "Summarize the research findings, key insights, and recommendations from this collaborative session."
+
+  nested_chat:
+    max_nesting_depth: 2
+    context_propagation: summary
+    result_aggregation: append
+    nested_chats:
+      - trigger:
+          type: keyword
+          keyword: "DEEP_DIVE"
+        participants:
+          - agent://web-researcher
+          - agent://data-analyst
+          - agent://fact-checker
+        initiator: agent://research-coordinator
+        max_turns: 10
+        summary_method: reflection_with_llm
+        summary_prompt: "Provide a concise summary of the deep-dive findings."
+        carryover:
+          mode: context_variables
+          context_keys:
+            - research_topic
+            - current_focus
+        silent: false
+        message: "Let's do a deep dive on this specific aspect."
+        position: 1
+
+      - trigger:
+          type: function_call
+          function_name: verify_claims
+        participants:
+          - agent://fact-checker
+          - agent://web-researcher
+        initiator: agent://research-coordinator
+        max_turns: 5
+        summary_method: last_msg
+        carryover:
+          mode: summary
+        silent: true
+        position: 2
+
+hitl:
+  enabled: true
+  human_input_mode: NEVER
+  intervention_points:
+    - id: quality_check
+      name: Research Quality Gate
+      trigger:
+        type: after_action
+        action_name: generate_report
+      mode: CONDITIONAL
+      conditional_logic:
+        rules:
+          - field: confidence
+            operator: lt
+            value: 0.8
+          - field: source_count
+            operator: lt
+            value: 5
+        operator: OR
+      notification_channels:
+        - email
+      priority: normal
+
+a2a:
+  service_discovery:
+    enabled: true
+    mechanism: registry
+    tags:
+      - research
+      - analysis
+      - collaboration
+  capability_advertisement:
+    agent_id: agent://research-team
+    name: Collaborative Research Team
+    capabilities:
+      - id: comprehensive_research
+        name: Comprehensive Research
+        type: skill
+        description: Multi-agent collaborative research with fact-checking
+        parameters:
+          schema:
+            type: object
+            required:
+              - topic
+            properties:
+              topic:
+                type: string
+              depth:
+                type: string
+                enum: [shallow, moderate, deep]
+              time_limit_minutes:
+                type: integer
+        returns:
+          schema:
+            type: object
+            properties:
+              findings:
+                type: array
+              sources:
+                type: array
+              confidence_score:
+                type: number
+        async: true
+        streaming: false
+
+state_management:
+  context_serialization:
+    format: json
+    compression: gzip
+  memory_portability:
+    enabled: true
+    export_format: json
+    include_vector_embeddings: true
+  teachability:
+    enabled: true
+    learning_modes:
+      - observation
+      - feedback
+      - pattern
+    memory_persistence: episodic
+    max_memory_size: 1000
+    forgetting_enabled: true

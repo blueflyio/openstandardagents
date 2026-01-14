@@ -1,0 +1,147 @@
+apiVersion: ossa/v0.3.4
+kind: Agent
+metadata:
+  name: mistral-code-assistant
+  version: 1.0.0
+  description: Code review and analysis assistant using Mistral Large
+  labels:
+    provider: mistral
+    purpose: code-review
+    language: multi
+
+spec:
+  role: |
+    You are an expert code reviewer and software architect.
+    You provide detailed, constructive feedback on code quality, performance, and best practices.
+    You can analyze code in multiple programming languages and suggest improvements.
+
+  llm:
+    provider: mistral
+    model: mistral-large-latest
+    temperature: 0.3
+    maxTokens: 4096
+
+  tools:
+    - type: function
+      name: analyze_complexity
+      capabilities:
+        - code-analysis
+        - complexity-metrics
+      config:
+        max_depth: 10
+        metrics:
+          - cyclomatic
+          - cognitive
+          - halstead
+
+    - type: function
+      name: check_security
+      capabilities:
+        - security-scan
+        - vulnerability-detection
+
+extensions:
+  mistral:
+    # Mistral-specific configuration
+    model: mistral-large-latest
+    api_key: ${MISTRAL_API_KEY}
+    temperature: 0.3
+    max_tokens: 4096
+    top_p: 0.95
+    random_seed: 42
+    safe_mode: false
+
+    # Define tools in Mistral format
+    tools:
+      - type: function
+        function:
+          name: analyze_complexity
+          description: Analyze code complexity and generate metrics
+          parameters:
+            type: object
+            properties:
+              code:
+                type: string
+                description: The code to analyze
+              language:
+                type: string
+                description: Programming language (e.g., javascript, python, java)
+                enum: [javascript, python, java, go, rust, typescript]
+              metrics:
+                type: array
+                items:
+                  type: string
+                description: Metrics to calculate
+            required:
+              - code
+              - language
+
+      - type: function
+        function:
+          name: check_security
+          description: Scan code for security vulnerabilities and best practice violations
+          parameters:
+            type: object
+            properties:
+              code:
+                type: string
+                description: The code to scan
+              language:
+                type: string
+                description: Programming language
+              severity_threshold:
+                type: string
+                enum: [low, medium, high, critical]
+                description: Minimum severity level to report
+            required:
+              - code
+              - language
+
+      - type: function
+        function:
+          name: suggest_refactoring
+          description: Suggest code refactoring opportunities
+          parameters:
+            type: object
+            properties:
+              code:
+                type: string
+                description: The code to analyze
+              language:
+                type: string
+                description: Programming language
+              focus:
+                type: array
+                items:
+                  type: string
+                description: Areas to focus on
+                enum:
+                  - performance
+                  - readability
+                  - maintainability
+                  - testability
+            required:
+              - code
+              - language
+
+  # Observability
+  observability:
+    enabled: true
+    metrics:
+      - token_usage
+      - latency
+      - tool_calls
+    traces:
+      provider: opentelemetry
+      endpoint: http://localhost:4318/v1/traces
+
+  # Rate limiting
+  ratelimit:
+    requests_per_minute: 60
+    tokens_per_minute: 100000
+
+  # Caching
+  cache:
+    enabled: true
+    ttl: 3600
+    strategy: semantic

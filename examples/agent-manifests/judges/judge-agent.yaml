@@ -1,0 +1,153 @@
+apiVersion: ossa/v0.3.4
+kind: Agent
+metadata:
+  name: decision-arbitration-judge
+  version: v1.0.0
+  description: 'Ultimate decision-making agent for conflict resolution and final arbitration'
+  author: 'architecture-council'
+  labels:
+    environment: production
+    classification: internal
+    role: judge
+    complexity: enterprise
+spec:
+  type: judge
+  subtype: decision-arbitrator
+  capabilities:
+    domains:
+      - decision-making
+      - conflict-resolution
+      - arbitration
+      - consensus-building
+      - priority-ranking
+      - resource-allocation
+    operations:
+      - arbitrate-conflicts
+      - make-decisions
+      - resolve-disputes
+      - prioritize-requests
+      - allocate-resources
+      - build-consensus
+    patterns:
+      - decision-tree
+      - weighted-scoring
+      - consensus-algorithm
+      - conflict-resolution
+      - priority-queue
+      - resource-optimization
+  protocols:
+    supported:
+      - name: rest
+        version: '1.1'
+        endpoint: 'https://judge.platform.com/api/v1'
+        authentication:
+          type: oauth2
+          scopes: ['judge.arbitrate', 'decisions.make', 'conflicts.resolve']
+        tls: true
+      - name: grpc
+        version: '1.0'
+        endpoint: 'grpc://judge.platform.com:9443/DecisionJudge'
+        authentication:
+          type: mutual-tls
+      - name: event-stream
+        version: '1.0'
+        endpoint: 'wss://events.platform.com/judge'
+        authentication:
+          type: jwt
+  arbitration:
+    decisionMaking:
+      algorithm: 'weighted-consensus'
+      votingSystem: 'ranked-choice'
+      quorumRequired: true
+      minimumParticipants: 3
+      timeoutPeriod: 300000
+    conflictResolution:
+      escalationLevels:
+        - automated
+        - peer-review
+        - expert-panel
+        - executive-decision
+      resolutionStrategies:
+        - compromise
+        - priority-based
+        - resource-optimal
+        - consensus-driven
+    criteria:
+      businessValue: 30
+      technicalFeasibility: 25
+      riskAssessment: 20
+      resourceRequirement: 15
+      timeToMarket: 10
+  decision:
+    factors:
+      - impact
+      - urgency
+      - complexity
+      - risk
+      - cost
+      - benefit
+      - feasibility
+      - alignment
+    scoringModel:
+      scale: '1-10'
+      weights:
+        strategic: 40
+        operational: 30
+        technical: 20
+        financial: 10
+    evidenceRequired:
+      dataPoints: true
+      stakeholderInput: true
+      expertOpinion: true
+      historicalContext: true
+      riskAssessment: true
+  governance:
+    authority:
+      scope: 'platform-wide'
+      limitations:
+        ['legal-compliance', 'budget-constraints', 'policy-boundaries']
+      escalationPath: 'executive-committee'
+    accountability:
+      decisionAudit: true
+      outcomeTracking: true
+      performanceReview: true
+      learningFeedback: true
+    transparency:
+      decisionLog: true
+      rationale: true
+      stakeholderNotification: true
+      appealProcess: true
+  consensus:
+    buildingMethods:
+      - facilitated-discussion
+      - structured-voting
+      - compromise-negotiation
+      - expert-mediation
+    participantRoles:
+      - stakeholder
+      - expert
+      - facilitator
+      - observer
+    agreements:
+      unanimous: preferred
+      majority: acceptable
+      executive: fallback
+  performance:
+    throughput:
+      decisionsPerDay: 20
+      conflictsPerWeek: 10
+    latency:
+      simpleDecision: 3600000
+      complexArbitration: 86400000
+      conflictResolution: 259200000
+      p95: 172800000
+      p99: 604800000
+  monitoring:
+    decisionQuality: true
+    outcomeTracking: true
+    stakeholderSatisfaction: true
+    processEfficiency: true
+    alerting:
+      escalationThreshold: 3
+      timeoutThreshold: 604800000
+      satisfactionThreshold: 70

@@ -1,0 +1,234 @@
+# ============================================================================
+# STAGE 1 - SETUP & VALIDATE
+# ============================================================================
+
+validate:node:
+  stage: validate
+  needs: []
+  image: node:${NODE_VERSION}-alpine
+  script:
+    - node --version
+    - npm --version
+    - echo "Node.js ${NODE_VERSION} ready"
+  rules:
+    - when: always
+
+validate:ossa:
+  stage: validate
+  image: node:${NODE_VERSION}-alpine
+  tags:
+    - saas-linux-small-amd64
+  extends:
+    - .npm-cache
+  before_script:
+    - apk add --no-cache curl jq
+    - npm ci --prefer-offline --no-audit
+    - npm run build
+  script:
+    - echo "Validating all OSSA manifests..."
+    - |
+      FAILED=0
+      for file in $(find examples -name "*.ossa.yaml" -o -name "*.ossa.yml"); do
+        if node dist/cli/index.js validate "$file" >/dev/null 2>&1; then
+          echo "✓ $file"
+        else
+          echo "✗ FAILED: $file"
+          node dist/cli/index.js validate "$file" 2>&1 || true
+          FAILED=$((FAILED + 1))
+        fi
+      done
+      for file in $(find examples/ossa-templates -name "*.ossa.yaml" 2>/dev/null); do
+        if node dist/cli/index.js validate "$file" >/dev/null 2>&1; then
+          echo "✓ $file"
+        else
+          echo "✗ FAILED: $file"
+          node dist/cli/index.js validate "$file" 2>&1 || true
+          FAILED=$((FAILED + 1))
+        fi
+      done
+      if [ $FAILED -gt 0 ]; then
+        echo "ERROR: $FAILED manifests failed validation"
+        exit 1
+      fi
+      echo "All OSSA manifests valid"
+  allow_failure: false
+  rules:
+    - when: always
+
+validate:gitlab-ci:
+  stage: validate
+  needs: []
+  image: alpine:latest
+  script:
+    - apk add --no-cache curl jq
+    - |
+      for file in $(find . -name ".gitlab-ci*.yml" -o -name "*.gitlab-ci.yml" 2>/dev/null | grep -v "^./examples/" | head -1); do
+        if [ -f "$file" ]; then
+          echo "Validating $file"
+          RESPONSE=$(curl --silent --request POST \
+            --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+            --header "Content-Type: application/json" \
+            --data "$(jq -Rs '{content: .}' < "$file")" \
+            "${CI_API_V4_URL}/ci/lint")
+          
+          # Check if the response contains a valid field
+          if echo "$RESPONSE" | jq -e '.valid' > /dev/null 2>&1; then
+            if echo "$RESPONSE" | jq -e '.valid == true' > /dev/null 2>&1; then
+              echo "CI configuration is valid"
+            else
+              echo "CI configuration is invalid:"
+              echo "$RESPONSE" | jq -r '.errors[]' 2>/dev/null || echo "Unknown validation error"
+              exit 1
+            fi
+          else
+            echo "WARNING: CI validation API returned unexpected response:"
+            echo "$RESPONSE"
+            echo "Continuing anyway..."
+          fi
+        fi
+      done
+  allow_failure: true
+  rules:
+    - when: always
+
+# Check for divergent branches before merging to protected branches
+check:divergence:
+  stage: validate
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache curl jq
+    - apk add --no-cache git
+  script:
+    - |
+      if [ "$CI_MERGE_REQUEST_TARGET_BRANCH" = "main" ] || echo "$CI_MERGE_REQUEST_TARGET_BRANCH" | grep -qE "^release/v"; then
+        echo "Checking for divergent branches..."
+        git fetch origin
+        
+        BEHIND=$(git log --oneline origin/$CI_MERGE_REQUEST_SOURCE_BRANCH..origin/$CI_MERGE_REQUEST_TARGET_BRANCH 2>/dev/null | wc -l)
+        AHEAD=$(git log --oneline origin/$CI_MERGE_REQUEST_TARGET_BRANCH..origin/$CI_MERGE_REQUEST_SOURCE_BRANCH 2>/dev/null | wc -l)
+        
+        if [ $BEHIND -gt 0 ] && [ $AHEAD -gt 0 ]; then
+          echo "ERROR: DIVERGENT BRANCHES DETECTED"
+          echo "Target has $BEHIND commits not in source"
+          echo "Source has $AHEAD commits not in target"
+          echo "Use squash merge or force push recovery"
+          exit 1
+        fi
+        
+        if [ $BEHIND -gt 0 ]; then
+          echo "WARNING: Source behind target by $BEHIND commits"
+          exit 1
+        fi
+        
+        echo "No divergence detected"
+      fi
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+# Check for .DS_Store files
+check:ds-store:
+  stage: validate
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache curl jq
+    - apk add --no-cache git
+  script:
+    - |
+      echo "Checking for .DS_Store files..."
+      if git diff --name-only $CI_MERGE_REQUEST_DIFF_BASE_SHA 2>/dev/null | grep -q "\.DS_Store"; then
+        echo "ERROR: .DS_Store files in MR"
+        exit 1
+      fi
+      echo "No .DS_Store files"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+# REMOVED: validate:version-sync - sync-versions.ts was deleted in DRY consolidation
+# Version sync is now handled by ossa-dev CLI (src/dev-cli/src/services/version-sync.service.ts)
+# Use: npm run version:sync (uses ossa-dev CLI)
+
+# ============================================================================
+# VERSION MANAGEMENT VIA GITLAB AGENTS (Dogfooding)
+# ============================================================================
+# TODO: Enable after component is published to main
+# include:
+#   - component: gitlab.com/blueflyio/ossa/openstandardagents/version-management/version-bump-agent@main
+
+# version:bump:agent:
+#   extends: .version-bump-agent
+#   variables:
+#     BUMP_TYPE: "patch"
+#     TARGET_BRANCH: "release/v0.X.x"
+#   rules:
+#     - if: '$BUMP_VERSION == "true"'
+#       when: manual
+#       allow_failure: false
+
+# version:sync:agent:
+#   extends: .version-sync-agent
+#   rules:
+#     - if: '$CI_PIPELINE_SOURCE == "push"'
+#       when: always
+#     - if: '$VERSION_SYNC == "true"'
+#       when: manual
+
+# version:consistency:check:
+#   extends: .version-consistency-check
+
+validate:scripts-version:
+  stage: validate
+  image: node:${NODE_VERSION}-alpine
+  tags:
+    - saas-linux-small-amd64
+  extends:
+    - .npm-cache
+  before_script:
+    - apk add --no-cache curl jq
+    - npm ci --prefer-offline --no-audit
+    - npm run build
+  script:
+    - |
+      echo "Validating npm scripts use dynamic version..."
+      VERSION=$(jq -r '.current' .version.json)
+      echo "Current version: ${VERSION}"
+      
+      # Verify exports["./schema"] uses dynamic version placeholder or matches current version
+      EXPECTED_EXPORT="./spec/v${VERSION}/ossa-${VERSION}.schema.json"
+      PLACEHOLDER_EXPORT='./spec/v{{VERSION}}/ossa-{{VERSION}}.schema.json'
+      ACTUAL_EXPORT=$(node -p "require('./package.json').exports?.['./schema'] || ''")
+      if [ "$ACTUAL_EXPORT" = "$PLACEHOLDER_EXPORT" ]; then
+        echo "exports[\"./schema\"] uses {{VERSION}} placeholder (will be replaced during release)"
+      elif [ "$ACTUAL_EXPORT" = "$EXPECTED_EXPORT" ]; then
+        echo "exports[\"./schema\"] matches current version: ${EXPECTED_EXPORT}"
+      elif [ -n "$ACTUAL_EXPORT" ]; then
+        echo "ERROR: package.json exports[\"./schema\"] is \"${ACTUAL_EXPORT}\""
+        echo "       Expected: \"${PLACEHOLDER_EXPORT}\" (placeholder) or \"${EXPECTED_EXPORT}\" (resolved)"
+        exit 1
+      fi
+
+      # Check scripts don't have hardcoded version paths
+      if node -e "const pkg = require('./package.json'); const scripts = JSON.stringify(pkg.scripts || {}); if (scripts.match(/spec\/v0\.[0-9]/)) { process.exit(1); }" 2>/dev/null; then
+        echo "Scripts field does not contain hardcoded version paths"
+      else
+        echo "ERROR: package.json scripts contain hardcoded version paths"
+        exit 1
+      fi
+
+      echo "All scripts use dynamic version detection"
+  allow_failure: false
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: always
+    - if: $CI_COMMIT_BRANCH =~ /^release\/v/
+      when: always
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: always
+    - changes:
+      - package.json
+      - src/tools/**/*
+      when: always
+
+# REMOVED: validate:docs-consistency - sync-versions.ts was deleted in DRY consolidation
+# Documentation consistency is now handled by ossa-dev CLI
+# Use: npm run version:sync (uses ossa-dev CLI)
+

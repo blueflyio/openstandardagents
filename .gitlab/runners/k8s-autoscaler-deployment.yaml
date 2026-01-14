@@ -1,0 +1,293 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gitlab-runner-autoscaler
+  namespace: gitlab-runner
+  labels:
+    app: gitlab-runner
+    component: autoscaler
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: gitlab-runner
+      component: autoscaler
+  template:
+    metadata:
+      labels:
+        app: gitlab-runner
+        component: autoscaler
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8093"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: gitlab-runner
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: gitlab-runner
+        image: gitlab/gitlab-runner:latest
+        command:
+        - /usr/bin/gitlab-runner
+        - run
+        - --config=/etc/gitlab-runner/config.toml
+        - --metrics-server=:8093
+        env:
+        - name: GITLAB_RUNNER_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: gitlab-runner-secret
+              key: runner-token
+        - name: S3_CACHE_SERVER
+          valueFrom:
+            secretKeyRef:
+              name: gitlab-runner-secret
+              key: s3-cache-server
+              optional: true
+        - name: S3_CACHE_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: gitlab-runner-secret
+              key: s3-cache-access-key
+              optional: true
+        - name: S3_CACHE_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: gitlab-runner-secret
+              key: s3-cache-secret-key
+              optional: true
+        volumeMounts:
+        - name: config
+          mountPath: /etc/gitlab-runner
+        - name: health-check
+          mountPath: /usr/local/bin/health-check.sh
+          subPath: health-check.sh
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - /usr/local/bin/health-check.sh
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+          successThreshold: 1
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - /usr/local/bin/health-check.sh
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+          successThreshold: 1
+        startupProbe:
+          exec:
+            command:
+            - /bin/sh
+            - /usr/local/bin/health-check.sh
+          initialDelaySeconds: 0
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 12
+          successThreshold: 1
+      volumes:
+      - name: config
+        configMap:
+          name: gitlab-runner-config
+      - name: health-check
+        configMap:
+          name: gitlab-runner-self-healing
+          defaultMode: 0755
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gitlab-runner-config
+  namespace: gitlab-runner
+data:
+  config.toml: |
+    concurrent = 20
+    check_interval = 0
+
+    [session_server]
+      session_timeout = 1800
+
+    [[runners]]
+      name = "ossa-autoscaler"
+      url = "https://gitlab.com/"
+      token = "${GITLAB_RUNNER_TOKEN}"
+      executor = "kubernetes"
+      [runners.kubernetes]
+        namespace = "gitlab-runner"
+        image = "node:22-alpine"
+        privileged = false
+        cpu_limit = "2"
+        memory_limit = "4Gi"
+        cpu_request = "500m"
+        memory_request = "1Gi"
+        poll_timeout = 180
+        output_limit = 4096
+        [runners.kubernetes.affinity]
+        [runners.kubernetes.pod_security_context]
+          run_as_non_root = true
+          run_as_user = 1000
+          fs_group = 1000
+        [runners.kubernetes.container_security_context]
+          privileged = false
+          allow_privilege_escalation = false
+        [runners.kubernetes.volumes]
+          [[runners.kubernetes.volumes.empty_dir]]
+            name = "cache"
+            mount_path = "/cache"
+          [[runners.kubernetes.volumes.empty_dir]]
+            name = "builds"
+            mount_path = "/builds"
+      [runners.cache]
+        Type = "s3"
+        ServerAddress = "${S3_CACHE_SERVER}"
+        AccessKey = "${S3_CACHE_ACCESS_KEY}"
+        SecretKey = "${S3_CACHE_SECRET_KEY}"
+        BucketName = "gitlab-runner-cache"
+        Insecure = false
+
+    [[runners]]
+      name = "ossa-agent-autoscaler"
+      url = "https://gitlab.com/"
+      token = "${GITLAB_RUNNER_TOKEN}"
+      executor = "kubernetes"
+      [runners.kubernetes]
+        namespace = "gitlab-runner"
+        image = "node:22-alpine"
+        privileged = false
+        cpu_limit = "4"
+        memory_limit = "8Gi"
+        cpu_request = "1"
+        memory_request = "2Gi"
+        poll_timeout = 300
+        output_limit = 8192
+        [runners.kubernetes.affinity]
+        [runners.kubernetes.pod_security_context]
+          run_as_non_root = true
+          run_as_user = 1000
+        [runners.kubernetes.container_security_context]
+          privileged = false
+        [runners.kubernetes.volumes]
+          [[runners.kubernetes.volumes.empty_dir]]
+            name = "cache"
+            mount_path = "/cache"
+          [[runners.kubernetes.volumes.empty_dir]]
+            name = "builds"
+            mount_path = "/builds"
+        [runners.kubernetes.env]
+          - name = "GITLAB_TOKEN"
+          - name = "ANTHROPIC_API_KEY"
+          - name = "OPENAI_API_KEY"
+      [runners.cache]
+        Type = "s3"
+        ServerAddress = "${S3_CACHE_SERVER}"
+        AccessKey = "${S3_CACHE_ACCESS_KEY}"
+        SecretKey = "${S3_CACHE_SECRET_KEY}"
+        BucketName = "gitlab-runner-cache"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gitlab-runner
+  namespace: gitlab-runner
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: gitlab-runner
+rules:
+- apiGroups: [""]
+  resources: ["pods", "pods/exec", "pods/attach", "pods/log"]
+  verbs: ["*"]
+- apiGroups: [""]
+  resources: ["configmaps", "secrets"]
+  verbs: ["create", "get", "list", "watch", "update", "patch", "delete"]
+- apiGroups: [""]
+  resources: ["namespaces"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: gitlab-runner
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: gitlab-runner
+subjects:
+- kind: ServiceAccount
+  name: gitlab-runner
+  namespace: gitlab-runner
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: gitlab-runner-autoscaler
+  namespace: gitlab-runner
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: gitlab-runner-autoscaler
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  - type: Pods
+    pods:
+      metric:
+        name: gitlab_runner_jobs_running
+      target:
+        type: AverageValue
+        averageValue: "5"
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+      - type: Pods
+        value: 1
+        periodSeconds: 60
+      selectPolicy: Min
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 15
+      - type: Pods
+        value: 2
+        periodSeconds: 15
+      selectPolicy: Max

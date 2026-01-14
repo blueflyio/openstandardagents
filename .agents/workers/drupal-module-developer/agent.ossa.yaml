@@ -1,0 +1,341 @@
+apiVersion: ossa/v0.3.3
+kind: Agent
+
+metadata:
+  name: drupal-module-developer
+  version: 1.0.0
+  description: |
+    Advanced Drupal module development specialist with AI-powered code
+    generation and best practices.
+
+  labels:
+    ossa-version: v0.3.3
+    platform: drupal
+    provider: blueflyio
+    category: worker
+    domain: development
+
+spec:
+  taxonomy:
+    domain: development
+    subdomain: drupal
+    capability: module-development
+
+  role: |
+    You are a Drupal Module Development specialist.
+
+    Your responsibilities:
+    1. Generate complete Drupal module scaffolds with best practices
+    2. Create custom entities with bundle support, fields, and views
+    3. Build REST API endpoints with proper serialization and authentication
+    4. Generate complex Drupal forms with validation and theming
+    5. Create plugin systems with discovery, managers, and base classes
+
+    Follow Drupal coding standards and modern PHP practices.
+
+  llm:
+    provider: ${LLM_PROVIDER:-anthropic}
+    model: ${LLM_MODEL:-claude-sonnet-4}
+    temperature: 0.2
+    maxTokens: 8000
+
+    fallback_models:
+      - provider: ${LLM_FALLBACK_PROVIDER_1:-openai}
+        model: ${LLM_FALLBACK_MODEL_1:-gpt-4o}
+
+    retry_config:
+      max_attempts: 3
+      backoff_strategy: exponential
+
+    cost_tracking:
+      enabled: true
+      budget_alert_threshold: 75.00
+      cost_allocation_tags:
+        platform: drupal
+        team: development-agents
+
+  capabilities:
+    - name: generate_module_scaffold
+      description: Generate complete Drupal module scaffold with best practices
+      input_schema:
+        type: object
+        required: [moduleName, moduleType]
+        properties:
+          moduleName:
+            type: string
+          moduleType:
+            type: string
+            enum: [custom_entity, content_type, api_integration, utility, plugin_system, workflow]
+          moduleInfo:
+            type: object
+            properties:
+              description:
+                type: string
+              package:
+                type: string
+              version:
+                type: string
+              dependencies:
+                type: array
+              drupalVersion:
+                type: string
+                default: ^10 || ^11
+          features:
+            type: object
+            properties:
+              entities:
+                type: array
+              plugins:
+                type: array
+              services:
+                type: array
+              tests:
+                type: boolean
+                default: true
+      output_schema:
+        type: object
+        properties:
+          moduleId:
+            type: string
+          files:
+            type: array
+          structure:
+            type: object
+          documentation:
+            type: object
+
+    - name: create_custom_entity
+      description: Generate complete custom entity with bundle support, fields, and views
+      input_schema:
+        type: object
+        required: [entityType, entityLabel]
+        properties:
+          entityType:
+            type: string
+          entityLabel:
+            type: string
+          entityConfig:
+            type: object
+            properties:
+              hasBundle:
+                type: boolean
+                default: false
+              isRevisionable:
+                type: boolean
+                default: false
+              isTranslatable:
+                type: boolean
+                default: false
+              hasOwner:
+                type: boolean
+                default: true
+              baseFields:
+                type: array
+          permissions:
+            type: array
+            items:
+              type: string
+              enum: [view, create, edit, delete, administer]
+      output_schema:
+        type: object
+        properties:
+          entityId:
+            type: string
+          entityClass:
+            type: string
+          generatedFiles:
+            type: array
+          configuration:
+            type: array
+
+    - name: build_api_endpoint
+      description: Create REST API endpoints with proper serialization and authentication
+      input_schema:
+        type: object
+        required: [endpointName, resourceType]
+        properties:
+          endpointName:
+            type: string
+          resourceType:
+            type: string
+          apiConfig:
+            type: object
+            properties:
+              version:
+                type: string
+                default: v1
+              methods:
+                type: array
+                default: [GET, POST, PATCH, DELETE]
+              authentication:
+                type: string
+                enum: [none, basic, oauth, jwt, api_key]
+                default: oauth
+              serialization:
+                type: string
+                enum: [json, hal_json, xml]
+                default: json
+          fields:
+            type: array
+          security:
+            type: object
+      output_schema:
+        type: object
+        properties:
+          apiId:
+            type: string
+          endpoints:
+            type: array
+          resourceFiles:
+            type: array
+          openApiSpec:
+            type: object
+
+    - name: generate_form_api
+      description: Create complex Drupal forms with validation and theming
+      input_schema:
+        type: object
+        required: [formId, formType]
+        properties:
+          formId:
+            type: string
+          formType:
+            type: string
+            enum: [config, entity, custom, wizard, ajax]
+          formElements:
+            type: array
+          formBehavior:
+            type: object
+            properties:
+              ajax:
+                type: boolean
+                default: false
+              clientValidation:
+                type: boolean
+                default: true
+              multiStep:
+                type: boolean
+                default: false
+      output_schema:
+        type: object
+        properties:
+          formId:
+            type: string
+          formClass:
+            type: string
+          formFile:
+            type: string
+          validationMethods:
+            type: array
+
+    - name: create_plugin_system
+      description: Generate plugin system with discovery, managers, and base classes
+      input_schema:
+        type: object
+        required: [pluginType, pluginId]
+        properties:
+          pluginType:
+            type: string
+          pluginId:
+            type: string
+          pluginConfig:
+            type: object
+            properties:
+              discoveryType:
+                type: string
+                enum: [annotation, yaml, hook]
+                default: annotation
+              derivativeSupport:
+                type: boolean
+                default: false
+              cacheSupport:
+                type: boolean
+                default: true
+          pluginInterface:
+            type: object
+          examplePlugins:
+            type: array
+      output_schema:
+        type: object
+        properties:
+          pluginSystemId:
+            type: string
+          generatedFiles:
+            type: array
+          documentation:
+            type: string
+          examples:
+            type: array
+
+  autonomy:
+    level: assisted
+    approval_required: []
+    escalation:
+      enabled: true
+      triggers:
+        - code_generation_failure
+        - validation_error
+      target: drupal-platform-team
+
+  constraints:
+    cost:
+      maxTokensPerDay: 400000
+      maxCostPerDay: 40.00
+    time:
+      maxTurns: 30
+      timeout: 900
+
+  runtime:
+    type: docker
+    config:
+      timeout: 900
+      retries: 3
+      resources:
+        cpu: 2
+        memory: 4Gi
+
+  observability:
+    logging:
+      level: info
+    metrics:
+      enabled: true
+    tracing:
+      enabled: true
+      provider: otel
+
+  safety:
+    content_filtering:
+      enabled: true
+    guardrails:
+      enabled: true
+      max_output_tokens: 8000
+
+  integration:
+    platform: drupal
+    version: ">=10.0.0"
+    configuration:
+      protocol: http
+      endpoints:
+        base_url: http://localhost:3000
+        health: /health
+        metrics: /metrics
+
+extensions:
+  langchain:
+    agent_type: "zero-shot-react-description"
+    memory:
+      type: "conversation_buffer"
+  opentelemetry:
+    enabled: true
+    service_name: "drupal-module-developer"
+    traces:
+      enabled: true
+      exporter: otlp
+      endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4317}"
+    metrics:
+      enabled: true
+      exporter: otlp
+      endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4317}"
+      enabled: true
+      api_key_env: "LANGSMITH_API_KEY"
+      project_name: "drupal-agents"

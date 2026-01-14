@@ -1,0 +1,48 @@
+apiVersion: ossa/v0.3.3
+kind: Task
+metadata:
+  name: close-milestone-task
+  version: 1.0.0
+  description: "Close GitLab milestone after release"
+  labels:
+    domain: release-automation
+    type: deterministic
+    ossa-version: v0.3.0
+
+spec:
+  execution:
+    type: deterministic
+    runtime: node
+    entrypoint: scripts/close-milestone.ts
+    timeout_seconds: 60
+
+  capabilities:
+    - gitlab_api_write
+
+  input:
+    type: object
+    properties:
+      milestone_id: { type: integer }
+      project_id: { type: integer }
+    required: [milestone_id, project_id]
+
+  output:
+    type: object
+    properties:
+      closed: { type: boolean }
+      milestone_state: { type: string }
+
+extensions:
+  kagent:
+    api_version: kagent.dev/v1alpha2
+    kubernetes:
+      namespace: task-system
+
+runtime:
+  type: kubernetes
+  bindings:
+    gitlab_api:
+      capability: gitlab_api_write
+      binding: service_account
+      service_account: gitlab-task-sa
+

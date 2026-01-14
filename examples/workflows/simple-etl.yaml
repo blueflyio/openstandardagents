@@ -1,0 +1,151 @@
+# Example: Simple ETL Workflow
+# Demonstrates sequential Tasks with data transformation
+apiVersion: ossa/v0.3.4
+kind: Workflow
+metadata:
+  name: simple-etl
+  version: 1.0.0
+  description: Extract data from source, transform, and load to destination
+  labels:
+    domain: data-engineering
+    type: etl
+
+spec:
+  triggers:
+    - type: cron
+      schedule: "0 2 * * *"  # Daily at 2 AM
+    - type: event
+      source: s3
+      event: object.created
+      filter:
+        bucket: data-ingestion
+        prefix: incoming/
+
+  inputs:
+    type: object
+    properties:
+      source_path:
+        type: string
+        description: Source file or API endpoint
+      destination:
+        type: string
+        description: Target destination identifier
+      transform_rules:
+        type: array
+        items:
+          type: object
+    required:
+      - source_path
+      - destination
+
+  outputs:
+    type: object
+    properties:
+      records_processed:
+        type: integer
+      records_loaded:
+        type: integer
+      duration_ms:
+        type: number
+
+  steps:
+    # Extract
+    - id: extract
+      kind: Task
+      name: Extract data from source
+      ref: ./tasks/data-extract.yaml
+      input:
+        source: ${{ workflow.input.source_path }}
+      timeout_seconds: 600
+      retry:
+        max_attempts: 3
+        retryable_errors:
+          - NETWORK_ERROR
+          - TIMEOUT
+
+    # Validate source data
+    - id: validate
+      kind: Task
+      name: Validate extracted data
+      ref: ./tasks/data-validate.yaml
+      input:
+        data: ${{ steps.extract.output.data }}
+        schema: ${{ steps.extract.output.schema }}
+      on_error:
+        action: goto
+        goto: notify-failure
+
+    # Transform
+    - id: transform
+      kind: Task
+      name: Transform data
+      ref: ./tasks/data-transform.yaml
+      input:
+        data: ${{ steps.validate.output.validated_data }}
+        rules: ${{ workflow.input.transform_rules }}
+        source_format: ${{ steps.extract.output.format }}
+        target_format: json
+      depends_on:
+        - validate
+
+    # Load
+    - id: load
+      kind: Task
+      name: Load to destination
+      ref: ./tasks/data-load.yaml
+      input:
+        data: ${{ steps.transform.output.transformed_data }}
+        destination: ${{ workflow.input.destination }}
+        batch_size: 1000
+      depends_on:
+        - transform
+      retry:
+        max_attempts: 3
+        backoff_strategy: exponential
+        initial_delay_ms: 2000
+
+    # Success notification
+    - id: notify-success
+      kind: Task
+      ref: ./tasks/send-notification.yaml
+      input:
+        recipient: data-team@example.com
+        template: etl_success
+        variables:
+          records: ${{ steps.load.output.records_loaded }}
+          source: ${{ workflow.input.source_path }}
+          destination: ${{ workflow.input.destination }}
+      depends_on:
+        - load
+
+    # Failure notification (jumped to on error)
+    - id: notify-failure
+      kind: Task
+      ref: ./tasks/send-notification.yaml
+      condition: ${{ workflow.error != null }}
+      input:
+        recipient: data-team@example.com
+        template: etl_failure
+        variables:
+          error: ${{ workflow.error.message }}
+          source: ${{ workflow.input.source_path }}
+
+  error_handling:
+    on_failure: compensate
+    compensation_steps:
+      - id: cleanup
+        kind: Task
+        ref: ./tasks/cleanup-partial-load.yaml
+        input:
+          destination: ${{ workflow.input.destination }}
+          job_id: ${{ workflow.run_id }}
+
+  timeout_seconds: 3600
+
+  observability:
+    logging:
+      level: info
+    metrics:
+      enabled: true
+      custom_labels:
+        pipeline: etl

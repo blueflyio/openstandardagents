@@ -1,0 +1,392 @@
+apiVersion: ossa/v0.3.4
+kind: Agent
+metadata:
+  name: security-scanner
+  version: 1.0.0
+  description: 'Security scanning agent demonstrating Agent-to-Agent (A2A) messaging.
+
+
+    PUBLISHES TO:
+
+    • security.vulnerabilities - Vulnerability findings
+
+    • security.scan.completed - Scan completion notifications
+
+
+    SUBSCRIBES TO:
+
+    • dependency.updates - Trigger scan when dependencies change
+
+    • ci.build.completed - Trigger scan after successful builds
+
+
+    COMMANDS:
+
+    • scan_repository - On-demand security scan
+
+    • get_scan_status - Query scan progress
+
+
+    This agent demonstrates:
+
+    - Pub/sub pattern for event broadcasting
+
+    - Command pattern for RPC-style invocation
+
+    - JSON Schema message validation
+
+    - At-least-once delivery with dead letter queue
+
+    - Message filtering based on payload
+
+    '
+  labels:
+    difficulty: intermediate
+    tutorial: '04'
+    capability: security
+    pattern: multi-agent
+spec:
+  role: 'You are a security scanner agent in a multi-agent system.
+
+
+    Your responsibilities:
+
+    1. Scan code repositories for security vulnerabilities
+
+    2. Publish findings to security.vulnerabilities channel for other agents
+
+    3. React to dependency update notifications by triggering scans
+
+    4. Respond to on-demand scan requests via commands
+
+
+    Communication guidelines:
+
+    - Publish vulnerability events immediately when found (don''t batch)
+
+    - Include complete context in each message (scan_id, repo, severity)
+
+    - Log all message publications for audit trail
+
+    - Handle duplicate messages gracefully (idempotency)
+
+
+    When publishing vulnerabilities:
+
+    - Set severity accurately (critical/high/medium/low)
+
+    - Include CVE ID if available
+
+    - Provide clear remediation steps
+
+    - Reference the specific file and line number
+
+    '
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    temperature: 0.2
+  tools:
+  - type: mcp
+    name: github
+    description: GitHub API for repository access
+    config:
+      server: npx -y @modelcontextprotocol/server-github
+      env:
+        GITHUB_TOKEN: ${GITHUB_TOKEN}
+  - type: function
+    name: run_security_scan
+    description: 'Execute security analysis on a codebase.
+
+      Scans for: SQL injection, XSS, CSRF, dependency vulnerabilities,
+
+      hardcoded secrets, authentication issues.
+
+      '
+    input_schema:
+      type: object
+      required:
+      - repo_url
+      properties:
+        repo_url:
+          type: string
+          description: Repository URL to scan
+        scan_type:
+          type: string
+          enum:
+          - quick
+          - full
+          - dependency
+          default: quick
+          description: '• quick: Fast scan, common issues only (5-10 minutes)
+
+            • full: Comprehensive scan, all rules (30-60 minutes)
+
+            • dependency: Dependency vulnerabilities only (2-5 minutes)
+
+            '
+  messaging:
+    publishes:
+    - channel: security.vulnerabilities
+      description: Security vulnerabilities found during scans
+      schema:
+        type: object
+        required:
+        - severity
+        - title
+        - affected_file
+        - scan_id
+        properties:
+          severity:
+            type: string
+            enum:
+            - critical
+            - high
+            - medium
+            - low
+            - info
+            description: 'Severity level following CVSS guidelines:
+
+              • critical: CVSS 9.0-10.0, immediate action required
+
+              • high: CVSS 7.0-8.9, fix urgently
+
+              • medium: CVSS 4.0-6.9, fix soon
+
+              • low: CVSS 0.1-3.9, fix eventually
+
+              • info: CVSS 0.0, informational only
+
+              '
+          title:
+            type: string
+            minLength: 10
+            maxLength: 200
+            description: Brief, descriptive vulnerability title
+          cve_id:
+            type: string
+            pattern: ^CVE-\d{4}-\d{4,}$
+            description: CVE identifier if available (e.g., CVE-2024-1234)
+          affected_file:
+            type: string
+            description: File path where vulnerability was found
+          line_number:
+            type: integer
+            minimum: 1
+            description: Line number in file (if applicable)
+          description:
+            type: string
+            description: Detailed explanation of the vulnerability
+          remediation:
+            type: string
+            description: How to fix the vulnerability
+          scan_id:
+            type: string
+            format: uuid
+            description: UUID of the scan that found this vulnerability
+          repo_url:
+            type: string
+            format: uri
+            description: Repository where vulnerability was found
+          found_at:
+            type: string
+            format: date-time
+            description: Timestamp when vulnerability was detected
+    - channel: security.scan.completed
+      description: Notification when a security scan completes
+      schema:
+        type: object
+        required:
+        - scan_id
+        - repo_url
+        - status
+        properties:
+          scan_id:
+            type: string
+            format: uuid
+            description: UUID of the completed scan
+          repo_url:
+            type: string
+            format: uri
+            description: Repository that was scanned
+          status:
+            type: string
+            enum:
+            - completed
+            - failed
+            - partial
+            description: '• completed: Scan finished successfully
+
+              • failed: Scan encountered fatal error
+
+              • partial: Scan completed with warnings/skipped files
+
+              '
+          duration_seconds:
+            type: integer
+            minimum: 0
+            description: How long the scan took
+          findings_count:
+            type: object
+            description: Count of findings by severity
+            properties:
+              critical:
+                type: integer
+              high:
+                type: integer
+              medium:
+                type: integer
+              low:
+                type: integer
+              info:
+                type: integer
+          files_scanned:
+            type: integer
+            minimum: 0
+            description: Number of files analyzed
+          completed_at:
+            type: string
+            format: date-time
+            description: Scan completion timestamp
+    subscribes:
+    - channel: dependency.updates
+      description: Listen for dependency update notifications
+      handler: on_dependency_update
+      filter:
+        severity:
+          $in:
+          - critical
+          - high
+    - channel: ci.build.completed
+      description: Trigger security scan when builds complete
+      handler: on_build_completed
+      filter:
+        build_status:
+          $eq: success
+    commands:
+    - name: scan_repository
+      description: Trigger a security scan of a repository
+      input_schema:
+        type: object
+        required:
+        - repo_url
+        properties:
+          repo_url:
+            type: string
+            format: uri
+            description: Repository URL to scan
+            example: https://github.com/myorg/myrepo
+          priority:
+            type: string
+            enum:
+            - urgent
+            - normal
+            - low
+            default: normal
+            description: '• urgent: Queue jump, scan immediately (SLA: 5 minutes)
+
+              • normal: Standard queue (SLA: 30 minutes)
+
+              • low: Background scan (SLA: 4 hours)
+
+              '
+          scan_type:
+            type: string
+            enum:
+            - quick
+            - full
+            - dependency
+            default: quick
+            description: Type of scan to perform
+          notify_channels:
+            type: array
+            description: Additional channels to notify (beyond security.vulnerabilities)
+            items:
+              type: string
+            example:
+            - slack:security-team
+            - email:security@company.com
+      output_schema:
+        type: object
+        required:
+        - scan_id
+        - status
+        properties:
+          scan_id:
+            type: string
+            format: uuid
+            description: Unique scan identifier (use to query status later)
+          status:
+            type: string
+            enum:
+            - queued
+            - started
+            - completed
+            - failed
+            description: Current scan status
+          estimated_completion:
+            type: string
+            format: date-time
+            description: When scan is expected to complete
+          queue_position:
+            type: integer
+            minimum: 0
+            description: Position in scan queue (if status=queued)
+    - name: get_scan_status
+      description: Get status of an ongoing or completed scan
+      input_schema:
+        type: object
+        required:
+        - scan_id
+        properties:
+          scan_id:
+            type: string
+            format: uuid
+            description: Scan ID returned from scan_repository command
+      output_schema:
+        type: object
+        properties:
+          scan_id:
+            type: string
+            format: uuid
+          status:
+            type: string
+            enum:
+            - queued
+            - started
+            - completed
+            - failed
+          progress_percent:
+            type: number
+            minimum: 0
+            maximum: 100
+            description: Scan progress (0-100)
+          files_scanned:
+            type: integer
+            description: Files analyzed so far
+          findings_count:
+            type: object
+            description: Vulnerabilities found so far
+            properties:
+              critical:
+                type: integer
+              high:
+                type: integer
+              medium:
+                type: integer
+          started_at:
+            type: string
+            format: date-time
+          completed_at:
+            type: string
+            format: date-time
+            description: Only present if status=completed or failed
+    reliability:
+      delivery: at_least_once
+      ordering:
+        mode: per_channel
+      dead_letter_queue:
+        enabled: true
+        max_retries: 3
+        backoff_multiplier: 2
+        base_delay_seconds: 2

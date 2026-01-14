@@ -1,0 +1,182 @@
+apiVersion: ossa/v0.3.4
+kind: Agent
+metadata:
+  name: software-development-swarm
+  namespace: examples
+  labels:
+    framework: ag2
+    pattern: hierarchical
+    domain: software-engineering
+  annotations:
+    description: Hierarchical swarm for software development with supervisor-worker pattern
+    example: AG2 integration with OSSA v0.3.4
+
+spec:
+  role: orchestrator
+  goal: "Coordinate software development tasks across specialized agents"
+  capabilities:
+    - task_planning
+    - code_generation
+    - code_review
+    - testing
+    - documentation
+
+orchestration:
+  swarm_topology:
+    topology_type: hierarchical
+    hierarchical:
+      root: agent://supervisor
+      levels:
+        - level_name: management
+          agents:
+            - uri: agent://supervisor
+              children:
+                - agent://tech-lead
+                - agent://qa-lead
+        - level_name: technical-leads
+          agents:
+            - uri: agent://tech-lead
+              children:
+                - agent://coder-python
+                - agent://coder-typescript
+                - agent://reviewer
+            - uri: agent://qa-lead
+              children:
+                - agent://tester
+                - agent://security-analyst
+      escalation_policy: on_failure
+    orchestration_mode: speaker_selection
+    max_rounds: 20
+    termination_condition:
+      max_turns: 20
+      keyword: "DEVELOPMENT_COMPLETE"
+      timeout_ms: 600000
+    speaker_selection_strategy:
+      method: capability_match
+      transition_rules:
+        - from: agent://supervisor
+          to: agent://tech-lead
+          condition: task_type:coding
+          priority: 1
+        - from: agent://tech-lead
+          to: agent://coder-python
+          condition: language:python
+          priority: 2
+        - from: agent://tech-lead
+          to: agent://coder-typescript
+          condition: language:typescript
+          priority: 2
+        - from: agent://coder-python
+          to: agent://reviewer
+          condition: code_complete
+          priority: 1
+        - from: agent://coder-typescript
+          to: agent://reviewer
+          condition: code_complete
+          priority: 1
+        - from: agent://reviewer
+          to: agent://qa-lead
+          condition: review_approved
+          priority: 1
+        - from: agent://qa-lead
+          to: agent://tester
+          condition: task_type:testing
+          priority: 1
+        - from: agent://tester
+          to: agent://supervisor
+          condition: tests_passed
+          priority: 1
+
+  group_chat:
+    participants:
+      - agent://supervisor
+      - agent://tech-lead
+      - agent://qa-lead
+      - agent://coder-python
+      - agent://coder-typescript
+      - agent://reviewer
+      - agent://tester
+      - agent://security-analyst
+    manager: agent://supervisor
+    max_round: 20
+    speaker_selection_method: auto
+    allow_repeat_speaker: false
+    send_introductions: true
+
+hitl:
+  enabled: true
+  human_input_mode: TERMINATE
+  intervention_points:
+    - id: security_review
+      name: Security Review Gate
+      trigger:
+        type: before_action
+        action_name: deploy
+      mode: ALWAYS
+      required_approvers:
+        - security-team
+      notification_channels:
+        - slack
+        - email
+      priority: critical
+    - id: code_review
+      name: Human Code Review
+      trigger:
+        type: on_decision
+        decision_type: merge_approval
+      mode: CONDITIONAL
+      conditional_logic:
+        rules:
+          - field: risk_score
+            operator: gt
+            value: 7
+        operator: OR
+      timeout_ms: 86400000
+      priority: high
+
+a2a:
+  service_discovery:
+    enabled: true
+    mechanism: registry
+    registry_url: https://registry.example.com/agents
+    refresh_interval_ms: 30000
+    health_check_enabled: true
+  handoff_protocol:
+    enabled: true
+    strategy: capability_match
+    timeout_ms: 30000
+    max_retries: 3
+    context_transfer:
+      mode: selective
+      include_history: true
+      max_history_length: 10
+      selective_keys:
+        - task_description
+        - code_context
+        - test_results
+  capability_advertisement:
+    agent_id: agent://software-development-swarm
+    capabilities:
+      - id: software_development
+        name: Software Development
+        type: skill
+        description: End-to-end software development with hierarchical team
+        async: true
+        max_concurrent: 5
+
+state_management:
+  context_serialization:
+    format: json
+    compression: gzip
+    encryption: true
+  memory_portability:
+    enabled: true
+    snapshot_interval_ms: 300000
+  teachability:
+    enabled: true
+    learning_modes:
+      - feedback
+      - correction
+      - observation
+    memory_persistence: persistent
+    confidence_threshold: 0.8
