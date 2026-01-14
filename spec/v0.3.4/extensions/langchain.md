@@ -1,6 +1,6 @@
-# LangChain/LangGraph Extension for OSSA v0.3.4
+# LangChain/LangGraph Extension for OSSA v0.3.3
 
-**Version:** 0.3.4
+**Version:** 0.3.3
 **Status:** Stable
 **Last Updated:** 2025-12-31
 
@@ -22,7 +22,7 @@ The `extensions.langchain` schema provides comprehensive bidirectional mapping b
 extensions:
   langchain:
     type: object
-    description: "LangChain/LangGraph integration extension for OSSA v0.3.4"
+    description: "LangChain/LangGraph integration extension for OSSA v0.3.3"
     properties:
       enabled:
         type: boolean
@@ -478,7 +478,7 @@ definitions:
 ### 1. ReAct Agent with Tools
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: react-research-agent
@@ -570,7 +570,7 @@ extensions:
 ### 2. LangGraph Workflow with Conditional Edges
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Workflow
 metadata:
   name: content-moderation-graph
@@ -709,7 +709,7 @@ extensions:
 ### 3. LCEL Chain as OSSA Task
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Task
 metadata:
   name: summarization-chain
@@ -833,7 +833,7 @@ extensions:
 ### 4. Vector Store Memory Agent
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: knowledge-assistant
@@ -915,7 +915,7 @@ extensions:
 ### 5. Multi-Agent Conversation with OpenAI Functions
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Workflow
 metadata:
   name: multi-agent-conversation
@@ -1087,6 +1087,6 @@ ossa validate manifest.yaml --check-callbacks
 
 - [LangChain Documentation](https://python.langchain.com/docs/)
 - [LangGraph Documentation](https://langchain-ai.github.io/langgraph/)
-- [OSSA v0.3.4 Specification](../ossa-0.3.4.schema.json)
+- [OSSA v0.3.3 Specification](../ossa-0.3.3.schema.json)
 - [OSSA Workflow Specification](../UNIFIED-SCHEMA.md)
 - [OSSA Observability Extension](./observability.md)

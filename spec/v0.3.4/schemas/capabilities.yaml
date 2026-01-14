@@ -1,8 +1,8 @@
-# OSSA v0.3.4 - Capabilities Schema
+# OSSA v0.3.3 - Capabilities Schema
 # Google A2A and GitLab Duo compatible capability declarations
 
 $schema: http://json-schema.org/draft-07/schema#
-$id: https://openstandardagents.org/schemas/v0.3.4/capabilities.yaml
+$id: https://openstandardagents.org/schemas/v0.3.3/capabilities.yaml
 
 title: Agent Capabilities
 description: |
@@ -35,9 +35,6 @@ items:
         - transform
         - validation
         - orchestration
-        - testing
-        - browser_automation
-        - output_evaluation
 
     runtime:
       type: string

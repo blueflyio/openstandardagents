@@ -1,4 +1,4 @@
-# llms.txt Extension for OSSA v0.3.4
+# llms.txt Extension for OSSA v0.3.3
 
 ## Overview
 
@@ -226,11 +226,11 @@ definitions:
 ## Example Manifest
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: openstandardagents-project
-  version: 0.3.4
+  version: 0.3.3
   description: Open Standard for Software Agents - Vendor-neutral specification, CLI tools, and SDKs
 
 spec:
@@ -250,7 +250,7 @@ extensions:
       core_specification:
         enabled: true
         file_list:
-          - "spec/v0.3.4/ossa-0.3.4.schema.json"
+          - "spec/v0.3.3/ossa-0.3.3.schema.json"
           - "openapi/"
       quick_start:
         enabled: true
@@ -285,11 +285,11 @@ ossa llms-txt sync manifest.yaml
 ## Related Resources
 
 - [llms.txt Specification](https://llmstxt.org/)
-- [OSSA v0.3.4 Schema](../ossa-0.3.4.schema.json)
+- [OSSA v0.3.3 Schema](../ossa-0.3.3.schema.json)
 - [Agents.md Extension](./agents-md.md)
 
 ## Version History
 
 | Version | Changes |
 |---------|---------|
-| 0.3.4 | Initial extension specification |
+| 0.3.3 | Initial extension specification |

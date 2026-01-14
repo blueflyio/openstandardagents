@@ -1,6 +1,6 @@
-# Microsoft Semantic Kernel Extension for OSSA v0.3.4
+# Microsoft Semantic Kernel Extension for OSSA v0.3.3
 
-**Version:** 0.3.4
+**Version:** 0.3.3
 **Status:** Stable
 **Last Updated:** 2025-12-31
 
@@ -35,7 +35,7 @@ This document describes the Microsoft Semantic Kernel extension for OSSA manifes
 
 | OSSA Concept | Semantic Kernel Equivalent | Notes |
 |-------------|---------------------------|-------|
-| `apiVersion: ossa/v0.3.4` | Kernel configuration | Version compatibility |
+| `apiVersion: ossa/v0.3.3` | Kernel configuration | Version compatibility |
 | `kind: Agent` | `ChatCompletionAgent` or `OpenAIAssistantAgent` | Agentic LLM loops |
 | `kind: Task` | `KernelFunction` (native) | Deterministic execution |
 | `kind: Workflow` | `Planner` output or `AgentGroupChat` | Composition patterns |
@@ -355,7 +355,7 @@ public class MathPlugin
 Equivalent OSSA Task manifest:
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Task
 metadata:
   name: math-add
@@ -421,7 +421,7 @@ Summary:
 Equivalent OSSA Agent manifest:
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: summarizer
@@ -488,7 +488,7 @@ Generated plan steps:
 Equivalent OSSA Workflow:
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Workflow
 metadata:
   name: poem-email-workflow
@@ -556,7 +556,7 @@ var result = await planner.ExecuteAsync("Research and summarize recent AI news")
 Equivalent OSSA Agent with tools:
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: research-agent
@@ -630,7 +630,7 @@ var results = await memory.SearchAsync("documents", "machine learning", limit: 5
 Equivalent OSSA configuration:
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: knowledge-agent
@@ -748,7 +748,7 @@ public class SafetyFilter : IFunctionFilter
 OSSA equivalent:
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: safe-agent
@@ -861,7 +861,7 @@ extensions:
 ### Single Agent
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: code-assistant
@@ -897,7 +897,7 @@ extensions:
 ### Agent Group Chat (Multi-Agent)
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Workflow
 metadata:
   name: review-workflow
@@ -937,7 +937,7 @@ extensions:
 ### Full-Featured OSSA Agent with Semantic Kernel
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: enterprise-assistant
@@ -1355,6 +1355,6 @@ ossa import --from semantic-kernel ./plugins/MyPlugin > tasks/my-plugin.yaml
 
 - [Microsoft Semantic Kernel Documentation](https://learn.microsoft.com/en-us/semantic-kernel/)
 - [Semantic Kernel GitHub](https://github.com/microsoft/semantic-kernel)
-- [OSSA Manifest Schema](../ossa-0.3.4.schema.json)
+- [OSSA Manifest Schema](../ossa-0.3.3.schema.json)
 - [OSSA Runtime Bindings](../runtime/bindings.yaml)
 - [OSSA Safety Configuration](../schemas/safety.schema.json)

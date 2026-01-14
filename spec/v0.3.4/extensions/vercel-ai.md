@@ -1,11 +1,11 @@
-# Vercel AI SDK Extension for OSSA v0.3.4
+# Vercel AI SDK Extension for OSSA v0.3.3
 
 ## Overview
 
 The `extensions.vercel_ai` schema provides bidirectional mapping between Vercel AI SDK primitives and OSSA manifest structures. This extension enables seamless integration of OSSA agents with Next.js/React applications using the Vercel AI SDK.
 
 **Vercel AI SDK Version**: 3.x+
-**OSSA Version**: v0.3.4+
+**OSSA Version**: v0.3.3+
 
 ## Schema Definition
 
@@ -309,7 +309,7 @@ extensions:
 A conversational agent mapped to the `useChat` hook:
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: customer-support-agent
@@ -421,7 +421,7 @@ extensions:
 A single-turn completion task:
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Task
 metadata:
   name: email-generator
@@ -496,7 +496,7 @@ extensions:
 An agent that generates React components:
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: data-dashboard-agent
@@ -627,7 +627,7 @@ extensions:
 Integration with OpenAI Assistants API:
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: code-review-assistant
@@ -679,7 +679,7 @@ extensions:
 A workflow using AI-powered server actions:
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Workflow
 metadata:
   name: content-pipeline
@@ -1019,7 +1019,7 @@ export type VercelAIExtension = z.infer<typeof VercelAIExtensionSchema>;
 openapi: 3.1.0
 info:
   title: OSSA Vercel AI Extension API
-  version: 0.3.4
+  version: 0.3.3
   description: API endpoints for OSSA agents with Vercel AI SDK
 
 paths:
@@ -1191,7 +1191,7 @@ function mapOSSAToDataStream(ossaEvent: OSSAEvent): DataStreamChunk {
 ## Related Resources
 
 - [Vercel AI SDK Documentation](https://sdk.vercel.ai/docs)
-- [OSSA v0.3.4 Specification](https://openstandardagents.org/spec/v0.3.4)
+- [OSSA v0.3.3 Specification](https://openstandardagents.org/spec/v0.3.3)
 - [Next.js App Router](https://nextjs.org/docs/app)
 - [React Server Components](https://react.dev/reference/react/use-server)
 - [OpenAI Assistants API](https://platform.openai.com/docs/assistants)

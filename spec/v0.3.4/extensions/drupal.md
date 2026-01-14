@@ -1,4 +1,4 @@
-# Drupal Extension for OSSA v0.3.4
+# Drupal Extension for OSSA v0.3.3
 
 ## Overview
 
@@ -133,7 +133,7 @@ extensions:
 An agent that generates content autonomously without user context:
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: content-writer
@@ -168,7 +168,7 @@ extensions:
 An agent that reviews user-submitted content with merged permissions:
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: content-reviewer
@@ -195,7 +195,7 @@ extensions:
 An agent integrated into ECA (Events-Conditions-Actions) module:
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: moderation-assistant
@@ -397,7 +397,7 @@ dependencies:
 id: content_writer
 label: Content Writer
 manifest: |
-  apiVersion: ossa/v0.3.4
+  apiVersion: ossa/v0.3.3
   kind: Agent
   # ... full manifest ...
 ```

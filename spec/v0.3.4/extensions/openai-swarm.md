@@ -1,14 +1,14 @@
-# OpenAI Swarm Extension for OSSA v0.3.4
+# OpenAI Swarm Extension for OSSA v0.3.3
 
 ## Overview
 
-The `extensions.openai_swarm` schema provides bidirectional mapping between OpenAI's experimental Swarm multi-agent framework and OSSA v0.3.4. This extension enables OSSA agents to operate within Swarm's handoff-based orchestration model while maintaining full OSSA compliance.
+The `extensions.openai_swarm` schema provides bidirectional mapping between OpenAI's experimental Swarm multi-agent framework and OSSA v0.3.3. This extension enables OSSA agents to operate within Swarm's handoff-based orchestration model while maintaining full OSSA compliance.
 
 **OpenAI Swarm Repository**: https://github.com/openai/swarm
 
 ## Key Concepts Mapping
 
-| OpenAI Swarm Concept | OSSA v0.3.4 Equivalent | Description |
+| OpenAI Swarm Concept | OSSA v0.3.3 Equivalent | Description |
 |---------------------|------------------------|-------------|
 | `Agent` | `kind: Agent` | Autonomous unit with LLM, instructions, and functions |
 | `handoff` | `spec.delegation` + `DelegationConfig` | Transfer control to another agent |
@@ -67,9 +67,9 @@ agent = Agent(
 )
 ```
 
-**OSSA v0.3.4 Equivalent:**
+**OSSA v0.3.3 Equivalent:**
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: sales-agent
@@ -128,9 +128,9 @@ sales_agent = Agent(
 )
 ```
 
-**OSSA v0.3.4 Equivalent:**
+**OSSA v0.3.3 Equivalent:**
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: sales-agent
@@ -193,9 +193,9 @@ response = client.run(
 )
 ```
 
-**OSSA v0.3.4 Equivalent:**
+**OSSA v0.3.3 Equivalent:**
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: context-aware-agent
@@ -257,9 +257,9 @@ agent = Agent(
 )
 ```
 
-**OSSA v0.3.4 Equivalent:**
+**OSSA v0.3.3 Equivalent:**
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: weather-agent
@@ -322,10 +322,10 @@ agent = Agent(
 )
 ```
 
-**OSSA v0.3.4 Equivalent:**
+**OSSA v0.3.3 Equivalent:**
 ```yaml
 # Static instructions
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: assistant
@@ -335,7 +335,7 @@ spec:
 
 ---
 # Dynamic instructions with template
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: personalized-assistant
@@ -378,9 +378,9 @@ response = client.run(
 )
 ```
 
-**OSSA v0.3.4 Equivalent:**
+**OSSA v0.3.3 Equivalent:**
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: run-loop-agent
@@ -445,9 +445,9 @@ router = Agent(
 )
 ```
 
-**OSSA v0.3.4 Equivalent:**
+**OSSA v0.3.3 Equivalent:**
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Workflow
 metadata:
   name: agent-router
@@ -523,9 +523,9 @@ def complex_function(args):
     )
 ```
 
-**OSSA v0.3.4 Equivalent:**
+**OSSA v0.3.3 Equivalent:**
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: result-handler-agent
@@ -619,7 +619,7 @@ extensions:
 ### Multi-Agent Swarm System
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Workflow
 metadata:
   name: customer-service-swarm
@@ -725,7 +725,7 @@ extensions:
 ### Single Agent with Swarm Functions
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: order-management-agent
@@ -1017,7 +1017,7 @@ export type OpenAISwarmExtension = z.infer<typeof OpenAISwarmExtensionSchema>;
 openapi: 3.1.0
 info:
   title: OSSA OpenAI Swarm Extension API
-  version: 0.3.4
+  version: 0.3.3
   description: OpenAI Swarm integration for OSSA agents
 
 paths:
@@ -1277,7 +1277,7 @@ export class SwarmOSSAAdapter {
    */
   fromSwarmAgent(swarmAgent: SwarmAgent): OSSAAgent {
     return {
-      apiVersion: 'ossa/v0.3.4',
+      apiVersion: 'ossa/v0.3.3',
       kind: 'Agent',
       metadata: {
         name: swarmAgent.name,
@@ -1395,6 +1395,6 @@ export class SwarmOSSAAdapter {
 ## Related Resources
 
 - [OpenAI Swarm Repository](https://github.com/openai/swarm)
-- [OSSA v0.3.4 Specification](../UNIFIED-SCHEMA.md)
+- [OSSA v0.3.3 Specification](../UNIFIED-SCHEMA.md)
 - [Delegation Configuration](../access_tiers.yaml)
 - [Workflow Specification](../schemas/workflow.schema.json)

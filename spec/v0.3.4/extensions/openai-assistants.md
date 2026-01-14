@@ -1,4 +1,4 @@
-# OpenAI Assistants API Extension for OSSA v0.3.4
+# OpenAI Assistants API Extension for OSSA v0.3.3
 
 ## Overview
 
@@ -502,7 +502,7 @@ definitions:
 ### 1. Code Assistant with Interpreter
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: code-assistant
@@ -591,7 +591,7 @@ extensions:
 ### 2. RAG Research Assistant
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: research-assistant
@@ -660,7 +660,7 @@ extensions:
 ### 3. Function-Calling Agent
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: booking-agent
@@ -799,7 +799,7 @@ extensions:
 ### 4. Multimodal Vision Agent
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: vision-analyst
@@ -1124,7 +1124,7 @@ async function importAssistantToOSSA(
   }
 
   const manifest: OSSAManifest = {
-    apiVersion: 'ossa/v0.3.4',
+    apiVersion: 'ossa/v0.3.3',
     kind: 'Agent',
     metadata: {
       name: assistant.name || assistantId,
@@ -1307,7 +1307,7 @@ function mapOpenAIEventToOSSA(event: OpenAI.Beta.AssistantStreamEvent): OSSAStre
 openapi: 3.1.0
 info:
   title: OSSA OpenAI Assistants Extension API
-  version: 0.3.4
+  version: 0.3.3
   description: API for managing OpenAI Assistants through OSSA manifests
 
 paths:
@@ -1627,6 +1627,6 @@ components:
 
 - [OpenAI Assistants API Documentation](https://platform.openai.com/docs/assistants/overview)
 - [OpenAI API Reference](https://platform.openai.com/docs/api-reference/assistants)
-- [OSSA v0.3.4 Specification](../ossa-0.3.4.schema.json)
+- [OSSA v0.3.3 Specification](../ossa-0.3.3.schema.json)
 - [MCP Extension](../extensions/drupal.md)
 - [OSSA Messaging Extension](../../extensions/a2a-messaging.md)

@@ -1,8 +1,8 @@
-# OSSA v0.3.4 - Unified Agent Schema
+# OSSA v0.3.3 - Unified Agent Schema
 # Universal agent platform: OSSA + GitLab Duo + Google A2A + MCP
 # Zero hardcoded models, runtime-agnostic, infrastructure-driven
 
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 
 metadata:

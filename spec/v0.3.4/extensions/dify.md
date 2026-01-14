@@ -1,4 +1,4 @@
-# Dify Extension for OSSA v0.3.4
+# Dify Extension for OSSA v0.3.3
 
 ## Overview
 
@@ -366,7 +366,7 @@ extensions:
 ### 1. Dify Chat Application as OSSA Agent
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: dify-customer-support
@@ -431,7 +431,7 @@ extensions:
 ### 2. Dify Completion as OSSA Task
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Task
 metadata:
   name: dify-content-generator
@@ -498,7 +498,7 @@ extensions:
 ### 3. Dify Agent with Tools as OSSA Agent
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: dify-research-agent
@@ -594,7 +594,7 @@ extensions:
 ### 4. Dify Workflow as OSSA Workflow
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Workflow
 metadata:
   name: dify-content-pipeline
@@ -799,7 +799,7 @@ extensions:
 ### 5. Dify RAG Application
 
 ```yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: dify-rag-assistant
@@ -1366,7 +1366,7 @@ export function convertDifyAppToOSSA(difyApp: DifyApp): Record<string, unknown> 
                difyApp.mode === 'completion' ? 'Task' : 'Agent';
 
   const base = {
-    apiVersion: 'ossa/v0.3.4',
+    apiVersion: 'ossa/v0.3.3',
     kind,
     metadata: {
       name: difyApp.name.toLowerCase().replace(/\s+/g, '-'),
@@ -1458,4 +1458,4 @@ export function convertDifyAppToOSSA(difyApp: DifyApp): Record<string, unknown> 
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 0.3.4 | 2025-01 | Initial Dify extension specification |
+| 0.3.3 | 2025-01 | Initial Dify extension specification |

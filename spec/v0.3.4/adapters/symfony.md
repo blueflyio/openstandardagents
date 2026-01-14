@@ -350,7 +350,7 @@ ossa:
 
 ```yaml
 # config/ossa/tasks/send-email.yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Task
 metadata:
   name: send-email-symfony
@@ -419,7 +419,7 @@ runtime:
 
 ```yaml
 # config/ossa/workflows/user-onboarding.yaml
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.3
 kind: Workflow
 metadata:
   name: user-onboarding-symfony
@@ -640,7 +640,7 @@ php bin/console messenger:failed:retry --all
 
 ## OSSA Compliance
 
-This adapter implements OSSA v0.3.4 specification:
+This adapter implements OSSA v0.3.3 specification:
 
 - ✅ Task execution with deterministic semantics
 - ✅ Workflow orchestration with step dependencies
@@ -653,7 +653,7 @@ This adapter implements OSSA v0.3.4 specification:
 
 ## Related
 
-- [OSSA Specification v0.3.4](../README.md)
+- [OSSA Specification v0.3.3](../README.md)
 - [Drupal Adapter](./drupal.md)
 - [Node.js Adapter](./nodejs.md)
 - [Capability Registry](../capability-schema.md)
