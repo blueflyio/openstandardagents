@@ -1,6 +1,8 @@
 include:
   - component: gitlab.com/blueflyio/gitlab_components/golden@release/v0.1.x
     inputs:
+      enable_agent_validation: true
+
       node_version: '20'
 # =============================================================================
 # OSSA Specification CI/CD Pipeline - GitLab Ultimate Optimized
