@@ -11,8 +11,8 @@ metadata:
     domain: frontend
     category: performance
     tier: expert
-    skill.priority: 90
-    skill.contexts: development,review
+    skill.priority: "90"
+    skill.contexts: "development,review"
     skill.enabled: "true"
     skill.auto_activate: "true"
   annotations:
