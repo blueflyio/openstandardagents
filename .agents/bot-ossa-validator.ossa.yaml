@@ -5,8 +5,7 @@ metadata:
   namespace: openstandardagents.org
   version: 1.0.0
   title: OSSA Validator Agent
-  description: Validates OSSA manifests against the schema specification. Ensures compliance with OSSA v0.3.0 standards and
-    best practices.
+  description: Validates OSSA manifests against the schema specification. Ensures compliance with OSSA v0.3.0 standards and best practices.
   labels:
     component: validation
     domain: ossa
@@ -289,3 +288,39 @@ extensions:
     - metric: validation_latency_p95
       target: 5
       unit: seconds
+  bat:
+    selection_criteria:
+    - dimension: validation_complexity
+      required: true
+      options:
+      - value: complex
+        technologies:
+        - claude-opus
+        - gpt-4-turbo
+        cost_tier: premium
+        use_case: Complex OSS Validator tasks
+      - value: standard
+        technologies:
+        - claude-sonnet
+        - gpt-4o
+        cost_tier: standard
+        use_case: Standard OSS Validator tasks
+      - value: simple
+        technologies:
+        - gemini-flash
+        - claude-haiku
+        cost_tier: economy
+        use_case: Quick OSS Validator checks
+  feedback:
+    learning:
+      enabled: true
+      strategy: reinforcement
+      data_sources:
+      - validation_outcomes
+      - validation_results
+  infrastructure:
+  - type: agent_mesh
+    endpoint: mesh.blueflyagents.com:3005
+    capabilities:
+    - agent_coordination
+    - validation_tracking

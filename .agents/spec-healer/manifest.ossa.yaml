@@ -463,3 +463,39 @@ extensions:
       enabled: true
       registry: agent-mesh
       refresh_interval: 60s
+  bat:
+    selection_criteria:
+    - dimension: spec_complexity
+      required: true
+      options:
+      - value: complex
+        technologies:
+        - claude-opus
+        - gpt-4-turbo
+        cost_tier: premium
+        use_case: Complex Spec Healer tasks
+      - value: standard
+        technologies:
+        - claude-sonnet
+        - gpt-4o
+        cost_tier: standard
+        use_case: Standard Spec Healer tasks
+      - value: simple
+        technologies:
+        - gemini-flash
+        - claude-haiku
+        cost_tier: economy
+        use_case: Quick Spec Healer checks
+  feedback:
+    learning:
+      enabled: true
+      strategy: reinforcement
+      data_sources:
+      - spec_outcomes
+      - validation_results
+  infrastructure:
+  - type: agent_mesh
+    endpoint: mesh.blueflyagents.com:3005
+    capabilities:
+    - agent_coordination
+    - spec_tracking

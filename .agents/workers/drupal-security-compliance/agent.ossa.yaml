@@ -347,3 +347,79 @@ extensions:
       agent.id: drupal-security-compliance
       domain: security
       compliance: fedramp,soc2
+  experts:
+    registry:
+    - id: deep-drupal-expert
+      name: Deep Drupal Security Compliance Expert
+      model:
+        provider: anthropic
+        model: claude-opus-4-5-20251101
+      specializations:
+      - deep_drupal_analysis
+      - complex_problem_solving
+      cost_tier: premium
+      capabilities:
+        extended_thinking: true
+        max_tokens: 200000
+        reasoning_depth: deep
+    - id: standard-drupal-expert
+      name: Standard Drupal Security Compliance Expert
+      model:
+        provider: anthropic
+        model: claude-sonnet-4-20250514
+      specializations:
+      - drupal_optimization
+      - standard_analysis
+      cost_tier: standard
+      capabilities:
+        max_tokens: 16384
+        reasoning_depth: balanced
+    - id: quick-drupal-expert
+      name: Quick Drupal Security Compliance Expert
+      model:
+        provider: google
+        model: gemini-2.0-flash
+      specializations:
+      - quick_drupal_scan
+      - basic_analysis
+      cost_tier: economy
+      capabilities:
+        max_tokens: 8192
+        reasoning_depth: fast
+    selection_strategy: agent_controlled
+  bat:
+    selection_criteria:
+    - dimension: drupal_complexity
+      required: true
+      options:
+      - value: complex
+        technologies:
+        - claude-opus
+        - gpt-4-turbo
+        cost_tier: premium
+        use_case: Complex Drupal Security Compliance tasks
+      - value: standard
+        technologies:
+        - claude-sonnet
+        - gpt-4o
+        cost_tier: standard
+        use_case: Standard Drupal Security Compliance tasks
+      - value: simple
+        technologies:
+        - gemini-flash
+        - claude-haiku
+        cost_tier: economy
+        use_case: Quick Drupal Security Compliance checks
+  feedback:
+    learning:
+      enabled: true
+      strategy: reinforcement
+      data_sources:
+      - drupal_outcomes
+      - validation_results
+  infrastructure:
+  - type: agent_mesh
+    endpoint: mesh.blueflyagents.com:3005
+    capabilities:
+    - agent_coordination
+    - drupal_tracking
