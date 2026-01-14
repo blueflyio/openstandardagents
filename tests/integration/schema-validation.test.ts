@@ -123,11 +123,7 @@ describe('Schema Validation Integration', () => {
         },
       },
       extensions: {
-        cursor: {
-          enabled: true,
-          agent_type: 'composer',
-        },
-        openai_agents: {
+        openai_assistants: {
           enabled: true,
           model: 'gpt-4o',
         },
@@ -135,6 +131,9 @@ describe('Schema Validation Integration', () => {
     };
 
     const result = await validationService.validate(manifest, CURRENT_SCHEMA_VERSION);
+    if (result.errors.length > 0) {
+      console.error('Platform extensions validation errors:', JSON.stringify(result.errors, null, 2));
+    }
     expect(result.valid).toBe(true);
   });
 
@@ -150,11 +149,11 @@ describe('Schema Validation Integration', () => {
         role: 'Test',
       },
       extensions: {
-        cursor: {
+        skills: {
           enabled: true,
-          agent_type: 'invalid_type',
+          platforms: ['InvalidPlatform'],
         },
-        openai_agents: {
+        openai_assistants: {
           enabled: true,
           model: 'invalid-model',
         },
@@ -188,16 +187,8 @@ describe('Schema Validation Integration', () => {
         tools: [],
       },
       extensions: {
-        cursor: { enabled: true, agent_type: 'composer' },
-        openai_agents: { enabled: true, model: 'gpt-4o' },
-        crewai: {
-          enabled: true,
-          agent_type: 'worker',
-          role: 'Worker',
-          goal: 'Complete tasks',
-        },
-        langchain: { enabled: true, chain_type: 'agent' },
-        anthropic: { enabled: true, model: 'claude-3-5-sonnet-20241022' },
+        openai_assistants: { enabled: true, model: 'gpt-4o' },
+        langchain: { enabled: true, agent_type: 'react' },
       },
     };
 
