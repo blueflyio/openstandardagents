@@ -288,6 +288,8 @@ describe('SkillRegistry', () => {
     });
 
     it('should get skills by context', () => {
+      SkillRegistry.clear(); // Clear manageable-skill from beforeEach
+      
       SkillRegistry.register({
         path: join(tempDir, 'dev-skill.ossa.yaml'),
         manifest: {
@@ -300,7 +302,7 @@ describe('SkillRegistry', () => {
         },
       });
 
-      const prodSkill = SkillRegistry.register({
+      SkillRegistry.register({
         path: join(tempDir, 'prod-skill.ossa.yaml'),
         manifest: {
           metadata: {
@@ -318,6 +320,7 @@ describe('SkillRegistry', () => {
       
       const prodSkills = SkillRegistry.getByContext('production');
       expect(prodSkills.some(s => s.name === 'prod-skill')).toBe(true);
+      expect(prodSkills.some(s => s.name === 'dev-skill')).toBe(false);
     });
 
     it('should filter matches above threshold', async () => {
