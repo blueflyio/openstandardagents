@@ -1,7 +1,7 @@
 # OSSA Agent Router Configuration
 # Routes MR comments and events to appropriate agents
 
-apiVersion: ossa/v0.3.3
+apiVersion: ossa/v0.3.5
 kind: Workflow
 metadata:
   name: mr-agent-router
@@ -21,6 +21,23 @@ spec:
         - note
       filter:
         expression: "${{ event.object_attributes.action in ['open', 'update', 'reopen'] || event.object_kind == 'note' }}"
+
+
+  # v0.3.5: Completion Signals
+  completion:
+    default_signal: complete
+    signals:
+      - signal: continue
+        condition: "steps_remaining > 0"
+        priority: 1
+      - signal: blocked
+        condition: "step_failures > 2"
+        priority: 2
+      - signal: escalate
+        condition: "workflow_timeout_approaching == true"
+        priority: 3
+    max_iterations: 50
+    timeout_seconds: 1800
 
   inputs:
     type: object
@@ -238,7 +255,7 @@ spec:
 # Agent Command Mapping Reference
 # Used by the router to match commands to agents
 
-apiVersion: ossa/v0.3.3
+apiVersion: ossa/v0.3.5
 kind: Task
 metadata:
   name: command-mapping
