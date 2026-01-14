@@ -25,8 +25,8 @@ describe('SkillRegistryService', () => {
     spec: {
       role: 'Performance expert',
       tools: [
-        { name: 'performance.analyze', description: 'Analyze performance' },
-        { name: 'bundle.optimize', description: 'Optimize bundle' }
+        { type: 'function', name: 'performance.analyze' },
+        { type: 'function', name: 'bundle.optimize' }
       ],
       llm: {
         provider: 'anthropic',
