@@ -80,6 +80,7 @@ export class SkillRegistry {
 
   /**
    * Discover skills from configured paths
+   * Supports both OSSA manifests (.ossa.yaml) and Vercel format (SKILL.md)
    */
   private static async discoverSkills(): Promise<void> {
     for (const skillPath of this.skillPaths) {
@@ -87,19 +88,165 @@ export class SkillRegistry {
         continue;
       }
 
-      const files = await glob('**/*.ossa.yaml', {
+      // Discover OSSA manifest skills
+      const ossaFiles = await glob('**/*.ossa.yaml', {
         cwd: skillPath,
         absolute: true,
       });
 
-      for (const file of files) {
+      for (const file of ossaFiles) {
         try {
           await this.registerFromFile(file);
         } catch (error) {
-          console.warn(`Failed to register skill from ${file}:`, error);
+          console.warn(`Failed to register OSSA skill from ${file}:`, error);
+        }
+      }
+
+      // Discover Vercel format skills (SKILL.md)
+      const skillMdFiles = await glob('**/SKILL.md', {
+        cwd: skillPath,
+        absolute: true,
+      });
+
+      for (const file of skillMdFiles) {
+        try {
+          await this.registerFromSkillMd(file);
+        } catch (error) {
+          console.warn(`Failed to register Vercel skill from ${file}:`, error);
         }
       }
     }
+  }
+
+  /**
+   * Register a skill from Vercel format SKILL.md file
+   */
+  private static async registerFromSkillMd(filePath: string): Promise<SkillMetadata> {
+    if (!existsSync(filePath)) {
+      throw new Error(`Skill file not found: ${filePath}`);
+    }
+
+    const content = readFileSync(filePath, 'utf-8');
+    
+    // Parse frontmatter
+    const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n/);
+    if (!frontmatterMatch) {
+      throw new Error(`Invalid SKILL.md format: missing frontmatter`);
+    }
+
+    const frontmatter = frontmatterMatch[1];
+    const nameMatch = frontmatter.match(/name:\s*(.+)/);
+    const descMatch = frontmatter.match(/description:\s*(.+)/);
+
+    const name = nameMatch ? nameMatch[1].trim() : 'unknown';
+    const description = descMatch ? descMatch[1].trim() : '';
+
+    // Extract priority from directory structure or defaults
+    const skillDir = filePath.replace('/SKILL.md', '');
+    const priority = skillDir.includes('react-best-practices') ? 90 : 50;
+
+    const skill: SkillMetadata = {
+      name,
+      description,
+      priority,
+      contexts: ['development', 'review'],
+      enabled: true,
+      path: filePath,
+      manifest: {
+        metadata: {
+          name,
+          description,
+          labels: {
+            'skill.priority': priority.toString(),
+            'skill.contexts': 'development,review',
+            'skill.enabled': 'true',
+            'skill.format': 'vercel',
+          },
+        },
+        spec: {
+          role: description,
+        },
+        runtime: {
+          triggers: {
+            keywords: this.extractKeywords(content),
+            file_patterns: this.extractFilePatterns(content),
+            frameworks: this.extractFrameworks(content),
+          },
+        },
+      },
+    };
+
+    const validated = SkillMetadataSchema.parse(skill);
+    this.skills.set(validated.name, validated);
+    return validated;
+  }
+
+  /**
+   * Extract keywords from skill content
+   */
+  private static extractKeywords(content: string): string[] {
+    const keywords: string[] = [];
+    const keywordPatterns = [
+      /keywords?:\s*\[(.*?)\]/i,
+      /triggers?:\s*\[(.*?)\]/i,
+      /when.*?:\s*\[(.*?)\]/i,
+    ];
+
+    for (const pattern of keywordPatterns) {
+      const match = content.match(pattern);
+      if (match) {
+        const items = match[1].split(',').map(s => s.trim().replace(/['"]/g, ''));
+        keywords.push(...items);
+      }
+    }
+
+    // Default keywords for React best practices
+    if (content.toLowerCase().includes('react') || content.toLowerCase().includes('performance')) {
+      keywords.push('performance', 'optimize', 'slow', 'bundle', 'waterfall', 'react', 'next.js');
+    }
+
+    return [...new Set(keywords)];
+  }
+
+  /**
+   * Extract file patterns from skill content
+   */
+  private static extractFilePatterns(content: string): string[] {
+    const patterns: string[] = [];
+    
+    if (content.toLowerCase().includes('react') || content.toLowerCase().includes('tsx') || content.toLowerCase().includes('jsx')) {
+      patterns.push('**/*.{tsx,jsx}', '**/components/**', '**/app/**', '**/pages/**');
+    }
+    if (content.toLowerCase().includes('typescript') || content.toLowerCase().includes('.ts')) {
+      patterns.push('**/*.ts');
+    }
+    if (content.toLowerCase().includes('javascript') || content.toLowerCase().includes('.js')) {
+      patterns.push('**/*.js');
+    }
+
+    return [...new Set(patterns)];
+  }
+
+  /**
+   * Extract frameworks from skill content
+   */
+  private static extractFrameworks(content: string): string[] {
+    const frameworks: string[] = [];
+    const frameworkMap: Record<string, string[]> = {
+      'next.js': ['next.js', 'next'],
+      'react': ['react'],
+      'remix': ['remix'],
+      'gatsby': ['gatsby'],
+    };
+
+    const contentLower = content.toLowerCase();
+    for (const [key, values] of Object.entries(frameworkMap)) {
+      if (contentLower.includes(key)) {
+        frameworks.push(...values);
+      }
+    }
+
+    return [...new Set(frameworks)];
   }
 
   /**
