@@ -549,9 +549,236 @@ export const wizardCommand = new Command('wizard')
       }
 
       // ========================================================================
-      // STEP 9: Output & Summary
+      // STEP 9: Code Compliance & Knowledge Sources
       // ========================================================================
-      printStep(9, 9, 'Output & Summary');
+      printStep(9, 10, 'Code Compliance & Knowledge Sources');
+
+      printInfo('Configure mandatory knowledge sources for code quality enforcement.');
+      printInfo('React Best Practices knowledge base will be automatically enabled for React/TypeScript agents.\n');
+
+      const worksWithCode = await askYesNo('Does this agent work with code files?', false);
+
+      if (worksWithCode) {
+        const codeTypes = await askMultiChoice(
+          'What types of code does this agent work with?',
+          [
+            { value: 'react', label: 'React/Next.js', description: 'TSX, JSX files' },
+            { value: 'typescript', label: 'TypeScript', description: 'TS files' },
+            { value: 'javascript', label: 'JavaScript', description: 'JS files' },
+            { value: 'drupal', label: 'Drupal/PHP', description: 'PHP files' },
+            { value: 'python', label: 'Python', description: 'PY files' },
+            { value: 'other', label: 'Other', description: 'Custom file types' },
+          ],
+          []
+        );
+
+        if (codeTypes.length > 0) {
+          // Initialize code_compliance if not exists
+          if (!(agent.spec as any).code_compliance) {
+            (agent.spec as any).code_compliance = {
+              enabled: true,
+              mandatory_sources: [],
+              enforcement_hooks: {
+                pre_write: { enabled: true, action: 'query' },
+                pre_commit: { enabled: true, action: 'block', check_critical: true, check_references: true },
+                pre_merge: { enabled: true, action: 'block', require_approval: true },
+                build: { enabled: true, fail_on_violations: true, generate_report: true }
+              },
+              tracking: {
+                track_queries: true,
+                track_applications: true,
+                track_violations: true,
+                store_in_graph: true
+              }
+            };
+          }
+
+          // Add React Best Practices if React/TypeScript/JavaScript selected
+          if (codeTypes.includes('react') || codeTypes.includes('typescript') || codeTypes.includes('javascript')) {
+            const enableReactBestPractices = await askYesNo(
+              'Enable React Best Practices knowledge base (MANDATORY for React/TS/JS)?',
+              true
+            );
+
+            if (enableReactBestPractices) {
+              const enforcementLevel = await askChoice(
+                'Enforcement Level:',
+                [
+                  { 
+                    value: 'block', 
+                    label: 'Block', 
+                    description: 'Block commits/merges on CRITICAL violations (recommended)' 
+                  },
+                  { 
+                    value: 'validate', 
+                    label: 'Validate', 
+                    description: 'Validate and warn, but allow commits' 
+                  },
+                  { 
+                    value: 'query', 
+                    label: 'Query Only', 
+                    description: 'Query knowledge base, no blocking' 
+                  },
+                ],
+                'block'
+              );
+
+              const triggers: string[] = [];
+              if (codeTypes.includes('react')) {
+                triggers.push('**/*.tsx', '**/*.jsx');
+              }
+              if (codeTypes.includes('typescript')) {
+                triggers.push('**/*.ts');
+              }
+              if (codeTypes.includes('javascript')) {
+                triggers.push('**/*.js');
+              }
+
+              const requireReferences = await askYesNo(
+                'Require rule references in code comments?',
+                true
+              );
+
+              const minCoverage = await question(
+                chalk.blue('Minimum rule reference coverage (0.0-1.0, default: 0.8): ')
+              ) || '0.8';
+              const coverageValue = parseFloat(minCoverage);
+              const validCoverage = isNaN(coverageValue) ? 0.8 : Math.max(0, Math.min(1, coverageValue));
+
+              (agent.spec as any).mandatory_knowledge_sources = [
+                {
+                  source_id: 'react-best-practices',
+                  enforcement_level: enforcementLevel,
+                  triggers: triggers,
+                  query_conditions: {
+                    before_write: true,
+                    before_review: true,
+                    on_optimization: true
+                  },
+                  validation_rules: {
+                    require_references: requireReferences,
+                    block_on_critical: enforcementLevel === 'block',
+                    warn_on_high: true,
+                    min_coverage: validCoverage
+                  },
+                  tool_injection: {
+                    tool_name: 'query_react_best_practices',
+                    mcp_server: 'agent-brain',
+                    auto_inject: true
+                  },
+                  tracking: {
+                    track_queries: true,
+                    track_applications: true,
+                    track_violations: true,
+                    store_in_graph: true
+                  }
+                }
+              ];
+
+              printInfo(`✓ React Best Practices knowledge base enabled`);
+              printInfo(`  Enforcement: ${enforcementLevel}`);
+              printInfo(`  Triggers: ${triggers.join(', ')}`);
+              printInfo(`  Tool: query_react_best_practices (auto-injected)`);
+            }
+          }
+
+          // Add Drupal Standards if Drupal selected
+          if (codeTypes.includes('drupal')) {
+            const enableDrupalStandards = await askYesNo(
+              'Enable Drupal Coding Standards knowledge base?',
+              false
+            );
+
+            if (enableDrupalStandards) {
+              (agent.spec as any).mandatory_knowledge_sources = (agent.spec as any).mandatory_knowledge_sources || [];
+              (agent.spec as any).mandatory_knowledge_sources.push({
+                source_id: 'drupal-standards',
+                enforcement_level: 'validate',
+                triggers: ['**/*.php', '**/*.module', '**/*.inc'],
+                query_conditions: {
+                  before_write: true,
+                  before_review: true,
+                  on_optimization: false
+                },
+                validation_rules: {
+                  require_references: false,
+                  block_on_critical: false,
+                  warn_on_high: true,
+                  min_coverage: 0.5
+                },
+                tool_injection: {
+                  tool_name: 'query_drupal_standards',
+                  mcp_server: 'agent-brain',
+                  auto_inject: true
+                }
+              });
+            }
+          }
+
+          // Configure enforcement hooks
+          const configureHooks = await askYesNo(
+            'Configure enforcement hooks (pre-commit, pre-merge, build)?',
+            true
+          );
+
+          if (configureHooks) {
+            const preCommitAction = await askChoice(
+              'Pre-commit hook action:',
+              [
+                { value: 'block', label: 'Block', description: 'Block commits on violations' },
+                { value: 'validate', label: 'Validate', description: 'Validate and warn' },
+                { value: 'warn', label: 'Warn', description: 'Warn only' },
+              ],
+              'block'
+            );
+
+            const preMergeAction = await askChoice(
+              'Pre-merge hook action:',
+              [
+                { value: 'block', label: 'Block', description: 'Block merges on violations' },
+                { value: 'validate', label: 'Validate', description: 'Validate and warn' },
+                { value: 'warn', label: 'Warn', description: 'Warn only' },
+              ],
+              'block'
+            );
+
+            const buildValidation = await askYesNo(
+              'Fail builds on CRITICAL violations?',
+              true
+            );
+
+            const requireReferences = (agent.spec as any).mandatory_knowledge_sources?.[0]?.validation_rules?.require_references || false;
+
+            (agent.spec as any).code_compliance.enforcement_hooks = {
+              pre_write: {
+                enabled: true,
+                action: 'query'
+              },
+              pre_commit: {
+                enabled: true,
+                action: preCommitAction,
+                check_critical: true,
+                check_references: requireReferences
+              },
+              pre_merge: {
+                enabled: true,
+                action: preMergeAction,
+                require_approval: preMergeAction === 'block'
+              },
+              build: {
+                enabled: true,
+                fail_on_violations: buildValidation,
+                generate_report: true
+              }
+            };
+          }
+        }
+      }
+
+      // ========================================================================
+      // STEP 10: Output & Summary
+      // ========================================================================
+      printStep(10, 10, 'Output & Summary');
 
       const useDirectory = await askYesNo('Create agent in directory structure (.agents/)?', false);
       
@@ -564,7 +791,7 @@ export const wizardCommand = new Command('wizard')
         outputPath = options?.output || 'agent.ossa.yaml';
       }
 
-      // Summary
+      // Enhanced Summary
       console.log('');
       printSection('Summary');
       console.log(chalk.green('✓ Agent Name:'), agent.metadata?.name);
@@ -575,6 +802,29 @@ export const wizardCommand = new Command('wizard')
       console.log(chalk.green('✓ Autonomy:'), agent.spec.autonomy?.level || 'Not configured');
       console.log(chalk.green('✓ Observability:'), agent.spec.observability ? 'Yes' : 'No');
       console.log(chalk.green('✓ Extensions:'), agent.extensions ? Object.keys(agent.extensions).length : 0);
+
+      // Knowledge Sources Summary
+      const mandatorySources = (agent.spec as any).mandatory_knowledge_sources || [];
+      console.log(chalk.green('✓ Mandatory Knowledge Sources:'), mandatorySources.length);
+      if (mandatorySources.length > 0) {
+        mandatorySources.forEach((source: any) => {
+          console.log(chalk.gray(`    - ${source.source_id} (${source.enforcement_level})`));
+          if (source.triggers && source.triggers.length > 0) {
+            console.log(chalk.gray(`      Triggers: ${source.triggers.join(', ')}`));
+          }
+        });
+      }
+
+      // Code Compliance Summary
+      const codeCompliance = (agent.spec as any).code_compliance;
+      console.log(chalk.green('✓ Code Compliance:'), codeCompliance?.enabled ? 'Yes' : 'No');
+      if (codeCompliance?.enabled && codeCompliance.enforcement_hooks) {
+        console.log(chalk.gray(`    Pre-commit: ${codeCompliance.enforcement_hooks.pre_commit?.action || 'not configured'}`));
+        console.log(chalk.gray(`    Pre-merge: ${codeCompliance.enforcement_hooks.pre_merge?.action || 'not configured'}`));
+        const buildAction = codeCompliance.enforcement_hooks.build?.fail_on_violations ? 'Fail on violations' : 'Warn only';
+        console.log(chalk.gray(`    Build validation: ${buildAction}`));
+      }
+
       console.log(chalk.green('✓ Output:'), outputPath);
       console.log('');
 
@@ -592,8 +842,12 @@ export const wizardCommand = new Command('wizard')
       console.log(chalk.gray(`  1. Review: ${outputPath}`));
       console.log(chalk.gray(`  2. Validate: ossa validate ${outputPath}`));
       console.log(chalk.gray(`  3. Test: ossa run ${outputPath}`));
+      if (mandatorySources.length > 0) {
+        console.log(chalk.gray(`  4. Knowledge base tools are auto-injected and ready to use`));
+      }
       if (useDirectory) {
-        console.log(chalk.gray(`  4. Register: ossa workspace discover`));
+        const stepNum = mandatorySources.length > 0 ? '5' : '4';
+        console.log(chalk.gray(`  ${stepNum}. Register: ossa workspace discover`));
       }
 
       rl.close();
