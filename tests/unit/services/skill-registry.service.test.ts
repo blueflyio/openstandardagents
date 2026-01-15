@@ -1,11 +1,14 @@
 /**
  * Skill Registry Service Tests
- * 
+ *
  * Comprehensive test suite for skill discovery, registration, and matching.
  */
 
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
-import { SkillRegistry, SkillMatchContext } from '../../../src/services/skill-registry.service';
+import {
+  SkillRegistry,
+  SkillMatchContext,
+} from '../../../src/services/skill-registry.service';
 import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
@@ -137,7 +140,10 @@ describe('SkillRegistry', () => {
       mkdirSync(skillDir, { recursive: true });
 
       // Create React performance skill
-      const reactSkillPath = join(skillDir, 'react-performance-expert.ossa.yaml');
+      const reactSkillPath = join(
+        skillDir,
+        'react-performance-expert.ossa.yaml'
+      );
       const reactSkill = {
         apiVersion: 'ossa/v0.3.5',
         kind: 'Agent',
@@ -208,7 +214,10 @@ describe('SkillRegistry', () => {
     it('should sort matches by confidence and priority', async () => {
       // Add second skill with lower priority
       const skillDir = join(tempDir, 'skills');
-      const lowPrioritySkillPath = join(skillDir, 'low-priority-skill.ossa.yaml');
+      const lowPrioritySkillPath = join(
+        skillDir,
+        'low-priority-skill.ossa.yaml'
+      );
       const lowPrioritySkill = {
         apiVersion: 'ossa/v0.3.5',
         kind: 'Agent',
@@ -231,7 +240,10 @@ describe('SkillRegistry', () => {
         },
       };
 
-      writeFileSync(lowPrioritySkillPath, JSON.stringify(lowPrioritySkill, null, 2));
+      writeFileSync(
+        lowPrioritySkillPath,
+        JSON.stringify(lowPrioritySkill, null, 2)
+      );
       await SkillRegistry.registerFromFile(lowPrioritySkillPath);
 
       const matches = await SkillRegistry.match({
@@ -240,7 +252,9 @@ describe('SkillRegistry', () => {
 
       expect(matches.length).toBeGreaterThan(1);
       // Higher priority should come first
-      expect(matches[0].skill.priority).toBeGreaterThanOrEqual(matches[1].skill.priority);
+      expect(matches[0].skill.priority).toBeGreaterThanOrEqual(
+        matches[1].skill.priority
+      );
     });
   });
 
@@ -284,12 +298,12 @@ describe('SkillRegistry', () => {
     it('should get all skills', () => {
       const allSkills = SkillRegistry.getAll();
       expect(allSkills.length).toBeGreaterThan(0);
-      expect(allSkills.some(s => s.name === 'manageable-skill')).toBe(true);
+      expect(allSkills.some((s) => s.name === 'manageable-skill')).toBe(true);
     });
 
     it('should get skills by context', () => {
       SkillRegistry.clear(); // Clear manageable-skill from beforeEach
-      
+
       SkillRegistry.register({
         path: join(tempDir, 'dev-skill.ossa.yaml'),
         manifest: {
@@ -315,12 +329,12 @@ describe('SkillRegistry', () => {
       });
 
       const devSkills = SkillRegistry.getByContext('development');
-      expect(devSkills.some(s => s.name === 'dev-skill')).toBe(true);
-      expect(devSkills.some(s => s.name === 'prod-skill')).toBe(false);
-      
+      expect(devSkills.some((s) => s.name === 'dev-skill')).toBe(true);
+      expect(devSkills.some((s) => s.name === 'prod-skill')).toBe(false);
+
       const prodSkills = SkillRegistry.getByContext('production');
-      expect(prodSkills.some(s => s.name === 'prod-skill')).toBe(true);
-      expect(prodSkills.some(s => s.name === 'dev-skill')).toBe(false);
+      expect(prodSkills.some((s) => s.name === 'prod-skill')).toBe(true);
+      expect(prodSkills.some((s) => s.name === 'dev-skill')).toBe(false);
     });
 
     it('should filter matches above threshold', async () => {
@@ -329,7 +343,7 @@ describe('SkillRegistry', () => {
         0.5
       );
 
-      matches.forEach(match => {
+      matches.forEach((match) => {
         expect(match.confidence).toBeGreaterThanOrEqual(0.5);
       });
     });

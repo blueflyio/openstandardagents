@@ -232,3 +232,32 @@ validate:scripts-version:
 # Documentation consistency is now handled by ossa-dev CLI
 # Use: npm run version:sync (uses ossa-dev CLI)
 
+validate:changelog:
+  stage: validate
+  image: node:${NODE_VERSION}-alpine
+  tags:
+    - saas-linux-small-amd64
+  extends:
+    - .npm-cache
+  before_script:
+    - npm ci --prefer-offline --no-audit
+  script:
+    - echo "Validating CHANGELOG.md format..."
+    - npm run validate:changelog
+    - |
+      if [ -n "$(git diff CHANGELOG.md)" ]; then
+        echo "ERROR: CHANGELOG.md format issues detected. Run 'npm run validate:changelog' locally to fix."
+        git diff CHANGELOG.md
+        exit 1
+      fi
+      echo "CHANGELOG.md format is valid"
+  allow_failure: false
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - CHANGELOG.md
+    - if: $CI_COMMIT_BRANCH =~ /^release\/v/
+      when: always
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: always
+

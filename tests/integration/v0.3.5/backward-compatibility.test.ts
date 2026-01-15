@@ -1,6 +1,6 @@
 /**
  * OSSA v0.3.5 Backward Compatibility Tests
- * 
+ *
  * Ensures v0.3.5 agents work with v0.3.4 runtimes
  */
 
@@ -13,8 +13,18 @@ import addFormats from 'ajv-formats';
 
 describe('OSSA v0.3.5 Backward Compatibility', () => {
   const rootDir = process.cwd();
-  const v034SchemaPath = join(rootDir, 'spec', 'v0.3.4', 'ossa-0.3.4.schema.json');
-  const v035SchemaPath = join(rootDir, 'spec', 'v0.3.5', 'ossa-0.3.5.schema.json');
+  const v034SchemaPath = join(
+    rootDir,
+    'spec',
+    'v0.3.4',
+    'ossa-0.3.4.schema.json'
+  );
+  const v035SchemaPath = join(
+    rootDir,
+    'spec',
+    'v0.3.5',
+    'ossa-0.3.5.schema.json'
+  );
 
   it('should validate v0.3.4 manifest with v0.3.5 schema', () => {
     const v034Schema = JSON.parse(readFileSync(v034SchemaPath, 'utf-8'));
@@ -133,10 +143,7 @@ describe('OSSA v0.3.5 Backward Compatibility', () => {
       spec: {
         flow_schema: {
           initial_state: 'ready',
-          states: [
-            { name: 'ready' },
-            { name: 'completed' },
-          ],
+          states: [{ name: 'ready' }, { name: 'completed' }],
         },
         transitions: [
           {

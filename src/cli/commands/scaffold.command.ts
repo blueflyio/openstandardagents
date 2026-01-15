@@ -20,6 +20,7 @@ import chalk from 'chalk';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'yaml';
+import { fileURLToPath } from 'url';
 import { container } from '../../di-container.js';
 import { GenerationService } from '../../services/generation.service.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
@@ -50,6 +51,10 @@ export const scaffoldCommand = new Command('scaffold')
     'Agent type (worker, orchestrator, judge, etc.)',
     getDefaultAgentType()
   )
+  .option(
+    '-p, --platform <platform>',
+    'Platform template (drupal, gitlab, kubernetes, cursor, langflow)'
+  )
   .option('-o, --output <dir>', 'Output directory', getDefaultOutputDir())
   .option('--with-prompts', 'Create prompts/ directory')
   .option('--with-tools', 'Create tools/ directory')
@@ -62,6 +67,7 @@ export const scaffoldCommand = new Command('scaffold')
         description?: string;
         role?: string;
         type?: string;
+        platform?: string;
         output?: string;
         withPrompts?: boolean;
         withTools?: boolean;
@@ -127,6 +133,9 @@ export const scaffoldCommand = new Command('scaffold')
         }
 
         console.log(chalk.blue(`Scaffolding agent: ${agentName}`));
+        if (options?.platform) {
+          console.log(chalk.gray(`  Platform: ${options.platform}`));
+        }
         console.log(chalk.gray('─'.repeat(50)));
 
         // Create agent directory
@@ -137,38 +146,104 @@ export const scaffoldCommand = new Command('scaffold')
         const generationService = container.get(GenerationService);
         const manifestRepo = container.get(ManifestRepository);
 
-        // Generate manifest
-        const agentType = options?.type || getDefaultAgentType();
-        const typeConfigs = getAgentTypeConfigs();
-        const typeConfig =
-          typeConfigs[agentType] || typeConfigs[getDefaultAgentType()];
+        // Load platform template if specified
+        let manifest: OssaAgent;
+        if (options?.platform) {
+          // Resolve templates directory from package root (works in both src and dist)
+          const __filename = fileURLToPath(import.meta.url);
+          const __dirname = path.dirname(__filename);
+          // Go up from dist/cli/commands or src/cli/commands to package root
+          const packageRoot = path.resolve(__dirname, '../../../..');
+          const platformTemplatesDir = path.join(
+            packageRoot,
+            'templates/platforms'
+          );
+          const platformDir = path.join(
+            platformTemplatesDir,
+            options.platform.toLowerCase()
+          );
 
-        const manifest: OssaAgent = {
-          apiVersion: getApiVersion(),
-          kind: getDefaultAgentKind(),
-          metadata: {
-            name: agentName,
-            version: getDefaultAgentVersion(),
-            description:
-              options?.description || getDefaultDescriptionTemplate(agentName),
-          },
-          spec: {
-            role: options?.role || getDefaultRoleTemplate(agentName),
-            llm: {
-              provider: getDefaultLLMProvider(),
-              model: getDefaultLLMModel(),
+          // Determine agent type based on platform
+          let agentTypeForPlatform = 'worker';
+          if (options.platform === 'drupal')
+            agentTypeForPlatform = 'content-agent';
+          else if (options.platform === 'gitlab')
+            agentTypeForPlatform = 'ci-agent';
+          else if (options.platform === 'kubernetes')
+            agentTypeForPlatform = 'operator-agent';
+          else if (options.platform === 'cursor')
+            agentTypeForPlatform = 'code-assistant';
+          else if (options.platform === 'langflow')
+            agentTypeForPlatform = 'workflow-agent';
+
+          const templatePath = path.join(
+            platformDir,
+            agentTypeForPlatform,
+            'manifest.ossa.yaml'
+          );
+
+          if (fs.existsSync(templatePath)) {
+            const templateContent = fs.readFileSync(templatePath, 'utf-8');
+            const templateManifest = yaml.parse(
+              templateContent.replace(/\$\{AGENT_NAME\}/g, agentName)
+            ) as OssaAgent;
+            manifest = templateManifest;
+            console.log(
+              chalk.gray(
+                `  Loaded platform template: ${options.platform}/${agentTypeForPlatform}`
+              )
+            );
+          } else {
+            console.log(
+              chalk.yellow(
+                `  ⚠ Platform template not found: ${templatePath}, using default`
+              )
+            );
+            manifest = createDefaultManifest(agentName, options);
+          }
+        } else {
+          manifest = createDefaultManifest(agentName, options);
+        }
+
+        // Helper function to create default manifest
+        function createDefaultManifest(
+          agentName: string,
+          opts?: typeof options
+        ): OssaAgent {
+          const agentType = opts?.type || getDefaultAgentType();
+          const typeConfigs = getAgentTypeConfigs();
+          const typeConfig =
+            typeConfigs[agentType] || typeConfigs[getDefaultAgentType()];
+
+          const defaultManifest: OssaAgent = {
+            apiVersion: getApiVersion(),
+            kind: getDefaultAgentKind(),
+            metadata: {
+              name: agentName,
+              version: getDefaultAgentVersion(),
+              description:
+                opts?.description || getDefaultDescriptionTemplate(agentName),
             },
-            tools: [],
-          },
-        };
+            spec: {
+              role: opts?.role || getDefaultRoleTemplate(agentName),
+              llm: {
+                provider: getDefaultLLMProvider(),
+                model: getDefaultLLMModel(),
+              },
+              tools: [],
+            },
+          };
 
-        // Add type-specific configuration via tools
-        if (typeConfig.capabilityName && manifest.spec) {
-          manifest.spec.tools = manifest.spec.tools || [];
-          manifest.spec.tools.push({
-            type: 'capability',
-            name: typeConfig.capabilityName,
-          });
+          // Add type-specific configuration via tools
+          if (typeConfig.capabilityName && defaultManifest.spec) {
+            defaultManifest.spec.tools = defaultManifest.spec.tools || [];
+            defaultManifest.spec.tools.push({
+              type: 'capability',
+              name: typeConfig.capabilityName,
+            });
+          }
+
+          return defaultManifest;
         }
 
         // Save manifest
@@ -202,6 +277,7 @@ export const scaffoldCommand = new Command('scaffold')
           options?.withReadme !== undefined ? options.withReadme : true;
         if (shouldCreateReadme) {
           const readmePath = path.join(agentDir, 'README.md');
+          const agentType = options?.type || getDefaultAgentType();
           const readmeContent = `# ${agentName}
 
 ${options?.description || getDefaultDescriptionTemplate(agentName)}
@@ -209,6 +285,7 @@ ${options?.description || getDefaultDescriptionTemplate(agentName)}
 ## Overview
 
 This agent is defined using the OSSA (Open Standard for Scalable AI Agents) specification.
+${options?.platform ? `\n**Platform**: ${options.platform}` : ''}
 
 ## Manifest
 

@@ -92,7 +92,9 @@ describe('AgentsMdExtension Schema', () => {
       },
     };
 
-    expect(fullConfig.extensions.agents_md.sections.dev_environment.enabled).toBe(true);
+    expect(
+      fullConfig.extensions.agents_md.sections.dev_environment.enabled
+    ).toBe(true);
     expect(fullConfig.extensions.agents_md.sections.custom).toHaveLength(1);
     expect(fullConfig.extensions.agents_md.nested_files).toHaveLength(1);
     expect(fullConfig.extensions.agents_md.cursor_integration).toBe(true);
@@ -126,7 +128,9 @@ describe('AgentsMdExtension Schema', () => {
 
     expect(config.agents_md.sections.dev_environment.source).toBe('spec.tools');
     expect(config.agents_md.sections.testing.source).toBe('spec.constraints');
-    expect(config.agents_md.sections.pr_instructions.source).toBe('spec.autonomy');
+    expect(config.agents_md.sections.pr_instructions.source).toBe(
+      'spec.autonomy'
+    );
   });
 
   it('should support custom output paths', () => {

@@ -51,12 +51,11 @@ describe('E2E Smoke Tests', () => {
     const manifestPath = join(projectRoot, 'tests/e2e/test-manifest.ossa.yaml');
 
     try {
-      writeFileSync(
-        manifestPath,
-        yaml.stringify(minimalManifest)
-      );
+      writeFileSync(manifestPath, yaml.stringify(minimalManifest));
     } catch (error) {
-      throw new Error(`Failed to create test manifest: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to create test manifest: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
     try {
       // Validate manifest path to prevent command injection
@@ -66,20 +65,26 @@ describe('E2E Smoke Tests', () => {
       if (!resolvedPath.startsWith(resolvedRoot)) {
         throw new Error(`Manifest path outside project root: ${manifestPath}`);
       }
-      
+
       // 2. Validate relative path contains only safe characters (no shell metacharacters)
-      const relativePath = manifestPath.replace(projectRoot + '/', '').replace(projectRoot + '\\', '');
+      const relativePath = manifestPath
+        .replace(projectRoot + '/', '')
+        .replace(projectRoot + '\\', '');
       // Allow alphanumeric, forward/backward slashes, dots, hyphens, underscores
       // Reject: spaces, quotes, semicolons, pipes, redirects, etc.
       if (!/^[a-zA-Z0-9/\\._-]+$/.test(relativePath)) {
-        throw new Error(`Invalid manifest path format: ${relativePath} (contains unsafe characters)`);
+        throw new Error(
+          `Invalid manifest path format: ${relativePath} (contains unsafe characters)`
+        );
       }
-      
+
       // 3. Ensure no path traversal attempts
       if (relativePath.includes('..')) {
-        throw new Error(`Invalid manifest path: ${relativePath} (path traversal detected)`);
+        throw new Error(
+          `Invalid manifest path: ${relativePath} (path traversal detected)`
+        );
       }
-      
+
       // 4. Use resolved absolute path in command (safer than relative)
       const result = execSync(`node bin/ossa validate "${resolvedPath}"`, {
         cwd: projectRoot,

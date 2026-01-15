@@ -1,6 +1,8 @@
 # Contributing to OSSA
 
-Thank you for your interest in contributing to OSSA! This document provides guidelines and instructions for contributing to the Open Standard for Software Agents (OSSA) - The OpenAPI for agents.
+Thank you for your interest in contributing to OSSA! This document provides guidelines and instructions for contributing to the Open Standard for Software Agents (OSSA) - **The OpenAPI for Software Agents**.
+
+**Built for Enterprise Adoption**: OSSA enables companies to build vendor-neutral, production-grade AI agent infrastructure. Your contributions help make OSSA the industry standard.
 
 ## 🌟 Code of Conduct
 
@@ -17,9 +19,12 @@ By participating in this project, you agree to abide by our [Code of Conduct](CO
 ### Setup
 
 ```bash
-# Fork and clone the repository
-git clone https://gitlab.com/blueflyio/ossa/openstandardagents.git
+# Fork and clone the repository (GitHub - public mirror)
+git clone https://github.com/blueflyio/openstandardagents.git
 cd openstandardagents
+
+# Or clone from GitLab (for internal contributors only)
+# git clone https://gitlab.com/blueflyio/ossa/openstandardagents.git
 
 # Install dependencies
 npm install
@@ -35,7 +40,7 @@ npm run validate:all
 
 ### Reporting Bugs
 
-1. Check if the issue already exists in [GitLab Issues](https://gitlab.com/blueflyio/ossa/openstandardagents/-/issues)
+1. Check if the issue already exists in [GitHub Issues](https://github.com/blueflyio/openstandardagents/issues) (public) or [GitLab Issues](https://gitlab.com/blueflyio/ossa/openstandardagents/-/issues) (internal)
 2. If not, create a new issue with:
    - Clear title and description
    - Steps to reproduce
@@ -192,7 +197,7 @@ openstandardagents/
 
 ## ❓ Questions?
 
-- **General questions**: [GitLab Discussions](https://gitlab.com/blueflyio/ossa/openstandardagents/-/issues)
+- **General questions**: [GitHub Discussions](https://github.com/blueflyio/openstandardagents/discussions) (public) or [GitLab Issues](https://gitlab.com/blueflyio/ossa/openstandardagents/-/issues) (internal)
 - **Technical questions**: Create an issue with the `question` label
 - **Security issues**: See [SECURITY.md](SECURITY.md)
 

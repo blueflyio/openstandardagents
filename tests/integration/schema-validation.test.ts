@@ -62,7 +62,10 @@ describe('Schema Validation Integration', () => {
             }
 
             // Map ossa/v0.2 or ossa/v0.2.x to current schema version
-            const result = await validationService.validate(manifest, CURRENT_SCHEMA_VERSION);
+            const result = await validationService.validate(
+              manifest,
+              CURRENT_SCHEMA_VERSION
+            );
 
             // Log errors for debugging
             if (result.errors.length > 0) {
@@ -83,7 +86,9 @@ describe('Schema Validation Integration', () => {
             // If there are errors, they should be from platform validators for incomplete configs
             // We'll be lenient here - examples are meant to demonstrate, not be production-ready
             const criticalErrors = result.errors.filter(
-              (e) => !e.instancePath?.includes('/extensions/') || e.message?.includes('required')
+              (e) =>
+                !e.instancePath?.includes('/extensions/') ||
+                e.message?.includes('required')
             );
 
             if (criticalErrors.length > 0) {
@@ -130,9 +135,15 @@ describe('Schema Validation Integration', () => {
       },
     };
 
-    const result = await validationService.validate(manifest, CURRENT_SCHEMA_VERSION);
+    const result = await validationService.validate(
+      manifest,
+      CURRENT_SCHEMA_VERSION
+    );
     if (result.errors.length > 0) {
-      console.error('Platform extensions validation errors:', JSON.stringify(result.errors, null, 2));
+      console.error(
+        'Platform extensions validation errors:',
+        JSON.stringify(result.errors, null, 2)
+      );
     }
     expect(result.valid).toBe(true);
   });
@@ -160,7 +171,10 @@ describe('Schema Validation Integration', () => {
       },
     };
 
-    const result = await validationService.validate(manifest, CURRENT_SCHEMA_VERSION);
+    const result = await validationService.validate(
+      manifest,
+      CURRENT_SCHEMA_VERSION
+    );
     if (result.valid) {
       console.error('Test failed: validation should have caught errors');
       console.error('Result:', JSON.stringify(result, null, 2));
@@ -192,9 +206,15 @@ describe('Schema Validation Integration', () => {
       },
     };
 
-    const result = await validationService.validate(manifest, CURRENT_SCHEMA_VERSION);
+    const result = await validationService.validate(
+      manifest,
+      CURRENT_SCHEMA_VERSION
+    );
     if (result.errors.length > 0) {
-      console.error('Cross-platform validation errors:', JSON.stringify(result.errors, null, 2));
+      console.error(
+        'Cross-platform validation errors:',
+        JSON.stringify(result.errors, null, 2)
+      );
     }
     expect(result.valid).toBe(true);
     expect(result.errors).toHaveLength(0);

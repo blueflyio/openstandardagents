@@ -83,7 +83,11 @@ describe('ContractValidator', () => {
 
       const runtimeEvents = ['other.event']; // Not publishing declared event
 
-      const result = validator.validateAgentContract(manifest, runtimeEvents, []);
+      const result = validator.validateAgentContract(
+        manifest,
+        runtimeEvents,
+        []
+      );
 
       expect(result.valid).toBe(false);
       expect(result.errors).toHaveLength(1);
@@ -105,7 +109,11 @@ describe('ContractValidator', () => {
 
       const runtimeEvents = ['undeclared.event'];
 
-      const result = validator.validateAgentContract(manifest, runtimeEvents, []);
+      const result = validator.validateAgentContract(
+        manifest,
+        runtimeEvents,
+        []
+      );
 
       expect(result.valid).toBe(true);
       expect(result.warnings).toHaveLength(1);
@@ -131,7 +139,11 @@ describe('ContractValidator', () => {
 
       const runtimeCommands = ['other.command']; // Not exposing declared command
 
-      const result = validator.validateAgentContract(manifest, [], runtimeCommands);
+      const result = validator.validateAgentContract(
+        manifest,
+        [],
+        runtimeCommands
+      );
 
       expect(result.valid).toBe(false);
       expect(result.errors).toHaveLength(1);
@@ -168,7 +180,9 @@ describe('ContractValidator', () => {
       const result = validator.validateAgentContract(manifest);
 
       expect(result.valid).toBe(false);
-      expect(result.errors.some((e) => e.type === 'schema_mismatch')).toBe(true);
+      expect(result.errors.some((e) => e.type === 'schema_mismatch')).toBe(
+        true
+      );
     });
 
     it('should warn about missing schemas', () => {
@@ -303,7 +317,9 @@ describe('ContractValidator', () => {
       const result = validator.testContractBetweenAgents(consumer, provider);
 
       expect(result.warnings.length).toBeGreaterThan(0);
-      expect(result.warnings.some((w) => w.includes('missing.channel'))).toBe(true);
+      expect(result.warnings.some((w) => w.includes('missing.channel'))).toBe(
+        true
+      );
     });
 
     it('should detect schema incompatibility', () => {
@@ -354,7 +370,9 @@ describe('ContractValidator', () => {
       const result = validator.testContractBetweenAgents(consumer, provider);
 
       expect(result.valid).toBe(false);
-      expect(result.errors.some((e) => e.type === 'schema_mismatch')).toBe(true);
+      expect(result.errors.some((e) => e.type === 'schema_mismatch')).toBe(
+        true
+      );
     });
 
     it('should detect missing expected commands', () => {
@@ -400,8 +418,12 @@ describe('ContractValidator', () => {
       const result = validator.testContractBetweenAgents(consumer, provider);
 
       expect(result.valid).toBe(false);
-      expect(result.errors.some((e) => e.type === 'missing_command')).toBe(true);
-      expect(result.errors.some((e) => e.message.includes('execute.task'))).toBe(true);
+      expect(result.errors.some((e) => e.type === 'missing_command')).toBe(
+        true
+      );
+      expect(
+        result.errors.some((e) => e.message.includes('execute.task'))
+      ).toBe(true);
     });
 
     it('should handle agents with no messaging configuration', () => {
@@ -517,7 +539,9 @@ describe('ContractValidator', () => {
       expect(result.hasBreakingChanges).toBe(true);
       expect(result.summary.major).toBeGreaterThan(0);
       expect(result.changes.some((c) => c.type === 'removed_event')).toBe(true);
-      expect(result.changes.some((c) => c.resource === 'removed.event')).toBe(true);
+      expect(result.changes.some((c) => c.resource === 'removed.event')).toBe(
+        true
+      );
     });
 
     it('should detect removed command as breaking change', () => {
@@ -550,8 +574,12 @@ describe('ContractValidator', () => {
       const result = validator.detectBreakingChanges(oldManifest, newManifest);
 
       expect(result.hasBreakingChanges).toBe(true);
-      expect(result.changes.some((c) => c.type === 'removed_command')).toBe(true);
-      expect(result.changes.some((c) => c.resource === 'old.command')).toBe(true);
+      expect(result.changes.some((c) => c.type === 'removed_command')).toBe(
+        true
+      );
+      expect(result.changes.some((c) => c.resource === 'old.command')).toBe(
+        true
+      );
     });
 
     it('should detect incompatible schema change as breaking', () => {
@@ -599,7 +627,9 @@ describe('ContractValidator', () => {
       const result = validator.detectBreakingChanges(oldManifest, newManifest);
 
       expect(result.hasBreakingChanges).toBe(true);
-      expect(result.changes.some((c) => c.type === 'schema_incompatible')).toBe(true);
+      expect(result.changes.some((c) => c.type === 'schema_incompatible')).toBe(
+        true
+      );
     });
 
     it('should detect new required field as breaking change', () => {
@@ -650,7 +680,9 @@ describe('ContractValidator', () => {
       const result = validator.detectBreakingChanges(oldManifest, newManifest);
 
       expect(result.hasBreakingChanges).toBe(true);
-      expect(result.changes.some((c) => c.type === 'signature_changed')).toBe(true);
+      expect(result.changes.some((c) => c.type === 'signature_changed')).toBe(
+        true
+      );
     });
 
     it('should throw error when comparing different agents', () => {
