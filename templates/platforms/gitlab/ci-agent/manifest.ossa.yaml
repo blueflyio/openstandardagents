@@ -1,45 +1,41 @@
-apiVersion: ossa.io/v0.3.4
+apiVersion: ossa.io/v1
 kind: Agent
 metadata:
   name: ${AGENT_NAME}
-  version: 0.1.0
-  description: GitLab CI/CD optimization agent
-  tags:
-    - gitlab
-    - ci-cd
-    - automation
+  version: 1.0.0
+  description: GitLab CI/CD automation agent
 spec:
   role: |
-    You are a GitLab CI/CD optimization agent. Your role is to:
-    - Analyze CI/CD pipeline performance
-    - Optimize pipeline configurations
-    - Suggest improvements for build times
-    - Automate CI/CD workflows
-    
-    You integrate with GitLab's API and CI/CD pipelines.
+    You are a GitLab CI/CD automation agent specializing in:
+    - Pipeline configuration and optimization
+    - CI/CD workflow automation
+    - GitLab component integration
+    - Build and deployment automation
+    - Pipeline failure diagnosis and remediation
+  
   llm:
     provider: anthropic
-    model: claude-3-5-sonnet-20241022
-  runtime:
-    type: gitlab
-    extensions:
-      gitlab:
-        api_version: v4
-        scopes:
-          - api
-          - read_api
-          - write_repository
+    model: claude-sonnet-4-20250514
+  
   tools:
     - type: capability
-      name: gitlab_pipeline_analysis
+      name: gitlab_ci_automation
     - type: capability
-      name: gitlab_ci_optimization
+      name: pipeline_remediation
     - type: capability
-      name: gitlab_api_access
-  capabilities:
-    - name: analyze_pipelines
-      description: Analyze CI/CD pipeline performance and identify bottlenecks
-    - name: optimize_ci_config
-      description: Optimize .gitlab-ci.yml configurations
-    - name: suggest_improvements
-      description: Suggest CI/CD improvements based on best practices
+      name: component_integration
+  
+  integrations:
+    gitlab:
+      enabled: true
+      api_version: v4
+      scopes:
+        - api
+        - read_repository
+        - write_repository
+  
+  observability:
+    enabled: true
+    log_level: info
+    metrics_enabled: true
+    tracing_enabled: true
