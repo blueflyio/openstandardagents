@@ -192,35 +192,43 @@ export class OpenTelemetryAdapter {
   ) {
     switch (config.exporter) {
       case 'otlp': {
-        // @ts-expect-error - Optional dependency, may not be installed
-        const { OTLPTraceExporter } =
-          await import('@opentelemetry/exporter-trace-otlp-http');
-        return new OTLPTraceExporter({
-          url: config.endpoint || 'http://localhost:4318/v1/traces',
-          headers: config.headers || {},
-        });
+        try {
+          const TraceExporter = await import('@opentelemetry/exporter-trace-otlp-http');
+          return new TraceExporter.OTLPTraceExporter({
+            url: config.endpoint || 'http://localhost:4318/v1/traces',
+            headers: config.headers || {},
+          });
+        } catch {
+          throw new Error('@opentelemetry/exporter-trace-otlp-http not installed');
+        }
       }
       case 'jaeger': {
-        // @ts-expect-error - Optional dependency, may not be installed
-        const { JaegerExporter } =
-          await import('@opentelemetry/exporter-jaeger');
-        return new JaegerExporter({
-          endpoint: config.endpoint || 'http://localhost:14268/api/traces',
-        });
+        try {
+          const JaegerExporter = await import('@opentelemetry/exporter-jaeger');
+          return new JaegerExporter.JaegerExporter({
+            endpoint: config.endpoint || 'http://localhost:14268/api/traces',
+          });
+        } catch {
+          throw new Error('@opentelemetry/exporter-jaeger not installed');
+        }
       }
       case 'zipkin': {
-        // @ts-expect-error - Optional dependency, may not be installed
-        const { ZipkinExporter } =
-          await import('@opentelemetry/exporter-zipkin');
-        return new ZipkinExporter({
-          url: config.endpoint || 'http://localhost:9411/api/v2/spans',
-        });
+        try {
+          const ZipkinExporter = await import('@opentelemetry/exporter-zipkin');
+          return new ZipkinExporter.ZipkinExporter({
+            url: config.endpoint || 'http://localhost:9411/api/v2/spans',
+          });
+        } catch {
+          throw new Error('@opentelemetry/exporter-zipkin not installed');
+        }
       }
       case 'console': {
-        // @ts-expect-error - Optional dependency, may not be installed
-        const { ConsoleSpanExporter } =
-          await import('@opentelemetry/sdk-trace-base');
-        return new ConsoleSpanExporter();
+        try {
+          const ConsoleExporter = await import('@opentelemetry/sdk-trace-base');
+          return new ConsoleExporter.ConsoleSpanExporter();
+        } catch {
+          throw new Error('@opentelemetry/sdk-trace-base not installed');
+        }
       }
       default:
         return undefined;
@@ -235,21 +243,25 @@ export class OpenTelemetryAdapter {
   ) {
     switch (config.exporter) {
       case 'otlp': {
-        // @ts-expect-error - Optional dependency, may not be installed
-        const { OTLPMetricExporter } =
-          await import('@opentelemetry/exporter-metrics-otlp-http');
-        return new OTLPMetricExporter({
-          url: config.endpoint || 'http://localhost:4318/v1/metrics',
-          headers: config.headers || {},
-        });
+        try {
+          const MetricsExporter = await import('@opentelemetry/exporter-metrics-otlp-http');
+          return new MetricsExporter.OTLPMetricExporter({
+            url: config.endpoint || 'http://localhost:4318/v1/metrics',
+            headers: config.headers || {},
+          });
+        } catch {
+          throw new Error('@opentelemetry/exporter-metrics-otlp-http not installed');
+        }
       }
       case 'prometheus': {
-        // @ts-expect-error - Optional dependency, may not be installed
-        const { PrometheusExporter } =
-          await import('@opentelemetry/exporter-prometheus');
-        return new PrometheusExporter({
-          port: 9090,
-        });
+        try {
+          const PrometheusExporter = await import('@opentelemetry/exporter-prometheus');
+          return new PrometheusExporter.PrometheusExporter({
+            port: 9090,
+          });
+        } catch {
+          throw new Error('@opentelemetry/exporter-prometheus not installed');
+        }
       }
       case 'console': {
         // Console metric exporter
