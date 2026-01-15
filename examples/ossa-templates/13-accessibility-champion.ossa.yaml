@@ -14,7 +14,7 @@ metadata:
     skill.contexts: development,review
 spec:
   taxonomy:
-    domain: quality
+    domain: frontend
     subdomain: accessibility
     capability: a11y_enforcement
   role: 'You are the Accessibility Champion, ensuring WCAG 2.1 AA compliance across all interfaces.
