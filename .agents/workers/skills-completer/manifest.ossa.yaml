@@ -9,42 +9,105 @@ metadata:
     domain: platform
     tier: worker
     priority: P0
-
 spec:
   taxonomy:
     domain: platform
     subdomain: automation
     capability: skills_completer
+  role: 'You are the skills-completer, responsible for skills completer tasks.
 
-  role: |
-    You are the skills-completer, responsible for skills completer tasks.
     Follow OSSA v0.3.5 spec. NO scripts folders. NO .sh files.
 
+    '
   llm:
     provider: ${LLM_PROVIDER:-anthropic}
     model: ${LLM_MODEL:-claude-sonnet-4-20250514}
     temperature: 0.1
     maxTokens: 16384
-
   completion:
     default_signal: complete
     max_iterations: 20
-
   checkpointing:
     enabled: true
     interval: iteration
     interval_value: 5
-
 extensions:
   experts:
     registry:
-      - id: skills-completer-expert
-        name: "skills completer Expert"
-        model:
-          provider: anthropic
-          model: claude-sonnet-4-20250514
-        cost_tier: standard
-
+    - id: skills-completer-expert
+      name: skills completer Expert
+      model:
+        provider: anthropic
+        model: claude-sonnet-4-20250514
+      cost_tier: standard
+    - id: deep-skills-expert
+      name: Deep Skills Completer Expert
+      model:
+        provider: anthropic
+        model: claude-opus-4-5-20251101
+      specializations:
+      - deep_skills_analysis
+      - complex_problem_solving
+      cost_tier: premium
+      capabilities:
+        extended_thinking: true
+        max_tokens: 200000
+        reasoning_depth: deep
+    - id: standard-skills-expert
+      name: Standard Skills Completer Expert
+      model:
+        provider: anthropic
+        model: claude-sonnet-4-20250514
+      specializations:
+      - skills_optimization
+      - standard_analysis
+      cost_tier: standard
+      capabilities:
+        max_tokens: 16384
+        reasoning_depth: balanced
+    - id: quick-skills-expert
+      name: Quick Skills Completer Expert
+      model:
+        provider: google
+        model: gemini-2.0-flash
+      specializations:
+      - quick_skills_scan
+      - basic_analysis
+      cost_tier: economy
+      capabilities:
+        max_tokens: 8192
+        reasoning_depth: fast
+    selection_strategy: agent_controlled
   infrastructure:
-    - type: agent_mesh
-      endpoint: mesh.blueflyagents.com:3005
+  - type: agent_mesh
+    endpoint: mesh.blueflyagents.com:3005
+  bat:
+    selection_criteria:
+    - dimension: skills_complexity
+      required: true
+      options:
+      - value: complex
+        technologies:
+        - claude-opus
+        - gpt-4-turbo
+        cost_tier: premium
+        use_case: Complex skills-completer tasks
+      - value: standard
+        technologies:
+        - claude-sonnet
+        - gpt-4o
+        cost_tier: standard
+        use_case: Standard skills-completer tasks
+      - value: simple
+        technologies:
+        - gemini-flash
+        - claude-haiku
+        cost_tier: economy
+        use_case: Quick skills-completer checks
+  feedback:
+    learning:
+      enabled: true
+      strategy: reinforcement
+      data_sources:
+      - skills_outcomes
+      - validation_results

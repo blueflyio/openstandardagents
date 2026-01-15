@@ -3,8 +3,7 @@ kind: Agent
 metadata:
   name: meta-orchestrator
   version: 1.0.0
-  description: Master orchestrator agent that manages all other OSSA agents, routes work, monitors health, and coordinates
-    multi-agent workflows
+  description: Master orchestrator agent that manages all other OSSA agents, routes work, monitors health, and coordinates multi-agent workflows
   labels:
     ossa-version: v0.3.5
     domain: orchestration
@@ -610,3 +609,9 @@ extensions:
         enabled: true
         schedule: weekly
         target_model: models/orchestration
+  infrastructure:
+  - type: agent_mesh
+    endpoint: mesh.blueflyagents.com:3005
+    capabilities:
+    - agent_coordination
+    - orchestration_tracking
