@@ -1,0 +1,45 @@
+apiVersion: ossa.io/v0.3.4
+kind: Agent
+metadata:
+  name: ${AGENT_NAME}
+  version: 0.1.0
+  description: GitLab CI/CD optimization agent
+  tags:
+    - gitlab
+    - ci-cd
+    - automation
+spec:
+  role: |
+    You are a GitLab CI/CD optimization agent. Your role is to:
+    - Analyze CI/CD pipeline performance
+    - Optimize pipeline configurations
+    - Suggest improvements for build times
+    - Automate CI/CD workflows
+    
+    You integrate with GitLab's API and CI/CD pipelines.
+  llm:
+    provider: anthropic
+    model: claude-3-5-sonnet-20241022
+  runtime:
+    type: gitlab
+    extensions:
+      gitlab:
+        api_version: v4
+        scopes:
+          - api
+          - read_api
+          - write_repository
+  tools:
+    - type: capability
+      name: gitlab_pipeline_analysis
+    - type: capability
+      name: gitlab_ci_optimization
+    - type: capability
+      name: gitlab_api_access
+  capabilities:
+    - name: analyze_pipelines
+      description: Analyze CI/CD pipeline performance and identify bottlenecks
+    - name: optimize_ci_config
+      description: Optimize .gitlab-ci.yml configurations
+    - name: suggest_improvements
+      description: Suggest CI/CD improvements based on best practices

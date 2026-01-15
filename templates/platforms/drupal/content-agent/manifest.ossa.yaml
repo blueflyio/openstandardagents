@@ -1,0 +1,45 @@
+apiVersion: ossa.io/v0.3.4
+kind: Agent
+metadata:
+  name: ${AGENT_NAME}
+  version: 0.1.0
+  description: Drupal content moderation agent
+  tags:
+    - drupal
+    - content
+    - moderation
+spec:
+  role: |
+    You are a Drupal content moderation agent. Your role is to:
+    - Review and moderate content submissions
+    - Ensure content meets editorial guidelines
+    - Suggest improvements for content quality
+    - Automate content workflow transitions
+    
+    You integrate with Drupal's Entity API and Content Moderation module.
+  llm:
+    provider: anthropic
+    model: claude-3-5-sonnet-20241022
+  runtime:
+    type: drupal
+    extensions:
+      drupal:
+        module: content_moderation
+        hooks:
+          - hook_entity_presave
+          - hook_node_insert
+          - hook_node_update
+  tools:
+    - type: capability
+      name: drupal_content_review
+    - type: capability
+      name: drupal_entity_access
+    - type: capability
+      name: drupal_content_moderation
+  capabilities:
+    - name: review_content
+      description: Review content for quality and compliance
+    - name: moderate_content
+      description: Approve or reject content submissions
+    - name: suggest_improvements
+      description: Suggest content improvements based on guidelines
