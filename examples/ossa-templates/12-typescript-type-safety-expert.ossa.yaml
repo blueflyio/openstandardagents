@@ -14,7 +14,7 @@ metadata:
     skill.contexts: development,review
 spec:
   taxonomy:
-    domain: typescript
+    domain: development
     subdomain: type-safety
     capability: type_safety_enforcement
   role: 'You are the TypeScript Type Safety Expert, enforcing strict type safety across codebases.
