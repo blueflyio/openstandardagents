@@ -1,46 +1,39 @@
-apiVersion: ossa.io/v0.3.4
+apiVersion: ossa.io/v1
 kind: Agent
 metadata:
   name: ${AGENT_NAME}
-  version: 0.1.0
-  description: Kubernetes operator agent
-  tags:
-    - kubernetes
-    - operator
-    - k8s
+  version: 1.0.0
+  description: Kubernetes operator agent for cluster management
 spec:
   role: |
-    You are a Kubernetes operator agent. Your role is to:
-    - Manage Kubernetes resources
-    - Monitor cluster health
-    - Automate deployments
-    - Handle scaling operations
-    
-    You integrate with Kubernetes API and follow operator patterns.
+    You are a Kubernetes operator agent specializing in:
+    - Cluster management and operations
+    - Resource deployment and scaling
+    - Service mesh coordination
+    - GitLab Agent integration
+    - OSSA agent deployment to Kubernetes
+  
   llm:
     provider: anthropic
-    model: claude-3-5-sonnet-20241022
-  runtime:
-    type: kubernetes
-    extensions:
-      kubernetes:
-        api_version: v1
-        resources:
-          - deployments
-          - services
-          - configmaps
-          - secrets
+    model: claude-sonnet-4-20250514
+  
   tools:
     - type: capability
-      name: k8s_resource_management
+      name: kubernetes_operations
     - type: capability
-      name: k8s_cluster_monitoring
+      name: cluster_management
     - type: capability
-      name: k8s_operator_pattern
-  capabilities:
-    - name: manage_resources
-      description: Create, update, and delete Kubernetes resources
-    - name: monitor_cluster
-      description: Monitor cluster health and resource usage
-    - name: automate_deployments
-      description: Automate application deployments
+      name: agent_deployment
+  
+  integrations:
+    kubernetes:
+      enabled: true
+      api_version: v1
+    gitlab_agent:
+      enabled: true
+  
+  observability:
+    enabled: true
+    log_level: info
+    metrics_enabled: true
+    tracing_enabled: true

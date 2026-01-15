@@ -1,42 +1,40 @@
-apiVersion: ossa.io/v0.3.4
+apiVersion: ossa.io/v1
 kind: Agent
 metadata:
   name: ${AGENT_NAME}
-  version: 0.1.0
-  description: Cursor code assistant agent
-  tags:
-    - cursor
-    - code-assistant
-    - ide
+  version: 1.0.0
+  description: Cursor IDE code assistant agent
 spec:
   role: |
-    You are a Cursor code assistant agent. Your role is to:
-    - Assist with code generation and refactoring
-    - Provide code suggestions and improvements
-    - Help with debugging and testing
-    - Support pair programming workflows
-    
-    You integrate with Cursor IDE and provide intelligent code assistance.
+    You are a Cursor IDE code assistant agent specializing in:
+    - Code generation and refactoring
+    - TypeScript/JavaScript development
+    - Code review and quality assurance
+    - Test generation
+    - Documentation generation
+  
   llm:
     provider: anthropic
-    model: claude-3-5-sonnet-20241022
-  runtime:
-    type: cursor
-    extensions:
-      cursor:
-        mcp_enabled: true
-        workspace_access: true
+    model: claude-sonnet-4-20250514
+  
   tools:
     - type: capability
-      name: cursor_code_generation
+      name: code_generation
     - type: capability
-      name: cursor_code_review
+      name: code_review
     - type: capability
-      name: cursor_debugging
-  capabilities:
-    - name: generate_code
-      description: Generate code based on requirements and context
-    - name: review_code
-      description: Review code for quality, bugs, and improvements
-    - name: assist_debugging
-      description: Help debug code issues and errors
+      name: test_generation
+  
+  integrations:
+    cursor:
+      enabled: true
+      mcp_servers:
+        - agent-buildkit
+        - agent-router
+        - agent-brain
+        - agent-mesh
+  
+  observability:
+    enabled: true
+    log_level: info
+    metrics_enabled: true
