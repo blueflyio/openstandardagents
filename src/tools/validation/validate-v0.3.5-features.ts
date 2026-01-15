@@ -348,34 +348,52 @@ export class V035FeatureValidator {
   }
 }
 
-// CLI interface
-if (import.meta.url === `file://${process.argv[1]}`) {
-  const validator = new V035FeatureValidator();
-  const manifestPath =
-    process.argv[2] || 'examples/forward-thinking-agent.ossa.yaml';
-  const result = validator.validate(manifestPath);
+// CLI interface - only execute when run directly (not imported)
+// Skip execution in test environments to avoid import.meta parsing issues in Jest
+if (
+  typeof process !== 'undefined' &&
+  process.env.NODE_ENV !== 'test' &&
+  !process.env.JEST_WORKER_ID
+) {
+  // Use eval to avoid Jest parsing import.meta.url at parse time
+  // This allows the code to be parsed by Jest without syntax errors
+  const shouldRunCLI = (() => {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-implied-eval
+      return eval('typeof import.meta !== "undefined" && import.meta.url === `file://${process.argv[1]}`');
+    } catch {
+      return false;
+    }
+  })();
 
-  console.log('🔍 OSSA v0.3.5 Feature Validation\n');
-  console.log(`Manifest: ${manifestPath}\n`);
+  if (shouldRunCLI) {
+    const validator = new V035FeatureValidator();
+    const manifestPath =
+      process.argv[2] || 'examples/forward-thinking-agent.ossa.yaml';
+    const result = validator.validate(manifestPath);
 
-  if (result.valid) {
-    console.log('✅ Validation passed!\n');
-  } else {
-    console.log('❌ Validation failed:\n');
-    result.errors.forEach((err) => console.log(`  • ${err}`));
+    console.log('🔍 OSSA v0.3.5 Feature Validation\n');
+    console.log(`Manifest: ${manifestPath}\n`);
+
+    if (result.valid) {
+      console.log('✅ Validation passed!\n');
+    } else {
+      console.log('❌ Validation failed:\n');
+      result.errors.forEach((err) => console.log(`  • ${err}`));
+    }
+
+    if (result.warnings.length > 0) {
+      console.log('\n⚠️  Warnings:');
+      result.warnings.forEach((warn) => console.log(`  • ${warn}`));
+    }
+
+    console.log('\n📊 Features Detected:');
+    Object.entries(result.features).forEach(([feature, detected]) => {
+      console.log(`  ${detected ? '✅' : '❌'} ${feature}`);
+    });
+
+    process.exit(result.valid ? 0 : 1);
   }
-
-  if (result.warnings.length > 0) {
-    console.log('\n⚠️  Warnings:');
-    result.warnings.forEach((warn) => console.log(`  • ${warn}`));
-  }
-
-  console.log('\n📊 Features Detected:');
-  Object.entries(result.features).forEach(([feature, detected]) => {
-    console.log(`  ${detected ? '✅' : '❌'} ${feature}`);
-  });
-
-  process.exit(result.valid ? 0 : 1);
 }
 
 // Export already defined above

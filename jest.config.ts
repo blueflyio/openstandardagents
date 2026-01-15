@@ -7,8 +7,7 @@ const config: Config = {
   testMatch: ['**/*.test.ts', '**/*.spec.ts'],
   testPathIgnorePatterns: [
     '/node_modules/',
-    '/tests/unit/v0\\.3\\.5/',
-    '/tests/integration/v0\\.3\\.5/',
+    // v0.3.5 tests are now enabled - removed ignore patterns
   ],
   collectCoverageFrom: [
     'src/**/*.ts',
