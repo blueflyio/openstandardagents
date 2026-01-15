@@ -58,14 +58,20 @@ describe('OSSA v0.3.5 Completion Signals', () => {
 
     const result = validator.validate(tempFile);
     expect(result.valid).toBe(false);
-    expect(result.errors.some(e => e.includes('invalid'))).toBe(true);
+    expect(result.errors.some((e) => e.includes('invalid'))).toBe(true);
 
     unlinkSync(tempFile);
   });
 
   it('should validate all five completion signals', () => {
-    const signals = ['continue', 'complete', 'blocked', 'escalate', 'checkpoint'];
-    
+    const signals = [
+      'continue',
+      'complete',
+      'blocked',
+      'escalate',
+      'checkpoint',
+    ];
+
     for (const signal of signals) {
       const manifest = {
         apiVersion: 'ossa/v0.3.5',

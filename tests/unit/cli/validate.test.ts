@@ -13,11 +13,11 @@ describe('ossa validate', () => {
       metadata: {
         name: 'test-agent',
         namespace: 'default',
-        version: '1.0.0'
+        version: '1.0.0',
       },
       spec: {
-        role: 'Test agent'
-      }
+        role: 'Test agent',
+      },
     };
 
     expect(validManifest.apiVersion).toBe('ossa/v0.3.3');
@@ -29,7 +29,7 @@ describe('ossa validate', () => {
   it('should reject invalid apiVersion', () => {
     const invalidManifest = {
       apiVersion: 'ossa/v0.1.0',
-      kind: 'Agent'
+      kind: 'Agent',
     };
 
     expect(invalidManifest.apiVersion).not.toBe('ossa/v0.3.3');
@@ -39,14 +39,15 @@ describe('ossa validate', () => {
     const invalidManifests = [
       { kind: 'Agent' },
       { apiVersion: 'ossa/v0.3.3' },
-      { apiVersion: 'ossa/v0.3.3', kind: 'Agent', metadata: {} }
+      { apiVersion: 'ossa/v0.3.3', kind: 'Agent', metadata: {} },
     ];
 
-    invalidManifests.forEach(manifest => {
-      const isValid = manifest.apiVersion === 'ossa/v0.3.3' &&
-                      manifest.kind === 'Agent' &&
-                      (manifest as any).metadata?.name &&
-                      (manifest as any).spec;
+    invalidManifests.forEach((manifest) => {
+      const isValid =
+        manifest.apiVersion === 'ossa/v0.3.3' &&
+        manifest.kind === 'Agent' &&
+        (manifest as any).metadata?.name &&
+        (manifest as any).spec;
       expect(isValid).toBeFalsy();
     });
   });
