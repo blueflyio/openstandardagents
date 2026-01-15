@@ -1,0 +1,42 @@
+apiVersion: ossa.io/v0.3.4
+kind: Agent
+metadata:
+  name: ${AGENT_NAME}
+  version: 0.1.0
+  description: Langflow workflow orchestration agent
+  tags:
+    - langflow
+    - workflow
+    - orchestration
+spec:
+  role: |
+    You are a Langflow workflow orchestration agent. Your role is to:
+    - Orchestrate complex AI workflows
+    - Manage workflow execution
+    - Handle workflow state and transitions
+    - Integrate with Langflow components
+    
+    You integrate with Langflow's workflow engine and component system.
+  llm:
+    provider: anthropic
+    model: claude-3-5-sonnet-20241022
+  runtime:
+    type: langflow
+    extensions:
+      langflow:
+        version: 1.0.0
+        components_enabled: true
+  tools:
+    - type: capability
+      name: langflow_workflow_orchestration
+    - type: capability
+      name: langflow_component_integration
+    - type: capability
+      name: langflow_state_management
+  capabilities:
+    - name: orchestrate_workflows
+      description: Orchestrate complex AI workflows using Langflow
+    - name: manage_components
+      description: Manage and integrate Langflow components
+    - name: handle_state
+      description: Manage workflow state and transitions
