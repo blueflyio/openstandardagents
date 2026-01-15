@@ -26,9 +26,16 @@
   },
   "overrides": [
     {
-      "files": ["*.test.ts", "**/__tests__/**/*.ts"],
+      "files": ["*.test.ts", "**/__tests__/**/*.ts", "tests/**/*.ts"],
+      "parserOptions": {
+        "project": null
+      },
       "rules": {
-        "@typescript-eslint/no-explicit-any": "off"
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/no-unsafe-assignment": "off",
+        "@typescript-eslint/no-unsafe-call": "off",
+        "@typescript-eslint/no-unsafe-member-access": "off",
+        "@typescript-eslint/no-unsafe-return": "off"
       }
     }
   ]
