@@ -275,6 +275,19 @@ extensions:
       - basic_checks
       - high_volume
       cost_tier: economy
+    - id: deep-validation-expert
+      name: Deep Validation Expert
+      model:
+        provider: anthropic
+        model: claude-opus-4-5-20251101
+      specializations:
+      - deep_validation_analysis
+      - complex_problem_solving
+      cost_tier: premium
+      capabilities:
+        extended_thinking: true
+        max_tokens: 200000
+        reasoning_depth: deep
     selection_strategy: agent_controlled
   moe:
     primary:
