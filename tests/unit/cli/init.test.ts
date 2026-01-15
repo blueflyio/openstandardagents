@@ -7,13 +7,9 @@ import { describe, it, expect } from '@jest/globals';
 
 describe('ossa init', () => {
   it('should create minimal template structure', () => {
-    const minimalFiles = [
-      'agent.ossa.yaml',
-      'package.json',
-      '.gitlab-ci.yml'
-    ];
+    const minimalFiles = ['agent.ossa.yaml', 'package.json', '.gitlab-ci.yml'];
 
-    minimalFiles.forEach(file => {
+    minimalFiles.forEach((file) => {
       expect(file).toBeTruthy();
     });
   });
@@ -24,10 +20,10 @@ describe('ossa init', () => {
       'package.json',
       'tsconfig.json',
       '.gitlab-ci.yml',
-      'src/index.ts'
+      'src/index.ts',
     ];
 
-    fullFiles.forEach(file => {
+    fullFiles.forEach((file) => {
       expect(file).toBeTruthy();
     });
   });
@@ -40,10 +36,10 @@ describe('ossa init', () => {
       '.eslintrc.json',
       '.gitlab-ci.yml',
       'src/index.ts',
-      'tests/unit/index.test.ts'
+      'tests/unit/index.test.ts',
     ];
 
-    enterpriseFiles.forEach(file => {
+    enterpriseFiles.forEach((file) => {
       expect(file).toBeTruthy();
     });
   });

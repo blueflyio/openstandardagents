@@ -157,7 +157,9 @@ describe('VercelAIValidator', () => {
       const result = validator.validate(manifest);
       expect(result.valid).toBe(false);
       expect(result.errors).toHaveLength(1);
-      expect(result.errors[0].message).toContain('max_tokens must be at least 1');
+      expect(result.errors[0].message).toContain(
+        'max_tokens must be at least 1'
+      );
     });
 
     it('should validate max_tokens is a number', () => {
@@ -172,7 +174,9 @@ describe('VercelAIValidator', () => {
       };
       const result = validator.validate(manifest);
       expect(result.valid).toBe(false);
-      expect(result.errors[0].message).toContain('max_tokens must be at least 1');
+      expect(result.errors[0].message).toContain(
+        'max_tokens must be at least 1'
+      );
     });
 
     it('should accept valid max_tokens', () => {
@@ -202,7 +206,9 @@ describe('VercelAIValidator', () => {
       const result = validator.validate(manifest);
       expect(result.valid).toBe(false);
       expect(result.errors).toHaveLength(1);
-      expect(result.errors[0].message).toContain('temperature must be between 0 and 2');
+      expect(result.errors[0].message).toContain(
+        'temperature must be between 0 and 2'
+      );
     });
 
     it('should reject temperature above 2', () => {
@@ -217,7 +223,9 @@ describe('VercelAIValidator', () => {
       };
       const result = validator.validate(manifest);
       expect(result.valid).toBe(false);
-      expect(result.errors[0].message).toContain('temperature must be between 0 and 2');
+      expect(result.errors[0].message).toContain(
+        'temperature must be between 0 and 2'
+      );
     });
 
     it('should validate temperature is a number', () => {
@@ -232,7 +240,9 @@ describe('VercelAIValidator', () => {
       };
       const result = validator.validate(manifest);
       expect(result.valid).toBe(false);
-      expect(result.errors[0].message).toContain('temperature must be between 0 and 2');
+      expect(result.errors[0].message).toContain(
+        'temperature must be between 0 and 2'
+      );
     });
 
     it('should accept temperature of 0', () => {

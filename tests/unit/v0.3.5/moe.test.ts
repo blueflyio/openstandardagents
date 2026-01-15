@@ -49,8 +49,13 @@ describe('OSSA v0.3.5 Mixture of Experts', () => {
   });
 
   it('should validate all selection strategies', () => {
-    const strategies = ['agent_controlled', 'cost_optimized', 'capability_match', 'hybrid'];
-    
+    const strategies = [
+      'agent_controlled',
+      'cost_optimized',
+      'capability_match',
+      'hybrid',
+    ];
+
     for (const strategy of strategies) {
       const manifest = {
         apiVersion: 'ossa/v0.3.5',
@@ -102,7 +107,7 @@ describe('OSSA v0.3.5 Mixture of Experts', () => {
 
     const result = validator.validate(tempFile);
     expect(result.valid).toBe(false);
-    expect(result.errors.some(e => e.includes('model'))).toBe(true);
+    expect(result.errors.some((e) => e.includes('model'))).toBe(true);
 
     unlinkSync(tempFile);
   });

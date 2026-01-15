@@ -360,7 +360,9 @@ if (
   const shouldRunCLI = (() => {
     try {
       // eslint-disable-next-line @typescript-eslint/no-implied-eval
-      return eval('typeof import.meta !== "undefined" && import.meta.url === `file://${process.argv[1]}`');
+      return eval(
+        'typeof import.meta !== "undefined" && import.meta.url === `file://${process.argv[1]}`'
+      );
     } catch {
       return false;
     }
