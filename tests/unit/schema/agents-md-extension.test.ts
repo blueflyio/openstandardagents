@@ -15,7 +15,10 @@ describe('AgentsMdExtension Schema Validation', () => {
 
   beforeAll(() => {
     // Load schema
-    const schemaPath = path.resolve(__dirname, '../../../spec/v0.3.3/ossa-0.3.3.schema.json');
+    const schemaPath = path.resolve(
+      __dirname,
+      '../../../spec/v0.3.3/ossa-0.3.3.schema.json'
+    );
     schema = JSON.parse(fs.readFileSync(schemaPath, 'utf-8'));
 
     ajv = new Ajv({ strict: false, allErrors: true });

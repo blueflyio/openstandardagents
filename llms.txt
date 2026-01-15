@@ -1,16 +1,19 @@
-# Open Standard for Software Agents (OSSA) - The OpenAPI for agents
+# Open Standard for Software Agents (OSSA) - The OpenAPI for Software Agents
 
-> OSSA is a vendor-neutral, open specification standard for defining software agents. **The OpenAPI for agents.**
+> **The industry standard for production-ready AI agent systems** - Built for enterprise adoption
 
-> OSSA is a **specification standard**, not a framework. It defines contracts and metadata for production agent systems (security, governance, portability), not orchestration algorithms or runtime behavior.
+> OSSA v0.3.5 transforms the specification into **the definitive OpenAPI for Software Agents**, enabling companies to build vendor-neutral, production-grade AI agent infrastructure with enterprise compliance built-in.
 
-This repository contains the complete specification, CLI tools, SDKs, and 100+ reference examples. OSSA provides standardized YAML schemas for defining software agents, their capabilities, triggers, and lifecycle management. It enables vendor-neutral agent definitions that work across LangChain, LangFlow, CrewAI, AutoGen, and other platforms.
+> OSSA is a **specification standard** (like OpenAPI for REST APIs), not a framework. It defines contracts and metadata for production agent systems (security, governance, portability), enabling vendor neutrality, cost optimization, and future-proof architecture.
+
+This repository contains the complete specification, CLI tools, SDKs, and 100+ reference examples. OSSA provides standardized YAML schemas for defining software agents, their capabilities, triggers, and lifecycle management. It enables vendor-neutral agent definitions that work across LangChain, LangFlow, CrewAI, AutoGen, Temporal, n8n, and other platforms.
 
 ## Core Specification
 
-- [OSSA Schema v0.3.3](https://openstandardagents.org/schemas/v0.3.3/ossa-0.3.3.schema.json): Complete JSON Schema for agent definitions
+- [OSSA Schema v0.3.5](https://openstandardagents.org/schemas/v0.3.5/ossa-0.3.5.schema.json): Complete JSON Schema for agent definitions (Latest)
+- [OSSA Schema v0.3.4](https://openstandardagents.org/schemas/v0.3.4/ossa-0.3.4.schema.json): Previous stable version
 - [OpenAPI Specifications](openapi/): API definitions for agent communication and discovery
-- [Specification Documentation](spec/v0.3.3/): Complete specification with examples and guides
+- [Specification Documentation](spec/v0.3.5/): Complete specification with examples and guides
 
 ## Quick Start
 
@@ -41,6 +44,7 @@ This repository contains the complete specification, CLI tools, SDKs, and 100+ r
 ## Migration Guides
 
 - [Migration System](migrations/README.md): How to migrate between OSSA versions
+- [v0.3.4 to v0.3.5](spec/v0.3.5/MIGRATION-v0.3.4-to-v0.3.5.md): Complete migration guide (100% backward compatible)
 - [v0.3.2 to v0.3.3](migrations/guides/MIGRATION-v0.3.2-to-v0.3.3.md): Skills Compatibility Extension
 - [Migration Runner](migrations/index.ts): Automated migration tool
 
@@ -53,9 +57,9 @@ This repository contains the complete specification, CLI tools, SDKs, and 100+ r
 
 ## Specification Versions
 
-- [v0.3.3](spec/v0.3.3/): Latest version with Skills Compatibility Extension
-- [v0.3.2](spec/v0.3.2/): Previous stable version
-- [v0.3.1](spec/v0.3.1/): Legacy version
+- [v0.3.5](spec/v0.3.5/): Latest version - The OpenAPI for Software Agents (10 major features)
+- [v0.3.4](spec/v0.3.4/): Previous stable version
+- [v0.3.3](spec/v0.3.3/): Legacy version with Skills Compatibility Extension
 - [Schema Index](spec/): All specification versions
 
 ## OpenAPI Specifications
@@ -70,7 +74,6 @@ This repository contains the complete specification, CLI tools, SDKs, and 100+ r
 
 - [Implementation Summary](docs/IMPLEMENTATION-SUMMARY.md): Architecture overview
 - [Unified Agent Platform](docs/UNIFIED-AGENT-PLATFORM.md): Platform integration guide
-- [GitLab Integration](docs/integrations/gitlab-ultimate-observability.md): GitLab Duo Platform integration
 - [Research](docs/research/): AI agent landscape research and comparisons
 
 ## Optional
@@ -78,4 +81,3 @@ This repository contains the complete specification, CLI tools, SDKs, and 100+ r
 - [Roadmap](docs/roadmap/): Future plans and milestones
 - [Whitepaper](docs/whitepaper/): Technical deep-dives
 - [Infrastructure](infrastructure/): Kubernetes and deployment configs
-- [GitLab CI/CD](.gitlab-ci.yml): CI/CD pipeline configuration

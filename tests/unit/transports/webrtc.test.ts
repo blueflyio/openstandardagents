@@ -2,7 +2,10 @@
  * Tests for WebRTC Transport
  */
 
-import { WebRTCTransport, InMemorySignalingServer } from '../../../src/transports/webrtc';
+import {
+  WebRTCTransport,
+  InMemorySignalingServer,
+} from '../../../src/transports/webrtc';
 import { EventEmitter } from 'events';
 
 // Mock RTCPeerConnection for testing
@@ -32,7 +35,9 @@ class MockRTCPeerConnection {
     };
   }
 
-  async setLocalDescription(description: RTCSessionDescriptionInit): Promise<void> {
+  async setLocalDescription(
+    description: RTCSessionDescriptionInit
+  ): Promise<void> {
     this.localDescription = description;
 
     // Simulate ICE candidate gathering
@@ -64,7 +69,9 @@ class MockRTCPeerConnection {
     }, 10);
   }
 
-  async setRemoteDescription(description: RTCSessionDescriptionInit): Promise<void> {
+  async setRemoteDescription(
+    description: RTCSessionDescriptionInit
+  ): Promise<void> {
     this.remoteDescription = description;
   }
 
@@ -72,7 +79,10 @@ class MockRTCPeerConnection {
     // Mock implementation
   }
 
-  createDataChannel(label: string, options?: RTCDataChannelInit): MockRTCDataChannel {
+  createDataChannel(
+    label: string,
+    options?: RTCDataChannelInit
+  ): MockRTCDataChannel {
     const channel = new MockRTCDataChannel(label, options);
     this.dataChannels.push(channel);
 
@@ -82,7 +92,10 @@ class MockRTCPeerConnection {
     } else {
       // Store reference to open when connection is established
       const openWhenConnected = () => {
-        if (this.connectionState === 'connected' && channel.readyState === 'connecting') {
+        if (
+          this.connectionState === 'connected' &&
+          channel.readyState === 'connecting'
+        ) {
           channel.simulateOpen();
         }
       };
@@ -130,7 +143,10 @@ class MockRTCDataChannel {
 
   private sentMessages: string[] = [];
 
-  constructor(public label: string, public options?: RTCDataChannelInit) {}
+  constructor(
+    public label: string,
+    public options?: RTCDataChannelInit
+  ) {}
 
   send(data: string | ArrayBuffer): void {
     if (this.readyState !== 'open') {
@@ -271,7 +287,10 @@ describe('WebRTCTransport', () => {
     });
 
     it('should create data channels', () => {
-      const channels = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
+      const channels = (transport1 as any).dataChannels as Map<
+        string,
+        MockRTCDataChannel
+      >;
       expect(channels.size).toBeGreaterThan(0);
       expect(channels.has('control')).toBe(true);
     });
@@ -287,7 +306,10 @@ describe('WebRTCTransport', () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Manually trigger channel open events if not already open
-      const channelMap = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
+      const channelMap = (transport1 as any).dataChannels as Map<
+        string,
+        MockRTCDataChannel
+      >;
       const pc = (transport1 as any).peerConnection as MockRTCPeerConnection;
 
       if (pc && pc.connectionState === 'connected') {
@@ -304,7 +326,10 @@ describe('WebRTCTransport', () => {
       const label = await Promise.race([
         channelOpenPromise,
         new Promise<string>((_, reject) =>
-          setTimeout(() => reject(new Error('Timeout waiting for channel:open event')), 5000)
+          setTimeout(
+            () => reject(new Error('Timeout waiting for channel:open event')),
+            5000
+          )
         ),
       ]);
 
@@ -319,7 +344,10 @@ describe('WebRTCTransport', () => {
     });
 
     it('should send message on data channel', async () => {
-      const channelMap = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
+      const channelMap = (transport1 as any).dataChannels as Map<
+        string,
+        MockRTCDataChannel
+      >;
       const channel = channelMap.get('control');
       if (channel && channel.readyState !== 'open') {
         channel.simulateOpen();
@@ -335,19 +363,22 @@ describe('WebRTCTransport', () => {
     });
 
     it('should throw error for non-existent channel', async () => {
-      await expect(
-        transport1.send('invalid', 'message', {})
-      ).rejects.toThrow("Data channel 'invalid' not found");
+      await expect(transport1.send('invalid', 'message', {})).rejects.toThrow(
+        "Data channel 'invalid' not found"
+      );
     });
 
     it('should throw error when channel not open', async () => {
-      const channelMap = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
+      const channelMap = (transport1 as any).dataChannels as Map<
+        string,
+        MockRTCDataChannel
+      >;
       const channel = channelMap.get('control')!;
       channel.readyState = 'connecting';
 
-      await expect(
-        transport1.send('control', 'message', {})
-      ).rejects.toThrow('not open');
+      await expect(transport1.send('control', 'message', {})).rejects.toThrow(
+        'not open'
+      );
     });
   });
 
@@ -364,16 +395,21 @@ describe('WebRTCTransport', () => {
         done();
       });
 
-      const channelMap = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
+      const channelMap = (transport1 as any).dataChannels as Map<
+        string,
+        MockRTCDataChannel
+      >;
       const channel = channelMap.get('control')!;
 
-      channel.simulateMessage(JSON.stringify({
-        type: 'message',
-        id: 'msg-123',
-        timestamp: new Date().toISOString(),
-        payload: { received: 'data' },
-        metadata: { agentId: 'agent://test/agent-2' },
-      }));
+      channel.simulateMessage(
+        JSON.stringify({
+          type: 'message',
+          id: 'msg-123',
+          timestamp: new Date().toISOString(),
+          payload: { received: 'data' },
+          metadata: { agentId: 'agent://test/agent-2' },
+        })
+      );
     });
   });
 
@@ -384,14 +420,19 @@ describe('WebRTCTransport', () => {
     });
 
     it('should invoke capability and receive response', async () => {
-      const channelMap = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
+      const channelMap = (transport1 as any).dataChannels as Map<
+        string,
+        MockRTCDataChannel
+      >;
       const channel = channelMap.get('control')!;
       if (channel.readyState !== 'open') {
         channel.simulateOpen();
         await new Promise((resolve) => setTimeout(resolve, 10));
       }
 
-      const responsePromise = transport1.invokeCapability('test_capability', { input: 'data' });
+      const responsePromise = transport1.invokeCapability('test_capability', {
+        input: 'data',
+      });
 
       await new Promise((resolve) => setTimeout(resolve, 10));
 
@@ -399,31 +440,40 @@ describe('WebRTCTransport', () => {
       expect(call.type).toBe('capability_call');
 
       // Simulate response
-      channel.simulateMessage(JSON.stringify({
-        type: 'capability_response',
-        id: 'resp-123',
-        timestamp: new Date().toISOString(),
-        payload: { result: 'success' },
-        metadata: {
-          agentId: 'agent://test/agent-2',
-          correlationId: call.metadata.correlationId,
-        },
-      }));
+      channel.simulateMessage(
+        JSON.stringify({
+          type: 'capability_response',
+          id: 'resp-123',
+          timestamp: new Date().toISOString(),
+          payload: { result: 'success' },
+          metadata: {
+            agentId: 'agent://test/agent-2',
+            correlationId: call.metadata.correlationId,
+          },
+        })
+      );
 
       const result = await responsePromise;
       expect(result).toEqual({ result: 'success' });
     });
 
     it('should timeout on capability call', async () => {
-      const channelMap = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
+      const channelMap = (transport1 as any).dataChannels as Map<
+        string,
+        MockRTCDataChannel
+      >;
       const channel = channelMap.get('control');
       if (channel && channel.readyState !== 'open') {
         channel.simulateOpen();
       }
       await expect(
-        transport1.invokeCapability('test_capability', { input: 'data' }, {
-          timeout: 100,
-        })
+        transport1.invokeCapability(
+          'test_capability',
+          { input: 'data' },
+          {
+            timeout: 100,
+          }
+        )
       ).rejects.toThrow(/timeout|Timeout/);
     });
   });
@@ -435,7 +485,10 @@ describe('WebRTCTransport', () => {
     });
 
     it('should chunk large messages', async () => {
-      const channelMap = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
+      const channelMap = (transport1 as any).dataChannels as Map<
+        string,
+        MockRTCDataChannel
+      >;
       const channel = channelMap.get('control')!;
       if (channel.readyState !== 'open') {
         channel.simulateOpen();
@@ -462,7 +515,10 @@ describe('WebRTCTransport', () => {
       });
 
       // Simulate receiving chunks
-      const channelMap = (transport1 as any).dataChannels as Map<string, MockRTCDataChannel>;
+      const channelMap = (transport1 as any).dataChannels as Map<
+        string,
+        MockRTCDataChannel
+      >;
       const channel = channelMap.get('control')!;
       const messageId = 'chunked-msg-123';
 
@@ -478,23 +534,27 @@ describe('WebRTCTransport', () => {
       const chunk1 = data.slice(0, 10);
       const chunk2 = data.slice(10);
 
-      channel.simulateMessage(JSON.stringify({
-        type: 'message',
-        payload: chunk1,
-        metadata: {
-          agentId: 'agent://test/agent-2',
-          chunked: { chunkIndex: 0, totalChunks: 2, messageId },
-        },
-      }));
+      channel.simulateMessage(
+        JSON.stringify({
+          type: 'message',
+          payload: chunk1,
+          metadata: {
+            agentId: 'agent://test/agent-2',
+            chunked: { chunkIndex: 0, totalChunks: 2, messageId },
+          },
+        })
+      );
 
-      channel.simulateMessage(JSON.stringify({
-        type: 'message',
-        payload: chunk2,
-        metadata: {
-          agentId: 'agent://test/agent-2',
-          chunked: { chunkIndex: 1, totalChunks: 2, messageId },
-        },
-      }));
+      channel.simulateMessage(
+        JSON.stringify({
+          type: 'message',
+          payload: chunk2,
+          metadata: {
+            agentId: 'agent://test/agent-2',
+            chunked: { chunkIndex: 1, totalChunks: 2, messageId },
+          },
+        })
+      );
     });
   });
 

@@ -113,7 +113,8 @@ spec:
         expect(true).toBe(false); // Should not reach here
       } catch (error: any) {
         expect(error.status).toBe(1);
-        const output = error.stderr?.toString() || error.stdout?.toString() || '';
+        const output =
+          error.stderr?.toString() || error.stdout?.toString() || '';
         expect(output).toContain('OPENAI_API_KEY');
       }
     });
@@ -147,7 +148,8 @@ spec:
         });
       } catch (error: any) {
         // May fail due to invalid API key, but should attempt to use openai
-        const output = error.stderr?.toString() || error.stdout?.toString() || '';
+        const output =
+          error.stderr?.toString() || error.stdout?.toString() || '';
         expect(output).not.toContain('Runtime');
         expect(output).not.toContain('not supported');
       }
@@ -180,7 +182,8 @@ spec:
         expect(true).toBe(false); // Should not reach here
       } catch (error: any) {
         expect(error.status).toBe(1);
-        const output = error.stderr?.toString() || error.stdout?.toString() || '';
+        const output =
+          error.stderr?.toString() || error.stdout?.toString() || '';
         expect(output).toContain('not supported');
       }
     });
@@ -366,7 +369,8 @@ spec:
         expect(true).toBe(false); // Should not reach here
       } catch (error: any) {
         expect(error.status).toBe(1);
-        const output = error.stderr?.toString() || error.stdout?.toString() || '';
+        const output =
+          error.stderr?.toString() || error.stdout?.toString() || '';
         expect(output.length).toBeGreaterThan(0);
       }
     });
@@ -435,14 +439,19 @@ spec:
       } catch (error: any) {
         const output = error.stdout?.toString() || '';
         // Should show agent name in output
-        expect(output.includes('my-test-agent') || output.includes('Agent')).toBe(true);
+        expect(
+          output.includes('my-test-agent') || output.includes('Agent')
+        ).toBe(true);
       }
     });
   });
 
   describe('Example Manifests', () => {
     it('should run with example OpenAI agent', () => {
-      const examplePath = path.join(cwd, 'examples/openai/swarm-agent.ossa.json');
+      const examplePath = path.join(
+        cwd,
+        'examples/openai/swarm-agent.ossa.json'
+      );
 
       // Check if example exists
       if (!fs.existsSync(examplePath)) {

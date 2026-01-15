@@ -193,7 +193,9 @@ describe('Export Adapters', () => {
       expect(result.edges.length).toBeGreaterThan(0);
 
       // Check for LLM to agent edge
-      const llmToAgent = result.edges.find((e) => e.source === 'llm-1' && e.target === 'agent-1');
+      const llmToAgent = result.edges.find(
+        (e) => e.source === 'llm-1' && e.target === 'agent-1'
+      );
       expect(llmToAgent).toBeDefined();
     });
 
@@ -294,7 +296,9 @@ describe('Export Adapters', () => {
       const result = OpenAPIAdapter.toOpenAPI(testManifest);
 
       const searchSchema =
-        result.paths['/tools/search'].post.requestBody?.content['application/json'].schema;
+        result.paths['/tools/search'].post.requestBody?.content[
+          'application/json'
+        ].schema;
       expect(searchSchema).toBeDefined();
       expect(searchSchema.type).toBe('object');
     });

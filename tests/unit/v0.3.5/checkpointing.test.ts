@@ -43,7 +43,7 @@ describe('OSSA v0.3.5 Checkpointing', () => {
 
   it('should validate all checkpoint intervals', () => {
     const intervals = ['iteration', 'time', 'manual'];
-    
+
     for (const interval of intervals) {
       const manifest = {
         apiVersion: 'ossa/v0.3.5',
@@ -89,7 +89,7 @@ describe('OSSA v0.3.5 Checkpointing', () => {
 
     const result = validator.validate(tempFile);
     expect(result.valid).toBe(false);
-    expect(result.errors.some(e => e.includes('backend'))).toBe(true);
+    expect(result.errors.some((e) => e.includes('backend'))).toBe(true);
 
     unlinkSync(tempFile);
   });
