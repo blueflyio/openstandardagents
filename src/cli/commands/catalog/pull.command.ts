@@ -18,7 +18,7 @@ export function createPullCommand(): Command {
     .option('--all', 'Pull all agents from catalog')
     .option('--overwrite', 'Overwrite local files')
     .action(async (opts) => {
-      const options = PullOptionsSchema.parse(opts) as PullOptions;
+      const options = PullOptionsSchema.parse(opts);
       const config = new CatalogConfig();
 
       console.log(chalk.cyan('\nPulling from GitLab Catalog...\n'));

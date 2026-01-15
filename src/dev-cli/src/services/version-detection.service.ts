@@ -1,13 +1,15 @@
 /**
  * Version Detection Service
- * 
- * DYNAMIC version detection from git tags - NO static .version.json
+ *
+ * DYNAMIC: Detects version from git tags and updates .version.json
  * SOLID: Single Responsibility - Version detection only
- * DRY: Single source of truth (git tags)
+ * DRY: Single source of truth (git tags) → updates .version.json
  */
 
 import { execSync } from 'child_process';
-import semver from 'semver';
+import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { join } from 'path';
+import { VersionConfigSchema } from '../schemas/version.schema.js';
 
 export interface VersionInfo {
   current: string;
@@ -21,44 +23,41 @@ export interface VersionInfo {
 
 export class VersionDetectionService {
   private readonly rootDir: string;
+  private readonly versionFile: string;
 
   constructor(rootDir: string = process.cwd()) {
     this.rootDir = rootDir;
+    this.versionFile = join(rootDir, '.version.json');
   }
 
   /**
-   * Detect version from git tags (DYNAMIC - no static file)
-   * CRUD: Read operation (reads git tags)
+   * Detect version from git tags and update .version.json
+   * DYNAMIC: Reads from git tags, writes to .version.json
    */
   async detectVersion(): Promise<VersionInfo> {
-    // Fetch latest tags
+    // Fetch all tags
     try {
-      execSync('git fetch --tags --prune', { 
-        cwd: this.rootDir, 
-        stdio: 'ignore' 
+      execSync('git fetch --tags --prune origin', {
+        cwd: this.rootDir,
+        stdio: 'ignore',
       });
     } catch {
       // Continue if fetch fails
     }
 
-    // Get all version tags (vX.Y.Z format)
+    // Get all version tags
     const allTags = this.getAllVersionTags();
-    
-    // Get latest stable tag (no -rc, -dev, -beta suffixes)
     const latestStable = this.getLatestStableTag(allTags);
-    
-    // Get latest tag (including pre-releases)
     const latestTag = allTags[0] || latestStable;
-    
-    // Current version is latest stable, or next patch if working on new version
+
+    // Determine current version from branch or latest tag
     const current = this.determineCurrentVersion(latestStable, latestTag);
-    
-    // Spec version matches current
+
     const spec_version = current;
     const spec_path = `spec/v${spec_version}`;
     const schema_file = `ossa-${spec_version}.schema.json`;
 
-    return {
+    const versionInfo: VersionInfo = {
       current,
       latest_stable: latestStable || '0.0.0',
       latest_tag: latestTag || '0.0.0',
@@ -67,79 +66,181 @@ export class VersionDetectionService {
       spec_path,
       schema_file,
     };
+
+    // UPDATE .version.json dynamically
+    this.updateVersionFile(versionInfo);
+
+    return versionInfo;
   }
 
   /**
-   * Get all version tags sorted by version (newest first)
+   * Update .version.json with detected version
+   */
+  private updateVersionFile(info: VersionInfo): void {
+    let config;
+
+    if (existsSync(this.versionFile)) {
+      try {
+        const content = readFileSync(this.versionFile, 'utf-8');
+        config = VersionConfigSchema.parse(JSON.parse(content));
+      } catch {
+        // If parse fails, create new config
+        config = {
+          current: '0.0.0',
+          spec_version: '0.0.0',
+          spec_path: 'spec/v0.0.0',
+          schema_file: 'ossa-0.0.0.schema.json',
+        };
+      }
+    } else {
+      // Create new config
+      config = {
+        current: '0.0.0',
+        spec_version: '0.0.0',
+        spec_path: 'spec/v0.0.0',
+        schema_file: 'ossa-0.0.0.schema.json',
+      };
+    }
+
+    // Update with detected version
+    config.current = info.current;
+    config.spec_version = info.spec_version;
+    config.spec_path = info.spec_path;
+    config.schema_file = info.schema_file;
+
+    // Write back to .version.json
+    writeFileSync(
+      this.versionFile,
+      JSON.stringify(config, null, 2) + '\n',
+      'utf-8'
+    );
+  }
+
+  /**
+   * Get all version tags (vX.Y.Z format)
    */
   private getAllVersionTags(): string[] {
     try {
-      const tags = execSync('git tag --sort=-v:refname', {
+      const tags = execSync('git tag -l "v*"', {
         cwd: this.rootDir,
         encoding: 'utf-8',
       })
         .trim()
         .split('\n')
-        .filter(tag => tag.startsWith('v') && semver.valid(tag.substring(1)))
-        .map(tag => tag.substring(1)); // Remove 'v' prefix
+        .filter(Boolean)
+        .map((tag) => tag.trim());
 
-      return tags;
+      // Sort by version (newest first)
+      return tags.sort((a, b) => {
+        const aVersion = a.replace(/^v/, '');
+        const bVersion = b.replace(/^v/, '');
+        try {
+          const aSemver = aVersion.split('.').map(Number);
+          const bSemver = bVersion.split('.').map(Number);
+
+          for (let i = 0; i < 3; i++) {
+            if (aSemver[i] > bSemver[i]) return -1;
+            if (aSemver[i] < bSemver[i]) return 1;
+          }
+          return 0;
+        } catch {
+          return a.localeCompare(b);
+        }
+      });
     } catch {
       return [];
     }
   }
 
   /**
-   * Get latest stable tag (no pre-release suffixes)
+   * Get latest stable tag (not -dev, -rc, etc.)
    */
-  private getLatestStableTag(tags: string[]): string {
-    const stableTags = tags.filter(tag => semver.prerelease(tag) === null);
-    return stableTags[0] || '0.0.0';
+  private getLatestStableTag(tags: string[]): string | null {
+    const stable = tags.find((tag) => {
+      const version = tag.replace(/^v/, '');
+      return !version.includes('-') && /^\d+\.\d+\.\d+$/.test(version);
+    });
+    return stable || null;
   }
 
   /**
-   * Determine current version based on git state
-   * - If on a release branch, use that version
-   * - If latest tag is pre-release, use that version
-   * - Otherwise, use latest stable
+   * Determine current version from branch or latest tag
    */
-  private determineCurrentVersion(latestStable: string, latestTag: string): string {
+  private determineCurrentVersion(
+    latestStable: string | null,
+    latestTag: string | null
+  ): string {
     try {
-      // Check current branch
       const branch = execSync('git rev-parse --abbrev-ref HEAD', {
         cwd: this.rootDir,
         encoding: 'utf-8',
       }).trim();
 
-      // If on release branch, extract version
-      const releaseMatch = branch.match(/release\/v?(\d+\.\d+\.\d+)/);
+      // If on release/v0.X.x branch, extract version
+      const releaseMatch = branch.match(/^release\/v(\d+\.\d+)\.x$/);
       if (releaseMatch) {
-        return releaseMatch[1];
+        // Use latest patch from that minor version
+        const minorVersion = releaseMatch[1];
+        const patchTag = this.getLatestPatchForMinor(minorVersion);
+        if (patchTag) {
+          return patchTag.replace(/^v/, '');
+        }
+        // Fallback to minor.0
+        return `${minorVersion}.0`;
       }
 
-      // If latest tag is newer than stable, use it
-      if (semver.gt(latestTag, latestStable)) {
-        return latestTag;
+      // If on feature branch, use latest stable
+      if (latestStable) {
+        return latestStable.replace(/^v/, '');
       }
 
-      // Default to latest stable
-      return latestStable || '0.0.0';
+      // Fallback to latest tag
+      if (latestTag) {
+        return latestTag.replace(/^v/, '');
+      }
+
+      return '0.0.0';
     } catch {
-      return latestStable || '0.0.0';
+      // Fallback to latest stable or 0.0.0
+      if (latestStable) {
+        return latestStable.replace(/^v/, '');
+      }
+      return '0.0.0';
     }
   }
 
   /**
-   * Get version info as JSON (for compatibility with existing code)
+   * Get latest patch version for a minor version (e.g., 0.3.4 for 0.3.x)
    */
-  async getVersionJson(): Promise<Record<string, string>> {
-    const info = await this.detectVersion();
-    return {
-      current: info.current,
-      latest_stable: info.latest_stable,
-      spec_version: info.spec_version,
-      spec_path: info.spec_path,
-      schema_file: info.schema_file,
-    };
+  private getLatestPatchForMinor(minorVersion: string): string | null {
+    try {
+      const tags = execSync(`git tag -l "v${minorVersion}.*"`, {
+        cwd: this.rootDir,
+        encoding: 'utf-8',
+      })
+        .trim()
+        .split('\n')
+        .filter(Boolean)
+        .map((tag) => tag.trim())
+        .filter((tag) => {
+          const version = tag.replace(/^v/, '');
+          return (
+            /^\d+\.\d+\.\d+$/.test(version) && version.startsWith(minorVersion)
+          );
+        });
+
+      if (tags.length === 0) return null;
+
+      // Sort and return latest
+      tags.sort((a, b) => {
+        const aPatch = parseInt(a.split('.')[2]);
+        const bPatch = parseInt(b.split('.')[2]);
+        return bPatch - aPatch;
+      });
+
+      return tags[0];
+    } catch {
+      return null;
+    }
   }
 }

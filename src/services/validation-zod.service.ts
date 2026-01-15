@@ -1,8 +1,8 @@
 /**
  * Validation Service - Zod Implementation
- * 
+ *
  * DRY, SOLID, ZOD, OPENAPI-FIRST
- * 
+ *
  * Replaces Ajv with Zod for runtime validation.
  * Uses generated Zod schemas from OpenAPI specs.
  */
@@ -36,7 +36,9 @@ function zodErrorToErrorObject(error: z.ZodError, path = ''): ErrorObject[] {
   const errors: ErrorObject[] = [];
 
   for (const issue of error.issues) {
-    const instancePath = path ? `${path}${issue.path.map(p => `/${String(p)}`).join('')}` : issue.path.map(p => `/${String(p)}`).join('');
+    const instancePath = path
+      ? `${path}${issue.path.map((p) => `/${String(p)}`).join('')}`
+      : issue.path.map((p) => `/${String(p)}`).join('');
 
     errors.push({
       instancePath,
@@ -60,26 +62,38 @@ async function loadZodSchema(version: string): Promise<z.ZodType<unknown>> {
 
   // Try to load the version-specific Zod schema
   try {
-    const { OssaAgentSchema } = await import(`../types/generated/ossa-${normalizedVersion}.zod.js`);
+    const { OssaAgentSchema } = await import(
+      `../types/generated/ossa-${normalizedVersion}.zod.js`
+    );
     return OssaAgentSchema as z.ZodType<unknown>;
   } catch {
     // Ultimate fallback - create minimal schema
-    return z.object({
-      apiVersion: z.string(),
-      kind: z.string().optional(),
-      metadata: z.object({
-        name: z.string(),
-      }).passthrough().optional(),
-      spec: z.record(z.string(), z.unknown()).optional(),
-    }).passthrough();
+    return z
+      .object({
+        apiVersion: z.string(),
+        kind: z.string().optional(),
+        metadata: z
+          .object({
+            name: z.string(),
+          })
+          .passthrough()
+          .optional(),
+        spec: z.record(z.string(), z.unknown()).optional(),
+      })
+      .passthrough();
   }
 }
 
 @injectable()
 export class ValidationZodService implements IValidationService {
-  private platformValidators: Map<string, { validate: (manifest: OssaAgent) => ValidationResult }>;
+  private platformValidators: Map<
+    string,
+    { validate: (manifest: OssaAgent) => ValidationResult }
+  >;
 
-  constructor(@inject(SchemaRepository) private schemaRepository: SchemaRepository) {
+  constructor(
+    @inject(SchemaRepository) private schemaRepository: SchemaRepository
+  ) {
     // Initialize platform validators
     this.platformValidators = new Map();
     this.platformValidators.set('cursor', new CursorValidator());
@@ -97,14 +111,21 @@ export class ValidationZodService implements IValidationService {
   /**
    * Validate OSSA agent manifest using Zod
    */
-  async validate(manifest: unknown, version?: SchemaVersion): Promise<ValidationResult> {
+  async validate(
+    manifest: unknown,
+    version?: SchemaVersion
+  ): Promise<ValidationResult> {
     // Use dynamic version detection if not provided
     if (!version) {
-      if (manifest && typeof manifest === 'object' && 'apiVersion' in manifest) {
+      if (
+        manifest &&
+        typeof manifest === 'object' &&
+        'apiVersion' in manifest
+      ) {
         const apiVersion = (manifest as { apiVersion: string }).apiVersion;
         const match = apiVersion?.match(/^ossa\/v(.+)$/);
         if (match) {
-          version = match[1] as SchemaVersion;
+          version = match[1];
         }
       }
       if (!version) {
@@ -134,10 +155,11 @@ export class ValidationZodService implements IValidationService {
         const spec = (manifest as { spec?: Record<string, unknown> }).spec;
         if (spec && typeof spec === 'object' && 'messaging' in spec) {
           const messagingValidator = new MessagingValidator();
-          const messagingValidationErrors = messagingValidator.validateMessagingExtension(
-            spec.messaging as Record<string, unknown>,
-            apiVersion
-          );
+          const messagingValidationErrors =
+            messagingValidator.validateMessagingExtension(
+              spec.messaging as Record<string, unknown>,
+              apiVersion
+            );
           messagingErrors.push(
             ...messagingValidationErrors.map((err) => ({
               instancePath: err.path,
@@ -157,9 +179,7 @@ export class ValidationZodService implements IValidationService {
 
       // 6. Combine all errors
       const allErrors = [
-        ...(result.success
-          ? []
-          : zodErrorToErrorObject(result.error)),
+        ...(result.success ? [] : zodErrorToErrorObject(result.error)),
         ...messagingErrors,
         ...platformResults.errors,
       ];
@@ -167,10 +187,16 @@ export class ValidationZodService implements IValidationService {
 
       // 7. Return structured result
       return {
-        valid: result.success && platformResults.valid && messagingErrors.length === 0,
+        valid:
+          result.success &&
+          platformResults.valid &&
+          messagingErrors.length === 0,
         errors: allErrors,
         warnings: allWarnings,
-        manifest: result.success && platformResults.valid ? (result.data as OssaAgent) : undefined,
+        manifest:
+          result.success && platformResults.valid
+            ? (result.data as OssaAgent)
+            : undefined,
       };
     } catch (error) {
       return {
@@ -181,7 +207,10 @@ export class ValidationZodService implements IValidationService {
             schemaPath: '',
             keyword: 'error',
             params: {},
-            message: error instanceof Error ? error.message : 'Unknown validation error',
+            message:
+              error instanceof Error
+                ? error.message
+                : 'Unknown validation error',
           } as ErrorObject,
         ],
         warnings: [],
@@ -216,12 +245,16 @@ export class ValidationZodService implements IValidationService {
       (typeof metadataRecord.description === 'string' &&
         metadataRecord.description.trim().length === 0)
     ) {
-      warnings.push('Best practice: Add agent description for better documentation');
+      warnings.push(
+        'Best practice: Add agent description for better documentation'
+      );
     }
 
     // Check for LLM configuration
     if (!spec.llm && !m.agent?.llm) {
-      warnings.push('Best practice: Specify LLM configuration (provider, model, temperature)');
+      warnings.push(
+        'Best practice: Specify LLM configuration (provider, model, temperature)'
+      );
     }
 
     // Check for tools/capabilities
@@ -229,7 +262,9 @@ export class ValidationZodService implements IValidationService {
       (!spec.tools || spec.tools.length === 0) &&
       (!m.agent?.tools || m.agent.tools.length === 0)
     ) {
-      warnings.push('Best practice: Define tools/capabilities for the agent to use');
+      warnings.push(
+        'Best practice: Define tools/capabilities for the agent to use'
+      );
     }
 
     // Check for observability
@@ -237,17 +272,23 @@ export class ValidationZodService implements IValidationService {
     const specRecord = spec as Record<string, unknown>;
     const agentRecord = m.agent as Record<string, unknown> | undefined;
     if (extensions && !specRecord.observability && !agentRecord?.monitoring) {
-      warnings.push('Best practice: Configure observability (tracing, metrics, logging)');
+      warnings.push(
+        'Best practice: Configure observability (tracing, metrics, logging)'
+      );
     }
 
     // Check for autonomy configuration
     if (!specRecord.autonomy && !agentRecord?.autonomy) {
-      warnings.push('Best practice: Define autonomy level and approval requirements');
+      warnings.push(
+        'Best practice: Define autonomy level and approval requirements'
+      );
     }
 
     // Check for constraints
     if (!specRecord.constraints && !agentRecord?.constraints) {
-      warnings.push('Best practice: Set cost and performance constraints for production use');
+      warnings.push(
+        'Best practice: Set cost and performance constraints for production use'
+      );
     }
 
     return warnings;
@@ -283,17 +324,24 @@ export class ValidationZodService implements IValidationService {
   /**
    * Validate multiple manifests
    */
-  async validateMany(manifests: unknown[], version?: SchemaVersion): Promise<ValidationResult[]> {
+  async validateMany(
+    manifests: unknown[],
+    version?: SchemaVersion
+  ): Promise<ValidationResult[]> {
     if (!version) {
       version = this.schemaRepository.getCurrentVersion();
     }
-    return Promise.all(manifests.map((manifest) => this.validate(manifest, version)));
+    return Promise.all(
+      manifests.map((manifest) => this.validate(manifest, version))
+    );
   }
 
   /**
    * Validate OpenAPI spec with OSSA extensions
    */
-  async validateOpenAPIExtensions(openapiSpec: unknown): Promise<ValidationResult> {
+  async validateOpenAPIExtensions(
+    openapiSpec: unknown
+  ): Promise<ValidationResult> {
     try {
       const spec = openapiSpec as Record<string, unknown>;
       const extensions: Record<string, unknown> = {};
@@ -310,7 +358,10 @@ export class ValidationZodService implements IValidationService {
 
       // Validate x-ossa-metadata
       if (extensions['x-ossa-metadata']) {
-        const metadata = extensions['x-ossa-metadata'] as Record<string, unknown>;
+        const metadata = extensions['x-ossa-metadata'] as Record<
+          string,
+          unknown
+        >;
         if (!metadata.version) {
           errors.push({
             instancePath: '/x-ossa-metadata',
@@ -358,7 +409,10 @@ export class ValidationZodService implements IValidationService {
             schemaPath: '',
             keyword: 'error',
             params: {},
-            message: error instanceof Error ? error.message : 'Unknown validation error',
+            message:
+              error instanceof Error
+                ? error.message
+                : 'Unknown validation error',
           } as ErrorObject,
         ],
         warnings: [],

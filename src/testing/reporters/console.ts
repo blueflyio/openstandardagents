@@ -19,7 +19,11 @@ export class ConsoleReporter implements TestReporter {
 
   onTestRunStart(manifest: OssaAgent): void {
     this.manifest = manifest;
-    console.log(chalk.blue.bold(`\nRunning tests for ${manifest.metadata?.name || 'agent'}...\n`));
+    console.log(
+      chalk.blue.bold(
+        `\nRunning tests for ${manifest.metadata?.name || 'agent'}...\n`
+      )
+    );
   }
 
   onTestResult(result: TestResult): void {
@@ -34,7 +38,10 @@ export class ConsoleReporter implements TestReporter {
           : chalk.yellow('○');
 
     const duration = chalk.gray(`(${result.duration}ms)`);
-    const name = result.status === 'passed' ? chalk.white(result.name) : chalk.white(result.name);
+    const name =
+      result.status === 'passed'
+        ? chalk.white(result.name)
+        : chalk.white(result.name);
 
     console.log(`  ${icon} ${name} ${duration}`);
 
@@ -69,7 +76,9 @@ export class ConsoleReporter implements TestReporter {
         const cap = summary.coverage.capabilities;
         const color = cap.percentage >= 80 ? chalk.green : chalk.yellow;
         console.log(
-          color(`  Capabilities: ${cap.tested}/${cap.total} (${cap.percentage.toFixed(1)}%)`)
+          color(
+            `  Capabilities: ${cap.tested}/${cap.total} (${cap.percentage.toFixed(1)}%)`
+          )
         );
       }
 
@@ -77,7 +86,9 @@ export class ConsoleReporter implements TestReporter {
         const pol = summary.coverage.policies;
         const color = pol.percentage >= 80 ? chalk.green : chalk.yellow;
         console.log(
-          color(`  Policies:     ${pol.tested}/${pol.total} (${pol.percentage.toFixed(1)}%)`)
+          color(
+            `  Policies:     ${pol.tested}/${pol.total} (${pol.percentage.toFixed(1)}%)`
+          )
         );
       }
 

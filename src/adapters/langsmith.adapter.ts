@@ -1,14 +1,17 @@
 /**
  * LangSmith Adapter
- * 
+ *
  * LangSmith tracing bridge for OSSA agents.
  * Uses OpenTelemetry under the hood (LangSmith supports OTLP).
- * 
+ *
  * SOLID: Single Responsibility - LangSmith integration only
  * DRY: Uses OpenTelemetryAdapter
  */
 
-import { OpenTelemetryAdapter, type OpenTelemetryExtension } from './opentelemetry.adapter.js';
+import {
+  OpenTelemetryAdapter,
+  type OpenTelemetryExtension,
+} from './opentelemetry.adapter.js';
 
 export interface LangSmithConfig {
   enabled: boolean;
@@ -38,11 +41,16 @@ export class LangSmithAdapter {
     }
 
     // Get API key
-    const apiKey = config.api_key || 
-                   (config.api_key_env ? process.env[config.api_key_env] : process.env.LANGSMITH_API_KEY);
+    const apiKey =
+      config.api_key ||
+      (config.api_key_env
+        ? process.env[config.api_key_env]
+        : process.env.LANGSMITH_API_KEY);
 
     if (!apiKey) {
-      throw new Error('LangSmith API key not found. Set LANGSMITH_API_KEY environment variable.');
+      throw new Error(
+        'LangSmith API key not found. Set LANGSMITH_API_KEY environment variable.'
+      );
     }
 
     // Configure OpenTelemetry for LangSmith

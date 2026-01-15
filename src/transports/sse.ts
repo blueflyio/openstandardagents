@@ -8,7 +8,11 @@ import { EventEmitter } from 'events';
 /**
  * SSE event types
  */
-export type SSEEventType = 'message' | 'status' | 'capability_response' | 'error';
+export type SSEEventType =
+  | 'message'
+  | 'status'
+  | 'capability_response'
+  | 'error';
 
 /**
  * Event metadata
@@ -89,10 +93,15 @@ export interface SSETransportConfig {
  */
 export class SSETransport extends EventEmitter {
   private eventSource: EventSource | null = null;
-  private config: SSETransportConfig & { reconnect: Required<NonNullable<SSETransportConfig['reconnect']>> };
+  private config: SSETransportConfig & {
+    reconnect: Required<NonNullable<SSETransportConfig['reconnect']>>;
+  };
   private reconnectAttempt = 0;
   private lastEventId?: string;
-  private readonly eventHandlers = new Map<string, (event: MessageEvent) => void>();
+  private readonly eventHandlers = new Map<
+    string,
+    (event: MessageEvent) => void
+  >();
 
   constructor(config: SSETransportConfig) {
     super();
@@ -159,7 +168,10 @@ export class SSETransport extends EventEmitter {
     if (this.eventSource) {
       // Remove all event listeners
       this.eventHandlers.forEach((handler, eventType) => {
-        this.eventSource!.removeEventListener(eventType, handler as EventListener);
+        this.eventSource!.removeEventListener(
+          eventType,
+          handler as EventListener
+        );
       });
       this.eventHandlers.clear();
 
@@ -220,7 +232,12 @@ export class SSETransport extends EventEmitter {
    * Register custom event handlers for different event types
    */
   private registerEventHandlers(): void {
-    const eventTypes: SSEEventType[] = ['message', 'status', 'capability_response', 'error'];
+    const eventTypes: SSEEventType[] = [
+      'message',
+      'status',
+      'capability_response',
+      'error',
+    ];
 
     eventTypes.forEach((eventType) => {
       const handler = (event: MessageEvent) => {
@@ -305,7 +322,10 @@ export class SSETransport extends EventEmitter {
 
       this.emit('*', data);
     } catch (error) {
-      this.emit('error', new Error(`Failed to parse ${eventType} event: ${error}`));
+      this.emit(
+        'error',
+        new Error(`Failed to parse ${eventType} event: ${error}`)
+      );
     }
   }
 
@@ -335,7 +355,10 @@ export class SSEStreamClient {
   private baseUrl: string;
   private auth?: { token?: string; type?: 'bearer' | 'cookie' | 'query' };
 
-  constructor(baseUrl: string, auth?: { token?: string; type?: 'bearer' | 'cookie' | 'query' }) {
+  constructor(
+    baseUrl: string,
+    auth?: { token?: string; type?: 'bearer' | 'cookie' | 'query' }
+  ) {
     this.baseUrl = baseUrl;
     this.auth = auth;
   }
@@ -353,28 +376,34 @@ export class SSEStreamClient {
     }
   ): Promise<TOutput> {
     // Step 1: POST to capability endpoint to initiate streaming
-    const response = await fetch(`${this.baseUrl}/capabilities/${capability}/invoke`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(this.auth?.type === 'bearer' && this.auth.token
-          ? { Authorization: `Bearer ${this.auth.token}` }
-          : {}),
-      },
-      body: JSON.stringify({
-        input,
-        options: {
-          timeout_seconds: options?.timeout,
-          priority: options?.priority,
+    const response = await fetch(
+      `${this.baseUrl}/capabilities/${capability}/invoke`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(this.auth?.type === 'bearer' && this.auth.token
+            ? { Authorization: `Bearer ${this.auth.token}` }
+            : {}),
         },
-      }),
-    });
+        body: JSON.stringify({
+          input,
+          options: {
+            timeout_seconds: options?.timeout,
+            priority: options?.priority,
+          },
+        }),
+      }
+    );
 
     if (!response.ok) {
       throw new Error(`Failed to invoke capability: ${response.statusText}`);
     }
 
-    const result = await response.json() as { streamId: string; streamUrl: string };
+    const result = (await response.json()) as {
+      streamId: string;
+      streamUrl: string;
+    };
     const { streamId, streamUrl } = result;
 
     // Step 2: Connect to SSE stream
@@ -389,19 +418,22 @@ export class SSEStreamClient {
         reject(new Error('Capability timeout'));
       }, options?.timeout || 30000);
 
-      this.transport.on('capability_response', (event: SSEEvent<SSECapabilityResponsePayload>) => {
-        // Emit progress updates
-        if (options?.onProgress) {
-          options.onProgress(event);
-        }
+      this.transport.on(
+        'capability_response',
+        (event: SSEEvent<SSECapabilityResponsePayload>) => {
+          // Emit progress updates
+          if (options?.onProgress) {
+            options.onProgress(event);
+          }
 
-        // Handle final result
-        if (event.metadata.final) {
-          clearTimeout(timeout);
-          this.transport?.disconnect();
-          resolve(event.payload.result as TOutput);
+          // Handle final result
+          if (event.metadata.final) {
+            clearTimeout(timeout);
+            this.transport?.disconnect();
+            resolve(event.payload.result as TOutput);
+          }
         }
-      });
+      );
 
       this.transport.on('error', (error) => {
         clearTimeout(timeout);

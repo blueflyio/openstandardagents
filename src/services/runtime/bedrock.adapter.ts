@@ -95,13 +95,18 @@ export class BedrockAdapter {
   private region: string;
   private modelId: string;
 
-  constructor(manifest: OssaManifestWithBedrock, config?: { profile?: string }) {
+  constructor(
+    manifest: OssaManifestWithBedrock,
+    config?: { profile?: string }
+  ) {
     this.manifest = manifest;
 
     // Get configuration from manifest extension
     const bedrockExt = manifest.extensions?.bedrock;
     if (!bedrockExt) {
-      throw new Error('Bedrock extension required in manifest.extensions.bedrock');
+      throw new Error(
+        'Bedrock extension required in manifest.extensions.bedrock'
+      );
     }
 
     this.region = bedrockExt.region;
@@ -270,7 +275,11 @@ export class BedrockAdapter {
     if (tool.config && typeof tool.config === 'object') {
       if ('input_schema' in tool.config) {
         const inputSchema = tool.config.input_schema as any;
-        if (inputSchema && typeof inputSchema === 'object' && 'json' in inputSchema) {
+        if (
+          inputSchema &&
+          typeof inputSchema === 'object' &&
+          'json' in inputSchema
+        ) {
           return inputSchema as ToolInputSchema;
         }
       }
@@ -404,7 +413,10 @@ export class BedrockAdapter {
   /**
    * Send a message and get a response using Converse API (with tool support)
    */
-  async chat(userMessage: string, options?: BedrockRunOptions): Promise<string> {
+  async chat(
+    userMessage: string,
+    options?: BedrockRunOptions
+  ): Promise<string> {
     if (!this.supportsConverseAPI()) {
       // Fall back to basic InvokeModel for models without Converse API
       return this.chatBasic(userMessage, options);
@@ -458,7 +470,9 @@ export class BedrockAdapter {
       const response = await this.client.send(command);
 
       if (options?.verbose) {
-        console.log(`  Model: ${this.getModelId()}, Stop: ${response.stopReason}`);
+        console.log(
+          `  Model: ${this.getModelId()}, Stop: ${response.stopReason}`
+        );
         console.log(
           `  Tokens: ${response.usage?.inputTokens || 0} in, ${response.usage?.outputTokens || 0} out`
         );
@@ -472,7 +486,8 @@ export class BedrockAdapter {
 
       // Check if we need to execute tools
       const toolUses = (response.output?.message?.content || []).filter(
-        (block): block is ContentBlock & { toolUse: ToolUseBlock } => 'toolUse' in block
+        (block): block is ContentBlock & { toolUse: ToolUseBlock } =>
+          'toolUse' in block
       );
 
       if (toolUses.length > 0) {
@@ -681,7 +696,8 @@ export class BedrockAdapter {
             } else if (event.contentBlockDelta.delta?.toolUse) {
               // Accumulate tool input
               if (currentToolUse) {
-                const inputDelta = event.contentBlockDelta.delta.toolUse.input || '';
+                const inputDelta =
+                  event.contentBlockDelta.delta.toolUse.input || '';
                 const currentInput = JSON.stringify(currentToolUse.input || {});
                 currentToolUse.input = JSON.parse(currentInput + inputDelta);
               }
@@ -714,7 +730,8 @@ export class BedrockAdapter {
 
       // Check if we need to execute tools
       const toolUses = responseContent.filter(
-        (block): block is ContentBlock & { toolUse: ToolUseBlock } => 'toolUse' in block
+        (block): block is ContentBlock & { toolUse: ToolUseBlock } =>
+          'toolUse' in block
       );
 
       if (toolUses.length > 0) {
@@ -772,7 +789,9 @@ export class BedrockAdapter {
       }
 
       // If we have text, we're done
-      const hasText = responseContent.some((block: ContentBlock) => 'text' in block);
+      const hasText = responseContent.some(
+        (block: ContentBlock) => 'text' in block
+      );
       if (hasText) {
         return;
       }

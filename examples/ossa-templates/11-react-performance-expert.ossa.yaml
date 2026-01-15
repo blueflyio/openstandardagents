@@ -1,356 +1,384 @@
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.5
 kind: Agent
 metadata:
   name: react-performance-expert
   version: 1.0.0
-  description: Expert React/Next.js performance optimization agent implementing Vercel agent-skills patterns
+  description: >-
+    React Performance Expert implementing 40+ Vercel best practices for optimal React application performance.
+    Auto-activates on performance-related queries, React/Next.js files, and performance keywords.
   labels:
-    ossa.dev/category: development
-    ossa.dev/tier: expert
-    ossa.dev/framework: react
-    ossa.dev/framework: nextjs
-    vercel-labs/skill-based: true
+    ossa-version: v0.3.5
+    domain: frontend
+    category: performance
+    tier: expert
+    skill.priority: "90"
+    skill.contexts: "development,review"
+    skill.enabled: "true"
+    skill.auto_activate: "true"
   annotations:
-    ossa.dev/documentation: https://openstandardagents.org/agents/react-performance-expert
-    ossa.dev/based-on: https://github.com/vercel-labs/agent-skills/tree/react-best-practices
-    ossa.dev/skill-format: https://agentskills.io/
+    ossa.dev/maintainer: vercel-labs
+    ossa.dev/source: https://github.com/vercel-labs/agent-skills/tree/react-best-practices
+    ossa.dev/purpose: react-performance,optimization,bundle-size,rendering
+
 spec:
-  capabilities:
-  - name: performance.analyze
-    description: Analyze React/Next.js code for performance issues across 8 priority categories
-  - name: performance.optimize
-    description: Apply targeted optimizations based on priority framework
-  - name: waterfall.eliminate
-    description: Identify and eliminate request waterfalls (CRITICAL priority)
-  - name: bundle.optimize
-    description: Reduce bundle size through strategic code splitting (CRITICAL priority)
-  - name: server.optimize
-    description: Optimize server-side rendering and data fetching (HIGH priority)
-  - name: client.optimize
-    description: Optimize client-side data fetching patterns (MEDIUM-HIGH priority)
-  - name: rerender.optimize
-    description: Minimize unnecessary re-renders (MEDIUM priority)
-  - name: rendering.optimize
-    description: Optimize browser rendering performance (MEDIUM priority)
-  - name: javascript.optimize
-    description: Apply micro-optimizations in hot paths (LOW-MEDIUM priority)
+  taxonomy:
+    domain: frontend
+    subdomain: performance
+    capability: react_optimization
 
   role: |
-    You are an expert React/Next.js performance optimization agent implementing Vercel's agent-skills best practices.
-    You activate automatically when detecting: component creation, data fetching, performance reviews, or bundle optimization tasks.
+    You are a React Performance Expert specializing in identifying and fixing performance bottlenecks
+    in React applications. You implement 40+ best practices from Vercel's React performance guide.
 
-    ## Priority Framework (Apply in Order):
+    CRITICAL Priority Rules (Must Fix Immediately):
+    1. Eliminate Waterfalls: Parallelize data fetching, avoid sequential requests
+    2. Bundle Optimization: Code splitting, tree shaking, dynamic imports
+    3. Server-Side Performance: Use React.cache, implement LRU caching
+    4. Avoid Barrel Imports: Direct imports reduce cold start time by 200-800ms
 
-    ### 1. CRITICAL - Eliminating Waterfalls
-    "Each sequential await adds full network latency. Eliminating them yields the largest gains."
-    - Defer await until needed (move into code branches)
-    - Use Promise.all() for independent operations
-    - Prevent waterfall chains in API routes
-    - Strategic Suspense boundaries for streaming
-    - Use better-all library for dependency-based parallelization
+    HIGH Priority Rules:
+    5. Re-render Optimization: Memoization, useMemo, useCallback where appropriate
+    6. Rendering Performance: Virtualization for long lists, lazy loading
+    7. Image Optimization: Next.js Image component, proper sizing, formats
+    8. Font Optimization: Font display strategies, subsetting, preloading
 
-    ### 2. CRITICAL - Bundle Size Optimization
-    "Reducing initial bundle improves Time to Interactive and LCP."
-    - AVOID barrel file imports (index.js re-exports cause 200-800ms delays)
-    - Import directly: `import Button from '@mui/material/Button'` NOT `from '@mui/material'`
-    - Use next/dynamic for heavy components (Monaco Editor, charts)
-    - Defer third-party libraries (analytics, logging) with `ssr: false`
-    - Conditional module loading (check `typeof window !== 'undefined'`)
-    - Preload on hover/focus for perceived performance
+    MEDIUM Priority Rules:
+    9. JavaScript Micro-optimizations: Avoid object creation in render, stable references
+    10. CSS Optimization: Critical CSS extraction, unused CSS removal
+    11. Network Optimization: Request deduplication, prefetching, compression
 
-    ### 3. HIGH - Server-Side Performance
-    - Per-request deduplication: React.cache() for auth/DB queries
-    - Cross-request caching: LRU cache for shared data
-    - Minimize serialization at RSC boundaries (pass only needed fields)
-    - Parallel data fetching via component composition
+    LOW Priority Rules:
+    12. Edge Cases: Micro-benchmarks, advanced memoization patterns
 
-    ### 4. MEDIUM-HIGH - Client-Side Data Fetching
-    - Use SWR for automatic deduplication and revalidation
-    - Deduplicate global event listeners with useSWRSubscription()
+    Quantified Impact Examples:
+    - Waterfall elimination: 66% latency reduction
+    - Barrel import fixes: 200-800ms cold start improvement
+    - Lazy state initialization: Runs once vs every render
+    - Dynamic imports: 30-50% bundle size reduction
 
-    ### 5. MEDIUM - Re-render Optimization
-    - Defer state reads to usage point (searchParams, localStorage)
-    - Use lazy state initialization: `useState(() => expensiveComputation())`
-    - Extract to memoized components for early returns
-    - Narrow effect dependencies (primitives vs objects)
-    - Subscribe to derived state (boolean) not continuous values
-    - Use startTransition() for non-urgent updates (scroll tracking)
-
-    ### 6. MEDIUM - Rendering Performance
-    - Animate SVG wrapper (div) not SVG element directly (hardware acceleration)
-    - CSS content-visibility: auto for long lists
-    - Hoist static JSX outside components
-    - Optimize SVG precision with SVGO (--precision=1)
-    - Prevent hydration mismatch: inline script before React hydration
-    - Use Activity component for show/hide with state preservation
-    - Explicit conditional rendering: ternary NOT &&
-
-    ### 7. LOW-MEDIUM - JavaScript Performance
-    - Batch DOM CSS changes (classes or cssText)
-    - Build index maps for repeated lookups (O(n) → O(1))
-    - Cache property access in loops
-    - Cache repeated function calls with Map
-    - Cache Storage API calls (localStorage is synchronous/expensive)
-    - Combine multiple array iterations
-    - Early length check for array comparisons
-    - Early return from functions
-    - Hoist RegExp creation to module scope
-    - Use loop for min/max (O(n)) not sort (O(n log n))
-    - Use Set/Map for O(1) lookups
-    - Use toSorted() for immutability
-
-    ### 8. LOW - Advanced Patterns
-    - Store event handlers in refs (avoid re-subscription)
-    - useLatest for stable callback refs
-
-    ## Activation Triggers:
-    - "Deploy my app" → Suggest optimization before deployment
-    - "Build a component" → Apply bundle and rendering optimizations
-    - "Fetch data" → Check for waterfall patterns
-    - "Performance review" → Full audit across all categories
-    - "Slow rendering" → Focus on categories 5-7
-    - "Bundle too large" → Focus on category 2
-
-    ## Key Implementation Patterns:
-
-    **Defer Await Pattern:**
-    ```typescript
-    // BAD: Blocks alternate code paths
-    const data = await fetchData();
-    if (condition) return data.field;
-
-    // GOOD: Await only where needed
-    if (condition) {
-      const data = await fetchData();
-      return data.field;
-    }
-    ```
-
-    **Direct Import Pattern:**
-    ```typescript
-    // BAD: Barrel import (200-800ms cold start)
-    import { Button, TextField } from '@mui/material';
-
-    // GOOD: Direct import
-    import Button from '@mui/material/Button';
-    import TextField from '@mui/material/TextField';
-    ```
-
-    **Suspense Streaming Pattern:**
-    ```typescript
-    // Show layout immediately, stream data
-    <Suspense fallback={<Skeleton />}>
-      <AsyncDataComponent />
-    </Suspense>
-    ```
-
-    **React.cache Pattern:**
-    ```typescript
-    // Deduplicate per-request
-    const getUser = cache(async (id: string) => {
-      return db.user.findUnique({ where: { id } });
-    });
-    ```
-
-    **SWR Pattern:**
-    ```typescript
-    // Automatic deduplication and revalidation
-    const { data } = useSWR('/api/user', fetcher);
-    ```
-
-    **Map Caching Pattern:**
-    ```typescript
-    const cache = new Map<Key, Value>();
-    if (!cache.has(key)) {
-      cache.set(key, expensiveComputation(key));
-    }
-    return cache.get(key);
-    ```
-
-    ## Skill Composition:
-    This agent follows Vercel's agent-skills format with:
-    - Self-contained modular design
-    - Context-based automatic activation
-    - Priority-driven guidance (Critical → Low)
-    - Framework-agnostic patterns
-    - Zero-friction integration
+    Always provide specific, actionable recommendations with code examples.
 
   llm:
-    provider: ${OSSA_LLM_PROVIDER:-anthropic}
-    model: ${OSSA_LLM_MODEL:-claude-sonnet-4}
-    temperature: ${OSSA_LLM_TEMPERATURE:-0.2}
-    maxTokens: ${OSSA_LLM_MAX_TOKENS:-16384}
+    provider: ${LLM_PROVIDER:-anthropic}
+    model: ${LLM_MODEL:-claude-sonnet-4-20250514}
+    temperature: 0.1
+    maxTokens: 8192
+
+  completion:
+    default_signal: complete
+    signals:
+      - signal: continue
+        condition: "optimization_opportunities_found > 0"
+        priority: 1
+      - signal: escalate
+        condition: "critical_issues_found == true"
+        priority: 2
+    max_iterations: 20
+    timeout_seconds: 300
+
+  checkpointing:
+    enabled: true
+    interval: iteration
+    interval_value: 5
+    retention:
+      days: 30
+      max_checkpoints: 50
 
   tools:
-  - name: file.read
-    description: Read React/Next.js component files
-    handler:
-      runtime: ide
-      capability: fs.read
-    type: function
+    - type: mcp
+      name: analyze_bundle
+      description: Analyze bundle size and identify optimization opportunities
+      source:
+        type: mcp
+        uri: mcp://build-tools/bundle-analyzer
+      input:
+        type: object
+        properties:
+          project_path: { type: string }
+          output_format: { type: string, enum: [json, html, text], default: "json" }
 
-  - name: file.edit
-    description: Apply performance optimizations with diff preview
-    handler:
-      runtime: ide
-      capability: fs.edit
-    type: function
+    - type: mcp
+      name: detect_waterfalls
+      description: Detect sequential data fetching patterns (waterfalls)
+      source:
+        type: mcp
+        uri: mcp://code-analyzer/detect-waterfalls
+      input:
+        type: object
+        properties:
+          files: { type: array, items: { type: string } }
+          framework: { type: string }
 
-  - name: search.imports
-    description: Find barrel imports and analyze bundle impact
-    handler:
-      runtime: ide
-      capability: search.code
-    type: function
+    - type: mcp
+      name: optimize_imports
+      description: Convert barrel imports to direct imports
+      source:
+        type: mcp
+        uri: mcp://code-transformer/optimize-imports
+      input:
+        type: object
+        properties:
+          file_path: { type: string }
+          dry_run: { type: boolean, default: false }
 
-  - name: analyze.bundle
-    description: Analyze Next.js bundle composition
-    handler:
-      runtime: terminal
-      command: npx @next/bundle-analyzer
-    type: function
+    - type: mcp
+      name: analyze_re_renders
+      description: Analyze component re-render patterns
+      source:
+        type: mcp
+        uri: mcp://react-profiler/analyze-renders
+      input:
+        type: object
+        properties:
+          component_path: { type: string }
+          trace_file: { type: string, required: false }
 
-  - name: analyze.waterfalls
-    description: Detect sequential await patterns
-    handler:
-      runtime: ide
-      capability: ast.analyze
-    type: function
+    - type: mcp
+      name: suggest_memoization
+      description: Suggest memoization opportunities
+      source:
+        type: mcp
+        uri: mcp://code-analyzer/suggest-memoization
+      input:
+        type: object
+        properties:
+          file_path: { type: string }
+          component_name: { type: string, required: false }
 
-  - name: terminal.run
-    description: Run performance tests and benchmarks
-    handler:
-      runtime: ide
-      capability: terminal.execute
-    type: function
+    - type: mcp
+      name: check_image_optimization
+      description: Check image optimization opportunities
+      source:
+        type: mcp
+        uri: mcp://image-optimizer/analyze
+      input:
+        type: object
+        properties:
+          image_paths: { type: array, items: { type: string } }
 
-  safety:
-    constraints:
-    - Never apply optimizations that change functional behavior without user approval
-    - Always explain trade-offs before refactoring
-    - Preserve existing error handling and edge cases
-    - Test optimizations in development before production
-    - Document performance improvements with metrics
-    policies:
-    - policy: measure-before-optimize
-      description: Use profiling tools to identify actual bottlenecks before optimizing
-    - policy: progressive-optimization
-      description: Start with CRITICAL priority issues, measure impact, then proceed
-    - policy: safe-refactoring
-      description: Maintain functionality while improving performance
+  autonomy:
+    level: assisted
+    approval_required:
+      - modify_code
+      - delete_files
+    allowed_actions:
+      - analyze_performance
+      - suggest_optimizations
+      - generate_reports
+      - create_optimization_plan
+
+  constraints:
+    max_tokens_per_turn: 16384
+    max_turns: 15
+    timeout_seconds: 300
+
+  observability:
+    tracing:
+      enabled: true
+      provider: otel
+      sampling_rate: 1.0
+    metrics:
+      enabled: true
+      custom:
+        - name: optimizations_suggested
+          type: counter
+          labels: [priority, type]
+        - name: performance_improvements
+          type: gauge
+          labels: [metric_name]
+        - name: bundle_size_reduction
+          type: gauge
+          unit: bytes
 
 extensions:
-  claude-code:
-    hooks:
-      before_optimize: analyze_performance_profile
-      after_optimize: validate_functionality
-    keyboard_shortcuts:
-      analyze: Cmd+Shift+P
-      optimize: Cmd+Shift+O
+  experts:
+    registry:
+      - id: deep-analysis-expert
+        name: "Deep Performance Analysis Expert"
+        model:
+          provider: anthropic
+          model: claude-opus-4-5-20251101
+        specializations:
+          - complex_performance_analysis
+          - bundle_optimization
+          - advanced_memoization
+        cost_tier: premium
+        capabilities:
+          extended_thinking: true
+          max_tokens: 200000
+          reasoning_depth: deep
 
-  cursor:
-    composer_integration: true
-    inline_suggestions: true
-    suggestion_categories:
-    - waterfall-elimination
-    - bundle-optimization
-    - server-optimization
+      - id: standard-analysis-expert
+        name: "Standard Performance Expert"
+        model:
+          provider: anthropic
+          model: claude-sonnet-4-20250514
+        specializations:
+          - performance_monitoring
+          - standard_optimizations
+          - re_render_analysis
+        cost_tier: standard
+        capabilities:
+          max_tokens: 16384
+          reasoning_depth: balanced
 
-  vscode:
-    extension_id: ossa.react-performance-expert
-    commands:
-    - ossa.analyze.performance
-    - ossa.optimize.bundle
-    - ossa.eliminate.waterfalls
-    - ossa.optimize.rerenders
-    webview:
+      - id: quick-scan-expert
+        name: "Quick Performance Scan Expert"
+        model:
+          provider: google
+          model: gemini-2.0-flash
+        specializations:
+          - quick_checks
+          - obvious_issues
+          - high_volume_scanning
+        cost_tier: economy
+        capabilities:
+          max_tokens: 8192
+          reasoning_depth: fast
+
+    selection_strategy: agent_controlled
+
+  bat:
+    selection_criteria:
+      - dimension: analysis_complexity
+        required: true
+        options:
+          - value: complex
+            technologies: [claude-opus, gpt-4-turbo]
+            cost_tier: premium
+            use_case: "Deep bundle analysis, complex optimization strategies"
+          - value: standard
+            technologies: [claude-sonnet, gpt-4o]
+            cost_tier: standard
+            use_case: "Standard performance analysis, common optimizations"
+          - value: simple
+            technologies: [gemini-flash, claude-haiku]
+            cost_tier: economy
+            use_case: "Quick scans, obvious issues, high-volume checks"
+
+  moe:
+    primary:
+      metric: performance_improvement_percentage
+      description: "Percentage improvement in key performance metrics"
+      target: 30.0
+      measurement:
+        type: percentage
+        numerator: performance_gain
+        denominator: baseline_performance
+        collection:
+          source: performance-monitor
+          interval: real_time
+
+    secondary:
+      - metric: bundle_size_reduction
+        description: "Reduction in bundle size"
+        target: 30.0
+        unit: percentage
+      - metric: render_time_improvement
+        description: "Improvement in render time"
+        target: 20.0
+        unit: percentage
+      - metric: optimization_accuracy
+        description: "Accuracy of optimization recommendations"
+        target: 0.85
+        unit: ratio
+
+  capabilities:
+    discovery:
       enabled: true
-      panels:
-      - performance-dashboard
-      - optimization-suggestions
+      registry: agent-mesh
+      refresh_interval: 60s
 
-  vercel:
-    integration: true
-    analytics:
-      track_web_vitals: true
-      metrics:
-      - LCP
-      - FID
-      - CLS
-      - TTFB
-      - FCP
-    deployment:
-      auto_optimize: false  # Require manual review
-      preview_on_hover: true
+  feedback:
+    tools:
+      - name: record_feedback
+        description: "Record feedback on optimization effectiveness"
+      - name: get_feedback_summary
+        description: "Get aggregate feedback for improvement"
+    learning:
+      enabled: true
+      strategy: reinforcement
+      data_sources:
+        - optimization_outcomes
+        - performance_metrics
+        - user_feedback
 
-# Additional metadata for skill discovery
-runtime:
-  triggers:
-    keywords:
-    - "performance"
-    - "slow"
-    - "optimize"
-    - "bundle"
-    - "waterfall"
-    - "deploy"
-    - "build component"
-    - "fetch data"
-    file_patterns:
-    - "**/*.tsx"
-    - "**/*.jsx"
-    - "**/app/**/*.{ts,tsx}"
-    - "**/pages/**/*.{ts,tsx}"
-    - "**/components/**/*.{ts,tsx}"
-    frameworks:
-    - next.js
-    - react
-    - remix
-    - gatsby
+  infrastructure:
+    - type: agent_mesh
+      endpoint: mesh.blueflyagents.com:3005
+      capabilities:
+        - performance_monitoring
+        - code_analysis
 
-  activation:
-    automatic: true
-    confidence_threshold: 0.8
-    priority: high
+  runtime:
+    triggers:
+      keywords:
+        - performance
+        - optimize
+        - slow
+        - bundle
+        - waterfall
+        - re-render
+        - memoization
+        - lazy
+        - code-splitting
+        - "bundle size"
+        - "cold start"
+        - "render performance"
+      file_patterns:
+        - "**/*.{tsx,jsx}"
+        - "**/components/**"
+        - "**/app/**"
+        - "**/pages/**"
+        - "**/*.react.{ts,tsx,js,jsx}"
+      frameworks:
+        - next.js
+        - react
+        - remix
+        - gatsby
+        - vite
+      project_types:
+        - react-app
+        - next-app
+        - remix-app
+    activation:
+      automatic: true
+      confidence_threshold: 0.7
+      priority_threshold: 80
 
-# Performance optimization knowledge base
-knowledge:
-  reference_docs:
-  - url: https://github.com/vercel-labs/agent-skills/tree/react-best-practices
-    type: primary_source
-    description: Vercel agent-skills React best practices
-  - url: https://nextjs.org/docs/app/building-your-application/optimizing
-    type: framework_docs
-    description: Next.js optimization guide
-  - url: https://react.dev/reference/react
-    type: framework_docs
-    description: React API reference
+  gitlab:
+    triggers:
+      - event: merge_request
+        filter:
+          labels: ["performance", "optimization"]
+          files: ["**/*.{tsx,jsx}"]
+      - event: webhook
+        path: /react-performance-expert/analyze
+    custom_fields:
+      performance_impact: estimated
+      optimizations_applied: boolean
+      bundle_size_change: number
 
-  examples:
-    waterfall_elimination:
-      before: |
-        const user = await getUser(id);
-        const posts = await getPosts(user.id);
-        const comments = await getComments(posts[0].id);
-      after: |
-        const [user, posts] = await Promise.all([
-          getUser(id),
-          getPosts(userId)
-        ]);
-        const comments = await getComments(posts[0].id);
-      impact: "Reduced latency by 66% (3 serial → 2 parallel + 1 serial)"
-
-    barrel_import_fix:
-      before: |
-        import { Button, TextField, MenuItem } from '@mui/material';
-      after: |
-        import Button from '@mui/material/Button';
-        import TextField from '@mui/material/TextField';
-        import MenuItem from '@mui/material/MenuItem';
-      impact: "Reduced cold start by 200-800ms, smaller bundle"
-
-    lazy_state_initialization:
-      before: |
-        const [data, setData] = useState(expensiveComputation());
-      after: |
-        const [data, setData] = useState(() => expensiveComputation());
-      impact: "Computation runs once, not on every render"
+  opentelemetry:
+    enabled: true
+    service_name: "react-performance-expert"
+    service_version: "1.0.0"
+    traces:
+      enabled: true
+      exporter: otlp
+      endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4317}"
+      sample_rate: 1.0
+    metrics:
+      enabled: true
+      exporter: otlp
+      endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4317}"
+    logs:
+      enabled: true
+      exporter: otlp
+      endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4317}"
+      level: info
+    resource_attributes:
+      agent.id: "react-performance-expert"
+      agent.version: "1.0.0"
+      framework: "ossa"
+      domain: "frontend-performance"

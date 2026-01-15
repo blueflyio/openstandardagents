@@ -1,6 +1,6 @@
 /**
  * Version Validate Service
- * 
+ *
  * Validates version consistency across all files
  * SOLID: Single Responsibility - Validation only
  */
@@ -22,23 +22,30 @@ export class VersionValidateService {
   /**
    * Validate version consistency
    * CRUD: Read operation (validates files)
-   * DYNAMIC: Reads version from git tags, not static file
+   * DYNAMIC: Reads version from git tags, updates .version.json
    */
   async validate(): Promise<VersionValidateResponse> {
     const errors: string[] = [];
     const warnings: string[] = [];
     const details: Record<string, string> = {};
 
-    // Detect version from git tags (DYNAMIC)
+    // Detect version from git tags (DYNAMIC) and update .version.json
     const versionInfo = await this.versionDetection.detectVersion();
     details['git_tags'] = versionInfo.current;
+    details['.version.json'] = versionInfo.current;
 
     // Check package.json
     const packageFile = join(this.rootDir, 'package.json');
     if (existsSync(packageFile)) {
       const pkg = JSON.parse(readFileSync(packageFile, 'utf-8'));
-      if (pkg.version && pkg.version !== versionInfo.current) {
-        errors.push(`package.json version (${pkg.version}) doesn't match git tags (${versionInfo.current})`);
+      if (
+        pkg.version &&
+        pkg.version !== versionInfo.current &&
+        !pkg.version.includes('{{VERSION}}')
+      ) {
+        errors.push(
+          `package.json version (${pkg.version}) doesn't match git tags/.version.json (${versionInfo.current})`
+        );
       }
       details['package.json'] = pkg.version || 'missing';
     }

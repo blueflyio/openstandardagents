@@ -1,383 +1,589 @@
 /**
- * Agent Skills Registry Service
+ * Skill Registry Service
  *
- * Implements Vercel agent-skills pattern for OSSA platform
- * - Automatic skill discovery and activation
- * - Context-based matching
- * - Priority-driven selection
+ * Implements Vercel agent-skills pattern for OSSA platform.
+ * Provides context-aware skill discovery and activation.
  *
- * Based on: https://github.com/vercel-labs/agent-skills
+ * @see https://agentskills.io/
+ * @see https://github.com/vercel-labs/agent-skills
  */
 
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import { injectable } from 'inversify';
-import { ManifestRepository } from '../repositories/manifest.repository.js';
-import type { OssaAgent } from '../types/index.js';
+import { readFileSync, existsSync, readdirSync, statSync } from 'fs';
+import { join, resolve, relative } from 'path';
+import { glob } from 'glob';
+import { parse as parseYaml } from 'yaml';
+import { z } from 'zod';
 
 /**
- * Skill registration configuration
+ * Skill metadata schema
  */
-export interface SkillRegistration {
-  path: string;           // Path to .ossa.yaml manifest
-  enabled?: boolean;      // Default: true
-  priority?: number;      // Higher = preferred when multiple match (0-100)
-  contexts?: string[];    // Limit to specific contexts (dev, prod, review, etc.)
+const SkillMetadataSchema = z.object({
+  name: z.string(),
+  description: z.string(),
+  priority: z.number().min(0).max(100).default(50),
+  contexts: z
+    .array(z.enum(['development', 'production', 'review', 'testing']))
+    .default(['development']),
+  enabled: z.boolean().default(true),
+  path: z.string(),
+  manifest: z.any(), // OSSA manifest
+});
+
+export type SkillMetadata = z.infer<typeof SkillMetadataSchema>;
+
+/**
+ * Skill match context
+ */
+export interface SkillMatchContext {
+  userInput?: string;
+  files?: string[];
+  framework?: string;
+  projectType?: string;
+  keywords?: string[];
 }
 
 /**
- * Context for matching skills to user requests
- */
-export interface MatchContext {
-  userInput: string;      // User's natural language request
-  files?: string[];       // Files being edited or relevant to task
-  framework?: string;     // Detected framework (next.js, react, vue, etc.)
-  task?: string;          // Task type (optimize, debug, deploy, test, etc.)
-  language?: string;      // Programming language
-  keywords?: string[];    // Additional context keywords
-}
-
-/**
- * Skill match result with confidence score
+ * Skill match result
  */
 export interface SkillMatch {
-  skill: RegisteredSkill;
-  confidence: number;     // 0-1 confidence score
-  matchedTriggers: {
-    keywords: string[];
-    filePatterns: string[];
-    frameworks: string[];
-  };
+  skill: SkillMetadata;
+  confidence: number;
+  reasons: string[];
 }
 
 /**
- * Registered skill with metadata
+ * Skill Registry Service
+ *
+ * Manages skill discovery, registration, and context-based matching.
  */
-export interface RegisteredSkill {
-  id: string;             // Skill identifier (metadata.name)
-  manifest: OssaAgent;
-  registration: SkillRegistration;
-  triggers: {
-    keywords: string[];
-    filePatterns: string[];
-    frameworks: string[];
-  };
-  capabilities: Array<{ name: string; description: string }>;
-}
-
-@injectable()
-export class SkillRegistryService {
-  private skills: Map<string, RegisteredSkill> = new Map();
-  private manifestRepo: ManifestRepository;
-
-  constructor(manifestRepo: ManifestRepository) {
-    this.manifestRepo = manifestRepo;
-  }
+export class SkillRegistry {
+  private static skills: Map<string, SkillMetadata> = new Map();
+  private static initialized = false;
+  private static skillPaths: string[] = [];
 
   /**
-   * Register a skill from OSSA manifest
+   * Initialize the skill registry
    */
-  async register(registration: SkillRegistration): Promise<RegisteredSkill> {
-    // Load and validate manifest
-    const manifest = await this.manifestRepo.load(registration.path);
-
-    if (!manifest || typeof manifest !== 'object' || !('metadata' in manifest)) {
-      throw new Error(`Invalid skill manifest at ${registration.path}`);
+  static async initialize(skillPaths: string[] = []): Promise<void> {
+    if (this.initialized) {
+      return;
     }
 
-    const ossaManifest = manifest as OssaAgent;
-    const skillId = ossaManifest.metadata?.name;
+    this.skillPaths =
+      skillPaths.length > 0
+        ? skillPaths
+        : [
+            resolve(process.cwd(), 'examples/agent-skills'),
+            resolve(process.cwd(), 'examples/ossa-templates'),
+          ];
 
-    if (!skillId) {
-      throw new Error(`Skill manifest missing metadata.name: ${registration.path}`);
-    }
-
-    // Extract triggers from runtime configuration
-    const runtime = (ossaManifest as any).runtime;
-    const triggers = {
-      keywords: runtime?.triggers?.keywords || [],
-      filePatterns: runtime?.triggers?.file_patterns || [],
-      frameworks: runtime?.triggers?.frameworks || []
-    };
-
-    // Extract capabilities from tools (capabilities not in v0.3.4 spec)
-    const capabilities = ossaManifest.spec?.tools?.map((t: any) => t.name || t).filter(Boolean) || [];
-
-    const registeredSkill: RegisteredSkill = {
-      id: skillId,
-      manifest: ossaManifest,
-      registration: {
-        ...registration,
-        enabled: registration.enabled !== false,
-        priority: registration.priority || 50
-      },
-      triggers,
-      capabilities
-    };
-
-    this.skills.set(skillId, registeredSkill);
-    return registeredSkill;
+    await this.discoverSkills();
+    this.initialized = true;
   }
 
   /**
-   * Register multiple skills from directory
+   * Discover skills from configured paths
+   * Supports both OSSA manifests (.ossa.yaml) and Vercel format (SKILL.md)
    */
-  async registerDirectory(dirPath: string): Promise<RegisteredSkill[]> {
-    const files = await fs.readdir(dirPath);
-    const yamlFiles = files.filter(f => f.endsWith('.ossa.yaml') || f.endsWith('.ossa.yml'));
-
-    const registered: RegisteredSkill[] = [];
-    for (const file of yamlFiles) {
-      const skillPath = path.join(dirPath, file);
-      try {
-        const skill = await this.register({ path: skillPath });
-        registered.push(skill);
-      } catch (error) {
-        console.warn(`Failed to register skill from ${file}:`, error);
-      }
-    }
-
-    return registered;
-  }
-
-  /**
-   * Get registered skill by ID
-   */
-  get(skillId: string): RegisteredSkill | undefined {
-    return this.skills.get(skillId);
-  }
-
-  /**
-   * List all registered skills
-   */
-  list(options?: { enabled?: boolean; context?: string }): RegisteredSkill[] {
-    const allSkills = Array.from(this.skills.values());
-
-    return allSkills.filter(skill => {
-      // Filter by enabled status
-      if (options?.enabled !== undefined && skill.registration.enabled !== options.enabled) {
-        return false;
+  private static async discoverSkills(): Promise<void> {
+    for (const skillPath of this.skillPaths) {
+      if (!existsSync(skillPath)) {
+        continue;
       }
 
-      // Filter by context
-      if (options?.context) {
-        const contexts = skill.registration.contexts;
-        if (contexts && contexts.length > 0 && !contexts.includes(options.context)) {
-          return false;
+      // Discover OSSA manifest skills
+      const ossaFiles = await glob('**/*.ossa.yaml', {
+        cwd: skillPath,
+        absolute: true,
+      });
+
+      for (const file of ossaFiles) {
+        try {
+          await this.registerFromFile(file);
+        } catch (error) {
+          console.warn(`Failed to register OSSA skill from ${file}:`, error);
         }
       }
 
-      return true;
-    });
+      // Discover Vercel format skills (SKILL.md)
+      const skillMdFiles = await glob('**/SKILL.md', {
+        cwd: skillPath,
+        absolute: true,
+      });
+
+      for (const file of skillMdFiles) {
+        try {
+          await this.registerFromSkillMd(file);
+        } catch (error) {
+          console.warn(`Failed to register Vercel skill from ${file}:`, error);
+        }
+      }
+    }
   }
 
   /**
-   * Match skills to user context with confidence scoring
+   * Register a skill from Vercel format SKILL.md file
    */
-  async match(context: MatchContext): Promise<SkillMatch[]> {
-    const candidates = this.list({ enabled: true });
+  private static async registerFromSkillMd(
+    filePath: string
+  ): Promise<SkillMetadata> {
+    if (!existsSync(filePath)) {
+      throw new Error(`Skill file not found: ${filePath}`);
+    }
+
+    const content = readFileSync(filePath, 'utf-8');
+
+    // Parse frontmatter
+    const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n/);
+    if (!frontmatterMatch) {
+      throw new Error(`Invalid SKILL.md format: missing frontmatter`);
+    }
+
+    const frontmatter = frontmatterMatch[1];
+    const nameMatch = frontmatter.match(/name:\s*(.+)/);
+    const descMatch = frontmatter.match(/description:\s*(.+)/);
+
+    const name = nameMatch ? nameMatch[1].trim() : 'unknown';
+    const description = descMatch ? descMatch[1].trim() : '';
+
+    // Extract priority from directory structure or defaults
+    const skillDir = filePath.replace('/SKILL.md', '');
+    const priority = skillDir.includes('react-best-practices') ? 90 : 50;
+
+    const skill: SkillMetadata = {
+      name,
+      description,
+      priority,
+      contexts: ['development', 'review'],
+      enabled: true,
+      path: filePath,
+      manifest: {
+        metadata: {
+          name,
+          description,
+          labels: {
+            'skill.priority': priority.toString(),
+            'skill.contexts': 'development,review',
+            'skill.enabled': 'true',
+            'skill.format': 'vercel',
+          },
+        },
+        spec: {
+          role: description,
+        },
+        runtime: {
+          triggers: {
+            keywords: this.extractKeywords(content),
+            file_patterns: this.extractFilePatterns(content),
+            frameworks: this.extractFrameworks(content),
+          },
+        },
+      },
+    };
+
+    const validated = SkillMetadataSchema.parse(skill);
+    this.skills.set(validated.name, validated);
+    return validated;
+  }
+
+  /**
+   * Extract keywords from skill content
+   */
+  private static extractKeywords(content: string): string[] {
+    const keywords: string[] = [];
+    const keywordPatterns = [
+      /keywords?:\s*\[(.*?)\]/i,
+      /triggers?:\s*\[(.*?)\]/i,
+      /when.*?:\s*\[(.*?)\]/i,
+    ];
+
+    for (const pattern of keywordPatterns) {
+      const match = content.match(pattern);
+      if (match) {
+        const items = match[1]
+          .split(',')
+          .map((s) => s.trim().replace(/['"]/g, ''));
+        keywords.push(...items);
+      }
+    }
+
+    // Default keywords for React best practices
+    if (
+      content.toLowerCase().includes('react') ||
+      content.toLowerCase().includes('performance')
+    ) {
+      keywords.push(
+        'performance',
+        'optimize',
+        'slow',
+        'bundle',
+        'waterfall',
+        'react',
+        'next.js'
+      );
+    }
+
+    return [...new Set(keywords)];
+  }
+
+  /**
+   * Extract file patterns from skill content
+   */
+  private static extractFilePatterns(content: string): string[] {
+    const patterns: string[] = [];
+
+    if (
+      content.toLowerCase().includes('react') ||
+      content.toLowerCase().includes('tsx') ||
+      content.toLowerCase().includes('jsx')
+    ) {
+      patterns.push(
+        '**/*.{tsx,jsx}',
+        '**/components/**',
+        '**/app/**',
+        '**/pages/**'
+      );
+    }
+    if (
+      content.toLowerCase().includes('typescript') ||
+      content.toLowerCase().includes('.ts')
+    ) {
+      patterns.push('**/*.ts');
+    }
+    if (
+      content.toLowerCase().includes('javascript') ||
+      content.toLowerCase().includes('.js')
+    ) {
+      patterns.push('**/*.js');
+    }
+
+    return [...new Set(patterns)];
+  }
+
+  /**
+   * Extract frameworks from skill content
+   */
+  private static extractFrameworks(content: string): string[] {
+    const frameworks: string[] = [];
+    const frameworkMap: Record<string, string[]> = {
+      'next.js': ['next.js', 'next'],
+      react: ['react'],
+      remix: ['remix'],
+      gatsby: ['gatsby'],
+    };
+
+    const contentLower = content.toLowerCase();
+    for (const [key, values] of Object.entries(frameworkMap)) {
+      if (contentLower.includes(key)) {
+        frameworks.push(...values);
+      }
+    }
+
+    return [...new Set(frameworks)];
+  }
+
+  /**
+   * Register a skill from a file path
+   */
+  static async registerFromFile(filePath: string): Promise<SkillMetadata> {
+    if (!existsSync(filePath)) {
+      throw new Error(`Skill file not found: ${filePath}`);
+    }
+
+    const content = readFileSync(filePath, 'utf-8');
+    const manifest = parseYaml(content);
+
+    if (!manifest.metadata?.name) {
+      throw new Error(`Invalid OSSA manifest: missing metadata.name`);
+    }
+
+    const skill: SkillMetadata = {
+      name: manifest.metadata.name,
+      description: manifest.metadata.description || '',
+      priority: manifest.metadata.labels?.['skill.priority']
+        ? parseInt(manifest.metadata.labels['skill.priority'])
+        : 50,
+      contexts: manifest.metadata.labels?.['skill.contexts']
+        ? manifest.metadata.labels['skill.contexts']
+            .split(',')
+            .map((c: string) => c.trim())
+        : ['development'],
+      enabled: manifest.metadata.labels?.['skill.enabled'] !== 'false',
+      path: filePath,
+      manifest,
+    };
+
+    // Validate schema
+    SkillMetadataSchema.parse(skill);
+
+    this.skills.set(skill.name, skill);
+    return skill;
+  }
+
+  /**
+   * Register a skill manually
+   */
+  static register(
+    skill: Partial<SkillMetadata> & { path: string; manifest: any }
+  ): SkillMetadata {
+    // Parse contexts from manifest labels if not provided
+    let contexts = skill.contexts;
+    if (!contexts && skill.manifest.metadata?.labels?.['skill.contexts']) {
+      const contextsStr = skill.manifest.metadata.labels['skill.contexts'];
+      contexts =
+        typeof contextsStr === 'string'
+          ? contextsStr.split(',').map((c: string) => c.trim())
+          : Array.isArray(contextsStr)
+            ? contextsStr
+            : ['development'];
+    }
+
+    const fullSkill: SkillMetadata = {
+      name: skill.name || skill.manifest.metadata?.name || 'unknown',
+      description:
+        skill.description || skill.manifest.metadata?.description || '',
+      priority:
+        skill.priority ??
+        (skill.manifest.metadata?.labels?.['skill.priority']
+          ? parseInt(skill.manifest.metadata.labels['skill.priority'])
+          : 50),
+      contexts: contexts || ['development'],
+      enabled:
+        skill.enabled ??
+        skill.manifest.metadata?.labels?.['skill.enabled'] !== 'false',
+      path: skill.path,
+      manifest: skill.manifest,
+    };
+
+    const validated = SkillMetadataSchema.parse(fullSkill);
+    this.skills.set(validated.name, validated);
+    return validated;
+  }
+
+  /**
+   * Match skills based on context
+   */
+  static async match(context: SkillMatchContext): Promise<SkillMatch[]> {
+    if (!this.initialized) {
+      await this.initialize();
+    }
+
     const matches: SkillMatch[] = [];
 
-    for (const skill of candidates) {
-      const match = this.calculateMatch(skill, context);
+    for (const [name, skill] of this.skills.entries()) {
+      if (!skill.enabled) {
+        continue;
+      }
 
-      // Only include matches above threshold
-      const threshold = (skill.manifest as any).runtime?.activation?.confidence_threshold || 0.5;
-      if (match.confidence >= threshold) {
+      const match = this.evaluateMatch(skill, context);
+      if (match.confidence > 0) {
         matches.push(match);
       }
     }
 
-    // Sort by confidence (descending), then priority (descending)
-    return matches.sort((a, b) => {
-      if (Math.abs(a.confidence - b.confidence) > 0.1) {
+    // Sort by confidence (descending), then by priority (descending)
+    matches.sort((a, b) => {
+      if (b.confidence !== a.confidence) {
         return b.confidence - a.confidence;
       }
-      return (b.skill.registration.priority || 50) - (a.skill.registration.priority || 50);
+      return b.skill.priority - a.skill.priority;
     });
+
+    return matches;
   }
 
   /**
-   * Calculate match confidence for a skill given context
+   * Evaluate a single skill match
    */
-  private calculateMatch(skill: RegisteredSkill, context: MatchContext): SkillMatch {
-    let score = 0;
-    let maxScore = 0;
-    const matchedTriggers = {
-      keywords: [] as string[],
-      filePatterns: [] as string[],
-      frameworks: [] as string[]
-    };
+  private static evaluateMatch(
+    skill: SkillMetadata,
+    context: SkillMatchContext
+  ): SkillMatch {
+    let confidence = 0;
+    const reasons: string[] = [];
 
-    // 1. Keyword matching (weight: 30%)
-    if (skill.triggers.keywords.length > 0) {
-      maxScore += 30;
-      const userInputLower = context.userInput.toLowerCase();
-      const allKeywords = [
-        ...context.keywords || [],
-        ...userInputLower.split(/\s+/)
-      ];
+    const manifest = skill.manifest;
+    const triggers = manifest.spec?.runtime?.triggers || {};
 
-      for (const keyword of skill.triggers.keywords) {
-        if (allKeywords.some(k => k.includes(keyword.toLowerCase()))) {
-          matchedTriggers.keywords.push(keyword);
-          score += 30 / skill.triggers.keywords.length;
-        }
+    // Keyword matching
+    if (context.userInput && triggers.keywords) {
+      const inputLower = context.userInput.toLowerCase();
+      const matchedKeywords = triggers.keywords.filter((kw: string) =>
+        inputLower.includes(kw.toLowerCase())
+      );
+      if (matchedKeywords.length > 0) {
+        confidence += matchedKeywords.length * 0.2;
+        reasons.push(`Matched keywords: ${matchedKeywords.join(', ')}`);
       }
     }
 
-    // 2. File pattern matching (weight: 25%)
-    if (skill.triggers.filePatterns.length > 0 && context.files) {
-      maxScore += 25;
-      for (const pattern of skill.triggers.filePatterns) {
-        const matchingFiles = context.files.filter(file =>
-          this.matchGlob(file, pattern)
+    // File pattern matching
+    if (context.files && triggers.file_patterns) {
+      let matchedFiles = 0;
+      for (const pattern of triggers.file_patterns) {
+        for (const file of context.files) {
+          if (this.matchesPattern(file, pattern)) {
+            matchedFiles++;
+            reasons.push(`Matched file pattern: ${pattern} (${file})`);
+            break;
+          }
+        }
+      }
+      if (matchedFiles > 0) {
+        confidence += Math.min(matchedFiles * 0.15, 0.4);
+      }
+    }
+
+    // Framework matching
+    if (context.framework && triggers.frameworks) {
+      const frameworks = Array.isArray(triggers.frameworks)
+        ? triggers.frameworks
+        : [triggers.frameworks];
+      if (
+        frameworks.some((f: string) =>
+          context.framework?.toLowerCase().includes(f.toLowerCase())
+        )
+      ) {
+        confidence += 0.3;
+        reasons.push(`Matched framework: ${context.framework}`);
+      }
+    }
+
+    // Project type matching
+    if (context.projectType && triggers.project_types) {
+      const projectTypes = Array.isArray(triggers.project_types)
+        ? triggers.project_types
+        : [triggers.project_types];
+      if (
+        projectTypes.some((pt: string) =>
+          context.projectType?.toLowerCase().includes(pt.toLowerCase())
+        )
+      ) {
+        confidence += 0.2;
+        reasons.push(`Matched project type: ${context.projectType}`);
+      }
+    }
+
+    // Explicit keyword matching (from context)
+    if (context.keywords && triggers.keywords) {
+      const matched = context.keywords.filter((kw) =>
+        triggers.keywords.some((tk: string) =>
+          kw.toLowerCase().includes(tk.toLowerCase())
+        )
+      );
+      if (matched.length > 0) {
+        confidence += matched.length * 0.1;
+        reasons.push(`Matched explicit keywords: ${matched.join(', ')}`);
+      }
+    }
+
+    // Capability matching
+    if (manifest.spec?.capabilities) {
+      const capabilities = Array.isArray(manifest.spec.capabilities)
+        ? manifest.spec.capabilities.map((c: any) => c.name || c)
+        : [];
+
+      if (context.userInput) {
+        const inputLower = context.userInput.toLowerCase();
+        const matchedCaps = capabilities.filter((cap: string) =>
+          inputLower.includes(cap.toLowerCase())
         );
-        if (matchingFiles.length > 0) {
-          matchedTriggers.filePatterns.push(pattern);
-          score += 25 / skill.triggers.filePatterns.length;
+        if (matchedCaps.length > 0) {
+          confidence += matchedCaps.length * 0.1;
+          reasons.push(`Matched capabilities: ${matchedCaps.join(', ')}`);
         }
       }
     }
 
-    // 3. Framework matching (weight: 25%)
-    if (skill.triggers.frameworks.length > 0 && context.framework) {
-      maxScore += 25;
-      if (skill.triggers.frameworks.includes(context.framework)) {
-        matchedTriggers.frameworks.push(context.framework);
-        score += 25;
-      }
-    }
-
-    // 4. Task type matching (weight: 20%)
-    if (context.task) {
-      maxScore += 20;
-      const taskLower = context.task.toLowerCase();
-
-      // Check if any capability matches the task
-      for (const cap of skill.capabilities) {
-        const capName = cap.name.toLowerCase();
-        if (capName.includes(taskLower) || taskLower.includes(capName)) {
-          score += 20;
-          break;
-        }
-      }
-    }
-
-    // Normalize score to 0-1 range
-    const confidence = maxScore > 0 ? score / maxScore : 0;
+    // Normalize confidence to 0-1 range
+    confidence = Math.min(confidence, 1.0);
 
     return {
       skill,
       confidence,
-      matchedTriggers
+      reasons,
     };
   }
 
   /**
-   * Simple glob pattern matching
+   * Check if a file matches a glob pattern
    */
-  private matchGlob(filePath: string, pattern: string): boolean {
+  private static matchesPattern(file: string, pattern: string): boolean {
     // Convert glob pattern to regex
     const regexPattern = pattern
-      .replace(/\./g, '\\.')
       .replace(/\*\*/g, '.*')
       .replace(/\*/g, '[^/]*')
       .replace(/\?/g, '.');
 
     const regex = new RegExp(`^${regexPattern}$`);
-    return regex.test(filePath);
+    return regex.test(file);
   }
 
   /**
-   * Unregister a skill
+   * Get all registered skills
    */
-  unregister(skillId: string): boolean {
-    return this.skills.delete(skillId);
+  static getAll(): SkillMetadata[] {
+    return Array.from(this.skills.values());
   }
 
   /**
-   * Enable/disable a skill
+   * Get a skill by name
    */
-  setEnabled(skillId: string, enabled: boolean): void {
-    const skill = this.skills.get(skillId);
+  static get(name: string): SkillMetadata | undefined {
+    return this.skills.get(name);
+  }
+
+  /**
+   * Enable a skill
+   */
+  static enable(name: string): boolean {
+    const skill = this.skills.get(name);
     if (skill) {
-      skill.registration.enabled = enabled;
+      skill.enabled = true;
+      return true;
     }
+    return false;
   }
 
   /**
-   * Update skill priority
+   * Disable a skill
    */
-  setPriority(skillId: string, priority: number): void {
-    const skill = this.skills.get(skillId);
+  static disable(name: string): boolean {
+    const skill = this.skills.get(name);
     if (skill) {
-      skill.registration.priority = priority;
+      skill.enabled = false;
+      return true;
     }
+    return false;
   }
 
   /**
-   * Get skill statistics
+   * Clear all skills
    */
-  getStats(): {
-    total: number;
-    enabled: number;
-    disabled: number;
-    byCategory: Record<string, number>;
-  } {
-    const allSkills = Array.from(this.skills.values());
-
-    const stats = {
-      total: allSkills.length,
-      enabled: allSkills.filter(s => s.registration.enabled).length,
-      disabled: allSkills.filter(s => !s.registration.enabled).length,
-      byCategory: {} as Record<string, number>
-    };
-
-    // Count by category label
-    for (const skill of allSkills) {
-      const category = skill.manifest.metadata?.labels?.['ossa.dev/category'] || 'uncategorized';
-      stats.byCategory[category] = (stats.byCategory[category] || 0) + 1;
-    }
-
-    return stats;
-  }
-}
-
-/**
- * Global skill registry singleton
- */
-export class SkillRegistry {
-  private static instance: SkillRegistryService;
-
-  static initialize(manifestRepo: ManifestRepository): void {
-    this.instance = new SkillRegistryService(manifestRepo);
+  static clear(): void {
+    this.skills.clear();
+    this.initialized = false;
   }
 
-  static getInstance(): SkillRegistryService {
-    if (!this.instance) {
-      throw new Error('SkillRegistry not initialized. Call SkillRegistry.initialize() first.');
-    }
-    return this.instance;
+  /**
+   * Get skills by context
+   */
+  static getByContext(
+    context: 'development' | 'production' | 'review' | 'testing'
+  ): SkillMetadata[] {
+    return Array.from(this.skills.values()).filter((skill) =>
+      skill.contexts.includes(context)
+    );
   }
 
-  static async register(registration: SkillRegistration): Promise<RegisteredSkill> {
-    return this.getInstance().register(registration);
-  }
-
-  static async registerDirectory(dirPath: string): Promise<RegisteredSkill[]> {
-    return this.getInstance().registerDirectory(dirPath);
-  }
-
-  static get(skillId: string): RegisteredSkill | undefined {
-    return this.getInstance().get(skillId);
-  }
-
-  static list(options?: { enabled?: boolean; context?: string }): RegisteredSkill[] {
-    return this.getInstance().list(options);
-  }
-
-  static async match(context: MatchContext): Promise<SkillMatch[]> {
-    return this.getInstance().match(context);
+  /**
+   * Get skills above confidence threshold
+   */
+  static async matchAboveThreshold(
+    context: SkillMatchContext,
+    threshold: number = 0.5
+  ): Promise<SkillMatch[]> {
+    const matches = await this.match(context);
+    return matches.filter((m) => m.confidence >= threshold);
   }
 }

@@ -1,401 +1,323 @@
-# Agent Skills Catalog
+# OSSA Agent Skills Catalog
 
-This catalog implements the [Agent Skills format](https://agentskills.io/) pioneered by Vercel Labs, adapted for the OSSA (Open Standard Agent Specification) platform.
+> **Source**: Based on [Vercel agent-skills](https://agentskills.io/) architecture pattern  
+> **Status**: Active Development  
+> **Version**: 1.0.0
+
+## Overview
+
+The OSSA Agent Skills System implements the Vercel agent-skills pattern, enabling context-aware skill discovery and automatic activation. Skills are OSSA agents that specialize in specific domains and auto-activate based on user input, file patterns, frameworks, and project context.
 
 ## Architecture
 
-### Skill Composition
+### Separation of Concerns
 
-Each skill is a self-contained, modular capability package consisting of:
+```
+OSSA Manifest → Agent config, capabilities, tools
+References → Documentation, examples, guidelines  
+Scripts → Automation helpers (optional)
+```
 
-1. **OSSA Manifest** (`*.ossa.yaml`) — Agent definition with role, capabilities, tools, and activation patterns
-2. **Reference Documentation** (`references/`) — Supporting docs, examples, and implementation guides
-3. **Scripts** (`scripts/`) — Optional automation helpers
+### Skill Structure
 
-### Automatic Discovery
+Each skill is an OSSA v0.3.5 agent manifest with:
 
-Skills activate contextually when agents detect relevant tasks through:
-- **Keyword triggers**: Specific terms in user requests
-- **File pattern matching**: Relevant file types being edited
-- **Framework detection**: Project structure analysis
-- **Confidence scoring**: Probabilistic relevance assessment
+1. **Metadata Labels**: Skill configuration (`skill.priority`, `skill.contexts`, `skill.enabled`)
+2. **Runtime Triggers**: Auto-activation rules (keywords, file patterns, frameworks)
+3. **Capabilities**: Domain-specific tools and expertise
+4. **Extensions**: MoE experts, BAT framework, feedback loops
+
+### Priority-Based Guidance
+
+Skills implement rules ranked by impact:
+
+- **CRITICAL**: Must fix immediately (waterfalls, bundle size)
+- **HIGH**: Significant impact (re-renders, rendering performance)
+- **MEDIUM**: Moderate impact (micro-optimizations, CSS)
+- **LOW**: Edge cases (advanced patterns, micro-benchmarks)
+
+## Integration
+
+### Claude.ai Integration
+
+Skills work seamlessly with Claude.ai:
+
+1. Skills auto-discover from configured paths
+2. Context matching activates relevant skills
+3. Skills provide specialized guidance in conversation
+
+### Cursor Integration
+
+Skills integrate with Cursor IDE:
+
+1. File pattern matching triggers skills on file open/edit
+2. Keyword detection in chat activates skills
+3. Framework detection enables framework-specific skills
+
+### VS Code Extension
+
+Skills can be packaged as VS Code extensions:
+
+1. Register skills via extension manifest
+2. Provide IntelliSense and quick fixes
+3. Show skill recommendations in editor
+
+## Skill Creation Guidelines
+
+### 1. Define Skill Metadata
+
+```yaml
+metadata:
+  name: react-performance-expert
+  labels:
+    skill.priority: 90
+    skill.contexts: development,review
+    skill.enabled: "true"
+    skill.auto_activate: "true"
+```
+
+### 2. Configure Runtime Triggers
+
+```yaml
+runtime:
+  triggers:
+    keywords:
+      - performance
+      - optimize
+      - slow
+    file_patterns:
+      - "**/*.{tsx,jsx}"
+      - "**/components/**"
+    frameworks:
+      - next.js
+      - react
+  activation:
+    automatic: true
+    confidence_threshold: 0.7
+```
+
+### 3. Implement Domain Expertise
+
+```yaml
+role: |
+  You are a React Performance Expert specializing in...
+  
+  CRITICAL Priority Rules:
+  1. Eliminate Waterfalls
+  2. Bundle Optimization
+  ...
+```
+
+### 4. Add Specialized Tools
+
+```yaml
+tools:
+  - name: analyze_bundle
+    description: Analyze bundle size
+    source:
+      type: mcp
+      uri: mcp://build-tools/bundle-analyzer
+```
+
+### 5. Enable v0.3.5 Features
+
+```yaml
+extensions:
+  experts:
+    registry:
+      - id: deep-analysis-expert
+        model: claude-opus-4-5-20251101
+        specializations: [complex_analysis]
+  bat:
+    selection_criteria: [...]
+  feedback:
+    learning:
+      enabled: true
+```
+
+## API Reference
+
+### SkillRegistry Service
+
+```typescript
+import { SkillRegistry } from '@bluefly/openstandardagents/skill-registry';
+
+// Initialize
+await SkillRegistry.initialize([
+  './examples/agent-skills',
+  './examples/ossa-templates',
+]);
+
+// Register skill
+await SkillRegistry.registerFromFile('./skills/my-skill.ossa.yaml');
+
+// Match skills
+const matches = await SkillRegistry.match({
+  userInput: "Optimize my React app",
+  files: ['src/App.tsx'],
+  framework: 'next.js',
+});
+
+// Get skills by context
+const devSkills = SkillRegistry.getByContext('development');
+
+// Enable/disable
+SkillRegistry.enable('react-performance-expert');
+SkillRegistry.disable('react-performance-expert');
+```
+
+### Skill Matching
+
+```typescript
+interface SkillMatchContext {
+  userInput?: string;
+  files?: string[];
+  framework?: string;
+  projectType?: string;
+  keywords?: string[];
+}
+
+interface SkillMatch {
+  skill: SkillMetadata;
+  confidence: number; // 0.0 - 1.0
+  reasons: string[];
+}
+```
 
 ## Available Skills
 
 ### 1. React Performance Expert
-**File**: `11-react-performance-expert.ossa.yaml`
 
-Expert React/Next.js performance optimization implementing Vercel's agent-skills patterns.
+**File**: `examples/ossa-templates/11-react-performance-expert.ossa.yaml`
 
-**Priority Framework**:
-1. CRITICAL: Eliminating waterfalls, bundle optimization
-2. HIGH: Server-side performance
-3. MEDIUM-HIGH: Client-side data fetching
-4. MEDIUM: Re-render and rendering optimization
-5. LOW-MEDIUM: JavaScript micro-optimizations
-6. LOW: Advanced patterns
+**Capabilities**:
+- Bundle size optimization
+- Waterfall elimination
+- Re-render optimization
+- Image optimization
+- Code splitting
 
-**Activation Triggers**:
-- Keywords: "performance", "slow", "optimize", "bundle", "waterfall", "deploy"
-- File patterns: `**/*.{tsx,jsx}`, `**/app/**`, `**/pages/**`, `**/components/**`
+**Auto-Activation**:
+- Keywords: "performance", "optimize", "slow", "bundle"
+- Files: `**/*.{tsx,jsx}`, `**/components/**`
 - Frameworks: Next.js, React, Remix, Gatsby
 
-**Key Capabilities**:
-- `performance.analyze` — Comprehensive performance audits across 8 categories
-- `waterfall.eliminate` — Detect and fix sequential await patterns (CRITICAL)
-- `bundle.optimize` — Reduce bundle size through strategic code splitting (CRITICAL)
-- `server.optimize` — Optimize SSR and data fetching (HIGH)
-- `rerender.optimize` — Minimize unnecessary re-renders (MEDIUM)
-
-**Impact Examples**:
-- Waterfall elimination: 66% latency reduction (3 serial → 2 parallel + 1 serial)
-- Barrel import fixes: 200-800ms cold start improvement
-- Lazy state initialization: Computation runs once vs every render
-
----
-
-## Integration Patterns
-
-### For Claude.ai / Cursor / VS Code
-1. Load skill manifest into project knowledge
-2. Allow network domains if needed (e.g., `*.vercel.com`)
-3. Agent auto-activates on relevant contexts
-
-### For Agent Platforms
-```typescript
-import { SkillRegistry } from '@ossa/skills';
-
-// Register skill
-await SkillRegistry.register({
-  path: './examples/ossa-templates/11-react-performance-expert.ossa.yaml'
-});
-
-// Skills auto-activate based on context
-const activeSkills = await SkillRegistry.match({
-  userInput: "Optimize this React component",
-  files: ['src/components/Dashboard.tsx'],
-  framework: 'next.js'
-});
-```
-
-### For CLI Tools
-```bash
-# Install skill
-npx add-skill openstandardagents/react-performance-expert
-
-# List available skills
-npx list-skills
-
-# Activate skill manually
-npx activate-skill react-performance-expert
-```
-
----
-
-## Design Patterns
-
-### 1. Separation of Concerns
-- **Manifest**: Agent configuration, capabilities, tools
-- **References**: Detailed documentation, examples, guidelines
-- **Scripts**: Automation helpers (optional)
-
-### 2. Priority-Based Guidance
-Rules explicitly marked by impact level (CRITICAL → LOW)
-
-Example from React Performance Expert:
-```yaml
-## Priority Framework (Apply in Order):
-
-### 1. CRITICAL - Eliminating Waterfalls
-"Each sequential await adds full network latency. Eliminating them yields the largest gains."
-
-### 2. CRITICAL - Bundle Size Optimization
-"Reducing initial bundle improves Time to Interactive and LCP."
-```
-
-### 3. Context-Based Activation
-Skills activate automatically based on multiple signals:
-```yaml
-runtime:
-  triggers:
-    keywords: ["performance", "optimize"]
-    file_patterns: ["**/*.tsx"]
-    frameworks: ["next.js", "react"]
-  activation:
-    automatic: true
-    confidence_threshold: 0.8
-```
-
-### 4. Framework Agnosticity
-Skills work across:
-- Claude.ai
-- Cursor
-- VS Code
-- JetBrains IDEs
-- CLI tools
-- Agent platforms
-
-### 5. Zero-Friction Authentication
-Skills operate without credentials when possible:
-- Read-only operations default
-- Explicit approval for writes
-- Sandboxed execution
-
----
-
-## Creating New Skills
-
-### Step 1: Define OSSA Manifest
-```yaml
-apiVersion: ossa/v0.3.4
-kind: Agent
-metadata:
-  name: my-skill
-  version: 1.0.0
-  description: Skill description
-  labels:
-    ossa.dev/category: development
-    vercel-labs/skill-based: true
-
-spec:
-  capabilities:
-  - name: skill.action
-    description: What this skill does
-
-  role: |
-    Detailed instructions for the agent...
-
-  tools:
-  - name: tool.name
-    description: Tool purpose
-    handler:
-      runtime: ide
-      capability: fs.read
-```
-
-### Step 2: Add Activation Triggers
-```yaml
-runtime:
-  triggers:
-    keywords: ["trigger", "words"]
-    file_patterns: ["**/*.ext"]
-    frameworks: ["framework-name"]
-
-  activation:
-    automatic: true
-    confidence_threshold: 0.8
-```
-
-### Step 3: Provide Examples and References
-```yaml
-knowledge:
-  examples:
-    pattern_name:
-      before: |
-        # Problematic code
-      after: |
-        # Optimized code
-      impact: "Quantified improvement"
-```
-
-### Step 4: Test and Validate
-```bash
-# Validate manifest
-npm run validate:manifest -- path/to/skill.ossa.yaml
-
-# Test activation
-npm run test:skill -- my-skill --context "test scenario"
-```
-
----
+**Impact**:
+- 66% latency reduction (waterfall elimination)
+- 200-800ms cold start improvement (barrel imports)
+- 30-50% bundle size reduction (dynamic imports)
 
 ## Best Practices
 
-### 1. Clear Categorization
-Organize optimization strategies by priority/impact level
+### 1. Skill Naming
 
-### 2. Practical Triggering Language
-Match real user requests:
-- "Deploy my app" → deployment skills
-- "Optimize this component" → performance skills
-- "Add authentication" → security skills
+- Use descriptive names: `react-performance-expert`, `typescript-type-safety-expert`
+- Include domain: `drupal-security-expert`, `api-design-expert`
+- Be specific: `react-performance-expert` not `performance-expert`
 
-### 3. Modular Capability Design
-Enable easy extension and composition:
-```yaml
-capabilities:
-- name: narrow.specific.action  # Not broad.generic.action
-  description: Precise capability description
-```
+### 2. Priority Setting
 
-### 4. Documentation Clarity
-Write for both agents AND developers:
-- Agents: Execution instructions
-- Developers: Architecture, patterns, integration
+- **90-100**: Critical, high-impact skills (performance, security)
+- **70-89**: Important skills (type safety, accessibility)
+- **50-69**: Standard skills (code quality, testing)
+- **30-49**: Nice-to-have skills (documentation, formatting)
+- **0-29**: Experimental skills
 
-### 5. Framework Auto-Detection
-Reduce setup friction:
-```yaml
-runtime:
-  frameworks:
-  - next.js
-  - react
-  - vue
-  detection:
-    auto: true
-    patterns:
-      next.js: ["next.config.{js,ts}", "app/", "pages/"]
-      react: ["package.json::dependencies.react"]
-```
+### 3. Context Selection
 
----
+- **development**: Active development work
+- **production**: Production deployment checks
+- **review**: Code review assistance
+- **testing**: Test generation and validation
 
-## Skill Registry API
+### 4. Trigger Configuration
 
-### Register Skill
-```typescript
-interface SkillRegistration {
-  path: string;           // Path to .ossa.yaml manifest
-  enabled?: boolean;      // Default: true
-  priority?: number;      // Higher = preferred when multiple match
-  contexts?: string[];    // Limit to specific contexts
-}
+- **Keywords**: Common terms users might use
+- **File Patterns**: Glob patterns for relevant files
+- **Frameworks**: Framework names (case-insensitive)
+- **Confidence Threshold**: 0.7+ for high-confidence matches
 
-await SkillRegistry.register({
-  path: './skills/react-performance-expert.ossa.yaml',
-  priority: 10,
-  contexts: ['development', 'review']
-});
-```
+### 5. Tool Design
 
-### Match Skills
-```typescript
-interface MatchContext {
-  userInput: string;
-  files?: string[];
-  framework?: string;
-  task?: string;
-}
-
-const matches = await SkillRegistry.match({
-  userInput: "Optimize my React app for production",
-  files: ['src/App.tsx', 'next.config.js'],
-  framework: 'next.js'
-});
-
-// Returns: [
-//   { skill: 'react-performance-expert', confidence: 0.95 },
-//   { skill: 'bundle-analyzer', confidence: 0.78 }
-// ]
-```
-
-### Activate Skill
-```typescript
-const skill = await SkillRegistry.get('react-performance-expert');
-const agent = await skill.instantiate({
-  llm: { provider: 'anthropic', model: 'claude-sonnet-4' },
-  tools: ['file.read', 'file.edit', 'terminal.run']
-});
-
-const result = await agent.execute({
-  task: 'Analyze component for performance issues',
-  files: ['src/components/Dashboard.tsx']
-});
-```
-
----
-
-## Contributing Skills
-
-### Submission Guidelines
-
-1. **Follow OSSA Spec**: Use `apiVersion: ossa/v0.3.4`
-2. **Add Skill Label**: Include `vercel-labs/skill-based: true`
-3. **Provide Examples**: Real before/after code with measured impact
-4. **Document Triggers**: Clear activation keywords and patterns
-5. **Test Thoroughly**: Validate across different contexts
-6. **Add References**: Link to authoritative sources
-
-### Pull Request Template
-```markdown
-## Skill: [Name]
-
-**Category**: Development / Security / DevOps / Content
-
-**Capabilities**:
-- capability.one
-- capability.two
-
-**Activation Triggers**:
-- Keywords: ["trigger", "words"]
-- File patterns: ["**/*.ext"]
-- Frameworks: ["framework"]
-
-**Priority**: CRITICAL / HIGH / MEDIUM / LOW
-
-**Impact Examples**:
-- Before/After with quantified improvements
-
-**References**:
-- [Source 1](url)
-- [Source 2](url)
-
-**Testing**:
-- [ ] Manifest validates
-- [ ] Skills activates on correct triggers
-- [ ] Does not activate on unrelated contexts
-- [ ] Examples run successfully
-```
-
----
+- Use MCP servers for tool integration
+- Provide clear input/output schemas
+- Include examples in descriptions
+- Support dry-run modes
 
 ## Roadmap
 
-### Planned Skills
+### Phase 1: Core Skills (Current)
 
-1. **TypeScript Type Safety Expert**
-   - Eliminate `any` types
-   - Add strict null checks
-   - Optimize type inference
+- ✅ React Performance Expert
+- 🔄 TypeScript Type Safety Expert
+- 🔄 Accessibility Champion
+- 🔄 Security Hardening Agent
 
-2. **Accessibility Champion**
-   - WCAG 2.1 compliance
-   - Screen reader compatibility
-   - Keyboard navigation
+### Phase 2: Advanced Skills
 
-3. **Security Hardening Agent**
-   - OWASP Top 10 prevention
-   - Dependency vulnerability scanning
-   - Security header configuration
+- 🔄 Database Query Optimizer
+- 🔄 API Design Expert
+- 🔄 Test Coverage Enforcer
+- 🔄 Documentation Generator
 
-4. **Database Query Optimizer**
-   - N+1 query detection
-   - Index recommendations
-   - Query plan analysis
+### Phase 3: Framework-Specific Skills
 
-5. **API Design Expert**
-   - RESTful conventions
-   - OpenAPI spec generation
-   - Versioning strategies
+- 🔄 Next.js Optimization Expert
+- 🔄 Drupal Best Practices Expert
+- 🔄 Node.js Performance Expert
+- 🔄 Python Code Quality Expert
 
-6. **Test Coverage Enforcer**
-   - Critical path identification
-   - Test case generation
-   - Coverage gap analysis
+### Phase 4: Domain-Specific Skills
 
----
+- 🔄 FinTech Compliance Expert
+- 🔄 Healthcare Data Privacy Expert
+- 🔄 E-commerce Performance Expert
+- 🔄 SaaS Security Expert
 
-## License
+## Contributing
 
-Skills in this catalog follow the OSSA specification and are available under MIT license unless otherwise specified.
+### Adding a New Skill
 
-Individual skills may reference external sources (e.g., Vercel agent-skills) which maintain their original licenses.
+1. Create OSSA manifest in `examples/ossa-templates/`
+2. Follow skill creation guidelines
+3. Add to skills catalog
+4. Write tests for skill registry
+5. Update documentation
 
----
+### Testing Skills
+
+```typescript
+import { SkillRegistry } from '@bluefly/openstandardagents/skill-registry';
+
+describe('React Performance Expert', () => {
+  it('should match on performance keywords', async () => {
+    const matches = await SkillRegistry.match({
+      userInput: 'My React app is slow',
+    });
+    
+    expect(matches[0].skill.name).toBe('react-performance-expert');
+    expect(matches[0].confidence).toBeGreaterThan(0.7);
+  });
+  
+  it('should match on React files', async () => {
+    const matches = await SkillRegistry.match({
+      files: ['src/components/App.tsx'],
+    });
+    
+    expect(matches.length).toBeGreaterThan(0);
+  });
+});
+```
 
 ## References
 
-- [Vercel Agent Skills](https://github.com/vercel-labs/agent-skills)
-- [Agent Skills Format](https://agentskills.io/)
-- [OSSA Specification](https://openstandardagents.org/spec/v0.3.4)
-- [Claude.ai Project Knowledge](https://docs.anthropic.com/claude/docs/project-knowledge)
+- [Vercel agent-skills](https://agentskills.io/)
+- [Vercel React Best Practices](https://github.com/vercel-labs/agent-skills/tree/react-best-practices)
+- [OSSA v0.3.5 Specification](../spec/v0.3.5/)
+- [Skill Registry Service](../../src/services/skill-registry.service.ts)
+
+---
+
+**Last Updated**: 2026-01-14  
+**Maintainer**: blueflyio  
+**License**: MIT

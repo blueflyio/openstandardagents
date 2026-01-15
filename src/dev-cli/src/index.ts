@@ -2,9 +2,9 @@
 
 /**
  * OSSA Developer CLI
- * 
+ *
  * Separate from npm package - Only for developers working on OSSA itself.
- * 
+ *
  * Architecture:
  * - OpenAPI-First: openapi/dev-cli.openapi.yml defines all commands
  * - Zod Validation: All inputs/outputs validated with Zod schemas

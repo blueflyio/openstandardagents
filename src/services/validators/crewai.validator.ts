@@ -13,7 +13,9 @@ export class CrewAIValidator {
     const errors: ErrorObject[] = [];
     const warnings: string[] = [];
 
-    const crewaiExt = manifest.extensions?.crewai as Record<string, unknown> | undefined;
+    const crewaiExt = manifest.extensions?.crewai as
+      | Record<string, unknown>
+      | undefined;
     if (!crewaiExt || (crewaiExt.enabled as boolean | undefined) === false) {
       return { valid: true, errors: [], warnings: [] };
     }
@@ -58,7 +60,9 @@ export class CrewAIValidator {
     // Validate backstory (optional but recommended)
     const backstory = crewaiExt.backstory as string | undefined;
     if (!backstory || backstory.trim().length === 0) {
-      warnings.push('Best practice: Add backstory for better CrewAI agent context');
+      warnings.push(
+        'Best practice: Add backstory for better CrewAI agent context'
+      );
     }
 
     // Validate tools if provided

@@ -24,7 +24,9 @@ export interface OssaCapability {
 /**
  * Tool handler function type
  */
-export type ToolHandler = (args: Record<string, unknown>) => Promise<string | Record<string, unknown>>;
+export type ToolHandler = (
+  args: Record<string, unknown>
+) => Promise<string | Record<string, unknown>>;
 
 /**
  * Tool definition with handler
@@ -69,9 +71,16 @@ export class ToolMapper {
     // Map from spec.tools
     if (agent.spec?.tools) {
       for (const tool of agent.spec.tools) {
-        if (tool.type === 'function' && tool.name && typeof tool.name === 'string') {
+        if (
+          tool.type === 'function' &&
+          tool.name &&
+          typeof tool.name === 'string'
+        ) {
           const toolName = tool.name;
-          const anthropicTool = this.convertFunctionToTool({ ...tool, name: toolName });
+          const anthropicTool = this.convertFunctionToTool({
+            ...tool,
+            name: toolName,
+          });
           tools.push(anthropicTool);
 
           this.tools.set(tool.name, {
@@ -102,9 +111,11 @@ export class ToolMapper {
     }
 
     // Map from extensions.anthropic.tools
-    const anthropicExt = agent.extensions?.anthropic as {
-      tools?: Tool[];
-    } | undefined;
+    const anthropicExt = agent.extensions?.anthropic as
+      | {
+          tools?: Tool[];
+        }
+      | undefined;
 
     if (anthropicExt?.tools) {
       for (const tool of anthropicExt.tools) {
@@ -204,8 +215,7 @@ export class ToolMapper {
   }): Tool {
     const config = tool.config || {};
     const description =
-      (config.description as string) ||
-      `Function: ${tool.name}`;
+      (config.description as string) || `Function: ${tool.name}`;
     const inputSchema = (config.input_schema as Record<string, unknown>) || {
       type: 'object',
       properties: {},
@@ -233,7 +243,7 @@ export class ToolMapper {
       required?: string[];
     } = {
       type: 'object',
-      properties: schema.properties as Record<string, unknown> || {},
+      properties: (schema.properties as Record<string, unknown>) || {},
     };
 
     // Add required fields if present
@@ -267,12 +277,15 @@ export function extractCapabilities(agent: OssaAgent): OssaCapability[] {
         const config = tool.config;
         capabilities.push({
           name: tool.name,
-          description: (config.description as string) || `Capability: ${tool.name}`,
+          description:
+            (config.description as string) || `Capability: ${tool.name}`,
           input_schema: (config.input_schema as Record<string, unknown>) || {
             type: 'object',
             properties: {},
           },
-          output_schema: config.output_schema as Record<string, unknown> | undefined,
+          output_schema: config.output_schema as
+            | Record<string, unknown>
+            | undefined,
         });
       }
     }
@@ -300,7 +313,9 @@ export function validateToolInput(
   }
 
   // Basic type checking for properties
-  const properties = schema.properties as Record<string, { type?: string }> | undefined;
+  const properties = schema.properties as
+    | Record<string, { type?: string }>
+    | undefined;
   if (properties) {
     for (const [key, value] of Object.entries(input)) {
       const propSchema = properties[key];
@@ -310,9 +325,16 @@ export function validateToolInput(
 
         if (expectedType === 'array' && !Array.isArray(value)) {
           errors.push(`Field '${key}' should be an array`);
-        } else if (expectedType === 'object' && (actualType !== 'object' || Array.isArray(value))) {
+        } else if (
+          expectedType === 'object' &&
+          (actualType !== 'object' || Array.isArray(value))
+        ) {
           errors.push(`Field '${key}' should be an object`);
-        } else if (expectedType !== 'array' && expectedType !== 'object' && actualType !== expectedType) {
+        } else if (
+          expectedType !== 'array' &&
+          expectedType !== 'object' &&
+          actualType !== expectedType
+        ) {
           errors.push(
             `Field '${key}' should be type '${expectedType}', got '${actualType}'`
           );

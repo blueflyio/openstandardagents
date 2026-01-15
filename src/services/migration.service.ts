@@ -79,7 +79,10 @@ export class MigrationService {
    * @param targetVersion - Target version (defaults to 'current' which reads from package.json)
    * @returns Migrated manifest
    */
-  async migrate(manifest: unknown, _targetVersion: SchemaVersion = 'current'): Promise<OssaAgent> {
+  async migrate(
+    manifest: unknown,
+    _targetVersion: SchemaVersion = 'current'
+  ): Promise<OssaAgent> {
     const m = manifest as Record<string, unknown>;
     const currentApiVersion = this.getCurrentApiVersion();
 
@@ -138,8 +141,11 @@ export class MigrationService {
     if (!migrated.metadata.annotations) {
       migrated.metadata.annotations = {};
     }
-    migrated.metadata.annotations['ossa.io/migration'] = `${sourceVersion}-to-${currentApiVersion}`;
-    migrated.metadata.annotations['ossa.io/migrated-date'] = new Date().toISOString().split('T')[0];
+    migrated.metadata.annotations['ossa.io/migration'] =
+      `${sourceVersion}-to-${currentApiVersion}`;
+    migrated.metadata.annotations['ossa.io/migrated-date'] = new Date()
+      .toISOString()
+      .split('T')[0];
 
     // Enhance LLM config with new features
     if (migrated.spec) {
@@ -164,7 +170,10 @@ export class MigrationService {
         // Normalize temperature/maxTokens field names
         if (llm.parameters) {
           const params = llm.parameters as Record<string, unknown>;
-          if (params.temperature !== undefined && llm.temperature === undefined) {
+          if (
+            params.temperature !== undefined &&
+            llm.temperature === undefined
+          ) {
             llm.temperature = params.temperature;
           }
           if (params.max_tokens !== undefined && llm.maxTokens === undefined) {
@@ -269,21 +278,29 @@ export class MigrationService {
     if (spec?.llm) {
       const llm = spec.llm as Record<string, unknown>;
       if (llm.fallback_models) {
-        summary.addedFeatures.push('Fallback models for multi-provider resilience');
+        summary.addedFeatures.push(
+          'Fallback models for multi-provider resilience'
+        );
       }
       if (llm.retry_config) {
-        summary.addedFeatures.push('Retry configuration with exponential backoff');
+        summary.addedFeatures.push(
+          'Retry configuration with exponential backoff'
+        );
       }
       if (llm.cost_tracking) {
         summary.addedFeatures.push('Cost tracking with budget alerts');
       }
       if (String(llm.provider).includes('${')) {
-        summary.addedFeatures.push('Runtime-configurable LLM via environment variables');
+        summary.addedFeatures.push(
+          'Runtime-configurable LLM via environment variables'
+        );
       }
     }
 
     if (spec?.safety) {
-      summary.addedFeatures.push('Safety configuration (content filtering, guardrails)');
+      summary.addedFeatures.push(
+        'Safety configuration (content filtering, guardrails)'
+      );
     }
 
     if (spec?.observability) {
@@ -351,7 +368,11 @@ export class MigrationService {
     };
 
     // Convert tags to labels
-    if (v1.agent.tags && Array.isArray(v1.agent.tags) && migrated.metadata?.labels) {
+    if (
+      v1.agent.tags &&
+      Array.isArray(v1.agent.tags) &&
+      migrated.metadata?.labels
+    ) {
       v1.agent.tags.forEach((tag) => {
         if (typeof tag === 'string') {
           migrated.metadata!.labels![tag] = 'true';
@@ -362,7 +383,9 @@ export class MigrationService {
     // Copy metadata
     if (v1.metadata && migrated.metadata?.annotations) {
       if (v1.metadata.authors) {
-        migrated.metadata.annotations.author = Array.isArray(v1.metadata.authors)
+        migrated.metadata.annotations.author = Array.isArray(
+          v1.metadata.authors
+        )
           ? v1.metadata.authors.join(', ')
           : String(v1.metadata.authors);
       }
@@ -370,7 +393,9 @@ export class MigrationService {
         migrated.metadata.annotations.license = String(v1.metadata.license);
       }
       if (v1.metadata.repository) {
-        migrated.metadata.annotations.repository = String(v1.metadata.repository);
+        migrated.metadata.annotations.repository = String(
+          v1.metadata.repository
+        );
       }
     }
 
@@ -386,12 +411,15 @@ export class MigrationService {
 
     // Convert LLM config with normalization
     if (v1.agent.llm && migrated.spec) {
-      const llm = v1.agent.llm as Record<string, unknown>;
+      const llm = v1.agent.llm;
       migrated.spec.llm = {
-        provider: (llm.provider === 'auto' ? 'openai' : String(llm.provider || 'openai')) as string,
+        provider:
+          llm.provider === 'auto' ? 'openai' : String(llm.provider || 'openai'),
         model: String(llm.model || ''),
-        temperature: typeof llm.temperature === 'number' ? llm.temperature : undefined,
-        maxTokens: typeof llm.maxTokens === 'number' ? llm.maxTokens : undefined,
+        temperature:
+          typeof llm.temperature === 'number' ? llm.temperature : undefined,
+        maxTokens:
+          typeof llm.maxTokens === 'number' ? llm.maxTokens : undefined,
         topP: typeof llm.topP === 'number' ? llm.topP : undefined,
       };
     }
@@ -403,7 +431,9 @@ export class MigrationService {
       migrated.spec &&
       migrated.metadata
     ) {
-      const mcpRecord = v1.agent.integration?.mcp as Record<string, unknown> | undefined;
+      const mcpRecord = v1.agent.integration?.mcp as
+        | Record<string, unknown>
+        | undefined;
       const metadataName = migrated.metadata.name;
       migrated.spec.tools = v1.agent.capabilities.map((cap) => ({
         type: 'mcp',
@@ -421,9 +451,7 @@ export class MigrationService {
 
     // Handle observability with proper structure
     if ((v1.agent.observability || v1.agent.monitoring) && migrated.spec) {
-      const obs = (v1.agent.observability || v1.agent.monitoring) as
-        | Record<string, unknown>
-        | undefined;
+      const obs = v1.agent.observability || v1.agent.monitoring;
       if (obs) {
         const metricsValue = obs.metrics;
         let normalizedMetrics: Record<string, unknown>;
@@ -488,7 +516,11 @@ export class MigrationService {
     }
 
     // kagent extension
-    if (v1.agent.runtime?.type === 'k8s' && migrated.spec && migrated.metadata) {
+    if (
+      v1.agent.runtime?.type === 'k8s' &&
+      migrated.spec &&
+      migrated.metadata
+    ) {
       const specRecord = migrated.spec as Record<string, unknown>;
       if (!specRecord.extensions) {
         specRecord.extensions = {};
@@ -508,7 +540,8 @@ export class MigrationService {
       if (!specRecord.extensions) {
         specRecord.extensions = {};
       }
-      (specRecord.extensions as Record<string, unknown>).runtime = v1.agent.runtime;
+      (specRecord.extensions as Record<string, unknown>).runtime =
+        v1.agent.runtime;
     }
 
     // Integration extension
@@ -517,7 +550,8 @@ export class MigrationService {
       if (!specRecord.extensions) {
         specRecord.extensions = {};
       }
-      (specRecord.extensions as Record<string, unknown>).integration = v1.agent.integration;
+      (specRecord.extensions as Record<string, unknown>).integration =
+        v1.agent.integration;
     }
 
     return migrated;
@@ -525,9 +559,13 @@ export class MigrationService {
 
   private detectDomain(agent: Record<string, unknown>): string {
     const tags = Array.isArray(agent.tags) ? agent.tags : [];
-    const text = [agent.id, agent.name, agent.description, ...tags].join(' ').toLowerCase();
-    if (text.includes('infrastructure') || text.includes('k8s')) return 'infrastructure';
-    if (text.includes('security') || text.includes('compliance')) return 'security';
+    const text = [agent.id, agent.name, agent.description, ...tags]
+      .join(' ')
+      .toLowerCase();
+    if (text.includes('infrastructure') || text.includes('k8s'))
+      return 'infrastructure';
+    if (text.includes('security') || text.includes('compliance'))
+      return 'security';
     if (text.includes('data') || text.includes('vector')) return 'data';
     if (text.includes('chat')) return 'conversation';
     if (text.includes('workflow')) return 'automation';
@@ -536,7 +574,8 @@ export class MigrationService {
 
   private detectSubdomain(agent: Record<string, unknown>): string {
     const text = [agent.id, agent.name].join(' ').toLowerCase();
-    if (text.includes('kubernetes') || text.includes('k8s')) return 'kubernetes';
+    if (text.includes('kubernetes') || text.includes('k8s'))
+      return 'kubernetes';
     if (text.includes('protocol') || text.includes('mcp')) return 'protocol';
     if (text.includes('workflow')) return 'workflow';
     return 'general';

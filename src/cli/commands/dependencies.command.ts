@@ -27,7 +27,10 @@ import {
  * Validate all agent dependencies in matching files
  */
 const validateDependenciesCommand = new Command('validate')
-  .argument('<pattern>', 'Glob pattern for agent manifests (e.g., .gitlab/agents/**/*.ossa.yaml)')
+  .argument(
+    '<pattern>',
+    'Glob pattern for agent manifests (e.g., .gitlab/agents/**/*.ossa.yaml)'
+  )
   .option('-v, --verbose', 'Verbose output with detailed validation info')
   .description('Validate all agent dependencies')
   .action(async (pattern: string, options: { verbose?: boolean }) => {
@@ -36,10 +39,15 @@ const validateDependenciesCommand = new Command('validate')
       printPatternInfo(pattern, 0);
 
       // Load all manifests using shared utility
-      const { loaded, errors } = await loadManifestsByGlob<AgentManifest>(pattern, { verbose: options.verbose });
+      const { loaded, errors } = await loadManifestsByGlob<AgentManifest>(
+        pattern,
+        { verbose: options.verbose }
+      );
 
       // Update pattern info with actual count
-      console.log(chalk.gray(`Found ${loaded.length + errors.length} manifests\n`));
+      console.log(
+        chalk.gray(`Found ${loaded.length + errors.length} manifests\n`)
+      );
 
       if (loaded.length === 0) {
         exitNoManifestsFound('matching pattern');
@@ -56,7 +64,9 @@ const validateDependenciesCommand = new Command('validate')
         console.log(chalk.green('\n[PASS] All dependencies are valid!\n'));
         if (options.verbose) {
           console.log(chalk.gray(`Validated ${manifests.length} agents`));
-          console.log(chalk.gray(`Total dependencies: ${countDependencies(manifests)}`));
+          console.log(
+            chalk.gray(`Total dependencies: ${countDependencies(manifests)}`)
+          );
         }
         process.exit(0);
       } else {
@@ -68,7 +78,11 @@ const validateDependenciesCommand = new Command('validate')
           for (const conflict of result.conflicts) {
             console.log(chalk.red(`\n  ${conflict.dependency}:`));
             for (const version of conflict.conflictingVersions) {
-              console.log(chalk.gray(`    ${version.requiredBy} requires ${version.version}`));
+              console.log(
+                chalk.gray(
+                  `    ${version.requiredBy} requires ${version.version}`
+                )
+              );
             }
           }
           console.log();
@@ -88,7 +102,9 @@ const validateDependenciesCommand = new Command('validate')
           console.log(chalk.yellow('[WARN]  Missing Dependencies:'));
           for (const missing of result.missingDependencies) {
             console.log(
-              chalk.red(`    ${missing.agent} requires ${missing.dependency} (not found)`)
+              chalk.red(
+                `    ${missing.agent} requires ${missing.dependency} (not found)`
+              )
             );
           }
           console.log();
@@ -98,7 +114,9 @@ const validateDependenciesCommand = new Command('validate')
         if (result.contractViolations.length > 0) {
           console.log(chalk.yellow('[WARN]  Contract Violations:'));
           for (const violation of result.contractViolations) {
-            console.log(chalk.red(`    ${violation.agent} → ${violation.dependency}:`));
+            console.log(
+              chalk.red(`    ${violation.agent} → ${violation.dependency}:`)
+            );
             console.log(chalk.gray(`      ${violation.violation}`));
           }
           console.log();
@@ -123,7 +141,9 @@ const checkConflictsCommand = new Command('check-conflicts')
       console.log(chalk.blue(`\n[CHECK] Checking for version conflicts...\n`));
 
       // Load manifests using shared utility
-      const { loaded } = await loadManifestsByGlob<AgentManifest>(pattern, { silent: true });
+      const { loaded } = await loadManifestsByGlob<AgentManifest>(pattern, {
+        silent: true,
+      });
       const manifests = loaded.map((l) => l.manifest);
 
       // Check conflicts
@@ -134,11 +154,19 @@ const checkConflictsCommand = new Command('check-conflicts')
         console.log(chalk.green('[PASS] No version conflicts found!\n'));
         process.exit(0);
       } else {
-        console.log(chalk.red(`[FAIL] Found ${result.conflicts.length} version conflicts:\n`));
+        console.log(
+          chalk.red(
+            `[FAIL] Found ${result.conflicts.length} version conflicts:\n`
+          )
+        );
         for (const conflict of result.conflicts) {
           console.log(chalk.yellow(`  ${conflict.dependency}:`));
           for (const version of conflict.conflictingVersions) {
-            console.log(chalk.gray(`    ${version.requiredBy} requires ${version.version}`));
+            console.log(
+              chalk.gray(
+                `    ${version.requiredBy} requires ${version.version}`
+              )
+            );
           }
           console.log();
         }
@@ -158,68 +186,93 @@ const graphCommand = new Command('graph')
   .option('-o, --output <file>', 'Output file (default: stdout)')
   .option('-f, --format <format>', 'Output format: dot, json', 'dot')
   .description('Generate dependency graph visualization')
-  .action(async (pattern: string, options: { output?: string; format?: string }) => {
-    try {
-      // Load manifests using shared utility
-      const { loaded } = await loadManifestsByGlob<AgentManifest>(pattern, { silent: true });
+  .action(
+    async (pattern: string, options: { output?: string; format?: string }) => {
+      try {
+        // Load manifests using shared utility
+        const { loaded } = await loadManifestsByGlob<AgentManifest>(pattern, {
+          silent: true,
+        });
 
-      if (loaded.length === 0) {
-        exitNoManifestsFound();
-      }
+        if (loaded.length === 0) {
+          exitNoManifestsFound();
+        }
 
-      const manifests = loaded.map((l) => l.manifest);
+        const manifests = loaded.map((l) => l.manifest);
 
-      // Generate graph
-      const validator = container.get(DependenciesValidator);
+        // Generate graph
+        const validator = container.get(DependenciesValidator);
 
-      if (options.format === 'json') {
-        // Generate JSON format
-        const graph = {
-          nodes: manifests.map((m) => ({
-            id: m.metadata.name,
-            version: m.metadata.version || 'unknown',
-          })),
-          edges: [] as Array<{ from: string; to: string; version?: string; required?: boolean }>,
-        };
+        if (options.format === 'json') {
+          // Generate JSON format
+          const graph = {
+            nodes: manifests.map((m) => ({
+              id: m.metadata.name,
+              version: m.metadata.version || 'unknown',
+            })),
+            edges: [] as Array<{
+              from: string;
+              to: string;
+              version?: string;
+              required?: boolean;
+            }>,
+          };
 
-        for (const manifest of manifests) {
-          const deps = manifest.spec.dependencies?.agents || [];
-          for (const dep of deps) {
-            graph.edges.push({
-              from: manifest.metadata.name,
-              to: dep.name,
-              version: dep.version,
-              required: dep.required,
-            });
+          for (const manifest of manifests) {
+            const deps = manifest.spec.dependencies?.agents || [];
+            for (const dep of deps) {
+              graph.edges.push({
+                from: manifest.metadata.name,
+                to: dep.name,
+                version: dep.version,
+                required: dep.required,
+              });
+            }
           }
+
+          if (options.output) {
+            fs.writeFileSync(
+              options.output,
+              JSON.stringify(graph, null, 2),
+              'utf-8'
+            );
+            console.log(
+              chalk.green(
+                `\n[PASS] Dependency graph written to ${options.output}`
+              )
+            );
+          } else {
+            outputJSON(graph);
+          }
+          process.exit(0);
         }
 
+        // DOT format
+        const output = validator.generateDependencyGraph(manifests);
+
+        // Output DOT format
         if (options.output) {
-          fs.writeFileSync(options.output, JSON.stringify(graph, null, 2), 'utf-8');
-          console.log(chalk.green(`\n[PASS] Dependency graph written to ${options.output}`));
+          fs.writeFileSync(options.output, output, 'utf-8');
+          console.log(
+            chalk.green(
+              `\n[PASS] Dependency graph written to ${options.output}`
+            )
+          );
+          console.log(
+            chalk.gray(
+              `\nGenerate PNG: dot -Tpng ${options.output} -o graph.png\n`
+            )
+          );
         } else {
-          outputJSON(graph);
+          console.log(output);
         }
+
         process.exit(0);
+      } catch (error) {
+        handleCommandError(error);
       }
-
-      // DOT format
-      const output = validator.generateDependencyGraph(manifests);
-
-      // Output DOT format
-      if (options.output) {
-        fs.writeFileSync(options.output, output, 'utf-8');
-        console.log(chalk.green(`\n[PASS] Dependency graph written to ${options.output}`));
-        console.log(chalk.gray(`\nGenerate PNG: dot -Tpng ${options.output} -o graph.png\n`));
-      } else {
-        console.log(output);
-      }
-
-      process.exit(0);
-    } catch (error) {
-      handleCommandError(error);
     }
-  });
+  );
 
 /**
  * ossa dependencies deploy-order <pattern>
@@ -234,7 +287,9 @@ const deployOrderCommand = new Command('deploy-order')
       console.log(chalk.blue(`\n[CHECK] Calculating deployment order...\n`));
 
       // Load manifests using shared utility
-      const { loaded } = await loadManifestsByGlob<AgentManifest>(pattern, { silent: true });
+      const { loaded } = await loadManifestsByGlob<AgentManifest>(pattern, {
+        silent: true,
+      });
 
       if (loaded.length === 0) {
         exitNoManifestsFound();
@@ -258,7 +313,9 @@ const deployOrderCommand = new Command('deploy-order')
           total_batches: batches.length,
         });
       } else {
-        console.log(chalk.green(`[PASS] Deployment order (${batches.length} batches):\n`));
+        console.log(
+          chalk.green(`[PASS] Deployment order (${batches.length} batches):\n`)
+        );
         for (let i = 0; i < batches.length; i++) {
           const batch = batches[i];
           console.log(chalk.yellow(`Batch ${i + 1}:`));
