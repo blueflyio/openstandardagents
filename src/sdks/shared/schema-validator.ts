@@ -70,7 +70,9 @@ export class SchemaValidator {
     if (!ajvAvailable || !this.ajv) {
       return {
         valid: false,
-        errors: ['JSON Schema validation requires ajv package. Install with: npm install ajv ajv-formats'],
+        errors: [
+          'JSON Schema validation requires ajv package. Install with: npm install ajv ajv-formats',
+        ],
         warnings: [],
       };
     }

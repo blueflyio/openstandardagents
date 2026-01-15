@@ -1,12 +1,12 @@
 /**
  * OSSA Default Configuration
- * 
+ *
  * Centralized default values for all OSSA CLI commands.
  * All defaults can be overridden via environment variables.
- * 
+ *
  * DRY: Single source of truth for all default values
  * SOLID: Configuration separated from business logic
- * 
+ *
  * @module config/defaults
  */
 
@@ -130,9 +130,10 @@ export function getAgentTypeConfigs(): Record<string, AgentTypeConfig> {
  * Template supports {name} placeholder
  */
 export function getDefaultRoleTemplate(agentName?: string): string {
-  const template = process.env.OSSA_DEFAULT_ROLE_TEMPLATE || 
+  const template =
+    process.env.OSSA_DEFAULT_ROLE_TEMPLATE ||
     'You are {name}, a helpful AI agent.';
-  
+
   if (agentName) {
     return template.replace('{name}', agentName);
   }
@@ -145,9 +146,10 @@ export function getDefaultRoleTemplate(agentName?: string): string {
  * Template supports {name} placeholder
  */
 export function getDefaultDescriptionTemplate(agentName: string): string {
-  const template = process.env.OSSA_DEFAULT_DESCRIPTION_TEMPLATE || 
+  const template =
+    process.env.OSSA_DEFAULT_DESCRIPTION_TEMPLATE ||
     '{name} - OSSA-compliant agent';
-  
+
   return template.replace('{name}', agentName);
 }
 
@@ -158,7 +160,10 @@ export function getDefaultDescriptionTemplate(agentName: string): string {
 export function getRequiredWorkspaceDirs(): string[] {
   const envDirs = process.env.OSSA_REQUIRED_WORKSPACE_DIRS;
   if (envDirs) {
-    return envDirs.split(',').map(d => d.trim()).filter(Boolean);
+    return envDirs
+      .split(',')
+      .map((d) => d.trim())
+      .filter(Boolean);
   }
   return ['registry', 'policies', 'orchestration', 'shared-context', 'logs'];
 }
@@ -176,7 +181,9 @@ export function getWorkspaceRegistryPath(): string {
  * Can be overridden via OSSA_WORKSPACE_POLICY_PATH env var
  */
 export function getWorkspacePolicyPath(): string {
-  return process.env.OSSA_WORKSPACE_POLICY_PATH || 'policies/tool-allowlist.yaml';
+  return (
+    process.env.OSSA_WORKSPACE_POLICY_PATH || 'policies/tool-allowlist.yaml'
+  );
 }
 
 /**
@@ -207,13 +214,13 @@ export function getMaxDNS1123Length(): number {
 export function getDefaultDiscoveryPatterns(): string[] {
   const envPatterns = process.env.OSSA_DISCOVERY_PATTERNS;
   if (envPatterns) {
-    return envPatterns.split(',').map(p => p.trim()).filter(Boolean);
+    return envPatterns
+      .split(',')
+      .map((p) => p.trim())
+      .filter(Boolean);
   }
   const outputDir = getDefaultOutputDir();
-  return [
-    `${outputDir}/**/*.ossa.yaml`,
-    `${outputDir}/**/manifest.ossa.yaml`,
-  ];
+  return [`${outputDir}/**/*.ossa.yaml`, `${outputDir}/**/manifest.ossa.yaml`];
 }
 
 /**

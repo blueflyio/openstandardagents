@@ -585,7 +585,9 @@ export class AnthropicAdapter {
             const lastBlock = responseContent[responseContent.length - 1];
             if (lastBlock && lastBlock.type === 'tool_use') {
               const currentInput = JSON.stringify(lastBlock.input || {});
-              lastBlock.input = JSON.parse(currentInput + event.delta.partial_json);
+              lastBlock.input = JSON.parse(
+                currentInput + event.delta.partial_json
+              );
             }
           }
         } else if (event.type === 'message_delta') {

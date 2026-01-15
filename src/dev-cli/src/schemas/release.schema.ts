@@ -1,6 +1,6 @@
 /**
  * Release Schema
- * 
+ *
  * Zod schemas for release management
  * SOLID: Single Responsibility - Schema definitions only
  * DRY: Single source of truth for release data structures

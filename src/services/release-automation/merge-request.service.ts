@@ -43,7 +43,10 @@ export class MergeRequestService extends BaseCrudService<
   private gitlab: InstanceType<typeof Gitlab>;
   private projectId: string | number;
 
-  constructor(gitlabToken: string, projectId: string | number = process.env.CI_PROJECT_ID || '') {
+  constructor(
+    gitlabToken: string,
+    projectId: string | number = process.env.CI_PROJECT_ID || ''
+  ) {
     super();
     this.gitlab = new Gitlab({ token: gitlabToken });
     this.projectId = projectId;
@@ -82,7 +85,9 @@ export class MergeRequestService extends BaseCrudService<
         updatedAt: String(mr.updatedAt),
         mergedAt: mr.mergedAt ? String(mr.mergedAt) : null,
         labels: Array.isArray(mr.labels)
-          ? mr.labels.map((l: unknown) => (typeof l === 'string' ? l : String(l)))
+          ? mr.labels.map((l: unknown) =>
+              typeof l === 'string' ? l : String(l)
+            )
           : [],
         approvals,
       };
@@ -101,7 +106,10 @@ export class MergeRequestService extends BaseCrudService<
     this.validateId(id);
 
     try {
-      const mr = await this.gitlab.MergeRequests.show(this.projectId, Number(id));
+      const mr = await this.gitlab.MergeRequests.show(
+        this.projectId,
+        Number(id)
+      );
 
       const approvals = await this.getApprovals(mr.iid);
 
@@ -117,7 +125,9 @@ export class MergeRequestService extends BaseCrudService<
         updatedAt: String(mr.updatedAt),
         mergedAt: mr.mergedAt ? String(mr.mergedAt) : null,
         labels: Array.isArray(mr.labels)
-          ? mr.labels.map((l: unknown) => (typeof l === 'string' ? l : String(l)))
+          ? mr.labels.map((l: unknown) =>
+              typeof l === 'string' ? l : String(l)
+            )
           : [],
         approvals,
       };
@@ -139,7 +149,10 @@ export class MergeRequestService extends BaseCrudService<
   /**
    * Update merge request
    */
-  async update(id: string | number, input: UpdateMergeRequestRequest): Promise<MergeRequest> {
+  async update(
+    id: string | number,
+    input: UpdateMergeRequestRequest
+  ): Promise<MergeRequest> {
     this.validateId(id);
     const validated = this.validateUpdate(input);
 
@@ -148,12 +161,16 @@ export class MergeRequestService extends BaseCrudService<
       this.throwNotFound('MergeRequest', id);
     }
 
-    const updated = await this.gitlab.MergeRequests.edit(this.projectId, Number(id), {
-      title: validated.title,
-      description: validated.description,
-      stateEvent: validated.state,
-      labels: validated.labels?.join(','),
-    });
+    const updated = await this.gitlab.MergeRequests.edit(
+      this.projectId,
+      Number(id),
+      {
+        title: validated.title,
+        description: validated.description,
+        stateEvent: validated.state,
+        labels: validated.labels?.join(','),
+      }
+    );
 
     const approvals = await this.getApprovals(updated.iid);
 
@@ -169,7 +186,9 @@ export class MergeRequestService extends BaseCrudService<
       updatedAt: String(updated.updatedAt),
       mergedAt: updated.mergedAt ? String(updated.mergedAt) : null,
       labels: Array.isArray(updated.labels)
-        ? updated.labels.map((l: unknown) => (typeof l === 'string' ? l : String(l)))
+        ? updated.labels.map((l: unknown) =>
+            typeof l === 'string' ? l : String(l)
+          )
         : [],
       approvals,
     };
@@ -223,12 +242,15 @@ export class MergeRequestService extends BaseCrudService<
             sourceBranch: String(mr.sourceBranch),
             targetBranch: String(mr.targetBranch),
             state: mr.state as MergeRequest['state'],
-            mergeStatus: mr.mergeStatus as string as MergeRequest['mergeStatus'],
+            mergeStatus:
+              mr.mergeStatus as string as MergeRequest['mergeStatus'],
             createdAt: String(mr.createdAt),
             updatedAt: String(mr.updatedAt),
             mergedAt: mr.mergedAt ? String(mr.mergedAt) : null,
             labels: Array.isArray(mr.labels)
-              ? mr.labels.map((l: unknown) => (typeof l === 'string' ? l : String(l)))
+              ? mr.labels.map((l: unknown) =>
+                  typeof l === 'string' ? l : String(l)
+                )
               : [],
             approvals,
           });
@@ -264,8 +286,10 @@ export class MergeRequestService extends BaseCrudService<
     try {
       const mr = await this.gitlab.MergeRequests.show(this.projectId, mrId);
       // GitLab API may include approval info in MR object
-      const approvalsRequired = (mr as { approvalsRequired?: number }).approvalsRequired || 0;
-      const approvalsLeft = (mr as { approvalsLeft?: number }).approvalsLeft || 0;
+      const approvalsRequired =
+        (mr as { approvalsRequired?: number }).approvalsRequired || 0;
+      const approvalsLeft =
+        (mr as { approvalsLeft?: number }).approvalsLeft || 0;
 
       return {
         required: approvalsRequired,

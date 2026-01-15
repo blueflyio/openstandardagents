@@ -33,7 +33,9 @@ const PlatformPrioritySchema = z.enum(['critical', 'high', 'medium', 'low']);
 const PlatformSchema = z.object({
   name: z.string().min(1).max(100),
   priority: PlatformPrioritySchema,
-  deadline: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Must be YYYY-MM-DD format'),
+  deadline: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Must be YYYY-MM-DD format'),
   requirements: z.record(z.string(), z.unknown()).optional().default({}),
 });
 
@@ -65,17 +67,57 @@ export interface IExtensionTeamKickoffService {
 @injectable()
 export class ExtensionTeamKickoffService implements IExtensionTeamKickoffService {
   private readonly CRITICAL_PLATFORMS: Platform[] = [
-    { name: 'vertex-ai', priority: 'critical', deadline: '2026-02-01', requirements: {} },
-    { name: 'dialogflow', priority: 'critical', deadline: '2026-02-01', requirements: {} },
-    { name: 'autogpt', priority: 'critical', deadline: '2026-02-15', requirements: {} },
-    { name: 'n8n', priority: 'critical', deadline: '2026-02-15', requirements: {} },
+    {
+      name: 'vertex-ai',
+      priority: 'critical',
+      deadline: '2026-02-01',
+      requirements: {},
+    },
+    {
+      name: 'dialogflow',
+      priority: 'critical',
+      deadline: '2026-02-01',
+      requirements: {},
+    },
+    {
+      name: 'autogpt',
+      priority: 'critical',
+      deadline: '2026-02-15',
+      requirements: {},
+    },
+    {
+      name: 'n8n',
+      priority: 'critical',
+      deadline: '2026-02-15',
+      requirements: {},
+    },
   ];
 
   private readonly HIGH_PRIORITY_PLATFORMS: Platform[] = [
-    { name: 'dspy', priority: 'high', deadline: '2026-03-01', requirements: {} },
-    { name: 'babyagi', priority: 'high', deadline: '2026-03-01', requirements: {} },
-    { name: 'zapier', priority: 'high', deadline: '2026-03-15', requirements: {} },
-    { name: 'salesforce-einstein', priority: 'high', deadline: '2026-03-15', requirements: {} },
+    {
+      name: 'dspy',
+      priority: 'high',
+      deadline: '2026-03-01',
+      requirements: {},
+    },
+    {
+      name: 'babyagi',
+      priority: 'high',
+      deadline: '2026-03-01',
+      requirements: {},
+    },
+    {
+      name: 'zapier',
+      priority: 'high',
+      deadline: '2026-03-15',
+      requirements: {},
+    },
+    {
+      name: 'salesforce-einstein',
+      priority: 'high',
+      deadline: '2026-03-15',
+      requirements: {},
+    },
   ];
 
   private readonly WORKFLOWS_DIR = '.gitlab/agents/workflows';
@@ -123,7 +165,10 @@ export class ExtensionTeamKickoffService implements IExtensionTeamKickoffService
     mkdirSync(this.WORKFLOWS_DIR, { recursive: true });
 
     // Write workflow input file
-    const inputFile = join(this.WORKFLOWS_DIR, `${validatedPlatform.name}-input.json`);
+    const inputFile = join(
+      this.WORKFLOWS_DIR,
+      `${validatedPlatform.name}-input.json`
+    );
     writeFileSync(inputFile, JSON.stringify(workflowInput, null, 2), 'utf-8');
   }
 

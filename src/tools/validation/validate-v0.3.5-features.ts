@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 /**
  * Validate OSSA v0.3.5 specific features
- * 
+ *
  * Validates:
  * - Completion signals configuration
  * - Checkpointing configuration
@@ -101,7 +101,10 @@ export class V035FeatureValidator {
       // Validate capability discovery
       if (manifest.extensions?.capabilities) {
         result.features.capability_discovery = true;
-        this.validateCapabilityDiscovery(manifest.extensions.capabilities, result);
+        this.validateCapabilityDiscovery(
+          manifest.extensions.capabilities,
+          result
+        );
       }
 
       // Validate feedback loops
@@ -113,54 +116,89 @@ export class V035FeatureValidator {
       // Validate infrastructure substrate
       if (manifest.spec?.infrastructure || manifest.infrastructure) {
         result.features.infrastructure = true;
-        this.validateInfrastructure(manifest.spec?.infrastructure || manifest.infrastructure, result);
+        this.validateInfrastructure(
+          manifest.spec?.infrastructure || manifest.infrastructure,
+          result
+        );
       }
 
       result.valid = result.errors.length === 0;
     } catch (error) {
       result.valid = false;
-      result.errors.push(`Failed to parse manifest: ${error instanceof Error ? error.message : String(error)}`);
+      result.errors.push(
+        `Failed to parse manifest: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
 
     return result;
   }
 
-  private validateCompletionSignals(completion: any, result: ValidationResult): void {
+  private validateCompletionSignals(
+    completion: any,
+    result: ValidationResult
+  ): void {
     if (!completion.default_signal) {
-      result.warnings.push('completion.default_signal not specified, using "complete"');
+      result.warnings.push(
+        'completion.default_signal not specified, using "complete"'
+      );
     }
 
-    const validSignals = ['continue', 'complete', 'blocked', 'escalate', 'checkpoint'];
-    if (completion.default_signal && !validSignals.includes(completion.default_signal)) {
-      result.errors.push(`Invalid completion.default_signal: ${completion.default_signal}`);
+    const validSignals = [
+      'continue',
+      'complete',
+      'blocked',
+      'escalate',
+      'checkpoint',
+    ];
+    if (
+      completion.default_signal &&
+      !validSignals.includes(completion.default_signal)
+    ) {
+      result.errors.push(
+        `Invalid completion.default_signal: ${completion.default_signal}`
+      );
     }
 
     if (completion.signals) {
       for (const signal of completion.signals) {
         if (!validSignals.includes(signal.signal)) {
-          result.errors.push(`Invalid signal in completion.signals: ${signal.signal}`);
+          result.errors.push(
+            `Invalid signal in completion.signals: ${signal.signal}`
+          );
         }
         if (signal.condition && typeof signal.condition !== 'string') {
-          result.errors.push('completion.signals[].condition must be a string expression');
+          result.errors.push(
+            'completion.signals[].condition must be a string expression'
+          );
         }
       }
     }
   }
 
-  private validateCheckpointing(checkpointing: any, result: ValidationResult): void {
+  private validateCheckpointing(
+    checkpointing: any,
+    result: ValidationResult
+  ): void {
     if (checkpointing.enabled === false) {
       return; // Checkpointing disabled, skip validation
     }
 
     const validIntervals = ['iteration', 'time', 'manual'];
-    if (checkpointing.interval && !validIntervals.includes(checkpointing.interval)) {
-      result.errors.push(`Invalid checkpointing.interval: ${checkpointing.interval}`);
+    if (
+      checkpointing.interval &&
+      !validIntervals.includes(checkpointing.interval)
+    ) {
+      result.errors.push(
+        `Invalid checkpointing.interval: ${checkpointing.interval}`
+      );
     }
 
     if (checkpointing.storage) {
       const validBackends = ['agent-brain', 's3', 'local'];
       if (!validBackends.includes(checkpointing.storage.backend)) {
-        result.errors.push(`Invalid checkpointing.storage.backend: ${checkpointing.storage.backend}`);
+        result.errors.push(
+          `Invalid checkpointing.storage.backend: ${checkpointing.storage.backend}`
+        );
       }
     }
   }
@@ -176,16 +214,30 @@ export class V035FeatureValidator {
         result.errors.push('Expert missing required field: id');
       }
       if (!expert.model) {
-        result.errors.push(`Expert ${expert.id || 'unknown'} missing required field: model`);
+        result.errors.push(
+          `Expert ${expert.id || 'unknown'} missing required field: model`
+        );
       }
       if (expert.model && !expert.model.provider) {
-        result.errors.push(`Expert ${expert.id || 'unknown'} model missing provider`);
+        result.errors.push(
+          `Expert ${expert.id || 'unknown'} model missing provider`
+        );
       }
     }
 
-    const validStrategies = ['agent_controlled', 'cost_optimized', 'capability_match', 'hybrid'];
-    if (experts.selection_strategy && !validStrategies.includes(experts.selection_strategy)) {
-      result.errors.push(`Invalid experts.selection_strategy: ${experts.selection_strategy}`);
+    const validStrategies = [
+      'agent_controlled',
+      'cost_optimized',
+      'capability_match',
+      'hybrid',
+    ];
+    if (
+      experts.selection_strategy &&
+      !validStrategies.includes(experts.selection_strategy)
+    ) {
+      result.errors.push(
+        `Invalid experts.selection_strategy: ${experts.selection_strategy}`
+      );
     }
   }
 
@@ -200,7 +252,9 @@ export class V035FeatureValidator {
         result.errors.push('BAT criterion missing required field: dimension');
       }
       if (!criterion.options || !Array.isArray(criterion.options)) {
-        result.errors.push(`BAT criterion ${criterion.dimension || 'unknown'} missing options array`);
+        result.errors.push(
+          `BAT criterion ${criterion.dimension || 'unknown'} missing options array`
+        );
       }
     }
   }
@@ -229,7 +283,9 @@ export class V035FeatureValidator {
     }
 
     if (!spec.flow_schema.initial_state) {
-      result.errors.push('Flow flow_schema missing required field: initial_state');
+      result.errors.push(
+        'Flow flow_schema missing required field: initial_state'
+      );
     }
     if (!spec.flow_schema.states || !Array.isArray(spec.flow_schema.states)) {
       result.errors.push('Flow flow_schema.states must be an array');
@@ -239,11 +295,19 @@ export class V035FeatureValidator {
     }
   }
 
-  private validateCapabilityDiscovery(capabilities: any, result: ValidationResult): void {
+  private validateCapabilityDiscovery(
+    capabilities: any,
+    result: ValidationResult
+  ): void {
     if (capabilities.discovery) {
       const validRegistries = ['agent-mesh', 'mcp-registry', 'local'];
-      if (capabilities.discovery.registry && !validRegistries.includes(capabilities.discovery.registry)) {
-        result.errors.push(`Invalid capabilities.discovery.registry: ${capabilities.discovery.registry}`);
+      if (
+        capabilities.discovery.registry &&
+        !validRegistries.includes(capabilities.discovery.registry)
+      ) {
+        result.errors.push(
+          `Invalid capabilities.discovery.registry: ${capabilities.discovery.registry}`
+        );
       }
     }
   }
@@ -251,13 +315,21 @@ export class V035FeatureValidator {
   private validateFeedbackLoops(feedback: any, result: ValidationResult): void {
     if (feedback.learning) {
       const validStrategies = ['reinforcement', 'supervised', 'unsupervised'];
-      if (feedback.learning.strategy && !validStrategies.includes(feedback.learning.strategy)) {
-        result.errors.push(`Invalid feedback.learning.strategy: ${feedback.learning.strategy}`);
+      if (
+        feedback.learning.strategy &&
+        !validStrategies.includes(feedback.learning.strategy)
+      ) {
+        result.errors.push(
+          `Invalid feedback.learning.strategy: ${feedback.learning.strategy}`
+        );
       }
     }
   }
 
-  private validateInfrastructure(infrastructure: any, result: ValidationResult): void {
+  private validateInfrastructure(
+    infrastructure: any,
+    result: ValidationResult
+  ): void {
     if (!Array.isArray(infrastructure)) {
       result.errors.push('infrastructure must be an array');
       return;
@@ -268,39 +340,60 @@ export class V035FeatureValidator {
         result.errors.push('Infrastructure entry missing required field: type');
       }
       if (!infra.hostname) {
-        result.errors.push('Infrastructure entry missing required field: hostname');
+        result.errors.push(
+          'Infrastructure entry missing required field: hostname'
+        );
       }
     }
   }
 }
 
-// CLI interface
-if (import.meta.url === `file://${process.argv[1]}`) {
-  const validator = new V035FeatureValidator();
-  const manifestPath = process.argv[2] || 'examples/forward-thinking-agent.ossa.yaml';
-  const result = validator.validate(manifestPath);
+// CLI interface - only execute when run directly (not imported)
+// Skip execution in test environments to avoid import.meta parsing issues in Jest
+if (
+  typeof process !== 'undefined' &&
+  process.env.NODE_ENV !== 'test' &&
+  !process.env.JEST_WORKER_ID
+) {
+  // Use eval to avoid Jest parsing import.meta.url at parse time
+  // This allows the code to be parsed by Jest without syntax errors
+  const shouldRunCLI = (() => {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-implied-eval
+      return eval('typeof import.meta !== "undefined" && import.meta.url === `file://${process.argv[1]}`');
+    } catch {
+      return false;
+    }
+  })();
 
-  console.log('🔍 OSSA v0.3.5 Feature Validation\n');
-  console.log(`Manifest: ${manifestPath}\n`);
+  if (shouldRunCLI) {
+    const validator = new V035FeatureValidator();
+    const manifestPath =
+      process.argv[2] || 'examples/forward-thinking-agent.ossa.yaml';
+    const result = validator.validate(manifestPath);
 
-  if (result.valid) {
-    console.log('✅ Validation passed!\n');
-  } else {
-    console.log('❌ Validation failed:\n');
-    result.errors.forEach(err => console.log(`  • ${err}`));
+    console.log('🔍 OSSA v0.3.5 Feature Validation\n');
+    console.log(`Manifest: ${manifestPath}\n`);
+
+    if (result.valid) {
+      console.log('✅ Validation passed!\n');
+    } else {
+      console.log('❌ Validation failed:\n');
+      result.errors.forEach((err) => console.log(`  • ${err}`));
+    }
+
+    if (result.warnings.length > 0) {
+      console.log('\n⚠️  Warnings:');
+      result.warnings.forEach((warn) => console.log(`  • ${warn}`));
+    }
+
+    console.log('\n📊 Features Detected:');
+    Object.entries(result.features).forEach(([feature, detected]) => {
+      console.log(`  ${detected ? '✅' : '❌'} ${feature}`);
+    });
+
+    process.exit(result.valid ? 0 : 1);
   }
-
-  if (result.warnings.length > 0) {
-    console.log('\n⚠️  Warnings:');
-    result.warnings.forEach(warn => console.log(`  • ${warn}`));
-  }
-
-  console.log('\n📊 Features Detected:');
-  Object.entries(result.features).forEach(([feature, detected]) => {
-    console.log(`  ${detected ? '✅' : '❌'} ${feature}`);
-  });
-
-  process.exit(result.valid ? 0 : 1);
 }
 
 // Export already defined above

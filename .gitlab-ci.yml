@@ -163,11 +163,34 @@ validate:ossa-templates:
   script:
     - echo "Validating OSSA template manifests..."
     - |
+      FAILED=0
       for f in examples/ossa-templates/*.ossa.yaml; do
         echo "Validating $f..."
-        npx ajv-cli validate -s spec/v0.3.3/ossa-0.3.3.schema.json --strict=false --allow-union-types -d "$f"
+        # Detect schema version from apiVersion in file
+        API_VERSION=$(grep -E "^apiVersion:" "$f" | head -1 | sed -E 's/.*v([0-9]+\.[0-9]+\.[0-9]+).*/\1/' || echo "")
+        if [ -z "$API_VERSION" ]; then
+          echo "WARNING: Could not detect apiVersion in $f, using v0.3.4"
+          API_VERSION="0.3.4"
+        fi
+        SCHEMA_FILE="spec/v${API_VERSION}/ossa-${API_VERSION}.schema.json"
+        if [ ! -f "$SCHEMA_FILE" ]; then
+          echo "ERROR: Schema file not found: $SCHEMA_FILE"
+          FAILED=$((FAILED + 1))
+          continue
+        fi
+        if npx ajv-cli validate -s "$SCHEMA_FILE" --strict=false --allow-union-types -d "$f" >/dev/null 2>&1; then
+          echo "✓ $f (v${API_VERSION})"
+        else
+          echo "✗ FAILED: $f (v${API_VERSION})"
+          npx ajv-cli validate -s "$SCHEMA_FILE" --strict=false --allow-union-types -d "$f" 2>&1 || true
+          FAILED=$((FAILED + 1))
+        fi
       done
-    - echo "All OSSA template examples valid"
+      if [ $FAILED -gt 0 ]; then
+        echo "ERROR: $FAILED template manifests failed validation"
+        exit 1
+      fi
+      echo "All OSSA template examples valid"
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH =~ /^release\//

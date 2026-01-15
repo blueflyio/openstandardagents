@@ -1,6 +1,6 @@
 /**
  * Version Audit Service
- * 
+ *
  * Finds all hardcoded versions (not using 0.3.4 placeholder).
  * SOLID: Single Responsibility - Audit version usage
  * DRY: Reuses Zod schemas from schemas/version.schema.ts
@@ -81,7 +81,10 @@ export class VersionAuditService {
   /**
    * Audit a single file for hardcoded versions
    */
-  private auditFile(filePath: string, relativePath: string): HardcodedVersionFile[] {
+  private auditFile(
+    filePath: string,
+    relativePath: string
+  ): HardcodedVersionFile[] {
     const issues: HardcodedVersionFile[] = [];
 
     try {
@@ -98,7 +101,7 @@ export class VersionAuditService {
         const matches = Array.from(line.matchAll(HARDCODED_VERSION_PATTERN));
         for (const match of matches) {
           const version = match[1];
-          
+
           // Skip if it's a comment or example
           if (this.isCommentOrExample(line)) {
             continue;

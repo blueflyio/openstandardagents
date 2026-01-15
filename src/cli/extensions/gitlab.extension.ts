@@ -27,7 +27,8 @@ export async function loadGitLabExtension(): Promise<OSSAExtension> {
 
   // Load GitLab Agent command
   try {
-    const { gitlabAgentCommand } = await import('../commands/gitlab-agent.command.js');
+    const { gitlabAgentCommand } =
+      await import('../commands/gitlab-agent.command.js');
     commands.push(gitlabAgentCommand);
   } catch {
     // Command not available
@@ -43,7 +44,8 @@ export async function loadGitLabExtension(): Promise<OSSAExtension> {
 
   // Load Catalog command (GitLab Duo)
   try {
-    const { createCatalogCommand } = await import('../commands/catalog/index.js');
+    const { createCatalogCommand } =
+      await import('../commands/catalog/index.js');
     commands.push(createCatalogCommand());
   } catch {
     // Command not available
@@ -52,7 +54,8 @@ export async function loadGitLabExtension(): Promise<OSSAExtension> {
   // Load GitLab-specific release commands (tag, milestone)
   // Note: version commands stay in core CLI
   try {
-    const { gitlabReleaseCommandGroup } = await import('./gitlab-release.commands.js');
+    const { gitlabReleaseCommandGroup } =
+      await import('./gitlab-release.commands.js');
     commands.push(gitlabReleaseCommandGroup);
   } catch {
     // Command not available

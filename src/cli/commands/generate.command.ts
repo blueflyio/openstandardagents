@@ -19,12 +19,16 @@ import chalk from 'chalk';
 import { container } from '../../di-container.js';
 import { GenerationService } from '../../services/generation.service.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
-import { CodegenService, type GeneratorType } from '../../services/codegen/index.js';
+import {
+  CodegenService,
+  type GeneratorType,
+} from '../../services/codegen/index.js';
 import type { AgentTemplate } from '../../types/index.js';
 import { handleCommandError } from '../utils/index.js';
 
-export const generateCommand = new Command('generate')
-  .description('Generate code, types, schemas, and manifests');
+export const generateCommand = new Command('generate').description(
+  'Generate code, types, schemas, and manifests'
+);
 
 // ============================================================================
 // Subcommand: generate agent <type>
@@ -33,7 +37,10 @@ generateCommand
   .command('agent <type>')
   .description('Generate OSSA agent manifest from template')
   .option('-n, --name <name>', 'Agent name', 'My Agent')
-  .option('-i, --id <id>', 'Agent ID (auto-generated from name if not provided)')
+  .option(
+    '-i, --id <id>',
+    'Agent ID (auto-generated from name if not provided)'
+  )
   .option('-d, --description <desc>', 'Agent description')
   .option('-r, --runtime <type>', 'Runtime type (docker, k8s, local)', 'docker')
   .option('-o, --output <file>', 'Output file path', './agent.ossa.yaml')
@@ -159,7 +166,7 @@ generateCommand
       if (files.length === 0) {
         console.log(chalk.yellow('No files found'));
       } else {
-        files.forEach(f => console.log(`  ${f}`));
+        files.forEach((f) => console.log(`  ${f}`));
         console.log(chalk.gray('─'.repeat(50)));
         console.log(`Total: ${chalk.cyan(files.length)} files`);
       }
@@ -195,16 +202,24 @@ generateCommand
         process.exit(0);
       }
 
-      console.log(chalk.red(`✗ Version drift detected in ${report.filesWithOldVersion.length} files:`));
+      console.log(
+        chalk.red(
+          `✗ Version drift detected in ${report.filesWithOldVersion.length} files:`
+        )
+      );
       console.log('');
 
       for (const file of report.filesWithOldVersion) {
         console.log(`  ${chalk.yellow(file.path)}`);
-        console.log(`    Found: ${chalk.red(file.foundVersion)} (expected: ${chalk.green(versionInfo.apiVersion)})`);
+        console.log(
+          `    Found: ${chalk.red(file.foundVersion)} (expected: ${chalk.green(versionInfo.apiVersion)})`
+        );
       }
 
       console.log('');
-      console.log(chalk.yellow('Run `ossa generate sync` to fix version drift'));
+      console.log(
+        chalk.yellow('Run `ossa generate sync` to fix version drift')
+      );
       process.exit(1);
     } catch (error) {
       handleCommandError(error);
@@ -225,7 +240,10 @@ generateCommand
 // ============================================================================
 // Helper: Run generator
 // ============================================================================
-async function runGenerator(type: GeneratorType, dryRun = false): Promise<void> {
+async function runGenerator(
+  type: GeneratorType,
+  dryRun = false
+): Promise<void> {
   try {
     const codegenService = container.get(CodegenService);
     const versionInfo = codegenService.getVersionInfo();
@@ -247,14 +265,15 @@ async function runGenerator(type: GeneratorType, dryRun = false): Promise<void> 
     let totalErrors = 0;
 
     for (const result of results) {
-      const status = result.errors.length > 0 ? chalk.red('✗') : chalk.green('✓');
+      const status =
+        result.errors.length > 0 ? chalk.red('✗') : chalk.green('✓');
       console.log(`${status} ${result.generator}`);
       console.log(`    Updated: ${chalk.cyan(result.filesUpdated)}`);
       console.log(`    Created: ${chalk.cyan(result.filesCreated)}`);
 
       if (result.errors.length > 0) {
         console.log(`    Errors: ${chalk.red(result.errors.length)}`);
-        result.errors.forEach(e => console.log(`      - ${chalk.red(e)}`));
+        result.errors.forEach((e) => console.log(`      - ${chalk.red(e)}`));
       }
 
       totalUpdated += result.filesUpdated;

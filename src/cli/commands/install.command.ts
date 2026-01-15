@@ -10,7 +10,8 @@ export const installCommand = new Command('install')
   .description('Install an agent from the OSSA registry')
   .action(async (agent: string, options: { output?: string }) => {
     try {
-      const token = process.env.GITLAB_TOKEN || process.env.GITLAB_PRIVATE_TOKEN;
+      const token =
+        process.env.GITLAB_TOKEN || process.env.GITLAB_PRIVATE_TOKEN;
       const projectId = process.env.GITLAB_PROJECT_ID || '76265294';
       const gitlabUrl = process.env.GITLAB_URL || 'https://gitlab.com';
       if (!token) {
@@ -18,10 +19,12 @@ export const installCommand = new Command('install')
         process.exit(1);
       }
       const parts = agent.split('@');
-      const agentName = parts.length > 1 ? parts.slice(0, -1).join('@') : parts[0];
+      const agentName =
+        parts.length > 1 ? parts.slice(0, -1).join('@') : parts[0];
       const version = parts.length > 1 ? parts[parts.length - 1] : 'latest';
       console.log(chalk.blue(`Installing ${agentName}@${version}...`));
-      const tagName = version === 'latest' ? agentName : `${agentName}-v${version}`;
+      const tagName =
+        version === 'latest' ? agentName : `${agentName}-v${version}`;
       const response = await axios.get(
         `${gitlabUrl}/api/v4/projects/${projectId}/releases/${encodeURIComponent(tagName)}`,
         {
@@ -33,7 +36,10 @@ export const installCommand = new Command('install')
       const _release = response.data;
       const outputDir = options.output || './agents';
       await fs.mkdir(outputDir, { recursive: true });
-      const outputPath = path.join(outputDir, `${agentName.replace('@ossa/', '')}.yaml`);
+      const outputPath = path.join(
+        outputDir,
+        `${agentName.replace('@ossa/', '')}.yaml`
+      );
       console.log(chalk.green(`✓ Installed to ${outputPath}`));
       console.log(chalk.gray(`  Run: ossa run ${outputPath}`));
     } catch (error: any) {

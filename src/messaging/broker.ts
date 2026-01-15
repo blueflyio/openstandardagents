@@ -35,7 +35,10 @@ export abstract class AbstractMessageBroker implements MessageBroker {
   /**
    * Subscribe to messages on a channel
    */
-  abstract subscribe(subscription: Subscription, handler: MessageHandler): Promise<SubscriptionHandle>;
+  abstract subscribe(
+    subscription: Subscription,
+    handler: MessageHandler
+  ): Promise<SubscriptionHandle>;
 
   /**
    * Unsubscribe from a channel
@@ -119,13 +122,19 @@ export abstract class AbstractMessageBroker implements MessageBroker {
   /**
    * Check if message matches subscription filter
    */
-  protected matchesFilter(message: Message, filter?: Record<string, unknown>): boolean {
+  protected matchesFilter(
+    message: Message,
+    filter?: Record<string, unknown>
+  ): boolean {
     if (!filter) {
       return true;
     }
 
     for (const [key, value] of Object.entries(filter)) {
-      const messagePath = this.getNestedValue(message as unknown as Record<string, unknown>, key);
+      const messagePath = this.getNestedValue(
+        message as unknown as Record<string, unknown>,
+        key
+      );
       if (messagePath !== value) {
         return false;
       }
@@ -137,9 +146,14 @@ export abstract class AbstractMessageBroker implements MessageBroker {
   /**
    * Get nested value from object using dot notation
    */
-  protected getNestedValue(obj: Record<string, unknown>, path: string): unknown {
+  protected getNestedValue(
+    obj: Record<string, unknown>,
+    path: string
+  ): unknown {
     return path.split('.').reduce((current: unknown, key: string) => {
-      return current && typeof current === 'object' ? (current as Record<string, unknown>)[key] : undefined;
+      return current && typeof current === 'object'
+        ? (current as Record<string, unknown>)[key]
+        : undefined;
     }, obj);
   }
 
@@ -183,7 +197,10 @@ export class BrokerFactory {
   /**
    * Create a message broker based on transport type
    */
-  static async create(type: 'redis' | 'memory', config: Record<string, unknown>): Promise<MessageBroker> {
+  static async create(
+    type: 'redis' | 'memory',
+    config: Record<string, unknown>
+  ): Promise<MessageBroker> {
     switch (type) {
       case 'redis': {
         const { RedisMessageBroker } = await import('./protocols/redis.js');

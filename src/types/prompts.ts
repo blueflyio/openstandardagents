@@ -229,7 +229,9 @@ export function isSystemPromptConfig(
 export function isGreetingConfig(
   greeting: string | GreetingConfig
 ): greeting is GreetingConfig {
-  return typeof greeting === 'object' && greeting !== null && 'default' in greeting;
+  return (
+    typeof greeting === 'object' && greeting !== null && 'default' in greeting
+  );
 }
 
 /**
@@ -249,7 +251,9 @@ export function isExampleCollectionArray(
 /**
  * Normalize system prompt to config
  */
-export function normalizeSystemPrompt(system: string | SystemPromptConfig): SystemPromptConfig {
+export function normalizeSystemPrompt(
+  system: string | SystemPromptConfig
+): SystemPromptConfig {
   if (isSystemPromptConfig(system)) {
     return system;
   }
@@ -259,7 +263,9 @@ export function normalizeSystemPrompt(system: string | SystemPromptConfig): Syst
 /**
  * Normalize greeting to config
  */
-export function normalizeGreeting(greeting: string | GreetingConfig): GreetingConfig {
+export function normalizeGreeting(
+  greeting: string | GreetingConfig
+): GreetingConfig {
   if (isGreetingConfig(greeting)) {
     return greeting;
   }
@@ -320,7 +326,10 @@ export function renderTemplate(
 /**
  * Create a default prompts configuration
  */
-export function createDefaultPrompts(agentName: string, role: string): PromptsSpec {
+export function createDefaultPrompts(
+  agentName: string,
+  role: string
+): PromptsSpec {
   return {
     system: `You are ${agentName}, an AI assistant.
 
@@ -330,12 +339,12 @@ Please help users with their requests while being helpful, accurate, and safe.`,
     greeting: `Hello! I'm ${agentName}. How can I help you today?`,
     examples: [],
     error_messages: {
-      general: "I apologize, but I encountered an error. Please try again.",
+      general: 'I apologize, but I encountered an error. Please try again.',
       rate_limit: "I'm receiving too many requests. Please wait a moment.",
       capability_unavailable: "I'm sorry, but I can't help with that request.",
     },
-    farewell: "Goodbye! Feel free to return if you need any help.",
-    thinking: "Let me think about that...",
+    farewell: 'Goodbye! Feel free to return if you need any help.',
+    thinking: 'Let me think about that...',
   };
 }
 

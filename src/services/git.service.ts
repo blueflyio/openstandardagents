@@ -115,7 +115,9 @@ export class GitService {
       } else if (ext === '.yaml' || ext === '.yml') {
         return parseYaml(content);
       } else {
-        throw new Error(`Unsupported file format: ${ext}. Must be .json, .yaml, or .yml`);
+        throw new Error(
+          `Unsupported file format: ${ext}. Must be .json, .yaml, or .yml`
+        );
       }
     } catch (error) {
       throw new Error(

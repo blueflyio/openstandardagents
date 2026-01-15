@@ -19,7 +19,7 @@ export function createSyncCommand(): Command {
     )
     .option('-n, --dry-run', 'Show what would be synced')
     .action(async (opts) => {
-      const options = SyncOptionsSchema.parse(opts) as SyncOptions;
+      const options = SyncOptionsSchema.parse(opts);
       const config = new CatalogConfig();
 
       console.log(chalk.cyan(`\nSyncing catalog (${options.direction})...\n`));

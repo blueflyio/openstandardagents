@@ -1,6 +1,6 @@
 /**
  * Langflow Runtime Bridge
- * 
+ *
  * Executes OSSA agents via Langflow API.
  * SOLID: Single Responsibility - Langflow execution only
  * DRY: Reuses LangflowAdapter for format conversion
@@ -21,12 +21,16 @@ const LangflowRunRequestSchema = z.object({
 });
 
 const LangflowRunResponseSchema = z.object({
-  outputs: z.array(z.object({
-    outputs: z.array(z.object({
-      results: z.record(z.string(), z.unknown()),
-      artifacts: z.record(z.string(), z.unknown()).optional(),
-    })),
-  })),
+  outputs: z.array(
+    z.object({
+      outputs: z.array(
+        z.object({
+          results: z.record(z.string(), z.unknown()),
+          artifacts: z.record(z.string(), z.unknown()).optional(),
+        })
+      ),
+    })
+  ),
   session_id: z.string().uuid().optional(),
 });
 
@@ -51,7 +55,10 @@ export class LangflowRuntime {
    * Execute OSSA agent via Langflow API
    * CRUD: Create operation (executes agent)
    */
-  async execute(manifest: OssaAgent, inputs: Record<string, unknown>): Promise<Record<string, unknown>> {
+  async execute(
+    manifest: OssaAgent,
+    inputs: Record<string, unknown>
+  ): Promise<Record<string, unknown>> {
     // Get flow_id from manifest extensions
     const flowId = this.getFlowId(manifest);
     if (!flowId) {
@@ -78,7 +85,9 @@ export class LangflowRuntime {
       {
         headers: {
           'Content-Type': 'application/json',
-          ...(this.config.api_key ? { 'Authorization': `Bearer ${this.config.api_key}` } : {}),
+          ...(this.config.api_key
+            ? { Authorization: `Bearer ${this.config.api_key}` }
+            : {}),
         },
         timeout: (this.config.timeout_seconds || 120) * 1000,
       }
@@ -117,7 +126,9 @@ export class LangflowRuntime {
     // If input mapping is defined, use it
     if (inputMapping?.field_mappings) {
       const mapped: Record<string, unknown> = {};
-      for (const [ossaField, mapping] of Object.entries(inputMapping.field_mappings)) {
+      for (const [ossaField, mapping] of Object.entries(
+        inputMapping.field_mappings
+      )) {
         if (inputs[ossaField] !== undefined) {
           // Map to Langflow component parameter
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -127,7 +138,8 @@ export class LangflowRuntime {
           if (!mapped[componentId]) {
             mapped[componentId] = {};
           }
-          (mapped[componentId] as Record<string, unknown>)[parameter] = inputs[ossaField];
+          (mapped[componentId] as Record<string, unknown>)[parameter] =
+            inputs[ossaField];
         }
       }
       return {
@@ -139,7 +151,8 @@ export class LangflowRuntime {
     // Default: use first input value as input_value
     const firstValue = Object.values(inputs)[0];
     return {
-      input_value: typeof firstValue === 'string' ? firstValue : JSON.stringify(inputs),
+      input_value:
+        typeof firstValue === 'string' ? firstValue : JSON.stringify(inputs),
     };
   }
 
@@ -160,12 +173,16 @@ export class LangflowRuntime {
     // If output mapping is defined, use it
     if (outputMapping?.field_mappings) {
       const mapped: Record<string, unknown> = {};
-      for (const [ossaField, mapping] of Object.entries(outputMapping.field_mappings)) {
+      for (const [ossaField, mapping] of Object.entries(
+        outputMapping.field_mappings
+      )) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const componentId = (mapping as any).component;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const outputField = (mapping as any).output_field || 'message';
-        const componentOutput = outputs[componentId] as Record<string, unknown> | undefined;
+        const componentOutput = outputs[componentId] as
+          | Record<string, unknown>
+          | undefined;
         if (componentOutput && componentOutput[outputField] !== undefined) {
           mapped[ossaField] = componentOutput[outputField];
         }

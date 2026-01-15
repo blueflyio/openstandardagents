@@ -43,7 +43,10 @@ export class MilestoneService extends BaseCrudService<
   private gitlab: InstanceType<typeof Gitlab>;
   private projectId: string | number;
 
-  constructor(gitlabToken: string, projectId: string | number = process.env.CI_PROJECT_ID || '') {
+  constructor(
+    gitlabToken: string,
+    projectId: string | number = process.env.CI_PROJECT_ID || ''
+  ) {
     super();
     this.gitlab = new Gitlab({ token: gitlabToken });
     this.projectId = projectId;
@@ -94,7 +97,10 @@ export class MilestoneService extends BaseCrudService<
     this.validateId(id);
 
     try {
-      const milestone = await this.gitlab.ProjectMilestones.show(this.projectId, Number(id));
+      const milestone = await this.gitlab.ProjectMilestones.show(
+        this.projectId,
+        Number(id)
+      );
 
       const statistics = await this.getMilestoneStatistics(milestone.id);
 
@@ -127,7 +133,10 @@ export class MilestoneService extends BaseCrudService<
   /**
    * Update milestone
    */
-  async update(id: string | number, input: UpdateMilestoneRequest): Promise<Milestone> {
+  async update(
+    id: string | number,
+    input: UpdateMilestoneRequest
+  ): Promise<Milestone> {
     this.validateId(id);
     const validated = this.validateUpdate(input);
 
@@ -203,11 +212,14 @@ export class MilestoneService extends BaseCrudService<
     const validatedFilters = this.validateFilter(filters || {});
 
     try {
-      const milestones = await this.gitlab.ProjectMilestones.all(this.projectId, {
-        state: validatedFilters.state,
-        perPage: validatedFilters.perPage,
-        page: validatedFilters.page,
-      });
+      const milestones = await this.gitlab.ProjectMilestones.all(
+        this.projectId,
+        {
+          state: validatedFilters.state,
+          perPage: validatedFilters.perPage,
+          page: validatedFilters.page,
+        }
+      );
 
       const items = await Promise.all(
         milestones.map(async (m) => {
@@ -255,12 +267,16 @@ export class MilestoneService extends BaseCrudService<
     completionPercentage: number;
   }> {
     try {
-      const milestone = await this.gitlab.ProjectMilestones.show(this.projectId, milestoneId);
+      const milestone = await this.gitlab.ProjectMilestones.show(
+        this.projectId,
+        milestoneId
+      );
 
       const totalIssues = (milestone.totalIssuesCount as number) || 0;
       const closedIssues = (milestone.closedIssuesCount as number) || 0;
       const openIssues = totalIssues - closedIssues;
-      const completionPercentage = totalIssues > 0 ? (closedIssues / totalIssues) * 100 : 0;
+      const completionPercentage =
+        totalIssues > 0 ? (closedIssues / totalIssues) * 100 : 0;
 
       return {
         totalIssues: Number(totalIssues),

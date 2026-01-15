@@ -27,7 +27,9 @@ export const publishCommand = new Command('publish')
         const result = await validationService.validate(manifest);
         if (!result.valid) {
           console.error(chalk.red('✗ Validation failed'));
-          result.errors.forEach((error) => console.error(chalk.red(`  - ${error}`)));
+          result.errors.forEach((error) =>
+            console.error(chalk.red(`  - ${error}`))
+          );
           process.exit(1);
         }
         if (!manifest.metadata) {
@@ -52,7 +54,9 @@ export const publishCommand = new Command('publish')
           console.error(chalk.red('✗ No token provided'));
           process.exit(1);
         }
-        console.log(chalk.blue(`\nPublishing to ${options.registry || 'gitlab'}...`));
+        console.log(
+          chalk.blue(`\nPublishing to ${options.registry || 'gitlab'}...`)
+        );
         const projectId = process.env.GITLAB_PROJECT_ID || '76265294';
         const gitlabUrl = process.env.GITLAB_URL || 'https://gitlab.com';
         const tagName = `${agentName}-v${agentVersion}`;
@@ -74,7 +78,9 @@ export const publishCommand = new Command('publish')
           }
         }
         console.log(chalk.green(`\n✓ Published ${agentName}@${agentVersion}`));
-        console.log(chalk.gray(`  Install: ossa install ${agentName}@${agentVersion}`));
+        console.log(
+          chalk.gray(`  Install: ossa install ${agentName}@${agentVersion}`)
+        );
       } catch (error) {
         console.error(
           chalk.red('✗ Failed:'),

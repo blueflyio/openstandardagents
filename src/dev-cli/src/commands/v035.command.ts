@@ -1,6 +1,6 @@
 /**
  * OSSA v0.3.5 CLI Commands
- * 
+ *
  * Production-grade tooling for v0.3.5 features
  */
 
@@ -32,21 +32,29 @@ v035Command
       console.log(chalk.green('✅ Validation passed!\n'));
     } else {
       console.log(chalk.red('❌ Validation failed:\n'));
-      result.errors.forEach((err: string) => console.log(chalk.red(`  • ${err}`)));
+      result.errors.forEach((err: string) =>
+        console.log(chalk.red(`  • ${err}`))
+      );
       if (options.strict && result.warnings.length > 0) {
-        result.warnings.forEach((warn: string) => console.log(chalk.yellow(`  ⚠️  ${warn}`)));
+        result.warnings.forEach((warn: string) =>
+          console.log(chalk.yellow(`  ⚠️  ${warn}`))
+        );
         process.exit(1);
       }
     }
 
     if (result.warnings.length > 0 && !options.strict) {
       console.log(chalk.yellow('\n⚠️  Warnings:'));
-      result.warnings.forEach((warn: string) => console.log(chalk.yellow(`  • ${warn}`)));
+      result.warnings.forEach((warn: string) =>
+        console.log(chalk.yellow(`  • ${warn}`))
+      );
     }
 
     console.log(chalk.blue('\n📊 Features Detected:'));
     Object.entries(result.features).forEach(([feature, detected]) => {
-      console.log(`  ${detected ? chalk.green('✅') : chalk.gray('❌')} ${feature}`);
+      console.log(
+        `  ${detected ? chalk.green('✅') : chalk.gray('❌')} ${feature}`
+      );
     });
 
     process.exit(result.valid ? 0 : 1);
@@ -207,7 +215,9 @@ v035Command
     writeFileSync(outputPath, yaml.stringify(example, { indent: 2 }), 'utf-8');
 
     console.log(chalk.green(`✅ Generated: ${outputPath}`));
-    console.log(chalk.blue(`\nFeatures included: ${options.features.join(', ')}`));
+    console.log(
+      chalk.blue(`\nFeatures included: ${options.features.join(', ')}`)
+    );
   });
 
 // List v0.3.5 features
@@ -219,15 +229,51 @@ v035Command
     console.log(chalk.blue('🚀 OSSA v0.3.5 Features\n'));
 
     const features = [
-      { name: 'Completion Signals', description: 'Standardized agent termination conditions', schema: 'completion-signals.schema.json' },
-      { name: 'Session Checkpointing', description: 'Resilient state management with resume', schema: 'checkpoint.schema.json' },
-      { name: 'Mixture of Experts (MoE)', description: 'Agent-controlled expert selection', schema: 'mixture-of-experts.schema.json' },
-      { name: 'BAT Framework', description: 'Best Available Technology selection', schema: 'bat-framework.schema.json' },
-      { name: 'MOE Metrics', description: 'Measure of Effectiveness evaluation', schema: 'moe-metrics.schema.json' },
-      { name: 'Flow Kind', description: 'Native flow-based orchestration', schema: 'flow-kind.schema.json' },
-      { name: 'Capability Discovery', description: 'Runtime-adaptive capabilities', schema: 'capability-discovery.schema.json' },
-      { name: 'Feedback Loops', description: 'Continuous improvement mechanisms', schema: 'feedback-loops.schema.json' },
-      { name: 'Infrastructure Substrate', description: 'Infrastructure as agent-addressable resources', schema: 'infrastructure-substrate.schema.json' },
+      {
+        name: 'Completion Signals',
+        description: 'Standardized agent termination conditions',
+        schema: 'completion-signals.schema.json',
+      },
+      {
+        name: 'Session Checkpointing',
+        description: 'Resilient state management with resume',
+        schema: 'checkpoint.schema.json',
+      },
+      {
+        name: 'Mixture of Experts (MoE)',
+        description: 'Agent-controlled expert selection',
+        schema: 'mixture-of-experts.schema.json',
+      },
+      {
+        name: 'BAT Framework',
+        description: 'Best Available Technology selection',
+        schema: 'bat-framework.schema.json',
+      },
+      {
+        name: 'MOE Metrics',
+        description: 'Measure of Effectiveness evaluation',
+        schema: 'moe-metrics.schema.json',
+      },
+      {
+        name: 'Flow Kind',
+        description: 'Native flow-based orchestration',
+        schema: 'flow-kind.schema.json',
+      },
+      {
+        name: 'Capability Discovery',
+        description: 'Runtime-adaptive capabilities',
+        schema: 'capability-discovery.schema.json',
+      },
+      {
+        name: 'Feedback Loops',
+        description: 'Continuous improvement mechanisms',
+        schema: 'feedback-loops.schema.json',
+      },
+      {
+        name: 'Infrastructure Substrate',
+        description: 'Infrastructure as agent-addressable resources',
+        schema: 'infrastructure-substrate.schema.json',
+      },
     ];
 
     features.forEach((feature, idx) => {
