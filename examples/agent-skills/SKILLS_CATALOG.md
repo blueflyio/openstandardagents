@@ -313,7 +313,7 @@ describe('React Performance Expert', () => {
 
 - [Vercel agent-skills](https://agentskills.io/)
 - [Vercel React Best Practices](https://github.com/vercel-labs/agent-skills/tree/react-best-practices)
-- [OSSA v0.3.5 Specification](../spec/v0.3.5/)
+- [OSSA v0.3.5 Specification](../spec/v0.3/)
 - [Skill Registry Service](../../src/services/skill-registry.service.ts)
 
 ---

@@ -1,0 +1,13 @@
+apiVersion: ossa/v0.3.5
+kind: Agent
+metadata:
+  name: minimal-test-agent
+  description: Minimal valid agent for baseline conformance testing
+spec:
+  type: service
+  identity:
+    id: minimal-test-agent
+    version: "1.0.0"
+  capabilities:
+    - name: test_capability
+      description: Test capability

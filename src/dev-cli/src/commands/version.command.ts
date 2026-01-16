@@ -10,6 +10,7 @@ import chalk from 'chalk';
 import { VersionReleaseService } from '../services/version-release.service.js';
 import { VersionValidateService } from '../services/version-validate.service.js';
 import { VersionSyncService } from '../services/version-sync.service.js';
+import { VersionDetectionService } from '../services/version-detection.service.js';
 
 export const versionCommand = new Command('version')
   .alias('ver')
@@ -139,6 +140,39 @@ versionCommand
         console.error(chalk.red('\n❌ Sync failed'));
         process.exit(1);
       }
+    } catch (error) {
+      console.error(
+        chalk.red(
+          `\n❌ Error: ${error instanceof Error ? error.message : String(error)}`
+        )
+      );
+      process.exit(1);
+    }
+  });
+
+// version:detect - Detect version from git tags and update .version.json
+versionCommand
+  .command('detect')
+  .alias('d')
+  .description('Detect version from git tags and update .version.json')
+  .action(async () => {
+    console.log(chalk.blue('🔍 OSSA Version Detection'));
+    console.log(chalk.gray('===========================\n'));
+
+    const service = new VersionDetectionService();
+    try {
+      const result = await service.detectVersion();
+
+      console.log(chalk.green('✅ Version detected successfully!'));
+      console.log(chalk.gray('\nVersion Information:'));
+      console.log(chalk.gray(`  • Current: ${result.current}`));
+      console.log(chalk.gray(`  • Latest Stable: ${result.latest_stable}`));
+      console.log(chalk.gray(`  • Latest Tag: ${result.latest_tag}`));
+      console.log(chalk.gray(`  • Spec Path: ${result.spec_path}`));
+      console.log(chalk.gray(`  • Schema File: ${result.schema_file}`));
+      console.log(
+        chalk.gray(`\n✅ Updated .version.json with detected version`)
+      );
     } catch (error) {
       console.error(
         chalk.red(

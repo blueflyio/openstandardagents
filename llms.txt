@@ -13,7 +13,7 @@ This repository contains the complete specification, CLI tools, SDKs, and 100+ r
 - [OSSA Schema v0.3.5](https://openstandardagents.org/schemas/v0.3.5/ossa-0.3.5.schema.json): Complete JSON Schema for agent definitions (Latest)
 - [OSSA Schema v0.3.4](https://openstandardagents.org/schemas/v0.3.4/ossa-0.3.4.schema.json): Previous stable version
 - [OpenAPI Specifications](openapi/): API definitions for agent communication and discovery
-- [Specification Documentation](spec/v0.3.5/): Complete specification with examples and guides
+- [Specification Documentation](spec/v0.3/): Complete specification with examples and guides
 
 ## Quick Start
 
@@ -44,7 +44,7 @@ This repository contains the complete specification, CLI tools, SDKs, and 100+ r
 ## Migration Guides
 
 - [Migration System](migrations/README.md): How to migrate between OSSA versions
-- [v0.3.4 to v0.3.5](spec/v0.3.5/MIGRATION-v0.3.4-to-v0.3.5.md): Complete migration guide (100% backward compatible)
+- [v0.3.4 to v0.3.5](spec/v0.3/MIGRATION-v0.3.4-to-v0.3.5.md): Complete migration guide (100% backward compatible)
 - [v0.3.2 to v0.3.3](migrations/guides/MIGRATION-v0.3.2-to-v0.3.3.md): Skills Compatibility Extension
 - [Migration Runner](migrations/index.ts): Automated migration tool
 
@@ -57,7 +57,7 @@ This repository contains the complete specification, CLI tools, SDKs, and 100+ r
 
 ## Specification Versions
 
-- [v0.3.5](spec/v0.3.5/): Latest version - The OpenAPI for Software Agents (10 major features)
+- [v0.3.5](spec/v0.3/): Latest version - The OpenAPI for Software Agents (10 major features)
 - [v0.3.4](spec/v0.3.4/): Previous stable version
 - [v0.3.3](spec/v0.3.3/): Legacy version with Skills Compatibility Extension
 - [Schema Index](spec/): All specification versions

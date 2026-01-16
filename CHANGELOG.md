@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **README**: Complete rewrite emphasizing vendor neutrality, cost optimization, and production reliability
 - **Documentation**: Updated all docs (README, llms.txt, CONTRIBUTING) to remove GitLab references, focus on GitHub (public mirror)
 - **Backward Compatibility**: All v0.3.4 agents work with v0.3.5 runtime (100% backward compatible)
-- **Migration Guide**: Complete migration guide available in `spec/v0.3.5/MIGRATION-v0.3.4-to-v0.3.5.md`
+- **Migration Guide**: Complete migration guide available in `spec/v0.3/MIGRATION-v0.3.4-to-v0.3.5.md`
 
 ### Fixed
 - **ESLint Configuration**: Fixed 2195 lint errors by disabling problematic rule and excluding test files from type-checking

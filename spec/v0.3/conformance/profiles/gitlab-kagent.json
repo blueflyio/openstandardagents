@@ -1,0 +1,22 @@
+{
+  "$schema": "https://openstandardagents.org/schemas/conformance-profile.json",
+  "profile": "gitlab-kagent",
+  "extends": "enterprise",
+  "version": "0.3.5",
+  "description": "GitLab Kagent extension compliance",
+  "required_features": {
+    "extensions": {
+      "kagent": {
+        "required": true,
+        "kubernetes": {
+          "required": ["namespace", "resourceLimits"]
+        }
+      }
+    }
+  },
+  "validators": ["kagent"],
+  "scoring": {
+    "required_weight": 80,
+    "optional_weight": 20
+  }
+}

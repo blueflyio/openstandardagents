@@ -1,6 +1,6 @@
 # Example: FlowDrop Visual Workflow to OSSA Workflow Mapping
 # Demonstrates how Drupal FlowDrop diagrams map to OSSA Workflows
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.5
 kind: Workflow
 metadata:
   name: flowdrop-user-registration
