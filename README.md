@@ -33,7 +33,7 @@
 - **Observability & Monitoring** - OpenTelemetry, LangSmith, Phoenix, Langfuse integration
 - **Kubernetes-Native** - GitOps-ready, cloud-agnostic deployment
 - **Framework Agnostic** - Works with LangChain, LangFlow, CrewAI, AutoGen, Temporal, n8n
-- **Type-Safe SDKs** - TypeScript and Python with full validation and IntelliSense
+- **Type-Safe TypeScript SDK** - Full validation and IntelliSense support (Python SDK planned)
 
 ### What is OSSA?
 
@@ -340,7 +340,7 @@ Please read [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) before contributing.
 - **CLI** - Command-line tool for validation, generation, and migration
 - **Developer CLI** - Version management and spec generation tools
 - **TypeScript SDK** - Type-safe client library
-- **Python SDK** - Python client library (coming soon)
+- **Python SDK** - Planned for future release (TypeScript available now)
 - **Framework Integrations** - Import/export from LangChain, LangFlow, CrewAI, AutoGen
 - **Observability Adapters** - Phoenix/Arize, Langfuse, LangSmith, OpenTelemetry support
 
