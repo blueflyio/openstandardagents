@@ -50,7 +50,7 @@
 # OSSA MANIFEST (After):
 # ----------------------------------------------------------------------------
 
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.5
 kind: Agent
 
 metadata:
@@ -117,7 +117,7 @@ spec:
 # ----------------------------------------------------------------------------
 
 ---
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.5
 kind: Agent
 
 metadata:
@@ -185,7 +185,7 @@ spec:
 # ----------------------------------------------------------------------------
 
 ---
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.5
 kind: Agent
 
 metadata:
@@ -215,7 +215,7 @@ spec:
       endpoint: https://api.academic.com/search
 
 ---
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.5
 kind: Agent
 
 metadata:

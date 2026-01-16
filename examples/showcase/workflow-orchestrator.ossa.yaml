@@ -1,4 +1,4 @@
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.5
 kind: Workflow
 metadata:
   name: workflow-orchestrator

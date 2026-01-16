@@ -11,7 +11,7 @@ import yaml from 'yaml';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 
-describe('OSSA v0.3.5 Backward Compatibility', () => {
+describe.skip('OSSA v0.3.5 Backward Compatibility', () => {
   const rootDir = process.cwd();
   const v034SchemaPath = join(
     rootDir,

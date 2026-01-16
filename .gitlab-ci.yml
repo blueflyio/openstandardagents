@@ -36,6 +36,7 @@ include:
   - local: .gitlab/ci/rules.yml
   - local: .gitlab/ci/build-jobs.yml
   - local: .gitlab/ci/validation-jobs.yml
+  - local: .gitlab/ci/conformance-jobs.yml
   - local: .gitlab/ci/optimized-test-jobs.yml
   - local: .gitlab/ci/security-jobs.yml
   - local: .gitlab/ci/quality-gates.yml
@@ -159,30 +160,43 @@ validate:ossa-templates:
   extends:
     - .npm-cache-readonly
   before_script:
+    - apk add --no-cache jq
     - npm ci --prefer-offline --no-audit
   script:
     - echo "Validating OSSA template manifests..."
     - |
+      # Read current version from .version.json
+      CURRENT_VERSION=$(jq -r '.current' .version.json)
+      SPEC_PATH=$(jq -r '.spec_path' .version.json)
+      SCHEMA_FILE=$(jq -r '.schema_file' .version.json)
+      SCHEMA_PATH="${SPEC_PATH}/${SCHEMA_FILE}"
+
+      echo "Using schema: ${SCHEMA_PATH}"
+
       FAILED=0
       for f in examples/ossa-templates/*.ossa.yaml; do
         echo "Validating $f..."
-        # Detect schema version from apiVersion in file
-        API_VERSION=$(grep -E "^apiVersion:" "$f" | head -1 | sed -E 's/.*v([0-9]+\.[0-9]+\.[0-9]+).*/\1/' || echo "")
+        # Detect apiVersion in file
+        API_VERSION=$(grep -E "^apiVersion:" "$f" | head -1 | sed -E 's/.*v([0-9]+\.[0-9]+).*/\1/' || echo "")
         if [ -z "$API_VERSION" ]; then
-          echo "WARNING: Could not detect apiVersion in $f, using v0.3.4"
-          API_VERSION="0.3.4"
-        fi
-        SCHEMA_FILE="spec/v${API_VERSION}/ossa-${API_VERSION}.schema.json"
-        if [ ! -f "$SCHEMA_FILE" ]; then
-          echo "ERROR: Schema file not found: $SCHEMA_FILE"
+          echo "WARNING: Could not detect apiVersion in $f"
           FAILED=$((FAILED + 1))
           continue
         fi
-        if npx ajv-cli validate -s "$SCHEMA_FILE" --strict=false --allow-union-types -d "$f" >/dev/null 2>&1; then
-          echo "✓ $f (v${API_VERSION})"
+
+        # After v0.3 consolidation, manifests use minor version (v0.3)
+        # but validate against current patch-level schema (v0.3.5)
+        if [ "$API_VERSION" != "0.3" ]; then
+          echo "ERROR: Expected apiVersion ossa/v0.3, got ossa/v${API_VERSION}"
+          FAILED=$((FAILED + 1))
+          continue
+        fi
+
+        if npx ajv-cli validate -s "$SCHEMA_PATH" --strict=false --allow-union-types -d "$f" >/dev/null 2>&1; then
+          echo "✓ $f (ossa/v${API_VERSION} → schema v${CURRENT_VERSION})"
         else
-          echo "✗ FAILED: $f (v${API_VERSION})"
-          npx ajv-cli validate -s "$SCHEMA_FILE" --strict=false --allow-union-types -d "$f" 2>&1 || true
+          echo "✗ FAILED: $f (ossa/v${API_VERSION})"
+          npx ajv-cli validate -s "$SCHEMA_PATH" --strict=false --allow-union-types -d "$f" 2>&1 || true
           FAILED=$((FAILED + 1))
         fi
       done

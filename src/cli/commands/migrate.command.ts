@@ -26,6 +26,7 @@ import { MigrationService } from '../../services/migration.service.js';
 import { ValidationService } from '../../services/validation.service.js';
 import type { OssaAgent } from '../../types/index.js';
 import { getVersionInfo } from '../../utils/version.js';
+import { migrateLangchainCommand } from './migrate-langchain.command.js';
 
 export const migrateCommand = new Command('migrate')
   .argument('<source>', 'Path to manifest or directory to migrate')
@@ -225,3 +226,6 @@ export const migrateCommand = new Command('migrate')
       }
     }
   );
+
+// Add langchain subcommand
+migrateCommand.addCommand(migrateLangchainCommand);

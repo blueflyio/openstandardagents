@@ -27,6 +27,7 @@ import { VercelAIValidator } from './validators/vercel-ai.validator.js';
 import { LlamaIndexValidator } from './validators/llamaindex.validator.js';
 import { LangGraphValidator } from './validators/langgraph.validator.js';
 import { MessagingValidator } from './validators/messaging.validator.js';
+import { KagentValidator } from './validators/kagent.validator.js';
 
 @injectable()
 export class ValidationService implements IValidationService {
@@ -58,6 +59,7 @@ export class ValidationService implements IValidationService {
     this.platformValidators.set('vercel_ai', new VercelAIValidator());
     this.platformValidators.set('llamaindex', new LlamaIndexValidator());
     this.platformValidators.set('langgraph', new LangGraphValidator());
+    this.platformValidators.set('kagent', new KagentValidator());
   }
 
   /**

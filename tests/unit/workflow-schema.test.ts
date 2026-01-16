@@ -18,10 +18,10 @@ describe('OSSA v0.3.0 Workflow Schema', () => {
   let schema: object;
 
   beforeAll(() => {
-    // Load the v0.3.0 schema
+    // Load the v0.3.x schema
     const schemaPath = path.join(
       __dirname,
-      '../../spec/v0.3.3/ossa-0.3.3.schema.json'
+      '../../spec/v0.3/ossa-0.3.5.schema.json'
     );
     schema = JSON.parse(fs.readFileSync(schemaPath, 'utf-8'));
 
