@@ -75,6 +75,9 @@ variables:
   # Alternative: Use 'ossa' directly if @bluefly/openstandardagents is pre-installed in PATH
   OSSA_CLI: 'npx @bluefly/openstandardagents'
 
+  # GitLab Project References
+  AGENT_BUILDKIT_PROJECT: 'blueflyio/agent-platform/agent-buildkit'
+
   # Agent Configuration
   MAX_AGENTS: '5'
   AGENT_TIMEOUT: '300'
@@ -457,7 +460,7 @@ integrate:sync:
 
       # Use ops for cross-project sync
       $OPS_CLI sync --source "$CI_PROJECT_PATH" \
-               --targets "agent_buildkit,common_npm/*" || true
+               --targets "@bluefly/agent-buildkit" || true
 
       # Trigger dependent pipelines
       if [ "$PIPELINE_TYPE" = "development" ]; then
@@ -466,7 +469,7 @@ integrate:sync:
           -F token="$CI_JOB_TOKEN" \
           -F ref=development \
           -F "variables[UPSTREAM_PROJECT]=$CI_PROJECT_PATH" \
-          "https://$CI_SERVER_HOST/api/v4/projects/$AGENT_BUILDKIT_PROJECT_ID/trigger/pipeline" || true
+          "https://$CI_SERVER_HOST/api/v4/projects/$AGENT_BUILDKIT_PROJECT/trigger/pipeline" || true
       fi
 
       echo "INFO: Cross-project sync complete"
