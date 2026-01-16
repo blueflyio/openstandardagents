@@ -8,7 +8,7 @@
 # 3. Contract validation between consumer and provider
 # 4. Schema compatibility testing
 
-apiVersion: ossa/v0.3.4
+apiVersion: ossa/v0.3.5
 kind: Agent
 metadata:
   name: data-consumer

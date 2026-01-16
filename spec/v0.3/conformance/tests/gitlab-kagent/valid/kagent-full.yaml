@@ -1,0 +1,52 @@
+apiVersion: ossa/v0.3.5
+kind: Agent
+metadata:
+  name: kagent-full-test-agent
+  description: Full GitLab Kagent configuration
+  version: "1.0.0"
+spec:
+  type: service
+  identity:
+    id: kagent-full-test-agent
+    version: "1.0.0"
+  capabilities:
+    - name: code_review
+      description: Review code changes
+    - name: ci_management
+      description: Manage CI/CD pipelines
+  llm:
+    provider: anthropic
+    model: claude-3-5-sonnet-20241022
+extensions:
+  kagent:
+    enabled: true
+    version: "1.0.0"
+    gitlab_integration:
+      enabled: true
+      url: https://gitlab.com
+      ci_cd:
+        enabled: true
+        auto_trigger: true
+      issues:
+        enabled: true
+        auto_label: true
+      merge_requests:
+        enabled: true
+        auto_review: true
+      pipelines:
+        enabled: true
+        auto_retry: true
+    kubernetes_native:
+      enabled: true
+      namespace: agents
+      deployment:
+        strategy: blue-green
+        replicas: 3
+      scaling:
+        auto: true
+        min_replicas: 2
+        max_replicas: 10
+        target_cpu_utilization: 70
+      monitoring:
+        enabled: true
+        dashboard_url: https://grafana.example.com

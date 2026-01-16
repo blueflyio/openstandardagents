@@ -1,0 +1,29 @@
+{
+  "$schema": "https://openstandardagents.org/schemas/conformance-profile.json",
+  "profile": "baseline",
+  "version": "0.3.5",
+  "description": "Minimal OSSA v0.3.5 compliance - Linux Foundation adoption ready",
+  "required_features": {
+    "apiVersion": "ossa/v0.3.5",
+    "kind": ["Agent"],
+    "metadata": {
+      "required": ["name", "version"],
+      "optional": ["labels", "annotations"]
+    },
+    "spec": {
+      "required": ["identity", "role"],
+      "identity": {
+        "required": ["id"]
+      }
+    }
+  },
+  "optional_features": {},
+  "schema_validation": {
+    "core_schema": "ossa-0.3.5.schema.json",
+    "strict": true
+  },
+  "scoring": {
+    "required_weight": 100,
+    "optional_weight": 0
+  }
+}

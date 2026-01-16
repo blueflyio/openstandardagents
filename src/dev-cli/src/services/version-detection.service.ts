@@ -32,9 +32,21 @@ export class VersionDetectionService {
 
   /**
    * Detect version from git tags and update .version.json
-   * DYNAMIC: Reads from git tags, writes to .version.json
+   * DYNAMIC: Reads from git tags (or existing .version.json), writes to .version.json
    */
   async detectVersion(): Promise<VersionInfo> {
+    // First check if .version.json exists and read current version
+    let existingCurrent: string | undefined;
+    if (existsSync(this.versionFile)) {
+      try {
+        const content = readFileSync(this.versionFile, 'utf-8');
+        const config = JSON.parse(content);
+        existingCurrent = config.current;
+      } catch {
+        // Continue if parse fails
+      }
+    }
+
     // Fetch all tags
     try {
       execSync('git fetch --tags --prune origin', {
@@ -50,11 +62,15 @@ export class VersionDetectionService {
     const latestStable = this.getLatestStableTag(allTags);
     const latestTag = allTags[0] || latestStable;
 
-    // Determine current version from branch or latest tag
-    const current = this.determineCurrentVersion(latestStable, latestTag);
+    // Determine current version: prefer existing .version.json, fallback to git
+    const current =
+      existingCurrent || this.determineCurrentVersion(latestStable, latestTag);
 
     const spec_version = current;
-    const spec_path = `spec/v${spec_version}`;
+
+    // Use minor version for spec_path (e.g., spec/v0.3 for all 0.3.x versions)
+    const minorVersion = this.extractMinorVersion(current);
+    const spec_path = `spec/v${minorVersion}`;
     const schema_file = `ossa-${spec_version}.schema.json`;
 
     const versionInfo: VersionInfo = {
@@ -242,5 +258,16 @@ export class VersionDetectionService {
     } catch {
       return null;
     }
+  }
+
+  /**
+   * Extract minor version from full version (e.g., "0.3.5" → "0.3")
+   */
+  private extractMinorVersion(version: string): string {
+    const parts = version.split('.');
+    if (parts.length >= 2) {
+      return `${parts[0]}.${parts[1]}`;
+    }
+    return version;
   }
 }

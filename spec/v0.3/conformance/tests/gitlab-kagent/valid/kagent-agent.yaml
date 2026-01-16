@@ -1,0 +1,71 @@
+apiVersion: ossa/v0.3.5
+kind: Agent
+metadata:
+  name: kagent-test-agent
+  description: GitLab Kagent extension conformance test agent
+  version: "1.0.0"
+  labels:
+    platform: gitlab
+    extension: kagent
+spec:
+  type: service
+  identity:
+    id: kagent-test-agent
+    version: "1.0.0"
+  capabilities:
+    - name: gitlab_operations
+      description: Perform GitLab operations
+  llm:
+    provider: anthropic
+    model: claude-3-5-sonnet-20241022
+  autonomy:
+    level: monitored
+    approval_required: true
+  constraints:
+    cost:
+      max_cost_per_task: 0.50
+    performance:
+      max_execution_time_ms: 30000
+  observability:
+    tracing:
+      enabled: true
+    metrics:
+      enabled: true
+    logging:
+      enabled: true
+extensions:
+  kagent:
+    enabled: true
+    version: "1.0.0"
+    gitlab_integration:
+      enabled: true
+      ci_cd:
+        enabled: true
+      issues:
+        enabled: true
+      merge_requests:
+        enabled: true
+      pipelines:
+        enabled: true
+    kubernetes_native:
+      enabled: true
+      deployment:
+        strategy: rolling
+      scaling:
+        auto: true
+        min_replicas: 1
+        max_replicas: 5
+      monitoring:
+        enabled: true
+    observability:
+      traces:
+        enabled: true
+        exporter: jaeger
+      metrics:
+        enabled: true
+        exporter: prometheus
+    security:
+      rbac:
+        enabled: true
+      secrets_management:
+        provider: vault

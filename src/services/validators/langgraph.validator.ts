@@ -6,9 +6,29 @@
 import { injectable } from 'inversify';
 import type { OssaAgent, ValidationResult } from '../../types/index.js';
 import type { ErrorObject } from 'ajv';
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+
+// Load LangGraph schema
+const langgraphSchemaPath = join(
+  process.cwd(),
+  'spec/v0.3/extensions/langgraph/langgraph.schema.json'
+);
+const langgraphSchema = JSON.parse(readFileSync(langgraphSchemaPath, 'utf-8'));
 
 @injectable()
 export class LangGraphValidator {
+  private ajv: Ajv;
+  private validateLangGraph: ReturnType<Ajv['compile']>;
+
+  constructor() {
+    this.ajv = new Ajv({ allErrors: true, strict: false });
+    addFormats(this.ajv);
+    this.validateLangGraph = this.ajv.compile(langgraphSchema);
+  }
+
   validate(manifest: OssaAgent): ValidationResult {
     const errors: ErrorObject[] = [];
     const warnings: string[] = [];
@@ -16,11 +36,25 @@ export class LangGraphValidator {
     const langgraphExt = manifest.extensions?.langgraph as
       | Record<string, unknown>
       | undefined;
-    if (
-      !langgraphExt ||
-      (langgraphExt.enabled as boolean | undefined) === false
-    ) {
+
+    if (!langgraphExt) {
       return { valid: true, errors: [], warnings: [] };
+    }
+
+    // Validate against LangGraph extension schema
+    const valid = this.validateLangGraph(langgraphExt);
+    if (!valid) {
+      const schemaErrors = this.validateLangGraph.errors || [];
+      errors.push(
+        ...schemaErrors.map((err: ErrorObject) => ({
+          ...err,
+          instancePath: `/extensions/langgraph${err.instancePath}`,
+        }))
+      );
+    }
+
+    if ((langgraphExt.enabled as boolean | undefined) === false) {
+      return { valid: errors.length === 0, errors, warnings };
     }
 
     // Validate graph_config if provided

@@ -1,0 +1,23 @@
+{
+  "$schema": "https://openstandardagents.org/schemas/conformance-profile.json",
+  "profile": "enterprise",
+  "extends": "baseline",
+  "version": "0.3.5",
+  "description": "Production-ready features for enterprise deployment",
+  "required_features": {
+    "spec": {
+      "required": ["completion", "checkpointing", "monitoring", "security"]
+    }
+  },
+  "optional_features": {
+    "extensions": {
+      "moe": "Mixture of Experts",
+      "feedback_loops": "Continuous improvement",
+      "bat": "Best Available Technology"
+    }
+  },
+  "scoring": {
+    "required_weight": 70,
+    "optional_weight": 30
+  }
+}

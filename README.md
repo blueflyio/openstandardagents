@@ -4,7 +4,7 @@
 
 > **Built for Enterprise Adoption**: OSSA enables companies to build, deploy, and manage AI agents with vendor neutrality, production-grade reliability, and enterprise compliance built-in.
 
-> 🚀 **v0.3.5 Released**: 10 major features including Completion Signals, Checkpointing, MoE, Flow Orchestration, and more. [See what's new →](spec/v0.3.5/README.md)
+> 🚀 **v0.3.5 Released**: 10 major features including Completion Signals, Checkpointing, MoE, Flow Orchestration, and more. [See what's new →](spec/v0.3/README.md)
 
 > 💡 **For Developers**: See [AGENTS.md](AGENTS.md) for setup and development guidelines. See [llms.txt](llms.txt) for LLM-friendly project overview.
 
@@ -161,7 +161,7 @@ state_management:
       - observation
 ```
 
-See [examples/ag2/](spec/v0.3.4/examples/ag2/) for AG2 examples, and [v0.3.5 examples](spec/v0.3.5/examples/) for new v0.3.5 features.
+See [examples/ag2/](spec/v0.3.4/examples/ag2/) for AG2 examples, and [v0.3.5 examples](spec/v0.3/examples/) for new v0.3.5 features.
 
 ### Validate Your Agent
 
