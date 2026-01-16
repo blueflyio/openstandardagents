@@ -9,10 +9,37 @@ metadata:
     tier: enterprise
     category: conformance
 spec:
+  role: assistant
   type: service
   identity:
     id: production-test-agent
     version: "1.0.0"
+  completion:
+    criteria:
+      - type: success_criteria
+        description: Task completed successfully
+    timeout_ms: 180000
+  checkpointing:
+    enabled: true
+    interval_ms: 60000
+    strategy: full
+  monitoring:
+    metrics:
+      enabled: true
+      interval_ms: 30000
+    alerts:
+      enabled: true
+      channels: ["email", "slack"]
+  security:
+    authentication:
+      required: true
+      method: oauth2
+    authorization:
+      rbac: true
+      policies: ["read", "write", "execute"]
+    encryption:
+      at_rest: true
+      in_transit: true
   capabilities:
     - name: data_processing
       description: Process and analyze data
