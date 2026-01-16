@@ -425,8 +425,8 @@ integrate:feature:
   needs: ['quality:gates']
   before_script:
     - apk add --no-cache git
-    - git config user.email "thomas.scola@bluefly.io"
-    - git config user.name "Bluefly.io Founder & creator of OssA"
+    - git config user.email "${GIT_AUTHOR_EMAIL:-ci@bluefly.io}"
+    - git config user.name "${GIT_AUTHOR_NAME:-Bluefly CI}"
   script:
     - |
       echo "🔀 Auto-merging to development..."
