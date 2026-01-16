@@ -197,18 +197,5 @@ test:security:
       fi
   script:
     - echo "Running npm audit on production dependencies..."
-    - |
-      # Run audit and exclude bundled npm dependencies (not in production runtime)
-      npm audit --production --audit-level=high --omit=dev || AUDIT_RESULT=$?
-      if [ "$AUDIT_RESULT" = "1" ]; then
-        echo "Checking if vulnerabilities are only in build-time dependencies..."
-        # Check if all HIGH/CRITICAL vulns are in npm package (build-time only)
-        RUNTIME_VULNS=$(npm audit --production --json | jq '.vulnerabilities | to_entries | map(select(.value.via[].source != "npm")) | length')
-        if [ "$RUNTIME_VULNS" = "0" ]; then
-          echo "All vulnerabilities are in build-time dependencies (npm), safe for production"
-          exit 0
-        fi
-        echo "Runtime vulnerabilities detected"
-        exit 1
-      fi
+    - npm audit --production --audit-level=high
   allow_failure: false
