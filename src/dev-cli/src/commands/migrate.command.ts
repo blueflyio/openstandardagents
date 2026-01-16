@@ -99,9 +99,7 @@ migrateCommand
           }
         } else {
           console.error(
-            chalk.red(
-              `\n❌ Migration completed with ${result.failed} error(s)`
-            )
+            chalk.red(`\n❌ Migration completed with ${result.failed} error(s)`)
           );
           process.exit(1);
         }

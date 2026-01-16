@@ -32,10 +32,7 @@ export class ConformanceProfileLoader {
       // Strategy 3: One level up (when cwd is in subdirectory)
       join(process.cwd(), '../spec/v0.3/conformance/profiles'),
       // Strategy 4: From openstandardagents directory
-      join(
-        process.cwd(),
-        'openstandardagents/spec/v0.3/conformance/profiles'
-      ),
+      join(process.cwd(), 'openstandardagents/spec/v0.3/conformance/profiles'),
       // Strategy 5: Absolute path from repo root (CI environments)
       '/builds/blueflyio/ossa/openstandardagents/spec/v0.3/conformance/profiles',
     ];

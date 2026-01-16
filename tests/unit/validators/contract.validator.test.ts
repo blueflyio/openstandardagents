@@ -1,10 +1,5 @@
 import { describe, it, expect, beforeEach } from '@jest/globals';
 import { ContractValidator } from '../../../src/services/validators/contract.validator.js';
-import type {
-  ContractValidationResult,
-  BreakingChangesResult,
-  AgentContract,
-} from '../../../src/services/validators/contract.validator.js';
 
 describe('ContractValidator', () => {
   let validator: ContractValidator;

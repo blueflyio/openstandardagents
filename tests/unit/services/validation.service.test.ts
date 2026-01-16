@@ -21,8 +21,8 @@ describe.skip('ValidationService', () => {
           role: 'assistant',
           llm: {
             provider: 'openai',
-            model: 'gpt-4'
-          }
+            model: 'gpt-4',
+          },
         },
       };
       const result = await service.validate(manifest);
@@ -46,8 +46,8 @@ describe.skip('ValidationService', () => {
           role: 'assistant',
           llm: {
             provider: 'openai',
-            model: 'gpt-4'
-          }
+            model: 'gpt-4',
+          },
         },
       };
       const result = await service.validate(manifest, '0.3.5');
@@ -63,8 +63,8 @@ describe.skip('ValidationService', () => {
           role: 'assistant',
           llm: {
             provider: 'openai',
-            model: 'gpt-4'
-          }
+            model: 'gpt-4',
+          },
         },
       };
       const result = await service.validate(manifest);
@@ -83,8 +83,8 @@ describe.skip('ValidationService', () => {
             role: 'assistant',
             llm: {
               provider: 'openai',
-              model: 'gpt-4'
-            }
+              model: 'gpt-4',
+            },
           },
         },
         {
@@ -95,8 +95,8 @@ describe.skip('ValidationService', () => {
             role: 'assistant',
             llm: {
               provider: 'openai',
-              model: 'gpt-4'
-            }
+              model: 'gpt-4',
+            },
           },
         },
       ];
@@ -116,8 +116,8 @@ describe.skip('ValidationService', () => {
             role: 'assistant',
             llm: {
               provider: 'openai',
-              model: 'gpt-4'
-            }
+              model: 'gpt-4',
+            },
           },
         },
         { invalid: 'data' },
@@ -143,8 +143,8 @@ describe.skip('ValidationService', () => {
             role: 'assistant',
             llm: {
               provider: 'openai',
-              model: 'gpt-4'
-            }
+              model: 'gpt-4',
+            },
           },
         },
       ];
