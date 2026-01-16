@@ -1,6 +1,30 @@
 import * as vscode from 'vscode';
 
+/**
+ * OSSA Hover Provider
+ *
+ * Provides inline documentation when hovering over OSSA manifest fields.
+ * Displays rich markdown documentation for all OSSA field names and common values.
+ *
+ * Supports:
+ * - Top-level fields (apiVersion, kind, metadata, spec)
+ * - Metadata fields (name, version, description)
+ * - Spec fields (role, llm, provider, model, tools, etc.)
+ * - Context-aware pattern matching for fields on the same line
+ */
 export class OSSAHoverProvider implements vscode.HoverProvider {
+  /**
+   * Provide hover information for the word under cursor
+   *
+   * Looks up the word under cursor in the field documentation dictionary
+   * and returns markdown-formatted help text. Falls back to pattern matching
+   * for common field patterns like "apiVersion:" or "kind:".
+   *
+   * @param document - Current text document
+   * @param position - Current cursor position
+   * @param token - Cancellation token
+   * @returns Hover object with documentation or null
+   */
   provideHover(
     document: vscode.TextDocument,
     position: vscode.Position,

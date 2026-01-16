@@ -1,6 +1,28 @@
 import * as vscode from 'vscode';
 
+/**
+ * OSSA Command Provider
+ *
+ * Provides VS Code commands for scaffolding new OSSA manifests:
+ * - Agent manifests with LLM configuration
+ * - Task manifests with step definitions
+ * - Workflow manifests with orchestration logic
+ *
+ * Includes interactive prompts for configuration values and validation
+ * of naming conventions (DNS-1123 compliance, semantic versioning).
+ */
 export class OSSACommandProvider {
+  /**
+   * Create a new Agent manifest interactively
+   *
+   * Prompts the user for:
+   * 1. Agent name (validated for DNS-1123 compliance)
+   * 2. Semantic version
+   * 3. LLM provider (anthropic, openai, google, etc.)
+   * 4. Model name (with provider-specific defaults)
+   *
+   * Opens the generated manifest in a new editor window for further customization.
+   */
   async createNewAgent(): Promise<void> {
     const name = await vscode.window.showInputBox({
       prompt: 'Enter agent name (lowercase, hyphens)',
@@ -61,6 +83,16 @@ export class OSSACommandProvider {
     await vscode.window.showTextDocument(document);
   }
 
+  /**
+   * Create a new Task manifest interactively
+   *
+   * Prompts the user for:
+   * 1. Task name (validated for DNS-1123 compliance)
+   * 2. Semantic version
+   *
+   * Generates a basic task manifest with a single echo step as a starting point.
+   * Opens the generated manifest in a new editor window for further customization.
+   */
   async createNewTask(): Promise<void> {
     const name = await vscode.window.showInputBox({
       prompt: 'Enter task name (lowercase, hyphens)',
@@ -93,6 +125,16 @@ export class OSSACommandProvider {
     await vscode.window.showTextDocument(document);
   }
 
+  /**
+   * Create a new Workflow manifest interactively
+   *
+   * Prompts the user for:
+   * 1. Workflow name (validated for DNS-1123 compliance)
+   * 2. Semantic version
+   *
+   * Generates a basic workflow manifest with an entrypoint and example node structure.
+   * Opens the generated manifest in a new editor window for further customization.
+   */
   async createNewWorkflow(): Promise<void> {
     const name = await vscode.window.showInputBox({
       prompt: 'Enter workflow name (lowercase, hyphens)',
@@ -125,6 +167,22 @@ export class OSSACommandProvider {
     await vscode.window.showTextDocument(document);
   }
 
+  /**
+   * Generate Agent manifest YAML content
+   *
+   * Creates a complete Agent manifest with:
+   * - Metadata (name, version, description)
+   * - LLM configuration (provider, model, temperature)
+   * - Example tool configuration (commented out)
+   * - Example safety controls (commented out)
+   * - Example autonomy settings (commented out)
+   *
+   * @param name - Agent name (DNS-1123 compliant)
+   * @param version - Semantic version
+   * @param provider - LLM provider
+   * @param model - Model identifier
+   * @returns YAML manifest string
+   */
   private generateAgentManifest(name: string, version: string, provider: string, model: string): string {
     return `apiVersion: ossa/v0.3.3
 kind: Agent
@@ -172,6 +230,18 @@ spec:
 `;
   }
 
+  /**
+   * Generate Task manifest YAML content
+   *
+   * Creates a basic Task manifest with:
+   * - Metadata (name, version, description)
+   * - Single echo step as starting point
+   * - Example error handling (commented out)
+   *
+   * @param name - Task name (DNS-1123 compliant)
+   * @param version - Semantic version
+   * @returns YAML manifest string
+   */
   private generateTaskManifest(name: string, version: string): string {
     return `apiVersion: ossa/v0.3.3
 kind: Task
@@ -197,6 +267,20 @@ spec:
 `;
   }
 
+  /**
+   * Generate Workflow manifest YAML content
+   *
+   * Creates a basic Workflow manifest with:
+   * - Metadata (name, version, description)
+   * - Entrypoint definition
+   * - Example node structure with agent reference
+   * - Example parallel execution (commented out)
+   * - Example conditional routing (commented out)
+   *
+   * @param name - Workflow name (DNS-1123 compliant)
+   * @param version - Semantic version
+   * @returns YAML manifest string
+   */
   private generateWorkflowManifest(name: string, version: string): string {
     return `apiVersion: ossa/v0.3.3
 kind: Workflow

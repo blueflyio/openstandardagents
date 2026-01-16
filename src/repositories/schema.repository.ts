@@ -274,9 +274,8 @@ export class SchemaRepository implements ISchemaRepository {
       depth++;
     }
 
-    // Strategy 5: Last resort - try common project paths
+    // Strategy 5: Last resort - try common relative paths
     const commonPaths = [
-      '/Users/flux423/Sites/LLM/OSSA',
       path.resolve(process.cwd(), '../OSSA'),
       path.resolve(process.cwd(), '../../OSSA'),
     ];

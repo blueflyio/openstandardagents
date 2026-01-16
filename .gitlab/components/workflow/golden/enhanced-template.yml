@@ -71,7 +71,9 @@ variables:
   BUILDKIT_CLI: 'buildkit' # Short form of agent-buildkit
   AGENT_BUILDKIT_CLI: 'agent-buildkit' # Full form
   OPS_CLI: 'ops'
-  OSSA_CLI: 'node /Users/flux423/Sites/LLM/OSSA/dist/cli/index.js'
+  # Use globally installed package for CI/CD portability across all runner environments
+  # Alternative: Use 'ossa' directly if @bluefly/openstandardagents is pre-installed in PATH
+  OSSA_CLI: 'npx @bluefly/openstandardagents'
 
   # Agent Configuration
   MAX_AGENTS: '5'
