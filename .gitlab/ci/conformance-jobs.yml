@@ -107,11 +107,15 @@ conformance:all:
       # Test all profiles
       for profile in baseline enterprise gitlab-kagent; do
         echo "Testing profile: $profile"
-        for manifest in spec/v0.3/conformance/tests/$profile/valid/*.yaml 2>/dev/null; do
-          [ -f "$manifest" ] || continue
-          echo "  Testing $manifest"
-          node dist/cli/index.js conformance run "$manifest" --profile "$profile" --verbose || exit 1
-        done
+        if [ -d "spec/v0.3/conformance/tests/$profile/valid" ]; then
+          for manifest in spec/v0.3/conformance/tests/$profile/valid/*.yaml; do
+            [ -f "$manifest" ] || continue
+            echo "  Testing $manifest"
+            node dist/cli/index.js conformance run "$manifest" --profile "$profile" --verbose || exit 1
+          done
+        else
+          echo "  No test manifests found for $profile"
+        fi
       done
     - echo "All conformance tests passed"
   artifacts:
@@ -133,11 +137,15 @@ conformance:examples:
   script:
     - echo "Validating example manifests against baseline profile..."
     - |
-      for manifest in examples/*.yaml examples/*.ossa.yaml; do
-        [ -f "$manifest" ] || continue
-        echo "Testing $manifest"
-        node dist/cli/index.js conformance run "$manifest" --profile baseline --verbose || echo "Warning: $manifest does not meet baseline conformance"
-      done
+      if ls examples/*.yaml examples/*.ossa.yaml 1> /dev/null 2>&1; then
+        for manifest in examples/*.yaml examples/*.ossa.yaml; do
+          [ -f "$manifest" ] || continue
+          echo "Testing $manifest"
+          node dist/cli/index.js conformance run "$manifest" --profile baseline --verbose || echo "Warning: $manifest does not meet baseline conformance"
+        done
+      else
+        echo "No example manifests found"
+      fi
   allow_failure: true
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
