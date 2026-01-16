@@ -1,12 +1,6 @@
 import { describe, it, expect, beforeEach } from '@jest/globals';
 import { DependenciesValidator } from '../../../src/services/validators/dependencies.validator.js';
-import type {
-  AgentManifest,
-  AgentDependency,
-  ValidationResult,
-  DependencyConflict,
-  CircularDependency,
-} from '../../../src/services/validators/dependencies.validator.js';
+import type { AgentManifest } from '../../../src/services/validators/dependencies.validator.js';
 
 describe('DependenciesValidator', () => {
   let validator: DependenciesValidator;

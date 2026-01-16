@@ -103,7 +103,8 @@ export class SchemaRepository implements ISchemaRepository {
 
     // Extract minor version for directory lookup (e.g., "0.3.5" -> "0.3")
     const parts = version.split('.');
-    const minorVersion = parts.length >= 2 ? `${parts[0]}.${parts[1]}` : version;
+    const minorVersion =
+      parts.length >= 2 ? `${parts[0]}.${parts[1]}` : version;
 
     // Try multiple naming patterns for schema files in both dist/spec and spec directories
     const possiblePaths = [
@@ -168,12 +169,16 @@ export class SchemaRepository implements ISchemaRepository {
 
         for (const schemaFile of schemaFiles) {
           // Extract version from schema file name (e.g., "ossa-0.3.5.schema.json" -> "0.3.5")
-          const match = schemaFile.match(/ossa-(?:v)?(\d+\.\d+\.\d+)\.schema\.json/);
+          const match = schemaFile.match(
+            /ossa-(?:v)?(\d+\.\d+\.\d+)\.schema\.json/
+          );
           if (match) {
             versions.push(match[1]);
           } else {
             // Fallback to directory version if schema file doesn't have patch version
-            const exactMatch = schemaFile.match(/ossa-(?:v)?(\d+\.\d+)\.schema\.json/);
+            const exactMatch = schemaFile.match(
+              /ossa-(?:v)?(\d+\.\d+)\.schema\.json/
+            );
             if (exactMatch) {
               versions.push(exactMatch[1]);
             }

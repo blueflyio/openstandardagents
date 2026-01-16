@@ -5,7 +5,7 @@
 
 import { describe, it, expect, beforeEach } from '@jest/globals';
 import { KagentValidator } from '../../../src/services/validators/kagent.validator.js';
-import type { OssaAgent, ValidationResult } from '../../../src/types/index.js';
+import type { OssaAgent } from '../../../src/types/index.js';
 
 describe('KagentValidator', () => {
   let validator: KagentValidator;

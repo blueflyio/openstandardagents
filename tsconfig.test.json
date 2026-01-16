@@ -5,7 +5,9 @@
     "rootDir": ".",
     "module": "CommonJS",
     "moduleResolution": "Node",
-    "isolatedModules": true
+    "isolatedModules": true,
+    "declaration": false,
+    "declarationMap": false
   },
   "include": [
     "tests/**/*",

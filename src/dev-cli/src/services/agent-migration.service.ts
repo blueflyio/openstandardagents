@@ -37,8 +37,7 @@ export class AgentMigrationService {
     const validated = MigrateAgentsRequestSchema.parse(request);
 
     // Get target version from .version.json if not specified
-    const targetVersion =
-      validated.targetVersion || this.getTargetVersion();
+    const targetVersion = validated.targetVersion || this.getTargetVersion();
 
     // Find all agent manifests
     const agentFiles = this.findAgentManifests(validated.paths);
@@ -73,8 +72,7 @@ export class AgentMigrationService {
           success: false,
           oldVersion: 'unknown',
           newVersion: targetVersion,
-          error:
-            error instanceof Error ? error.message : String(error),
+          error: error instanceof Error ? error.message : String(error),
         });
         failed++;
       }
@@ -143,7 +141,8 @@ export class AgentMigrationService {
             return (
               content.includes('apiVersion') &&
               content.includes('ossa/v') &&
-              (content.includes('kind: Agent') || content.includes('"kind": "Agent"'))
+              (content.includes('kind: Agent') ||
+                content.includes('"kind": "Agent"'))
             );
           });
 
