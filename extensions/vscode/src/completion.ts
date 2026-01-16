@@ -1,6 +1,35 @@
 import * as vscode from 'vscode';
 
+/**
+ * OSSA Completion Provider
+ *
+ * Provides intelligent code completion for OSSA manifest files with context-aware
+ * suggestions based on cursor position and document structure.
+ *
+ * Completion categories:
+ * - Top-level fields (apiVersion, kind, metadata, spec)
+ * - Metadata fields (name, version, description, tags)
+ * - Spec fields (role, llm, tools, capabilities, etc.)
+ * - LLM provider names with descriptions
+ *
+ * All completions use VS Code snippets with placeholders for efficient editing.
+ */
 export class OSSACompletionProvider implements vscode.CompletionItemProvider {
+  /**
+   * Provide completion items based on cursor position and context
+   *
+   * Analyzes the text before the cursor to determine appropriate completions:
+   * - Empty lines or comments: top-level fields
+   * - Inside metadata section: metadata fields
+   * - Inside spec section: spec fields
+   * - After provider field: LLM provider names
+   *
+   * @param document - Current text document
+   * @param position - Current cursor position
+   * @param token - Cancellation token
+   * @param context - Completion context
+   * @returns Array of completion items or null
+   */
   provideCompletionItems(
     document: vscode.TextDocument,
     position: vscode.Position,
@@ -60,6 +89,17 @@ export class OSSACompletionProvider implements vscode.CompletionItemProvider {
     return completions;
   }
 
+  /**
+   * Create a completion item with snippet support
+   *
+   * Constructs a VS Code completion item with snippet placeholders and markdown
+   * documentation for rich inline help.
+   *
+   * @param label - Display label in completion list
+   * @param insertText - Snippet text with ${N:placeholder} syntax
+   * @param documentation - Markdown documentation string
+   * @returns Configured completion item
+   */
   private createCompletion(
     label: string,
     insertText: string,
