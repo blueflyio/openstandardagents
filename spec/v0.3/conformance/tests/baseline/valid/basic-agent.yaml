@@ -2,11 +2,13 @@ apiVersion: ossa/v0.3.5
 kind: Agent
 metadata:
   name: basic-test-agent
+  version: "1.0.0"
   description: Basic agent with optional features for baseline testing
   labels:
     environment: test
     category: conformance
 spec:
+  role: assistant
   type: service
   identity:
     id: basic-test-agent

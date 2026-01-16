@@ -5,10 +5,37 @@ metadata:
   description: Full GitLab Kagent configuration
   version: "1.0.0"
 spec:
+  role: assistant
   type: service
   identity:
     id: kagent-full-test-agent
     version: "1.0.0"
+  completion:
+    criteria:
+      - type: task_completed
+        description: Successfully completed task
+    timeout_ms: 300000
+  checkpointing:
+    enabled: true
+    interval_ms: 45000
+    strategy: incremental
+  monitoring:
+    metrics:
+      enabled: true
+      interval_ms: 30000
+    alerts:
+      enabled: true
+      channels: ["email", "slack", "pagerduty"]
+  security:
+    authentication:
+      required: true
+      method: oauth2
+    authorization:
+      rbac: true
+      policies: ["admin", "developer", "viewer"]
+    encryption:
+      at_rest: true
+      in_transit: true
   capabilities:
     - name: code_review
       description: Review code changes
@@ -17,28 +44,34 @@ spec:
   llm:
     provider: anthropic
     model: claude-3-5-sonnet-20241022
-extensions:
-  kagent:
-    enabled: true
-    version: "1.0.0"
-    gitlab_integration:
+  extensions:
+    kagent:
       enabled: true
-      url: https://gitlab.com
-      ci_cd:
+      version: "1.0.0"
+      kubernetes:
+        namespace: kagent-production
+        resourceLimits:
+          cpu: "2000m"
+          memory: "4Gi"
+          storage: "10Gi"
+        requests:
+          cpu: "1000m"
+          memory: "2Gi"
+      gitlab_integration:
         enabled: true
-        auto_trigger: true
-      issues:
-        enabled: true
-        auto_label: true
-      merge_requests:
-        enabled: true
-        auto_review: true
-      pipelines:
-        enabled: true
-        auto_retry: true
-    kubernetes_native:
-      enabled: true
-      namespace: agents
+        url: https://gitlab.com
+        ci_cd:
+          enabled: true
+          auto_trigger: true
+        issues:
+          enabled: true
+          auto_label: true
+        merge_requests:
+          enabled: true
+          auto_review: true
+        pipelines:
+          enabled: true
+          auto_retry: true
       deployment:
         strategy: blue-green
         replicas: 3
@@ -47,6 +80,13 @@ extensions:
         min_replicas: 2
         max_replicas: 10
         target_cpu_utilization: 70
-      monitoring:
-        enabled: true
-        dashboard_url: https://grafana.example.com
+      observability:
+        monitoring:
+          enabled: true
+          dashboard_url: https://grafana.example.com
+        traces:
+          enabled: true
+          exporter: jaeger
+        metrics:
+          enabled: true
+          exporter: prometheus

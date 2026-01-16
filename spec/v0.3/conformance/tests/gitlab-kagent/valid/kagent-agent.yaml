@@ -8,10 +8,32 @@ metadata:
     platform: gitlab
     extension: kagent
 spec:
+  role: assistant
   type: service
   identity:
     id: kagent-test-agent
     version: "1.0.0"
+  completion:
+    criteria:
+      - type: task_completed
+        description: Task completed successfully
+    timeout_ms: 180000
+  checkpointing:
+    enabled: true
+    interval_ms: 60000
+    strategy: full
+  monitoring:
+    metrics:
+      enabled: true
+      interval_ms: 30000
+    alerts:
+      enabled: true
+  security:
+    authentication:
+      required: true
+      method: oauth2
+    authorization:
+      rbac: true
   capabilities:
     - name: gitlab_operations
       description: Perform GitLab operations
@@ -33,39 +55,37 @@ spec:
       enabled: true
     logging:
       enabled: true
-extensions:
-  kagent:
-    enabled: true
-    version: "1.0.0"
-    gitlab_integration:
+  extensions:
+    kagent:
       enabled: true
-      ci_cd:
+      version: "1.0.0"
+      kubernetes:
+        namespace: kagent-agents
+        resourceLimits:
+          cpu: "1000m"
+          memory: "2Gi"
+        requests:
+          cpu: "500m"
+          memory: "1Gi"
+      gitlab_integration:
         enabled: true
-      issues:
-        enabled: true
-      merge_requests:
-        enabled: true
-      pipelines:
-        enabled: true
-    kubernetes_native:
-      enabled: true
-      deployment:
-        strategy: rolling
-      scaling:
-        auto: true
-        min_replicas: 1
-        max_replicas: 5
-      monitoring:
-        enabled: true
-    observability:
-      traces:
-        enabled: true
-        exporter: jaeger
-      metrics:
-        enabled: true
-        exporter: prometheus
-    security:
-      rbac:
-        enabled: true
-      secrets_management:
-        provider: vault
+        ci_cd:
+          enabled: true
+        issues:
+          enabled: true
+        merge_requests:
+          enabled: true
+        pipelines:
+          enabled: true
+      observability:
+        traces:
+          enabled: true
+          exporter: jaeger
+        metrics:
+          enabled: true
+          exporter: prometheus
+      security:
+        rbac:
+          enabled: true
+        secrets_management:
+          provider: vault

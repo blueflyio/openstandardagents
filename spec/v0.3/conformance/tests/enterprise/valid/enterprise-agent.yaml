@@ -8,10 +8,32 @@ metadata:
     environment: staging
     tier: enterprise
 spec:
+  role: assistant
   type: service
   identity:
     id: enterprise-test-agent
     version: "2.1.0"
+  completion:
+    criteria:
+      - type: task_completed
+        description: Task is successfully completed
+    timeout_ms: 300000
+  checkpointing:
+    enabled: true
+    interval_ms: 30000
+    strategy: incremental
+  monitoring:
+    metrics:
+      enabled: true
+      interval_ms: 60000
+    alerts:
+      enabled: true
+  security:
+    authentication:
+      required: true
+      method: api_key
+    authorization:
+      rbac: true
   capabilities:
     - name: analysis
       description: Analyze data
