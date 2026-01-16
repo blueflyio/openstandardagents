@@ -65,7 +65,7 @@ Healers automatically detect and fix issues in code, security, architecture, and
 
 **Version:** 0.1.0
 **Domain:** specification → schema-validation → consistency-maintenance
-**File:** `/Users/thomas.scola/Sites/Agent-platform/openstandardagents/.agents/spec-healer/manifest.ossa.yaml`
+**File:** `.agents/spec-healer/manifest.ossa.yaml`
 
 Agent that maintains OSSA specification consistency and validates schema correctness.
 
@@ -94,7 +94,7 @@ Agent that maintains OSSA specification consistency and validates schema correct
 
 **Version:** 1.0.0
 **Domain:** security → vulnerability-management → remediation
-**File:** `/Users/thomas.scola/Sites/Agent-platform/openstandardagents/.agents/workers/security-healer/manifest.ossa.yaml`
+**File:** `.agents/workers/security-healer/manifest.ossa.yaml`
 
 Security scanning and remediation agent with automated patching, SBOM generation, and compliance reporting.
 
@@ -130,7 +130,7 @@ Workers are specialized agents that perform specific tasks in their domain.
 
 **Version:** 1.0.0
 **Domain:** ossa → validation → schema-validation
-**File:** `/Users/thomas.scola/Sites/Agent-platform/openstandardagents/.agents/bot-ossa-validator.ossa.yaml`
+**File:** `.agents/bot-ossa-validator.ossa.yaml`
 
 Validates OSSA manifests against the schema specification. Ensures compliance with OSSA v0.3.0 standards and best practices.
 
@@ -159,7 +159,7 @@ Validates OSSA manifests against the schema specification. Ensures compliance wi
 
 **Version:** 1.0.0
 **Domain:** platform → agent-optimization → v035_feature_completion
-**File:** `/Users/thomas.scola/Sites/Agent-platform/openstandardagents/.agents/workers/agent-optimizer-v035/manifest.ossa.yaml`
+**File:** `.agents/workers/agent-optimizer-v035/manifest.ossa.yaml`
 
 Optimizes all OSSA agents to leverage 100% of v0.3.5 features.
 
@@ -185,7 +185,7 @@ Optimizes all OSSA agents to leverage 100% of v0.3.5 features.
 
 **Version:** 1.0.0
 **Domain:** platform → automation → branch_cleanup_agent
-**File:** `/Users/thomas.scola/Sites/Agent-platform/openstandardagents/.agents/workers/branch-cleanup-agent/manifest.ossa.yaml`
+**File:** `.agents/workers/branch-cleanup-agent/manifest.ossa.yaml`
 
 Specialized agent for branch cleanup and repository maintenance.
 
@@ -210,7 +210,7 @@ Specialized agent for branch cleanup and repository maintenance.
 
 **Version:** 1.0.0
 **Domain:** platform → automation → code_quality_fixer
-**File:** `/Users/thomas.scola/Sites/Agent-platform/openstandardagents/.agents/workers/code-quality-fixer/manifest.ossa.yaml`
+**File:** `.agents/workers/code-quality-fixer/manifest.ossa.yaml`
 
 Specialized agent for code quality analysis and automated fixing.
 
@@ -236,7 +236,7 @@ Specialized agent for code quality analysis and automated fixing.
 
 **Version:** 1.0.0
 **Domain:** finops → cost-optimization → llm-cost-management
-**File:** `/Users/thomas.scola/Sites/Agent-platform/openstandardagents/.agents/workers/cost-optimizer/manifest.ossa.yaml`
+**File:** `.agents/workers/cost-optimizer/manifest.ossa.yaml`
 
 Intelligent cost optimization agent that monitors and optimizes LLM costs across all OSSA agents. Leverages v0.3.5 MoE, BAT framework, and MOE metrics to achieve 30%+ cost reduction.
 
@@ -272,7 +272,7 @@ Intelligent cost optimization agent that monitors and optimizes LLM costs across
 
 **Version:** 1.0.0
 **Domain:** platform → automation → documentation_updater
-**File:** `/Users/thomas.scola/Sites/Agent-platform/openstandardagents/.agents/workers/documentation-updater/manifest.ossa.yaml`
+**File:** `.agents/workers/documentation-updater/manifest.ossa.yaml`
 
 Specialized agent for documentation generation and updates.
 
@@ -298,7 +298,7 @@ Specialized agent for documentation generation and updates.
 **Version:** 1.0.0
 **Domain:** migration → drupal → d7-to-d11
 **Platform:** Drupal
-**File:** `/Users/thomas.scola/Sites/Agent-platform/openstandardagents/.agents/workers/drupal-migration-intelligence/agent.ossa.yaml`
+**File:** `.agents/workers/drupal-migration-intelligence/agent.ossa.yaml`
 
 Intelligent Drupal migration specialist for D7 to D11 migrations with automated assessment and planning.
 
@@ -328,7 +328,7 @@ Intelligent Drupal migration specialist for D7 to D11 migrations with automated 
 **Version:** 1.0.0
 **Domain:** development → drupal → module-development
 **Platform:** Drupal
-**File:** `/Users/thomas.scola/Sites/Agent-platform/openstandardagents/.agents/workers/drupal-module-developer/agent.ossa.yaml`
+**File:** `.agents/workers/drupal-module-developer/agent.ossa.yaml`
 
 Advanced Drupal module development specialist with AI-powered code generation and best practices.
 
@@ -359,7 +359,7 @@ Advanced Drupal module development specialist with AI-powered code generation an
 **Version:** 1.0.0
 **Domain:** security → compliance → drupal-security
 **Platform:** Drupal
-**File:** `/Users/thomas.scola/Sites/Agent-platform/openstandardagents/.agents/workers/drupal-security-compliance/agent.ossa.yaml`
+**File:** `.agents/workers/drupal-security-compliance/agent.ossa.yaml`
 
 Drupal security and compliance specialist for FedRAMP, NIST, and enterprise security requirements.
 
@@ -390,7 +390,7 @@ Drupal security and compliance specialist for FedRAMP, NIST, and enterprise secu
 
 **Version:** 1.0.0
 **Domain:** platform → automation → skills_completer
-**File:** `/Users/thomas.scola/Sites/Agent-platform/openstandardagents/.agents/workers/skills-completer/manifest.ossa.yaml`
+**File:** `.agents/workers/skills-completer/manifest.ossa.yaml`
 
 Specialized agent for skill completion and management.
 
@@ -419,7 +419,7 @@ Workflows orchestrate multi-step processes and route events to appropriate agent
 **Version:** 1.0.0
 **Kind:** Workflow
 **Domain:** gitlab → merge-requests → routing
-**File:** `/Users/thomas.scola/Sites/Agent-platform/openstandardagents/.agents/workflows/mr-agent-router.ossa.yaml`
+**File:** `.agents/workflows/mr-agent-router.ossa.yaml`
 
 Routes GitLab MR events to OSSA agents based on file changes, commands, and mentions.
 

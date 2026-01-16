@@ -76,7 +76,7 @@
           "gpt-4o"
         ]
       },
-      "file_path": "/Users/thomas.scola/Sites/Agent-platform/openstandardagents/.agents/orchestrators/meta-orchestrator/manifest.ossa.yaml",
+      "file_path": ".agents/orchestrators/meta-orchestrator/manifest.ossa.yaml",
       "compliance": {
         "v0_3_5_compliant": true,
         "features": {
@@ -124,7 +124,7 @@
         "provider": "anthropic",
         "model": "claude-sonnet-4-20250514"
       },
-      "file_path": "/Users/thomas.scola/Sites/Agent-platform/openstandardagents/.agents/spec-healer/manifest.ossa.yaml",
+      "file_path": ".agents/spec-healer/manifest.ossa.yaml",
       "compliance": {
         "v0_3_5_compliant": true,
         "features": {
@@ -171,7 +171,7 @@
         "provider": "anthropic",
         "model": "claude-sonnet-4-20250514"
       },
-      "file_path": "/Users/thomas.scola/Sites/Agent-platform/openstandardagents/.agents/workers/agent-optimizer-v035/manifest.ossa.yaml",
+      "file_path": ".agents/workers/agent-optimizer-v035/manifest.ossa.yaml",
       "compliance": {
         "v0_3_5_compliant": true,
         "features": {
@@ -204,7 +204,7 @@
         "provider": "anthropic",
         "model": "claude-sonnet-4-20250514"
       },
-      "file_path": "/Users/thomas.scola/Sites/Agent-platform/openstandardagents/.agents/workers/branch-cleanup-agent/manifest.ossa.yaml",
+      "file_path": ".agents/workers/branch-cleanup-agent/manifest.ossa.yaml",
       "compliance": {
         "v0_3_5_compliant": true,
         "features": {
@@ -239,7 +239,7 @@
         "provider": "anthropic",
         "model": "claude-sonnet-4-20250514"
       },
-      "file_path": "/Users/thomas.scola/Sites/Agent-platform/openstandardagents/.agents/workers/code-quality-fixer/manifest.ossa.yaml",
+      "file_path": ".agents/workers/code-quality-fixer/manifest.ossa.yaml",
       "compliance": {
         "v0_3_5_compliant": true,
         "features": {
@@ -276,7 +276,7 @@
         "provider": "anthropic",
         "model": "claude-haiku-4-20250514"
       },
-      "file_path": "/Users/thomas.scola/Sites/Agent-platform/openstandardagents/.agents/workers/cost-optimizer/manifest.ossa.yaml",
+      "file_path": ".agents/workers/cost-optimizer/manifest.ossa.yaml",
       "compliance": {
         "v0_3_5_compliant": true,
         "features": {
@@ -321,7 +321,7 @@
         "provider": "anthropic",
         "model": "claude-sonnet-4-20250514"
       },
-      "file_path": "/Users/thomas.scola/Sites/Agent-platform/openstandardagents/.agents/workers/documentation-updater/manifest.ossa.yaml",
+      "file_path": ".agents/workers/documentation-updater/manifest.ossa.yaml",
       "compliance": {
         "v0_3_5_compliant": true,
         "features": {
@@ -359,7 +359,7 @@
           "gpt-4o"
         ]
       },
-      "file_path": "/Users/thomas.scola/Sites/Agent-platform/openstandardagents/.agents/workers/drupal-migration-intelligence/agent.ossa.yaml",
+      "file_path": ".agents/workers/drupal-migration-intelligence/agent.ossa.yaml",
       "compliance": {
         "v0_3_5_compliant": true,
         "features": {
@@ -405,7 +405,7 @@
           "gpt-4o"
         ]
       },
-      "file_path": "/Users/thomas.scola/Sites/Agent-platform/openstandardagents/.agents/workers/drupal-module-developer/agent.ossa.yaml",
+      "file_path": ".agents/workers/drupal-module-developer/agent.ossa.yaml",
       "compliance": {
         "v0_3_5_compliant": true,
         "features": {
@@ -451,7 +451,7 @@
           "gpt-4o"
         ]
       },
-      "file_path": "/Users/thomas.scola/Sites/Agent-platform/openstandardagents/.agents/workers/drupal-security-compliance/agent.ossa.yaml",
+      "file_path": ".agents/workers/drupal-security-compliance/agent.ossa.yaml",
       "compliance": {
         "v0_3_5_compliant": true,
         "features": {
@@ -506,7 +506,7 @@
           "gpt-4o"
         ]
       },
-      "file_path": "/Users/thomas.scola/Sites/Agent-platform/openstandardagents/.agents/workers/security-healer/manifest.ossa.yaml",
+      "file_path": ".agents/workers/security-healer/manifest.ossa.yaml",
       "compliance": {
         "v0_3_5_compliant": true,
         "features": {
@@ -552,7 +552,7 @@
         "provider": "anthropic",
         "model": "claude-sonnet-4-20250514"
       },
-      "file_path": "/Users/thomas.scola/Sites/Agent-platform/openstandardagents/.agents/workers/skills-completer/manifest.ossa.yaml",
+      "file_path": ".agents/workers/skills-completer/manifest.ossa.yaml",
       "compliance": {
         "v0_3_5_compliant": true,
         "features": {
@@ -584,7 +584,7 @@
         "file-type-routing",
         "response-aggregation"
       ],
-      "file_path": "/Users/thomas.scola/Sites/Agent-platform/openstandardagents/.agents/workflows/mr-agent-router.ossa.yaml",
+      "file_path": ".agents/workflows/mr-agent-router.ossa.yaml",
       "compliance": {
         "v0_3_5_compliant": true,
         "features": {
