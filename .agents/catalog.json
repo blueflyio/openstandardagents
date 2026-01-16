@@ -29,7 +29,7 @@
           "claude-3-5-sonnet-20241022"
         ]
       },
-      "file_path": "/Users/thomas.scola/Sites/Agent-platform/openstandardagents/.agents/bot-ossa-validator.ossa.yaml",
+      "file_path": ".agents/bot-ossa-validator.ossa.yaml",
       "compliance": {
         "v0_3_5_compliant": true,
         "features": {

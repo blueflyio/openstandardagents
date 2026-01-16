@@ -23,7 +23,7 @@ Orchestrators manage and coordinate multiple agents, routing work and monitoring
 
 **Version:** 1.0.0
 **Domain:** orchestration → agent-management → coordination
-**File:** `/Users/thomas.scola/Sites/Agent-platform/openstandardagents/.agents/orchestrators/meta-orchestrator/manifest.ossa.yaml`
+**File:** `.agents/orchestrators/meta-orchestrator/manifest.ossa.yaml`
 
 Master orchestrator agent that manages all other OSSA agents, routes work, monitors health, and coordinates multi-agent workflows.
 
