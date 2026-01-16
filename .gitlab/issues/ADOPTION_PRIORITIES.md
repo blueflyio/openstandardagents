@@ -76,7 +76,7 @@ Based on integration research with kagent.dev, AgentQL, AgentK, dagrunner, Symfo
 
 ```bash
 # Each issue gets its own worktree
-WORKTREE_BASE="/Users/flux423/Sites/.workingtrees/LLM/openstandardagents"
+WORKTREE_BASE="${HOME}/.worktrees/openstandardagents"
 
 # Tier 1 - Start immediately
 git worktree add "$WORKTREE_BASE/182-openapi-conversion" -b feature/182-openapi-conversion release/v0.3.x
