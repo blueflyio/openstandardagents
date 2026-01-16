@@ -294,12 +294,17 @@ export class OpenAPIZodGenerator implements Generator {
     const lines: string[] = [];
     const refs = new Map<string, string>();
 
+    // Convert absolute path to relative path from project root
+    const relativeSourceFile = sourceFile
+      ? path.relative(process.cwd(), sourceFile)
+      : 'shared schemas';
+
     // Header
     lines.push('/**');
     lines.push(` * ${title} - Zod Schemas`);
     lines.push(' *');
     lines.push(' * AUTO-GENERATED - DO NOT EDIT');
-    lines.push(` * Generated from: ${sourceFile || 'shared schemas'}`);
+    lines.push(` * Generated from: ${relativeSourceFile}`);
     lines.push(` * OSSA Version: ${version}`);
     lines.push(` * API Version: ${apiVersion}`);
     lines.push(` * Generated on: ${new Date().toISOString()}`);
