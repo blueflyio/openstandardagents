@@ -69,8 +69,8 @@ spec:
     input:
       type: object
       required:
-      required:
         - schema_path
+      properties:
         schema_path:
           type: string
           description: Path to the JSON Schema file
