@@ -6,9 +6,29 @@
 import { injectable } from 'inversify';
 import type { ErrorObject } from 'ajv';
 import type { OssaAgent, ValidationResult } from '../../types/index.js';
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+
+// Load CrewAI schema
+const crewaiSchemaPath = join(
+  process.cwd(),
+  'spec/v0.3/extensions/crewai/crewai.schema.json'
+);
+const crewaiSchema = JSON.parse(readFileSync(crewaiSchemaPath, 'utf-8'));
 
 @injectable()
 export class CrewAIValidator {
+  private ajv: Ajv;
+  private validateCrewAI: ReturnType<Ajv['compile']>;
+
+  constructor() {
+    this.ajv = new Ajv({ allErrors: true, strict: false });
+    addFormats(this.ajv);
+    this.validateCrewAI = this.ajv.compile(crewaiSchema);
+  }
+
   validate(manifest: OssaAgent): ValidationResult {
     const errors: ErrorObject[] = [];
     const warnings: string[] = [];
@@ -16,8 +36,25 @@ export class CrewAIValidator {
     const crewaiExt = manifest.extensions?.crewai as
       | Record<string, unknown>
       | undefined;
-    if (!crewaiExt || (crewaiExt.enabled as boolean | undefined) === false) {
+
+    if (!crewaiExt) {
       return { valid: true, errors: [], warnings: [] };
+    }
+
+    // Validate against CrewAI extension schema
+    const valid = this.validateCrewAI(crewaiExt);
+    if (!valid) {
+      const schemaErrors = this.validateCrewAI.errors || [];
+      errors.push(
+        ...schemaErrors.map((err: ErrorObject) => ({
+          ...err,
+          instancePath: `/extensions/crewai${err.instancePath}`,
+        }))
+      );
+    }
+
+    if ((crewaiExt.enabled as boolean | undefined) === false) {
+      return { valid: errors.length === 0, errors, warnings };
     }
 
     // Validate agent_type

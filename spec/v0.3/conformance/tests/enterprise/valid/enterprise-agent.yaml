@@ -1,0 +1,36 @@
+apiVersion: ossa/v0.3.5
+kind: Agent
+metadata:
+  name: enterprise-test-agent
+  description: Enterprise agent with full configuration
+  version: "2.1.0"
+  labels:
+    environment: staging
+    tier: enterprise
+spec:
+  type: service
+  identity:
+    id: enterprise-test-agent
+    version: "2.1.0"
+  capabilities:
+    - name: analysis
+      description: Analyze data
+  llm:
+    provider: openai
+    model: gpt-4-turbo
+  autonomy:
+    level: semi_autonomous
+    approval_required: false
+  constraints:
+    cost:
+      max_cost_per_task: 1.0
+      currency: USD
+    performance:
+      max_execution_time_ms: 60000
+  observability:
+    tracing:
+      enabled: true
+    metrics:
+      enabled: true
+    logging:
+      enabled: true

@@ -279,6 +279,6 @@ v035Command
     features.forEach((feature, idx) => {
       console.log(chalk.green(`${idx + 1}. ${feature.name}`));
       console.log(chalk.gray(`   ${feature.description}`));
-      console.log(chalk.gray(`   Schema: spec/v0.3.5/${feature.schema}\n`));
+      console.log(chalk.gray(`   Schema: spec/v0.3/${feature.schema}\n`));
     });
   });

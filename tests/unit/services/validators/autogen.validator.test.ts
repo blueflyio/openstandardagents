@@ -41,7 +41,8 @@ describe('AutoGenValidator', () => {
         extensions: {
           autogen: {
             enabled: true,
-            agent_type: 'assistant',
+            pattern: 'two_agent',
+            human_input_mode: 'NEVER',
           },
         },
       };

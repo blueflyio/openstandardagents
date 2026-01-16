@@ -52,10 +52,11 @@
 #### Feature Branch Push
 - `test:quick` - Quick validation only ✅
 - `build:dist` - Builds artifacts ✅
+- `validate:kagent-examples` - Validates Kagent examples ✅
 - Security jobs - SKIPPED ✅
 
 #### MR Pipeline
-- All validation jobs ✅
+- All validation jobs including `validate:kagent-examples` ✅
 - `build:dist` ✅
 - Full test suite (unit, integration, e2e) ✅
 - All security jobs (SAST, Dependency, Secret, IaC) ✅
@@ -64,10 +65,11 @@
 #### Merge Train
 - `build:dist` - SKIPPED (uses cache) ✅
 - `train:quick-validate` - Quick validation ✅
+- `validate:kagent-examples` - Validates Kagent examples ✅
 - Full tests - SKIPPED (already passed in MR) ✅
 
 #### Release/Main Branch
-- Full validation ✅
+- Full validation including Kagent examples ✅
 - Full test suite ✅
 - Full security scanning ✅
 - Release automation ✅
@@ -84,6 +86,39 @@
 .pre → validate → build → test → security → quality → release → .post
 ```
 All stages properly ordered ✅
+
+### ✅ Kagent Extension Validation
+**Job:** `validate:kagent-examples` (validate stage)
+
+**Purpose:** Validates all GitLab Kagent (Kubernetes Agents) example manifests for schema compliance
+
+**Validation:**
+- Validates `examples/kagent/*.ossa.yaml` files
+- Uses compiled Kagent validator from `src/services/validators/kagent.validator.ts`
+- Checks:
+  - Schema compliance via `spec/v0.3/extensions/kagent/kagent.schema.json`
+  - Kubernetes namespace format (DNS-1123 compliant)
+  - CPU/Memory resource limit formats
+  - Cost limit validations (maxTokensPerDay, maxCostPerDay)
+  - Audit log retention format
+  - Agent-to-agent communication endpoints
+  - GitLab integration configuration
+
+**Test Coverage:**
+- 24 unit tests in `tests/unit/validators/kagent.validator.test.ts`
+- Validates all Kagent extension features and error handling
+- Ensures error messages are clear and actionable
+
+**Runs On:**
+- Feature branch push (when changes affect `examples/kagent/`)
+- MR pipelines (always)
+- Release branches (always)
+- Main branch (always)
+
+**Dependencies:**
+- `build:dist` (for compiled CLI)
+- Kagent schema: `spec/v0.3/extensions/kagent/kagent.schema.json`
+- Kagent validator: `src/services/validators/kagent.validator.ts`
 
 ---
 

@@ -244,7 +244,7 @@ function generateAPIReference(outputDir: string, features: FeatureDoc[]): void {
   features.forEach(feature => {
     apiRef += `### ${feature.name}
 
-**Schema File**: \`spec/v0.3.5/${feature.schema}\`
+**Schema File**: \`spec/v0.3/${feature.schema}\`
 
 **Key Properties**:
 `;
