@@ -67,4 +67,5 @@
     - job: test:lint
     - job: test:security
     - job: test:e2e
+    - job: test:smoke
     - job: quality:gates:full

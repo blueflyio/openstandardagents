@@ -129,6 +129,24 @@ test:e2e:
     expire_in: 7 days
   allow_failure: false
 
+# Smoke tests - production-grade validation (uses .rules:full)
+# Validates: npm pack installation, exports, CLI commands, schema coverage
+test:smoke:
+  extends:
+    - .test-job-base
+    - .rules:full
+  stage: test
+  timeout: 15 minutes
+  script:
+    - npm run test:smoke
+  artifacts:
+    reports:
+      junit: test-results/junit.xml
+    paths:
+      - test-results/
+    expire_in: 7 days
+  allow_failure: false
+
 # Lint and typecheck - always run (fast) - uses .rules:fast
 test:lint:
   stage: test
