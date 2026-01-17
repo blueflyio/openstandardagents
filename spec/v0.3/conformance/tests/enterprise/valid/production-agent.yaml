@@ -30,19 +30,6 @@ spec:
     alerts:
       enabled: true
       channels: ["email", "slack"]
-  security:
-    authentication:
-      required: true
-      method: oauth2
-    authorization:
-      rbac: true
-      policies: ["read", "write", "execute"]
-    encryption:
-      at_rest: true
-      in_transit: true
-    data_privacy:
-      enabled: true
-      pii_handling: redact
   capabilities:
     - name: data_processing
       description: Process and analyze data
@@ -72,6 +59,17 @@ spec:
     logging:
       enabled: true
       level: info
+  security:
+    authentication:
+      required: true
+      methods:
+        - oauth2
+    authorization:
+      enabled: true
+      model: rbac
+    data_privacy:
+      enabled: true
+      pii_handling: redact
   resilience:
     retry_policy:
       max_attempts: 3
@@ -85,3 +83,30 @@ spec:
     scaling:
       min_instances: 2
       max_instances: 10
+  extensions:
+    moe:
+      enabled: true
+      routing_strategy: least_cost
+      models:
+        - provider: anthropic
+          model: claude-3-5-haiku-20241022
+          use_case: simple_queries
+        - provider: anthropic
+          model: claude-3-5-sonnet-20241022
+          use_case: complex_analysis
+    bat:
+      enabled: true
+      criteria:
+        - type: cost
+          weight: 0.4
+        - type: performance
+          weight: 0.3
+        - type: quality
+          weight: 0.3
+    feedback_loops:
+      enabled: true
+      mechanisms:
+        - type: user_feedback
+          collection_method: inline
+        - type: performance_metrics
+          interval_ms: 60000
