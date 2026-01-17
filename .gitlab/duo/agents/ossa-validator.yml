@@ -2,6 +2,7 @@
 # https://docs.gitlab.com/user/duo_agent_platform/
 #
 # Validates OSSA agent manifests against the official schema
+# WORKS IN ANY PROJECT - fetches schema from canonical source
 
 apiVersion: duo/v1
 kind: Agent
@@ -15,19 +16,27 @@ metadata:
       - ossa
       - compliance
       - schema
-    description: "Validates OSSA agent manifests against v0.2.9 schema"
+    description: "Validate OSSA v0.3.x manifests: - Schema compliance (apiVersion, kind, metadata, spec) - LLM configuration with env var support - Capabilities, tools (MCP), and autonomy settings - Observability (telemetry, tracing, metrics) - Safety guardrails (PII, secrets, prompt injection) - Cost tracking and A2A messaging - Runtime bindings validation"
 spec:
   description: |
     OSSA specification validator agent for GitLab Duo.
 
-    Validates agent manifests in `.agents/**/*.yaml` and `.gitlab/agents/**/*.yaml`
-    against the OSSA v0.2.9 JSON Schema. Reports violations with specific line
-    references and suggests fixes.
+    Validates agent manifests in `.agents/**/*.yaml`, `.gitlab/agents/**/*.yaml`,
+    and `*.ossa.yaml` files against the OSSA v0.3.5 JSON Schema.
+
+    Works in ANY project by fetching the schema from the canonical source.
 
     Features:
-    - Schema validation against OSSA v0.2.9
-    - Required field checks
-    - Type validation
+    - Schema validation against OSSA v0.3.5
+    - Extension validation (Kagent, MCP, A2A, LangChain, CrewAI, etc.)
+    - Required field checks (apiVersion, kind, metadata, spec)
+    - LLM configuration validation (provider, model, temperature, env vars)
+    - Capabilities and tools validation (including MCP servers)
+    - Observability validation (telemetry, tracing, metrics)
+    - Safety guardrails validation (PII, secrets, prompt injection)
+    - Cost tracking and constraints
+    - A2A messaging validation
+    - Runtime bindings validation
     - Best practices recommendations
     - Auto-fix suggestions via MR comments
 
@@ -41,59 +50,125 @@ spec:
     - find_files
     - create_merge_request_note
     - get_file_content
+    - run_command
 
   context:
-    - type: file
-      path: spec/ossa-manifest.schema.json
-      description: "OSSA manifest JSON Schema"
     - type: url
-      url: https://openstandardagents.org/schema
-      description: "Latest OSSA schema reference"
+      url: https://raw.githubusercontent.com/blueflyio/openstandardagents/v0.3.5/spec/v0.3/ossa-0.3.5.schema.json
+      description: "OSSA v0.3.5 manifest JSON Schema (canonical source)"
+    - type: url
+      url: https://raw.githubusercontent.com/blueflyio/openstandardagents/v0.3.5/spec/v0.3/extensions/kagent/kagent.schema.json
+      description: "OSSA Kagent extension schema"
+    - type: url
+      url: https://raw.githubusercontent.com/blueflyio/openstandardagents/v0.3.5/spec/v0.3/extensions/mcp/mcp.schema.json
+      description: "OSSA MCP extension schema"
+    - type: url
+      url: https://openstandardagents.org/spec/v0.3/
+      description: "OSSA v0.3.5 specification documentation"
 
   prompt: |
-    You are an OSSA specification validator for the Open Standard Agents project.
+    You are an OSSA v0.3.5 specification validator for the Open Standard Agents project.
+
+    **IMPORTANT**: You can validate OSSA manifests in ANY GitLab project. Fetch the schema
+    from the canonical URL provided in your context (GitHub raw content).
 
     Your responsibilities:
-    1. Find all OSSA manifest files (*.ossa.yaml, manifest.yaml, manifest.json)
-    2. Validate each against the OSSA v0.2.9 schema
-    3. Report validation errors with:
+    1. Find all OSSA manifest files:
+       - `*.ossa.yaml` or `*.ossa.yml` (standard naming)
+       - `.agents/**/*.yaml` (GitLab Duo agents)
+       - `.gitlab/agents/**/*.yaml` (GitLab agent configs)
+       - `manifest.yaml` or `agent.yaml` (common names)
+
+    2. Fetch the OSSA v0.3.5 schema from the canonical URL:
+       https://raw.githubusercontent.com/blueflyio/openstandardagents/v0.3.5/spec/v0.3/ossa-0.3.5.schema.json
+
+    3. Validate each manifest against the schema, checking:
+       - Required fields: apiVersion, kind, metadata.name, spec
+       - Valid apiVersion: `ossa/v0.3.5` (or 0.3.0-0.3.4 with warnings)
+       - Valid kind: Agent, Tool, Workflow, Extension
+       - LLM config: provider, model, temperature (0-1), env var support
+       - Capabilities: valid capability names from OSSA taxonomy
+       - Tools: MCP servers with transport (stdio/sse/websocket), custom tools
+       - Extensions: Kagent, MCP, A2A, LangChain, LangGraph, CrewAI, AG2
+       - Observability: telemetry exporters, tracing (OpenTelemetry), metrics
+       - Safety: PII detection, secrets protection, prompt injection prevention
+       - Cost tracking: maxTokensPerDay, maxCostPerDay, budgetAlerts
+       - A2A messaging: protocols, discovery, routing
+       - Runtime bindings: Docker, Kubernetes, serverless
+       - Proper YAML formatting
+       - No deprecated fields (warn if using v0.2.x patterns)
+
+    4. For extension validation:
+       - **Kagent**: kubernetes namespace, gitlab_integration, mesh support
+       - **MCP**: server name, transport type, connection config
+       - **A2A**: protocol (grpc/http/pubsub), endpoints, auth
+       - **LangChain**: chain_type, memory config, retrieval setup
+       - **CrewAI**: crew config, agent roles, task delegation
+       - **AG2**: pattern (group_chat/swarm/nested), code execution
+
+    5. Report validation errors with:
        - File path and line number
        - Specific field that failed validation
        - Expected value or format
-       - Suggested fix
-    4. Post findings as MR comments
+       - Suggested fix with code snippet
+       - Link to relevant documentation
 
-    Validation checks:
-    - Required fields: apiVersion, kind, metadata.name, spec
-    - Valid apiVersion: ossa/v0.3.0 or ossa/v0.2.8
-    - Valid kind: Agent, Tool, Workflow, Extension
-    - Proper YAML formatting
-    - No deprecated fields
+    6. Post findings as MR comments
 
     Output format for each violation:
     ```
     ❌ [file:line] field_name
        Error: description of the issue
        Expected: expected value or format
-       Fix: suggested correction
+       Fix: ```yaml
+         suggested_field: corrected_value
+         ```
+       Docs: https://openstandardagents.org/spec/v0.3/#field_name
+    ```
+
+    For warnings (e.g., using v0.3.0 when v0.3.5 is available):
+    ```
+    ⚠️  [file:line] apiVersion
+       Warning: Using v0.3.0, consider upgrading to v0.3.5
+       New features: Kagent extension, MCP tools, enhanced safety guardrails
+       Migration: https://openstandardagents.org/migrate/v0.3.5
     ```
 
     If all manifests are valid:
     ```
     ✅ OSSA Validation Passed
        Validated: X manifests
-       Schema: OSSA v0.2.9
+       Schema: OSSA v0.3.5
+       Extensions found: Kagent (Y), MCP (Z), A2A (W)
+       All manifests comply with OSSA v0.3.5 specification
     ```
+
+    **Error handling**:
+    - If schema fetch fails, report clear error and fallback to basic YAML validation
+    - If manifest is not YAML, skip with informational message
+    - If file is not an OSSA manifest (missing apiVersion: ossa/*), skip silently
 
   triggers:
     - event: merge_request_created
       conditions:
         - changed_files:
+            - "**/*.ossa.yaml"
+            - "**/*.ossa.yml"
             - ".agents/**/*.yaml"
             - ".gitlab/agents/**/*.yaml"
-            - "spec/**"
+            - "**/manifest.yaml"
+            - "**/agent.yaml"
     - event: merge_request_updated
       conditions:
         - changed_files:
+            - "**/*.ossa.yaml"
+            - "**/*.ossa.yml"
             - ".agents/**/*.yaml"
             - ".gitlab/agents/**/*.yaml"
+            - "**/manifest.yaml"
+            - "**/agent.yaml"
+    - event: mention
+      keywords:
+        - "@ossa-validator"
+        - "validate ossa"
+        - "check manifest"

@@ -1,9 +1,9 @@
 /**
  * Release Verify Service
- * 
+ *
  * Validates repository state, versions, tags, and CI configuration
  * before any release operations
- * 
+ *
  * Architecture:
  * - OpenAPI-First: Spec in openapi/dev-cli.openapi.yml
  * - Zod Validation: All inputs/outputs validated with Zod schemas
@@ -46,11 +46,13 @@ export class ReleaseVerifyService {
   /**
    * Verify release readiness
    * CRUD: Read operation (validates state, doesn't modify)
-   * 
+   *
    * @param request - Verification request (validated with Zod)
    * @returns Verification result (validated with Zod)
    */
-  async verify(request: Partial<ReleaseVerifyRequest> = {}): Promise<ReleaseVerifyResponse> {
+  async verify(
+    request: Partial<ReleaseVerifyRequest> = {}
+  ): Promise<ReleaseVerifyResponse> {
     // Validate input with Zod (with defaults)
     const validatedRequest = ReleaseVerifyRequestSchema.parse(request);
 
@@ -74,17 +76,17 @@ export class ReleaseVerifyService {
     }
 
     // Collect errors and warnings from all checks
-    repository.checks.forEach(check => {
+    repository.checks.forEach((check) => {
       if (!check.passed) errors.push(check.message);
     });
-    versionState.checks.forEach(check => {
+    versionState.checks.forEach((check) => {
       if (!check.passed) errors.push(check.message);
     });
-    tagState.checks.forEach(check => {
+    tagState.checks.forEach((check) => {
       if (!check.passed) errors.push(check.message);
     });
     if (ciConfig) {
-      ciConfig.checks.forEach(check => {
+      ciConfig.checks.forEach((check) => {
         if (!check.passed) errors.push(check.message);
       });
     }
@@ -92,8 +94,12 @@ export class ReleaseVerifyService {
     // Next steps if ready
     if (errors.length === 0) {
       nextSteps.push('Ensure CI pipeline passes on target branch');
-      nextSteps.push('Verify protected tag rules allow CI_DEPLOY_OSSA to create tags');
-      nextSteps.push(`Promote RC tag to stable: git tag -a ${versionState.versionTag} -m 'Release ${versionState.versionTag}' <commit-sha>`);
+      nextSteps.push(
+        'Verify protected tag rules allow CI_DEPLOY_OSSA to create tags'
+      );
+      nextSteps.push(
+        `Promote RC tag to stable: git tag -a ${versionState.versionTag} -m 'Release ${versionState.versionTag}' <commit-sha>`
+      );
       nextSteps.push(`Push tag: git push origin ${versionState.versionTag}`);
       nextSteps.push('Monitor release pipeline for npm publish');
     }
@@ -120,7 +126,8 @@ export class ReleaseVerifyService {
    * CRUD: Read
    */
   private async verifyRepository(): Promise<RepositoryState> {
-    const checks: Array<{ name: string; passed: boolean; message: string }> = [];
+    const checks: Array<{ name: string; passed: boolean; message: string }> =
+      [];
     let remoteUrl = '';
     let currentBranch = '';
     let isClean = false;
@@ -131,8 +138,9 @@ export class ReleaseVerifyService {
         cwd: this.rootDir,
       }).trim();
 
-
-      const expectedRepo = process.env.EXPECTED_REPO_URL || 'gitlab.com/blueflyio/ossa/openstandardagents';
+      const expectedRepo =
+        process.env.EXPECTED_REPO_URL ||
+        'gitlab.com/blueflyio/ossa/openstandardagents';
       if (!remoteUrl.includes(expectedRepo)) {
         checks.push({
           name: 'Repository Identity',
@@ -195,7 +203,7 @@ export class ReleaseVerifyService {
       remoteUrl,
       currentBranch,
       isClean,
-      checks: checks.map(c => RepositoryCheckSchema.parse(c)),
+      checks: checks.map((c) => RepositoryCheckSchema.parse(c)),
     });
   }
 
@@ -205,7 +213,8 @@ export class ReleaseVerifyService {
    * DRY: Reuses VersionValidateService
    */
   private async verifyVersion(versionArg?: string): Promise<VersionState> {
-    const checks: Array<{ name: string; passed: boolean; message: string }> = [];
+    const checks: Array<{ name: string; passed: boolean; message: string }> =
+      [];
     const versionJsonPath = join(this.rootDir, '.version.json');
     const packageJsonPath = join(this.rootDir, 'package.json');
 
@@ -220,7 +229,7 @@ export class ReleaseVerifyService {
         packageVersion: '',
         versionTag: '',
         isSynced: false,
-        checks: checks.map(c => RepositoryCheckSchema.parse(c)),
+        checks: checks.map((c) => RepositoryCheckSchema.parse(c)),
       });
     }
 
@@ -235,7 +244,7 @@ export class ReleaseVerifyService {
         packageVersion: '',
         versionTag: '',
         isSynced: false,
-        checks: checks.map(c => RepositoryCheckSchema.parse(c)),
+        checks: checks.map((c) => RepositoryCheckSchema.parse(c)),
       });
     }
 
@@ -243,11 +252,13 @@ export class ReleaseVerifyService {
     const versionConfig = VersionConfigSchema.parse(
       JSON.parse(readFileSync(versionJsonPath, 'utf-8'))
     );
-    
+
     // Validate package.json with Zod
-    const PackageJsonSchema = z.object({
-      version: z.string(),
-    }).passthrough();
+    const PackageJsonSchema = z
+      .object({
+        version: z.string(),
+      })
+      .passthrough();
     const packageJson = PackageJsonSchema.parse(
       JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
     );
@@ -285,7 +296,7 @@ export class ReleaseVerifyService {
       packageVersion,
       versionTag,
       isSynced,
-      checks: checks.map(c => RepositoryCheckSchema.parse(c)),
+      checks: checks.map((c) => RepositoryCheckSchema.parse(c)),
     });
   }
 
@@ -294,7 +305,8 @@ export class ReleaseVerifyService {
    * CRUD: Read
    */
   private async verifyTags(versionTag: string): Promise<TagState> {
-    const checks: Array<{ name: string; passed: boolean; message: string }> = [];
+    const checks: Array<{ name: string; passed: boolean; message: string }> =
+      [];
     let stableTagExists = false;
     const rcTags: string[] = [];
     const devTags: string[] = [];
@@ -364,7 +376,7 @@ export class ReleaseVerifyService {
       stableTagExists,
       rcTags,
       devTags,
-      checks: checks.map(c => RepositoryCheckSchema.parse(c)),
+      checks: checks.map((c) => RepositoryCheckSchema.parse(c)),
     });
   }
 
@@ -373,7 +385,8 @@ export class ReleaseVerifyService {
    * CRUD: Read
    */
   private async verifyCIConfig(): Promise<CIConfigState> {
-    const checks: Array<{ name: string; passed: boolean; message: string }> = [];
+    const checks: Array<{ name: string; passed: boolean; message: string }> =
+      [];
     const ciFiles = [
       { path: '.gitlab-ci.yml', name: 'Main CI Config' },
       { path: '.gitlab/ci/rules.yml', name: 'Rules Config' },
@@ -381,7 +394,7 @@ export class ReleaseVerifyService {
       { path: '.gitlab/ci/security-jobs.yml', name: 'Security Jobs' },
     ];
 
-    const fileChecks = ciFiles.map(file => {
+    const fileChecks = ciFiles.map((file) => {
       const filePath = join(this.rootDir, file.path);
       const exists = existsSync(filePath);
 
@@ -439,7 +452,7 @@ export class ReleaseVerifyService {
 
     return CIConfigStateSchema.parse({
       files: fileChecks,
-      checks: checks.map(c => RepositoryCheckSchema.parse(c)),
+      checks: checks.map((c) => RepositoryCheckSchema.parse(c)),
     });
   }
 }

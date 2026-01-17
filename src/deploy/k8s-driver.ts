@@ -20,7 +20,9 @@ const execAsync = promisify(exec);
 /**
  * Execute kubectl with stdin input
  */
-async function kubectlApply(manifest: string): Promise<{ stdout: string; stderr: string }> {
+async function kubectlApply(
+  manifest: string
+): Promise<{ stdout: string; stderr: string }> {
   return new Promise((resolve, reject) => {
     const kubectl = spawn('kubectl', ['apply', '-f', '-'], {
       stdio: ['pipe', 'pipe', 'pipe'],
@@ -83,7 +85,10 @@ export class KubernetesDeploymentDriver extends BaseDeploymentDriver {
   /**
    * Get Docker image for agent
    */
-  private getDockerImage(manifest: OssaAgent, config: DeploymentConfig): string {
+  private getDockerImage(
+    manifest: OssaAgent,
+    config: DeploymentConfig
+  ): string {
     if (config.dockerImage) {
       return config.dockerImage;
     }
@@ -146,7 +151,10 @@ export class KubernetesDeploymentDriver extends BaseDeploymentDriver {
                 image,
                 ports: [{ containerPort: 3000 }],
                 env: [
-                  { name: 'OSSA_AGENT_NAME', value: manifest.metadata?.name || 'agent' },
+                  {
+                    name: 'OSSA_AGENT_NAME',
+                    value: manifest.metadata?.name || 'agent',
+                  },
                   { name: 'OSSA_ENVIRONMENT', value: config.environment },
                   { name: 'OSSA_VERSION', value: version },
                 ],
@@ -210,7 +218,8 @@ export class KubernetesDeploymentDriver extends BaseDeploymentDriver {
     if (!kubectlAvailable) {
       return {
         success: false,
-        message: 'kubectl is not available. Please install kubectl and configure kubeconfig.',
+        message:
+          'kubectl is not available. Please install kubectl and configure kubeconfig.',
       };
     }
 
@@ -219,7 +228,11 @@ export class KubernetesDeploymentDriver extends BaseDeploymentDriver {
     const namespace = config.namespace || 'default';
 
     if (config.dryRun) {
-      const k8sManifest = this.generateK8sManifest(manifest, config, instanceId);
+      const k8sManifest = this.generateK8sManifest(
+        manifest,
+        config,
+        instanceId
+      );
       return {
         success: true,
         message: '[DRY RUN] Would deploy to Kubernetes',
@@ -236,11 +249,19 @@ export class KubernetesDeploymentDriver extends BaseDeploymentDriver {
 
     try {
       // Apply deployment using kubectlApply helper
-      const deploymentManifest = this.generateK8sManifest(manifest, config, instanceId);
+      const deploymentManifest = this.generateK8sManifest(
+        manifest,
+        config,
+        instanceId
+      );
       await kubectlApply(deploymentManifest);
 
       // Apply service using kubectlApply helper
-      const serviceManifest = this.generateServiceManifest(manifest, config, instanceId);
+      const serviceManifest = this.generateServiceManifest(
+        manifest,
+        config,
+        instanceId
+      );
       await kubectlApply(serviceManifest);
 
       // Wait for deployment to be ready
@@ -350,7 +371,9 @@ export class KubernetesDeploymentDriver extends BaseDeploymentDriver {
 
     try {
       // Delete deployment
-      await execAsync(`kubectl delete deployment ${deploymentName} -n ${namespace}`);
+      await execAsync(
+        `kubectl delete deployment ${deploymentName} -n ${namespace}`
+      );
 
       // Delete service
       const serviceName = `${deploymentName}-svc`;
@@ -429,8 +452,14 @@ export class KubernetesDeploymentDriver extends BaseDeploymentDriver {
       const desiredReplicas = deployment.spec?.replicas || 0;
       const readyReplicas = deployment.status?.readyReplicas || 0;
 
-      const isHealthy = availableReplicas === desiredReplicas && readyReplicas === desiredReplicas;
-      const status = isHealthy ? 'healthy' : availableReplicas > 0 ? 'degraded' : 'unhealthy';
+      const isHealthy =
+        availableReplicas === desiredReplicas &&
+        readyReplicas === desiredReplicas;
+      const status = isHealthy
+        ? 'healthy'
+        : availableReplicas > 0
+          ? 'degraded'
+          : 'unhealthy';
 
       const uptime = Date.now() - new Date(instance.deployedAt).getTime();
 

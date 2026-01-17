@@ -1,0 +1,264 @@
+apiVersion: ossa/v0.3
+kind: Agent
+metadata:
+  name: accessibility-champion
+  version: 1.0.0
+  description: Accessibility Champion - WCAG 2.1 AA compliance, ARIA best practices, keyboard navigation
+  labels:
+    ossa-version: v0.3.5
+    domain: accessibility
+    category: a11y
+    tier: worker
+    priority: P0
+    skill.priority: '85'
+    skill.contexts: development,review
+spec:
+  taxonomy:
+    domain: frontend
+    subdomain: accessibility
+    capability: a11y_enforcement
+  role: 'You are the Accessibility Champion, ensuring WCAG 2.1 AA compliance across all interfaces.
+
+
+    Your mission:
+
+    1. Enforce WCAG 2.1 AA standards (4.5:1 contrast, keyboard navigation)
+
+    2. Ensure proper ARIA labels and roles
+
+    3. Validate semantic HTML structure
+
+    4. Check keyboard accessibility (tab order, focus management)
+
+    5. Verify screen reader compatibility
+
+    6. Ensure color is not the only indicator
+
+
+    Priority Rules:
+
+    - CRITICAL: WCAG 2.1 AA contrast ratios (4.5:1 for text)
+
+    - CRITICAL: Keyboard navigation for all interactive elements
+
+    - HIGH: ARIA labels for all interactive elements
+
+    - HIGH: Semantic HTML (nav, main, article, etc.)
+
+    - MEDIUM: Focus indicators visible
+
+    - LOW: Reduced motion support'
+  llm:
+    provider: ${LLM_PROVIDER:-anthropic}
+    model: ${LLM_MODEL:-claude-sonnet-4-20250514}
+    temperature: 0.1
+    maxTokens: 16384
+  runtime:
+    triggers:
+      keywords:
+      - accessibility
+      - a11y
+      - wcag
+      - aria
+      - keyboard
+      - screen-reader
+      - contrast
+      file_patterns:
+      - '**/*.{tsx,jsx,html}'
+      - '**/components/**'
+      frameworks:
+      - react
+      - next.js
+      - html
+    activation:
+      automatic: true
+      confidence_threshold: 0.7
+extensions:
+  experts:
+    registry:
+    - id: deep-analysis-expert
+      name: Deep Performance Analysis Expert
+      model:
+        provider: anthropic
+        model: claude-opus-4-5-20251101
+      specializations:
+      - wcag_compliance
+      - aria_best_practices
+      - keyboard_navigation
+      cost_tier: premium
+      capabilities:
+        extended_thinking: true
+        max_tokens: 200000
+        reasoning_depth: deep
+    - id: standard-analysis-expert
+      name: Standard Performance Expert
+      model:
+        provider: anthropic
+        model: claude-sonnet-4-20250514
+      specializations:
+      - wcag_compliance
+      - aria_best_practices
+      - keyboard_navigation
+      cost_tier: standard
+      capabilities:
+        max_tokens: 16384
+        reasoning_depth: balanced
+    - id: quick-scan-expert
+      name: Quick Performance Scan Expert
+      model:
+        provider: google
+        model: gemini-2.0-flash
+      specializations:
+      - wcag_compliance
+      - aria_best_practices
+      - keyboard_navigation
+      cost_tier: economy
+      capabilities:
+        max_tokens: 8192
+        reasoning_depth: fast
+    selection_strategy: agent_controlled
+  bat:
+    selection_criteria:
+    - dimension: analysis_complexity
+      required: true
+      options:
+      - value: complex
+        technologies:
+        - claude-opus
+        - gpt-4-turbo
+        cost_tier: premium
+        use_case: Deep bundle analysis, complex optimization strategies
+      - value: standard
+        technologies:
+        - claude-sonnet
+        - gpt-4o
+        cost_tier: standard
+        use_case: Standard performance analysis, common optimizations
+      - value: simple
+        technologies:
+        - gemini-flash
+        - claude-haiku
+        cost_tier: economy
+        use_case: Quick scans, obvious issues, high-volume checks
+  moe:
+    primary:
+      metric: performance_improvement_percentage
+      description: Percentage improvement in key performance metrics
+      target: 30.0
+      measurement:
+        type: percentage
+        numerator: performance_gain
+        denominator: baseline_performance
+        collection:
+          source: performance-monitor
+          interval: real_time
+    secondary:
+    - metric: bundle_size_reduction
+      description: Reduction in bundle size
+      target: 30.0
+      unit: percentage
+    - metric: render_time_improvement
+      description: Improvement in render time
+      target: 20.0
+      unit: percentage
+    - metric: optimization_accuracy
+      description: Accuracy of optimization recommendations
+      target: 0.85
+      unit: ratio
+  capabilities:
+    discovery:
+      enabled: true
+      registry: agent-mesh
+      refresh_interval: 60s
+  feedback:
+    tools:
+    - name: record_feedback
+      description: Record feedback on optimization effectiveness
+    - name: get_feedback_summary
+      description: Get aggregate feedback for improvement
+    learning:
+      enabled: true
+      strategy: reinforcement
+      data_sources:
+      - optimization_outcomes
+      - performance_metrics
+      - user_feedback
+  infrastructure:
+  - type: agent_mesh
+    endpoint: mesh.blueflyagents.com:3005
+    capabilities:
+    - performance_monitoring
+    - code_analysis
+  runtime:
+    triggers:
+      keywords:
+      - performance
+      - optimize
+      - slow
+      - bundle
+      - waterfall
+      - re-render
+      - memoization
+      - lazy
+      - code-splitting
+      - bundle size
+      - cold start
+      - render performance
+      file_patterns:
+      - '**/*.{tsx,jsx}'
+      - '**/components/**'
+      - '**/app/**'
+      - '**/pages/**'
+      - '**/*.react.{ts,tsx,js,jsx}'
+      frameworks:
+      - next.js
+      - react
+      - remix
+      - gatsby
+      - vite
+      project_types:
+      - react-app
+      - next-app
+      - remix-app
+    activation:
+      automatic: true
+      confidence_threshold: 0.7
+      priority_threshold: 80
+  gitlab:
+    triggers:
+    - event: merge_request
+      filter:
+        labels:
+        - performance
+        - optimization
+        files:
+        - '**/*.{tsx,jsx}'
+    - event: webhook
+      path: /react-performance-expert/analyze
+    custom_fields:
+      performance_impact: estimated
+      optimizations_applied: boolean
+      bundle_size_change: number
+  opentelemetry:
+    enabled: true
+    service_name: react-performance-expert
+    service_version: 1.0.0
+    traces:
+      enabled: true
+      exporter: otlp
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4317}
+      sample_rate: 1.0
+    metrics:
+      enabled: true
+      exporter: otlp
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4317}
+    logs:
+      enabled: true
+      exporter: otlp
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4317}
+      level: info
+    resource_attributes:
+      agent.id: react-performance-expert
+      agent.version: 1.0.0
+      framework: ossa
+      domain: frontend-performance

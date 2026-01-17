@@ -38,7 +38,9 @@ const GitLabAgentTokenResponseSchema = z.object({
 
 export type GitLabAgentConfig = z.infer<typeof GitLabAgentConfigSchema>;
 export type GitLabAgentResponse = z.infer<typeof GitLabAgentResponseSchema>;
-export type GitLabAgentTokenResponse = z.infer<typeof GitLabAgentTokenResponseSchema>;
+export type GitLabAgentTokenResponse = z.infer<
+  typeof GitLabAgentTokenResponseSchema
+>;
 
 export interface RegisterAgentResult {
   agentId: number;
@@ -92,7 +94,9 @@ export class GitLabAgentService {
    */
   async listAgents(projectId?: number): Promise<AgentInfo[]> {
     const pid = projectId || (await this.getProjectId());
-    const response = await this.client.get(`/api/v4/projects/${pid}/cluster_agents`);
+    const response = await this.client.get(
+      `/api/v4/projects/${pid}/cluster_agents`
+    );
     return response.data.map((agent: unknown) => {
       const parsed = GitLabAgentResponseSchema.parse(agent);
       return {
@@ -107,7 +111,10 @@ export class GitLabAgentService {
   /**
    * Get agent by name
    */
-  async getAgent(agentName?: string, projectId?: number): Promise<AgentInfo | null> {
+  async getAgent(
+    agentName?: string,
+    projectId?: number
+  ): Promise<AgentInfo | null> {
     const name = agentName || this.config.name;
     const agents = await this.listAgents(projectId);
     return agents.find((a) => a.name === name) || null;
@@ -120,9 +127,12 @@ export class GitLabAgentService {
     const name = agentName || this.config.name;
     const projectId = await this.getProjectId();
 
-    const response = await this.client.post(`/api/v4/projects/${projectId}/cluster_agents`, {
-      name,
-    });
+    const response = await this.client.post(
+      `/api/v4/projects/${projectId}/cluster_agents`,
+      {
+        name,
+      }
+    );
 
     const parsed = GitLabAgentResponseSchema.parse(response.data);
     return {
@@ -172,20 +182,31 @@ export class GitLabAgentService {
   /**
    * List agent tokens (READ operation)
    */
-  async listTokens(agentId: number, projectId?: number): Promise<GitLabAgentTokenResponse[]> {
+  async listTokens(
+    agentId: number,
+    projectId?: number
+  ): Promise<GitLabAgentTokenResponse[]> {
     const pid = projectId || (await this.getProjectId());
     const response = await this.client.get(
       `/api/v4/projects/${pid}/cluster_agents/${agentId}/tokens`
     );
-    return response.data.map((token: unknown) => GitLabAgentTokenResponseSchema.parse(token));
+    return response.data.map((token: unknown) =>
+      GitLabAgentTokenResponseSchema.parse(token)
+    );
   }
 
   /**
    * Delete agent token (DELETE operation)
    */
-  async deleteToken(agentId: number, tokenId: number, projectId?: number): Promise<void> {
+  async deleteToken(
+    agentId: number,
+    tokenId: number,
+    projectId?: number
+  ): Promise<void> {
     const pid = projectId || (await this.getProjectId());
-    await this.client.delete(`/api/v4/projects/${pid}/cluster_agents/${agentId}/tokens/${tokenId}`);
+    await this.client.delete(
+      `/api/v4/projects/${pid}/cluster_agents/${agentId}/tokens/${tokenId}`
+    );
   }
 
   /**
@@ -193,13 +214,17 @@ export class GitLabAgentService {
    */
   async deleteAgent(agentId: number, projectId?: number): Promise<void> {
     const pid = projectId || (await this.getProjectId());
-    await this.client.delete(`/api/v4/projects/${pid}/cluster_agents/${agentId}`);
+    await this.client.delete(
+      `/api/v4/projects/${pid}/cluster_agents/${agentId}`
+    );
   }
 
   /**
    * Register agent and create token (full registration flow)
    */
-  async registerAgentWithToken(agentName?: string): Promise<RegisterAgentResult> {
+  async registerAgentWithToken(
+    agentName?: string
+  ): Promise<RegisterAgentResult> {
     const agent = await this.registerAgent(agentName);
     const token = await this.createToken(agent.id);
     const projectId = await this.getProjectId();

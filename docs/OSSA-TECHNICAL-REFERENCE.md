@@ -1,13 +1,13 @@
-# OSSA v0.3.3 Technical Reference
+# OSSA v0.3.4 Technical Reference
 
-**Schema:** `spec/v0.3.3/ossa-0.3.3.schema.json` (9,656 lines, JSON Schema Draft-07)
+**Schema:** `spec/v0.3.4/ossa-0.3.4.schema.json` (9,656 lines, JSON Schema Draft-07)
 
 ---
 
 ## Manifest Structure
 
 ```yaml
-apiVersion: ossa/v0.3.3          # REQUIRED - exactly this string
+apiVersion: ossa/v0.3.4          # REQUIRED - exactly this string
 kind: Agent | Task | Workflow    # REQUIRED - determines spec schema
 metadata:                        # REQUIRED
   name: string                   # REQUIRED - kebab-case
@@ -53,7 +53,7 @@ For LLM-based reasoning. Uses tokens.
 ### Minimal Valid Agent
 
 ```yaml
-apiVersion: ossa/v0.3.3
+apiVersion: ossa/v0.3.4
 kind: Agent
 metadata:
   name: my-agent
@@ -65,7 +65,7 @@ spec:
 ### Full Agent Example
 
 ```yaml
-apiVersion: ossa/v0.3.3
+apiVersion: ossa/v0.3.4
 kind: Agent
 metadata:
   name: code-review-agent
@@ -213,7 +213,7 @@ Deterministic execution. No LLM, no tokens.
 ### Task Example
 
 ```yaml
-apiVersion: ossa/v0.3.3
+apiVersion: ossa/v0.3.4
 kind: Task
 metadata:
   name: validate-json-schema
@@ -269,7 +269,7 @@ Composition of Agents and Tasks.
 ### Workflow Example
 
 ```yaml
-apiVersion: ossa/v0.3.3
+apiVersion: ossa/v0.3.4
 kind: Workflow
 metadata:
   name: pr-review-pipeline
@@ -454,22 +454,22 @@ npm install -g @bluefly/openstandardagents
 
 # Validate schema compiles
 npm run validate:schema
-# Uses: npx ajv-cli compile -s spec/v0.3.3/ossa-0.3.3.schema.json --strict=false --allow-union-types
+# Uses: npx ajv-cli compile -s spec/v0.3.4/ossa-0.3.4.schema.json --strict=false --allow-union-types
 
 # Validate a manifest
 npm run validate:manifest -- path/to/agent.ossa.yaml
-# Uses: npx ajv validate -s spec/v0.3.3/ossa-0.3.3.schema.json --strict=false --allow-union-types -d
+# Uses: npx ajv validate -s spec/v0.3.4/ossa-0.3.4.schema.json --strict=false --allow-union-types -d
 
 # Direct ajv command
 npx ajv validate \
-  -s spec/v0.3.3/ossa-0.3.3.schema.json \
+  -s spec/v0.3.4/ossa-0.3.4.schema.json \
   -d your-agent.ossa.yaml \
   --strict=false \
   --allow-union-types
 
 # Validate all examples
 find examples -name "*.ossa.yaml" | xargs -I {} npx ajv validate \
-  -s spec/v0.3.3/ossa-0.3.3.schema.json -d {} --strict=false
+  -s spec/v0.3.4/ossa-0.3.4.schema.json -d {} --strict=false
 ```
 
 ---
@@ -504,8 +504,8 @@ spec:
 ## File Structure
 
 ```
-spec/v0.3.3/
-├── ossa-0.3.3.schema.json     # Main schema
+spec/v0.3.4/
+├── ossa-0.3.4.schema.json     # Main schema
 ├── taxonomy.yaml              # Domain/type definitions
 ├── access_tiers.yaml          # Tier permission matrix
 ├── examples/
@@ -543,7 +543,7 @@ src/
 
 ## Adding a New Extension
 
-1. **Define schema** in `spec/v0.3.3/ossa-0.3.3.schema.json`:
+1. **Define schema** in `spec/v0.3.4/ossa-0.3.4.schema.json`:
 
 ```json
 {
@@ -590,7 +590,7 @@ export function toYourFramework(manifest: OSSAManifest): YourFrameworkConfig {
 
 export function fromYourFramework(config: YourFrameworkConfig): Partial<OSSAManifest> {
   return {
-    apiVersion: 'ossa/v0.3.3',
+    apiVersion: 'ossa/v0.3.4',
     kind: 'Agent',
     // ...
   };
@@ -648,20 +648,20 @@ validate:ossa:
 
 ```bash
 # Validate
-npx ajv validate -s spec/v0.3.3/ossa-0.3.3.schema.json -d agent.yaml --strict=false
+npx ajv validate -s spec/v0.3.4/ossa-0.3.4.schema.json -d agent.yaml --strict=false
 
 # List AgentSpec properties
-cat spec/v0.3.3/ossa-0.3.3.schema.json | jq '.definitions.AgentSpec.properties | keys'
+cat spec/v0.3.4/ossa-0.3.4.schema.json | jq '.definitions.AgentSpec.properties | keys'
 
 # List all extensions
-cat spec/v0.3.3/ossa-0.3.3.schema.json | jq '.definitions | keys | map(select(endswith("Extension")))'
+cat spec/v0.3.4/ossa-0.3.4.schema.json | jq '.definitions | keys | map(select(endswith("Extension")))'
 
 # Get specific definition
-cat spec/v0.3.3/ossa-0.3.3.schema.json | jq '.definitions.AccessTier'
+cat spec/v0.3.4/ossa-0.3.4.schema.json | jq '.definitions.AccessTier'
 ```
 
 ---
 
 **Repo:** gitlab.com/blueflyio/ossa/openstandardagents
 **npm:** @bluefly/openstandardagents
-**Schema:** spec/v0.3.3/ossa-0.3.3.schema.json
+**Schema:** spec/v0.3.4/ossa-0.3.4.schema.json

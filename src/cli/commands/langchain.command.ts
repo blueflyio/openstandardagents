@@ -1,6 +1,6 @@
 /**
  * LangChain CLI Commands
- * 
+ *
  * Framework integration commands for LangChain.
  * SOLID: Single Responsibility - LangChain CLI only
  */
@@ -22,39 +22,61 @@ langchainCommand
   .command('convert')
   .description('Convert LangChain agent to OSSA manifest')
   .argument('<source>', 'Path to LangChain Python file or config file')
-  .option('-o, --output <path>', 'Output path for OSSA manifest', 'agent.ossa.yaml')
+  .option(
+    '-o, --output <path>',
+    'Output path for OSSA manifest',
+    'agent.ossa.yaml'
+  )
   .option('--from-python', 'Source is Python code file')
   .option('--from-config', 'Source is config file (JSON/YAML)')
-  .action(async (source: string, options: { output: string; fromPython?: boolean; fromConfig?: boolean }) => {
-    console.log(chalk.blue('🔄 Converting LangChain Agent to OSSA'));
-    console.log(chalk.gray('========================================\n'));
+  .action(
+    async (
+      source: string,
+      options: { output: string; fromPython?: boolean; fromConfig?: boolean }
+    ) => {
+      console.log(chalk.blue('🔄 Converting LangChain Agent to OSSA'));
+      console.log(chalk.gray('========================================\n'));
 
-    if (!existsSync(source)) {
-      console.error(chalk.red(`❌ File not found: ${source}`));
-      process.exit(1);
-    }
-
-    try {
-      const importer = new LangChainImporterService();
-      let manifest;
-
-      if (options.fromConfig || source.endsWith('.json') || source.endsWith('.yaml') || source.endsWith('.yml')) {
-        manifest = await importer.importFromConfig(source);
-      } else {
-        manifest = await importer.importFromPythonFile(source);
+      if (!existsSync(source)) {
+        console.error(chalk.red(`❌ File not found: ${source}`));
+        process.exit(1);
       }
 
-      // Write to output file
-      const yaml = await import('yaml');
-      writeFileSync(options.output, yaml.stringify(manifest));
+      try {
+        const importer = new LangChainImporterService();
+        let manifest;
 
-      console.log(chalk.green(`\n✅ Converted LangChain agent to: ${options.output}`));
-      console.log(chalk.gray(`\nAgent: ${manifest.metadata?.name || 'unknown'}`));
-    } catch (error) {
-      console.error(chalk.red(`\n❌ Error: ${error instanceof Error ? error.message : String(error)}`));
-      process.exit(1);
+        if (
+          options.fromConfig ||
+          source.endsWith('.json') ||
+          source.endsWith('.yaml') ||
+          source.endsWith('.yml')
+        ) {
+          manifest = await importer.importFromConfig(source);
+        } else {
+          manifest = await importer.importFromPythonFile(source);
+        }
+
+        // Write to output file
+        const yaml = await import('yaml');
+        writeFileSync(options.output, yaml.stringify(manifest));
+
+        console.log(
+          chalk.green(`\n✅ Converted LangChain agent to: ${options.output}`)
+        );
+        console.log(
+          chalk.gray(`\nAgent: ${manifest.metadata?.name || 'unknown'}`)
+        );
+      } catch (error) {
+        console.error(
+          chalk.red(
+            `\n❌ Error: ${error instanceof Error ? error.message : String(error)}`
+          )
+        );
+        process.exit(1);
+      }
     }
-  });
+  );
 
 // langchain:export - Export OSSA → LangChain Python code
 langchainCommand
@@ -74,14 +96,20 @@ langchainCommand
     try {
       const content = readFileSync(manifestFile, 'utf-8');
       const manifest = parse(content);
-      const pythonCode = LangChainAdapter.toPythonCode(manifest as any);
+      const pythonCode = LangChainAdapter.toPythonCode(manifest);
 
       writeFileSync(options.output, pythonCode);
 
-      console.log(chalk.green(`\n✅ Exported OSSA manifest to: ${options.output}`));
+      console.log(
+        chalk.green(`\n✅ Exported OSSA manifest to: ${options.output}`)
+      );
       console.log(chalk.gray('\nYou can run this Python file directly'));
     } catch (error) {
-      console.error(chalk.red(`\n❌ Error: ${error instanceof Error ? error.message : String(error)}`));
+      console.error(
+        chalk.red(
+          `\n❌ Error: ${error instanceof Error ? error.message : String(error)}`
+        )
+      );
       process.exit(1);
     }
   });
@@ -93,32 +121,41 @@ langchainCommand
   .argument('<manifestFile>', 'Path to OSSA manifest file')
   .option('--input <json>', 'Input JSON string', '{}')
   .option('--python-path <path>', 'Python executable path', 'python3')
-  .action(async (manifestFile: string, options: { input: string; pythonPath: string }) => {
-    console.log(chalk.blue('🚀 Executing OSSA Agent via LangChain'));
-    console.log(chalk.gray('======================================\n'));
+  .action(
+    async (
+      manifestFile: string,
+      options: { input: string; pythonPath: string }
+    ) => {
+      console.log(chalk.blue('🚀 Executing OSSA Agent via LangChain'));
+      console.log(chalk.gray('======================================\n'));
 
-    if (!existsSync(manifestFile)) {
-      console.error(chalk.red(`❌ File not found: ${manifestFile}`));
-      process.exit(1);
+      if (!existsSync(manifestFile)) {
+        console.error(chalk.red(`❌ File not found: ${manifestFile}`));
+        process.exit(1);
+      }
+
+      try {
+        const content = readFileSync(manifestFile, 'utf-8');
+        const manifest = parse(content);
+        const inputs = JSON.parse(options.input);
+
+        const runtime = new LangChainRuntime({
+          python_path: options.pythonPath,
+        });
+
+        console.log(chalk.gray('Executing agent via LangChain...'));
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const result = await runtime.execute(manifest, inputs);
+
+        console.log(chalk.green('\n✅ Execution complete:'));
+        console.log(JSON.stringify(result, null, 2));
+      } catch (error) {
+        console.error(
+          chalk.red(
+            `\n❌ Error: ${error instanceof Error ? error.message : String(error)}`
+          )
+        );
+        process.exit(1);
+      }
     }
-
-    try {
-      const content = readFileSync(manifestFile, 'utf-8');
-      const manifest = parse(content);
-      const inputs = JSON.parse(options.input);
-
-      const runtime = new LangChainRuntime({
-        python_path: options.pythonPath,
-      });
-
-      console.log(chalk.gray('Executing agent via LangChain...'));
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const result = await runtime.execute(manifest as any, inputs);
-
-      console.log(chalk.green('\n✅ Execution complete:'));
-      console.log(JSON.stringify(result, null, 2));
-    } catch (error) {
-      console.error(chalk.red(`\n❌ Error: ${error instanceof Error ? error.message : String(error)}`));
-      process.exit(1);
-    }
-  });
+  );

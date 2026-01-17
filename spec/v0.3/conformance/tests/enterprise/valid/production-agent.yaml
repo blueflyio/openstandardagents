@@ -1,0 +1,95 @@
+apiVersion: ossa/v0.3.5
+kind: Agent
+metadata:
+  name: production-test-agent
+  description: Production-ready agent for enterprise conformance testing
+  version: "1.0.0"
+  labels:
+    environment: production
+    tier: enterprise
+    category: conformance
+spec:
+  role: assistant
+  type: service
+  identity:
+    id: production-test-agent
+    version: "1.0.0"
+  completion:
+    criteria:
+      - type: success_criteria
+        description: Task completed successfully
+    timeout_ms: 180000
+  checkpointing:
+    enabled: true
+    interval_ms: 60000
+    strategy: full
+  monitoring:
+    metrics:
+      enabled: true
+      interval_ms: 30000
+    alerts:
+      enabled: true
+      channels: ["email", "slack"]
+  security:
+    authentication:
+      required: true
+      method: oauth2
+    authorization:
+      rbac: true
+      policies: ["read", "write", "execute"]
+    encryption:
+      at_rest: true
+      in_transit: true
+  capabilities:
+    - name: data_processing
+      description: Process and analyze data
+    - name: reporting
+      description: Generate reports
+  llm:
+    provider: anthropic
+    model: claude-3-5-sonnet-20241022
+    temperature: 0.7
+  autonomy:
+    level: monitored
+    approval_required: true
+  constraints:
+    cost:
+      max_cost_per_task: 0.50
+      currency: USD
+    performance:
+      max_execution_time_ms: 30000
+      max_memory_mb: 512
+  observability:
+    tracing:
+      enabled: true
+      provider: opentelemetry
+    metrics:
+      enabled: true
+      provider: prometheus
+    logging:
+      enabled: true
+      level: info
+  security:
+    authentication:
+      required: true
+      methods:
+        - oauth2
+    authorization:
+      enabled: true
+      model: rbac
+    data_privacy:
+      enabled: true
+      pii_handling: redact
+  resilience:
+    retry_policy:
+      max_attempts: 3
+      backoff_multiplier: 2
+    timeout_ms: 30000
+    circuit_breaker:
+      enabled: true
+      failure_threshold: 5
+  deployment:
+    environment: production
+    scaling:
+      min_instances: 2
+      max_instances: 10

@@ -26,15 +26,21 @@ import { MigrationService } from '../../services/migration.service.js';
 import { ValidationService } from '../../services/validation.service.js';
 import type { OssaAgent } from '../../types/index.js';
 import { getVersionInfo } from '../../utils/version.js';
+import { migrateLangchainCommand } from './migrate-langchain.command.js';
 
 export const migrateCommand = new Command('migrate')
   .argument('<source>', 'Path to manifest or directory to migrate')
   .option('-o, --output <path>', 'Output path for migrated manifest')
-  .option('-r, --recursive', 'Recursively migrate all .ossa.yaml files in directory')
+  .option(
+    '-r, --recursive',
+    'Recursively migrate all .ossa.yaml files in directory'
+  )
   .option('--dry-run', 'Show migration preview without writing file')
   .option('-v, --verbose', 'Verbose output')
   .option('--summary', 'Show migration summary with added features')
-  .description('Migrate OSSA manifests to current version (from v1.0 legacy or older versions)')
+  .description(
+    'Migrate OSSA manifests to current version (from v1.0 legacy or older versions)'
+  )
   .action(
     async (
       source: string,
@@ -66,17 +72,25 @@ export const migrateCommand = new Command('migrate')
 
         // Check if migration is needed
         if (!migrationService.needsMigration(legacyManifest)) {
-          const m = legacyManifest as OssaAgent;
+          const m = legacyManifest;
           if (m.apiVersion === `ossa/v${currentVersion}`) {
-            console.log(chalk.green(`✓ Manifest is already at v${currentVersion}`));
+            console.log(
+              chalk.green(`✓ Manifest is already at v${currentVersion}`)
+            );
           } else if (
             typeof m.apiVersion === 'string' &&
             m.apiVersion.startsWith('ossa/v') &&
             m.kind === 'Agent'
           ) {
-            console.log(chalk.green('✓ Manifest is already at current version'));
+            console.log(
+              chalk.green('✓ Manifest is already at current version')
+            );
           } else {
-            console.log(chalk.yellow('⚠  Manifest format not recognized or already migrated'));
+            console.log(
+              chalk.yellow(
+                '⚠  Manifest format not recognized or already migrated'
+              )
+            );
           }
           process.exit(0);
         }
@@ -86,7 +100,10 @@ export const migrateCommand = new Command('migrate')
 
         // Show migration summary if requested
         if (options.summary || options.verbose) {
-          const summary = migrationService.getMigrationSummary(legacyManifest, migratedManifest);
+          const summary = migrationService.getMigrationSummary(
+            legacyManifest,
+            migratedManifest
+          );
           console.log(chalk.cyan('\n[LIST] Migration Summary:'));
           console.log(chalk.gray(`  From: ${summary.sourceVersion}`));
           console.log(chalk.gray(`  To: ${summary.targetVersion}`));
@@ -106,12 +123,17 @@ export const migrateCommand = new Command('migrate')
         }
 
         // Validate migrated manifest (use 'current' to let validation service resolve)
-        const validationResult = await validationService.validate(migratedManifest, 'current');
+        const validationResult = await validationService.validate(
+          migratedManifest,
+          'current'
+        );
 
         if (!validationResult.valid) {
           console.error(chalk.red('✗ Migration produced invalid manifest:'));
           validationResult.errors.forEach((error) => {
-            console.error(chalk.red(`  - ${error.instancePath}: ${error.message}`));
+            console.error(
+              chalk.red(`  - ${error.instancePath}: ${error.message}`)
+            );
           });
           process.exit(1);
         }
@@ -127,13 +149,22 @@ export const migrateCommand = new Command('migrate')
             (() => {
               let path = source;
               // Remove existing version suffixes if present
-              path = path.replace(/\.v\d+\.\d+\.\d+\.ossa\.(yaml|yml|json)$/, '.ossa.$1');
+              path = path.replace(
+                /\.v\d+\.\d+\.\d+\.ossa\.(yaml|yml|json)$/,
+                '.ossa.$1'
+              );
               // If already has .ossa, just add version before .ossa
               if (path.includes('.ossa.')) {
-                return path.replace(/\.ossa\.(yaml|yml|json)$/, `.v${currentVersion}.ossa.$1`);
+                return path.replace(
+                  /\.ossa\.(yaml|yml|json)$/,
+                  `.v${currentVersion}.ossa.$1`
+                );
               }
               // Otherwise add version.ossa before extension
-              return path.replace(/\.(yaml|yml|json)$/, `.v${currentVersion}.ossa.$1`);
+              return path.replace(
+                /\.(yaml|yml|json)$/,
+                `.v${currentVersion}.ossa.$1`
+              );
             })();
 
           // Save migrated manifest
@@ -141,10 +172,12 @@ export const migrateCommand = new Command('migrate')
 
           console.log(chalk.green('✓ Migration successful'));
           console.log(chalk.gray('\nMigrated Agent:'));
-          const m = migratedManifest as OssaAgent;
+          const m = migratedManifest;
           if (m.apiVersion) {
             console.log(`  Name: ${chalk.cyan(m.metadata?.name || 'unknown')}`);
-            console.log(`  Version: ${chalk.cyan(m.metadata?.version || '0.1.0')}`);
+            console.log(
+              `  Version: ${chalk.cyan(m.metadata?.version || '0.1.0')}`
+            );
             console.log(`  Role: ${chalk.cyan(m.spec?.role || 'unknown')}`);
             if (m.spec?.tools) {
               console.log(`  Tools: ${chalk.cyan(m.spec.tools.length)}`);
@@ -152,7 +185,9 @@ export const migrateCommand = new Command('migrate')
           } else {
             console.log(`  ID: ${chalk.cyan(m.agent?.id || 'unknown')}`);
             console.log(`  Name: ${chalk.cyan(m.agent?.name || 'unknown')}`);
-            console.log(`  Version: ${chalk.cyan(m.agent?.version || 'unknown')}`);
+            console.log(
+              `  Version: ${chalk.cyan(m.agent?.version || 'unknown')}`
+            );
             console.log(`  Role: ${chalk.cyan(m.agent?.role || 'unknown')}`);
           }
           console.log(`\nSaved to: ${chalk.cyan(outputPath)}`);
@@ -166,13 +201,22 @@ export const migrateCommand = new Command('migrate')
 
           console.log(chalk.yellow('\n[TIP] Next steps:'));
           console.log(chalk.gray('  1. Review the migrated manifest'));
-          console.log(chalk.gray(`  2. Validate: ${chalk.white(`ossa validate ${outputPath}`)}`));
-          console.log(chalk.gray(`  3. Update capabilities to OpenAPI-style operations`));
+          console.log(
+            chalk.gray(
+              `  2. Validate: ${chalk.white(`ossa validate ${outputPath}`)}`
+            )
+          );
+          console.log(
+            chalk.gray(`  3. Update capabilities to OpenAPI-style operations`)
+          );
         }
 
         process.exit(0);
       } catch (error) {
-        console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
+        console.error(
+          chalk.red('Error:'),
+          error instanceof Error ? error.message : String(error)
+        );
 
         if (options.verbose && error instanceof Error) {
           console.error(chalk.gray(error.stack));
@@ -182,3 +226,6 @@ export const migrateCommand = new Command('migrate')
       }
     }
   );
+
+// Add langchain subcommand
+migrateCommand.addCommand(migrateLangchainCommand);

@@ -1,14 +1,17 @@
 /**
  * Langfuse Adapter
- * 
+ *
  * Langfuse LLM observability connector for OSSA agents.
  * Uses OpenTelemetry under the hood (Langfuse supports OTLP).
- * 
+ *
  * SOLID: Single Responsibility - Langfuse integration only
  * DRY: Uses OpenTelemetryAdapter
  */
 
-import { OpenTelemetryAdapter, type OpenTelemetryExtension } from './opentelemetry.adapter.js';
+import {
+  OpenTelemetryAdapter,
+  type OpenTelemetryExtension,
+} from './opentelemetry.adapter.js';
 
 export interface LangfuseConfig {
   enabled: boolean;
@@ -39,13 +42,21 @@ export class LangfuseAdapter {
     }
 
     // Get API keys
-    const publicKey = config.public_key || 
-                      (config.public_key_env ? process.env[config.public_key_env] : process.env.LANGFUSE_PUBLIC_KEY);
-    const secretKey = config.secret_key || 
-                      (config.secret_key_env ? process.env[config.secret_key_env] : process.env.LANGFUSE_SECRET_KEY);
+    const publicKey =
+      config.public_key ||
+      (config.public_key_env
+        ? process.env[config.public_key_env]
+        : process.env.LANGFUSE_PUBLIC_KEY);
+    const secretKey =
+      config.secret_key ||
+      (config.secret_key_env
+        ? process.env[config.secret_key_env]
+        : process.env.LANGFUSE_SECRET_KEY);
 
     if (!publicKey || !secretKey) {
-      throw new Error('Langfuse API keys not found. Set LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY environment variables.');
+      throw new Error(
+        'Langfuse API keys not found. Set LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY environment variables.'
+      );
     }
 
     // Configure OpenTelemetry for Langfuse

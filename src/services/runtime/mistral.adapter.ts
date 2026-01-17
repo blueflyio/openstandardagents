@@ -541,7 +541,10 @@ export class MistralAdapter {
   /**
    * Send a message and get a response (non-streaming)
    */
-  async chat(userMessage: string, options?: MistralRunOptions): Promise<string> {
+  async chat(
+    userMessage: string,
+    options?: MistralRunOptions
+  ): Promise<string> {
     // Add user message to history
     this.messages.push({
       role: 'user',
@@ -601,7 +604,9 @@ export class MistralAdapter {
       const data = (await response.json()) as MistralChatResponse;
 
       if (options?.verbose) {
-        console.log(`  Model: ${data.model}, Finish: ${data.choices[0]?.finish_reason}`);
+        console.log(
+          `  Model: ${data.model}, Finish: ${data.choices[0]?.finish_reason}`
+        );
         console.log(
           `  Tokens: ${data.usage.prompt_tokens} in, ${data.usage.completion_tokens} out`
         );
@@ -622,7 +627,9 @@ export class MistralAdapter {
       // Check if we need to execute tools
       if (choice.message.tool_calls && choice.message.tool_calls.length > 0) {
         if (options?.verbose) {
-          console.log(`  [Executing ${choice.message.tool_calls.length} tool(s)...]`);
+          console.log(
+            `  [Executing ${choice.message.tool_calls.length} tool(s)...]`
+          );
         }
 
         // Execute all tool calls
@@ -744,7 +751,11 @@ export class MistralAdapter {
       }
 
       // Call Mistral API with streaming
-      const response = await this.makeRequest('/chat/completions', requestBody, true);
+      const response = await this.makeRequest(
+        '/chat/completions',
+        requestBody,
+        true
+      );
 
       // Process stream
       const reader = response.body?.getReader();
@@ -807,10 +818,12 @@ export class MistralAdapter {
                     toolCalls[index].id = toolCallDelta.id;
                   }
                   if (toolCallDelta.function?.name) {
-                    toolCalls[index].function.name = toolCallDelta.function.name;
+                    toolCalls[index].function.name =
+                      toolCallDelta.function.name;
                   }
                   if (toolCallDelta.function?.arguments) {
-                    toolCalls[index].function.arguments += toolCallDelta.function.arguments;
+                    toolCalls[index].function.arguments +=
+                      toolCallDelta.function.arguments;
                   }
                 }
               }

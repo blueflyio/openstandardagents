@@ -1,4 +1,4 @@
-# OSSA v0.3.3 — What It Actually Is
+# OSSA v0.3.4 — What It Actually Is
 
 ## The Problem
 
@@ -20,14 +20,14 @@ That's it. It's a schema. Like OpenAPI for REST APIs.
 
 ## The Schema
 
-File: `spec/v0.3.3/ossa-0.3.3.schema.json`
+File: `spec/v0.3.4/ossa-0.3.4.schema.json`
 Size: 9,656 lines
 Format: JSON Schema Draft-07
 
 ### Root Structure (REQUIRED)
 
 ```yaml
-apiVersion: ossa/v0.3.3   # REQUIRED. Regex: ^ossa/v(0\.3\.[0-9]+|1)
+apiVersion: ossa/v0.3.4   # REQUIRED. Regex: ^ossa/v(0\.3\.[0-9]+|1)
 kind: Agent               # REQUIRED. Enum: Agent | Task | Workflow
 metadata:                 # REQUIRED
   name: my-agent          # REQUIRED. DNS-1123 format (lowercase, hyphens ok)
@@ -271,7 +271,7 @@ npm install ajv-cli -g
 
 ```bash
 ajv compile \
-  -s spec/v0.3.3/ossa-0.3.3.schema.json \
+  -s spec/v0.3.4/ossa-0.3.4.schema.json \
   --strict=false \
   --allow-union-types
 ```
@@ -280,7 +280,7 @@ ajv compile \
 
 ```bash
 ajv validate \
-  -s spec/v0.3.3/ossa-0.3.3.schema.json \
+  -s spec/v0.3.4/ossa-0.3.4.schema.json \
   -d your-agent.ossa.yaml \
   --strict=false \
   --allow-union-types
@@ -306,7 +306,7 @@ ajv validate \
 ### Agent
 
 ```yaml
-apiVersion: ossa/v0.3.3
+apiVersion: ossa/v0.3.4
 kind: Agent
 metadata:
   name: my-agent
@@ -317,7 +317,7 @@ spec:
 ### Task
 
 ```yaml
-apiVersion: ossa/v0.3.3
+apiVersion: ossa/v0.3.4
 kind: Task
 metadata:
   name: my-task
@@ -330,7 +330,7 @@ spec:
 ### Workflow
 
 ```yaml
-apiVersion: ossa/v0.3.3
+apiVersion: ossa/v0.3.4
 kind: Workflow
 metadata:
   name: my-workflow
@@ -346,16 +346,16 @@ spec:
 
 ```bash
 # List all AgentSpec properties
-cat spec/v0.3.3/ossa-0.3.3.schema.json | jq '.definitions.AgentSpec.properties | keys'
+cat spec/v0.3.4/ossa-0.3.4.schema.json | jq '.definitions.AgentSpec.properties | keys'
 
 # Get AccessTier structure
-cat spec/v0.3.3/ossa-0.3.3.schema.json | jq '.definitions.AccessTier'
+cat spec/v0.3.4/ossa-0.3.4.schema.json | jq '.definitions.AccessTier'
 
 # Get all definition names
-cat spec/v0.3.3/ossa-0.3.3.schema.json | jq '.definitions | keys'
+cat spec/v0.3.4/ossa-0.3.4.schema.json | jq '.definitions | keys'
 
 # Get required fields for any definition
-cat spec/v0.3.3/ossa-0.3.3.schema.json | jq '.definitions.LLMConfig.required'
+cat spec/v0.3.4/ossa-0.3.4.schema.json | jq '.definitions.LLMConfig.required'
 # Output: ["provider", "model"]
 ```
 
@@ -389,8 +389,8 @@ spec:
 ## File Locations
 
 ```
-spec/v0.3.3/
-├── ossa-0.3.3.schema.json    # THE schema. This is the source of truth.
+spec/v0.3.4/
+├── ossa-0.3.4.schema.json    # THE schema. This is the source of truth.
 └── examples/                  # Reference manifests
 
 src/
@@ -402,10 +402,10 @@ src/
 
 ## Contributing
 
-1. Edit `spec/v0.3.3/ossa-0.3.3.schema.json`
-2. Run: `ajv compile -s spec/v0.3.3/ossa-0.3.3.schema.json --strict=false --allow-union-types`
+1. Edit `spec/v0.3.4/ossa-0.3.4.schema.json`
+2. Run: `ajv compile -s spec/v0.3.4/ossa-0.3.4.schema.json --strict=false --allow-union-types`
 3. Create example manifest that uses your changes
-4. Validate example: `ajv validate -s spec/v0.3.3/ossa-0.3.3.schema.json -d your-example.ossa.yaml --strict=false --allow-union-types`
+4. Validate example: `ajv validate -s spec/v0.3.4/ossa-0.3.4.schema.json -d your-example.ossa.yaml --strict=false --allow-union-types`
 5. Open MR
 
 ---
@@ -414,7 +414,7 @@ src/
 
 OSSA is a JSON Schema for AI agent manifests.
 
-- `apiVersion: ossa/v0.3.3` — required
+- `apiVersion: ossa/v0.3.4` — required
 - `kind: Agent | Task | Workflow` — required
 - `metadata.name` — required
 - `spec` — schema depends on kind

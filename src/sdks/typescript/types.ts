@@ -225,7 +225,9 @@ export function isTask(manifest: OSSAManifest): manifest is TaskManifest {
   return manifest.kind === 'Task';
 }
 
-export function isWorkflow(manifest: OSSAManifest): manifest is WorkflowManifest {
+export function isWorkflow(
+  manifest: OSSAManifest
+): manifest is WorkflowManifest {
   return manifest.kind === 'Workflow';
 }
 
@@ -257,7 +259,7 @@ export function normalizeAccessTier(tier: AccessTier): AccessTier {
 export function getAccessTier(manifest: OSSAManifest): AccessTier | undefined {
   if (manifest.kind !== 'Agent') return undefined;
 
-  const spec = manifest.spec as AgentSpec;
+  const spec = manifest.spec;
   const tier = spec.access_tier ?? spec.identity?.access_tier;
   return tier ? normalizeAccessTier(tier) : undefined;
 }

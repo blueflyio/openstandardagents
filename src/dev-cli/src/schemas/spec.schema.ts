@@ -1,6 +1,6 @@
 /**
  * Spec Schema
- * 
+ *
  * Zod schemas for spec generation and validation
  * SOLID: Single Responsibility - Schema definitions only
  */
@@ -18,10 +18,12 @@ export const SpecGenerateResponseSchema = z.object({
   success: z.boolean(),
   outputPath: z.string(),
   filesGenerated: z.array(z.string()),
-  validation: z.object({
-    valid: z.boolean(),
-    errors: z.array(z.string()),
-  }).optional(),
+  validation: z
+    .object({
+      valid: z.boolean(),
+      errors: z.array(z.string()),
+    })
+    .optional(),
 });
 
 export type SpecGenerateResponse = z.infer<typeof SpecGenerateResponseSchema>;

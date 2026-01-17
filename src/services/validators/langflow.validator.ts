@@ -13,8 +13,13 @@ export class LangflowValidator {
     const errors: ErrorObject[] = [];
     const warnings: string[] = [];
 
-    const langflowExt = manifest.extensions?.langflow as Record<string, unknown> | undefined;
-    if (!langflowExt || (langflowExt.enabled as boolean | undefined) === false) {
+    const langflowExt = manifest.extensions?.langflow as
+      | Record<string, unknown>
+      | undefined;
+    if (
+      !langflowExt ||
+      (langflowExt.enabled as boolean | undefined) === false
+    ) {
       return { valid: true, errors: [], warnings: [] };
     }
 
@@ -85,7 +90,9 @@ export class LangflowValidator {
 
     // Warnings
     if (!flowId && !endpoint) {
-      warnings.push('Best practice: Specify flow_id or endpoint for Langflow integration');
+      warnings.push(
+        'Best practice: Specify flow_id or endpoint for Langflow integration'
+      );
     }
 
     return {

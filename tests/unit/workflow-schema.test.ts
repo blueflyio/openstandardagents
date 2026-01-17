@@ -5,7 +5,12 @@ import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import * as fs from 'fs';
 import * as path from 'path';
-import { isOssaWorkflow, createWorkflowManifest, createStep, expr } from '../../src/types/workflow';
+import {
+  isOssaWorkflow,
+  createWorkflowManifest,
+  createStep,
+  expr,
+} from '../../src/types/workflow';
 import { getApiVersion } from '../../src/utils/version.js';
 
 describe('OSSA v0.3.0 Workflow Schema', () => {
@@ -13,8 +18,11 @@ describe('OSSA v0.3.0 Workflow Schema', () => {
   let schema: object;
 
   beforeAll(() => {
-    // Load the v0.3.0 schema
-    const schemaPath = path.join(__dirname, '../../spec/v0.3.3/ossa-0.3.3.schema.json');
+    // Load the v0.3.x schema
+    const schemaPath = path.join(
+      __dirname,
+      '../../spec/v0.3/ossa-0.3.5.schema.json'
+    );
     schema = JSON.parse(fs.readFileSync(schemaPath, 'utf-8'));
 
     // Setup AJV validator
@@ -397,7 +405,9 @@ describe('OSSA v0.3.0 Workflow Schema', () => {
     });
 
     it('expr should create expression syntax', () => {
-      expect(expr('steps.fetch.output.data')).toBe('${{ steps.fetch.output.data }}');
+      expect(expr('steps.fetch.output.data')).toBe(
+        '${{ steps.fetch.output.data }}'
+      );
       expect(expr('workflow.input.id')).toBe('${{ workflow.input.id }}');
     });
   });

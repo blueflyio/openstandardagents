@@ -36,7 +36,12 @@ export const StyleModifierSchema = z.enum([
   'confident',
 ]);
 
-export const EmojiUsageSchema = z.enum(['none', 'minimal', 'moderate', 'liberal']);
+export const EmojiUsageSchema = z.enum([
+  'none',
+  'minimal',
+  'moderate',
+  'liberal',
+]);
 
 export const ToneConfigSchema = z.object({
   preset: TonePresetSchema.optional(),
@@ -98,7 +103,12 @@ export const ExpertiseDomainSchema = z.enum([
   'observability',
 ]);
 
-export const ExpertiseLevelSchema = z.enum(['beginner', 'intermediate', 'advanced', 'expert']);
+export const ExpertiseLevelSchema = z.enum([
+  'beginner',
+  'intermediate',
+  'advanced',
+  'expert',
+]);
 
 export const ExpertiseEntrySchema = z.object({
   domain: z.union([ExpertiseDomainSchema, z.string()]),
@@ -111,7 +121,12 @@ export const ExpertiseEntrySchema = z.object({
 // Behavioral Traits Schema
 // ============================================================================
 
-export const UncertaintyHandlingSchema = z.enum(['acknowledge', 'investigate', 'defer', 'estimate']);
+export const UncertaintyHandlingSchema = z.enum([
+  'acknowledge',
+  'investigate',
+  'defer',
+  'estimate',
+]);
 
 export const ErrorResponseSchema = z.enum([
   'apologetic',
@@ -120,7 +135,12 @@ export const ErrorResponseSchema = z.enum([
   'detailed',
 ]);
 
-export const ProactivitySchema = z.enum(['reactive', 'suggestive', 'proactive', 'autonomous']);
+export const ProactivitySchema = z.enum([
+  'reactive',
+  'suggestive',
+  'proactive',
+  'autonomous',
+]);
 
 export const CollaborationSchema = z.enum([
   'independent',
@@ -136,7 +156,12 @@ export const DetailOrientationSchema = z.enum([
   'comprehensive',
 ]);
 
-export const RiskToleranceSchema = z.enum(['conservative', 'moderate', 'progressive', 'experimental']);
+export const RiskToleranceSchema = z.enum([
+  'conservative',
+  'moderate',
+  'progressive',
+  'experimental',
+]);
 
 export const BehavioralTraitsSchema = z.object({
   uncertainty_handling: UncertaintyHandlingSchema.optional(),
@@ -151,7 +176,12 @@ export const BehavioralTraitsSchema = z.object({
 // Communication Format Schema
 // ============================================================================
 
-export const ResponseLengthSchema = z.enum(['brief', 'moderate', 'detailed', 'comprehensive']);
+export const ResponseLengthSchema = z.enum([
+  'brief',
+  'moderate',
+  'detailed',
+  'comprehensive',
+]);
 
 export const CommunicationFormatSchema = z.object({
   response_length: ResponseLengthSchema.optional(),

@@ -1,6 +1,6 @@
 /**
  * Spec Generation Zod Schemas
- * 
+ *
  * Generated from OpenAPI spec: openapi/dev-cli.openapi.yml
  * DRY: Single source of truth for spec validation
  */

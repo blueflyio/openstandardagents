@@ -1,6 +1,12 @@
 # OSSA Agents Directory
 
-This directory contains OSSA-compliant agent manifests for major IDE and agent platforms.
+**Local agent registry for OSSA v0.3.5 production agents**
+
+This directory contains production-ready OSSA agent manifests organized by tier:
+- **Workers**: Task-specific automation agents
+- **Orchestrators**: Workflow coordination agents
+- **Workflows**: Multi-step process definitions
+- **Spec Healers**: Specification maintenance agents
 
 ## Available Agents
 
@@ -198,7 +204,7 @@ ossa validate .agents/my-agent/agent.ossa.yaml
 
 ## Agent Structure
 
-All agents follow the OSSA v0.2.6 specification:
+All agents follow the OSSA v0.3.5 specification:
 
 ```yaml
 apiVersion: ossa/v0.3.0
@@ -291,14 +297,14 @@ To add a new agent:
 
 1. Create directory: `mkdir .agents/platform-name`
 2. Create manifest: `touch .agents/platform-name/agent.ossa.yaml`
-3. Follow OSSA v0.2.6 specification
+3. Follow OSSA v0.3.5 specification
 4. Validate: `ossa validate .agents/platform-name/agent.ossa.yaml`
 5. Document in this README
 6. Submit pull request
 
 ## Resources
 
-- [OSSA Specification](../spec/v0.2.6/ossa-0.2.6.schema.json)
+- [OSSA Specification](../spec/v0.3.5/ossa-0.3.5.schema.json)
 - [OSSA Documentation](https://openstandardagents.org)
 - [Examples](../examples/)
 - [CLI Reference](https://openstandardagents.org/docs/cli)

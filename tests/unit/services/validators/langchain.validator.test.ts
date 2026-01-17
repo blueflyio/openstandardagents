@@ -102,7 +102,10 @@ describe('LangChainValidator', () => {
         langchain: {
           enabled: true,
           chain_type: 'agent',
-          callbacks: ['callback1', 'callback2'],
+          callbacks: [
+            { type: 'langsmith' },
+            { type: 'wandb', config: { project: 'test' } },
+          ],
         },
       },
     };

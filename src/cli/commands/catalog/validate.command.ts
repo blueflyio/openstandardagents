@@ -67,7 +67,7 @@ export function createValidateCommand(): Command {
       'both'
     )
     .action(async (opts) => {
-      const options = ValidateOptionsSchema.parse(opts) as ValidateOptions;
+      const options = ValidateOptionsSchema.parse(opts);
       const config = new CatalogConfig();
 
       const agentIds = config.resolveAgentIds(options.agent, options.all);

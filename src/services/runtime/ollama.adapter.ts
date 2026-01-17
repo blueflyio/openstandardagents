@@ -464,7 +464,9 @@ export class OllamaAdapter {
         if (options?.verbose) {
           console.log(`  Model: ${data.model}`);
           if (data.prompt_eval_count) {
-            console.log(`  Tokens: ${data.prompt_eval_count} in, ${data.eval_count || 0} out`);
+            console.log(
+              `  Tokens: ${data.prompt_eval_count} in, ${data.eval_count || 0} out`
+            );
           }
         }
 
@@ -480,7 +482,9 @@ export class OllamaAdapter {
         // Check if we need to call tools
         if (message.tool_calls && message.tool_calls.length > 0) {
           if (options?.verbose) {
-            console.log(`  [Executing ${message.tool_calls.length} tool(s)...]`);
+            console.log(
+              `  [Executing ${message.tool_calls.length} tool(s)...]`
+            );
           }
 
           // Execute each tool call
@@ -761,10 +765,7 @@ export class OllamaAdapter {
   /**
    * Create an Ollama adapter from a manifest object
    */
-  static fromManifest(
-    manifest: OssaAgent,
-    baseUrl?: string
-  ): OllamaAdapter {
+  static fromManifest(manifest: OssaAgent, baseUrl?: string): OllamaAdapter {
     return new OllamaAdapter({
       manifest,
       baseUrl,

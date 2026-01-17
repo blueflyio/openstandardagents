@@ -2,7 +2,7 @@
  * OSSA Agent CRUD API - Zod Schemas
  *
  * AUTO-GENERATED - DO NOT EDIT
- * Generated from: /Users/flux423/Sites/LLM/OssA/openstandardagents/openapi/agent-crud.yaml
+ * Generated from: openapi/agent-crud.yaml
  * OSSA Version: 0.3.3
  * API Version: ossa/v0.3.3
  * Generated on: 2026-01-06T18:11:54.160Z
@@ -166,7 +166,7 @@ export const agentSpecSchema = z.object({
 export type AgentSpec = z.infer<typeof agentSpecSchema>;
 
 export const agentCreateSchema = z.object({
-  apiVersion: z.literal("ossa/v0.3.3"),
+  apiVersion: z.literal("ossa/v0.3.4"),
   kind: z.literal("Agent"),
   metadata: agentMetadataSchema,
   spec: agentSpecSchema
@@ -207,7 +207,7 @@ export type AgentMetrics = z.infer<typeof agentMetricsSchema>;
 
 export const agentResponseSchema = z.object({
   id: z.string().uuid(),
-  apiVersion: z.literal("ossa/v0.3.3"),
+  apiVersion: z.literal("ossa/v0.3.4"),
   kind: z.literal("Agent"),
   metadata: agentMetadataSchema,
   spec: agentSpecSchema,

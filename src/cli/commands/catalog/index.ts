@@ -1,7 +1,7 @@
 /**
  * Catalog Commands
  *
- * Manage OSSA agents in GitLab Catalog.
+ * Manage OSSA agents in GitLab Catalog and Registry.
  *
  * Commands:
  *   convert  - Convert OSSA manifests to GitLab Duo format
@@ -11,6 +11,8 @@
  *   sync     - Synchronize local and remote catalog
  *   diff     - Show differences between local and remote
  *   list     - List all agents with status
+ *   search   - Search agents in the registry
+ *   info     - Show detailed agent information
  */
 
 import { Command } from 'commander';
@@ -21,10 +23,12 @@ import { createPullCommand } from './pull.command.js';
 import { createSyncCommand } from './sync.command.js';
 import { createDiffCommand } from './diff.command.js';
 import { createListCommand } from './list.command.js';
+import { catalogSearchCommand } from './search.command.js';
+import { catalogInfoCommand } from './info.command.js';
 
 export function createCatalogCommand(): Command {
   const catalog = new Command('catalog')
-    .description('Manage OSSA agents in GitLab Catalog')
+    .description('Manage OSSA agents in GitLab Catalog and Registry')
     .alias('cat');
 
   // Register all subcommands
@@ -35,6 +39,8 @@ export function createCatalogCommand(): Command {
   catalog.addCommand(createSyncCommand());
   catalog.addCommand(createDiffCommand());
   catalog.addCommand(createListCommand());
+  catalog.addCommand(catalogSearchCommand);
+  catalog.addCommand(catalogInfoCommand);
 
   return catalog;
 }

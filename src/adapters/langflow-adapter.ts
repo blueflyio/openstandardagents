@@ -43,7 +43,10 @@ export class LangflowAdapter {
    */
   static toLangflow(manifest: OssaAgent): LangflowFlow {
     const spec = manifest.spec || { role: '' };
-    const metadata = manifest.metadata || { name: 'unknown-flow', description: '' };
+    const metadata = manifest.metadata || {
+      name: 'unknown-flow',
+      description: '',
+    };
     const tools = spec.tools || [];
 
     const nodes: LangflowNode[] = [];
@@ -116,38 +119,41 @@ export class LangflowAdapter {
     nodes.push(agentNode);
 
     // Create tool nodes
-    tools.forEach((tool: { name?: string; description?: string }, index: number) => {
-      const toolNode: LangflowNode = {
-        id: `tool-${index + 1}`,
-        data: {
-          type: 'Tool',
-          node: {
-            template: {
-              name: {
-                value: tool.name || `tool_${index + 1}`,
-              },
-              description: {
-                value: tool.description || '',
-              },
-              func: {
-                value: 'def function(input: str) -> str:\n    return "Implement tool logic here"',
+    tools.forEach(
+      (tool: { name?: string; description?: string }, index: number) => {
+        const toolNode: LangflowNode = {
+          id: `tool-${index + 1}`,
+          data: {
+            type: 'Tool',
+            node: {
+              template: {
+                name: {
+                  value: tool.name || `tool_${index + 1}`,
+                },
+                description: {
+                  value: tool.description || '',
+                },
+                func: {
+                  value:
+                    'def function(input: str) -> str:\n    return "Implement tool logic here"',
+                },
               },
             },
           },
-        },
-        position: { x: 750, y: index * 100 },
-        type: 'Tool',
-      };
-      nodes.push(toolNode);
+          position: { x: 750, y: index * 100 },
+          type: 'Tool',
+        };
+        nodes.push(toolNode);
 
-      // Connect tool to agent
-      edges.push({
-        source: `tool-${index + 1}`,
-        target: 'agent-1',
-        sourceHandle: 'output',
-        targetHandle: 'tools',
-      });
-    });
+        // Connect tool to agent
+        edges.push({
+          source: `tool-${index + 1}`,
+          target: 'agent-1',
+          sourceHandle: 'output',
+          targetHandle: 'tools',
+        });
+      }
+    );
 
     // Connect prompt to LLM
     edges.push({
@@ -203,7 +209,10 @@ export class LangflowAdapter {
    */
   static toSimpleFlow(manifest: OssaAgent): LangflowFlow {
     const spec = manifest.spec || { role: '' };
-    const metadata = manifest.metadata || { name: 'unknown-flow', description: '' };
+    const metadata = manifest.metadata || {
+      name: 'unknown-flow',
+      description: '',
+    };
 
     const nodes: LangflowNode[] = [];
     const edges: LangflowEdge[] = [];

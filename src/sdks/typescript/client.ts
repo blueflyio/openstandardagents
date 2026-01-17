@@ -54,7 +54,11 @@ export class OSSASDKClient {
    * Save manifest to file
    * CRUD: Create/Update
    */
-  saveManifest(manifest: OSSAManifest, filePath: string, format: 'yaml' | 'json' = 'yaml'): void {
+  saveManifest(
+    manifest: OSSAManifest,
+    filePath: string,
+    format: 'yaml' | 'json' = 'yaml'
+  ): void {
     this.manifestService.save(manifest, filePath, format);
   }
 
@@ -62,7 +66,10 @@ export class OSSASDKClient {
    * Export manifest
    * CRUD: Read
    */
-  exportManifest(manifest: OSSAManifest, format: 'yaml' | 'json' | 'typescript'): string {
+  exportManifest(
+    manifest: OSSAManifest,
+    format: 'yaml' | 'json' | 'typescript'
+  ): string {
     return this.manifestService.export(manifest, format);
   }
 }

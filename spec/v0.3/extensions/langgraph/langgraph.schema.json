@@ -1,0 +1,211 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openstandardagents.org/schemas/v0.3.5/extensions/langgraph/langgraph.json",
+  "title": "LangGraph Extension",
+  "description": "Native integration with LangGraph for building stateful, cyclical agent workflows with state machines, checkpoints, and human-in-the-loop capabilities.",
+  "type": "object",
+  "properties": {
+    "enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Enable LangGraph integration"
+    },
+    "graph_config": {
+      "$ref": "#/definitions/GraphConfig",
+      "description": "State graph configuration"
+    },
+    "checkpoint_config": {
+      "$ref": "#/definitions/CheckpointConfig",
+      "description": "Checkpoint configuration for state persistence"
+    },
+    "max_iterations": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Maximum graph iterations"
+    },
+    "interrupt_before": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Node IDs to interrupt before execution"
+    },
+    "interrupt_after": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Node IDs to interrupt after execution"
+    },
+    "recursion_limit": {
+      "type": "integer",
+      "minimum": 1,
+      "default": 25,
+      "description": "Maximum recursion depth"
+    },
+    "stream_mode": {
+      "type": "string",
+      "enum": ["values", "updates", "debug"],
+      "default": "values",
+      "description": "Stream mode for graph execution"
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "GraphConfig": {
+      "type": "object",
+      "description": "State graph configuration",
+      "required": ["nodes", "edges"],
+      "properties": {
+        "nodes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/GraphNode"
+          },
+          "description": "Graph nodes"
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/GraphEdge"
+          },
+          "description": "Graph edges"
+        },
+        "conditional_edges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ConditionalEdge"
+          },
+          "description": "Conditional edges for branching"
+        },
+        "entry_point": {
+          "type": "string",
+          "description": "Entry node ID"
+        },
+        "finish_point": {
+          "type": "string",
+          "description": "Finish node ID"
+        },
+        "state_schema": {
+          "type": "object",
+          "description": "JSON Schema for graph state"
+        }
+      },
+      "additionalProperties": false
+    },
+    "GraphNode": {
+      "type": "object",
+      "description": "Graph node definition",
+      "required": ["id", "type"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique node identifier"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["llm", "tool", "retriever", "function", "human", "end"],
+          "description": "Node type"
+        },
+        "config": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Node-specific configuration"
+        },
+        "reducer": {
+          "type": "string",
+          "description": "State reducer function"
+        }
+      },
+      "additionalProperties": false
+    },
+    "GraphEdge": {
+      "type": "object",
+      "description": "Graph edge definition",
+      "required": ["from", "to"],
+      "properties": {
+        "from": {
+          "type": "string",
+          "description": "Source node ID"
+        },
+        "to": {
+          "type": "string",
+          "description": "Target node ID"
+        },
+        "label": {
+          "type": "string",
+          "description": "Edge label"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ConditionalEdge": {
+      "type": "object",
+      "description": "Conditional edge for branching",
+      "required": ["from", "condition", "mapping"],
+      "properties": {
+        "from": {
+          "type": "string",
+          "description": "Source node ID"
+        },
+        "condition": {
+          "type": "string",
+          "description": "Condition function or expression"
+        },
+        "mapping": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Condition result to target node mapping"
+        },
+        "default": {
+          "type": "string",
+          "description": "Default target node if condition doesn't match"
+        }
+      },
+      "additionalProperties": false
+    },
+    "CheckpointConfig": {
+      "type": "object",
+      "description": "Checkpoint configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable checkpointing"
+        },
+        "storage": {
+          "type": "string",
+          "enum": ["memory", "sqlite", "postgres", "redis"],
+          "default": "memory",
+          "description": "Checkpoint storage backend"
+        },
+        "namespace": {
+          "type": "string",
+          "description": "Checkpoint namespace"
+        },
+        "config": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Storage-specific configuration"
+        },
+        "saver_config": {
+          "type": "object",
+          "properties": {
+            "thread_id": {
+              "type": "string",
+              "description": "Thread identifier for checkpoints"
+            },
+            "checkpoint_ns": {
+              "type": "string",
+              "description": "Checkpoint namespace"
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

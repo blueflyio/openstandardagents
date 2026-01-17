@@ -2,7 +2,7 @@
  * OSSA Deploy Command Tests
  */
 
-import { describe, it, expect, jest, beforeEach } from '@jest/globals';
+import { describe, it, expect } from '@jest/globals';
 
 describe('Deploy Commands', () => {
   describe('deployCommand', () => {
