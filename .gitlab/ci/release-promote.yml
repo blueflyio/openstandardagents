@@ -129,20 +129,15 @@ publish-npm:stable:
   # This job runs independently when stable tag is pushed
   extends:
     - .npm-cache
-  # GitLab Environment for deployment tracking and security
-  environment:
-    name: npm-registry
-    deployment_tier: production
-    url: https://www.npmjs.com/package/@bluefly/openstandardagents
-  # OIDC Trusted Publishers - no NPM_TOKEN needed
-  id_tokens:
-    NPM_ID_TOKEN:
-      aud: "npm:registry.npmjs.org"
   before_script:
     - npm ci
     - npm run build
-    - echo "Configuring npm to use OIDC token..."
-    - echo "//registry.npmjs.org/:_authToken=${NPM_ID_TOKEN}" > ~/.npmrc
+    - |
+      if [ -z "$NPM_TOKEN" ]; then
+        echo "ERROR: NPM_TOKEN not set in CI/CD variables"
+        exit 1
+      fi
+      echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
   script:
     - |
       #!/bin/bash
@@ -180,8 +175,8 @@ publish-npm:stable:
         exit 0
       fi
 
-      # Publish to npm with OIDC authentication
-      echo "Publishing ${VERSION} to npmjs.org with OIDC..."
+      # Publish to npm
+      echo "Publishing ${VERSION} to npmjs.org..."
       npm publish --access public
 
       echo "✅ Published ${VERSION} to npmjs.org"
