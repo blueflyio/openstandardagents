@@ -306,6 +306,13 @@ create-rc-tag:
 
       echo "Base version: $BASE_VERSION"
 
+      # CRITICAL: Check if stable tag already exists - don't create RC if stable released
+      if git tag -l "v${BASE_VERSION}" | grep -q "^v${BASE_VERSION}$"; then
+        echo "Stable tag v${BASE_VERSION} already exists - skipping RC creation"
+        echo "RC tags are only created before stable release"
+        exit 0
+      fi
+
       # Get next RC number
       LATEST_RC=$(git tag -l "v${BASE_VERSION}-rc.*" 2>/dev/null | sort -V | tail -1 || echo "")
       if [ -z "$LATEST_RC" ]; then

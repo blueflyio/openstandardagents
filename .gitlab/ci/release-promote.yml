@@ -113,9 +113,6 @@ promote-rc-to-stable:
     # Run on main branch after quality gates pass (auto-promote when RC exists)
     - if: $CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"
       when: on_success
-    # Also run when RC tag is pushed (immediate promotion if ready)
-    - if: $CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+$/
-      when: on_success
   allow_failure: false
 
 # ============================================================================
