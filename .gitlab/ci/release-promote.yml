@@ -14,7 +14,14 @@ promote-rc-to-stable:
   image: alpine:latest
   tags:
     - saas-linux-small-amd64
-  needs: []
+  needs:
+    - job: build:dist
+    - job: test:unit
+    - job: test:integration
+    - job: test:lint
+    - job: test:security
+    - job: test:e2e
+    - job: quality:gates:full
   before_script:
     - apk add --no-cache curl jq git bash
     - git config user.email "ci@bluefly.io"
