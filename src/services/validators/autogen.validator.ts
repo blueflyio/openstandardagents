@@ -11,13 +11,6 @@ import addFormats from 'ajv-formats';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-// Load AG2 schema
-const ag2SchemaPath = join(
-  process.cwd(),
-  'spec/v0.3/extensions/ag2/ag2.schema.json'
-);
-const ag2Schema = JSON.parse(readFileSync(ag2SchemaPath, 'utf-8'));
-
 @injectable()
 export class AutoGenValidator {
   private ajv: Ajv;
@@ -26,6 +19,14 @@ export class AutoGenValidator {
   constructor() {
     this.ajv = new Ajv({ allErrors: true, strict: false });
     addFormats(this.ajv);
+
+    // Load AG2 schema from spec/ directory (relative to project root)
+    // Works in both Jest (source tree) and production (project root with dist/)
+    const ag2SchemaPath = join(
+      process.cwd(),
+      'spec/v0.3/extensions/ag2/ag2.schema.json'
+    );
+    const ag2Schema = JSON.parse(readFileSync(ag2SchemaPath, 'utf-8'));
     this.validateAG2 = this.ajv.compile(ag2Schema);
   }
 
