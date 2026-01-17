@@ -40,6 +40,9 @@ spec:
     encryption:
       at_rest: true
       in_transit: true
+    data_privacy:
+      enabled: true
+      pii_handling: redact
   capabilities:
     - name: data_processing
       description: Process and analyze data
@@ -69,17 +72,6 @@ spec:
     logging:
       enabled: true
       level: info
-  security:
-    authentication:
-      required: true
-      methods:
-        - oauth2
-    authorization:
-      enabled: true
-      model: rbac
-    data_privacy:
-      enabled: true
-      pii_handling: redact
   resilience:
     retry_policy:
       max_attempts: 3
