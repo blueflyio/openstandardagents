@@ -180,9 +180,9 @@ publish-npm:stable:
         exit 0
       fi
 
-      # Publish to npm with OIDC provenance
+      # Publish to npm with OIDC authentication
       echo "Publishing ${VERSION} to npmjs.org with OIDC..."
-      npm publish --access public --provenance
+      npm publish --access public
 
       echo "✅ Published ${VERSION} to npmjs.org"
       echo "Verify: npm view @bluefly/openstandardagents@${VERSION}"
