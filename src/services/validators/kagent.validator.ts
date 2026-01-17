@@ -10,17 +10,7 @@ import type { OssaAgent, ValidationResult } from '../../types/index.js';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import { readFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-// Load Kagent schema - use path relative to compiled dist/ location
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const kagentSchemaPath = join(
-  __dirname,
-  '../../spec/v0.3/extensions/kagent/kagent.schema.json'
-);
-const kagentSchema = JSON.parse(readFileSync(kagentSchemaPath, 'utf-8'));
+import { join } from 'path';
 
 @injectable()
 export class KagentValidator {
@@ -30,6 +20,14 @@ export class KagentValidator {
   constructor() {
     this.ajv = new Ajv({ allErrors: true, strict: false });
     addFormats(this.ajv);
+
+    // Load Kagent schema from spec/ directory (relative to project root)
+    // Works in both Jest (source tree) and production (project root with dist/)
+    const kagentSchemaPath = join(
+      process.cwd(),
+      'spec/v0.3/extensions/kagent/kagent.schema.json'
+    );
+    const kagentSchema = JSON.parse(readFileSync(kagentSchemaPath, 'utf-8'));
     this.validateKagent = this.ajv.compile(kagentSchema);
   }
 

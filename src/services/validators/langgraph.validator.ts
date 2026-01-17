@@ -9,17 +9,7 @@ import type { ErrorObject } from 'ajv';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import { readFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-// Load LangGraph schema - use path relative to compiled dist/ location
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const langgraphSchemaPath = join(
-  __dirname,
-  '../../spec/v0.3/extensions/langgraph/langgraph.schema.json'
-);
-const langgraphSchema = JSON.parse(readFileSync(langgraphSchemaPath, 'utf-8'));
+import { join } from 'path';
 
 @injectable()
 export class LangGraphValidator {
@@ -29,6 +19,14 @@ export class LangGraphValidator {
   constructor() {
     this.ajv = new Ajv({ allErrors: true, strict: false });
     addFormats(this.ajv);
+
+    // Load LangGraph schema from spec/ directory (relative to project root)
+    // Works in both Jest (source tree) and production (project root with dist/)
+    const langgraphSchemaPath = join(
+      process.cwd(),
+      'spec/v0.3/extensions/langgraph/langgraph.schema.json'
+    );
+    const langgraphSchema = JSON.parse(readFileSync(langgraphSchemaPath, 'utf-8'));
     this.validateLangGraph = this.ajv.compile(langgraphSchema);
   }
 
