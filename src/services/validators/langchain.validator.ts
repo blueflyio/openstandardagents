@@ -26,7 +26,9 @@ export class LangChainValidator {
       process.cwd(),
       'spec/v0.3/extensions/langchain/langchain.schema.json'
     );
-    const langchainSchema = JSON.parse(readFileSync(langchainSchemaPath, 'utf-8'));
+    const langchainSchema = JSON.parse(
+      readFileSync(langchainSchemaPath, 'utf-8')
+    );
     this.validateLangChain = this.ajv.compile(langchainSchema);
   }
 
