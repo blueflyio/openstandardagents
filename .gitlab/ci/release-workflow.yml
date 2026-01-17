@@ -486,3 +486,11 @@ create-gitlab-release:
     - if: '$CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+(-RC|-dev[0-9]*)?$/'
       when: on_success
   allow_failure: true
+
+# ============================================================================
+# OVERRIDE COMPONENT JOBS - Make release jobs manual instead of failing
+# ============================================================================
+
+release:semantic:
+  when: manual
+  allow_failure: true
