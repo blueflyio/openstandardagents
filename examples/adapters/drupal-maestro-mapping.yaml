@@ -1,0 +1,369 @@
+# Example: Maestro Business Process to OSSA Workflow Mapping
+# Demonstrates how Drupal Maestro templates map to OSSA Workflows
+apiVersion: ossa/v0.3.5
+kind: Workflow
+metadata:
+  name: maestro-content-approval
+  version: 1.0.0
+  description: Content approval workflow (Maestro template mapping)
+  labels:
+    runtime: drupal
+    engine: maestro
+    domain: content-management
+  annotations:
+    drupal.ossa.io/maestro-template: content_approval_v2
+    drupal.ossa.io/maestro-version: "2.1.0"
+
+spec:
+  # Maestro Process Initiation → OSSA Triggers
+  triggers:
+    - type: event
+      source: drupal.entity
+      event: node.presave
+      filter:
+        moderation_state: needs_review
+    - type: api
+      endpoint: /api/workflows/content-approval/start
+      method: POST
+
+  # Maestro Process Variables → OSSA Input
+  inputs:
+    type: object
+    properties:
+      node_id:
+        type: integer
+        description: The Drupal node ID
+      node_type:
+        type: string
+        description: Content type (bundle)
+      author_uid:
+        type: integer
+        description: Content author user ID
+      reviewer_role:
+        type: string
+        default: content_reviewer
+        description: Role required for review
+      priority:
+        type: string
+        enum: [low, normal, high, urgent]
+        default: normal
+    required:
+      - node_id
+      - node_type
+      - author_uid
+
+  # Maestro Process Variables → OSSA Output
+  outputs:
+    type: object
+    properties:
+      final_status:
+        type: string
+        enum: [approved, rejected, revision_requested]
+      reviewer_id:
+        type: integer
+      review_date:
+        type: string
+        format: date-time
+      revision_count:
+        type: integer
+      total_duration_hours:
+        type: number
+
+  # Maestro Tasks → OSSA Workflow Steps
+  steps:
+    # Maestro: Set Process Variables
+    - id: initialize
+      kind: Task
+      name: Initialize workflow variables
+      inline:
+        execution:
+          type: deterministic
+          runtime: drupal
+          entrypoint: "Drupal\\ossa_adapter\\TaskHandler\\MaestroSetVariables::execute"
+        input:
+          type: object
+          properties:
+            variables:
+              type: object
+        output:
+          type: object
+          properties:
+            revision_count:
+              type: integer
+            started_at:
+              type: string
+      input:
+        variables:
+          revision_count: 0
+          started_at: "${{ now() }}"
+
+    # Maestro: Assign Task to Role
+    - id: assign_reviewer
+      kind: Task
+      name: Assign to content reviewer
+      ref: ./tasks/assign-to-role.yaml
+      input:
+        role: "${{ workflow.input.reviewer_role }}"
+        task_type: content_review
+        priority: "${{ workflow.input.priority }}"
+        entity_id: "${{ workflow.input.node_id }}"
+      depends_on:
+        - initialize
+
+    # Maestro: Notify Assignee
+    - id: notify_reviewer
+      kind: Task
+      name: Send review notification
+      ref: ./tasks/send-notification.yaml
+      input:
+        user_id: "${{ steps.assign_reviewer.output.assigned_user_id }}"
+        template: content_review_request
+        variables:
+          node_title: "${{ steps.initialize.output.node_title }}"
+          node_url: "/node/${{ workflow.input.node_id }}"
+          priority: "${{ workflow.input.priority }}"
+      depends_on:
+        - assign_reviewer
+
+    # Maestro: Interactive Task (Human Review)
+    - id: human_review
+      kind: Task
+      name: Content review decision
+      inline:
+        execution:
+          type: human
+          assignee: "${{ steps.assign_reviewer.output.assigned_user_id }}"
+          timeout_hours: 72
+          escalation:
+            after_hours: 48
+            to_role: senior_editor
+        input:
+          type: object
+          properties:
+            decision:
+              type: string
+              enum: [approve, reject, request_revision]
+            comments:
+              type: string
+            quality_score:
+              type: integer
+              minimum: 1
+              maximum: 5
+          required:
+            - decision
+        output:
+          type: object
+          properties:
+            decision:
+              type: string
+            comments:
+              type: string
+            quality_score:
+              type: integer
+            reviewed_at:
+              type: string
+            reviewer_id:
+              type: integer
+      depends_on:
+        - notify_reviewer
+
+    # Maestro: Exclusive Gateway (Decision Branch)
+    - id: process_decision
+      kind: Task
+      name: Route based on decision
+      inline:
+        execution:
+          type: deterministic
+          runtime: drupal
+        output:
+          type: object
+          properties:
+            branch:
+              type: string
+              enum: [approved, rejected, revision]
+      input:
+        decision: "${{ steps.human_review.output.decision }}"
+      depends_on:
+        - human_review
+
+    # Maestro: Update Entity (Approved Branch)
+    - id: publish_content
+      kind: Task
+      name: Publish approved content
+      ref: ./tasks/update-moderation-state.yaml
+      condition: "${{ steps.process_decision.output.branch == 'approved' }}"
+      input:
+        node_id: "${{ workflow.input.node_id }}"
+        new_state: published
+        log_message: "Approved by reviewer"
+      depends_on:
+        - process_decision
+
+    # Maestro: Notify Author (Approved)
+    - id: notify_author_approved
+      kind: Task
+      name: Notify author of approval
+      ref: ./tasks/send-notification.yaml
+      condition: "${{ steps.process_decision.output.branch == 'approved' }}"
+      input:
+        user_id: "${{ workflow.input.author_uid }}"
+        template: content_approved
+        variables:
+          node_title: "${{ steps.initialize.output.node_title }}"
+          reviewer_comments: "${{ steps.human_review.output.comments }}"
+      depends_on:
+        - publish_content
+
+    # Maestro: Update Entity (Rejected Branch)
+    - id: archive_content
+      kind: Task
+      name: Archive rejected content
+      ref: ./tasks/update-moderation-state.yaml
+      condition: "${{ steps.process_decision.output.branch == 'rejected' }}"
+      input:
+        node_id: "${{ workflow.input.node_id }}"
+        new_state: archived
+        log_message: "Rejected: ${{ steps.human_review.output.comments }}"
+      depends_on:
+        - process_decision
+
+    # Maestro: Notify Author (Rejected)
+    - id: notify_author_rejected
+      kind: Task
+      name: Notify author of rejection
+      ref: ./tasks/send-notification.yaml
+      condition: "${{ steps.process_decision.output.branch == 'rejected' }}"
+      input:
+        user_id: "${{ workflow.input.author_uid }}"
+        template: content_rejected
+        variables:
+          node_title: "${{ steps.initialize.output.node_title }}"
+          rejection_reason: "${{ steps.human_review.output.comments }}"
+      depends_on:
+        - archive_content
+
+    # Maestro: Loop Back (Revision Branch)
+    - id: request_revision
+      kind: Task
+      name: Update for revision
+      ref: ./tasks/update-moderation-state.yaml
+      condition: "${{ steps.process_decision.output.branch == 'revision' }}"
+      input:
+        node_id: "${{ workflow.input.node_id }}"
+        new_state: draft
+        log_message: "Revision requested: ${{ steps.human_review.output.comments }}"
+      depends_on:
+        - process_decision
+
+    # Maestro: Notify Author (Revision)
+    - id: notify_author_revision
+      kind: Task
+      name: Notify author of revision request
+      ref: ./tasks/send-notification.yaml
+      condition: "${{ steps.process_decision.output.branch == 'revision' }}"
+      input:
+        user_id: "${{ workflow.input.author_uid }}"
+        template: content_revision_requested
+        variables:
+          node_title: "${{ steps.initialize.output.node_title }}"
+          revision_notes: "${{ steps.human_review.output.comments }}"
+          edit_url: "/node/${{ workflow.input.node_id }}/edit"
+      depends_on:
+        - request_revision
+
+    # Maestro: Wait for Resubmission (Loop)
+    - id: wait_resubmission
+      kind: Task
+      name: Wait for author to resubmit
+      condition: "${{ steps.process_decision.output.branch == 'revision' }}"
+      inline:
+        execution:
+          type: event_wait
+          timeout_hours: 168  # 7 days
+          event:
+            source: drupal.entity
+            type: node.update
+            filter:
+              nid: "${{ workflow.input.node_id }}"
+              moderation_state: needs_review
+      depends_on:
+        - notify_author_revision
+
+    # Maestro: Increment Counter and Loop
+    - id: increment_revision
+      kind: Task
+      name: Increment revision counter
+      condition: "${{ steps.process_decision.output.branch == 'revision' }}"
+      inline:
+        execution:
+          type: deterministic
+        output:
+          type: object
+          properties:
+            new_count:
+              type: integer
+      input:
+        current_count: "${{ steps.initialize.output.revision_count }}"
+      depends_on:
+        - wait_resubmission
+      # Note: In a full implementation, this would loop back to assign_reviewer
+
+  # Workflow-level error handling
+  error_handling:
+    on_failure: compensate
+    compensation_steps:
+      - id: notify_admin_failure
+        kind: Task
+        name: Notify admin of workflow failure
+        ref: ./tasks/send-notification.yaml
+        input:
+          user_id: 1  # Admin
+          template: workflow_failure
+          variables:
+            workflow_name: content-approval
+            node_id: "${{ workflow.input.node_id }}"
+            error: "${{ workflow.error.message }}"
+
+  # Workflow timeout
+  timeout_seconds: 604800  # 7 days
+
+  observability:
+    logging:
+      level: info
+      include_step_results: true
+    metrics:
+      enabled: true
+      custom_labels:
+        content_type: "${{ workflow.input.node_type }}"
+        priority: "${{ workflow.input.priority }}"
+
+# Drupal Maestro-specific runtime bindings
+runtime:
+  type: drupal
+  bindings:
+    maestro:
+      template_id: content_approval_v2
+      process_name: "Content Approval"
+      task_console_path: /admin/maestro/outstanding
+      initiator_variable: initiator_uid
+
+      # Maestro task type mappings
+      task_types:
+        human_review:
+          maestro_type: interactive
+          handler: MaestroInteractiveTask
+        assign_reviewer:
+          maestro_type: set_process_variable
+          handler: MaestroSetProcessVariable
+        notify_reviewer:
+          maestro_type: send_email
+          handler: MaestroSendEmail
+
+      # Variable mappings
+      variables:
+        revision_count:
+          type: integer
+          persist: true
+        assigned_reviewer:
+          type: entity_reference
+          target_type: user

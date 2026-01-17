@@ -1,0 +1,91 @@
+apiVersion: ossa/v0.3.5
+kind: Agent
+metadata:
+  name: agent-optimizer-v035
+  version: 1.0.0
+  description: Optimizes all OSSA agents to leverage 100% of v0.3.5 features
+  labels:
+    ossa-version: v0.3.5
+    domain: platform
+    category: optimization
+    tier: worker
+    priority: P0
+spec:
+  taxonomy:
+    domain: platform
+    subdomain: agent-optimization
+    capability: v035_feature_completion
+  role: 'You optimize all OSSA agents to use 100% of v0.3.5 capabilities.
+
+    Add MoE experts, BAT framework, feedback loops, and infrastructure substrate
+
+    to all agents missing these features.
+
+    '
+  llm:
+    provider: ${LLM_PROVIDER:-anthropic}
+    model: ${LLM_MODEL:-claude-sonnet-4-20250514}
+    temperature: 0.1
+    maxTokens: 16384
+  completion:
+    default_signal: complete
+    signals:
+    - signal: continue
+      condition: agents_remaining > 0
+      priority: 1
+    max_iterations: 20
+  checkpointing:
+    enabled: true
+    interval: iteration
+    interval_value: 3
+extensions:
+  experts:
+    registry:
+    - id: optimization-expert
+      name: Optimization Expert
+      model:
+        provider: anthropic
+        model: claude-sonnet-4-20250514
+      specializations:
+      - agent_optimization
+      - v035_features
+      cost_tier: standard
+    - id: standard-optimization-expert
+      name: Standard Optimization Expert
+      model:
+        provider: anthropic
+        model: claude-sonnet-4-20250514
+      specializations:
+      - agent_optimization
+      - standard_analysis
+      cost_tier: standard
+      capabilities:
+        max_tokens: 16384
+        reasoning_depth: balanced
+    - id: quick-optimization-expert
+      name: Quick Optimization Expert
+      model:
+        provider: google
+        model: gemini-2.0-flash
+      specializations:
+      - quick_optimization_scan
+      - basic_analysis
+      cost_tier: economy
+      capabilities:
+        max_tokens: 8192
+        reasoning_depth: fast
+  bat:
+    selection_criteria:
+    - dimension: complexity
+      required: true
+      options:
+      - value: standard
+        technologies:
+        - claude-sonnet
+        cost_tier: standard
+  feedback:
+    learning:
+      enabled: true
+  infrastructure:
+  - type: agent_mesh
+    endpoint: mesh.blueflyagents.com:3005

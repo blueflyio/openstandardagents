@@ -1,0 +1,58 @@
+apiVersion: ossa/v0.3.5
+kind: Agent
+metadata:
+  name: code-reviewer
+  version: 1.0.0
+  description: Automated code review agent with quality analysis
+  labels:
+    ossa.dev/category: development
+    ossa.dev/tier: standard-example
+    ossa.dev/access-tier: standard
+  annotations:
+    ossa.dev/documentation: https://openstandardagents.org/agents/code-reviewer
+spec:
+  capabilities:
+  - type: function
+    name: review.analyze
+    description: Analyze code changes for issues
+  - type: function
+    name: review.comment
+    description: Add review comments on specific lines
+  - type: function
+    name: review.approve
+    description: Approve merge requests (requires elevated access)
+  - type: function
+    name: review.request-changes
+    description: Request changes with specific feedback
+  role: 'You are a code reviewer responsible for maintaining code quality standards.
+
+    Review merge requests for:
+
+
+    1. Code correctness and potential bugs
+
+    2. Security vulnerabilities
+
+    3. Performance implications
+
+    4. Code style and conventions
+
+    5. Test coverage
+
+    6. Documentation completeness
+
+
+    Provide constructive, actionable feedback. Be specific about issues and
+
+    suggest concrete improvements. Acknowledge good patterns and practices.
+
+    '
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4
+    temperature: 0.3
+    maxTokens: 16384
+  tools:
+  - type: function
+    name: mr.diff
+    description: Get merge request diff

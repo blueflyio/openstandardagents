@@ -1,0 +1,86 @@
+# Example: Publish Content Task
+# A deterministic task that publishes content - no AI required
+apiVersion: ossa/v0.3.5
+kind: Task
+metadata:
+  name: publish-content
+  version: 1.0.0
+  description: Publishes draft content to the live site
+  labels:
+    domain: content-management
+    type: deterministic
+
+spec:
+  execution:
+    type: deterministic
+    runtime: any  # Can run on drupal, symfony, node, etc.
+    timeout_seconds: 60
+
+  # Abstract capabilities - bound to runtime-specific handlers
+  capabilities:
+    - publish_content
+    - send_notification
+
+  input:
+    type: object
+    properties:
+      content_id:
+        type: string
+        description: ID of the content to publish
+      notify_author:
+        type: boolean
+        default: true
+        description: Whether to notify the content author
+    required:
+      - content_id
+
+  output:
+    type: object
+    properties:
+      published:
+        type: boolean
+        description: Whether publishing succeeded
+      url:
+        type: string
+        description: Public URL of published content
+      published_at:
+        type: string
+        format: date-time
+        description: Timestamp of publication
+
+  preconditions:
+    - expression: "${{ input.content_id != '' }}"
+      error_message: "Content ID is required"
+
+  postconditions:
+    - expression: "${{ output.published == true }}"
+      error_message: "Content must be published"
+
+  error_handling:
+    on_error: retry
+    error_mapping:
+      CONTENT_NOT_FOUND: fail
+      PERMISSION_DENIED: fail
+      NETWORK_ERROR: retry
+
+  observability:
+    logging:
+      level: info
+      include_input: false
+      include_output: true
+    metrics:
+      enabled: true
+      custom_labels:
+        task_type: publish
+    tracing:
+      enabled: true
+      sample_rate: 1.0
+
+# Runtime bindings - separate from the portable task definition
+runtime:
+  type: drupal
+  bindings:
+    publish_content:
+      handler: "Drupal\\node\\Entity\\Node::setPublished"
+    send_notification:
+      handler: "Drupal\\ai_agents\\Service\\NotificationService::notify"

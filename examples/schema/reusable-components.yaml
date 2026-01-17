@@ -1,0 +1,95 @@
+apiVersion: ossa/v0.3.5
+kind: Agent
+metadata:
+  name: component-showcase
+  description: Demonstrates reusable schema components
+spec:
+  model:
+    $ref: "#/components/models/gpt4-turbo"
+  
+  capabilities:
+    - $ref: "#/components/capabilities/web-search"
+    - $ref: "#/components/capabilities/code-execution"
+  
+  tools:
+    - $ref: "#/components/tools/github-integration"
+    - $ref: "#/components/tools/slack-notification"
+  
+  state:
+    $ref: "#/components/state/redis-encrypted"
+  
+  observability:
+    $ref: "#/components/observability/full-stack"
+
+components:
+  models:
+    gpt4-turbo:
+      provider: openai
+      name: gpt-4-turbo
+      temperature: 0.7
+      max_tokens: 4096
+    
+    claude-opus:
+      provider: anthropic
+      name: claude-3-opus-20240229
+      temperature: 0.5
+      max_tokens: 4096
+  
+  capabilities:
+    web-search:
+      name: web_search
+      provider: brave
+      config:
+        api_key_env: BRAVE_API_KEY
+    
+    code-execution:
+      name: code_execution
+      provider: e2b
+      config:
+        sandbox_timeout: 30
+  
+  tools:
+    github-integration:
+      name: github
+      type: mcp
+      server:
+        command: npx
+        args: ["-y", "@modelcontextprotocol/server-github"]
+        env:
+          GITHUB_TOKEN: ${GITHUB_TOKEN}
+    
+    slack-notification:
+      name: slack
+      type: webhook
+      config:
+        webhook_url_env: SLACK_WEBHOOK_URL
+  
+  state:
+    redis-encrypted:
+      storage:
+        provider: redis
+        config:
+          url: ${REDIS_URL}
+      encryption:
+        enabled: true
+        provider: aws-kms
+        config:
+          key_id: ${KMS_KEY_ID}
+  
+  observability:
+    full-stack:
+      tracing:
+        enabled: true
+        provider: jaeger
+        endpoint: http://jaeger:14268/api/traces
+      metrics:
+        enabled: true
+        provider: prometheus
+        port: 9090
+      logging:
+        level: info
+        format: json
+        destination: stdout
+      activity_stream:
+        enabled: true
+        format: w3c-activitystreams-2.0

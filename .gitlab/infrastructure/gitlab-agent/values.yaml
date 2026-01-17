@@ -1,0 +1,150 @@
+# GitLab Kubernetes Agent Helm Values
+# Production-ready configuration for OSSA agents
+
+# Agent configuration
+config:
+  # Agent token (set via --set config.token=<token> or from secret)
+  # token: ""
+  
+  # KAS address for self-hosted GitLab
+  # Replace with your GitLab instance URL
+  kasAddress: "wss://your-gitlab-instance.com/-/kubernetes-agent/"
+  
+  # Optional: KAS CA certificate for self-signed certs
+  # kasCaCert: ""
+
+# Image configuration
+image:
+  repository: registry.gitlab.com/gitlab-org/cluster-integration/gitlab-agent/agentk
+  tag: "v18.4.0"  # Match your GitLab version
+  pullPolicy: IfNotPresent
+
+# Service account configuration
+serviceAccount:
+  create: true
+  name: gitlab-agent
+  annotations: {}
+  # annotations:
+  #   eks.amazonaws.com/role-arn: "arn:aws:iam::ACCOUNT_ID:role/ROLE_NAME"
+
+# RBAC configuration
+rbac:
+  create: true
+  # Use existing role instead of creating cluster-admin
+  # useExistingRole: false
+  # existingRoleName: ""
+
+# Resource limits
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# Pod configuration
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8080"
+  prometheus.io/path: "/metrics"
+
+podLabels:
+  app: gitlab-agent
+  component: ossa-agent
+  managed-by: helm
+
+# Security context
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 65534
+  fsGroup: 65534
+  seccompProfile:
+    type: RuntimeDefault
+
+# Node selector (optional)
+nodeSelector: {}
+
+# Tolerations (optional)
+tolerations: []
+
+# Affinity rules (optional)
+affinity: {}
+
+# Extra environment variables
+extraEnv: []
+# Example:
+# extraEnv:
+#   - name: LOG_LEVEL
+#     value: "debug"
+
+# Liveness and readiness probes
+livenessProbe:
+  httpGet:
+    path: /liveness
+    port: 8080
+  initialDelaySeconds: 30
+  periodSeconds: 30
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /readiness
+    port: 8080
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+# Pod disruption budget
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+# Service monitor for Prometheus (if Prometheus Operator is installed)
+serviceMonitor:
+  enabled: false
+  interval: 30s
+  scrapeTimeout: 10s
+  labels: {}
+
+# Network policy (if supported)
+networkPolicy:
+  enabled: false
+
+# Priority class (optional)
+priorityClassName: ""
+
+# Extra volumes
+extraVolumes: []
+
+# Extra volume mounts
+extraVolumeMounts: []
+
+# Init containers
+initContainers: []
+
+# Additional containers (sidecars)
+additionalContainers: []
+
+# Deployment configuration
+replicaCount: 1
+
+# Strategy
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+
+# Termination grace period
+terminationGracePeriodSeconds: 30
+
+# Namespace configuration
+namespace:
+  create: true
+  name: gitlab-agent
+  annotations: {}
+  labels: {}
+

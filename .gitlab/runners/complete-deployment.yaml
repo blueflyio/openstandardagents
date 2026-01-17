@@ -1,0 +1,13 @@
+# Complete OSSA Runner Deployment
+# All-in-one deployment manifest
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gitlab-runner
+  labels:
+    name: gitlab-runner
+
+---
+# Include all other manifests via references
+# This is a master deployment file that references all components

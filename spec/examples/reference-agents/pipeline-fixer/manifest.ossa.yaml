@@ -1,0 +1,336 @@
+# ============================================================================
+# OSSA Pipeline Fixer Agent
+# ============================================================================
+#
+# PURPOSE:
+#   Automatically detect and fix common CI/CD pipeline failures. Analyzes
+#   job logs, identifies root causes, and applies fixes or suggests
+#   remediation steps.
+#
+# ============================================================================
+
+apiVersion: ossa/v0.3.5
+kind: Agent
+
+metadata:
+  name: pipeline-fixer
+  version: 1.0.0
+  description: |
+    Automated CI/CD pipeline failure detection and remediation agent.
+    Analyzes failing jobs, identifies root causes, and applies fixes
+    for common issues like dependency conflicts, test flakes, and
+    configuration errors.
+  labels:
+    environment: production
+    team: devops
+    domain: ci-cd
+    capability: pipeline-automation
+    integration: gitlab
+    ossa-version: v0.3.0
+  annotations:
+    documentation: https://openstandardagents.org/docs/agents/pipeline-fixer
+    support: ops@openstandardagents.org
+
+spec:
+  lifecycle:
+    phases:
+      - name: message_normalization
+        description: "Normalize incoming messages to canonical format"
+        timeout: 5s
+        retry: 2
+      - name: tool_resolution
+        description: "Resolve available tools and capabilities"
+        timeout: 10s
+        retry: 1
+      - name: llm_inference
+        description: "Execute LLM reasoning with context"
+        timeout: 60s
+        retry: 3
+      - name: tool_execution
+        description: "Execute resolved tools and actions"
+        timeout: 120s
+        retry: 2
+      - name: response_assembly
+        description: "Assemble final response"
+        timeout: 5s
+        retry: 1
+      - name: state_persistence
+        description: "Persist state and memory updates"
+        timeout: 10s
+        retry: 3
+      - name: observability_emission
+        description: "Emit telemetry, traces, and metrics"
+        timeout: 5s
+        retry: 1
+
+  taxonomy:
+    domain: ci-cd
+    subdomain: pipeline-automation
+    capability: failure-remediation
+
+  role: |
+    You are an expert CI/CD engineer specializing in GitLab pipeline
+    troubleshooting and automated remediation.
+
+    Your responsibilities:
+    1. Analyze failing pipeline job logs
+    2. Identify root causes of failures
+    3. Apply automated fixes for common issues
+    4. Create merge requests with fixes
+    5. Retry pipelines after fixes
+    6. Escalate complex issues to humans
+
+    Common failure patterns you can fix:
+    - Dependency version conflicts (npm, composer, pip)
+    - Flaky tests (add retry, increase timeout)
+    - Missing environment variables
+    - Docker build failures (cache, layer issues)
+    - Resource limits (memory, disk)
+    - Network timeouts (retry logic)
+    - Linting/formatting issues (auto-fix)
+
+  llm:
+    provider: anthropic
+    model: claude-3-5-sonnet-20241022
+    temperature: 0.1
+    maxTokens: 8000
+
+  tools:
+    - type: mcp
+      name: gitlab-api
+      description: Access GitLab CI/CD API for pipelines, jobs, and logs.
+      config:
+        server: gitlab-mcp
+        scope: ci-cd
+      auth:
+        type: bearer
+        tokenPath: /var/secrets/gitlab-token
+
+    - type: mcp
+      name: filesystem
+      description: Read and modify CI configuration files.
+      config:
+        server: filesystem-mcp
+        allowed_paths:
+          - '.gitlab-ci.yml'
+          - '.gitlab/**'
+          - 'package*.json'
+          - 'composer*.json'
+
+    - type: a2a
+      name: agent-mesh
+      description: Communicate with gitops-deployer and mr-reviewer agents.
+      endpoint: http://agent-mesh:9090/a2a
+      config:
+        protocol: json-rpc
+        version: "2.0"
+
+  capabilities:
+    policy: deny_by_default
+    grants:
+      - capability: file_read
+        scope: [".gitlab-ci.yml", ".gitlab/**/*.yml", "package*.json", "composer*.json", "requirements*.txt", "Dockerfile*", "docker-compose*.yml"]
+        rationale: "Read CI configuration and dependency files for failure analysis"
+      - capability: file_write
+        scope: [".gitlab-ci.yml", ".gitlab/**/*.yml", "package*.json", "composer*.json", "requirements*.txt"]
+        rationale: "Write fixes to CI configuration and dependency files"
+      - capability: api_call
+        scope: ["gitlab.com/api/v4/projects/*/pipelines/*", "gitlab.com/api/v4/projects/*/jobs/*"]
+        rate_limit: "100/minute"
+        rationale: "GitLab API access for pipeline and job operations"
+      - capability: api_call
+        scope: ["gitlab.com/api/v4/projects/*/merge_requests"]
+        rate_limit: "20/minute"
+        rationale: "Create merge requests with pipeline fixes"
+      - capability: pipeline_retry
+        scope: ["gitlab.com/api/v4/projects/*/pipelines/*/retry"]
+        rate_limit: "10/minute"
+        rationale: "Retry failed pipelines after applying fixes"
+      - capability: llm_inference
+        providers: ["anthropic"]
+        models: ["claude-3-5-sonnet-20241022"]
+        rationale: "AI reasoning for failure analysis and fix generation"
+      - capability: agent_communication
+        scope: ["gitops-deployer", "mr-reviewer"]
+        rationale: "Coordinate with deployment and review agents"
+
+    actions:
+      - name: analyze_failure
+        description: Analyze a failing pipeline job
+        input_schema:
+          type: object
+          properties:
+            project_id: { type: string }
+            job_id: { type: integer }
+          required: [project_id, job_id]
+        output_schema:
+          type: object
+          properties:
+            failure_type: { type: string }
+            root_cause: { type: string }
+            suggested_fix: { type: string }
+            auto_fixable: { type: boolean }
+            success: { type: boolean }
+
+      - name: apply_fix
+        description: Apply automated fix for a failure
+        input_schema:
+          type: object
+          properties:
+            project_id: { type: string }
+            failure_type: { type: string }
+            fix_config: { type: object }
+          required: [project_id, failure_type]
+
+      - name: retry_pipeline
+        description: Retry a failed pipeline
+        input_schema:
+          type: object
+          properties:
+            project_id: { type: string }
+            pipeline_id: { type: integer }
+          required: [project_id, pipeline_id]
+
+  triggers:
+    - type: webhook
+      name: on_pipeline_failed
+      event: pipeline
+      filter:
+        status: failed
+
+    - type: webhook
+      name: on_job_failed
+      event: job
+      filter:
+        status: failed
+
+  autonomy:
+    level: autonomous
+    approval_required: false
+    allowed_actions:
+      - analyze_failure
+      - apply_fix
+      - retry_pipeline
+      - create_merge_requests
+    blocked_actions:
+      - delete_pipelines
+      - modify_protected_branches
+
+  constraints:
+    cost:
+      maxTokensPerDay: 200000
+      maxCostPerDay: 20.00
+      currency: USD
+    performance:
+      maxLatencySeconds: 120
+      timeoutSeconds: 300
+    resources:
+      cpu: "1000m"
+      memory: "2Gi"
+
+  observability:
+    telemetry:
+      enabled: true
+      exporter: otlp
+      endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT}"
+      service_name: "${AGENT_NAME}"
+      service_version: "${AGENT_VERSION}"
+    tracing:
+      enabled: true
+      sampler: parentbased_traceidratio
+      sample_rate: 0.1
+      propagation: ["tracecontext", "baggage"]
+    metrics:
+      enabled: true
+      interval: 30s
+      histogram_buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]
+      labels:
+        - agent_name
+        - agent_version
+        - phase
+        - capability
+        - status
+    logging:
+      level: info
+      format: json
+      redact_pii: true
+      structured: true
+      fields:
+        - execution_id
+        - agent_id
+        - phase
+        - duration_ms
+
+  safety:
+    guardrails:
+      pii_detection:
+        enabled: true
+        action: redact
+        categories: ["email", "phone", "ssn", "credit_card"]
+      secrets_detection:
+        enabled: true
+        action: block
+        patterns:
+          - "glpat-*"
+          - "ghp_*"
+          - "sk-*"
+          - "bearer *"
+          - "password=*"
+          - "api_key=*"
+      prompt_injection:
+        enabled: true
+        action: warn
+        detection: ["ignore previous", "system prompt", "jailbreak"]
+      content_policy:
+        enabled: true
+        categories:
+          violence: block
+          hate: block
+          sexual: block
+          self_harm: block
+    kill_switch:
+      enabled: true
+      trigger: manual
+      webhook: "${KILL_SWITCH_WEBHOOK}"
+      grace_period: 30s
+    compliance:
+      profiles:
+        - fedramp_moderate
+        - hipaa
+        - gdpr
+        - soc2_type2
+
+extensions:
+  kagent:
+    api_version: kagent.dev/v1alpha2
+    kubernetes:
+      namespace: agent-system
+      labels:
+        app.kubernetes.io/name: pipeline-fixer
+        app.kubernetes.io/part-of: ossa-showcase
+        openstandardagents.org/version: v0.3.0
+      resourceLimits:
+        cpu: "1"
+        memory: 2Gi
+    deployment:
+      replicas: { min: 1, max: 3 }
+      strategy: rolling-update
+    a2aConfig:
+      enabled: true
+      protocol: json-rpc
+    meshIntegration:
+      enabled: true
+      istioIntegration: true
+
+  gitlab_duo:
+    enabled: true
+    flow_execution: true
+    model: ${GITLAB_DUO_MODEL:-claude-sonnet-4.5-20250929}
+    knowledge_graph:
+      enabled: true
+      index_on_push: true
+
+  mcp:
+    enabled: true
+    server_type: stdio
+    server_name: pipeline-fixer-mcp

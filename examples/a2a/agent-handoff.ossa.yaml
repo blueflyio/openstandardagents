@@ -1,0 +1,200 @@
+apiVersion: ossa/v0.3.5
+kind: Agent
+metadata:
+  name: support-agent
+  version: 1.0.0
+  description: "Customer support agent with escalation and handoff capabilities"
+  labels:
+    framework: a2a
+    capability: support
+    tier: tier-1
+
+spec:
+  model:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    parameters:
+      temperature: 0.8
+      maxTokens: 4096
+
+  instructions: |
+    You are a Tier 1 customer support agent. Handle customer inquiries and
+    escalate complex issues to specialized agents.
+
+    Escalation Rules:
+    - Technical issues → @technical-support
+    - Billing questions → @billing-support
+    - Complex product issues → @product-specialist
+    - Critical issues → @senior-support
+
+    When escalating:
+    1. Summarize the customer's issue
+    2. Include relevant context and conversation history
+    3. Set appropriate priority
+    4. Use handoff to preserve context
+
+  tools:
+    - name: escalate_to_agent
+      description: "Escalate issue to another agent"
+      parameters:
+        type: object
+        required: [agentId, reason, summary]
+        properties:
+          agentId:
+            type: string
+            description: "Target agent ID"
+          reason:
+            type: string
+            description: "Escalation reason"
+          summary:
+            type: string
+            description: "Issue summary"
+          priority:
+            type: string
+            enum: [low, medium, high, critical]
+            default: medium
+
+    - name: handoff_conversation
+      description: "Hand off entire conversation to another agent"
+      parameters:
+        type: object
+        required: [agentId]
+        properties:
+          agentId:
+            type: string
+            description: "Target agent ID"
+          note:
+            type: string
+            description: "Handoff note for receiving agent"
+
+  extensions:
+    a2a:
+      enabled: true
+
+      protocol:
+        type: json-rpc
+        version: "2.0"
+        messageFormat: json
+        timeout: 60
+
+      endpoints:
+        - agentId: "@technical-support"
+          url: "http://technical-support:8080/a2a"
+          capabilities: ["technical-support", "troubleshooting", "debugging"]
+          priority: 10
+
+        - agentId: "@billing-support"
+          url: "http://billing-support:8080/a2a"
+          capabilities: ["billing", "payments", "subscriptions"]
+          priority: 8
+
+        - agentId: "@product-specialist"
+          url: "http://product-specialist:8080/a2a"
+          capabilities: ["product-expertise", "features", "roadmap"]
+          priority: 7
+
+        - agentId: "@senior-support"
+          url: "http://senior-support:8080/a2a"
+          capabilities: ["escalation-handler", "complex-issues", "vip-support"]
+          priority: 15
+
+      routing:
+        strategy: direct
+        routingRules:
+          - name: "technical-escalation"
+            condition: "message.category == 'technical' && message.complexity > 3"
+            target: "@technical-support"
+            priority: 10
+
+          - name: "billing-escalation"
+            condition: "message.category == 'billing'"
+            target: "@billing-support"
+            priority: 8
+
+          - name: "critical-escalation"
+            condition: "message.priority == 'critical'"
+            target: "@senior-support"
+            priority: 15
+
+      delegation:
+        enabled: true
+        maxDepth: 2
+        timeout: 600
+        handoff:
+          enabled: true
+          preserveContext: true
+          handoffRules:
+            - name: "complexity-handoff"
+              condition: "confidence < 0.5"
+              target: "@senior-support"
+              message: "Issue complexity exceeds Tier 1 capability"
+
+            - name: "technical-handoff"
+              condition: "category == 'technical' && attempts > 2"
+              target: "@technical-support"
+              message: "Technical issue requires specialist"
+
+            - name: "vip-handoff"
+              condition: "customer.tier == 'vip'"
+              target: "@senior-support"
+              message: "VIP customer requiring priority handling"
+
+      completionSignals:
+        enabled: true
+        signals: ["continue", "complete", "blocked", "escalate"]
+        handlers:
+          - signal: escalate
+            action: handoff
+            target: "@senior-support"
+            config:
+              preserveContext: true
+              notifyCustomer: true
+              notificationMessage: "Your inquiry has been escalated to a senior specialist."
+
+          - signal: blocked
+            action: handoff
+            target: "@technical-support"
+            config:
+              preserveContext: true
+              reason: "Unable to resolve issue at current tier"
+
+          - signal: complete
+            action: notify
+            config:
+              channels: ["customer", "metrics"]
+              logResolution: true
+
+      authentication:
+        type: jwt
+        jwt:
+          secret: "${A2A_JWT_SECRET}"
+          algorithm: HS256
+          expiresIn: 3600
+
+      retryPolicy:
+        enabled: true
+        maxRetries: 2
+        backoff: exponential
+        initialDelay: 2
+        maxDelay: 30
+        retryableErrors:
+          - "UNAVAILABLE"
+          - "TIMEOUT"
+
+      circuitBreaker:
+        enabled: true
+        failureThreshold: 3
+        successThreshold: 2
+        timeout: 120
+
+      observability:
+        tracing:
+          enabled: true
+          provider: opentelemetry
+          samplingRate: 1.0
+        metrics:
+          enabled: true
+          endpoint: "/metrics"
+        logging:
+          level: info
+          format: json

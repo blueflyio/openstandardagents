@@ -1,0 +1,153 @@
+# Example: ECA (Event-Condition-Action) to OSSA Task Mapping
+# Demonstrates how Drupal ECA rules map to OSSA Task/Workflow manifests
+apiVersion: ossa/v0.3.5
+kind: Task
+metadata:
+  name: eca-content-published-notify
+  version: 1.0.0
+  description: Send notification when content is published (ECA rule mapping)
+  labels:
+    runtime: drupal
+    engine: eca
+    domain: content
+  annotations:
+    drupal.ossa.io/eca-model: content_published_notification
+    drupal.ossa.io/eca-version: "1.0"
+
+spec:
+  execution:
+    type: deterministic
+    runtime: drupal
+    entrypoint: "Drupal\\ossa_adapter\\TaskHandler\\ECAHandler::execute"
+    timeout_seconds: 30
+
+  # ECA Event → OSSA Trigger
+  triggers:
+    - type: event
+      source: drupal.entity
+      event: node.insert
+      filter:
+        bundle: article
+        status: 1  # Published
+    - type: event
+      source: drupal.entity
+      event: node.update
+      filter:
+        bundle: article
+        status: 1
+        _previous_status: 0  # Was unpublished
+
+  # ECA Conditions → OSSA Input Schema
+  input:
+    type: object
+    properties:
+      entity:
+        type: object
+        description: The Drupal node entity
+        properties:
+          nid:
+            type: integer
+          title:
+            type: string
+          bundle:
+            type: string
+          uid:
+            type: integer
+          status:
+            type: integer
+      user:
+        type: object
+        description: The user who triggered the action
+        properties:
+          uid:
+            type: integer
+          mail:
+            type: string
+          name:
+            type: string
+      event_type:
+        type: string
+        enum: [insert, update]
+    required:
+      - entity
+      - user
+
+  # ECA Actions → OSSA Capabilities
+  capabilities:
+    - send_email
+    - log_message
+    - create_entity
+    - queue_item
+
+  output:
+    type: object
+    properties:
+      notifications_sent:
+        type: integer
+      log_id:
+        type: string
+      success:
+        type: boolean
+
+  # Error handling
+  error_handling:
+    on_error: log_and_continue
+    fallback:
+      log_level: error
+      notify_admin: true
+
+  observability:
+    logging:
+      level: info
+    metrics:
+      enabled: true
+      custom_labels:
+        content_type: "${{ input.entity.bundle }}"
+        event_type: "${{ input.event_type }}"
+
+# Drupal-specific runtime bindings
+runtime:
+  type: drupal
+  bindings:
+    # Map OSSA capabilities to ECA plugins
+    send_email:
+      plugin: "eca_mail:send"
+      config:
+        to: "admin@example.com"
+        subject: "Content Published: ${{ input.entity.title }}"
+        body: |
+          A new article has been published:
+
+          Title: ${{ input.entity.title }}
+          Author: ${{ input.user.name }}
+          URL: /node/${{ input.entity.nid }}
+
+    log_message:
+      plugin: "eca_log:message"
+      config:
+        level: info
+        message: "Content published notification sent for node ${{ input.entity.nid }}"
+
+    create_entity:
+      plugin: "eca_content:create_entity"
+      config:
+        entity_type: notification
+        bundle: content_alert
+
+    queue_item:
+      plugin: "eca_queue:add"
+      config:
+        queue_name: content_notifications
+
+  # ECA-specific configuration
+  eca:
+    model_id: content_published_notification
+    event_plugins:
+      - eca_content:entity_insert
+      - eca_content:entity_update
+    condition_plugins:
+      - eca_content:entity_bundle
+      - eca_content:entity_field_value
+    action_plugins:
+      - eca_mail:send
+      - eca_log:message

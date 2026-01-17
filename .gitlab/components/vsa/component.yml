@@ -1,0 +1,44 @@
+spec:
+  inputs:
+    enable_vsa:
+      description: 'Enable Value Stream Analytics tracking'
+      type: boolean
+      default: true
+    vsa_dashboard_url:
+      description: 'URL for VSA dashboard deployment'
+      type: string
+      default: ''
+    track_lead_time:
+      description: 'Track lead time metrics (commit to deploy)'
+      type: boolean
+      default: true
+    track_cycle_time:
+      description: 'Track cycle time metrics (start to finish)'
+      type: boolean
+      default: true
+    track_deployment_frequency:
+      description: 'Track deployment frequency metrics'
+      type: boolean
+      default: true
+    track_mttr:
+      description: 'Track Mean Time To Recovery metrics'
+      type: boolean
+      default: true
+    track_change_failure_rate:
+      description: 'Track change failure rate'
+      type: boolean
+      default: true
+    vsa_report_format:
+      description: 'Output format for VSA reports (json, html, markdown)'
+      type: string
+      default: 'json'
+---
+name: vsa
+description: 'Value Stream Analytics - Track and measure software delivery performance metrics'
+version: '0.1.0'
+tags:
+  - analytics
+  - metrics
+  - dora
+  - value-stream
+  - performance

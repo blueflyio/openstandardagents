@@ -1,0 +1,133 @@
+apiVersion: ossa/v0.3.5
+kind: Agent
+metadata:
+  name: activity-tracked-agent
+  description: Agent with comprehensive activity stream tracking
+spec:
+  model:
+    provider: openai
+    name: gpt-4-turbo
+  observability:
+    activity_stream:
+      enabled: true
+      format: w3c-activitystreams-2.0
+      
+      # Activity types to track
+      track:
+        - agent.started
+        - agent.stopped
+        - interaction.received
+        - interaction.completed
+        - tool.invoked
+        - tool.completed
+        - capability.executed
+        - error.occurred
+        - state.updated
+      
+      # Sink configuration
+      sinks:
+        - type: http
+          url: https://activity.example.com/stream
+          headers:
+            Authorization: Bearer ${ACTIVITY_TOKEN}
+          batch_size: 10
+          flush_interval_ms: 5000
+        
+        - type: kafka
+          topic: agent-activities
+          brokers:
+            - kafka1.example.com:9092
+            - kafka2.example.com:9092
+          config:
+            compression: gzip
+            acks: all
+        
+        - type: elasticsearch
+          url: https://elastic.example.com
+          index: agent-activities
+          auth:
+            username: ${ELASTIC_USER}
+            password: ${ELASTIC_PASS}
+      
+      # Enrichment
+      enrich:
+        - type: context
+          fields:
+            - agent_id
+            - agent_version
+            - environment
+            - tenant_id
+        
+        - type: timing
+          fields:
+            - duration_ms
+            - queue_time_ms
+            - processing_time_ms
+        
+        - type: correlation
+          fields:
+            - trace_id
+            - span_id
+            - parent_span_id
+      
+      # Filtering
+      filters:
+        - type: sample
+          rate: 0.1  # Sample 10% of activities
+          priority_activities:  # Always include these
+            - error.occurred
+            - agent.stopped
+        
+        - type: exclude
+          patterns:
+            - "*.heartbeat"
+            - "*.health_check"
+      
+      # Privacy
+      redact:
+        - field: user.email
+          strategy: hash
+        - field: user.phone
+          strategy: mask
+          mask_char: "*"
+          visible_chars: 4
+        - field: api_key
+          strategy: remove
+
+---
+# Example Activity Stream Output (W3C ActivityStreams 2.0)
+{
+  "@context": "https://www.w3.org/ns/activitystreams",
+  "type": "Activity",
+  "id": "https://example.com/activities/123",
+  "actor": {
+    "type": "Application",
+    "id": "urn:ossa:agent:activity-tracked-agent",
+    "name": "activity-tracked-agent"
+  },
+  "object": {
+    "type": "Note",
+    "content": "User query processed successfully",
+    "attributedTo": {
+      "type": "Person",
+      "id": "urn:user:abc123"
+    }
+  },
+  "published": "2025-12-07T06:00:00Z",
+  "duration": "PT2.5S",
+  "context": {
+    "trace_id": "abc-def-ghi",
+    "span_id": "123-456",
+    "environment": "production",
+    "tenant_id": "customer-xyz"
+  },
+  "result": {
+    "type": "Object",
+    "summary": "Response generated",
+    "content": {
+      "tokens_used": 450,
+      "model": "gpt-4-turbo",
+      "confidence": 0.95
+    }
+  }
+}

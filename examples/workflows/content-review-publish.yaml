@@ -1,0 +1,156 @@
+# Example: Content Review and Publish Workflow
+# Demonstrates mixed Task + Agent composition
+apiVersion: ossa/v0.3.5
+kind: Workflow
+metadata:
+  name: content-review-publish
+  version: 1.0.0
+  description: AI-assisted content review followed by deterministic publishing
+  labels:
+    domain: content-management
+    type: hybrid
+
+spec:
+  # Workflow can be triggered multiple ways
+  triggers:
+    - type: event
+      source: drupal
+      event: node.submitted_for_review
+      filter:
+        content_type: article
+    - type: webhook
+      path: /api/workflows/content-review
+    - type: manual
+
+  # Workflow input schema
+  inputs:
+    type: object
+    properties:
+      content_id:
+        type: string
+        description: ID of the content to review
+      auto_publish:
+        type: boolean
+        default: false
+        description: Automatically publish if review passes
+    required:
+      - content_id
+
+  # Workflow output schema
+  outputs:
+    type: object
+    properties:
+      content_id:
+        type: string
+      review_status:
+        type: string
+        enum: [approved, rejected, needs_revision]
+      published:
+        type: boolean
+      review_notes:
+        type: string
+
+  # Workflow steps - mix of Tasks and Agents
+  steps:
+    # Step 1: Fetch content (deterministic Task)
+    - id: fetch-content
+      kind: Task
+      ref: ./tasks/fetch-content.yaml
+      input:
+        content_id: ${{ workflow.input.content_id }}
+
+    # Step 2: AI Content Review (Agent with LLM)
+    - id: ai-review
+      kind: Agent
+      ref: ./agents/content-reviewer.yaml
+      input:
+        content: ${{ steps.fetch-content.output.content }}
+        title: ${{ steps.fetch-content.output.title }}
+        guidelines: ${{ context.variables.style_guidelines }}
+      timeout_seconds: 120
+      retry:
+        max_attempts: 2
+        backoff_strategy: exponential
+
+    # Step 3: Conditional publish (only if approved and auto_publish enabled)
+    - id: conditional-publish
+      kind: Conditional
+      branches:
+        - condition: ${{ steps.ai-review.output.approved && workflow.input.auto_publish }}
+          steps:
+            - id: publish
+              kind: Task
+              ref: ./tasks/publish-content.yaml
+              input:
+                content_id: ${{ workflow.input.content_id }}
+                notify_author: true
+        - condition: ${{ steps.ai-review.output.approved && !workflow.input.auto_publish }}
+          steps:
+            - id: queue-for-manual
+              kind: Task
+              inline:
+                execution:
+                  type: deterministic
+                  runtime: drupal
+                capabilities:
+                  - update_content_status
+                input:
+                  type: object
+                  properties:
+                    content_id: { type: string }
+                    status: { type: string }
+              input:
+                content_id: ${{ workflow.input.content_id }}
+                status: pending_manual_review
+      else:
+        - id: request-revision
+          kind: Task
+          ref: ./tasks/request-revision.yaml
+          input:
+            content_id: ${{ workflow.input.content_id }}
+            feedback: ${{ steps.ai-review.output.feedback }}
+            suggested_changes: ${{ steps.ai-review.output.suggestions }}
+
+    # Step 4: Send notification
+    - id: notify
+      kind: Task
+      ref: ./tasks/send-notification.yaml
+      input:
+        recipient: ${{ steps.fetch-content.output.author_email }}
+        template: content_review_complete
+        variables:
+          status: "${{ steps.ai-review.output.approved ? 'approved' : 'needs_revision' }}"
+          feedback: ${{ steps.ai-review.output.feedback }}
+
+  # Shared context
+  context:
+    variables:
+      style_guidelines: "Follow AP style. Maximum 2000 words. Include meta description."
+    secrets:
+      - name: openai_api_key
+        ref: vault://secret/openai
+
+  # Concurrency control
+  concurrency:
+    group: content-review-${{ workflow.input.content_id }}
+    cancel_in_progress: true
+
+  # Error handling
+  error_handling:
+    on_failure: notify
+    notification:
+      channels:
+        - slack
+        - email
+      template: workflow_failure
+
+  timeout_seconds: 600  # 10 minutes max
+
+  observability:
+    tracing:
+      enabled: true
+      propagate_context: true
+    metrics:
+      enabled: true
+      custom_labels:
+        workflow_type: content_review

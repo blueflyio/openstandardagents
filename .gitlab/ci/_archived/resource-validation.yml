@@ -1,0 +1,60 @@
+# GitLab CI - Resource Validation
+# 
+# Automatically validates Kubernetes manifests to prevent cluster exhaustion.
+# Blocks PRs/MRs that exceed resource limits.
+
+validate:k8s-resources:
+  stage: validate
+  image: node:20-slim
+  before_script:
+    - npm install -g ts-node typescript js-yaml @types/js-yaml @types/node
+  script:
+    - echo "🔍 Validating Kubernetes resource limits..."
+    - ts-node examples/bridges/k8s/validate-resources.ts examples/bridges/k8s/
+  rules:
+    - changes:
+        - "examples/bridges/k8s/*.yaml"
+        - "examples/bridges/k8s/*.yml"
+  allow_failure: false  # BLOCK on validation failure
+
+validate:k8s-total-cluster-usage:
+  stage: validate
+  image: bitnami/kubectl:latest
+  script:
+    - |
+      echo "📊 Checking total cluster resource usage..."
+      
+      # Get total cluster capacity
+      TOTAL_CPU=$(kubectl get nodes -o json | jq -r '[.items[].status.allocatable.cpu | rtrimstr("m") | tonumber] | add')
+      TOTAL_MEM=$(kubectl get nodes -o json | jq -r '[.items[].status.allocatable.memory | rtrimstr("Ki") | tonumber] | add')
+      
+      # Get current usage
+      USED_CPU=$(kubectl top nodes --no-headers | awk '{sum+=$2} END {print sum}' | sed 's/m//')
+      USED_MEM=$(kubectl top nodes --no-headers | awk '{sum+=$4} END {print sum}' | sed 's/Mi//')
+      
+      # Calculate percentages
+      CPU_PCT=$(echo "scale=2; ($USED_CPU / $TOTAL_CPU) * 100" | bc)
+      MEM_PCT=$(echo "scale=2; ($USED_MEM / $TOTAL_MEM) * 100" | bc)
+      
+      echo "CPU: ${USED_CPU}m / ${TOTAL_CPU}m (${CPU_PCT}%)"
+      echo "Memory: ${USED_MEM}Mi / ${TOTAL_MEM}Mi (${MEM_PCT}%)"
+      
+      # Alert if > 80%
+      if (( $(echo "$CPU_PCT > 80" | bc -l) )); then
+        echo "⚠️  WARNING: CPU usage > 80%"
+      fi
+      
+      if (( $(echo "$MEM_PCT > 80" | bc -l) )); then
+        echo "⚠️  WARNING: Memory usage > 80%"
+      fi
+      
+      # Block if > 95%
+      if (( $(echo "$CPU_PCT > 95" | bc -l) )); then
+        echo "🚨 BLOCKED: CPU usage > 95% - cluster exhausted!"
+        exit 1
+      fi
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: always
+  allow_failure: true  # Warning only
+
