@@ -53,3 +53,18 @@
       - coverage/
       - .jest-cache/
     policy: pull-push
+
+# ============================================================================
+# REUSABLE DEPENDENCIES - DRY PRINCIPLE
+# ============================================================================
+
+# All critical tests that MUST pass before release/tagging
+.needs-all-tests:
+  needs:
+    - job: build:dist
+    - job: test:unit
+    - job: test:integration
+    - job: test:lint
+    - job: test:security
+    - job: test:e2e
+    - job: quality:gates:full

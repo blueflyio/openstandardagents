@@ -12,11 +12,8 @@
 
 create-dev-tag:release:
   stage: .post
-  needs:
-    - job: build:dist
-    - job: test:unit
-    - job: test:integration
-    - job: test:lint
+  extends:
+    - .needs-all-tests
   image: alpine:latest
   tags:
     - saas-linux-small-amd64
