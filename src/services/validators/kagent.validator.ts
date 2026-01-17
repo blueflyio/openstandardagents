@@ -12,13 +12,6 @@ import addFormats from 'ajv-formats';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-// Load Kagent schema
-const kagentSchemaPath = join(
-  process.cwd(),
-  'spec/v0.3/extensions/kagent/kagent.schema.json'
-);
-const kagentSchema = JSON.parse(readFileSync(kagentSchemaPath, 'utf-8'));
-
 @injectable()
 export class KagentValidator {
   private ajv: Ajv;
@@ -27,6 +20,14 @@ export class KagentValidator {
   constructor() {
     this.ajv = new Ajv({ allErrors: true, strict: false });
     addFormats(this.ajv);
+
+    // Load Kagent schema from spec/ directory (relative to project root)
+    // Works in both Jest (source tree) and production (project root with dist/)
+    const kagentSchemaPath = join(
+      process.cwd(),
+      'spec/v0.3/extensions/kagent/kagent.schema.json'
+    );
+    const kagentSchema = JSON.parse(readFileSync(kagentSchemaPath, 'utf-8'));
     this.validateKagent = this.ajv.compile(kagentSchema);
   }
 
