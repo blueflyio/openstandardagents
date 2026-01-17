@@ -1,6 +1,6 @@
 /**
  * Version Schema
- * 
+ *
  * Zod schemas for version management
  * SOLID: Single Responsibility - Schema definitions only
  */
@@ -26,7 +26,9 @@ export const VersionValidateResponseSchema = z.object({
   details: z.record(z.string(), z.string()).optional(),
 });
 
-export type VersionValidateResponse = z.infer<typeof VersionValidateResponseSchema>;
+export type VersionValidateResponse = z.infer<
+  typeof VersionValidateResponseSchema
+>;
 
 export const VersionSyncRequestSchema = z.object({
   version: z.string().optional(),
@@ -59,4 +61,6 @@ export const VersionReleaseResponseSchema = z.object({
   nextSteps: z.array(z.string()),
 });
 
-export type VersionReleaseResponse = z.infer<typeof VersionReleaseResponseSchema>;
+export type VersionReleaseResponse = z.infer<
+  typeof VersionReleaseResponseSchema
+>;

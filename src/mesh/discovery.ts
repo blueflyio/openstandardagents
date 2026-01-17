@@ -55,7 +55,10 @@ export interface AgentRegistry {
  * In-Memory Agent Registry Implementation
  */
 export class InMemoryAgentRegistry implements AgentRegistry {
-  private agents: Map<string, { card: AgentCard; lastHeartbeat: Date; ttl: number }> = new Map();
+  private agents: Map<
+    string,
+    { card: AgentCard; lastHeartbeat: Date; ttl: number }
+  > = new Map();
   private cleanupInterval: NodeJS.Timeout | null = null;
 
   constructor(private readonly cleanupIntervalMs: number = 60000) {
@@ -90,7 +93,10 @@ export class InMemoryAgentRegistry implements AgentRegistry {
   async findByCapability(capability: string): Promise<AgentCard[]> {
     const agents: AgentCard[] = [];
     for (const entry of this.agents.values()) {
-      if (entry.card.capabilities.includes(capability) && this.isHealthy(entry)) {
+      if (
+        entry.card.capabilities.includes(capability) &&
+        this.isHealthy(entry)
+      ) {
         agents.push(entry.card);
       }
     }
@@ -116,9 +122,14 @@ export class InMemoryAgentRegistry implements AgentRegistry {
     return agents;
   }
 
-  private isHealthy(entry: { card: AgentCard; lastHeartbeat: Date; ttl: number }): boolean {
+  private isHealthy(entry: {
+    card: AgentCard;
+    lastHeartbeat: Date;
+    ttl: number;
+  }): boolean {
     const now = new Date();
-    const elapsedSeconds = (now.getTime() - entry.lastHeartbeat.getTime()) / 1000;
+    const elapsedSeconds =
+      (now.getTime() - entry.lastHeartbeat.getTime()) / 1000;
     return elapsedSeconds <= entry.ttl;
   }
 
@@ -126,7 +137,8 @@ export class InMemoryAgentRegistry implements AgentRegistry {
     this.cleanupInterval = setInterval(() => {
       const now = new Date();
       for (const [uri, entry] of this.agents.entries()) {
-        const elapsedSeconds = (now.getTime() - entry.lastHeartbeat.getTime()) / 1000;
+        const elapsedSeconds =
+          (now.getTime() - entry.lastHeartbeat.getTime()) / 1000;
         if (elapsedSeconds > entry.ttl) {
           entry.card.status = 'unavailable';
           // Remove after 2x TTL
@@ -165,7 +177,10 @@ export class DiscoveryService {
   /**
    * Register this agent with the discovery service
    */
-  async registerSelf(agentCard: AgentCard, heartbeatIntervalMs: number = 30000): Promise<void> {
+  async registerSelf(
+    agentCard: AgentCard,
+    heartbeatIntervalMs: number = 30000
+  ): Promise<void> {
     this.localAgent = agentCard;
     await this.registry.register(agentCard);
 
@@ -253,7 +268,8 @@ export class DiscoveryService {
  * Utility for parsing and validating agent URIs
  */
 export class AgentUriParser {
-  private static readonly URI_PATTERN = /^agent:\/\/([a-z0-9-]+)\/([a-z0-9-]+)$/;
+  private static readonly URI_PATTERN =
+    /^agent:\/\/([a-z0-9-]+)\/([a-z0-9-]+)$/;
 
   /**
    * Parse an agent URI into namespace and name
@@ -306,7 +322,8 @@ export class AgentUriParser {
  */
 export class TopicUriParser {
   private static readonly TOPIC_PATTERN = /^topic:\/\/([a-z0-9.-]+)$/;
-  private static readonly BROADCAST_PATTERN = /^broadcast:\/\/([a-z0-9-]+)\/\*$/;
+  private static readonly BROADCAST_PATTERN =
+    /^broadcast:\/\/([a-z0-9-]+)\/\*$/;
 
   /**
    * Parse a topic URI

@@ -1,6 +1,6 @@
 /**
  * CrewAI Runtime Bridge
- * 
+ *
  * Executes OSSA agents via CrewAI.
  * SOLID: Single Responsibility - CrewAI execution only
  * DRY: Reuses CrewAIAdapter for format conversion
@@ -25,7 +25,10 @@ export class CrewAIRuntime {
    * Execute OSSA agent via CrewAI
    * CRUD: Create operation (executes agent)
    */
-  async execute(manifest: OssaAgent, inputs: Record<string, unknown>): Promise<Record<string, unknown>> {
+  async execute(
+    manifest: OssaAgent,
+    inputs: Record<string, unknown>
+  ): Promise<Record<string, unknown>> {
     // Convert OSSA manifest to CrewAI Python code
     const crew = CrewAIAdapter.workflowToCrew(manifest);
     const pythonCode = this.generateCrewAICode(crew, inputs);
@@ -47,7 +50,9 @@ export class CrewAIRuntime {
 
       return this.parseExecutionResult(result);
     } catch (error) {
-      throw new Error(`CrewAI execution failed: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `CrewAI execution failed: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
@@ -55,7 +60,10 @@ export class CrewAIRuntime {
    * Generate CrewAI Python code
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private generateCrewAICode(crew: any, inputs: Record<string, unknown>): string {
+  private generateCrewAICode(
+    crew: any,
+    inputs: Record<string, unknown>
+  ): string {
     const inputJson = JSON.stringify(inputs);
     return `
 from crewai import Agent, Task, Crew, Process
@@ -67,7 +75,17 @@ llm = OpenAI(model_name="${crew.agents[0]?.llm?.model || 'gpt-4'}")
 
 # Create agents
 agents = []
-${crew.agents.map((agent: { role: string; goal: string; backstory: string; verbose: boolean }, i: number) => `
+${crew.agents
+  .map(
+    (
+      agent: {
+        role: string;
+        goal: string;
+        backstory: string;
+        verbose: boolean;
+      },
+      i: number
+    ) => `
 agent_${i} = Agent(
     role="${agent.role}",
     goal="${agent.goal}",
@@ -76,18 +94,27 @@ agent_${i} = Agent(
     llm=llm
 )
 agents.append(agent_${i})
-`).join('')}
+`
+  )
+  .join('')}
 
 # Create tasks
 tasks = []
-${crew.tasks.map((task: { description: string; expected_output: string; agent?: string }, i: number) => `
+${crew.tasks
+  .map(
+    (
+      task: { description: string; expected_output: string; agent?: string },
+      i: number
+    ) => `
 task_${i} = Task(
     description="${task.description}",
     expected_output="${task.expected_output}",
     agent=agents[${task.agent ? '0' : 'None'}]
 )
 tasks.append(task_${i})
-`).join('')}
+`
+  )
+  .join('')}
 
 # Create crew
 crew = Crew(

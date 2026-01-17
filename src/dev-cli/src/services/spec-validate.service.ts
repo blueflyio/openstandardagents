@@ -1,13 +1,16 @@
 /**
  * Spec Validate Service
- * 
+ *
  * Validates generated spec against OpenAPI schema
  * SOLID: Single Responsibility - Validation only
  */
 
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
-import { SpecValidateRequest, SpecValidateResponse } from '../schemas/spec.schema.js';
+import {
+  SpecValidateRequest,
+  SpecValidateResponse,
+} from '../schemas/spec.schema.js';
 
 export class SpecValidateService {
   private readonly rootDir: string;
@@ -22,7 +25,7 @@ export class SpecValidateService {
    */
   async validate(request: SpecValidateRequest): Promise<SpecValidateResponse> {
     const specPath = join(this.rootDir, request.specPath);
-    
+
     if (!existsSync(specPath)) {
       return {
         valid: false,
@@ -33,10 +36,10 @@ export class SpecValidateService {
 
     try {
       const spec = JSON.parse(readFileSync(specPath, 'utf-8'));
-      
+
       // TODO: Add actual validation against OpenAPI schema
       // For now, just check if it's valid JSON
-      
+
       const errors: string[] = [];
       const warnings: string[] = [];
 
@@ -53,7 +56,9 @@ export class SpecValidateService {
     } catch (error) {
       return {
         valid: false,
-        errors: [`Invalid JSON: ${error instanceof Error ? error.message : String(error)}`],
+        errors: [
+          `Invalid JSON: ${error instanceof Error ? error.message : String(error)}`,
+        ],
         warnings: [],
       };
     }

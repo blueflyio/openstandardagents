@@ -172,7 +172,7 @@ spec:
     policies:
       - name: pod-security-standards
         level: restricted`,
-      outputPath: 'infrastructure/k8s/config.yaml',
+      outputPath: '.gitlab/infrastructure/k8s/config.yaml',
       variables: {
         CONFIG_NAME: 'ossa-infrastructure',
         NAMESPACE: 'default',

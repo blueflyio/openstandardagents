@@ -16,8 +16,9 @@ import chalk from 'chalk';
 import { container } from '../../di-container.js';
 import { ExtensionTeamKickoffService } from '../../services/extension-team/extension-team-kickoff.service.js';
 
-export const extensionTeamCommand = new Command('extension-team')
-  .description('Manage extension development teams');
+export const extensionTeamCommand = new Command('extension-team').description(
+  'Manage extension development teams'
+);
 
 // ============================================================================
 // Subcommand: spawn
@@ -26,7 +27,10 @@ export const extensionTeamCommand = new Command('extension-team')
 extensionTeamCommand
   .command('spawn')
   .description('Spawn agent teams for extension development')
-  .argument('[platform]', 'Specific platform to spawn (optional, defaults to all critical)')
+  .argument(
+    '[platform]',
+    'Specific platform to spawn (optional, defaults to all critical)'
+  )
   .option('--priority <priority>', 'Filter by priority', 'critical')
   .action(async (platform?: string, _options?: { priority?: string }) => {
     try {
@@ -34,7 +38,9 @@ extensionTeamCommand
         ExtensionTeamKickoffService
       );
 
-      console.log(chalk.bold.blue('🚀 OSSA Extension Development Team - SPAWNING'));
+      console.log(
+        chalk.bold.blue('🚀 OSSA Extension Development Team - SPAWNING')
+      );
       console.log(chalk.gray('='.repeat(50)));
       console.log(`Date: ${new Date().toISOString()}`);
       console.log('Priority: CRITICAL - Build ASAP\n');
@@ -43,7 +49,7 @@ extensionTeamCommand
         // Spawn specific platform
         const platforms = service.listPlatforms();
         const allPlatforms = [...platforms.critical, ...platforms.high];
-        const targetPlatform = allPlatforms.find(p => p.name === platform);
+        const targetPlatform = allPlatforms.find((p) => p.name === platform);
 
         if (!targetPlatform) {
           console.error(chalk.red(`❌ Platform "${platform}" not found`));
@@ -57,12 +63,12 @@ extensionTeamCommand
         const platforms = service.listPlatforms();
 
         console.log(chalk.bold('📋 Critical Platforms (Spawning Now):'));
-        platforms.critical.forEach(p => {
+        platforms.critical.forEach((p) => {
           console.log(`  - ${p.name} (deadline: ${p.deadline})`);
         });
 
         console.log(chalk.bold('\n📋 High Priority Platforms (Next):'));
-        platforms.high.forEach(p => {
+        platforms.high.forEach((p) => {
           console.log(`  - ${p.name} (deadline: ${p.deadline})`);
         });
 
@@ -73,9 +79,15 @@ extensionTeamCommand
         console.log(chalk.green('\n✅ All critical agent teams spawned!'));
         console.log(chalk.bold('\n📊 Next Steps:'));
         console.log('  1. Execute workflows via GitLab Agents');
-        console.log('  2. Or run: npm run extension:build -- --platform <name>');
+        console.log(
+          '  2. Or run: npm run extension:build -- --platform <name>'
+        );
         console.log('  3. Monitor progress in GitLab CI/CD pipelines');
-        console.log(chalk.gray('\n🎯 Expected completion: 2-4 weeks for critical platforms'));
+        console.log(
+          chalk.gray(
+            '\n🎯 Expected completion: 2-4 weeks for critical platforms'
+          )
+        );
       }
     } catch (error) {
       console.error(chalk.red('❌ Error spawning agent teams:'), error);
@@ -101,12 +113,12 @@ extensionTeamCommand
       console.log(chalk.bold.blue('📋 Extension Development Platforms\n'));
 
       console.log(chalk.bold.red('🔴 Critical Platforms:'));
-      platforms.critical.forEach(p => {
+      platforms.critical.forEach((p) => {
         console.log(`  - ${chalk.bold(p.name)} (deadline: ${p.deadline})`);
       });
 
       console.log(chalk.bold.yellow('\n🟡 High Priority Platforms:'));
-      platforms.high.forEach(p => {
+      platforms.high.forEach((p) => {
         console.log(`  - ${chalk.bold(p.name)} (deadline: ${p.deadline})`);
       });
     } catch (error) {

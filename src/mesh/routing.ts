@@ -125,7 +125,10 @@ export class MessageFilter {
     return current;
   }
 
-  private static evaluateExpression(message: MessageEnvelope, expression: string): boolean {
+  private static evaluateExpression(
+    message: MessageEnvelope,
+    expression: string
+  ): boolean {
     // Simplified expression evaluation
     // In production, use a proper expression evaluator like jmespath
     try {
@@ -275,7 +278,10 @@ export class DefaultSubscriptionManager implements SubscriptionManager {
 
     // Find wildcard matches
     for (const [pattern, entry] of this.subscriptions.entries()) {
-      if (pattern !== channel && TopicUriParser.matchesPattern(channel, pattern)) {
+      if (
+        pattern !== channel &&
+        TopicUriParser.matchesPattern(channel, pattern)
+      ) {
         handlers.push(...Array.from(entry.handlers));
       }
     }
@@ -291,7 +297,9 @@ export class DefaultSubscriptionManager implements SubscriptionManager {
    * Get all subscriptions
    */
   getAllSubscriptions(): Subscription[] {
-    return Array.from(this.subscriptions.values()).map((entry) => entry.subscription);
+    return Array.from(this.subscriptions.values()).map(
+      (entry) => entry.subscription
+    );
   }
 
   /**
@@ -403,7 +411,10 @@ export class MessageTransform {
   /**
    * Apply a transformation to a message
    */
-  static transform(message: MessageEnvelope, transformExpression?: string): MessageEnvelope {
+  static transform(
+    message: MessageEnvelope,
+    transformExpression?: string
+  ): MessageEnvelope {
     if (!transformExpression) {
       return message;
     }
@@ -451,11 +462,13 @@ export class RoutingStatsCollector {
     const priority = message.priority || 'normal';
     this.stats.messagesByPriority[priority]++;
 
-    this.stats.messagesByType[message.type] = (this.stats.messagesByType[message.type] || 0) + 1;
+    this.stats.messagesByType[message.type] =
+      (this.stats.messagesByType[message.type] || 0) + 1;
 
     this.routingTimes.push(routingTimeMs);
     this.stats.averageRoutingTimeMs =
-      this.routingTimes.reduce((sum, time) => sum + time, 0) / this.routingTimes.length;
+      this.routingTimes.reduce((sum, time) => sum + time, 0) /
+      this.routingTimes.length;
   }
 
   recordError(): void {

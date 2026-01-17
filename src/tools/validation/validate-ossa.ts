@@ -239,9 +239,9 @@ function main() {
     console.log(chalk.blue(`OSSA ${VERSION} Power-Suite Validation Tool\n`));
     console.log('Usage:');
     console.log(`  validate-ossa.ts <file1.yaml> [file2.yaml] ...\n`);
-    console.log('Or validate all power-suite modules:');
+    console.log('Or validate all OSSA manifests recursively:');
     console.log(
-      '  find ../common_npm -name "ossa.yaml" -o -path "*/config/ossa.yaml" | xargs ts-node bin/validate-ossa.ts'
+      '  find ../projects -name "ossa.yaml" -o -path "*/config/ossa.yaml" | xargs ts-node bin/validate-ossa.ts'
     );
     process.exit(1);
   }

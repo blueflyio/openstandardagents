@@ -12,12 +12,18 @@ import type { GitLabAgentConfig } from '../../services/gitlab-agent.service.js';
 export const gitlabAgentCommand = new Command('gitlab-agent')
   .alias('agent')
   .description('Manage GitLab Kubernetes agents (register, list, delete)')
-  .option('--gitlab-url <url>', 'GitLab instance URL (or set GITLAB_URL env var)')
+  .option(
+    '--gitlab-url <url>',
+    'GitLab instance URL (or set GITLAB_URL env var)'
+  )
   .option(
     '--project <path>',
     'GitLab project path (e.g., group/project) (or set CI_PROJECT_PATH env var)'
   )
-  .option('--token <token>', 'GitLab personal access token (or set GITLAB_TOKEN env var)')
+  .option(
+    '--token <token>',
+    'GitLab personal access token (or set GITLAB_TOKEN env var)'
+  )
   .option('--name <name>', 'Agent name', 'ossa-agent');
 
 // Register subcommand
@@ -28,7 +34,8 @@ gitlabAgentCommand
   .action(async (options, command) => {
     try {
       const parentOptions = command.parent?.opts() || {};
-      const token = parentOptions.token || options.token || process.env.GITLAB_TOKEN;
+      const token =
+        parentOptions.token || options.token || process.env.GITLAB_TOKEN;
       if (!token) {
         console.error(chalk.red('Error: GitLab token required'));
         console.error('Set GITLAB_TOKEN environment variable or use --token');
@@ -40,13 +47,17 @@ gitlabAgentCommand
 
       if (!gitlabUrl) {
         console.error(chalk.red('Error: GitLab URL required'));
-        console.error('Set GITLAB_URL environment variable or use --gitlab-url');
+        console.error(
+          'Set GITLAB_URL environment variable or use --gitlab-url'
+        );
         process.exit(1);
       }
 
       if (!projectPath) {
         console.error(chalk.red('Error: Project path required'));
-        console.error('Set CI_PROJECT_PATH environment variable or use --project');
+        console.error(
+          'Set CI_PROJECT_PATH environment variable or use --project'
+        );
         process.exit(1);
       }
 
@@ -82,7 +93,9 @@ gitlabAgentCommand
       console.log(`   export GITLAB_AGENT_TOKEN="${result.token}"`);
       console.log('');
       console.log('2. Install the agent using Helm:');
-      console.log(`   helm upgrade --install ${config.name} gitlab/gitlab-agent \\`);
+      console.log(
+        `   helm upgrade --install ${config.name} gitlab/gitlab-agent \\`
+      );
       console.log(`     --namespace gitlab-agent \\`);
       console.log(`     --create-namespace \\`);
       console.log(`     --set config.token='${result.token}' \\`);
@@ -101,7 +114,9 @@ gitlabAgentCommand
         if (error instanceof Error && 'response' in error) {
           const axiosError = error as { response?: { data?: unknown } };
           if (axiosError.response?.data) {
-            console.error(chalk.red(JSON.stringify(axiosError.response.data, null, 2)));
+            console.error(
+              chalk.red(JSON.stringify(axiosError.response.data, null, 2))
+            );
           }
         }
       }
@@ -127,13 +142,17 @@ gitlabAgentCommand
 
       if (!gitlabUrl) {
         console.error(chalk.red('Error: GitLab URL required'));
-        console.error('Set GITLAB_URL environment variable or use --gitlab-url');
+        console.error(
+          'Set GITLAB_URL environment variable or use --gitlab-url'
+        );
         process.exit(1);
       }
 
       if (!projectPath) {
         console.error(chalk.red('Error: Project path required'));
-        console.error('Set CI_PROJECT_PATH environment variable or use --project');
+        console.error(
+          'Set CI_PROJECT_PATH environment variable or use --project'
+        );
         process.exit(1);
       }
 
@@ -156,7 +175,9 @@ gitlabAgentCommand
       console.log('');
       agents.forEach((agent) => {
         console.log(`  ${chalk.green(agent.name)} (ID: ${agent.id})`);
-        console.log(`    Created: ${new Date(agent.createdAt).toLocaleString()}`);
+        console.log(
+          `    Created: ${new Date(agent.createdAt).toLocaleString()}`
+        );
         console.log('');
       });
     } catch (error) {
@@ -187,13 +208,17 @@ gitlabAgentCommand
 
       if (!gitlabUrl) {
         console.error(chalk.red('Error: GitLab URL required'));
-        console.error('Set GITLAB_URL environment variable or use --gitlab-url');
+        console.error(
+          'Set GITLAB_URL environment variable or use --gitlab-url'
+        );
         process.exit(1);
       }
 
       if (!projectPath) {
         console.error(chalk.red('Error: Project path required'));
-        console.error('Set CI_PROJECT_PATH environment variable or use --project');
+        console.error(
+          'Set CI_PROJECT_PATH environment variable or use --project'
+        );
         process.exit(1);
       }
 

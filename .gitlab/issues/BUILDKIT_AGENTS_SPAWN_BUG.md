@@ -14,7 +14,7 @@ $ buildkit agents spawn --agent gitlab-expert --task "Work on issue #21"
 ## Root Cause Analysis
 
 ### Location
-- **File**: `/Users/flux423/Sites/LLM/agent-buildkit/src/cli/index.ts`
+- **File**: `agent-buildkit/src/cli/index.ts`
 - **Lines**: 329-378 (agents spawn command)
 
 ### Problem
@@ -184,9 +184,9 @@ Try multiple methods in order:
 
 ## Related Files
 
-- `/Users/flux423/Sites/LLM/agent-buildkit/src/cli/index.ts` - Main CLI entry point
-- `/Users/flux423/Sites/LLM/agent-buildkit/src/experimental/services/agent-workspace.service.ts` - Filesystem agent discovery
-- `/Users/flux423/Sites/LLM/agent-buildkit/src/cli/commands/agents.command.ts.bak*` - Backup files with different implementations
+- `agent-buildkit/src/cli/index.ts` - Main CLI entry point
+- `agent-buildkit/src/experimental/services/agent-workspace.service.ts` - Filesystem agent discovery
+- `agent-buildkit/src/cli/commands/agents.command.ts.bak*` - Backup files with different implementations
 
 ## Environment
 

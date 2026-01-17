@@ -17,8 +17,15 @@ export interface SafeYAMLOptions {
  * @param options - Optional security configuration
  * @returns Parsed YAML object
  */
-export function safeParseYAML<T = unknown>(content: string, options: SafeYAMLOptions = {}): T {
-  const { maxAliasCount = 100, allowCustomTags = false, allowMergeKeys = false } = options;
+export function safeParseYAML<T = unknown>(
+  content: string,
+  options: SafeYAMLOptions = {}
+): T {
+  const {
+    maxAliasCount = 100,
+    allowCustomTags = false,
+    allowMergeKeys = false,
+  } = options;
 
   // Parse with security restrictions
   const parsed = YAML.parse(content, {

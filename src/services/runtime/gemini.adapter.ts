@@ -175,7 +175,10 @@ export class GeminiAdapter {
       model: string;
       systemInstruction?: string;
       generationConfig?: typeof generationConfig;
-      safetySettings?: Array<{ category: HarmCategory; threshold: HarmBlockThreshold }>;
+      safetySettings?: Array<{
+        category: HarmCategory;
+        threshold: HarmBlockThreshold;
+      }>;
       tools?: Array<{ functionDeclarations: FunctionDeclaration[] }>;
     } = {
       model: modelName,
@@ -333,7 +336,7 @@ export class GeminiAdapter {
           name: tool.name,
           description: tool.description || '',
           parameters: tool.parameters
-            ? (tool.parameters as FunctionDeclarationSchema)
+            ? tool.parameters
             : { type: SchemaType.OBJECT, properties: {} },
         };
         this.tools.set(tool.name, toolDef);
@@ -350,7 +353,7 @@ export class GeminiAdapter {
             name: tool.name,
             description: tool.description || '',
             parameters: tool.parameters
-              ? (tool.parameters as FunctionDeclarationSchema)
+              ? tool.parameters
               : { type: SchemaType.OBJECT, properties: {} },
           };
           this.tools.set(tool.name, toolDef);
@@ -399,10 +402,13 @@ export class GeminiAdapter {
       }
 
       // Use config as properties
-      const properties: { [k: string]: { type: SchemaType; description: string } } = {};
+      const properties: {
+        [k: string]: { type: SchemaType; description: string };
+      } = {};
       for (const [key, value] of Object.entries(tool.config)) {
         properties[key] = {
-          type: typeof value === 'number' ? SchemaType.NUMBER : SchemaType.STRING,
+          type:
+            typeof value === 'number' ? SchemaType.NUMBER : SchemaType.STRING,
           description: `${key} parameter`,
         };
       }
@@ -667,7 +673,10 @@ export class GeminiAdapter {
         await this.chatSession!.sendMessageStream(currentMessage);
 
       // Collect function calls and text chunks
-      const functionCalls: Array<{ name: string; args: Record<string, unknown> }> = [];
+      const functionCalls: Array<{
+        name: string;
+        args: Record<string, unknown>;
+      }> = [];
       let hasText = false;
 
       for await (const chunk of result.stream) {
@@ -744,13 +753,21 @@ export class GeminiAdapter {
    * Extract function calls from a response
    */
   private extractFunctionCalls(
-    response: GenerateContentResult | { functionCalls?: () => FunctionCall[] | undefined }
+    response:
+      | GenerateContentResult
+      | { functionCalls?: () => FunctionCall[] | undefined }
   ): Array<{ name: string; args: Record<string, unknown> }> {
-    const functionCalls: Array<{ name: string; args: Record<string, unknown> }> = [];
+    const functionCalls: Array<{
+      name: string;
+      args: Record<string, unknown>;
+    }> = [];
 
     try {
       // Gemini API provides a functionCalls() method on candidates
-      if ('functionCalls' in response && typeof response.functionCalls === 'function') {
+      if (
+        'functionCalls' in response &&
+        typeof response.functionCalls === 'function'
+      ) {
         const calls = response.functionCalls();
         if (calls && calls.length > 0) {
           for (const call of calls) {

@@ -3,7 +3,10 @@
  */
 
 import { describe, it, expect } from '@jest/globals';
-import { safeParseYAML, safeStringifyYAML } from '../../../src/utils/yaml-parser';
+import {
+  safeParseYAML,
+  safeStringifyYAML,
+} from '../../../src/utils/yaml-parser';
 
 describe('safeParseYAML', () => {
   it('should parse valid YAML', () => {

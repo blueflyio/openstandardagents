@@ -5,7 +5,12 @@
  * Version is derived dynamically from package.json.
  */
 
-import { getApiVersion, getVersion, getSchemaPath, getVersionInfo } from '../src/utils/version.js';
+import {
+  getApiVersion,
+  getVersion,
+  getSchemaPath,
+  getVersionInfo,
+} from '../src/utils/version.js';
 
 // Re-export for easy use in tests
 export { getApiVersion, getVersion, getSchemaPath, getVersionInfo };
@@ -31,7 +36,9 @@ export function createTestManifest(overrides: Record<string, unknown> = {}) {
 /**
  * Create a minimal valid Task manifest for testing
  */
-export function createTestTaskManifest(overrides: Record<string, unknown> = {}) {
+export function createTestTaskManifest(
+  overrides: Record<string, unknown> = {}
+) {
   return {
     apiVersion: CURRENT_API_VERSION,
     kind: 'Task',

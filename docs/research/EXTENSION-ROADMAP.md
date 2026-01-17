@@ -201,7 +201,7 @@
 ```yaml
 # extensions/{platform-name}.md
 
-# {Platform Name} Extension for OSSA v0.3.3
+# {Platform Name} Extension for OSSA v0.3.4
 
 ## Overview
 Brief description of platform and OSSA integration

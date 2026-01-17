@@ -11,7 +11,11 @@ import { injectable } from 'inversify';
 import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
-import type { Generator, GenerateResult, DriftReport } from '../codegen.service.js';
+import type {
+  Generator,
+  GenerateResult,
+  DriftReport,
+} from '../codegen.service.js';
 import { getVersion } from '../../../utils/version.js';
 
 @injectable()
@@ -74,7 +78,9 @@ export class TypesGenerator implements Generator {
         result.filesCreated = 1;
       }
     } catch (error) {
-      result.errors.push(error instanceof Error ? error.message : String(error));
+      result.errors.push(
+        error instanceof Error ? error.message : String(error)
+      );
     }
 
     return result;
@@ -97,10 +103,16 @@ export class TypesGenerator implements Generator {
   }
 
   private getSchemaPath(version: string): string {
-    return path.join(process.cwd(), `spec/v${version}/ossa-${version}.schema.json`);
+    return path.join(
+      process.cwd(),
+      `spec/v${version}/ossa-${version}.schema.json`
+    );
   }
 
   private getOutputPath(version: string): string {
-    return path.join(process.cwd(), `src/types/generated/ossa-${version}.types.ts`);
+    return path.join(
+      process.cwd(),
+      `src/types/generated/ossa-${version}.types.ts`
+    );
   }
 }

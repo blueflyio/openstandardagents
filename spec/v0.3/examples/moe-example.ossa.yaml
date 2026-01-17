@@ -1,0 +1,120 @@
+apiVersion: ossa/v0.3.5
+kind: Agent
+metadata:
+  name: moe-powered-agent
+  version: 1.0.0
+  description: "Agent demonstrating Mixture of Experts (MoE) for cost optimization"
+spec:
+  identity:
+    id: "@moe-powered-agent"
+    display_name: "MoE Powered Agent"
+    tier: worker
+
+  llm:
+    provider: ${LLM_PROVIDER:-anthropic}
+    model: ${LLM_MODEL:-claude-sonnet}
+    profile: balanced
+
+  # Completion signals
+  completion:
+    default_signal: complete
+    signals:
+      - signal: continue
+        condition: "iteration_count < max_iterations"
+      - signal: escalate
+        condition: "confidence < 0.3"
+    max_iterations: 15
+
+extensions:
+  # Mixture of Experts
+  experts:
+    registry:
+      - id: reasoning-expert
+        name: "Complex Reasoning Expert"
+        model:
+          provider: anthropic
+          model: claude-opus-4-5-20251101
+        specializations:
+          - complex_reasoning
+          - planning
+          - multi_step_analysis
+        cost_tier: premium
+        capabilities:
+          extended_thinking: true
+          max_tokens: 200000
+          reasoning_depth: deep
+        availability:
+          regions: [us-east-1, eu-west-1]
+          fallback: code-expert
+
+      - id: code-expert
+        name: "Code Generation Expert"
+        model:
+          provider: anthropic
+          model: claude-sonnet-4-20250514
+        specializations:
+          - code_generation
+          - code_review
+          - debugging
+        cost_tier: standard
+        capabilities:
+          max_tokens: 16384
+          reasoning_depth: balanced
+
+      - id: speed-expert
+        name: "High-Volume Expert"
+        model:
+          provider: google
+          model: gemini-2.0-flash
+        specializations:
+          - quick_responses
+          - high_volume
+          - cost_sensitive
+        cost_tier: economy
+        capabilities:
+          max_tokens: 8192
+          reasoning_depth: fast
+
+    selection_strategy: agent_controlled
+
+    tools:
+      - name: list_experts
+        description: "Discover available expert models and their capabilities"
+      - name: invoke_expert
+        description: "Delegate task to specialized expert model"
+      - name: get_expert_history
+        description: "Review past expert invocations for learning"
+
+  # MOE Metrics
+  moe:
+    primary:
+      metric: expert_selection_accuracy
+      target: 0.90
+      measurement:
+        type: ratio
+        numerator: optimal_expert_selections
+        denominator: total_expert_invocations
+    secondary:
+      - metric: cost_per_task
+        target: 0.15
+        unit: usd
+    operational:
+      - metric: expert_availability
+        target: 0.95
+        unit: ratio
+
+tools:
+  - name: select_expert_for_task
+    description: "Select optimal expert for a given task"
+    parameters:
+      type: object
+      required: [task_description]
+      properties:
+        task_description:
+          type: string
+        cost_sensitivity:
+          type: string
+          enum: [high, medium, low]
+        reasoning_requirement:
+          type: string
+          enum: [fast, balanced, deep]
