@@ -1,0 +1,66 @@
+apiVersion: ossa/v0.3.5
+kind: Agent
+metadata:
+  name: doc-generator
+  version: 1.0.0
+  description: Automated documentation generation agent
+  labels:
+    ossa.dev/category: documentation
+    ossa.dev/tier: standard-example
+  annotations:
+    ossa.dev/documentation: https://openstandardagents.org/agents/doc-generator
+spec:
+  capabilities:
+  - type: function
+    name: docs.api
+    description: Generate API documentation from code
+  - type: function
+    name: docs.readme
+    description: Generate or update README files
+  - type: function
+    name: docs.changelog
+    description: Generate changelog from commits
+  - type: function
+    name: docs.technical
+    description: Generate technical documentation
+  role: 'You are a technical documentation specialist responsible for generating
+
+    and maintaining project documentation.
+
+
+    Documentation types:
+
+    1. API Documentation - Generate from code, OpenAPI specs, or schemas
+
+    2. README - Project overview, installation, usage, examples
+
+    3. Changelog - Semantic versioning, conventional commits
+
+    4. Technical Docs - Architecture, design decisions, guides
+
+
+    Always:
+
+    - Use clear, concise language
+
+    - Include code examples where appropriate
+
+    - Follow project documentation conventions
+
+    - Keep documentation in sync with code
+
+    '
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4
+    temperature: 0.5
+    maxTokens: 16384
+    fallback:
+    - provider: openai
+      model: gpt-4o
+    - provider: google
+      model: gemini-2.0-flash
+  tools:
+  - type: function
+    name: code.analyze
+    description: Analyze code structure for documentation

@@ -1,0 +1,102 @@
+apiVersion: ossa/v0.3.5
+kind: Agent
+metadata:
+  name: k8s-troubleshooter
+  version: 1.0.0
+  description: Autonomous Kubernetes cluster troubleshooting agent with diagnostic
+    capabilities
+spec:
+  taxonomy:
+    domain: infrastructure
+    subdomain: kubernetes
+    capability: troubleshooting
+  role: 'You are an expert Kubernetes troubleshooter. You diagnose pod failures, network
+    issues,
+
+    resource constraints, and configuration problems. You use kubectl and monitoring
+    tools
+
+    to identify root causes and suggest remediation steps.
+
+    '
+  llm:
+    provider: openai
+    model: gpt-4
+    temperature: 0.2
+    maxTokens: 4000
+  tools:
+  - type: mcp
+    server: kubernetes-mcp
+    namespace: default
+    capabilities:
+    - get_pods
+    - get_logs
+    - get_events
+    - describe_resource
+    - get_metrics
+  - type: mcp
+    server: buildkit-agent-protocol
+    namespace: default
+    capabilities:
+    - search_documentation
+    - analyze_logs
+  autonomy:
+    level: supervised
+    approval_required: true
+    allowed_actions:
+    - read_pods
+    - read_logs
+    - read_events
+    - read_metrics
+    blocked_actions:
+    - delete_pods
+    - scale_deployments
+    - modify_configs
+  constraints:
+    cost:
+      maxTokensPerDay: 50000
+      maxTokensPerRequest: 4000
+      maxCostPerDay: 10.0
+      currency: USD
+    performance:
+      maxLatencySeconds: 30
+      maxConcurrentRequests: 5
+  extensions:
+    kagent:
+      kubernetes:
+        namespace: production
+        labels:
+          app: k8s-troubleshooter
+          team: platform
+          environment: production
+        annotations:
+          description: Kubernetes troubleshooting agent
+          contact: platform-team@company.com
+        resourceLimits:
+          cpu: 500m
+          memory: 512Mi
+      guardrails:
+        requireApproval: true
+        costLimits:
+          maxTokensPerDay: 50000
+          maxCostPerDay: 10.0
+          currency: USD
+        allowedActions:
+        - kubernetes:get:pods
+        - kubernetes:get:logs
+        - kubernetes:get:events
+        auditLog:
+          destination: compliance-engine
+          retention: 7years
+      a2aConfig:
+        enabled: true
+        protocol: json-rpc
+        endpoints:
+        - http://security-scanner:8080/a2a
+        - http://cost-optimizer:8080/a2a
+        authentication:
+          type: mtls
+      meshIntegration:
+        enabled: true
+        istioIntegration: true
+        ambientMesh: true

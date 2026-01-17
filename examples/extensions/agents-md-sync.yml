@@ -1,0 +1,96 @@
+# OSSA agents.md Extension - Sync Example
+# Demonstrates automatic synchronization configuration
+
+apiVersion: ossa/v0.3.5
+kind: Agent
+metadata:
+  name: docs-agent
+  version: 1.0.0
+  description: Documentation maintenance agent with auto-sync
+  labels:
+    domain: documentation
+    capability: generation
+
+spec:
+  role: |
+    You are a documentation agent that maintains project documentation,
+    generates API docs, and keeps AGENTS.md synchronized with the manifest.
+
+  llm:
+    provider: openai
+    model: gpt-4o
+    temperature: 0.5
+    maxTokens: 4000
+
+  tools:
+    - type: mcp
+      name: markdown_tools
+      server: markdown-mcp
+      capabilities:
+        - parse_markdown
+        - generate_toc
+        - validate_links
+
+    - type: function
+      name: generate_api_docs
+      config:
+        tool: typedoc
+        output: docs/api
+
+  autonomy:
+    level: autonomous
+    approval_required: false
+    allowed_actions:
+      - update_documentation
+      - generate_diagrams
+      - fix_broken_links
+
+  constraints:
+    performance:
+      maxLatencySeconds: 20
+      timeoutSeconds: 45
+
+extensions:
+  agents_md:
+    enabled: true
+    generate: true
+    output_path: AGENTS.md
+    sections:
+      dev_environment:
+        enabled: true
+        custom: |
+          ## Documentation Tools
+          - Markdown editor (VS Code recommended)
+          - PlantUML for diagrams
+          - Vale for style checking
+
+          ## Commands
+          - Generate docs: `npm run docs:generate`
+          - Validate links: `npm run docs:validate`
+          - Preview: `npm run docs:serve`
+
+      testing:
+        enabled: true
+        custom: |
+          ## Documentation Quality Checks
+          - Run Vale linter: `vale docs/`
+          - Check broken links: `npm run docs:check-links`
+          - Validate examples: `npm run docs:test-examples`
+
+      pr_instructions:
+        enabled: true
+        custom: |
+          ## Documentation PR Requirements
+          - Update table of contents if adding new pages
+          - Run spell check: `npm run docs:spell-check`
+          - Ensure all code examples are tested
+          - Add screenshots for visual changes
+          - Update version in docs if needed
+
+    sync:
+      on_manifest_change: true
+      include_comments: true
+
+  # Example: Use with ossa agents-md sync command
+  # Command: ossa agents-md sync .agents/docs-agent/manifest.yaml --watch
+  # This will automatically regenerate AGENTS.md whenever the manifest changes

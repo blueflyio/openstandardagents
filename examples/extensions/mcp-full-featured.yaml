@@ -1,0 +1,150 @@
+apiVersion: ossa/v0.3.5
+kind: Agent
+metadata:
+  name: mcp-powered-agent
+  description: Agent with full MCP capabilities - resources, prompts, and tools
+spec:
+  model:
+    provider: anthropic
+    name: claude-3-5-sonnet-20241022
+  capabilities:
+    - mcp_resources
+    - mcp_prompts
+    - mcp_tools
+extensions:
+  mcp:
+    servers:
+      - name: filesystem
+        command: npx
+        args: ["-y", "@modelcontextprotocol/server-filesystem", "/workspace"]
+        resources:
+          - uri: file:///workspace/docs/**/*.md
+            name: documentation
+            description: Project documentation files
+            mimeType: text/markdown
+          - uri: file:///workspace/src/**/*.ts
+            name: source-code
+            description: TypeScript source files
+            mimeType: text/typescript
+        
+      - name: github
+        command: npx
+        args: ["-y", "@modelcontextprotocol/server-github"]
+        env:
+          GITHUB_TOKEN: ${GITHUB_TOKEN}
+        resources:
+          - uri: github://owner/repo/issues
+            name: github-issues
+            description: Repository issues
+          - uri: github://owner/repo/pulls
+            name: github-prs
+            description: Pull requests
+        tools:
+          - name: create_issue
+            description: Create a new GitHub issue
+            inputSchema:
+              type: object
+              properties:
+                title: { type: string }
+                body: { type: string }
+                labels: { type: array, items: { type: string } }
+          - name: create_pull_request
+            description: Create a new pull request
+        
+      - name: postgres
+        command: npx
+        args: ["-y", "@modelcontextprotocol/server-postgres"]
+        env:
+          DATABASE_URL: ${DATABASE_URL}
+        resources:
+          - uri: postgres://localhost/mydb/schema
+            name: database-schema
+            description: Database schema information
+        tools:
+          - name: query
+            description: Execute SQL query
+            inputSchema:
+              type: object
+              properties:
+                sql: { type: string }
+                params: { type: array }
+      
+      - name: brave-search
+        command: npx
+        args: ["-y", "@modelcontextprotocol/server-brave-search"]
+        env:
+          BRAVE_API_KEY: ${BRAVE_API_KEY}
+        tools:
+          - name: brave_web_search
+            description: Search the web using Brave
+            inputSchema:
+              type: object
+              properties:
+                query: { type: string }
+                count: { type: integer, default: 10 }
+    
+    prompts:
+      - name: code-review
+        description: Review code changes with context
+        arguments:
+          - name: file_path
+            description: Path to file being reviewed
+            required: true
+          - name: changes
+            description: Git diff of changes
+            required: true
+        template: |
+          Review the following code changes in {{ file_path }}:
+          
+          ```diff
+          {{ changes }}
+          ```
+          
+          Consider:
+          1. Code quality and best practices
+          2. Potential bugs or edge cases
+          3. Performance implications
+          4. Security concerns
+          5. Test coverage
+      
+      - name: bug-analysis
+        description: Analyze bug report with full context
+        arguments:
+          - name: issue_number
+            required: true
+          - name: error_logs
+            required: false
+        template: |
+          Analyze bug #{{ issue_number }}
+          
+          {% if error_logs %}
+          Error logs:
+          ```
+          {{ error_logs }}
+          ```
+          {% endif %}
+          
+          Steps:
+          1. Review related code from filesystem
+          2. Check recent commits from GitHub
+          3. Query database for relevant data
+          4. Search for similar issues
+      
+      - name: feature-implementation
+        description: Implement new feature with full context
+        arguments:
+          - name: feature_name
+            required: true
+          - name: requirements
+            required: true
+        template: |
+          Implement feature: {{ feature_name }}
+          
+          Requirements:
+          {{ requirements }}
+          
+          Use available resources:
+          - Read existing code patterns
+          - Check database schema
+          - Review similar implementations
+          - Create GitHub issue for tracking

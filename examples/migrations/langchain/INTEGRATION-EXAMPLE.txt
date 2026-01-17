@@ -1,0 +1,335 @@
+LangChain to OSSA Migration - Complete Integration Example
+============================================================
+
+This example demonstrates the complete workflow of migrating a LangChain
+agent to OSSA format, including validation and testing.
+
+SCENARIO
+--------
+You have a Python LangChain ReAct agent that handles customer inquiries
+with access to search, knowledge base, and ticket creation tools.
+
+STEP 1: ORIGINAL LANGCHAIN CODE
+--------------------------------
+File: customer-service-agent.py
+
+```python
+from langchain.agents import initialize_agent, AgentType, Tool
+from langchain.chat_models import ChatOpenAI
+from langchain.memory import ConversationBufferMemory
+from langchain.tools import tool
+
+llm = ChatOpenAI(
+    model_name="gpt-4-turbo",
+    temperature=0.5,
+    max_tokens=2000
+)
+
+@tool
+def search_knowledge_base(query: str) -> str:
+    """Search company knowledge base for information."""
+    # Implementation
+    return f"Knowledge base results for: {query}"
+
+@tool
+def create_support_ticket(description: str, priority: str) -> str:
+    """Create a support ticket. Priority: low, medium, high, urgent."""
+    # Implementation
+    return f"Ticket created: {description} (Priority: {priority})"
+
+@tool
+def check_order_status(order_id: str) -> str:
+    """Check the status of an order by order ID."""
+    # Implementation
+    return f"Order {order_id} status: Shipped"
+
+tools = [search_knowledge_base, create_support_ticket, check_order_status]
+memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
+
+agent = initialize_agent(
+    tools=tools,
+    llm=llm,
+    agent=AgentType.CHAT_ZERO_SHOT_REACT_DESCRIPTION,
+    memory=memory,
+    verbose=True
+)
+```
+
+STEP 2: RUN MIGRATION
+---------------------
+Command:
+  ossa migrate langchain customer-service-agent.py -v --report migration-report.json
+
+Output:
+  Migrating LangChain agent from customer-service-agent.py...
+
+  Migration Summary:
+    Source: customer-service-agent.py
+    Format: python
+    Target: customer-service-agent.ossa.yaml
+    Confidence: 95%
+
+  Mappings:
+    ✓ LangChain react Agent → OSSA Agent (kind: Agent)
+    ✓ LLM: openai/gpt-4-turbo → spec.llm configuration
+    ✓ Tool: search_knowledge_base → spec.tools[] entry
+    ✓ Tool: create_support_ticket → spec.tools[] entry
+    ✓ Tool: check_order_status → spec.tools[] entry
+    ✓ Memory: ConversationBufferMemory → extensions.langchain.memory_type
+
+  Recommendations:
+    • Review tool implementations and add proper schemas
+    • Consider implementing tools as MCP servers for better reusability
+    • Validate generated manifest with: ossa validate customer-service-agent.ossa.yaml
+    • Test the agent in a development environment
+
+  Validating manifest...
+  ✓ Manifest is valid
+
+  ✓ Manifest saved to: customer-service-agent.ossa.yaml
+  ✓ Report saved to: migration-report.json
+
+  Next Steps:
+    1. Review the generated manifest: customer-service-agent.ossa.yaml
+    2. Implement tool functions/endpoints
+    3. Test the agent: ossa run customer-service-agent.ossa.yaml
+
+STEP 3: GENERATED OSSA MANIFEST
+--------------------------------
+File: customer-service-agent.ossa.yaml
+
+```yaml
+apiVersion: ossa/v0.3.3
+kind: Agent
+metadata:
+  name: customer-service-agent
+  version: 0.1.0
+  description: Migrated from LangChain react agent
+  labels:
+    ossa-version: v0.3.3
+    migration-source: langchain
+    department: customer-support
+  annotations:
+    ossa.io/migration: langchain-to-ossa
+    ossa.io/migrated-date: "2026-01-15"
+    ossa.io/source-file: customer-service-agent.py
+spec:
+  role: |
+    You are a helpful customer service agent. You can:
+    - Search the knowledge base for company information
+    - Create support tickets for complex issues
+    - Check order status for customers
+
+    Always be polite, professional, and empathetic.
+
+  llm:
+    provider: openai
+    model: gpt-4-turbo
+    temperature: 0.5
+    maxTokens: 2000
+
+  tools:
+    - type: function
+      name: search_knowledge_base
+      description: Search company knowledge base for information.
+
+    - type: function
+      name: create_support_ticket
+      description: Create a support ticket. Priority - low, medium, high, urgent.
+
+    - type: function
+      name: check_order_status
+      description: Check the status of an order by order ID.
+
+  autonomy:
+    level: autonomous
+    approval_required: false
+
+  constraints:
+    cost:
+      maxTokensPerDay: 100000
+      maxCostPerDay: 50.0
+    performance:
+      maxLatencySeconds: 30
+
+  extensions:
+    langchain:
+      memory_type: ConversationBufferMemory
+      memory_config:
+        memory_key: chat_history
+        return_messages: true
+```
+
+STEP 4: MIGRATION REPORT
+------------------------
+File: migration-report.json
+
+```json
+{
+  "sourceFile": "customer-service-agent.py",
+  "sourceFormat": "python",
+  "targetManifest": "customer-service-agent.ossa.yaml",
+  "components": {
+    "detected": [
+      {
+        "type": "agent",
+        "agentType": "react",
+        "name": "ReAct Agent"
+      },
+      {
+        "type": "llm",
+        "llmConfig": {
+          "provider": "openai",
+          "model": "gpt-4-turbo",
+          "temperature": 0.5,
+          "maxTokens": 2000
+        }
+      },
+      {
+        "type": "tool",
+        "tools": [
+          {
+            "name": "search_knowledge_base",
+            "description": "Search company knowledge base for information.",
+            "type": "function"
+          },
+          {
+            "name": "create_support_ticket",
+            "description": "Create a support ticket. Priority: low, medium, high, urgent.",
+            "type": "function"
+          },
+          {
+            "name": "check_order_status",
+            "description": "Check the status of an order by order ID.",
+            "type": "function"
+          }
+        ]
+      },
+      {
+        "type": "memory",
+        "memory": {
+          "type": "ConversationBufferMemory"
+        }
+      }
+    ],
+    "mapped": [
+      {
+        "source": "LangChain react Agent",
+        "target": "OSSA Agent (kind: Agent)",
+        "confidence": "high"
+      },
+      {
+        "source": "LLM: openai/gpt-4-turbo",
+        "target": "spec.llm configuration",
+        "confidence": "high"
+      },
+      {
+        "source": "Tool: search_knowledge_base",
+        "target": "spec.tools[] entry",
+        "confidence": "high"
+      },
+      {
+        "source": "Tool: create_support_ticket",
+        "target": "spec.tools[] entry",
+        "confidence": "high"
+      },
+      {
+        "source": "Tool: check_order_status",
+        "target": "spec.tools[] entry",
+        "confidence": "high"
+      },
+      {
+        "source": "Memory: ConversationBufferMemory",
+        "target": "extensions.langchain.memory_type",
+        "confidence": "medium"
+      }
+    ],
+    "unmapped": []
+  },
+  "warnings": [
+    "Memory configuration requires manual verification and implementation"
+  ],
+  "recommendations": [
+    "Review tool implementations and add proper schemas",
+    "Consider implementing tools as MCP servers for better reusability",
+    "Validate generated manifest with: ossa validate customer-service-agent.ossa.yaml",
+    "Test the agent in a development environment"
+  ],
+  "confidence": 95,
+  "timestamp": "2026-01-15T10:30:00.000Z"
+}
+```
+
+STEP 5: VALIDATE THE MANIFEST
+-----------------------------
+Command:
+  ossa validate customer-service-agent.ossa.yaml
+
+Output:
+  ✓ Manifest is valid (ossa/v0.3.3)
+
+  Agent Details:
+    Name: customer-service-agent
+    Version: 0.1.0
+    Kind: Agent
+    Tools: 3
+    LLM: openai/gpt-4-turbo
+
+STEP 6: ENHANCE THE MANIFEST (OPTIONAL)
+---------------------------------------
+Add OpenAPI-style tool schemas for better type safety:
+
+```yaml
+spec:
+  tools:
+    - type: function
+      name: search_knowledge_base
+      description: Search company knowledge base
+      input_schema:
+        type: object
+        properties:
+          query:
+            type: string
+            description: Search query
+        required: [query]
+      output_schema:
+        type: object
+        properties:
+          results:
+            type: array
+            items:
+              type: object
+              properties:
+                title: { type: string }
+                content: { type: string }
+                relevance_score: { type: number }
+```
+
+STEP 7: TEST THE AGENT
+-----------------------
+Command:
+  ossa run customer-service-agent.ossa.yaml
+
+This demonstrates the complete migration workflow from LangChain to OSSA,
+including validation, enhancement, and testing.
+
+KEY BENEFITS
+------------
+1. Standardized Format: OSSA manifests are portable across frameworks
+2. Better Validation: OpenAPI-style schemas for tools
+3. Enhanced Features: Cost tracking, constraints, observability
+4. Kubernetes-style: Familiar apiVersion/kind/metadata/spec structure
+5. MCP Integration: Ready for Model Context Protocol tooling
+
+TROUBLESHOOTING
+---------------
+If migration confidence is low (<50%):
+- Check that the source file is valid LangChain code
+- Ensure LLM configuration is present
+- Verify tool definitions are properly decorated/defined
+- Review the migration report for specific issues
+
+For manual adjustments:
+- Use --dry-run to preview before writing
+- Edit the generated manifest as needed
+- Re-validate after changes: ossa validate <manifest>

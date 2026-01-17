@@ -1,0 +1,131 @@
+apiVersion: ossa/v0.3.5
+kind: Agent
+metadata:
+  name: wiki-healer-production
+  description: Production wiki healer with comprehensive checks
+  labels:
+    tier: healer
+    domain: documentation
+spec:
+  model:
+    provider: anthropic
+    name: claude-3-5-sonnet-20241022
+  
+  capabilities:
+    - file_operations
+    - git_operations
+    - markdown_parsing
+    - link_validation
+    - content_analysis
+  
+  tools:
+    - name: check_broken_links
+      description: Scan wiki for broken internal/external links
+      action: |
+        find docs/ -name "*.md" -exec grep -H "](http" {} \; | \
+        while read line; do
+          url=$(echo "$line" | grep -oP '(?<=\()http[^)]+')
+          curl -s -o /dev/null -w "%{http_code}" "$url"
+        done
+    
+    - name: validate_frontmatter
+      description: Ensure all wiki pages have valid frontmatter
+      action: |
+        for file in docs/**/*.md; do
+          if ! head -n 5 "$file" | grep -q "^---$"; then
+            echo "Missing frontmatter: $file"
+          fi
+        done
+    
+    - name: check_orphaned_pages
+      description: Find pages not linked from anywhere
+      action: |
+        all_pages=$(find docs/ -name "*.md")
+        for page in $all_pages; do
+          basename=$(basename "$page")
+          if ! grep -r "$basename" docs/ --exclude="$page" > /dev/null; then
+            echo "Orphaned: $page"
+          fi
+        done
+    
+    - name: fix_markdown_formatting
+      description: Auto-fix common markdown issues
+      action: |
+        # Fix heading hierarchy
+        # Fix list indentation
+        # Fix code block fences
+        # Fix table formatting
+        prettier --write "docs/**/*.md"
+    
+    - name: update_table_of_contents
+      description: Regenerate TOC for changed pages
+      action: |
+        for file in $(git diff --name-only HEAD~1 docs/**/*.md); do
+          markdown-toc -i "$file"
+        done
+    
+    - name: check_image_references
+      description: Validate all image references exist
+      action: |
+        grep -r "!\[.*\](" docs/ | while read line; do
+          img=$(echo "$line" | grep -oP '(?<=\().*?(?=\))')
+          if [[ ! -f "docs/$img" ]]; then
+            echo "Missing image: $img in $line"
+          fi
+        done
+  
+  triggers:
+    - event: wiki.page.created
+      action: validate_and_enhance
+    - event: wiki.page.updated
+      action: check_and_fix
+    - event: schedule.daily
+      action: comprehensive_audit
+  
+  healing_rules:
+    - name: fix-broken-links
+      condition: broken_links_detected
+      actions:
+        - update_links_to_latest
+        - create_redirects
+        - notify_page_owners
+    
+    - name: fix-orphaned-pages
+      condition: orphaned_pages_found
+      actions:
+        - add_to_index
+        - suggest_parent_pages
+        - create_category_links
+    
+    - name: fix-formatting
+      condition: markdown_errors_detected
+      actions:
+        - auto_format
+        - fix_heading_hierarchy
+        - standardize_code_blocks
+    
+    - name: update-stale-content
+      condition: page_not_updated_90_days
+      actions:
+        - flag_for_review
+        - notify_maintainers
+        - add_stale_warning
+  
+  observability:
+    metrics:
+      - name: pages_healed
+        type: counter
+      - name: broken_links_fixed
+        type: counter
+      - name: orphaned_pages_linked
+        type: counter
+      - name: healing_duration_ms
+        type: histogram
+    
+    activity_stream:
+      enabled: true
+      track:
+        - healing.started
+        - healing.completed
+        - issue.detected
+        - issue.fixed

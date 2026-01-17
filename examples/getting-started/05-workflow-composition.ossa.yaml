@@ -1,0 +1,153 @@
+apiVersion: ossa/v0.3.5
+kind: Workflow
+metadata:
+  name: code-review-pipeline
+  version: 1.0.0
+  description: Automated code review pipeline with security scanning
+  labels:
+    difficulty: advanced
+    tutorial: '05'
+    use-case: ci-cd
+spec:
+  triggers:
+  - type: webhook
+    path: /api/review
+    method: POST
+    authentication:
+      type: bearer
+      secret_ref: ${WEBHOOK_SECRET}
+  - type: event
+    source: gitlab
+    events:
+    - merge_request.opened
+    - merge_request.updated
+    filter:
+      expression: ${{ event.target_branch in ['main', 'develop'] }}
+  inputs:
+    type: object
+    required:
+    - repository_url
+    - branch
+    properties:
+      repository_url:
+        type: string
+        format: uri
+        description: Git repository URL
+      branch:
+        type: string
+        description: Branch to review
+      pr_number:
+        type: integer
+        description: Pull request number (if applicable)
+  outputs:
+    type: object
+    properties:
+      review_status:
+        type: string
+        enum:
+        - approved
+        - changes_requested
+        - blocked
+      findings:
+        type: array
+        items:
+          type: object
+      security_score:
+        type: number
+        minimum: 0
+        maximum: 100
+  steps:
+  - id: validate
+    name: Validate PR Structure
+    kind: Task
+    ref: ./tasks/validate-pr.ossa.yaml
+    input:
+      repository: ${{ workflow.input.repository_url }}
+      branch: ${{ workflow.input.branch }}
+    output:
+      files_changed: array
+      is_valid: boolean
+  - id: security-scan
+    name: Security Analysis
+    kind: Agent
+    ref: ./agents/security-scanner.ossa.yaml
+    condition: ${{ steps.validate.output.is_valid == true }}
+    input:
+      files: ${{ steps.validate.output.files_changed }}
+      scan_type: full
+    output:
+      vulnerabilities: array
+      security_score: number
+  - id: code-review
+    name: Code Quality Review
+    kind: Agent
+    ref: ./agents/code-reviewer.ossa.yaml
+    condition: ${{ steps.validate.output.is_valid == true }}
+    parallel_with: security-scan
+    input:
+      files: ${{ steps.validate.output.files_changed }}
+      review_type: comprehensive
+    output:
+      suggestions: array
+      quality_score: number
+  - id: aggregate
+    name: Aggregate Review Results
+    kind: Task
+    depends_on:
+    - security-scan
+    - code-review
+    ref: ./tasks/aggregate-results.ossa.yaml
+    input:
+      security_findings: ${{ steps.security-scan.output.vulnerabilities }}
+      security_score: ${{ steps.security-scan.output.security_score }}
+      code_suggestions: ${{ steps.code-review.output.suggestions }}
+      quality_score: ${{ steps.code-review.output.quality_score }}
+    output:
+      final_status: string
+      combined_findings: array
+  - id: post-comment
+    name: Post Review Comment
+    kind: Task
+    ref: ./tasks/post-pr-comment.ossa.yaml
+    input:
+      pr_number: ${{ workflow.input.pr_number }}
+      status: ${{ steps.aggregate.output.final_status }}
+      findings: ${{ steps.aggregate.output.combined_findings }}
+  - id: block-merge
+    name: Block Merge on Critical Issues
+    kind: Task
+    condition: ${{ steps.aggregate.output.final_status == 'blocked' }}
+    ref: ./tasks/block-merge.ossa.yaml
+    input:
+      pr_number: ${{ workflow.input.pr_number }}
+      reason: Critical security vulnerabilities found
+  context:
+    variables:
+      organization: ${{ env.GITHUB_ORG }}
+      default_reviewers:
+      - '@security-team'
+      - '@code-review-team'
+  error_handling:
+    on_failure: compensation
+    compensation_steps:
+    - id: cleanup
+      name: Cleanup Failed Review
+      kind: Task
+      ref: ./tasks/cleanup-review.ossa.yaml
+      input:
+        pr_number: ${{ workflow.input.pr_number }}
+    retry:
+      max_attempts: 3
+      backoff: exponential
+      initial_delay_seconds: 5
+  timeouts:
+    workflow: 30m
+    step_default: 5m
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+    metrics:
+      enabled: true
+      custom_labels:
+        workflow: code-review-pipeline
