@@ -64,7 +64,10 @@ export type AuthMethod = 'mtls' | 'bearer' | 'oidc' | 'api_key' | 'none';
 /**
  * Delivery Guarantees
  */
-export type DeliveryGuarantee = 'at-most-once' | 'at-least-once' | 'exactly-once';
+export type DeliveryGuarantee =
+  | 'at-most-once'
+  | 'at-least-once'
+  | 'exactly-once';
 
 /**
  * Agent Status
@@ -507,7 +510,9 @@ export interface Connection {
 /**
  * Message Handler Function
  */
-export type MessageHandler<T = unknown> = (message: MessageEnvelope<T>) => Promise<void> | void;
+export type MessageHandler<T = unknown> = (
+  message: MessageEnvelope<T>
+) => Promise<void> | void;
 
 /**
  * Command Handler Function

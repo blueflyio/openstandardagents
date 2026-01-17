@@ -258,17 +258,17 @@ describe('AnthropicAdapter', () => {
     });
 
     it('should recommend models based on criteria', () => {
-      expect(
-        getRecommendedModel({ complexity: 'high' })
-      ).toBe(DEFAULT_MODELS.opus);
+      expect(getRecommendedModel({ complexity: 'high' })).toBe(
+        DEFAULT_MODELS.opus
+      );
 
-      expect(
-        getRecommendedModel({ complexity: 'low' })
-      ).toBe(DEFAULT_MODELS.haiku);
+      expect(getRecommendedModel({ complexity: 'low' })).toBe(
+        DEFAULT_MODELS.haiku
+      );
 
-      expect(
-        getRecommendedModel({ complexity: 'medium', speed: 'fast' })
-      ).toBe(DEFAULT_MODELS.haiku);
+      expect(getRecommendedModel({ complexity: 'medium', speed: 'fast' })).toBe(
+        DEFAULT_MODELS.haiku
+      );
     });
   });
 

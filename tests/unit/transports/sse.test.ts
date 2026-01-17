@@ -33,14 +33,20 @@ class MockEventSource {
     }, 10);
   }
 
-  addEventListener(type: string, listener: (event: MessageEvent) => void): void {
+  addEventListener(
+    type: string,
+    listener: (event: MessageEvent) => void
+  ): void {
     if (!this.eventListeners.has(type)) {
       this.eventListeners.set(type, []);
     }
     this.eventListeners.get(type)!.push(listener);
   }
 
-  removeEventListener(type: string, listener: (event: MessageEvent) => void): void {
+  removeEventListener(
+    type: string,
+    listener: (event: MessageEvent) => void
+  ): void {
     const listeners = this.eventListeners.get(type);
     if (listeners) {
       const index = listeners.indexOf(listener);
@@ -101,8 +107,11 @@ describe('SSETransport', () => {
 
       await channelTransport.connect();
 
-      const eventSource = (channelTransport as any).eventSource as MockEventSource;
-      expect(eventSource.url).toContain('channels=content.published%2Cuser.login');
+      const eventSource = (channelTransport as any)
+        .eventSource as MockEventSource;
+      expect(eventSource.url).toContain(
+        'channels=content.published%2Cuser.login'
+      );
 
       await channelTransport.disconnect();
     });
@@ -306,7 +315,8 @@ describe('SSETransport', () => {
       });
 
       reconnectTransport.connect().then(() => {
-        const eventSource = (reconnectTransport as any).eventSource as MockEventSource;
+        const eventSource = (reconnectTransport as any)
+          .eventSource as MockEventSource;
         eventSource.readyState = MockEventSource.CLOSED;
         if (eventSource.onerror) {
           eventSource.onerror(new Event('error'));

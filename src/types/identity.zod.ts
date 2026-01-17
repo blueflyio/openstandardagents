@@ -40,9 +40,18 @@ export const ServiceAccountRoleSchema = z.enum([
   'guest',
 ]);
 
-export const TokenEncryptionSchema = z.enum(['none', 'at_rest', 'in_transit', 'both']);
+export const TokenEncryptionSchema = z.enum([
+  'none',
+  'at_rest',
+  'in_transit',
+  'both',
+]);
 
-export const AuditLoggingLevelSchema = z.enum(['required', 'optional', 'disabled']);
+export const AuditLoggingLevelSchema = z.enum([
+  'required',
+  'optional',
+  'disabled',
+]);
 
 export const ComplianceFrameworkSchema = z.enum([
   'SOC2',

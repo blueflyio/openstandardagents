@@ -13,8 +13,13 @@ export class AnthropicValidator {
     const errors: ErrorObject[] = [];
     const warnings: string[] = [];
 
-    const anthropicExt = manifest.extensions?.anthropic as Record<string, unknown> | undefined;
-    if (!anthropicExt || (anthropicExt.enabled as boolean | undefined) === false) {
+    const anthropicExt = manifest.extensions?.anthropic as
+      | Record<string, unknown>
+      | undefined;
+    if (
+      !anthropicExt ||
+      (anthropicExt.enabled as boolean | undefined) === false
+    ) {
       return { valid: true, errors: [], warnings: [] };
     }
 
@@ -43,7 +48,9 @@ export class AnthropicValidator {
       typeof anthropicExt.system !== 'string' ||
       anthropicExt.system.trim().length === 0
     ) {
-      warnings.push('Best practice: Define system prompt for Anthropic Claude agents');
+      warnings.push(
+        'Best practice: Define system prompt for Anthropic Claude agents'
+      );
     }
 
     // Validate max_tokens if provided
@@ -66,7 +73,11 @@ export class AnthropicValidator {
     // Validate temperature if provided
     const temperature = anthropicExt.temperature as number | undefined;
     if (temperature !== undefined) {
-      if (typeof temperature !== 'number' || temperature < 0 || temperature > 1) {
+      if (
+        typeof temperature !== 'number' ||
+        temperature < 0 ||
+        temperature > 1
+      ) {
         errors.push({
           instancePath: '/extensions/anthropic/temperature',
           schemaPath: '',

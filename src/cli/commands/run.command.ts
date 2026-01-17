@@ -10,7 +10,10 @@ import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { ValidationService } from '../../services/validation.service.js';
 import { OpenAIAdapter } from '../../services/runtime/openai.adapter.js';
-import { formatValidationErrors, formatErrorCompact } from '../utils/error-formatter.js';
+import {
+  formatValidationErrors,
+  formatErrorCompact,
+} from '../utils/error-formatter.js';
 // SchemaVersion not used in this file
 
 export const runCommand = new Command('run')
@@ -50,13 +53,21 @@ export const runCommand = new Command('run')
             if (options.verbose) {
               console.error(formatValidationErrors(result.errors, manifest));
             } else {
-              console.error(chalk.red.bold('\n✗ Agent manifest validation failed'));
-              console.error(chalk.red(`Found ${result.errors.length} error(s):\n`));
+              console.error(
+                chalk.red.bold('\n✗ Agent manifest validation failed')
+              );
+              console.error(
+                chalk.red(`Found ${result.errors.length} error(s):\n`)
+              );
               result.errors.forEach((error, index) => {
                 console.error(formatErrorCompact(error, index, manifest));
               });
-              console.error(chalk.gray('\nUse --verbose for detailed error information'));
-              console.error(chalk.blue('📚 Docs: https://openstandardagents.org/docs\n'));
+              console.error(
+                chalk.gray('\nUse --verbose for detailed error information')
+              );
+              console.error(
+                chalk.blue('📚 Docs: https://openstandardagents.org/docs\n')
+              );
             }
             process.exit(1);
           }
@@ -68,15 +79,21 @@ export const runCommand = new Command('run')
 
         // Check runtime
         if (options.runtime !== 'openai') {
-          console.error(chalk.red(`Runtime '${options.runtime}' not supported yet`));
+          console.error(
+            chalk.red(`Runtime '${options.runtime}' not supported yet`)
+          );
           console.error(chalk.yellow('Available runtimes: openai'));
           process.exit(1);
         }
 
         // Check for API key
         if (!process.env.OPENAI_API_KEY) {
-          console.error(chalk.red('Error: OPENAI_API_KEY environment variable not set'));
-          console.error(chalk.yellow('Set it with: export OPENAI_API_KEY=sk-...'));
+          console.error(
+            chalk.red('Error: OPENAI_API_KEY environment variable not set')
+          );
+          console.error(
+            chalk.yellow('Set it with: export OPENAI_API_KEY=sk-...')
+          );
           process.exit(1);
         }
 
@@ -105,7 +122,9 @@ export const runCommand = new Command('run')
         }
 
         // Interactive REPL mode
-        console.log(chalk.gray('\nEntering interactive mode. Type "exit" to quit.\n'));
+        console.log(
+          chalk.gray('\nEntering interactive mode. Type "exit" to quit.\n')
+        );
 
         const rl = readline.createInterface({
           input: process.stdin,
@@ -116,7 +135,10 @@ export const runCommand = new Command('run')
           rl.question(chalk.yellow('You: '), async (input) => {
             const trimmed = input.trim();
 
-            if (trimmed.toLowerCase() === 'exit' || trimmed.toLowerCase() === 'quit') {
+            if (
+              trimmed.toLowerCase() === 'exit' ||
+              trimmed.toLowerCase() === 'quit'
+            ) {
               console.log(chalk.gray('\nGoodbye!'));
               rl.close();
               process.exit(0);
@@ -147,7 +169,10 @@ export const runCommand = new Command('run')
 
         prompt();
       } catch (error) {
-        console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
+        console.error(
+          chalk.red('Error:'),
+          error instanceof Error ? error.message : String(error)
+        );
 
         if (options.verbose && error instanceof Error) {
           console.error(chalk.gray(error.stack));
