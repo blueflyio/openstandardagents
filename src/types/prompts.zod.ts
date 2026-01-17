@@ -49,7 +49,13 @@ export const ExampleCollectionSchema = z.object({
 // Template Schemas
 // ============================================================================
 
-export const TemplateVariableTypeSchema = z.enum(['string', 'number', 'boolean', 'array', 'object']);
+export const TemplateVariableTypeSchema = z.enum([
+  'string',
+  'number',
+  'boolean',
+  'array',
+  'object',
+]);
 
 export const TemplateVariableSchema = z.object({
   name: z.string(),
@@ -110,7 +116,9 @@ export const SystemPromptConfigSchema = z.object({
 export const PromptsSpecSchema = z.object({
   system: z.union([z.string(), SystemPromptConfigSchema]),
   greeting: z.union([z.string(), GreetingConfigSchema]).optional(),
-  examples: z.union([z.array(PromptExampleSchema), z.array(ExampleCollectionSchema)]).optional(),
+  examples: z
+    .union([z.array(PromptExampleSchema), z.array(ExampleCollectionSchema)])
+    .optional(),
   error_messages: z.record(z.string(), z.string()).optional(),
   confirmations: z.record(z.string(), z.string()).optional(),
   help: z.string().optional(),

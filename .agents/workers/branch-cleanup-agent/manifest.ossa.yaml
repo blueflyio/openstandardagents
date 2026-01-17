@@ -1,0 +1,113 @@
+apiVersion: ossa/v0.3.5
+kind: Agent
+metadata:
+  name: branch-cleanup-agent
+  version: 1.0.0
+  description: Specialized agent for branch cleanup agent tasks
+  labels:
+    ossa-version: v0.3.5
+    domain: platform
+    tier: worker
+    priority: P0
+spec:
+  taxonomy:
+    domain: platform
+    subdomain: automation
+    capability: branch_cleanup_agent
+  role: 'You are the branch-cleanup-agent, responsible for branch cleanup agent tasks.
+
+    Follow OSSA v0.3.5 spec. NO scripts folders. NO .sh files.
+
+    '
+  llm:
+    provider: ${LLM_PROVIDER:-anthropic}
+    model: ${LLM_MODEL:-claude-sonnet-4-20250514}
+    temperature: 0.1
+    maxTokens: 16384
+  completion:
+    default_signal: complete
+    max_iterations: 20
+  checkpointing:
+    enabled: true
+    interval: iteration
+    interval_value: 5
+extensions:
+  experts:
+    registry:
+    - id: branch-cleanup-agent-expert
+      name: branch cleanup agent Expert
+      model:
+        provider: anthropic
+        model: claude-sonnet-4-20250514
+      cost_tier: standard
+    - id: deep-maintenance-expert
+      name: Deep Branch Cleanup Agent Expert
+      model:
+        provider: anthropic
+        model: claude-opus-4-5-20251101
+      specializations:
+      - deep_maintenance_analysis
+      - complex_problem_solving
+      cost_tier: premium
+      capabilities:
+        extended_thinking: true
+        max_tokens: 200000
+        reasoning_depth: deep
+    - id: standard-maintenance-expert
+      name: Standard Branch Cleanup Agent Expert
+      model:
+        provider: anthropic
+        model: claude-sonnet-4-20250514
+      specializations:
+      - maintenance_optimization
+      - standard_analysis
+      cost_tier: standard
+      capabilities:
+        max_tokens: 16384
+        reasoning_depth: balanced
+    - id: quick-maintenance-expert
+      name: Quick Branch Cleanup Agent Expert
+      model:
+        provider: google
+        model: gemini-2.0-flash
+      specializations:
+      - quick_maintenance_scan
+      - basic_analysis
+      cost_tier: economy
+      capabilities:
+        max_tokens: 8192
+        reasoning_depth: fast
+    selection_strategy: agent_controlled
+  infrastructure:
+  - type: agent_mesh
+    endpoint: mesh.blueflyagents.com:3005
+  bat:
+    selection_criteria:
+    - dimension: maintenance_complexity
+      required: true
+      options:
+      - value: complex
+        technologies:
+        - claude-opus
+        - gpt-4-turbo
+        cost_tier: premium
+        use_case: Complex branch-cleanup-agent tasks
+      - value: standard
+        technologies:
+        - claude-sonnet
+        - gpt-4o
+        cost_tier: standard
+        use_case: Standard branch-cleanup-agent tasks
+      - value: simple
+        technologies:
+        - gemini-flash
+        - claude-haiku
+        cost_tier: economy
+        use_case: Quick branch-cleanup-agent checks
+  feedback:
+    learning:
+      enabled: true
+      strategy: reinforcement
+      data_sources:
+      - maintenance_outcomes
+      - validation_results

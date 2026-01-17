@@ -1,12 +1,6 @@
 import { describe, it, expect, beforeEach } from '@jest/globals';
 import { DependenciesValidator } from '../../../src/services/validators/dependencies.validator.js';
-import type {
-  AgentManifest,
-  AgentDependency,
-  ValidationResult,
-  DependencyConflict,
-  CircularDependency,
-} from '../../../src/services/validators/dependencies.validator.js';
+import type { AgentManifest } from '../../../src/services/validators/dependencies.validator.js';
 
 describe('DependenciesValidator', () => {
   let validator: DependenciesValidator;
@@ -282,7 +276,10 @@ describe('DependenciesValidator', () => {
           metadata: { name: 'agent-b' },
           spec: {
             messaging: {
-              publishes: [{ channel: 'user.created' }, { channel: 'user.updated' }],
+              publishes: [
+                { channel: 'user.created' },
+                { channel: 'user.updated' },
+              ],
             },
           },
         },
@@ -1024,7 +1021,10 @@ describe('DependenciesValidator', () => {
       ];
 
       const agentRegistry = new Map(manifests.map((m) => [m.metadata.name, m]));
-      const missing = (validator as any).detectMissingDependencies(manifests, agentRegistry);
+      const missing = (validator as any).detectMissingDependencies(
+        manifests,
+        agentRegistry
+      );
 
       expect(missing).toHaveLength(0);
     });
@@ -1050,7 +1050,10 @@ describe('DependenciesValidator', () => {
       ];
 
       const agentRegistry = new Map(manifests.map((m) => [m.metadata.name, m]));
-      const missing = (validator as any).detectMissingDependencies(manifests, agentRegistry);
+      const missing = (validator as any).detectMissingDependencies(
+        manifests,
+        agentRegistry
+      );
 
       expect(missing).toHaveLength(1);
       expect(missing[0].agent).toBe('agent-a');
@@ -1083,7 +1086,10 @@ describe('DependenciesValidator', () => {
       ];
 
       const agentRegistry = new Map(manifests.map((m) => [m.metadata.name, m]));
-      const missing = (validator as any).detectMissingDependencies(manifests, agentRegistry);
+      const missing = (validator as any).detectMissingDependencies(
+        manifests,
+        agentRegistry
+      );
 
       expect(missing).toHaveLength(2);
     });
@@ -1109,7 +1115,10 @@ describe('DependenciesValidator', () => {
       ];
 
       const agentRegistry = new Map(manifests.map((m) => [m.metadata.name, m]));
-      const missing = (validator as any).detectMissingDependencies(manifests, agentRegistry);
+      const missing = (validator as any).detectMissingDependencies(
+        manifests,
+        agentRegistry
+      );
 
       expect(missing).toHaveLength(0);
     });
@@ -1146,7 +1155,10 @@ describe('DependenciesValidator', () => {
       ];
 
       const agentRegistry = new Map(manifests.map((m) => [m.metadata.name, m]));
-      const missing = (validator as any).detectMissingDependencies(manifests, agentRegistry);
+      const missing = (validator as any).detectMissingDependencies(
+        manifests,
+        agentRegistry
+      );
 
       expect(missing).toHaveLength(1);
       expect(missing[0].dependency).toBe('missing-agent');
@@ -1163,7 +1175,10 @@ describe('DependenciesValidator', () => {
       ];
 
       const agentRegistry = new Map(manifests.map((m) => [m.metadata.name, m]));
-      const missing = (validator as any).detectMissingDependencies(manifests, agentRegistry);
+      const missing = (validator as any).detectMissingDependencies(
+        manifests,
+        agentRegistry
+      );
 
       expect(missing).toHaveLength(0);
     });
@@ -1183,7 +1198,10 @@ describe('DependenciesValidator', () => {
       ];
 
       const agentRegistry = new Map(manifests.map((m) => [m.metadata.name, m]));
-      const missing = (validator as any).detectMissingDependencies(manifests, agentRegistry);
+      const missing = (validator as any).detectMissingDependencies(
+        manifests,
+        agentRegistry
+      );
 
       expect(missing).toHaveLength(0);
     });
@@ -1224,7 +1242,10 @@ describe('DependenciesValidator', () => {
       ];
 
       const agentRegistry = new Map(manifests.map((m) => [m.metadata.name, m]));
-      const violations = (validator as any).detectContractViolations(manifests, agentRegistry);
+      const violations = (validator as any).detectContractViolations(
+        manifests,
+        agentRegistry
+      );
 
       expect(violations).toHaveLength(0);
     });
@@ -1263,7 +1284,10 @@ describe('DependenciesValidator', () => {
       ];
 
       const agentRegistry = new Map(manifests.map((m) => [m.metadata.name, m]));
-      const violations = (validator as any).detectContractViolations(manifests, agentRegistry);
+      const violations = (validator as any).detectContractViolations(
+        manifests,
+        agentRegistry
+      );
 
       expect(violations).toHaveLength(1);
       expect(violations[0].agent).toBe('agent-a');
@@ -1305,7 +1329,10 @@ describe('DependenciesValidator', () => {
       ];
 
       const agentRegistry = new Map(manifests.map((m) => [m.metadata.name, m]));
-      const violations = (validator as any).detectContractViolations(manifests, agentRegistry);
+      const violations = (validator as any).detectContractViolations(
+        manifests,
+        agentRegistry
+      );
 
       expect(violations).toHaveLength(2);
     });
@@ -1337,7 +1364,10 @@ describe('DependenciesValidator', () => {
       ];
 
       const agentRegistry = new Map(manifests.map((m) => [m.metadata.name, m]));
-      const violations = (validator as any).detectContractViolations(manifests, agentRegistry);
+      const violations = (validator as any).detectContractViolations(
+        manifests,
+        agentRegistry
+      );
 
       expect(violations).toHaveLength(0);
     });
@@ -1366,7 +1396,10 @@ describe('DependenciesValidator', () => {
       ];
 
       const agentRegistry = new Map(manifests.map((m) => [m.metadata.name, m]));
-      const violations = (validator as any).detectContractViolations(manifests, agentRegistry);
+      const violations = (validator as any).detectContractViolations(
+        manifests,
+        agentRegistry
+      );
 
       expect(violations).toHaveLength(0);
     });
@@ -1401,7 +1434,10 @@ describe('DependenciesValidator', () => {
       ];
 
       const agentRegistry = new Map(manifests.map((m) => [m.metadata.name, m]));
-      const violations = (validator as any).detectContractViolations(manifests, agentRegistry);
+      const violations = (validator as any).detectContractViolations(
+        manifests,
+        agentRegistry
+      );
 
       expect(violations).toHaveLength(1);
     });
@@ -1440,7 +1476,10 @@ describe('DependenciesValidator', () => {
       ];
 
       const agentRegistry = new Map(manifests.map((m) => [m.metadata.name, m]));
-      const violations = (validator as any).detectContractViolations(manifests, agentRegistry);
+      const violations = (validator as any).detectContractViolations(
+        manifests,
+        agentRegistry
+      );
 
       expect(violations).toHaveLength(1);
     });
@@ -1497,7 +1536,10 @@ describe('DependenciesValidator', () => {
       ];
 
       const agentRegistry = new Map(manifests.map((m) => [m.metadata.name, m]));
-      const violations = (validator as any).detectContractViolations(manifests, agentRegistry);
+      const violations = (validator as any).detectContractViolations(
+        manifests,
+        agentRegistry
+      );
 
       expect(violations).toHaveLength(0);
     });
@@ -1540,7 +1582,10 @@ describe('DependenciesValidator', () => {
       ];
 
       const agentRegistry = new Map(manifests.map((m) => [m.metadata.name, m]));
-      const violations = (validator as any).detectContractViolations(manifests, agentRegistry);
+      const violations = (validator as any).detectContractViolations(
+        manifests,
+        agentRegistry
+      );
 
       expect(violations).toHaveLength(0);
     });
@@ -1800,7 +1845,9 @@ describe('DependenciesValidator', () => {
           metadata: { name: 'agent-a' },
           spec: {
             dependencies: {
-              agents: [{ name: 'shared-dep', version: '^1.0.0', required: true }],
+              agents: [
+                { name: 'shared-dep', version: '^1.0.0', required: true },
+              ],
             },
           },
         },
@@ -1810,7 +1857,9 @@ describe('DependenciesValidator', () => {
           metadata: { name: 'agent-b' },
           spec: {
             dependencies: {
-              agents: [{ name: 'shared-dep', version: '^1.0.0', required: true }],
+              agents: [
+                { name: 'shared-dep', version: '^1.0.0', required: true },
+              ],
             },
           },
         },

@@ -217,7 +217,7 @@ export interface MessageBroker {
   subscribe(
     channel: string,
     handler: MessageHandler,
-    options?: SubscriptionOptions,
+    options?: SubscriptionOptions
   ): Promise<string>;
 
   /**

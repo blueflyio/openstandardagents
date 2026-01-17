@@ -2,7 +2,7 @@
 # This manifest defines the project itself as an OSSA agent
 # Enables bidirectional sync with AGENTS.md and llms.txt
 
-apiVersion: ossa/v0.3.3
+apiVersion: ossa/v0.3.5
 kind: Agent
 metadata:
   name: openstandardagents-project

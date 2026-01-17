@@ -67,7 +67,11 @@ export const deployCommand = new Command('deploy')
     ) => {
       try {
         // Validate target
-        const validTargets: DeploymentTarget[] = ['local', 'docker', 'kubernetes'];
+        const validTargets: DeploymentTarget[] = [
+          'local',
+          'docker',
+          'kubernetes',
+        ];
         const target = options.target as DeploymentTarget;
         if (!validTargets.includes(target)) {
           console.error(
@@ -126,7 +130,9 @@ export const deployCommand = new Command('deploy')
         if (options.replicas) {
           const replicas = parseInt(options.replicas);
           if (isNaN(replicas) || replicas <= 0) {
-            console.error(chalk.red(`✗ Invalid replicas count: ${options.replicas}`));
+            console.error(
+              chalk.red(`✗ Invalid replicas count: ${options.replicas}`)
+            );
             process.exit(1);
           }
           deployConfig.replicas = replicas;
@@ -146,7 +152,9 @@ export const deployCommand = new Command('deploy')
         if (deployResult.success) {
           console.log(chalk.green(`\n✓ ${deployResult.message}`));
           if (deployResult.instanceId) {
-            console.log(chalk.cyan(`  Instance ID: ${deployResult.instanceId}`));
+            console.log(
+              chalk.cyan(`  Instance ID: ${deployResult.instanceId}`)
+            );
           }
           if (deployResult.endpoint) {
             console.log(chalk.cyan(`  Endpoint: ${deployResult.endpoint}`));
@@ -155,7 +163,9 @@ export const deployCommand = new Command('deploy')
             console.log(chalk.gray('\n  Deployment details:'));
             Object.entries(deployResult.metadata).forEach(([key, value]) => {
               console.log(
-                chalk.gray(`    ${key}: ${typeof value === 'object' ? JSON.stringify(value, null, 2).split('\n').join('\n    ') : value}`)
+                chalk.gray(
+                  `    ${key}: ${typeof value === 'object' ? JSON.stringify(value, null, 2).split('\n').join('\n    ') : value}`
+                )
               );
             });
           }
@@ -213,7 +223,11 @@ export const statusCommand = new Command('status')
       health?: boolean;
     }) => {
       try {
-        const validTargets: DeploymentTarget[] = ['local', 'docker', 'kubernetes'];
+        const validTargets: DeploymentTarget[] = [
+          'local',
+          'docker',
+          'kubernetes',
+        ];
         const target = options.target as DeploymentTarget;
         if (!validTargets.includes(target)) {
           console.error(chalk.red(`✗ Invalid target: ${options.target}`));
@@ -224,9 +238,7 @@ export const statusCommand = new Command('status')
 
         if (options.list) {
           // List all instances
-          console.log(
-            chalk.cyan.bold(`\nRunning Instances (${target}):\n`)
-          );
+          console.log(chalk.cyan.bold(`\nRunning Instances (${target}):\n`));
           const instances = await driver.listInstances();
 
           if (instances.length === 0) {
@@ -246,7 +258,9 @@ export const statusCommand = new Command('status')
             console.log(`    ID:       ${instance.id}`);
             console.log(`    Status:   ${statusColor(instance.status)}`);
             console.log(`    Version:  ${instance.version}`);
-            console.log(`    Deployed: ${new Date(instance.deployedAt).toLocaleString()}`);
+            console.log(
+              `    Deployed: ${new Date(instance.deployedAt).toLocaleString()}`
+            );
             if (instance.endpoint) {
               console.log(`    Endpoint: ${instance.endpoint}`);
             }
@@ -255,7 +269,9 @@ export const statusCommand = new Command('status')
               const healthColor = instance.health.healthy
                 ? chalk.green
                 : chalk.red;
-              console.log(`    Health:   ${healthColor(instance.health.status)}`);
+              console.log(
+                `    Health:   ${healthColor(instance.health.status)}`
+              );
               if (instance.health.metrics?.uptime !== undefined) {
                 console.log(
                   `    Uptime:   ${Math.floor(instance.health.metrics.uptime / 60)}m`
@@ -279,7 +295,9 @@ export const statusCommand = new Command('status')
                 : chalk.yellow;
           console.log(`  Status:   ${statusColor(instance.status)}`);
           console.log(`  Version:  ${instance.version}`);
-          console.log(`  Deployed: ${new Date(instance.deployedAt).toLocaleString()}`);
+          console.log(
+            `  Deployed: ${new Date(instance.deployedAt).toLocaleString()}`
+          );
           if (instance.endpoint) {
             console.log(`  Endpoint: ${instance.endpoint}`);
           }
@@ -353,7 +371,11 @@ export const rollbackCommand = new Command('rollback')
       }
     ) => {
       try {
-        const validTargets: DeploymentTarget[] = ['local', 'docker', 'kubernetes'];
+        const validTargets: DeploymentTarget[] = [
+          'local',
+          'docker',
+          'kubernetes',
+        ];
         const target = options.target as DeploymentTarget;
         if (!validTargets.includes(target)) {
           console.error(chalk.red(`✗ Invalid target: ${options.target}`));
@@ -410,7 +432,11 @@ export const stopCommand = new Command('stop')
       }
     ) => {
       try {
-        const validTargets: DeploymentTarget[] = ['local', 'docker', 'kubernetes'];
+        const validTargets: DeploymentTarget[] = [
+          'local',
+          'docker',
+          'kubernetes',
+        ];
         const target = options.target as DeploymentTarget;
         if (!validTargets.includes(target)) {
           console.error(chalk.red(`✗ Invalid target: ${options.target}`));

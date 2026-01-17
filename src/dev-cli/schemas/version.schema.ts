@@ -1,6 +1,6 @@
 /**
  * Version Management Zod Schemas
- * 
+ *
  * Generated from OpenAPI spec: openapi/dev-cli.openapi.yml
  * DRY: Single source of truth for version validation
  */
@@ -26,7 +26,9 @@ export const VersionReleaseResponseSchema = z.object({
 });
 
 export type VersionReleaseRequest = z.infer<typeof VersionReleaseRequestSchema>;
-export type VersionReleaseResponse = z.infer<typeof VersionReleaseResponseSchema>;
+export type VersionReleaseResponse = z.infer<
+  typeof VersionReleaseResponseSchema
+>;
 
 // ============================================================================
 // Version Validation
@@ -39,7 +41,9 @@ export const VersionValidateResponseSchema = z.object({
   details: z.record(z.string(), z.string()).optional(),
 });
 
-export type VersionValidateResponse = z.infer<typeof VersionValidateResponseSchema>;
+export type VersionValidateResponse = z.infer<
+  typeof VersionValidateResponseSchema
+>;
 
 // ============================================================================
 // Version Audit
@@ -103,11 +107,12 @@ export type VersionConfig = z.infer<typeof VersionConfigSchema>;
 export const SEMVER_PATTERN = /^(\d+)\.(\d+)\.(\d+)(?:-([a-zA-Z0-9.]+))?$/;
 
 /**
- * Pattern for matching {{VERSION}} placeholder
+ * Pattern for matching 0.3.4 placeholder
  */
 export const VERSION_PLACEHOLDER_PATTERN = /\{\{VERSION\}\}/g;
 
 /**
  * Pattern for matching hardcoded versions in files
  */
-export const HARDCODED_VERSION_PATTERN = /(?:version|VERSION|v)\s*[:=]\s*["']?(\d+\.\d+\.\d+(?:-[a-zA-Z0-9.]+)?)["']?/gi;
+export const HARDCODED_VERSION_PATTERN =
+  /(?:version|VERSION|v)\s*[:=]\s*["']?(\d+\.\d+\.\d+(?:-[a-zA-Z0-9.]+)?)["']?/gi;

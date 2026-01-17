@@ -1,4 +1,4 @@
-apiVersion: ossa/v0.3.3
+apiVersion: ossa/v0.3
 kind: Agent
 metadata:
   name: example-agent
@@ -8,11 +8,9 @@ metadata:
     module: ai_agents_ossa
     domain: example
 spec:
-  role: 'You are an example agent demonstrating OSSA integration with Drupal.
-
+  role: |
+    You are an example agent demonstrating OSSA integration with Drupal.
     This agent shows how to structure agents in Drupal modules.
-
-    '
   llm:
     provider: openai
     model: gpt-4-turbo
@@ -20,12 +18,12 @@ spec:
   taxonomy:
     domain: example
     capabilities:
-    - demonstrate-ossa
-    - drupal-integration
+      - demonstrate-ossa
+      - drupal-integration
   constraints:
     cost:
       maxTokensPerDay: 10000
-      maxCostPerDay: 1.0
+      maxCostPerDay: 1
       currency: USD
   observability:
     logging:

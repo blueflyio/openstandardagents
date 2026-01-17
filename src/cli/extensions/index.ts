@@ -68,7 +68,9 @@ export function getRegisteredExtensions(): string[] {
 /**
  * Load a specific extension by name
  */
-export async function loadExtension(name: string): Promise<OSSAExtension | undefined> {
+export async function loadExtension(
+  name: string
+): Promise<OSSAExtension | undefined> {
   const loader = extensionRegistry.get(name);
   if (!loader) return undefined;
 
@@ -101,7 +103,10 @@ registerExtension('gitlab', async () => {
  */
 export function shouldLoadExtensions(): boolean {
   // Check environment variable
-  if (process.env.OSSA_EXTENSIONS === 'true' || process.env.OSSA_EXTENSIONS === '1') {
+  if (
+    process.env.OSSA_EXTENSIONS === 'true' ||
+    process.env.OSSA_EXTENSIONS === '1'
+  ) {
     return true;
   }
 
@@ -162,7 +167,9 @@ export function printExtensionStatus(extensions: OSSAExtension[]): void {
 
   console.log(chalk.gray('\nLoaded extensions:'));
   extensions.forEach((ext) => {
-    console.log(chalk.gray(`  • ${ext.name} v${ext.version} - ${ext.description}`));
+    console.log(
+      chalk.gray(`  • ${ext.name} v${ext.version} - ${ext.description}`)
+    );
   });
 }
 

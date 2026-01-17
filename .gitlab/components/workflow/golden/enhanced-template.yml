@@ -71,7 +71,12 @@ variables:
   BUILDKIT_CLI: 'buildkit' # Short form of agent-buildkit
   AGENT_BUILDKIT_CLI: 'agent-buildkit' # Full form
   OPS_CLI: 'ops'
-  OSSA_CLI: 'node /Users/flux423/Sites/LLM/OSSA/dist/cli/index.js'
+  # Use globally installed package for CI/CD portability across all runner environments
+  # Alternative: Use 'ossa' directly if @bluefly/openstandardagents is pre-installed in PATH
+  OSSA_CLI: 'npx @bluefly/openstandardagents'
+
+  # GitLab Project References
+  AGENT_BUILDKIT_PROJECT: 'blueflyio/agent-platform/agent-buildkit'
 
   # Agent Configuration
   MAX_AGENTS: '5'
@@ -420,8 +425,8 @@ integrate:feature:
   needs: ['quality:gates']
   before_script:
     - apk add --no-cache git
-    - git config user.email "thomas.scola@bluefly.io"
-    - git config user.name "Bluefly.io Founder & creator of OssA"
+    - git config user.email "${GIT_AUTHOR_EMAIL:-ci@bluefly.io}"
+    - git config user.name "${GIT_AUTHOR_NAME:-Bluefly CI}"
   script:
     - |
       echo "🔀 Auto-merging to development..."
@@ -455,7 +460,7 @@ integrate:sync:
 
       # Use ops for cross-project sync
       $OPS_CLI sync --source "$CI_PROJECT_PATH" \
-               --targets "agent_buildkit,common_npm/*" || true
+               --targets "@bluefly/agent-buildkit" || true
 
       # Trigger dependent pipelines
       if [ "$PIPELINE_TYPE" = "development" ]; then
@@ -464,7 +469,7 @@ integrate:sync:
           -F token="$CI_JOB_TOKEN" \
           -F ref=development \
           -F "variables[UPSTREAM_PROJECT]=$CI_PROJECT_PATH" \
-          "https://$CI_SERVER_HOST/api/v4/projects/$AGENT_BUILDKIT_PROJECT_ID/trigger/pipeline" || true
+          "https://$CI_SERVER_HOST/api/v4/projects/$AGENT_BUILDKIT_PROJECT/trigger/pipeline" || true
       fi
 
       echo "INFO: Cross-project sync complete"

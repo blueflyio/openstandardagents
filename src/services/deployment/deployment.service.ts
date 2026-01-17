@@ -36,7 +36,8 @@ export class DeploymentService {
       status: 'deployed',
     };
 
-    const { ManifestRepository } = await import('../../repositories/manifest.repository.js');
+    const { ManifestRepository } =
+      await import('../../repositories/manifest.repository.js');
     const repo = new ManifestRepository();
     await repo.save(manifestPath, manifest);
   }
@@ -67,7 +68,8 @@ export class DeploymentService {
       status: 'deployed',
     };
 
-    const { ManifestRepository } = await import('../../repositories/manifest.repository.js');
+    const { ManifestRepository } =
+      await import('../../repositories/manifest.repository.js');
     const repo = new ManifestRepository();
     await repo.save(manifestPath, manifest);
   }
@@ -124,7 +126,8 @@ export class DeploymentService {
       manifest.metadata.lifecycle.deprecation.replacement = replacement;
     }
 
-    const { ManifestRepository } = await import('../../repositories/manifest.repository.js');
+    const { ManifestRepository } =
+      await import('../../repositories/manifest.repository.js');
     const repo = new ManifestRepository();
     await repo.save(manifestPath, manifest);
   }

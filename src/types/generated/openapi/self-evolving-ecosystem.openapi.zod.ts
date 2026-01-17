@@ -2,7 +2,7 @@
  * Self-Evolving Agent Ecosystem API - Zod Schemas
  *
  * AUTO-GENERATED - DO NOT EDIT
- * Generated from: /Users/flux423/Sites/LLM/OssA/openstandardagents/openapi/reference-implementations/self-evolving-ecosystem.openapi.yaml
+ * Generated from: openapi/reference-implementations/self-evolving-ecosystem.openapi.yaml
  * OSSA Version: 0.3.3
  * API Version: ossa/v0.3.3
  * Generated on: 2026-01-06T18:11:54.182Z

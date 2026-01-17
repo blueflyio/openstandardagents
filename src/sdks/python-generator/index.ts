@@ -10,8 +10,13 @@
 
 export interface PythonSDKClient {
   loadManifest(filePath: string): Promise<unknown>;
-  validateManifest(manifest: unknown): Promise<{ valid: boolean; errors: string[] }>;
-  exportManifest(manifest: unknown, format: 'yaml' | 'json' | 'python'): Promise<string>;
+  validateManifest(
+    manifest: unknown
+  ): Promise<{ valid: boolean; errors: string[] }>;
+  exportManifest(
+    manifest: unknown,
+    format: 'yaml' | 'json' | 'python'
+  ): Promise<string>;
 }
 
 // Python SDK integration would go here

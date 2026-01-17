@@ -42,10 +42,14 @@ const lintRules: LintRule[] = [
     severity: 'error',
     check: (manifest: OssaAgent) => {
       const issues: LintIssue[] = [];
-      if (manifest.spec?.llm?.model && !manifest.spec.llm.model.includes('${')) {
+      if (
+        manifest.spec?.llm?.model &&
+        !manifest.spec.llm.model.includes('${')
+      ) {
         issues.push({
           rule: 'no-hardcoded-models',
-          message: 'Model name should use environment variable (e.g., ${LLM_MODEL:-gpt-4})',
+          message:
+            'Model name should use environment variable (e.g., ${LLM_MODEL:-gpt-4})',
           severity: 'error',
           path: 'spec.llm.model',
           fix: `Replace with: \${LLM_MODEL:-${manifest.spec.llm.model}}`,
@@ -142,8 +146,9 @@ const lintRules: LintRule[] = [
     check: (manifest: OssaAgent) => {
       const issues: LintIssue[] = [];
       const labels = manifest.metadata?.labels || {};
-      const isProduction = Object.values(labels).some((v: unknown) => 
-        typeof v === 'string' && v.toLowerCase().includes('production')
+      const isProduction = Object.values(labels).some(
+        (v: unknown) =>
+          typeof v === 'string' && v.toLowerCase().includes('production')
       );
       if (isProduction && !manifest.spec?.constraints?.cost) {
         issues.push({
@@ -159,12 +164,23 @@ const lintRules: LintRule[] = [
 ];
 
 export const lintCommand = new Command('lint')
-  .argument('[paths...]', 'Paths to OSSA manifests (default: current directory)')
+  .argument(
+    '[paths...]',
+    'Paths to OSSA manifests (default: current directory)'
+  )
   .option('--fix', 'Auto-fix issues where possible')
   .option('--rule <rule>', 'Run specific rule only')
-  .option('--format <format>', 'Output format (default, json, sarif)', 'default')
+  .option(
+    '--format <format>',
+    'Output format (default, json, sarif)',
+    'default'
+  )
   .option('-o, --output <file>', 'Output file (for json/sarif formats)')
-  .option('--max-warnings <number>', 'Maximum warnings before exit with error', '0')
+  .option(
+    '--max-warnings <number>',
+    'Maximum warnings before exit with error',
+    '0'
+  )
   .description('Lint OSSA agent manifests against best practices')
   .action(
     async (
@@ -252,7 +268,8 @@ export const lintCommand = new Command('lint')
           // SARIF format for CI integration
           const sarif = {
             version: '2.1.0',
-            $schema: 'https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json',
+            $schema:
+              'https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json',
             runs: [
               {
                 tool: {
@@ -263,7 +280,12 @@ export const lintCommand = new Command('lint')
                 },
                 results: allIssues.map((issue) => ({
                   ruleId: issue.rule,
-                  level: issue.severity === 'error' ? 'error' : issue.severity === 'warning' ? 'warning' : 'note',
+                  level:
+                    issue.severity === 'error'
+                      ? 'error'
+                      : issue.severity === 'warning'
+                        ? 'warning'
+                        : 'note',
                   message: {
                     text: issue.message,
                   },
@@ -282,13 +304,17 @@ export const lintCommand = new Command('lint')
           };
           if (options.output) {
             fs.writeFileSync(options.output, JSON.stringify(sarif, null, 2));
-            console.log(chalk.green(`SARIF results written to ${options.output}`));
+            console.log(
+              chalk.green(`SARIF results written to ${options.output}`)
+            );
           } else {
             outputJSON(sarif);
           }
         } else {
           // Default format
-          console.log(chalk.blue(`\nLinting ${filesToLint.length} file(s)...\n`));
+          console.log(
+            chalk.blue(`\nLinting ${filesToLint.length} file(s)...\n`)
+          );
 
           if (allIssues.length === 0) {
             console.log(chalk.green('No linting issues found!'));
@@ -311,7 +337,12 @@ export const lintCommand = new Command('lint')
                     : issue.severity === 'warning'
                       ? chalk.yellow
                       : chalk.blue;
-                const icon = issue.severity === 'error' ? '✗' : issue.severity === 'warning' ? '⚠' : 'ℹ';
+                const icon =
+                  issue.severity === 'error'
+                    ? '✗'
+                    : issue.severity === 'warning'
+                      ? '⚠'
+                      : 'ℹ';
                 console.log(
                   color(`  ${icon} [${issue.rule}] ${issue.message}`) +
                     (issue.path ? chalk.gray(` (${issue.path})`) : '') +

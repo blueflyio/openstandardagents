@@ -61,14 +61,14 @@ Just as OpenAPI standardized REST API contracts, OSSA v0.4.0 will standardize ag
 |-------|-------|---------|-------|--------|
 | [#132](https://gitlab.com/blueflyio/openstandardagents/-/issues/132) | Agent-to-Agent Messaging Extension | v0.3.0 | 1 | 🔄 In Progress |
 | [#133](https://gitlab.com/blueflyio/openstandardagents/-/issues/133) | Enhanced Task/Workflow Schema | v0.3.0 | 1 | 🔄 In Progress |
-| [#96](https://gitlab.com/blueflyio/openstandardagents/-/issues/96) | Knowledge Sources Extension | v0.3.3 | 4 | ⚪ Closed |
+| [#96](https://gitlab.com/blueflyio/openstandardagents/-/issues/96) | Knowledge Sources Extension | v0.3.4 | 4 | ⚪ Closed |
 | [Epic #9](https://gitlab.com/groups/blueflyio/-/epics/9) | Unified Task Schema | v0.4.0 | 4 | ⚪ Not Started |
 
 ### Implementation Issues
 
 | Issue | Title | Version | Phase | Status |
 |-------|-------|---------|-------|--------|
-| [#126](https://gitlab.com/blueflyio/openstandardagents/-/issues/126) | Symfony Messenger Adapter | v0.3.3 | 2 | ⚪ Closed |
+| [#126](https://gitlab.com/blueflyio/openstandardagents/-/issues/126) | Symfony Messenger Adapter | v0.3.4 | 2 | ⚪ Closed |
 | TBD | API Normalizer OSSA Integration | v0.1.x | 2-3 | ⚪ Not Started |
 
 ---

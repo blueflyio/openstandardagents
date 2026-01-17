@@ -96,7 +96,11 @@ export type ExpertiseDomain =
 /**
  * Expertise level
  */
-export type ExpertiseLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';
+export type ExpertiseLevel =
+  | 'beginner'
+  | 'intermediate'
+  | 'advanced'
+  | 'expert';
 
 /**
  * Detailed expertise configuration
@@ -147,11 +151,19 @@ export interface BehavioralTraits {
   /** How the agent handles uncertainty */
   uncertainty_handling?: 'acknowledge' | 'investigate' | 'defer' | 'estimate';
   /** How the agent responds to errors */
-  error_response?: 'apologetic' | 'matter-of-fact' | 'solution-focused' | 'detailed';
+  error_response?:
+    | 'apologetic'
+    | 'matter-of-fact'
+    | 'solution-focused'
+    | 'detailed';
   /** Proactivity level */
   proactivity?: 'reactive' | 'suggestive' | 'proactive' | 'autonomous';
   /** Collaboration style */
-  collaboration?: 'independent' | 'consultative' | 'collaborative' | 'deferential';
+  collaboration?:
+    | 'independent'
+    | 'consultative'
+    | 'collaborative'
+    | 'deferential';
   /** Detail orientation */
   detail_orientation?: 'high-level' | 'balanced' | 'detailed' | 'comprehensive';
   /** Risk tolerance */
@@ -220,7 +232,9 @@ export interface PersonalitySpec {
 /**
  * Check if a value is a ToneConfig object
  */
-export function isToneConfig(tone: TonePreset | ToneConfig): tone is ToneConfig {
+export function isToneConfig(
+  tone: TonePreset | ToneConfig
+): tone is ToneConfig {
   return typeof tone === 'object' && tone !== null;
 }
 
@@ -230,7 +244,9 @@ export function isToneConfig(tone: TonePreset | ToneConfig): tone is ToneConfig 
 export function isExpertiseEntry(
   expertise: ExpertiseDomain | string | ExpertiseEntry
 ): expertise is ExpertiseEntry {
-  return typeof expertise === 'object' && expertise !== null && 'domain' in expertise;
+  return (
+    typeof expertise === 'object' && expertise !== null && 'domain' in expertise
+  );
 }
 
 /**

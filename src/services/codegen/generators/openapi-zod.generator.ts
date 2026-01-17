@@ -1,8 +1,8 @@
 /**
  * OpenAPI → Zod Generator
- * 
+ *
  * DRY, SOLID, ZOD, OPENAPI-FIRST
- * 
+ *
  * Generates Zod schemas from OpenAPI 3.1 specs in openapi/ directory.
  * This is the SINGLE SOURCE OF TRUTH - OpenAPI specs drive everything.
  */
@@ -11,7 +11,11 @@ import { injectable } from 'inversify';
 import * as fs from 'fs';
 import * as path from 'path';
 import { glob } from 'glob';
-import type { Generator, GenerateResult, DriftReport } from '../codegen.service.js';
+import type {
+  Generator,
+  GenerateResult,
+  DriftReport,
+} from '../codegen.service.js';
 import { getVersion, getApiVersion } from '../../../utils/version.js';
 import { safeParseYAML } from '../../../utils/yaml-parser.js';
 
@@ -57,7 +61,10 @@ export class OpenAPIZodGenerator implements Generator {
   name = 'openapi-zod';
 
   private readonly openapiDir = path.join(process.cwd(), 'openapi');
-  private readonly outputDir = path.join(process.cwd(), 'src/types/generated/openapi');
+  private readonly outputDir = path.join(
+    process.cwd(),
+    'src/types/generated/openapi'
+  );
 
   /**
    * Generate Zod schemas from all OpenAPI specs
@@ -89,24 +96,35 @@ export class OpenAPIZodGenerator implements Generator {
     // Generate Zod from shared schemas first (must be done before individual files)
     const sharedSchemasPath = path.join(this.openapiDir, 'schemas/common');
     if (fs.existsSync(sharedSchemasPath)) {
-      const sharedResult = await this.generateFromSharedSchemas(sharedSchemasPath, version, apiVersion, dryRun);
+      const sharedResult = await this.generateFromSharedSchemas(
+        sharedSchemasPath,
+        version,
+        apiVersion,
+        dryRun
+      );
       result.filesCreated += sharedResult.filesCreated;
       result.filesUpdated += sharedResult.filesUpdated;
       result.errors.push(...sharedResult.errors);
     }
 
-
     // Generate Zod from each OpenAPI spec
     for (const file of openapiFiles) {
       try {
-        const fileResult = await this.generateFromFile(file, version, apiVersion, dryRun);
+        const fileResult = await this.generateFromFile(
+          file,
+          version,
+          apiVersion,
+          dryRun
+        );
         result.filesCreated += fileResult.filesCreated;
         result.filesUpdated += fileResult.filesUpdated;
         if (fileResult.errors.length > 0) {
           result.errors.push(`${file}: ${fileResult.errors.join(', ')}`);
         }
       } catch (error) {
-        result.errors.push(`${file}: ${error instanceof Error ? error.message : String(error)}`);
+        result.errors.push(
+          `${file}: ${error instanceof Error ? error.message : String(error)}`
+        );
       }
     }
 
@@ -176,13 +194,22 @@ export class OpenAPIZodGenerator implements Generator {
           Object.assign(allSchemas, spec.components.schemas);
         }
       } catch (error) {
-        result.errors.push(`${file}: ${error instanceof Error ? error.message : String(error)}`);
+        result.errors.push(
+          `${file}: ${error instanceof Error ? error.message : String(error)}`
+        );
       }
     }
 
     if (Object.keys(allSchemas).length > 0) {
       const outputPath = path.join(this.outputDir, 'common-schemas.zod.ts');
-      const content = this.generateZodFile(allSchemas, 'Common Shared Schemas', version, apiVersion, undefined, dryRun);
+      const content = this.generateZodFile(
+        allSchemas,
+        'Common Shared Schemas',
+        version,
+        apiVersion,
+        undefined,
+        dryRun
+      );
 
       if (!dryRun) {
         fs.writeFileSync(outputPath, content, 'utf8');
@@ -215,7 +242,10 @@ export class OpenAPIZodGenerator implements Generator {
       const content = fs.readFileSync(filePath, 'utf8');
       const spec = safeParseYAML<OpenAPISpec>(content);
 
-      if (!spec.components?.schemas || Object.keys(spec.components.schemas).length === 0) {
+      if (
+        !spec.components?.schemas ||
+        Object.keys(spec.components.schemas).length === 0
+      ) {
         return result;
       }
 
@@ -242,7 +272,9 @@ export class OpenAPIZodGenerator implements Generator {
         result.filesCreated = 1;
       }
     } catch (error) {
-      result.errors.push(error instanceof Error ? error.message : String(error));
+      result.errors.push(
+        error instanceof Error ? error.message : String(error)
+      );
     }
 
     return result;
@@ -262,12 +294,17 @@ export class OpenAPIZodGenerator implements Generator {
     const lines: string[] = [];
     const refs = new Map<string, string>();
 
+    // Convert absolute path to relative path from project root
+    const relativeSourceFile = sourceFile
+      ? path.relative(process.cwd(), sourceFile)
+      : 'shared schemas';
+
     // Header
     lines.push('/**');
     lines.push(` * ${title} - Zod Schemas`);
     lines.push(' *');
     lines.push(' * AUTO-GENERATED - DO NOT EDIT');
-    lines.push(` * Generated from: ${sourceFile || 'shared schemas'}`);
+    lines.push(` * Generated from: ${relativeSourceFile}`);
     lines.push(` * OSSA Version: ${version}`);
     lines.push(` * API Version: ${apiVersion}`);
     lines.push(` * Generated on: ${new Date().toISOString()}`);
@@ -276,14 +313,17 @@ export class OpenAPIZodGenerator implements Generator {
     lines.push(' */');
     lines.push('');
     lines.push("import { z } from 'zod';");
-    
+
     // Import common schemas if this is not the common schemas file itself
     if (sourceFile && !sourceFile.includes('schemas/common')) {
-      const commonSchemasPath = path.join(this.outputDir, 'common-schemas.zod.ts');
+      const commonSchemasPath = path.join(
+        this.outputDir,
+        'common-schemas.zod.ts'
+      );
       // Always import in generated files (common schemas generated first)
       lines.push("import * as CommonSchemas from './common-schemas.zod';");
     }
-    
+
     lines.push('');
 
     // First pass: collect schema names
@@ -292,9 +332,13 @@ export class OpenAPIZodGenerator implements Generator {
     }
 
     // Second pass: generate schemas
-    lines.push('// ============================================================================');
+    lines.push(
+      '// ============================================================================'
+    );
     lines.push('// Component Schemas');
-    lines.push('// ============================================================================');
+    lines.push(
+      '// ============================================================================'
+    );
     lines.push('');
 
     for (const [name, schema] of Object.entries(schemas)) {
@@ -333,7 +377,10 @@ export class OpenAPIZodGenerator implements Generator {
         return refs.get(refName)!;
       }
       // External ref to shared schemas
-      if (schema.$ref.includes('../schemas/common/') || schema.$ref.includes('schemas/common/')) {
+      if (
+        schema.$ref.includes('../schemas/common/') ||
+        schema.$ref.includes('schemas/common/')
+      ) {
         const parts = schema.$ref.split('#/components/schemas/');
         if (parts.length > 1) {
           const refSchema = parts[1];
@@ -400,15 +447,30 @@ export class OpenAPIZodGenerator implements Generator {
           zodSchema = 'z.boolean()';
           break;
         case 'array':
-          zodSchema = this.generateArraySchema(schema, schemaName, refs, visited);
+          zodSchema = this.generateArraySchema(
+            schema,
+            schemaName,
+            refs,
+            visited
+          );
           break;
         case 'object':
-          zodSchema = this.generateObjectSchema(schema, schemaName, refs, visited);
+          zodSchema = this.generateObjectSchema(
+            schema,
+            schemaName,
+            refs,
+            visited
+          );
           break;
         default:
           // Implicit object from properties
           if (schema.properties) {
-            zodSchema = this.generateObjectSchema(schema, schemaName, refs, visited);
+            zodSchema = this.generateObjectSchema(
+              schema,
+              schemaName,
+              refs,
+              visited
+            );
           } else {
             zodSchema = 'z.unknown()';
           }
@@ -495,7 +557,12 @@ export class OpenAPIZodGenerator implements Generator {
     visited: Set<string>
   ): string {
     if (schema.items) {
-      const itemSchema = this.toZodSchema(schema.items, `${schemaName}Item`, refs, new Set(visited));
+      const itemSchema = this.toZodSchema(
+        schema.items,
+        `${schemaName}Item`,
+        refs,
+        new Set(visited)
+      );
       return `z.array(${itemSchema})`;
     }
     return 'z.array(z.unknown())';
@@ -518,7 +585,12 @@ export class OpenAPIZodGenerator implements Generator {
         return 'z.record(z.string(), z.unknown())';
       }
       if (typeof schema.additionalProperties === 'object') {
-        const valueSchema = this.toZodSchema(schema.additionalProperties, `${schemaName}Value`, refs, new Set(visited));
+        const valueSchema = this.toZodSchema(
+          schema.additionalProperties,
+          `${schemaName}Value`,
+          refs,
+          new Set(visited)
+        );
         return `z.record(z.string(), ${valueSchema})`;
       }
       return 'z.record(z.string(), z.unknown())';
@@ -527,7 +599,12 @@ export class OpenAPIZodGenerator implements Generator {
     const props: string[] = [];
     for (const [key, propSchema] of Object.entries(schema.properties)) {
       const isRequired = schema.required?.includes(key) ?? false;
-      const propZod = this.toZodSchema(propSchema, `${schemaName}${this.capitalize(key)}`, refs, new Set(visited));
+      const propZod = this.toZodSchema(
+        propSchema,
+        `${schemaName}${this.capitalize(key)}`,
+        refs,
+        new Set(visited)
+      );
       if (isRequired) {
         props.push(`  ${key}: ${propZod}`);
       } else {
@@ -541,7 +618,12 @@ export class OpenAPIZodGenerator implements Generator {
     if (schema.additionalProperties === false) {
       objectSchema += '.strict()';
     } else if (typeof schema.additionalProperties === 'object') {
-      const valueSchema = this.toZodSchema(schema.additionalProperties, `${schemaName}Additional`, refs, new Set(visited));
+      const valueSchema = this.toZodSchema(
+        schema.additionalProperties,
+        `${schemaName}Additional`,
+        refs,
+        new Set(visited)
+      );
       objectSchema += `.passthrough().catchall(${valueSchema})`;
     }
 

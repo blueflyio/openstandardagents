@@ -1,21 +1,61 @@
 /**
- * AutoGen Platform Validator
- * Validates AutoGen-specific extension configuration
+ * AutoGen (AG2) Platform Validator
+ * Validates AG2/AutoGen-specific extension configuration
  */
 
 import { injectable } from 'inversify';
 import type { ErrorObject } from 'ajv';
 import type { OssaAgent, ValidationResult } from '../../types/index.js';
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+
+// Load AG2 schema
+const ag2SchemaPath = join(
+  process.cwd(),
+  'spec/v0.3/extensions/ag2/ag2.schema.json'
+);
+const ag2Schema = JSON.parse(readFileSync(ag2SchemaPath, 'utf-8'));
 
 @injectable()
 export class AutoGenValidator {
+  private ajv: Ajv;
+  private validateAG2: ReturnType<Ajv['compile']>;
+
+  constructor() {
+    this.ajv = new Ajv({ allErrors: true, strict: false });
+    addFormats(this.ajv);
+    this.validateAG2 = this.ajv.compile(ag2Schema);
+  }
+
   validate(manifest: OssaAgent): ValidationResult {
     const errors: ErrorObject[] = [];
     const warnings: string[] = [];
 
-    const autogenExt = manifest.extensions?.autogen as Record<string, unknown> | undefined;
-    if (!autogenExt || (autogenExt.enabled as boolean | undefined) === false) {
+    // Support both 'autogen' and 'ag2' keys
+    const autogenExt = (manifest.extensions?.autogen ||
+      manifest.extensions?.ag2) as Record<string, unknown> | undefined;
+
+    if (!autogenExt) {
       return { valid: true, errors: [], warnings: [] };
+    }
+
+    // Validate against AG2 extension schema
+    const valid = this.validateAG2(autogenExt);
+    if (!valid) {
+      const schemaErrors = this.validateAG2.errors || [];
+      const extKey = manifest.extensions?.autogen ? 'autogen' : 'ag2';
+      errors.push(
+        ...schemaErrors.map((err: ErrorObject) => ({
+          ...err,
+          instancePath: `/extensions/${extKey}${err.instancePath}`,
+        }))
+      );
+    }
+
+    if ((autogenExt.enabled as boolean | undefined) === false) {
+      return { valid: errors.length === 0, errors, warnings };
     }
 
     // Validate agent_type
@@ -44,9 +84,14 @@ export class AutoGenValidator {
     }
 
     // Validate max_consecutive_auto_reply if provided
-    const maxConsecutiveAutoReply = autogenExt.max_consecutive_auto_reply as number | undefined;
+    const maxConsecutiveAutoReply = autogenExt.max_consecutive_auto_reply as
+      | number
+      | undefined;
     if (maxConsecutiveAutoReply !== undefined) {
-      if (typeof maxConsecutiveAutoReply !== 'number' || maxConsecutiveAutoReply < 0) {
+      if (
+        typeof maxConsecutiveAutoReply !== 'number' ||
+        maxConsecutiveAutoReply < 0
+      ) {
         errors.push({
           instancePath: '/extensions/autogen/max_consecutive_auto_reply',
           schemaPath: '',
@@ -105,7 +150,9 @@ export class AutoGenValidator {
     }
 
     if (agentType === 'assistant' && maxConsecutiveAutoReply === undefined) {
-      warnings.push('Best practice: Set max_consecutive_auto_reply for AutoGen assistant agents');
+      warnings.push(
+        'Best practice: Set max_consecutive_auto_reply for AutoGen assistant agents'
+      );
     }
 
     return {

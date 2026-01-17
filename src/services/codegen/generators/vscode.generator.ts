@@ -11,7 +11,11 @@
 import { injectable } from 'inversify';
 import * as fs from 'fs';
 import * as path from 'path';
-import type { Generator, GenerateResult, DriftReport } from '../codegen.service.js';
+import type {
+  Generator,
+  GenerateResult,
+  DriftReport,
+} from '../codegen.service.js';
 import { getVersion, getApiVersion } from '../../../utils/version.js';
 
 @injectable()
@@ -47,12 +51,19 @@ export class VSCodeGenerator implements Generator {
       }
 
       try {
-        const updated = await this.updateFile(filePath, apiVersion, version, dryRun);
+        const updated = await this.updateFile(
+          filePath,
+          apiVersion,
+          version,
+          dryRun
+        );
         if (updated) {
           result.filesUpdated++;
         }
       } catch (error) {
-        result.errors.push(`${relativePath}: ${error instanceof Error ? error.message : String(error)}`);
+        result.errors.push(
+          `${relativePath}: ${error instanceof Error ? error.message : String(error)}`
+        );
       }
     }
 
@@ -64,14 +75,17 @@ export class VSCodeGenerator implements Generator {
    */
   async listTargetFiles(): Promise<string[]> {
     return this.targetFiles
-      .map(f => path.join(process.cwd(), f))
-      .filter(f => fs.existsSync(f));
+      .map((f) => path.join(process.cwd(), f))
+      .filter((f) => fs.existsSync(f));
   }
 
   /**
    * Check for version drift
    */
-  async checkDrift(version: string, apiVersion: string): Promise<DriftReport['filesWithOldVersion']> {
+  async checkDrift(
+    version: string,
+    apiVersion: string
+  ): Promise<DriftReport['filesWithOldVersion']> {
     const drift: DriftReport['filesWithOldVersion'] = [];
 
     for (const relativePath of this.targetFiles) {
@@ -131,7 +145,11 @@ export class VSCodeGenerator implements Generator {
   /**
    * Update JSON file - replace old version patterns
    */
-  private updateJsonFile(content: string, apiVersion: string, version: string): string {
+  private updateJsonFile(
+    content: string,
+    apiVersion: string,
+    version: string
+  ): string {
     let updated = content;
 
     // Replace ossa/v0.x.x patterns
@@ -171,17 +189,14 @@ export class VSCodeGenerator implements Generator {
     );
 
     // Replace 'v0.x.x' default values
-    updated = updated.replace(
-      /['"]v\d+\.\d+\.\d+['"]/g,
-      (match) => {
-        // Only replace if it looks like an OSSA version
-        if (match.includes("v0.3") || match.includes("v0.2")) {
-          // apiVersion is "ossa/v0.3.3", so .replace('ossa/', '') gives "v0.3.3"
-          return `'${apiVersion.replace('ossa/', '')}'`;
-        }
-        return match;
+    updated = updated.replace(/['"]v\d+\.\d+\.\d+['"]/g, (match) => {
+      // Only replace if it looks like an OSSA version
+      if (match.includes('v0.3') || match.includes('v0.2')) {
+        // apiVersion is "ossa/v0.3.3", so .replace('ossa/', '') gives "v0.3.3"
+        return `'${apiVersion.replace('ossa/', '')}'`;
       }
-    );
+      return match;
+    });
 
     return updated;
   }
@@ -189,7 +204,10 @@ export class VSCodeGenerator implements Generator {
   /**
    * Find old version patterns in content
    */
-  private findOldVersions(content: string, currentApiVersion: string): string[] {
+  private findOldVersions(
+    content: string,
+    currentApiVersion: string
+  ): string[] {
     const versions: string[] = [];
     const currentBase = currentApiVersion.replace('ossa/', '');
 

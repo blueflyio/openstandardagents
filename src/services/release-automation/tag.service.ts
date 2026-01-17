@@ -35,14 +35,17 @@ export class TagService extends BaseCrudService<
   TagFilter
 > {
   protected createSchema = CreateTagRequestSchema;
-  protected updateSchema = z.never() as z.ZodNever; // Tags cannot be updated
+  protected updateSchema = z.never(); // Tags cannot be updated
   protected filterSchema = TagFilterSchema;
   protected entitySchema = TagSchema;
 
   private gitlab: InstanceType<typeof Gitlab>;
   private projectId: string | number;
 
-  constructor(gitlabToken: string, projectId: string | number = process.env.CI_PROJECT_ID || '') {
+  constructor(
+    gitlabToken: string,
+    projectId: string | number = process.env.CI_PROJECT_ID || ''
+  ) {
     super();
     this.gitlab = new Gitlab({ token: gitlabToken });
     this.projectId = projectId;
@@ -62,9 +65,14 @@ export class TagService extends BaseCrudService<
       }
 
       // Create tag via GitLab API
-      const tag = await this.gitlab.Tags.create(this.projectId, validated.name, validated.ref, {
-        message: validated.message || `Tag ${validated.name}`,
-      });
+      const tag = await this.gitlab.Tags.create(
+        this.projectId,
+        validated.name,
+        validated.ref,
+        {
+          message: validated.message || `Tag ${validated.name}`,
+        }
+      );
 
       const result: Tag = {
         name: tag.name,
@@ -106,7 +114,8 @@ export class TagService extends BaseCrudService<
         version: this.extractVersion(tag.name),
         commitSha: tag.commit?.id || '',
         message: tag.message || '',
-        createdAt: (tag as { createdAt?: string }).createdAt || new Date().toISOString(),
+        createdAt:
+          (tag as { createdAt?: string }).createdAt || new Date().toISOString(),
         ref: (tag as { target?: string }).target || 'unknown',
       };
 

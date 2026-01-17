@@ -79,7 +79,9 @@ export class SchemaRepository implements ISchemaRepository {
 
     // Load schema from filesystem
     if (!fs.existsSync(schemaPath)) {
-      throw new Error(`Schema not found for version ${version} at ${schemaPath}`);
+      throw new Error(
+        `Schema not found for version ${version} at ${schemaPath}`
+      );
     }
 
     const schemaContent = fs.readFileSync(schemaPath, 'utf-8');
@@ -99,14 +101,23 @@ export class SchemaRepository implements ISchemaRepository {
   private getSchemaPath(version: SchemaVersion): string {
     const ossaRoot = this.findOssaRoot();
 
+    // Extract minor version for directory lookup (e.g., "0.3.5" -> "0.3")
+    const parts = version.split('.');
+    const minorVersion =
+      parts.length >= 2 ? `${parts[0]}.${parts[1]}` : version;
+
     // Try multiple naming patterns for schema files in both dist/spec and spec directories
     const possiblePaths = [
-      // Try dist/spec first (for built/published package)
+      // Try exact version directory first (backwards compatibility)
       `dist/spec/v${version}/ossa-${version}.schema.json`,
       `dist/spec/v${version}/ossa-v${version}.schema.json`,
-      // Then try source spec (for development)
       `spec/v${version}/ossa-${version}.schema.json`,
       `spec/v${version}/ossa-v${version}.schema.json`,
+      // Try minor version directory with patch-level schema file (new pattern)
+      `dist/spec/v${minorVersion}/ossa-${version}.schema.json`,
+      `dist/spec/v${minorVersion}/ossa-v${version}.schema.json`,
+      `spec/v${minorVersion}/ossa-${version}.schema.json`,
+      `spec/v${minorVersion}/ossa-v${version}.schema.json`,
     ];
 
     // Try each pattern
@@ -147,25 +158,36 @@ export class SchemaRepository implements ISchemaRepository {
 
     for (const entry of entries) {
       if (entry.isDirectory() && entry.name.startsWith('v')) {
-        // Extract version from directory name (e.g., "v0.2.5-RC" -> "0.2.5-RC")
-        const version = entry.name.substring(1);
+        // Extract version from directory name (e.g., "v0.3" -> "0.3")
+        const dirVersion = entry.name.substring(1);
 
-        // Check if schema file exists for this version
-        const schemaPatterns = [
-          path.join(specDir, entry.name, `ossa-${version}.schema.json`),
-          path.join(specDir, entry.name, `ossa-v${version}.schema.json`),
-        ];
+        // For minor version directories (e.g., v0.3), look for any schema files inside
+        const versionDir = path.join(specDir, entry.name);
+        const schemaFiles = fs
+          .readdirSync(versionDir)
+          .filter((f) => f.startsWith('ossa-') && f.endsWith('.schema.json'));
 
-        for (const schemaPath of schemaPatterns) {
-          if (fs.existsSync(schemaPath)) {
-            versions.push(version);
-            break;
+        for (const schemaFile of schemaFiles) {
+          // Extract version from schema file name (e.g., "ossa-0.3.5.schema.json" -> "0.3.5")
+          const match = schemaFile.match(
+            /ossa-(?:v)?(\d+\.\d+\.\d+)\.schema\.json/
+          );
+          if (match) {
+            versions.push(match[1]);
+          } else {
+            // Fallback to directory version if schema file doesn't have patch version
+            const exactMatch = schemaFile.match(
+              /ossa-(?:v)?(\d+\.\d+)\.schema\.json/
+            );
+            if (exactMatch) {
+              versions.push(exactMatch[1]);
+            }
           }
         }
       }
     }
 
-    return versions.sort();
+    return [...new Set(versions)].sort();
   }
 
   /**
@@ -225,7 +247,9 @@ export class SchemaRepository implements ISchemaRepository {
       const packageJsonPath = path.join(current, 'package.json');
       if (fs.existsSync(packageJsonPath)) {
         try {
-          const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
+          const packageJson = JSON.parse(
+            fs.readFileSync(packageJsonPath, 'utf-8')
+          );
           if (packageJson.name === '@bluefly/openstandardagents') {
             // Found OSSA package - check for spec directory
             if (this.hasSpecDirectory(current)) {
@@ -250,9 +274,8 @@ export class SchemaRepository implements ISchemaRepository {
       depth++;
     }
 
-    // Strategy 5: Last resort - try common project paths
+    // Strategy 5: Last resort - try common relative paths
     const commonPaths = [
-      '/Users/flux423/Sites/LLM/OSSA',
       path.resolve(process.cwd(), '../OSSA'),
       path.resolve(process.cwd(), '../../OSSA'),
     ];

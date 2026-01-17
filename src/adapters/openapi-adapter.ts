@@ -87,72 +87,87 @@ export class OpenAPIAdapter {
     const schemas: Record<string, OpenAPISchema> = {};
 
     // Convert each tool to an OpenAPI operation
-    tools.forEach((tool: { name?: string; description?: string; input_schema?: Record<string, unknown>; parameters?: Record<string, unknown>; output_schema?: Record<string, unknown>; auth?: { type: string } }, index: number) => {
-      const toolName = tool.name || `tool_${index + 1}`;
-      const path = `/tools/${toolName}`;
-
-      // Parse input schema
-      const inputSchema = this.normalizeSchema(tool.input_schema || tool.parameters || {});
-      const outputSchema = this.normalizeSchema(tool.output_schema || {});
-
-      // Create operation
-      const operation: OpenAPIOperation = {
-        operationId: toolName,
-        summary: tool.description || `Execute ${toolName}`,
-        description: tool.description || `Executes the ${toolName} capability`,
-        tags: ['tools'],
-        requestBody: {
-          description: `Input parameters for ${toolName}`,
-          required: true,
-          content: {
-            'application/json': {
-              schema: inputSchema,
-            },
-          },
+    tools.forEach(
+      (
+        tool: {
+          name?: string;
+          description?: string;
+          input_schema?: Record<string, unknown>;
+          parameters?: Record<string, unknown>;
+          output_schema?: Record<string, unknown>;
+          auth?: { type: string };
         },
-        responses: {
-          '200': {
-            description: 'Successful operation',
+        index: number
+      ) => {
+        const toolName = tool.name || `tool_${index + 1}`;
+        const path = `/tools/${toolName}`;
+
+        // Parse input schema
+        const inputSchema = this.normalizeSchema(
+          tool.input_schema || tool.parameters || {}
+        );
+        const outputSchema = this.normalizeSchema(tool.output_schema || {});
+
+        // Create operation
+        const operation: OpenAPIOperation = {
+          operationId: toolName,
+          summary: tool.description || `Execute ${toolName}`,
+          description:
+            tool.description || `Executes the ${toolName} capability`,
+          tags: ['tools'],
+          requestBody: {
+            description: `Input parameters for ${toolName}`,
+            required: true,
             content: {
               'application/json': {
-                schema: outputSchema.type
-                  ? outputSchema
-                  : {
-                      type: 'object',
-                      properties: {
-                        result: {
-                          type: 'string',
-                          description: 'Operation result',
-                        },
-                      },
-                    },
+                schema: inputSchema,
               },
             },
           },
-          '400': {
-            description: 'Invalid input',
+          responses: {
+            '200': {
+              description: 'Successful operation',
+              content: {
+                'application/json': {
+                  schema: outputSchema.type
+                    ? outputSchema
+                    : {
+                        type: 'object',
+                        properties: {
+                          result: {
+                            type: 'string',
+                            description: 'Operation result',
+                          },
+                        },
+                      },
+                },
+              },
+            },
+            '400': {
+              description: 'Invalid input',
+            },
+            '500': {
+              description: 'Internal server error',
+            },
           },
-          '500': {
-            description: 'Internal server error',
-          },
-        },
-      };
+        };
 
-      // Add security if tool has auth
-      if (tool.auth) {
-        operation.security = [{ [tool.auth.type]: [] }];
+        // Add security if tool has auth
+        if (tool.auth) {
+          operation.security = [{ [tool.auth.type]: [] }];
+        }
+
+        paths[path] = {
+          post: operation,
+        };
+
+        // Add schemas to components
+        schemas[`${toolName}Input`] = inputSchema;
+        if (outputSchema.type) {
+          schemas[`${toolName}Output`] = outputSchema;
+        }
       }
-
-      paths[path] = {
-        post: operation,
-      };
-
-      // Add schemas to components
-      schemas[`${toolName}Input`] = inputSchema;
-      if (outputSchema.type) {
-        schemas[`${toolName}Output`] = outputSchema;
-      }
-    });
+    );
 
     // Add a chat endpoint for the agent
     paths['/chat'] = {
@@ -264,8 +279,10 @@ export class OpenAPIAdapter {
    * Normalize schema to OpenAPI format
    */
   private static normalizeSchema(schema: unknown): OpenAPISchema {
-    let parsedSchema: Record<string, unknown> | string = schema as Record<string, unknown> | string;
-    
+    let parsedSchema: Record<string, unknown> | string = schema as
+      | Record<string, unknown>
+      | string;
+
     if (typeof parsedSchema === 'string') {
       try {
         parsedSchema = JSON.parse(parsedSchema) as Record<string, unknown>;
@@ -278,7 +295,7 @@ export class OpenAPIAdapter {
       return { type: 'object' };
     }
 
-    const schemaObj = parsedSchema as Record<string, unknown>;
+    const schemaObj = parsedSchema;
 
     // If it's already a valid OpenAPI schema, return it
     if (schemaObj.type || schemaObj.properties || schemaObj.$ref) {
@@ -332,14 +349,17 @@ export class OpenAPIAdapter {
       case 'string':
         return { type: 'string' };
       case 'number':
-        return Number.isInteger(value) ? { type: 'integer' } : { type: 'number' };
+        return Number.isInteger(value)
+          ? { type: 'integer' }
+          : { type: 'number' };
       case 'boolean':
         return { type: 'boolean' };
       case 'object':
         if (Array.isArray(value)) {
           return {
             type: 'array',
-            items: value.length > 0 ? this.inferType(value[0]) : { type: 'string' },
+            items:
+              value.length > 0 ? this.inferType(value[0]) : { type: 'string' },
           };
         }
         // Prevent infinite recursion with circular references

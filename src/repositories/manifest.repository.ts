@@ -32,7 +32,9 @@ export class ManifestRepository implements IManifestRepository {
         // Use safe YAML parsing to prevent injection attacks
         return safeParseYAML(content);
       } else {
-        throw new Error(`Unsupported file format: ${ext}. Must be .json, .yaml, or .yml`);
+        throw new Error(
+          `Unsupported file format: ${ext}. Must be .json, .yaml, or .yml`
+        );
       }
     } catch (error) {
       throw new Error(
@@ -74,11 +76,12 @@ export class ManifestRepository implements IManifestRepository {
         defaultStringType: 'QUOTE_DOUBLE' as any,
       });
     } else {
-      throw new Error(`Unsupported file format: ${ext}. Must be .json, .yaml, or .yml`);
+      throw new Error(
+        `Unsupported file format: ${ext}. Must be .json, .yaml, or .yml`
+      );
     }
 
     try {
-
       fs.writeFileSync(resolvedPath, content, 'utf-8');
     } catch (error) {
       throw new Error(

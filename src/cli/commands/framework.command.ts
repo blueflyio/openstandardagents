@@ -1,6 +1,6 @@
 /**
  * Framework CLI Commands
- * 
+ *
  * Framework detection and setup commands.
  * SOLID: Single Responsibility - Framework integration only
  */
@@ -25,19 +25,28 @@ frameworkCommand
     const detected: string[] = [];
 
     // Check for Langflow
-    const langflowFiles = await glob('**/langflow*.{json,yaml,yml}', { ignore: ['node_modules/**'] });
+    const langflowFiles = await glob('**/langflow*.{json,yaml,yml}', {
+      ignore: ['node_modules/**'],
+    });
     if (langflowFiles.length > 0) {
       detected.push('langflow');
       console.log(chalk.green('✅ Langflow detected:'));
-      langflowFiles.slice(0, 5).forEach((file: string) => console.log(chalk.gray(`   ${file}`)));
+      langflowFiles
+        .slice(0, 5)
+        .forEach((file: string) => console.log(chalk.gray(`   ${file}`)));
     }
 
     // Check for LangChain
-    const langchainFiles = await glob('**/*langchain*.{py,json,yaml,yml}', { ignore: ['node_modules/**'] });
+    const langchainFiles = await glob('**/*langchain*.{py,json,yaml,yml}', {
+      ignore: ['node_modules/**'],
+    });
     const hasLangchainImport = langchainFiles.some((file: string) => {
       try {
         const content = readFileSync(file, 'utf-8');
-        return content.includes('from langchain') || content.includes('import langchain');
+        return (
+          content.includes('from langchain') ||
+          content.includes('import langchain')
+        );
       } catch {
         return false;
       }
@@ -45,15 +54,21 @@ frameworkCommand
     if (hasLangchainImport || langchainFiles.length > 0) {
       detected.push('langchain');
       console.log(chalk.green('\n✅ LangChain detected:'));
-      langchainFiles.slice(0, 5).forEach((file: string) => console.log(chalk.gray(`   ${file}`)));
+      langchainFiles
+        .slice(0, 5)
+        .forEach((file: string) => console.log(chalk.gray(`   ${file}`)));
     }
 
     // Check for CrewAI
-    const crewaiFiles = await glob('**/*crewai*.{py,json,yaml,yml}', { ignore: ['node_modules/**'] });
+    const crewaiFiles = await glob('**/*crewai*.{py,json,yaml,yml}', {
+      ignore: ['node_modules/**'],
+    });
     const hasCrewaiImport = crewaiFiles.some((file: string) => {
       try {
         const content = readFileSync(file, 'utf-8');
-        return content.includes('from crewai') || content.includes('import crewai');
+        return (
+          content.includes('from crewai') || content.includes('import crewai')
+        );
       } catch {
         return false;
       }
@@ -61,15 +76,22 @@ frameworkCommand
     if (hasCrewaiImport || crewaiFiles.length > 0) {
       detected.push('crewai');
       console.log(chalk.green('\n✅ CrewAI detected:'));
-      crewaiFiles.slice(0, 5).forEach((file: string) => console.log(chalk.gray(`   ${file}`)));
+      crewaiFiles
+        .slice(0, 5)
+        .forEach((file: string) => console.log(chalk.gray(`   ${file}`)));
     }
 
     // Check for requirements.txt / pyproject.toml
     if (existsSync('requirements.txt')) {
       const requirements = readFileSync('requirements.txt', 'utf-8');
-      if (requirements.includes('langchain') && !detected.includes('langchain')) {
+      if (
+        requirements.includes('langchain') &&
+        !detected.includes('langchain')
+      ) {
         detected.push('langchain');
-        console.log(chalk.green('\n✅ LangChain detected (in requirements.txt)'));
+        console.log(
+          chalk.green('\n✅ LangChain detected (in requirements.txt)')
+        );
       }
       if (requirements.includes('crewai') && !detected.includes('crewai')) {
         detected.push('crewai');
@@ -79,13 +101,23 @@ frameworkCommand
 
     if (detected.length === 0) {
       console.log(chalk.yellow('\n⚠️  No frameworks detected'));
-      console.log(chalk.gray('Run "ossa framework:setup <framework>" to set up OSSA integration'));
+      console.log(
+        chalk.gray(
+          'Run "ossa framework:setup <framework>" to set up OSSA integration'
+        )
+      );
     } else {
-      console.log(chalk.cyan(`\n📋 Detected frameworks: ${detected.join(', ')}`));
+      console.log(
+        chalk.cyan(`\n📋 Detected frameworks: ${detected.join(', ')}`)
+      );
       console.log(chalk.gray('\nNext steps:'));
-      detected.forEach(fw => {
-        console.log(chalk.gray(`   ossa ${fw}:convert <file> - Convert to OSSA`));
-        console.log(chalk.gray(`   ossa framework:setup ${fw} - Set up integration`));
+      detected.forEach((fw) => {
+        console.log(
+          chalk.gray(`   ossa ${fw}:convert <file> - Convert to OSSA`)
+        );
+        console.log(
+          chalk.gray(`   ossa framework:setup ${fw} - Set up integration`)
+        );
       });
     }
   });
@@ -103,7 +135,9 @@ frameworkCommand
     const validFrameworks = ['langflow', 'langchain', 'crewai'];
     if (!validFrameworks.includes(framework.toLowerCase())) {
       console.error(chalk.red(`❌ Invalid framework: ${framework}`));
-      console.error(chalk.gray(`Valid frameworks: ${validFrameworks.join(', ')}`));
+      console.error(
+        chalk.gray(`Valid frameworks: ${validFrameworks.join(', ')}`)
+      );
       process.exit(1);
     }
 
@@ -131,7 +165,11 @@ frameworkCommand
 
       console.log(chalk.green('\n✅ Setup complete!'));
     } catch (error) {
-      console.error(chalk.red(`\n❌ Error: ${error instanceof Error ? error.message : String(error)}`));
+      console.error(
+        chalk.red(
+          `\n❌ Error: ${error instanceof Error ? error.message : String(error)}`
+        )
+      );
       process.exit(1);
     }
   });

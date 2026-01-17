@@ -42,15 +42,23 @@ export class CrewAIAdapter {
    */
   static toCrewAI(manifest: OssaAgent): CrewAIAgent {
     const spec = manifest.spec || { role: '' };
-    const metadata = manifest.metadata || { name: 'unknown-agent', description: '' };
+    const metadata = manifest.metadata || {
+      name: 'unknown-agent',
+      description: '',
+    };
     const tools = spec.tools || [];
 
     // Extract role, goal, and backstory from spec.role
     const roleText = spec.role || '';
-    const { role, goal, backstory } = this.parseRoleText(roleText, metadata.description);
+    const { role, goal, backstory } = this.parseRoleText(
+      roleText,
+      metadata.description
+    );
 
     // Convert OSSA tools to CrewAI tool names
-    const crewaiTools = tools.map((tool: { name?: string }) => tool.name || 'unknown_tool');
+    const crewaiTools = tools.map(
+      (tool: { name?: string }) => tool.name || 'unknown_tool'
+    );
 
     return {
       agent_type: 'custom',

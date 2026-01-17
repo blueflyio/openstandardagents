@@ -79,6 +79,11 @@ pnpm-workspace.yaml
 # Agent runtime state (regenerated at runtime)
 .agents-workspace/
 
+# Migration state file contains environment-specific absolute paths
+# Should be regenerated at build time rather than committed to version control
+# Prevents deployment failures when repository is cloned to different locations
+.migration-state.json
+
 # Released specs are immutable - do not track changes
 spec/v0.3.0/
 spec/v0.3.1/

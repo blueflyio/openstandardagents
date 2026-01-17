@@ -23,7 +23,7 @@
 ossa-dev version:release [patch|minor|major]  # One command to release
 ossa-dev version:validate                     # Validate consistency
 ossa-dev version:audit                        # Find hardcoded versions
-ossa-dev version:sync                         # Sync {{VERSION}} placeholders
+ossa-dev version:sync                         # Sync 0.3.4 placeholders
 ossa-dev version:replace <old> <new>         # Replace version in files
 
 # Spec Generation (for CI)

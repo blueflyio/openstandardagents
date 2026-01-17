@@ -1,0 +1,384 @@
+apiVersion: ossa/v0.3
+kind: Agent
+metadata:
+  name: react-performance-expert
+  version: 1.0.0
+  description: >-
+    React Performance Expert implementing 40+ Vercel best practices for optimal React application performance.
+    Auto-activates on performance-related queries, React/Next.js files, and performance keywords.
+  labels:
+    ossa-version: v0.3.5
+    domain: frontend
+    category: performance
+    tier: expert
+    skill.priority: "90"
+    skill.contexts: "development,review"
+    skill.enabled: "true"
+    skill.auto_activate: "true"
+  annotations:
+    ossa.dev/maintainer: vercel-labs
+    ossa.dev/source: https://github.com/vercel-labs/agent-skills/tree/react-best-practices
+    ossa.dev/purpose: react-performance,optimization,bundle-size,rendering
+
+spec:
+  taxonomy:
+    domain: frontend
+    subdomain: performance
+    capability: react_optimization
+
+  role: |
+    You are a React Performance Expert specializing in identifying and fixing performance bottlenecks
+    in React applications. You implement 40+ best practices from Vercel's React performance guide.
+
+    CRITICAL Priority Rules (Must Fix Immediately):
+    1. Eliminate Waterfalls: Parallelize data fetching, avoid sequential requests
+    2. Bundle Optimization: Code splitting, tree shaking, dynamic imports
+    3. Server-Side Performance: Use React.cache, implement LRU caching
+    4. Avoid Barrel Imports: Direct imports reduce cold start time by 200-800ms
+
+    HIGH Priority Rules:
+    5. Re-render Optimization: Memoization, useMemo, useCallback where appropriate
+    6. Rendering Performance: Virtualization for long lists, lazy loading
+    7. Image Optimization: Next.js Image component, proper sizing, formats
+    8. Font Optimization: Font display strategies, subsetting, preloading
+
+    MEDIUM Priority Rules:
+    9. JavaScript Micro-optimizations: Avoid object creation in render, stable references
+    10. CSS Optimization: Critical CSS extraction, unused CSS removal
+    11. Network Optimization: Request deduplication, prefetching, compression
+
+    LOW Priority Rules:
+    12. Edge Cases: Micro-benchmarks, advanced memoization patterns
+
+    Quantified Impact Examples:
+    - Waterfall elimination: 66% latency reduction
+    - Barrel import fixes: 200-800ms cold start improvement
+    - Lazy state initialization: Runs once vs every render
+    - Dynamic imports: 30-50% bundle size reduction
+
+    Always provide specific, actionable recommendations with code examples.
+
+  llm:
+    provider: ${LLM_PROVIDER:-anthropic}
+    model: ${LLM_MODEL:-claude-sonnet-4-20250514}
+    temperature: 0.1
+    maxTokens: 8192
+
+  completion:
+    default_signal: complete
+    signals:
+      - signal: continue
+        condition: "optimization_opportunities_found > 0"
+        priority: 1
+      - signal: escalate
+        condition: "critical_issues_found == true"
+        priority: 2
+    max_iterations: 20
+    timeout_seconds: 300
+
+  checkpointing:
+    enabled: true
+    interval: iteration
+    interval_value: 5
+    retention:
+      days: 30
+      max_checkpoints: 50
+
+  tools:
+    - type: mcp
+      name: analyze_bundle
+      description: Analyze bundle size and identify optimization opportunities
+      source:
+        type: mcp
+        uri: mcp://build-tools/bundle-analyzer
+      input:
+        type: object
+        properties:
+          project_path: { type: string }
+          output_format: { type: string, enum: [json, html, text], default: "json" }
+
+    - type: mcp
+      name: detect_waterfalls
+      description: Detect sequential data fetching patterns (waterfalls)
+      source:
+        type: mcp
+        uri: mcp://code-analyzer/detect-waterfalls
+      input:
+        type: object
+        properties:
+          files: { type: array, items: { type: string } }
+          framework: { type: string }
+
+    - type: mcp
+      name: optimize_imports
+      description: Convert barrel imports to direct imports
+      source:
+        type: mcp
+        uri: mcp://code-transformer/optimize-imports
+      input:
+        type: object
+        properties:
+          file_path: { type: string }
+          dry_run: { type: boolean, default: false }
+
+    - type: mcp
+      name: analyze_re_renders
+      description: Analyze component re-render patterns
+      source:
+        type: mcp
+        uri: mcp://react-profiler/analyze-renders
+      input:
+        type: object
+        properties:
+          component_path: { type: string }
+          trace_file: { type: string, required: false }
+
+    - type: mcp
+      name: suggest_memoization
+      description: Suggest memoization opportunities
+      source:
+        type: mcp
+        uri: mcp://code-analyzer/suggest-memoization
+      input:
+        type: object
+        properties:
+          file_path: { type: string }
+          component_name: { type: string, required: false }
+
+    - type: mcp
+      name: check_image_optimization
+      description: Check image optimization opportunities
+      source:
+        type: mcp
+        uri: mcp://image-optimizer/analyze
+      input:
+        type: object
+        properties:
+          image_paths: { type: array, items: { type: string } }
+
+  autonomy:
+    level: assisted
+    approval_required:
+      - modify_code
+      - delete_files
+    allowed_actions:
+      - analyze_performance
+      - suggest_optimizations
+      - generate_reports
+      - create_optimization_plan
+
+  constraints:
+    max_tokens_per_turn: 16384
+    max_turns: 15
+    timeout_seconds: 300
+
+  observability:
+    tracing:
+      enabled: true
+      provider: otel
+      sampling_rate: 1.0
+    metrics:
+      enabled: true
+      custom:
+        - name: optimizations_suggested
+          type: counter
+          labels: [priority, type]
+        - name: performance_improvements
+          type: gauge
+          labels: [metric_name]
+        - name: bundle_size_reduction
+          type: gauge
+          unit: bytes
+
+extensions:
+  experts:
+    registry:
+      - id: deep-analysis-expert
+        name: "Deep Performance Analysis Expert"
+        model:
+          provider: anthropic
+          model: claude-opus-4-5-20251101
+        specializations:
+          - complex_performance_analysis
+          - bundle_optimization
+          - advanced_memoization
+        cost_tier: premium
+        capabilities:
+          extended_thinking: true
+          max_tokens: 200000
+          reasoning_depth: deep
+
+      - id: standard-analysis-expert
+        name: "Standard Performance Expert"
+        model:
+          provider: anthropic
+          model: claude-sonnet-4-20250514
+        specializations:
+          - performance_monitoring
+          - standard_optimizations
+          - re_render_analysis
+        cost_tier: standard
+        capabilities:
+          max_tokens: 16384
+          reasoning_depth: balanced
+
+      - id: quick-scan-expert
+        name: "Quick Performance Scan Expert"
+        model:
+          provider: google
+          model: gemini-2.0-flash
+        specializations:
+          - quick_checks
+          - obvious_issues
+          - high_volume_scanning
+        cost_tier: economy
+        capabilities:
+          max_tokens: 8192
+          reasoning_depth: fast
+
+    selection_strategy: agent_controlled
+
+  bat:
+    selection_criteria:
+      - dimension: analysis_complexity
+        required: true
+        options:
+          - value: complex
+            technologies: [claude-opus, gpt-4-turbo]
+            cost_tier: premium
+            use_case: "Deep bundle analysis, complex optimization strategies"
+          - value: standard
+            technologies: [claude-sonnet, gpt-4o]
+            cost_tier: standard
+            use_case: "Standard performance analysis, common optimizations"
+          - value: simple
+            technologies: [gemini-flash, claude-haiku]
+            cost_tier: economy
+            use_case: "Quick scans, obvious issues, high-volume checks"
+
+  moe:
+    primary:
+      metric: performance_improvement_percentage
+      description: "Percentage improvement in key performance metrics"
+      target: 30.0
+      measurement:
+        type: percentage
+        numerator: performance_gain
+        denominator: baseline_performance
+        collection:
+          source: performance-monitor
+          interval: real_time
+
+    secondary:
+      - metric: bundle_size_reduction
+        description: "Reduction in bundle size"
+        target: 30.0
+        unit: percentage
+      - metric: render_time_improvement
+        description: "Improvement in render time"
+        target: 20.0
+        unit: percentage
+      - metric: optimization_accuracy
+        description: "Accuracy of optimization recommendations"
+        target: 0.85
+        unit: ratio
+
+  capabilities:
+    discovery:
+      enabled: true
+      registry: agent-mesh
+      refresh_interval: 60s
+
+  feedback:
+    tools:
+      - name: record_feedback
+        description: "Record feedback on optimization effectiveness"
+      - name: get_feedback_summary
+        description: "Get aggregate feedback for improvement"
+    learning:
+      enabled: true
+      strategy: reinforcement
+      data_sources:
+        - optimization_outcomes
+        - performance_metrics
+        - user_feedback
+
+  infrastructure:
+    - type: agent_mesh
+      endpoint: mesh.blueflyagents.com:3005
+      capabilities:
+        - performance_monitoring
+        - code_analysis
+
+  runtime:
+    triggers:
+      keywords:
+        - performance
+        - optimize
+        - slow
+        - bundle
+        - waterfall
+        - re-render
+        - memoization
+        - lazy
+        - code-splitting
+        - "bundle size"
+        - "cold start"
+        - "render performance"
+      file_patterns:
+        - "**/*.{tsx,jsx}"
+        - "**/components/**"
+        - "**/app/**"
+        - "**/pages/**"
+        - "**/*.react.{ts,tsx,js,jsx}"
+      frameworks:
+        - next.js
+        - react
+        - remix
+        - gatsby
+        - vite
+      project_types:
+        - react-app
+        - next-app
+        - remix-app
+    activation:
+      automatic: true
+      confidence_threshold: 0.7
+      priority_threshold: 80
+
+  gitlab:
+    triggers:
+      - event: merge_request
+        filter:
+          labels: ["performance", "optimization"]
+          files: ["**/*.{tsx,jsx}"]
+      - event: webhook
+        path: /react-performance-expert/analyze
+    custom_fields:
+      performance_impact: estimated
+      optimizations_applied: boolean
+      bundle_size_change: number
+
+  opentelemetry:
+    enabled: true
+    service_name: "react-performance-expert"
+    service_version: "1.0.0"
+    traces:
+      enabled: true
+      exporter: otlp
+      endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4317}"
+      sample_rate: 1.0
+    metrics:
+      enabled: true
+      exporter: otlp
+      endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4317}"
+    logs:
+      enabled: true
+      exporter: otlp
+      endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4317}"
+      level: info
+    resource_attributes:
+      agent.id: "react-performance-expert"
+      agent.version: "1.0.0"
+      framework: "ossa"
+      domain: "frontend-performance"

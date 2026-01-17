@@ -37,8 +37,8 @@ echo "────────────────────────�
 # Build the graph
 if command -v ossa &> /dev/null; then
   ossa knowledge-graph \
-    --buildkit /Users/flux423/Sites/LLM/agent_buildkit/.agents \
-    --ossa /Users/flux423/Sites/LLM/OSSA/.agents \
+    --buildkit ~/projects/agent-buildkit/.agents \
+    --ossa ~/projects/openstandardagents/.agents \
     --output ./knowledge-graph \
     2>&1 | grep -E '(✅|❌|agents|relationships|Duration)'
 else
