@@ -26,7 +26,9 @@ export class LangGraphValidator {
       process.cwd(),
       'spec/v0.3/extensions/langgraph/langgraph.schema.json'
     );
-    const langgraphSchema = JSON.parse(readFileSync(langgraphSchemaPath, 'utf-8'));
+    const langgraphSchema = JSON.parse(
+      readFileSync(langgraphSchemaPath, 'utf-8')
+    );
     this.validateLangGraph = this.ajv.compile(langgraphSchema);
   }
 
