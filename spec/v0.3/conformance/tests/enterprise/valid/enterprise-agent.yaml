@@ -7,6 +7,9 @@ metadata:
   labels:
     environment: staging
     tier: enterprise
+  annotations:
+    owner: platform-team
+    compliance: SOC2
 spec:
   role: assistant
   type: service
@@ -56,3 +59,30 @@ spec:
       enabled: true
     logging:
       enabled: true
+  extensions:
+    moe:
+      enabled: true
+      routing_strategy: least_cost
+      models:
+        - provider: openai
+          model: gpt-4o-mini
+          use_case: simple_queries
+        - provider: openai
+          model: gpt-4-turbo
+          use_case: complex_analysis
+    bat:
+      enabled: true
+      criteria:
+        - type: cost
+          weight: 0.4
+        - type: performance
+          weight: 0.3
+        - type: quality
+          weight: 0.3
+    feedback_loops:
+      enabled: true
+      mechanisms:
+        - type: user_feedback
+          collection_method: inline
+        - type: performance_metrics
+          interval_ms: 60000
