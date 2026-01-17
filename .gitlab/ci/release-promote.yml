@@ -11,10 +11,11 @@
 
 promote-rc-to-stable:
   stage: release
+  extends:
+    - .needs-all-tests
   image: alpine:latest
   tags:
     - saas-linux-small-amd64
-  needs: []
   before_script:
     - apk add --no-cache curl jq git bash
     - git config user.email "ci@bluefly.io"
