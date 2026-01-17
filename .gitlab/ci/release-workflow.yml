@@ -12,7 +12,14 @@
 
 create-dev-tag:release:
   stage: .post
-  needs: []  # Run independently - don't wait for manual jobs
+  needs:
+    - job: validate:schema
+    - job: validate:lint
+    - job: validate:typecheck
+    - job: build:dist
+    - job: test:unit
+    - job: test:integration
+    - job: test:conformance
   image: alpine:latest
   tags:
     - saas-linux-small-amd64
