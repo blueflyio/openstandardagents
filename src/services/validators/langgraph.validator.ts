@@ -11,13 +11,6 @@ import addFormats from 'ajv-formats';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-// Load LangGraph schema
-const langgraphSchemaPath = join(
-  process.cwd(),
-  'spec/v0.3/extensions/langgraph/langgraph.schema.json'
-);
-const langgraphSchema = JSON.parse(readFileSync(langgraphSchemaPath, 'utf-8'));
-
 @injectable()
 export class LangGraphValidator {
   private ajv: Ajv;
@@ -26,6 +19,14 @@ export class LangGraphValidator {
   constructor() {
     this.ajv = new Ajv({ allErrors: true, strict: false });
     addFormats(this.ajv);
+
+    // Load LangGraph schema from spec/ directory (relative to project root)
+    // Works in both Jest (source tree) and production (project root with dist/)
+    const langgraphSchemaPath = join(
+      process.cwd(),
+      'spec/v0.3/extensions/langgraph/langgraph.schema.json'
+    );
+    const langgraphSchema = JSON.parse(readFileSync(langgraphSchemaPath, 'utf-8'));
     this.validateLangGraph = this.ajv.compile(langgraphSchema);
   }
 

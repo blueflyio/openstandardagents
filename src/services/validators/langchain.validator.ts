@@ -11,13 +11,6 @@ import addFormats from 'ajv-formats';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-// Load LangChain schema
-const langchainSchemaPath = join(
-  process.cwd(),
-  'spec/v0.3/extensions/langchain/langchain.schema.json'
-);
-const langchainSchema = JSON.parse(readFileSync(langchainSchemaPath, 'utf-8'));
-
 @injectable()
 export class LangChainValidator {
   private ajv: Ajv;
@@ -26,6 +19,14 @@ export class LangChainValidator {
   constructor() {
     this.ajv = new Ajv({ allErrors: true, strict: false });
     addFormats(this.ajv);
+
+    // Load LangChain schema from spec/ directory (relative to project root)
+    // Works in both Jest (source tree) and production (project root with dist/)
+    const langchainSchemaPath = join(
+      process.cwd(),
+      'spec/v0.3/extensions/langchain/langchain.schema.json'
+    );
+    const langchainSchema = JSON.parse(readFileSync(langchainSchemaPath, 'utf-8'));
     this.validateLangChain = this.ajv.compile(langchainSchema);
   }
 

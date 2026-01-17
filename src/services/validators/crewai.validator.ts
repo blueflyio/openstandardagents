@@ -11,13 +11,6 @@ import addFormats from 'ajv-formats';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-// Load CrewAI schema
-const crewaiSchemaPath = join(
-  process.cwd(),
-  'spec/v0.3/extensions/crewai/crewai.schema.json'
-);
-const crewaiSchema = JSON.parse(readFileSync(crewaiSchemaPath, 'utf-8'));
-
 @injectable()
 export class CrewAIValidator {
   private ajv: Ajv;
@@ -26,6 +19,14 @@ export class CrewAIValidator {
   constructor() {
     this.ajv = new Ajv({ allErrors: true, strict: false });
     addFormats(this.ajv);
+
+    // Load CrewAI schema from spec/ directory (relative to project root)
+    // Works in both Jest (source tree) and production (project root with dist/)
+    const crewaiSchemaPath = join(
+      process.cwd(),
+      'spec/v0.3/extensions/crewai/crewai.schema.json'
+    );
+    const crewaiSchema = JSON.parse(readFileSync(crewaiSchemaPath, 'utf-8'));
     this.validateCrewAI = this.ajv.compile(crewaiSchema);
   }
 
