@@ -12,7 +12,7 @@ import { describe, it, expect } from '@jest/globals';
 import { readdirSync, readFileSync, existsSync } from 'fs';
 import { join, relative } from 'path';
 import { z } from 'zod';
-import { ValidationService } from '../../src/services/validation.service.js';
+import { ValidationService } from '../../dist/services/validation.service.js';
 import * as yaml from 'yaml';
 
 const projectRoot = join(__dirname, '../..');

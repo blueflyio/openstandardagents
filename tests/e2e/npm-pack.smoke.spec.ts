@@ -45,7 +45,7 @@ function exec(command: string, cwd: string = projectRoot): string {
   } catch (error) {
     if (error instanceof Error && 'stderr' in error) {
       throw new Error(
-        `Command failed: ${command}\nStderr: ${(error as any).stderr}`
+        `Command failed: ${command}\nStderr: ${error && typeof error === 'object' && 'stderr' in error ? (error as any).stderr : 'No stderr available'}`
       );
     }
     throw error;
