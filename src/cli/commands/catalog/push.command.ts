@@ -19,7 +19,7 @@ export function createPushCommand(): Command {
     .option('-n, --dry-run', 'Show what would be pushed')
     .option('-f, --force', 'Force overwrite remote')
     .action(async (opts) => {
-      const options = PushOptionsSchema.parse(opts) as PushOptions;
+      const options = PushOptionsSchema.parse(opts);
       const config = new CatalogConfig();
 
       const agentIds = config.resolveAgentIds(options.agent, options.all);

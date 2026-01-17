@@ -1,6 +1,6 @@
 /**
  * Langflow Importer Service
- * 
+ *
  * Imports Langflow flows and converts them to OSSA manifests.
  * SOLID: Single Responsibility - Langflow import only
  * DRY: Reuses LangflowAdapter patterns
@@ -15,24 +15,28 @@ const LangflowFlowSchema = z.object({
   description: z.string().optional(),
   id: z.string().uuid().optional(),
   data: z.object({
-    nodes: z.array(z.object({
-      id: z.string(),
-      type: z.string(),
-      data: z.object({
+    nodes: z.array(
+      z.object({
+        id: z.string(),
         type: z.string(),
-        node: z.record(z.string(), z.unknown()),
-      }),
-      position: z.object({
-        x: z.number(),
-        y: z.number(),
-      }),
-    })),
-    edges: z.array(z.object({
-      source: z.string(),
-      target: z.string(),
-      sourceHandle: z.string().optional(),
-      targetHandle: z.string().optional(),
-    })),
+        data: z.object({
+          type: z.string(),
+          node: z.record(z.string(), z.unknown()),
+        }),
+        position: z.object({
+          x: z.number(),
+          y: z.number(),
+        }),
+      })
+    ),
+    edges: z.array(
+      z.object({
+        source: z.string(),
+        target: z.string(),
+        sourceHandle: z.string().optional(),
+        targetHandle: z.string().optional(),
+      })
+    ),
   }),
   is_component: z.boolean().default(false),
 });
@@ -67,9 +71,10 @@ export class LangflowImporterService {
     const { nodes, edges } = flow.data;
 
     // Determine if it's an Agent or Workflow
-    const hasMultipleAgents = nodes.filter(n => 
-      n.data.type === 'Agent' || n.data.type === 'AgentInitializer'
-    ).length > 1;
+    const hasMultipleAgents =
+      nodes.filter(
+        (n) => n.data.type === 'Agent' || n.data.type === 'AgentInitializer'
+      ).length > 1;
 
     const isWorkflow = hasMultipleAgents || edges.length > 3;
 
@@ -87,29 +92,31 @@ export class LangflowImporterService {
     const { nodes, edges } = flow.data;
 
     // Find LLM node
-    const llmNode = nodes.find(n => 
-      ['ChatOpenAI', 'OpenAIModel', 'AnthropicModel', 'OllamaModel'].includes(n.data.type)
+    const llmNode = nodes.find((n) =>
+      ['ChatOpenAI', 'OpenAIModel', 'AnthropicModel', 'OllamaModel'].includes(
+        n.data.type
+      )
     );
 
     // Find prompt node
-    const promptNode = nodes.find(n => 
+    const promptNode = nodes.find((n) =>
       ['PromptTemplate', 'ChatPromptTemplate'].includes(n.data.type)
     );
 
     // Find agent node
-    const agentNode = nodes.find(n => 
+    const agentNode = nodes.find((n) =>
       ['Agent', 'AgentInitializer'].includes(n.data.type)
     );
 
     // Find tool nodes
-    const toolNodes = nodes.filter(n => n.data.type === 'Tool');
+    const toolNodes = nodes.filter((n) => n.data.type === 'Tool');
 
     // Extract LLM config
     const llmConfig = this.extractLLMConfig(llmNode);
     const role = this.extractRole(promptNode);
 
     // Extract tools
-    const tools = toolNodes.map(node => this.extractTool(node));
+    const tools = toolNodes.map((node) => this.extractTool(node));
 
     return {
       apiVersion: 'ossa/v0.3.3',
@@ -131,7 +138,7 @@ export class LangflowImporterService {
       extensions: {
         langflow: {
           flow_id: flow.id || '',
-          components: nodes.map(n => ({
+          components: nodes.map((n) => ({
             node_id: n.id,
             component_type: n.data.type,
             ossa_capability: this.mapComponentToCapability(n.data.type),
@@ -152,12 +159,17 @@ export class LangflowImporterService {
 
     // Convert nodes to steps
     const steps = nodes
-      .filter(n => ['Agent', 'AgentInitializer', 'Tool', 'Chain'].includes(n.data.type))
+      .filter((n) =>
+        ['Agent', 'AgentInitializer', 'Tool', 'Chain'].includes(n.data.type)
+      )
       .map((node, index) => ({
         id: node.id,
         name: node.id.toLowerCase().replace(/-/g, '_'),
         ref: `agents/${node.id}`,
-        kind: node.data.type === 'Agent' || node.data.type === 'AgentInitializer' ? 'Agent' : 'Task',
+        kind:
+          node.data.type === 'Agent' || node.data.type === 'AgentInitializer'
+            ? 'Agent'
+            : 'Task',
         depends_on: dependencies[node.id] || [],
         input: this.extractStepInput(node),
       }));
@@ -192,7 +204,7 @@ export class LangflowImporterService {
       extensions: {
         langflow: {
           flow_id: flow.id || '',
-          components: nodes.map(n => ({
+          components: nodes.map((n) => ({
             node_id: n.id,
             component_type: n.data.type,
             ossa_capability: this.mapComponentToCapability(n.data.type),
@@ -205,13 +217,18 @@ export class LangflowImporterService {
   /**
    * Extract LLM config from Langflow node
    */
-  private extractLLMConfig(node: any): { provider: string; model: string; temperature?: number } {
+  private extractLLMConfig(node: any): {
+    provider: string;
+    model: string;
+    temperature?: number;
+  } {
     if (!node) {
       return { provider: 'openai', model: 'gpt-3.5-turbo' };
     }
 
     const nodeData = node.data.node?.template || {};
-    const modelName = nodeData.model_name?.value || nodeData.model?.value || 'gpt-3.5-turbo';
+    const modelName =
+      nodeData.model_name?.value || nodeData.model?.value || 'gpt-3.5-turbo';
 
     // Determine provider from node type
     let provider = 'openai';
@@ -230,8 +247,9 @@ export class LangflowImporterService {
    */
   private extractRole(node: any): string | null {
     if (!node) return null;
-    const template = node.data.node?.template?.template?.value || 
-                     node.data.node?.template?.system_message?.value;
+    const template =
+      node.data.node?.template?.template?.value ||
+      node.data.node?.template?.system_message?.value;
     return template || null;
   }
 
@@ -251,23 +269,23 @@ export class LangflowImporterService {
    */
   private mapComponentToCapability(componentType: string): string {
     const mapping: Record<string, string> = {
-      'ChatInput': 'receive_input',
-      'ChatOutput': 'send_output',
-      'TextInput': 'receive_text',
-      'TextOutput': 'send_text',
-      'OpenAIModel': 'llm_inference',
-      'AnthropicModel': 'llm_inference',
-      'OllamaModel': 'llm_inference',
-      'Agent': 'agentic_loop',
-      'AgentInitializer': 'agentic_loop',
-      'Tool': 'tool_invoke',
-      'VectorStore': 'vector_search',
-      'Retriever': 'retrieve_documents',
-      'Memory': 'manage_state',
-      'Prompt': 'format_prompt',
-      'Parser': 'parse_output',
-      'Chain': 'execute_chain',
-      'Embeddings': 'generate_embeddings',
+      ChatInput: 'receive_input',
+      ChatOutput: 'send_output',
+      TextInput: 'receive_text',
+      TextOutput: 'send_text',
+      OpenAIModel: 'llm_inference',
+      AnthropicModel: 'llm_inference',
+      OllamaModel: 'llm_inference',
+      Agent: 'agentic_loop',
+      AgentInitializer: 'agentic_loop',
+      Tool: 'tool_invoke',
+      VectorStore: 'vector_search',
+      Retriever: 'retrieve_documents',
+      Memory: 'manage_state',
+      Prompt: 'format_prompt',
+      Parser: 'parse_output',
+      Chain: 'execute_chain',
+      Embeddings: 'generate_embeddings',
     };
     return mapping[componentType] || 'custom';
   }
@@ -275,7 +293,9 @@ export class LangflowImporterService {
   /**
    * Build dependency graph from edges
    */
-  private buildDependencyGraph(edges: Array<{ source: string; target: string }>): Record<string, string[]> {
+  private buildDependencyGraph(
+    edges: Array<{ source: string; target: string }>
+  ): Record<string, string[]> {
     const deps: Record<string, string[]> = {};
     for (const edge of edges) {
       if (!deps[edge.target]) {

@@ -1,4 +1,4 @@
-apiVersion: ossa/v0.3.3
+apiVersion: ossa/v0.3
 kind: Agent
 metadata:
   name: claude-code-reviewer
@@ -14,9 +14,9 @@ spec:
     '
   llm:
     provider: anthropic
-    model: claude-sonnet-4-5-20250929
+    model: claude-3-5-sonnet-20241022
     temperature: 0.2
-    max_tokens: 16384
+    max_tokens: 4096
   capabilities:
   - name: review_code
     description: Review code changes for quality and security
@@ -81,6 +81,6 @@ extensions:
     - test_coverage
   anthropic:
     enabled: true
-    model: claude-sonnet-4-5-20250929
-    max_tokens: 16384
+    model: claude-3-5-sonnet-20241022
+    max_tokens: 4096
     temperature: 0.2

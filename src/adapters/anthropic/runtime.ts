@@ -109,18 +109,23 @@ export class AnthropicAdapter {
     }
 
     // Extract from extensions.anthropic
-    const anthropicExt = this.agent.extensions?.anthropic as {
-      model?: string;
-      temperature?: number;
-      max_tokens?: number;
-      stop_sequences?: string[];
-    } | undefined;
+    const anthropicExt = this.agent.extensions?.anthropic as
+      | {
+          model?: string;
+          temperature?: number;
+          max_tokens?: number;
+          stop_sequences?: string[];
+        }
+      | undefined;
 
     if (anthropicExt) {
-      if (anthropicExt.model) config.model = anthropicExt.model as AnthropicConfig['model'];
-      if (anthropicExt.temperature !== undefined) config.temperature = anthropicExt.temperature;
+      if (anthropicExt.model)
+        config.model = anthropicExt.model as AnthropicConfig['model'];
+      if (anthropicExt.temperature !== undefined)
+        config.temperature = anthropicExt.temperature;
       if (anthropicExt.max_tokens) config.maxTokens = anthropicExt.max_tokens;
-      if (anthropicExt.stop_sequences) config.stopSequences = anthropicExt.stop_sequences;
+      if (anthropicExt.stop_sequences)
+        config.stopSequences = anthropicExt.stop_sequences;
     }
 
     return config;
@@ -150,7 +155,8 @@ export class AnthropicAdapter {
     const { system, messages } = convertToAnthropicMessages(mergedHistory);
 
     // Get system prompt from agent role if not provided
-    const systemPrompt = system || this.agent.spec?.role || 'You are a helpful assistant.';
+    const systemPrompt =
+      system || this.agent.spec?.role || 'You are a helpful assistant.';
 
     // Get tools
     const tools = this.toolMapper.getTools();
@@ -228,7 +234,9 @@ export class AnthropicAdapter {
           const { id, name, input } = toolUse;
 
           if (options?.verbose) {
-            console.log(`    → ${name}(${JSON.stringify(input).substring(0, 100)}...)`);
+            console.log(
+              `    → ${name}(${JSON.stringify(input).substring(0, 100)}...)`
+            );
           }
 
           const result = await this.toolMapper.executeTool(
@@ -272,7 +280,9 @@ export class AnthropicAdapter {
 
       if (textBlocks.length > 0) {
         finalText = textBlocks
-          .map((block) => (block.type === 'text' ? (block as { text: string }).text : ''))
+          .map((block) =>
+            block.type === 'text' ? (block as { text: string }).text : ''
+          )
           .join('\n');
         break;
       }
@@ -317,7 +327,9 @@ export class AnthropicAdapter {
    * Get agent information
    */
   getAgentInfo(): AgentInfo {
-    const config = this.agent.spec?.llm ? { model: this.agent.spec.llm.model } : {};
+    const config = this.agent.spec?.llm
+      ? { model: this.agent.spec.llm.model }
+      : {};
     const tools = this.toolMapper.getTools().map((t) => t.name);
 
     return {
@@ -409,7 +421,10 @@ export class AnthropicAdapter {
     let manifest: OssaAgent;
     if (manifestPath.endsWith('.json')) {
       manifest = JSON.parse(manifestContent);
-    } else if (manifestPath.endsWith('.yaml') || manifestPath.endsWith('.yml')) {
+    } else if (
+      manifestPath.endsWith('.yaml') ||
+      manifestPath.endsWith('.yml')
+    ) {
       const { parse: parseYaml } = await import('yaml');
       manifest = parseYaml(manifestContent);
     } else {

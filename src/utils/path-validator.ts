@@ -20,7 +20,10 @@ export class PathValidationError extends Error {
  * @returns Absolute, validated file path
  * @throws PathValidationError if path is invalid or inaccessible
  */
-export function validateFilePath(filePath: string, basePath: string | null = null): string {
+export function validateFilePath(
+  filePath: string,
+  basePath: string | null = null
+): string {
   // Normalize and resolve path
   const normalized = normalize(filePath);
   const resolved = resolve(normalized);
@@ -56,7 +59,10 @@ export function validateFilePath(filePath: string, basePath: string | null = nul
  * @returns Absolute, validated directory path
  * @throws PathValidationError if path is invalid or inaccessible
  */
-export function validateDirectoryPath(dirPath: string, basePath: string | null = null): string {
+export function validateDirectoryPath(
+  dirPath: string,
+  basePath: string | null = null
+): string {
   const normalized = normalize(dirPath);
   const resolved = resolve(normalized);
 

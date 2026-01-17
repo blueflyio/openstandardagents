@@ -108,7 +108,14 @@ export interface SubscriptionConfig {
 export interface DeliveryReceipt {
   messageId: string;
   receiptId?: string;
-  status: 'accepted' | 'delivered' | 'acknowledged' | 'processed' | 'failed' | 'rejected' | 'expired';
+  status:
+    | 'accepted'
+    | 'delivered'
+    | 'acknowledged'
+    | 'processed'
+    | 'failed'
+    | 'rejected'
+    | 'expired';
   timestamp: string;
   subscriber?: string;
   channel?: string;
@@ -131,7 +138,10 @@ export interface DeliveryError {
  */
 export interface MessageBroker {
   publish(channel: string, message: Message): Promise<void>;
-  subscribe(subscription: Subscription, handler: MessageHandler): Promise<SubscriptionHandle>;
+  subscribe(
+    subscription: Subscription,
+    handler: MessageHandler
+  ): Promise<SubscriptionHandle>;
   unsubscribe(handle: SubscriptionHandle): Promise<void>;
   createChannel(channel: Channel): Promise<void>;
   deleteChannel(channelName: string): Promise<void>;

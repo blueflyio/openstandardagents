@@ -3,7 +3,7 @@
 **Status**: ✅ Production-Ready SDK Complete
 
 **Created**: 2024-12-12
-**Location**: `/Users/flux423/Sites/LLM/openstandardagents/sdks/python/`
+**Location**: `openstandardagents/sdks/python/`
 
 ---
 
@@ -68,7 +68,7 @@ pip install ossa-sdk
 
 ### From Source
 ```bash
-cd /Users/flux423/Sites/LLM/openstandardagents/sdks/python
+cd openstandardagents/sdks/python
 pip install -e ".[dev]"
 ```
 
@@ -377,7 +377,7 @@ manifest = load_manifest("agent.ossa.yaml")
 - **Repository**: https://gitlab.com/blueflyio/openstandardagents
 - **Documentation**: https://openstandardagents.org/docs
 - **Issues**: https://gitlab.com/blueflyio/openstandardagents/-/issues
-- **Examples**: `/Users/flux423/Sites/LLM/openstandardagents/examples/`
+- **Examples**: `openstandardagents/examples/`
 
 ---
 

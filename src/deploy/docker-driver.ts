@@ -45,7 +45,10 @@ export class DockerDeploymentDriver extends BaseDeploymentDriver {
   /**
    * Get Docker image for agent
    */
-  private getDockerImage(manifest: OssaAgent, config: DeploymentConfig): string {
+  private getDockerImage(
+    manifest: OssaAgent,
+    config: DeploymentConfig
+  ): string {
     if (config.dockerImage) {
       return config.dockerImage;
     }
@@ -70,7 +73,8 @@ export class DockerDeploymentDriver extends BaseDeploymentDriver {
     if (!dockerAvailable) {
       return {
         success: false,
-        message: 'Docker is not available. Please install Docker and try again.',
+        message:
+          'Docker is not available. Please install Docker and try again.',
       };
     }
 
