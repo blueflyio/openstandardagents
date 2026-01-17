@@ -1,4 +1,4 @@
-apiVersion: ossa/v0.3.3
+apiVersion: ossa/v0.3.5
 kind: Agent
 metadata:
   name: mistral-code-assistant

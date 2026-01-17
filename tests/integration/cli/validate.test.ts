@@ -72,11 +72,14 @@ spec:
 
     let caughtError = false;
     try {
-      execSync(`node --require reflect-metadata dist/cli/index.js validate ${manifestPath}`, {
-        encoding: 'utf-8',
-        cwd: path.resolve(__dirname, '../../..'),
-        stdio: 'pipe',
-      });
+      execSync(
+        `node --require reflect-metadata dist/cli/index.js validate ${manifestPath}`,
+        {
+          encoding: 'utf-8',
+          cwd: path.resolve(__dirname, '../../..'),
+          stdio: 'pipe',
+        }
+      );
     } catch (error: any) {
       // Command should throw when YAML parsing fails
       caughtError = true;
@@ -108,10 +111,13 @@ spec:
 
     fs.writeFileSync(manifestPath, manifest);
 
-    const output = execSync(`node --require reflect-metadata dist/cli/index.js validate ${manifestPath} --verbose`, {
-      encoding: 'utf-8',
-      cwd: path.resolve(__dirname, '../../..'),
-    });
+    const output = execSync(
+      `node --require reflect-metadata dist/cli/index.js validate ${manifestPath} --verbose`,
+      {
+        encoding: 'utf-8',
+        cwd: path.resolve(__dirname, '../../..'),
+      }
+    );
 
     expect(output).toContain('test-agent');
   });

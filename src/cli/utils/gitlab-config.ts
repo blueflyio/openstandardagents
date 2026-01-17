@@ -75,7 +75,11 @@ export function getGitLabProjectId(): string | number | undefined {
  * Get GitLab API URL from environment
  */
 export function getGitLabApiUrl(): string {
-  return process.env.CI_API_V4_URL || process.env.GITLAB_API_URL || 'https://gitlab.com/api/v4';
+  return (
+    process.env.CI_API_V4_URL ||
+    process.env.GITLAB_API_URL ||
+    'https://gitlab.com/api/v4'
+  );
 }
 
 /**
@@ -198,7 +202,9 @@ export function encodeProjectPath(projectPath: string): string {
 /**
  * Parse a GitLab project URL into project ID/path
  */
-export function parseGitLabUrl(url: string): { projectPath: string; host: string } | undefined {
+export function parseGitLabUrl(
+  url: string
+): { projectPath: string; host: string } | undefined {
   try {
     const parsed = new URL(url);
     const path = parsed.pathname.replace(/^\//, '').replace(/\.git$/, '');

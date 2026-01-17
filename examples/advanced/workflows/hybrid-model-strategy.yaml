@@ -1,7 +1,7 @@
 # Hybrid Model Strategy: Fast Local Planning + Premium Development
 # Demonstrates using fast Ollama models for planning agents and Claude for development
 
-apiVersion: ossa/v0.3.3
+apiVersion: ossa/v0.3.5
 kind: Workflow
 metadata:
   name: hybrid-development-workflow

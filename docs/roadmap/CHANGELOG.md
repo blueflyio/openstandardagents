@@ -153,7 +153,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **Issues**: #126, API Normalizer
 - **Deliverables**: Symfony adapter, Drupal ECA, state management
 
-### v0.3.3 - Production Use Cases (Target: Week 6)
+### v0.3.4 - Production Use Cases (Target: Week 6)
 - **Status**: Not Started
 - **Issues**: API Normalizer integration, multi-agent workflows
 - **Deliverables**: Production deployments, integration tests

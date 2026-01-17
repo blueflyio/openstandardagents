@@ -37,7 +37,9 @@ export class ValidatorService {
 
     // Kind validation
     if (manifest.kind && !VALID_KINDS.includes(manifest.kind)) {
-      errors.push(`Invalid kind: ${manifest.kind}. Must be one of: ${VALID_KINDS.join(', ')}`);
+      errors.push(
+        `Invalid kind: ${manifest.kind}. Must be one of: ${VALID_KINDS.join(', ')}`
+      );
     }
 
     // Metadata validation
@@ -61,7 +63,15 @@ export class ValidatorService {
    * Validate against JSON Schema file
    * CRUD: Read (validation)
    */
-  async validateJSONSchema(manifest: OSSAManifest, schemaPath: string, strict = false) {
-    return await this.schemaValidator.validateJSONSchema(manifest, schemaPath, strict);
+  async validateJSONSchema(
+    manifest: OSSAManifest,
+    schemaPath: string,
+    strict = false
+  ) {
+    return await this.schemaValidator.validateJSONSchema(
+      manifest,
+      schemaPath,
+      strict
+    );
   }
 }

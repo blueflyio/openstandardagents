@@ -1,17 +1,17 @@
-apiVersion: ossa/v0.3.3
+apiVersion: ossa/v0.3.5
 kind: Agent
 metadata:
   name: k8s-troubleshooter
   version: 1.0.0
   description: Autonomous Kubernetes cluster troubleshooting agent with diagnostic capabilities
   labels:
-    ossa-version: v0.3.3
+    ossa-version: v0.3.4
     kubernetes: "true"
     troubleshooting: "true"
     infrastructure: "true"
     diagnostics: "true"
   annotations:
-    ossa.io/migration: legacy-v1.0-to-ossa/v0.3.3
+    ossa.io/migration: legacy-v1.0-to-ossa/v0.3.4
     ossa.io/migrated-date: 2026-01-10
 spec:
   role: monitoring

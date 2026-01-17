@@ -165,7 +165,9 @@ export class AzureAdapter {
       apiKey: apiKey || process.env.AZURE_OPENAI_API_KEY,
       baseURL: `${endpoint}/openai/deployments/${this.deployment}`,
       defaultQuery: { 'api-version': apiVersion },
-      defaultHeaders: { 'api-key': apiKey || process.env.AZURE_OPENAI_API_KEY || '' },
+      defaultHeaders: {
+        'api-key': apiKey || process.env.AZURE_OPENAI_API_KEY || '',
+      },
     });
   }
 

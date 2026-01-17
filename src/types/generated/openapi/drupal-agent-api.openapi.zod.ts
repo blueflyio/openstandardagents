@@ -2,7 +2,7 @@
  * Drupal LLM Platform Agent API - Zod Schemas
  *
  * AUTO-GENERATED - DO NOT EDIT
- * Generated from: /Users/flux423/Sites/LLM/OssA/openstandardagents/openapi/reference-implementations/drupal-agent-api.openapi.yaml
+ * Generated from: openapi/reference-implementations/drupal-agent-api.openapi.yaml
  * OSSA Version: 0.3.3
  * API Version: ossa/v0.3.3
  * Generated on: 2026-01-06T18:04:52.293Z

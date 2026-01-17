@@ -1,10 +1,11 @@
-apiVersion: ossa/v0.3.3-alpha.1
+apiVersion: ossa/v0.3
 kind: Agent
 metadata:
   name: financial-data-processor
   version: v1.2.3
-  description: 'Enterprise-grade financial data processing agent with full OSSA Gold compliance'
-  author: 'enterprise-financial-corp'
+  description: Enterprise-grade financial data processing agent with full OSSA
+    Gold compliance
+  author: enterprise-financial-corp
   labels:
     environment: production
     classification: confidential
@@ -35,23 +36,26 @@ spec:
   protocols:
     supported:
       - name: rest
-        version: '1.1'
-        endpoint: 'https://api.enterprise.com/agents/financial-processor'
+        version: "1.1"
+        endpoint: https://api.enterprise.com/agents/financial-processor
         authentication:
           type: oauth2
-          scopes: ['agent.execute', 'data.read', 'audit.write']
+          scopes:
+            - agent.execute
+            - data.read
+            - audit.write
         tls: true
         timeout: 30000
       - name: grpc
-        version: '1.0'
-        endpoint: 'grpc://secure.enterprise.com:9443/FinancialProcessor'
+        version: "1.0"
+        endpoint: grpc://secure.enterprise.com:9443/FinancialProcessor
         authentication:
           type: mutual-tls
         tls: true
         timeout: 30000
       - name: mcp
-        version: '0.1.0'
-        endpoint: 'mcp://internal.enterprise.com:8080/financial-processor'
+        version: 0.1.0
+        endpoint: mcp://internal.enterprise.com:8080/financial-processor
         authentication:
           type: api-key
         tls: true
@@ -88,18 +92,20 @@ spec:
       maximum: 50000
       emergency: 100000
     cost:
-      hourly: 10.50
-      daily: 252.00
-      monthly: 7560.00
+      hourly: 10.5
+      daily: 252
+      monthly: 7560
     resources:
-      cpu: '2000m'
-      memory: '4Gi'
-      storage: '10Gi'
+      cpu: 2000m
+      memory: 4Gi
+      storage: 10Gi
   security:
     encryption:
       atRest: true
       inTransit: true
-      algorithms: ['AES-256-GCM', 'RSA-4096']
+      algorithms:
+        - AES-256-GCM
+        - RSA-4096
     access:
       authentication: required
       authorization: rbac
@@ -120,23 +126,30 @@ spec:
         - pii-handling
   monitoring:
     healthCheck:
-      endpoint: '/health'
+      endpoint: /health
       interval: 30
       timeout: 5
     metrics:
-      endpoint: '/metrics'
+      endpoint: /metrics
       format: prometheus
-      retention: '7d'
+      retention: 7d
     logging:
       level: info
       format: structured
       destination: enterprise-audit-log
-      retention: '2y'
+      retention: 2y
   governance:
     approvals:
-      deployment: ['security-officer', 'compliance-manager']
-      updates: ['technical-lead', 'compliance-manager']
-      retirement: ['security-officer', 'data-officer', 'compliance-manager']
+      deployment:
+        - security-officer
+        - compliance-manager
+      updates:
+        - technical-lead
+        - compliance-manager
+      retirement:
+        - security-officer
+        - data-officer
+        - compliance-manager
     policies:
       - financial-data-policy-v2.1
       - enterprise-security-policy-v3.0

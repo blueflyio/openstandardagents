@@ -31,7 +31,7 @@ export function createListCommand(): Command {
       'all'
     )
     .action(async (opts) => {
-      const options = ListOptionsSchema.parse(opts) as ListOptions;
+      const options = ListOptionsSchema.parse(opts);
       const config = new CatalogConfig();
 
       const agentInfos = config.getAgentInfos();

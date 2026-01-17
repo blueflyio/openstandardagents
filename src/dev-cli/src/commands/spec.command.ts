@@ -1,6 +1,6 @@
 /**
  * Spec Generation Commands
- * 
+ *
  * SOLID: Single Responsibility - Spec generation only
  * DRY: Reuses Zod schemas from schemas/spec.schema.ts
  */
@@ -18,7 +18,9 @@ export const specCommand = new Command('spec')
 specCommand
   .command('generate')
   .alias('gen')
-  .description('Generate spec from source (for CI - prevents local AI bots from breaking spec)')
+  .description(
+    'Generate spec from source (for CI - prevents local AI bots from breaking spec)'
+  )
   .option('--output-dir <dir>', 'Output directory', 'spec/')
   .option('--no-validate', 'Skip validation after generation', false)
   .action(async (options: { outputDir: string; validate: boolean }) => {
@@ -34,15 +36,21 @@ specCommand
 
       if (result.success) {
         console.log(chalk.green(`\n✅ Spec generated: ${result.outputPath}`));
-        console.log(chalk.gray(`\nFiles generated: ${result.filesGenerated.length}`));
-        result.filesGenerated.forEach(file => console.log(chalk.gray(`  • ${file}`)));
+        console.log(
+          chalk.gray(`\nFiles generated: ${result.filesGenerated.length}`)
+        );
+        result.filesGenerated.forEach((file) =>
+          console.log(chalk.gray(`  • ${file}`))
+        );
 
         if (result.validation) {
           if (result.validation.valid) {
             console.log(chalk.green('\n✅ Spec validation passed'));
           } else {
             console.error(chalk.red('\n❌ Spec validation failed:'));
-            result.validation.errors.forEach(err => console.error(chalk.red(`  • ${err}`)));
+            result.validation.errors.forEach((err) =>
+              console.error(chalk.red(`  • ${err}`))
+            );
             process.exit(1);
           }
         }
@@ -51,7 +59,11 @@ specCommand
         process.exit(1);
       }
     } catch (error) {
-      console.error(chalk.red(`\n❌ Error: ${error instanceof Error ? error.message : String(error)}`));
+      console.error(
+        chalk.red(
+          `\n❌ Error: ${error instanceof Error ? error.message : String(error)}`
+        )
+      );
       process.exit(1);
     }
   });
@@ -74,15 +86,21 @@ specCommand
         console.log(chalk.green('✅ Spec is valid!'));
         if (result.warnings.length > 0) {
           console.log(chalk.yellow('\n⚠️  Warnings:'));
-          result.warnings.forEach(warn => console.log(chalk.yellow(`  • ${warn}`)));
+          result.warnings.forEach((warn) =>
+            console.log(chalk.yellow(`  • ${warn}`))
+          );
         }
       } else {
         console.error(chalk.red('\n❌ Spec validation failed:'));
-        result.errors.forEach(err => console.error(chalk.red(`  • ${err}`)));
+        result.errors.forEach((err) => console.error(chalk.red(`  • ${err}`)));
         process.exit(1);
       }
     } catch (error) {
-      console.error(chalk.red(`\n❌ Error: ${error instanceof Error ? error.message : String(error)}`));
+      console.error(
+        chalk.red(
+          `\n❌ Error: ${error instanceof Error ? error.message : String(error)}`
+        )
+      );
       process.exit(1);
     }
   });

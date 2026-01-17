@@ -9,7 +9,6 @@
 
 import { z } from 'zod';
 
-
 // Basic OSSA schema - manual generation fallback
 export const OssaApiVersionSchema = z.literal('ossa/v0.3.3');
 

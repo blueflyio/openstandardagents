@@ -37,16 +37,17 @@ export class ManifestLoader {
     const content = readFileSync(filePath, 'utf-8');
 
     // Parse YAML/JSON
-    const parsed = filePath.endsWith('.yaml') || filePath.endsWith('.yml')
-      ? parse(content)
-      : JSON.parse(content);
+    const parsed =
+      filePath.endsWith('.yaml') || filePath.endsWith('.yml')
+        ? parse(content)
+        : JSON.parse(content);
 
     // Validate base structure
     ManifestBaseSchema.parse(parsed);
 
     // Validate against specific schema if provided
     if (options.validate !== false && schema) {
-      return schema.parse(parsed) as T;
+      return schema.parse(parsed);
     }
 
     return parsed as T;

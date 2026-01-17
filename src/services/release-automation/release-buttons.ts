@@ -21,7 +21,8 @@ async function releaseToNpm() {
   // Determine version type and appropriate tag
   const isRC = version.includes('-rc');
   const isDev = version.includes('-dev');
-  const isPrerelease = isRC || isDev || version.includes('-alpha') || version.includes('-beta');
+  const isPrerelease =
+    isRC || isDev || version.includes('-alpha') || version.includes('-beta');
 
   // Determine npm tag based on version type
   let npmTag = 'latest';
@@ -44,7 +45,11 @@ async function releaseToNpm() {
   let previousLatest: string | null = null;
   if (!isPrerelease) {
     try {
-      previousLatest = execSync(`npm view ${packageName} dist-tags.latest 2>/dev/null`).toString().trim();
+      previousLatest = execSync(
+        `npm view ${packageName} dist-tags.latest 2>/dev/null`
+      )
+        .toString()
+        .trim();
       console.log(`📌 Current latest version: ${previousLatest}`);
     } catch {
       console.log('No previous latest version found');
@@ -59,7 +64,9 @@ async function releaseToNpm() {
   if (!isPrerelease && previousLatest && previousLatest !== version) {
     console.log(`📌 Updating legacy tag to point to ${previousLatest}...`);
     try {
-      execSync(`npm dist-tag add ${packageName}@${previousLatest} legacy`, { stdio: 'inherit' });
+      execSync(`npm dist-tag add ${packageName}@${previousLatest} legacy`, {
+        stdio: 'inherit',
+      });
       console.log(`✅ Legacy tag updated to ${previousLatest}`);
     } catch (error) {
       console.warn(`⚠️ Failed to update legacy tag: ${error}`);
@@ -77,71 +84,81 @@ async function releaseToNpm() {
   // 7. Run smoke tests on published package
   console.log('Running smoke tests...');
   const tempDir = execSync('mktemp -d').toString().trim();
-  execSync(`cd ${tempDir} && npm install ${packageName}@${version}`, { stdio: 'inherit' });
-  execSync(`cd ${tempDir} && npx ${packageName} --version`, { stdio: 'inherit' });
+  execSync(`cd ${tempDir} && npm install ${packageName}@${version}`, {
+    stdio: 'inherit',
+  });
+  execSync(`cd ${tempDir} && npx ${packageName} --version`, {
+    stdio: 'inherit',
+  });
 
   console.log('✅ npm release successful');
 }
 
 async function releaseToGitHub() {
   console.log('🐙 Starting GitHub release...');
-  
+
   const packageJson = JSON.parse(execSync('cat package.json').toString());
   const version = packageJson.version;
   const tag = `v${version}`;
-  
+
   // 1. Create GitHub release
-  const releaseNotes = execSync(`git tag -l --format='%(contents)' ${tag}`).toString();
-  
-  execSync(`gh release create ${tag} \
+  const releaseNotes = execSync(
+    `git tag -l --format='%(contents)' ${tag}`
+  ).toString();
+
+  execSync(
+    `gh release create ${tag} \
     --title "Release ${version}" \
     --notes "${releaseNotes}" \
-    --repo blueflyio/openstandardagents`, 
-    { stdio: 'inherit' }
-  );
-  
-  // 2. Upload artifacts
-  execSync(`gh release upload ${tag} dist/*.tgz \
     --repo blueflyio/openstandardagents`,
     { stdio: 'inherit' }
   );
-  
+
+  // 2. Upload artifacts
+  execSync(
+    `gh release upload ${tag} dist/*.tgz \
+    --repo blueflyio/openstandardagents`,
+    { stdio: 'inherit' }
+  );
+
   console.log('✅ GitHub release successful');
 }
 
 async function deployWebsite() {
   console.log('🌐 Starting website deployment...');
-  
+
   // Note: We're already in website/ directory from CI before_script
   // Check if we're in website directory, if not, cd into it
   const cwd = process.cwd();
   const isInWebsite = cwd.endsWith('website');
   const websiteDir = isInWebsite ? '.' : 'website';
-  
+
   // 1. Build website
   execSync(`cd ${websiteDir} && npm run build`, { stdio: 'inherit' });
-  
+
   // 2. Run pre-deploy checks
   execSync(`cd ${websiteDir} && npm run lighthouse`, { stdio: 'inherit' });
-  
+
   // 3. Deploy to production
   execSync(`cd ${websiteDir} && npm run deploy`, { stdio: 'inherit' });
-  
+
   // 4. Verify deployment
-  const response = execSync('curl -s -o /dev/null -w "%{http_code}" https://openstandardagents.org').toString();
+  const response = execSync(
+    'curl -s -o /dev/null -w "%{http_code}" https://openstandardagents.org'
+  ).toString();
   if (response !== '200') {
     throw new Error(`Website deployment failed: HTTP ${response}`);
   }
-  
+
   console.log('✅ Website deployment successful');
 }
 
 async function announceRelease() {
   console.log('📢 Announcing release...');
-  
+
   const packageJson = JSON.parse(execSync('cat package.json').toString());
   const version = packageJson.version;
-  
+
   // 1. Create announcement issue
   const projectId = process.env.CI_PROJECT_ID!;
   const issueTitle = `🎉 Release ${version} Announcement`;
@@ -165,17 +182,17 @@ Please help spread the word about this release!`;
     description: issueDescription,
     labels: 'announcement,release',
   });
-  
+
   // 2. Send notifications (Slack, email, etc.)
   // TODO: Implement notification system
-  
+
   console.log('✅ Release announced');
 }
 
 // Main handler
 async function main() {
   const action = process.env.RELEASE_ACTION;
-  
+
   switch (action) {
     case 'npm':
       await releaseToNpm();

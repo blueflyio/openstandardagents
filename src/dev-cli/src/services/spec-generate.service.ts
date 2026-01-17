@@ -1,6 +1,6 @@
 /**
  * Spec Generate Service
- * 
+ *
  * Generates OSSA spec from source files (for CI)
  * Prevents local AI bots from breaking the spec
  * SOLID: Single Responsibility - Spec generation only
@@ -8,7 +8,10 @@
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
-import { SpecGenerateRequest, SpecGenerateResponse } from '../schemas/spec.schema.js';
+import {
+  SpecGenerateRequest,
+  SpecGenerateResponse,
+} from '../schemas/spec.schema.js';
 
 export class SpecGenerateService {
   private readonly rootDir: string;
@@ -31,7 +34,7 @@ export class SpecGenerateService {
     }
 
     const filesGenerated: string[] = [];
-    
+
     // TODO: Generate spec from source files
     // This should read from source TypeScript files and generate JSON schema
 

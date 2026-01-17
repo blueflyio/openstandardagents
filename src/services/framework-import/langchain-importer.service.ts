@@ -1,6 +1,6 @@
 /**
  * LangChain Importer Service
- * 
+ *
  * Imports LangChain agents and converts them to OSSA manifests.
  * SOLID: Single Responsibility - LangChain import only
  */
@@ -11,20 +11,28 @@ import type { OssaAgent } from '../../types/index.js';
 
 const LangChainConfigSchema = z.object({
   agent_type: z.string().optional(),
-  llm: z.object({
-    model_name: z.string(),
-    temperature: z.number().optional(),
-    max_tokens: z.number().optional(),
-  }).optional(),
-  tools: z.array(z.object({
-    name: z.string(),
-    description: z.string(),
-    func: z.string().optional(),
-  })).optional(),
-  memory: z.object({
-    type: z.string(),
-    config: z.record(z.string(), z.unknown()).optional(),
-  }).optional(),
+  llm: z
+    .object({
+      model_name: z.string(),
+      temperature: z.number().optional(),
+      max_tokens: z.number().optional(),
+    })
+    .optional(),
+  tools: z
+    .array(
+      z.object({
+        name: z.string(),
+        description: z.string(),
+        func: z.string().optional(),
+      })
+    )
+    .optional(),
+  memory: z
+    .object({
+      type: z.string(),
+      config: z.record(z.string(), z.unknown()).optional(),
+    })
+    .optional(),
 });
 
 export type LangChainConfig = z.infer<typeof LangChainConfigSchema>;
@@ -78,7 +86,9 @@ export class LangChainImporterService {
     const config: Partial<LangChainConfig> = {};
 
     // Extract LLM model
-    const llmMatch = code.match(/ChatOpenAI\([\s\S]*?model_name\s*=\s*["']([^"']+)["']/);
+    const llmMatch = code.match(
+      /ChatOpenAI\([\s\S]*?model_name\s*=\s*["']([^"']+)["']/
+    );
     if (llmMatch) {
       config.llm = {
         model_name: llmMatch[1],
@@ -98,7 +108,9 @@ export class LangChainImporterService {
     }
 
     // Extract tools
-    const toolMatches = code.matchAll(/Tool\([\s\S]*?name\s*=\s*["']([^"']+)["'][\s\S]*?description\s*=\s*["']([^"']+)["']/g);
+    const toolMatches = code.matchAll(
+      /Tool\([\s\S]*?name\s*=\s*["']([^"']+)["'][\s\S]*?description\s*=\s*["']([^"']+)["']/g
+    );
     const tools: Array<{ name: string; description: string }> = [];
     for (const match of toolMatches) {
       tools.push({
@@ -129,8 +141,10 @@ export class LangChainImporterService {
     // Determine provider from model name
     const modelName = config.llm?.model_name || 'gpt-3.5-turbo';
     let provider = 'openai';
-    if (modelName.includes('claude') || modelName.includes('anthropic')) provider = 'anthropic';
-    if (modelName.includes('gemini') || modelName.includes('google')) provider = 'google';
+    if (modelName.includes('claude') || modelName.includes('anthropic'))
+      provider = 'anthropic';
+    if (modelName.includes('gemini') || modelName.includes('google'))
+      provider = 'google';
 
     return {
       apiVersion: 'ossa/v0.3.3',
@@ -151,7 +165,7 @@ export class LangChainImporterService {
           model: modelName,
           temperature: config.llm?.temperature,
         },
-        tools: config.tools?.map(tool => ({
+        tools: config.tools?.map((tool) => ({
           name: tool.name,
           description: tool.description,
         })),

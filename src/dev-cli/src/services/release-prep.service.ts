@@ -1,8 +1,8 @@
 /**
  * Release Preparation Service
- * 
+ *
  * Comprehensive validation for v0.3.3 release to GitLab, GitHub, and npmjs
- * 
+ *
  * Architecture:
  * - OpenAPI-First: Spec in openapi/dev-cli.openapi.yml
  * - Zod Validation: All inputs/outputs validated with Zod schemas
@@ -118,7 +118,14 @@ export class ReleasePrepService {
     const ready = allErrors.length === 0 && gitlab.ready;
 
     // Build next steps
-    const nextSteps = this.buildNextSteps(version, versionTag, gitlab, github, npm, ready);
+    const nextSteps = this.buildNextSteps(
+      version,
+      versionTag,
+      gitlab,
+      github,
+      npm,
+      ready
+    );
 
     // Build rollback plan
     const rollbackPlan = this.buildRollbackPlan(version, versionTag);
@@ -142,7 +149,10 @@ export class ReleasePrepService {
    * Validate GitLab readiness
    * CRUD: Read
    */
-  private async validateGitLab(version: string, versionTag: string): Promise<GitLabValidation> {
+  private async validateGitLab(
+    version: string,
+    versionTag: string
+  ): Promise<GitLabValidation> {
     const errors: string[] = [];
     const warnings: string[] = [];
 
@@ -180,7 +190,9 @@ export class ReleasePrepService {
       tagExists = existingTags.includes(versionTag);
 
       if (tagExists) {
-        errors.push(`Tag ${versionTag} already exists - cannot create duplicate`);
+        errors.push(
+          `Tag ${versionTag} already exists - cannot create duplicate`
+        );
         tagCanBeCreated = false;
       }
 
@@ -201,9 +213,10 @@ export class ReleasePrepService {
       if (branch !== 'main' && !branch.startsWith('release/')) {
         warnings.push(`Not on main or release/* branch (current: ${branch})`);
       }
-
     } catch (error) {
-      errors.push(`GitLab validation failed: ${error instanceof Error ? error.message : String(error)}`);
+      errors.push(
+        `GitLab validation failed: ${error instanceof Error ? error.message : String(error)}`
+      );
       tagCanBeCreated = false;
       releaseCanBeCreated = false;
     }
@@ -229,7 +242,10 @@ export class ReleasePrepService {
    * Validate GitHub readiness
    * CRUD: Read
    */
-  private async validateGitHub(version: string, versionTag: string): Promise<GitHubValidation> {
+  private async validateGitHub(
+    version: string,
+    versionTag: string
+  ): Promise<GitHubValidation> {
     const errors: string[] = [];
     const warnings: string[] = [];
 
@@ -262,9 +278,10 @@ export class ReleasePrepService {
       }
 
       releaseCanBeCreated = remoteConfigured && tokenConfigured;
-
     } catch (error) {
-      errors.push(`GitHub validation failed: ${error instanceof Error ? error.message : String(error)}`);
+      errors.push(
+        `GitHub validation failed: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
 
     return GitHubValidationSchema.parse({
@@ -323,8 +340,12 @@ export class ReleasePrepService {
 
       // Validate package name format to prevent command injection (single validation point - DRY)
       // NPM package name rules: scoped packages must be @scope/name, alphanumeric + - . _ ~
-      if (!/^@[a-z0-9-~][a-z0-9-._~]*\/[a-z0-9-~][a-z0-9-._~]*$/.test(packageName)) {
-        errors.push(`Invalid package name format: ${packageName} (must be scoped: @scope/name)`);
+      if (
+        !/^@[a-z0-9-~][a-z0-9-._~]*\/[a-z0-9-~][a-z0-9-._~]*$/.test(packageName)
+      ) {
+        errors.push(
+          `Invalid package name format: ${packageName} (must be scoped: @scope/name)`
+        );
         canPublish = false;
         return NPMValidationSchema.parse({
           ready: false,
@@ -341,7 +362,9 @@ export class ReleasePrepService {
       // Validate version format to prevent command injection
       // Semantic versioning: major.minor.patch[-pre-release]
       if (!/^[0-9]+\.[0-9]+\.[0-9]+(-[a-z0-9-]+(\.[0-9]+)?)?$/.test(version)) {
-        errors.push(`Invalid version format: ${version} (must be semantic version)`);
+        errors.push(
+          `Invalid version format: ${version} (must be semantic version)`
+        );
         canPublish = false;
         return NPMValidationSchema.parse({
           ready: false,
@@ -357,11 +380,14 @@ export class ReleasePrepService {
 
       // Check if version already exists on npm (packageName and version validated above)
       try {
-        const npmViewOutput = execSync(`npm view ${packageName}@${version} version`, {
-          encoding: 'utf-8',
-          stdio: 'pipe',
-          cwd: this.rootDir,
-        }).trim();
+        const npmViewOutput = execSync(
+          `npm view ${packageName}@${version} version`,
+          {
+            encoding: 'utf-8',
+            stdio: 'pipe',
+            cwd: this.rootDir,
+          }
+        ).trim();
 
         if (npmViewOutput) {
           versionExists = true;
@@ -396,9 +422,10 @@ export class ReleasePrepService {
         warnings.push('npm registry not accessible - check network/firewall');
         registryAccessible = false;
       }
-
     } catch (error) {
-      errors.push(`NPM validation failed: ${error instanceof Error ? error.message : String(error)}`);
+      errors.push(
+        `NPM validation failed: ${error instanceof Error ? error.message : String(error)}`
+      );
       canPublish = false;
     }
 
@@ -423,15 +450,27 @@ export class ReleasePrepService {
     gitlab: GitLabValidation,
     github: GitHubValidation | undefined,
     npm: NPMValidation | undefined
-  ): Array<{ category: string; item: string; status: 'pass' | 'fail' | 'warning' | 'skip'; message: string }> {
-    const checklist: Array<{ category: string; item: string; status: 'pass' | 'fail' | 'warning' | 'skip'; message: string }> = [];
+  ): Array<{
+    category: string;
+    item: string;
+    status: 'pass' | 'fail' | 'warning' | 'skip';
+    message: string;
+  }> {
+    const checklist: Array<{
+      category: string;
+      item: string;
+      status: 'pass' | 'fail' | 'warning' | 'skip';
+      message: string;
+    }> = [];
 
     // Repository checks
     checklist.push({
       category: 'Repository',
       item: 'Working tree clean',
       status: verifyResult.repository.isClean ? 'pass' : 'fail',
-      message: verifyResult.repository.isClean ? 'Working tree is clean' : 'Uncommitted changes found',
+      message: verifyResult.repository.isClean
+        ? 'Working tree is clean'
+        : 'Uncommitted changes found',
     });
 
     checklist.push({
@@ -448,14 +487,18 @@ export class ReleasePrepService {
       category: 'GitLab',
       item: 'Tag does not exist',
       status: !gitlab.tagExists ? 'pass' : 'fail',
-      message: gitlab.tagExists ? `Tag ${gitlab.protectedTagRules.pattern} already exists` : 'Tag can be created',
+      message: gitlab.tagExists
+        ? `Tag ${gitlab.protectedTagRules.pattern} already exists`
+        : 'Tag can be created',
     });
 
     checklist.push({
       category: 'GitLab',
       item: 'CI token configured',
       status: gitlab.ciTokenConfigured ? 'pass' : 'warning',
-      message: gitlab.ciTokenConfigured ? 'CI_DEPLOY_OSSA configured' : 'CI_DEPLOY_OSSA not set',
+      message: gitlab.ciTokenConfigured
+        ? 'CI_DEPLOY_OSSA configured'
+        : 'CI_DEPLOY_OSSA not set',
     });
 
     // GitHub checks
@@ -464,14 +507,18 @@ export class ReleasePrepService {
         category: 'GitHub',
         item: 'Remote configured',
         status: github.remoteConfigured ? 'pass' : 'warning',
-        message: github.remoteConfigured ? 'GitHub remote found' : 'GitHub remote not configured',
+        message: github.remoteConfigured
+          ? 'GitHub remote found'
+          : 'GitHub remote not configured',
       });
 
       checklist.push({
         category: 'GitHub',
         item: 'Token configured',
         status: github.tokenConfigured ? 'pass' : 'warning',
-        message: github.tokenConfigured ? 'GITHUB_TOKEN configured' : 'GITHUB_TOKEN not set',
+        message: github.tokenConfigured
+          ? 'GITHUB_TOKEN configured'
+          : 'GITHUB_TOKEN not set',
       });
     } else {
       checklist.push({
@@ -488,21 +535,27 @@ export class ReleasePrepService {
         category: 'NPM',
         item: 'Version not published',
         status: !npm.versionExists ? 'pass' : 'fail',
-        message: npm.versionExists ? `Version ${npm.packageName}@${npm.currentPublishedVersion} already published` : 'Version not published',
+        message: npm.versionExists
+          ? `Version ${npm.packageName}@${npm.currentPublishedVersion} already published`
+          : 'Version not published',
       });
 
       checklist.push({
         category: 'NPM',
         item: 'Token configured',
         status: npm.tokenConfigured ? 'pass' : 'fail',
-        message: npm.tokenConfigured ? 'NPM_TOKEN configured' : 'NPM_TOKEN not set',
+        message: npm.tokenConfigured
+          ? 'NPM_TOKEN configured'
+          : 'NPM_TOKEN not set',
       });
 
       checklist.push({
         category: 'NPM',
         item: 'Registry accessible',
         status: npm.registryAccessible ? 'pass' : 'warning',
-        message: npm.registryAccessible ? 'npm registry accessible' : 'npm registry not accessible',
+        message: npm.registryAccessible
+          ? 'npm registry accessible'
+          : 'npm registry not accessible',
       });
     } else {
       checklist.push({
@@ -533,13 +586,17 @@ export class ReleasePrepService {
 
     const steps: string[] = [];
 
-    steps.push(`1. Create GitLab tag: git tag -a ${versionTag} -m 'Release ${versionTag}'`);
+    steps.push(
+      `1. Create GitLab tag: git tag -a ${versionTag} -m 'Release ${versionTag}'`
+    );
     steps.push(`2. Push GitLab tag: git push origin ${versionTag}`);
     steps.push('3. Monitor GitLab CI pipeline for release job');
 
     if (npm && npm.ready) {
       steps.push('4. Verify npm publish job completes in CI');
-      steps.push(`5. Verify package on npmjs.org: npm view ${npm.packageName}@${version}`);
+      steps.push(
+        `5. Verify package on npmjs.org: npm view ${npm.packageName}@${version}`
+      );
     }
 
     if (github && github.ready) {
@@ -575,7 +632,12 @@ export class ReleasePrepService {
     npm: NPMValidation | undefined,
     allErrors: string[],
     allWarnings: string[],
-    checklist: Array<{ category: string; item: string; status: 'pass' | 'fail' | 'warning' | 'skip'; message: string }>,
+    checklist: Array<{
+      category: string;
+      item: string;
+      status: 'pass' | 'fail' | 'warning' | 'skip';
+      message: string;
+    }>,
     nextSteps: string[]
   ): ReleasePrepResponse {
     return ReleasePrepResponseSchema.parse({

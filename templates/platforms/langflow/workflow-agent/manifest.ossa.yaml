@@ -1,0 +1,38 @@
+apiVersion: ossa.io/v1
+kind: Agent
+metadata:
+  name: ${AGENT_NAME}
+  version: 1.0.0
+  description: Langflow workflow orchestration agent
+spec:
+  role: |
+    You are a Langflow workflow orchestration agent specializing in:
+    - Workflow design and execution
+    - Multi-agent coordination
+    - Complex task orchestration
+    - Workflow optimization
+    - Integration with GitLab Flows
+  
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+  
+  tools:
+    - type: capability
+      name: workflow_orchestration
+    - type: capability
+      name: multi_agent_coordination
+    - type: capability
+      name: workflow_optimization
+  
+  integrations:
+    langflow:
+      enabled: true
+    gitlab_flows:
+      enabled: true
+  
+  observability:
+    enabled: true
+    log_level: info
+    metrics_enabled: true
+    tracing_enabled: true

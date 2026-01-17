@@ -1,6 +1,6 @@
 /**
  * Workflow Help Commands
- * 
+ *
  * SOLID: Single Responsibility - Workflow guidance only
  */
 
@@ -44,17 +44,19 @@ workflowCommand
       {
         number: 5,
         description: 'Commit and push changes',
-        command: 'git add . && git commit -m "chore: release vX.Y.Z" && git push',
+        command:
+          'git add . && git commit -m "chore: release vX.Y.Z" && git push',
       },
       {
         number: 6,
-        description: 'CI will handle the rest (publish to npm, create GitLab release, etc.)',
+        description:
+          'CI will handle the rest (publish to npm, create GitLab release, etc.)',
         command: '',
         optional: true,
       },
     ];
 
-    steps.forEach(step => {
+    steps.forEach((step) => {
       console.log(chalk.cyan(`${step.number}. ${step.description}`));
       if (step.command) {
         console.log(chalk.gray(`   ${step.command}`));
@@ -92,7 +94,7 @@ workflowCommand
       },
     ];
 
-    steps.forEach(step => {
+    steps.forEach((step) => {
       console.log(chalk.cyan(`${step.number}. ${step.description}`));
       console.log(chalk.gray(`   ${step.command}`));
       console.log('');
