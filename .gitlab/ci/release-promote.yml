@@ -124,6 +124,9 @@ publish-npm:stable:
   image: node:${NODE_VERSION}
   tags:
     - saas-linux-small-amd64
+  environment:
+    name: npm-registry
+    action: prepare
   # NOTE: Cannot use needs: promote-rc-to-stable because tag pipelines are separate from branch pipelines
   # When stable tag is pushed, it triggers a new pipeline where promote-rc-to-stable doesn't exist
   # This job runs independently when stable tag is pushed
@@ -132,12 +135,6 @@ publish-npm:stable:
   before_script:
     - npm ci
     - npm run build
-    - |
-      if [ -z "$NPM_TOKEN" ]; then
-        echo "ERROR: NPM_TOKEN not set in CI/CD variables"
-        exit 1
-      fi
-      echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
   script:
     - |
       #!/bin/bash
@@ -175,9 +172,9 @@ publish-npm:stable:
         exit 0
       fi
 
-      # Publish to npm
-      echo "Publishing ${VERSION} to npmjs.org..."
-      npm publish --access public
+      # Publish to npm using OIDC (no token needed - uses trusted publisher)
+      echo "Publishing ${VERSION} to npmjs.org with OIDC..."
+      npm publish --access public --provenance
 
       echo "✅ Published ${VERSION} to npmjs.org"
       echo "Verify: npm view @bluefly/openstandardagents@${VERSION}"
