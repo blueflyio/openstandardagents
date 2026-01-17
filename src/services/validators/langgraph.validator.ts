@@ -9,12 +9,15 @@ import type { ErrorObject } from 'ajv';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import { readFileSync } from 'fs';
-import { join } from 'path';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
-// Load LangGraph schema
+// Load LangGraph schema - use path relative to compiled dist/ location
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 const langgraphSchemaPath = join(
-  process.cwd(),
-  'spec/v0.3/extensions/langgraph/langgraph.schema.json'
+  __dirname,
+  '../../spec/v0.3/extensions/langgraph/langgraph.schema.json'
 );
 const langgraphSchema = JSON.parse(readFileSync(langgraphSchemaPath, 'utf-8'));
 
