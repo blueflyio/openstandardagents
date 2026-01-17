@@ -124,39 +124,17 @@ publish-npm:stable:
   image: node:${NODE_VERSION}
   tags:
     - saas-linux-small-amd64
-  environment:
-    name: production
-  id_tokens:
-    NPM_OIDC_TOKEN:
-      aud: https://registry.npmjs.org
-  # NOTE: Cannot use needs: promote-rc-to-stable because tag pipelines are separate from branch pipelines
-  # When stable tag is pushed, it triggers a new pipeline where promote-rc-to-stable doesn't exist
-  # This job runs independently when stable tag is pushed
   extends:
     - .npm-cache
   before_script:
     - npm ci
     - npm run build
     - |
-      # Validate OIDC token is available
-      if [ -z "$NPM_OIDC_TOKEN" ]; then
-        echo "ERROR: NPM_OIDC_TOKEN not generated - OIDC configuration may be missing"
-        echo "Ensure npm trusted publisher is configured at:"
-        echo "  https://www.npmjs.com/settings/blueflyio/trusted-publishers"
-        echo ""
-        echo "Add GitLab as trusted publisher with:"
-        echo "  - Provider: GitLab"
-        echo "  - Owner: blueflyio"
-        echo "  - Repository: openstandardagents"
-        echo "  - Environment name: production"
+      if [ -z "$OSSA_NPMJS" ]; then
+        echo "ERROR: OSSA_NPMJS not set in CI/CD variables"
         exit 1
       fi
-      echo "✓ NPM_OIDC_TOKEN generated successfully"
-      cat > ~/.npmrc << EOF
-      @bluefly:registry=https://registry.npmjs.org/
-      //registry.npmjs.org/:_authToken=${NPM_OIDC_TOKEN}
-      EOF
-      chmod 600 ~/.npmrc
+      echo "//registry.npmjs.org/:_authToken=${OSSA_NPMJS}" > ~/.npmrc
   script:
     - |
       #!/bin/bash
