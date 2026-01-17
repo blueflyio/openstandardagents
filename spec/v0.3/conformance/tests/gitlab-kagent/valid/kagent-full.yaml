@@ -4,6 +4,13 @@ metadata:
   name: kagent-full-test-agent
   description: Full GitLab Kagent configuration
   version: "1.0.0"
+  labels:
+    platform: gitlab
+    extension: kagent
+    tier: enterprise
+  annotations:
+    owner: platform-team
+    compliance: SOC2
 spec:
   role: assistant
   type: service
