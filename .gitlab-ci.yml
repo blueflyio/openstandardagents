@@ -269,6 +269,8 @@ release:semantic:
       if [ -n "$GITHUB_TOKEN" ]; then
         export GITHUB_TOKEN
       fi
+      # Skip lifecycle scripts (prepublishOnly) - already built/tested in CI
+      export npm_config_ignore_scripts=true
       npx semantic-release
   rules:
     - if: $CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"
