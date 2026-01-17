@@ -10,12 +10,15 @@ import type { OssaAgent, ValidationResult } from '../../types/index.js';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import { readFileSync } from 'fs';
-import { join } from 'path';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
-// Load Kagent schema
+// Load Kagent schema - use path relative to compiled dist/ location
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 const kagentSchemaPath = join(
-  process.cwd(),
-  'spec/v0.3/extensions/kagent/kagent.schema.json'
+  __dirname,
+  '../../spec/v0.3/extensions/kagent/kagent.schema.json'
 );
 const kagentSchema = JSON.parse(readFileSync(kagentSchemaPath, 'utf-8'));
 

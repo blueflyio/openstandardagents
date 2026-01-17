@@ -9,12 +9,15 @@ import type { OssaAgent, ValidationResult } from '../../types/index.js';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import { readFileSync } from 'fs';
-import { join } from 'path';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
-// Load AG2 schema
+// Load AG2 schema - use path relative to compiled dist/ location
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 const ag2SchemaPath = join(
-  process.cwd(),
-  'spec/v0.3/extensions/ag2/ag2.schema.json'
+  __dirname,
+  '../../spec/v0.3/extensions/ag2/ag2.schema.json'
 );
 const ag2Schema = JSON.parse(readFileSync(ag2SchemaPath, 'utf-8'));
 

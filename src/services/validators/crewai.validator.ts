@@ -9,12 +9,15 @@ import type { OssaAgent, ValidationResult } from '../../types/index.js';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import { readFileSync } from 'fs';
-import { join } from 'path';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
-// Load CrewAI schema
+// Load CrewAI schema - use path relative to compiled dist/ location
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 const crewaiSchemaPath = join(
-  process.cwd(),
-  'spec/v0.3/extensions/crewai/crewai.schema.json'
+  __dirname,
+  '../../spec/v0.3/extensions/crewai/crewai.schema.json'
 );
 const crewaiSchema = JSON.parse(readFileSync(crewaiSchemaPath, 'utf-8'));
 
