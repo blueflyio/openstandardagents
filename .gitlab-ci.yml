@@ -228,9 +228,6 @@ release:semantic:
     - saas-linux-small-amd64
   environment:
     name: production
-  id_tokens:
-    NPM_OIDC_TOKEN:
-      aud: https://registry.npmjs.org
   variables:
     GIT_AUTHOR_NAME: "OSSA Release Bot"
     GIT_AUTHOR_EMAIL: "release-bot@openstandardagents.org"
@@ -243,20 +240,11 @@ release:semantic:
     - npm ci
     - npm run build
     - |
-      # Validate OIDC token is available
-      if [ -z "$NPM_OIDC_TOKEN" ]; then
-        echo "ERROR: NPM_OIDC_TOKEN not generated - OIDC configuration may be missing"
-        echo "Ensure npm trusted publisher is configured at:"
-        echo "  https://www.npmjs.com/settings/blueflyio/trusted-publishers"
-        echo ""
-        echo "Add GitLab as trusted publisher with:"
-        echo "  - Provider: GitLab"
-        echo "  - Owner: blueflyio"
-        echo "  - Repository: openstandardagents"
-        echo "  - Environment name: production"
+      if [ -z "$OSSA_NPMJS" ]; then
+        echo "ERROR: OSSA_NPMJS not set in CI/CD variables"
         exit 1
       fi
-      echo "✓ NPM_OIDC_TOKEN generated successfully"
+      echo "OSSA_NPMJS configured"
       if [ -z "$CI_DEPLOY_OSSA" ]; then
         echo "ERROR: CI_DEPLOY_OSSA not set"
         exit 1
@@ -270,14 +258,9 @@ release:semantic:
       fi
       echo "✓ Required tokens configured"
   script:
-    - echo "Running semantic-release with OIDC authentication..."
-    # Configure npm auth with OIDC token (npm trusted publishers)
-    - |
-      cat > ~/.npmrc << EOF
-      @bluefly:registry=https://registry.npmjs.org/
-      //registry.npmjs.org/:_authToken=${NPM_OIDC_TOKEN}
-      EOF
-      chmod 600 ~/.npmrc
+    - echo "Running semantic-release..."
+    # Configure npm auth with OSSA_NPMJS token
+    - echo "//registry.npmjs.org/:_authToken=${OSSA_NPMJS}" > ~/.npmrc
     - |
       # Fetch latest tags and commits to ensure semantic-release has correct git state
       git fetch --tags --prune origin
