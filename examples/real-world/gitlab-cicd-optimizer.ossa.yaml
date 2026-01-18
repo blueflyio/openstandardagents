@@ -156,9 +156,16 @@ spec:
       provider: opentelemetry
       endpoint: "${env.OTEL_ENDPOINT}"
     metrics:
-      - name: pipelines_analyzed
-        type: counter
-      - name: recommendations_generated
-        type: counter
-      - name: average_pipeline_duration
-        type: gauge
+      enabled: true
+      exporter: prometheus
+      port: 9090
+      customMetrics:
+        - name: pipelines_analyzed
+          type: counter
+          description: Total number of pipelines analyzed
+        - name: recommendations_generated
+          type: counter
+          description: Total number of recommendations generated
+        - name: average_pipeline_duration
+          type: gauge
+          description: Average pipeline duration in seconds
