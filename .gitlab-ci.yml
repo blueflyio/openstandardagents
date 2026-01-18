@@ -42,6 +42,7 @@ include:
   - local: .gitlab/ci/quality-gates.yml
   - local: .gitlab/ci/release-workflow.yml
   - local: .gitlab/ci/release-promote.yml
+  - local: .gitlab/ci/sdk-publish.yml
   - local: .gitlab/ci/merge-train-optimized.yml
 
 # =============================================================================
