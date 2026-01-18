@@ -55,11 +55,12 @@ const config: Config = {
     '^.+\\.tsx?$': [
       'ts-jest',
       {
-        useESM: false,
+        useESM: true,
         tsconfig: 'tsconfig.test.json',
       },
     ],
   },
+  extensionsToTreatAsEsm: ['.ts'],
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
   verbose: true,
   testTimeout: 10000,

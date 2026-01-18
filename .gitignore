@@ -31,6 +31,16 @@ pnpm-debug.log*
 # Test coverage
 coverage/
 .nyc_output/
+test-results/
+junit.xml
+
+# Test build artifacts
+tests/**/*.js
+tests/**/*.d.ts
+tests/**/*.js.map
+tests/**/*.d.ts.map
+!tests/**/*.test.ts
+!tests/**/*.spec.ts
 
 # Cache
 .cache/
