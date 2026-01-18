@@ -27,10 +27,21 @@ import chalk from 'chalk';
 
 import type { OssaAgent } from '../../types/index.js';
 import type { WizardState, WizardOptions, AgentType } from '../wizard/types.js';
-import { console_ui, formatAgentType, createProgressBar } from '../wizard/ui/console.js';
+import {
+  console_ui,
+  formatAgentType,
+  createProgressBar,
+} from '../wizard/ui/console.js';
 import { AGENT_TYPES } from '../wizard/data/agent-types.js';
-import { LLM_PROVIDERS, estimateMonthlyCost } from '../wizard/data/llm-providers.js';
-import { AGENT_TEMPLATES, getTemplateById, getTemplatesByType } from '../wizard/data/templates.js';
+import {
+  LLM_PROVIDERS,
+  estimateMonthlyCost,
+} from '../wizard/data/llm-providers.js';
+import {
+  AGENT_TEMPLATES,
+  getTemplateById,
+  getTemplatesByType,
+} from '../wizard/data/templates.js';
 import { getApiVersion } from '../../utils/version.js';
 
 /**
@@ -63,8 +74,14 @@ async function createAgentWizard(options: WizardOptions): Promise<void> {
     'Create production-ready agents step-by-step'
   );
 
-  console.log(chalk.gray('This wizard will guide you through creating a complete OSSA agent.'));
-  console.log(chalk.gray('You can use defaults, templates, or customize every detail.\n'));
+  console.log(
+    chalk.gray(
+      'This wizard will guide you through creating a complete OSSA agent.'
+    )
+  );
+  console.log(
+    chalk.gray('You can use defaults, templates, or customize every detail.\n')
+  );
 
   // Step 1: Choose creation method
   const { creationMethod } = await inquirer.prompt([
@@ -92,7 +109,10 @@ async function createAgentWizard(options: WizardOptions): Promise<void> {
 /**
  * Create agent from a pre-built template
  */
-async function createFromTemplate(state: WizardState, options: WizardOptions): Promise<void> {
+async function createFromTemplate(
+  state: WizardState,
+  options: WizardOptions
+): Promise<void> {
   console_ui.section('Template Selection');
 
   // Show template categories
@@ -146,7 +166,10 @@ async function createFromTemplate(state: WizardState, options: WizardOptions): P
 /**
  * Customize a template
  */
-async function customizeTemplate(state: WizardState, options: WizardOptions): Promise<void> {
+async function customizeTemplate(
+  state: WizardState,
+  options: WizardOptions
+): Promise<void> {
   console_ui.section('Customize Template');
 
   // Agent name
@@ -232,7 +255,10 @@ async function customizeTemplate(state: WizardState, options: WizardOptions): Pr
 /**
  * Create agent from an example
  */
-async function createFromExample(state: WizardState, options: WizardOptions): Promise<void> {
+async function createFromExample(
+  state: WizardState,
+  options: WizardOptions
+): Promise<void> {
   console_ui.section('Load Example');
 
   const examplesDir = path.resolve(process.cwd(), 'examples');
@@ -278,7 +304,10 @@ async function createFromExample(state: WizardState, options: WizardOptions): Pr
 /**
  * Create a custom agent step-by-step
  */
-async function createCustomAgent(state: WizardState, options: WizardOptions): Promise<void> {
+async function createCustomAgent(
+  state: WizardState,
+  options: WizardOptions
+): Promise<void> {
   // Step 1: Agent Type
   await selectAgentType(state);
 
@@ -317,7 +346,9 @@ async function selectAgentType(state: WizardState): Promise<void> {
   console_ui.step(1, state.totalSteps, 'Agent Type Selection');
 
   console_ui.info('Choose the type of agent you want to create.');
-  console_ui.info('Each type has specific use cases and recommended configurations.\n');
+  console_ui.info(
+    'Each type has specific use cases and recommended configurations.\n'
+  );
 
   const { agentType } = await inquirer.prompt([
     {
@@ -396,8 +427,10 @@ async function configureBasicInfo(state: WizardState): Promise<void> {
 async function configureRole(state: WizardState): Promise<void> {
   console_ui.step(3, state.totalSteps, 'System Prompt & Role');
 
-  console_ui.info('Define the agent\'s role and capabilities.');
-  console_ui.info('This becomes the system prompt that guides the agent\'s behavior.\n');
+  console_ui.info("Define the agent's role and capabilities.");
+  console_ui.info(
+    "This becomes the system prompt that guides the agent's behavior.\n"
+  );
 
   const { useTemplate } = await inquirer.prompt([
     {
@@ -489,7 +522,9 @@ async function configureLLM(state: WizardState): Promise<void> {
 
   // Show cost estimate
   const monthlyCost = estimateMonthlyCost(modelId, 100000); // Assume 100k tokens/day
-  console_ui.info(`Estimated monthly cost (100k tokens/day): $${monthlyCost.toFixed(2)}`);
+  console_ui.info(
+    `Estimated monthly cost (100k tokens/day): $${monthlyCost.toFixed(2)}`
+  );
   console_ui.success(`LLM configured: ${provider.name} - ${modelId}`);
 }
 
@@ -499,7 +534,9 @@ async function configureLLM(state: WizardState): Promise<void> {
 async function configureTools(state: WizardState): Promise<void> {
   console_ui.step(5, state.totalSteps, 'Tools & Capabilities');
 
-  console_ui.info('Tools allow your agent to interact with external systems.\n');
+  console_ui.info(
+    'Tools allow your agent to interact with external systems.\n'
+  );
 
   const { addTools } = await inquirer.prompt([
     {
@@ -534,7 +571,11 @@ async function configureTools(state: WizardState): Promise<void> {
       const mcpAnswers = await inquirer.prompt([
         { type: 'input', name: 'name', message: 'MCP Server name:' },
         { type: 'input', name: 'server', message: 'MCP Server command:' },
-        { type: 'input', name: 'description', message: 'Description (optional):' },
+        {
+          type: 'input',
+          name: 'description',
+          message: 'Description (optional):',
+        },
       ]);
 
       tools.push({
@@ -654,8 +695,14 @@ async function configureAutonomy(state: WizardState): Promise<void> {
       message: 'Autonomy level:',
       choices: [
         { name: 'Full Autonomy - No human approval required', value: 'full' },
-        { name: 'Assisted - Human approval for sensitive actions', value: 'assisted' },
-        { name: 'Supervised - Human approval for most actions', value: 'supervised' },
+        {
+          name: 'Assisted - Human approval for sensitive actions',
+          value: 'assisted',
+        },
+        {
+          name: 'Supervised - Human approval for most actions',
+          value: 'supervised',
+        },
       ],
       default: 'assisted',
     },
@@ -755,7 +802,10 @@ async function configureExtensions(state: WizardState): Promise<void> {
 /**
  * Step 10: Save agent
  */
-async function saveAgent(state: WizardState, options: WizardOptions): Promise<void> {
+async function saveAgent(
+  state: WizardState,
+  options: WizardOptions
+): Promise<void> {
   console_ui.step(10, state.totalSteps, 'Save Agent');
 
   // Show summary
@@ -763,7 +813,9 @@ async function saveAgent(state: WizardState, options: WizardOptions): Promise<vo
   console_ui.success(`Agent: ${state.agent.metadata?.name}`);
   console_ui.success(`Version: ${state.agent.metadata?.version}`);
   console_ui.success(`Type: ${formatAgentType(state.agentType || 'worker')}`);
-  console_ui.success(`LLM: ${state.agent.spec?.llm?.provider}/${state.agent.spec?.llm?.model}`);
+  console_ui.success(
+    `LLM: ${state.agent.spec?.llm?.provider}/${state.agent.spec?.llm?.model}`
+  );
   console_ui.success(`Tools: ${state.agent.spec?.tools?.length || 0}`);
 
   // Ask for format preference (YAML or JSON)
@@ -914,7 +966,10 @@ async function showAgent(name: string, options: WizardOptions): Promise<void> {
 /**
  * Delete an agent
  */
-async function deleteAgent(name: string, options: WizardOptions): Promise<void> {
+async function deleteAgent(
+  name: string,
+  options: WizardOptions
+): Promise<void> {
   console_ui.header(`Delete Agent: ${name}`);
 
   const agentsDir = options.directory || '.agents';
@@ -1022,7 +1077,10 @@ function findAgentManifests(dir: string): string[] {
 /**
  * Update an existing agent
  */
-async function updateAgent(name: string, options: WizardOptions): Promise<void> {
+async function updateAgent(
+  name: string,
+  options: WizardOptions
+): Promise<void> {
   console_ui.header(`Update Agent: ${name}`);
 
   const agentsDir = options.directory || '.agents';
@@ -1083,27 +1141,33 @@ async function updateAgent(name: string, options: WizardOptions): Promise<void> 
     // Import and use specific step modules
     switch (updateField) {
       case 'basic':
-        const { configureBasicInfoStep } = await import('../wizard/steps/02-basic-info.js');
+        const { configureBasicInfoStep } =
+          await import('../wizard/steps/02-basic-info.js');
         await configureBasicInfoStep(state);
         break;
       case 'llm':
-        const { configureLLMStep } = await import('../wizard/steps/04-llm-config.js');
+        const { configureLLMStep } =
+          await import('../wizard/steps/04-llm-config.js');
         await configureLLMStep(state);
         break;
       case 'tools':
-        const { configureToolsStep } = await import('../wizard/steps/05-tools.js');
+        const { configureToolsStep } =
+          await import('../wizard/steps/05-tools.js');
         await configureToolsStep(state);
         break;
       case 'autonomy':
-        const { configureAutonomyStep } = await import('../wizard/steps/06-autonomy.js');
+        const { configureAutonomyStep } =
+          await import('../wizard/steps/06-autonomy.js');
         await configureAutonomyStep(state);
         break;
       case 'observability':
-        const { configureObservabilityStep } = await import('../wizard/steps/07-observability.js');
+        const { configureObservabilityStep } =
+          await import('../wizard/steps/07-observability.js');
         await configureObservabilityStep(state);
         break;
       case 'safety':
-        const { configureAdvancedStep } = await import('../wizard/steps/09-advanced.js');
+        const { configureAdvancedStep } =
+          await import('../wizard/steps/09-advanced.js');
         await configureAdvancedStep(state);
         break;
     }
@@ -1122,7 +1186,10 @@ async function updateAgent(name: string, options: WizardOptions): Promise<void> 
 /**
  * Validate an agent manifest
  */
-async function validateAgentManifest(manifestPath: string, options: any): Promise<void> {
+async function validateAgentManifest(
+  manifestPath: string,
+  options: any
+): Promise<void> {
   console_ui.header('Validate Agent Manifest');
 
   if (!fs.existsSync(manifestPath)) {
@@ -1142,18 +1209,26 @@ async function validateAgentManifest(manifestPath: string, options: any): Promis
     // Required fields validation
     if (!agent.apiVersion) errors.push('Missing required field: apiVersion');
     if (!agent.kind) errors.push('Missing required field: kind');
-    if (!agent.metadata?.name) errors.push('Missing required field: metadata.name');
-    if (!agent.metadata?.version) errors.push('Missing required field: metadata.version');
+    if (!agent.metadata?.name)
+      errors.push('Missing required field: metadata.name');
+    if (!agent.metadata?.version)
+      errors.push('Missing required field: metadata.version');
     if (!agent.spec?.role) errors.push('Missing required field: spec.role');
     if (!agent.spec?.llm) errors.push('Missing required field: spec.llm');
 
     // DNS-1123 validation
-    if (agent.metadata?.name && !/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/.test(agent.metadata.name)) {
+    if (
+      agent.metadata?.name &&
+      !/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/.test(agent.metadata.name)
+    ) {
       errors.push('metadata.name must be DNS-1123 compliant');
     }
 
     // Semver validation
-    if (agent.metadata?.version && !/^\d+\.\d+\.\d+(-[a-zA-Z0-9]+)?$/.test(agent.metadata.version)) {
+    if (
+      agent.metadata?.version &&
+      !/^\d+\.\d+\.\d+(-[a-zA-Z0-9]+)?$/.test(agent.metadata.version)
+    ) {
       errors.push('metadata.version must be semver format');
     }
 
@@ -1177,15 +1252,18 @@ async function validateAgentManifest(manifestPath: string, options: any): Promis
     }
 
     // Warnings
-    if (!agent.metadata?.description) warnings.push('Consider adding metadata.description');
-    if (!agent.spec?.autonomy) warnings.push('Consider configuring spec.autonomy');
-    if (!agent.spec?.observability) warnings.push('Consider enabling spec.observability');
+    if (!agent.metadata?.description)
+      warnings.push('Consider adding metadata.description');
+    if (!agent.spec?.autonomy)
+      warnings.push('Consider configuring spec.autonomy');
+    if (!agent.spec?.observability)
+      warnings.push('Consider enabling spec.observability');
 
     spinner.stop();
 
     if (errors.length > 0) {
       console_ui.error('Validation failed:');
-      errors.forEach(err => console_ui.error(`  - ${err}`));
+      errors.forEach((err) => console_ui.error(`  - ${err}`));
       process.exit(1);
     }
 
@@ -1193,17 +1271,18 @@ async function validateAgentManifest(manifestPath: string, options: any): Promis
 
     if (warnings.length > 0) {
       console_ui.warning('Recommendations:');
-      warnings.forEach(warn => console_ui.warning(`  - ${warn}`));
+      warnings.forEach((warn) => console_ui.warning(`  - ${warn}`));
     }
 
     if (options.verbose) {
       console_ui.info('\nManifest summary:');
       console_ui.success(`Name: ${agent.metadata.name}`);
       console_ui.success(`Version: ${agent.metadata.version}`);
-      console_ui.success(`LLM: ${agent.spec.llm.provider}/${agent.spec.llm.model}`);
+      console_ui.success(
+        `LLM: ${agent.spec.llm.provider}/${agent.spec.llm.model}`
+      );
       console_ui.success(`Tools: ${agent.spec?.tools?.length || 0}`);
     }
-
   } catch (error) {
     spinner.fail('Validation error');
     console_ui.error(error instanceof Error ? error.message : String(error));
@@ -1216,7 +1295,7 @@ async function validateAgentManifest(manifestPath: string, options: any): Promis
 // ============================================================================
 
 export const agentWizardCommand = new Command('agent-wizard')
-  .description('Interactive wizard for creating OSSA agents (THE WORLD\'S BEST)')
+  .description("Interactive wizard for creating OSSA agents (THE WORLD'S BEST)")
   .option('-o, --output <path>', 'Output file path', 'agent.ossa.yaml')
   .option('-d, --directory <dir>', 'Agent directory', '.agents')
   .option('-t, --template <id>', 'Use a template')
