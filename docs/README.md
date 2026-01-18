@@ -1,61 +1,57 @@
 # OSSA Documentation
 
-Welcome to the Open Standard for Scalable AI Agents (OSSA) documentation.
+Open Standard for Software Agents (OSSA) - The OpenAPI for Agents
 
----
+This documentation provides comprehensive guidance for implementing, deploying, and operating production-ready agent systems using the OSSA specification.
 
-## 📚 Documentation Structure
+## Documentation Structure
+
+### Getting Started
+- [Quickstart Guide](./getting-started/QUICKSTART.md) - Get started in 5 minutes
+- [Installation](./getting-started/installation.md) - Installation and setup
+- [Core Concepts](./getting-started/concepts.md) - Understanding OSSA fundamentals
+
+### Guides
+- [Agent Lifecycle](./guides/agent-lifecycle.md) - Agent creation, deployment, and management
+- [Capability Development](./guides/capability-development.md) - Building agent capabilities
+- [Production Deployment](./guides/production-deployment.md) - Production deployment best practices
+
+### Reference Documentation
+- [API Reference](./reference/api/README.md) - Complete API documentation
+- [Schema Reference](./reference/schema/README.md) - OSSA schema specifications
+- [CLI Reference](./reference/cli/README.md) - Command-line interface documentation
 
 ### Specifications
+- [v0.3 Specification](./specifications/v0.3/README.md) - Current specification (v0.3.5)
+- [Migration Guides](./migration/README.md) - Version migration documentation
 
-The `specs/` directory contains formal specifications for OSSA:
+### Integration Guides
+- [Drupal Integration](./integrations/drupal/getting-started.md) - Drupal/Symfony bundle
+- [GitLab Integration](./integrations/gitlab/getting-started.md) - GitLab agent integration
+- [Framework Adapters](./integrations/frameworks/README.md) - LangChain, CrewAI, AutoGen
 
-- **[Policy DSL](specs/policy-dsl.md)** - Policy Domain-Specific Language for agent behavior constraints
+### Advanced Topics
+- [Observability](./advanced/observability.md) - OpenTelemetry integration
+- [SDK Development](./advanced/sdk-development.md) - Building language SDKs
+- [CI/CD Integration](./advanced/ci-cd.md) - Continuous integration and deployment
 
-### Operations
+## Quick Links
 
-The `operations/` directory contains operational documentation:
+**Main Repository**: https://github.com/blueflyio/openstandardagents
+**Issue Tracker**: https://github.com/blueflyio/openstandardagents/issues
+**Examples**: https://github.com/blueflyio/openstandardagents/tree/main/examples
+**NPM Package**: https://www.npmjs.com/package/@bluefly/openstandardagents
 
-- **[Automation Roadmap](operations/automation-roadmap.md)** - Automation audit and conversion plan
-- **[GitHub Sync Strategy](operations/github-sync-strategy.md)** - GitHub mirroring strategy
+## Contributing
 
-### Brand Guide
+See [CONTRIBUTING.md](../CONTRIBUTING.md) for contribution guidelines.
 
-The `brand-guide/` directory contains brand and positioning documentation:
+## License
 
-- Brand positioning and value proposition
-- Visual identity system
-- Competitive comparison matrix
-
-### Comparison
-
-- **[comparison.md](comparison.md)** - Comparison with other agent frameworks
-
----
-
-## Roadmap
-
-See [roadmap/README.md](roadmap/README.md) for OSSA evolution roadmap from v0.3.0 to v0.4.0.
-
-**Quick Links:**
-- [Master Roadmap](roadmap/v0.3.x-to-v0.4.0.md) - Complete overview
-- [Phase 1: Specification](roadmap/phase-1-specification.md) - Weeks 1-2
-- [Phase 2: Runtime Implementation](roadmap/phase-2-runtime-implementation.md) - Weeks 3-4
-- [Phase 3: Production Use Cases](roadmap/phase-3-production-use-cases.md) - Weeks 5-6
-- [Phase 4: Knowledge & Convergence](roadmap/phase-4-knowledge-convergence.md) - Weeks 7-8
+Apache License 2.0 - See [LICENSE](../LICENSE) for details.
 
 ---
 
-## 🔗 External Resources
-
-- [OSSA Website](https://openstandardagents.org)
-- [GitLab Repository](https://gitlab.com/blueflyio/openstandardagents)
-- [Issue Tracker](https://gitlab.com/blueflyio/openstandardagents/-/issues)
-- [Examples](../examples/)
-- [Specification](../spec/)
-
----
-
-**Maintained by**: OSSA Community  
-**Last Updated**: 2025-12-10  
-**License**: MIT
+**Version**: v0.3.5
+**Last Updated**: 2026-01-18
+**Maintained by**: OSSA Standards Team
