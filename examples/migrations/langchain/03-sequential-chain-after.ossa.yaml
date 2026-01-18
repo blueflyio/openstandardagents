@@ -19,7 +19,8 @@ spec:
     temperature: 0.3
     maxTokens: 4000
   steps:
-    - name: extract
+    - id: extract
+      name: extract
       description: Extract key information from document
       task:
         prompt: |
@@ -34,7 +35,8 @@ spec:
       outputs:
         - extracted_info
 
-    - name: analyze
+    - id: analyze
+      name: analyze
       description: Analyze sentiment and tone
       task:
         prompt: |
@@ -49,7 +51,8 @@ spec:
       outputs:
         - analysis
 
-    - name: summarize
+    - id: summarize
+      name: summarize
       description: Generate comprehensive summary
       task:
         prompt: |
@@ -67,17 +70,26 @@ spec:
         - summary
 
   inputs:
-    - name: document
-      type: string
-      description: Document text to process
+    type: object
+    properties:
+      document:
+        type: string
+        description: Document text to process
+    required:
+      - document
 
   outputs:
-    - name: extracted_info
-      from: steps.extract.outputs.extracted_info
-    - name: analysis
-      from: steps.analyze.outputs.analysis
-    - name: summary
-      from: steps.summarize.outputs.summary
+    type: object
+    properties:
+      extracted_info:
+        type: string
+        description: Extracted information from document
+      analysis:
+        type: string
+        description: Sentiment and tone analysis
+      summary:
+        type: string
+        description: Executive summary
 
   autonomy:
     level: autonomous
