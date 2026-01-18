@@ -1,8 +1,9 @@
 # Build output (TypeScript SDK builds here)
 *.js
+*.js.map
 *.d.ts
-*.map
 *.d.ts.map
 
-# Keep source files
+# Keep only .ts source files (not .d.ts)
 !*.ts
+*.d.ts
