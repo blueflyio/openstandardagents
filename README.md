@@ -203,17 +203,18 @@ if (validation.valid) {
 ```
 openstandardagents/
 ├── spec/              # OSSA specification schemas
-│   ├── v0.3.5/       # Latest version (v0.3.5) - The OpenAPI for Software Agents
-│   └── v0.3.4/       # Previous stable version
+│   └── v0.3/         # Current specification version
 ├── src/              # TypeScript source code
-│   ├── cli/          # CLI commands (validate, generate, migrate, etc.)
-│   ├── dev-cli/      # Developer CLI (version, spec, workflow commands)
-│   ├── services/     # Core services (validation, generation, migration)
-│   ├── adapters/     # Observability adapters (Phoenix, Langfuse, LangSmith, OpenTelemetry)
+│   ├── cli/          # CLI commands
+│   ├── dev-cli/      # Developer CLI tools
+│   ├── services/     # Core services
+│   ├── adapters/     # Framework adapters
 │   ├── tools/        # Development tools
-│   └── sdks/         # SDK implementations
-├── examples/         # 100+ reference examples
-├── openapi/          # OpenAPI specifications
+│   ├── sdks/         # SDK implementations
+│   ├── runtime/      # Runtime execution
+│   ├── types/        # TypeScript types
+│   └── utils/        # Utilities
+├── examples/         # Reference examples
 ├── tests/            # Test suite
 └── docs/             # Documentation
 ```
@@ -261,10 +262,8 @@ npm run generate:all             # Generate everything
 npm run migrate                  # Migrate manifests to latest version
 npm run migrate:check            # Check which files need migration
 
-# Framework Integration
-ossa langflow <file>             # Import/export LangFlow workflows
-ossa langchain <file>            # Import/export LangChain chains
-ossa framework <file>            # Import from any supported framework
+# Migration
+ossa migrate <file>              # Migrate manifests to latest version
 
 # Developer CLI (for contributors)
 ossa-dev version sync            # Sync version across all files
@@ -299,7 +298,7 @@ Companies use OSSA to:
 ### Migration Support
 
 - **From Custom Agents** - Use OSSA CLI to convert existing agent definitions
-- **From LangChain/CrewAI** - Import workflows with `ossa langchain:import` or `ossa crewai:import`
+- **From LangChain/CrewAI** - Migration tools for popular frameworks
 - **From Other Standards** - Migration guides available for common formats
 - **Zero Downtime** - Migrate incrementally, agents continue working during transition
 
@@ -346,7 +345,7 @@ Please read [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) before contributing.
 
 ### Examples
 
-- **100+ Examples** - Reference implementations for common patterns
+- **Reference Examples** - Example implementations for common patterns
 - **Platform Adapters** - Integrations with LangChain, CrewAI, etc.
 - **Multi-Agent Workflows** - Complex orchestration examples
 
@@ -354,7 +353,7 @@ Please read [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) before contributing.
 
 - **Website**: https://openstandardagents.org - Complete specification and enterprise guides
 - **npm Package**: https://www.npmjs.com/package/@bluefly/openstandardagents
-- **Community**: [Discord](https://discord.gg/ZZqad3v4) - Join 1000+ developers and companies
+- **Community**: [Discord](https://discord.gg/ZZqad3v4) - Join our developer community
 - **Documentation**: [Full Docs](https://openstandardagents.org/docs) - API reference, guides, examples
 - **Issues**: [GitHub Issues](https://github.com/blueflyio/openstandardagents/issues)
 - **Star Us**: [GitHub](https://github.com/blueflyio/openstandardagents) - Help us grow the ecosystem
