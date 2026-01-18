@@ -22,11 +22,12 @@ include:
   # ============================================================================
   # GitLab Component - Golden CI Template
   # ============================================================================
-  # TEMPORARILY DISABLED - component causing "Invalid configuration format" error
-  # - component: gitlab.com/blueflyio/gitlab_components/golden@release/v0.1.x
-  #   inputs:
-  #     enable_agent_validation: true
-  #     node_version: '20'
+  - component: $CI_SERVER_FQDN/blueflyio/gitlab_components/golden@release/v0.1.x
+    inputs:
+      project_type: typescript
+      node_version: "20"
+      enable_mr_validation: "false"
+      require_milestone: "false"
   # ============================================================================
   # Local CI Configuration Files (Organized by Concern)
   # ============================================================================
