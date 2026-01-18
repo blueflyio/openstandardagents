@@ -1,0 +1,78 @@
+{
+  "name": "@ossa/framework-converters",
+  "version": "0.3.5",
+  "description": "Convert agents from popular frameworks (LangChain, CrewAI, AutoGen) to OSSA manifests",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "ossa-convert": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./langchain": {
+      "types": "./dist/converters/langchain.d.ts",
+      "import": "./dist/converters/langchain.js"
+    },
+    "./crewai": {
+      "types": "./dist/converters/crewai.d.ts",
+      "import": "./dist/converters/crewai.js"
+    },
+    "./autogen": {
+      "types": "./dist/converters/autogen.d.ts",
+      "import": "./dist/converters/autogen.js"
+    }
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "ossa",
+    "langchain",
+    "crewai",
+    "autogen",
+    "agent-conversion",
+    "framework-migration"
+  ],
+  "author": "OSSA Contributors",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.com/blueflyio/ossa/openstandardagents",
+    "directory": "tools/framework-converters"
+  },
+  "homepage": "https://openstandardagents.org/tools/converters",
+  "dependencies": {
+    "yaml": "^2.3.0",
+    "commander": "^11.1.0",
+    "chalk": "^5.3.0",
+    "ora": "^8.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.2.0",
+    "@vitest/coverage-v8": "^1.2.0",
+    "eslint": "^8.56.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
