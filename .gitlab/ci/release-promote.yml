@@ -124,17 +124,17 @@ publish-npm:stable:
   image: node:${NODE_VERSION}
   tags:
     - saas-linux-small-amd64
+  environment:
+    name: npm-registry
+    action: prepare
+  # NOTE: Cannot use needs: promote-rc-to-stable because tag pipelines are separate from branch pipelines
+  # When stable tag is pushed, it triggers a new pipeline where promote-rc-to-stable doesn't exist
+  # This job runs independently when stable tag is pushed
   extends:
     - .npm-cache
   before_script:
     - npm ci
     - npm run build
-    - |
-      if [ -z "$OSSA_NPMJS" ]; then
-        echo "ERROR: OSSA_NPMJS not set in CI/CD variables"
-        exit 1
-      fi
-      echo "//registry.npmjs.org/:_authToken=${OSSA_NPMJS}" > ~/.npmrc
   script:
     - |
       #!/bin/bash
@@ -172,9 +172,9 @@ publish-npm:stable:
         exit 0
       fi
 
-      # Publish to npm (skip prepublishOnly - already built/tested/linted in CI)
-      echo "Publishing ${VERSION} to npmjs.org..."
-      npm publish --access public --ignore-scripts
+      # Publish to npm using OIDC (no token needed - uses trusted publisher)
+      echo "Publishing ${VERSION} to npmjs.org with OIDC..."
+      npm publish --access public --provenance
 
       echo "✅ Published ${VERSION} to npmjs.org"
       echo "Verify: npm view @bluefly/openstandardagents@${VERSION}"
