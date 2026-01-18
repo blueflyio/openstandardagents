@@ -75,6 +75,7 @@ stages:
   - security      # SAST, Dependency Scanning, Secret Detection
   - quality       # Code quality gates
   - release       # Semantic release, npm publish
+  - deploy        # Deployment (used by golden component)
   - .post         # Cleanup, notifications, dev tags
 
 # =============================================================================
