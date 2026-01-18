@@ -15,3 +15,4 @@ node_modules/
 # Keep only .ts source files (not .d.ts)
 !*.ts
 *.d.ts
+.DS_Store
