@@ -1,0 +1,99 @@
+# ==================================================================
+# SDK PUBLISHING AUTOMATION
+# ==================================================================
+# Publishes TypeScript SDK to npm and Python SDK to PyPI
+# Runs on stable version tags (v0.3.x)
+
+.sdk-publish-base:
+  stage: release
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/'
+      when: on_success
+  tags:
+    - saas-linux-small-amd64
+
+# ==================================================================
+# TYPESCRIPT SDK - Publish to npm
+# ==================================================================
+publish:sdk:typescript:
+  extends: .sdk-publish-base
+  image: node:20-alpine
+  needs:
+    - job: build:dist
+  before_script:
+    - cd src/sdks/typescript
+    - npm install
+    - npm run build
+  script:
+    - echo "Publishing @ossa/sdk to npm..."
+
+    # Update version to match release tag
+    - TAG_VERSION=${CI_COMMIT_TAG#v}
+    - npm version $TAG_VERSION --no-git-tag-version
+
+    # Configure npm authentication
+    - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
+
+    # Publish with provenance
+    - npm publish --access public
+
+    - echo "✅ Published @ossa/sdk@$TAG_VERSION to npm"
+  artifacts:
+    paths:
+      - src/sdks/typescript/dist/
+    expire_in: 1 week
+
+# ==================================================================
+# PYTHON SDK - Publish to PyPI
+# ==================================================================
+publish:sdk:python:
+  extends: .sdk-publish-base
+  image: python:3.11-alpine
+  needs:
+    - job: build:dist
+  before_script:
+    - cd src/sdks/python
+    - pip install --upgrade pip
+    - pip install build twine
+  script:
+    - echo "Publishing ossa-sdk to PyPI..."
+
+    # Update version to match release tag
+    - TAG_VERSION=${CI_COMMIT_TAG#v}
+    - sed -i "s/version = \".*\"/version = \"$TAG_VERSION\"/" pyproject.toml
+
+    # Build distribution packages
+    - python -m build
+
+    # Publish to PyPI
+    - python -m twine upload dist/* --username __token__ --password ${PYPI_TOKEN}
+
+    - echo "✅ Published ossa-sdk $TAG_VERSION to PyPI"
+  artifacts:
+    paths:
+      - src/sdks/python/dist/
+    expire_in: 1 week
+
+# ==================================================================
+# GO SDK - Package and tag
+# ==================================================================
+tag:sdk:go:
+  extends: .sdk-publish-base
+  image: alpine:latest
+  script:
+    - echo "Creating Go module tag..."
+
+    # Go modules use tags in format sdk/go/vX.Y.Z
+    - TAG_VERSION=${CI_COMMIT_TAG#v}
+    - GO_TAG="sdk/go/v$TAG_VERSION"
+
+    - apk add --no-cache git
+    - git config user.name "OSSA CI"
+    - git config user.email "ci@openstandardagents.org"
+    - git tag -a "$GO_TAG" -m "Release Go SDK $TAG_VERSION"
+    - git push origin "$GO_TAG"
+
+    - echo "✅ Created Go module tag: $GO_TAG"
+  only:
+    refs:
+      - tags
