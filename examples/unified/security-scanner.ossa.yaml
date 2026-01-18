@@ -25,8 +25,8 @@ spec:
       model: ${LLM_FALLBACK_MODEL_2:-gemini-2.0-flash}
       condition: on_rate_limit
     retry_config:
-      max_attempts: ${LLM_RETRY_ATTEMPTS:-3}
-      backoff_strategy: ${LLM_BACKOFF_STRATEGY:-exponential}
+      max_attempts: 3
+      backoff_strategy: exponential
       initial_delay_ms: 1000
       max_delay_ms: 30000
   execution_profile:

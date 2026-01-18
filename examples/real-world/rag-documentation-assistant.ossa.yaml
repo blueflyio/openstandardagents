@@ -225,12 +225,5 @@ spec:
       enabled: true
       provider: opentelemetry
     metrics:
-      - name: questions_answered
-        type: counter
-        labels: [user_id, confidence_bucket]
-      - name: retrieval_latency
-        type: histogram
-      - name: generation_latency
-        type: histogram
-      - name: knowledge_base_size
-        type: gauge
+      enabled: true
+      port: 9090
