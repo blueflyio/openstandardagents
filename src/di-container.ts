@@ -13,13 +13,16 @@ import { SchemaRepository } from './repositories/schema.repository.js';
 // Services
 import { GenerationService } from './services/generation.service.js';
 import { MigrationService } from './services/migration.service.js';
+import { MigrationTransformService } from './services/migration-transform.service.js';
 import { LangChainMigrationService } from './services/migration/langchain-migration.service.js';
 import { ValidationService } from './services/validation.service.js';
 import { ValidationZodService } from './services/validation-zod.service.js';
+import { VersionDetectionService } from './services/version-detection.service.js';
 import { AgentsMdService } from './services/agents-md/agents-md.service.js';
 import { LlmsTxtService } from './services/llms-txt/llms-txt.service.js';
 import { TestRunnerService } from './services/test-runner/test-runner.service.js';
 import { GitService } from './services/git.service.js';
+import { GitRollbackService } from './services/git-rollback.service.js';
 import { ExtensionTeamKickoffService } from './services/extension-team/extension-team-kickoff.service.js';
 
 // Codegen Service and Generators
@@ -57,11 +60,14 @@ container.bind(ManifestRepository).toSelf().inSingletonScope();
 container.bind(ValidationService).to(ValidationZodService as any);
 container.bind(GenerationService).toSelf();
 container.bind(MigrationService).toSelf();
+container.bind(MigrationTransformService).toSelf();
 container.bind(LangChainMigrationService).toSelf();
+container.bind(VersionDetectionService).toSelf();
 container.bind(AgentsMdService).toSelf();
 container.bind(LlmsTxtService).toSelf();
 container.bind(TestRunnerService).toSelf();
 container.bind(GitService).toSelf();
+container.bind(GitRollbackService).toSelf();
 container.bind(ExtensionTeamKickoffService).toSelf();
 
 // Bind codegen generators (must be bound before CodegenService)
@@ -111,11 +117,14 @@ export function resetContainer(): void {
   container.bind(ValidationService).to(ValidationZodService as any);
   container.bind(GenerationService).toSelf();
   container.bind(MigrationService).toSelf();
+  container.bind(MigrationTransformService).toSelf();
   container.bind(LangChainMigrationService).toSelf();
+  container.bind(VersionDetectionService).toSelf();
   container.bind(AgentsMdService).toSelf();
   container.bind(LlmsTxtService).toSelf();
   container.bind(TestRunnerService).toSelf();
   container.bind(GitService).toSelf();
+  container.bind(GitRollbackService).toSelf();
   container.bind(ManifestGenerator).toSelf();
   container.bind(VSCodeGenerator).toSelf();
   container.bind(OpenAPIGenerator).toSelf();

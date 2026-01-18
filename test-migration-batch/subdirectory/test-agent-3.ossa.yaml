@@ -1,0 +1,11 @@
+apiVersion: ossa/v0.3.3
+kind: Agent
+metadata:
+  name: test-agent-3
+  version: 1.0.0
+  description: Test agent in subdirectory
+spec:
+  role: Monitoring agent
+  llm:
+    provider: anthropic
+    model: claude-3-opus

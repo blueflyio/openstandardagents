@@ -1,0 +1,54 @@
+{
+  "summary": {
+    "total": 4,
+    "successful": 3,
+    "failed": 0,
+    "skipped": 1,
+    "duration": 0.112
+  },
+  "metadata": {
+    "targetVersion": "v0.3.5",
+    "directory": "test-migration-batch",
+    "timestamp": "2026-01-18T13:44:27.615Z",
+    "dryRun": false
+  },
+  "results": [
+    {
+      "manifest": {
+        "path": "/Users/thomas.scola/Sites/Agent-platform/openstandardagents/test-migration-batch/already-migrated.ossa.yaml",
+        "relativePath": "already-migrated.ossa.yaml",
+        "name": "already-migrated.ossa.yaml",
+        "version": "v0.3.5"
+      },
+      "status": "skipped",
+      "skipReason": "Already at target version"
+    },
+    {
+      "manifest": {
+        "path": "/Users/thomas.scola/Sites/Agent-platform/openstandardagents/test-migration-batch/subdirectory/test-agent-3.ossa.yaml",
+        "relativePath": "subdirectory/test-agent-3.ossa.yaml",
+        "name": "test-agent-3.ossa.yaml",
+        "version": "v0.3.3"
+      },
+      "status": "success"
+    },
+    {
+      "manifest": {
+        "path": "/Users/thomas.scola/Sites/Agent-platform/openstandardagents/test-migration-batch/test-agent-1.ossa.yaml",
+        "relativePath": "test-agent-1.ossa.yaml",
+        "name": "test-agent-1.ossa.yaml",
+        "version": "v0.3.3"
+      },
+      "status": "success"
+    },
+    {
+      "manifest": {
+        "path": "/Users/thomas.scola/Sites/Agent-platform/openstandardagents/test-migration-batch/test-agent-2.ossa.yaml",
+        "relativePath": "test-agent-2.ossa.yaml",
+        "name": "test-agent-2.ossa.yaml",
+        "version": "v0.3.4"
+      },
+      "status": "success"
+    }
+  ]
+}

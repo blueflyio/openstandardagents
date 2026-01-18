@@ -167,6 +167,7 @@
     "sync:pr": "tsx src/cli/commands/github-sync.command.ts pr",
     "sync:batch": "tsx src/cli/commands/github-sync.command.ts batch",
     "sync:list": "tsx src/cli/commands/github-sync.command.ts list",
+    "migrate:batch": "node dist/cli/index.js migrate-batch",
     "compliance:audit": "tsx src/tools/compliance-audit.ts",
     "verify:npm-auth": "tsx src/tools/verify-npm-auth.ts",
     "audit:mrs": "tsx src/tools/audit-mrs.ts",
