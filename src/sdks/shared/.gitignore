@@ -1,0 +1,8 @@
+# Build output (TypeScript SDK builds here)
+*.js
+*.d.ts
+*.map
+*.d.ts.map
+
+# Keep source files
+!*.ts
