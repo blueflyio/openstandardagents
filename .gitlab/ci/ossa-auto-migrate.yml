@@ -16,7 +16,7 @@
 
 # Base configuration for all migration jobs
 .ossa-migrate-base:
-  image: node:${NODE_VERSION:-22}-alpine
+  image: node:${NODE_VERSION}-alpine
   tags:
     - saas-linux-small-amd64
   before_script:
