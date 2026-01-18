@@ -45,6 +45,7 @@ include:
   - local: .gitlab/ci/release-promote.yml
   - local: .gitlab/ci/sdk-publish.yml
   - local: .gitlab/ci/merge-train-optimized.yml
+  - local: .gitlab/ci/ossa-auto-migrate.yml
 
 # =============================================================================
 # PIPELINE DEDUPLICATION
