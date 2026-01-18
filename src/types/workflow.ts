@@ -3,7 +3,7 @@
  * Type definitions for kind: Workflow - composition of Tasks and Agents
  */
 
-import { JSONSchemaDefinition } from './task';
+import { JSONSchemaDefinition } from './task.js';
 import { getApiVersion } from '../utils/version.js';
 
 /**
