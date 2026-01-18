@@ -303,6 +303,6 @@ spec:
       enabled: true
       port: 9090
     logging:
-      level: ${LOG_LEVEL:-info}
+      level: info
       format: json
       audit_enabled: true
