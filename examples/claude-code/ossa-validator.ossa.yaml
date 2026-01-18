@@ -56,16 +56,18 @@ spec:
       required:
       - source_path
   tools:
-  - name: ossa_validate
+  - type: function
+    name: ossa_validate
     description: Run OSSA CLI validation
-    handler: bash
-    command: npm run cli -- validate ${manifest_path}
-    type: function
-  - name: ossa_generate
+    handler:
+      runtime: bash
+      command: npm run cli -- validate ${manifest_path}
+  - type: function
+    name: ossa_generate
     description: Generate new OSSA manifest
-    handler: bash
-    command: npm run cli -- generate ${agent_type} --name "${name}"
-    type: function
+    handler:
+      runtime: bash
+      command: npm run cli -- generate ${agent_type} --name "${name}"
 extensions:
   claude_code:
     enabled: true

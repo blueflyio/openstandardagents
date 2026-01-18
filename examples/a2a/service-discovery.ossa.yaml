@@ -30,9 +30,10 @@ spec:
     Use service discovery to find agents dynamically and route tasks efficiently.
 
   tools:
-    - name: discover_agents
+    - type: function
+      name: discover_agents
       description: "Discover available agents with specific capabilities"
-      parameters:
+      input_schema:
         type: object
         properties:
           capabilities:
@@ -41,9 +42,10 @@ spec:
               type: string
             description: "Required agent capabilities"
 
-    - name: delegate_task
+    - type: function
+      name: delegate_task
       description: "Delegate task to another agent"
-      parameters:
+      input_schema:
         type: object
         required: [agentId, task]
         properties:
