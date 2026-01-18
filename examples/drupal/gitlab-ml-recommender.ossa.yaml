@@ -19,7 +19,7 @@ metadata:
     ossa-version: v0.3.4
   annotations:
     ossa.io/migration: legacy-v1.0-to-ossa/v0.3.4
-    ossa.io/migrated-date: 2026-01-10
+    ossa.io/migrated-date: "2026-01-10"
 spec:
   role: integration
   taxonomy:

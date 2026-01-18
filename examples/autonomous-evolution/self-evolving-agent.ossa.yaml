@@ -4,27 +4,24 @@ metadata:
   name: self-evolving-agent
   version: 1.0.0
   description: Example demonstrating OSSA v0.3.0 features
-  lifecycle:
-    state: active
-    maturity: beta
 spec:
   role: Example agent with lifecycle, environments, and dependencies
   llm:
     provider: anthropic
     model: claude-3-5-sonnet-20241022
-  dependencies:
-    agents:
+  lifecycle:
+    environments:
+      staging:
+        version: 1.0.0-rc1
+        deployedAt: '2025-12-01T00:00:00Z'
+        status: healthy
+      production:
+        version: 1.0.0
+        deployedAt: '2025-12-15T00:00:00Z'
+        status: healthy
+    dependencies:
     - name: '@ossa/research-agent'
       version: '>=1.0.0'
-  environments:
-    staging:
-      version: 1.0.0-rc1
-      deployedAt: '2025-12-01T00:00:00Z'
-      status: healthy
-    production:
-      version: 1.0.0
-      deployedAt: '2025-12-15T00:00:00Z'
-      status: healthy
   tests:
   - id: test-metadata
     type: unit

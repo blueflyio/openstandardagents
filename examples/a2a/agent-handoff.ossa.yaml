@@ -34,9 +34,10 @@ spec:
     4. Use handoff to preserve context
 
   tools:
-    - name: escalate_to_agent
+    - type: function
+      name: escalate_to_agent
       description: "Escalate issue to another agent"
-      parameters:
+      input_schema:
         type: object
         required: [agentId, reason, summary]
         properties:
@@ -54,9 +55,10 @@ spec:
             enum: [low, medium, high, critical]
             default: medium
 
-    - name: handoff_conversation
+    - type: function
+      name: handoff_conversation
       description: "Hand off entire conversation to another agent"
-      parameters:
+      input_schema:
         type: object
         required: [agentId]
         properties:
