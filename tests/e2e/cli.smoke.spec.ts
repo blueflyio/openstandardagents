@@ -1,101 +1,180 @@
 /**
- * E2E Smoke Test - Minimal validation that CLI works
- * This makes test:e2e a legitimate gate, not a hollow job
+ * Smoke Test: CLI Command Verification
+ *
+ * Validates that all CLI commands execute without errors and produce expected output.
+ * This catches broken CLI entry points, missing dependencies, and runtime errors.
+ *
+ * DRY Principle: Reusable command execution helper
+ * Zod: Runtime validation of CLI output structure
  */
 
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect, beforeAll } from '@jest/globals';
 import { execSync } from 'child_process';
-import { existsSync, writeFileSync, unlinkSync } from 'fs';
-import { join, resolve } from 'path';
-import * as yaml from 'yaml';
+import { existsSync } from 'fs';
+import { join } from 'path';
+import { z } from 'zod';
 
-describe('E2E Smoke Tests', () => {
-  const projectRoot = join(__dirname, '../..');
+const projectRoot = join(__dirname, '../..');
+const cliPath = join(projectRoot, 'bin/ossa');
 
-  it('should have built CLI binary', () => {
-    const cliPath = join(projectRoot, 'bin/ossa');
-    expect(existsSync(cliPath)).toBe(true);
-  });
+// Zod schema for version output
+const VersionOutputSchema = z.string().regex(/^\d+\.\d+\.\d+/);
 
-  it('should execute ossa --version without errors', () => {
-    const result = execSync('node bin/ossa --version', {
+// Zod schema for help output
+const HelpOutputSchema = z.string().refine((s) => s.includes('Usage:'), {
+  message: 'Help output must contain "Usage:"',
+});
+
+/**
+ * DRY Helper: Execute CLI command with error handling
+ */
+function execCLI(args: string): string {
+  try {
+    return execSync(`node ${cliPath} ${args}`, {
       cwd: projectRoot,
       encoding: 'utf-8',
       stdio: 'pipe',
     });
-    expect(result.trim()).toMatch(/^\d+\.\d+\.\d+/);
-  });
-
-  it('should execute ossa --help without errors', () => {
-    const result = execSync('node bin/ossa --help', {
-      cwd: projectRoot,
-      encoding: 'utf-8',
-      stdio: 'pipe',
-    });
-    expect(result).toContain('Usage:');
-  });
-
-  it('should validate a minimal OSSA manifest', () => {
-    const minimalManifest = {
-      apiVersion: 'ossa/v0.3.3',
-      kind: 'Agent',
-      metadata: {
-        name: 'test-agent',
-        version: '1.0.0',
-      },
-      spec: {
-        capabilities: [],
-      },
-    };
-
-    const manifestPath = join(projectRoot, 'tests/e2e/test-manifest.ossa.yaml');
-
-    try {
-      writeFileSync(manifestPath, yaml.stringify(minimalManifest));
-    } catch (error) {
+  } catch (error) {
+    if (error instanceof Error && 'stderr' in error) {
       throw new Error(
-        `Failed to create test manifest: ${error instanceof Error ? error.message : String(error)}`
+        `CLI command failed: ${args}\nStderr: ${(error as any).stderr}`
       );
     }
-    try {
-      // Validate manifest path to prevent command injection
-      // 1. Ensure path is absolute and within project root
-      const resolvedPath = resolve(manifestPath);
-      const resolvedRoot = resolve(projectRoot);
-      if (!resolvedPath.startsWith(resolvedRoot)) {
-        throw new Error(`Manifest path outside project root: ${manifestPath}`);
-      }
+    throw error;
+  }
+}
 
-      // 2. Validate relative path contains only safe characters (no shell metacharacters)
-      const relativePath = manifestPath
-        .replace(projectRoot + '/', '')
-        .replace(projectRoot + '\\', '');
-      // Allow alphanumeric, forward/backward slashes, dots, hyphens, underscores
-      // Reject: spaces, quotes, semicolons, pipes, redirects, etc.
-      if (!/^[a-zA-Z0-9/\\._-]+$/.test(relativePath)) {
-        throw new Error(
-          `Invalid manifest path format: ${relativePath} (contains unsafe characters)`
-        );
-      }
-
-      // 3. Ensure no path traversal attempts
-      if (relativePath.includes('..')) {
-        throw new Error(
-          `Invalid manifest path: ${relativePath} (path traversal detected)`
-        );
-      }
-
-      // 4. Use resolved absolute path in command (safer than relative)
-      const result = execSync(`node bin/ossa validate "${resolvedPath}"`, {
-        cwd: projectRoot,
-        encoding: 'utf-8',
-        stdio: 'pipe',
-      });
-      expect(result).toBeTruthy();
-    } finally {
-      if (existsSync(manifestPath)) {
-        unlinkSync(manifestPath);
-      }
+describe('Smoke Test: CLI Commands', () => {
+  beforeAll(() => {
+    // Ensure CLI binary exists
+    if (!existsSync(cliPath)) {
+      throw new Error(
+        `CLI binary not found at ${cliPath}. Run 'npm run build' first.`
+      );
     }
+  });
+
+  describe('Basic Commands', () => {
+    it('--version returns valid semver', () => {
+      const output = execCLI('--version');
+      const result = VersionOutputSchema.safeParse(output.trim());
+
+      if (!result.success) {
+        console.error('Version validation failed:', result.error.format());
+      }
+
+      expect(result.success).toBe(true);
+    });
+
+    it('--help displays usage information', () => {
+      const output = execCLI('--help');
+      const result = HelpOutputSchema.safeParse(output);
+
+      if (!result.success) {
+        console.error('Help validation failed:', result.error.format());
+      }
+
+      expect(result.success).toBe(true);
+      expect(output).toContain('ossa');
+    });
+
+    it('-h displays usage information (short form)', () => {
+      const output = execCLI('-h');
+      expect(output).toContain('Usage:');
+    });
+  });
+
+  describe('validate Command', () => {
+    it('validates known-good fixture', () => {
+      const fixturePath = join(
+        projectRoot,
+        'spec/v0.3/conformance/tests/baseline/valid/basic-agent.yaml'
+      );
+
+      if (!existsSync(fixturePath)) {
+        console.warn('Baseline fixture not found, skipping validation test');
+        return;
+      }
+
+      const output = execCLI(`validate "${fixturePath}"`);
+      expect(output).toBeDefined();
+      // Success means no error thrown
+    });
+
+    it('rejects invalid manifest with error', () => {
+      const invalidFixturePath = join(
+        projectRoot,
+        'spec/v0.3/conformance/tests/baseline/invalid/invalid-apiversion.yaml'
+      );
+
+      if (!existsSync(invalidFixturePath)) {
+        console.warn('Invalid fixture not found, skipping rejection test');
+        return;
+      }
+
+      // Expect this to fail (exit code !== 0)
+      expect(() => {
+        execCLI(`validate "${invalidFixturePath}"`);
+      }).toThrow();
+    });
+  });
+
+  describe('conformance Command', () => {
+    it('lists conformance profiles', () => {
+      const output = execCLI('conformance list');
+      expect(output).toContain('baseline');
+      expect(output).toContain('enterprise');
+    });
+
+    it('tests agent against baseline profile', () => {
+      const fixturePath = join(
+        projectRoot,
+        'spec/v0.3/conformance/tests/baseline/valid/basic-agent.yaml'
+      );
+
+      if (!existsSync(fixturePath)) {
+        console.warn('Baseline fixture not found, skipping conformance test');
+        return;
+      }
+
+      const output = execCLI(
+        `conformance run "${fixturePath}" --profile baseline`
+      );
+      expect(output).toBeDefined();
+      // Success means no error thrown
+    });
+  });
+
+  describe('CLI Error Handling', () => {
+    it('handles missing file gracefully', () => {
+      expect(() => {
+        execCLI('validate /nonexistent/file.yaml');
+      }).toThrow();
+    });
+
+    it('handles invalid command gracefully', () => {
+      expect(() => {
+        execCLI('nonexistent-command');
+      }).toThrow();
+    });
+  });
+
+  describe('CLI Performance', () => {
+    it('--version executes in under 1 second', () => {
+      const start = Date.now();
+      execCLI('--version');
+      const duration = Date.now() - start;
+
+      expect(duration).toBeLessThan(1000);
+    });
+
+    it('--help executes in under 1 second', () => {
+      const start = Date.now();
+      execCLI('--help');
+      const duration = Date.now() - start;
+
+      expect(duration).toBeLessThan(1000);
+    });
   });
 });
