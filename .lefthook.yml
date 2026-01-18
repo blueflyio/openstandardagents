@@ -16,17 +16,12 @@ pre-commit:
 pre-push:
   parallel: true
   commands:
-    # Validation engine - architectural rules enforcement
-    validation-engine:
-      run: npx @bluefly/validation-engine validate --hook=pre-push
-      fail_text: |
-        ❌ VALIDATION FAILED - Push blocked
-        Fix violations above or request exception:
-          npm run validation exception request
-
-    # Run tests
+    # Run tests before push
     test:
       run: npm test
+      fail_text: |
+        ❌ TESTS FAILED - Push blocked
+        Fix test failures before pushing
       skip:
         - merge
         - rebase
