@@ -1,8 +1,8 @@
 # Build output
 dist/
 *.js
+*.js.map
 *.d.ts
-*.map
 *.d.ts.map
 
 # Dependencies
@@ -12,5 +12,6 @@ node_modules/
 !package.json
 !package-lock.json
 
-# Keep source files
+# Keep only .ts source files (not .d.ts)
 !*.ts
+*.d.ts
