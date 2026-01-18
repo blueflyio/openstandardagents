@@ -4,26 +4,26 @@
 
 > **Built for Enterprise Adoption**: OSSA enables companies to build, deploy, and manage AI agents with vendor neutrality, production-grade reliability, and enterprise compliance built-in.
 
-> 🚀 **v0.3.5 Released**: 10 major features including Completion Signals, Checkpointing, MoE, Flow Orchestration, and more. [See what's new →](spec/v0.3/README.md)
+> **v0.3.5 Released**: 10 major features including Completion Signals, Checkpointing, MoE, Flow Orchestration, and more. [See what's new →](spec/v0.3/README.md)
 
-> 💡 **For Developers**: See [AGENTS.md](AGENTS.md) for setup and development guidelines. See [llms.txt](llms.txt) for LLM-friendly project overview.
+> **For Developers**: See [AGENTS.md](AGENTS.md) for setup and development guidelines. See [llms.txt](llms.txt) for LLM-friendly project overview.
 
 [![npm version](https://img.shields.io/npm/v/@bluefly/openstandardagents)](https://www.npmjs.com/package/@bluefly/openstandardagents)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![GitHub Actions](https://github.com/blueflyio/openstandardagents/workflows/CI/badge.svg)](https://github.com/blueflyio/openstandardagents/actions)
 
-## 🌟 Why Companies Choose OSSA
+## Why Companies Choose OSSA
 
 **OSSA is an emerging open standard for production AI agent systems** - designed for companies building enterprise-grade agent infrastructure.
 
 ### Business Value
 
-✅ **Vendor Lock-In Elimination** - Switch AI providers (OpenAI, Anthropic, Google) without code changes
-✅ **Cost Optimization** - Designed to reduce LLM costs via intelligent expert selection (MoE)
-✅ **Production Reliability** - Improved session recovery with checkpointing and fault tolerance
-✅ **Enterprise Compliance** - Built-in support for SOC2, HIPAA, GDPR, FedRAMP requirements
-✅ **Future-Proof Architecture** - Write once, deploy anywhere as AI landscape evolves
-✅ **Risk Mitigation** - Standardized contracts reduce vendor dependency and technical debt  
+- **Vendor Lock-In Elimination** - Switch AI providers (OpenAI, Anthropic, Google) without code changes
+- **Cost Optimization** - Designed to reduce LLM costs via intelligent expert selection (MoE)
+- **Production Reliability** - Improved session recovery with checkpointing and fault tolerance
+- **Enterprise Compliance** - Built-in support for SOC2, HIPAA, GDPR, FedRAMP requirements
+- **Future-Proof Architecture** - Write once, deploy anywhere as AI landscape evolves
+- **Risk Mitigation** - Standardized contracts reduce vendor dependency and technical debt  
 
 ### Enterprise Features
 
@@ -45,7 +45,7 @@ OSSA is a **specification standard** (like OpenAPI for REST APIs) that defines c
 - **Production-Ready** - Built for enterprise scale and reliability
 - **Open Source** - Apache 2.0 licensed, community-driven
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Install
 
@@ -184,13 +184,13 @@ const manifest = client.loadManifest('my-agent.ossa.yaml');
 const validation = client.validateManifest(manifest);
 
 if (validation.valid) {
-  console.log('✅ Agent manifest is valid!');
+  console.log('Agent manifest is valid!');
 } else {
-  console.error('❌ Validation errors:', validation.errors);
+  console.error('Validation errors:', validation.errors);
 }
 ```
 
-## 📚 Documentation
+## Documentation
 
 - **[Official Website](https://openstandardagents.org)** - Complete specification and guides
 - **[Quick Start Guide](docs/QUICKSTART.md)** - Get started in 5 minutes
@@ -198,7 +198,7 @@ if (validation.valid) {
 - **[Examples](examples/)** - 100+ reference examples
 - **[Migration Guides](migrations/guides/)** - Upgrade between versions
 
-## 🏗️ Project Structure
+## Project Structure
 
 ```
 openstandardagents/
@@ -218,7 +218,7 @@ openstandardagents/
 └── docs/             # Documentation
 ```
 
-## 🛠️ Development
+## Development
 
 ### Prerequisites
 
@@ -276,7 +276,7 @@ ossa-dev spec validate           # Validate generated spec
 npm run docs:generate            # Generate documentation
 ```
 
-## 🏢 Enterprise Adoption
+## Enterprise Adoption
 
 ### Who Uses OSSA?
 
@@ -310,7 +310,7 @@ Companies use OSSA to:
 - **Migration Tools** - Automated migration CLI for seamless upgrades
 - **Compliance** - Built-in security and compliance features
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions from companies and individuals! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
@@ -327,7 +327,7 @@ We welcome contributions from companies and individuals! Please see [CONTRIBUTIN
 
 Please read [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) before contributing.
 
-## 📦 What's Included
+## What's Included
 
 ### Specification
 
@@ -350,20 +350,20 @@ Please read [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) before contributing.
 - **Platform Adapters** - Integrations with LangChain, CrewAI, etc.
 - **Multi-Agent Workflows** - Complex orchestration examples
 
-## 🔗 Resources
+## Resources
 
-- **🌐 Website**: https://openstandardagents.org - Complete specification and enterprise guides
-- **📦 npm Package**: https://www.npmjs.com/package/@bluefly/openstandardagents
-- **💬 Community**: [Discord](https://discord.gg/ZZqad3v4) - Join 1000+ developers and companies
-- **📚 Documentation**: [Full Docs](https://openstandardagents.org/docs) - API reference, guides, examples
-- **🐛 Issues**: [GitHub Issues](https://github.com/blueflyio/openstandardagents/issues)
-- **⭐ Star Us**: [GitHub](https://github.com/blueflyio/openstandardagents) - Help us grow the ecosystem
+- **Website**: https://openstandardagents.org - Complete specification and enterprise guides
+- **npm Package**: https://www.npmjs.com/package/@bluefly/openstandardagents
+- **Community**: [Discord](https://discord.gg/ZZqad3v4) - Join 1000+ developers and companies
+- **Documentation**: [Full Docs](https://openstandardagents.org/docs) - API reference, guides, examples
+- **Issues**: [GitHub Issues](https://github.com/blueflyio/openstandardagents/issues)
+- **Star Us**: [GitHub](https://github.com/blueflyio/openstandardagents) - Help us grow the ecosystem
 
-## 📄 License
+## License
 
 Apache-2.0 - See [LICENSE](LICENSE) for details.
 
-## 📈 Design Goals
+## Design Goals
 
 OSSA is designed to provide:
 - **Cost Reduction** - Optimize LLM costs via MoE and intelligent routing
@@ -372,12 +372,12 @@ OSSA is designed to provide:
 - **Faster Development** - Accelerated agent development with standardized patterns
 - **Compliance Support** - Built-in features for SOC2, HIPAA, GDPR requirements
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 OSSA is maintained by the open-source community and adopted by companies worldwide. Special thanks to all contributors and adopters!
 
 ---
 
-**Built for Enterprise. Open for Everyone.** ❤️
+**Built for Enterprise. Open for Everyone.**
 
-**Join the companies standardizing on OSSA** - [Get Started →](https://openstandardagents.org/docs/getting-started)
+**Join the companies standardizing on OSSA** - [Get Started](https://openstandardagents.org/docs/getting-started)
