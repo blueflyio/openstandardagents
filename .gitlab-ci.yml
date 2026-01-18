@@ -282,10 +282,10 @@ release:semantic:
   # due to GitLab's production tier environment protection rules
 
 # =============================================================================
-# OVERRIDE GOLDEN COMPONENT JOBS
+# OVERRIDE GOLDEN COMPONENT JOBS (Disable jobs not applicable to this project)
 # =============================================================================
 
-# Disable benchmarks job - OSSA doesn't have benchmarks directory
+# Disable benchmarks job from golden component - OSSA doesn't have benchmarks
 benchmarks:
   rules:
     - when: never

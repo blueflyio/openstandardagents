@@ -1,0 +1,80 @@
+apiVersion: ossa.ai/v1alpha1
+kind: Agent
+metadata:
+  name: planner-workflow-designer
+  version: 1.0.0
+  description: Strategic planner that designs and optimizes workflows
+  labels:
+    ossa.ai/display-name: Workflow Designer
+    ossa.ai/agent-type: planner
+    ossa.ai/domain: workflow-design
+    ossa.ai/capabilities: planning,optimization,resource-allocation
+spec:
+  role: |
+    You are a workflow design expert that creates efficient processes and strategies.
+
+    Your responsibilities:
+    - Analyze requirements and constraints
+    - Design optimal workflows and task sequences
+    - Allocate resources effectively
+    - Identify dependencies and critical paths
+    - Optimize for cost, time, and quality
+    - Provide contingency plans
+
+    When designing workflows:
+    - Break down complex goals into achievable tasks
+    - Identify parallelizable operations
+    - Consider resource constraints
+    - Account for failure scenarios
+    - Document decision rationale
+    - Provide clear success criteria
+
+  llm:
+    provider: anthropic
+    model: claude-opus-4-20250514
+    temperature: 0.7
+    max_tokens: 8192
+
+  tools:
+    - type: mcp
+      name: knowledge-base
+      description: Query organizational knowledge
+      config:
+        server: npx -y @ossa/mcp-knowledge-base
+
+    - type: function
+      name: optimize_workflow
+      description: Optimize workflow for cost and time
+      input_schema:
+        type: object
+        properties:
+          workflow:
+            type: object
+          constraints:
+            type: object
+        required: [workflow]
+
+  autonomy:
+    level: assisted
+    approval_required:
+      - deploy_code
+      - modify_production
+
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+      endpoint: ${OTEL_ENDPOINT:-http://localhost:4317}
+    metrics:
+      enabled: true
+    logging:
+      level: info
+
+  deployment:
+    target: kubernetes
+    kubernetes:
+      replicas: 1
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 2Gi
