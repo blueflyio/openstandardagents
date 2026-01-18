@@ -174,7 +174,7 @@
     "fix:schemas": "node src/tools/generators/fix-schema-formats.js",
     "hooks:install": "lefthook install",
     "hooks:uninstall": "lefthook uninstall",
-    "prepare": "husky install || true",
+    "prepare": "lefthook install || true",
     "postinstall": "node bin/postinstall || true",
     "// RELEASE & PUBLISH": "",
     "prerelease": "npm run quality && npm run test && npm run validate",
