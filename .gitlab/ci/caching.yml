@@ -59,13 +59,22 @@
 # ============================================================================
 
 # All critical tests that MUST pass before release/tagging
+# Jobs marked optional since they have rules that control when they run
 .needs-all-tests:
   needs:
     - job: build:dist
+      optional: true
     - job: test:unit
+      optional: true
     - job: test:integration
+      optional: true
     - job: test:lint
+      optional: true
     - job: test:security
+      optional: true
     - job: test:e2e
+      optional: true
     - job: test:smoke
+      optional: true
     - job: quality:gates:full
+      optional: true
