@@ -30,7 +30,7 @@ publish:sdk:typescript:
     - npm version $TAG_VERSION --no-git-tag-version
     - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
     - npm publish --access public
-    - echo "✅ Published @ossa/sdk@$TAG_VERSION to npm"
+    - echo "Published @ossa/sdk@$TAG_VERSION to npm"
   artifacts:
     paths:
       - src/sdks/typescript/dist/
@@ -54,7 +54,7 @@ publish:sdk:python:
     - sed -i "s/version = \".*\"/version = \"$TAG_VERSION\"/" pyproject.toml
     - python -m build
     - python -m twine upload dist/* --username __token__ --password ${PYPI_TOKEN}
-    - echo "✅ Published ossa-sdk $TAG_VERSION to PyPI"
+    - echo "Published ossa-sdk $TAG_VERSION to PyPI"
   artifacts:
     paths:
       - src/sdks/python/dist/
@@ -76,4 +76,4 @@ tag:sdk:go:
     - GO_TAG="sdk/go/v$TAG_VERSION"
     - git tag -a "$GO_TAG" -m "Release Go SDK $TAG_VERSION"
     - git push origin "$GO_TAG"
-    - echo "✅ Created Go module tag: $GO_TAG"
+    - echo "Created Go module tag $GO_TAG"
