@@ -20,6 +20,10 @@
 
 include:
   # ============================================================================
+  # GitLab Component - Golden CI Template (no inputs - use defaults)
+  # ============================================================================
+  - component: $CI_SERVER_FQDN/blueflyio/gitlab_components/golden@release/v0.1.x
+  # ============================================================================
   # Local CI Configuration Files (Organized by Concern)
   # ============================================================================
   # NOTE: GitLab SAST/Dependency-Scanning templates removed - they include
@@ -276,3 +280,12 @@ release:semantic:
       when: on_success
   # NOTE: Removed 'environment: production' which was causing job to be manual
   # due to GitLab's production tier environment protection rules
+
+# =============================================================================
+# OVERRIDE GOLDEN COMPONENT JOBS
+# =============================================================================
+
+# Disable benchmarks job - OSSA doesn't have benchmarks directory
+benchmarks:
+  rules:
+    - when: never
