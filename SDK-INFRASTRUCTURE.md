@@ -118,6 +118,149 @@ go get gitlab.com/blueflyio/openstandardagents/sdk/go@v0.3.5
 
 ---
 
+## 🔌 USING FRAMEWORK ADAPTERS
+
+**The Power of OSSA:** Write once in OSSA format, use with ANY framework.
+
+### **Quick Start: Import and Use**
+
+```typescript
+// TypeScript: Use OSSA agents with LangChain
+import { loadManifest } from '@ossa/sdk';
+import { LangChainAdapter } from '@ossa/sdk/adapters/langchain';
+
+const manifest = loadManifest('agent.ossa.yaml');
+const langchainConfig = LangChainAdapter.toLangChain(manifest);
+// Now use langchainConfig with LangChain executor
+```
+
+```python
+# Python: Use OSSA agents with CrewAI
+from ossa import load_manifest
+from ossa.adapters.crewai import to_crewai
+
+manifest = load_manifest("agent.ossa.yaml")
+crew_config = to_crewai(manifest)
+# Now use crew_config with CrewAI
+```
+
+### **LangChain Example: OSSA → LangChain**
+
+```typescript
+import { loadManifest } from '@ossa/sdk';
+import { LangChainAdapter } from '@ossa/sdk/adapters/langchain';
+import { initializeAgentExecutorWithOptions } from 'langchain/agents';
+import { ChatAnthropic } from '@langchain/anthropic';
+
+// Load OSSA manifest
+const ossa = loadManifest('research-agent.ossa.yaml');
+
+// Convert to LangChain format
+const langchainConfig = LangChainAdapter.toLangChain(ossa);
+
+// Initialize LangChain agent with OSSA configuration
+const model = new ChatAnthropic({
+  model: ossa.spec.llm.model,
+  temperature: ossa.spec.llm.temperature
+});
+
+const executor = await initializeAgentExecutorWithOptions(
+  langchainConfig.tools,
+  model,
+  {
+    agentType: langchainConfig.agentType,
+    verbose: true,
+    maxIterations: ossa.spec.max_iterations
+  }
+);
+
+// Execute with OSSA system prompt and instructions
+const result = await executor.call({
+  input: "Research quantum computing trends",
+  systemMessage: ossa.spec.instructions.system_prompt
+});
+```
+
+### **CrewAI Example: OSSA → CrewAI**
+
+```python
+from ossa import load_manifest
+from ossa.adapters.crewai import to_crewai
+from crewai import Crew, Task
+
+# Load OSSA manifest
+manifest = load_manifest("content-team.ossa.yaml")
+
+# Convert to CrewAI format
+crew_config = to_crewai(manifest)
+
+# Create CrewAI crew from OSSA configuration
+crew = Crew(
+    agents=crew_config["agents"],
+    tasks=crew_config["tasks"],
+    verbose=True,
+    process=crew_config["process"]
+)
+
+# Execute with OSSA-defined workflow
+result = crew.kickoff(inputs={
+    "topic": "AI safety guidelines",
+    "audience": "developers"
+})
+
+print(result)
+```
+
+### **Available Adapters**
+
+**Export Adapters** (OSSA → Framework):
+
+| Adapter | Language | Purpose | Import Path |
+|---------|----------|---------|-------------|
+| **LangChain** | TypeScript | Convert OSSA to LangChain agents/chains | `@ossa/sdk/adapters/langchain` |
+| **LangChain** | Python | Convert OSSA to LangChain Python | `ossa.adapters.langchain` |
+| **CrewAI** | TypeScript | Convert OSSA to CrewAI crew config | `@ossa/sdk/adapters/crewai` |
+| **CrewAI** | Python | Convert OSSA to CrewAI Python | `ossa.adapters.crewai` |
+| **AutoGen** | Python | Convert OSSA to AutoGen agents | `ossa.adapters.autogen` |
+| **OpenTelemetry** | TypeScript | Add tracing/observability | `@ossa/sdk/adapters/opentelemetry` |
+| **LangSmith** | TypeScript | LangChain monitoring integration | `@ossa/sdk/adapters/langsmith` |
+
+**Import Adapters** (Framework → OSSA):
+
+| Adapter | Purpose | CLI Command |
+|---------|---------|-------------|
+| **LangChain Importer** | Import existing LangChain agents to OSSA | `ossa import langchain agent.py` |
+| **LangChain Migrator** | Migrate LangChain codebase to OSSA | `ossa migrate langchain agent.py --output agent.ossa.yaml` |
+
+**Why Use Adapters?**
+
+1. **Write Once, Run Anywhere** - Define your agent once in OSSA, use it with any framework
+2. **Framework Migration** - Switch frameworks without rewriting agent logic
+3. **Multi-Framework** - Use different frameworks for different environments (dev/prod)
+4. **Best-of-Both** - Get OSSA portability + framework-specific features
+5. **No Lock-In** - Your OSSA manifest works with current AND future frameworks
+
+**Typical Workflow:**
+
+```bash
+# 1. Define agent in OSSA
+vim my-agent.ossa.yaml
+
+# 2. Validate compatibility with target framework
+ossa framework validate my-agent.ossa.yaml --framework langchain
+
+# 3a. Use adapter in code (TypeScript)
+import { LangChainAdapter } from '@ossa/sdk/adapters/langchain';
+
+# 3b. OR export to framework-specific code
+ossa export my-agent.ossa.yaml --platform langchain -o agent.py
+
+# 4. Run with your framework of choice
+python agent.py
+```
+
+---
+
 ## 🔌 FRAMEWORK INTEGRATIONS
 
 ### **Adapters** (Export FROM OSSA)
