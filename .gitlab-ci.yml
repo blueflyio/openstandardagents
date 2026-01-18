@@ -20,15 +20,6 @@
 
 include:
   # ============================================================================
-  # GitLab Component - Golden CI Template
-  # ============================================================================
-  - component: $CI_SERVER_FQDN/blueflyio/gitlab_components/golden@release/v0.1.x
-    inputs:
-      project_type: typescript
-      node_version: "20"
-      enable_mr_validation: "false"
-      require_milestone: "false"
-  # ============================================================================
   # Local CI Configuration Files (Organized by Concern)
   # ============================================================================
   # NOTE: GitLab SAST/Dependency-Scanning templates removed - they include
