@@ -3,11 +3,13 @@
   "compilerOptions": {
     "types": ["node", "jest"],
     "rootDir": ".",
-    "module": "CommonJS",
-    "moduleResolution": "Node",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "isolatedModules": true,
     "declaration": false,
-    "declarationMap": false
+    "declarationMap": false,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
   },
   "include": [
     "tests/**/*",
