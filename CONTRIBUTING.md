@@ -4,11 +4,11 @@ Thank you for your interest in contributing to OSSA! This document provides guid
 
 **Built for Enterprise Adoption**: OSSA enables companies to build vendor-neutral, production-grade AI agent infrastructure. Your contributions help make OSSA the industry standard.
 
-## 🌟 Code of Conduct
+## Code of Conduct
 
 By participating in this project, you agree to abide by our [Code of Conduct](CODE_OF_CONDUCT.md). We are committed to providing a welcoming and inclusive environment for all contributors.
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -36,7 +36,7 @@ npm test
 npm run validate:all
 ```
 
-## 📝 How to Contribute
+## How to Contribute
 
 ### Reporting Bugs
 
@@ -89,7 +89,7 @@ npm run validate:all
    ```
    Then create a Merge Request targeting `development` branch.
 
-## 📋 Contribution Guidelines
+## Contribution Guidelines
 
 ### Commit Message Format
 
@@ -140,21 +140,21 @@ docs: update quickstart guide
 - Update examples if behavior changes
 - Keep migration guides up to date
 
-## 🏗️ Project Structure
+## Project Structure
 
 ### Repository Boundaries
 
 **This repository (`openstandardagents`) contains:**
-- ✅ OSSA specification (schemas, OpenAPI, documentation)
-- ✅ CLI tooling (`ossa` commands)
-- ✅ Reference examples (`examples/` directory)
-- ✅ SDKs (TypeScript, Python)
-- ✅ Documentation and guides
+- OSSA specification (schemas, OpenAPI, documentation)
+- CLI tooling (`ossa` commands)
+- Reference examples (`examples/` directory)
+- SDKs (TypeScript, Python)
+- Documentation and guides
 
 **This repository does NOT contain:**
-- ❌ Production agent implementations (use `platform-agents` repo)
-- ❌ Bot scripts or production CI jobs
-- ❌ Website code (use `openstandardagents.org` repo)
+- Production agent implementations (use `platform-agents` repo)
+- Bot scripts or production CI jobs
+- Website code (use `openstandardagents.org` repo)
 
 ### Directory Structure
 
@@ -172,7 +172,7 @@ openstandardagents/
 └── docs/             # Documentation
 ```
 
-## 🔍 Review Process
+## Review Process
 
 1. **Automated Checks**: CI/CD will run:
    - Linting and formatting checks
@@ -188,20 +188,20 @@ openstandardagents/
 
 3. **Feedback**: We'll provide constructive feedback and work with you to improve your contribution.
 
-## 📚 Resources
+## Resources
 
 - **[OSSA Specification](https://openstandardagents.org)** - Official specification
 - **[Quick Start Guide](docs/QUICKSTART.md)** - Get started quickly
 - **[API Reference](docs/api-reference/)** - Complete API docs
 - **[Examples](examples/)** - Reference implementations
 
-## ❓ Questions?
+## Questions?
 
 - **General questions**: [GitHub Discussions](https://github.com/blueflyio/openstandardagents/discussions) (public) or [GitLab Issues](https://gitlab.com/blueflyio/ossa/openstandardagents/-/issues) (internal)
 - **Technical questions**: Create an issue with the `question` label
 - **Security issues**: See [SECURITY.md](SECURITY.md)
 
-## 🙏 Thank You!
+## Thank You!
 
 Your contributions make OSSA better for everyone. We appreciate your time and effort!
 

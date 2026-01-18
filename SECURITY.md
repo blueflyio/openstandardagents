@@ -4,11 +4,11 @@
 
 We actively support the following versions of OSSA with security updates:
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 0.3.x   | :white_check_mark: |
-| 0.2.x   | :white_check_mark: |
-| < 0.2.0 | :x:                |
+| Version | Supported |
+| ------- | --------- |
+| 0.3.x   | Yes       |
+| 0.2.x   | Yes       |
+| < 0.2.0 | No        |
 
 ## Reporting a Vulnerability
 
