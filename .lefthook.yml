@@ -12,3 +12,21 @@ pre-commit:
     prevent-hardcoded-versions:
       run: tsx src/tools/validation/version-validator.ts
       stage_fixed: false
+
+pre-push:
+  parallel: true
+  commands:
+    # Validation engine - architectural rules enforcement
+    validation-engine:
+      run: npx @bluefly/validation-engine validate --hook=pre-push
+      fail_text: |
+        ❌ VALIDATION FAILED - Push blocked
+        Fix violations above or request exception:
+          npm run validation exception request
+
+    # Run tests
+    test:
+      run: npm test
+      skip:
+        - merge
+        - rebase
