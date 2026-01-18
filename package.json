@@ -172,7 +172,9 @@
     "audit:mrs": "tsx src/tools/audit-mrs.ts",
     "// MAINTENANCE": "",
     "fix:schemas": "node src/tools/generators/fix-schema-formats.js",
-    "prepare": "husky install || true",
+    "hooks:install": "lefthook install",
+    "hooks:uninstall": "lefthook uninstall",
+    "prepare": "lefthook install || true",
     "postinstall": "node bin/postinstall || true",
     "// RELEASE & PUBLISH": "",
     "prerelease": "npm run quality && npm run test && npm run validate",
@@ -252,11 +254,16 @@
     "json-schema-to-typescript": "^15.0.4",
     "json-schema-to-zod": "^2.6.1",
     "keep-a-changelog": "^2.8.0",
+    "lefthook": "^1.12.3",
     "prettier": "^3.6.2",
     "semantic-release": "^25.0.1",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
+  },
+  "volta": {
+    "node": "18.20.8",
+    "npm": "10.9.4"
   }
 }
