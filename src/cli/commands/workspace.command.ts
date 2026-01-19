@@ -284,11 +284,13 @@ workspaceCommand
 
       console.log(chalk.blue('Discovering agents...'));
 
-      // Find all .agents directories
+      // Find all .agents directories and packages/@ossa/* directories
       const patterns = [
         '**/.agents/manifest.ossa.yaml',
         '**/.agents/*.ossa.yaml',
         '**/agents/*.ossa.yaml',
+        '**/packages/@ossa/*/manifest.ossa.yaml',
+        '**/packages/@ossa/*/agent.ossa.yaml', // Support legacy naming during migration
       ];
 
       const found: Array<{
