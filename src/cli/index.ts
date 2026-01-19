@@ -58,6 +58,8 @@ import { setupCommand } from './commands/setup.command.js';
 import { testCommand } from './commands/test.command.js';
 import { validateCommand } from './commands/validate.command.js';
 import { workspaceCommand } from './commands/workspace.command.js';
+import { taxonomyCommandGroup } from './commands/taxonomy.command.js';
+import { skillsCommandGroup } from './commands/skills.command.js';
 
 // Framework integration commands
 import { langflowCommand } from './commands/langflow.command.js';
@@ -211,6 +213,12 @@ program.addCommand(diffCommand);
 
 // Agent management
 program.addCommand(agentsCommandGroup);
+
+// Taxonomy commands
+program.addCommand(taxonomyCommandGroup);
+
+// Claude Skills commands
+program.addCommand(skillsCommandGroup);
 
 // Two-tier architecture commands
 program.addCommand(workspaceCommand);

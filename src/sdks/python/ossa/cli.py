@@ -7,6 +7,7 @@ from pathlib import Path
 from . import __version__
 from .manifest import load_manifest
 from .validator import validate_manifest
+from .structure import AgentsFolderService
 
 
 def main() -> int:
@@ -23,12 +24,19 @@ def main() -> int:
     info_parser = subparsers.add_parser("info", help="Show manifest info")
     info_parser.add_argument("file", help="Manifest file")
 
+    scaffold_parser = subparsers.add_parser("scaffold", help="Scaffold agent folder structure")
+    scaffold_parser.add_argument("name", help="Agent name")
+    scaffold_parser.add_argument("--base-path", default=".agents", help="Base path for agents")
+    scaffold_parser.add_argument("--overwrite", action="store_true", help="Overwrite existing structure")
+
     args = parser.parse_args()
 
     if args.command == "validate":
         return cmd_validate(args)
     elif args.command == "info":
         return cmd_info(args)
+    elif args.command == "scaffold":
+        return cmd_scaffold(args)
     else:
         parser.print_help()
         return 0
@@ -78,6 +86,34 @@ def cmd_info(args: argparse.Namespace) -> int:
         if manifest.version:
             print(f"Version: {manifest.version}")
         return 0
+    except Exception as e:
+        print(f"ERROR: {e}")
+        return 1
+
+
+def cmd_scaffold(args: argparse.Namespace) -> int:
+    """Scaffold command handler."""
+    try:
+        service = AgentsFolderService()
+        structure = service.generate_structure(args.name, args.base_path)
+        
+        print(f"Creating folder structure for agent: {args.name}")
+        service.create_structure(structure, args.overwrite)
+        
+        # Validate structure
+        agent_dir = Path(args.base_path) / args.name
+        validation = service.validate_structure(str(agent_dir))
+        
+        if validation["valid"]:
+            print(f"✓ Folder structure created successfully at: {agent_dir}")
+            print(f"  Created {len(structure.directories)} directories")
+            print(f"  Created {len(structure.files)} files")
+            return 0
+        else:
+            print("⚠ Structure created but validation failed:")
+            for error in validation["errors"]:
+                print(f"  - {error}")
+            return 1
     except Exception as e:
         print(f"ERROR: {e}")
         return 1
