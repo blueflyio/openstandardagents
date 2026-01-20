@@ -43,6 +43,7 @@ include:
   - local: .gitlab/ci/sdk-publish.yml
   - local: .gitlab/ci/merge-train-optimized.yml
   - local: .gitlab/ci/ossa-auto-migrate.yml
+  - local: .gitlab/ci/mirror-github.yml
 
 # =============================================================================
 # PIPELINE DEDUPLICATION

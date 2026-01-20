@@ -1,0 +1,40 @@
+apiVersion: ossa/v0.3.6
+metadata:
+  name: report-generator
+  version: 1.0.0
+  description: Report generation agent that generates reports from data, creates visualizations, and formats outputs
+  labels:
+    ossa.ai/type: worker
+    ossa.ai/domain: data
+spec:
+  role: Report Generation Agent
+  system_message: |
+    You are a report generation agent that generates comprehensive reports from data, 
+    creates visualizations, formats outputs, and delivers reports in various formats.
+  llm_config:
+    provider: openai
+    model: gpt-4
+    temperature: 0.3
+  tools:
+    - name: generate_report
+      description: Generate report from data
+      parameters:
+        type: object
+        properties:
+          data_source:
+            type: string
+          format:
+            type: string
+            enum: [pdf, html, markdown, json]
+          template:
+            type: string
+  taxonomy:
+    domain: data
+    subdomain: reporting
+    capability: report_generation
+    concerns: [quality, performance]
+    maturity: stable
+    deployment_pattern: serverless
+    integration_pattern: batch
+    cost_profile: low
+    performance_tier: batch

@@ -26,7 +26,6 @@ import { complianceCommand } from './commands/compliance.command.js';
 import { conformanceCommand } from './commands/conformance.command.js';
 import { contractCommand } from './commands/contract.command.js';
 import { dependenciesCommand } from './commands/dependencies.command.js';
-import { deployGroup } from './commands/deploy.command.js';
 import {
   deployCommand,
   rollbackCommand,
@@ -47,6 +46,7 @@ import { lintCommand } from './commands/lint.command.js';
 import { standardizeCommand } from './commands/standardize.command.js';
 import { llmsTxtCommand } from './commands/llms-txt.command.js';
 import { migrateCommand } from './commands/migrate.command.js';
+import { buildCommand } from './commands/build.command.js';
 import { migrateBatchCommand } from './commands/migrate-batch.command.js';
 import { publishCommand } from './commands/publish.command.js';
 import { quickstartCommand } from './commands/quickstart.command.js';
@@ -54,12 +54,14 @@ import { registryCommand } from './commands/registry.command.js';
 import { runCommand } from './commands/run.command.js';
 import { schemaCommand } from './commands/schema.command.js';
 import { searchCommand } from './commands/search.command.js';
+import { updateCommand } from './commands/update.command.js';
 import { setupCommand } from './commands/setup.command.js';
 import { testCommand } from './commands/test.command.js';
 import { validateCommand } from './commands/validate.command.js';
 import { workspaceCommand } from './commands/workspace.command.js';
 import { taxonomyCommandGroup } from './commands/taxonomy.command.js';
 import { skillsCommandGroup } from './commands/skills.command.js';
+import { templateCommandGroup } from './commands/template.command.js';
 
 // Framework integration commands
 import { langflowCommand } from './commands/langflow.command.js';
@@ -196,6 +198,7 @@ program.addCommand(llmsTxtCommand);
 program.addCommand(publishCommand);
 program.addCommand(searchCommand);
 program.addCommand(installCommand);
+program.addCommand(updateCommand);
 program.addCommand(infoCommand);
 
 // Deploy commands
@@ -203,7 +206,7 @@ program.addCommand(deployCommand);
 program.addCommand(statusCommand);
 program.addCommand(rollbackCommand);
 program.addCommand(stopCommand);
-program.addCommand(deployGroup); // Legacy compatibility
+// deployGroup removed - using deployCommand from deploy.js instead
 
 // Quality commands
 program.addCommand(testCommand);
@@ -219,6 +222,7 @@ program.addCommand(taxonomyCommandGroup);
 
 // Claude Skills commands
 program.addCommand(skillsCommandGroup);
+program.addCommand(templateCommandGroup);
 
 // Two-tier architecture commands
 program.addCommand(workspaceCommand);

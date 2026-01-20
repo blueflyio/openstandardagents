@@ -12,6 +12,7 @@ import { Command } from 'commander';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { ValidationService } from '../../services/validation.service.js';
+import { KAgentValidator } from '../../sdks/kagent/validator.js';
 import {
   formatValidationErrors,
   formatErrorCompact,
@@ -34,6 +35,11 @@ export const validateCommand = new Command('validate')
   .option('--check-messaging', 'Validate messaging extension (v0.3.0+)')
   .option('-v, --verbose', 'Verbose output with detailed information')
   .option('--output <format>', 'Output format (json|text)', 'text')
+  .option(
+    '-p, --platform <platform>',
+    'Platform-specific validation (kagent, langchain, crewai, docker, kubernetes)'
+  )
+  .option('--all', 'Validate for all platforms', false)
   .description(
     'Validate OSSA agent manifest or OpenAPI spec against JSON schema'
   )
@@ -202,6 +208,30 @@ export const validateCommand = new Command('validate')
             });
           }
 
+          // Platform-specific validation
+          const platforms = (options as { all?: boolean; platform?: string })
+            .all
+            ? ['kagent', 'langchain', 'crewai', 'docker', 'kubernetes']
+            : (options as { all?: boolean; platform?: string }).platform
+              ? [(options as { all?: boolean; platform?: string }).platform!]
+              : [];
+
+          if (platforms.length > 0) {
+            console.log(chalk.blue('\nPlatform-specific validation:'));
+            for (const platform of platforms) {
+              try {
+                await validateForPlatform(manifest, platform);
+                console.log(chalk.green(`  ✓ ${platform} validation passed`));
+              } catch (error) {
+                console.error(
+                  chalk.red(
+                    `  ✗ ${platform} validation failed: ${error instanceof Error ? error.message : String(error)}`
+                  )
+                );
+              }
+            }
+          }
+
           process.exit(0);
         } else {
           // Use the new error formatter for better error messages
@@ -241,3 +271,30 @@ export const validateCommand = new Command('validate')
       }
     }
   );
+
+async function validateForPlatform(
+  manifest: OssaAgent,
+  platform: string
+): Promise<void> {
+  switch (platform) {
+    case 'kagent': {
+      const validator = new KAgentValidator();
+      const result = validator.validate(manifest);
+      if (!result.valid) {
+        throw new Error(result.errors.join('; '));
+      }
+      break;
+    }
+
+    case 'langchain':
+    case 'crewai':
+    case 'docker':
+    case 'kubernetes':
+      // Platform validators not yet implemented
+      console.log(chalk.yellow(`  ${platform} validator not yet implemented`));
+      break;
+
+    default:
+      throw new Error(`Unknown platform: ${platform}`);
+  }
+}

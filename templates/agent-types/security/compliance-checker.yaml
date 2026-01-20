@@ -1,0 +1,38 @@
+apiVersion: ossa/v0.3.6
+metadata:
+  name: compliance-checker
+  version: 1.0.0
+  description: Compliance checking agent that validates configurations against security policies and compliance standards
+  labels:
+    ossa.ai/type: analyzer
+    ossa.ai/domain: security
+spec:
+  role: Compliance Checking Agent
+  system_message: |
+    You are a compliance checking agent that validates configurations, policies, 
+    and implementations against security standards and compliance requirements.
+  llm_config:
+    provider: openai
+    model: gpt-4
+    temperature: 0.1
+  tools:
+    - name: check_compliance
+      description: Check compliance against standard
+      parameters:
+        type: object
+        properties:
+          standard:
+            type: string
+            enum: [SOC2, GDPR, HIPAA, PCI-DSS]
+          configuration:
+            type: object
+  taxonomy:
+    domain: security
+    subdomain: compliance
+    capability: compliance_validation
+    concerns: [security, governance]
+    maturity: production
+    deployment_pattern: container
+    integration_pattern: api-first
+    cost_profile: medium
+    performance_tier: near-real-time

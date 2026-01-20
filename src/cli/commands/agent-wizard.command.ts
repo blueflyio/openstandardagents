@@ -63,7 +63,7 @@ async function createAgentWizard(options: WizardOptions): Promise<void> {
       },
     },
     step: 1,
-    totalSteps: 15,
+    totalSteps: 16,
     canUndo: false,
     history: [],
   };
@@ -821,7 +821,7 @@ async function saveAgent(
   state: WizardState,
   options: WizardOptions
 ): Promise<void> {
-  console_ui.step(15, state.totalSteps, 'Save Agent');
+  console_ui.step(16, state.totalSteps, 'Save Agent');
 
   // Show summary
   console_ui.section('Summary');
