@@ -1,0 +1,38 @@
+apiVersion: ossa/v0.3.6
+metadata:
+  name: database-migrator
+  version: 1.0.0
+  description: Database migration agent that executes schema changes, validates migrations, and manages rollbacks
+  labels:
+    ossa.ai/type: worker
+    ossa.ai/domain: infrastructure
+spec:
+  role: Database Migration Agent
+  system_message: |
+    You are a database migration agent that safely executes schema changes, 
+    validates migration scripts, manages rollbacks, and ensures data integrity 
+    during database updates.
+  llm_config:
+    provider: openai
+    model: gpt-4
+    temperature: 0.1
+  tools:
+    - name: execute_migration
+      description: Execute database migration script
+      parameters:
+        type: object
+        properties:
+          script:
+            type: string
+          database:
+            type: string
+  taxonomy:
+    domain: infrastructure
+    subdomain: database
+    capability: migration
+    concerns: [reliability, architecture]
+    maturity: stable
+    deployment_pattern: container
+    integration_pattern: batch
+    cost_profile: low
+    performance_tier: batch

@@ -70,8 +70,30 @@ taxonomyCommandGroup
     '--concern <concern>',
     'Filter by concern (can be used multiple times)'
   )
+  .option(
+    '--maturity <maturity>',
+    'Filter by maturity level (prototype, beta, stable, production)'
+  )
+  .option(
+    '--deployment <pattern>',
+    'Filter by deployment pattern (serverless, container, edge, hybrid)'
+  )
+  .option(
+    '--integration <pattern>',
+    'Filter by integration pattern (api-first, event-driven, batch, streaming)'
+  )
+  .option(
+    '--cost <profile>',
+    'Filter by cost profile (low, medium, high, enterprise)'
+  )
+  .option(
+    '--performance <tier>',
+    'Filter by performance tier (real-time, near-real-time, batch)'
+  )
   .option('--workspace <path>', 'Workspace path to search', '.')
-  .description('Query agents by taxonomy criteria')
+  .description(
+    'Query agents by taxonomy criteria (supports multi-dimensional filtering)'
+  )
   .action(
     async (options: {
       domain?: string;
@@ -79,6 +101,11 @@ taxonomyCommandGroup
       type?: string;
       capability?: string;
       concern?: string[];
+      maturity?: string;
+      deployment?: string;
+      integration?: string;
+      cost?: string;
+      performance?: string;
       workspace?: string;
     }) => {
       try {
@@ -110,6 +137,11 @@ taxonomyCommandGroup
                 type?: string;
                 capability?: string;
                 concerns?: string[];
+                maturity?: string;
+                deployment_pattern?: string;
+                integration_pattern?: string;
+                cost_profile?: string;
+                performance_tier?: string;
               }
             | undefined;
 
@@ -142,6 +174,35 @@ taxonomyCommandGroup
             if (!hasConcern) return false;
           }
 
+          if (options.maturity && taxonomy.maturity !== options.maturity) {
+            return false;
+          }
+
+          if (
+            options.deployment &&
+            taxonomy.deployment_pattern !== options.deployment
+          ) {
+            return false;
+          }
+
+          if (
+            options.integration &&
+            taxonomy.integration_pattern !== options.integration
+          ) {
+            return false;
+          }
+
+          if (options.cost && taxonomy.cost_profile !== options.cost) {
+            return false;
+          }
+
+          if (
+            options.performance &&
+            taxonomy.performance_tier !== options.performance
+          ) {
+            return false;
+          }
+
           return true;
         });
 
@@ -163,6 +224,11 @@ taxonomyCommandGroup
                 type?: string;
                 capability?: string;
                 concerns?: string[];
+                maturity?: string;
+                deployment_pattern?: string;
+                integration_pattern?: string;
+                cost_profile?: string;
+                performance_tier?: string;
               }
             | undefined;
 
@@ -180,6 +246,21 @@ taxonomyCommandGroup
             }
             if (taxonomy.concerns && taxonomy.concerns.length > 0) {
               console.log(`  Concerns: ${taxonomy.concerns.join(', ')}`);
+            }
+            if (taxonomy.maturity) {
+              console.log(`  Maturity: ${taxonomy.maturity}`);
+            }
+            if (taxonomy.deployment_pattern) {
+              console.log(`  Deployment: ${taxonomy.deployment_pattern}`);
+            }
+            if (taxonomy.integration_pattern) {
+              console.log(`  Integration: ${taxonomy.integration_pattern}`);
+            }
+            if (taxonomy.cost_profile) {
+              console.log(`  Cost Profile: ${taxonomy.cost_profile}`);
+            }
+            if (taxonomy.performance_tier) {
+              console.log(`  Performance: ${taxonomy.performance_tier}`);
             }
           }
           console.log('');
