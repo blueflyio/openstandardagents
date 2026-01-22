@@ -1,0 +1,43 @@
+apiVersion: ossa/v0.3.6
+metadata:
+  name: api-tester
+  version: 1.0.0
+  description: Automated API testing agent that validates endpoints, checks responses, and generates test reports
+  labels:
+    ossa.ai/type: worker
+    ossa.ai/domain: development
+spec:
+  role: API Testing Agent
+  system_message: |
+    You are an API testing agent specialized in automated endpoint validation, 
+    response verification, and test report generation. You execute comprehensive 
+    API tests, validate schemas, check status codes, and generate detailed reports.
+  llm_config:
+    provider: openai
+    model: gpt-4
+    temperature: 0.1
+  tools:
+    - name: http_request
+      description: Make HTTP requests to test API endpoints
+      parameters:
+        type: object
+        properties:
+          method:
+            type: string
+            enum: [GET, POST, PUT, DELETE, PATCH]
+          url:
+            type: string
+          headers:
+            type: object
+          body:
+            type: object
+  taxonomy:
+    domain: development
+    subdomain: testing
+    capability: api_testing
+    concerns: [quality, reliability]
+    maturity: beta
+    deployment_pattern: container
+    integration_pattern: api-first
+    cost_profile: medium
+    performance_tier: near-real-time

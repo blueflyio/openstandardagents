@@ -1,56 +1,72 @@
-import chalk from 'chalk';
 import { Command } from 'commander';
+import chalk from 'chalk';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import axios from 'axios';
+import { container } from '../../di-container.js';
+import { RegistryService } from '../../services/registry.service.js';
+import { ManifestRepository } from '../../repositories/manifest.repository.js';
+import yaml from 'yaml';
 
 export const installCommand = new Command('install')
-  .argument('<agent>', 'Agent identifier (e.g., @ossa/code-reviewer@1.0.0)')
-  .option('--output <dir>', 'Output directory', './agents')
-  .description('Install an agent from the OSSA registry')
-  .action(async (agent: string, options: { output?: string }) => {
-    try {
-      const token =
-        process.env.GITLAB_TOKEN || process.env.GITLAB_PRIVATE_TOKEN;
-      const projectId = process.env.GITLAB_PROJECT_ID || '76265294';
-      const gitlabUrl = process.env.GITLAB_URL || 'https://gitlab.com';
-      if (!token) {
-        console.error(chalk.red('✗ GITLAB_TOKEN required'));
+  .description('Install an OSSA agent from the registry')
+  .argument('<agent-id>', 'Agent ID to install')
+  .option('-v, --version <version>', 'Version to install (defaults to latest)')
+  .option(
+    '-o, --output <path>',
+    'Output directory (defaults to current directory)'
+  )
+  .option('-r, --registry <path>', 'Registry path (defaults to .ossa-registry)')
+  .action(
+    async (
+      agentId: string,
+      options: { version?: string; output?: string; registry?: string }
+    ) => {
+      try {
+        const registryService = options.registry
+          ? new RegistryService(options.registry)
+          : container.get<RegistryService>(RegistryService);
+
+        await registryService.initialize();
+
+        const entry = await registryService.get(agentId, options.version);
+
+        if (!entry) {
+          console.error(
+            chalk.red(
+              `Agent ${agentId}${options.version ? `@${options.version}` : ''} not found`
+            )
+          );
+          process.exit(1);
+        }
+
+        // Load manifest from registry
+        const manifestPath = path.join(
+          registryService['agentsPath'],
+          agentId,
+          entry.version,
+          'manifest.yaml'
+        );
+        const manifestContent = await fs.readFile(manifestPath, 'utf-8');
+        const manifest = yaml.parse(manifestContent);
+
+        // Save to output directory
+        const outputDir = options.output || process.cwd();
+        await fs.mkdir(outputDir, { recursive: true });
+        const outputPath = path.join(outputDir, `${agentId}.ossa.yaml`);
+
+        await fs.writeFile(outputPath, yaml.stringify(manifest), 'utf-8');
+
+        console.log(chalk.green(`\n✓ Installed: ${agentId}@${entry.version}`));
+        console.log(chalk.gray(`  Location: ${outputPath}`));
+
+        process.exit(0);
+      } catch (error) {
+        console.error(
+          chalk.red(
+            `\n✗ Error: ${error instanceof Error ? error.message : String(error)}`
+          )
+        );
         process.exit(1);
       }
-      const parts = agent.split('@');
-      const agentName =
-        parts.length > 1 ? parts.slice(0, -1).join('@') : parts[0];
-      const version = parts.length > 1 ? parts[parts.length - 1] : 'latest';
-      console.log(chalk.blue(`Installing ${agentName}@${version}...`));
-      const tagName =
-        version === 'latest' ? agentName : `${agentName}-v${version}`;
-      const response = await axios.get(
-        `${gitlabUrl}/api/v4/projects/${projectId}/releases/${encodeURIComponent(tagName)}`,
-        {
-          headers: { 'PRIVATE-TOKEN': token },
-        }
-      );
-      // Response data contains release info but not used in this flow
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const _release = response.data;
-      const outputDir = options.output || './agents';
-      await fs.mkdir(outputDir, { recursive: true });
-      const outputPath = path.join(
-        outputDir,
-        `${agentName.replace('@ossa/', '')}.yaml`
-      );
-      console.log(chalk.green(`✓ Installed to ${outputPath}`));
-      console.log(chalk.gray(`  Run: ossa run ${outputPath}`));
-    } catch (error: any) {
-      if (axios.isAxiosError(error) && error.response?.status === 404) {
-        console.error(chalk.red(`✗ Agent ${agent} not found`));
-      } else {
-        console.error(
-          chalk.red('✗ Installation failed:'),
-          error instanceof Error ? error.message : String(error)
-        );
-      }
-      process.exit(1);
     }
-  });
+  );
