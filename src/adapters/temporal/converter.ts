@@ -53,6 +53,15 @@ export class TemporalConverter {
    */
   generateTypeScriptCode(workflow: OssaWorkflow): string {
     const config = this.convert(workflow);
+    const spec = workflow.spec as unknown as Record<string, unknown>;
+    const steps = spec.steps as
+      | Array<{
+          name?: string;
+          description?: string;
+          agent?: string;
+          task?: string;
+        }>
+      | undefined;
 
     const activitiesCode = config.activities
       .map((activity) => {
