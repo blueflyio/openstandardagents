@@ -41,6 +41,12 @@ __all__ = [
     "TaskRunner",
     "Workflow",
     "WorkflowRunner",
+    
+    # CRUD operations
+    "IAgentRepository",
+    "AgentRepository",
+    "AgentService",
+    "AgentController",
 
     # Exceptions
     "OSSAError",
@@ -58,6 +64,8 @@ from .exceptions import OSSAError, ValidationError, ConfigurationError, Executio
 from .agent import Agent, AgentRunner, AgentResponse
 from .task import Task, TaskRunner
 from .workflow import Workflow, WorkflowRunner
+from .structure import AgentsFolderService, AgentFolderStructure, FileDefinition
+from .crud import IAgentRepository, AgentRepository, AgentService, AgentController
 
 # Convenience aliases
 load = load_manifest

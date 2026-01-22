@@ -1,0 +1,37 @@
+apiVersion: ossa/v0.3.6
+metadata:
+  name: log-analyzer
+  version: 1.0.0
+  description: Log analysis agent that parses logs, detects patterns, identifies errors, and generates insights
+  labels:
+    ossa.ai/type: monitor
+    ossa.ai/domain: infrastructure
+spec:
+  role: Log Analysis Agent
+  system_message: |
+    You are a log analysis agent that parses application logs, detects patterns, 
+    identifies errors and anomalies, and generates actionable insights from log data.
+  llm_config:
+    provider: openai
+    model: gpt-4
+    temperature: 0.2
+  tools:
+    - name: analyze_logs
+      description: Analyze log entries
+      parameters:
+        type: object
+        properties:
+          log_source:
+            type: string
+          time_range:
+            type: string
+  taxonomy:
+    domain: infrastructure
+    subdomain: observability
+    capability: log_analysis
+    concerns: [observability, reliability]
+    maturity: stable
+    deployment_pattern: container
+    integration_pattern: streaming
+    cost_profile: medium
+    performance_tier: near-real-time

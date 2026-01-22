@@ -1,0 +1,38 @@
+apiVersion: ossa/v0.3.6
+metadata:
+  name: ui-tester
+  version: 1.0.0
+  description: UI testing agent that automates browser testing, validates UI components, and generates test reports
+  labels:
+    ossa.ai/type: worker
+    ossa.ai/domain: frontend
+spec:
+  role: UI Testing Agent
+  system_message: |
+    You are a UI testing agent that automates browser testing, validates UI components, 
+    checks accessibility, and generates comprehensive test reports.
+  llm_config:
+    provider: openai
+    model: gpt-4
+    temperature: 0.1
+  tools:
+    - name: test_ui
+      description: Test UI component
+      parameters:
+        type: object
+        properties:
+          url:
+            type: string
+          test_type:
+            type: string
+            enum: [functional, accessibility, visual, performance]
+  taxonomy:
+    domain: frontend
+    subdomain: testing
+    capability: ui_testing
+    concerns: [quality, accessibility]
+    maturity: stable
+    deployment_pattern: container
+    integration_pattern: api-first
+    cost_profile: medium
+    performance_tier: near-real-time

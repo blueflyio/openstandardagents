@@ -45,6 +45,7 @@ include:
   - local: .gitlab/ci/ossa-auto-migrate.yml
   # GitLab Duo Agent Platform & Ultimate Features (Duo Code Suggestions, AI MR Summaries, Value Stream Analytics)
   - local: .gitlab/ci/duo-platform-features.yml
+  - local: .gitlab/ci/mirror-github.yml
 
 # =============================================================================
 # PIPELINE DEDUPLICATION

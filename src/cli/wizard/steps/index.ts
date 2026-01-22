@@ -13,3 +13,6 @@ export { configureObservabilityStep } from './07-observability.js';
 export { configureDeploymentStep } from './08-deployment.js';
 export { configureAdvancedStep } from './09-advanced.js';
 export { reviewAndSaveStep } from './10-review.js';
+export { createAgentsFolderStep } from './12-agents-folder.js';
+export { generateOpenAPIStep } from './13-openapi-generation.js';
+export { registerWorkspaceStep } from './14-workspace-registration.js';
