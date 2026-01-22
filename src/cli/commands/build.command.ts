@@ -193,18 +193,16 @@ async function buildForPlatform(
 
     case 'docker': {
       try {
-        const manifestContent = fs.readFileSync(manifestPath, 'utf-8');
-        const manifest = yaml.load(manifestContent) as any;
-
-        const dockerConfig = manifest?.spec?.runtime?.bindings?.docker;
+        // Use manifest parameter directly (already loaded)
+        const spec = manifest.spec as any;
+        const dockerConfig = spec?.runtime?.bindings?.docker;
         if (!dockerConfig) {
           throw new Error(
             'Docker config not found in manifest. Add spec.runtime.bindings.docker'
           );
         }
 
-        const baseImage =
-          options.baseImage || dockerConfig.baseImage || 'node:20-alpine';
+        const baseImage = dockerConfig.baseImage || 'node:20-alpine';
         const agentName = manifest.metadata?.name || 'agent';
         const workdir = dockerConfig.workdir || '/app';
 
@@ -273,8 +271,10 @@ WORKDIR ${workdir}
         const outputPath = path.join(outputDir, 'Dockerfile');
         fs.writeFileSync(outputPath, dockerfile);
         console.log(chalk.green(`  ✅ Generated Dockerfile: ${outputPath}`));
+        files.push(outputPath);
 
-        if (options.generateDockerignore !== false) {
+        // Always generate .dockerignore
+        {
           const dockerignore = `# .dockerignore for ${agentName}
 # Generated from OSSA manifest
 
@@ -315,17 +315,16 @@ coverage
 
     case 'kubernetes': {
       try {
-        const manifestContent = fs.readFileSync(manifestPath, 'utf-8');
-        const manifest = yaml.load(manifestContent) as any;
-
-        const k8sConfig = manifest?.spec?.runtime?.bindings?.kubernetes;
+        // Use manifest parameter directly (already loaded)
+        const spec = manifest.spec as any;
+        const k8sConfig = spec?.runtime?.bindings?.kubernetes;
         if (!k8sConfig) {
           throw new Error(
             'Kubernetes config not found in manifest. Add spec.runtime.bindings.kubernetes'
           );
         }
 
-        const namespace = options.namespace || k8sConfig.namespace || 'default';
+        const namespace = k8sConfig.namespace || 'default';
         const agentName = manifest.metadata?.name || 'agent';
         const image = k8sConfig.image || `${agentName}:latest`;
         const replicas = k8sConfig.replicas || 1;
@@ -385,7 +384,8 @@ coverage
         );
         files.push(deploymentPath);
 
-        if (options.generateService !== false) {
+        // Always generate service if ports are defined
+        if (k8sConfig.ports && k8sConfig.ports.length > 0) {
           const service = {
             apiVersion: 'v1',
             kind: 'Service',

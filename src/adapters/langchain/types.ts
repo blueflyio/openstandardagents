@@ -24,4 +24,5 @@ export interface LangChainToolConfig {
   type: 'function' | 'mcp' | 'api';
   schema?: Record<string, unknown>;
   implementation?: string; // Python code
+  server?: string; // MCP server name (for mcp type)
 }
