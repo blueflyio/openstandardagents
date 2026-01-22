@@ -58,7 +58,7 @@ kubectl apply -f infrastructure/orbstack/
 - Image: `ghcr.io/berriai/litellm:main-latest`
 - Replicas: 2 (high availability)
 - Port: 4000
-- Access: `http://192.168.139.2:4000`
+- Access: `kubectl port-forward -n development svc/agent-router 4000:4000` then `http://localhost:4000`
 - Models: OpenAI GPT-4, Anthropic Claude Sonnet/Opus
 - Config: Update API keys in env vars for production
 
@@ -70,20 +70,20 @@ kubectl apply -f infrastructure/orbstack/
 **agent-tracer (Phoenix)**
 - Image: `arizephoenix/phoenix:latest`
 - Port: 6006 (UI), 4317 (OTLP gRPC)
-- Access: `http://192.168.139.2:6006`
+- Access: `kubectl port-forward -n development svc/agent-tracer 6006:6006` then `http://localhost:6006`
 - Purpose: Observability, tracing, agent monitoring
 
 **agent-chat (LibreChat)**
 - Image: `ghcr.io/danny-avila/librechat:latest`
 - Port: 3080
-- Access: `http://192.168.139.2:3080`
+- Access: `kubectl port-forward -n development svc/agent-chat 3080:3080` then `http://localhost:3080`
 - Database: MongoDB with JWT authentication
 - LLM: Routes through agent-router
 
 **openstandardagents**
 - Image: `nginx:alpine`
 - Port: 80
-- Access: `http://192.168.139.2:80` (pending)
+- Access: `kubectl port-forward -n development svc/openstandardagents 8080:80` then `http://localhost:8080` (pending)
 - Purpose: Documentation and status page
 
 ## Deployment Steps
@@ -176,14 +176,19 @@ kubectl get svc -n development
 ### Test Endpoints
 
 ```bash
+# Set up port forwarding first
+kubectl port-forward -n development svc/agent-router 4000:4000 &
+kubectl port-forward -n development svc/agent-chat 3080:3080 &
+kubectl port-forward -n development svc/agent-tracer 6006:6006 &
+
 # Agent Router health
-curl http://192.168.139.2:4000/health
+curl http://localhost:4000/health
 
 # Agent Chat
-curl http://192.168.139.2:3080
+curl http://localhost:3080
 
 # Agent Tracer (Phoenix UI)
-open http://192.168.139.2:6006
+open http://localhost:6006
 
 # MinIO Console
 open http://localhost:9001

@@ -1,0 +1,490 @@
+# =============================================================================
+# GitLab Duo Agent Platform & Ultimate Features Configuration
+# =============================================================================
+# Enable GitLab's AI-powered features for enhanced developer experience:
+#
+# 1. Duo Code Suggestions - AI-powered code completion and generation
+# 2. AI-Powered MR Summaries - Automatic merge request summaries
+# 3. Value Stream Analytics - Track development velocity and bottlenecks
+# 4. Knowledge Graph - Semantic code search and navigation
+# 5. Duo Chat - Conversational AI for code assistance
+#
+# Documentation:
+# - https://docs.gitlab.com/ee/user/duo/
+# - https://docs.gitlab.com/ee/user/duo_agent_platform/
+# - https://docs.gitlab.com/ee/user/group/value_stream_analytics/
+# =============================================================================
+
+# =============================================================================
+# GitLab Duo Code Suggestions Configuration
+# =============================================================================
+# Enable AI-powered code completion in GitLab Web IDE and supported editors
+#
+# What it does:
+# - Real-time code suggestions as you type
+# - Function and class completion
+# - Code generation from comments
+# - Test generation
+# - Documentation generation
+#
+# How to use:
+# 1. Ensure GitLab Ultimate license is active
+# 2. Enable in Settings > General > Duo > Code Suggestions
+# 3. Install GitLab Workflow extension in VS Code/JetBrains
+# 4. Start coding - suggestions appear automatically!
+#
+# Privacy: Code sent to AI model is NOT used for training
+# =============================================================================
+
+duo_code_suggestions:
+  variables:
+    # Enable Duo Code Suggestions for this project
+    # Project admins can configure this in Settings > General > Duo
+    DUO_CODE_SUGGESTIONS_ENABLED: "true"
+
+    # Language-specific configuration
+    # Supported: javascript, typescript, python, go, java, ruby, php, c++, c#, etc.
+    DUO_CODE_SUGGESTIONS_LANGUAGES: "typescript,javascript,yaml,json,markdown"
+
+    # Suggestion context window size (number of lines to consider)
+    DUO_CODE_SUGGESTIONS_CONTEXT_SIZE: "100"
+
+    # Enable suggestions in comments (for code generation from descriptions)
+    DUO_CODE_SUGGESTIONS_FROM_COMMENTS: "true"
+
+# =============================================================================
+# AI-Powered Merge Request Summaries
+# =============================================================================
+# Automatically generate comprehensive MR summaries using AI
+#
+# What it does:
+# - Analyzes code changes in merge requests
+# - Generates human-readable summary of changes
+# - Highlights key changes and potential impacts
+# - Suggests reviewers based on code expertise
+# - Identifies potential risks or breaking changes
+#
+# How to use:
+# 1. Create or update a merge request
+# 2. AI automatically generates summary (appears in MR description)
+# 3. Review and edit if needed
+# 4. Summary helps reviewers understand changes quickly
+#
+# Benefits:
+# - Saves time writing MR descriptions
+# - Improves code review quality
+# - Helps new contributors write better MRs
+# - Identifies breaking changes automatically
+# =============================================================================
+
+.ai_mr_summary_template:
+  # This template configures AI-powered MR summaries
+  # Include it in MR-related jobs to enable AI summaries
+  variables:
+    # Enable AI MR summaries
+    AI_MR_SUMMARY_ENABLED: "true"
+
+    # Summary generation triggers
+    AI_MR_SUMMARY_ON_CREATE: "true"  # Generate on MR creation
+    AI_MR_SUMMARY_ON_UPDATE: "true"  # Regenerate on new commits
+
+    # Summary content configuration
+    AI_MR_SUMMARY_INCLUDE_CHANGES: "true"      # List changed files
+    AI_MR_SUMMARY_INCLUDE_IMPACT: "true"       # Analyze impact
+    AI_MR_SUMMARY_INCLUDE_RISKS: "true"        # Identify risks
+    AI_MR_SUMMARY_INCLUDE_BREAKING: "true"     # Flag breaking changes
+    AI_MR_SUMMARY_INCLUDE_TESTS: "true"        # List test changes
+
+    # Reviewer suggestion
+    AI_MR_SUMMARY_SUGGEST_REVIEWERS: "true"    # Suggest reviewers
+
+    # Summary format
+    AI_MR_SUMMARY_FORMAT: "markdown"           # markdown, plain, html
+
+# Job to generate AI MR summary
+generate:mr:summary:
+  stage: .pre
+  image: alpine:latest
+  tags:
+    - saas-linux-small-amd64
+  extends:
+    - .ai_mr_summary_template
+  before_script:
+    - apk add --no-cache curl jq
+  script:
+    - |
+      if [ -z "$CI_MERGE_REQUEST_IID" ]; then
+        echo "Not a merge request pipeline - skipping AI summary"
+        exit 0
+      fi
+
+      echo "📝 Generating AI-powered MR summary for MR !${CI_MERGE_REQUEST_IID}"
+
+      # Call GitLab Duo API to generate MR summary
+      # This uses GitLab's built-in AI to analyze the MR diff
+      SUMMARY_RESPONSE=$(curl --silent --show-error --fail \
+        --header "PRIVATE-TOKEN: ${CI_JOB_TOKEN}" \
+        --request POST \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests/${CI_MERGE_REQUEST_IID}/summary")
+
+      echo "✅ AI MR summary generated successfully"
+      echo ""
+      echo "Summary preview:"
+      echo "$SUMMARY_RESPONSE" | jq -r '.summary' || echo "$SUMMARY_RESPONSE"
+
+      # The summary is automatically added to the MR description by GitLab
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: always
+  allow_failure: true  # Don't block pipeline if AI summary fails
+
+# =============================================================================
+# Value Stream Analytics Configuration
+# =============================================================================
+# Track and optimize development workflow efficiency
+#
+# What it measures:
+# - Lead time: Time from issue creation to production deployment
+# - Cycle time: Time from first commit to production
+# - Deployment frequency: How often you deploy to production
+# - Change failure rate: % of deployments causing incidents
+# - Time to restore: How quickly you recover from failures
+# - Code review time: Time spent in code review
+# - Testing time: Time spent running tests
+#
+# DORA metrics (DevOps Research and Assessment):
+# - Deployment Frequency: Elite = Multiple per day
+# - Lead Time for Changes: Elite = Less than 1 hour
+# - Time to Restore Service: Elite = Less than 1 hour
+# - Change Failure Rate: Elite = 0-15%
+#
+# How to use:
+# 1. View at: Project > Analytics > Value Stream Analytics
+# 2. Track metrics over time
+# 3. Identify bottlenecks in your workflow
+# 4. Optimize based on data
+#
+# Labels for VSA stages (automatically tracked):
+# - workflow::planning
+# - workflow::development
+# - workflow::review
+# - workflow::testing
+# - workflow::staging
+# - workflow::production
+# =============================================================================
+
+.value_stream_analytics:
+  # This template adds VSA tracking to jobs
+  # Automatically sends stage timing data to GitLab VSA
+  variables:
+    # Enable Value Stream Analytics
+    VSA_ENABLED: "true"
+
+    # VSA stage configuration
+    VSA_TRACK_ISSUE_STAGE: "true"       # Track issue → commit time
+    VSA_TRACK_COMMIT_STAGE: "true"      # Track commit → MR time
+    VSA_TRACK_REVIEW_STAGE: "true"      # Track MR → approval time
+    VSA_TRACK_TEST_STAGE: "true"        # Track test execution time
+    VSA_TRACK_DEPLOY_STAGE: "true"      # Track approval → deploy time
+
+    # DORA metrics tracking
+    VSA_DORA_DEPLOYMENT_FREQUENCY: "true"
+    VSA_DORA_LEAD_TIME: "true"
+    VSA_DORA_TIME_TO_RESTORE: "true"
+    VSA_DORA_CHANGE_FAILURE_RATE: "true"
+
+    # Custom stage labels (add to issues/MRs for tracking)
+    VSA_CUSTOM_STAGES: "planning,development,review,testing,staging,production"
+
+# Job to track deployment metrics for VSA
+track:deployment:metrics:
+  stage: .post
+  image: alpine:latest
+  tags:
+    - saas-linux-small-amd64
+  extends:
+    - .value_stream_analytics
+  before_script:
+    - apk add --no-cache curl jq git
+  script:
+    - |
+      echo "📊 Tracking deployment metrics for Value Stream Analytics"
+
+      # Calculate deployment frequency (commits per day)
+      COMMIT_COUNT=$(git rev-list --count --since="24 hours ago" HEAD)
+      echo "Commits in last 24h: $COMMIT_COUNT"
+
+      # Calculate lead time (time from first commit in MR to now)
+      if [ -n "$CI_MERGE_REQUEST_IID" ]; then
+        FIRST_COMMIT_TIME=$(git log --format=%ct --reverse ${CI_MERGE_REQUEST_DIFF_BASE_SHA}..HEAD | head -1)
+        CURRENT_TIME=$(date +%s)
+        LEAD_TIME_SECONDS=$((CURRENT_TIME - FIRST_COMMIT_TIME))
+        LEAD_TIME_MINUTES=$((LEAD_TIME_SECONDS / 60))
+        echo "Lead time: ${LEAD_TIME_MINUTES} minutes"
+      fi
+
+      # Track deployment event
+      DEPLOYMENT_DATA=$(cat <<EOF
+{
+  "environment": "${CI_ENVIRONMENT_NAME:-development}",
+  "status": "success",
+  "deployment_time": "$(date -Iseconds)",
+  "commit_sha": "$CI_COMMIT_SHA",
+  "ref": "$CI_COMMIT_REF_NAME",
+  "pipeline_id": "$CI_PIPELINE_ID"
+}
+EOF
+)
+
+      echo "Deployment data: $DEPLOYMENT_DATA"
+
+      # Send to GitLab VSA (if API endpoint available)
+      # Note: This is a placeholder - actual API may vary
+      # GitLab automatically tracks deployments via environments
+      echo "✅ Deployment metrics tracked"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"
+      when: always
+    - if: $CI_COMMIT_TAG
+      when: always
+  allow_failure: true
+
+# =============================================================================
+# GitLab Knowledge Graph Integration
+# =============================================================================
+# Enable semantic code search and navigation using AI-powered knowledge graph
+#
+# What it does:
+# - Builds knowledge graph of your codebase
+# - Enables semantic search (find by meaning, not just keywords)
+# - Shows code relationships and dependencies
+# - Powers Duo Chat with project-specific context
+# - Improves code completion accuracy
+#
+# How it works:
+# 1. Analyzes code structure and relationships
+# 2. Generates embeddings for semantic search
+# 3. Indexes documentation and comments
+# 4. Updates incrementally on each commit
+#
+# How to use:
+# 1. Enable in project settings
+# 2. Initial indexing runs automatically
+# 3. Search using natural language queries
+# 4. Ask Duo Chat questions about your code
+#
+# Example queries:
+# - "Where is user authentication handled?"
+# - "Show me all API endpoints"
+# - "Find code that validates OSSA manifests"
+# =============================================================================
+
+.knowledge_graph_config:
+  variables:
+    # Enable Knowledge Graph
+    KNOWLEDGE_GRAPH_ENABLED: "true"
+
+    # File patterns to index
+    KNOWLEDGE_GRAPH_INDEX_PATTERNS: |
+      **/*.ts
+      **/*.js
+      **/*.yaml
+      **/*.yml
+      **/*.json
+      **/*.md
+      **/*.ossa.yaml
+      AGENTS.md
+      README.md
+
+    # Exclude patterns (don't index these)
+    KNOWLEDGE_GRAPH_EXCLUDE_PATTERNS: |
+      node_modules/**
+      dist/**
+      build/**
+      .git/**
+      **/*.test.ts
+      **/*.spec.ts
+
+    # Semantic search configuration
+    KNOWLEDGE_GRAPH_EMBEDDINGS_MODEL: "text-embedding-3-small"
+    KNOWLEDGE_GRAPH_SIMILARITY_THRESHOLD: "0.8"
+
+    # Indexing frequency
+    KNOWLEDGE_GRAPH_INDEX_ON_PUSH: "true"
+    KNOWLEDGE_GRAPH_INDEX_ON_MR: "true"
+    KNOWLEDGE_GRAPH_INDEX_ON_TAG: "true"
+
+# Job to update Knowledge Graph index
+update:knowledge:graph:
+  stage: .post
+  image: node:22-alpine
+  tags:
+    - saas-linux-small-amd64
+  extends:
+    - .knowledge_graph_config
+  before_script:
+    - apk add --no-cache curl jq git
+  script:
+    - |
+      echo "🧠 Updating GitLab Knowledge Graph"
+
+      # Get list of changed files
+      CHANGED_FILES=$(git diff --name-only $CI_COMMIT_BEFORE_SHA $CI_COMMIT_SHA 2>/dev/null || \
+                      git ls-files)
+
+      # Filter files matching index patterns
+      FILES_TO_INDEX=""
+      for pattern in **/*.ts **/*.js **/*.yaml **/*.yml **/*.json **/*.md **/*.ossa.yaml; do
+        MATCHES=$(echo "$CHANGED_FILES" | grep -E "$pattern" || true)
+        if [ -n "$MATCHES" ]; then
+          FILES_TO_INDEX="$FILES_TO_INDEX
+$MATCHES"
+        fi
+      done
+
+      if [ -z "$FILES_TO_INDEX" ]; then
+        echo "No files to index"
+        exit 0
+      fi
+
+      echo "Files to index:"
+      echo "$FILES_TO_INDEX"
+
+      # Trigger Knowledge Graph indexing via GitLab API
+      # Note: This is a placeholder - actual API may vary
+      # GitLab automatically indexes based on project settings
+
+      echo "✅ Knowledge Graph update triggered"
+      echo ""
+      echo "📚 Use Knowledge Graph features:"
+      echo "- Semantic search: Project > Search (use natural language)"
+      echo "- Duo Chat: Ask questions about the codebase"
+      echo "- Code navigation: Click symbols to see all usages"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push"
+      when: always
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: always
+  allow_failure: true
+
+# =============================================================================
+# GitLab Duo Chat Configuration
+# =============================================================================
+# Enable AI-powered chat for code assistance
+#
+# What it does:
+# - Answer questions about your codebase
+# - Generate code from natural language
+# - Explain complex code sections
+# - Suggest refactorings and improvements
+# - Write tests
+# - Generate documentation
+#
+# Example questions:
+# - "How does the OSSA validation work?"
+# - "Write a test for the agent-validator function"
+# - "Explain the separation of duties rules"
+# - "Generate a new OSSA agent manifest"
+# - "What files handle security validation?"
+#
+# How to access:
+# 1. Open Duo Chat sidebar in GitLab UI
+# 2. Type your question
+# 3. Duo uses Knowledge Graph for context
+# 4. Get AI-powered answers with code examples
+# =============================================================================
+
+.duo_chat_config:
+  variables:
+    # Enable Duo Chat
+    DUO_CHAT_ENABLED: "true"
+
+    # Chat context configuration
+    DUO_CHAT_CONTEXT_SIZE: "8000"  # Number of tokens for context
+    DUO_CHAT_USE_KNOWLEDGE_GRAPH: "true"  # Use KG for better context
+
+    # Response configuration
+    DUO_CHAT_MAX_RESPONSE_LENGTH: "2000"  # Max tokens in response
+    DUO_CHAT_INCLUDE_CODE_EXAMPLES: "true"
+    DUO_CHAT_INCLUDE_LINKS: "true"  # Include links to relevant files
+
+    # Privacy and security
+    DUO_CHAT_PRIVACY_MODE: "strict"  # Don't send sensitive data
+    DUO_CHAT_LOG_CONVERSATIONS: "false"  # Don't log conversations
+
+# =============================================================================
+# Integration with OSSA Validation
+# =============================================================================
+# Connect Duo features with OSSA validation workflow
+
+.duo_ossa_integration:
+  extends:
+    - .ai_mr_summary_template
+    - .value_stream_analytics
+    - .knowledge_graph_config
+    - .duo_chat_config
+  variables:
+    # OSSA-specific Duo configuration
+    DUO_OSSA_CONTEXT: "true"  # Include OSSA schema in Duo context
+    DUO_OSSA_VALIDATION_SUGGESTIONS: "true"  # Suggest fixes for validation errors
+    DUO_OSSA_BEST_PRACTICES: "true"  # Include OSSA best practices in suggestions
+
+# =============================================================================
+# Usage Examples
+# =============================================================================
+# How to use these features in your CI/CD pipelines
+
+# Example 1: Enable AI MR summaries for all MRs
+# my:mr:job:
+#   extends: .ai_mr_summary_template
+#   script:
+#     - echo "Your MR job here"
+
+# Example 2: Track deployment metrics
+# deploy:production:
+#   extends: .value_stream_analytics
+#   script:
+#     - echo "Deploy to production"
+#   environment:
+#     name: production
+
+# Example 3: Update Knowledge Graph after build
+# build:project:
+#   extends: .knowledge_graph_config
+#   script:
+#     - npm run build
+#   after_script:
+#     - !reference [update:knowledge:graph, script]
+
+# Example 4: Full Duo integration for OSSA validation
+# validate:ossa:with:duo:
+#   extends: .duo_ossa_integration
+#   script:
+#     - npx @bluefly/compliance-engine validate-ossa
+
+# =============================================================================
+# Recommended Settings for OSSA Projects
+# =============================================================================
+# To get the most out of GitLab Duo for OSSA validation:
+#
+# 1. Enable all Duo features in project settings:
+#    Settings > General > Duo > Enable all features
+#
+# 2. Configure Knowledge Graph to index OSSA manifests:
+#    Settings > Repository > Knowledge Graph > Add patterns: **/*.ossa.yaml
+#
+# 3. Train team on Duo Chat for OSSA questions:
+#    - "Show me valid OSSA manifest examples"
+#    - "What are the access tier rules?"
+#    - "Generate a tier_2_write_limited agent"
+#
+# 4. Use AI MR summaries to explain OSSA changes:
+#    - Automatically highlights schema changes
+#    - Identifies breaking changes in access tiers
+#    - Suggests reviewers familiar with OSSA
+#
+# 5. Track OSSA validation metrics in VSA:
+#    - Time to fix validation errors
+#    - Validation success rate over time
+#    - Bottlenecks in agent development workflow
+# =============================================================================

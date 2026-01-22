@@ -99,3 +99,28 @@ spec/v0.3.0/
 spec/v0.3.1/
 spec/v0.3.2/
 __DELETE_LATER/
+
+# IDE/Editor Configs (Comprehensive Coverage for Portability)
+# These configs are developer-specific and should never be committed
+.cursor/
+.cursor/*
+.cursor/**/*
+.claude/
+.claude/*
+.claude/**/*
+.cursorrules
+.cursorignore
+.vscode/settings.json
+.idea/workspace.xml
+.idea/tasks.xml
+
+# Runtime State Files (Generated Dynamically)
+# These contain machine-specific paths and should be regenerated at runtime
+.migration-state.json
+.agents-workspace/
+.kiro/
+
+# macOS-specific files
+.DS_Store
+.AppleDouble
+.LSOverride
