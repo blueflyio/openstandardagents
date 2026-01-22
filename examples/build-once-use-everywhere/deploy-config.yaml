@@ -1,0 +1,32 @@
+# Multi-platform deployment configuration
+platforms:
+  kagent:
+    enabled: true
+    namespace: default
+    replicas: 1
+  
+  langchain:
+    enabled: true
+    output_dir: ./langchain
+  
+  crewai:
+    enabled: true
+    output_dir: ./crewai
+  
+  docker:
+    enabled: true
+    image_name: universal-agent
+    tag: latest
+  
+  kubernetes:
+    enabled: true
+    namespace: default
+    replicas: 1
+  
+  gitlab:
+    enabled: true
+    branch: main
+  
+  temporal:
+    enabled: true
+    task_queue: agents

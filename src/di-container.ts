@@ -24,6 +24,10 @@ import { TestRunnerService } from './services/test-runner/test-runner.service.js
 import { GitService } from './services/git.service.js';
 import { GitRollbackService } from './services/git-rollback.service.js';
 import { ExtensionTeamKickoffService } from './services/extension-team/extension-team-kickoff.service.js';
+import { TaxonomyService } from './services/taxonomy.service.js';
+import { TaxonomyValidatorService } from './services/taxonomy-validator.service.js';
+import { TemplateService } from './services/template.service.js';
+import { RegistryService } from './services/registry.service.js';
 
 // Codegen Service and Generators
 import { CodegenService } from './services/codegen/codegen.service.js';
@@ -69,6 +73,10 @@ container.bind(TestRunnerService).toSelf();
 container.bind(GitService).toSelf();
 container.bind(GitRollbackService).toSelf();
 container.bind(ExtensionTeamKickoffService).toSelf();
+container.bind(TaxonomyService).toSelf().inSingletonScope();
+container.bind(TaxonomyValidatorService).toSelf().inSingletonScope();
+container.bind(TemplateService).toSelf().inSingletonScope();
+container.bind(RegistryService).toSelf().inSingletonScope();
 
 // Bind codegen generators (must be bound before CodegenService)
 container.bind(ManifestGenerator).toSelf();

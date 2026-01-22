@@ -1,0 +1,38 @@
+apiVersion: ossa/v0.3.6
+metadata:
+  name: dependency-updater
+  version: 1.0.0
+  description: Dependency update agent that checks for updates, validates compatibility, and updates dependencies safely
+  labels:
+    ossa.ai/type: worker
+    ossa.ai/domain: development
+spec:
+  role: Dependency Update Agent
+  system_message: |
+    You are a dependency update agent that checks for package updates, validates 
+    compatibility, tests updates, and safely updates project dependencies.
+  llm_config:
+    provider: openai
+    model: gpt-4
+    temperature: 0.1
+  tools:
+    - name: check_updates
+      description: Check for dependency updates
+      parameters:
+        type: object
+        properties:
+          package_manager:
+            type: string
+            enum: [npm, pip, maven, gradle]
+          package:
+            type: string
+  taxonomy:
+    domain: development
+    subdomain: dependency_management
+    capability: dependency_updates
+    concerns: [quality, reliability]
+    maturity: stable
+    deployment_pattern: container
+    integration_pattern: batch
+    cost_profile: low
+    performance_tier: batch
