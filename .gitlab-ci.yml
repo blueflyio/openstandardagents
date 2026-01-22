@@ -43,6 +43,8 @@ include:
   - local: .gitlab/ci/sdk-publish.yml
   - local: .gitlab/ci/merge-train-optimized.yml
   - local: .gitlab/ci/ossa-auto-migrate.yml
+  # GitLab Duo Agent Platform & Ultimate Features (Duo Code Suggestions, AI MR Summaries, Value Stream Analytics)
+  - local: .gitlab/ci/duo-platform-features.yml
 
 # =============================================================================
 # PIPELINE DEDUPLICATION
