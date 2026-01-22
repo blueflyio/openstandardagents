@@ -11,7 +11,7 @@
 # Prerequisites:
 #   1. CI/CD Variable: KUBECONFIG_LOCAL (base64 encoded kubeconfig for OrbStack)
 #   2. OrbStack with nginx-ingress controller installed
-#   3. DNS: *.review.blueflyagents.com → 192.168.139.2 (OrbStack ingress)
+#   3. DNS: *.review.blueflyagents.com → <OrbStack ingress IP> (use 'kubectl get svc -n ingress-nginx')
 # =============================================================================
 
 variables:
