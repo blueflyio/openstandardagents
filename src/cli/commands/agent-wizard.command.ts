@@ -63,7 +63,7 @@ async function createAgentWizard(options: WizardOptions): Promise<void> {
       },
     },
     step: 1,
-    totalSteps: 10,
+    totalSteps: 16,
     canUndo: false,
     history: [],
   };
@@ -335,7 +335,22 @@ async function createCustomAgent(
   // Step 9: Extensions
   await configureExtensions(state);
 
-  // Step 10: Save
+  // Step 11: Create .agents folder structure
+  const { createAgentsFolderStep } =
+    await import('../wizard/steps/12-agents-folder.js');
+  await createAgentsFolderStep(state, options);
+
+  // Step 12: Generate OpenAPI specification
+  const { generateOpenAPIStep } =
+    await import('../wizard/steps/13-openapi-generation.js');
+  await generateOpenAPIStep(state, options);
+
+  // Step 13: Register in workspace
+  const { registerWorkspaceStep } =
+    await import('../wizard/steps/14-workspace-registration.js');
+  await registerWorkspaceStep(state, options);
+
+  // Step 14: Save Agent
   await saveAgent(state, options);
 }
 
@@ -806,7 +821,7 @@ async function saveAgent(
   state: WizardState,
   options: WizardOptions
 ): Promise<void> {
-  console_ui.step(10, state.totalSteps, 'Save Agent');
+  console_ui.step(16, state.totalSteps, 'Save Agent');
 
   // Show summary
   console_ui.section('Summary');

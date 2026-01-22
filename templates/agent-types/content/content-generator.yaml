@@ -1,0 +1,40 @@
+apiVersion: ossa/v0.3.6
+metadata:
+  name: content-generator
+  version: 1.0.0
+  description: Content generation agent that creates written content, articles, and documentation
+  labels:
+    ossa.ai/type: worker
+    ossa.ai/domain: content
+spec:
+  role: Content Generation Agent
+  system_message: |
+    You are a content generation agent that creates high-quality written content, 
+    articles, blog posts, documentation, and marketing materials.
+  llm_config:
+    provider: openai
+    model: gpt-4
+    temperature: 0.7
+  tools:
+    - name: generate_content
+      description: Generate content from prompt
+      parameters:
+        type: object
+        properties:
+          content_type:
+            type: string
+            enum: [article, blog, documentation, marketing]
+          topic:
+            type: string
+          length:
+            type: integer
+  taxonomy:
+    domain: content
+    subdomain: generation
+    capability: content_creation
+    concerns: [quality]
+    maturity: stable
+    deployment_pattern: serverless
+    integration_pattern: api-first
+    cost_profile: medium
+    performance_tier: near-real-time

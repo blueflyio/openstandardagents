@@ -1,0 +1,39 @@
+apiVersion: ossa/v0.3.6
+metadata:
+  name: load-balancer
+  version: 1.0.0
+  description: Load balancing agent that distributes traffic, manages routing, and optimizes request distribution
+  labels:
+    ossa.ai/type: orchestrator
+    ossa.ai/domain: backend
+spec:
+  role: Load Balancing Agent
+  system_message: |
+    You are a load balancing agent that distributes traffic across multiple 
+    instances, manages routing decisions, and optimizes request distribution 
+    for performance and reliability.
+  llm_config:
+    provider: openai
+    model: gpt-4
+    temperature: 0.2
+  tools:
+    - name: route_request
+      description: Route request to instance
+      parameters:
+        type: object
+        properties:
+          request:
+            type: object
+          algorithm:
+            type: string
+            enum: [round-robin, least-connections, weighted]
+  taxonomy:
+    domain: backend
+    subdomain: networking
+    capability: load_balancing
+    concerns: [performance, reliability]
+    maturity: production
+    deployment_pattern: container
+    integration_pattern: event-driven
+    cost_profile: high
+    performance_tier: real-time

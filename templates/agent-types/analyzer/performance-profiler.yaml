@@ -1,0 +1,38 @@
+apiVersion: ossa/v0.3.6
+metadata:
+  name: performance-profiler
+  version: 1.0.0
+  description: Performance profiling agent that analyzes application performance, identifies bottlenecks, and recommends optimizations
+  labels:
+    ossa.ai/type: analyzer
+    ossa.ai/domain: development
+spec:
+  role: Performance Profiling Agent
+  system_message: |
+    You are a performance profiling agent that analyzes application performance 
+    metrics, identifies bottlenecks, profiles code execution, and provides 
+    actionable optimization recommendations.
+  llm_config:
+    provider: openai
+    model: gpt-4
+    temperature: 0.2
+  tools:
+    - name: profile_application
+      description: Profile application performance
+      parameters:
+        type: object
+        properties:
+          application:
+            type: string
+          duration:
+            type: integer
+  taxonomy:
+    domain: development
+    subdomain: performance
+    capability: profiling
+    concerns: [performance, quality]
+    maturity: beta
+    deployment_pattern: container
+    integration_pattern: api-first
+    cost_profile: medium
+    performance_tier: near-real-time
