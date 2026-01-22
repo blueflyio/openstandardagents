@@ -22,7 +22,7 @@ include:
   # ============================================================================
   # GitLab Component - Golden CI Template (no inputs - use defaults)
   # ============================================================================
-  - component: $CI_SERVER_FQDN/blueflyio/gitlab_components/golden@release/v0.1.x
+  - component: $CI_SERVER_FQDN/blueflyio/gitlab_components/golden@v0.1.365
   # ============================================================================
   # Local CI Configuration Files (Organized by Concern)
   # ============================================================================
