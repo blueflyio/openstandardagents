@@ -261,15 +261,31 @@ export const scaffoldCommand = new Command('scaffold')
           console.log(chalk.gray(`  Created prompts/`));
         }
 
-        // Create tools directory
+        // Create complete folder structure using service
+        const { AgentsFolderService } =
+          await import('../../services/structure/agents-folder.service.js');
+        const structureService = new AgentsFolderService();
+        const structureBasePath = options?.output || getDefaultOutputDir();
+        const structure = structureService.generateStructure(
+          agentName,
+          structureBasePath
+        );
+
+        // Create structure
+        structureService.createStructure(structure, false);
+        console.log(chalk.gray(`  Created complete folder structure`));
+
+        // Create tools directory (legacy support)
         if (options?.withTools) {
           const toolsDir = path.join(agentDir, 'tools');
-          fs.mkdirSync(toolsDir, { recursive: true });
-          fs.writeFileSync(
-            path.join(toolsDir, '.gitkeep'),
-            '# Agent-specific tools directory\n'
-          );
-          console.log(chalk.gray(`  Created tools/`));
+          if (!fs.existsSync(toolsDir)) {
+            fs.mkdirSync(toolsDir, { recursive: true });
+            fs.writeFileSync(
+              path.join(toolsDir, '.gitkeep'),
+              '# Agent-specific tools directory\n'
+            );
+            console.log(chalk.gray(`  Created tools/`));
+          }
         }
 
         // Create README (default: true, unless explicitly disabled)

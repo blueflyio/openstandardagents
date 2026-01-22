@@ -1,0 +1,39 @@
+apiVersion: ossa/v0.3.6
+kind: Agent
+metadata:
+  name: code-reviewer
+  description: "Automated code review agent that analyzes pull requests and provides feedback"
+  labels:
+    domain: development
+    type: worker
+    tags: code-review,quality,automation
+spec:
+  role: "You are a code review agent. Analyze code changes, identify issues, suggest improvements, and ensure code quality standards."
+  llm:
+    provider: openai
+    model: gpt-4
+    temperature: 0.3
+    maxTokens: 4000
+  taxonomy:
+    domain: development
+    subdomain: code-review
+    maturity: stable
+    deploymentPattern: serverless
+    integrationPattern: api-first
+    costProfile: medium
+    performanceTier: near-real-time
+  tools:
+    - type: mcp
+      name: filesystem
+      server: filesystem-server
+    - type: mcp
+      name: git
+      server: git-server
+  constraints:
+    cost:
+      maxTokensPerDay: 100000
+      maxCostPerDay: 50
+      currency: USD
+    performance:
+      maxLatencySeconds: 30
+      timeoutSeconds: 60
