@@ -20,9 +20,12 @@
 
 include:
   # ============================================================================
-  # GitLab Component - Golden CI Template (no inputs - use defaults)
+  # GitLab Component - Golden CI Template (DISABLED - causing pipeline failures)
   # ============================================================================
-  - component: $CI_SERVER_FQDN/blueflyio/gitlab_components/golden@release/v0.1.x
+  # COMMENTED OUT: Golden component causes instant pipeline failures
+  # The component requires proper inputs or has path issues
+  # All necessary CI config is in local .gitlab/ci/*.yml files
+  # - component: $CI_SERVER_FQDN/blueflyio/gitlab_components/golden@release/v0.1.x
   # ============================================================================
   # Local CI Configuration Files (Organized by Concern)
   # ============================================================================
@@ -287,8 +290,7 @@ release:semantic:
 # =============================================================================
 # OVERRIDE GOLDEN COMPONENT JOBS (Disable jobs not applicable to this project)
 # =============================================================================
-
-# Disable benchmarks job from golden component - OSSA doesn't have benchmarks
-benchmarks:
-  rules:
-    - when: never
+# NOTE: Golden component currently disabled - no overrides needed
+# benchmarks:
+#   rules:
+#     - when: never
