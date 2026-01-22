@@ -1140,36 +1140,42 @@ async function updateAgent(
 
     // Import and use specific step modules
     switch (updateField) {
-      case 'basic':
+      case 'basic': {
         const { configureBasicInfoStep } =
           await import('../wizard/steps/02-basic-info.js');
         await configureBasicInfoStep(state);
         break;
-      case 'llm':
+      }
+      case 'llm': {
         const { configureLLMStep } =
           await import('../wizard/steps/04-llm-config.js');
         await configureLLMStep(state);
         break;
-      case 'tools':
+      }
+      case 'tools': {
         const { configureToolsStep } =
           await import('../wizard/steps/05-tools.js');
         await configureToolsStep(state);
         break;
-      case 'autonomy':
+      }
+      case 'autonomy': {
         const { configureAutonomyStep } =
           await import('../wizard/steps/06-autonomy.js');
         await configureAutonomyStep(state);
         break;
-      case 'observability':
+      }
+      case 'observability': {
         const { configureObservabilityStep } =
           await import('../wizard/steps/07-observability.js');
         await configureObservabilityStep(state);
         break;
-      case 'safety':
+      }
+      case 'safety': {
         const { configureAdvancedStep } =
           await import('../wizard/steps/09-advanced.js');
         await configureAdvancedStep(state);
         break;
+      }
     }
   }
 
