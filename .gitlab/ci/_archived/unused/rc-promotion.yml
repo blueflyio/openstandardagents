@@ -16,9 +16,7 @@ release:promote-rc-to-final:
   stage: release
   image: alpine:latest
   tags:
-    - self-hosted
-    - docker
-    - linux
+    - saas-linux-small-amd64
   before_script:
     - apk add --no-cache git curl jq bash
     - git config user.email "gitlab-ci@${CI_SERVER_HOST}"

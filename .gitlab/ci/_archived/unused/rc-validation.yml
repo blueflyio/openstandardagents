@@ -7,9 +7,7 @@ rc:smoke-tests:
   stage: rc-validation
   image: node:${NODE_VERSION}-alpine
   tags:
-    - self-hosted
-    - docker
-    - linux
+    - saas-linux-small-amd64
   before_script:
     - apk add --no-cache curl jq
     - npm ci --legacy-peer-deps
@@ -34,9 +32,7 @@ rc:integration-tests:
   stage: rc-validation
   image: node:${NODE_VERSION}-alpine
   tags:
-    - self-hosted
-    - docker
-    - linux
+    - saas-linux-small-amd64
   before_script:
     - apk add --no-cache curl jq
     - npm ci --legacy-peer-deps
@@ -65,9 +61,7 @@ rc:deploy-orbstack:
   stage: rc-validation
   image: node:${NODE_VERSION}-alpine
   tags:
-    - self-hosted
-    - docker
-    - linux
+    - saas-linux-small-amd64
   before_script:
     - apk add --no-cache curl jq
     - npm ci --legacy-peer-deps
