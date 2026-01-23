@@ -19,7 +19,8 @@
     - npm install -g @bluefly/openstandardagents@latest
     - ossa --version
   tags:
-    - saas-linux-small-amd64
+    - self-hosted
+    - docker
 
 # =============================================================================
 # OSSA Manifest Validation

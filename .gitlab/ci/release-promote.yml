@@ -15,7 +15,8 @@ promote-rc-to-stable:
     - .needs-all-tests
   image: alpine:latest
   tags:
-    - saas-linux-small-amd64
+    - self-hosted
+    - docker
   before_script:
     - apk add --no-cache curl jq git bash
     - git config user.email "ci@bluefly.io"
@@ -123,7 +124,8 @@ publish-npm:stable:
   stage: release
   image: node:${NODE_VERSION}
   tags:
-    - saas-linux-small-amd64
+    - self-hosted
+    - docker
   environment:
     name: npm-registry
     action: prepare
@@ -192,7 +194,8 @@ create-gitlab-release:stable:
   stage: .post
   image: alpine:latest
   tags:
-    - saas-linux-small-amd64
+    - self-hosted
+    - docker
   needs:
     - job: publish-npm:stable
       artifacts: false
@@ -261,7 +264,8 @@ sync-github:stable:
   stage: .post
   image: alpine:latest
   tags:
-    - saas-linux-small-amd64
+    - self-hosted
+    - docker
   needs:
     - job: create-gitlab-release:stable
       artifacts: false
