@@ -106,7 +106,8 @@ generate:mr:summary:
   stage: .pre
   image: alpine:latest
   tags:
-    - saas-linux-small-amd64
+    - self-hosted
+    - docker
   extends:
     - .ai_mr_summary_template
   before_script:
@@ -201,7 +202,8 @@ track:deployment:metrics:
   stage: .post
   image: alpine:latest
   tags:
-    - saas-linux-small-amd64
+    - self-hosted
+    - docker
   extends:
     - .value_stream_analytics
   before_script:
@@ -319,7 +321,8 @@ update:knowledge:graph:
   stage: .post
   image: node:22-alpine
   tags:
-    - saas-linux-small-amd64
+    - self-hosted
+    - docker
   extends:
     - .knowledge_graph_config
   before_script:

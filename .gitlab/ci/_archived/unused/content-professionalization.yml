@@ -18,7 +18,8 @@ professionalize:content:
   stage: validate
   image: node:22-alpine
   tags:
-    - saas-linux-small-amd64
+    - self-hosted
+    - docker
   before_script:
     - apk add --no-cache git
     - npm ci

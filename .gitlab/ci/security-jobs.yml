@@ -9,7 +9,8 @@ security:secrets-check:
   stage: security
   image: node:${NODE_VERSION}-alpine
   tags:
-    - saas-linux-small-amd64
+    - self-hosted
+    - docker
   script:
     - echo "Checking for potential secrets in code..."
     - |
@@ -33,7 +34,8 @@ security:license-check:
   stage: security
   image: node:${NODE_VERSION}-alpine
   tags:
-    - saas-linux-small-amd64
+    - self-hosted
+    - docker
   extends:
     - .npm-cache-readonly
   before_script:

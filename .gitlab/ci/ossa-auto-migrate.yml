@@ -18,7 +18,8 @@
 .ossa-migrate-base:
   image: node:${NODE_VERSION:-22}-alpine
   tags:
-    - saas-linux-small-amd64
+    - self-hosted
+    - docker
   before_script:
     - echo "Installing dependencies..."
     - npm ci --prefer-offline --no-audit

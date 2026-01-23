@@ -17,7 +17,8 @@ validate:ossa:
   stage: validate
   image: node:${NODE_VERSION}-alpine
   tags:
-    - saas-linux-small-amd64
+    - self-hosted
+    - docker
   extends:
     - .npm-cache
   before_script:
@@ -179,7 +180,8 @@ validate:scripts-version:
   stage: validate
   image: node:${NODE_VERSION}-alpine
   tags:
-    - saas-linux-small-amd64
+    - self-hosted
+    - docker
   extends:
     - .npm-cache
   before_script:
@@ -240,7 +242,8 @@ validate:changelog:
   stage: validate
   image: node:${NODE_VERSION}-alpine
   tags:
-    - saas-linux-small-amd64
+    - self-hosted
+    - docker
   extends:
     - .npm-cache
   before_script:
@@ -269,7 +272,8 @@ validate:adoption-blockers:
   stage: validate
   image: node:${NODE_VERSION}-alpine
   tags:
-    - saas-linux-small-amd64
+    - self-hosted
+    - docker
   extends:
     - .npm-cache
   before_script:
@@ -348,7 +352,8 @@ validate:kagent-examples:
   stage: validate
   image: node:${NODE_VERSION}-alpine
   tags:
-    - saas-linux-small-amd64
+    - self-hosted
+    - docker
   extends:
     - .npm-cache
   before_script:
