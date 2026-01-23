@@ -13,7 +13,9 @@ mirror:github:
   stage: .post
   image: alpine:latest
   tags:
-    - saas-linux-small-amd64
+    - self-hosted
+    - docker
+    - linux
   before_script:
     - apk add --no-cache git bash
     - git config --global user.email "ci@bluefly.io"
