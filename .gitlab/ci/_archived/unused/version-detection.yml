@@ -8,7 +8,9 @@ detect:version:
   image: alpine:latest
   timeout: 5 minutes
   tags:
-    - saas-linux-small-amd64
+    - self-hosted
+    - docker
+    - linux
   before_script:
     - apk add --no-cache curl jq
     - apk add --no-cache git bash

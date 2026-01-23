@@ -323,7 +323,9 @@ duo:create-version-mr:
 
 .duo_agent_base:
   tags:
-    - saas-linux-small-amd64
+    - self-hosted
+    - docker
+    - linux
   timeout: 30m
   before_script:
     - apk add --no-cache curl jq
@@ -336,7 +338,9 @@ duo:create-version-mr:
 
 .platform_agent_base:
   tags:
-    - saas-linux-small-amd64
+    - self-hosted
+    - docker
+    - linux
   timeout: 30m
   before_script:
     - apk add --no-cache curl jq
