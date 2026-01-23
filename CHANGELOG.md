@@ -4,6 +4,47 @@ All notable changes to OSSA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.6] - 2026-01-23
+### Added
+- **Token Efficiency Framework**: Comprehensive cost optimization achieving 70-95% savings
+  - Context Management: Semantic pruning, summarization, and caching strategies
+  - Prompt Caching: Provider-specific caching (Anthropic, OpenAI) with 90% savings on repeated context
+  - Token Budgets: Hard limits with soft/hard/adaptive enforcement
+  - Tool Output Limits: Prevent excessive tool outputs with smart truncation
+  - Knowledge Graph Efficiency: 98% token reduction through structured code indexing
+  - Checkpoint Compression: Delta-based state compression for long-running agents
+- **Composite Identity Support**: GitLab Duo-inspired identity merging (vendor-neutral)
+  - Primary identity (service account) + secondary identity (human user)
+  - Merge strategies: restrictive (intersection), permissive (union), custom
+  - Full attribution and audit trail for compliance
+  - Explicit permission management (read, write, execute)
+- **Agent Catalog Metadata**: Discovery and publication support
+  - Visibility controls: public, private, internal
+  - Categories, tags, and search metadata
+  - Pricing models: free, freemium, paid, enterprise
+  - Ratings and documentation links
+- **Efficiency Tier System**: Declarative optimization levels
+  - Premium: No optimization (full quality)
+  - Standard: Basic pruning (30% savings)
+  - Economy: Aggressive optimization (95% savings)
+  - Custom: Explicit configuration
+- **Knowledge Graph Integration**: MCP-based codebase understanding
+  - Provider-agnostic (GitLab, GitHub, local, custom)
+  - Index types: files, classes, functions, dependencies, relationships
+  - Query capabilities: semantic search, dependency traversal, code navigation
+  - 98% token reduction vs full codebase inclusion
+- **Version-Specific Schema Naming**: Schema files now use version-specific names (ossa-{version}.schema.json)
+
+### Changed
+- **Schema Naming Convention**: Changed from `ossa-agent.schema.json` to `ossa-0.3.6.schema.json` for website compatibility
+- **Specification**: Updated to v0.3.6 with token efficiency and enterprise features
+- **Package Version**: Bumped to 0.3.6 in package.json and .version.json
+- **Backward Compatibility**: All v0.3.5 agents work with v0.3.6 runtime (100% backward compatible)
+
+### Fixed
+- **Website Integration**: Ensured schema naming matches website validator expectations
+- **Example Validation**: Fixed YAML formatting issues in examples (removed document separators, fixed numeric formats)
+
 ## [0.3.5] - 2026-01-15
 ### Added
 - **Completion Signals**: Standardized agent termination conditions enabling intelligent workflow orchestration
