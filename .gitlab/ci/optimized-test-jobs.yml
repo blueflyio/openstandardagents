@@ -13,7 +13,8 @@ include:
 .test-job-base:
   image: node:${NODE_VERSION}-alpine
   tags:
-    - saas-linux-small-amd64
+    - self-hosted
+    - docker
   extends:
     - .npm-cache-readonly
   dependencies:
@@ -40,7 +41,8 @@ test:quick:
   stage: test
   image: node:${NODE_VERSION}-alpine
   tags:
-    - saas-linux-small-amd64
+    - self-hosted
+    - docker
   extends:
     - .npm-cache-readonly
   before_script:
@@ -152,7 +154,8 @@ test:lint:
   stage: test
   image: node:${NODE_VERSION}-alpine
   tags:
-    - saas-linux-small-amd64
+    - self-hosted
+    - docker
   extends:
     - .npm-cache-readonly
     - .rules:fast
@@ -193,7 +196,8 @@ test:security:
   stage: test
   image: node:${NODE_VERSION}-alpine
   tags:
-    - saas-linux-small-amd64
+    - self-hosted
+    - docker
   extends:
     - .npm-cache-readonly
     - .rules:fast
@@ -230,7 +234,8 @@ test:sdk:typescript:
   stage: test
   image: node:${NODE_VERSION}-alpine
   tags:
-    - saas-linux-small-amd64
+    - self-hosted
+    - docker
   before_script:
     - apk add --no-cache curl jq
     - cd src/sdks/typescript
@@ -254,7 +259,8 @@ test:sdk:python:
   stage: test
   image: python:3.11-alpine
   tags:
-    - saas-linux-small-amd64
+    - self-hosted
+    - docker
   before_script:
     - apk add --no-cache gcc musl-dev python3-dev
     - cd src/sdks/python
