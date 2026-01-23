@@ -10,7 +10,9 @@
     - if: '$CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/'
       when: on_success
   tags:
-    - saas-linux-small-amd64
+    - self-hosted
+    - docker
+    - linux
 
 # ==================================================================
 # TYPESCRIPT SDK - Publish to npm
