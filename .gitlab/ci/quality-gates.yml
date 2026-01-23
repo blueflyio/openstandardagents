@@ -14,7 +14,9 @@ quality:gates:fast:
   stage: quality
   image: node:${NODE_VERSION}-alpine
   tags:
-    - saas-linux-small-amd64
+    - self-hosted
+    - docker
+    - linux
   extends:
     - .rules:fast
   needs:
@@ -33,7 +35,9 @@ quality:gates:full:
   stage: quality
   image: node:${NODE_VERSION}-alpine
   tags:
-    - saas-linux-small-amd64
+    - self-hosted
+    - docker
+    - linux
   extends:
     - .rules:full
   needs:
