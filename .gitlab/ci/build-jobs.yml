@@ -8,9 +8,7 @@ build:dist:
   stage: build
   image: node:${NODE_VERSION}-alpine
   tags:
-    - self-hosted
-    - docker
-    - linux
+    - saas-linux-small-amd64
   extends:
     - .npm-cache
     - .build-cache
@@ -41,9 +39,7 @@ detect:version:
   stage: build
   image: node:${NODE_VERSION}-alpine
   tags:
-    - self-hosted
-    - docker
-    - linux
+    - saas-linux-small-amd64
   before_script:
     - apk add --no-cache jq
   script:
