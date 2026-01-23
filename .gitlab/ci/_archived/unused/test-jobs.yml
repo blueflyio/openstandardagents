@@ -6,9 +6,7 @@ test:lint:
   stage: test
   image: node:${NODE_VERSION}-alpine
   tags:
-    - self-hosted
-    - docker
-    - linux
+    - saas-linux-small-amd64
   needs:
     - job: version:sync:placeholders
       optional: true
@@ -33,9 +31,7 @@ test:code-quality:
   needs: []
   image: node:${NODE_VERSION}-alpine
   tags:
-    - self-hosted
-    - docker
-    - linux
+    - saas-linux-small-amd64
   script:
     - npm ci --legacy-peer-deps
     - npx eslint src/ -f json -o eslint-report.json || true
@@ -54,9 +50,7 @@ test:unit:
   stage: test
   image: node:${NODE_VERSION}-alpine
   tags:
-    - self-hosted
-    - docker
-    - linux
+    - saas-linux-small-amd64
   timeout: 20 minutes
   retry:
     max: 2
@@ -101,9 +95,7 @@ test:integration:
   stage: test
   image: node:${NODE_VERSION}-alpine
   tags:
-    - self-hosted
-    - docker
-    - linux
+    - saas-linux-small-amd64
   timeout: 20 minutes
   dependencies:
     - build:dist
@@ -130,9 +122,7 @@ test:e2e:
   stage: test
   image: node:${NODE_VERSION}-alpine
   tags:
-    - self-hosted
-    - docker
-    - linux
+    - saas-linux-small-amd64
   timeout: 30 minutes
   dependencies:
     - build:dist
@@ -160,9 +150,7 @@ test:security:
   needs: []
   image: node:${NODE_VERSION}-alpine
   tags:
-    - self-hosted
-    - docker
-    - linux
+    - saas-linux-small-amd64
   script:
     - npm ci --legacy-peer-deps
     - npm audit --production || echo "WARNING Security vulnerabilities"

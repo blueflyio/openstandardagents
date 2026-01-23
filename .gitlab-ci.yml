@@ -124,9 +124,7 @@ validate:schema:
   stage: validate
   image: node:${NODE_VERSION}-alpine
   tags:
-    - self-hosted
-    - docker
-    - linux
+    - saas-linux-small-amd64
   extends:
     - .npm-cache-readonly
   before_script:
@@ -146,9 +144,7 @@ validate:examples:
   stage: validate
   image: node:${NODE_VERSION}-alpine
   tags:
-    - self-hosted
-    - docker
-    - linux
+    - saas-linux-small-amd64
   extends:
     - .npm-cache-readonly
   before_script:
@@ -167,9 +163,7 @@ validate:ossa-templates:
   stage: validate
   image: node:${NODE_VERSION}-alpine
   tags:
-    - self-hosted
-    - docker
-    - linux
+    - saas-linux-small-amd64
   extends:
     - .npm-cache-readonly
   before_script:
@@ -238,9 +232,7 @@ release:semantic:
   stage: release
   image: node:${NODE_VERSION}
   tags:
-    - self-hosted
-    - docker
-    - linux
+    - saas-linux-small-amd64
   environment:
     name: production
   variables:
