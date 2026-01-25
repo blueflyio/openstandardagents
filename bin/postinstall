@@ -14,7 +14,7 @@ import { join } from 'path';
 import { execSync } from 'child_process';
 
 // Detect if we're being installed in a user's project (not the package itself)
-const isUserProject = () => {
+const isUserProject = async () => {
   const cwd = process.cwd();
   const packageJsonPath = join(cwd, 'package.json');
 
@@ -23,8 +23,9 @@ const isUserProject = () => {
   }
 
   try {
+    // Use dynamic import without assert (Node 22 compatible)
     const pkgContent = existsSync(packageJsonPath) ?
-      await import('file://' + packageJsonPath, { assert: { type: 'json' } }) : null;
+      await import('file://' + packageJsonPath, { with: { type: 'json' } }) : null;
     if (!pkgContent) return false;
     const pkg = pkgContent.default;
     // If package.json name is our package, we're inside the package itself

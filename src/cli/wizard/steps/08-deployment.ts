@@ -23,30 +23,11 @@ export async function configureDeploymentStep(
 
   if (!configureDeployment) return state;
 
-  // Platform selection
-  const platformAnswers = await inquirer.prompt([
-    {
-      type: 'checkbox',
-      name: 'platforms',
-      message: 'Select target platforms (can select multiple):',
-      choices: [
-        { name: 'kagent.dev (Kubernetes)', value: 'kagent', checked: false },
-        { name: 'LangChain', value: 'langchain', checked: false },
-        { name: 'CrewAI', value: 'crewai', checked: false },
-        { name: 'Temporal', value: 'temporal', checked: false },
-        { name: 'Docker', value: 'docker', checked: true },
-        { name: 'Kubernetes (Native)', value: 'kubernetes', checked: false },
-        { name: 'GitLab CI/CD', value: 'gitlab', checked: false },
-        { name: 'n8n', value: 'n8n', checked: false },
-      ],
-    },
-  ]);
-
   const deploymentAnswers = await inquirer.prompt([
     {
       type: 'list',
       name: 'target',
-      message: 'Primary deployment target:',
+      message: 'Deployment target:',
       choices: [
         { name: 'Kubernetes', value: 'kubernetes' },
         { name: 'Docker', value: 'docker' },
@@ -144,18 +125,7 @@ export async function configureDeploymentStep(
   if (!state.agent.spec) state.agent.spec = { role: '' };
   (state.agent.spec as any).deployment = deployment;
 
-  // Store platform selections
-  if (!state.agent.metadata) state.agent.metadata = { name: '' };
-  if (!state.agent.metadata.labels) state.agent.metadata.labels = {};
-  if (platformAnswers.platforms && platformAnswers.platforms.length > 0) {
-    state.agent.metadata.labels['ossa.ai/platforms'] =
-      platformAnswers.platforms.join(',');
-  }
-
   console_ui.success(`Deployment target: ${deploymentAnswers.target}`);
-  if (platformAnswers.platforms && platformAnswers.platforms.length > 0) {
-    console_ui.success(`Platforms: ${platformAnswers.platforms.join(', ')}`);
-  }
 
   return state;
 }
