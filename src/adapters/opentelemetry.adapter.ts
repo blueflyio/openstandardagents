@@ -128,7 +128,9 @@ export class OpenTelemetryAdapter {
     }
 
     // Dynamic import OpenTelemetry SDK (optional dependencies)
+    // @ts-expect-error - Optional dependency, may not be installed
     const { NodeSDK } = await import('@opentelemetry/sdk-node');
+    // @ts-expect-error - Optional dependency, may not be installed
     const { Resource } = await import('@opentelemetry/resources');
 
     // Build resource attributes (using standard semantic convention attribute names)
@@ -163,6 +165,7 @@ export class OpenTelemetryAdapter {
     sdk.start();
 
     // Get tracer and meter
+    // @ts-expect-error - Optional dependency, may not be installed
     const { trace } = await import('@opentelemetry/api');
     const tracer = trace.getTracer(
       config.service_name || agentMetadata.name,
@@ -190,6 +193,7 @@ export class OpenTelemetryAdapter {
     switch (config.exporter) {
       case 'otlp': {
         try {
+          // @ts-ignore - Optional dependency, may not be installed
           const TraceExporter =
             await import('@opentelemetry/exporter-trace-otlp-http');
           return new TraceExporter.OTLPTraceExporter({
@@ -204,6 +208,7 @@ export class OpenTelemetryAdapter {
       }
       case 'jaeger': {
         try {
+          // @ts-ignore - Optional dependency, may not be installed
           const JaegerExporter = await import('@opentelemetry/exporter-jaeger');
           return new JaegerExporter.JaegerExporter({
             endpoint: config.endpoint || 'http://localhost:14268/api/traces',
@@ -214,6 +219,7 @@ export class OpenTelemetryAdapter {
       }
       case 'zipkin': {
         try {
+          // @ts-ignore - Optional dependency, may not be installed
           const ZipkinExporter = await import('@opentelemetry/exporter-zipkin');
           return new ZipkinExporter.ZipkinExporter({
             url: config.endpoint || 'http://localhost:9411/api/v2/spans',
@@ -224,6 +230,7 @@ export class OpenTelemetryAdapter {
       }
       case 'console': {
         try {
+          // @ts-ignore - Optional dependency, may not be installed
           const ConsoleExporter = await import('@opentelemetry/sdk-trace-base');
           return new ConsoleExporter.ConsoleSpanExporter();
         } catch {
@@ -244,6 +251,7 @@ export class OpenTelemetryAdapter {
     switch (config.exporter) {
       case 'otlp': {
         try {
+          // @ts-ignore - Optional dependency, may not be installed
           const MetricsExporter =
             await import('@opentelemetry/exporter-metrics-otlp-http');
           return new MetricsExporter.OTLPMetricExporter({
@@ -258,6 +266,7 @@ export class OpenTelemetryAdapter {
       }
       case 'prometheus': {
         try {
+          // @ts-ignore - Optional dependency, may not be installed
           const PrometheusExporter =
             await import('@opentelemetry/exporter-prometheus');
           return new PrometheusExporter.PrometheusExporter({
