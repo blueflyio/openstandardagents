@@ -165,11 +165,16 @@ export const scaffoldCommand = new Command('scaffold')
 
           // Determine agent type based on platform
           let agentTypeForPlatform = 'worker';
-          if (options.platform === 'drupal') agentTypeForPlatform = 'content-agent';
-          else if (options.platform === 'gitlab') agentTypeForPlatform = 'ci-agent';
-          else if (options.platform === 'kubernetes') agentTypeForPlatform = 'operator-agent';
-          else if (options.platform === 'cursor') agentTypeForPlatform = 'code-assistant';
-          else if (options.platform === 'langflow') agentTypeForPlatform = 'workflow-agent';
+          if (options.platform === 'drupal')
+            agentTypeForPlatform = 'content-agent';
+          else if (options.platform === 'gitlab')
+            agentTypeForPlatform = 'ci-agent';
+          else if (options.platform === 'kubernetes')
+            agentTypeForPlatform = 'operator-agent';
+          else if (options.platform === 'cursor')
+            agentTypeForPlatform = 'code-assistant';
+          else if (options.platform === 'langflow')
+            agentTypeForPlatform = 'workflow-agent';
 
           const templatePath = path.join(
             platformDir,
@@ -184,7 +189,9 @@ export const scaffoldCommand = new Command('scaffold')
             ) as OssaAgent;
             manifest = templateManifest;
             console.log(
-              chalk.gray(`  Loaded platform template: ${options.platform}/${agentTypeForPlatform}`)
+              chalk.gray(
+                `  Loaded platform template: ${options.platform}/${agentTypeForPlatform}`
+              )
             );
           } else {
             console.log(
