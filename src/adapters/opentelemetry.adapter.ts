@@ -190,7 +190,8 @@ export class OpenTelemetryAdapter {
     switch (config.exporter) {
       case 'otlp': {
         try {
-          const TraceExporter = await import('@opentelemetry/exporter-trace-otlp-http');
+          const TraceExporter =
+            await import('@opentelemetry/exporter-trace-otlp-http');
           return new TraceExporter.OTLPTraceExporter({
             url: config.endpoint || 'http://localhost:4318/v1/traces',
             headers: config.headers || {},
@@ -243,7 +244,8 @@ export class OpenTelemetryAdapter {
     switch (config.exporter) {
       case 'otlp': {
         try {
-          const MetricsExporter = await import('@opentelemetry/exporter-metrics-otlp-http');
+          const MetricsExporter =
+            await import('@opentelemetry/exporter-metrics-otlp-http');
           return new MetricsExporter.OTLPMetricExporter({
             url: config.endpoint || 'http://localhost:4318/v1/metrics',
             headers: config.headers || {},
@@ -256,7 +258,8 @@ export class OpenTelemetryAdapter {
       }
       case 'prometheus': {
         try {
-          const PrometheusExporter = await import('@opentelemetry/exporter-prometheus');
+          const PrometheusExporter =
+            await import('@opentelemetry/exporter-prometheus');
           return new PrometheusExporter.PrometheusExporter({
             port: 9090,
           });
