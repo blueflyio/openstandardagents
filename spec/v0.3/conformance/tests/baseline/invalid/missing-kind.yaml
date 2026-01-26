@@ -1,7 +1,0 @@
-apiVersion: ossa/v0.3.5
-metadata:
-  name: invalid-agent-no-kind
-spec:
-  type: service
-  identity:
-    id: invalid-agent
