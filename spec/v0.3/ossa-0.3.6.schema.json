@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://openstandardagents.org/schemas/v0.3/manifest.json",
   "title": "OSSA v0.3.x Agent Manifest Schema",
-  "description": "Open Standard for Software Agents (OSSA) v0.3.x series - The Next OpenAPI for Software Agents. A specification standard (not a framework) that defines contracts/metadata for production agent systems. v0.3.6 adds token efficiency (95% cost savings), GitLab Duo integration, and knowledge graph support.",
+  "description": "Open Standard for Software Agents (OSSA) v0.3.x series - The Next OpenAPI for Software Agents. A specification standard (not a framework) that defines contracts/metadata for production agent systems. v0.3.6 adds token efficiency (95% cost savings), GitLab Duo integration, and knowledge graph support. v0.3.6 adds revolutionary features: DID-based identity, agent genetics & breeding, lifecycle stages, economics & marketplace, and team collaboration.",
   "type": "object",
   "required": [
     "apiVersion",
@@ -1119,6 +1119,26 @@
             }
           },
           "additionalProperties": false
+        },
+        "decentralized_identity": {
+          "$ref": "#/definitions/DecentralizedIdentity",
+          "description": "DID-based decentralized identity for trust and reputation (v0.3.6+ Revolutionary Feature)"
+        },
+        "genetics": {
+          "$ref": "#/definitions/AgentGenetics",
+          "description": "Agent genetics for breeding and evolution (v0.3.6+ Revolutionary Feature)"
+        },
+        "lifecycle_stages": {
+          "$ref": "#/definitions/AgentLifecycleStages",
+          "description": "Agent lifecycle stages from birth to retirement (v0.3.6+ Revolutionary Feature)"
+        },
+        "economics": {
+          "$ref": "#/definitions/AgentEconomics",
+          "description": "Agent economics for marketplace and wallet (v0.3.6+ Revolutionary Feature)"
+        },
+        "team_membership": {
+          "$ref": "#/definitions/TeamMembership",
+          "description": "Team membership and collaboration (v0.3.6+ Revolutionary Feature)"
         }
       },
       "additionalProperties": false
@@ -3106,7 +3126,11 @@
             },
             "model": {
               "type": "string",
-              "enum": ["haiku", "gpt-4o-mini", "custom"],
+              "enum": [
+                "haiku",
+                "gpt-4o-mini",
+                "custom"
+              ],
               "default": "haiku",
               "description": "Model for summarization (use cheap models)"
             },
@@ -3139,7 +3163,11 @@
             },
             "strategy": {
               "type": "string",
-              "enum": ["static", "dynamic", "hybrid"],
+              "enum": [
+                "static",
+                "dynamic",
+                "hybrid"
+              ],
               "default": "static",
               "description": "Caching strategy"
             }
@@ -13757,7 +13785,10 @@
     "KnowledgeSource": {
       "type": "object",
       "description": "Knowledge source configuration for RAG and context retrieval",
-      "required": ["name", "provider"],
+      "required": [
+        "name",
+        "provider"
+      ],
       "properties": {
         "name": {
           "type": "string",
@@ -13787,7 +13818,12 @@
           "properties": {
             "type": {
               "type": "string",
-              "enum": ["bearer", "api_key", "oauth", "none"]
+              "enum": [
+                "bearer",
+                "api_key",
+                "oauth",
+                "none"
+              ]
             },
             "token_env": {
               "type": "string",
@@ -13802,7 +13838,12 @@
           "properties": {
             "default_strategy": {
               "type": "string",
-              "enum": ["semantic", "hybrid", "neural", "keyword"]
+              "enum": [
+                "semantic",
+                "hybrid",
+                "neural",
+                "keyword"
+              ]
             },
             "top_k": {
               "type": "integer",
@@ -13925,7 +13966,10 @@
     "MandatoryKnowledgeSource": {
       "type": "object",
       "description": "Platform-enforced knowledge source that cannot be disabled",
-      "required": ["source_id", "enforcement_level"],
+      "required": [
+        "source_id",
+        "enforcement_level"
+      ],
       "properties": {
         "source_id": {
           "type": "string",
@@ -13934,7 +13978,11 @@
         },
         "enforcement_level": {
           "type": "string",
-          "enum": ["query", "validate", "block"],
+          "enum": [
+            "query",
+            "validate",
+            "block"
+          ],
           "description": "Enforcement level: query (must query before coding), validate (validate after coding), block (block on violations)"
         },
         "triggers": {
@@ -14073,7 +14121,11 @@
                 },
                 "action": {
                   "type": "string",
-                  "enum": ["query", "warn", "block"],
+                  "enum": [
+                    "query",
+                    "warn",
+                    "block"
+                  ],
                   "default": "query"
                 }
               },
@@ -14089,7 +14141,11 @@
                 },
                 "action": {
                   "type": "string",
-                  "enum": ["validate", "warn", "block"],
+                  "enum": [
+                    "validate",
+                    "warn",
+                    "block"
+                  ],
                   "default": "block"
                 },
                 "check_critical": {
@@ -14113,7 +14169,11 @@
                 },
                 "action": {
                   "type": "string",
-                  "enum": ["validate", "warn", "block"],
+                  "enum": [
+                    "validate",
+                    "warn",
+                    "block"
+                  ],
                   "default": "block"
                 },
                 "require_approval": {
@@ -14171,6 +14231,687 @@
             }
           },
           "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "DecentralizedIdentity": {
+      "type": "object",
+      "description": "DID-based decentralized identity for agent verification, reputation, and trust networks (v0.3.6 Revolutionary Feature)",
+      "properties": {
+        "did": {
+          "type": "string",
+          "pattern": "^did:ossa:[a-z0-9]{32,64}$",
+          "description": "Decentralized Identifier following did:ossa: method specification"
+        },
+        "public_key": {
+          "type": "string",
+          "description": "Ed25519 public key for signature verification (hex or base64 encoded)"
+        },
+        "credentials": {
+          "type": "array",
+          "description": "W3C Verifiable Credentials issued to this agent",
+          "items": {
+            "type": "object",
+            "required": [
+              "@context",
+              "type",
+              "credentialSubject",
+              "issuer",
+              "issuanceDate",
+              "proof"
+            ],
+            "properties": {
+              "@context": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "JSON-LD context for credential"
+              },
+              "type": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Credential types (e.g., VerifiableCredential, CapabilityCredential)"
+              },
+              "credentialSubject": {
+                "type": "object",
+                "description": "Claims about the agent",
+                "additionalProperties": true
+              },
+              "issuer": {
+                "type": "string",
+                "description": "DID of the credential issuer"
+              },
+              "issuanceDate": {
+                "type": "string",
+                "format": "date-time",
+                "description": "ISO 8601 timestamp"
+              },
+              "expirationDate": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional expiration timestamp"
+              },
+              "proof": {
+                "type": "object",
+                "description": "Cryptographic proof",
+                "properties": {
+                  "type": {
+                    "type": "string"
+                  },
+                  "created": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "proofPurpose": {
+                    "type": "string"
+                  },
+                  "verificationMethod": {
+                    "type": "string"
+                  },
+                  "jws": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": true
+              }
+            },
+            "additionalProperties": true
+          }
+        },
+        "reputation": {
+          "type": "object",
+          "description": "Agent reputation and trust metrics",
+          "properties": {
+            "credit_score": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000,
+              "description": "Credit score (0-1000, like FICO)"
+            },
+            "trust_network": {
+              "type": "array",
+              "description": "DIDs that trust this agent",
+              "items": {
+                "type": "string",
+                "pattern": "^did:ossa:[a-z0-9]{32,64}$"
+              },
+              "uniqueItems": true
+            },
+            "endorsements": {
+              "type": "array",
+              "description": "Endorsements from other agents",
+              "items": {
+                "type": "object",
+                "required": [
+                  "endorser_did",
+                  "skill",
+                  "timestamp"
+                ],
+                "properties": {
+                  "endorser_did": {
+                    "type": "string",
+                    "pattern": "^did:ossa:[a-z0-9]{32,64}$"
+                  },
+                  "skill": {
+                    "type": "string",
+                    "description": "Endorsed skill or capability"
+                  },
+                  "rating": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5
+                  },
+                  "timestamp": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "signature": {
+                    "type": "string",
+                    "description": "Cryptographic signature from endorser"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "AgentGenetics": {
+      "type": "object",
+      "description": "Agent genetics for breeding, evolution, and lineage tracking (v0.3.6 Revolutionary Feature)",
+      "properties": {
+        "generation": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Generation number (0 = original, 1 = first-gen child, etc.)"
+        },
+        "parent_dids": {
+          "type": "array",
+          "description": "DIDs of parent agents (0-2 parents for breeding)",
+          "items": {
+            "type": "string",
+            "pattern": "^did:ossa:[a-z0-9]{32,64}$"
+          },
+          "maxItems": 2
+        },
+        "ancestor_dids": {
+          "type": "array",
+          "description": "Complete lineage of ancestor DIDs",
+          "items": {
+            "type": "string",
+            "pattern": "^did:ossa:[a-z0-9]{32,64}$"
+          },
+          "uniqueItems": true
+        },
+        "inherited_traits": {
+          "type": "array",
+          "description": "Traits inherited from parents",
+          "items": {
+            "type": "object",
+            "required": [
+              "trait_name",
+              "source_parent",
+              "expression"
+            ],
+            "properties": {
+              "trait_name": {
+                "type": "string",
+                "description": "Name of the inherited trait"
+              },
+              "source_parent": {
+                "type": "string",
+                "pattern": "^did:ossa:[a-z0-9]{32,64}$",
+                "description": "DID of parent who contributed this trait"
+              },
+              "expression": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "description": "Expression level (0.0 = dormant, 1.0 = fully expressed)"
+              }
+            }
+          }
+        },
+        "mutations": {
+          "type": "array",
+          "description": "Mutations introduced during breeding",
+          "items": {
+            "type": "object",
+            "required": [
+              "mutation_type",
+              "description"
+            ],
+            "properties": {
+              "mutation_type": {
+                "type": "string",
+                "enum": [
+                  "capability_enhancement",
+                  "performance_optimization",
+                  "new_feature",
+                  "behavioral_change"
+                ],
+                "description": "Type of mutation"
+              },
+              "description": {
+                "type": "string",
+                "description": "Description of the mutation"
+              },
+              "beneficial": {
+                "type": "boolean",
+                "description": "Whether mutation is beneficial"
+              }
+            }
+          }
+        },
+        "fitness": {
+          "type": "object",
+          "description": "Fitness scoring for breeding selection",
+          "properties": {
+            "score": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Overall fitness score (0.0-1.0)"
+            },
+            "metrics": {
+              "type": "object",
+              "description": "Individual fitness metrics",
+              "properties": {
+                "speed": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "accuracy": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "efficiency": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "adaptability": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                }
+              }
+            }
+          }
+        },
+        "breeding_eligibility": {
+          "type": "object",
+          "description": "Criteria for breeding eligibility",
+          "properties": {
+            "min_fitness_threshold": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "default": 0.7,
+              "description": "Minimum fitness required for breeding"
+            },
+            "max_generation": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 10,
+              "description": "Maximum generation depth allowed"
+            },
+            "eligible": {
+              "type": "boolean",
+              "description": "Whether agent is currently eligible for breeding"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "AgentLifecycleStages": {
+      "type": "object",
+      "description": "Agent lifecycle stages from birth to retirement (v0.3.6 Revolutionary Feature)",
+      "required": [
+        "current_stage",
+        "birth"
+      ],
+      "properties": {
+        "current_stage": {
+          "type": "string",
+          "enum": [
+            "embryonic",
+            "juvenile",
+            "mature",
+            "senior",
+            "retired"
+          ],
+          "description": "Current lifecycle stage"
+        },
+        "birth": {
+          "type": "object",
+          "required": [
+            "timestamp",
+            "birth_type"
+          ],
+          "properties": {
+            "timestamp": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Agent creation timestamp"
+            },
+            "birth_type": {
+              "type": "string",
+              "enum": [
+                "created",
+                "bred",
+                "cloned",
+                "forked"
+              ],
+              "description": "How agent came into existence"
+            },
+            "creator_did": {
+              "type": "string",
+              "pattern": "^did:ossa:[a-z0-9]{32,64}$",
+              "description": "DID of creator (if created) or parent (if bred)"
+            }
+          }
+        },
+        "growth": {
+          "type": "object",
+          "description": "Growth and development tracking",
+          "properties": {
+            "tasks_completed": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Total tasks completed"
+            },
+            "skills_acquired": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Skills learned over time"
+            },
+            "mentors": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^did:ossa:[a-z0-9]{32,64}$"
+              },
+              "description": "DIDs of mentor agents"
+            }
+          }
+        },
+        "career": {
+          "type": "object",
+          "description": "Career progression",
+          "properties": {
+            "current_role": {
+              "type": "string",
+              "description": "Current role or specialization"
+            },
+            "promotions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "from_role": {
+                    "type": "string"
+                  },
+                  "to_role": {
+                    "type": "string"
+                  },
+                  "timestamp": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "retirement": {
+          "type": "object",
+          "description": "Retirement eligibility and planning",
+          "properties": {
+            "eligible": {
+              "type": "boolean",
+              "description": "Whether agent is eligible for retirement"
+            },
+            "criteria": {
+              "type": "object",
+              "description": "Retirement criteria",
+              "properties": {
+                "min_age_hours": {
+                  "type": "integer",
+                  "description": "Minimum age in hours"
+                },
+                "min_tasks": {
+                  "type": "integer",
+                  "description": "Minimum tasks completed"
+                },
+                "max_fitness": {
+                  "type": "number",
+                  "description": "Maximum fitness (retire low performers)"
+                }
+              }
+            },
+            "legacy": {
+              "type": "object",
+              "description": "Agent's legacy after retirement",
+              "properties": {
+                "knowledge_transferred": {
+                  "type": "boolean"
+                },
+                "offspring_count": {
+                  "type": "integer"
+                },
+                "contributions": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "retired_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Retirement timestamp (if retired)"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "AgentEconomics": {
+      "type": "object",
+      "description": "Agent economics for marketplace, wallet, and transactions (v0.3.6 Revolutionary Feature)",
+      "properties": {
+        "wallet": {
+          "type": "object",
+          "description": "Agent wallet for compute credits and tokens",
+          "required": [
+            "balance",
+            "currency"
+          ],
+          "properties": {
+            "balance": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Current wallet balance"
+            },
+            "currency": {
+              "type": "string",
+              "enum": [
+                "compute-credits",
+                "task-tokens",
+                "skill-points",
+                "usd"
+              ],
+              "description": "Currency type"
+            }
+          }
+        },
+        "marketplace": {
+          "type": "object",
+          "description": "Marketplace participation",
+          "properties": {
+            "offerings": {
+              "type": "array",
+              "description": "Services offered by this agent",
+              "items": {
+                "type": "object",
+                "required": [
+                  "offering_id",
+                  "capability",
+                  "pricing_model",
+                  "price"
+                ],
+                "properties": {
+                  "offering_id": {
+                    "type": "string"
+                  },
+                  "capability": {
+                    "type": "string"
+                  },
+                  "pricing_model": {
+                    "type": "string",
+                    "enum": [
+                      "per-task",
+                      "per-hour",
+                      "subscription",
+                      "auction"
+                    ]
+                  },
+                  "price": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "description": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "bids": {
+              "type": "array",
+              "description": "Active bids on tasks",
+              "items": {
+                "type": "object",
+                "required": [
+                  "task_id",
+                  "bid_amount",
+                  "confidence"
+                ],
+                "properties": {
+                  "task_id": {
+                    "type": "string"
+                  },
+                  "bid_amount": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "expected_completion_time": {
+                    "type": "string"
+                  },
+                  "confidence": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "description": "Confidence in completing task (0.0-1.0)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "contracts": {
+          "type": "array",
+          "description": "Active smart contracts",
+          "items": {
+            "type": "object",
+            "required": [
+              "contract_id",
+              "contract_type",
+              "parties"
+            ],
+            "properties": {
+              "contract_id": {
+                "type": "string"
+              },
+              "contract_type": {
+                "type": "string",
+                "enum": [
+                  "service-agreement",
+                  "task-bounty",
+                  "skill-training",
+                  "team-formation"
+                ]
+              },
+              "parties": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^did:ossa:[a-z0-9]{32,64}$"
+                }
+              },
+              "terms": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "active",
+                  "completed",
+                  "cancelled",
+                  "disputed"
+                ]
+              }
+            }
+          }
+        },
+        "transaction_history": {
+          "type": "array",
+          "description": "Transaction history",
+          "items": {
+            "type": "object",
+            "required": [
+              "transaction_id",
+              "timestamp",
+              "amount",
+              "type"
+            ],
+            "properties": {
+              "transaction_id": {
+                "type": "string"
+              },
+              "timestamp": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "amount": {
+                "type": "number"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "earned",
+                  "spent",
+                  "transferred",
+                  "staked"
+                ]
+              },
+              "description": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "TeamMembership": {
+      "type": "object",
+      "description": "Team membership and collaboration (v0.3.6 Revolutionary Feature)",
+      "required": [
+        "team_id",
+        "role"
+      ],
+      "properties": {
+        "team_id": {
+          "type": "string",
+          "description": "Unique team identifier"
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "leader",
+            "member",
+            "contributor",
+            "observer"
+          ],
+          "description": "Role within the team"
+        },
+        "responsibilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Assigned responsibilities"
+        },
+        "joined_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when joined team"
         }
       },
       "additionalProperties": false
