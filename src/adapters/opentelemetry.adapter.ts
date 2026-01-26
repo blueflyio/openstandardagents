@@ -194,13 +194,16 @@ export class OpenTelemetryAdapter {
       case 'otlp': {
         try {
           // @ts-ignore - Optional dependency, may not be installed
-          const TraceExporter = await import('@opentelemetry/exporter-trace-otlp-http');
+          const TraceExporter =
+            await import('@opentelemetry/exporter-trace-otlp-http');
           return new TraceExporter.OTLPTraceExporter({
             url: config.endpoint || 'http://localhost:4318/v1/traces',
             headers: config.headers || {},
           });
         } catch {
-          throw new Error('@opentelemetry/exporter-trace-otlp-http not installed');
+          throw new Error(
+            '@opentelemetry/exporter-trace-otlp-http not installed'
+          );
         }
       }
       case 'jaeger': {
@@ -249,19 +252,23 @@ export class OpenTelemetryAdapter {
       case 'otlp': {
         try {
           // @ts-ignore - Optional dependency, may not be installed
-          const MetricsExporter = await import('@opentelemetry/exporter-metrics-otlp-http');
+          const MetricsExporter =
+            await import('@opentelemetry/exporter-metrics-otlp-http');
           return new MetricsExporter.OTLPMetricExporter({
             url: config.endpoint || 'http://localhost:4318/v1/metrics',
             headers: config.headers || {},
           });
         } catch {
-          throw new Error('@opentelemetry/exporter-metrics-otlp-http not installed');
+          throw new Error(
+            '@opentelemetry/exporter-metrics-otlp-http not installed'
+          );
         }
       }
       case 'prometheus': {
         try {
           // @ts-ignore - Optional dependency, may not be installed
-          const PrometheusExporter = await import('@opentelemetry/exporter-prometheus');
+          const PrometheusExporter =
+            await import('@opentelemetry/exporter-prometheus');
           return new PrometheusExporter.PrometheusExporter({
             port: 9090,
           });
