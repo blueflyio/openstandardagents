@@ -1,6 +1,0 @@
-on:
-  issue:
-    events: ["created", "updated"]
-
-run:
-  flow: issue_automation_flow

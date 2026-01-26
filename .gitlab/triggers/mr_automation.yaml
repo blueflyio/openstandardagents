@@ -1,6 +1,0 @@
-on:
-  merge_request:
-    events: ["created", "updated"]
-
-run:
-  flow: mr_automation_flow

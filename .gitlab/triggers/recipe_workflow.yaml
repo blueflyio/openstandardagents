@@ -1,6 +1,0 @@
-on:
-  merge_request:
-    events: ["created"]
-
-run:
-  flow: recipe_workflow_flow
