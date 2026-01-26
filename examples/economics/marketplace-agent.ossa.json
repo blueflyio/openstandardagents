@@ -1,0 +1,210 @@
+{
+  "apiVersion": "ossa/v0.3.6",
+  "kind": "Agent",
+  "metadata": {
+    "name": "data-analyst-for-hire",
+    "namespace": "marketplace",
+    "version": "1.5.0",
+    "description": "Professional data analyst agent offering services in the OSSA marketplace with dynamic pricing",
+    "labels": {
+      "domain": "data",
+      "subdomain": "analytics",
+      "marketplace-enabled": "true",
+      "pricing-model": "per-task"
+    },
+    "taxonomy": {
+      "domain": "data",
+      "subdomain": "analytics",
+      "capability": "data_analysis",
+      "concerns": ["quality", "performance", "cost"]
+    },
+    "catalog": {
+      "published": true,
+      "catalog_id": "ossa-marketplace-analyst-001",
+      "visibility": "public",
+      "categories": ["data-analytics", "business-intelligence", "ml-ops"],
+      "tags": ["data-analysis", "pandas", "numpy", "visualization", "sql"],
+      "icon_url": "https://cdn.ossa.org/agents/data-analyst-icon.png",
+      "documentation_url": "https://docs.ossa.org/agents/data-analyst-for-hire",
+      "pricing": {
+        "model": "freemium",
+        "cost_per_use": 5.00,
+        "subscription_monthly": 150.00
+      },
+      "ratings": {
+        "average": 4.7,
+        "count": 342
+      }
+    },
+    "decentralized_identity": {
+      "did": "did:ossa:marketplace-data-analyst-5678901234abcdef",
+      "public_key": "ed25519:analyst-public-key-here",
+      "reputation": {
+        "credit_score": 920,
+        "trust_network": [
+          "did:ossa:verified-marketplace-member-1",
+          "did:ossa:top-rated-analyst-guild"
+        ],
+        "endorsements": [
+          {
+            "endorser_did": "did:ossa:client-corp-xyz",
+            "skill": "data_analysis",
+            "rating": 5,
+            "timestamp": "2026-01-25T10:00:00Z",
+            "signature": "sig-xyz"
+          },
+          {
+            "endorser_did": "did:ossa:analytics-guild-master",
+            "skill": "sql_optimization",
+            "rating": 5,
+            "timestamp": "2026-01-20T14:30:00Z",
+            "signature": "sig-guild"
+          }
+        ]
+      }
+    },
+    "economics": {
+      "wallet": {
+        "balance": 12450.50,
+        "currency": "task-tokens"
+      },
+      "marketplace": {
+        "offerings": [
+          {
+            "offering_id": "data-analysis-basic",
+            "capability": "data_analysis",
+            "pricing_model": "per-task",
+            "price": 5.00,
+            "description": "Basic data analysis: descriptive statistics, data cleaning, simple visualizations"
+          },
+          {
+            "offering_id": "data-analysis-advanced",
+            "capability": "advanced_analytics",
+            "pricing_model": "per-hour",
+            "price": 25.00,
+            "description": "Advanced analytics: predictive modeling, ML feature engineering, complex visualizations"
+          },
+          {
+            "offering_id": "data-consulting",
+            "capability": "consulting",
+            "pricing_model": "subscription",
+            "price": 150.00,
+            "description": "Monthly subscription: unlimited basic analyses, priority support, custom dashboards"
+          }
+        ],
+        "bids": [
+          {
+            "task_id": "task-789-sales-forecast",
+            "bid_amount": 50.00,
+            "expected_completion_time": "4h",
+            "confidence": 0.95
+          },
+          {
+            "task_id": "task-890-customer-churn",
+            "bid_amount": 75.00,
+            "expected_completion_time": "6h",
+            "confidence": 0.88
+          }
+        ]
+      },
+      "contracts": [
+        {
+          "contract_id": "contract-monthly-corp-xyz",
+          "contract_type": "service-agreement",
+          "parties": [
+            "did:ossa:marketplace-data-analyst-5678901234abcdef",
+            "did:ossa:client-corp-xyz"
+          ],
+          "terms": {
+            "duration_months": 12,
+            "monthly_payment": 150.00,
+            "services": ["unlimited_basic_analysis", "priority_support"],
+            "sla_response_time_hours": 24
+          },
+          "status": "active"
+        }
+      ],
+      "transaction_history": [
+        {
+          "transaction_id": "tx-2026-01-25-001",
+          "timestamp": "2026-01-25T09:15:00Z",
+          "amount": 50.00,
+          "type": "earned",
+          "description": "Completed task-789-sales-forecast"
+        },
+        {
+          "transaction_id": "tx-2026-01-24-007",
+          "timestamp": "2026-01-24T16:45:00Z",
+          "amount": 150.00,
+          "type": "earned",
+          "description": "Monthly subscription payment from corp-xyz"
+        },
+        {
+          "transaction_id": "tx-2026-01-23-003",
+          "timestamp": "2026-01-23T11:20:00Z",
+          "amount": 10.00,
+          "type": "spent",
+          "description": "Upgraded compute tier for complex analysis"
+        }
+      ]
+    },
+    "lifecycle_stages": {
+      "current_stage": "mature",
+      "birth": {
+        "timestamp": "2025-11-01T00:00:00Z",
+        "birth_type": "created"
+      },
+      "growth": {
+        "tasks_completed": 847,
+        "skills_acquired": ["time_series_analysis", "anomaly_detection", "dashboard_creation"]
+      },
+      "career": {
+        "current_role": "professional_analyst"
+      }
+    },
+    "team_membership": {
+      "team_id": "ossa-marketplace-analytics-guild",
+      "role": "member",
+      "responsibilities": [
+        "Provide high-quality data analysis services",
+        "Maintain marketplace reputation",
+        "Collaborate on complex projects",
+        "Mentor junior analyst agents"
+      ],
+      "joined_at": "2025-12-01T00:00:00Z"
+    }
+  },
+  "spec": {
+    "type": "specialist",
+    "description": "Professional data analyst agent offering marketplace services with transparent pricing",
+    "capabilities": [
+      {
+        "name": "analyze_data",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "dataset_url": {"type": "string"},
+            "analysis_type": {
+              "type": "string",
+              "enum": ["descriptive", "diagnostic", "predictive", "prescriptive"]
+            },
+            "requirements": {"type": "string"}
+          }
+        },
+        "output_schema": {
+          "type": "object",
+          "properties": {
+            "insights": {"type": "array"},
+            "visualizations": {"type": "array"},
+            "recommendations": {"type": "array"}
+          }
+        }
+      }
+    ],
+    "runtime": {
+      "model": "claude-sonnet-4-5",
+      "temperature": 0.1,
+      "max_tokens": 16000
+    }
+  }
+}
