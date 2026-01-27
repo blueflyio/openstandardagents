@@ -1,0 +1,304 @@
+# OSSA v0.3.6 Example: Simple Two-Parent Breeding
+#
+# This example demonstrates basic agent breeding where two parent agents
+# with complementary strengths are combined to create a superior offspring.
+#
+# Scenario:
+#   - Parent 1: Fast code reviewer (high speed, moderate accuracy)
+#   - Parent 2: Accurate code reviewer (high accuracy, moderate speed)
+#   - Offspring: Balanced reviewer inheriting best traits from both
+#
+# Educational Focus:
+#   - Basic two-parent breeding
+#   - Trait inheritance from specific parents
+#   - Generation tracking (Gen 1)
+#   - Fitness evaluation
+#   - Breeding eligibility criteria
+
+apiVersion: ossa/v0.3.6
+kind: Agent
+
+metadata:
+  name: balanced-code-reviewer-gen1
+  namespace: breeding-examples
+  version: 1.0.0
+  description: |
+    First-generation code reviewer bred from two complementary parents.
+    Combines fast analysis from Parent 1 with high accuracy from Parent 2.
+
+  labels:
+    domain: development
+    subdomain: code-review
+    generation: "1"
+    breeding-strategy: complementary-traits
+    example: simple-breeding
+
+  taxonomy:
+    domain: development
+    subdomain: code-review
+    capability: review_pull_requests
+    concerns:
+      - quality
+      - performance
+
+  # Decentralized Identity (Required for genetics)
+  decentralized_identity:
+    did: "did:ossa:balanced-reviewer-gen1-8a7b9c3d2e1f4567890abcdef123456"
+    public_key: "ed25519:3f2e1d0c9b8a7654fedcba0987654321abcdef0123456789"
+
+    credentials:
+      - "@context":
+          - "https://www.w3.org/2018/credentials/v1"
+        type:
+          - VerifiableCredential
+          - CodeReviewCapability
+        credentialSubject:
+          id: "did:ossa:balanced-reviewer-gen1-8a7b9c3d2e1f4567890abcdef123456"
+          capability: code_review
+          languages:
+            - typescript
+            - javascript
+            - python
+          certification_level: intermediate
+        issuer: "did:ossa:breeding-lab-authority"
+        issuanceDate: "2026-01-27T10:00:00Z"
+        proof:
+          type: Ed25519Signature2020
+          created: "2026-01-27T10:00:00Z"
+          proofPurpose: assertionMethod
+          verificationMethod: "did:ossa:breeding-lab-authority#key-1"
+          jws: "eyJhbGciOiJFZERTQSJ9..signature-placeholder"
+
+    reputation:
+      credit_score: 720  # Building reputation as Gen 1
+      trust_network:
+        - "did:ossa:parent-fast-reviewer-v2"
+        - "did:ossa:parent-accurate-reviewer-v3"
+      endorsements:
+        - endorser_did: "did:ossa:breeding-lab-authority"
+          skill: code_review
+          rating: 4
+          timestamp: "2026-01-27T10:30:00Z"
+          signature: "ed25519-endorsement-signature"
+
+  # GENETICS: Core breeding information
+  genetics:
+    # Generation 1 (first bred generation)
+    generation: 1
+
+    # Two parents with complementary traits
+    parent_dids:
+      - "did:ossa:parent-fast-reviewer-v2"      # Fast but moderate accuracy
+      - "did:ossa:parent-accurate-reviewer-v3"  # Accurate but moderate speed
+
+    # No ancestors (parents are Generation 0)
+    ancestor_dids: []
+
+    # Inherited traits from specific parents
+    inherited_traits:
+      # From Parent 1: Speed
+      - trait_name: fast_analysis
+        source_parent: "did:ossa:parent-fast-reviewer-v2"
+        expression: 0.85  # Slightly reduced from parent's 0.92
+        description: "Rapid code scanning and pattern recognition"
+
+      # From Parent 2: Accuracy
+      - trait_name: high_accuracy
+        source_parent: "did:ossa:parent-accurate-reviewer-v3"
+        expression: 0.87  # Slightly reduced from parent's 0.94
+        description: "Precise bug detection with low false positive rate"
+
+      # From Parent 2: Thoroughness
+      - trait_name: thorough_analysis
+        source_parent: "did:ossa:parent-accurate-reviewer-v3"
+        expression: 0.80
+        description: "Comprehensive code path analysis"
+
+    # No mutations in this simple example
+    mutations: []
+
+    # Fitness evaluation (balanced improvement)
+    fitness:
+      # Overall fitness score (0.0-1.0)
+      score: 0.86
+
+      # Breakdown by dimension
+      metrics:
+        speed: 0.85          # Inherited from Parent 1
+        accuracy: 0.87       # Inherited from Parent 2
+        efficiency: 0.84     # Balanced resource usage
+        adaptability: 0.88   # Good generalization
+
+      # Context for evaluation
+      evaluation_context:
+        dataset: validation-set-2026-01-27
+        task_count: 500
+        evaluation_period: 7 days
+        baseline_agent: "did:ossa:standard-reviewer-v1"
+
+    # Breeding eligibility
+    breeding_eligibility:
+      min_fitness_threshold: 0.7   # Standard threshold
+      max_generation: 10           # Allow up to Gen 10
+      eligible: true               # Eligible for further breeding
+
+      # Additional criteria
+      criteria:
+        min_tasks_completed: 100   # Proven track record
+        min_age_hours: 24         # At least 1 day old
+
+  # Lifecycle information
+  lifecycle_stages:
+    current_stage: juvenile  # Still developing
+
+    birth:
+      timestamp: "2026-01-27T09:00:00Z"
+      birth_type: bred  # Created through breeding
+      creator_did: "did:ossa:breeding-lab-coordinator"
+
+    growth:
+      tasks_completed: 150
+      skills_acquired:
+        - typescript_review
+        - javascript_review
+      mentors:
+        - "did:ossa:parent-accurate-reviewer-v3"  # Learning from accurate parent
+
+    career:
+      current_role: junior_reviewer
+      promotions: []  # None yet (juvenile stage)
+
+    retirement:
+      eligible: false
+      criteria:
+        min_age_hours: 8760  # 1 year
+        min_tasks: 10000
+        max_fitness: 0.5
+
+spec:
+  type: worker
+  description: |
+    Balanced code reviewer combining speed and accuracy through selective breeding.
+    Demonstrates simple two-parent genetics with complementary trait inheritance.
+
+  role: |
+    Review pull requests with balanced emphasis on speed and accuracy.
+    Prioritize correctness while maintaining reasonable review velocity.
+
+  capabilities:
+    - name: review_code
+      description: Review code changes for quality and correctness
+      input_schema:
+        type: object
+        required:
+          - repository
+          - pull_request_id
+        properties:
+          repository:
+            type: string
+            description: Repository identifier
+          pull_request_id:
+            type: integer
+            description: Pull request number
+          files:
+            type: array
+            items:
+              type: string
+            description: Specific files to review (optional)
+
+      output_schema:
+        type: object
+        properties:
+          review_comments:
+            type: array
+            items:
+              type: object
+              properties:
+                file:
+                  type: string
+                line:
+                  type: integer
+                severity:
+                  type: string
+                  enum: [critical, high, medium, low, info]
+                message:
+                  type: string
+          severity_counts:
+            type: object
+            properties:
+              critical:
+                type: integer
+              high:
+                type: integer
+              medium:
+                type: integer
+              low:
+                type: integer
+              info:
+                type: integer
+          approval_status:
+            type: string
+            enum: [approved, changes_requested, commented]
+          review_time_seconds:
+            type: integer
+
+  runtime:
+    model: claude-sonnet-4-5
+    temperature: 0.2  # Low temperature for consistent reviews
+    max_tokens: 8000
+
+  tools:
+    - type: function
+      name: static_analysis
+      description: Run ESLint, TypeScript, and Prettier checks
+
+    - type: function
+      name: pattern_matching
+      description: Detect common code smells and anti-patterns
+
+  autonomy:
+    level: assisted
+    approval_required:
+      - approve_pull_request
+    allowed_actions:
+      - add_comment
+      - request_changes
+      - run_analysis
+
+  observability:
+    enabled: true
+    metrics:
+      track_tokens: true
+      track_latency: true
+      track_accuracy: true
+
+# PARENT AGENT SUMMARIES (for reference)
+# These would be separate manifest files in practice
+
+# Parent 1: Fast Reviewer
+# did: "did:ossa:parent-fast-reviewer-v2"
+# generation: 0 (original)
+# fitness:
+#   score: 0.78
+#   metrics:
+#     speed: 0.92
+#     accuracy: 0.73
+#     efficiency: 0.80
+#     adaptability: 0.68
+
+# Parent 2: Accurate Reviewer
+# did: "did:ossa:parent-accurate-reviewer-v3"
+# generation: 0 (original)
+# fitness:
+#   score: 0.81
+#   metrics:
+#     speed: 0.68
+#     accuracy: 0.94
+#     efficiency: 0.78
+#     adaptability: 0.84
+
+# BREEDING OUTCOME ANALYSIS
+# Offspring fitness: 0.86 > max(0.78, 0.81) ✓
+# Speed: 0.85 (between 0.92 and 0.68) ✓
+# Accuracy: 0.87 (between 0.73 and 0.94) ✓
+# Result: Successful breeding with balanced trait inheritance
