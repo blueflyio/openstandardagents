@@ -35,7 +35,7 @@ Distributed Tracing:
 For more examples, see: https://openstandardagents.org/docs/sdks/python
 """
 
-__version__ = "0.3.5"
+__version__ = "0.3.6"
 __all__ = [
     # Core manifest types
     "Manifest",
@@ -57,12 +57,6 @@ __all__ = [
     "Workflow",
     "WorkflowRunner",
 
-    # CRUD operations
-    "IAgentRepository",
-    "AgentRepository",
-    "AgentService",
-    "AgentController",
-
     # Exceptions
     "OSSAError",
     "ValidationError",
@@ -80,7 +74,13 @@ from .agent import Agent, AgentRunner, AgentResponse
 from .task import Task, TaskRunner
 from .workflow import Workflow, WorkflowRunner
 from .structure import AgentsFolderService, AgentFolderStructure, FileDefinition
-from .crud import IAgentRepository, AgentRepository, AgentService, AgentController
+
+# Optional CRUD imports (requires fastapi)
+try:
+    from .crud import IAgentRepository, AgentRepository, AgentService, AgentController
+except ImportError:
+    # CRUD features require: pip install fastapi uvicorn
+    pass
 
 # Convenience aliases
 load = load_manifest
