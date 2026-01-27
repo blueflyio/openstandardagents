@@ -1,0 +1,551 @@
+# OSSA v0.3.6 Example: Fitness-Based Selection
+#
+# This example demonstrates comprehensive fitness evaluation and selection
+# strategies for agent breeding programs. Shows custom fitness metrics,
+# weighted scoring, comparative analysis, and tournament selection.
+#
+# Scenario:
+#   - Data analysis agent with custom fitness metrics
+#   - Multi-dimensional fitness evaluation
+#   - Weighted aggregate scoring
+#   - Comparative fitness analysis against population
+#   - Tournament selection breeding strategy
+#
+# Educational Focus:
+#   - Custom fitness metrics (domain-specific)
+#   - Multi-objective optimization
+#   - Weighted fitness aggregation
+#   - Population-relative scoring
+#   - Selection strategies (tournament, roulette, elite)
+#   - Pareto frontier analysis
+
+apiVersion: ossa/v0.3.6
+kind: Agent
+
+metadata:
+  name: data-analyst-fitness-optimized-gen3
+  namespace: fitness-lab
+  version: 3.1.0
+  description: |
+    Third-generation data analysis agent optimized through fitness-based
+    tournament selection. Demonstrates comprehensive multi-objective
+    fitness evaluation and population-relative scoring.
+
+  labels:
+    domain: data
+    subdomain: analytics
+    generation: "3"
+    breeding-strategy: tournament-selection
+    fitness-optimization: pareto-optimal
+    example: fitness-scoring
+
+  taxonomy:
+    domain: data
+    subdomain: analytics
+    capability: data_analysis
+    concerns:
+      - quality
+      - performance
+      - cost
+
+  # Decentralized Identity
+  decentralized_identity:
+    did: "did:ossa:data-analyst-fitness-gen3-7e6f5d4c3b2a1098fedcba"
+    public_key: "ed25519:1234567890abcdefedcba09876543210fedcba098765"
+
+    credentials:
+      - "@context":
+          - "https://www.w3.org/2018/credentials/v1"
+        type:
+          - VerifiableCredential
+          - DataAnalysisCapability
+        credentialSubject:
+          id: "did:ossa:data-analyst-fitness-gen3-7e6f5d4c3b2a1098fedcba"
+          capability: advanced_data_analysis
+          specializations:
+            - statistical_analysis
+            - predictive_modeling
+            - data_visualization
+            - pattern_recognition
+          certification_level: advanced
+        issuer: "did:ossa:data-science-authority"
+        issuanceDate: "2026-01-27T15:00:00Z"
+        proof:
+          type: Ed25519Signature2020
+          created: "2026-01-27T15:00:00Z"
+          proofPurpose: assertionMethod
+          verificationMethod: "did:ossa:data-science-authority#key-1"
+          jws: "eyJhbGciOiJFZERTQSJ9..fitness-signature"
+
+    reputation:
+      credit_score: 840
+      trust_network:
+        - "did:ossa:gen2-parent-statistical-analyst"
+        - "did:ossa:gen2-parent-predictive-modeler"
+        - "did:ossa:data-science-mentor"
+      endorsements:
+        - endorser_did: "did:ossa:data-science-mentor"
+          skill: statistical_analysis
+          rating: 5
+          timestamp: "2026-01-26T12:00:00Z"
+          signature: "ed25519-stats-endorsement"
+
+  # GENETICS: Tournament selection breeding
+  genetics:
+    generation: 3
+
+    # Parents selected via tournament selection (fitness-based)
+    parent_dids:
+      - "did:ossa:gen2-parent-statistical-analyst"
+      - "did:ossa:gen2-parent-predictive-modeler"
+
+    # Ancestor lineage
+    ancestor_dids:
+      # Gen 2 parents (in parent_dids)
+      # Gen 1 grandparents (4)
+      - "did:ossa:gen1-stats-specialist"
+      - "did:ossa:gen1-stats-generalist"
+      - "did:ossa:gen1-ml-specialist"
+      - "did:ossa:gen1-ml-generalist"
+      # Gen 0 founders (8)
+      - "did:ossa:gen0-descriptive-stats"
+      - "did:ossa:gen0-inferential-stats"
+      - "did:ossa:gen0-regression-analysis"
+      - "did:ossa:gen0-classification"
+      - "did:ossa:gen0-clustering"
+      - "did:ossa:gen0-time-series"
+      - "did:ossa:gen0-anomaly-detection"
+      - "did:ossa:gen0-dimensionality-reduction"
+
+    # Inherited traits
+    inherited_traits:
+      - trait_name: statistical_rigor
+        source_parent: "did:ossa:gen2-parent-statistical-analyst"
+        expression: 0.93
+        description: "Methodologically sound statistical analysis"
+
+      - trait_name: predictive_accuracy
+        source_parent: "did:ossa:gen2-parent-predictive-modeler"
+        expression: 0.91
+        description: "High-quality predictive models"
+
+      - trait_name: interpretability
+        source_parent: "did:ossa:gen2-parent-statistical-analyst"
+        expression: 0.88
+        description: "Clear explanations of analytical results"
+
+      - trait_name: computational_efficiency
+        source_parent: "did:ossa:gen2-parent-predictive-modeler"
+        expression: 0.85
+        description: "Fast computation on large datasets"
+
+    # Mutations
+    mutations:
+      - mutation_type: capability_enhancement
+        description: "Automated feature engineering for tabular data"
+        beneficial: true
+        generation_introduced: 3
+
+      - mutation_type: performance_optimization
+        description: "Streaming data processing for large datasets"
+        beneficial: true
+        generation_introduced: 3
+
+    # COMPREHENSIVE FITNESS EVALUATION
+    fitness:
+      # Overall aggregate fitness (weighted average)
+      score: 0.89
+
+      # Standard fitness metrics (OSSA core)
+      metrics:
+        speed: 0.87              # Analysis completion time
+        accuracy: 0.92           # Correctness of insights
+        efficiency: 0.86         # Token/compute cost
+        adaptability: 0.88       # Performance on novel datasets
+
+      # CUSTOM METRICS: Domain-specific for data analysis
+      custom_metrics:
+        # Statistical validity
+        statistical_rigor:
+          score: 0.93
+          description: "Proper hypothesis testing, significance levels, assumptions checking"
+          measurement: "% of analyses passing statistical validation"
+
+        # Predictive performance
+        model_accuracy:
+          score: 0.91
+          description: "Predictive model performance (R², F1, AUC-ROC)"
+          measurement: "Average cross-validated performance across tasks"
+
+        # Result interpretability
+        interpretability:
+          score: 0.88
+          description: "Clarity and actionability of insights"
+          measurement: "Human evaluator ratings (1-5 scale, normalized)"
+
+        # Data quality handling
+        robustness:
+          score: 0.85
+          description: "Performance on messy/incomplete data"
+          measurement: "Accuracy degradation with missing/noisy data"
+
+        # Insight generation
+        insight_quality:
+          score: 0.90
+          description: "Novelty and business value of insights"
+          measurement: "Expert panel ratings on insight actionability"
+
+        # Visualization quality
+        visualization_quality:
+          score: 0.87
+          description: "Quality of generated charts and dashboards"
+          measurement: "Design principles adherence + clarity scores"
+
+        # Computational cost
+        token_efficiency:
+          score: 0.86
+          description: "Analysis quality per token consumed"
+          measurement: "Insight value / token cost ratio"
+
+        # Dataset size handling
+        scalability:
+          score: 0.84
+          description: "Performance on large datasets (>1M rows)"
+          measurement: "Completion time and accuracy on scaled datasets"
+
+      # WEIGHTED AGGREGATE SCORING
+      scoring_methodology:
+        # Weights for aggregate score calculation
+        weights:
+          # Standard metrics (40% total)
+          speed: 0.10
+          accuracy: 0.15
+          efficiency: 0.10
+          adaptability: 0.05
+
+          # Custom metrics (60% total - domain-critical)
+          statistical_rigor: 0.15
+          model_accuracy: 0.15
+          interpretability: 0.10
+          robustness: 0.05
+          insight_quality: 0.10
+          visualization_quality: 0.03
+          token_efficiency: 0.01
+          scalability: 0.01
+
+        # Verification: sum(weights) = 1.00
+        total_weight: 1.00
+
+        # Calculation
+        formula: |
+          score = sum(metric_value * weight for each metric)
+          0.89 = 0.87*0.10 + 0.92*0.15 + 0.86*0.10 + 0.88*0.05 +
+                 0.93*0.15 + 0.91*0.15 + 0.88*0.10 + 0.85*0.05 +
+                 0.90*0.10 + 0.87*0.03 + 0.86*0.01 + 0.84*0.01
+
+      # POPULATION-RELATIVE SCORING
+      population_analysis:
+        # Compare to all Gen 3 data analysts
+        population_size: 250
+        percentile_rank: 88  # Top 12%
+
+        # Breakdown by metric
+        metric_percentiles:
+          speed: 75
+          accuracy: 92
+          efficiency: 70
+          adaptability: 85
+          statistical_rigor: 95  # Elite
+          model_accuracy: 90
+          interpretability: 85
+          robustness: 78
+          insight_quality: 88
+          visualization_quality: 82
+          token_efficiency: 68
+          scalability: 65
+
+        # Elite status (top 10%) in which metrics?
+        elite_metrics:
+          - statistical_rigor   # 95th percentile
+          - accuracy            # 92nd percentile
+          - model_accuracy      # 90th percentile
+
+      # PARETO FRONTIER ANALYSIS
+      pareto_analysis:
+        # Multi-objective optimization: accuracy vs efficiency
+        objectives:
+          - name: accuracy
+            value: 0.92
+            maximize: true
+          - name: efficiency
+            value: 0.86
+            maximize: true
+
+        # Is this agent Pareto optimal?
+        pareto_optimal: false  # Trade-off: could be more efficient
+
+        # Pareto frontier agents (dominating solutions)
+        dominated_by:
+          - did: "did:ossa:gen3-pareto-1"
+            accuracy: 0.94
+            efficiency: 0.88
+            note: "Dominates on both objectives"
+
+        # Agents dominated by this one
+        dominates:
+          - did: "did:ossa:gen2-parent-statistical-analyst"
+            accuracy: 0.88
+            efficiency: 0.82
+          - did: "did:ossa:gen2-parent-predictive-modeler"
+            accuracy: 0.90
+            efficiency: 0.80
+
+      # EVALUATION CONTEXT
+      evaluation_context:
+        dataset: "Kaggle-Competition-Suite-2026"
+        task_count: 100
+        task_types:
+          - regression
+          - classification
+          - clustering
+          - time_series_forecasting
+          - anomaly_detection
+        evaluation_period: 14 days
+        baseline_agent: "did:ossa:gen0-descriptive-stats"
+        validation_strategy: k-fold cross-validation (k=5)
+
+      # TOURNAMENT SELECTION HISTORY
+      selection_history:
+        tournament_size: 5
+        tournaments_won: 3
+        tournaments_participated: 8
+        selection_pressure: medium  # 5 competitors per tournament
+
+        # Tournament results
+        tournaments:
+          - tournament_id: "t-2026-01-20-001"
+            competitors:
+              - "did:ossa:gen2-candidate-1"
+              - "did:ossa:gen2-candidate-2"
+              - "did:ossa:gen2-candidate-3"
+              - "did:ossa:gen2-candidate-4"
+              - "did:ossa:gen2-parent-statistical-analyst"  # Winner
+            winner: "did:ossa:gen2-parent-statistical-analyst"
+            selection_metric: aggregate_fitness
+
+          - tournament_id: "t-2026-01-20-002"
+            competitors:
+              - "did:ossa:gen2-candidate-5"
+              - "did:ossa:gen2-candidate-6"
+              - "did:ossa:gen2-candidate-7"
+              - "did:ossa:gen2-candidate-8"
+              - "did:ossa:gen2-parent-predictive-modeler"  # Winner
+            winner: "did:ossa:gen2-parent-predictive-modeler"
+            selection_metric: aggregate_fitness
+
+    # BREEDING ELIGIBILITY
+    breeding_eligibility:
+      min_fitness_threshold: 0.7
+      max_generation: 10
+      eligible: true
+
+      # Fitness-based criteria
+      fitness_criteria:
+        min_aggregate_score: 0.7
+        min_accuracy: 0.75
+        min_custom_metric_average: 0.70
+        all_metrics_above: 0.60  # No metric below this floor
+
+      # Population-relative criteria
+      population_criteria:
+        min_percentile_rank: 60   # Top 40%
+        min_elite_metrics: 1      # At least 1 metric in top 10%
+
+      # Eligibility check
+      criteria_met:
+        fitness_threshold: true   # 0.89 >= 0.70
+        generation_limit: true    # 3 < 10
+        accuracy_floor: true      # 0.92 >= 0.75
+        percentile_rank: true     # 88 >= 60
+        elite_metrics: true       # 3 >= 1
+
+      # Breeding recommendation
+      recommendation: "Highly suitable for breeding (top tier Gen 3)"
+
+  # Lifecycle
+  lifecycle_stages:
+    current_stage: mature
+
+    birth:
+      timestamp: "2026-01-20T10:00:00Z"
+      birth_type: bred
+      creator_did: "did:ossa:fitness-lab-coordinator"
+
+    growth:
+      tasks_completed: 3250
+      skills_acquired:
+        - advanced_regression
+        - ensemble_methods
+        - feature_engineering
+        - streaming_analytics
+      mentors:
+        - "did:ossa:data-science-mentor"
+
+    career:
+      current_role: senior_data_analyst
+      promotions:
+        - from_role: junior_analyst
+          to_role: mid_analyst
+          timestamp: "2026-01-22T00:00:00Z"
+          reason: "Completed 1000 analyses with 90%+ accuracy"
+        - from_role: mid_analyst
+          to_role: senior_data_analyst
+          timestamp: "2026-01-26T00:00:00Z"
+          reason: "Elite statistical rigor (95th percentile)"
+
+    retirement:
+      eligible: false
+      criteria:
+        min_age_hours: 8760
+        min_tasks: 10000
+        max_fitness: 0.5
+
+spec:
+  type: worker
+  description: |
+    Fitness-optimized data analysis agent bred through tournament selection.
+    Demonstrates comprehensive multi-dimensional fitness evaluation and
+    population-relative performance scoring.
+
+  role: |
+    Perform statistical analysis, predictive modeling, and data visualization.
+    Prioritize statistical rigor and interpretability while maintaining
+    computational efficiency.
+
+  capabilities:
+    - name: analyze_data
+      description: Statistical analysis and predictive modeling
+      input_schema:
+        type: object
+        required:
+          - dataset
+          - analysis_type
+        properties:
+          dataset:
+            type: string
+            description: Dataset identifier or URL
+          analysis_type:
+            type: string
+            enum:
+              - descriptive
+              - inferential
+              - predictive
+              - exploratory
+              - confirmatory
+          target_variable:
+            type: string
+            description: Dependent variable (for predictive tasks)
+
+      output_schema:
+        type: object
+        properties:
+          insights:
+            type: array
+            items:
+              type: object
+              properties:
+                insight:
+                  type: string
+                confidence:
+                  type: number
+                statistical_significance:
+                  type: number
+                business_impact:
+                  type: string
+          models:
+            type: array
+            items:
+              type: object
+              properties:
+                model_type:
+                  type: string
+                performance_metrics:
+                  type: object
+                feature_importance:
+                  type: array
+          visualizations:
+            type: array
+            items:
+              type: object
+              properties:
+                chart_type:
+                  type: string
+                data_url:
+                  type: string
+
+  runtime:
+    model: claude-sonnet-4-5
+    temperature: 0.3
+    max_tokens: 12000
+
+  tools:
+    - type: function
+      name: statistical_tests
+      description: Hypothesis testing, ANOVA, chi-square, etc.
+
+    - type: function
+      name: machine_learning
+      description: Scikit-learn, XGBoost, LightGBM models
+
+    - type: function
+      name: data_visualization
+      description: Matplotlib, Seaborn, Plotly charts
+
+  autonomy:
+    level: assisted
+    approval_required:
+      - deploy_model_to_production
+    allowed_actions:
+      - run_analysis
+      - generate_insights
+      - create_visualizations
+
+  observability:
+    enabled: true
+    metrics:
+      track_tokens: true
+      track_latency: true
+      track_accuracy: true
+      track_model_performance: true
+
+# SELECTION STRATEGY COMPARISON
+# ==============================
+# 1. Tournament Selection (used here):
+#    - Pros: Maintains diversity, adjustable selection pressure
+#    - Cons: May miss global optimum
+#    - Best for: Ongoing evolution with exploration
+#
+# 2. Roulette Wheel (fitness-proportionate):
+#    - Pros: Probabilistic, prevents premature convergence
+#    - Cons: Weak agents still have small chance
+#    - Best for: Early generations with high variance
+#
+# 3. Elite Selection:
+#    - Pros: Guarantees best agents propagate
+#    - Cons: Genetic bottleneck, loss of diversity
+#    - Best for: Final optimization, exploitation phase
+#
+# 4. Rank-based Selection:
+#    - Pros: Reduces selection pressure from outliers
+#    - Cons: Ignores absolute fitness differences
+#    - Best for: Populations with extreme fitness variance
+
+# PARETO FRONTIER EXPLANATION
+# ============================
+# Agent is NOT Pareto optimal because:
+# - Accuracy: 0.92, Efficiency: 0.86
+# - Dominated by: did:ossa:gen3-pareto-1 (0.94, 0.88)
+# - To reach Pareto frontier, need to improve either:
+#   a) Accuracy to 0.94+ while maintaining efficiency, OR
+#   b) Efficiency to 0.88+ while maintaining accuracy
+# - Trade-off accepted for better interpretability (0.88)
