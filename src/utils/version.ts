@@ -112,9 +112,17 @@ function readVersionFromPackageJson(): string {
   // When installed globally, __dirname or import.meta.url points to node_modules/@bluefly/openstandardagents/dist
   try {
     // Try to find package.json from this file's location (works for global install)
-    const moduleDir = typeof __dirname !== 'undefined'
-      ? __dirname
-      : path.dirname(new URL(import.meta.url).pathname);
+    let moduleDir: string;
+    if (typeof __dirname !== 'undefined') {
+      moduleDir = __dirname;
+    } else {
+      // ESM: use import.meta.url (skip in Jest/test environments)
+      if (typeof process !== 'undefined' && process.env.NODE_ENV === 'test') {
+        throw new Error('Skip import.meta in test environment');
+      }
+      // @ts-ignore - import.meta.url is valid in ESM
+      moduleDir = path.dirname(new URL(import.meta.url).pathname);
+    }
     const pkgPath = findPackageJson(moduleDir);
     if (pkgPath) {
       const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
@@ -156,9 +164,17 @@ function readVersionFromPackageJson(): string {
 
   // Strategy 5: Read from .version.json (bundled with npm package)
   try {
-    const moduleDir = typeof __dirname !== 'undefined'
-      ? __dirname
-      : path.dirname(new URL(import.meta.url).pathname);
+    let moduleDir: string;
+    if (typeof __dirname !== 'undefined') {
+      moduleDir = __dirname;
+    } else {
+      // ESM: use import.meta.url (skip in Jest/test environments)
+      if (typeof process !== 'undefined' && process.env.NODE_ENV === 'test') {
+        throw new Error('Skip import.meta in test environment');
+      }
+      // @ts-ignore - import.meta.url is valid in ESM
+      moduleDir = path.dirname(new URL(import.meta.url).pathname);
+    }
     const versionJsonPath = findVersionJson(moduleDir);
     if (versionJsonPath) {
       const versionData = JSON.parse(fs.readFileSync(versionJsonPath, 'utf-8'));
