@@ -1,3 +1,4 @@
+import { injectable, inject, optional } from 'inversify';
 import { OssaAgent } from '../types/index.js';
 import * as fs from 'fs/promises';
 import * as path from 'path';
@@ -26,11 +27,12 @@ export interface PublishRequest {
   version?: string;
 }
 
+@injectable()
 export class RegistryService {
   private registryPath: string;
   private agentsPath: string;
 
-  constructor(registryPath?: string) {
+  constructor(@inject('registryPath') @optional() registryPath?: string) {
     this.registryPath =
       registryPath || path.join(process.cwd(), '.ossa-registry');
     this.agentsPath = path.join(this.registryPath, 'agents');
