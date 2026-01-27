@@ -90,7 +90,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/blueflyio/openstandardagents/"
+    "url": "git+https://github.com/blueflyio/openstandardagents.git"
   },
   "bugs": {
     "url": "https://github.com/blueflyio/openstandardagents/issues"
