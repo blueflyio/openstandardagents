@@ -197,15 +197,15 @@ export class OSSAComplianceBot {
     return recommendations;
   }
 
-  private detectOSSAVersion(manifest: Record<string, unknown>): string {
-    if (manifest.apiVersion && typeof manifest.apiVersion === 'string') {
+  private detectOSSAVersion(manifest: any): string {
+    if (manifest.apiVersion) {
       const match = manifest.apiVersion.match(/^ossa\/v(.+)$/);
       if (match) return match[1];
     }
     return '0.3.0';
   }
 
-  private isFixable(error: { message?: string }): boolean {
+  private isFixable(error: any): boolean {
     const fixablePatterns = [
       /missing required field/i,
       /invalid format/i,
