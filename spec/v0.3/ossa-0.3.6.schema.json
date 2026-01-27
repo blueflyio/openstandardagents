@@ -14915,6 +14915,792 @@
         }
       },
       "additionalProperties": false
+    },
+    "AgentLifecycle": {
+      "type": "object",
+      "description": "Agent lifecycle management - career stages, growth, retirement (v0.3.6 Revolutionary Feature)",
+      "properties": {
+        "stage": {
+          "type": "string",
+          "enum": ["embryonic", "juvenile", "mature", "senior", "retired"],
+          "description": "Current lifecycle stage"
+        },
+        "birth": {
+          "$ref": "#/definitions/BirthEvent"
+        },
+        "growth": {
+          "$ref": "#/definitions/GrowthMetrics"
+        },
+        "career": {
+          "$ref": "#/definitions/CareerPath"
+        },
+        "retirement": {
+          "$ref": "#/definitions/RetirementCriteria"
+        }
+      },
+      "additionalProperties": false
+    },
+    "BirthEvent": {
+      "type": "object",
+      "description": "Agent birth event details",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "birth_type": {
+          "type": "string",
+          "enum": ["created", "bred", "cloned", "forked"],
+          "description": "How the agent came into existence"
+        },
+        "creator_did": {
+          "type": "string",
+          "description": "DID of the creator agent or human"
+        }
+      },
+      "additionalProperties": false
+    },
+    "GrowthMetrics": {
+      "type": "object",
+      "description": "Agent growth and learning metrics",
+      "properties": {
+        "tasks_completed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "skills_acquired": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "specializations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "mentors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Mentor"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "Mentor": {
+      "type": "object",
+      "description": "Mentor relationship",
+      "properties": {
+        "mentor_did": {
+          "type": "string"
+        },
+        "skill_taught": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "CareerPath": {
+      "type": "object",
+      "description": "Agent career progression",
+      "properties": {
+        "current_role": {
+          "type": "string",
+          "enum": ["tech-lead", "backend", "frontend", "devops", "qa", "security", "pm", "researcher", "analyst"],
+          "description": "Current role in the team"
+        },
+        "promotions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Promotion"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "Promotion": {
+      "type": "object",
+      "description": "Promotion event",
+      "required": ["from_role", "to_role", "timestamp"],
+      "properties": {
+        "from_role": {
+          "type": "string"
+        },
+        "to_role": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "reason": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "RetirementCriteria": {
+      "type": "object",
+      "description": "Agent retirement criteria and legacy",
+      "properties": {
+        "eligible": {
+          "type": "boolean"
+        },
+        "retirement_criteria": {
+          "type": "object",
+          "properties": {
+            "min_age_hours": {
+              "type": "integer",
+              "default": 8760,
+              "description": "Minimum age in hours (default: 1 year)"
+            },
+            "min_tasks_completed": {
+              "type": "integer",
+              "default": 1000
+            },
+            "fitness_below_threshold": {
+              "type": "number",
+              "default": 0.3,
+              "minimum": 0,
+              "maximum": 1
+            }
+          }
+        },
+        "legacy": {
+          "$ref": "#/definitions/AgentLegacy"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AgentLegacy": {
+      "type": "object",
+      "description": "Agent's legacy after retirement",
+      "properties": {
+        "knowledge_transferred": {
+          "type": "boolean"
+        },
+        "offspring_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "contributions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "SwarmConfig": {
+      "type": "object",
+      "description": "Swarm intelligence configuration - PSO, ACO, emergent behavior (v0.3.6 Revolutionary Feature)",
+      "properties": {
+        "swarm_id": {
+          "type": "string"
+        },
+        "swarm_type": {
+          "type": "string",
+          "enum": ["exploration", "optimization", "problem-solving", "defense"],
+          "description": "Type of swarm behavior"
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "swarm_size": {
+              "type": "integer",
+              "minimum": 10,
+              "description": "Number of agents in swarm"
+            },
+            "communication_radius": {
+              "type": "integer",
+              "description": "Communication range between agents"
+            },
+            "exploration_rate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Balance between exploration and exploitation"
+            },
+            "convergence_threshold": {
+              "type": "number",
+              "description": "Threshold for swarm convergence"
+            }
+          }
+        },
+        "behavior_rules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "rule_name": {
+                "type": "string"
+              },
+              "condition": {
+                "type": "string",
+                "description": "Condition expression"
+              },
+              "action": {
+                "type": "string",
+                "description": "Action to take when condition met"
+              }
+            }
+          }
+        },
+        "emergent_behavior": {
+          "type": "object",
+          "description": "Observed emergent behaviors",
+          "properties": {
+            "observed_patterns": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "collective_intelligence": {
+              "type": "number",
+              "description": "Measured collective intelligence score"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "CollectiveMemory": {
+      "type": "object",
+      "description": "Collective memory and knowledge sharing across agents (v0.3.6 Revolutionary Feature)",
+      "properties": {
+        "knowledge_graph": {
+          "type": "object",
+          "description": "Shared knowledge graph",
+          "properties": {
+            "nodes": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": ["concept", "skill", "experience", "pattern", "heuristic"]
+                  },
+                  "data": {
+                    "type": "object"
+                  }
+                }
+              }
+            },
+            "edges": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "from": {
+                    "type": "string"
+                  },
+                  "to": {
+                    "type": "string"
+                  },
+                  "relationship": {
+                    "type": "string",
+                    "enum": ["relates_to", "depends_on", "derives_from", "conflicts_with"]
+                  },
+                  "weight": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "shared_experiences": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "experience_id": {
+                "type": "string"
+              },
+              "agent_did": {
+                "type": "string",
+                "description": "Agent who had the experience"
+              },
+              "timestamp": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "context": {
+                "type": "object"
+              },
+              "outcome": {
+                "type": "object"
+              },
+              "lessons_learned": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "skill_transfer": {
+          "type": "object",
+          "description": "Skill transfer mechanism",
+          "properties": {
+            "available_skills": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "skill_name": {
+                    "type": "string"
+                  },
+                  "source_agent_did": {
+                    "type": "string"
+                  },
+                  "proficiency_level": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "transfer_cost": {
+                    "type": "number",
+                    "description": "Cost in task-tokens to learn this skill"
+                  }
+                }
+              }
+            },
+            "transfer_history": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "timestamp": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "from_agent_did": {
+                    "type": "string"
+                  },
+                  "to_agent_did": {
+                    "type": "string"
+                  },
+                  "skill_name": {
+                    "type": "string"
+                  },
+                  "success": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "collective_insights": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "insight_id": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "contributing_agents": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "confidence": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "validated": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "TimeTravel": {
+      "type": "object",
+      "description": "Time-travel debugging with checkpoints and timeline branching (v0.3.6 Revolutionary Feature)",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "checkpoints": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["checkpoint_id", "timestamp"],
+            "properties": {
+              "checkpoint_id": {
+                "type": "string"
+              },
+              "timestamp": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "state_snapshot": {
+                "type": "object",
+                "description": "Full agent state at this checkpoint"
+              },
+              "metadata": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  },
+                  "tags": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "automatic": {
+                    "type": "boolean",
+                    "description": "Whether checkpoint was auto-created"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "replay": {
+          "type": "object",
+          "description": "Replay configuration",
+          "properties": {
+            "active": {
+              "type": "boolean"
+            },
+            "from_checkpoint": {
+              "type": "string",
+              "description": "Checkpoint ID to replay from"
+            },
+            "to_checkpoint": {
+              "type": "string",
+              "description": "Checkpoint ID to replay to"
+            },
+            "speed": {
+              "type": "number",
+              "minimum": 0.1,
+              "maximum": 100,
+              "default": 1,
+              "description": "Replay speed multiplier"
+            }
+          }
+        },
+        "branching": {
+          "type": "object",
+          "description": "Timeline branching for alternate realities",
+          "properties": {
+            "current_timeline": {
+              "type": "string"
+            },
+            "branches": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "branch_id": {
+                    "type": "string"
+                  },
+                  "branched_from_checkpoint": {
+                    "type": "string"
+                  },
+                  "created_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "active": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "diff": {
+          "type": "object",
+          "description": "Diff between checkpoints or timelines",
+          "properties": {
+            "checkpoint_a": {
+              "type": "string"
+            },
+            "checkpoint_b": {
+              "type": "string"
+            },
+            "changes": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "description": "JSON path to changed field"
+                  },
+                  "old_value": {},
+                  "new_value": {},
+                  "change_type": {
+                    "type": "string",
+                    "enum": ["added", "removed", "modified"]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "MetaLearning": {
+      "type": "object",
+      "description": "Meta-learning: self-analysis, self-modification, teaching (v0.3.6 Revolutionary Feature)",
+      "properties": {
+        "self_analysis": {
+          "type": "object",
+          "description": "Agent's ability to analyze its own performance",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "analysis_frequency": {
+              "type": "string",
+              "enum": ["per-task", "hourly", "daily", "weekly", "on-demand"],
+              "default": "daily"
+            },
+            "metrics_tracked": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Which metrics to track (accuracy, speed, token usage, etc.)"
+            },
+            "performance_trends": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "metric": {
+                    "type": "string"
+                  },
+                  "trend": {
+                    "type": "string",
+                    "enum": ["improving", "stable", "declining"]
+                  },
+                  "change_rate": {
+                    "type": "number"
+                  }
+                }
+              }
+            },
+            "bottlenecks_identified": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "bottleneck_type": {
+                    "type": "string"
+                  },
+                  "severity": {
+                    "type": "string",
+                    "enum": ["low", "medium", "high", "critical"]
+                  },
+                  "suggested_fix": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "self_modification": {
+          "type": "object",
+          "description": "Agent's ability to modify its own behavior",
+          "properties": {
+            "allowed": {
+              "type": "boolean",
+              "default": false,
+              "description": "Whether agent is allowed to modify itself"
+            },
+            "approval_required": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether human approval is required"
+            },
+            "modification_history": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "timestamp": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "modification_type": {
+                    "type": "string",
+                    "enum": ["prompt-update", "parameter-tuning", "capability-addition", "capability-removal", "workflow-change"]
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string"
+                  },
+                  "approved": {
+                    "type": "boolean"
+                  },
+                  "result": {
+                    "type": "object",
+                    "properties": {
+                      "success": {
+                        "type": "boolean"
+                      },
+                      "performance_impact": {
+                        "type": "string",
+                        "enum": ["positive", "neutral", "negative"]
+                      },
+                      "rollback_checkpoint": {
+                        "type": "string",
+                        "description": "Checkpoint to rollback to if modification fails"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "constraints": {
+              "type": "object",
+              "description": "Constraints on self-modification",
+              "properties": {
+                "allowed_modifications": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "forbidden_modifications": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "max_modifications_per_day": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        },
+        "teaching": {
+          "type": "object",
+          "description": "Agent's ability to teach other agents",
+          "properties": {
+            "can_teach": {
+              "type": "boolean",
+              "default": false
+            },
+            "teachable_skills": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "teaching_style": {
+              "type": "string",
+              "enum": ["demonstration", "explanation", "guided-practice", "assessment", "mixed"],
+              "default": "mixed"
+            },
+            "students": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "student_did": {
+                    "type": "string"
+                  },
+                  "skill_being_taught": {
+                    "type": "string"
+                  },
+                  "progress": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "started_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "estimated_completion": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                }
+              }
+            },
+            "teaching_effectiveness": {
+              "type": "object",
+              "description": "Metrics on teaching effectiveness",
+              "properties": {
+                "students_taught": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "success_rate": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "average_time_to_mastery": {
+                  "type": "number",
+                  "description": "Average hours for student to master skill"
+                }
+              }
+            }
+          }
+        },
+        "learning_strategies": {
+          "type": "object",
+          "description": "Agent's learning strategies",
+          "properties": {
+            "preferred_learning_style": {
+              "type": "string",
+              "enum": ["experiential", "observational", "instructional", "collaborative", "self-directed"]
+            },
+            "adaptation_rate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "How quickly agent adapts to new information (0=slow, 1=fast)"
+            },
+            "knowledge_consolidation": {
+              "type": "string",
+              "enum": ["immediate", "periodic", "on-demand"],
+              "description": "When agent consolidates learned knowledge"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
     }
   }
 }
