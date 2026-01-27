@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ossa-sdk"
-version = "0.3.5"
+version = "0.3.6"
 description = "Python SDK for OSSA (Open Standard for Scalable Agents) - Build, validate, and execute AI agents"
 readme = "README.md"
 license = "Apache-2.0"
