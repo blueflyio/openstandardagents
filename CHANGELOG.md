@@ -6,12 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.3.6] - 2026-01-23
 ### Added
-- **Token Efficiency Framework**: Comprehensive cost optimization achieving 70-95% savings
+- **Token Efficiency Framework**: Comprehensive cost optimization with significant token savings
   - Context Management: Semantic pruning, summarization, and caching strategies
   - Prompt Caching: Provider-specific caching (Anthropic, OpenAI) with 90% savings on repeated context
   - Token Budgets: Hard limits with soft/hard/adaptive enforcement
   - Tool Output Limits: Prevent excessive tool outputs with smart truncation
-  - Knowledge Graph Efficiency: 98% token reduction through structured code indexing
+  - Knowledge Graph Efficiency: Significant token reduction through structured code indexing
   - Checkpoint Compression: Delta-based state compression for long-running agents
 - **Composite Identity Support**: GitLab Duo-inspired identity merging (vendor-neutral)
   - Primary identity (service account) + secondary identity (human user)
@@ -25,14 +25,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Ratings and documentation links
 - **Efficiency Tier System**: Declarative optimization levels
   - Premium: No optimization (full quality)
-  - Standard: Basic pruning (30% savings)
-  - Economy: Aggressive optimization (95% savings)
+  - Standard: Basic pruning (moderate savings)
+  - Economy: Aggressive optimization (maximum savings)
   - Custom: Explicit configuration
 - **Knowledge Graph Integration**: MCP-based codebase understanding
   - Provider-agnostic (GitLab, GitHub, local, custom)
   - Index types: files, classes, functions, dependencies, relationships
   - Query capabilities: semantic search, dependency traversal, code navigation
-  - 98% token reduction vs full codebase inclusion
+  - Significant token reduction vs full codebase inclusion
 - **Version-Specific Schema Naming**: Schema files now use version-specific names (ossa-{version}.schema.json)
 
 ### Changed
@@ -49,7 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **Completion Signals**: Standardized agent termination conditions enabling intelligent workflow orchestration
 - **Session Checkpointing**: Resilient, resumable agent state for long-running tasks and cost optimization
-- **Mixture of Experts (MoE)**: Agent-controlled expert model selection for intelligent routing (25-30% cost reduction)
+- **Mixture of Experts (MoE)**: Agent-controlled expert model selection for intelligent routing and cost optimization
 - **BAT Framework**: Best Available Technology selection with multi-dimensional criteria
 - **MOE Metrics**: Measure of Effectiveness framework with primary, secondary, and operational categories
 - **Flow-Based Orchestration**: Native Flow kind support with state machines and transitions (100% compatibility with LangGraph, Temporal, n8n)

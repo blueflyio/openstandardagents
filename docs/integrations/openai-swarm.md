@@ -46,7 +46,7 @@ This guide shows how to migrate Swarm agents to OSSA while gaining enterprise ca
 | **Code-based config** | Hard to version control | Declarative YAML/JSON |
 | **No authentication** | Manual auth implementation | Built-in OAuth2, JWT, etc. |
 | **No observability** | Manual metrics/tracing | Built-in OpenTelemetry |
-| **No cost controls** | Unlimited token usage | Token efficiency (95% savings) |
+| **No cost controls** | Unlimited token usage | Token efficiency optimization |
 | **No governance** | Manual compliance | Built-in policies |
 | **Limited deployment** | Local/custom only | Kubernetes, Docker, Serverless |
 
@@ -65,7 +65,7 @@ This guide shows how to migrate Swarm agents to OSSA while gaining enterprise ca
 - Enforce security and compliance policies
 
 **For Business**:
-- Reduce LLM costs by up to 95%
+- Optimize LLM costs through intelligent token management
 - Meet compliance requirements (SOC 2, GDPR, HIPAA)
 - Scale agents across multiple providers
 - Avoid vendor lock-in
@@ -463,7 +463,7 @@ spec:
 spec:
   token_efficiency:
     enabled: true
-    target_savings: 0.7  # 70% reduction
+    target_savings: 0.7  # Optimize token usage
     context_management:
       strategy: adaptive
       pruning:
@@ -877,7 +877,7 @@ capabilities:
 spec:
   token_efficiency:
     enabled: true
-    target_savings: 0.7  # 70% reduction
+    target_savings: 0.7  # Optimize token usage
     context_management:
       pruning:
         enabled: true
