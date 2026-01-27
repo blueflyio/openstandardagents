@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://openstandardagents.org/schemas/v0.3/manifest.json",
   "title": "OSSA v0.3.x Agent Manifest Schema",
-  "description": "Open Standard for Software Agents (OSSA) v0.3.x series - The Next OpenAPI for Software Agents. A specification standard (not a framework) that defines contracts/metadata for production agent systems. v0.3.6 adds token efficiency (95% cost savings), GitLab Duo integration, and knowledge graph support. v0.3.6 adds revolutionary features: DID-based identity, agent genetics & breeding, lifecycle stages, economics & marketplace, and team collaboration.",
+  "description": "Open Standard for Software Agents (OSSA) v0.3.x series - The Next OpenAPI for Software Agents. A specification standard (not a framework) that defines contracts/metadata for production agent systems. v0.3.6 adds token efficiency (95% cost savings), GitLab Duo integration, knowledge graph support, DID-based identity, agent genetics & breeding, lifecycle stages, economics & marketplace, and team collaboration.",
   "type": "object",
   "required": [
     "apiVersion",

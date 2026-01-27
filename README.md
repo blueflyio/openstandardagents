@@ -234,7 +234,7 @@ const agent: OssaAgent = {
 
 ## What's New in v0.3.6
 
-### Revolutionary Features
+### New Features
 
 1. **Decentralized Identity** - W3C DID-based agent identities with verifiable credentials
 2. **Agent Genetics** - Breed agents by combining traits from successful parents
@@ -245,7 +245,7 @@ const agent: OssaAgent = {
 
 ### Schema Enhancements
 
-- **Schema Size**: 419KB → 441KB (+5% with revolutionary features)
+- **Schema Size**: 419KB → 441KB (+5%)
 - **New Definitions**: 5 major new types
 - **Example Manifests**: 4 comprehensive examples showcasing new features
 - **Validation Tools**: New linter and validator with 7 rule categories
