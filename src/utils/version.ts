@@ -54,6 +54,23 @@ function findPackageJson(startDir: string): string | null {
 }
 
 /**
+ * Find .version.json by searching upward from a starting directory
+ */
+function findVersionJson(startDir: string): string | null {
+  let current = startDir;
+  for (let i = 0; i < 10; i++) {
+    const candidate = path.resolve(current, '.version.json');
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+    const parent = path.dirname(current);
+    if (parent === current) break;
+    current = parent;
+  }
+  return null;
+}
+
+/**
  * Parse version string into components
  */
 function parseVersion(
@@ -79,8 +96,9 @@ function parseVersion(
  *
  * Strategy order:
  * 1. OSSA_VERSION environment variable (for CI/CD overrides)
- * 2. package.json from process.cwd()
- * 3. package.json from __dirname (CommonJS)
+ * 2. package.json from module's installation directory (npm install -g)
+ * 3. package.json from process.cwd() (local development)
+ * 4. package.json from __dirname (CommonJS/Jest)
  *
  * THROWS if no version can be determined - we NEVER use fallback hardcoded versions.
  */
@@ -90,27 +108,44 @@ function readVersionFromPackageJson(): string {
     return process.env.OSSA_VERSION;
   }
 
-  // Strategy 2: From process.cwd() - most common case
+  // Strategy 2: From module's installation directory (CRITICAL for npm install -g)
+  // When installed globally, __dirname or import.meta.url points to node_modules/@bluefly/openstandardagents/dist
   try {
-    const pkgPath = findPackageJson(process.cwd());
+    // Try to find package.json from this file's location (works for global install)
+    const moduleDir = typeof __dirname !== 'undefined'
+      ? __dirname
+      : path.dirname(new URL(import.meta.url).pathname);
+    const pkgPath = findPackageJson(moduleDir);
     if (pkgPath) {
       const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
-      if (pkg.version && pkg.version !== '0.3.3') {
+      if (pkg.version && pkg.name === '@bluefly/openstandardagents') {
         return pkg.version;
       }
-      // If version is 0.3.3 placeholder, continue to next strategy
     }
   } catch {
     // Continue to next strategy
   }
 
-  // Strategy 3: From __dirname (CommonJS/Jest)
+  // Strategy 3: From process.cwd() - local development
+  try {
+    const pkgPath = findPackageJson(process.cwd());
+    if (pkgPath) {
+      const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+      if (pkg.version && pkg.name === '@bluefly/openstandardagents') {
+        return pkg.version;
+      }
+    }
+  } catch {
+    // Continue to next strategy
+  }
+
+  // Strategy 4: From __dirname (CommonJS/Jest)
   if (typeof __dirname !== 'undefined') {
     try {
       const pkgPath = findPackageJson(__dirname);
       if (pkgPath) {
         const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
-        if (pkg.version && pkg.version !== '0.3.3') {
+        if (pkg.version && pkg.name === '@bluefly/openstandardagents') {
           return pkg.version;
         }
       }
@@ -119,7 +154,23 @@ function readVersionFromPackageJson(): string {
     }
   }
 
-  // Strategy 4: Check for spec directories to infer version
+  // Strategy 5: Read from .version.json (bundled with npm package)
+  try {
+    const moduleDir = typeof __dirname !== 'undefined'
+      ? __dirname
+      : path.dirname(new URL(import.meta.url).pathname);
+    const versionJsonPath = findVersionJson(moduleDir);
+    if (versionJsonPath) {
+      const versionData = JSON.parse(fs.readFileSync(versionJsonPath, 'utf-8'));
+      if (versionData.current) {
+        return versionData.current;
+      }
+    }
+  } catch {
+    // Continue
+  }
+
+  // Strategy 6: Check for spec directories to infer version
   // Look for existing schema directories and use the latest
   try {
     const specDir = path.resolve(process.cwd(), 'spec');

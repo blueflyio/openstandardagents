@@ -76,6 +76,7 @@
     "README.md",
     "LICENSE",
     "CHANGELOG.md",
+    ".version.json",
     ".env.local",
     ".devfile.yaml",
     ".wiki-config.json",
