@@ -272,6 +272,9 @@
   "engines": {
     "node": ">=20.0.0"
   },
+  "workspaces": [
+    "packages/*"
+  ],
   "lint-staged": {
     "src/**/*.{ts,tsx}": [
       "eslint --fix",
