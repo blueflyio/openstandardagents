@@ -4,7 +4,7 @@
 # in a multi-agent security system. It implements the routing rules
 # for the security-scanner, dependency-healer, and incident-responder agents.
 
-apiVersion: ossa/v0.3.5
+apiVersion: ossa/v0.3.6
 kind: Workflow
 metadata:
   name: security-workflow-routing
