@@ -1,0 +1,40 @@
+{
+  "name": "@ossa/typescript-client",
+  "version": "0.3.3",
+  "description": "TypeScript reference implementation for OSSA API",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "dev": "tsc --watch",
+    "example": "tsx examples/basic-usage.ts",
+    "example:search": "tsx examples/search-agents.ts",
+    "example:publish": "tsx examples/publish-agent.ts",
+    "example:messaging": "tsx examples/messaging.ts"
+  },
+  "keywords": [
+    "ossa",
+    "agents",
+    "ai",
+    "sdk",
+    "typescript"
+  ],
+  "author": "OSSA Community",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

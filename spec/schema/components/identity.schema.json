@@ -1,0 +1,126 @@
+{
+  "$id": "https://ossa.dev/schema/components/identity.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "OSSA Identity Component",
+  "description": "Reusable identity block for OSSA agent instances",
+  "definitions": {
+    "CredentialSource": {
+      "type": "object",
+      "required": ["type", "ref"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["secretRef", "workloadIdentity", "external", "env"],
+          "description": "Type of credential source"
+        },
+        "ref": {
+          "type": "string",
+          "description": "Reference string (e.g., secrets://scm/github/token)"
+        },
+        "format": {
+          "type": "string",
+          "enum": ["json", "text", "base64"],
+          "description": "Format hint for the secret value"
+        }
+      },
+      "additionalProperties": false
+    },
+    "Principal": {
+      "type": "object",
+      "required": ["category", "mode", "credentialSource", "policy"],
+      "properties": {
+        "category": {
+          "type": "string",
+          "enum": ["scm", "cloud", "database", "service"],
+          "description": "Abstract provider category"
+        },
+        "mode": {
+          "type": "string",
+          "enum": ["app", "service_account", "user", "workload_identity"],
+          "description": "Mode of operation"
+        },
+        "credentialSource": {
+          "$ref": "#/definitions/CredentialSource"
+        },
+        "policy": {
+          "type": "object",
+          "required": ["permissions"],
+          "properties": {
+            "permissions": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Abstract permission verbs"
+            },
+            "scope": {
+              "type": "object",
+              "properties": {
+                "resources": { "type": "array", "items": { "type": "string" } },
+                "paths": { "type": "array", "items": { "type": "string" } },
+                "namespaces": { "type": "array", "items": { "type": "string" } }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "controls": {
+          "type": "object",
+          "properties": {
+            "rotationPolicy": {
+              "type": "object",
+              "properties": {
+                "type": { "type": "string", "enum": ["managed", "automatic", "manual"] },
+                "intervalDays": { "type": "integer" }
+              }
+            },
+            "auditLogging": { "type": "boolean" },
+            "envBindings": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "type": "object",
+  "properties": {
+    "instance_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for this agent instance"
+    },
+    "interaction_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for this interaction/session"
+    },
+    "parent_instance_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Parent agent instance ID for multi-agent scenarios"
+    },
+    "workflow_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Workflow execution ID"
+    },
+    "trace_id": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{32}$",
+      "description": "W3C Trace ID for distributed tracing"
+    },
+    "span_id": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{16}$",
+      "description": "W3C Span ID for distributed tracing"
+    },
+    "tenant_id": {
+      "type": "string",
+      "description": "Multi-tenant environment identifier"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Initiating user identifier"
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,120 @@
+apiVersion: ossa/v0.3.6
+kind: Agent
+metadata:
+  name: secure-agent
+  description: Agent with encrypted state storage across multiple providers
+spec:
+  model:
+    provider: openai
+    name: gpt-4
+  state:
+    storage:
+      provider: redis
+      config:
+        url: redis://localhost:6379
+        db: 0
+    encryption:
+      enabled: true
+      provider: aws-kms
+      config:
+        key_id: arn:aws:kms:us-east-1:123456789:key/abc-def-ghi
+        region: us-east-1
+      fields:
+        - conversation_history
+        - user_context
+        - api_credentials
+      rotation:
+        enabled: true
+        interval_days: 90
+        
+---
+apiVersion: ossa/v0.3.6
+kind: Agent
+metadata:
+  name: vault-encrypted-agent
+  description: Agent using HashiCorp Vault for encryption
+spec:
+  model:
+    provider: anthropic
+    name: claude-3-opus-20240229
+  state:
+    storage:
+      provider: postgres
+      config:
+        connection_string: ${DATABASE_URL}
+    encryption:
+      enabled: true
+      provider: vault
+      config:
+        address: https://vault.example.com
+        namespace: production
+        mount_path: transit
+        key_name: agent-encryption-key
+        auth:
+          method: kubernetes
+          role: agent-service
+      fields:
+        - "*"  # Encrypt all fields
+      
+---
+apiVersion: ossa/v0.3.6
+kind: Agent
+metadata:
+  name: gcp-kms-agent
+  description: Agent using Google Cloud KMS
+spec:
+  model:
+    provider: google
+    name: gemini-pro
+  state:
+    storage:
+      provider: firestore
+      config:
+        project_id: my-project
+        collection: agent-state
+    encryption:
+      enabled: true
+      provider: gcp-kms
+      config:
+        project_id: my-project
+        location: us-central1
+        key_ring: agent-keys
+        key_name: state-encryption
+        service_account_key: ${GCP_SA_KEY}
+      fields:
+        - sensitive_data
+        - pii_fields
+      
+---
+apiVersion: ossa/v0.3.6
+kind: Agent
+metadata:
+  name: azure-keyvault-agent
+  description: Agent using Azure Key Vault
+spec:
+  model:
+    provider: azure
+    name: gpt-4
+  state:
+    storage:
+      provider: cosmosdb
+      config:
+        endpoint: https://myaccount.documents.azure.com
+        database: agents
+        container: state
+    encryption:
+      enabled: true
+      provider: azure-keyvault
+      config:
+        vault_url: https://myvault.vault.azure.net
+        key_name: agent-encryption-key
+        tenant_id: ${AZURE_TENANT_ID}
+        client_id: ${AZURE_CLIENT_ID}
+        client_secret: ${AZURE_CLIENT_SECRET}
+      fields:
+        - conversation_history
+        - user_preferences
+      rotation:
+        enabled: true
+        interval_days: 30
+        notify_before_days: 7

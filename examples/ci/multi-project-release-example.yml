@@ -1,0 +1,401 @@
+# Multi-Project Release Pipeline Example
+# Demonstrates how to use the multi-project-release component
+# for orchestrating releases across multiple OSSA agent projects
+
+# ============================================================================
+# Example 1: Basic Multi-Project Release
+# ============================================================================
+# Discovers all agents using default pattern and releases them in dependency order
+
+include:
+  - component: gitlab.com/blueflyio/openstandardagents/multi-project-release@v0.3.x
+
+stages:
+  - .pre
+  - deploy
+  - .post
+
+# Trigger multi-project release with defaults
+release:all-agents:
+  trigger:
+    include:
+      - component: gitlab.com/blueflyio/openstandardagents/multi-project-release@v0.3.x
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+
+# ============================================================================
+# Example 2: Dry Run for Testing
+# ============================================================================
+# Test the release pipeline without actually deploying
+
+test:release-plan:
+  trigger:
+    include:
+      - component: gitlab.com/blueflyio/openstandardagents/multi-project-release@v0.3.x
+        inputs:
+          dry_run: true
+          manifest_pattern: '.agents/**/*.ossa.yaml'
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: manual
+
+# ============================================================================
+# Example 3: Production Release with Custom Configuration
+# ============================================================================
+# Full production release with rollback enabled and notifications
+
+release:production:
+  trigger:
+    include:
+      - component: gitlab.com/blueflyio/openstandardagents/multi-project-release@v0.3.x
+        inputs:
+          manifest_pattern: '.agents/**/*.ossa.yaml'
+          release_type: 'minor'
+          dry_run: false
+          parallel_batches: true
+          batch_delay: 60
+          fail_fast: true
+          enable_rollback: true
+          rollback_strategy: 'batch'
+          notify_on_failure: true
+          notification_channel: $SLACK_WEBHOOK_URL
+          pipeline_timeout: 180
+          batch_timeout: 45
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main" && $CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/
+
+# ============================================================================
+# Example 4: Explicit Manifest List
+# ============================================================================
+# Release specific agents only (bypassing discovery)
+
+release:critical-agents:
+  trigger:
+    include:
+      - component: gitlab.com/blueflyio/openstandardagents/multi-project-release@v0.3.x
+        inputs:
+          manifest_files:
+            - '.agents/auth-agent.ossa.yaml'
+            - '.agents/api-gateway-agent.ossa.yaml'
+            - '.agents/monitoring-agent.ossa.yaml'
+          parallel_batches: false
+          fail_fast: true
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web"
+      when: manual
+
+# ============================================================================
+# Example 5: Patch Release with Immediate Rollback
+# ============================================================================
+# Quick patch release with aggressive rollback strategy
+
+release:hotfix:
+  trigger:
+    include:
+      - component: gitlab.com/blueflyio/openstandardagents/multi-project-release@v0.3.x
+        inputs:
+          release_type: 'patch'
+          parallel_batches: true
+          batch_delay: 15
+          fail_fast: true
+          enable_rollback: true
+          rollback_strategy: 'immediate'
+          batch_timeout: 20
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /^hotfix\//
+  environment:
+    name: production
+    action: prepare
+
+# ============================================================================
+# Example 6: Staged Release (Development → Staging → Production)
+# ============================================================================
+# Multi-stage release pipeline with manual approvals
+
+stages:
+  - validate
+  - dev-release
+  - staging-release
+  - prod-release
+
+validate:manifests:
+  stage: validate
+  image: node:20-alpine
+  before_script:
+    - npm install -g @bluefly/openstandardagents@latest
+  script:
+    - ossa dependencies validate '.agents/**/*.ossa.yaml'
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+release:development:
+  stage: dev-release
+  trigger:
+    include:
+      - component: gitlab.com/blueflyio/openstandardagents/multi-project-release@v0.3.x
+        inputs:
+          manifest_pattern: '.agents/**/*.ossa.yaml'
+          release_type: 'auto'
+          parallel_batches: true
+          fail_fast: false
+          enable_rollback: false
+  environment:
+    name: development
+  rules:
+    - if: $CI_COMMIT_BRANCH == "development"
+
+release:staging:
+  stage: staging-release
+  trigger:
+    include:
+      - component: gitlab.com/blueflyio/openstandardagents/multi-project-release@v0.3.x
+        inputs:
+          manifest_pattern: '.agents/**/*.ossa.yaml'
+          release_type: 'auto'
+          parallel_batches: true
+          batch_delay: 30
+          fail_fast: true
+          enable_rollback: true
+          rollback_strategy: 'batch'
+  environment:
+    name: staging
+    on_stop: rollback:staging
+  needs:
+    - release:development
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
+      when: manual
+
+release:production:
+  stage: prod-release
+  trigger:
+    include:
+      - component: gitlab.com/blueflyio/openstandardagents/multi-project-release@v0.3.x
+        inputs:
+          manifest_pattern: '.agents/**/*.ossa.yaml'
+          release_type: 'auto'
+          parallel_batches: true
+          batch_delay: 60
+          fail_fast: true
+          enable_rollback: true
+          rollback_strategy: 'immediate'
+          notify_on_failure: true
+          notification_channel: $SLACK_WEBHOOK_URL
+          pipeline_timeout: 180
+  environment:
+    name: production
+    on_stop: rollback:production
+  needs:
+    - release:staging
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
+
+# Manual rollback jobs
+rollback:staging:
+  stage: staging-release
+  trigger:
+    include:
+      - component: gitlab.com/blueflyio/openstandardagents/multi-project-release@v0.3.x
+        inputs:
+          manifest_pattern: '.agents/**/*.ossa.yaml'
+          enable_rollback: true
+          rollback_strategy: 'immediate'
+  environment:
+    name: staging
+    action: stop
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
+      when: manual
+
+rollback:production:
+  stage: prod-release
+  trigger:
+    include:
+      - component: gitlab.com/blueflyio/openstandardagents/multi-project-release@v0.3.x
+        inputs:
+          manifest_pattern: '.agents/**/*.ossa.yaml'
+          enable_rollback: true
+          rollback_strategy: 'immediate'
+  environment:
+    name: production
+    action: stop
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
+
+# ============================================================================
+# Example 7: Canary Release Strategy
+# ============================================================================
+# Release to a small subset first, then full rollout
+
+release:canary:
+  stage: deploy
+  trigger:
+    include:
+      - component: gitlab.com/blueflyio/openstandardagents/multi-project-release@v0.3.x
+        inputs:
+          manifest_files:
+            - '.agents/canary-test-agent.ossa.yaml'
+          parallel_batches: false
+          fail_fast: true
+          enable_rollback: true
+          rollback_strategy: 'immediate'
+  environment:
+    name: production/canary
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+
+release:full-rollout:
+  stage: deploy
+  trigger:
+    include:
+      - component: gitlab.com/blueflyio/openstandardagents/multi-project-release@v0.3.x
+        inputs:
+          manifest_pattern: '.agents/**/*.ossa.yaml'
+          parallel_batches: true
+          batch_delay: 30
+          fail_fast: true
+  environment:
+    name: production
+  needs:
+    - release:canary
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
+  allow_failure: false
+
+# ============================================================================
+# Example 8: Scheduled Nightly Releases
+# ============================================================================
+# Automated nightly release to development environment
+
+release:nightly:
+  trigger:
+    include:
+      - component: gitlab.com/blueflyio/openstandardagents/multi-project-release@v0.3.x
+        inputs:
+          manifest_pattern: '.agents/**/*.ossa.yaml'
+          release_type: 'auto'
+          parallel_batches: true
+          fail_fast: false
+          enable_rollback: false
+  environment:
+    name: development/nightly
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULE_TYPE == "nightly"
+  allow_failure: true
+
+# ============================================================================
+# Example 9: Dependency-Specific Release
+# ============================================================================
+# Release only agents affected by a specific dependency change
+
+release:affected-by-auth-change:
+  trigger:
+    include:
+      - component: gitlab.com/blueflyio/openstandardagents/multi-project-release@v0.3.x
+        inputs:
+          manifest_pattern: '.agents/**/*.ossa.yaml'
+          # Additional filtering would be done by the component
+          parallel_batches: true
+          fail_fast: true
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - '.agents/auth-agent.ossa.yaml'
+      when: manual
+
+# ============================================================================
+# Example 10: Custom Pipeline with Pre/Post Hooks
+# ============================================================================
+# Add custom validation and notification stages around the release
+
+stages:
+  - pre-release
+  - release
+  - post-release
+
+pre-release:notify:
+  stage: pre-release
+  image: alpine:latest
+  script:
+    - |
+      curl -X POST $SLACK_WEBHOOK_URL \
+        -H "Content-Type: application/json" \
+        -d '{"text":"🚀 Starting multi-project release"}'
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+
+pre-release:health-check:
+  stage: pre-release
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache curl
+  script:
+    - |
+      echo "🏥 Checking health of production environment..."
+      curl -f https://api.example.com/health || exit 1
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+
+release:with-hooks:
+  stage: release
+  trigger:
+    include:
+      - component: gitlab.com/blueflyio/openstandardagents/multi-project-release@v0.3.x
+        inputs:
+          manifest_pattern: '.agents/**/*.ossa.yaml'
+          parallel_batches: true
+          fail_fast: true
+          enable_rollback: true
+          notify_on_failure: true
+          notification_channel: $SLACK_WEBHOOK_URL
+  needs:
+    - pre-release:notify
+    - pre-release:health-check
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+
+post-release:verify:
+  stage: post-release
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache curl jq
+  script:
+    - |
+      echo "✅ Verifying release deployment..."
+
+      # Check all agents are responding
+      AGENTS=$(cat .agents/**/*.ossa.yaml | grep "name:" | awk '{print $2}')
+
+      for agent in $AGENTS; do
+        echo "Checking ${agent}..."
+        curl -f "https://api.example.com/agents/${agent}/health" || exit 1
+      done
+
+      echo "✅ All agents healthy"
+  needs:
+    - release:with-hooks
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+
+post-release:notify:
+  stage: post-release
+  image: alpine:latest
+  script:
+    - |
+      if [ "$CI_JOB_STATUS" == "success" ]; then
+        MESSAGE="✅ Multi-project release completed successfully"
+      else
+        MESSAGE="❌ Multi-project release failed"
+      fi
+
+      curl -X POST $SLACK_WEBHOOK_URL \
+        -H "Content-Type: application/json" \
+        -d "{\"text\":\"${MESSAGE}\"}"
+  needs:
+    - release:with-hooks
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: always

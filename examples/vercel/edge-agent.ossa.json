@@ -1,0 +1,44 @@
+{
+  "apiVersion": "ossa/v0.3",
+  "kind": "Agent",
+  "metadata": {
+    "name": "edge-chat-agent",
+    "version": "1.0.0",
+    "description": "Vercel AI SDK edge runtime agent"
+  },
+  "spec": {
+    "role": "You are a helpful AI assistant running on Vercel Edge.",
+    "llm": {
+      "provider": "openai",
+      "model": "gpt-4",
+      "temperature": 0.7
+    },
+    "tools": []
+  },
+  "extensions": {
+    "vercel_ai": {
+      "enabled": true,
+      "runtime": "edge",
+      "stream": true,
+      "route": "/api/chat",
+      "tools": [
+        {
+          "name": "get_weather",
+          "description": "Get current weather for a location",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "location": {
+                "type": "string",
+                "description": "City name"
+              }
+            },
+            "required": [
+              "location"
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

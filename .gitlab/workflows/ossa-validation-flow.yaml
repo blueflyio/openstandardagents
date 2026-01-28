@@ -1,0 +1,403 @@
+# GitLab Duo Agent Platform - OSSA Validation Flow
+# PUBLIC workflow for orchestrating OSSA validation across multiple stages
+# Documentation: https://docs.gitlab.com/user/duo_agent_platform/flows/
+#
+# Usage: This flow orchestrates the complete OSSA validation workflow:
+# 1. Detect OSSA manifest changes
+# 2. Validate schema compliance
+# 3. Run security checks
+# 4. Generate validation reports
+# 5. Post results to MR
+
+name: ossa-validation-flow
+version: "1.0.0"
+description: |
+  Public workflow for orchestrating OSSA (Open Standard for Software Agents) validation.
+  Provides comprehensive validation pipeline including schema, security, taxonomy, and best practices.
+
+# Flow metadata
+metadata:
+  author: "BlueFly Agents Platform"
+  license: "MIT"
+  tags:
+    - ossa
+    - validation
+    - workflow
+    - agent-platform
+  public: true
+
+# Flow inputs
+inputs:
+  - name: files_changed
+    description: "List of files that changed in the MR/commit"
+    type: array
+    required: true
+
+  - name: schema_version
+    description: "OSSA schema version to validate against"
+    type: string
+    default: "0.3.3"
+    enum:
+      - "0.3.0"
+      - "0.3.1"
+      - "0.3.2"
+      - "0.3.3"
+
+  - name: validation_level
+    description: "Validation strictness level"
+    type: string
+    default: "strict"
+    enum:
+      - "strict"
+      - "normal"
+      - "permissive"
+
+  - name: fail_fast
+    description: "Stop on first validation error"
+    type: boolean
+    default: false
+
+  - name: post_mr_comment
+    description: "Post validation results as MR comment"
+    type: boolean
+    default: true
+
+# Flow outputs
+outputs:
+  - name: validation_result
+    description: "Overall validation result (pass/fail)"
+    type: string
+
+  - name: errors_found
+    description: "Number of validation errors found"
+    type: integer
+
+  - name: warnings_found
+    description: "Number of validation warnings found"
+    type: integer
+
+  - name: report_url
+    description: "URL to detailed validation report"
+    type: string
+
+# Flow steps
+steps:
+  # Step 1: Detect OSSA manifest files
+  - name: detect_ossa_files
+    description: "Detect OSSA manifest files in changed files"
+    agent: ossa-validator
+    action: detect
+    inputs:
+      files: ${{ inputs.files_changed }}
+    outputs:
+      - name: ossa_files
+        description: "List of OSSA manifest files detected"
+
+  # Step 2: Validate schema compliance
+  - name: validate_schema
+    description: "Validate OSSA manifests against schema"
+    agent: ossa-validator
+    action: validate_schema
+    depends_on:
+      - detect_ossa_files
+    inputs:
+      files: ${{ steps.detect_ossa_files.outputs.ossa_files }}
+      schema_version: ${{ inputs.schema_version }}
+      validation_level: ${{ inputs.validation_level }}
+    outputs:
+      - name: schema_errors
+        description: "Schema validation errors"
+      - name: schema_warnings
+        description: "Schema validation warnings"
+    on_failure:
+      action: continue  # Continue to next step even if schema validation fails
+      if: ${{ inputs.fail_fast == false }}
+
+  # Step 3: Validate access tiers
+  - name: validate_access_tiers
+    description: "Validate access tier definitions"
+    agent: ossa-validator
+    action: validate_access_tier
+    depends_on:
+      - detect_ossa_files
+    inputs:
+      files: ${{ steps.detect_ossa_files.outputs.ossa_files }}
+    outputs:
+      - name: tier_errors
+        description: "Access tier validation errors"
+      - name: tier_warnings
+        description: "Access tier validation warnings"
+    on_failure:
+      action: continue
+      if: ${{ inputs.fail_fast == false }}
+
+  # Step 4: Validate separation of duties
+  - name: validate_separation_of_duties
+    description: "Validate separation of duties compliance"
+    agent: ossa-validator
+    action: validate_separation
+    depends_on:
+      - detect_ossa_files
+    inputs:
+      files: ${{ steps.detect_ossa_files.outputs.ossa_files }}
+    outputs:
+      - name: separation_errors
+        description: "Separation of duties errors"
+      - name: separation_warnings
+        description: "Separation of duties warnings"
+    on_failure:
+      action: continue
+      if: ${{ inputs.fail_fast == false }}
+
+  # Step 5: Validate taxonomy classification
+  - name: validate_taxonomy
+    description: "Validate taxonomy classifications"
+    agent: ossa-validator
+    action: validate_taxonomy
+    depends_on:
+      - detect_ossa_files
+    inputs:
+      files: ${{ steps.detect_ossa_files.outputs.ossa_files }}
+    outputs:
+      - name: taxonomy_errors
+        description: "Taxonomy validation errors"
+      - name: taxonomy_warnings
+        description: "Taxonomy validation warnings"
+    on_failure:
+      action: continue
+      if: ${{ inputs.fail_fast == false }}
+
+  # Step 6: Validate security policies
+  - name: validate_security
+    description: "Validate security policies and configurations"
+    agent: ossa-validator
+    action: validate_security
+    depends_on:
+      - detect_ossa_files
+    inputs:
+      files: ${{ steps.detect_ossa_files.outputs.ossa_files }}
+    outputs:
+      - name: security_errors
+        description: "Security validation errors"
+      - name: security_warnings
+        description: "Security validation warnings"
+    on_failure:
+      action: continue
+      if: ${{ inputs.fail_fast == false }}
+
+  # Step 7: Validate best practices
+  - name: validate_best_practices
+    description: "Validate OSSA best practices and conventions"
+    agent: ossa-validator
+    action: validate_best_practices
+    depends_on:
+      - detect_ossa_files
+    inputs:
+      files: ${{ steps.detect_ossa_files.outputs.ossa_files }}
+    outputs:
+      - name: best_practices_errors
+        description: "Best practices errors"
+      - name: best_practices_warnings
+        description: "Best practices warnings"
+    on_failure:
+      action: continue
+      if: ${{ inputs.fail_fast == false }}
+
+  # Step 8: Aggregate results
+  - name: aggregate_results
+    description: "Aggregate validation results from all steps"
+    agent: ossa-validator
+    action: aggregate
+    depends_on:
+      - validate_schema
+      - validate_access_tiers
+      - validate_separation_of_duties
+      - validate_taxonomy
+      - validate_security
+      - validate_best_practices
+    inputs:
+      schema_errors: ${{ steps.validate_schema.outputs.schema_errors }}
+      tier_errors: ${{ steps.validate_access_tiers.outputs.tier_errors }}
+      separation_errors: ${{ steps.validate_separation_of_duties.outputs.separation_errors }}
+      taxonomy_errors: ${{ steps.validate_taxonomy.outputs.taxonomy_errors }}
+      security_errors: ${{ steps.validate_security.outputs.security_errors }}
+      best_practices_errors: ${{ steps.validate_best_practices.outputs.best_practices_errors }}
+      schema_warnings: ${{ steps.validate_schema.outputs.schema_warnings }}
+      tier_warnings: ${{ steps.validate_access_tiers.outputs.tier_warnings }}
+      separation_warnings: ${{ steps.validate_separation_of_duties.outputs.separation_warnings }}
+      taxonomy_warnings: ${{ steps.validate_taxonomy.outputs.taxonomy_warnings }}
+      security_warnings: ${{ steps.validate_security.outputs.security_warnings }}
+      best_practices_warnings: ${{ steps.validate_best_practices.outputs.best_practices_warnings }}
+    outputs:
+      - name: total_errors
+        description: "Total number of validation errors"
+      - name: total_warnings
+        description: "Total number of validation warnings"
+      - name: validation_status
+        description: "Overall validation status (pass/fail)"
+
+  # Step 9: Generate report
+  - name: generate_report
+    description: "Generate detailed validation report"
+    agent: ossa-validator
+    action: generate_report
+    depends_on:
+      - aggregate_results
+    inputs:
+      validation_status: ${{ steps.aggregate_results.outputs.validation_status }}
+      total_errors: ${{ steps.aggregate_results.outputs.total_errors }}
+      total_warnings: ${{ steps.aggregate_results.outputs.total_warnings }}
+      files: ${{ steps.detect_ossa_files.outputs.ossa_files }}
+    outputs:
+      - name: report_markdown
+        description: "Validation report in Markdown format"
+      - name: report_json
+        description: "Validation report in JSON format"
+
+  # Step 10: Post MR comment (if enabled)
+  - name: post_mr_comment
+    description: "Post validation results as MR comment"
+    agent: ossa-validator
+    action: post_comment
+    depends_on:
+      - generate_report
+    condition: ${{ inputs.post_mr_comment == true && env.CI_MERGE_REQUEST_IID != '' }}
+    inputs:
+      report: ${{ steps.generate_report.outputs.report_markdown }}
+      merge_request_iid: ${{ env.CI_MERGE_REQUEST_IID }}
+    on_failure:
+      action: warn  # Warn but don't fail if comment posting fails
+
+  # Step 11: Update Knowledge Graph (GitLab Ultimate)
+  - name: update_knowledge_graph
+    description: "Update GitLab Knowledge Graph with validation results"
+    agent: ossa-validator
+    action: update_kg
+    depends_on:
+      - generate_report
+    condition: ${{ env.GITLAB_FEATURES =~ 'knowledge_graph' }}
+    inputs:
+      files: ${{ steps.detect_ossa_files.outputs.ossa_files }}
+      validation_results: ${{ steps.generate_report.outputs.report_json }}
+    on_failure:
+      action: warn
+
+# Flow error handling
+error_handling:
+  on_error:
+    - action: log
+      message: "OSSA validation flow failed: ${{ error.message }}"
+
+    - action: notify
+      channel: gitlab_comments
+      condition: ${{ inputs.post_mr_comment == true }}
+
+    - action: exit
+      code: 1
+      condition: ${{ inputs.fail_fast == true }}
+
+# Flow retry policy
+retry:
+  max_attempts: 3
+  backoff: exponential
+  backoff_multiplier: 2
+  max_backoff: 60s
+
+# Flow timeout
+timeout: 600s  # 10 minutes
+
+# Flow concurrency
+concurrency:
+  group: ossa-validation-${{ env.CI_MERGE_REQUEST_IID || env.CI_COMMIT_SHA }}
+  cancel_in_progress: true
+
+# Flow caching
+cache:
+  key: ossa-schemas-${{ inputs.schema_version }}
+  paths:
+    - .ossa-cache/schemas/
+  policy: pull-push
+
+# Flow artifacts
+artifacts:
+  - name: validation-report
+    paths:
+      - validation-report.md
+      - validation-report.json
+    when: always
+    expire_in: 30 days
+
+# Flow permissions
+permissions:
+  repository:
+    - read
+  merge_requests:
+    - write  # For posting comments
+  api:
+    - read
+
+# Flow observability
+observability:
+  opentelemetry:
+    enabled: true
+    traces: true
+    metrics: true
+
+  metrics:
+    - name: flow_duration
+      type: histogram
+      labels:
+        - schema_version
+        - validation_level
+
+    - name: flow_success_rate
+      type: gauge
+      labels:
+        - schema_version
+
+    - name: errors_detected
+      type: counter
+      labels:
+        - error_type
+
+# Public flow examples
+examples:
+  - name: "Basic usage in CI/CD"
+    description: "Run OSSA validation flow in GitLab CI/CD"
+    code: |
+      # Add to .gitlab-ci.yml:
+      include:
+        - remote: 'https://gitlab.com/blueflyio/ossa/openstandardagents/-/raw/main/.gitlab/ci/ossa-validation.yml'
+
+      validate:ossa:
+        stage: validate
+        trigger:
+          include:
+            - local: '.gitlab/workflows/ossa-validation-flow.yaml'
+          strategy: depend
+
+  - name: "Custom schema version"
+    description: "Validate against specific OSSA schema version"
+    code: |
+      validate:ossa:v0.3.2:
+        stage: validate
+        trigger:
+          include:
+            - local: '.gitlab/workflows/ossa-validation-flow.yaml'
+          variables:
+            schema_version: "0.3.2"
+            validation_level: "normal"
+
+  - name: "MR validation with comments"
+    description: "Run validation on MR and post results as comment"
+    code: |
+      validate:ossa:mr:
+        stage: validate
+        trigger:
+          include:
+            - local: '.gitlab/workflows/ossa-validation-flow.yaml'
+          variables:
+            post_mr_comment: "true"
+            fail_fast: "false"
+        rules:
+          - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'

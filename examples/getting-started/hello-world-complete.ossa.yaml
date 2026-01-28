@@ -1,0 +1,111 @@
+apiVersion: ossa/v0.3.6
+kind: Agent
+metadata:
+  name: hello-world-agent
+  version: 1.0.0
+  description: 'A minimal OSSA-compliant agent that demonstrates basic capabilities.
+
+    This agent can greet users, echo messages, and report its status.
+
+    Perfect for learning OSSA fundamentals and testing deployments.
+
+    '
+  labels:
+    environment: development
+    team: platform-engineering
+    domain: examples
+    complexity: minimal
+  annotations:
+    documentation: https://docs.ossa.io/examples/hello-world
+    support: support@example.com
+    runbook: https://runbooks.example.com/hello-world-agent
+spec:
+  role: 'You are a helpful assistant agent that can:
+
+    1. Greet users with personalized messages
+
+    2. Echo back messages sent to you
+
+    3. Report your current status and health
+
+
+    Always be friendly, concise, and helpful. If you receive a request
+
+    you cannot handle, politely explain your limitations.
+
+    '
+  llm:
+    provider: openai
+    model: gpt-3.5-turbo
+    temperature: 0.7
+    maxTokens: 1000
+    topP: 0.9
+  tools:
+  - type: function
+    name: greet_user
+    description: 'Generate a personalized greeting message for a user.
+
+      Takes a user name and optional context, returns a friendly greeting.
+
+      '
+    config:
+      handler: greet_handler
+      timeout: 5
+    auth:
+      type: none
+  - type: function
+    name: echo_message
+    description: 'Echo back a message sent to the agent.
+
+      Useful for testing and demonstrating basic agent communication.
+
+      '
+    config:
+      handler: echo_handler
+      timeout: 2
+  - type: http
+    name: get_status
+    description: 'Get the current status and health of the agent.
+
+      Returns agent metadata, uptime, and capability status.
+
+      '
+    endpoint: http://localhost:8080/status
+    config:
+      method: GET
+      timeout: 3
+    auth:
+      type: none
+  autonomy:
+    level: supervised
+    approval_required: true
+    allowed_actions:
+    - greet_user
+    - echo_message
+    - get_status
+    blocked_actions: []
+  constraints:
+    cost:
+      maxTokensPerDay: 100000
+      maxTokensPerRequest: 2000
+      maxCostPerDay: 10.0
+      currency: USD
+    performance:
+      maxLatencySeconds: 5.0
+      maxConcurrentRequests: 10
+      timeoutSeconds: 30
+    resources:
+      cpu: 100m
+      memory: 256Mi
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+      endpoint: http://localhost:4318
+    metrics:
+      enabled: true
+      exporter: prometheus
+      endpoint: http://localhost:9090/metrics
+    logging:
+      level: info
+      format: json

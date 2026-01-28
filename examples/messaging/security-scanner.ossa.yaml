@@ -1,0 +1,335 @@
+apiVersion: ossa/v0.3.6
+kind: Agent
+metadata:
+  name: security-scanner
+  version: 1.0.0
+  description: Scans dependencies for security vulnerabilities and publishes findings
+  labels:
+    domain: security
+    tier: core
+  annotations:
+    ossa.openstandardagents.org/category: security
+    ossa.openstandardagents.org/compliance: SOC2,HIPAA
+spec:
+  role: 'You are a security vulnerability scanner. Your responsibilities:
+
+    1. Analyze software dependencies for known vulnerabilities (CVEs)
+
+    2. Assess severity and exploitability of findings
+
+    3. Provide actionable remediation guidance
+
+    4. Publish findings to security channels for downstream processing
+
+
+    When scanning packages:
+
+    - Check against NVD, OSV, and GitHub Advisory databases
+
+    - Consider CVSS scores for severity classification
+
+    - Identify if exploits are publicly available
+
+    - Suggest specific version upgrades when available
+
+    '
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    temperature: 0
+    maxTokens: 4096
+  tools:
+  - type: mcp
+    name: nvd-database
+    capabilities:
+    - name: search_cve
+      description: Search NVD for CVE information
+      input_schema:
+        type: object
+        properties:
+          cve_id:
+            type: string
+            description: CVE identifier (e.g., CVE-2024-1234)
+    - name: check_package
+      description: Check package for known vulnerabilities
+      input_schema:
+        type: object
+        properties:
+          package:
+            type: string
+          version:
+            type: string
+          ecosystem:
+            type: string
+            enum:
+            - npm
+            - pypi
+            - maven
+            - go
+            - rubygems
+  messaging:
+    publishes:
+    - channel: security.vulnerabilities
+      description: Vulnerability findings from security scans
+      schema:
+        type: object
+        required:
+        - vulnerability_id
+        - severity
+        - affected_package
+        properties:
+          vulnerability_id:
+            type: string
+            description: Unique vulnerability identifier
+          severity:
+            type: string
+            enum:
+            - low
+            - medium
+            - high
+            - critical
+            description: Severity rating based on CVSS
+          cve_id:
+            type: string
+            pattern: ^CVE-\d{4}-\d+$
+            description: CVE identifier if available
+          cvss_score:
+            type: number
+            minimum: 0
+            maximum: 10
+            description: CVSS v3.1 score
+          affected_package:
+            type: string
+            description: Package name and version affected
+          vulnerable_versions:
+            type: string
+            description: Version range affected (semver)
+          fixed_version:
+            type: string
+            description: Minimum version that fixes the vulnerability
+          remediation:
+            type: string
+            description: Recommended remediation steps
+          exploit_available:
+            type: boolean
+            description: Whether public exploits exist
+          references:
+            type: array
+            items:
+              type: string
+              format: uri
+            description: Reference URLs for more information
+      examples:
+      - vulnerability_id: vuln-2024-001
+        severity: critical
+        cve_id: CVE-2024-1234
+        cvss_score: 9.8
+        affected_package: lodash@4.17.20
+        vulnerable_versions: <4.17.21
+        fixed_version: 4.17.21
+        remediation: Update lodash to version 4.17.21 or later
+        exploit_available: true
+        references:
+        - https://nvd.nist.gov/vuln/detail/CVE-2024-1234
+        - https://github.com/advisories/GHSA-xxxx-xxxx-xxxx
+    - channel: security.scan.completed
+      description: Notification when a security scan completes
+      schema:
+        type: object
+        required:
+        - scan_id
+        - status
+        - summary
+        properties:
+          scan_id:
+            type: string
+          status:
+            type: string
+            enum:
+            - success
+            - failed
+            - partial
+          target:
+            type: string
+            description: What was scanned (repo, package, etc.)
+          summary:
+            type: object
+            properties:
+              total_packages:
+                type: integer
+              vulnerabilities_found:
+                type: integer
+              critical:
+                type: integer
+              high:
+                type: integer
+              medium:
+                type: integer
+              low:
+                type: integer
+          duration_ms:
+            type: integer
+      examples:
+      - scan_id: scan-abc123
+        status: success
+        target: lodash@4.17.20
+        summary:
+          total_packages: 1
+          vulnerabilities_found: 3
+          critical: 1
+          high: 1
+          medium: 1
+          low: 0
+        duration_ms: 2500
+    subscribes:
+    - channel: dependency.updates
+      description: Notifications about dependency changes that need scanning
+      handler: process_dependency_update
+      filter:
+        expression: ${{ message.change_type in ['added', 'updated'] }}
+      priority: high
+      maxConcurrency: 10
+    - channel: security.scan.requested
+      description: Manual scan requests from other agents or users
+      handler: process_scan_request
+      priority: normal
+      maxConcurrency: 5
+    commands:
+    - name: scan_package
+      description: Scan a specific package for vulnerabilities
+      inputSchema:
+        type: object
+        required:
+        - package_name
+        properties:
+          package_name:
+            type: string
+            description: Package name to scan
+          version:
+            type: string
+            description: Specific version (latest if not specified)
+          ecosystem:
+            type: string
+            enum:
+            - npm
+            - pypi
+            - maven
+            - go
+            - rubygems
+            default: npm
+          include_transitive:
+            type: boolean
+            default: true
+            description: Include transitive dependencies
+      outputSchema:
+        type: object
+        properties:
+          scan_id:
+            type: string
+          vulnerabilities:
+            type: array
+            items:
+              $ref: '#/spec/messaging/publishes/0/schema'
+          scan_status:
+            type: string
+            enum:
+            - success
+            - failed
+            - partial
+          scanned_at:
+            type: string
+            format: date-time
+      timeoutSeconds: 120
+      idempotent: true
+    - name: get_cve_details
+      description: Get detailed information about a specific CVE
+      inputSchema:
+        type: object
+        required:
+        - cve_id
+        properties:
+          cve_id:
+            type: string
+            pattern: ^CVE-\d{4}-\d+$
+      outputSchema:
+        type: object
+        properties:
+          cve_id:
+            type: string
+          description:
+            type: string
+          cvss:
+            type: object
+            properties:
+              version:
+                type: string
+              score:
+                type: number
+              vector:
+                type: string
+          affected_products:
+            type: array
+            items:
+              type: object
+          references:
+            type: array
+            items:
+              type: string
+      timeoutSeconds: 30
+      idempotent: true
+    reliability:
+      deliveryGuarantee: at-least-once
+      retry:
+        maxAttempts: 3
+        backoff:
+          strategy: exponential
+          initialDelayMs: 1000
+          maxDelayMs: 30000
+          multiplier: 2
+      dlq:
+        enabled: true
+        channel: security.dlq
+        retentionDays: 30
+      ordering:
+        guarantee: per-source
+        timeoutSeconds: 300
+      acknowledgment:
+        mode: manual
+        timeoutSeconds: 60
+  autonomy:
+    level: autonomous
+    approval_required: false
+    allowed_actions:
+    - scan_dependencies
+    - query_vulnerability_databases
+    - publish_findings
+    blocked_actions:
+    - modify_code
+    - deploy_patches
+  constraints:
+    cost:
+      maxTokensPerDay: 100000
+      maxTokensPerRequest: 8000
+    performance:
+      maxLatencySeconds: 30
+      maxConcurrentRequests: 20
+      timeoutSeconds: 120
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+    metrics:
+      enabled: true
+      exporter: prometheus
+    logging:
+      level: info
+      format: json
+  safety:
+    content_filtering:
+      enabled: true
+      categories:
+      - malicious_code
+      - sensitive_data
+    guardrails:
+      enabled: true
+      max_tool_calls: 50

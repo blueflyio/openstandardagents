@@ -1,0 +1,587 @@
+# GitLab Webhook-Triggered Agent Pipeline
+# Enterprise-grade agent automation using OSSA v0.3.0
+# Part of BlueFly.io Agent Platform
+#
+# Trigger Flow:
+#   GitLab Webhook → Pipeline Trigger → Agent Router → OSSA Agents
+#
+# Setup Requirements:
+#   1. AGENT_SERVICE_TOKEN: Service account token with api scope
+#   2. WEBHOOK_SECRET: Shared secret for webhook validation
+#   3. TRIGGER_TOKEN: Pipeline trigger token (auto-generated)
+#
+# Webhook URL Format:
+#   https://gitlab.com/api/v4/projects/{PROJECT_ID}/ref/{REF}/trigger/pipeline
+#   ?token={TRIGGER_TOKEN}&variables[WEBHOOK_EVENT_TYPE]={event_type}
+#
+# NOTE: This file uses stages from main .gitlab-ci.yml
+# Stage mapping: .pre → validate, setup → route, build → execute, .post → report
+
+variables:
+  # Agent Configuration
+  AGENT_TIMEOUT: "600"  # 10 minutes max per agent
+  AGENT_MAX_RETRIES: "3"
+  AGENT_LOG_LEVEL: "info"
+
+  # Webhook Configuration
+  WEBHOOK_VALIDATION_ENABLED: "true"
+
+  # OSSA Configuration
+  OSSA_SCHEMA_VERSION: "v0.3.0"
+  OSSA_MANIFEST_PATH: ".gitlab/agents"
+
+# ============================================================================
+# STAGE 1: WEBHOOK RECEIVE & VALIDATE (.pre stage)
+# ============================================================================
+
+webhook:validate:
+  stage: .pre
+  image: node:22-alpine
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "trigger"
+      when: always
+    - if: $CI_PIPELINE_SOURCE == "pipeline" && $WEBHOOK_EVENT_TYPE
+      when: always
+  script:
+    - |
+      echo "=============================================="
+      echo "  WEBHOOK VALIDATION"
+      echo "=============================================="
+      echo ""
+      echo "Pipeline Source: ${CI_PIPELINE_SOURCE}"
+      echo "Event Type: ${WEBHOOK_EVENT_TYPE:-unknown}"
+      echo "Project ID: ${WEBHOOK_PROJECT_ID:-$CI_PROJECT_ID}"
+      echo "Object Kind: ${WEBHOOK_OBJECT_KIND:-unknown}"
+      echo "Action: ${WEBHOOK_ACTION:-unknown}"
+      echo ""
+
+      # Validate webhook source
+      if [ "$CI_PIPELINE_SOURCE" != "trigger" ] && [ -z "$WEBHOOK_EVENT_TYPE" ]; then
+        echo "[FAIL] ERROR: Invalid webhook trigger"
+        echo "   Expected: CI_PIPELINE_SOURCE=trigger or WEBHOOK_EVENT_TYPE set"
+        exit 1
+      fi
+
+      # Validate required variables for event processing
+      if [ -z "$WEBHOOK_OBJECT_KIND" ] && [ -z "$WEBHOOK_EVENT_TYPE" ]; then
+        echo "[WARN]  WARNING: No event type detected, using default routing"
+        echo "WEBHOOK_EVENT_TYPE=generic" >> webhook.env
+      else
+        EVENT_TYPE="${WEBHOOK_OBJECT_KIND:-$WEBHOOK_EVENT_TYPE}"
+        echo "WEBHOOK_EVENT_TYPE=${EVENT_TYPE}" >> webhook.env
+      fi
+
+      # Extract and validate event-specific data
+      if [ -n "$WEBHOOK_OBJECT_ATTRIBUTES" ]; then
+        echo "WEBHOOK_OBJECT_ATTRIBUTES=${WEBHOOK_OBJECT_ATTRIBUTES}" >> webhook.env
+      fi
+
+      if [ -n "$WEBHOOK_PROJECT_ID" ]; then
+        echo "WEBHOOK_PROJECT_ID=${WEBHOOK_PROJECT_ID}" >> webhook.env
+      else
+        echo "WEBHOOK_PROJECT_ID=${CI_PROJECT_ID}" >> webhook.env
+      fi
+
+      echo "[PASS] Webhook validated successfully"
+      echo ""
+      cat webhook.env
+  artifacts:
+    reports:
+      dotenv: webhook.env
+    expire_in: 1 hour
+
+# ============================================================================
+# STAGE 2: AGENT ROUTING (setup stage)
+# ============================================================================
+
+agent:router:
+  stage: setup
+  image: node:22-alpine
+  needs:
+    - webhook:validate
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "trigger"
+      when: on_success
+    - if: $CI_PIPELINE_SOURCE == "pipeline" && $WEBHOOK_EVENT_TYPE
+      when: on_success
+  before_script:
+    - npm ci --legacy-peer-deps --silent 2>/dev/null || true
+    - npm run build --silent 2>/dev/null || true
+  script:
+    - |
+      echo "=============================================="
+      echo "  AGENT ROUTER"
+      echo "=============================================="
+      echo ""
+      echo "Event Type: ${WEBHOOK_EVENT_TYPE}"
+      echo "Object Kind: ${WEBHOOK_OBJECT_KIND}"
+      echo "Action: ${WEBHOOK_ACTION}"
+      echo ""
+
+      # Determine which agent(s) to invoke based on event type
+      AGENTS_TO_RUN=""
+
+      case "${WEBHOOK_EVENT_TYPE:-${WEBHOOK_OBJECT_KIND}}" in
+        "issue"|"issue_hook")
+          echo "[LIST] Issue event detected"
+          case "${WEBHOOK_ACTION}" in
+            "open"|"reopen")
+              AGENTS_TO_RUN="issue-triage"
+              echo "   → Routing to: issue-triage agent"
+              ;;
+            "update")
+              # Check if labels changed for re-triage
+              if [ "${WEBHOOK_CHANGES_LABELS}" = "true" ]; then
+                AGENTS_TO_RUN="issue-triage"
+                echo "   → Labels changed, routing to: issue-triage agent"
+              else
+                echo "   → No agent action required for this update"
+              fi
+              ;;
+            "close")
+              echo "   → Issue closed, no agent action required"
+              ;;
+            *)
+              echo "   → Unknown action: ${WEBHOOK_ACTION}"
+              ;;
+          esac
+          ;;
+
+        "merge_request"|"merge_request_hook")
+          echo "🔀 Merge Request event detected"
+          case "${WEBHOOK_ACTION}" in
+            "open"|"reopen")
+              AGENTS_TO_RUN="mr-manager"
+              echo "   → Routing to: mr-manager agent"
+              ;;
+            "update")
+              AGENTS_TO_RUN="mr-manager"
+              echo "   → Routing to: mr-manager agent"
+              ;;
+            "merge")
+              AGENTS_TO_RUN="mr-manager"
+              echo "   → MR merged, routing to: mr-manager for cleanup"
+              ;;
+            "approved"|"unapproved")
+              AGENTS_TO_RUN="mr-manager"
+              echo "   → Approval status changed, routing to: mr-manager"
+              ;;
+            *)
+              echo "   → Unknown action: ${WEBHOOK_ACTION}"
+              ;;
+          esac
+          ;;
+
+        "note"|"note_hook")
+          echo "💬 Note/Comment event detected"
+          # Check if it's a command (starts with /)
+          if echo "${WEBHOOK_NOTE_BODY:-}" | grep -qE "^/agent"; then
+            AGENTS_TO_RUN="mr-manager,issue-triage"
+            echo "   → Agent command detected, routing to multiple agents"
+          else
+            echo "   → Regular comment, no agent action required"
+          fi
+          ;;
+
+        "pipeline"|"pipeline_hook")
+          echo "[SYNC] Pipeline event detected"
+          if [ "${WEBHOOK_PIPELINE_STATUS}" = "failed" ]; then
+            AGENTS_TO_RUN="mr-manager"
+            echo "   → Pipeline failed, routing to: mr-manager for handling"
+          fi
+          ;;
+
+        "push"|"push_hook")
+          echo "📤 Push event detected"
+          echo "   → No direct agent action for push events"
+          ;;
+
+        *)
+          echo "❓ Unknown event type: ${WEBHOOK_EVENT_TYPE:-${WEBHOOK_OBJECT_KIND}}"
+          echo "   → No agent action configured"
+          ;;
+      esac
+
+      # Write routing decision
+      echo "AGENTS_TO_RUN=${AGENTS_TO_RUN}" >> routing.env
+      echo "ROUTING_TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> routing.env
+
+      if [ -z "$AGENTS_TO_RUN" ]; then
+        echo ""
+        echo "[INFO]  No agents to execute for this event"
+        echo "AGENT_EXECUTION_REQUIRED=false" >> routing.env
+      else
+        echo ""
+        echo "[PASS] Routing complete"
+        echo "   Agents to execute: ${AGENTS_TO_RUN}"
+        echo "AGENT_EXECUTION_REQUIRED=true" >> routing.env
+      fi
+  artifacts:
+    reports:
+      dotenv: routing.env
+    expire_in: 1 hour
+
+# ============================================================================
+# STAGE 3: AGENT EXECUTION (build stage)
+# ============================================================================
+
+# Issue Triage Agent
+agent:issue-triage:
+  stage: build
+  image: node:22-alpine
+  needs:
+    - webhook:validate
+    - agent:router
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "trigger" && $AGENTS_TO_RUN =~ /issue-triage/
+      when: on_success
+    - if: $CI_PIPELINE_SOURCE == "pipeline" && $AGENTS_TO_RUN =~ /issue-triage/
+      when: on_success
+  timeout: 10 minutes
+  variables:
+    AGENT_NAME: "issue-triage"
+    MANIFEST_PATH: "${OSSA_MANIFEST_PATH}/issue-triage/manifest.ossa.yaml"
+  before_script:
+    - apk add --no-cache jq curl
+    - npm ci --legacy-peer-deps --silent
+    - npm run build --silent
+  script:
+    - |
+      echo "=============================================="
+      echo "  ISSUE TRIAGE AGENT"
+      echo "=============================================="
+      echo ""
+      echo "Agent: ${AGENT_NAME}"
+      echo "Manifest: ${MANIFEST_PATH}"
+      echo "Event: ${WEBHOOK_EVENT_TYPE}"
+      echo "Project: ${WEBHOOK_PROJECT_ID}"
+      echo "Issue IID: ${WEBHOOK_ISSUE_IID:-N/A}"
+      echo ""
+
+      # Validate manifest exists
+      if [ ! -f "${MANIFEST_PATH}" ]; then
+        echo "[FAIL] ERROR: Manifest not found: ${MANIFEST_PATH}"
+        exit 1
+      fi
+
+      # Validate manifest against OSSA schema (auto-detected from apiVersion)
+      echo "[LIST] Validating OSSA manifest..."
+      if node dist/cli/index.js validate "${MANIFEST_PATH}"; then
+        echo "[PASS] Manifest validation passed"
+      else
+        echo "[FAIL] ERROR: Manifest validation failed"
+        exit 1
+      fi
+
+      # Set up GitLab API token
+      export GITLAB_TOKEN="${AGENT_SERVICE_TOKEN:-${CI_JOB_TOKEN}}"
+
+      # Execute agent
+      echo ""
+      echo "[RUN] Executing Issue Triage Agent..."
+      echo ""
+
+      # Create agent execution context
+      cat > /tmp/agent-context.json << EOF
+      {
+        "event_type": "${WEBHOOK_EVENT_TYPE}",
+        "action": "${WEBHOOK_ACTION}",
+        "project_id": ${WEBHOOK_PROJECT_ID:-${CI_PROJECT_ID}},
+        "issue_iid": ${WEBHOOK_ISSUE_IID:-0},
+        "pipeline_id": "${CI_PIPELINE_ID}",
+        "job_id": "${CI_JOB_ID}",
+        "triggered_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+      }
+      EOF
+
+      echo "Agent Context:"
+      cat /tmp/agent-context.json | jq .
+      echo ""
+
+      # Run the OSSA agent
+      node dist/cli/index.js run "${MANIFEST_PATH}" \
+        --context /tmp/agent-context.json \
+        --output /tmp/agent-result.json \
+        2>&1 | tee agent-output.log
+
+      AGENT_EXIT_CODE=$?
+
+      if [ $AGENT_EXIT_CODE -eq 0 ]; then
+        echo ""
+        echo "[PASS] Issue Triage Agent completed successfully"
+
+        if [ -f /tmp/agent-result.json ]; then
+          echo ""
+          echo "Agent Result:"
+          cat /tmp/agent-result.json | jq .
+        fi
+      else
+        echo ""
+        echo "[FAIL] Issue Triage Agent failed with exit code: ${AGENT_EXIT_CODE}"
+        exit $AGENT_EXIT_CODE
+      fi
+  artifacts:
+    paths:
+      - agent-output.log
+    reports:
+      dotenv: agent-result.env
+    when: always
+    expire_in: 7 days
+  allow_failure: true
+
+# MR Manager Agent
+agent:mr-manager:
+  stage: build
+  image: node:22-alpine
+  needs:
+    - webhook:validate
+    - agent:router
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "trigger" && $AGENTS_TO_RUN =~ /mr-manager/
+      when: on_success
+    - if: $CI_PIPELINE_SOURCE == "pipeline" && $AGENTS_TO_RUN =~ /mr-manager/
+      when: on_success
+  timeout: 10 minutes
+  variables:
+    AGENT_NAME: "mr-manager"
+    MANIFEST_PATH: "${OSSA_MANIFEST_PATH}/mr-manager/manifest.ossa.yaml"
+  before_script:
+    - apk add --no-cache jq curl
+    - npm ci --legacy-peer-deps --silent
+    - npm run build --silent
+  script:
+    - |
+      echo "=============================================="
+      echo "  MR MANAGER AGENT"
+      echo "=============================================="
+      echo ""
+      echo "Agent: ${AGENT_NAME}"
+      echo "Manifest: ${MANIFEST_PATH}"
+      echo "Event: ${WEBHOOK_EVENT_TYPE}"
+      echo "Project: ${WEBHOOK_PROJECT_ID}"
+      echo "MR IID: ${WEBHOOK_MR_IID:-N/A}"
+      echo ""
+
+      # Validate manifest exists
+      if [ ! -f "${MANIFEST_PATH}" ]; then
+        echo "[FAIL] ERROR: Manifest not found: ${MANIFEST_PATH}"
+        exit 1
+      fi
+
+      # Validate manifest against OSSA schema (auto-detected from apiVersion)
+      echo "[LIST] Validating OSSA manifest..."
+      if node dist/cli/index.js validate "${MANIFEST_PATH}"; then
+        echo "[PASS] Manifest validation passed"
+      else
+        echo "[FAIL] ERROR: Manifest validation failed"
+        exit 1
+      fi
+
+      # Set up GitLab API token
+      export GITLAB_TOKEN="${AGENT_SERVICE_TOKEN:-${CI_JOB_TOKEN}}"
+
+      # Execute agent
+      echo ""
+      echo "[RUN] Executing MR Manager Agent..."
+      echo ""
+
+      # Create agent execution context
+      cat > /tmp/agent-context.json << EOF
+      {
+        "event_type": "${WEBHOOK_EVENT_TYPE}",
+        "action": "${WEBHOOK_ACTION}",
+        "project_id": ${WEBHOOK_PROJECT_ID:-${CI_PROJECT_ID}},
+        "mr_iid": ${WEBHOOK_MR_IID:-0},
+        "pipeline_status": "${WEBHOOK_PIPELINE_STATUS:-unknown}",
+        "pipeline_id": "${CI_PIPELINE_ID}",
+        "job_id": "${CI_JOB_ID}",
+        "triggered_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+      }
+      EOF
+
+      echo "Agent Context:"
+      cat /tmp/agent-context.json | jq .
+      echo ""
+
+      # Run the OSSA agent
+      node dist/cli/index.js run "${MANIFEST_PATH}" \
+        --context /tmp/agent-context.json \
+        --output /tmp/agent-result.json \
+        2>&1 | tee agent-output.log
+
+      AGENT_EXIT_CODE=$?
+
+      if [ $AGENT_EXIT_CODE -eq 0 ]; then
+        echo ""
+        echo "[PASS] MR Manager Agent completed successfully"
+
+        if [ -f /tmp/agent-result.json ]; then
+          echo ""
+          echo "Agent Result:"
+          cat /tmp/agent-result.json | jq .
+        fi
+      else
+        echo ""
+        echo "[FAIL] MR Manager Agent failed with exit code: ${AGENT_EXIT_CODE}"
+        exit $AGENT_EXIT_CODE
+      fi
+  artifacts:
+    paths:
+      - agent-output.log
+    reports:
+      dotenv: agent-result.env
+    when: always
+    expire_in: 7 days
+  allow_failure: true
+
+# ============================================================================
+# STAGE 4: REPORTING (.post stage)
+# ============================================================================
+
+agent:report:
+  stage: .post
+  image: alpine:latest
+  needs:
+    - job: agent:issue-triage
+      optional: true
+    - job: agent:mr-manager
+      optional: true
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "trigger"
+      when: always
+    - if: $CI_PIPELINE_SOURCE == "pipeline" && $WEBHOOK_EVENT_TYPE
+      when: always
+  script:
+    - |
+      echo "=============================================="
+      echo "  AGENT EXECUTION REPORT"
+      echo "=============================================="
+      echo ""
+      echo "Pipeline: ${CI_PIPELINE_ID}"
+      echo "Source: ${CI_PIPELINE_SOURCE}"
+      echo "Event: ${WEBHOOK_EVENT_TYPE:-unknown}"
+      echo "Agents Requested: ${AGENTS_TO_RUN:-none}"
+      echo ""
+      echo "Timestamp: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+      echo ""
+
+      # Check agent execution status
+      if [ -f agent-output.log ]; then
+        echo "[STATS] Agent execution logs available"
+      fi
+
+      echo "[PASS] Agent pipeline complete"
+  allow_failure: true
+
+# ============================================================================
+# MANUAL TRIGGERS
+# ============================================================================
+# To run these jobs:
+#   1. Go to: CI/CD → Pipelines → Run pipeline
+#   2. Select branch: release/* (or any branch)
+#   3. Add variable: MANUAL_ISSUE_IID=90 (or MANUAL_MR_IID=185)
+#   4. Run pipeline - the job will execute automatically
+
+# Manual issue triage trigger
+# Only appears when MANUAL_ISSUE_IID is explicitly provided
+manual:triage-issue:
+  stage: build
+  image: node:22-alpine
+  variables:
+    AGENT_NAME: "issue-triage"
+    MANIFEST_PATH: "${OSSA_MANIFEST_PATH}/issue-triage/manifest.ossa.yaml"
+  rules:
+    # Only run when MANUAL_ISSUE_IID is explicitly provided
+    - if: $MANUAL_ISSUE_IID
+      when: on_success
+    - when: never
+  before_script:
+    - apk add --no-cache jq curl
+    - npm ci --legacy-peer-deps --silent
+    - npm run build --silent
+  script:
+    - |
+      echo "[TAG]  Manual Issue Triage"
+      echo ""
+      echo "Project ID: ${MANUAL_PROJECT_ID:-$CI_PROJECT_ID}"
+      echo "Issue IID: ${MANUAL_ISSUE_IID:-not specified}"
+
+      if [ -z "$MANUAL_ISSUE_IID" ]; then
+        echo "[FAIL] ERROR: MANUAL_ISSUE_IID variable required"
+        echo "   Set via: Run pipeline → Variables → MANUAL_ISSUE_IID=123"
+        exit 1
+      fi
+
+      export GITLAB_TOKEN="${AGENT_SERVICE_TOKEN:-${CI_JOB_TOKEN}}"
+
+      cat > /tmp/agent-context.json << EOF
+      {
+        "event_type": "manual_triage",
+        "action": "open",
+        "project_id": ${MANUAL_PROJECT_ID:-${CI_PROJECT_ID}},
+        "issue_iid": ${MANUAL_ISSUE_IID},
+        "pipeline_id": "${CI_PIPELINE_ID}",
+        "triggered_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+      }
+      EOF
+
+      node dist/cli/index.js run "${MANIFEST_PATH}" \
+        --context /tmp/agent-context.json \
+        2>&1 | tee agent-output.log
+
+# Manual MR processing trigger
+# Only appears when MANUAL_MR_IID is explicitly provided
+manual:process-mr:
+  stage: build
+  image: node:22-alpine
+  variables:
+    AGENT_NAME: "mr-manager"
+    MANIFEST_PATH: "${OSSA_MANIFEST_PATH}/mr-manager/manifest.ossa.yaml"
+  rules:
+    # Only run when MANUAL_MR_IID is explicitly provided
+    - if: $MANUAL_MR_IID
+      when: on_success
+    - when: never
+  before_script:
+    - apk add --no-cache jq curl
+    - npm ci --legacy-peer-deps --silent
+    - npm run build --silent
+  script:
+    - |
+      echo "Manual MR Processing"
+      echo ""
+      echo "Project ID: ${MANUAL_PROJECT_ID:-$CI_PROJECT_ID}"
+      
+      # Try to auto-detect MR IID from pipeline context
+      if [ -z "$MANUAL_MR_IID" ]; then
+        if [ -n "$CI_MERGE_REQUEST_IID" ]; then
+          MANUAL_MR_IID="$CI_MERGE_REQUEST_IID"
+          echo "Auto-detected MR IID from pipeline: $MANUAL_MR_IID"
+        else
+          echo "WARNING: MANUAL_MR_IID variable not set and not in MR context"
+          echo "This job requires either:"
+          echo "  1. Set MANUAL_MR_IID variable when running pipeline"
+          echo "  2. Run from an MR pipeline context"
+          echo "Skipping job execution"
+          exit 0
+        fi
+      fi
+      
+      echo "MR IID: $MANUAL_MR_IID"
+
+      export GITLAB_TOKEN="${AGENT_SERVICE_TOKEN:-${CI_JOB_TOKEN}}"
+
+      cat > /tmp/agent-context.json << EOF
+      {
+        "event_type": "manual_mr",
+        "action": "update",
+        "project_id": ${MANUAL_PROJECT_ID:-${CI_PROJECT_ID}},
+        "mr_iid": ${MANUAL_MR_IID},
+        "pipeline_id": "${CI_PIPELINE_ID}",
+        "triggered_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+      }
+      EOF
+
+      node dist/cli/index.js run "${MANIFEST_PATH}" \
+        --context /tmp/agent-context.json \
+        2>&1 | tee agent-output.log

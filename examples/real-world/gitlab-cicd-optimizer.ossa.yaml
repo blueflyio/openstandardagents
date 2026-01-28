@@ -1,0 +1,171 @@
+apiVersion: ossa/v0.3.6
+kind: Agent
+metadata:
+  name: gitlab-cicd-optimizer
+  version: "1.0.0"
+  description: |
+    Real-world agent that optimizes GitLab CI/CD pipelines by:
+    - Analyzing pipeline performance
+    - Identifying slow jobs
+    - Suggesting parallelization opportunities
+    - Detecting unused cache keys
+    - Recommending resource optimizations
+  labels:
+    use-case: ci-cd-optimization
+    platform: gitlab
+    tier: production
+spec:
+  role: analyzer
+  capabilities:
+    - gitlab-api
+    - performance-analysis
+    - recommendation-engine
+  
+  # Trigger on pipeline completion
+  triggers:
+    - type: webhook
+      source: gitlab
+      events: [pipeline_success, pipeline_failed]
+      filter:
+        branches: [main, release/*]
+  
+  # Input: Pipeline data from GitLab webhook
+  inputs:
+    - name: pipeline_data
+      type: object
+      required: true
+      schema:
+        project_id: string
+        pipeline_id: integer
+        duration: integer
+        jobs: array
+  
+  # Analysis tasks
+  tasks:
+    - name: analyze-performance
+      description: Analyze pipeline performance metrics
+      steps:
+        - name: fetch-pipeline-details
+          action: http
+          method: GET
+          url: "https://gitlab.com/api/v4/projects/${inputs.pipeline_data.project_id}/pipelines/${inputs.pipeline_data.pipeline_id}"
+          headers:
+            PRIVATE-TOKEN: "${env.GITLAB_TOKEN}"
+        
+        - name: identify-slow-jobs
+          action: analyze
+          logic: |
+            # Find jobs taking >5 minutes
+            slow_jobs = []
+            for job in pipeline.jobs:
+              if job.duration > 300:
+                slow_jobs.append({
+                  'name': job.name,
+                  'duration': job.duration,
+                  'stage': job.stage
+                })
+            return slow_jobs
+        
+        - name: detect-parallelization
+          action: analyze
+          logic: |
+            # Find sequential jobs that could run in parallel
+            stages = group_by(pipeline.jobs, 'stage')
+            opportunities = []
+            for stage, jobs in stages.items():
+              if len(jobs) == 1 and jobs[0].duration > 180:
+                opportunities.append({
+                  'stage': stage,
+                  'suggestion': 'Split into parallel jobs'
+                })
+            return opportunities
+        
+        - name: check-cache-usage
+          action: analyze
+          logic: |
+            # Detect unused cache keys
+            cache_keys = set()
+            used_keys = set()
+            for job in pipeline.jobs:
+              if job.cache:
+                cache_keys.add(job.cache.key)
+              if job.cache_hit:
+                used_keys.add(job.cache.key)
+            unused = cache_keys - used_keys
+            return list(unused)
+    
+    - name: generate-recommendations
+      description: Create actionable recommendations
+      steps:
+        - name: create-report
+          action: template
+          template: |
+            ## 🚀 CI/CD Optimization Report
+            
+            **Pipeline**: #${inputs.pipeline_data.pipeline_id}
+            **Duration**: ${inputs.pipeline_data.duration}s
+            
+            ### ⚠️ Slow Jobs (>5min)
+            {% for job in analysis.slow_jobs %}
+            - **${job.name}** (${job.stage}): ${job.duration}s
+              - Consider: Caching dependencies, using smaller Docker images
+            {% endfor %}
+            
+            ### ⚡ Parallelization Opportunities
+            {% for opp in analysis.parallelization %}
+            - **${opp.stage}**: ${opp.suggestion}
+            {% endfor %}
+            
+            ### 🗑️ Unused Cache Keys
+            {% for key in analysis.unused_cache %}
+            - `${key}` - Consider removing to save storage
+            {% endfor %}
+            
+            ### 💡 Recommendations
+            1. Enable `interruptible: true` for non-critical jobs
+            2. Use `needs:` to create DAG pipelines
+            3. Consider using GitLab's merge trains
+            4. Review resource allocation for slow jobs
+        
+        - name: post-comment
+          action: http
+          method: POST
+          url: "https://gitlab.com/api/v4/projects/${inputs.pipeline_data.project_id}/merge_requests/${inputs.pipeline_data.merge_request_iid}/notes"
+          headers:
+            PRIVATE-TOKEN: "${env.GITLAB_TOKEN}"
+          body:
+            body: "${outputs.report}"
+  
+  # Outputs
+  outputs:
+    - name: report
+      type: markdown
+      description: Optimization report
+    - name: metrics
+      type: object
+      schema:
+        slow_jobs_count: integer
+        parallelization_opportunities: integer
+        unused_cache_keys: integer
+        total_duration: integer
+  
+  # Observability
+  observability:
+    tracing:
+      enabled: true
+      provider: opentelemetry
+      endpoint: "${env.OTEL_ENDPOINT}"
+    metrics:
+      enabled: true
+      exporter: prometheus
+      port: 9090
+      customMetrics:
+        - name: pipelines_analyzed
+          type: counter
+          description: Total number of pipelines analyzed
+        - name: recommendations_generated
+          type: counter
+          description: Total number of recommendations generated
+        - name: average_pipeline_duration
+          type: gauge
+          description: Average pipeline duration in seconds

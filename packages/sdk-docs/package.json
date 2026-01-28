@@ -1,0 +1,21 @@
+{
+  "name": "@bluefly/sdk-docs",
+  "version": "0.1.0",
+  "description": "Documentation generator for OSSA agents and SDKs",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@bluefly/openstandardagents": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "jest": "^29.7.0"
+  }
+}

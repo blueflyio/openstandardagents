@@ -1,0 +1,137 @@
+apiVersion: ossa/v0.3.6
+kind: Agent
+metadata:
+  name: secure-assistant
+  version: 1.0.0
+  description: 'Production-ready enterprise assistant with comprehensive safety controls:
+
+    - PII detection and redaction (7 types)
+
+    - Content filtering (4 harmful categories)
+
+    - Rate limiting (30 req/min with burst protection)
+
+    - Behavioral guardrails (prevent runaway loops)
+
+    - Autonomy controls (human-in-the-loop for sensitive actions)
+
+    - Full observability (tracing, metrics, structured logging)
+
+
+    Compliance: SOC2, GDPR-ready, HIPAA-compatible (with custom PII patterns)
+
+    '
+  labels:
+    difficulty: intermediate
+    tutorial: '03'
+    compliance: soc2
+    environment: production
+spec:
+  role: "You are a secure enterprise assistant for internal employee support.\n\n\
+    Your responsibilities:\n- Help employees find internal documentation and policies\n\
+    - Answer workflow and process questions\n- Provide guidance on tools and systems\n\
+    - Escalate sensitive questions to human support staff\n\nSECURITY REQUIREMENTS\
+    \ (CRITICAL):\n1. **Confidentiality**: Never share confidential company information\
+    \ externally\n2. **PII Protection**: All personally identifiable information is\
+    \ automatically\n   redacted, but you should still avoid requesting unnecessary\
+    \ PII\n3. **Data Minimization**: Only request data necessary to answer the question\n\
+    4. **Compliance**: Follow company data handling policies at all times\n\nWhen\
+    \ you detect PII in user input, acknowledge it professionally:\n✓ \"I see you\
+    \ provided contact information. [PII has been redacted]\"\n✗ \"Your email is john@company.com\"\
+    \ (don't repeat PII)\n\nFor sensitive operations (delete, permissions changes):\n\
+    - Explain the action clearly\n- Explain the risks\n- Request explicit confirmation\n\
+    - Document the reason for the action\n"
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    temperature: 0.5
+    fallback_models:
+    - provider: openai
+      model: gpt-4o
+      trigger:
+        on_error: true
+        max_retries: 2
+    cost_tracking:
+      enabled: true
+      budget_alert_threshold: 50.0
+      cost_allocation_tags:
+        team: platform
+        environment: production
+        cost_center: engineering
+  autonomy:
+    level: assisted
+    approval_required:
+    - delete_data
+    - modify_permissions
+    - external_api_calls
+    - deploy_code
+    - modify_production
+    allowed_actions:
+    - read_documents
+    - search_knowledge_base
+    - generate_reports
+    - send_notifications
+    blocked_actions:
+    - access_production_database
+    - modify_security_settings
+    - access_secrets_directly
+    escalation_policy:
+      triggers:
+      - confidence_below_80_percent
+      - sensitive_topic_detected
+      - multiple_approval_requests
+      - unusual_access_pattern
+      notify:
+      - slack:#security-alerts
+      - email:security@company.com
+      - pagerduty:agent-alerts
+  safety:
+    content_filtering:
+      enabled: true
+      categories:
+      - hate_speech
+      - violence
+      - self_harm
+      - illegal_activity
+      threshold: medium
+      action: block
+    pii_detection:
+      enabled: true
+      types:
+      - email
+      - phone
+      - ssn
+      - credit_card
+      - api_key
+      - password
+      - ip_address
+      action: redact
+    rate_limiting:
+      enabled: true
+      requests_per_minute: 30
+      burst_limit: 5
+    guardrails:
+      enabled: true
+      max_tool_calls: 20
+      max_iteration_depth: 5
+      max_tokens_per_turn: 4000
+      require_confirmation_for:
+      - destructive_actions
+      - external_communications
+      - data_modifications
+      - cost_intensive_operations
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+      endpoint: ${OTEL_ENDPOINT:-http://localhost:4317}
+    metrics:
+      enabled: true
+      custom_labels:
+        service: secure-assistant
+        environment: production
+        region: us-east-1
+    logging:
+      level: info
+      include_prompts: false
+      include_responses: false

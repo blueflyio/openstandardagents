@@ -1,0 +1,115 @@
+# ============================================================================
+# GitLab Duo Flow: Full Autonomous Cycle
+# ============================================================================
+# Complete autonomous cycle from issue to release
+# ============================================================================
+
+image: node:22-alpine
+injectGatewayToken: true
+
+variables:
+  PLATFORM_AGENTS_API: ${PLATFORM_AGENTS_API_URL:-https://api.blueflyagents.com}
+
+commands:
+  - echo "Starting Full Autonomous Cycle"
+  - apk add --no-cache curl jq
+
+steps:
+  # Phase 1: Issue Intelligence
+  - id: triage_issues
+    tool: InvokePlatformAgent
+    with:
+      agent: issue-lifecycle-manager
+      service_account: @issue-lifecycle-manager
+      token: ${SERVICE_ACCOUNT_ISSUE_LIFECYCLE_TOKEN}
+      task: triage-all
+      inputs:
+        project_id: ${CI_PROJECT_ID}
+        auto_assign: true
+        auto_label: true
+        create_subtasks: true
+
+  # Phase 2: Code Quality
+  - id: review_code
+    tool: InvokePlatformAgent
+    with:
+      agent: code-quality-reviewer
+      service_account: @code-quality-reviewer
+      token: ${SERVICE_ACCOUNT_CODE_QUALITY_TOKEN}
+      task: comprehensive-review
+      inputs:
+        project_id: ${CI_PROJECT_ID}
+        auto_fix: true
+        create_issues: true
+    needs:
+      - triage_issues
+
+  # Phase 3: Security
+  - id: security_scan
+    tool: InvokePlatformAgent
+    with:
+      agent: vulnerability-scanner
+      service_account: @vuln-scanner
+      token: ${SERVICE_ACCOUNT_VULN_SCANNER_TOKEN}
+      task: full-scan
+      inputs:
+        project_id: ${CI_PROJECT_ID}
+        auto_remediate: true
+    needs:
+      - review_code
+
+  # Phase 4: Documentation
+  - id: sync_docs
+    tool: InvokePlatformAgent
+    with:
+      agent: documentation-aggregator
+      service_account: @documentation-aggregator
+      token: ${SERVICE_ACCOUNT_DOCUMENTATION_TOKEN}
+      task: sync-all-docs
+      inputs:
+        project_id: ${CI_PROJECT_ID}
+        auto_update: true
+    needs:
+      - security_scan
+
+  # Phase 5: Version Management
+  - id: version_check
+    tool: InvokePlatformAgent
+    with:
+      agent: release-coordinator
+      service_account: @release-coordinator
+      token: ${SERVICE_ACCOUNT_RELEASE_COORDINATOR_TOKEN}
+      task: check-and-bump
+      inputs:
+        project_id: ${CI_PROJECT_ID}
+        auto_create_mr: true
+    needs:
+      - sync_docs
+
+  # Phase 6: MR Management
+  - id: review_mrs
+    tool: InvokePlatformAgent
+    with:
+      agent: mr-reviewer
+      service_account: @mr-reviewer
+      token: ${SERVICE_ACCOUNT_MR_REVIEWER_TOKEN}
+      task: review-all-open
+      inputs:
+        project_id: ${CI_PROJECT_ID}
+        auto_approve_safe: true
+    needs:
+      - version_check
+
+  # Phase 7: Release
+  - id: check_release
+    tool: InvokePlatformAgent
+    with:
+      agent: release-coordinator
+      service_account: @release-coordinator
+      token: ${SERVICE_ACCOUNT_RELEASE_COORDINATOR_TOKEN}
+      task: check-milestone-readiness
+      inputs:
+        project_id: ${CI_PROJECT_ID}
+        auto_create_release: true
+    needs:
+      - review_mrs

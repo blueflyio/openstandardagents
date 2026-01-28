@@ -1,0 +1,49 @@
+"apiVersion": "ossa/v0.3.5"
+"kind": "Agent"
+"metadata":
+  "name": "test-agent-2"
+  "version": "1.0.0"
+  "description": "Another test agent"
+  "labels":
+    "ossa-version": "v0.3.5"
+  "annotations":
+    "ossa.io/migration": "ossa/v0.3.4-to-ossa/v0.3.5"
+    "ossa.io/migrated-date": "2026-01-18"
+"spec":
+  "role": "Data processing agent"
+  "llm":
+    "provider": "${LLM_PROVIDER:-openai}"
+    "model": "${LLM_MODEL:-gpt-4}"
+    "fallback_models":
+      - "provider": "${LLM_FALLBACK_PROVIDER_1:-openai}"
+        "model": "${LLM_FALLBACK_MODEL_1:-gpt-4o}"
+    "retry_config":
+      "max_attempts": 3
+      "backoff_strategy": "exponential"
+    "cost_tracking":
+      "enabled": true
+      "budget_alert_threshold": 50
+      "cost_allocation_tags":
+        "platform": "unknown"
+        "team": "default"
+  "tools":
+    - "type": "function"
+      "name": "process_data"
+  "autonomy":
+    "level": "assisted"
+  "constraints":
+    "cost":
+      "maxTokensPerDay": 100000
+      "maxCostPerDay": 10
+  "observability":
+    "logging":
+      "level": "info"
+    "metrics":
+      "enabled": true
+    "tracing":
+      "enabled": true
+  "safety":
+    "content_filtering":
+      "enabled": true
+    "guardrails":
+      "enabled": true

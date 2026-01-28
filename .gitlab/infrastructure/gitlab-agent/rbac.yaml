@@ -1,0 +1,126 @@
+# GitLab Kubernetes Agent RBAC Configuration
+# Production-ready RBAC with least privilege principles
+# This replaces the default cluster-admin role with more restrictive permissions
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gitlab-agent
+  namespace: gitlab-agent
+  labels:
+    app: gitlab-agent
+    component: ossa-agent
+---
+# ClusterRole with minimal required permissions for GitLab agent
+# Adjust based on your specific needs
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: gitlab-agent
+  labels:
+    app: gitlab-agent
+    component: ossa-agent
+rules:
+  # Core API access for agent operations
+  - apiGroups: [""]
+    resources:
+      - namespaces
+      - pods
+      - pods/exec
+      - pods/log
+      - pods/portforward
+      - services
+      - endpoints
+      - configmaps
+      - secrets
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  
+  # Deployment and workload management
+  - apiGroups: ["apps"]
+    resources:
+      - deployments
+      - replicasets
+      - statefulsets
+      - daemonsets
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  
+  # Job and CronJob management
+  - apiGroups: ["batch"]
+    resources:
+      - jobs
+      - cronjobs
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  
+  # Ingress management
+  - apiGroups: ["networking.k8s.io"]
+    resources:
+      - ingresses
+      - ingressclasses
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  
+  # Service account and RBAC (for CI/CD operations)
+  - apiGroups: [""]
+    resources:
+      - serviceaccounts
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+  
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources:
+      - roles
+      - rolebindings
+      - clusterroles
+      - clusterrolebindings
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+  
+  # Events for observability
+  - apiGroups: [""]
+    resources:
+      - events
+    verbs: ["get", "list", "watch", "create", "patch"]
+  
+  # Nodes (read-only for cluster info)
+  - apiGroups: [""]
+    resources:
+      - nodes
+    verbs: ["get", "list", "watch"]
+  
+  # Persistent volumes (if needed for deployments)
+  - apiGroups: [""]
+    resources:
+      - persistentvolumes
+      - persistentvolumeclaims
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+  
+  # Custom resources (for OSSA agents and other CRDs)
+  - apiGroups: ["*"]
+    resources: ["*"]
+    verbs: ["get", "list", "watch"]
+  
+  # Metrics and monitoring
+  - apiGroups: ["metrics.k8s.io"]
+    resources:
+      - nodes
+      - pods
+    verbs: ["get", "list"]
+  
+  # Health checks
+  - nonResourceURLs: ["/healthz", "/readyz", "/livez"]
+    verbs: ["get"]
+---
+# ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: gitlab-agent
+  labels:
+    app: gitlab-agent
+    component: ossa-agent
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: gitlab-agent
+subjects:
+  - kind: ServiceAccount
+    name: gitlab-agent
+    namespace: gitlab-agent
+

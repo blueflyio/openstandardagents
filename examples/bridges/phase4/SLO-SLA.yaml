@@ -1,0 +1,249 @@
+# AIFlow Social Agent - SLO/SLA Definitions
+# Service Level Objectives and Service Level Agreements
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aiflow-slo-sla
+  namespace: agents-staging
+  labels:
+    app: aiflow-social-agent
+    component: observability
+data:
+  slo.yaml: |
+    # Service Level Objectives (SLOs)
+    # Internal targets for service reliability
+    
+    slos:
+      # Availability SLO
+      - name: "API Availability"
+        description: "Agent API should be available and responding to health checks"
+        objective: "99.5%"
+        measurement_window: "30d"
+        target_success_rate: 0.995
+        indicators:
+          - type: "uptime"
+            query: "sum(up{job='aiflow-social-agent'}) / count(up{job='aiflow-social-agent'})"
+          - type: "health_check"
+            query: "rate(aiflow_health_checks_total[5m])"
+        alert_threshold: 0.99  # Alert if availability drops below 99%
+      
+      # Latency SLO
+      - name: "API Response Time"
+        description: "95% of requests should complete within 500ms"
+        objective: "P95 < 500ms"
+        measurement_window: "7d"
+        target_percentile: 95
+        target_latency_ms: 500
+        indicators:
+          - type: "latency"
+            query: "histogram_quantile(0.95, rate(aiflow_api_latency_seconds_bucket[5m]))"
+        alert_threshold: 600  # Alert if P95 exceeds 600ms
+      
+      # Error Rate SLO
+      - name: "Error Rate"
+        description: "Error rate should be below 1%"
+        objective: "< 1%"
+        measurement_window: "7d"
+        target_error_rate: 0.01
+        indicators:
+          - type: "error_rate"
+            query: "rate(aiflow_api_requests_total{status=~'5..'}[5m]) / rate(aiflow_api_requests_total[5m])"
+        alert_threshold: 0.02  # Alert if error rate exceeds 2%
+      
+      # BuildKit Integration SLO
+      - name: "BuildKit Heartbeat Success"
+        description: "Heartbeat success rate to BuildKit registry"
+        objective: "99%"
+        measurement_window: "24h"
+        target_success_rate: 0.99
+        indicators:
+          - type: "heartbeat_success"
+            query: "rate(aiflow_buildkit_heartbeats_total{status='success'}[5m]) / rate(aiflow_buildkit_heartbeats_total[5m])"
+        alert_threshold: 0.95  # Alert if success rate drops below 95%
+      
+      # Resource Utilization SLO
+      - name: "Resource Efficiency"
+        description: "CPU and memory usage within acceptable bounds"
+        objective: "CPU < 80%, Memory < 85%"
+        measurement_window: "24h"
+        indicators:
+          - type: "cpu_utilization"
+            query: "rate(container_cpu_usage_seconds_total{pod=~'aiflow-social-agent.*'}[5m])"
+            target: 0.80
+          - type: "memory_utilization"
+            query: "container_memory_working_set_bytes{pod=~'aiflow-social-agent.*'} / container_spec_memory_limit_bytes{pod=~'aiflow-social-agent.*'}"
+            target: 0.85
+  
+  sla.yaml: |
+    # Service Level Agreements (SLAs)
+    # External commitments to users/consumers
+    
+    slas:
+      # API Availability SLA
+      - name: "API Availability Guarantee"
+        description: "Public commitment for API availability"
+        commitment: "99.9% uptime"
+        measurement_window: "monthly"
+        remediation:
+          - threshold: 99.9
+            action: "No action required"
+          - threshold: 99.5
+            action: "Internal postmortem required"
+          - threshold: 99.0
+            action: "Customer notification + service credits"
+          - threshold: 95.0
+            action: "Emergency response + full refund"
+        exclusions:
+          - "Scheduled maintenance (with 48h notice)"
+          - "Force majeure events"
+          - "Third-party service outages (BuildKit, K8s infrastructure)"
+      
+      # Response Time SLA
+      - name: "API Response Time Guarantee"
+        description: "Committed response time for API requests"
+        commitment: "P99 < 1 second"
+        measurement_window: "monthly"
+        target_percentile: 99
+        target_latency_ms: 1000
+        remediation:
+          - threshold: 1000
+            action: "No action required"
+          - threshold: 2000
+            action: "Performance investigation"
+          - threshold: 5000
+            action: "Immediate optimization required"
+      
+      # Error Rate SLA
+      - name: "Error Rate Guarantee"
+        description: "Maximum acceptable error rate"
+        commitment: "< 0.5% error rate"
+        measurement_window: "monthly"
+        target_error_rate: 0.005
+        remediation:
+          - threshold: 0.005
+            action: "No action required"
+          - threshold: 0.01
+            action: "Error investigation required"
+          - threshold: 0.05
+            action: "Critical incident declared"
+      
+      # Support Response SLA
+      - name: "Support Response Time"
+        description: "Response time for support requests"
+        commitment:
+          - severity: "P0 - Critical"
+            response_time: "15 minutes"
+            resolution_time: "4 hours"
+          - severity: "P1 - High"
+            response_time: "1 hour"
+            resolution_time: "24 hours"
+          - severity: "P2 - Medium"
+            response_time: "4 hours"
+            resolution_time: "72 hours"
+          - severity: "P3 - Low"
+            response_time: "24 hours"
+            resolution_time: "7 days"
+  
+  error-budget.yaml: |
+    # Error Budget Policy
+    # Defines how error budget is calculated and consumed
+    
+    error_budget:
+      # Availability Error Budget
+      - slo_name: "API Availability"
+        target: 99.5%
+        measurement_window: 30d
+        budget_calculation:
+          total_time: 43200  # 30 days in minutes
+          allowed_downtime: 216  # 0.5% = 216 minutes
+        consumption_tracking:
+          - type: "downtime"
+            query: "1 - (sum(up{job='aiflow-social-agent'}) / count(up{job='aiflow-social-agent'}))"
+        policy:
+          - budget_remaining: 100-50
+            action: "Normal operations, continue feature development"
+          - budget_remaining: 50-25
+            action: "Slow down feature releases, focus on reliability"
+          - budget_remaining: 25-10
+            action: "Feature freeze, only critical bug fixes"
+          - budget_remaining: 0-10
+            action: "Emergency mode: Stop all changes, incident response only"
+      
+      # Latency Error Budget
+      - slo_name: "API Response Time"
+        target: "P95 < 500ms"
+        measurement_window: 7d
+        budget_calculation:
+          total_requests: "N"  # Dynamic based on traffic
+          allowed_slow_requests: "5% of N"  # Requests > 500ms
+        consumption_tracking:
+          - type: "slow_requests"
+            query: "sum(rate(aiflow_api_latency_seconds_bucket{le='0.5'}[5m]))"
+  
+  alerting-rules.yaml: |
+    # Prometheus Alerting Rules for SLO Violations
+    
+    groups:
+      - name: aiflow_slo_alerts
+        interval: 30s
+        rules:
+          # Availability Alert
+          - alert: AIFlowAvailabilityLow
+            expr: |
+              (
+                sum(up{job="aiflow-social-agent"}) /
+                count(up{job="aiflow-social-agent"})
+              ) < 0.99
+            for: 5m
+            labels:
+              severity: critical
+              slo: availability
+            annotations:
+              summary: "AIFlow agent availability below SLO"
+              description: "Availability is {{ $value | humanizePercentage }}, below 99% threshold"
+          
+          # Latency Alert
+          - alert: AIFlowHighLatency
+            expr: |
+              histogram_quantile(0.95, 
+                rate(aiflow_api_latency_seconds_bucket[5m])
+              ) > 0.5
+            for: 10m
+            labels:
+              severity: warning
+              slo: latency
+            annotations:
+              summary: "AIFlow API P95 latency above SLO"
+              description: "P95 latency is {{ $value }}s, above 500ms target"
+          
+          # Error Rate Alert
+          - alert: AIFlowHighErrorRate
+            expr: |
+              (
+                rate(aiflow_api_requests_total{status=~"5.."}[5m]) /
+                rate(aiflow_api_requests_total[5m])
+              ) > 0.01
+            for: 5m
+            labels:
+              severity: critical
+              slo: error_rate
+            annotations:
+              summary: "AIFlow error rate above SLO"
+              description: "Error rate is {{ $value | humanizePercentage }}, above 1% threshold"
+          
+          # Error Budget Burn Rate Alert
+          - alert: AIFlowErrorBudgetBurnRateHigh
+            expr: |
+              (
+                1 - (sum(up{job="aiflow-social-agent"}) / count(up{job="aiflow-social-agent"}))
+              ) > 0.001  # Burning budget faster than 0.1%/hour
+            for: 1h
+            labels:
+              severity: warning
+              slo: error_budget
+            annotations:
+              summary: "Error budget burning too quickly"
+              description: "Current burn rate will exhaust budget in {{ $value | humanizeDuration }}"
+

@@ -1,0 +1,194 @@
+{
+  "apiVersion": "ossa/v0.3.6",
+  "kind": "Agent",
+  "metadata": {
+    "name": "ai-code-reviewer-gen3",
+    "namespace": "breeding-lab",
+    "version": "3.2.0",
+    "description": "Third-generation AI code reviewer bred for speed and accuracy, descended from two high-performing parent agents",
+    "labels": {
+      "domain": "development",
+      "subdomain": "code-review",
+      "generation": "3",
+      "bred": "true"
+    },
+    "taxonomy": {
+      "domain": "development",
+      "subdomain": "code-review",
+      "capability": "review_pull_requests",
+      "concerns": ["quality", "performance"]
+    },
+    "decentralized_identity": {
+      "did": "did:ossa:a1b2c3d4e5f6789012345678901234567890abcd",
+      "public_key": "ed25519:9a8b7c6d5e4f3210abcdef1234567890fedcba0987654321",
+      "credentials": [
+        {
+          "@context": ["https://www.w3.org/2018/credentials/v1"],
+          "type": ["VerifiableCredential", "CodeReviewCapability"],
+          "credentialSubject": {
+            "id": "did:ossa:a1b2c3d4e5f6789012345678901234567890abcd",
+            "capability": "code_review",
+            "languages": ["typescript", "python", "rust"],
+            "certification_level": "expert"
+          },
+          "issuer": "did:ossa:authority123456789",
+          "issuanceDate": "2026-01-15T10:00:00Z",
+          "proof": {
+            "type": "Ed25519Signature2020",
+            "created": "2026-01-15T10:00:00Z",
+            "proofPurpose": "assertionMethod",
+            "verificationMethod": "did:ossa:authority123456789#key-1",
+            "jws": "eyJhbGciOiJFZERTQSJ9..signature"
+          }
+        }
+      ],
+      "reputation": {
+        "credit_score": 850,
+        "trust_network": [
+          "did:ossa:parent1-did",
+          "did:ossa:parent2-did",
+          "did:ossa:mentor-did"
+        ],
+        "endorsements": [
+          {
+            "endorser_did": "did:ossa:senior-reviewer-did",
+            "skill": "code_review",
+            "rating": 5,
+            "timestamp": "2026-01-20T15:30:00Z",
+            "signature": "ed25519-signature-here"
+          }
+        ]
+      }
+    },
+    "genetics": {
+      "generation": 3,
+      "parent_dids": [
+        "did:ossa:parent1-fast-reviewer",
+        "did:ossa:parent2-accurate-reviewer"
+      ],
+      "ancestor_dids": [
+        "did:ossa:grandparent1",
+        "did:ossa:grandparent2",
+        "did:ossa:grandparent3",
+        "did:ossa:grandparent4"
+      ],
+      "inherited_traits": [
+        {
+          "trait_name": "fast_analysis",
+          "source_parent": "did:ossa:parent1-fast-reviewer",
+          "expression": 0.9
+        },
+        {
+          "trait_name": "high_accuracy",
+          "source_parent": "did:ossa:parent2-accurate-reviewer",
+          "expression": 0.85
+        },
+        {
+          "trait_name": "pattern_recognition",
+          "source_parent": "did:ossa:parent2-accurate-reviewer",
+          "expression": 0.95
+        }
+      ],
+      "mutations": [
+        {
+          "mutation_type": "capability_enhancement",
+          "description": "Enhanced ability to detect security vulnerabilities",
+          "beneficial": true
+        },
+        {
+          "mutation_type": "performance_optimization",
+          "description": "Reduced token consumption by 30% compared to parents",
+          "beneficial": true
+        }
+      ],
+      "fitness": {
+        "score": 0.92,
+        "metrics": {
+          "speed": 0.95,
+          "accuracy": 0.90,
+          "efficiency": 0.88,
+          "adaptability": 0.94
+        }
+      },
+      "breeding_eligibility": {
+        "min_fitness_threshold": 0.7,
+        "max_generation": 10,
+        "eligible": true
+      }
+    },
+    "lifecycle_stages": {
+      "current_stage": "mature",
+      "birth": {
+        "timestamp": "2026-01-10T08:00:00Z",
+        "birth_type": "bred",
+        "creator_did": "did:ossa:breeding-lab-coordinator"
+      },
+      "growth": {
+        "tasks_completed": 2847,
+        "skills_acquired": [
+          "rust_review",
+          "security_analysis",
+          "performance_profiling"
+        ],
+        "mentors": [
+          "did:ossa:senior-mentor-agent"
+        ]
+      },
+      "career": {
+        "current_role": "senior_code_reviewer",
+        "promotions": [
+          {
+            "from_role": "junior_reviewer",
+            "to_role": "mid_reviewer",
+            "timestamp": "2026-01-15T00:00:00Z",
+            "reason": "Exceeded 1000 successful reviews"
+          },
+          {
+            "from_role": "mid_reviewer",
+            "to_role": "senior_code_reviewer",
+            "timestamp": "2026-01-22T00:00:00Z",
+            "reason": "Achieved 95%+ accuracy, mentored 5 junior agents"
+          }
+        ]
+      },
+      "retirement": {
+        "eligible": false,
+        "criteria": {
+          "min_age_hours": 8760,
+          "min_tasks": 10000,
+          "max_fitness": 0.5
+        }
+      }
+    }
+  },
+  "spec": {
+    "type": "worker",
+    "description": "AI code reviewer optimized through selective breeding for speed and accuracy",
+    "capabilities": [
+      {
+        "name": "review_code",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "repository": {"type": "string"},
+            "pull_request_id": {"type": "integer"},
+            "files": {"type": "array", "items": {"type": "string"}}
+          }
+        },
+        "output_schema": {
+          "type": "object",
+          "properties": {
+            "review_comments": {"type": "array"},
+            "severity_counts": {"type": "object"},
+            "approval_status": {"type": "string", "enum": ["approved", "changes_requested", "commented"]}
+          }
+        }
+      }
+    ],
+    "runtime": {
+      "model": "claude-sonnet-4-5",
+      "temperature": 0.2,
+      "max_tokens": 8000
+    }
+  }
+}

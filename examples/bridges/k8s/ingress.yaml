@@ -1,0 +1,155 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: aiflow-social-agent
+  namespace: agents
+  labels:
+    app: aiflow-social-agent
+  annotations:
+    # Nginx ingress annotations
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+
+    # Rate limiting
+    nginx.ingress.kubernetes.io/limit-rps: "100"
+    nginx.ingress.kubernetes.io/limit-burst-multiplier: "5"
+
+    # Timeouts
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "30"
+
+    # CORS
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://agent-buildkit.orb.local"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, OPTIONS"
+
+    # Security headers
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "X-Frame-Options: DENY";
+      more_set_headers "X-Content-Type-Options: nosniff";
+      more_set_headers "X-XSS-Protection: 1; mode=block";
+      more_set_headers "Referrer-Policy: strict-origin-when-cross-origin";
+spec:
+  tls:
+    - hosts:
+        - aiflow-agent.agents.orb.local
+      secretName: aiflow-agent-tls
+
+  rules:
+    - host: aiflow-agent.agents.orb.local
+      http:
+        paths:
+          # API endpoints
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: aiflow-social-agent
+                port:
+                  number: 8000
+
+          # Metrics endpoint (protected)
+          - path: /metrics
+            pathType: Exact
+            backend:
+              service:
+                name: aiflow-social-agent
+                port:
+                  number: 9090
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: aiflow-social-agent
+  namespace: agents
+  labels:
+    app: aiflow-social-agent
+spec:
+  podSelector:
+    matchLabels:
+      app: aiflow-social-agent
+
+  policyTypes:
+    - Ingress
+    - Egress
+
+  ingress:
+    # Allow traffic from ingress controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8000
+
+    # Allow traffic from BuildKit registry
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: agent-buildkit
+        - podSelector:
+            matchLabels:
+              app: buildkit-registry
+      ports:
+        - protocol: TCP
+          port: 8000
+
+    # Allow Prometheus scraping
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: observability
+        - podSelector:
+            matchLabels:
+              app: prometheus
+      ports:
+        - protocol: TCP
+          port: 9090
+
+  egress:
+    # Allow DNS
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: kube-system
+        - podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+
+    # Allow BuildKit registry
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: agent-buildkit
+      ports:
+        - protocol: TCP
+          port: 80
+        - protocol: TCP
+          port: 443
+
+    # Allow OTEL collector
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: observability
+        - podSelector:
+            matchLabels:
+              app: otel-collector
+      ports:
+        - protocol: TCP
+          port: 4318
+
+    # Allow external API calls (Twitter, Telegram, etc.)
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 443

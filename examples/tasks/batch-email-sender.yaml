@@ -1,0 +1,105 @@
+# Example: Batch Email Sender Task
+# A deterministic batch task that sends emails to multiple recipients
+apiVersion: ossa/v0.3.6
+kind: Task
+metadata:
+  name: batch-email-sender
+  version: 1.0.0
+  description: Sends emails to a batch of recipients
+  labels:
+    domain: communication
+    type: batch
+
+spec:
+  execution:
+    type: idempotent  # Safe to retry without duplicate sends
+    runtime: any
+    timeout_seconds: 3600  # 1 hour for large batches
+
+  capabilities:
+    - send_email
+    - validate_email
+
+  input:
+    type: object
+    properties:
+      recipients:
+        type: array
+        items:
+          type: object
+          properties:
+            email:
+              type: string
+              format: email
+            name:
+              type: string
+            variables:
+              type: object
+              description: Template variables for personalization
+          required:
+            - email
+      template_id:
+        type: string
+        description: Email template identifier
+      subject:
+        type: string
+      from_email:
+        type: string
+        format: email
+    required:
+      - recipients
+      - template_id
+      - subject
+      - from_email
+
+  output:
+    type: object
+    properties:
+      total_sent:
+        type: integer
+      total_failed:
+        type: integer
+      failures:
+        type: array
+        items:
+          type: object
+          properties:
+            email:
+              type: string
+            error:
+              type: string
+
+  # Batch processing configuration
+  batch:
+    enabled: true
+    parallelism: 50      # Send 50 emails concurrently
+    chunk_size: 100      # Process 100 recipients at a time
+    retry:
+      max_attempts: 3
+      backoff_strategy: exponential
+      initial_delay_ms: 2000
+    on_item_error: skip  # Continue with other recipients on failure
+
+  error_handling:
+    on_error: continue  # Don't fail entire batch on partial failures
+
+  observability:
+    logging:
+      level: info
+    metrics:
+      enabled: true
+      custom_labels:
+        batch_type: email
+    tracing:
+      enabled: true
+      sample_rate: 0.1  # Sample 10% of emails for tracing
+
+# Runtime bindings for different environments
+runtime:
+  type: symfony_messenger
+  transport: async
+  bindings:
+    send_email:
+      handler: "App\\Service\\EmailService::send"
+    validate_email:
+      handler: "App\\Service\\EmailValidator::validate"

@@ -1,0 +1,51 @@
+# Branch Policy Enforcement
+# Ensures main branch only receives merges from release branches
+
+validate:branch-policy:
+  stage: validate
+  image: alpine:latest
+  script:
+    - |
+      #!/bin/sh
+      set -e
+
+      echo "[LOCK] BRANCH POLICY ENFORCEMENT"
+      echo "============================"
+      echo ""
+
+      # Only run on merge requests targeting main
+      if [ "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" != "main" ]; then
+        echo "[PASS] Not targeting main branch, policy check skipped"
+        exit 0
+      fi
+
+      echo "Target branch: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
+      echo "Source branch: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
+      echo ""
+
+      # Check if source branch is a release branch
+      case "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" in
+        release/*)
+          echo "[PASS] ALLOWED: Merge from release branch → main"
+          exit 0
+          ;;
+      esac
+
+      # Block all other merges to main
+      echo "[FAIL] BLOCKED: Direct merges to main are not allowed"
+      echo ""
+      echo "Policy: main branch ONLY accepts merges from release/* branches"
+      echo ""
+      echo "Required workflow:"
+      echo "  1. Create feature branch from release/*"
+      echo "  2. Merge feature → release/*"
+      echo "  3. Merge release/* → main"
+      echo ""
+      echo "Your branch: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
+      echo "Please merge to a release branch first"
+
+      exit 1
+  allow_failure: false
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+      when: always

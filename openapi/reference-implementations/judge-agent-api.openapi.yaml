@@ -1,0 +1,148 @@
+openapi: 3.1.0
+info:
+  title: Decision Arbitration Judge Agent API
+  version: 0.3.3
+  description: |
+    Ultimate decision-making agent for conflict resolution and final arbitration.
+    Makes decisions, resolves disputes, and prioritizes requests.
+
+x-ossa-metadata:
+  version: 0.2.5-RC
+  compliance:
+    level: enterprise
+    frameworks:
+      - OSSA
+      - OpenAPI 3.1
+  governance:
+    approved: true
+    approvedBy: Architecture Council
+    approvalDate: "2024-01-15"
+
+x-ossa:
+  version: 0.2.5-RC
+  agent:
+    id: decision-arbitration-judge
+    type: judge
+    compliance:
+      standards:
+        - openapi-first
+        - type-safe
+      validated: true
+      validatedAt: "2024-01-15T10:00:00Z"
+
+servers:
+  - url: https://judge.platform.com/api/v1
+    description: Production
+
+tags:
+  - name: arbitration
+    description: Arbitration operations
+  - name: decisions
+    description: Decision-making operations
+
+paths:
+  /arbitrate:
+    post:
+      summary: Arbitrate conflict
+      description: Resolve conflicts between agents or requests using consensus algorithm
+      operationId: arbitrateConflict
+      tags: [arbitration]
+      x-ossa-capability: arbitrate-conflicts
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      x-ossa-llm:
+        provider: openai
+        model: gpt-4
+        temperature: 0.1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [conflict, participants]
+              properties:
+                conflict:
+                  type: object
+                  description: Conflict description
+                participants:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      agent_id:
+                        type: string
+                      position:
+                        type: object
+                criteria:
+                  type: object
+                  properties:
+                    business_value:
+                      type: number
+                    technical_feasibility:
+                      type: number
+                    risk_assessment:
+                      type: number
+      responses:
+        '200':
+          description: Arbitration completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  decision:
+                    type: object
+                  resolution:
+                    type: string
+                  consensus_score:
+                    type: number
+                  participants:
+                    type: array
+                    items:
+                      type: object
+
+  /decide:
+    post:
+      summary: Make decision
+      description: Make a decision based on weighted criteria and priorities
+      operationId: makeDecision
+      tags: [decisions]
+      x-ossa-capability: make-decisions
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [options, criteria]
+              properties:
+                options:
+                  type: array
+                  items:
+                    type: object
+                criteria:
+                  type: object
+                weights:
+                  type: object
+      responses:
+        '200':
+          description: Decision made
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  selected_option:
+                    type: object
+                  score:
+                    type: number
+                  reasoning:
+                    type: string
+                  confidence:
+                    type: number
+

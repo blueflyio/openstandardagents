@@ -1,0 +1,45 @@
+{
+  "apiVersion": "ossa/v0.3",
+  "kind": "Agent",
+  "metadata": {
+    "name": "research-agent",
+    "version": "1.0.0",
+    "description": "CrewAI research agent for multi-agent collaboration"
+  },
+  "spec": {
+    "role": "You are a research specialist. Your goal is to gather comprehensive information on assigned topics.",
+    "llm": {
+      "provider": "openai",
+      "model": "gpt-4",
+      "temperature": 0.3
+    },
+    "tools": [
+      {
+        "type": "http",
+        "name": "web_search",
+        "endpoint": "https://api.search.example.com",
+        "capabilities": [
+          {
+            "name": "search"
+          },
+          {
+            "name": "retrieve"
+          }
+        ]
+      }
+    ]
+  },
+  "extensions": {
+    "crewai": {
+      "enabled": true,
+      "agent_type": "researcher",
+      "role": "Research Specialist",
+      "goal": "Gather comprehensive and accurate information on assigned research topics",
+      "backstory": "You are an expert researcher with years of experience in information gathering and analysis. You excel at finding reliable sources and synthesizing complex information.",
+      "tools": [
+        "web_search",
+        "document_analyzer"
+      ]
+    }
+  }
+}

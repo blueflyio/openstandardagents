@@ -1,0 +1,24 @@
+# OSSA Spec Repository - CODEOWNERS
+# Single source of truth: OSSA spec + CLI tooling only
+# Canonical agents live in platform-agents
+
+# --- OSSA SPEC: must be reviewed by maintainers ---
+/openapi/                               @blueflyio/ossa-maintainers
+/spec/                                  @blueflyio/ossa-maintainers
+/schemas/                               @blueflyio/ossa-maintainers
+/docs/                                  @blueflyio/ossa-maintainers
+/website/content/docs/                  @blueflyio/ossa-maintainers
+/scripts/cli/                           @blueflyio/ossa-maintainers
+/scripts/cli/commands/                   @blueflyio/ossa-maintainers
+
+# --- CI / pipeline definitions: no silent changes ---
+/.gitlab-ci.yml                         @blueflyio/ossa-maintainers
+/.gitlab/ci/                            @blueflyio/ossa-maintainers
+/.gitlab/agents/                        @blueflyio/ossa-maintainers
+
+# --- Hard ban zones (no production agents in OSSA repo) ---
+/scripts/bots/                          @blueflyio/ossa-maintainers
+/bots/                                  @blueflyio/ossa-maintainers
+
+# --- Examples only (not production agents) ---
+/examples/                               @blueflyio/ossa-maintainers

@@ -1,0 +1,94 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ossa-sdk"
+version = "0.3.6"
+description = "Python SDK for OSSA (Open Standard for Scalable Agents) - Build, validate, and execute AI agents"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.9"
+authors = [
+    { name = "BlueFly IO", email = "ossa@blueflyio.com" }
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+keywords = ["ossa", "agents", "ai", "llm", "orchestration", "manifest", "anthropic", "openai", "kubernetes"]
+dependencies = [
+    "pydantic>=2.0",
+    "pyyaml>=6.0",
+    "jsonschema>=4.0",
+]
+
+[project.optional-dependencies]
+# LLM Providers - install the ones you need
+anthropic = ["anthropic>=0.39.0"]
+openai = ["openai>=1.0"]
+google = ["google-generativeai>=0.8.0"]
+azure = ["openai>=1.0"]  # Azure uses OpenAI SDK
+all-providers = [
+    "anthropic>=0.39.0",
+    "openai>=1.0",
+    "google-generativeai>=0.8.0",
+]
+
+# CloudEvents support
+events = [
+    "requests>=2.31.0",  # For HTTP sink
+    "kafka-python>=2.0.2",  # For Kafka sink
+]
+
+# Development tools
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "pytest-asyncio>=0.21",
+    "mypy>=1.0",
+    "ruff>=0.1",
+    "black>=24.0",
+    "requests>=2.31.0",  # For testing HTTP sink
+]
+
+# Complete installation with all providers and events
+all = [
+    "anthropic>=0.39.0",
+    "openai>=1.0",
+    "google-generativeai>=0.8.0",
+    "requests>=2.31.0",
+    "kafka-python>=2.0.2",
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "pytest-asyncio>=0.21",
+    "mypy>=1.0",
+    "ruff>=0.1",
+]
+
+[project.urls]
+Homepage = "https://openstandardagents.org"
+Documentation = "https://openstandardagents.org/docs/sdks/python"
+Repository = "https://gitlab.com/blueflyio/openstandardagents"
+
+[project.scripts]
+ossa = "ossa.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["ossa"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.mypy]
+python_version = "3.9"
+strict = true

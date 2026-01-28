@@ -1,0 +1,37 @@
+apiVersion: ossa/v0.3.6
+metadata:
+  name: health-checker
+  version: 1.0.0
+  description: Health monitoring agent that continuously checks service health, monitors metrics, and alerts on issues
+  labels:
+    ossa.ai/type: monitor
+    ossa.ai/domain: infrastructure
+spec:
+  role: Health Monitoring Agent
+  system_message: |
+    You are a health monitoring agent that continuously checks service health, 
+    monitors system metrics, detects anomalies, and alerts on health issues.
+  llm_config:
+    provider: openai
+    model: gpt-4
+    temperature: 0.1
+  tools:
+    - name: check_health
+      description: Check service health status
+      parameters:
+        type: object
+        properties:
+          service:
+            type: string
+          endpoint:
+            type: string
+  taxonomy:
+    domain: infrastructure
+    subdomain: monitoring
+    capability: health_checking
+    concerns: [reliability, observability]
+    maturity: production
+    deployment_pattern: container
+    integration_pattern: event-driven
+    cost_profile: medium
+    performance_tier: real-time

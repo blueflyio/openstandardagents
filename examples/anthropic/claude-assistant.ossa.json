@@ -1,0 +1,46 @@
+{
+  "apiVersion": "ossa/v0.3",
+  "kind": "Agent",
+  "metadata": {
+    "name": "claude-assistant",
+    "version": "1.0.0",
+    "description": "Anthropic Claude API assistant agent"
+  },
+  "spec": {
+    "role": "You are a helpful, harmless, and honest AI assistant.",
+    "llm": {
+      "provider": "anthropic",
+      "model": "claude-3-5-sonnet-20241022",
+      "temperature": 1
+    },
+    "tools": []
+  },
+  "extensions": {
+    "anthropic": {
+      "enabled": true,
+      "model": "claude-3-5-sonnet-20241022",
+      "system": "You are a helpful, harmless, and honest AI assistant.",
+      "max_tokens": 4096,
+      "temperature": 1,
+      "tools": [
+        {
+          "name": "calculator",
+          "description": "Perform mathematical calculations",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "expression": {
+                "type": "string",
+                "description": "Mathematical expression to evaluate"
+              }
+            },
+            "required": [
+              "expression"
+            ]
+          }
+        }
+      ],
+      "streaming": false
+    }
+  }
+}

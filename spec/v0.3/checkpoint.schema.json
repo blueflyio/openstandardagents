@@ -1,0 +1,132 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openstandardagents.org/schemas/v0.3.5/checkpoint.json",
+  "title": "OSSA v0.3.5 Agent Checkpoint Schema",
+  "description": "Session checkpointing for resilient agent state management",
+  "type": "object",
+  "definitions": {
+    "AgentCheckpoint": {
+      "type": "object",
+      "required": ["session_id", "agent_id", "state_version", "created_at"],
+      "properties": {
+        "session_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique session identifier"
+        },
+        "agent_id": {
+          "type": "string",
+          "pattern": "^@[a-z0-9]([-a-z0-9]*[a-z0-9])?$",
+          "description": "Agent identifier (e.g., @mr-reviewer)"
+        },
+        "state_version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "description": "OSSA version this checkpoint targets",
+          "examples": ["0.3.5"]
+        },
+        "messages": {
+          "type": "array",
+          "description": "Conversation history",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "iteration_count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of reasoning iterations"
+        },
+        "custom_state": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Agent-specific state"
+        },
+        "checkpoint_metadata": {
+          "type": "object",
+          "properties": {
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "expires_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "storage_location": {
+              "type": "string",
+              "format": "uri"
+            },
+            "checksum": {
+              "type": "string",
+              "description": "State integrity checksum"
+            },
+            "size_bytes": {
+              "type": "integer"
+            }
+          },
+          "required": ["created_at", "storage_location"]
+        }
+      }
+    },
+    "CheckpointConfiguration": {
+      "type": "object",
+      "description": "Checkpoint configuration for agent",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "interval": {
+          "type": "string",
+          "enum": ["iteration", "time", "manual"],
+          "default": "iteration",
+          "description": "Checkpoint trigger type"
+        },
+        "interval_value": {
+          "type": "integer",
+          "description": "Checkpoint every N iterations or seconds",
+          "default": 5
+        },
+        "retention": {
+          "type": "object",
+          "properties": {
+            "days": {
+              "type": "integer",
+              "default": 30,
+              "minimum": 1,
+              "maximum": 365
+            },
+            "max_checkpoints": {
+              "type": "integer",
+              "default": 100,
+              "minimum": 1
+            }
+          }
+        },
+        "storage": {
+          "type": "object",
+          "properties": {
+            "backend": {
+              "type": "string",
+              "enum": ["agent-brain", "s3", "local"],
+              "default": "agent-brain"
+            },
+            "location": {
+              "type": "string",
+              "format": "uri",
+              "description": "Storage location pattern (e.g., s3://checkpoints/{agent_id}/{session_id})"
+            }
+          },
+          "required": ["backend"]
+        }
+      }
+    }
+  },
+  "properties": {
+    "checkpointing": {
+      "$ref": "#/definitions/CheckpointConfiguration"
+    }
+  }
+}
