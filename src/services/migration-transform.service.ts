@@ -58,6 +58,18 @@ export class MigrationTransformService {
       transform: this.transformV034ToV035.bind(this),
     });
 
+    // v0.3.3 → v0.3.5: Direct migration
+    this.register({
+      id: 'v0.3.3-to-v0.3.5',
+      fromVersion: '0.3.3',
+      toVersion: '0.3.5',
+      description: 'Direct upgrade from v0.3.3 to v0.3.5',
+      breaking: false,
+      reversible: true,
+      transform: (manifest) =>
+        this.transformV034ToV035(this.transformV033ToV034(manifest)),
+    });
+
     // v0.3.5 → v0.3.6: Maintenance release
     this.register({
       id: 'v0.3.5-to-v0.3.6',

@@ -1407,31 +1407,3 @@ x-ossa-metadata:
     approved: true
     approvedBy: OSSA Standards Team
     approvalDate: 2026-01-09
-  cli_mapping:
-    validate: POST /cli/validate
-    lint: POST /cli/lint
-    diff: POST /cli/diff
-    export: POST /cli/export
-    import: POST /cli/import
-    init: POST /cli/init
-    generate: POST /cli/generate
-    migrate: POST /cli/migrate
-    agents_list: GET /cli/agents
-    agents_create: POST /cli/agents
-    agents_get: GET /cli/agents/{name}
-    agents_update: PUT /cli/agents/{name}
-    agents_delete: DELETE /cli/agents/{name}
-    publish: POST /cli/registry/publish
-    search: GET /cli/registry/search
-    install: POST /cli/registry/install
-    info: GET /cli/registry/info/{name}
-    schema: GET /cli/schema
-    test: POST /cli/test
-    deploy: POST /cli/deploy
-    run: POST /cli/run
-    status: GET /cli/status
-    stop: POST /cli/stop
-    rollback: POST /cli/rollback
-    llms_txt_generate: POST /cli/llms-txt/generate
-    llms_txt_validate: POST /cli/llms-txt/validate
-    llms_txt_sync: POST /cli/llms-txt/sync
