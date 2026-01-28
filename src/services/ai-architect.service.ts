@@ -3,6 +3,16 @@
  *
  * The "Brain" of the wizard. Transforms high-level user intent into
  * valid OSSA manifests with correct Adapters and Principals using LLM reasoning.
+ *
+ * CORE CONCEPT: THE BLUEPRINT
+ * The "Blueprint" is an intermediate representation between abstract user intent
+ * and the concrete, detailed OSSA Manifest. It captures the *architectural decisions*
+ * (patterns, identity, capabilities) before they are compiled into the final spec.
+ *
+ * API-FIRST PRINCIPLE:
+ * This service ensures that the generated manifest strictly adheres to the OSSA schema.
+ * It uses the ValidationService to verify the output before returning it, preventing
+ * the creation of invalid agents.
  */
 
 import { injectable, inject } from 'inversify';
