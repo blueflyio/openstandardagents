@@ -77,8 +77,8 @@ export class DocsGenerator {
         const auth = t.auth ? ` (Auth: ${t.auth.type})` : '';
         return (
           `### 🛠️ ${t.name || 'Unnamed Tool'}${auth}\n\n` +
-          'Type: `'
-          + (t.type || 'unknown') +
+          'Type: `' +
+          (t.type || 'unknown') +
           '`\n\n' +
           (t.description ? `${t.description}\n` : '') +
           (t.capabilities

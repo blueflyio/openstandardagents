@@ -4,6 +4,7 @@
  */
 
 import * as path from 'path';
+import * as fs from 'fs';
 import { execSync } from 'child_process';
 import inquirer from 'inquirer';
 import type { WizardState, WizardOptions } from '../types.js';
@@ -44,7 +45,7 @@ export async function registerWorkspaceStep(
 
     // Check if workspace exists
     const workspacePath = path.join(cwd, '.agents-workspace');
-    if (!require('fs').existsSync(workspacePath)) {
+    if (!fs.existsSync(workspacePath)) {
       console_ui.warning(
         'No workspace found. Run `ossa workspace init` first.'
       );

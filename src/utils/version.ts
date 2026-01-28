@@ -112,13 +112,15 @@ function readVersionFromPackageJson(): string {
   let pkgPath: string | null = null;
 
   // Check if running in a Jest test environment
-  if (process.env.JEST_WORKER_ID) {
-    // Strategy for Jest: Find package.json from the project root
+  if (process.env.JEST_WORKER_ID || typeof __dirname !== 'undefined') {
+    // Strategy for Jest/CJS: Find package.json from the project root
     pkgPath = findPackageJson(process.cwd());
   } else {
     // Strategy for ESM (runtime): Use import.meta.url to find package.json
     try {
-      const modulePath = fileURLToPath(import.meta.url);
+      // Use eval to prevent bundlers from seeing import.meta.url in environments that don't support it
+      const metaUrl = eval('import.meta.url');
+      const modulePath = fileURLToPath(metaUrl);
       // The built file is in `dist/utils`, so we go up 3 levels to the project root
       const searchDir = path.resolve(modulePath, '..', '..', '..');
       pkgPath = findPackageJson(searchDir);
@@ -143,11 +145,12 @@ function readVersionFromPackageJson(): string {
   // Fallback Strategy: Read from .version.json (bundled with the package)
   try {
     let searchDir: string;
-    if (process.env.JEST_WORKER_ID) {
+    if (process.env.JEST_WORKER_ID || typeof __dirname !== 'undefined') {
       searchDir = process.cwd();
     } else {
       try {
-        const modulePath = fileURLToPath(import.meta.url);
+        const metaUrl = eval('import.meta.url');
+        const modulePath = fileURLToPath(metaUrl);
         searchDir = path.dirname(modulePath);
       } catch {
         searchDir = process.cwd();
@@ -203,7 +206,7 @@ export function getVersionInfo(forceRefresh = false): VersionInfo {
     schemaDir,
     schemaFile,
     schemaPath: `spec/${schemaDir}/${schemaFile}`,
-    apiVersion: `ossa/${schemaDir}`,
+    apiVersion: `ossa/v${version}`,
   };
 
   return cachedVersionInfo;

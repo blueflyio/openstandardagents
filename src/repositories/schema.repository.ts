@@ -118,6 +118,9 @@ export class SchemaRepository implements ISchemaRepository {
       `dist/spec/v${minorVersion}/ossa-v${version}.schema.json`,
       `spec/v${minorVersion}/ossa-${version}.schema.json`,
       `spec/v${minorVersion}/ossa-v${version}.schema.json`,
+      // Try minor version directory with minor-level schema file
+      `dist/spec/v${minorVersion}/ossa-v${minorVersion}.schema.json`,
+      `spec/v${minorVersion}/ossa-v${minorVersion}.schema.json`,
     ];
 
     // Try each pattern
@@ -175,12 +178,12 @@ export class SchemaRepository implements ISchemaRepository {
           if (match) {
             versions.push(match[1]);
           } else {
-            // Fallback to directory version if schema file doesn't have patch version
-            const exactMatch = schemaFile.match(
+            // Fallback to major.minor if schema file doesn't have patch version (e.g. ossa-v0.3.schema.json)
+            const majorMinorMatch = schemaFile.match(
               /ossa-(?:v)?(\d+\.\d+)\.schema\.json/
             );
-            if (exactMatch) {
-              versions.push(exactMatch[1]);
+            if (majorMinorMatch) {
+              versions.push(majorMinorMatch[1]);
             }
           }
         }

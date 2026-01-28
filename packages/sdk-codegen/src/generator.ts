@@ -75,7 +75,7 @@ export class ${name} extends AgentClient {
   }): string {
     const toolName = this.toCamelCase(tool.name || 'tool');
     const desc = tool.description || `Execute tool: ${tool.name}`;
-    
+
     return `  /**
    * ${desc}
    * @param params Tool parameters

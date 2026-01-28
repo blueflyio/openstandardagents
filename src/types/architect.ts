@@ -58,6 +58,6 @@ export interface Blueprint {
 export interface ArchitectRecommendation {
   adapters: Adapter[];
   tools: string[]; // Tool names
-  configuration: Record<string, any>;
+  configuration: Record<string, unknown>;
   confidence: number;
 }
