@@ -5,12 +5,7 @@
 
 import { injectable } from 'inversify';
 import * as fs from 'fs/promises';
-import * as path from 'path';
-import type {
-  OssaAgent,
-  AgentsMdExtension,
-  AgentsMdSection,
-} from '../../types/index.js';
+import type { OssaAgent, AgentsMdSection } from '../../types/index.js';
 
 /**
  * Service for generating and managing agents.md files from OSSA manifests
@@ -287,12 +282,6 @@ export class AgentsMdService {
     // Read the file
     const content = await fs.readFile(agentsMdPath, 'utf-8');
 
-    // Check for required sections
-    const requiredSections = [
-      '# Dev environment tips',
-      '# Testing instructions',
-      '# PR instructions',
-    ];
     const extension = manifest.extensions?.agents_md;
 
     if (extension?.sections?.dev_environment?.enabled !== false) {
@@ -362,7 +351,7 @@ export class AgentsMdService {
     }
 
     // Extract tool hints from commands mentioned
-    const tools: Array<{ type: string; name: string }> = [];
+    const tools: NonNullable<NonNullable<OssaAgent['spec']>['tools']> = [];
 
     // Look for npm commands
     if (content.includes('npm test') || content.includes('npm run')) {
@@ -375,7 +364,7 @@ export class AgentsMdService {
     }
 
     if (tools.length > 0 && manifest.spec) {
-      manifest.spec.tools = tools as any;
+      manifest.spec.tools = tools;
     }
 
     // Populate cursor extension context files

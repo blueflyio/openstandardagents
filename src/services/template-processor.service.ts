@@ -13,14 +13,26 @@ export interface TemplateVariables {
   [key: string]: string;
 }
 
+interface PackageJson {
+  name?: string;
+  description?: string;
+  repository?: string | { url: string };
+  status?: string;
+  [key: string]: unknown;
+}
+
 @injectable()
 export class TemplateProcessorService {
-  private readonly defaultTemplatePath = '/Users/thomas.scola/Sites/blueflyio/AGENTS.md.template';
+  private readonly legacyTemplatePath =
+    '/Users/thomas.scola/Sites/blueflyio/AGENTS.md.template';
 
   /**
    * Process template with variables
    */
-  async process(templateContent: string, variables: TemplateVariables): Promise<string> {
+  async process(
+    templateContent: string,
+    variables: TemplateVariables
+  ): Promise<string> {
     let result = templateContent;
 
     for (const [key, value] of Object.entries(variables)) {
@@ -35,7 +47,7 @@ export class TemplateProcessorService {
    * Extract variables from a repository path
    */
   async extractVariablesFromRepo(repoPath: string): Promise<TemplateVariables> {
-    let packageJson: any = {};
+    let packageJson: PackageJson = {};
     const packageJsonPath = path.join(repoPath, 'package.json');
 
     try {
@@ -47,7 +59,7 @@ export class TemplateProcessorService {
 
     const projectName = packageJson.name || path.basename(repoPath);
     const description = packageJson.description || '';
-    
+
     let repoUrl = '';
     if (typeof packageJson.repository === 'string') {
       repoUrl = packageJson.repository;
@@ -56,13 +68,17 @@ export class TemplateProcessorService {
     }
 
     // Clean up repo URL (remove git+, .git etc)
-    repoUrl = repoUrl.replace(/^git+/, '').replace(/\.git$/, '');
+    repoUrl = repoUrl.replace(/^git\+/, '').replace(/\.git$/, '');
 
     const projectType = this.inferProjectType(repoPath, packageJson);
     const wikiUrl = repoUrl ? `${repoUrl}.wiki` : '';
-    
-    // Relative path in bare repos structure
-    const repoPathRel = path.relative('/Volumes/AgentPlatform/repos/bare/blueflyio', repoPath);
+
+    // Relative path in bare repos structure (with fallback if not in expected structure)
+    const baseBarePath = '/Volumes/AgentPlatform/repos/bare/blueflyio';
+    let repoPathRel = repoPath;
+    if (repoPath.startsWith(baseBarePath)) {
+      repoPathRel = path.relative(baseBarePath, repoPath);
+    }
 
     return {
       PROJECT_NAME: projectName,
@@ -70,7 +86,7 @@ export class TemplateProcessorService {
       REPO_URL: repoUrl,
       REPO_PATH: repoPathRel,
       PROJECT_TYPE: projectType,
-      PROJECT_STATUS: 'Active',
+      PROJECT_STATUS: packageJson.status || 'Active',
       WIKI_URL: wikiUrl,
     };
   }
@@ -80,19 +96,20 @@ export class TemplateProcessorService {
    */
   getPlaceholders(templateContent: string): string[] {
     const matches = templateContent.match(/\{[A-Z0-9_]+\}/g) || [];
-    return [...new Set(matches)].map(m => m.slice(1, -1));
+    return [...new Set(matches)].map((m) => m.slice(1, -1));
   }
 
   /**
    * Infer project type from repo structure
    */
-  private inferProjectType(repoPath: string, packageJson: any): string {
+  private inferProjectType(repoPath: string, packageJson: PackageJson): string {
     if (packageJson.name) {
-      if (repoPath.includes('drupal')) return 'drupal';
+      if (repoPath.toLowerCase().includes('drupal')) return 'drupal';
       return 'npm';
     }
-    
-    if (repoPath.includes('docs') || repoPath.includes('wiki')) {
+
+    const lowerPath = repoPath.toLowerCase();
+    if (lowerPath.includes('docs') || lowerPath.includes('wiki')) {
       return 'documentation';
     }
 
@@ -100,14 +117,24 @@ export class TemplateProcessorService {
   }
 
   /**
-   * Load the default template
+   * Load the default template with prioritized lookup
    */
   async loadDefaultTemplate(): Promise<string> {
-    try {
-      return await fs.readFile(this.defaultTemplatePath, 'utf-8');
-    } catch (error) {
-      // Fallback minimal template if file doesn't exist
-      return `# {PROJECT_NAME}\n\n{PROJECT_DESCRIPTION}\n\n- **Type**: {PROJECT_TYPE}\n- **Status**: {PROJECT_STATUS}\n- **Repo**: {REPO_URL}\n- **Wiki**: {WIKI_URL}\n`;
+    const lookupPaths = [
+      path.join(process.cwd(), 'AGENTS.md.template'),
+      path.join(process.env.HOME || '', '.ossa', 'AGENTS.md.template'),
+      this.legacyTemplatePath,
+    ];
+
+    for (const templatePath of lookupPaths) {
+      try {
+        return await fs.readFile(templatePath, 'utf-8');
+      } catch (err) {
+        // Continue to next path
+      }
     }
+
+    // Fallback minimal template if no file found
+    return `# {PROJECT_NAME}\n\n{PROJECT_DESCRIPTION}\n\n- **Type**: {PROJECT_TYPE}\n- **Status**: {PROJECT_STATUS}\n- **Repo**: {REPO_URL}\n- **Wiki**: {WIKI_URL}\n`;
   }
 }
