@@ -162,7 +162,7 @@ function getValueAtPath(manifest: unknown, path: string): unknown {
 
   for (const part of parts) {
     if (current && typeof current === 'object' && part in current) {
-      current = (current as any)[part];
+      current = (current as Record<string, unknown>)[part];
     } else {
       return undefined;
     }

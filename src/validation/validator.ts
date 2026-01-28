@@ -44,6 +44,13 @@ export class OSSAValidator {
   }
 
   /**
+   * Get Ajv instance for internal use
+   */
+  get ajvInstance(): Ajv {
+    return this.ajv;
+  }
+
+  /**
    * Validate an OSSA manifest
    */
   validate(manifest: Record<string, unknown>): ValidationResult {

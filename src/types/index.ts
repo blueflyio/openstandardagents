@@ -271,8 +271,8 @@ export interface OssaAgent {
     policies?: Array<{
       name: string;
       type: string;
-      rules: any[];
-      [key: string]: any;
+      rules: unknown[];
+      [key: string]: unknown;
     }>;
     tests?: Array<{
       id: string;
@@ -281,9 +281,9 @@ export interface OssaAgent {
       assertions: Array<{
         type: string;
         actual: string;
-        expected: any;
+        expected: unknown;
       }>;
-      [key: string]: any;
+      [key: string]: unknown;
     }>;
     environments?: Record<
       string,

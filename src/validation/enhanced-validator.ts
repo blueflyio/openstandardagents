@@ -1,4 +1,3 @@
-
 import * as fs from 'fs';
 
 /**
@@ -63,7 +62,7 @@ export class EnhancedOSSAValidator {
     // Add schema validation errors
     if (schemaResult.errors) {
       // Convert Ajv errors to FormattedError
-      const ajvErrors = (this.validator as any).ajv.errors || [];
+      const ajvErrors = this.validator.ajvInstance.errors || [];
       allErrors.push(...formatAjvErrors(ajvErrors));
     }
 

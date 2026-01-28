@@ -32,7 +32,6 @@ spec:
     subdomain: demo
     capability: multi_platform
     concerns: [architecture, performance]
-    maturity: beta
     deployment_pattern: container
     integration_pattern: api-first
     cost_profile: medium

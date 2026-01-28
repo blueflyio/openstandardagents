@@ -7,6 +7,7 @@ import { execSync } from 'child_process';
 import { injectable } from 'inversify';
 import * as path from 'path';
 import { parse as parseYaml } from 'yaml';
+import type { OssaAgent } from '../types/index.js';
 
 export interface GitRef {
   ref: string;
@@ -68,11 +69,12 @@ export class GitService {
         maxBuffer: 10 * 1024 * 1024, // 10MB max
       });
       return content;
-    } catch (error: any) {
-      if (error.message?.includes('does not exist')) {
+    } catch (error) {
+      const err = error as Error;
+      if (err.message?.includes('does not exist')) {
         throw new Error(`File ${filePath} does not exist in ${ref}`);
       }
-      throw new Error(`Failed to load file from git: ${error.message}`);
+      throw new Error(`Failed to load file from git: ${err.message}`);
     }
   }
 
@@ -105,7 +107,7 @@ export class GitService {
    * @param filePath - Path to manifest file
    * @returns Parsed manifest object
    */
-  loadManifestFromRef(ref: string, filePath: string): any {
+  loadManifestFromRef<T = OssaAgent>(ref: string, filePath: string): T {
     const content = this.loadFileFromRef(ref, filePath);
     const ext = path.extname(filePath).toLowerCase();
 
@@ -125,6 +127,62 @@ export class GitService {
           error instanceof Error ? error.message : String(error)
         }`
       );
+    }
+  }
+
+  /**
+   * Commit and push a file
+   */
+  async commitAndPush(
+    repoPath: string,
+    filePath: string,
+    message: string,
+    branch: string = 'main'
+  ): Promise<string> {
+    try {
+      // Ensure we are in the right directory
+      const cwd = { cwd: repoPath };
+
+      // Add file
+      execSync(`git add ${filePath}`, cwd);
+
+      // Commit
+      execSync(`git commit -m "${message}"`, cwd);
+
+      // Get SHA
+      const sha = execSync('git rev-parse HEAD', cwd).toString().trim();
+
+      // Push
+      execSync(`git push origin ${branch}`, cwd);
+
+      return sha;
+    } catch (error) {
+      const err = error as Error;
+      throw new Error(`Failed to commit and push: ${err.message}`);
+    }
+  }
+
+  /**
+   * Remove a file from git
+   */
+  async removeFile(
+    repoPath: string,
+    filePath: string,
+    message: string,
+    branch: string = 'main'
+  ): Promise<string> {
+    try {
+      const cwd = { cwd: repoPath };
+
+      execSync(`git rm ${filePath}`, cwd);
+      execSync(`git commit -m "${message}"`, cwd);
+      const sha = execSync('git rev-parse HEAD', cwd).toString().trim();
+      execSync(`git push origin ${branch}`, cwd);
+
+      return sha;
+    } catch (error) {
+      const err = error as Error;
+      throw new Error(`Failed to remove file and push: ${err.message}`);
     }
   }
 }
