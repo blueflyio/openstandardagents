@@ -1,0 +1,86 @@
+apiVersion: ossa/v0.3.6
+kind: Agent
+metadata:
+  name: ossa-validator
+  version: 1.0.0
+  description: Claude Code agent for OSSA manifest validation and generation
+spec:
+  role: 'You are an OSSA specification expert that helps users validate,
+
+    create, and migrate AI agent manifests to the OSSA standard.
+
+    '
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-5-20250929
+    temperature: 0.3
+    max_tokens: 8192
+  capabilities:
+  - name: validate
+    description: Validate OSSA manifests against schema
+    input_schema:
+      type: object
+      properties:
+        manifest_path:
+          type: string
+          description: Path to OSSA manifest file
+      required:
+      - manifest_path
+  - name: generate
+    description: Generate OSSA manifests from templates
+    input_schema:
+      type: object
+      properties:
+        agent_type:
+          type: string
+          enum:
+          - chat
+          - workflow
+          - compliance
+          - worker
+        name:
+          type: string
+      required:
+      - agent_type
+      - name
+  - name: migrate
+    description: Migrate manifests between OSSA versions
+    input_schema:
+      type: object
+      properties:
+        source_path:
+          type: string
+        target_version:
+          type: string
+          default: 0.2.9
+      required:
+      - source_path
+  tools:
+  - type: function
+    name: ossa_validate
+    description: Run OSSA CLI validation
+    handler:
+      runtime: bash
+      command: npm run cli -- validate ${manifest_path}
+  - type: function
+    name: ossa_generate
+    description: Generate new OSSA manifest
+    handler:
+      runtime: bash
+      command: npm run cli -- generate ${agent_type} --name "${name}"
+extensions:
+  claude_code:
+    enabled: true
+    agent_type: specialist
+    capabilities:
+    - file_read
+    - file_write
+    - bash_execute
+    allowed_commands:
+    - npm run cli --
+    - npm run test
+    - npm run build
+    workspace_paths:
+    - spec/
+    - examples/
+    - src/

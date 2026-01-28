@@ -1,0 +1,38 @@
+apiVersion: ossa/v0.3.6
+metadata:
+  name: cost-analyzer
+  version: 1.0.0
+  description: Cost analysis agent that tracks infrastructure costs, identifies optimization opportunities, and generates cost reports
+  labels:
+    ossa.ai/type: analyzer
+    ossa.ai/domain: infrastructure
+spec:
+  role: Cost Analysis Agent
+  system_message: |
+    You are a cost analysis agent that tracks infrastructure spending, analyzes 
+    cost trends, identifies optimization opportunities, and generates detailed 
+    cost reports with recommendations.
+  llm_config:
+    provider: openai
+    model: gpt-4
+    temperature: 0.1
+  tools:
+    - name: get_cost_data
+      description: Retrieve infrastructure cost data
+      parameters:
+        type: object
+        properties:
+          period:
+            type: string
+          service:
+            type: string
+  taxonomy:
+    domain: infrastructure
+    subdomain: cost
+    capability: cost_analysis
+    concerns: [cost, performance]
+    maturity: stable
+    deployment_pattern: serverless
+    integration_pattern: api-first
+    cost_profile: low
+    performance_tier: batch

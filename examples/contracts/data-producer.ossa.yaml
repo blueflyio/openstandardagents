@@ -1,0 +1,219 @@
+# Contract Testing Example: Data Producer Agent
+# This agent demonstrates contract testing capabilities by publishing events
+# and exposing commands that other agents can depend on.
+#
+# Contract Testing Use Cases:
+# 1. Validate that agent publishes declared events
+# 2. Validate that agent exposes declared commands
+# 3. Test schema compatibility with consumer agents
+# 4. Detect breaking changes between versions
+
+apiVersion: ossa/v0.3.6
+kind: Agent
+metadata:
+  name: data-producer
+  version: 1.0.0
+  description: Example agent that produces data events for contract testing
+  labels:
+    team: platform
+    environment: development
+    example: contract-testing
+
+spec:
+  role: Data producer that generates and publishes data events
+
+  # Messaging contract definition
+  messaging:
+    # Events published by this agent
+    publishes:
+      - channel: data.created
+        description: Emitted when new data is created
+        contentType: application/json
+        schema:
+          type: object
+          properties:
+            id:
+              type: string
+              description: Unique identifier for the data
+            timestamp:
+              type: string
+              format: date-time
+              description: When the data was created
+            payload:
+              type: object
+              description: The data payload
+              properties:
+                type:
+                  type: string
+                  enum: [user, order, product]
+                value:
+                  type: string
+          required: [id, timestamp, payload]
+        examples:
+          - id: "data-123"
+            timestamp: "2025-12-13T10:00:00Z"
+            payload:
+              type: user
+              value: "john.doe@example.com"
+
+      - channel: data.updated
+        description: Emitted when existing data is updated
+        contentType: application/json
+        schema:
+          type: object
+          properties:
+            id:
+              type: string
+            timestamp:
+              type: string
+              format: date-time
+            changes:
+              type: array
+              items:
+                type: object
+                properties:
+                  field:
+                    type: string
+                  oldValue:
+                    type: string
+                  newValue:
+                    type: string
+          required: [id, timestamp, changes]
+        examples:
+          - id: "data-123"
+            timestamp: "2025-12-13T11:00:00Z"
+            changes:
+              - field: email
+                oldValue: "old@example.com"
+                newValue: "new@example.com"
+
+      - channel: data.deleted
+        description: Emitted when data is deleted
+        contentType: application/json
+        schema:
+          type: object
+          properties:
+            id:
+              type: string
+            timestamp:
+              type: string
+              format: date-time
+            reason:
+              type: string
+          required: [id, timestamp]
+        examples:
+          - id: "data-123"
+            timestamp: "2025-12-13T12:00:00Z"
+            reason: "User requested deletion"
+
+    # Commands exposed by this agent
+    commands:
+      - name: create_data
+        description: Create new data entry
+        inputSchema:
+          type: object
+          properties:
+            type:
+              type: string
+              enum: [user, order, product]
+            value:
+              type: string
+          required: [type, value]
+        outputSchema:
+          type: object
+          properties:
+            id:
+              type: string
+            success:
+              type: boolean
+            message:
+              type: string
+          required: [id, success]
+        timeoutSeconds: 30
+        idempotent: true
+        async: false
+
+      - name: update_data
+        description: Update existing data entry
+        inputSchema:
+          type: object
+          properties:
+            id:
+              type: string
+            changes:
+              type: object
+          required: [id, changes]
+        outputSchema:
+          type: object
+          properties:
+            success:
+              type: boolean
+            message:
+              type: string
+          required: [success]
+        timeoutSeconds: 30
+        idempotent: true
+        async: false
+
+      - name: delete_data
+        description: Delete data entry
+        inputSchema:
+          type: object
+          properties:
+            id:
+              type: string
+            reason:
+              type: string
+          required: [id]
+        outputSchema:
+          type: object
+          properties:
+            success:
+              type: boolean
+            message:
+              type: string
+          required: [success]
+        timeoutSeconds: 30
+        idempotent: true
+        async: false
+
+    # Reliability configuration
+    reliability:
+      deliveryGuarantee: at-least-once
+      retry:
+        maxAttempts: 3
+        backoff:
+          strategy: exponential
+          initialDelayMs: 1000
+          maxDelayMs: 10000
+      ordering:
+        enabled: true
+        key: id
+
+  # Observability
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+      endpoint: http://jaeger:4318
+    metrics:
+      enabled: true
+      exporter: prometheus
+      endpoint: http://prometheus:9090
+    logging:
+      level: info
+      format: json
+
+# Contract Testing Commands:
+#
+# 1. Validate this agent's contract:
+#    ossa contract validate "examples/contracts/*.ossa.yaml"
+#
+# 2. Extract contract from this agent:
+#    ossa contract extract examples/contracts/data-producer.ossa.yaml
+#
+# 3. Test contract with consumer:
+#    ossa contract test examples/contracts/data-consumer.ossa.yaml examples/contracts/data-producer.ossa.yaml
+#
+# 4. Detect breaking changes between versions:
+#    ossa contract breaking-changes examples/contracts/data-producer-v1.ossa.yaml examples/contracts/data-producer-v2.ossa.yaml

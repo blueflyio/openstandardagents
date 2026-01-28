@@ -1,0 +1,109 @@
+apiVersion: ossa/v0.3.6
+kind: Agent
+metadata:
+  name: codebase-navigator
+  version: 1.0.0
+  description: "Intelligent codebase navigation with 98% token reduction via knowledge graph"
+  efficiency_tier: economy
+  labels:
+    feature: knowledge-graph
+    optimization: 98-percent
+    use-case: codebase-understanding
+
+spec:
+  role: "Expert codebase navigator that understands project structure through knowledge graph indexing"
+
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4
+    temperature: 0.2
+
+  # Token Efficiency via Knowledge Graph (v0.3.6+)
+  token_efficiency:
+    enabled: true
+
+    # Knowledge Graph Configuration: 98% savings
+    knowledge_graph:
+      enabled: true
+      max_context_tokens: 10000       # vs 500k+ for full codebase
+      indexing_strategy: selective    # Only index changed files
+
+      # Estimated savings
+      # Before: 500,000 tokens (full codebase in context)
+      # After: 10,000 tokens (knowledge graph queries)
+      # Reduction: 98%
+
+  # Knowledge Graph via MCP (GitLab Duo or local)
+  extensions:
+    mcp:
+      servers:
+        - name: gitlab-kg
+          description: "GitLab Knowledge Graph MCP server"
+          transport: http
+          oauth2:
+            enabled: true
+            registration_endpoint: https://gitlab.com/oauth/applications
+            scopes:
+              - api
+              - read_repository
+
+      tools:
+        - name: query_codebase
+          description: "Semantic code search via knowledge graph"
+          server: gitlab-kg
+          schema:
+            type: object
+            properties:
+              query:
+                type: string
+                description: "Natural language query (e.g., 'find authentication functions')"
+              index_types:
+                type: array
+                items:
+                  enum: [files, classes, functions, dependencies]
+              max_results:
+                type: integer
+                default: 10
+
+        - name: get_relationships
+          description: "Get code relationships (imports, extends, calls)"
+          server: gitlab-kg
+          schema:
+            type: object
+            properties:
+              entity_id:
+                type: string
+                description: "Entity to get relationships for"
+              relationship_types:
+                type: array
+                items:
+                  enum: [imports, extends, calls, depends_on]
+
+        - name: traverse_dependencies
+          description: "Traverse dependency graph"
+          server: gitlab-kg
+          schema:
+            type: object
+            properties:
+              start_node:
+                type: string
+              max_depth:
+                type: integer
+                default: 3
+
+  # Capabilities
+  capabilities:
+    - name: code-understanding
+      type: tool
+      description: "Understand codebase structure via knowledge graph"
+      available: true
+
+  autonomy:
+    level: semi_autonomous
+    approval_required: false        # No approval needed for queries
+
+  observability:
+    enabled: true
+    metrics:
+      track_tokens: true
+      track_queries: true

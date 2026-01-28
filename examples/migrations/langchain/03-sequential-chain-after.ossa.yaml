@@ -1,0 +1,95 @@
+apiVersion: ossa/v0.3.6
+kind: Workflow
+metadata:
+  name: sequential-chain
+  version: 0.1.0
+  description: Migrated from LangChain sequential chain
+  labels:
+    ossa-version: v0.3.6
+    migration-source: langchain
+  annotations:
+    ossa.io/migration: langchain-to-ossa
+    ossa.io/migrated-date: "2026-01-15"
+    ossa.io/source-file: 03-sequential-chain-before.py
+spec:
+  role: Sequential chain processor - executes steps in order
+  llm:
+    provider: anthropic
+    model: claude-3-sonnet-20240229
+    temperature: 0.3
+    maxTokens: 4000
+  steps:
+    - id: extract
+      name: extract
+      description: Extract key information from document
+      task:
+        prompt: |
+          Extract the key information from the following document:
+
+          Document: {{ inputs.document }}
+
+          Extract:
+          - Main topic
+          - Key points (bullet list)
+          - Entities mentioned (people, organizations, dates)
+      outputs:
+        - extracted_info
+
+    - id: analyze
+      name: analyze
+      description: Analyze sentiment and tone
+      task:
+        prompt: |
+          Analyze the sentiment and tone of the following extracted information:
+
+          {{ steps.extract.outputs.extracted_info }}
+
+          Provide:
+          - Overall sentiment (positive/negative/neutral)
+          - Tone (formal/informal/technical)
+          - Confidence level
+      outputs:
+        - analysis
+
+    - id: summarize
+      name: summarize
+      description: Generate comprehensive summary
+      task:
+        prompt: |
+          Create a comprehensive summary based on the extracted information and analysis:
+
+          Extracted Information:
+          {{ steps.extract.outputs.extracted_info }}
+
+          Analysis:
+          {{ steps.analyze.outputs.analysis }}
+
+          Generate a 2-3 paragraph executive summary that captures the essence of the document,
+          its key points, and the overall tone.
+      outputs:
+        - summary
+
+  inputs:
+    type: object
+    properties:
+      document:
+        type: string
+        description: Document text to process
+    required:
+      - document
+
+  outputs:
+    type: object
+    properties:
+      extracted_info:
+        type: string
+        description: Extracted information from document
+      analysis:
+        type: string
+        description: Sentiment and tone analysis
+      summary:
+        type: string
+        description: Executive summary
+
+  autonomy:
+    level: autonomous

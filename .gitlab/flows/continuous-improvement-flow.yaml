@@ -1,0 +1,56 @@
+# ============================================================================
+# GitLab Duo Flow: Continuous Improvement
+# ============================================================================
+# Autonomous continuous improvement using existing agents
+# ============================================================================
+
+image: node:22-alpine
+injectGatewayToken: true
+
+variables:
+  PLATFORM_AGENTS_API: ${PLATFORM_AGENTS_API_URL:-https://api.blueflyagents.com}
+
+commands:
+  - echo "Starting Continuous Improvement Flow"
+  - apk add --no-cache curl jq
+
+steps:
+  - id: analyze_codebase
+    tool: InvokePlatformAgent
+    with:
+      agent: code-quality-reviewer
+      service_account: @code-quality-reviewer
+      token: ${SERVICE_ACCOUNT_CODE_QUALITY_TOKEN}
+      task: analyze-improvements
+      inputs:
+        project_id: ${CI_PROJECT_ID}
+        create_issues: true
+        prioritize: true
+
+  - id: analyze_dependencies
+    tool: InvokePlatformAgent
+    with:
+      agent: vulnerability-scanner
+      service_account: @vuln-scanner
+      token: ${SERVICE_ACCOUNT_VULN_SCANNER_TOKEN}
+      task: analyze-dependencies
+      inputs:
+        project_id: ${CI_PROJECT_ID}
+        create_issues: true
+        auto_remediate: false
+
+  - id: generate_improvements
+    tool: InvokePlatformAgent
+    with:
+      agent: task-dispatcher
+      service_account: @task-dispatcher
+      token: ${SERVICE_ACCOUNT_TASK_DISPATCHER_TOKEN}
+      task: generate-improvement-plan
+      inputs:
+        project_id: ${CI_PROJECT_ID}
+        max_issues: 15
+        prioritize: true
+        assign_milestones: true
+    needs:
+      - analyze_codebase
+      - analyze_dependencies

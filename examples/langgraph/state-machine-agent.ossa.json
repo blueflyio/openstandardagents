@@ -1,0 +1,58 @@
+{
+  "apiVersion": "ossa/v0.3",
+  "kind": "Agent",
+  "metadata": {
+    "name": "state-machine-agent",
+    "version": "1.0.0",
+    "description": "LangGraph state machine agent"
+  },
+  "spec": {
+    "role": "You are a state machine agent that processes requests through defined states.",
+    "llm": {
+      "provider": "openai",
+      "model": "gpt-4",
+      "temperature": 0.3
+    },
+    "tools": []
+  },
+  "extensions": {
+    "langgraph": {
+      "enabled": true,
+      "graph_name": "request-processor",
+      "state_schema": {
+        "messages": "list",
+        "current_state": "str",
+        "data": "dict"
+      },
+      "nodes": [
+        {
+          "name": "start",
+          "function": "initialize"
+        },
+        {
+          "name": "process",
+          "function": "process_request"
+        },
+        {
+          "name": "validate",
+          "function": "validate_response"
+        }
+      ],
+      "edges": [
+        {
+          "from": "start",
+          "to": "process"
+        },
+        {
+          "from": "process",
+          "to": "validate",
+          "condition": "should_validate"
+        }
+      ],
+      "checkpoint": {
+        "enabled": true,
+        "type": "memory"
+      }
+    }
+  }
+}

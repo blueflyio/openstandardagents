@@ -1,0 +1,85 @@
+# Multi-Cluster Runner Configuration
+# Support for running across multiple Kubernetes clusters
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: runner-multi-cluster-config
+  namespace: gitlab-runner
+data:
+  cluster-config.json: |
+    {
+      "clusters": [
+        {
+          "name": "primary",
+          "endpoint": "https://kubernetes.default.svc",
+          "namespace": "gitlab-runner",
+          "priority": 1,
+          "tags": ["primary", "production"]
+        },
+        {
+          "name": "secondary",
+          "endpoint": "${SECONDARY_CLUSTER_ENDPOINT}",
+          "namespace": "gitlab-runner",
+          "priority": 2,
+          "tags": ["secondary", "backup"]
+        }
+      ],
+      "routing": {
+        "strategy": "round-robin",
+        "failover": true,
+        "healthCheckInterval": 30
+      }
+    }
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gitlab-runner-config
+  namespace: gitlab-runner
+data:
+  config.toml: |
+    concurrent = 20
+    check_interval = 0
+
+    [session_server]
+      session_timeout = 1800
+
+    [[runners]]
+      name = "ossa-multi-cluster"
+      url = "https://gitlab.com/"
+      token = "${GITLAB_RUNNER_TOKEN}"
+      executor = "kubernetes"
+      [runners.kubernetes]
+        namespace = "gitlab-runner"
+        image = "node:22-alpine"
+        privileged = false
+        cpu_limit = "2"
+        memory_limit = "4Gi"
+        cpu_request = "500m"
+        memory_request = "1Gi"
+        poll_timeout = 180
+        output_limit = 4096
+        [runners.kubernetes.affinity]
+        [runners.kubernetes.pod_security_context]
+          run_as_non_root = true
+          run_as_user = 1000
+          fs_group = 1000
+        [runners.kubernetes.container_security_context]
+          privileged = false
+          allow_privilege_escalation = false
+        [runners.kubernetes.volumes]
+          [[runners.kubernetes.volumes.empty_dir]]
+            name = "cache"
+            mount_path = "/cache"
+          [[runners.kubernetes.volumes.empty_dir]]
+            name = "builds"
+            mount_path = "/builds"
+      [runners.cache]
+        Type = "s3"
+        ServerAddress = "${S3_CACHE_SERVER}"
+        AccessKey = "${S3_CACHE_ACCESS_KEY}"
+        SecretKey = "${S3_CACHE_SECRET_KEY}"
+        BucketName = "gitlab-runner-cache"
+        Insecure = false

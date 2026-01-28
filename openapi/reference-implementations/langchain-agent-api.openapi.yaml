@@ -1,0 +1,171 @@
+openapi: 3.1.0
+info:
+  title: LangChain Agent API
+  version: 0.3.3
+  description: |
+    LangChain agent with tool chain integration.
+    Uses tools to accomplish tasks with memory and chain capabilities.
+
+x-ossa-metadata:
+  version: 0.2.5-RC
+  compliance:
+    level: basic
+    frameworks:
+      - OSSA
+      - OpenAPI 3.1
+      - LangChain
+
+x-ossa:
+  version: 0.2.5-RC
+  agent:
+    id: langchain-agent
+    type: worker
+    compliance:
+      standards:
+        - openapi-first
+      validated: true
+      validatedAt: "2024-01-15T10:00:00Z"
+
+servers:
+  - url: http://localhost:3000
+    description: Local development
+
+tags:
+  - name: tasks
+    description: Task execution operations
+  - name: tools
+    description: Tool operations
+
+paths:
+  /execute:
+    post:
+      summary: Execute task with tools
+      description: Execute a task using LangChain agent with available tools
+      operationId: executeTask
+      tags: [tasks]
+      x-ossa-capability: execute_task
+      x-ossa-autonomy:
+        level: autonomous
+        approval_required: false
+      x-ossa-llm:
+        provider: openai
+        model: gpt-4
+        temperature: 0.5
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [task]
+              properties:
+                task:
+                  type: string
+                  description: Task description
+                tools:
+                  type: array
+                  items:
+                    type: string
+                  description: Tools to use for task
+                context:
+                  type: object
+                  description: Additional context
+      responses:
+        '200':
+          description: Task executed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                  steps:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        tool:
+                          type: string
+                        result:
+                          type: string
+                  memory:
+                    type: object
+
+  /tools/calculator:
+    post:
+      summary: Calculator tool
+      description: Perform mathematical calculations
+      operationId: calculator
+      tags: [tools]
+      x-ossa-capability: calculator
+      x-ossa-autonomy:
+        level: autonomous
+        approval_required: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [operation, a, b]
+              properties:
+                operation:
+                  type: string
+                  enum: [add, subtract, multiply, divide]
+                a:
+                  type: number
+                b:
+                  type: number
+      responses:
+        '200':
+          description: Calculation result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: number
+
+  /tools/search:
+    post:
+      summary: Web search tool
+      description: Search the web for information
+      operationId: webSearch
+      tags: [tools]
+      x-ossa-capability: web_search
+      x-ossa-autonomy:
+        level: autonomous
+        approval_required: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [query]
+              properties:
+                query:
+                  type: string
+                  description: Search query
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        title:
+                          type: string
+                        url:
+                          type: string
+                        snippet:
+                          type: string
+

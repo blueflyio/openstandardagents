@@ -1,0 +1,229 @@
+# Contract Testing Example: Data Producer v2 (Breaking Changes)
+# This is version 2.0.0 of the data-producer agent with intentional breaking changes
+# to demonstrate breaking change detection.
+#
+# Breaking Changes from v1.0.0:
+# 1. Removed "data.deleted" event (MAJOR)
+# 2. Changed "data.created" schema - made "payload.type" required (MAJOR)
+# 3. Removed "delete.data" command (MAJOR)
+# 4. Changed output schema for "create.data" command (MINOR)
+#
+# Use this to test:
+#   ossa contract breaking-changes examples/contracts/data-producer.ossa.yaml examples/contracts/data-producer-v2.ossa.yaml
+
+apiVersion: ossa/v0.3.6
+kind: Agent
+metadata:
+  name: data-producer
+  version: 2.0.0  # Major version bump due to breaking changes
+  description: Example agent v2 with breaking changes for contract testing
+  labels:
+    team: platform
+    environment: development
+    example: contract-testing-breaking-changes
+
+spec:
+  role: Data producer v2 with breaking changes
+
+  messaging:
+    # CHANGE: "data.deleted" event removed (BREAKING)
+    publishes:
+      - channel: data.created
+        description: Emitted when new data is created
+        contentType: application/json
+        schema:
+          type: object
+          properties:
+            id:
+              type: string
+            timestamp:
+              type: string
+              format: date-time
+            payload:
+              type: object
+              properties:
+                type:
+                  type: string
+                  enum: [user, order, product]
+                value:
+                  type: string
+              # BREAKING: Made "type" required where it wasn't before
+              required: [type, value]
+          required: [id, timestamp, payload]
+        examples:
+          - id: "data-456"
+            timestamp: "2025-12-13T10:00:00Z"
+            payload:
+              type: user
+              value: "jane.doe@example.com"
+
+      - channel: data.updated
+        description: Emitted when existing data is updated
+        contentType: application/json
+        schema:
+          type: object
+          properties:
+            id:
+              type: string
+            timestamp:
+              type: string
+              format: date-time
+            changes:
+              type: array
+              items:
+                type: object
+                properties:
+                  field:
+                    type: string
+                  oldValue:
+                    type: string
+                  newValue:
+                    type: string
+            # NEW: Added version field (non-breaking, optional)
+            version:
+              type: integer
+              description: Version number after update
+          required: [id, timestamp, changes]
+
+      # NEW: Added new event (non-breaking addition)
+      - channel: data.validated
+        description: Emitted when data passes validation
+        contentType: application/json
+        schema:
+          type: object
+          properties:
+            id:
+              type: string
+            timestamp:
+              type: string
+              format: date-time
+            validationResults:
+              type: object
+          required: [id, timestamp, validationResults]
+
+    # CHANGE: "delete.data" command removed (BREAKING)
+    commands:
+      - name: create_data
+        description: Create new data entry
+        inputSchema:
+          type: object
+          properties:
+            type:
+              type: string
+              enum: [user, order, product]
+            value:
+              type: string
+          required: [type, value]
+        outputSchema:
+          type: object
+          properties:
+            id:
+              type: string
+            success:
+              type: boolean
+            # CHANGE: Removed "message" field from output (MINOR)
+            # Added new fields (non-breaking addition)
+            createdAt:
+              type: string
+              format: date-time
+            version:
+              type: integer
+          required: [id, success, createdAt]
+        timeoutSeconds: 30
+        idempotent: true
+        async: false
+
+      - name: update_data
+        description: Update existing data entry
+        inputSchema:
+          type: object
+          properties:
+            id:
+              type: string
+            changes:
+              type: object
+          required: [id, changes]
+        outputSchema:
+          type: object
+          properties:
+            success:
+              type: boolean
+            message:
+              type: string
+          required: [success]
+        timeoutSeconds: 30
+        idempotent: true
+        async: false
+
+      # NEW: Added new command (non-breaking addition)
+      - name: validate_data
+        description: Validate data entry
+        inputSchema:
+          type: object
+          properties:
+            id:
+              type: string
+          required: [id]
+        outputSchema:
+          type: object
+          properties:
+            valid:
+              type: boolean
+            errors:
+              type: array
+              items:
+                type: string
+          required: [valid]
+        timeoutSeconds: 15
+        idempotent: true
+        async: false
+
+    reliability:
+      deliveryGuarantee: at-least-once
+      retry:
+        maxAttempts: 3
+        backoff:
+          strategy: exponential
+          initialDelayMs: 1000
+          maxDelayMs: 10000
+      ordering:
+        enabled: true
+        key: id
+
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+      endpoint: http://jaeger:4318
+    metrics:
+      enabled: true
+      exporter: prometheus
+      endpoint: http://prometheus:9090
+    logging:
+      level: info
+      format: json
+
+# Breaking Changes Detection:
+#
+# Run:
+#   ossa contract breaking-changes examples/contracts/data-producer.ossa.yaml examples/contracts/data-producer-v2.ossa.yaml
+#
+# Expected Output:
+# MAJOR BREAKING CHANGES:
+# - removed_event: Event "data.deleted" was removed
+# - removed_command: Command "delete.data" was removed
+# - schema_incompatible: Schema for event "data.created" requires new field "payload.type"
+#
+# MINOR CHANGES:
+# - signature_changed: Output schema for command "create.data" changed (removed "message" field)
+#
+# SAFE ADDITIONS (Non-Breaking):
+# - Added event "data.validated"
+# - Added command "validate.data"
+# - Added optional field "version" to "data.updated" event
+#
+# Impact Analysis:
+# - Any consumer expecting "data.deleted" events will break
+# - Any consumer calling "delete.data" command will break
+# - Any consumer not providing "payload.type" in schema validation will break
+# - Consumers relying on "message" field in create.data output should be updated
