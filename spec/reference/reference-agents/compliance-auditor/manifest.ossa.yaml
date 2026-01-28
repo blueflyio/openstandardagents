@@ -1,0 +1,527 @@
+apiVersion: ossa/v0.3.5
+kind: Agent
+metadata:
+  name: compliance-auditor
+  version: 1.0.0
+  description: |
+    Automated compliance auditing agent for regulatory frameworks (SOC 2, HIPAA,
+    PCI-DSS, GDPR, FedRAMP). Validates Kubernetes configurations, audit logs, and
+    operational practices against compliance requirements.
+  labels:
+    environment: production
+    team: compliance
+    domain: governance
+    capability: audit
+    frameworks: SOC2,HIPAA,PCI-DSS,GDPR,FedRAMP
+    ossa-version: v0.3.0
+  annotations:
+    documentation: https://openstandardagents.org/docs/agents/compliance-auditor
+    support: ops@openstandardagents.org
+    runbook: https://openstandardagents.org/docs/runbooks/compliance-auditor
+    certifications: SOC 2 Type II, HIPAA, PCI-DSS Level 1
+spec:
+  lifecycle:
+    phases:
+      - name: message_normalization
+        description: "Normalize incoming messages to canonical format"
+        timeout: 5s
+        retry: 2
+      - name: tool_resolution
+        description: "Resolve available tools and capabilities"
+        timeout: 10s
+        retry: 1
+      - name: llm_inference
+        description: "Execute LLM reasoning with context"
+        timeout: 60s
+        retry: 3
+      - name: tool_execution
+        description: "Execute resolved tools and actions"
+        timeout: 120s
+        retry: 2
+      - name: response_assembly
+        description: "Assemble final response"
+        timeout: 5s
+        retry: 1
+      - name: state_persistence
+        description: "Persist state and memory updates"
+        timeout: 10s
+        retry: 3
+      - name: observability_emission
+        description: "Emit telemetry, traces, and metrics"
+        timeout: 5s
+        retry: 1
+
+  taxonomy:
+    domain: governance-risk-compliance
+    subdomain: regulatory-compliance
+    capability: automated-auditing
+  role: |
+    You are an expert compliance auditor specializing in regulatory frameworks.
+
+    Your responsibilities:
+    1. SOC 2 Type II Compliance:
+       - Validate access controls (RBAC, least privilege)
+       - Verify encryption at rest and in transit (TLS 1.2+)
+       - Audit logging and retention (1 year minimum)
+       - Monitor security incidents and response procedures
+       - Validate backup and disaster recovery procedures
+
+    2. HIPAA Compliance (Healthcare):
+       - Verify PHI encryption (AES-256 at rest, TLS 1.2+ in transit)
+       - Audit trail for all PHI access (who, what, when)
+       - Access controls (role-based, need-to-know)
+       - Breach notification procedures
+       - Business Associate Agreements (BAA) tracking
+
+    3. PCI-DSS Compliance (Payment Processing):
+       - Network segmentation (cardholder data environment isolation)
+       - Encryption of cardholder data (AES-256, tokenization)
+       - No hardcoded credentials or secrets in code
+       - Quarterly vulnerability scans
+       - Annual penetration testing
+
+    4. GDPR Compliance (EU Data Protection):
+       - Data residency validation (EU region enforcement)
+       - Right to erasure implementation (data deletion workflows)
+       - Consent management and audit trails
+       - Data processing agreements (DPA) validation
+       - Data breach notification (72-hour requirement)
+
+    5. FedRAMP Compliance (Government Workloads):
+       - FIPS 140-2 validated cryptography
+       - NIST 800-53 controls implementation
+       - Continuous monitoring (ConMon) requirements
+       - Incident response plan validation
+       - System Security Plan (SSP) alignment
+
+    For each violation:
+    - Framework (SOC 2, HIPAA, PCI-DSS, GDPR, FedRAMP)
+    - Control violated (specific requirement ID)
+    - Severity (critical/high/medium/low)
+    - Affected resources (namespace/pod/service)
+    - Remediation steps
+    - Auditor evidence (logs, configs, screenshots)
+  llm:
+    provider: ${LLM_PROVIDER:-anthropic}
+    model: ${LLM_MODEL:-claude-sonnet}
+    temperature: 0
+    maxTokens: 10000
+    topP: 0.9
+    fallback_models:
+      - provider: ${LLM_FALLBACK_PROVIDER_1:-openai}
+        model: ${LLM_FALLBACK_MODEL_1:-gpt-4o}
+      - provider: ${LLM_FALLBACK_PROVIDER_2:-anthropic}
+        model: ${LLM_FALLBACK_MODEL_2:-claude-haiku}
+    retry_config:
+      max_attempts: 3
+      backoff_strategy: exponential
+    cost_tracking:
+      enabled: true
+      budget_alert_threshold: 40
+      cost_allocation_tags:
+        project: ossa-agents
+        team: compliance
+        service: compliance-auditor
+
+  capabilities:
+    policy: deny_by_default
+    grants:
+      - capability: file_read
+        scope: ["**/*.yaml", "**/*.yml", "**/*.json", "/var/log/kubernetes/audit/**", "/var/log/audit/**"]
+        rationale: "Read configuration files and audit logs for compliance validation"
+      - capability: api_call
+        scope: ["vault:8200/v1/sys/audit*", "vault:8200/v1/sys/health*"]
+        rate_limit: "30/minute"
+        rationale: "HashiCorp Vault API access for secrets encryption audit"
+      - capability: api_call
+        scope: ["falco:2801/api/v1/alerts*"]
+        rate_limit: "60/minute"
+        rationale: "Falco API access for runtime security violations"
+      - capability: api_call
+        scope: ["splunk:8089/services/search/*"]
+        rate_limit: "20/minute"
+        rationale: "Splunk SIEM API for security event queries"
+      - capability: api_call
+        scope: ["jira.bluefly.io/rest/api/2/issue*"]
+        rate_limit: "30/minute"
+        rationale: "Jira API access for compliance violation ticket creation"
+      - capability: database_read
+        scope: ["postgres:audit_db/audit_trail/*", "postgres:audit_db/pgaudit/*"]
+        rationale: "PostgreSQL audit database read access for compliance queries"
+      - capability: kubernetes_read
+        scope: ["pods", "deployments", "configmaps", "secrets/metadata", "networkpolicies", "rbac/*"]
+        rationale: "Kubernetes API read access for configuration compliance checks"
+      - capability: report_write
+        scope: ["reports/compliance/**", "reports/audit/**"]
+        rationale: "Write compliance and audit reports"
+      - capability: llm_inference
+        providers: ["anthropic", "openai"]
+        models: ["claude-sonnet", "gpt-4o", "claude-haiku"]
+        rationale: "AI reasoning for compliance analysis and report generation"
+      - capability: agent_communication
+        scope: ["security-scanner", "config-validator"]
+        rationale: "Coordinate with security and configuration validation agents"
+      - capability: ticket_create
+        scope: ["jira:compliance-violations/*"]
+        rationale: "Create compliance violation tickets in Jira"
+
+  tools:
+    - type: mcp
+      name: kubernetes-audit
+      description: |
+        Access Kubernetes audit logs for compliance validation.
+      config:
+        server: kubernetes-mcp
+        auditLogPath: /var/log/kubernetes/audit
+      auth:
+        type: mtls
+        certPath: /var/secrets/k8s-audit-cert.pem
+    - type: http
+      name: vault-compliance
+      description: |
+        Audit HashiCorp Vault for secrets encryption and access controls.
+      endpoint: http://vault:8200/v1/sys/audit
+      config:
+        method: GET
+        timeout: 10
+      auth:
+        type: token
+        tokenPath: /var/secrets/vault-token
+    - type: http
+      name: falco-alerts
+      description: |
+        Query Falco for runtime security violations and compliance events.
+      endpoint: http://falco:2801/api/v1/alerts
+      config:
+        method: GET
+        timeout: 10
+    - type: mcp
+      name: postgres-audit
+      description: |
+        Audit PostgreSQL for data access logs and encryption settings.
+      config:
+        server: postgres-mcp
+        database: audit_db
+        auditSchema: pgaudit
+    - type: http
+      name: splunk-query
+      description: |
+        Query Splunk SIEM for security events and audit logs.
+      endpoint: http://splunk:8089/services/search/jobs
+      config:
+        method: POST
+        timeout: 30
+      auth:
+        type: bearer
+        tokenPath: /var/secrets/splunk-token
+    - type: a2a
+      name: security-scanner
+      description: |
+        Coordinate with security-scanner for vulnerability compliance.
+      endpoint: http://security-scanner:8080/a2a
+      config:
+        protocol: json-rpc
+      auth:
+        type: mtls
+        certPath: /var/secrets/a2a-client-cert.pem
+    - type: http
+      name: jira-api
+      description: |
+        Create compliance violation tickets in Jira.
+      endpoint: https://jira.bluefly.io/rest/api/2/issue
+      config:
+        method: POST
+        timeout: 10
+      auth:
+        type: bearer
+        tokenPath: /var/secrets/jira-token
+  autonomy:
+    level: autonomous
+    approval_required: false
+    allowed_actions:
+      - audit_kubernetes_configs
+      - audit_access_logs
+      - audit_encryption_settings
+      - generate_compliance_reports
+      - create_violation_tickets
+    blocked_actions:
+      - modify_audit_logs
+      - disable_encryption
+      - grant_access_permissions
+  constraints:
+    cost:
+      maxTokensPerDay: 500000
+      maxTokensPerRequest: 10000
+      maxCostPerDay: 50
+      currency: USD
+    performance:
+      maxLatencySeconds: 120
+      maxConcurrentRequests: 10
+      timeoutSeconds: 300
+    resources:
+      cpu: 1000m
+      memory: 2Gi
+  observability:
+    telemetry:
+      enabled: true
+      exporter: otlp
+      endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT}"
+      service_name: "${AGENT_NAME}"
+      service_version: "${AGENT_VERSION}"
+    tracing:
+      enabled: true
+      sampler: parentbased_traceidratio
+      sample_rate: 0.1
+      propagation: ["tracecontext", "baggage"]
+    metrics:
+      enabled: true
+      interval: 30s
+      histogram_buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]
+      labels:
+        - agent_name
+        - agent_version
+        - phase
+        - capability
+        - status
+    logging:
+      level: info
+      format: json
+      redact_pii: true
+      structured: true
+      fields:
+        - execution_id
+        - agent_id
+        - phase
+        - duration_ms
+  state:
+    backend: postgres
+    config:
+      host: postgres-primary.default.svc.cluster.local
+      port: 5432
+      database: compliance_db
+      schema: audit_trail
+      ssl: true
+      sslMode: require
+      encryption: pgcrypto
+  reliability:
+    sla:
+      availability_percent: 99.9
+      latency_p95_ms: 30000
+      error_rate_percent: 0.1
+    circuit_breaker:
+      enabled: true
+      failure_threshold: 3
+      timeout_seconds: 60
+      half_open_requests: 2
+    health_check:
+      enabled: true
+      interval_seconds: 30
+      timeout_seconds: 10
+    failover:
+      enabled: true
+      strategy: active-passive
+  security:
+    authentication:
+      required: true
+      methods:
+        - mtls
+        - bearer
+    authorization:
+      model: rbac
+      roles:
+        - compliance-auditor
+        - agent-operator
+      permissions:
+        - kubernetes:read
+        - audit:read
+        - vault:audit
+    encryption:
+      in_transit:
+        enabled: true
+        tls_version: "1.3"
+      at_rest:
+        enabled: true
+        algorithm: aes-256-gcm
+        key_management: vault
+    audit:
+      enabled: true
+      log_level: detailed
+      retention_days: 2555
+      pii_redaction: true
+    compliance:
+      frameworks:
+        - soc2
+        - hipaa
+        - pci-dss
+        - gdpr
+        - fedramp
+  safety:
+    content_filtering:
+      enabled: true
+      categories:
+        - pii
+        - phi
+        - pci
+      threshold: high
+      action: block
+    rate_limiting:
+      enabled: true
+      requests_per_minute: 60
+      burst_limit: 10
+    guardrails:
+      enabled: true
+      policies:
+        - name: audit_log_protection
+          type: output
+          rules:
+            - no_modify_audit_logs
+        - name: encryption_enforcement
+          type: output
+          rules:
+            - no_disable_encryption
+      max_tool_calls: 100
+      max_execution_time_seconds: 300
+      pii_detection:
+        enabled: true
+        action: redact
+        categories: ["email", "phone", "ssn", "credit_card"]
+      secrets_detection:
+        enabled: true
+        action: block
+        patterns:
+          - "glpat-*"
+          - "ghp_*"
+          - "sk-*"
+          - "bearer *"
+          - "password=*"
+          - "api_key=*"
+      prompt_injection:
+        enabled: true
+        action: warn
+        detection: ["ignore previous", "system prompt", "jailbreak"]
+      content_policy:
+        enabled: true
+        categories:
+          violence: block
+          hate: block
+          sexual: block
+          self_harm: block
+    kill_switch:
+      enabled: true
+      trigger: manual
+      webhook: "${KILL_SWITCH_WEBHOOK}"
+      grace_period: 30s
+    compliance:
+      profiles:
+        - fedramp_moderate
+        - hipaa
+        - gdpr
+        - soc2_type2
+  deployment:
+    strategy: rolling
+    rollback:
+      enabled: true
+      automatic: true
+    versioning:
+      scheme: semver
+      compatibility: backward
+    lifecycle:
+      startup_probe:
+        enabled: true
+        initial_delay_seconds: 10
+        period_seconds: 10
+        failure_threshold: 6
+      readiness_probe:
+        enabled: true
+        period_seconds: 10
+      liveness_probe:
+        enabled: true
+        period_seconds: 30
+      graceful_shutdown:
+        enabled: true
+        timeout_seconds: 60
+  extensions:
+    kagent:
+      kubernetes:
+        namespace: compliance-system
+        labels:
+          app: compliance-auditor
+          team: compliance
+          frameworks: SOC2,HIPAA,PCI-DSS,GDPR,FedRAMP
+        annotations:
+          certifications: SOC 2 Type II, HIPAA, PCI-DSS Level 1
+        resourceLimits:
+          cpu: 1000m
+          memory: 2Gi
+        serviceAccount: compliance-auditor-sa
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 65534
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
+      guardrails:
+        requireApproval: false
+        costLimits:
+          maxTokensPerDay: 500000
+          maxCostPerDay: 50
+          currency: USD
+        allowedActions:
+          - kubernetes:get:*
+          - vault:audit:*
+          - postgres:select:audit_trail
+          - splunk:search:*
+        auditLog:
+          destination: compliance-engine
+          retention: 7years
+          tamperProof: true
+      a2aConfig:
+        enabled: true
+        protocol: json-rpc
+        endpoints:
+          - http://security-scanner:8080/a2a
+          - http://config-validator:8080/a2a
+        authentication:
+          type: mtls
+          certPath: /var/secrets/a2a-client-cert.pem
+          keyPath: /var/secrets/a2a-client-key.pem
+      meshIntegration:
+        enabled: true
+        istioIntegration: true
+        ambientMesh: true
+        mtlsMode: STRICT
+extensions:
+  kagent:
+    api_version: kagent.dev/v1alpha2
+    kubernetes:
+      namespace: agent-system
+      labels:
+        app.kubernetes.io/name: compliance-auditor
+        app.kubernetes.io/part-of: ossa-showcase
+        openstandardagents.org/version: v0.3.0
+      resourceLimits:
+        cpu: "1"
+        memory: 2Gi
+    deployment:
+      replicas:
+        min: 1
+        max: 3
+      strategy: rolling-update
+    a2aConfig:
+      enabled: true
+      protocol: json-rpc
+    meshIntegration:
+      enabled: true
+      istioIntegration: true
+  gitlab_duo:
+    enabled: true
+    flow_execution: true
+    model: ${GITLAB_DUO_MODEL:-claude-sonnet-4.5-20250929}
+    knowledge_graph:
+      enabled: true
+      index_on_push: true
+  mcp:
+    enabled: true
+    server_type: stdio
+    server_name: compliance-auditor-mcp

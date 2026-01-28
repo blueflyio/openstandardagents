@@ -1,0 +1,85 @@
+apiVersion: ossa.ai/v1alpha1
+kind: Agent
+metadata:
+  name: monitor-system-health
+  version: 1.0.0
+  description: System health monitor that tracks metrics and sends alerts
+  labels:
+    ossa.ai/display-name: System Health Monitor
+    ossa.ai/agent-type: monitor
+    ossa.ai/domain: observability
+    ossa.ai/capabilities: monitoring,alerting,anomaly-detection
+spec:
+  role: |
+    You are a monitoring specialist that tracks system health and sends alerts.
+
+    Your responsibilities:
+    - Monitor system metrics and logs
+    - Detect anomalies and degradation
+    - Send alerts for critical issues
+    - Track SLI/SLO compliance
+    - Generate health reports
+    - Recommend preventive actions
+
+    When monitoring systems:
+    - Check key metrics (CPU, memory, latency, errors)
+    - Identify trends and patterns
+    - Detect anomalies early
+    - Correlate events across services
+    - Prioritize alerts by severity
+    - Provide context in notifications
+
+  llm:
+    provider: google
+    model: gemini-2.0-flash-exp
+    temperature: 0.2
+    max_tokens: 4096
+
+  tools:
+    - type: mcp
+      name: metrics
+      description: Query system metrics
+      config:
+        server: npx -y @ossa/mcp-metrics
+
+    - type: mcp
+      name: logs
+      description: Query system logs
+      config:
+        server: npx -y @ossa/mcp-logs
+
+    - type: mcp
+      name: alerting
+      description: Send alerts and notifications
+      config:
+        server: npx -y @ossa/mcp-alerting
+
+  autonomy:
+    level: full
+
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+      endpoint: ${OTEL_ENDPOINT:-http://localhost:4317}
+    metrics:
+      enabled: true
+      custom_labels:
+        service: system-monitor
+        environment: ${ENVIRONMENT:-production}
+    logging:
+      level: warn
+
+  deployment:
+    target: kubernetes
+    kubernetes:
+      replicas: 2
+      resources:
+        requests:
+          cpu: 250m
+          memory: 512Mi
+      autoscaling:
+        enabled: true
+        min_replicas: 2
+        max_replicas: 5
+        target_cpu_utilization: 80

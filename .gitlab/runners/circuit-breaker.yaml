@@ -1,0 +1,120 @@
+# Circuit Breaker for OSSA Runners
+# Prevents cascading failures and provides automatic recovery
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: runner-circuit-breaker
+  namespace: gitlab-runner
+data:
+  circuit-breaker.sh: |
+    #!/bin/sh
+    # Circuit breaker for GitLab runner health
+    FAILURE_THRESHOLD=5
+    SUCCESS_THRESHOLD=2
+    TIMEOUT=60
+    
+    STATE_FILE="/tmp/runner-circuit-state"
+    FAILURE_COUNT_FILE="/tmp/runner-failure-count"
+    SUCCESS_COUNT_FILE="/tmp/runner-success-count"
+    LAST_FAILURE_FILE="/tmp/runner-last-failure"
+    
+    check_health() {
+      if pgrep -f "gitlab-runner.*run" > /dev/null && \
+         curl -f http://localhost:8093/metrics > /dev/null 2>&1; then
+        return 0
+      fi
+      return 1
+    }
+    
+    get_state() {
+      if [ -f "$STATE_FILE" ]; then
+        cat "$STATE_FILE"
+      else
+        echo "closed"
+      fi
+    }
+    
+    set_state() {
+      echo "$1" > "$STATE_FILE"
+    }
+    
+    increment_failure() {
+      count=$(cat "$FAILURE_COUNT_FILE" 2>/dev/null || echo "0")
+      echo $((count + 1)) > "$FAILURE_COUNT_FILE"
+      date +%s > "$LAST_FAILURE_FILE"
+    }
+    
+    reset_failure() {
+      echo "0" > "$FAILURE_COUNT_FILE"
+      echo "0" > "$SUCCESS_COUNT_FILE"
+    }
+    
+    increment_success() {
+      count=$(cat "$SUCCESS_COUNT_FILE" 2>/dev/null || echo "0")
+      echo $((count + 1)) > "$SUCCESS_COUNT_FILE"
+    }
+    
+    state=$(get_state)
+    
+    if check_health; then
+      if [ "$state" = "open" ]; then
+        increment_success
+        success_count=$(cat "$SUCCESS_COUNT_FILE")
+        if [ "$success_count" -ge "$SUCCESS_THRESHOLD" ]; then
+          set_state "closed"
+          reset_failure
+          echo "Circuit breaker: CLOSED (recovered)"
+        else
+          echo "Circuit breaker: HALF-OPEN (testing recovery)"
+        fi
+      else
+        reset_failure
+        echo "Circuit breaker: CLOSED (healthy)"
+      fi
+    else
+      increment_failure
+      failure_count=$(cat "$FAILURE_COUNT_FILE")
+      
+      if [ "$failure_count" -ge "$FAILURE_THRESHOLD" ]; then
+        set_state "open"
+        echo "Circuit breaker: OPEN (too many failures)"
+        exit 1
+      else
+        echo "Circuit breaker: CLOSED (failure count: $failure_count/$FAILURE_THRESHOLD)"
+      fi
+    fi
+
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: runner-health-monitor
+  namespace: gitlab-runner
+spec:
+  schedule: "*/1 * * * *"
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: gitlab-runner
+          containers:
+          - name: health-monitor
+            image: bitnami/kubectl:latest
+            command:
+            - /bin/sh
+            - -c
+            - |
+              # Check runner pod health
+              for pod in $(kubectl get pods -n gitlab-runner -l app=gitlab-runner --no-headers | awk '{print $1}'); do
+                status=$(kubectl get pod $pod -n gitlab-runner -o jsonpath='{.status.phase}')
+                restarts=$(kubectl get pod $pod -n gitlab-runner -o jsonpath='{.status.containerStatuses[0].restartCount}')
+                
+                if [ "$status" != "Running" ] || [ "$restarts" -gt 5 ]; then
+                  echo "Unhealthy pod detected: $pod (status: $status, restarts: $restarts)"
+                  kubectl delete pod $pod -n gitlab-runner --grace-period=0 --force || true
+                fi
+              done
+          restartPolicy: OnFailure

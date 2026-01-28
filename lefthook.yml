@@ -1,0 +1,128 @@
+# =============================================================================
+# LEFTHOOK GIT HOOKS CONFIGURATION
+# =============================================================================
+# Comprehensive pre-commit and pre-push validation to prevent broken code
+# from being committed or pushed to remote.
+#
+# Installation:
+#   npm install -g lefthook  # or: brew install lefthook
+#   lefthook install
+#
+# Skip hooks (emergency only):
+#   LEFTHOOK=0 git push
+#
+# Run manually:
+#   lefthook run pre-push
+# =============================================================================
+
+# =============================================================================
+# PRE-COMMIT: Fast Local Validation (< 10 seconds)
+# =============================================================================
+# Runs before every commit to catch obvious issues early
+pre-commit:
+  parallel: true
+  commands:
+    # TypeScript type checking
+    typecheck:
+      run: npm run typecheck
+      fail_text: "❌ TypeScript type errors found. Fix them before committing."
+
+    # Linting (auto-fixable)
+    lint:
+      glob: "*.{ts,tsx}"
+      run: npx eslint {staged_files} --fix
+      fail_text: "❌ ESLint errors found. Run 'npm run lint:fix' to auto-fix."
+      stage_fixed: true
+
+    # Schema validation (fast)
+    validate-schema:
+      run: npm run validate:schema
+      fail_text: "❌ OSSA schema validation failed. Check your schema changes."
+
+# =============================================================================
+# PRE-PUSH: Comprehensive CI Validation (< 2 minutes)
+# =============================================================================
+# Runs before every push to ensure code is production-ready
+# Mirrors critical CI checks to prevent pipeline failures
+pre-push:
+  parallel: false  # Run sequentially to show clear progress
+  commands:
+    # 1. TypeScript Build (validates compilation)
+    build:
+      run: npm run build:clean
+      fail_text: |
+        ❌ Build failed. Cannot push broken code.
+        Fix TypeScript compilation errors before pushing.
+
+    # 2. Unit Tests (fast, high-value)
+    test-unit:
+      run: npm run test:unit
+      fail_text: |
+        ❌ Unit tests failed. Cannot push failing tests.
+        Run 'npm run test:unit' locally to debug.
+
+    # 3. Smoke Tests (critical functionality)
+    test-smoke:
+      run: npm run test:smoke
+      fail_text: |
+        ❌ Smoke tests failed. Critical functionality is broken.
+        Run 'npm run test:smoke' to reproduce.
+
+    # 4. SDK Validation (TypeScript + Python)
+    validate-sdks:
+      run: npm run validate:sdks
+      fail_text: |
+        ❌ SDK validation failed. SDKs are not production-ready.
+        Check TypeScript and Python SDK builds.
+
+    # 5. Schema + Examples Validation
+    validate-all:
+      run: npm run validate
+      fail_text: |
+        ❌ Validation failed. Schema or examples are invalid.
+        Run 'npm run validate' to see details.
+
+  scripts:
+    # Pre-push banner
+    "pre-push-banner":
+      runner: bash
+      run: |
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "🚀 Running Pre-Push Validation (CI Mirror)"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "This ensures your push will pass CI. Please wait..."
+        echo ""
+
+# =============================================================================
+# POST-CHECKOUT: Dependency Sync
+# =============================================================================
+# Automatically install dependencies when switching branches
+post-checkout:
+  commands:
+    install-deps:
+      run: |
+        if git diff HEAD@{1} HEAD --name-only | grep -q 'package.json\|package-lock.json'; then
+          echo "📦 package.json changed, running npm install..."
+          npm install
+        fi
+
+# =============================================================================
+# SKIP PATTERNS
+# =============================================================================
+# Skip hooks for specific branches or scenarios
+skip_output:
+  - meta
+  - skipped
+
+# Don't run on rebase/merge
+skip:
+  - merge
+  - rebase
+
+# =============================================================================
+# NOTIFICATIONS
+# =============================================================================
+# Show success message
+output:
+  - execution_info
+  - summary

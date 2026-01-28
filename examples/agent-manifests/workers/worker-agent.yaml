@@ -1,0 +1,82 @@
+apiVersion: ossa/v0.3.6
+kind: Agent
+metadata:
+  name: data-processing-worker
+  version: v1.2.0
+  description: 'High-performance worker agent for distributed data processing tasks'
+  author: 'data-engineering-team'
+  labels:
+    environment: production
+    classification: internal
+    role: worker
+    complexity: standard
+spec:
+  type: worker
+  subtype: data-processor
+  capabilities:
+    domains:
+      - data-processing
+      - stream-analytics
+      - batch-processing
+      - file-operations
+      - database-operations
+    operations:
+      - process-records
+      - transform-data
+      - validate-input
+      - generate-output
+      - handle-errors
+      - report-progress
+    patterns:
+      - pipeline-processing
+      - error-recovery
+      - checkpoint-resume
+      - rate-limiting
+      - batching
+  protocols:
+    supported:
+      - name: rest
+        version: '1.1'
+        endpoint: 'https://worker.platform.com/api/v1'
+        authentication:
+          type: bearer-token
+          scopes: ['worker.execute', 'data.read', 'data.write']
+        tls: true
+      - name: message-queue
+        version: '1.0'
+        endpoint: 'amqp://queue.platform.com:5672/workers'
+        authentication:
+          type: sasl
+      - name: grpc
+        version: '1.0'
+        endpoint: 'grpc://worker.platform.com:9090/DataProcessor'
+        authentication:
+          type: mutual-tls
+  processing:
+    maxConcurrentTasks: 10
+    maxMemoryUsage: '2Gi'
+    maxCpuUsage: '1000m'
+    timeout: 300000
+    retryPolicy:
+      maxAttempts: 3
+      backoffStrategy: exponential
+      baseDelay: 1000
+    errorHandling:
+      strategy: dead-letter-queue
+      maxFailures: 5
+  performance:
+    throughput:
+      recordsPerSecond: 1000
+      maxBatchSize: 100
+    latency:
+      processingTime: 50
+      p95: 200
+      p99: 500
+  monitoring:
+    healthChecks: true
+    performanceMetrics: true
+    errorTracking: true
+    alerting:
+      errorThreshold: 5
+      latencyThreshold: 1000
+      memoryThreshold: 80

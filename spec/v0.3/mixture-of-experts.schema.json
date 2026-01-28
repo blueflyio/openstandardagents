@@ -1,0 +1,159 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openstandardagents.org/schemas/v0.3.5/mixture-of-experts.json",
+  "title": "OSSA v0.3.5 Mixture of Experts (MoE) Extension",
+  "description": "Agent-controlled expert model selection for intelligent routing",
+  "type": "object",
+  "definitions": {
+    "ExpertModel": {
+      "type": "object",
+      "required": ["id", "model"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$",
+          "description": "Unique expert identifier",
+          "examples": ["reasoning-expert", "code-expert", "speed-expert"]
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable expert name"
+        },
+        "model": {
+          "type": "object",
+          "required": ["provider", "model"],
+          "properties": {
+            "provider": {
+              "type": "string",
+              "enum": ["anthropic", "openai", "google", "aws", "azure", "local"],
+              "examples": ["anthropic", "openai"]
+            },
+            "model": {
+              "type": "string",
+              "examples": ["claude-opus-4-5-20251101", "gpt-4-turbo", "gemini-2.0-flash"]
+            },
+            "api_key_env": {
+              "type": "string",
+              "description": "Environment variable for API key"
+            }
+          }
+        },
+        "specializations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Expert specialization areas",
+          "examples": [["complex_reasoning", "planning"], ["code_generation", "code_review"]]
+        },
+        "cost_tier": {
+          "type": "string",
+          "enum": ["economy", "standard", "premium"],
+          "description": "Cost tier classification"
+        },
+        "capabilities": {
+          "type": "object",
+          "properties": {
+            "extended_thinking": {
+              "type": "boolean",
+              "description": "Supports extended thinking/reasoning"
+            },
+            "max_tokens": {
+              "type": "integer",
+              "description": "Maximum context window"
+            },
+            "reasoning_depth": {
+              "type": "string",
+              "enum": ["fast", "balanced", "deep"],
+              "description": "Reasoning depth capability"
+            },
+            "multimodal": {
+              "type": "boolean",
+              "description": "Supports multimodal inputs"
+            },
+            "streaming": {
+              "type": "boolean",
+              "description": "Supports streaming responses"
+            }
+          }
+        },
+        "availability": {
+          "type": "object",
+          "properties": {
+            "regions": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "examples": [["us-east-1", "eu-west-1"]]
+            },
+            "fallback": {
+              "type": "string",
+              "description": "Fallback expert ID if unavailable"
+            },
+            "sla": {
+              "type": "object",
+              "properties": {
+                "uptime": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "latency_p95_ms": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "ExpertSelectionStrategy": {
+      "type": "string",
+      "enum": ["agent_controlled", "cost_optimized", "capability_match", "hybrid"],
+      "default": "agent_controlled",
+      "description": "How experts are selected"
+    },
+    "MoEExtension": {
+      "type": "object",
+      "properties": {
+        "registry": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ExpertModel"
+          },
+          "description": "Available expert models"
+        },
+        "selection_strategy": {
+          "$ref": "#/definitions/ExpertSelectionStrategy"
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "enum": ["list_experts", "invoke_expert", "get_expert_history"]
+              },
+              "description": {
+                "type": "string"
+              },
+              "parameters": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "required": ["name", "description"]
+          }
+        }
+      },
+      "required": ["registry", "selection_strategy"]
+    }
+  },
+  "properties": {
+    "experts": {
+      "$ref": "#/definitions/MoEExtension"
+    }
+  }
+}

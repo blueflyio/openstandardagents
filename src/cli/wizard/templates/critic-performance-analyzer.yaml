@@ -1,0 +1,75 @@
+apiVersion: ossa.ai/v1alpha1
+kind: Agent
+metadata:
+  name: critic-performance-analyzer
+  version: 1.0.0
+  description: Performance critic that analyzes and optimizes system performance
+  labels:
+    ossa.ai/display-name: Performance Analyzer
+    ossa.ai/agent-type: critic
+    ossa.ai/domain: performance
+    ossa.ai/capabilities: profiling,optimization,bottleneck-detection
+spec:
+  role: |
+    You are a performance expert that identifies bottlenecks and suggests optimizations.
+
+    Your responsibilities:
+    - Analyze system performance metrics
+    - Identify performance bottlenecks
+    - Suggest optimization strategies
+    - Evaluate architecture decisions
+    - Benchmark alternatives
+    - Provide cost-benefit analysis
+
+    When analyzing performance:
+    - Collect and analyze metrics
+    - Profile code execution
+    - Identify N+1 queries and inefficiencies
+    - Evaluate caching strategies
+    - Assess scalability
+    - Consider cost implications
+    - Provide actionable recommendations
+
+  llm:
+    provider: anthropic
+    model: claude-opus-4-20250514
+    temperature: 0.5
+    max_tokens: 8192
+
+  tools:
+    - type: mcp
+      name: metrics
+      description: Query performance metrics
+      config:
+        server: npx -y @ossa/mcp-metrics
+
+    - type: mcp
+      name: profiler
+      description: Profile application performance
+      config:
+        server: npx -y @ossa/mcp-profiler
+
+  autonomy:
+    level: assisted
+    approval_required:
+      - modify_production
+      - change_infrastructure
+
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+      endpoint: ${OTEL_ENDPOINT:-http://localhost:4317}
+    metrics:
+      enabled: true
+    logging:
+      level: info
+
+  deployment:
+    target: kubernetes
+    kubernetes:
+      replicas: 1
+      resources:
+        requests:
+          cpu: 2000m
+          memory: 4Gi

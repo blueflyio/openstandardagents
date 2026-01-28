@@ -1,0 +1,349 @@
+# ============================================================================
+# AUTOMATED RC → STABLE PROMOTION
+# ============================================================================
+# Fully automated promotion of RC tags to stable releases
+# Triggers: When RC tag exists and is ready for promotion
+# Actions: Creates stable tag, publishes to npm, creates releases
+
+# ============================================================================
+# PROMOTE RC TO STABLE (FULLY AUTOMATED)
+# ============================================================================
+
+promote-rc-to-stable:
+  stage: release
+  extends:
+    - .needs-all-tests
+  image: alpine:latest
+  tags:
+    - self-hosted
+    - docker
+  before_script:
+    - apk add --no-cache curl jq git bash
+    - git config user.email "ci@bluefly.io"
+    - git config user.name "GitLab CI"
+    - git fetch --tags --force || true
+    - git remote set-url origin https://oauth2:${CI_DEPLOY_OSSA}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
+  script:
+    - |
+      #!/bin/bash
+      set -e
+
+      echo "AUTOMATED RC → STABLE PROMOTION"
+      echo "==============================="
+      echo "Branch: ${CI_COMMIT_BRANCH}"
+      echo "Commit: ${CI_COMMIT_SHA}"
+      echo "Tag: ${CI_COMMIT_TAG}"
+      echo ""
+
+      # Determine version to promote
+      if [ -n "$CI_COMMIT_TAG" ] && echo "$CI_COMMIT_TAG" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+$'; then
+        # Triggered by RC tag push - extract version from tag
+        BASE_VERSION=$(echo "$CI_COMMIT_TAG" | sed 's/^v//' | sed 's/-rc\.[0-9]*$//')
+        echo "Version from RC tag: ${BASE_VERSION}"
+      elif [ -f .version.json ]; then
+        # Read version from .version.json (single source of truth)
+        BASE_VERSION=$(jq -r '.current' .version.json)
+        echo "Version from .version.json: ${BASE_VERSION}"
+      else
+        echo "ERROR: Cannot determine version - no .version.json and not triggered by RC tag"
+        exit 1
+      fi
+
+      # Validate version format
+      if ! echo "$BASE_VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+        echo "ERROR: Invalid version format: $BASE_VERSION"
+        exit 1
+      fi
+
+      STABLE_TAG="v${BASE_VERSION}"
+
+      # Check if stable tag already exists
+      if git tag -l "$STABLE_TAG" | grep -q "^${STABLE_TAG}$"; then
+        echo "Stable tag ${STABLE_TAG} already exists - skipping promotion"
+        exit 0
+      fi
+
+      # Find latest RC tag for this version
+      LATEST_RC=$(git tag -l "${STABLE_TAG}-rc.*" 2>/dev/null | sort -V | tail -1 || echo "")
+
+      if [ -z "$LATEST_RC" ]; then
+        echo "No RC tags found for ${STABLE_TAG}"
+        echo "Cannot promote - RC tags required"
+        exit 0
+      fi
+
+      echo "Latest RC tag: ${LATEST_RC}"
+      echo "Promoting to stable: ${STABLE_TAG}"
+
+      # Get commit SHA from latest RC tag
+      RC_COMMIT=$(git rev-list -n 1 "${LATEST_RC}" 2>/dev/null || echo "")
+      if [ -z "$RC_COMMIT" ]; then
+        echo "ERROR: Could not find commit for RC tag ${LATEST_RC}"
+        exit 1
+      fi
+
+      echo "RC commit: ${RC_COMMIT:0:8}"
+
+      # Create stable tag from RC commit
+      git tag -a "$STABLE_TAG" -m "Release ${STABLE_TAG}
+
+      Stable release promoted from ${LATEST_RC}
+      - Version: ${BASE_VERSION}
+      - Promoted from: ${LATEST_RC}
+      - Commit: ${RC_COMMIT:0:8}
+      - Pipeline: ${CI_PIPELINE_URL}
+
+      This is the stable release for production use." "$RC_COMMIT"
+
+      # Push stable tag
+      echo "Pushing stable tag ${STABLE_TAG}..."
+      if git push origin "$STABLE_TAG" 2>&1; then
+        echo "✅ Created and pushed stable tag: ${STABLE_TAG}"
+        echo "STABLE_TAG=${STABLE_TAG}" > stable-tag.env
+        echo "PROMOTED_FROM=${LATEST_RC}" >> stable-tag.env
+      else
+        echo "ERROR: Failed to push stable tag ${STABLE_TAG}"
+        git tag -d "$STABLE_TAG" 2>/dev/null || true
+        exit 1
+      fi
+  artifacts:
+    reports:
+      dotenv: stable-tag.env
+    expire_in: 1 week
+  rules:
+    # Run on main branch after quality gates pass (auto-promote when RC exists)
+    - if: $CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"
+      when: on_success
+  allow_failure: false
+
+# ============================================================================
+# PUBLISH TO NPM (AUTOMATED - TRIGGERED BY STABLE TAG)
+# ============================================================================
+
+publish-npm:stable:
+  stage: release
+  image: node:${NODE_VERSION}
+  tags:
+    - self-hosted
+    - docker
+  environment:
+    name: npm-registry
+    action: prepare
+  # NOTE: Cannot use needs: promote-rc-to-stable because tag pipelines are separate from branch pipelines
+  # When stable tag is pushed, it triggers a new pipeline where promote-rc-to-stable doesn't exist
+  # This job runs independently when stable tag is pushed
+  extends:
+    - .npm-cache
+  before_script:
+    - npm ci
+    - npm run build
+  script:
+    - |
+      #!/bin/bash
+      set -e
+
+      echo "AUTOMATED NPM PUBLISH"
+      echo "====================="
+
+      # Extract version from tag (tag pipelines don't have stable-tag.env from promote job)
+      if [ -z "$CI_COMMIT_TAG" ]; then
+        echo "ERROR: CI_COMMIT_TAG not set"
+        exit 1
+      fi
+
+      VERSION="${CI_COMMIT_TAG#v}"
+      echo "Publishing version: ${VERSION}"
+
+      # Verify version matches package.json
+      PACKAGE_VERSION=$(node -p "require('./package.json').version")
+      if [ "$PACKAGE_VERSION" != "$VERSION" ]; then
+        echo "ERROR: Version mismatch - package.json=${PACKAGE_VERSION}, tag=${VERSION}"
+        exit 1
+      fi
+
+      # Validate version format to prevent command injection
+      if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+        echo "ERROR: Invalid version format: $VERSION"
+        exit 1
+      fi
+
+      # Check if already published (package name is hardcoded, safe)
+      # VERSION already validated above
+      if npm view "@bluefly/openstandardagents@${VERSION}" version >/dev/null 2>&1; then
+        echo "Version ${VERSION} already published to npm - skipping"
+        exit 0
+      fi
+
+      # Publish to npm using OIDC (no token needed - uses trusted publisher)
+      echo "Publishing ${VERSION} to npmjs.org with OIDC..."
+      npm publish --access public --provenance
+
+      echo "✅ Published ${VERSION} to npmjs.org"
+      echo "Verify: npm view @bluefly/openstandardagents@${VERSION}"
+      # VERSION already validated above
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/ && $CI_COMMIT_TAG !~ /-rc|-dev/
+      when: on_success
+  allow_failure: false
+
+# ============================================================================
+# CREATE GITLAB RELEASE (AUTOMATED - TRIGGERED BY STABLE TAG)
+# ============================================================================
+
+create-gitlab-release:stable:
+  stage: .post
+  image: alpine:latest
+  tags:
+    - self-hosted
+    - docker
+  needs:
+    - job: publish-npm:stable
+      artifacts: false
+      optional: false
+  before_script:
+    - apk add --no-cache git bash curl jq
+  script:
+    - |
+      #!/bin/bash
+      set -e
+
+      echo "AUTOMATED GITLAB RELEASE CREATION"
+      echo "=================================="
+      echo "Tag: ${CI_COMMIT_TAG}"
+      echo ""
+
+      if [ -z "$CI_COMMIT_TAG" ]; then
+        echo "ERROR: CI_COMMIT_TAG not set"
+        exit 1
+      fi
+
+      VERSION="${CI_COMMIT_TAG#v}"
+
+      # Extract changelog for this version
+      CHANGELOG=$(git show HEAD:CHANGELOG.md 2>/dev/null | sed -n "/## \[${VERSION}\]/,/## \[/p" | head -n -1 || echo "")
+
+      if [ -z "$CHANGELOG" ]; then
+        CHANGELOG="Release ${CI_COMMIT_TAG}
+
+      Stable release for production use.
+      See CHANGELOG.md for details."
+      fi
+
+      RELEASE_NAME="OSSA ${CI_COMMIT_TAG}"
+
+      echo "Creating GitLab Release: ${RELEASE_NAME}"
+
+      # Create release using GitLab API
+      RESPONSE=$(curl --fail --request POST \
+        --header "PRIVATE-TOKEN: ${CI_DEPLOY_OSSA}" \
+        --header "Content-Type: application/json" \
+        --data "{
+          \"tag_name\": \"${CI_COMMIT_TAG}\",
+          \"name\": \"${RELEASE_NAME}\",
+          \"description\": $(echo "$CHANGELOG" | jq -Rs .)
+        }" \
+        "https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/releases" 2>&1)
+
+      if [ $? -eq 0 ]; then
+        echo "✅ Created GitLab Release: https://gitlab.com/blueflyio/ossa/openstandardagents/-/releases/${CI_COMMIT_TAG}"
+      else
+        echo "ERROR: Failed to create GitLab Release"
+        echo "$RESPONSE"
+        exit 1
+      fi
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/ && $CI_COMMIT_TAG !~ /-rc|-dev/
+      when: on_success
+  allow_failure: false
+
+# ============================================================================
+# SYNC TO GITHUB (AUTOMATED - TRIGGERED BY STABLE TAG)
+# ============================================================================
+
+sync-github:stable:
+  stage: .post
+  image: alpine:latest
+  tags:
+    - self-hosted
+    - docker
+  needs:
+    - job: create-gitlab-release:stable
+      artifacts: false
+  before_script:
+    - apk add --no-cache git bash curl jq
+  script:
+    - |
+      #!/bin/bash
+      set -e
+
+      echo "AUTOMATED GITHUB SYNC"
+      echo "===================="
+      echo "Tag: ${CI_COMMIT_TAG}"
+      echo ""
+
+      if [ -z "$CI_COMMIT_TAG" ]; then
+        echo "ERROR: CI_COMMIT_TAG not set"
+        exit 1
+      fi
+
+      if [ -z "$GITHUB_TOKEN" ]; then
+        echo "WARNING: GITHUB_TOKEN not set - skipping GitHub sync"
+        exit 0
+      fi
+
+      # Check for GitHub remote
+      GITHUB_REMOTE=$(git remote -v | grep github.com | head -1 | awk '{print $2}' || echo "")
+      if [ -z "$GITHUB_REMOTE" ]; then
+        echo "WARNING: GitHub remote not configured - skipping sync"
+        exit 0
+      fi
+
+      # Extract repo from remote (e.g., git@github.com:user/repo.git or https://github.com/user/repo.git)
+      GITHUB_REPO=$(echo "$GITHUB_REMOTE" | sed -E 's|.*github.com[:/]([^/]+/[^/]+)(\.git)?$|\1|')
+
+      if [ -z "$GITHUB_REPO" ]; then
+        echo "WARNING: Could not extract GitHub repo from remote"
+        exit 0
+      fi
+
+      echo "GitHub repo: ${GITHUB_REPO}"
+
+      # Push tag to GitHub
+      echo "Pushing tag to GitHub..."
+      git remote set-url github "https://${GITHUB_TOKEN}@github.com/${GITHUB_REPO}.git" 2>/dev/null || \
+      git remote add github "https://${GITHUB_TOKEN}@github.com/${GITHUB_REPO}.git"
+
+      if git push github "${CI_COMMIT_TAG}" 2>&1; then
+        echo "✅ Pushed tag to GitHub"
+      else
+        echo "WARNING: Failed to push tag to GitHub (non-blocking)"
+      fi
+
+      # Create GitHub release
+      VERSION="${CI_COMMIT_TAG#v}"
+      CHANGELOG=$(git show HEAD:CHANGELOG.md 2>/dev/null | sed -n "/## \[${VERSION}\]/,/## \[/p" | head -n -1 || echo "Release ${CI_COMMIT_TAG}")
+
+      echo "Creating GitHub release..."
+      RESPONSE=$(curl --fail --request POST \
+        --header "Authorization: token ${GITHUB_TOKEN}" \
+        --header "Accept: application/vnd.github.v3+json" \
+        --header "Content-Type: application/json" \
+        --data "{
+          \"tag_name\": \"${CI_COMMIT_TAG}\",
+          \"name\": \"OSSA ${CI_COMMIT_TAG}\",
+          \"body\": $(echo "$CHANGELOG" | jq -Rs .),
+          \"draft\": false,
+          \"prerelease\": false
+        }" \
+        "https://api.github.com/repos/${GITHUB_REPO}/releases" 2>&1)
+
+      if [ $? -eq 0 ]; then
+        echo "✅ Created GitHub Release"
+      else
+        echo "WARNING: Failed to create GitHub release (non-blocking)"
+        echo "$RESPONSE"
+      fi
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/ && $CI_COMMIT_TAG !~ /-rc|-dev/
+      when: on_success
+  allow_failure: true

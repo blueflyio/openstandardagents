@@ -1,0 +1,116 @@
+"""OSSA Type Definitions - Pydantic models for OSSA manifests."""
+
+from typing import Any, Literal, Optional, Union
+from pydantic import BaseModel, Field
+
+
+class LLMConfig(BaseModel):
+    """LLM configuration."""
+    provider: str
+    model: str
+    temperature: Optional[float] = Field(None, ge=0, le=2)
+    max_tokens: Optional[int] = Field(None, alias="maxTokens", gt=0)
+    top_p: Optional[float] = Field(None, alias="topP", ge=0, le=1)
+
+
+class ToolConfig(BaseModel):
+    """Tool configuration."""
+    type: str
+    name: Optional[str] = None
+    server: Optional[str] = None
+    namespace: Optional[str] = None
+    endpoint: Optional[str] = None
+    capabilities: Optional[list[str]] = None
+    config: Optional[dict[str, Any]] = None
+
+
+class AutonomyConfig(BaseModel):
+    """Autonomy configuration."""
+    level: Optional[str] = None
+    approval_required: Optional[bool] = Field(None, alias="approvalRequired")
+    allowed_actions: Optional[list[str]] = Field(None, alias="allowedActions")
+    blocked_actions: Optional[list[str]] = Field(None, alias="blockedActions")
+
+
+class Constraints(BaseModel):
+    """Agent constraints."""
+    cost: Optional[dict[str, Any]] = None
+    performance: Optional[dict[str, Any]] = None
+
+
+class AgentSpec(BaseModel):
+    """Agent specification."""
+    role: str
+    llm: Optional[LLMConfig] = None
+    tools: Optional[list[ToolConfig]] = None
+    autonomy: Optional[AutonomyConfig] = None
+    constraints: Optional[Constraints] = None
+
+
+class TaskExecution(BaseModel):
+    """Task execution configuration."""
+    type: Literal["deterministic", "idempotent", "transactional"] = "deterministic"
+    runtime: Optional[str] = None
+    handler: Optional[str] = None
+    timeout: Optional[int] = None
+    retries: Optional[int] = None
+
+
+class TaskStep(BaseModel):
+    """Individual task step."""
+    name: str
+    handler: str
+    inputs: Optional[dict[str, Any]] = None
+    outputs: Optional[dict[str, Any]] = None
+    timeout: Optional[int] = None
+    retries: Optional[int] = None
+
+
+class TaskSpec(BaseModel):
+    """Task specification for deterministic workflows."""
+    execution: TaskExecution
+    steps: Optional[list[TaskStep]] = None
+    inputs: Optional[dict[str, Any]] = None
+    outputs: Optional[dict[str, Any]] = None
+    error_handling: Optional[dict[str, Any]] = Field(None, alias="errorHandling")
+
+
+class WorkflowStep(BaseModel):
+    """Individual workflow step."""
+    name: str
+    type: Literal["task", "agent", "parallel", "condition", "loop"] = "task"
+    task: Optional[str] = None
+    agent: Optional[str] = None
+    inputs: Optional[dict[str, Any]] = None
+    outputs: Optional[dict[str, Any]] = None
+    condition: Optional[str] = None
+    parallel: Optional[list["WorkflowStep"]] = None
+    loop: Optional[dict[str, Any]] = None
+
+
+class WorkflowSpec(BaseModel):
+    """Workflow specification for multi-step orchestration."""
+    steps: list[WorkflowStep]
+    triggers: Optional[list[dict[str, Any]]] = None
+    error_handling: Optional[dict[str, Any]] = Field(None, alias="errorHandling")
+    retry_policy: Optional[dict[str, Any]] = Field(None, alias="retryPolicy")
+
+
+class Metadata(BaseModel):
+    """Manifest metadata."""
+    name: str
+    version: Optional[str] = None
+    description: Optional[str] = None
+    labels: Optional[dict[str, str]] = None
+    annotations: Optional[dict[str, str]] = None
+
+
+class OSSAManifest(BaseModel):
+    """OSSA Manifest structure."""
+    api_version: str = Field(alias="apiVersion")
+    kind: Literal["Agent", "Task", "Workflow"]
+    metadata: Metadata
+    spec: Union[AgentSpec, TaskSpec, WorkflowSpec]
+
+    class Config:
+        populate_by_name = True

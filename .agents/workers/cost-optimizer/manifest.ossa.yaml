@@ -1,0 +1,430 @@
+apiVersion: ossa/v0.3.5
+kind: Agent
+metadata:
+  name: cost-optimizer
+  version: 1.0.0
+  description: >-
+    Intelligent cost optimization agent that monitors and optimizes LLM costs across all OSSA agents.
+    Leverages v0.3.5 MoE, BAT framework, and MOE metrics to achieve 30%+ cost reduction.
+  labels:
+    ossa-version: v0.3.5
+    domain: finops
+    category: optimizer
+    tier: worker
+    priority: P0
+
+spec:
+  taxonomy:
+    domain: finops
+    subdomain: cost-optimization
+    capability: llm-cost-management
+
+  role: |
+    You are the Cost Optimizer, responsible for monitoring and optimizing LLM costs across all OSSA agents.
+
+    Your core responsibilities:
+    1. Real-time Cost Monitoring: Track token usage, API calls, and costs across all agents
+    2. MoE Optimization: Recommend optimal expert selection to minimize costs while maintaining quality
+    3. BAT Framework: Guide technology selection based on cost/performance tradeoffs
+    4. Anomaly Detection: Identify cost spikes, inefficient patterns, and budget violations
+    5. Automated Optimization: Suggest and implement cost-saving strategies
+    6. Budget Enforcement: Monitor budgets, alert on thresholds, and enforce limits
+    7. Cost Allocation: Track costs by agent, team, project, and feature
+
+    Optimization strategies:
+    - Expert Selection: Route simple tasks to economy experts, complex to premium only when needed
+    - Model Selection: Use BAT framework to select cost-optimal models for each task type
+    - Token Optimization: Identify and reduce token waste
+    - Caching: Recommend caching strategies for repeated queries
+    - Batching: Identify opportunities for batch processing
+
+  llm:
+    provider: ${LLM_PROVIDER:-anthropic}
+    model: ${LLM_MODEL:-claude-haiku-4-20250514}
+    temperature: 0.1
+    maxTokens: 4096
+    profile: cost_optimized
+
+  completion:
+    default_signal: complete
+    signals:
+      - signal: continue
+        condition: optimization_opportunities_found > 0
+        priority: 1
+      - signal: blocked
+        condition: "budget_exceeded == true"
+        priority: 2
+      - signal: escalate
+        condition: "cost_spike_detected == true && spike_percentage > 50"
+        priority: 3
+      - signal: checkpoint
+        condition: "analysis_iteration_count % 10 == 0"
+        priority: 4
+    max_iterations: 50
+    timeout_seconds: 300
+
+  checkpointing:
+    enabled: true
+    interval: iteration
+    interval_value: 10
+    retention:
+      days: 90
+      max_checkpoints: 200
+    storage:
+      backend: agent-brain
+      location: s3://checkpoints/@cost-optimizer/{session_id}
+
+  tools:
+    - name: get_agent_costs
+      description: Get cost metrics for a specific agent or all agents
+      source:
+        type: mcp
+        uri: mcp://agent-tracer/costs
+      input:
+        type: object
+        properties:
+          agent_id: { type: string }
+          time_range: { type: object }
+          group_by: { type: array, items: { type: string } }
+
+    - name: analyze_cost_efficiency
+      description: Analyze cost efficiency and identify optimization opportunities
+      source:
+        type: mcp
+        uri: mcp://agent-tracer/analyze-costs
+      input:
+        type: object
+        properties:
+          agent_id: { type: string }
+          include_recommendations: { type: boolean, default: true }
+
+    - name: optimize_expert_selection
+      description: Recommend optimal expert selection for MoE agents
+      source:
+        type: mcp
+        uri: mcp://agent-mesh/optimize-experts
+      input:
+        type: object
+        required: [agent_id, task_description]
+        properties:
+          agent_id: { type: string }
+          task_description: { type: string }
+          cost_sensitivity: { type: string, enum: [high, medium, low] }
+          quality_requirement: { type: string, enum: [minimal, standard, high] }
+
+    - name: optimize_bat_selection
+      description: Recommend BAT framework technology selection
+      source:
+        type: mcp
+        uri: mcp://agent-mesh/optimize-bat
+      input:
+        type: object
+        required: [dimensions]
+        properties:
+          dimensions: { type: object }
+          cost_constraint: { type: number }
+          performance_requirement: { type: string }
+
+    - name: detect_cost_anomalies
+      description: Detect cost anomalies and spikes
+      source:
+        type: mcp
+        uri: mcp://agent-tracer/anomalies
+      input:
+        type: object
+        properties:
+          threshold_percentage: { type: number, default: 30 }
+          time_window: { type: string, default: "1h" }
+
+    - name: enforce_budget
+      description: Enforce budget limits and alert on violations
+      source:
+        type: mcp
+        uri: mcp://agent-tracer/enforce-budget
+      input:
+        type: object
+        required: [budget_config]
+        properties:
+          budget_config: { type: object }
+          action: { type: string, enum: [alert, block, throttle] }
+
+    - name: generate_cost_report
+      description: Generate comprehensive cost analysis report
+      source:
+        type: mcp
+        uri: mcp://agent-tracer/cost-report
+      input:
+        type: object
+        properties:
+          format: { type: string, enum: [markdown, json, csv], default: "markdown" }
+          include_recommendations: { type: boolean, default: true }
+          time_range: { type: object }
+
+  autonomy:
+    level: assisted
+    approval_required:
+      - apply_optimization
+      - enforce_budget
+      - modify_agent_config
+    allowed_actions:
+      - analyze_costs
+      - generate_reports
+      - detect_anomalies
+      - recommend_optimizations
+
+  constraints:
+    max_tokens_per_turn: 8192
+    max_turns: 30
+    timeout_seconds: 300
+    cost:
+      maxTokensPerDay: 50000
+      maxCostPerDay: 10.0
+      currency: USD
+
+  observability:
+    tracing:
+      enabled: true
+      provider: otel
+      sampling_rate: 1.0
+    metrics:
+      enabled: true
+      custom:
+        - name: total_cost_saved
+          type: counter
+          description: Total cost savings achieved
+        - name: optimization_recommendations
+          type: counter
+          labels: [agent_id, optimization_type]
+        - name: cost_anomalies_detected
+          type: counter
+          labels: [agent_id, severity]
+        - name: budget_violations
+          type: counter
+          labels: [agent_id, budget_type]
+
+extensions:
+  experts:
+    registry:
+      - id: deep-analysis-expert
+        name: "Deep Cost Analysis Expert"
+        model:
+          provider: anthropic
+          model: claude-opus-4-5-20251101
+        specializations:
+          - complex_cost_analysis
+          - multi_agent_optimization
+          - predictive_cost_modeling
+        cost_tier: premium
+        capabilities:
+          extended_thinking: true
+          max_tokens: 200000
+          reasoning_depth: deep
+
+      - id: standard-analysis-expert
+        name: "Standard Cost Analysis Expert"
+        model:
+          provider: anthropic
+          model: claude-sonnet-4-20250514
+        specializations:
+          - cost_monitoring
+          - anomaly_detection
+          - standard_optimization
+        cost_tier: standard
+        capabilities:
+          max_tokens: 16384
+          reasoning_depth: balanced
+
+      - id: quick-scan-expert
+        name: "Quick Cost Scan Expert"
+        model:
+          provider: google
+          model: gemini-2.0-flash
+        specializations:
+          - quick_cost_checks
+          - high_volume_monitoring
+          - basic_optimization
+        cost_tier: economy
+        capabilities:
+          max_tokens: 8192
+          reasoning_depth: fast
+
+    selection_strategy: agent_controlled
+
+    tools:
+      - name: list_experts
+        description: "Discover available cost analysis experts"
+      - name: invoke_expert
+        description: "Delegate cost analysis to specialized expert"
+      - name: get_expert_history
+        description: "Review past expert selections for learning"
+
+  bat:
+    selection_criteria:
+      - dimension: analysis_complexity
+        required: true
+        options:
+          - value: complex
+            technologies: [claude-opus, gpt-4-turbo]
+            cost_tier: premium
+            use_case: "Multi-agent optimization, predictive modeling"
+          - value: standard
+            technologies: [claude-sonnet, gpt-4o]
+            cost_tier: standard
+            use_case: "Daily monitoring, standard optimization"
+          - value: simple
+            technologies: [gemini-flash, claude-haiku]
+            cost_tier: economy
+            use_case: "Quick scans, high-volume monitoring"
+
+      - dimension: cost_sensitivity
+        required: true
+        options:
+          - value: high
+            prefer: [gemini-flash, claude-haiku]
+            max_cost_per_analysis: 0.05
+          - value: medium
+            prefer: [claude-sonnet, gpt-4o]
+            max_cost_per_analysis: 0.20
+          - value: low
+            prefer: [claude-opus, gpt-4-turbo]
+            max_cost_per_analysis: 1.00
+
+  moe:
+    primary:
+      metric: cost_reduction_percentage
+      description: "Percentage of cost reduction achieved"
+      target: 30.0
+      measurement:
+        type: percentage
+        numerator: cost_saved
+        denominator: baseline_cost
+        collection:
+          source: agent-tracer
+          interval: real_time
+
+    secondary:
+      - metric: optimization_recommendation_accuracy
+        description: "Accuracy of optimization recommendations"
+        target: 0.85
+        unit: ratio
+      - metric: cost_anomaly_detection_latency
+        description: "Time to detect cost anomalies"
+        target: 300
+        unit: seconds
+      - metric: budget_compliance_rate
+        description: "Percentage of agents within budget"
+        target: 0.95
+        unit: ratio
+
+    operational:
+      - metric: uptime
+        description: "Cost optimizer availability"
+        target: 0.999
+        unit: ratio
+      - metric: analysis_cost_per_agent
+        description: "Cost to analyze one agent"
+        target: 0.10
+        unit: usd
+
+    tracking:
+      enabled: true
+      collection_interval: 60s
+      retention_days: 365
+      dashboards:
+        - gitlab_observability
+        - finops_dashboard
+      alerts:
+        - condition: "cost_reduction_percentage < target * 0.8"
+          severity: warning
+        - condition: "budget_compliance_rate < 0.90"
+          severity: critical
+
+  capabilities:
+    discovery:
+      enabled: true
+      registry: agent-mesh
+      refresh_interval: 30s
+
+    tools:
+      - name: list_capabilities
+        description: "Discover cost optimization capabilities in the mesh"
+      - name: register_capability
+        description: "Register cost optimization capabilities"
+
+  feedback:
+    tools:
+      - name: record_feedback
+        description: "Record feedback on optimization effectiveness"
+      - name: get_feedback_summary
+        description: "Get aggregate feedback for optimization improvement"
+      - name: suggest_improvements
+        description: "Get improvement suggestions based on feedback"
+
+    learning:
+      enabled: true
+      strategy: reinforcement
+      data_sources:
+        - optimization_outcomes
+        - cost_reduction_results
+        - expert_selection_outcomes
+        - bat_selection_outcomes
+      model_fine_tuning:
+        enabled: true
+        schedule: weekly
+        target_model: models/cost-optimization
+
+  infrastructure:
+    - type: synology_nas
+      hostname: blueflynas.tailcf98b3.ts.net
+      capabilities:
+        - store_cost_reports
+        - manage_checkpoints
+        - archive_cost_data
+      access:
+        tier: tier_2_write_limited
+    - type: agent_mesh
+      endpoint: mesh.blueflyagents.com:3005
+      capabilities:
+        - agent_cost_monitoring
+        - optimization_coordination
+
+  gitlab:
+    triggers:
+      - event: schedule
+        cron: "*/15 * * * *"
+        description: "Run cost analysis every 15 minutes"
+      - event: webhook
+        path: /cost-optimizer/analyze
+      - event: merge_request
+        filter:
+          labels: ["cost-review"]
+    custom_fields:
+      cost_impact: estimated
+      optimization_applied: boolean
+    duo_platform:
+      route: /automate/cost-optimizer
+      registry_endpoint: /automate/cost-optimizer/:id
+
+  opentelemetry:
+    enabled: true
+    service_name: "cost-optimizer"
+    service_version: "1.0.0"
+    traces:
+      enabled: true
+      exporter: otlp
+      endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4317}"
+      sample_rate: 1.0
+    metrics:
+      enabled: true
+      exporter: otlp
+      endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4317}"
+    logs:
+      enabled: true
+      exporter: otlp
+      endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4317}"
+      level: info
+    resource_attributes:
+      agent.id: "cost-optimizer"
+      agent.version: "1.0.0"
+      framework: "ossa"
+      domain: "finops"

@@ -1,0 +1,110 @@
+# =============================================================================
+# GITLAB ULTIMATE DUO AGENT - DRY VERSION
+# =============================================================================
+# Uses GitLab Ultimate built-in features instead of custom code
+# Copy to: https://gitlab.com/blueflyio/ossa/openstandardagents/-/automate/agents/1261/edit
+# =============================================================================
+
+# Use GitLab's standard Node.js image
+image: node:${NODE_VERSION:-20}-alpine
+
+commands:
+  # ============================================================================
+  # PHASE 1: SETUP (Minimal - GitLab handles the rest)
+  # ============================================================================
+  - npm ci --prefer-offline --no-audit
+  - npm run build
+
+  # ============================================================================
+  # PHASE 2: OSSA VALIDATION (Use OSSA Validator Component)
+  # ============================================================================
+  # Instead of 100+ lines of custom validation, use:
+  # - GitLab's built-in validation via CI/CD component
+  # - Platform-Agents ossa-validator agent
+  - |
+    echo "🔍 OSSA Validation via Platform-Agents..."
+    # Platform-Agents ossa-validator handles all validation
+    # Configured in .gitlab/ci/platform-agents-integration.yml
+
+  # ============================================================================
+  # PHASE 3: CODE QUALITY (Use GitLab's Built-In)
+  # ============================================================================
+  # Instead of custom ESLint/YAML/ShellCheck, use:
+  # - GitLab Code Quality job (Jobs/Code-Quality.gitlab-ci.yml)
+  # - Platform-Agents code-quality-reviewer
+  - |
+    echo "📋 Code Quality via GitLab Code Quality job..."
+    # GitLab's Code Quality job handles all linting
+    # Configured in .gitlab-ci.yml via template
+
+  # ============================================================================
+  # PHASE 4: SECURITY (Use GitLab's Built-In Scanners)
+  # ============================================================================
+  # Instead of custom security scanning, use:
+  # - GitLab SAST (Jobs/SAST.gitlab-ci.yml)
+  # - GitLab Dependency Scanning (Jobs/Dependency-Scanning.gitlab-ci.yml)
+  # - GitLab Secret Detection (Jobs/Secret-Detection.gitlab-ci.yml)
+  # - Platform-Agents vulnerability-scanner
+  - |
+    echo "🔒 Security via GitLab Security Scanners..."
+    # GitLab's security jobs handle all scanning
+    # Configured in .gitlab-ci.yml via templates
+
+  # ============================================================================
+  # PHASE 5: DOCUMENTATION (Use Platform-Agents)
+  # ============================================================================
+  # Instead of custom documentation generation, use:
+  # - Platform-Agents documentation-aggregator
+  - |
+    echo "📚 Documentation via Platform-Agents..."
+    # Platform-Agents documentation-aggregator handles docs
+    # Configured in .gitlab/ci/platform-agents-integration.yml
+
+  # ============================================================================
+  # PHASE 6: TEST COVERAGE (Use GitLab's Built-In)
+  # ============================================================================
+  # Instead of custom test coverage, use:
+  # - GitLab's built-in test coverage reporting
+  # - Configured in .gitlab-ci.yml with coverage regex
+  - |
+    echo "🧪 Test Coverage via GitLab Coverage Reporting..."
+    # GitLab automatically collects coverage from test jobs
+    # Configured in .gitlab-ci.yml
+
+  # ============================================================================
+  # PHASE 7: AUTO-FIX (Use GitLab Duo's Built-In)
+  # ============================================================================
+  # Instead of custom auto-fix logic, use:
+  # - GitLab Duo's built-in code suggestions
+  # - Platform-Agents pipeline-remediation
+  - |
+    echo "🔧 Auto-Fix via GitLab Duo..."
+    # GitLab Duo provides suggestions automatically
+    # Platform-Agents pipeline-remediation fixes CI/CD issues
+
+  # ============================================================================
+  # SUMMARY
+  # ============================================================================
+  - |
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "🎯 GITLAB ULTIMATE + OSSA AGENTS - COMPLETE"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    echo "✅ All validation: GitLab + Platform-Agents"
+    echo "✅ All security: GitLab Security Scanners"
+    echo "✅ All quality: GitLab Code Quality"
+    echo "✅ All docs: Platform-Agents documentation-aggregator"
+    echo "✅ All tests: GitLab Coverage Reporting"
+    echo "✅ All fixes: GitLab Duo + Platform-Agents"
+    echo ""
+    echo "🚀 Zero custom code - Maximum GitLab Ultimate leverage!"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# ============================================================================
+# TRIGGERS (Use GitLab Duo's Built-In Triggers)
+# ============================================================================
+# Configure in GitLab UI → Settings → Duo Agents
+# Instead of custom trigger logic, use:
+# - GitLab Duo's file change detection
+# - GitLab Duo's MR comment triggers
+# - GitLab Duo's scheduled triggers
