@@ -29,7 +29,8 @@ pre-commit:
 
     # Linting (auto-fixable)
     lint:
-      run: npm run lint:fix
+      glob: "*.{ts,tsx}"
+      run: npx eslint {staged_files} --fix
       fail_text: "❌ ESLint errors found. Run 'npm run lint:fix' to auto-fix."
       stage_fixed: true
 

@@ -269,8 +269,17 @@
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "lint-staged": {
+    "src/**/*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
+  },
   "volta": {
-    "node": "18.20.8",
-    "npm": "10.9.4"
+    "node": "20.11.0",
+    "npm": "10.2.4"
   }
 }
