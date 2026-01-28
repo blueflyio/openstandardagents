@@ -267,6 +267,24 @@ export interface OssaAgent {
         };
       }>;
     };
+    capabilities?: Capability[];
+    policies?: Array<{
+      name: string;
+      type: string;
+      rules: any[];
+      [key: string]: any;
+    }>;
+    tests?: Array<{
+      id: string;
+      name?: string;
+      type?: 'unit' | 'integration' | 'capability' | 'policy';
+      assertions: Array<{
+        type: string;
+        actual: string;
+        expected: any;
+      }>;
+      [key: string]: any;
+    }>;
     environments?: Record<
       string,
       {
