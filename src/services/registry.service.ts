@@ -112,7 +112,7 @@ export class RegistryService {
     const agentDir = path.join(this.agentsPath, agentId, version);
     await fs.mkdir(agentDir, { recursive: true });
     const manifestPath = path.join(agentDir, 'manifest.yaml');
-    const yaml = require('yaml');
+    const yaml = await import('yaml');
     await fs.writeFile(manifestPath, yaml.stringify(manifest), 'utf-8');
 
     // Update index

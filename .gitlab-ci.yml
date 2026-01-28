@@ -18,6 +18,8 @@ variables:
 validate:schema:
   stage: validate
   image: node:${NODE_VERSION}-alpine
+  tags:
+    - nas-npm-runner
   before_script:
     - npm ci --prefer-offline --no-audit
   script:
@@ -32,6 +34,8 @@ validate:schema:
 validate:examples:
   stage: validate
   image: node:${NODE_VERSION}-alpine
+  tags:
+    - nas-npm-runner
   before_script:
     - npm ci --prefer-offline --no-audit
   script:
@@ -47,6 +51,8 @@ validate:examples:
 validate:ossa-templates:
   stage: validate
   image: node:${NODE_VERSION}-alpine
+  tags:
+    - nas-npm-runner
   before_script:
     - npm ci --prefer-offline --no-audit
   script:
@@ -68,6 +74,8 @@ validate:ossa-templates:
 
 .node-setup:
   image: node:${NODE_VERSION}-alpine
+  tags:
+    - nas-npm-runner
   before_script:
     - npm ci --prefer-offline --no-audit
 
@@ -96,6 +104,8 @@ test:unit:
 release:semantic:
   stage: release
   image: node:${NODE_VERSION}
+  tags:
+    - nas-npm-runner
   variables:
     GIT_AUTHOR_NAME: "OSSA Release Bot"
     GIT_AUTHOR_EMAIL: "release-bot@openstandardagents.org"

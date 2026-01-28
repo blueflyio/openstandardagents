@@ -302,7 +302,9 @@ export class TestRunner {
   ): Promise<TestResult[]> {
     const results: TestResult[] = [];
     const capabilities = (manifest.spec as any)?.capabilities || [];
-    const capability = capabilities.find((c: any) => c.name === capabilityName);
+    const capability = capabilities.find(
+      (c: any) => c.name === capabilityName
+    );
 
     if (!capability) {
       results.push({

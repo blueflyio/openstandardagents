@@ -1,3 +1,6 @@
+
+import * as fs from 'fs';
+
 /**
  * Enhanced OSSA Validator with Error Codes
  *
@@ -107,7 +110,6 @@ export class EnhancedOSSAValidator {
    */
   validateFile(filePath: string): EnhancedValidationResult {
     try {
-      const fs = require('fs');
       const content = fs.readFileSync(filePath, 'utf-8');
       const manifest = JSON.parse(content);
       return this.validate(manifest);
