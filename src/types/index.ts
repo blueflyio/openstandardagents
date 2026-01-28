@@ -32,6 +32,24 @@ export type {
   RoutingRule,
 } from './messaging.js';
 
+// Export Identity & Adapter types (v0.3.6)
+export * from './identity.js';
+export type {
+  Principal,
+  CredentialSource,
+  Adapter,
+  GenerationContext,
+} from './identity.js';
+
+// Export Architect types (v0.3.6)
+export * from './architect.js';
+export type {
+  Blueprint,
+  AgentKind,
+  ArchitectureConstraint,
+  ArchitectRecommendation,
+} from './architect.js';
+
 /**
  * Capability definition (OpenAPI-style operation)
  */
@@ -51,6 +69,8 @@ export interface Capability {
     backoff?: 'linear' | 'exponential';
   };
 }
+
+import { Adapter, Principal } from './identity.js';
 
 /**
  * OSSA Agent manifest structure (k8s-style format)
@@ -86,6 +106,10 @@ export interface OssaAgent {
       maxTokens?: number;
       topP?: number;
     };
+    // Adapters: The new envelope for platform-specifics
+    adapters?: Adapter[];
+    // Principal: Abstract identity definition (v0.3.6)
+    principal?: Principal;
     tools?: Array<{
       type: string;
       name?: string;

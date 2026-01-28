@@ -1,6 +1,6 @@
 # Example: OSSA Task executed via Symfony Messenger
 # Demonstrates async task execution with queue-based processing
-apiVersion: ossa/v0.3.5
+apiVersion: ossa/v0.3.6
 kind: Task
 metadata:
   name: send-email-symfony

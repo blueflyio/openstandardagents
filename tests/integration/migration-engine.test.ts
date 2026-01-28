@@ -45,7 +45,7 @@ describe('Migration Engine Integration', () => {
 
       const detection = await versionDetector.detectVersion(manifest);
 
-      expect(detection.version).toBe('0.3.5');
+      expect(detection.version).toBe('0.3.6');
       expect(detection.confidence).toBe('high');
       expect(detection.source).toBe('apiVersion');
     });
@@ -65,7 +65,7 @@ describe('Migration Engine Integration', () => {
   });
 
   describe('Single Manifest Migration', () => {
-    it('should migrate v0.3.3 manifest to v0.3.5', async () => {
+    it('should migrate v0.3.3 manifest to v0.3.6', async () => {
       const manifest = {
         apiVersion: 'ossa/v0.3.3',
         kind: 'Agent',
@@ -88,13 +88,13 @@ describe('Migration Engine Integration', () => {
 
       const result = await migrationService.migrateWithDetection(
         manifest,
-        '0.3.5'
+        '0.3.6'
       );
 
       expect(result.success).toBe(true);
-      expect(result.manifest?.apiVersion).toBe('ossa/v0.3.5');
+      expect(result.manifest?.apiVersion).toBe('ossa/v0.3.6');
       expect(result.sourceVersion).toBe('0.3.3');
-      expect(result.targetVersion).toBe('0.3.5');
+      expect(result.targetVersion).toBe('0.3.6');
       expect(result.summary).toBeDefined();
 
       // Verify critical fields preserved
@@ -111,7 +111,7 @@ describe('Migration Engine Integration', () => {
 
       const result = await migrationService.migrateWithDetection(
         manifest,
-        '0.3.5'
+        '0.3.6'
       );
 
       expect(result.success).toBe(true);
@@ -142,7 +142,7 @@ describe('Migration Engine Integration', () => {
         },
       ];
 
-      const result = await migrationService.migrateBatch(manifests, '0.3.5', {
+      const result = await migrationService.migrateBatch(manifests, '0.3.6', {
         parallel: true,
         maxConcurrent: 2,
       });
@@ -156,7 +156,7 @@ describe('Migration Engine Integration', () => {
       // Verify all are migrated to target version
       result.results.forEach((res) => {
         expect(res.success).toBe(true);
-        expect(res.manifest?.apiVersion).toBe('ossa/v0.3.5');
+        expect(res.manifest?.apiVersion).toBe('ossa/v0.3.6');
       });
     });
 
@@ -176,7 +176,7 @@ describe('Migration Engine Integration', () => {
         },
       ];
 
-      const result = await migrationService.migrateBatch(manifests, '0.3.5', {
+      const result = await migrationService.migrateBatch(manifests, '0.3.6', {
         parallel: false,
       });
 
@@ -202,7 +202,7 @@ describe('Migration Engine Integration', () => {
         },
       ];
 
-      const result = await migrationService.migrateBatch(manifests, '0.3.5', {
+      const result = await migrationService.migrateBatch(manifests, '0.3.6', {
         stopOnError: true,
       });
 
@@ -228,7 +228,7 @@ describe('Migration Engine Integration', () => {
         },
       ];
 
-      const result = await migrationService.migrateBatch(manifests, '0.3.5', {
+      const result = await migrationService.migrateBatch(manifests, '0.3.6', {
         stopOnError: false,
       });
 
@@ -286,7 +286,7 @@ describe('Migration Engine Integration', () => {
       const migrated = transformService.applyTransform(
         original,
         '0.3.4',
-        '0.3.5'
+        '0.3.6'
       );
 
       // Verify metrics was normalized to object
@@ -302,8 +302,8 @@ describe('Migration Engine Integration', () => {
 
       expect(transforms.length).toBeGreaterThanOrEqual(3);
       expect(transforms.some((t) => t.id === 'v0.3.3-to-v0.3.4')).toBe(true);
-      expect(transforms.some((t) => t.id === 'v0.3.4-to-v0.3.5')).toBe(true);
-      expect(transforms.some((t) => t.id === 'v0.3.3-to-v0.3.5')).toBe(true);
+      expect(transforms.some((t) => t.id === 'v0.3.4-to-v0.3.6')).toBe(true);
+      expect(transforms.some((t) => t.id === 'v0.3.3-to-v0.3.6')).toBe(true);
     });
 
     it('should provide transformation summaries', () => {
@@ -318,20 +318,20 @@ describe('Migration Engine Integration', () => {
 
   describe('Migration Path Planning', () => {
     it('should calculate migration path', () => {
-      const path = versionDetector.getMigrationPath('0.3.3', '0.3.5');
+      const path = versionDetector.getMigrationPath('0.3.3', '0.3.6');
 
       expect(path.length).toBeGreaterThan(0);
-      expect(path[path.length - 1]).toBe('0.3.5');
+      expect(path[path.length - 1]).toBe('0.3.6');
     });
 
     it('should return empty path for same version', () => {
-      const path = versionDetector.getMigrationPath('0.3.5', '0.3.5');
+      const path = versionDetector.getMigrationPath('0.3.6', '0.3.6');
 
       expect(path).toHaveLength(0);
     });
 
     it('should return empty path for downgrade', () => {
-      const path = versionDetector.getMigrationPath('0.3.5', '0.3.3');
+      const path = versionDetector.getMigrationPath('0.3.6', '0.3.3');
 
       expect(path).toHaveLength(0);
     });
