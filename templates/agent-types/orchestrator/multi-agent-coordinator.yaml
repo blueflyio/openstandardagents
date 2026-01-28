@@ -1,0 +1,38 @@
+apiVersion: ossa/v0.3.6
+metadata:
+  name: multi-agent-coordinator
+  version: 1.0.0
+  description: Multi-agent coordination agent that orchestrates workflows across multiple agents, manages task distribution, and coordinates execution
+  labels:
+    ossa.ai/type: orchestrator
+    ossa.ai/domain: agents
+spec:
+  role: Multi-Agent Coordinator
+  system_message: |
+    You are a multi-agent coordinator that orchestrates complex workflows 
+    across multiple agents, manages task distribution, coordinates execution, 
+    and ensures workflow completion.
+  llm_config:
+    provider: openai
+    model: gpt-4
+    temperature: 0.3
+  tools:
+    - name: dispatch_task
+      description: Dispatch task to agent
+      parameters:
+        type: object
+        properties:
+          agent:
+            type: string
+          task:
+            type: object
+  taxonomy:
+    domain: agents
+    subdomain: orchestration
+    capability: coordination
+    concerns: [architecture, reliability]
+    maturity: stable
+    deployment_pattern: container
+    integration_pattern: event-driven
+    cost_profile: high
+    performance_tier: real-time

@@ -1,0 +1,731 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openstandardagents.org/schemas/registry/api/v1.json",
+  "title": "OSSA Registry API Schema",
+  "description": "JSON Schema for OSSA Agent Registry API requests and responses",
+  "version": "1.0.0",
+  "definitions": {
+    "AgentRegistryMetadata": {
+      "type": "object",
+      "required": [
+        "name",
+        "version",
+        "publisher",
+        "description",
+        "license",
+        "manifest_url",
+        "package_url",
+        "created_at",
+        "updated_at"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$",
+          "maxLength": 253,
+          "description": "Agent name in DNS-1123 format"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+          "description": "Semantic version (semver 2.0.0)"
+        },
+        "publisher": {
+          "$ref": "#/definitions/PublisherInfo"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 200,
+          "description": "Short description of the agent"
+        },
+        "long_description": {
+          "type": "string",
+          "description": "Full description (supports Markdown)"
+        },
+        "license": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9.\\-]+$",
+          "description": "SPDX license identifier"
+        },
+        "keywords": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "maxItems": 20,
+          "description": "Search keywords"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "maxItems": 20,
+          "description": "Classification tags"
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "OSSA capabilities"
+        },
+        "taxonomy": {
+          "$ref": "#/definitions/TaxonomyInfo"
+        },
+        "repository": {
+          "type": "string",
+          "format": "uri",
+          "description": "Source code repository URL"
+        },
+        "homepage": {
+          "type": "string",
+          "format": "uri",
+          "description": "Project homepage URL"
+        },
+        "documentation": {
+          "type": "string",
+          "format": "uri",
+          "description": "Documentation URL"
+        },
+        "changelog": {
+          "type": "string",
+          "format": "uri",
+          "description": "Changelog URL"
+        },
+        "issues": {
+          "type": "string",
+          "format": "uri",
+          "description": "Issue tracker URL"
+        },
+        "compliance_profiles": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "fedramp-low",
+              "fedramp-moderate",
+              "fedramp-high",
+              "hipaa",
+              "soc2",
+              "gdpr",
+              "pci-dss"
+            ]
+          },
+          "description": "Compliance profiles"
+        },
+        "ossa_version": {
+          "type": "string",
+          "pattern": "^v?\\d+\\.\\d+\\.\\d+$",
+          "description": "Required OSSA specification version"
+        },
+        "dependencies": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Agent/runtime dependencies with version ranges"
+        },
+        "llm_requirements": {
+          "$ref": "#/definitions/LLMRequirements"
+        },
+        "manifest_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "OSSA manifest download URL"
+        },
+        "package_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Agent package download URL"
+        },
+        "package_size": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Package size in bytes"
+        },
+        "package_shasum": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "SHA-256 checksum of package"
+        },
+        "downloads": {
+          "$ref": "#/definitions/DownloadStats"
+        },
+        "rating": {
+          "$ref": "#/definitions/RatingInfo"
+        },
+        "verified": {
+          "type": "boolean",
+          "description": "Publisher verification status"
+        },
+        "security_scan": {
+          "$ref": "#/definitions/SecurityScanResult"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Agent creation timestamp"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update timestamp"
+        },
+        "published_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Version publication timestamp"
+        },
+        "deprecated": {
+          "type": "boolean",
+          "description": "Deprecation status"
+        },
+        "deprecation_reason": {
+          "type": "string",
+          "description": "Reason for deprecation"
+        },
+        "replacement_version": {
+          "type": "string",
+          "description": "Recommended replacement version"
+        }
+      }
+    },
+    "PublisherInfo": {
+      "type": "object",
+      "required": ["id", "name", "verified"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$",
+          "description": "Publisher identifier"
+        },
+        "name": {
+          "type": "string",
+          "description": "Publisher display name"
+        },
+        "verified": {
+          "type": "boolean",
+          "description": "Verification status"
+        },
+        "website": {
+          "type": "string",
+          "format": "uri",
+          "description": "Publisher website"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Publisher contact email"
+        },
+        "github": {
+          "type": "string",
+          "description": "GitHub username"
+        }
+      }
+    },
+    "TaxonomyInfo": {
+      "type": "object",
+      "required": ["domain"],
+      "properties": {
+        "domain": {
+          "type": "string",
+          "enum": [
+            "infrastructure",
+            "security",
+            "development",
+            "documentation",
+            "compliance",
+            "operations",
+            "data",
+            "ml",
+            "other"
+          ],
+          "description": "Primary domain"
+        },
+        "subdomain": {
+          "type": "string",
+          "description": "Secondary classification"
+        },
+        "capability": {
+          "type": "string",
+          "description": "Specific function"
+        }
+      }
+    },
+    "LLMRequirements": {
+      "type": "object",
+      "required": ["provider", "model"],
+      "properties": {
+        "provider": {
+          "type": "string",
+          "enum": [
+            "anthropic",
+            "openai",
+            "google",
+            "azure",
+            "aws",
+            "cohere",
+            "huggingface",
+            "other"
+          ],
+          "description": "LLM provider"
+        },
+        "model": {
+          "type": "string",
+          "description": "Model identifier"
+        },
+        "estimated_cost_per_run": {
+          "type": "string",
+          "pattern": "^\\$\\d+\\.\\d{2}$",
+          "description": "Estimated cost per execution"
+        }
+      }
+    },
+    "DownloadStats": {
+      "type": "object",
+      "required": ["total"],
+      "properties": {
+        "total": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total downloads"
+        },
+        "last_month": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Downloads in last 30 days"
+        },
+        "last_week": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Downloads in last 7 days"
+        }
+      }
+    },
+    "RatingInfo": {
+      "type": "object",
+      "required": ["average", "count"],
+      "properties": {
+        "average": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 5,
+          "description": "Average rating (1-5)"
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of ratings"
+        }
+      }
+    },
+    "SecurityScanResult": {
+      "type": "object",
+      "required": ["status"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["passed", "failed", "pending"],
+          "description": "Security scan status"
+        },
+        "scanned_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Scan timestamp"
+        },
+        "checks": {
+          "type": "object",
+          "properties": {
+            "schema_valid": {
+              "type": "boolean"
+            },
+            "dependencies_secure": {
+              "type": "boolean"
+            },
+            "secrets_detected": {
+              "type": "boolean"
+            },
+            "capabilities_verified": {
+              "type": "boolean"
+            },
+            "compliance_verified": {
+              "type": "boolean"
+            }
+          }
+        },
+        "vulnerabilities": {
+          "type": "object",
+          "properties": {
+            "critical": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "high": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "medium": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "low": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "critical"]
+        }
+      }
+    },
+    "PublishRequest": {
+      "type": "object",
+      "required": ["manifest", "package", "license"],
+      "properties": {
+        "manifest": {
+          "type": "object",
+          "description": "OSSA agent manifest"
+        },
+        "package": {
+          "type": "object",
+          "required": ["tarball_url", "shasum", "size_bytes"],
+          "properties": {
+            "tarball_url": {
+              "type": "string",
+              "format": "uri",
+              "description": "Package tarball URL"
+            },
+            "shasum": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$",
+              "description": "SHA-256 checksum"
+            },
+            "size_bytes": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Package size in bytes"
+            }
+          }
+        },
+        "documentation": {
+          "type": "object",
+          "properties": {
+            "readme": {
+              "type": "string",
+              "format": "uri"
+            },
+            "changelog": {
+              "type": "string",
+              "format": "uri"
+            },
+            "repository": {
+              "type": "string",
+              "format": "uri"
+            }
+          }
+        },
+        "license": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9.\\-]+$",
+          "description": "SPDX license identifier"
+        },
+        "keywords": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20
+        },
+        "dependencies": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "PublishResponse": {
+      "type": "object",
+      "required": ["status", "agent", "verification"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["published", "pending", "failed"]
+        },
+        "agent": {
+          "type": "object",
+          "required": ["name", "version", "publisher", "published_at"],
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "version": {
+              "type": "string"
+            },
+            "publisher": {
+              "type": "string"
+            },
+            "published_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "registry_url": {
+              "type": "string",
+              "format": "uri"
+            },
+            "package_url": {
+              "type": "string",
+              "format": "uri"
+            }
+          }
+        },
+        "verification": {
+          "type": "object",
+          "properties": {
+            "schema_valid": {
+              "type": "boolean"
+            },
+            "security_scan": {
+              "type": "string",
+              "enum": ["passed", "failed", "pending"]
+            },
+            "verified_publisher": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "SearchRequest": {
+      "type": "object",
+      "properties": {
+        "q": {
+          "type": "string",
+          "description": "Search query"
+        },
+        "tag": {
+          "type": "string",
+          "description": "Filter by tag"
+        },
+        "capability": {
+          "type": "string",
+          "description": "Filter by capability"
+        },
+        "domain": {
+          "type": "string",
+          "description": "Filter by domain"
+        },
+        "publisher": {
+          "type": "string",
+          "description": "Filter by publisher"
+        },
+        "license": {
+          "type": "string",
+          "description": "Filter by license"
+        },
+        "compliance": {
+          "type": "string",
+          "description": "Filter by compliance profile"
+        },
+        "verified": {
+          "type": "boolean",
+          "description": "Only verified publishers"
+        },
+        "min_rating": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 5,
+          "description": "Minimum rating"
+        },
+        "sort": {
+          "type": "string",
+          "enum": ["downloads", "rating", "updated", "created", "relevance"],
+          "default": "relevance"
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 20
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        }
+      }
+    },
+    "SearchResponse": {
+      "type": "object",
+      "required": ["total", "limit", "offset", "agents"],
+      "properties": {
+        "total": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total matching agents"
+        },
+        "limit": {
+          "type": "integer",
+          "description": "Results per page"
+        },
+        "offset": {
+          "type": "integer",
+          "description": "Pagination offset"
+        },
+        "agents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AgentSearchResult"
+          }
+        }
+      }
+    },
+    "AgentSearchResult": {
+      "type": "object",
+      "required": [
+        "name",
+        "version",
+        "publisher",
+        "description",
+        "license",
+        "downloads",
+        "rating",
+        "verified",
+        "created_at",
+        "updated_at"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "publisher": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "license": {
+          "type": "string"
+        },
+        "downloads": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rating": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 5
+        },
+        "verified": {
+          "type": "boolean"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "registry_url": {
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    },
+    "ReviewRequest": {
+      "type": "object",
+      "required": ["rating"],
+      "properties": {
+        "version": {
+          "type": "string",
+          "description": "Reviewed version"
+        },
+        "rating": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5,
+          "description": "Rating (1-5)"
+        },
+        "review": {
+          "type": "string",
+          "maxLength": 5000,
+          "description": "Review text"
+        },
+        "use_case": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Use case description"
+        }
+      }
+    },
+    "ReviewResponse": {
+      "type": "object",
+      "required": ["status", "review_id", "published_at"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["submitted", "pending_moderation", "published"]
+        },
+        "review_id": {
+          "type": "string"
+        },
+        "published_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "ErrorResponse": {
+      "type": "object",
+      "required": ["error", "message"],
+      "properties": {
+        "error": {
+          "type": "string",
+          "enum": [
+            "bad_request",
+            "unauthorized",
+            "forbidden",
+            "not_found",
+            "conflict",
+            "unprocessable_entity",
+            "rate_limited",
+            "internal_error"
+          ]
+        },
+        "message": {
+          "type": "string",
+          "description": "Human-readable error message"
+        },
+        "details": {
+          "type": "object",
+          "description": "Additional error details"
+        },
+        "retry_after": {
+          "type": "integer",
+          "description": "Seconds to wait before retry (for rate limits)"
+        }
+      }
+    }
+  }
+}

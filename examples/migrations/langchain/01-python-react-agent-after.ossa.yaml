@@ -1,0 +1,38 @@
+apiVersion: ossa/v0.3.6
+kind: Agent
+metadata:
+  name: python-react-agent
+  version: 0.1.0
+  description: Migrated from LangChain react agent
+  labels:
+    ossa-version: v0.3.6
+    migration-source: langchain
+  annotations:
+    ossa.io/migration: langchain-to-ossa
+    ossa.io/migrated-date: "2026-01-15"
+    ossa.io/source-file: 01-python-react-agent-before.py
+spec:
+  role: Reasoning and Action (ReAct) Agent - uses chain-of-thought reasoning to decide which tools to use
+  llm:
+    provider: openai
+    model: gpt-4
+    temperature: 0.7
+    maxTokens: 2000
+  tools:
+    - type: function
+      name: search_web
+      description: Search the web for information. Use this when you need to find current information or facts.
+    - type: function
+      name: calculate
+      description: Calculate mathematical expressions. Use this for any math operations.
+    - type: function
+      name: get_weather
+      description: Get current weather for a location. Use this when asked about weather.
+  autonomy:
+    level: autonomous
+  extensions:
+    langchain:
+      memory_type: ConversationBufferMemory
+      memory_config:
+        memory_key: chat_history
+        return_messages: true

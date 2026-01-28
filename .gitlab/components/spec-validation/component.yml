@@ -1,0 +1,40 @@
+spec:
+  inputs:
+    spec_directory:
+      description: Directory containing specification files
+      default: src/api
+    node_version:
+      description: Node.js version to use
+      default: '20'
+    validate_openapi:
+      description: Whether to validate OpenAPI specifications
+      type: boolean
+      default: true
+    validate_schemas:
+      description: Whether to validate JSON schemas
+      type: boolean
+      default: true
+---
+.spec-validation:
+  image: node:$[[inputs.node_version]]
+  stage: validate
+  script:
+    - echo "📋 Validating OSSA specifications"
+    - |
+      if [[ "$[[inputs.validate_openapi]]" == "true" ]]; then
+        echo "Validating OpenAPI specifications..."
+        npm ci
+        npm run api:validate || exit 1
+        npx swagger-cli validate $[[inputs.spec_directory]]/*.yml || exit 1
+        echo "✅ OpenAPI specifications valid"
+      fi
+    - |
+      if [[ "$[[inputs.validate_schemas]]" == "true" ]]; then
+        echo "Validating JSON schemas..."
+        npx ajv compile -s $[[inputs.spec_directory]]/*.json || exit 1
+        echo "✅ JSON schemas valid"
+      fi
+  artifacts:
+    paths:
+      - $[[inputs.spec_directory]]/types/
+    expire_in: 1 day

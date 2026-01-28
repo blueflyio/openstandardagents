@@ -1,0 +1,143 @@
+apiVersion: ossa/v0.3.6
+kind: Agent
+metadata:
+  name: architecture-healer-enterprise
+  description: Enterprise architecture healer for microservices
+  labels:
+    tier: healer
+    domain: architecture
+spec:
+  model:
+    provider: openai
+    name: gpt-4-turbo
+  
+  capabilities:
+    - architecture_analysis
+    - dependency_mapping
+    - pattern_detection
+    - refactoring_suggestions
+    - diagram_generation
+  
+  tools:
+    - name: analyze_dependencies
+      description: Map service dependencies and detect cycles
+      action: |
+        # Parse package.json, go.mod, requirements.txt
+        # Build dependency graph
+        # Detect circular dependencies
+        # Identify unused dependencies
+        madge --circular --extensions ts,js src/
+    
+    - name: detect_anti_patterns
+      description: Scan for architectural anti-patterns
+      patterns:
+        - god_object
+        - circular_dependency
+        - tight_coupling
+        - missing_abstraction
+        - duplicate_code
+        - magic_numbers
+        - hardcoded_config
+    
+    - name: validate_layer_boundaries
+      description: Ensure clean architecture layers
+      layers:
+        - name: presentation
+          allowed_deps: [application]
+        - name: application
+          allowed_deps: [domain, infrastructure]
+        - name: domain
+          allowed_deps: []
+        - name: infrastructure
+          allowed_deps: [domain]
+    
+    - name: check_api_consistency
+      description: Validate API design consistency
+      checks:
+        - rest_conventions
+        - versioning_strategy
+        - error_response_format
+        - pagination_pattern
+        - authentication_method
+    
+    - name: generate_architecture_diagram
+      description: Auto-generate C4 diagrams from code
+      action: |
+        # Parse code structure
+        # Generate PlantUML/Mermaid
+        # Update docs/architecture/
+        structurizr-cli export -workspace workspace.dsl -format plantuml
+  
+  healing_rules:
+    - name: fix-circular-dependencies
+      condition: circular_dependency_detected
+      actions:
+        - suggest_dependency_inversion
+        - create_interface_abstraction
+        - generate_refactoring_pr
+    
+    - name: enforce-layer-boundaries
+      condition: layer_violation_detected
+      actions:
+        - move_code_to_correct_layer
+        - create_adapter_interface
+        - update_imports
+    
+    - name: standardize-api-patterns
+      condition: api_inconsistency_detected
+      actions:
+        - generate_openapi_spec
+        - create_api_client
+        - update_documentation
+    
+    - name: reduce-coupling
+      condition: high_coupling_detected
+      actions:
+        - introduce_event_bus
+        - create_facade_pattern
+        - extract_shared_interface
+    
+    - name: update-architecture-docs
+      condition: code_structure_changed
+      actions:
+        - regenerate_diagrams
+        - update_adr
+        - notify_architects
+  
+  analysis:
+    metrics:
+      - name: coupling_score
+        threshold: 0.3
+        action: alert_if_exceeded
+      - name: cohesion_score
+        threshold: 0.7
+        action: alert_if_below
+      - name: cyclomatic_complexity
+        threshold: 10
+        action: suggest_refactoring
+      - name: dependency_depth
+        threshold: 5
+        action: flatten_hierarchy
+    
+    reports:
+      - type: architecture_health
+        schedule: weekly
+        recipients: [architects, tech-leads]
+      - type: technical_debt
+        schedule: monthly
+        format: markdown
+        output: docs/architecture/debt-report.md
+  
+  integrations:
+    - name: sonarqube
+      url: https://sonar.example.com
+      project_key: my-project
+      quality_gate: strict
+    
+    - name: archunit
+      rules: architecture-rules.java
+      fail_on_violation: true
+    
+    - name: dependency-cruiser
+      config: .dependency-cruiser.js
+      output: dependency-graph.svg
