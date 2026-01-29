@@ -10,18 +10,16 @@ stages:
 
 variables:
   NODE_VERSION: "22.14"
-  GIT_STRATEGY: clone  # Force fresh clone each time to avoid lock file issues
-  GIT_DEPTH: 0  # Disable shallow clone to avoid missing object errors
   CI_USE_LOCAL_RUNNERS: "true" # Toggle this to switch between local and shared runners
 
 workflow:
   rules:
     - if: $CI_USE_LOCAL_RUNNERS == "true"
       variables:
-        OSSA_RUNNER_TAG: "local"
+        OSSA_RUNNER_TAG: "nas-npm-runner"
     - if: $CI_USE_LOCAL_RUNNERS != "true"
       variables:
-        OSSA_RUNNER_TAG: "docker"
+        OSSA_RUNNER_TAG: "docker" # Default shared runner tag
     - when: always
 
 # =============================================================================
