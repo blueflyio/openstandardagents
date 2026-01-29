@@ -19,7 +19,7 @@ describe('ossa knowledge CLI', () => {
   beforeEach(async () => {
     testDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ossa-cli-test-'));
     // Assume ossa binary is built
-    ossaBin = path.resolve(__dirname, '../../dist/cli/index.js');
+    ossaBin = path.resolve(__dirname, '../../dist/src/cli/index.js');
   });
 
   afterEach(async () => {
@@ -39,7 +39,7 @@ describe('ossa knowledge CLI', () => {
       );
 
       expect(stdout).toContain('indexed successfully');
-      
+
       // Verify index file was created
       const indexPath = path.join(testDir, 'knowledge.json');
       const exists = await fs
