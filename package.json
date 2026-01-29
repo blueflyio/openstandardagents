@@ -53,6 +53,11 @@
       "types": "./dist/mesh/index.d.ts",
       "import": "./dist/mesh/index.js",
       "require": "./dist/mesh/index.js"
+    },
+    "./audit": {
+      "types": "./dist/services/audit.d.ts",
+      "import": "./dist/services/audit.js",
+      "require": "./dist/services/audit.js"
     }
   },
   "description": "OSSA - Open Standard for Software Agents. The OpenAPI for agents. A specification standard (not a framework) that defines contracts/metadata for production agent systems.",
