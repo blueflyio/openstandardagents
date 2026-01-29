@@ -379,72 +379,72 @@ function generateReadme(manifest: OssaAgent): string {
   const version = manifest.metadata?.version || '1.0.0';
   const role = manifest.spec?.role || 'General purpose agent';
 
-  return \`# \${name}
+  return `# ${name}
 
-\${description}
+${description}
 
 ## Overview
 
-- **Version**: \${version}
-- **Type**: \${manifest.metadata?.labels?.['agent.ossa.io/type'] || 'worker'}
-- **OSSA Version**: \${manifest.apiVersion || 'ossa/v0.3.6'}
+- **Version**: ${version}
+- **Type**: ${manifest.metadata?.labels?.['agent.ossa.io/type'] || 'worker'}
+- **OSSA Version**: ${manifest.apiVersion || 'ossa/v0.3.6'}
 
 ## Role
 
-\${role}
+${role}
 
 ## Configuration
 
 ### LLM Settings
 
-- **Provider**: \${manifest.spec?.llm?.provider || 'openai'}
-- **Model**: \${manifest.spec?.llm?.model || 'gpt-4o'}
-- **Temperature**: \${manifest.spec?.llm?.temperature || 0.5}
-- **Max Tokens**: \${manifest.spec?.llm?.maxTokens || 4000}
+- **Provider**: ${manifest.spec?.llm?.provider || 'openai'}
+- **Model**: ${manifest.spec?.llm?.model || 'gpt-4o'}
+- **Temperature**: ${manifest.spec?.llm?.temperature || 0.5}
+- **Max Tokens**: ${manifest.spec?.llm?.maxTokens || 4000}
 
 ### Capabilities
 
-\${(manifest.spec?.tools || []).map((tool) => \`- \${tool.name}\`).join('\\n')}
+${(manifest.spec?.tools || []).map((tool) => `- ${tool.name}`).join('\\n')}
 
 ## Directory Structure
 
-\\\`\\\`\\\`
-\${name}/
+\`\`\`
+${name}/
 ├── manifest.yaml       # OSSA agent manifest
 ├── capabilities/       # Capability implementations
 ├── resources/          # Agent resources (prompts, configs)
 ├── knowledge/          # Knowledge base
 └── README.md          # This file
-\\\`\\\`\\\`
+\`\`\`
 
 ## Usage
 
 ### Validate manifest
 
-\\\`\\\`\\\`bash
+\`\`\`bash
 ossa validate manifest.yaml
-\\\`\\\`\\\`
+\`\`\`
 
 ### Deploy agent
 
-\\\`\\\`\\\`bash
+\`\`\`bash
 ossa deploy manifest.yaml
-\\\`\\\`\\\`
+\`\`\`
 
 ### Run agent locally
 
-\\\`\\\`\\\`bash
+\`\`\`bash
 ossa run manifest.yaml --port 3000
-\\\`\\\`\\\`
+\`\`\`
 
 ## Development
 
-1. Edit \\\`manifest.yaml\\\` to customize agent configuration
-2. Add capability implementations in \\\`capabilities/\\\`
-3. Add resources (prompts, configs) in \\\`resources/\\\`
-4. Add knowledge base content in \\\`knowledge/\\\`
-5. Validate with \\\`ossa validate manifest.yaml\\\`
-6. Test with \\\`ossa run manifest.yaml\\\`
+1. Edit \`manifest.yaml\` to customize agent configuration
+2. Add capability implementations in \`capabilities/\`
+3. Add resources (prompts, configs) in \`resources/\`
+4. Add knowledge base content in \`knowledge/\`
+5. Validate with \`ossa validate manifest.yaml\`
+6. Test with \`ossa run manifest.yaml\`
 
 ## License
 
@@ -452,8 +452,8 @@ MIT
 
 ---
 
-Generated with OSSA CLI v\${getApiVersion()}
-\`;
+Generated with OSSA CLI v${getApiVersion()}
+`;
 }
 
 /**
@@ -507,7 +507,7 @@ export const agentCreateCommand = new Command('create')
           console.log(chalk.gray('─'.repeat(50)));
           console.log(
             chalk.gray(
-              \`\\nOutput directory: \${path.resolve(options.outputDir || '.agents', details.name)}\`
+              `\\nOutput directory: ${path.resolve(options.outputDir || '.agents', details.name)}`
             )
           );
           return;
@@ -523,23 +523,23 @@ export const agentCreateCommand = new Command('create')
 
         console.log(chalk.green('\n✓ Agent created successfully!\n'));
         console.log(chalk.cyan('Agent Details:'));
-        console.log(chalk.gray(\`  Name:        \${details.name}\`));
-        console.log(chalk.gray(\`  Type:        \${details.type}\`));
-        console.log(chalk.gray(\`  Version:     \${details.version}\`));
-        console.log(chalk.gray(\`  Location:    \${agentDir}\`));
+        console.log(chalk.gray(`  Name:        ${details.name}`));
+        console.log(chalk.gray(`  Type:        ${details.type}`));
+        console.log(chalk.gray(`  Version:     ${details.version}`));
+        console.log(chalk.gray(`  Location:    ${agentDir}`));
 
         console.log(chalk.cyan('\nNext Steps:'));
         console.log(
-          chalk.gray(\`  1. Review manifest:  cat \${agentDir}/manifest.yaml\`)
+          chalk.gray(`  1. Review manifest:  cat ${agentDir}/manifest.yaml`)
         );
         console.log(
-          chalk.gray(\`  2. Validate:         ossa validate \${agentDir}/manifest.yaml\`)
+          chalk.gray(`  2. Validate:         ossa validate ${agentDir}/manifest.yaml`)
         );
         console.log(
-          chalk.gray(\`  3. Customize:        Edit \${agentDir}/manifest.yaml\`)
+          chalk.gray(`  3. Customize:        Edit ${agentDir}/manifest.yaml`)
         );
         console.log(
-          chalk.gray(\`  4. Deploy:           ossa deploy \${agentDir}/manifest.yaml\\n\`)
+          chalk.gray(`  4. Deploy:           ossa deploy ${agentDir}/manifest.yaml\\n`)
         );
       } catch (error) {
         handleCommandError(error, 'Failed to create agent');

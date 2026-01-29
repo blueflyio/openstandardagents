@@ -44,8 +44,8 @@ export const knowledgeIndexCommand = new Command('index')
         const agentName = options.agent || path.basename(resolvedPath);
         
         if (!isJSONOutput(options)) {
-          console.log(chalk.blue(\`Indexing knowledge base: \${resolvedPath}\`));
-          console.log(chalk.gray(\`Agent: \${agentName}\`));
+          console.log(chalk.blue(`Indexing knowledge base: ${resolvedPath}`));
+          console.log(chalk.gray(`Agent: ${agentName}`));
           if (options.incremental) {
             console.log(chalk.gray('Mode: Incremental (only changed files)'));
           }
@@ -95,16 +95,16 @@ export const knowledgeIndexCommand = new Command('index')
           console.log(chalk.green('Knowledge base indexed successfully'));
           console.log();
           console.log(chalk.bold('Index Statistics:'));
-          console.log(\`  Documents:    \${index.metadata.totalDocuments}\`);
-          console.log(\`  Total Size:   \${formatBytes(index.metadata.totalSize)}\`);
-          console.log(\`  Index Path:   \${index.metadata.indexPath}\`);
-          console.log(\`  Last Indexed: \${index.metadata.lastIndexed.toISOString()}\`);
+          console.log(`  Documents:    ${index.metadata.totalDocuments}`);
+          console.log(`  Total Size:   ${formatBytes(index.metadata.totalSize)}`);
+          console.log(`  Index Path:   ${index.metadata.indexPath}`);
+          console.log(`  Last Indexed: ${index.metadata.lastIndexed.toISOString()}`);
           
           if (options.verbose && index.documents.length > 0) {
             console.log();
             console.log(chalk.bold('Indexed Documents:'));
             for (const doc of index.documents) {
-              console.log(\`  - \${doc.metadata.fileName} (\${formatBytes(doc.metadata.size)})\`);
+              console.log(`  - ${doc.metadata.fileName} (${formatBytes(doc.metadata.size)})`);
             }
           }
         }
