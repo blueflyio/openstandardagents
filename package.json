@@ -106,7 +106,7 @@
     "// ─────────────────────────────────────────────────────────────────────────────": "",
     "// BUILD & DEVELOPMENT": "",
     "prebuild": "npm run docs:process",
-    "build": "tsc && node scripts/fix-esm-imports.js && npm run build:assets",
+    "build": "tsc && tsx src/tools/fix-esm-imports.ts && npm run build:assets",
     "build:assets": "cp -r spec dist/",
     "build:clean": "npm run clean && npm run build",
     "dev": "tsc --watch",

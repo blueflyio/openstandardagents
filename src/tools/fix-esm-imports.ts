@@ -1,18 +1,18 @@
-#!/usr/bin/env node
+#!/usr/bin/env tsx
 /**
  * Post-build script to add .js extensions to ESM imports
  * Fixes Node.js ESM module resolution issues
  */
 
 import { readdir, readFile, writeFile } from 'fs/promises';
-import { join, dirname, extname, relative } from 'path';
+import { join, dirname, extname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const distDir = join(__dirname, '../dist');
+const distDir = join(__dirname, '../../dist');
 
-async function* walk(dir) {
+async function* walk(dir: string): AsyncGenerator<string> {
   const entries = await readdir(dir, { withFileTypes: true });
   for (const entry of entries) {
     const path = join(dir, entry.name);
@@ -24,7 +24,7 @@ async function* walk(dir) {
   }
 }
 
-async function fixImports() {
+async function fixImports(): Promise<void> {
   let fileCount = 0;
   let importCount = 0;
 
@@ -34,11 +34,9 @@ async function fixImports() {
     const content = await readFile(file, 'utf-8');
     const originalContent = content;
 
-    // Fix relative imports without extensions
     const fixed = content.replace(
       /from\s+['"](\.[^'"]+?)['"];/g,
       (match, path) => {
-        // Skip if already has extension
         if (path.endsWith('.js') || path.endsWith('.json')) {
           return match;
         }
@@ -53,10 +51,10 @@ async function fixImports() {
     }
   }
 
-  console.log(`✅ Fixed ${importCount} imports in ${fileCount} files`);
+  console.log(`Fixed ${importCount} imports in ${fileCount} files`);
 }
 
-fixImports().catch(err => {
-  console.error('❌ Failed to fix imports:', err);
+fixImports().catch((err) => {
+  console.error('Failed to fix imports:', err);
   process.exit(1);
 });
