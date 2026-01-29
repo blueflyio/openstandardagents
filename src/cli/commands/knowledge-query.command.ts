@@ -11,21 +11,20 @@ import chalk from 'chalk';
 import { Command } from 'commander';
 import ora from 'ora';
 import { KnowledgeService } from '../../services/knowledge.service.js';
-import {
-  formatErrorCompact,
-  isJSONOutput,
-  outputJSON,
-} from '../utils/index.js';
+import { isJSONOutput, outputJSON } from '../utils/index.js';
 import * as path from 'path';
 
 export const knowledgeQueryCommand = new Command('query')
   .argument('<query>', 'Search query')
   .option('-i, --index <path>', 'Path to knowledge.json index file')
-  .option('-k, --knowledge <path>', 'Path to knowledge directory (will look for knowledge.json inside)')
+  .option(
+    '-k, --knowledge <path>',
+    'Path to knowledge directory (will look for knowledge.json inside)'
+  )
   .option('-l, --limit <number>', 'Maximum number of results', '10')
   .option('-t, --threshold <number>', 'Minimum similarity score (0-1)', '0.5')
   .option('--no-excerpts', 'Do not include text excerpts in results')
-  .option('--output-format <format>', 'Output format (json|text)', 'text')
+  .option('--output <format>', 'Output format (json|text)', 'text')
   .option('-v, --verbose', 'Verbose output with full document content')
   .description('Query agent knowledge base with semantic search')
   .action(
@@ -37,15 +36,15 @@ export const knowledgeQueryCommand = new Command('query')
         limit?: string;
         threshold?: string;
         excerpts?: boolean;
-        outputFormat?: string;
+        output?: string;
         verbose?: boolean;
       }
     ) => {
       const spinner = ora();
-      
+
       try {
         let indexPath: string;
-        
+
         if (options.index) {
           indexPath = path.resolve(options.index);
         } else if (options.knowledge) {
@@ -94,7 +93,11 @@ export const knowledgeQueryCommand = new Command('query')
           if (results.length === 0) {
             console.log();
             console.log(chalk.yellow('No results found matching your query.'));
-            console.log(chalk.gray('Try lowering the threshold or using different search terms.'));
+            console.log(
+              chalk.gray(
+                'Try lowering the threshold or using different search terms.'
+              )
+            );
           } else {
             console.log();
             console.log(chalk.bold(`Top ${results.length} Results:`));
@@ -102,22 +105,28 @@ export const knowledgeQueryCommand = new Command('query')
 
             results.forEach((result, index) => {
               const score = (result.score * 100).toFixed(1);
-              console.log(chalk.bold(`${index + 1}. ${result.document.metadata.fileName}`) + chalk.gray(` (score: ${score}%)`));
+              console.log(
+                chalk.bold(
+                  `${index + 1}. ${result.document.metadata.fileName}`
+                ) + chalk.gray(` (score: ${score}%)`)
+              );
               console.log(chalk.gray(`   Path: ${result.document.filePath}`));
-              
+
               if (result.excerpt) {
                 console.log(`   ${result.excerpt.trim()}`);
               }
-              
+
               if (options.verbose) {
                 console.log();
                 console.log(chalk.dim('   --- Full Content ---'));
-                console.log(chalk.dim(result.document.content.substring(0, 500)));
+                console.log(
+                  chalk.dim(result.document.content.substring(0, 500))
+                );
                 if (result.document.content.length > 500) {
                   console.log(chalk.dim('   ...'));
                 }
               }
-              
+
               console.log();
             });
           }
@@ -128,16 +137,18 @@ export const knowledgeQueryCommand = new Command('query')
         if (!isJSONOutput(options)) {
           spinner.fail('Query failed');
         }
-        
+
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
         if (isJSONOutput(options)) {
           outputJSON({
             success: false,
-            error: formatErrorCompact(error),
+            error: errorMessage,
           });
         } else {
-          console.error(chalk.red('\nError:'), formatErrorCompact(error));
+          console.error(chalk.red('\nError:'), errorMessage);
         }
-        
+
         process.exit(1);
       }
     }
