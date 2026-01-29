@@ -1,3 +1,10 @@
+## [1.0.1](https://gitlab.com/blueflyio/ossa/openstandardagents/compare/v1.0.0...v1.0.1) (2026-01-29)
+
+
+### Bug Fixes
+
+* use compiled JS in bin/ossa, enhance semantic-release config ([12be69b](https://gitlab.com/blueflyio/ossa/openstandardagents/commit/12be69b5d856a7d210758905ffcaa52b5e60a5ea))
+
 # [1.0.0](https://gitlab.com/blueflyio/ossa/openstandardagents/compare/v0.3.7...v1.0.0) (2026-01-29)
 
 
