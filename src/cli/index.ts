@@ -65,6 +65,7 @@ import { templateCommandGroup } from './commands/template.command.js';
 import { knowledgeCommand } from './commands/knowledge.command.js';
 import { enhanceCommand } from './commands/enhance.command.js';
 import { examplesCommand } from './commands/examples.command.js';
+import { releaseCommand } from './commands/release.command.js';
 
 // Framework integration commands
 import { langflowCommand } from './commands/langflow.command.js';
@@ -231,6 +232,9 @@ program.addCommand(templateCommandGroup);
 program.addCommand(knowledgeCommand);
 program.addCommand(enhanceCommand);
 program.addCommand(examplesCommand);
+
+// Release automation commands
+program.addCommand(releaseCommand);
 
 // Two-tier architecture commands
 program.addCommand(workspaceCommand);

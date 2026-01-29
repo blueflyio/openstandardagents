@@ -1,0 +1,144 @@
+openapi: 3.1.0
+info:
+  title: Release Automation API
+  version: 1.0.0
+  description: |
+    OpenAPI specification for agent-based release automation.
+    Integrates semantic-release, Keep a Changelog format, and agent orchestration.
+    
+    FOLLOWS DRY PRINCIPLE: Single source of truth for release automation schemas.
+  contact:
+    name: OSSA Release Team
+    email: release@bluefly.io
+  license:
+    name: Apache-2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+
+servers:
+  - url: http://localhost:4000/api/v1
+    description: Local development server
+  - url: https://api.blueflyagents.com/api/v1
+    description: Production API server
+
+tags:
+  - name: release
+    description: Release orchestration and automation
+  - name: changelog
+    description: Changelog generation and management
+  - name: version
+    description: Version management and validation
+
+paths:
+  /release/analyze:
+    post:
+      operationId: analyzeRelease
+      summary: Analyze commits and determine release type
+      tags:
+        - release
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - branch
+              properties:
+                branch:
+                  type: string
+                  example: release/v0.3.x
+                fromTag:
+                  type: string
+                  example: v0.3.6
+                toCommit:
+                  type: string
+                  example: HEAD
+                dryRun:
+                  type: boolean
+                  default: false
+      responses:
+        '200':
+          description: Release analysis complete
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  releaseNeeded:
+                    type: boolean
+                  releaseType:
+                    type: string
+                    enum: [major, minor, patch, prerelease]
+                  currentVersion:
+                    type: string
+                  nextVersion:
+                    type: string
+
+  /release/execute:
+    post:
+      operationId: executeRelease
+      summary: Execute full release workflow via agent orchestration
+      tags:
+        - release
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - branch
+              properties:
+                branch:
+                  type: string
+                dryRun:
+                  type: boolean
+                  default: false
+      responses:
+        '200':
+          description: Release executed successfully
+
+  /changelog/generate:
+    post:
+      operationId: generateChangelog
+      summary: Generate changelog following Keep a Changelog format
+      tags:
+        - changelog
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - version
+              properties:
+                version:
+                  type: string
+                format:
+                  type: string
+                  enum: [keepachangelog, markdown, json]
+                  default: keepachangelog
+      responses:
+        '200':
+          description: Changelog generated successfully
+
+  /changelog/validate:
+    post:
+      operationId: validateChangelog
+      summary: Validate changelog follows Keep a Changelog format
+      tags:
+        - changelog
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                changelogPath:
+                  type: string
+                  default: CHANGELOG.md
+      responses:
+        '200':
+          description: Changelog validation result
