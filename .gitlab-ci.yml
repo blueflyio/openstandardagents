@@ -11,6 +11,7 @@ stages:
 variables:
   NODE_VERSION: "22.14"
   CI_USE_LOCAL_RUNNERS: "true" # Toggle this to switch between local and shared runners
+  GIT_DEPTH: 0 # Disable shallow cloning to prevent git corruption
 
 workflow:
   rules:
@@ -33,11 +34,11 @@ validate:schema:
     - ${OSSA_RUNNER_TAG}
   timeout: 10 minutes
   before_script:
-    - npm ci --prefer-offline --no-audit
+    - npm ci --prefer-offline --no-audit --ignore-scripts
   script:
-    - echo "🔍 Validating OSSA JSON Schema..."
+    - echo "Validating OSSA JSON Schema..."
     - timeout 5m npm run validate:schema || echo "[WARN] Schema validation timed out - see issue #395"
-    - echo "✅ Schema compiles successfully"
+    - echo "Schema compiles successfully"
   allow_failure: true
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
@@ -51,11 +52,11 @@ validate:examples:
     - ${OSSA_RUNNER_TAG}
   timeout: 10 minutes
   before_script:
-    - npm ci --prefer-offline --no-audit
+    - npm ci --prefer-offline --no-audit --ignore-scripts
   script:
-    - echo "🔍 Validating example manifests..."
+    - echo "Validating example manifests..."
     - timeout 5m npm run validate:examples || echo "[WARN] Some examples need fixes - see issue #395"
-    - echo "✅ Example validation complete"
+    - echo "Example validation complete"
   allow_failure: true
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
@@ -69,9 +70,9 @@ validate:ossa-templates:
     - ${OSSA_RUNNER_TAG}
   timeout: 10 minutes
   before_script:
-    - npm ci --prefer-offline --no-audit
+    - npm ci --prefer-offline --no-audit --ignore-scripts
   script:
-    - echo "🔍 Validating power agent manifests..."
+    - echo "Validating power agent manifests..."
     - |
       timeout 5m bash -c '
       for f in examples/ossa-templates/*.ossa.yaml; do
@@ -79,7 +80,7 @@ validate:ossa-templates:
         npx ajv-cli validate -s spec/v0.3.3/ossa-0.3.3.schema.json --strict=false --allow-union-types -d "$f" || echo "SKIP: $f"
       done
       ' || echo "[WARN] Template validation timed out or failed - see issue #395"
-    - echo "✅ OSSA template validation complete"
+    - echo "OSSA template validation complete"
   allow_failure: true
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
