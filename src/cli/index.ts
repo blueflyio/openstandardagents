@@ -62,6 +62,9 @@ import { workspaceCommand } from './commands/workspace.command.js';
 import { taxonomyCommandGroup } from './commands/taxonomy.command.js';
 import { skillsCommandGroup } from './commands/skills.command.js';
 import { templateCommandGroup } from './commands/template.command.js';
+import { knowledgeCommand } from './commands/knowledge.command.js';
+import { enhanceCommand } from './commands/enhance.command.js';
+import { examplesCommand } from './commands/examples.command.js';
 
 // Framework integration commands
 import { langflowCommand } from './commands/langflow.command.js';
@@ -223,6 +226,11 @@ program.addCommand(taxonomyCommandGroup);
 // Claude Skills commands
 program.addCommand(skillsCommandGroup);
 program.addCommand(templateCommandGroup);
+
+// Agent enhancement commands
+program.addCommand(knowledgeCommand);
+program.addCommand(enhanceCommand);
+program.addCommand(examplesCommand);
 
 // Two-tier architecture commands
 program.addCommand(workspaceCommand);
