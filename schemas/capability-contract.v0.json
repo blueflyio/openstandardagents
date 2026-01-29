@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OSSA Capability Contract v0",
+  "description": "Defines an enforceable contract for an agent capability.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for the capability (e.g., 'search', 'summarize-text'). Must be URL-friendly."
+    },
+    "version": {
+      "type": "string",
+      "description": "Version of this capability contract (e.g., '0.1.0').",
+      "pattern": "^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of what the capability does and when to use it.",
+      "maxLength": 1024
+    },
+    "inputSchema": {
+      "description": "JSON Schema defining the expected input for the capability.",
+      "oneOf": [
+        {" $ref": "https://json-schema.org/draft/2020-12/schema"},
+        {"type": "string"} 
+      ]
+    },
+    "outputSchema": {
+      "description": "JSON Schema defining the expected output from the capability.",
+      "oneOf": [
+        {" $ref": "https://json-schema.org/draft/2020-12/schema"},
+        {"type": "string"} 
+      ]
+    },
+    "authRequirements": {
+      "type": "object",
+      "description": "Specifies authentication schemes and scopes required for this capability.",
+      "properties": {
+        "schemes": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "List of OpenAPI security scheme names (e.g., 'oauth2', 'apiKey')."
+        },
+        "scopes": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Provider-specific scopes or permissions required."
+        }
+      },
+      "required": ["schemes"]
+    },
+    "semantics": {
+      "type": "object",
+      "properties": {
+        "idempotency": {
+          "type": "string",
+          "enum": ["idempotent", "non-idempotent"],
+          "description": "Indicates if the operation is idempotent."
+        },
+        "sideEffects": {
+          "type": "string",
+          "enum": ["none", "stateful", "external"],
+          "description": "Indicates if the capability has side effects."
+        }
+      },
+      "required": ["idempotency", "sideEffects"]
+    },
+    "slo": {
+      "type": "object",
+      "description": "Service Level Objectives for the capability.",
+      "properties": {
+        "maxLatencyMs": {
+          "type": "integer",
+          "description": "Maximum acceptable latency in milliseconds (e.g., for p95)."
+        },
+        "maxErrorRate": {
+          "type": "number",
+          "format": "float",
+          "description": "Maximum acceptable error rate (e.g., 0.01 for 1%)."
+        }
+      },
+      "required": ["maxLatencyMs", "maxErrorRate"]
+    },
+    "telemetryRequirements": {
+      "type": "object",
+      "description": "Specifies required telemetry emissions for this capability.",
+      "properties": {
+        "requiredMetrics": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "List of standard metric names that must be emitted (e.g., 'ossa.capability.invocations', 'ossa.tokens.prompt')."
+        },
+        "logs": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "List of standard log types that must be emitted (e.g., 'request_details', 'error_context')."
+        },
+        "trace": {
+          "type": "boolean",
+          "description": "Indicates whether tracing should be enabled for this capability."
+        }
+      },
+      "required": ["requiredMetrics", "logs", "trace"]
+    }
+  },
+  "required": [
+    "id",
+    "version",
+    "description",
+    "inputSchema",
+    "outputSchema",
+    "semantics",
+    "slo",
+    "telemetryRequirements"
+  ]
+}

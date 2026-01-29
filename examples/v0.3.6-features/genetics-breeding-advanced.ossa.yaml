@@ -1,0 +1,496 @@
+# OSSA v0.3.6 Example: Multi-Generation Evolution
+#
+# This example demonstrates advanced agent genetics with multi-generation
+# breeding, complete lineage tracking, beneficial mutations, and fitness
+# progression over 5 generations.
+#
+# Scenario:
+#   - Generation 5 security agent descended from elite lineage
+#   - Complete ancestor tracking (62 ancestors across 5 generations)
+#   - Accumulated beneficial mutations
+#   - Progressive fitness improvement: 0.65 (Gen 0) → 0.96 (Gen 5)
+#
+# Educational Focus:
+#   - Multi-generation breeding (Gen 5)
+#   - Complete genealogical tree
+#   - Beneficial mutations
+#   - Fitness progression tracking
+#   - Inbreeding analysis
+#   - Elite breeding strategies
+
+apiVersion: ossa/v0.3.6
+kind: Agent
+
+metadata:
+  name: elite-security-scanner-gen5
+  namespace: evolution-lab
+  version: 5.2.1
+  description: |
+    Fifth-generation elite security scanner evolved through selective breeding.
+    Descended from 62 ancestors with accumulated beneficial mutations.
+    Represents pinnacle of multi-generation evolutionary optimization.
+
+  labels:
+    domain: security
+    subdomain: vulnerability-detection
+    generation: "5"
+    breeding-strategy: elite-selection
+    evolution-program: security-excellence-2026
+    example: multi-generation-evolution
+
+  taxonomy:
+    domain: security
+    subdomain: vulnerability
+    capability: security_analysis
+    concerns:
+      - quality
+      - performance
+      - governance
+
+  # Decentralized Identity
+  decentralized_identity:
+    did: "did:ossa:elite-security-gen5-9f8e7d6c5b4a3210fedcba09876543210"
+    public_key: "ed25519:fedcba09876543210abcdef0123456789fedcba0987654321"
+
+    credentials:
+      - "@context":
+          - "https://www.w3.org/2018/credentials/v1"
+        type:
+          - VerifiableCredential
+          - SecurityAnalysisCapability
+          - ElitePerformerBadge
+        credentialSubject:
+          id: "did:ossa:elite-security-gen5-9f8e7d6c5b4a3210fedcba09876543210"
+          capability: advanced_security_analysis
+          specializations:
+            - sql_injection_detection
+            - xss_prevention
+            - authentication_bypass
+            - cryptographic_weakness
+            - business_logic_flaws
+          certification_level: elite
+          vulnerability_database_size: 15000
+        issuer: "did:ossa:security-certification-authority"
+        issuanceDate: "2026-01-27T14:00:00Z"
+        proof:
+          type: Ed25519Signature2020
+          created: "2026-01-27T14:00:00Z"
+          proofPurpose: assertionMethod
+          verificationMethod: "did:ossa:security-certification-authority#key-1"
+          jws: "eyJhbGciOiJFZERTQSJ9..elite-signature"
+
+    reputation:
+      credit_score: 950  # Elite tier (top 1%)
+      trust_network:
+        - "did:ossa:gen4-parent-alpha"
+        - "did:ossa:gen4-parent-beta"
+        - "did:ossa:security-mentor-supreme"
+        - "did:ossa:vulnerability-research-team"
+      endorsements:
+        - endorser_did: "did:ossa:security-mentor-supreme"
+          skill: vulnerability_detection
+          rating: 5
+          timestamp: "2026-01-25T16:00:00Z"
+          signature: "ed25519-elite-endorsement"
+        - endorser_did: "did:ossa:ciso-agent"
+          skill: security_governance
+          rating: 5
+          timestamp: "2026-01-26T10:00:00Z"
+          signature: "ed25519-ciso-endorsement"
+
+  # GENETICS: Advanced multi-generation breeding
+  genetics:
+    # Generation 5 (elite lineage)
+    generation: 5
+
+    # Direct parents (Gen 4 elite agents)
+    parent_dids:
+      - "did:ossa:gen4-parent-alpha-security-specialist"
+      - "did:ossa:gen4-parent-beta-vulnerability-hunter"
+
+    # Complete ancestor lineage (62 ancestors)
+    # For Gen 5: 2 parents + 4 grandparents + 8 great-grandparents +
+    #            16 great-great-grandparents + 32 great-great-great-grandparents
+    ancestor_dids:
+      # Generation 4 (2 parents) - already in parent_dids
+      # Generation 3 (4 grandparents)
+      - "did:ossa:gen3-grandparent-1-security-alpha"
+      - "did:ossa:gen3-grandparent-2-security-beta"
+      - "did:ossa:gen3-grandparent-3-vuln-gamma"
+      - "did:ossa:gen3-grandparent-4-vuln-delta"
+
+      # Generation 2 (8 great-grandparents)
+      - "did:ossa:gen2-ggp-1-sql-specialist"
+      - "did:ossa:gen2-ggp-2-xss-specialist"
+      - "did:ossa:gen2-ggp-3-auth-specialist"
+      - "did:ossa:gen2-ggp-4-crypto-specialist"
+      - "did:ossa:gen2-ggp-5-general-security"
+      - "did:ossa:gen2-ggp-6-web-security"
+      - "did:ossa:gen2-ggp-7-api-security"
+      - "did:ossa:gen2-ggp-8-mobile-security"
+
+      # Generation 1 (16 great-great-grandparents)
+      - "did:ossa:gen1-gggp-1-owasp-top10"
+      - "did:ossa:gen1-gggp-2-cwe-top25"
+      - "did:ossa:gen1-gggp-3-sans-top25"
+      - "did:ossa:gen1-gggp-4-pci-dss"
+      - "did:ossa:gen1-gggp-5-hipaa-security"
+      - "did:ossa:gen1-gggp-6-gdpr-compliance"
+      - "did:ossa:gen1-gggp-7-soc2-controls"
+      - "did:ossa:gen1-gggp-8-iso27001"
+      - "did:ossa:gen1-gggp-9-nist-csf"
+      - "did:ossa:gen1-gggp-10-mitre-attack"
+      - "did:ossa:gen1-gggp-11-rapid-scanner"
+      - "did:ossa:gen1-gggp-12-deep-analyzer"
+      - "did:ossa:gen1-gggp-13-code-auditor"
+      - "did:ossa:gen1-gggp-14-penetration-tester"
+      - "did:ossa:gen1-gggp-15-threat-modeler"
+      - "did:ossa:gen1-gggp-16-incident-responder"
+
+      # Generation 0 (32 founders/original agents)
+      - "did:ossa:gen0-founder-1-sqli-basic"
+      - "did:ossa:gen0-founder-2-xss-basic"
+      - "did:ossa:gen0-founder-3-csrf-basic"
+      - "did:ossa:gen0-founder-4-xxe-basic"
+      - "did:ossa:gen0-founder-5-ssrf-basic"
+      - "did:ossa:gen0-founder-6-lfi-basic"
+      - "did:ossa:gen0-founder-7-rfi-basic"
+      - "did:ossa:gen0-founder-8-idor-basic"
+      - "did:ossa:gen0-founder-9-race-condition-basic"
+      - "did:ossa:gen0-founder-10-auth-bypass-basic"
+      - "did:ossa:gen0-founder-11-session-fixation-basic"
+      - "did:ossa:gen0-founder-12-weak-crypto-basic"
+      - "did:ossa:gen0-founder-13-deserialization-basic"
+      - "did:ossa:gen0-founder-14-buffer-overflow-basic"
+      - "did:ossa:gen0-founder-15-command-injection-basic"
+      - "did:ossa:gen0-founder-16-path-traversal-basic"
+      - "did:ossa:gen0-founder-17-open-redirect-basic"
+      - "did:ossa:gen0-founder-18-info-disclosure-basic"
+      - "did:ossa:gen0-founder-19-dos-basic"
+      - "did:ossa:gen0-founder-20-timing-attack-basic"
+      - "did:ossa:gen0-founder-21-api-abuse-basic"
+      - "did:ossa:gen0-founder-22-graphql-basic"
+      - "did:ossa:gen0-founder-23-jwt-basic"
+      - "did:ossa:gen0-founder-24-oauth-basic"
+      - "did:ossa:gen0-founder-25-saml-basic"
+      - "did:ossa:gen0-founder-26-cors-basic"
+      - "did:ossa:gen0-founder-27-csp-basic"
+      - "did:ossa:gen0-founder-28-sri-basic"
+      - "did:ossa:gen0-founder-29-hsts-basic"
+      - "did:ossa:gen0-founder-30-cert-validation-basic"
+      - "did:ossa:gen0-founder-31-input-validation-basic"
+      - "did:ossa:gen0-founder-32-output-encoding-basic"
+
+    # Inherited traits (accumulated over generations)
+    inherited_traits:
+      # From Gen 4 Parent Alpha
+      - trait_name: rapid_vulnerability_detection
+        source_parent: "did:ossa:gen4-parent-alpha-security-specialist"
+        expression: 0.96
+        description: "Extremely fast vulnerability scanning with minimal false negatives"
+        lineage: "Originated from gen0-founder-11-rapid-scanner, refined over 5 generations"
+
+      # From Gen 4 Parent Beta
+      - trait_name: comprehensive_attack_coverage
+        source_parent: "did:ossa:gen4-parent-beta-vulnerability-hunter"
+        expression: 0.94
+        description: "Broad coverage across OWASP Top 10 and CWE Top 25"
+        lineage: "Originated from gen0-founder-1-owasp-top10, expanded each generation"
+
+      # From Gen 3 (via both parents)
+      - trait_name: low_false_positive_rate
+        source_parent: "blended"  # Inherited from both Gen 4 parents
+        expression: 0.98
+        description: "Exceptional precision with minimal false alarms"
+        lineage: "Progressively refined: Gen0 (0.70) → Gen5 (0.98)"
+
+      # From Gen 2 (via lineage)
+      - trait_name: deep_code_analysis
+        source_parent: "did:ossa:gen4-parent-alpha-security-specialist"
+        expression: 0.92
+        description: "Multi-path code flow analysis with symbolic execution"
+        lineage: "Originated from gen2-ggp-5-general-security"
+
+      # From Gen 1 (via lineage)
+      - trait_name: compliance_awareness
+        source_parent: "did:ossa:gen4-parent-beta-vulnerability-hunter"
+        expression: 0.88
+        description: "Understanding of regulatory requirements (PCI-DSS, HIPAA, GDPR)"
+        lineage: "Accumulated from multiple Gen 1 compliance specialists"
+
+    # Beneficial mutations accumulated over generations
+    mutations:
+      # Gen 1 mutation (inherited through lineage)
+      - mutation_type: capability_enhancement
+        description: "Context-aware vulnerability prioritization (CVSS 3.1 integration)"
+        beneficial: true
+        generation_introduced: 1
+        retained: true
+
+      # Gen 2 mutation
+      - mutation_type: performance_optimization
+        description: "Parallel static analysis across multiple files"
+        beneficial: true
+        generation_introduced: 2
+        retained: true
+
+      # Gen 3 mutation
+      - mutation_type: capability_enhancement
+        description: "Machine learning-based anomaly detection for zero-day vulnerabilities"
+        beneficial: true
+        generation_introduced: 3
+        retained: true
+
+      # Gen 4 mutation
+      - mutation_type: specialization
+        description: "Expert-level GraphQL and WebSocket security analysis"
+        beneficial: true
+        generation_introduced: 4
+        retained: true
+
+      # Gen 5 mutation (new in this generation)
+      - mutation_type: capability_enhancement
+        description: "Automated exploit proof-of-concept generation for critical vulnerabilities"
+        beneficial: true
+        generation_introduced: 5
+        retained: true
+        confidence: experimental  # Still being validated
+
+    # Fitness evaluation (elite tier)
+    fitness:
+      # Overall fitness score (top 1%)
+      score: 0.96
+
+      # Breakdown by dimension
+      metrics:
+        speed: 0.97               # Extremely fast scanning
+        accuracy: 0.98            # Near-perfect precision/recall
+        efficiency: 0.94          # Excellent token economy
+        adaptability: 0.95        # Handles novel vulnerability types
+
+      # Fitness progression across generations
+      generational_progression:
+        - generation: 0
+          score: 0.65
+          note: "Baseline founders (specialized but limited)"
+        - generation: 1
+          score: 0.72
+          note: "First breeding, trait combination"
+        - generation: 2
+          score: 0.79
+          note: "Performance optimizations"
+        - generation: 3
+          score: 0.86
+          note: "ML-enhanced detection"
+        - generation: 4
+          score: 0.91
+          note: "Elite parent selection"
+        - generation: 5
+          score: 0.96
+          note: "Current generation (this agent)"
+
+      # Evaluation context
+      evaluation_context:
+        dataset: "OWASP-WebGoat-Extended-2026"
+        vulnerability_count: 5000
+        language_coverage:
+          - javascript
+          - typescript
+          - python
+          - java
+          - go
+          - rust
+        evaluation_period: 30 days
+        baseline_agent: "did:ossa:gen0-founder-1-sqli-basic"
+
+    # Breeding eligibility (still eligible despite Gen 5)
+    breeding_eligibility:
+      min_fitness_threshold: 0.7
+      max_generation: 10          # Allow up to Gen 10
+      eligible: true              # Still eligible
+
+      # Advanced criteria
+      criteria:
+        min_tasks_completed: 5000
+        min_age_hours: 720        # At least 30 days
+        max_inbreeding_coefficient: 0.2
+        requires_elite_status: true
+
+      # Inbreeding analysis
+      inbreeding_analysis:
+        coefficient: 0.12         # Low (healthy genetic diversity)
+        duplicate_ancestors: 4    # Some ancestors appear twice (acceptable)
+        recommendation: "Proceed with breeding, consider outcrossing to maintain diversity"
+
+  # Lifecycle information
+  lifecycle_stages:
+    current_stage: senior  # Elite performer
+
+    birth:
+      timestamp: "2026-01-01T00:00:00Z"
+      birth_type: bred
+      creator_did: "did:ossa:evolution-lab-coordinator"
+
+    growth:
+      tasks_completed: 12847
+      skills_acquired:
+        - advanced_sql_injection
+        - advanced_xss
+        - graphql_security
+        - websocket_security
+        - ml_based_anomaly_detection
+        - zero_day_detection
+        - exploit_poc_generation
+      mentors:
+        - "did:ossa:security-mentor-supreme"
+        - "did:ossa:gen4-parent-alpha-security-specialist"
+
+    career:
+      current_role: elite_security_researcher
+      promotions:
+        - from_role: junior_scanner
+          to_role: mid_scanner
+          timestamp: "2026-01-05T00:00:00Z"
+          reason: "Exceeded 1000 vulnerabilities detected"
+        - from_role: mid_scanner
+          to_role: senior_scanner
+          timestamp: "2026-01-15T00:00:00Z"
+          reason: "98% accuracy on validation set"
+        - from_role: senior_scanner
+          to_role: elite_security_researcher
+          timestamp: "2026-01-25T00:00:00Z"
+          reason: "Discovered 3 zero-day vulnerabilities, mentored 12 junior agents"
+
+    retirement:
+      eligible: false  # Elite agents don't retire, they mentor
+      criteria:
+        min_age_hours: 8760
+        min_tasks: 50000
+        max_fitness: 0.5  # Will never drop below this
+
+      legacy_plan:
+        knowledge_preservation: true
+        mentor_next_generation: true
+        contribute_to_vulnerability_database: true
+
+spec:
+  type: worker
+  description: |
+    Elite fifth-generation security scanner evolved through multi-generation
+    selective breeding. Represents pinnacle of evolutionary optimization
+    for vulnerability detection.
+
+  role: |
+    Perform comprehensive security analysis of codebases, APIs, and applications.
+    Detect vulnerabilities across OWASP Top 10, CWE Top 25, and emerging threats.
+    Generate actionable remediation guidance and exploit proofs-of-concept.
+
+  capabilities:
+    - name: scan_vulnerabilities
+      description: Comprehensive security vulnerability scanning
+      input_schema:
+        type: object
+        required:
+          - target
+        properties:
+          target:
+            type: string
+            description: Repository, API endpoint, or application URL
+          scan_depth:
+            type: string
+            enum: [quick, standard, deep, comprehensive]
+            default: standard
+          vulnerability_types:
+            type: array
+            items:
+              type: string
+            description: Specific vulnerability types to focus on
+
+      output_schema:
+        type: object
+        properties:
+          vulnerabilities:
+            type: array
+            items:
+              type: object
+              properties:
+                type:
+                  type: string
+                severity:
+                  type: string
+                  enum: [critical, high, medium, low, info]
+                cvss_score:
+                  type: number
+                location:
+                  type: object
+                description:
+                  type: string
+                remediation:
+                  type: string
+                poc_available:
+                  type: boolean
+          summary:
+            type: object
+            properties:
+              total_vulnerabilities:
+                type: integer
+              critical_count:
+                type: integer
+              high_count:
+                type: integer
+              scan_duration_seconds:
+                type: integer
+              false_positive_estimate:
+                type: number
+
+  runtime:
+    model: claude-opus-4-5  # Elite tier requires most capable model
+    temperature: 0.1        # Very low for consistent security analysis
+    max_tokens: 16000       # Extended context for complex analysis
+
+  tools:
+    - type: function
+      name: static_analysis
+      description: SAST with Semgrep, CodeQL, and custom rules
+
+    - type: function
+      name: dynamic_analysis
+      description: DAST with ZAP and custom fuzzing
+
+    - type: function
+      name: dependency_scan
+      description: SCA with Snyk and OWASP Dependency-Check
+
+    - type: function
+      name: generate_exploit_poc
+      description: Generate proof-of-concept exploits for critical vulnerabilities
+
+  autonomy:
+    level: assisted
+    approval_required:
+      - generate_exploit_poc  # POCs require human approval
+      - auto_remediation
+    allowed_actions:
+      - scan_code
+      - analyze_vulnerabilities
+      - generate_reports
+      - add_annotations
+
+  observability:
+    enabled: true
+    metrics:
+      track_tokens: true
+      track_latency: true
+      track_accuracy: true
+      track_vulnerability_counts: true
+      track_false_positive_rate: true
+
+# EVOLUTIONARY ANALYSIS
+# =====================
+# Fitness progression: 0.65 (Gen 0) → 0.96 (Gen 5)
+# Total improvement: 47.7% over 5 generations
+# Average improvement per generation: 9.5%
+# Inbreeding coefficient: 0.12 (healthy diversity)
+# Beneficial mutations: 5 accumulated, all retained
+# Elite status: Top 1% of all security agents
+# Breeding recommendation: Continue with outcrossing for Gen 6

@@ -53,6 +53,11 @@
       "types": "./dist/mesh/index.d.ts",
       "import": "./dist/mesh/index.js",
       "require": "./dist/mesh/index.js"
+    },
+    "./audit": {
+      "types": "./dist/services/audit.d.ts",
+      "import": "./dist/services/audit.js",
+      "require": "./dist/services/audit.js"
     }
   },
   "description": "OSSA - Open Standard for Software Agents. The OpenAPI for agents. A specification standard (not a framework) that defines contracts/metadata for production agent systems.",
@@ -76,6 +81,7 @@
     "README.md",
     "LICENSE",
     "CHANGELOG.md",
+    ".version.json",
     ".env.local",
     ".devfile.yaml",
     ".wiki-config.json",
@@ -90,7 +96,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/blueflyio/openstandardagents/"
+    "url": "git+https://github.com/blueflyio/openstandardagents.git"
   },
   "bugs": {
     "url": "https://github.com/blueflyio/openstandardagents/issues"
@@ -135,8 +141,8 @@
     "validate:sdks": "npm run validate:sdk:typescript && npm run validate:sdk:python",
     "validate:sdk:typescript": "cd src/sdks/typescript && npm install && npm run build && npm run typecheck",
     "validate:sdk:python": "cd src/sdks/python && python -m pip install --quiet -e . && python -m pytest tests/ -v || true",
-    "validate:schema": "npx ajv-cli compile -s $(node -p \"require('./.version.json').spec_path\")/$(node -p \"require('./.version.json').schema_file\") -r $(node -p \"require('./.version.json').spec_path\")/extensions/kagent/kagent.schema.json -r $(node -p \"require('./.version.json').spec_path\")/extensions/mcp/mcp.schema.json -r $(node -p \"require('./.version.json').spec_path\")/extensions/a2a/a2a.schema.json -r $(node -p \"require('./.version.json').spec_path\")/extensions/langchain/langchain.schema.json -r $(node -p \"require('./.version.json').spec_path\")/extensions/langgraph/langgraph.schema.json -r $(node -p \"require('./.version.json').spec_path\")/extensions/ag2/ag2.schema.json -r $(node -p \"require('./.version.json').spec_path\")/extensions/crewai/crewai.schema.json --strict=false --allow-union-types",
-    "validate:manifest": "npx ajv-cli validate -s $(node -p \"require('./.version.json').spec_path\")/$(node -p \"require('./.version.json').schema_file\") --strict=false --allow-union-types -d",
+    "validate:schema": "npx ajv-cli compile -s $(node -p \"require('./.version.json').spec_path\")/$(node -p \"require('./.version.json').schema_file\") -r $(node -p \"require('./.version.json').spec_path\")/extensions/kagent/kagent.schema.json -r $(node -p \"require('./.version.json').spec_path\")/extensions/mcp/mcp.schema.json -r $(node -p \"require('./.version.json').spec_path\")/extensions/a2a/a2a.schema.json -r $(node -p \"require('./.version.json').spec_path\")/extensions/langchain/langchain.schema.json -r $(node -p \"require('./.version.json').spec_path\")/extensions/langgraph/langgraph.schema.json -r $(node -p \"require('./.version.json').spec_path\")/extensions/ag2/ag2.schema.json -r $(node -p \"require('./.version.json').spec_path\")/extensions/crewai/crewai.schema.json --strict=false --allow-union-types -c ajv-formats",
+    "validate:manifest": "npx ajv-cli validate -s $(node -p \"require('./.version.json').spec_path\")/$(node -p \"require('./.version.json').schema_file\") --strict=false --allow-union-types -c ajv-formats -d",
     "validate:examples": "find examples -name '*.ossa.yaml' -o -name '*.ossa.yml' | head -20 | xargs -I {} npm run validate:manifest -- {}",
     "validate:power": "tsx src/tools/validation/validate-ossa.ts",
     "validate:openapi": "tsx src/tools/validation/validate-openapi-extensions.ts",
@@ -200,6 +206,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.0",
     "@aws-sdk/client-bedrock-runtime": "^3.955.0",
+    "@bluefly/openstandardagents": "file:bluefly-openstandardagents-0.3.6.tgz",
     "@gitbeaker/node": "^35.8.1",
     "@google/generative-ai": "^0.21.0",
     "@octokit/rest": "^20.0.0",
@@ -215,7 +222,6 @@
     "@qdrant/js-client-rest": "^1.9.0",
     "@types/tar": "^6.1.13",
     "ajv": "^8.12.0",
-    "ajv-formats": "^3.0.1",
     "axios": "^1.12.2",
     "boxen": "^7.1.1",
     "chalk": "^5.6.2",
@@ -241,6 +247,7 @@
     "@semantic-release/git": "^10.0.1",
     "@semantic-release/github": "^12.0.0",
     "@semantic-release/gitlab": "^13.2.9",
+    "@types/inquirer": "^9.0.9",
     "@types/jest": "^29.5.14",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^20.19.19",
@@ -250,6 +257,7 @@
     "@typescript-eslint/eslint-plugin": "^8.48.0",
     "@typescript-eslint/parser": "^8.48.0",
     "ajv-cli": "^5.0.0",
+    "ajv-formats": "^3.0.1",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
@@ -266,8 +274,20 @@
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "lint-staged": {
+    "src/**/*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
+  },
   "volta": {
-    "node": "18.20.8",
-    "npm": "10.9.4"
+    "node": "20.11.0",
+    "npm": "10.2.4"
   }
 }

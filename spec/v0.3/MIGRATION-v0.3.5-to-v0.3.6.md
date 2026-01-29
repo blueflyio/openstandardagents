@@ -376,8 +376,132 @@ npm run validate:manifest -- your-agent.ossa.yaml
 
 ---
 
+## Revolutionary Features (v0.3.6 Extended)
+
+v0.3.6 also introduces **revolutionary features** for advanced agent ecosystems:
+
+### 1. Decentralized Identity (`decentralized_identity`)
+
+DID-based identity with W3C Verifiable Credentials:
+
+```yaml
+metadata:
+  decentralized_identity:
+    did: did:ossa:a1b2c3d4e5f6789012345678901234567890abcd
+    public_key: ed25519:9a8b7c6d5e4f3210abcdef...
+    credentials:
+      - '@context': ['https://www.w3.org/2018/credentials/v1']
+        type: ['VerifiableCredential', 'CodeReviewCapability']
+        credentialSubject:
+          id: did:ossa:a1b2c3d4e5f6789012345678901234567890abcd
+          capability: code_review
+        issuer: did:ossa:authority123456789
+        issuanceDate: '2026-01-15T10:00:00Z'
+        proof: { ... }
+    reputation:
+      credit_score: 850  # 0-1000
+      trust_network: [...]
+      endorsements: [...]
+```
+
+**Use When:** Building trust networks, reputation systems, or agent marketplaces.
+
+### 2. Agent Genetics (`genetics`)
+
+Breeding and evolution with lineage tracking:
+
+```yaml
+metadata:
+  genetics:
+    generation: 3
+    parent_dids:
+      - did:ossa:parent1-fast-reviewer
+      - did:ossa:parent2-accurate-reviewer
+    inherited_traits:
+      - trait_name: fast_analysis
+        source_parent: did:ossa:parent1-fast-reviewer
+        expression: 0.9
+    mutations: [...]
+    fitness:
+      score: 0.92
+      metrics:
+        speed: 0.95
+        accuracy: 0.90
+    breeding_eligibility:
+      eligible: true
+```
+
+**Use When:** Optimizing agent performance through selective breeding.
+
+### 3. Lifecycle Stages (`lifecycle_stages`)
+
+Birth through retirement with legacy preservation:
+
+```yaml
+metadata:
+  lifecycle_stages:
+    current_stage: mature  # embryonic|juvenile|mature|senior|retired
+    birth:
+      timestamp: '2026-01-10T08:00:00Z'
+      birth_type: bred  # created|bred|cloned|forked
+    growth:
+      tasks_completed: 2847
+      skills_acquired: [...]
+      mentors: [...]
+    career:
+      current_role: senior_code_reviewer
+      promotions: [...]
+    retirement:
+      eligible: false
+      criteria: { ... }
+      legacy: { ... }
+```
+
+**Use When:** Managing agent development and graceful retirement.
+
+### 4. Agent Economics (`economics`)
+
+Marketplace, wallets, and smart contracts:
+
+```yaml
+metadata:
+  economics:
+    wallet:
+      balance: 12450.50
+      currency: task-tokens
+    marketplace:
+      offerings:
+        - offering_id: data-analysis-basic
+          capability: data_analysis
+          pricing_model: per-task
+          price: 5.00
+      bids: [...]
+    contracts: [...]
+    transaction_history: [...]
+```
+
+**Use When:** Building agent marketplaces or resource allocation systems.
+
+### 5. Team Membership (`team_membership`)
+
+Multi-agent collaboration:
+
+```yaml
+metadata:
+  team_membership:
+    team_id: ossa-marketplace-analytics-guild
+    role: member  # leader|member|contributor|observer
+    responsibilities: [...]
+    joined_at: '2025-12-01T00:00:00Z'
+```
+
+**Use When:** Organizing agents into teams, guilds, or communities.
+
+---
+
 ## Migration Checklist
 
+### Core Features
 - [ ] Read this migration guide
 - [ ] Update `apiVersion: ossa/v0.3.6`
 - [ ] Validate manifest with new schema
@@ -387,6 +511,13 @@ npm run validate:manifest -- your-agent.ossa.yaml
 - [ ] Add `catalog` metadata if publishing
 - [ ] Monitor token usage and costs
 - [ ] Deploy to production
+
+### Revolutionary Features (Optional)
+- [ ] Add `decentralized_identity` for trust/reputation
+- [ ] Add `genetics` for breeding/evolution
+- [ ] Add `lifecycle_stages` for growth tracking
+- [ ] Add `economics` for marketplace participation
+- [ ] Add `team_membership` for collaboration
 
 ---
 
@@ -405,9 +536,17 @@ v0.3.6 is a **pure additive release** focused on:
 2. **Enterprise compliance** (composite identity)
 3. **Discoverability** (agent catalog)
 4. **Efficiency** (knowledge graphs)
+5. **Revolutionary features** (DID identity, genetics, lifecycle, economics, teams)
 
 **Zero breaking changes.** All v0.3.5 agents work unchanged.
 
 **Upgrade path:** Update apiVersion, optionally add new features.
 
-**Recommended:** Start with `efficiency_tier: standard` for immediate 30% cost savings with zero risk.
+**Recommended:**
+- **Immediate:** Start with `efficiency_tier: standard` for 30% cost savings
+- **Advanced:** Explore revolutionary features for agent ecosystems
+
+**Documentation:**
+- Core features: This guide
+- Revolutionary features: `docs/v0.3.6-features.md`
+- Examples: `examples/genetics/`, `examples/economics/`, `examples/lifecycle/`, `examples/swarm/`

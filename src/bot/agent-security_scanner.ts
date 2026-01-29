@@ -16,7 +16,9 @@ export class SecurityScannerBot {
     return { found: secrets.length > 0, secrets };
   }
 
-  async scanDependencies(): Promise<{ vulnerabilities: any[] }> {
+  async scanDependencies(): Promise<{
+    vulnerabilities: Array<Record<string, unknown>>;
+  }> {
     return { vulnerabilities: [] };
   }
 }

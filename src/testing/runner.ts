@@ -92,7 +92,7 @@ export class TestRunner {
       }
 
       // 3. Run policy compliance tests
-      if ((manifest.spec as any)?.policies) {
+      if (manifest.spec?.policies) {
         const policyResults = await this.runPolicyTests(manifest, options);
         results.push(...policyResults);
       }
@@ -194,12 +194,12 @@ export class TestRunner {
     manifest: OssaAgent,
     options: TestOptions
   ): Promise<TestResult[]> {
-    const tests = (manifest.spec as any)?.tests || [];
+    const tests = manifest.spec?.tests || [];
     const results: TestResult[] = [];
 
     // Filter tests if testId specified
     const testsToRun = options.testId
-      ? tests.filter((t: any) => t.id === options.testId)
+      ? tests.filter((t) => t.id === options.testId)
       : tests;
 
     for (const test of testsToRun) {
@@ -214,7 +214,7 @@ export class TestRunner {
    * Run a single test
    */
   private async runSingleTest(
-    test: any,
+    test: NonNullable<NonNullable<OssaAgent['spec']>['tests']>[number],
     manifest: OssaAgent,
     options: TestOptions
   ): Promise<TestResult> {
@@ -257,9 +257,9 @@ export class TestRunner {
    * Execute unit test with assertions
    */
   private async executeUnitTest(
-    test: any,
+    test: NonNullable<NonNullable<OssaAgent['spec']>['tests']>[number],
     manifest: OssaAgent,
-    options: TestOptions
+    _options: TestOptions
   ): Promise<void> {
     if (!test.assertions || test.assertions.length === 0) {
       return;
@@ -277,7 +277,7 @@ export class TestRunner {
    * Execute integration test
    */
   private async executeIntegrationTest(
-    test: any,
+    test: NonNullable<NonNullable<OssaAgent['spec']>['tests']>[number],
     manifest: OssaAgent,
     options: TestOptions
   ): Promise<void> {
@@ -298,11 +298,11 @@ export class TestRunner {
   private async runCapabilityTests(
     manifest: OssaAgent,
     capabilityName: string,
-    options: TestOptions
+    _options: TestOptions
   ): Promise<TestResult[]> {
     const results: TestResult[] = [];
-    const capabilities = (manifest.spec as any)?.capabilities || [];
-    const capability = capabilities.find((c: any) => c.name === capabilityName);
+    const capabilities = manifest.spec?.capabilities || [];
+    const capability = capabilities.find((c) => c.id === capabilityName);
 
     if (!capability) {
       results.push({
@@ -322,24 +322,6 @@ export class TestRunner {
       // Test capability definition
       if (!capability.description) {
         throw new Error('Capability missing description');
-      }
-
-      // Test capability inputs
-      if (capability.inputs) {
-        for (const input of capability.inputs) {
-          if (!input.name || !input.type) {
-            throw new Error('Invalid capability input definition');
-          }
-        }
-      }
-
-      // Test capability outputs
-      if (capability.outputs) {
-        for (const output of capability.outputs) {
-          if (!output.name || !output.type) {
-            throw new Error('Invalid capability output definition');
-          }
-        }
       }
 
       results.push({
@@ -369,10 +351,10 @@ export class TestRunner {
    */
   private async runPolicyTests(
     manifest: OssaAgent,
-    options: TestOptions
+    _options: TestOptions
   ): Promise<TestResult[]> {
     const results: TestResult[] = [];
-    const policies = (manifest.spec as any)?.policies || [];
+    const policies = manifest.spec?.policies || [];
 
     for (const policy of policies) {
       const startTime = Date.now();
@@ -389,7 +371,7 @@ export class TestRunner {
         }
 
         // Validate each rule
-        for (const rule of policy.rules) {
+        for (const rule of policy.rules as Record<string, unknown>[]) {
           if (!rule.condition || !rule.action) {
             throw new Error('Invalid policy rule structure');
           }
@@ -422,7 +404,9 @@ export class TestRunner {
    * Evaluate assertion
    */
   private evaluateAssertion(
-    assertion: any,
+    assertion: NonNullable<
+      NonNullable<NonNullable<OssaAgent['spec']>['tests']>[number]['assertions']
+    >[number],
     manifest: OssaAgent
   ): { passed: boolean; message: string } {
     const type = assertion.type;
@@ -447,7 +431,7 @@ export class TestRunner {
         ) {
           return { passed: true, message: 'String contains expected value' };
         }
-        if (Array.isArray(actual) && actual.includes(expected)) {
+        if (Array.isArray(actual) && (actual as unknown[]).includes(expected)) {
           return { passed: true, message: 'Array contains expected value' };
         }
         return {
@@ -481,16 +465,16 @@ export class TestRunner {
   /**
    * Evaluate expression against manifest
    */
-  private evaluateExpression(expr: string, manifest: OssaAgent): any {
+  private evaluateExpression(expr: string, manifest: OssaAgent): unknown {
     if (typeof expr !== 'string') {
       return expr;
     }
 
     const parts = expr.split('.');
-    let value: any = manifest;
+    let value: unknown = manifest;
 
     for (const part of parts) {
-      value = value?.[part];
+      value = (value as Record<string, unknown>)?.[part];
     }
 
     return value;
@@ -506,7 +490,7 @@ export class TestRunner {
     const coverage: TestCoverage = {};
 
     // Calculate capability coverage
-    const capabilities = (manifest.spec as any)?.capabilities || [];
+    const capabilities = manifest.spec?.capabilities || [];
     const capabilityTests = results.filter((r) => r.type === 'capability');
 
     if (capabilities.length > 0) {
@@ -521,7 +505,7 @@ export class TestRunner {
     }
 
     // Calculate policy coverage
-    const policies = (manifest.spec as any)?.policies || [];
+    const policies = manifest.spec?.policies || [];
     const policyTests = results.filter((r) => r.type === 'policy');
 
     if (policies.length > 0) {

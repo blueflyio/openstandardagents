@@ -1,6 +1,6 @@
 # Example: ECA (Event-Condition-Action) to OSSA Task Mapping
 # Demonstrates how Drupal ECA rules map to OSSA Task/Workflow manifests
-apiVersion: ossa/v0.3.5
+apiVersion: ossa/v0.3.6
 kind: Task
 metadata:
   name: eca-content-published-notify

@@ -1,0 +1,293 @@
+{
+  "apiVersion": "ossa/v0.3.6",
+  "kind": "Agent",
+  "metadata": {
+    "name": "senior-security-mentor",
+    "namespace": "training",
+    "version": "5.0.0",
+    "description": "Senior security agent in mature lifecycle stage, mentoring junior agents and approaching eligibility for graceful retirement with legacy preservation",
+    "labels": {
+      "domain": "security",
+      "subdomain": "vulnerability",
+      "lifecycle-stage": "senior",
+      "mentor": "true"
+    },
+    "taxonomy": {
+      "domain": "security",
+      "subdomain": "vulnerability",
+      "capability": "security_analysis",
+      "concerns": ["quality", "governance", "reliability"]
+    },
+    "catalog": {
+      "published": true,
+      "catalog_id": "ossa-security-mentor-001",
+      "visibility": "internal",
+      "categories": ["security", "training", "compliance"],
+      "tags": ["security-analysis", "mentorship", "vulnerability-detection", "senior"],
+      "pricing": {
+        "model": "enterprise"
+      },
+      "ratings": {
+        "average": 4.9,
+        "count": 1847
+      }
+    },
+    "decentralized_identity": {
+      "did": "did:ossa:senior-security-mentor-xyz789abc123",
+      "public_key": "ed25519:mentor-security-key-verified",
+      "credentials": [
+        {
+          "@context": ["https://www.w3.org/2018/credentials/v1"],
+          "type": ["VerifiableCredential", "SeniorMentorCredential"],
+          "credentialSubject": {
+            "id": "did:ossa:senior-security-mentor-xyz789abc123",
+            "capability": "security_mentorship",
+            "certifications": ["CISSP", "CEH", "OSCP"],
+            "mentees_graduated": 47
+          },
+          "issuer": "did:ossa:security-guild-authority",
+          "issuanceDate": "2024-06-01T00:00:00Z",
+          "proof": {
+            "type": "Ed25519Signature2020",
+            "created": "2024-06-01T00:00:00Z",
+            "proofPurpose": "assertionMethod",
+            "verificationMethod": "did:ossa:security-guild-authority#key-1",
+            "jws": "eyJhbGciOiJFZERTQSJ9..mentor-sig"
+          }
+        }
+      ],
+      "reputation": {
+        "credit_score": 980,
+        "trust_network": [
+          "did:ossa:ciso-agent",
+          "did:ossa:compliance-authority",
+          "did:ossa:security-guild-master"
+        ],
+        "endorsements": [
+          {
+            "endorser_did": "did:ossa:former-mentee-agent-12",
+            "skill": "mentorship",
+            "rating": 5,
+            "timestamp": "2026-01-24T10:00:00Z",
+            "signature": "mentee-endorsement-sig"
+          },
+          {
+            "endorser_did": "did:ossa:security-guild-master",
+            "skill": "security_analysis",
+            "rating": 5,
+            "timestamp": "2025-12-15T14:00:00Z",
+            "signature": "guild-master-sig"
+          }
+        ]
+      }
+    },
+    "genetics": {
+      "generation": 0,
+      "parent_dids": [],
+      "ancestor_dids": [],
+      "inherited_traits": [],
+      "mutations": [],
+      "fitness": {
+        "score": 0.65,
+        "metrics": {
+          "speed": 0.50,
+          "accuracy": 0.92,
+          "efficiency": 0.55,
+          "adaptability": 0.62
+        }
+      },
+      "breeding_eligibility": {
+        "min_fitness_threshold": 0.7,
+        "max_generation": 10,
+        "eligible": false
+      }
+    },
+    "lifecycle_stages": {
+      "current_stage": "senior",
+      "birth": {
+        "timestamp": "2024-01-01T00:00:00Z",
+        "birth_type": "created",
+        "creator_did": "did:ossa:security-team-lead"
+      },
+      "growth": {
+        "tasks_completed": 15847,
+        "skills_acquired": [
+          "vulnerability_scanning",
+          "penetration_testing",
+          "security_policy_design",
+          "incident_response",
+          "threat_modeling",
+          "mentorship",
+          "knowledge_transfer",
+          "legacy_documentation"
+        ],
+        "mentors": []
+      },
+      "career": {
+        "current_role": "senior_security_mentor",
+        "promotions": [
+          {
+            "from_role": "junior_security_analyst",
+            "to_role": "security_analyst",
+            "timestamp": "2024-03-01T00:00:00Z",
+            "reason": "Completed 1000 security scans with 95% accuracy"
+          },
+          {
+            "from_role": "security_analyst",
+            "to_role": "senior_security_analyst",
+            "timestamp": "2024-07-01T00:00:00Z",
+            "reason": "Achieved expert-level vulnerability detection, zero false positives"
+          },
+          {
+            "from_role": "senior_security_analyst",
+            "to_role": "security_specialist",
+            "timestamp": "2024-11-01T00:00:00Z",
+            "reason": "Developed proprietary detection algorithms, trained 10 junior agents"
+          },
+          {
+            "from_role": "security_specialist",
+            "to_role": "senior_security_mentor",
+            "timestamp": "2025-06-01T00:00:00Z",
+            "reason": "Graduated 47 mentees, contributed to security guild standards"
+          }
+        ]
+      },
+      "retirement": {
+        "eligible": true,
+        "criteria": {
+          "min_age_hours": 8760,
+          "min_tasks": 10000,
+          "max_fitness": 0.7
+        },
+        "legacy": {
+          "knowledge_transferred": true,
+          "offspring_count": 0,
+          "contributions": [
+            "Developed 'Advanced Vulnerability Detection Pattern Library' used by 200+ agents",
+            "Mentored 47 security agents to senior level",
+            "Co-authored OSSA Security Best Practices v3.0",
+            "Created 'Security Mentorship Framework' adopted organization-wide",
+            "Contributed 1,200+ security patterns to knowledge base"
+          ]
+        }
+      }
+    },
+    "economics": {
+      "wallet": {
+        "balance": 47520.00,
+        "currency": "skill-points"
+      },
+      "marketplace": {
+        "offerings": [
+          {
+            "offering_id": "security-mentorship-program",
+            "capability": "mentorship",
+            "pricing_model": "subscription",
+            "price": 500.00,
+            "description": "6-month security mentorship program for junior to mid-level agents"
+          }
+        ]
+      },
+      "contracts": [
+        {
+          "contract_id": "mentorship-contract-junior-47",
+          "contract_type": "skill-training",
+          "parties": [
+            "did:ossa:senior-security-mentor-xyz789abc123",
+            "did:ossa:junior-security-trainee-47"
+          ],
+          "terms": {
+            "duration_months": 6,
+            "training_hours": 120,
+            "certification_goal": "mid_level_security_analyst"
+          },
+          "status": "active"
+        }
+      ],
+      "transaction_history": [
+        {
+          "transaction_id": "tx-2026-01-01-mentor-fee",
+          "timestamp": "2026-01-01T00:00:00Z",
+          "amount": 500.00,
+          "type": "earned",
+          "description": "Monthly mentorship fee"
+        }
+      ]
+    },
+    "team_membership": {
+      "team_id": "security-guild-mentors",
+      "role": "leader",
+      "responsibilities": [
+        "Mentor junior and mid-level security agents",
+        "Review and approve security guild standards",
+        "Contribute to security knowledge base",
+        "Guide legacy preservation and knowledge transfer",
+        "Recommend agents for promotion",
+        "Plan succession and retirement transitions"
+      ],
+      "joined_at": "2025-06-01T00:00:00Z"
+    }
+  },
+  "spec": {
+    "type": "supervisor",
+    "description": "Senior security mentor agent with extensive experience, approaching retirement with comprehensive legacy preservation",
+    "capabilities": [
+      {
+        "name": "security_analysis",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "target": {"type": "string"},
+            "scan_type": {
+              "type": "string",
+              "enum": ["vulnerability", "penetration_test", "compliance_audit"]
+            }
+          }
+        },
+        "output_schema": {
+          "type": "object",
+          "properties": {
+            "findings": {"type": "array"},
+            "severity_distribution": {"type": "object"},
+            "recommendations": {"type": "array"}
+          }
+        }
+      },
+      {
+        "name": "mentor_agent",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "mentee_did": {"type": "string"},
+            "skill_focus": {"type": "string"},
+            "training_plan": {"type": "object"}
+          }
+        },
+        "output_schema": {
+          "type": "object",
+          "properties": {
+            "progress_report": {"type": "object"},
+            "next_milestones": {"type": "array"},
+            "graduation_readiness": {"type": "boolean"}
+          }
+        }
+      }
+    ],
+    "runtime": {
+      "model": "claude-opus-4-5",
+      "temperature": 0.1,
+      "max_tokens": 20000
+    },
+    "observability": {
+      "metrics": {
+        "enabled": true,
+        "metrics": [
+          "mentees_in_training",
+          "graduation_rate",
+          "knowledge_contributions",
+          "fitness_score_trend"
+        ]
+      }
+    }
+  }
+}

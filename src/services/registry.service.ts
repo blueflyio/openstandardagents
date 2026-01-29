@@ -1,3 +1,4 @@
+import { injectable, inject, optional } from 'inversify';
 import { OssaAgent } from '../types/index.js';
 import * as fs from 'fs/promises';
 import * as path from 'path';
@@ -26,11 +27,12 @@ export interface PublishRequest {
   version?: string;
 }
 
+@injectable()
 export class RegistryService {
   private registryPath: string;
   private agentsPath: string;
 
-  constructor(registryPath?: string) {
+  constructor(@inject('registryPath') @optional() registryPath?: string) {
     this.registryPath =
       registryPath || path.join(process.cwd(), '.ossa-registry');
     this.agentsPath = path.join(this.registryPath, 'agents');
@@ -110,7 +112,7 @@ export class RegistryService {
     const agentDir = path.join(this.agentsPath, agentId, version);
     await fs.mkdir(agentDir, { recursive: true });
     const manifestPath = path.join(agentDir, 'manifest.yaml');
-    const yaml = require('yaml');
+    const yaml = await import('yaml');
     await fs.writeFile(manifestPath, yaml.stringify(manifest), 'utf-8');
 
     // Update index

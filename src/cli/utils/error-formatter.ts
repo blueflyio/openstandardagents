@@ -158,11 +158,11 @@ function getValueAtPath(manifest: unknown, path: string): unknown {
   }
 
   const parts = path.split('/').filter(Boolean);
-  let current: any = manifest;
+  let current: unknown = manifest;
 
   for (const part of parts) {
     if (current && typeof current === 'object' && part in current) {
-      current = current[part];
+      current = (current as Record<string, unknown>)[part];
     } else {
       return undefined;
     }

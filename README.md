@@ -35,15 +35,26 @@
 - **Framework Agnostic** - Works with LangChain, LangFlow, CrewAI, AutoGen, Temporal, n8n
 - **Type-Safe TypeScript SDK** - Full validation and IntelliSense support (Python SDK planned)
 
-### What is OSSA?
+## Agent Definition and Structure
 
-OSSA is a **specification standard** (like OpenAPI for REST APIs) that defines contracts and metadata for production agent systems. It's not a framework - it's the standard that frameworks and platforms adopt.
+For a detailed explanation of what constitutes an agent in OSSA, its core attributes, and the standard project structure including `.agents` and `.agents-workspace` directories, please refer to our [Agent Definition Guide](docs/agent-definition.md).
 
-**Key Differentiators:**
-- **The OpenAPI for Agents** - Open specification standard for agent systems
-- **100% Backward Compatible** - Upgrade without breaking changes
-- **Production-Ready** - Built for enterprise scale and reliability
-- **Open Source** - Apache 2.0 licensed, community-driven
+## Project Overview
+
+This repository contains the Open Standard for Software Agents (OSSA) core libraries and tooling.
+
+OSSA defines a standard contract for AI agents, enabling interoperability and discoverability across different platforms and frameworks.
+
+### Key Components:
+
+- **Core Specification (`spec/`)**: Defines the OSSA schema versions and agent manifest structure.
+- **Runtime Adapters (`src/services/runtime/`)**: Implementations for interacting with various LLM providers and platforms.
+-   **Generation Service (`src/services/generation.service.ts`)**: Tools for creating agent manifests from templates.
+-   **AI Architect Service (`src/services/ai-architect.service.ts`)**: Leverages LLMs to design agent blueprints and manifests.
+-   **SDK Codegen (`packages/sdk-codegen`)**: Generates client libraries for OSSA agents.
+-   **SDK Docs (`packages/sdk-docs`)**: Generates documentation for OSSA agents.
+
+## Getting Started
 
 ## Quick Start
 

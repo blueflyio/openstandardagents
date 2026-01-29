@@ -57,7 +57,7 @@ spec:
       secondary_identity:
         user_id: $GITLAB_USER_ID
         username: $GITLAB_USERNAME
-        email: $GITLAB_USER_EMAIL
+        email: user@example.com
 
       permissions:
         read:

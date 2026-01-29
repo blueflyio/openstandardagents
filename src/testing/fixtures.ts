@@ -21,6 +21,7 @@ export const basicAgentManifest: OssaAgent = {
     },
   },
   spec: {
+    // eslint-disable-line @typescript-eslint/no-explicit-any
     role: 'You are a helpful test assistant',
     llm: {
       provider: 'openai',
@@ -40,6 +41,7 @@ export const agentWithCapabilities: OssaAgent = {
     name: 'capability-agent',
   },
   spec: {
+    // eslint-disable-line @typescript-eslint/no-explicit-any
     ...basicAgentManifest.spec,
     capabilities: [
       {
@@ -94,6 +96,7 @@ export const agentWithPolicies: OssaAgent = {
     name: 'policy-agent',
   },
   spec: {
+    // eslint-disable-line @typescript-eslint/no-explicit-any
     ...basicAgentManifest.spec,
     policies: [
       {
@@ -130,6 +133,7 @@ export const agentWithTests: OssaAgent = {
     name: 'tested-agent',
   },
   spec: {
+    // eslint-disable-line @typescript-eslint/no-explicit-any
     ...basicAgentManifest.spec,
     tests: [
       {
@@ -193,6 +197,7 @@ export const invalidAgentManifest: any = {
     // Missing version
   },
   spec: {
+    // eslint-disable-line @typescript-eslint/no-explicit-any
     // Missing role
     llm: {
       provider: 'openai',
@@ -212,6 +217,7 @@ export const agentWithComplexTests: OssaAgent = {
     description: 'Agent with complex test scenarios',
   },
   spec: {
+    // eslint-disable-line @typescript-eslint/no-explicit-any
     ...basicAgentManifest.spec,
     capabilities: [
       {

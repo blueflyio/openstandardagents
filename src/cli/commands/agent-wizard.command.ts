@@ -549,7 +549,19 @@ async function configureTools(state: WizardState): Promise<void> {
 
   if (!addTools) return;
 
-  const tools: any[] = state.agent.spec?.tools || [];
+  const tools: Array<{
+    type: string;
+    name?: string;
+    description?: string;
+    server?: string;
+    namespace?: string;
+    endpoint?: string;
+    capabilities?: string[];
+    config?: Record<string, unknown>;
+    auth?: { type: string; credentials?: string };
+    input_schema?: Record<string, unknown>;
+    [k: string]: unknown;
+  }> = state.agent.spec?.tools || [];
 
   while (true) {
     const { toolType } = await inquirer.prompt([
@@ -649,7 +661,7 @@ async function configureSafety(state: WizardState): Promise<void> {
     },
   ]);
 
-  const safety: any = {};
+  const safety: Record<string, unknown> = {};
 
   if (safetyAnswers.contentFiltering) {
     safety.content_filtering = {
@@ -677,7 +689,7 @@ async function configureSafety(state: WizardState): Promise<void> {
   }
 
   if (Object.keys(safety).length > 0) {
-    (state.agent.spec as any).safety = safety;
+    (state.agent.spec as Record<string, unknown>).safety = safety;
     console_ui.success('Safety controls configured');
   }
 }
@@ -952,10 +964,15 @@ async function showAgent(name: string, options: WizardOptions): Promise<void> {
   console_ui.success(`Model: ${agent.spec?.llm?.model}`);
   console_ui.success(`Temperature: ${agent.spec?.llm?.temperature}`);
 
-  if (agent.spec?.tools && agent.spec.tools.length > 0) {
+  if (
+    agent.spec?.tools &&
+    Array.isArray(agent.spec.tools) &&
+    agent.spec.tools.length > 0
+  ) {
     console_ui.section('Tools');
-    agent.spec.tools.forEach((tool: any) => {
-      console_ui.success(`${tool.type}: ${tool.name || 'unnamed'}`);
+    agent.spec.tools.forEach((tool: unknown) => {
+      const toolObj = tool as Record<string, unknown>;
+      console_ui.success(`${toolObj.type}: ${toolObj.name || 'unnamed'}`);
     });
   }
 
@@ -1106,10 +1123,10 @@ async function updateAgent(
 
     // Set nested property
     const keys = options.field.split('.');
-    let current: any = agent;
+    let current: Record<string, unknown> = agent as Record<string, unknown>;
     for (let i = 0; i < keys.length - 1; i++) {
       if (!current[keys[i]]) current[keys[i]] = {};
-      current = current[keys[i]];
+      current = current[keys[i]] as Record<string, unknown>;
     }
     current[keys[keys.length - 1]] = value;
   } else {
@@ -1188,7 +1205,7 @@ async function updateAgent(
  */
 async function validateAgentManifest(
   manifestPath: string,
-  options: any
+  options: Record<string, unknown>
 ): Promise<void> {
   console_ui.header('Validate Agent Manifest');
 
@@ -1245,9 +1262,10 @@ async function validateAgentManifest(
 
     // Tools validation
     if (agent.spec?.tools && Array.isArray(agent.spec.tools)) {
-      agent.spec.tools.forEach((tool: any, index: number) => {
-        if (!tool.type) errors.push(`Tool ${index}: missing type`);
-        if (!tool.name) errors.push(`Tool ${index}: missing name`);
+      agent.spec.tools.forEach((tool: unknown, index: number) => {
+        const toolObj = tool as Record<string, unknown>;
+        if (!toolObj.type) errors.push(`Tool ${index}: missing type`);
+        if (!toolObj.name) errors.push(`Tool ${index}: missing name`);
       });
     }
 
