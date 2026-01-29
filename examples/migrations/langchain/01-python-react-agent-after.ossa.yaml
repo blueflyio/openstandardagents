@@ -1,11 +1,11 @@
-apiVersion: ossa/v0.3.5
+apiVersion: ossa/v0.3.6
 kind: Agent
 metadata:
   name: python-react-agent
   version: 0.1.0
   description: Migrated from LangChain react agent
   labels:
-    ossa-version: v0.3.5
+    ossa-version: v0.3.6
     migration-source: langchain
   annotations:
     ossa.io/migration: langchain-to-ossa

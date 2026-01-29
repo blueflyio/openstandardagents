@@ -220,8 +220,8 @@ npm run validate:v0.3.5:examples
 By Q3 2026:
 - **50+ agents** using v0.3.5 features
 - **100% compatibility** with LangGraph, Temporal, n8n
-- **30% improvement** in agent autonomy rate
-- **25% reduction** in LLM costs via MoE
+- **Improved** agent autonomy rate through enhanced capabilities
+- **Cost optimization** via MoE intelligent model selection
 - **99% session recovery** success rate
 
 ---

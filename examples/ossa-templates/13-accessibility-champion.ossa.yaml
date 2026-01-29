@@ -5,7 +5,7 @@ metadata:
   version: 1.0.0
   description: Accessibility Champion - WCAG 2.1 AA compliance, ARIA best practices, keyboard navigation
   labels:
-    ossa-version: v0.3.5
+    ossa-version: v0.3.6
     domain: accessibility
     category: a11y
     tier: worker

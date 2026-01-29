@@ -67,7 +67,7 @@ export class ManifestRepository implements IManifestRepository {
     } else if (ext === '.yaml' || ext === '.yml') {
       // Use YAML stringify with options that ensure proper handling of strings with special characters
       // Environment variable patterns like ${VAR:-default} need to be preserved correctly
-      content = stringifyYaml(manifest, {
+      content = stringifyYaml(manifest, null, {
         indent: 2,
         lineWidth: 0,
         minContentWidth: 0,

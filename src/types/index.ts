@@ -32,14 +32,47 @@ export type {
   RoutingRule,
 } from './messaging.js';
 
+// Export Identity & Adapter types (v0.3.6)
+export * from './identity.js';
+export type {
+  Principal,
+  CredentialSource,
+  Adapter,
+  GenerationContext,
+} from './identity.js';
+
+// Export Architect types (v0.3.6)
+export * from './architect.js';
+export type {
+  Blueprint,
+  AgentKind,
+  ArchitectureConstraint,
+  ArchitectRecommendation,
+} from './architect.js';
+
 /**
  * Capability definition (OpenAPI-style operation)
  */
 export interface Capability {
-  name: string;
+  id: string; // Unique identifier for the capability
   description: string;
-  input_schema: Record<string, unknown> | string;
-  output_schema: Record<string, unknown> | string;
+  inputSchema: Record<string, unknown> | string; // JSON Schema for inputs
+  outputSchema: Record<string, unknown> | string; // JSON Schema for outputs
+  authRequirements?: {
+    type: string; // e.g., 'apiKey', 'oauth2', 'bearer'
+    scopes?: string[]; // Provider-specific scopes
+    // ... other auth details mapped from OpenAPI securitySchemes
+  };
+  idempotencySemantics?: 'idempotent' | 'non-idempotent';
+  slo?: {
+    maxLatencySeconds?: number;
+    maxErrorRate?: number; // e.g., 0.01 for 1%
+  };
+  telemetryRequirements?: {
+    metrics?: string[]; // e.g., ['request_count', 'token_usage', 'latency']
+    logs?: string[]; // e.g., ['request_details', 'error_context']
+    trace?: boolean; // Whether tracing should be enabled
+  };
   examples?: Array<{
     name?: string;
     input?: Record<string, unknown>;
@@ -51,6 +84,8 @@ export interface Capability {
     backoff?: 'linear' | 'exponential';
   };
 }
+
+import { Adapter, Principal } from './identity.js';
 
 /**
  * OSSA Agent manifest structure (k8s-style format)
@@ -77,7 +112,15 @@ export interface OssaAgent {
       };
     };
   };
-  spec?: {
+
+  /**
+   * Legacy agent format support (v0.2.x)
+   */
+  agent?: {
+    id: string;
+    name: string;
+    version: string;
+    description?: string;
     role: string;
     llm?: {
       provider: string;
@@ -86,13 +129,41 @@ export interface OssaAgent {
       maxTokens?: number;
       topP?: number;
     };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    capabilities?: any[];
+    runtime?: {
+      type: string;
+      image?: string;
+      config?: Record<string, unknown>;
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    tools?: any[];
+  };
+
+  skills?: string[]; // List of skill names or references
+  spec?: {
+    // This 'spec' object is part of the k8s-style format
+    role: string;
+    llm?: {
+      provider: string;
+      model: string;
+      temperature?: number;
+      maxTokens?: number;
+      topP?: number;
+    };
+    // Adapters: The new envelope for platform-specifics
+    adapters?: Adapter[];
+    // Principal: Abstract identity definition (v0.3.6)
+    principal?: Principal;
     tools?: Array<{
       type: string;
       name?: string;
       server?: string;
       namespace?: string;
       endpoint?: string;
-      capabilities?: string[];
+      // Reference to the CapabilityContract ID that this tool implements
+      capabilityId?: string; // Made optional to maintain backward compatibility
+      capabilities?: string[]; // For MCP-style capabilities
       config?: Record<string, unknown>;
       auth?: {
         type: string;
@@ -114,7 +185,7 @@ export interface OssaAgent {
       };
       performance?: {
         maxLatencySeconds?: number;
-        maxConcurrentRequests?: number;
+        maxErrorRate?: number; // e.g., 0.01 for 1%
         timeoutSeconds?: number;
       };
       resources?: {
@@ -196,6 +267,24 @@ export interface OssaAgent {
         };
       }>;
     };
+    capabilities?: Capability[];
+    policies?: Array<{
+      name: string;
+      type: string;
+      rules: unknown[];
+      [key: string]: unknown;
+    }>;
+    tests?: Array<{
+      id: string;
+      name?: string;
+      type?: 'unit' | 'integration' | 'capability' | 'policy';
+      assertions: Array<{
+        type: string;
+        actual: string;
+        expected: unknown;
+      }>;
+      [key: string]: unknown;
+    }>;
     environments?: Record<
       string,
       {
@@ -206,44 +295,6 @@ export interface OssaAgent {
         endpoint?: string;
       }
     >;
-  };
-  // Legacy v0.1.9 format (for backward compatibility)
-  ossaVersion?: string;
-  agent?: {
-    id: string;
-    name: string;
-    version: string;
-    role: string;
-    description?: string;
-    runtime: {
-      type: string;
-      image?: string;
-      command?: string[];
-      requirements?: Record<string, unknown>;
-    };
-    capabilities: Capability[];
-    llm?: {
-      provider?: string;
-      model?: string;
-      temperature?: number;
-      maxTokens?: number;
-    };
-    tools?: Array<{
-      type: string;
-      server?: string;
-      namespace?: string;
-      capabilities?: string[];
-    }>;
-    protocols?: Array<{
-      type: string;
-      version?: string;
-      endpoint?: string;
-    }>;
-    compliance?: {
-      frameworks?: string[];
-      dataClassification?: string;
-      retentionPolicy?: string;
-    };
   };
   extensions?: {
     agents_md?: AgentsMdExtension;

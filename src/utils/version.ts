@@ -11,6 +11,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
 
 // Cache the version info once resolved
 let cachedVersionInfo: VersionInfo | null = null;
@@ -54,6 +55,23 @@ function findPackageJson(startDir: string): string | null {
 }
 
 /**
+ * Find .version.json by searching upward from a starting directory
+ */
+function findVersionJson(startDir: string): string | null {
+  let current = startDir;
+  for (let i = 0; i < 10; i++) {
+    const candidate = path.resolve(current, '.version.json');
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+    const parent = path.dirname(current);
+    if (parent === current) break;
+    current = parent;
+  }
+  return null;
+}
+
+/**
  * Parse version string into components
  */
 function parseVersion(
@@ -79,8 +97,9 @@ function parseVersion(
  *
  * Strategy order:
  * 1. OSSA_VERSION environment variable (for CI/CD overrides)
- * 2. package.json from process.cwd()
- * 3. package.json from __dirname (CommonJS)
+ * 2. Jest environment check
+ * 3. ESM import.meta.url check (Production)
+ * 4. Fallback to .version.json
  *
  * THROWS if no version can be determined - we NEVER use fallback hardcoded versions.
  */
@@ -90,68 +109,69 @@ function readVersionFromPackageJson(): string {
     return process.env.OSSA_VERSION;
   }
 
-  // Strategy 2: From process.cwd() - most common case
-  try {
-    const pkgPath = findPackageJson(process.cwd());
-    if (pkgPath) {
+  let pkgPath: string | null = null;
+
+  // Check if running in a Jest test environment
+  if (process.env.JEST_WORKER_ID || typeof __dirname !== 'undefined') {
+    // Strategy for Jest/CJS: Find package.json from the project root
+    pkgPath = findPackageJson(process.cwd());
+  } else {
+    // Strategy for ESM (runtime): Use import.meta.url to find package.json
+    try {
+      // Use eval to prevent bundlers from seeing import.meta.url in environments that don't support it
+      const metaUrl = eval('import.meta.url');
+      const modulePath = fileURLToPath(metaUrl);
+      // The built file is in `dist/utils`, so we go up 3 levels to the project root
+      const searchDir = path.resolve(modulePath, '..', '..', '..');
+      pkgPath = findPackageJson(searchDir);
+    } catch (e) {
+      // Fallback if import.meta.url fails for some reason
+      pkgPath = findPackageJson(process.cwd());
+    }
+  }
+
+  // Read from package.json if found
+  if (pkgPath) {
+    try {
       const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
-      if (pkg.version && pkg.version !== '0.3.3') {
+      if (pkg.version && pkg.name === '@bluefly/openstandardagents') {
         return pkg.version;
       }
-      // If version is 0.3.3 placeholder, continue to next strategy
-    }
-  } catch {
-    // Continue to next strategy
-  }
-
-  // Strategy 3: From __dirname (CommonJS/Jest)
-  if (typeof __dirname !== 'undefined') {
-    try {
-      const pkgPath = findPackageJson(__dirname);
-      if (pkgPath) {
-        const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
-        if (pkg.version && pkg.version !== '0.3.3') {
-          return pkg.version;
-        }
-      }
     } catch {
-      // Continue to next strategy
+      // Fallthrough
     }
   }
 
-  // Strategy 4: Check for spec directories to infer version
-  // Look for existing schema directories and use the latest
+  // Fallback Strategy: Read from .version.json (bundled with the package)
   try {
-    const specDir = path.resolve(process.cwd(), 'spec');
-    if (fs.existsSync(specDir)) {
-      const versions = fs
-        .readdirSync(specDir)
-        .filter(
-          (d) =>
-            d.startsWith('v') &&
-            fs.statSync(path.join(specDir, d)).isDirectory()
-        )
-        .map((d) => d.substring(1)) // Remove 'v' prefix
-        .filter((v) => /^\d+\.\d+\.\d+/.test(v))
-        .sort((a, b) => {
-          const [aMajor, aMinor, aPatch] = a.split('.').map(Number);
-          const [bMajor, bMinor, bPatch] = b.split('.').map(Number);
-          return bMajor - aMajor || bMinor - aMinor || bPatch - aPatch;
-        });
+    let searchDir: string;
+    if (process.env.JEST_WORKER_ID || typeof __dirname !== 'undefined') {
+      searchDir = process.cwd();
+    } else {
+      try {
+        const metaUrl = eval('import.meta.url');
+        const modulePath = fileURLToPath(metaUrl);
+        searchDir = path.dirname(modulePath);
+      } catch {
+        searchDir = process.cwd();
+      }
+    }
 
-      if (versions.length > 0) {
-        return versions[0];
+    const versionJsonPath = findVersionJson(searchDir);
+    if (versionJsonPath) {
+      const versionData = JSON.parse(fs.readFileSync(versionJsonPath, 'utf-8'));
+      if (versionData.current) {
+        return versionData.current;
       }
     }
   } catch {
-    // Continue
+    // Fallthrough
   }
 
   // NO FALLBACK - fail loudly
   throw new Error(
     'OSSA_VERSION_ERROR: Could not determine version dynamically. ' +
-      'Ensure package.json exists with a valid version, or set OSSA_VERSION env var. ' +
-      'NEVER hardcode version strings.'
+      'Ensure package.json or .version.json exists with a valid version, or set OSSA_VERSION env var.'
   );
 }
 
@@ -174,8 +194,11 @@ export function getVersionInfo(forceRefresh = false): VersionInfo {
 
   const version = readVersionFromPackageJson();
   const parsed = parseVersion(version);
-  const schemaDir = `v${version}`;
-  const schemaFile = `ossa-${version}.schema.json`;
+
+  // USE MAJOR.MINOR for stability (ignore patch version for schema/api)
+  // 0.3.6 -> v0.3
+  const schemaDir = `v${parsed.major}.${parsed.minor}`;
+  const schemaFile = `ossa-${schemaDir}.schema.json`;
 
   cachedVersionInfo = {
     version,
@@ -183,7 +206,7 @@ export function getVersionInfo(forceRefresh = false): VersionInfo {
     schemaDir,
     schemaFile,
     schemaPath: `spec/${schemaDir}/${schemaFile}`,
-    apiVersion: `ossa/${schemaDir}`,
+    apiVersion: `ossa/v${version}`,
   };
 
   return cachedVersionInfo;

@@ -11,7 +11,7 @@
 # Use this to test:
 #   ossa contract breaking-changes examples/contracts/data-producer.ossa.yaml examples/contracts/data-producer-v2.ossa.yaml
 
-apiVersion: ossa/v0.3.5
+apiVersion: ossa/v0.3.6
 kind: Agent
 metadata:
   name: data-producer
@@ -182,8 +182,10 @@ spec:
       deliveryGuarantee: at-least-once
       retry:
         maxAttempts: 3
-        backoffMs: 1000
-        maxBackoffMs: 10000
+        backoff:
+          strategy: exponential
+          initialDelayMs: 1000
+          maxDelayMs: 10000
       ordering:
         enabled: true
         key: id
