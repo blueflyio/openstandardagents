@@ -136,19 +136,24 @@ release:semantic:
     - npm ci
     - npm run build
     - |
+      # Clean up stale local tags from previous failed runs (local runner issue)
+      git tag -l | xargs -r git tag -d
+      git fetch --tags
+      echo "Cleaned stale local tags"
+    - |
       # Publishing to GitLab Package Registry (private)
       # Use GITLAB_TOKEN from CI/CD variables for package publishing
       echo "//gitlab.com/api/v4/projects/76265294/packages/npm/:_authToken=${GITLAB_TOKEN}" > .npmrc
       echo "@bluefly:registry=https://gitlab.com/api/v4/projects/76265294/packages/npm/" >> .npmrc
       if [ -z "$GITLAB_TOKEN" ]; then
-        echo "❌ ERROR: GITLAB_TOKEN not set in CI/CD variables"
+        echo "ERROR: GITLAB_TOKEN not set in CI/CD variables"
         exit 1
       fi
       if [ -z "$GITLAB_PUSH_TOKEN" ]; then
-        echo "❌ ERROR: GITLAB_PUSH_TOKEN not set"
+        echo "ERROR: GITLAB_PUSH_TOKEN not set"
         exit 1
       fi
-      echo "✅ Publishing to GitLab Package Registry (private)"
+      echo "Publishing to GitLab Package Registry (private)"
   script:
     - echo "🚀 Running semantic-release..."
     - npx semantic-release
