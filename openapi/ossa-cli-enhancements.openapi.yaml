@@ -1,0 +1,148 @@
+openapi: 3.1.0
+info:
+  title: OSSA CLI Enhancements API
+  version: 1.0.0
+  description: |
+    OpenAPI specification for OSSA CLI enhancement commands:
+    - Knowledge base generation
+    - Agent enhancement
+    - Context enrichment
+    - Learning & feedback loops
+    - Real example generation
+    
+    FOLLOWS DRY PRINCIPLE: Single source of truth for all CLI command schemas.
+  contact:
+    name: OSSA Standards Team
+    email: ossa@bluefly.io
+  license:
+    name: Apache-2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+
+servers:
+  - url: http://localhost:4000/api/v1
+    description: Local development server
+  - url: https://api.blueflyagents.com/api/v1
+    description: Production API server
+
+tags:
+  - name: knowledge
+    description: Knowledge base generation and management
+  - name: enhancement
+    description: Agent enhancement operations
+  - name: examples
+    description: Real example generation
+
+paths:
+  /knowledge/generate:
+    post:
+      operationId: generateKnowledgeBase
+      summary: Generate knowledge base from codebase
+      tags:
+        - knowledge
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - agentName
+                - sourcePath
+              properties:
+                agentName:
+                  type: string
+                  example: code-quality-reviewer
+                sourcePath:
+                  type: string
+                  example: ~/Sites/blueflyio/compliance-engine
+                patterns:
+                  type: array
+                  items:
+                    type: string
+                  example: ["typescript", "react", "drupal"]
+                outputPath:
+                  type: string
+                syncBrain:
+                  type: boolean
+                  default: false
+      responses:
+        '200':
+          description: Knowledge base generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  knowledgeBase:
+                    type: object
+                    properties:
+                      patterns:
+                        type: array
+                        items:
+                          type: string
+                      examples:
+                        type: integer
+                      contextFiles:
+                        type: integer
+                  outputPath:
+                    type: string
+
+  /enhance/agent:
+    post:
+      operationId: enhanceAgent
+      summary: Enhance existing agent
+      tags:
+        - enhancement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - agentName
+              properties:
+                agentName:
+                  type: string
+                capabilities:
+                  type: array
+                  items:
+                    type: string
+                promptsFromCodebase:
+                  type: boolean
+                tools:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Agent enhanced successfully
+
+  /examples/generate:
+    post:
+      operationId: generateExamples
+      summary: Generate real examples from codebase
+      tags:
+        - examples
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - agentName
+              properties:
+                agentName:
+                  type: string
+                sourcePath:
+                  type: string
+                gitlabIssues:
+                  type: boolean
+                gitlabMRs:
+                  type: boolean
+      responses:
+        '200':
+          description: Examples generated successfully
