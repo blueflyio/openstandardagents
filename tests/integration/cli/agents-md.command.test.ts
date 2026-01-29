@@ -68,7 +68,7 @@ describe('ossa agents-md command', () => {
 
       // Run generate command
       const output = execSync(
-        `node --require reflect-metadata dist/cli/index.js agents-md generate ${manifestPath} --output ${agentsMdPath}`,
+        `node --require reflect-metadata dist/src/cli/index.js agents-md generate ${manifestPath} --output ${agentsMdPath}`,
         {
           encoding: 'utf-8',
           cwd: path.resolve(__dirname, '../../..'),
@@ -110,7 +110,7 @@ describe('ossa agents-md command', () => {
 
       expect(() => {
         execSync(
-          `node --require reflect-metadata dist/cli/index.js agents-md generate ${manifestPath}`,
+          `node --require reflect-metadata dist/src/cli/index.js agents-md generate ${manifestPath}`,
           {
             encoding: 'utf-8',
             cwd: path.resolve(__dirname, '../../..'),
@@ -141,7 +141,7 @@ describe('ossa agents-md command', () => {
       fs.writeFileSync(manifestPath, stringifyYaml(manifest));
 
       const output = execSync(
-        `node --require reflect-metadata dist/cli/index.js agents-md generate ${manifestPath} --verbose`,
+        `node --require reflect-metadata dist/src/cli/index.js agents-md generate ${manifestPath} --verbose`,
         {
           encoding: 'utf-8',
           cwd: path.resolve(__dirname, '../../..'),
@@ -189,7 +189,7 @@ Test content`;
       fs.writeFileSync(agentsMdPath, agentsMdContent);
 
       const output = execSync(
-        `node --require reflect-metadata dist/cli/index.js agents-md validate ${agentsMdPath} ${manifestPath}`,
+        `node --require reflect-metadata dist/src/cli/index.js agents-md validate ${agentsMdPath} ${manifestPath}`,
         {
           encoding: 'utf-8',
           cwd: path.resolve(__dirname, '../../..'),
@@ -230,7 +230,7 @@ Test content`;
 
       expect(() => {
         execSync(
-          `node --require reflect-metadata dist/cli/index.js agents-md validate ${agentsMdPath} ${manifestPath}`,
+          `node --require reflect-metadata dist/src/cli/index.js agents-md validate ${agentsMdPath} ${manifestPath}`,
           {
             encoding: 'utf-8',
             cwd: path.resolve(__dirname, '../../..'),
@@ -268,7 +268,7 @@ Test content`;
       fs.writeFileSync(manifestPath, JSON.stringify(manifest));
 
       const output = execSync(
-        `node --require reflect-metadata dist/cli/index.js agents-md sync ${manifestPath}`,
+        `node --require reflect-metadata dist/src/cli/index.js agents-md sync ${manifestPath}`,
         {
           encoding: 'utf-8',
           cwd: path.resolve(__dirname, '../../..'),
@@ -306,7 +306,7 @@ Test content`;
 
       expect(() => {
         execSync(
-          `node --require reflect-metadata dist/cli/index.js agents-md sync ${manifestPath}`,
+          `node --require reflect-metadata dist/src/cli/index.js agents-md sync ${manifestPath}`,
           {
             encoding: 'utf-8',
             cwd: path.resolve(__dirname, '../../..'),
@@ -369,7 +369,7 @@ Test content`;
 
       // Step 1: Generate
       execSync(
-        `node --require reflect-metadata dist/cli/index.js agents-md generate ${manifestPath} --output ${agentsMdPath}`,
+        `node --require reflect-metadata dist/src/cli/index.js agents-md generate ${manifestPath} --output ${agentsMdPath}`,
         {
           encoding: 'utf-8',
           cwd: path.resolve(__dirname, '../../..'),
@@ -380,7 +380,7 @@ Test content`;
 
       // Step 2: Validate
       const validateOutput = execSync(
-        `node --require reflect-metadata dist/cli/index.js agents-md validate ${agentsMdPath} ${manifestPath}`,
+        `node --require reflect-metadata dist/src/cli/index.js agents-md validate ${agentsMdPath} ${manifestPath}`,
         {
           encoding: 'utf-8',
           cwd: path.resolve(__dirname, '../../..'),

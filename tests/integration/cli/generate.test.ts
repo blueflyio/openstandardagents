@@ -26,7 +26,7 @@ describe('ossa generate command', () => {
     const outputPath = path.join(tempDir, 'chat-agent.ossa.yaml');
 
     const output = execSync(
-      `node --require reflect-metadata dist/cli/index.js generate agent chat --name "Chat Bot" --output ${outputPath}`,
+      `node --require reflect-metadata dist/src/cli/index.js generate agent chat --name "Chat Bot" --output ${outputPath}`,
       {
         encoding: 'utf-8',
         cwd: path.resolve(__dirname, '../../..'),
@@ -50,7 +50,7 @@ describe('ossa generate command', () => {
     const outputPath = path.join(tempDir, 'workflow.ossa.yaml');
 
     execSync(
-      `node --require reflect-metadata dist/cli/index.js generate agent workflow --name "Workflow Engine" --output ${outputPath}`,
+      `node --require reflect-metadata dist/src/cli/index.js generate agent workflow --name "Workflow Engine" --output ${outputPath}`,
       {
         encoding: 'utf-8',
         cwd: path.resolve(__dirname, '../../..'),
@@ -67,7 +67,7 @@ describe('ossa generate command', () => {
     const outputPath = path.join(tempDir, 'compliance.ossa.yaml');
 
     execSync(
-      `node --require reflect-metadata dist/cli/index.js generate agent compliance --name "Compliance Scanner" --output ${outputPath}`,
+      `node --require reflect-metadata dist/src/cli/index.js generate agent compliance --name "Compliance Scanner" --output ${outputPath}`,
       {
         encoding: 'utf-8',
         cwd: path.resolve(__dirname, '../../..'),
@@ -84,7 +84,7 @@ describe('ossa generate command', () => {
     const outputPath = path.join(tempDir, 'k8s-agent.ossa.yaml');
 
     execSync(
-      `node --require reflect-metadata dist/cli/index.js generate agent monitoring --name "K8s Monitor" --runtime k8s --output ${outputPath}`,
+      `node --require reflect-metadata dist/src/cli/index.js generate agent monitoring --name "K8s Monitor" --runtime k8s --output ${outputPath}`,
       {
         encoding: 'utf-8',
         cwd: path.resolve(__dirname, '../../..'),
@@ -101,7 +101,7 @@ describe('ossa generate command', () => {
     const outputPath = path.join(tempDir, 'normalized.ossa.yaml');
 
     execSync(
-      `node --require reflect-metadata dist/cli/index.js generate agent chat --name "My Agent With SPACES" --output ${outputPath}`,
+      `node --require reflect-metadata dist/src/cli/index.js generate agent chat --name "My Agent With SPACES" --output ${outputPath}`,
       {
         encoding: 'utf-8',
         cwd: path.resolve(__dirname, '../../..'),
@@ -118,7 +118,7 @@ describe('ossa generate command', () => {
     const outputPath = path.join(tempDir, 'nested', 'deep', 'agent.ossa.yaml');
 
     execSync(
-      `node --require reflect-metadata dist/cli/index.js generate agent chat --name "Test" --output ${outputPath}`,
+      `node --require reflect-metadata dist/src/cli/index.js generate agent chat --name "Test" --output ${outputPath}`,
       {
         encoding: 'utf-8',
         cwd: path.resolve(__dirname, '../../..'),
