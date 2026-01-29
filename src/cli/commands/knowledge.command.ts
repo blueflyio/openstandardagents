@@ -14,6 +14,7 @@ import * as path from 'path';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { handleCommandError } from '../utils/index.js';
+import { KnowledgeGenerationService } from '../../services/knowledge-generation.service.js';
 
 // Zod schemas matching OpenAPI spec (DRY - single source of truth)
 const KnowledgeGenerateRequestSchema = z.object({
@@ -95,11 +96,12 @@ knowledgeCommand
 
       await fs.mkdir(outputPath, { recursive: true });
 
-      const knowledgeBase = {
-        patterns: request.patterns || [],
-        examples: 0,
-        contextFiles: 0,
-      };
+      const knowledgeService = new KnowledgeGenerationService();
+      const result = await knowledgeService.generateKnowledgeBase({
+        ...request,
+        outputPath,
+      });
+      const knowledgeBase = result.knowledgeBase;
 
       console.log(chalk.green(`\n✅ Knowledge base generated:`));
       console.log(chalk.gray(`   Output: ${outputPath}`));
