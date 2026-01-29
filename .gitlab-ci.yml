@@ -10,7 +10,7 @@ stages:
 
 variables:
   NODE_VERSION: "22.14"
-  CI_USE_LOCAL_RUNNERS: "true" # Toggle this to switch between local and shared runners
+  CI_USE_LOCAL_RUNNERS: "false" # Toggle this to switch between local and shared runners
 
 workflow:
   rules:
