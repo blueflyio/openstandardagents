@@ -203,6 +203,14 @@
   ],
   "author": "OSSA Standards Team",
   "license": "Apache-2.0",
+  "publishConfig": {
+    "registry": "https://gitlab.com/api/v4/projects/76265294/packages/npm/",
+    "access": "restricted"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.com/blueflyio/ossa/openstandardagents.git"
+  },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.0",
     "@aws-sdk/client-bedrock-runtime": "^3.955.0",
