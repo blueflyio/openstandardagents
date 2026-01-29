@@ -55,8 +55,8 @@ export const knowledgeQueryCommand = new Command('query')
         }
 
         if (!isJSONOutput(options)) {
-          console.log(chalk.blue(\`Querying knowledge base: \${indexPath}\`));
-          console.log(chalk.gray(\`Query: "\${query}"\`));
+          console.log(chalk.blue(`Querying knowledge base: ${indexPath}`));
+          console.log(chalk.gray(`Query: "${query}"`));
           console.log();
         }
 
@@ -73,7 +73,7 @@ export const knowledgeQueryCommand = new Command('query')
         });
 
         if (!isJSONOutput(options)) {
-          spinner.succeed(\`Found \${results.length} results\`);
+          spinner.succeed(`Found ${results.length} results`);
         }
 
         if (isJSONOutput(options)) {
@@ -97,16 +97,16 @@ export const knowledgeQueryCommand = new Command('query')
             console.log(chalk.gray('Try lowering the threshold or using different search terms.'));
           } else {
             console.log();
-            console.log(chalk.bold(\`Top \${results.length} Results:\`));
+            console.log(chalk.bold(`Top ${results.length} Results:`));
             console.log();
 
             results.forEach((result, index) => {
               const score = (result.score * 100).toFixed(1);
-              console.log(chalk.bold(\`\${index + 1}. \${result.document.metadata.fileName}\`) + chalk.gray(\` (score: \${score}%)\`));
-              console.log(chalk.gray(\`   Path: \${result.document.filePath}\`));
+              console.log(chalk.bold(`${index + 1}. ${result.document.metadata.fileName}`) + chalk.gray(` (score: ${score}%)`));
+              console.log(chalk.gray(`   Path: ${result.document.filePath}`));
               
               if (result.excerpt) {
-                console.log(\`   \${result.excerpt.trim()}\`);
+                console.log(`   ${result.excerpt.trim()}`);
               }
               
               if (options.verbose) {
