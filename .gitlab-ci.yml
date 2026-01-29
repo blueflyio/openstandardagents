@@ -16,10 +16,10 @@ workflow:
   rules:
     - if: $CI_USE_LOCAL_RUNNERS == "true"
       variables:
-        OSSA_RUNNER_TAG: "nas-npm-runner"
+        OSSA_RUNNER_TAG: "local"
     - if: $CI_USE_LOCAL_RUNNERS != "true"
       variables:
-        OSSA_RUNNER_TAG: "docker" # Default shared runner tag
+        OSSA_RUNNER_TAG: "docker"
     - when: always
 
 # =============================================================================
