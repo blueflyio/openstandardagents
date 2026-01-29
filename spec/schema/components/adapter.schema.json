@@ -1,0 +1,33 @@
+{
+  "$id": "https://ossa.dev/schema/components/adapter.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "OSSA Adapter Component",
+  "description": "Platform-specific adapter configuration for the Adapter Envelope pattern",
+  "type": "object",
+  "required": ["type", "version", "config"],
+  "properties": {
+    "type": {
+      "type": "string",
+      "description": "Adapter type identifier (e.g., scm.github, runtime.kagent)",
+      "pattern": "^[a-z0-9]+(\.[a-z0-9]+)+$"
+    },
+    "version": {
+      "type": "string",
+      "description": "Adapter version (semver)",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "config": {
+      "type": "object",
+      "description": "Provider-specific configuration object, validated against the adapter's schema",
+      "additionalProperties": true
+    },
+    "secrets": {
+      "type": "object",
+      "description": "Secrets required by this adapter",
+      "additionalProperties": {
+        "$ref": "identity.schema.json#/definitions/CredentialSource"
+      }
+    }
+  },
+  "additionalProperties": false
+}

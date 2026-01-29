@@ -3,7 +3,7 @@ kind: Agent
 metadata:
   name: cost-optimized-code-reviewer
   version: 1.0.0
-  description: "Code review agent with 95% cost savings through token efficiency"
+  description: "Code review agent with significant cost optimization through token efficiency"
   efficiency_tier: economy  # Enables aggressive optimization
   labels:
     cost-tier: economy
@@ -20,7 +20,7 @@ spec:
     max_tokens: 4096
 
   # Token Efficiency Configuration (v0.3.6+)
-  # Achieves 95% cost savings vs baseline
+  # Achieves significant cost optimization vs baseline
   token_efficiency:
     enabled: true
 

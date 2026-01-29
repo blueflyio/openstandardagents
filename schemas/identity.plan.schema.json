@@ -1,0 +1,132 @@
+{
+  "title": "Identity Plan Schema",
+  "description": "Schema for defining the declarative requirements of an agent's identity.",
+  "type": "object",
+  "properties": {
+    "agentName": {
+      "type": "string",
+      "description": "The name of the agent."
+    },
+    "identityConfig": {
+      "type": "object",
+      "properties": {
+        "principal": {
+          "type": "object",
+          "properties": {
+            "category": {
+              "type": "string",
+              "enum": ["service", "user", "workload"],
+              "description": "The category of the principal (e.g., service, user, workload)."
+            },
+            "mode": {
+              "type": "string",
+              "description": "The mode of identity (e.g., service_account, oidc, iam_role)."
+            },
+            "provider": {
+              "type": "string",
+              "description": "The cloud provider or platform (e.g., gitlab, github, aws, azure)."
+            },
+            "region": {
+              "type": "string",
+              "description": "The region where the identity resource is provisioned, if applicable."
+            },
+            "roleName": {
+              "type": "string",
+              "description": "The name of the role or service account."
+            },
+            "scopes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Provider-specific scopes or permissions required."
+            },
+            "oidc": {
+              "type": "object",
+              "properties": {
+                "issuerUrl": {"type": "string"},
+                "audience": {"type": "string"}
+              },
+              "required": ["issuerUrl", "audience"]
+            }
+          },
+          "required": ["category", "mode", "provider", "roleName"]
+        },
+        "requiredPermissions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Abstract permissions needed by the agent."
+        },
+        "credentialSource": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["env", "vault", "secret_manager", "file"],
+              "description": "The type of credential source."
+            },
+            "ref": {
+              "type": "string",
+              "description": "Reference to the secret (e.g., environment variable name, vault path)."
+            }
+          },
+          "required": ["type", "ref"]
+        }
+      },
+      "required": ["principal", "requiredPermissions", "credentialSource"]
+    },
+    "provisioningDetails": {
+      "type": "object",
+      "description": "Provider-specific details for provisioning identity resources.",
+      "properties": {
+        "gitlab": {
+          "type": "object",
+          "properties": {
+            "serviceAccount": {
+              "type": "object",
+              "properties": {
+                "name": {"type": "string"},
+                "scopes": {"type": "array", "items": {"type": "string"}}
+              },
+              "required": ["name", "scopes"]
+            }
+          },
+          "required": ["serviceAccount"]
+        },
+        "github": {
+          "type": "object",
+          "properties": {
+            "appPermissions": {
+              "type": "object",
+              "properties": {
+                "metadata": {"type": "string"},
+                "contents": {"type": "string"},
+                "pull_requests": {"type": "string"}
+              },
+              "required": ["metadata", "contents", "pull_requests"]
+            }
+          },
+          "required": ["appPermissions"]
+        }
+        // ... other providers can be added here
+      }
+    },
+    "rotationPolicy": {
+      "type": "object",
+      "properties": {
+        "maxAge": {
+          "type": "string",
+          "description": "Maximum age of the credential (e.g., '90d' for 90 days)."
+        },
+        "frequency": {
+          "type": "string",
+          "description": "Rotation frequency (e.g., '30d' for 30 days)."
+        }
+      },
+      "required": ["maxAge", "frequency"]
+    }
+  },
+  "required": ["agentName", "identityConfig"]
+}

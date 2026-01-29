@@ -7,7 +7,7 @@ metadata:
     React Performance Expert implementing 40+ Vercel best practices for optimal React application performance.
     Auto-activates on performance-related queries, React/Next.js files, and performance keywords.
   labels:
-    ossa-version: v0.3.5
+    ossa-version: v0.3.6
     domain: frontend
     category: performance
     tier: expert

@@ -1,0 +1,311 @@
+openapi: 3.1.0
+info:
+  title: OSSA Agent Audit API
+  version: 1.0.0
+  description: |
+    API for auditing OSSA agent health, compliance, and validation.
+    Scan folders, validate manifests, and generate comprehensive health reports.
+  contact:
+    name: Bluefly Platform Team
+    email: platform@bluefly.io
+
+servers:
+  - url: http://localhost:3000
+    description: Local development
+  - url: https://ossa-audit.blueflyagents.com
+    description: Production
+
+paths:
+  /audit/scan:
+    post:
+      summary: Scan folder for agents and generate health audit
+      description: Recursively scans a directory for OSSA agent manifests and validates them
+      operationId: scanAndAuditAgents
+      tags:
+        - Audit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - path
+              properties:
+                path:
+                  type: string
+                  description: Absolute or relative path to scan for agents
+                  example: "./packages/@ossa"
+                recursive:
+                  type: boolean
+                  description: Recursively scan subdirectories
+                  default: true
+                validationLevel:
+                  type: string
+                  description: Level of validation to perform
+                  enum: [basic, full, strict]
+                  default: full
+                specVersion:
+                  type: string
+                  description: OSSA spec version to validate against
+                  example: "0.3.5"
+                  default: "0.3.5"
+                includeExamples:
+                  type: boolean
+                  description: Include example manifests in scan
+                  default: false
+      responses:
+        '200':
+          description: Audit report generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditReport'
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error during audit
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /audit/agent/{agentId}:
+    get:
+      summary: Get health status for specific agent
+      description: Validate and audit a single agent by ID
+      operationId: auditSingleAgent
+      tags:
+        - Audit
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          description: Agent identifier
+          schema:
+            type: string
+          example: task-dispatcher
+        - name: path
+          in: query
+          required: true
+          description: Path to agent manifest
+          schema:
+            type: string
+          example: "./packages/@ossa/task-dispatcher"
+        - name: validationLevel
+          in: query
+          schema:
+            type: string
+            enum: [basic, full, strict]
+            default: full
+      responses:
+        '200':
+          description: Agent health status retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentHealth'
+        '404':
+          description: Agent not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /audit/validate:
+    post:
+      summary: Validate agent manifest against OSSA spec
+      description: Validate a single manifest file without scanning
+      operationId: validateManifest
+      tags:
+        - Validation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - manifestPath
+              properties:
+                manifestPath:
+                  type: string
+                  description: Path to manifest file
+                specVersion:
+                  type: string
+                  default: "0.3.5"
+      responses:
+        '200':
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResult'
+
+components:
+  schemas:
+    AuditReport:
+      type: object
+      required:
+        - summary
+        - agents
+        - timestamp
+      properties:
+        summary:
+          type: object
+          required:
+            - total
+            - healthy
+            - warning
+            - error
+            - healthPercentage
+          properties:
+            total:
+              type: integer
+              description: Total number of agents found
+            healthy:
+              type: integer
+              description: Agents with valid manifests and complete data
+            warning:
+              type: integer
+              description: Agents with minor issues
+            error:
+              type: integer
+              description: Agents with critical issues or missing manifests
+            healthPercentage:
+              type: number
+              format: float
+              description: Overall health percentage (0-100)
+        agents:
+          type: array
+          description: Detailed health status for each agent
+          items:
+            $ref: '#/components/schemas/AgentHealth'
+        timestamp:
+          type: string
+          format: date-time
+          description: When the audit was performed
+        scanPath:
+          type: string
+          description: Path that was scanned
+        validationLevel:
+          type: string
+          enum: [basic, full, strict]
+
+    AgentHealth:
+      type: object
+      required:
+        - id
+        - status
+      properties:
+        id:
+          type: string
+          description: Agent identifier
+        name:
+          type: string
+          description: Agent display name
+        path:
+          type: string
+          description: Path to agent directory
+        manifestExists:
+          type: boolean
+          description: Whether manifest file was found
+        manifestPath:
+          type: string
+          description: Path to manifest file
+        manifestFormat:
+          type: string
+          enum: [yaml, json]
+          description: Manifest file format
+        manifestValid:
+          type: boolean
+          description: Whether manifest passes OSSA spec validation
+        capabilitiesCount:
+          type: integer
+          description: Number of capabilities defined
+        toolsCount:
+          type: integer
+          description: Number of tools defined
+        triggersCount:
+          type: integer
+          description: Number of triggers defined
+        status:
+          type: string
+          enum: [healthy, warning, error]
+          description: Overall health status
+        healthScore:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 100
+          description: Health score (0-100)
+        issues:
+          type: array
+          description: List of issues found during audit
+          items:
+            type: object
+            properties:
+              severity:
+                type: string
+                enum: [error, warning, info]
+              code:
+                type: string
+              message:
+                type: string
+              field:
+                type: string
+        validationErrors:
+          type: array
+          description: OSSA spec validation errors
+          items:
+            type: object
+            properties:
+              path:
+                type: string
+              message:
+                type: string
+
+    ValidationResult:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              path: {type: string}
+              message: {type: string}
+        warnings:
+          type: array
+          items:
+            type: object
+            properties:
+              path: {type: string}
+              message: {type: string}
+
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        code:
+          type: string
+        details:
+          type: object
+
+tags:
+  - name: Audit
+    description: Agent health auditing operations
+  - name: Validation
+    description: Manifest validation operations

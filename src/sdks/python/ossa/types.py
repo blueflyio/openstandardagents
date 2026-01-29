@@ -1,6 +1,6 @@
 """OSSA Type Definitions - Pydantic models for OSSA manifests."""
 
-from typing import Any, Literal, Optional
+from typing import Any, Literal, Optional, Union
 from pydantic import BaseModel, Field
 
 
@@ -47,6 +47,55 @@ class AgentSpec(BaseModel):
     constraints: Optional[Constraints] = None
 
 
+class TaskExecution(BaseModel):
+    """Task execution configuration."""
+    type: Literal["deterministic", "idempotent", "transactional"] = "deterministic"
+    runtime: Optional[str] = None
+    handler: Optional[str] = None
+    timeout: Optional[int] = None
+    retries: Optional[int] = None
+
+
+class TaskStep(BaseModel):
+    """Individual task step."""
+    name: str
+    handler: str
+    inputs: Optional[dict[str, Any]] = None
+    outputs: Optional[dict[str, Any]] = None
+    timeout: Optional[int] = None
+    retries: Optional[int] = None
+
+
+class TaskSpec(BaseModel):
+    """Task specification for deterministic workflows."""
+    execution: TaskExecution
+    steps: Optional[list[TaskStep]] = None
+    inputs: Optional[dict[str, Any]] = None
+    outputs: Optional[dict[str, Any]] = None
+    error_handling: Optional[dict[str, Any]] = Field(None, alias="errorHandling")
+
+
+class WorkflowStep(BaseModel):
+    """Individual workflow step."""
+    name: str
+    type: Literal["task", "agent", "parallel", "condition", "loop"] = "task"
+    task: Optional[str] = None
+    agent: Optional[str] = None
+    inputs: Optional[dict[str, Any]] = None
+    outputs: Optional[dict[str, Any]] = None
+    condition: Optional[str] = None
+    parallel: Optional[list["WorkflowStep"]] = None
+    loop: Optional[dict[str, Any]] = None
+
+
+class WorkflowSpec(BaseModel):
+    """Workflow specification for multi-step orchestration."""
+    steps: list[WorkflowStep]
+    triggers: Optional[list[dict[str, Any]]] = None
+    error_handling: Optional[dict[str, Any]] = Field(None, alias="errorHandling")
+    retry_policy: Optional[dict[str, Any]] = Field(None, alias="retryPolicy")
+
+
 class Metadata(BaseModel):
     """Manifest metadata."""
     name: str
@@ -61,7 +110,7 @@ class OSSAManifest(BaseModel):
     api_version: str = Field(alias="apiVersion")
     kind: Literal["Agent", "Task", "Workflow"]
     metadata: Metadata
-    spec: AgentSpec
+    spec: Union[AgentSpec, TaskSpec, WorkflowSpec]
 
     class Config:
         populate_by_name = True

@@ -1,0 +1,21 @@
+{
+  "name": "@bluefly/sdk-codegen",
+  "version": "0.1.0",
+  "description": "Multi-language SDK generator for OSSA agents",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@bluefly/openstandardagents": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "jest": "^29.7.0"
+  }
+}

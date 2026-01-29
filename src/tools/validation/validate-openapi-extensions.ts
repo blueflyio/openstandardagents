@@ -30,11 +30,17 @@ import chalk from 'chalk';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Schema path
-const SCHEMA_PATH = resolve(
-  __dirname,
-  '../spec/extensions/openapi/ossa-openapi-extensions.schema.json'
-);
+// Schema path resolution
+const POSSIBLE_PATHS = [
+  // Source structure: src/tools/validation -> ../../../spec
+  resolve(__dirname, '../../../spec/extensions/openapi/ossa-openapi-extensions.schema.json'),
+  // Dist structure: dist/tools/validation -> ../../spec
+  resolve(__dirname, '../../spec/extensions/openapi/ossa-openapi-extensions.schema.json'),
+  // Legacy/Fallback
+  resolve(__dirname, '../spec/extensions/openapi/ossa-openapi-extensions.schema.json')
+];
+
+const SCHEMA_PATH = POSSIBLE_PATHS.find(p => existsSync(p)) || POSSIBLE_PATHS[0];
 
 // Result types
 interface ValidationResult {

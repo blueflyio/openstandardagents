@@ -58,15 +58,49 @@ export class MigrationTransformService {
       transform: this.transformV034ToV035.bind(this),
     });
 
-    // v0.3.3 → v0.3.5: Direct migration (combines both)
+    // v0.3.3 → v0.3.5: Direct migration
     this.register({
       id: 'v0.3.3-to-v0.3.5',
       fromVersion: '0.3.3',
       toVersion: '0.3.5',
-      description: 'Direct upgrade with all v0.3.4 and v0.3.5 features',
+      description: 'Direct upgrade from v0.3.3 to v0.3.5',
       breaking: false,
       reversible: true,
-      transform: this.transformV033ToV035.bind(this),
+      transform: (manifest) =>
+        this.transformV034ToV035(this.transformV033ToV034(manifest)),
+    });
+
+    // v0.3.5 → v0.3.6: Maintenance release
+    this.register({
+      id: 'v0.3.5-to-v0.3.6',
+      fromVersion: '0.3.5',
+      toVersion: '0.3.6',
+      description: 'Maintenance release with consolidated features',
+      breaking: false,
+      reversible: true,
+      transform: this.transformV035ToV036.bind(this),
+    });
+
+    // v0.3.3 → v0.3.6: Direct migration (combines all)
+    this.register({
+      id: 'v0.3.3-to-v0.3.6',
+      fromVersion: '0.3.3',
+      toVersion: '0.3.6',
+      description: 'Direct upgrade to latest version',
+      breaking: false,
+      reversible: true,
+      transform: this.transformV033ToV036.bind(this),
+    });
+
+    // v0.3.4 → v0.3.6: Direct migration
+    this.register({
+      id: 'v0.3.4-to-v0.3.6',
+      fromVersion: '0.3.4',
+      toVersion: '0.3.6',
+      description: 'Direct upgrade to latest version',
+      breaking: false,
+      reversible: true,
+      transform: this.transformV034ToV036.bind(this),
     });
   }
 
@@ -228,19 +262,55 @@ export class MigrationTransformService {
   }
 
   /**
-   * Transform v0.3.3 → v0.3.5 (direct)
-   * Combines both v0.3.4 and v0.3.5 transformations
+   * Transform v0.3.5 → v0.3.6
+   * Maintenance release
    */
-  private transformV033ToV035(manifest: OssaAgent): OssaAgent {
-    // Apply v0.3.3 → v0.3.4 first
-    let migrated = this.transformV033ToV034(manifest);
+  private transformV035ToV036(manifest: OssaAgent): OssaAgent {
+    const migrated: OssaAgent = JSON.parse(JSON.stringify(manifest));
 
-    // Then apply v0.3.4 → v0.3.5
-    migrated = this.transformV034ToV035(migrated);
+    // Update apiVersion
+    migrated.apiVersion = 'ossa/v0.3.6';
 
-    // Update annotation to reflect direct migration
+    // Update labels
+    if (migrated.metadata?.labels) {
+      migrated.metadata.labels['ossa-version'] = 'v0.3.6';
+    }
+
+    // Add migration annotation
     if (migrated.metadata?.annotations) {
-      migrated.metadata.annotations['ossa.io/migration'] = 'v0.3.3-to-v0.3.5';
+      migrated.metadata.annotations['ossa.io/migration'] = 'v0.3.5-to-v0.3.6';
+      migrated.metadata.annotations['ossa.io/migrated-date'] = new Date()
+        .toISOString()
+        .split('T')[0];
+    }
+
+    return migrated;
+  }
+
+  /**
+   * Transform v0.3.3 → v0.3.6 (direct)
+   */
+  private transformV033ToV036(manifest: OssaAgent): OssaAgent {
+    let migrated = this.transformV033ToV034(manifest);
+    migrated = this.transformV034ToV035(migrated);
+    migrated = this.transformV035ToV036(migrated);
+
+    if (migrated.metadata?.annotations) {
+      migrated.metadata.annotations['ossa.io/migration'] = 'v0.3.3-to-v0.3.6';
+    }
+
+    return migrated;
+  }
+
+  /**
+   * Transform v0.3.4 → v0.3.6 (direct)
+   */
+  private transformV034ToV036(manifest: OssaAgent): OssaAgent {
+    let migrated = this.transformV034ToV035(manifest);
+    migrated = this.transformV035ToV036(migrated);
+
+    if (migrated.metadata?.annotations) {
+      migrated.metadata.annotations['ossa.io/migration'] = 'v0.3.4-to-v0.3.6';
     }
 
     return migrated;

@@ -941,8 +941,8 @@ definitions:
 
 1. **Adoption**: 50+ agents using v0.3.5 features by Q3 2026
 2. **Interoperability**: 100% compatibility with LangGraph, Temporal, n8n
-3. **Performance**: 30% improvement in agent autonomy rate
-4. **Cost**: 25% reduction in LLM costs via MoE
+3. **Performance**: Improved agent autonomy rate through enhanced capabilities
+4. **Cost**: Optimized LLM costs via MoE intelligent model selection
 5. **Reliability**: 99% session recovery success rate
 
 ---

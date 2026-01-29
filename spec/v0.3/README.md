@@ -75,7 +75,7 @@ experts:
   selection_strategy: agent_controlled
 ```
 
-**Impact**: 30% cost reduction via intelligent expert selection, 40% improvement in task quality.
+**Impact**: Intelligent expert selection optimizes costs and improves task quality.
 
 ---
 
@@ -337,7 +337,7 @@ By Q3 2026:
 - **50+ agents** using v0.3.5 features
 - **100% compatibility** with LangGraph, Temporal, n8n
 - **30% improvement** in agent autonomy rate
-- **25% reduction** in LLM costs via MoE
+- **Cost optimization** via MoE intelligent model selection
 - **99% session recovery** success rate
 
 ---

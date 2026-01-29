@@ -1,0 +1,338 @@
+openapi: 3.1.0
+info:
+  title: OSSA AGENTS.md Generation Service
+  description: Service for generating and managing agents.md documentation files for repositories.
+  version: 1.0.0
+
+servers:
+  - url: /api/v1/agents-md
+    description: v1 API root
+
+paths:
+  /generate:
+    post:
+      summary: Generate AGENTS.md for a repository
+      operationId: generateAgentsMd
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - repo_path
+              properties:
+                repo_path:
+                  type: string
+                  description: Path to the repository (bare or worktree)
+                branch:
+                  type: string
+                  default: main
+                template_overrides:
+                  type: object
+                  additionalProperties: true
+                auto_commit:
+                  type: boolean
+                  default: false
+                auto_push:
+                  type: boolean
+                  default: false
+      responses:
+        '200':
+          description: Successfully generated AGENTS.md
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerationResult'
+        '400':
+          description: Invalid request
+        '500':
+          description: Internal server error
+
+  /batch:
+    post:
+      summary: Batch generate AGENTS.md for multiple repositories
+      operationId: batchGenerateAgentsMd
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - repos
+              properties:
+                repos:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/RepoConfig'
+                parallel:
+                  type: boolean
+                  default: true
+      responses:
+        '200':
+          description: Batch generation completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/GenerationResult'
+                  summary:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      success:
+                        type: integer
+                      failed:
+                        type: integer
+
+  /:
+    get:
+      summary: List all repositories with AGENTS.md status
+      operationId: listReposStatus
+      parameters:
+        - name: filter
+          in: query
+          schema:
+            type: string
+            enum: [has_agents_md, missing_agents_md, all]
+            default: all
+      responses:
+        '200':
+          description: List of repository statuses
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  repos:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        repo_id:
+                          type: string
+                        exists:
+                          type: boolean
+                        last_updated:
+                          type: string
+                          format: date-time
+                        validates:
+                          type: boolean
+
+  /{repoId}:
+    parameters:
+      - name: repoId
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Get AGENTS.md status for a repository
+      operationId: getRepoStatus
+      responses:
+        '200':
+          description: Repository AGENTS.md status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  exists:
+                    type: boolean
+                  content:
+                    type: string
+                  last_updated:
+                    type: string
+                    format: date-time
+                  validates:
+                    type: boolean
+        '404':
+          description: Repository not found
+    put:
+      summary: Regenerate or update AGENTS.md for a repository
+      operationId: updateAgentsMd
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                template_overrides:
+                  type: object
+                auto_commit:
+                  type: boolean
+                  default: false
+      responses:
+        '200':
+          description: Successfully updated AGENTS.md
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: string
+                  diff:
+                    type: string
+                  commit_sha:
+                    type: string
+    delete:
+      summary: Remove AGENTS.md from a repository
+      operationId: deleteAgentsMd
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                auto_commit:
+                  type: boolean
+                  default: false
+      responses:
+        '200':
+          description: Successfully deleted AGENTS.md
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [success, failure]
+                  commit_sha:
+                    type: string
+
+  /template:
+    get:
+      summary: Get current AGENTS.md template
+      operationId: getTemplate
+      responses:
+        '200':
+          description: Current template content and variables
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  template:
+                    type: string
+                  variables:
+                    type: array
+                    items:
+                      type: string
+    put:
+      summary: Update AGENTS.md template
+      operationId: updateTemplate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - template
+              properties:
+                template:
+                  type: string
+      responses:
+        '200':
+          description: Template updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [success, failure]
+                  validation:
+                    $ref: '#/components/schemas/ValidationResult'
+
+components:
+  schemas:
+    RepoConfig:
+      type: object
+      required:
+        - repo_path
+      properties:
+        repo_path:
+          type: string
+          example: /Volumes/AgentPlatform/repos/bare/blueflyio/agent-protocol.git
+        branch:
+          type: string
+          example: main
+        project_name:
+          type: string
+        project_type:
+          type: string
+        description:
+          type: string
+        gitlab_url:
+          type: string
+        wiki_url:
+          type: string
+
+    GenerationResult:
+      type: object
+      required:
+        - repo_path
+        - status
+        - content
+        - validation
+      properties:
+        repo_path:
+          type: string
+        status:
+          type: string
+          enum: [success, failed]
+        content:
+          type: string
+        commit_sha:
+          type: string
+        validation:
+          $ref: '#/components/schemas/ValidationResult'
+        error:
+          type: string
+
+    ValidationResult:
+      type: object
+      required:
+        - valid
+        - follows_standard
+      properties:
+        valid:
+          type: boolean
+        follows_standard:
+          type: boolean
+        errors:
+          type: array
+          items:
+            type: string
+        warnings:
+          type: array
+          items:
+            type: string
+
+    TemplateVariables:
+      type: object
+      properties:
+        PROJECT_NAME:
+          type: string
+        PROJECT_DESCRIPTION:
+          type: string
+        REPO_URL:
+          type: string
+        REPO_PATH:
+          type: string
+        PROJECT_TYPE:
+          type: string
+        PROJECT_STATUS:
+          type: string
+        WIKI_URL:
+          type: string

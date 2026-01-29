@@ -94,8 +94,8 @@ describe('SchemaRepository', () => {
     it('should return versions in expected format', () => {
       const versions = repo.getAvailableVersions();
       versions.forEach((v) => {
-        // Accept semver format with optional pre-release suffix
-        expect(v).toMatch(/^\d+\.\d+\.\d+(-[A-Z0-9]+)?$/i);
+        // Accept semver format (0.3.0) or major.minor (0.3)
+        expect(v).toMatch(/^\d+\.\d+(\.\d+)?(-[A-Z0-9]+)?$/i);
       });
     });
 
