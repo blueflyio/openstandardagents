@@ -68,11 +68,23 @@ interface AgentCreateOptions {
 }
 
 /**
+ * Prompt answers interface
+ */
+interface AgentPromptAnswers {
+  name?: string;
+  description?: string;
+  version?: string;
+  type?: string;
+  author?: string;
+  capabilities?: string[];
+  llmProvider: string;
+  llmModel: string;
+}
+
+/**
  * Interactive prompts for agent metadata
  */
-async function promptForAgentDetails(
-  options: AgentCreateOptions
-): Promise<{
+async function promptForAgentDetails(options: AgentCreateOptions): Promise<{
   name: string;
   description: string;
   version: string;
@@ -82,7 +94,7 @@ async function promptForAgentDetails(
   llmProvider: string;
   llmModel: string;
 }> {
-  const answers = await inquirer.prompt([
+  const answers = await inquirer.prompt<AgentPromptAnswers>([
     {
       type: 'input',
       name: 'name',
@@ -188,7 +200,7 @@ async function promptForAgentDetails(
       type: 'list',
       name: 'llmModel',
       message: 'LLM Model:',
-      choices: (answers: { llmProvider: string }) => {
+      choices: (answers: AgentPromptAnswers) => {
         const modelsByProvider: Record<string, string[]> = {
           openai: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-3.5-turbo'],
           anthropic: [
@@ -196,7 +208,11 @@ async function promptForAgentDetails(
             'claude-3-5-haiku-20241022',
             'claude-3-opus-20240229',
           ],
-          google: ['gemini-2.0-flash-exp', 'gemini-1.5-pro', 'gemini-1.5-flash'],
+          google: [
+            'gemini-2.0-flash-exp',
+            'gemini-1.5-pro',
+            'gemini-1.5-flash',
+          ],
           'aws-bedrock': [
             'anthropic.claude-3-5-sonnet-20241022-v2:0',
             'anthropic.claude-3-5-haiku-20241022-v1:0',
@@ -210,11 +226,14 @@ async function promptForAgentDetails(
   ]);
 
   return {
-    name: options.name || answers.name,
-    description: options.description || answers.description,
-    version: options.version || answers.version,
-    type: options.type || answers.type,
-    author: options.author || answers.author,
+    name: options.name || answers.name || 'my-agent',
+    description:
+      options.description ||
+      answers.description ||
+      'A new OSSA-compliant agent',
+    version: options.version || answers.version || 'v1.0.0',
+    type: options.type || answers.type || 'worker',
+    author: options.author || answers.author || 'OSSA Community',
     capabilities: answers.capabilities || ['data-processing'],
     llmProvider: answers.llmProvider,
     llmModel: answers.llmModel,
@@ -274,7 +293,9 @@ function generateAgentManifest(details: {
       description: details.description,
       labels: {
         'agent.ossa.io/type': details.type,
-        'agent.ossa.io/author': details.author.toLowerCase().replace(/\s+/g, '-'),
+        'agent.ossa.io/author': details.author
+          .toLowerCase()
+          .replace(/\s+/g, '-'),
         'agent.ossa.io/version': details.version,
       },
       annotations: {
@@ -469,80 +490,76 @@ export const agentCreateCommand = new Command('create')
     'Agent type (worker, orchestrator, judge, critic, monitor, integrator, governor)'
   )
   .option('-a, --author <author>', 'Author/team name')
-  .option(
-    '-o, --output-dir <dir>',
-    'Output directory',
-    '.agents'
-  )
+  .option('-o, --output-dir <dir>', 'Output directory', '.agents')
   .option('-i, --interactive', 'Use interactive mode (default)', true)
   .option('--dry-run', 'Preview without creating files')
-  .action(
-    async (
-      name: string | undefined,
-      options: AgentCreateOptions
-    ) => {
-      try {
-        console.log(chalk.blue.bold('\n🤖 OSSA Agent Creator\n'));
+  .action(async (name: string | undefined, options: AgentCreateOptions) => {
+    try {
+      console.log(chalk.blue.bold('\n🤖 OSSA Agent Creator\n'));
 
-        // Get agent details (interactive or from options)
-        const details = await promptForAgentDetails({
-          ...options,
-          name,
-        });
+      // Get agent details (interactive or from options)
+      const details = await promptForAgentDetails({
+        ...options,
+        name,
+      });
 
-        // Validate inputs
-        AgentNameSchema.parse(details.name);
-        AgentVersionSchema.parse(details.version);
-        AgentTypeSchema.parse(details.type);
+      // Validate inputs
+      AgentNameSchema.parse(details.name);
+      AgentVersionSchema.parse(details.version);
+      AgentTypeSchema.parse(details.type);
 
-        console.log(chalk.blue('\nGenerating agent manifest...'));
+      console.log(chalk.blue('\nGenerating agent manifest...'));
 
-        // Generate manifest
-        const manifest = generateAgentManifest(details);
+      // Generate manifest
+      const manifest = generateAgentManifest(details);
 
-        if (options.dryRun) {
-          console.log(chalk.yellow('\n[DRY RUN] Would create:\n'));
-          console.log(chalk.gray('─'.repeat(50)));
-          console.log(yaml.stringify(manifest, { indent: 2 }));
-          console.log(chalk.gray('─'.repeat(50)));
-          console.log(
-            chalk.gray(
-              `\\nOutput directory: ${path.resolve(options.outputDir || '.agents', details.name)}`
-            )
-          );
-          return;
-        }
-
-        // Create agent structure
-        const outputDir = path.resolve(options.outputDir || '.agents');
-        const agentDir = await createAgentStructure(
-          details.name,
-          manifest,
-          outputDir
-        );
-
-        console.log(chalk.green('\n✓ Agent created successfully!\n'));
-        console.log(chalk.cyan('Agent Details:'));
-        console.log(chalk.gray(`  Name:        ${details.name}`));
-        console.log(chalk.gray(`  Type:        ${details.type}`));
-        console.log(chalk.gray(`  Version:     ${details.version}`));
-        console.log(chalk.gray(`  Location:    ${agentDir}`));
-
-        console.log(chalk.cyan('\nNext Steps:'));
+      if (options.dryRun) {
+        console.log(chalk.yellow('\n[DRY RUN] Would create:\n'));
+        console.log(chalk.gray('─'.repeat(50)));
+        console.log(yaml.stringify(manifest, { indent: 2 }));
+        console.log(chalk.gray('─'.repeat(50)));
         console.log(
-          chalk.gray(`  1. Review manifest:  cat ${agentDir}/manifest.yaml`)
+          chalk.gray(
+            `\\nOutput directory: ${path.resolve(options.outputDir || '.agents', details.name)}`
+          )
         );
-        console.log(
-          chalk.gray(`  2. Validate:         ossa validate ${agentDir}/manifest.yaml`)
-        );
-        console.log(
-          chalk.gray(`  3. Customize:        Edit ${agentDir}/manifest.yaml`)
-        );
-        console.log(
-          chalk.gray(`  4. Deploy:           ossa deploy ${agentDir}/manifest.yaml\\n`)
-        );
-      } catch (error) {
-        handleCommandError(error, 'Failed to create agent');
+        return;
       }
+
+      // Create agent structure
+      const outputDir = path.resolve(options.outputDir || '.agents');
+      const agentDir = await createAgentStructure(
+        details.name,
+        manifest,
+        outputDir
+      );
+
+      console.log(chalk.green('\n✓ Agent created successfully!\n'));
+      console.log(chalk.cyan('Agent Details:'));
+      console.log(chalk.gray(`  Name:        ${details.name}`));
+      console.log(chalk.gray(`  Type:        ${details.type}`));
+      console.log(chalk.gray(`  Version:     ${details.version}`));
+      console.log(chalk.gray(`  Location:    ${agentDir}`));
+
+      console.log(chalk.cyan('\nNext Steps:'));
+      console.log(
+        chalk.gray(`  1. Review manifest:  cat ${agentDir}/manifest.yaml`)
+      );
+      console.log(
+        chalk.gray(
+          `  2. Validate:         ossa validate ${agentDir}/manifest.yaml`
+        )
+      );
+      console.log(
+        chalk.gray(`  3. Customize:        Edit ${agentDir}/manifest.yaml`)
+      );
+      console.log(
+        chalk.gray(
+          `  4. Deploy:           ossa deploy ${agentDir}/manifest.yaml\\n`
+        )
+      );
+    } catch (error) {
+      console.error(chalk.red('\n[FAIL] Failed to create agent'));
+      handleCommandError(error, { verbose: false });
     }
-  );
+  });
