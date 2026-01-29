@@ -1,6 +1,6 @@
 {
   "name": "@bluefly/openstandardagents",
-  "version": "0.3.6",
+  "version": "1.0.0",
   "exports": {
     "./schema": "./spec/v{{VERSION}}/ossa-{{VERSION}}.schema.json",
     "./schema/v0.3.3": "./spec/v{{VERSION}}/ossa-{{VERSION}}.schema.json",
@@ -91,12 +91,12 @@
     "llms-ctx.txt"
   ],
   "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
+    "registry": "https://gitlab.com/api/v4/projects/76265294/packages/npm/",
+    "access": "restricted"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/blueflyio/openstandardagents.git"
+    "url": "https://gitlab.com/blueflyio/ossa/openstandardagents.git"
   },
   "bugs": {
     "url": "https://github.com/blueflyio/openstandardagents/issues"
@@ -203,14 +203,6 @@
   ],
   "author": "OSSA Standards Team",
   "license": "Apache-2.0",
-  "publishConfig": {
-    "registry": "https://gitlab.com/api/v4/projects/76265294/packages/npm/",
-    "access": "restricted"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://gitlab.com/blueflyio/ossa/openstandardagents.git"
-  },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.0",
     "@aws-sdk/client-bedrock-runtime": "^3.955.0",
