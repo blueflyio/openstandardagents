@@ -10,6 +10,7 @@ stages:
 
 variables:
   NODE_VERSION: "22.14"
+  GIT_STRATEGY: clone  # Force fresh clone each time to avoid lock file issues
   GIT_DEPTH: 0  # Disable shallow clone to avoid missing object errors
   CI_USE_LOCAL_RUNNERS: "true" # Toggle this to switch between local and shared runners
 
