@@ -206,7 +206,6 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.0",
     "@aws-sdk/client-bedrock-runtime": "^3.955.0",
-    "@bluefly/openstandardagents": "file:bluefly-openstandardagents-0.3.6.tgz",
     "@gitbeaker/node": "^35.8.1",
     "@google/generative-ai": "^0.21.0",
     "@octokit/rest": "^20.0.0",
