@@ -1,3 +1,11 @@
+## [1.0.1](https://gitlab.com/blueflyio/ossa/openstandardagents/compare/v1.0.0...v1.0.1) (2026-01-30)
+
+
+### Reverts
+
+* Revert "chore(release): 1.0.0 [skip ci]" ([ff74b1e](https://gitlab.com/blueflyio/ossa/openstandardagents/commit/ff74b1ee7ab091bfea1f84e25b77b5b6cc7192cf))
+* Revert "chore(release): 1.0.0 [skip ci]" ([22460bc](https://gitlab.com/blueflyio/ossa/openstandardagents/commit/22460bcd9b79a47e12927df5aed7fc33cab63680))
+
 ## [1.0.1](https://gitlab.com/blueflyio/ossa/openstandardagents/compare/v1.0.0...v1.0.1) (2026-01-29)
 
 
