@@ -4,7 +4,7 @@
 
 > **Built for Enterprise Adoption**: OSSA enables companies to build, deploy, and manage AI agents with vendor neutrality, production-grade reliability, and enterprise compliance built-in.
 
-> **v0.3.5 Released**: 10 major features including Completion Signals, Checkpointing, MoE, Flow Orchestration, and more. [See what's new →](spec/v0.3/README.md)
+> **v0.3.6 Released**: 10 major features including Completion Signals, Checkpointing, MoE, Flow Orchestration, and more. [See what's new →](spec/v0.3/README.md)
 
 > **For Developers**: See [AGENTS.md](AGENTS.md) for setup and development guidelines. See [llms.txt](llms.txt) for LLM-friendly project overview.
 
@@ -72,7 +72,7 @@ yarn add @bluefly/openstandardagents
 
 ```yaml
 # my-agent.ossa.yaml
-apiVersion: ossa/v0.3.5
+apiVersion: ossa/v0.3.6
 kind: Agent
 metadata:
   name: my-first-agent
@@ -95,9 +95,9 @@ spec:
     enabled: true
 ```
 
-### v0.3.5: The OpenAPI for Software Agents
+### v0.3.6: The OpenAPI for Software Agents
 
-OSSA v0.3.5 introduces **10 major features** transforming it into the definitive OpenAPI for Software Agents:
+OSSA v0.3.6 introduces **10 major features** transforming it into the definitive OpenAPI for Software Agents:
 
 - **Completion Signals** - Standardized agent termination conditions
 - **Session Checkpointing** - Resilient, resumable agent state
@@ -110,7 +110,7 @@ OSSA v0.3.5 introduces **10 major features** transforming it into the definitive
 - **Infrastructure Substrate** - Infrastructure as agent-addressable resources
 - **Enhanced A2A Protocol** - Production-ready agent-to-agent communication
 
-**100% Backward Compatible** - All v0.3.4 agents work with v0.3.5 runtime.
+**100% Backward Compatible** - All v0.3.4 agents work with v0.3.6 runtime.
 
 ### AG2 Multi-Agent Swarm (v0.3.4+)
 
@@ -118,7 +118,7 @@ OSSA v0.3.4+ adds first-class support for AG2 (AutoGen) swarm topologies:
 
 ```yaml
 # ag2-swarm.ossa.yaml
-apiVersion: ossa/v0.3.5
+apiVersion: ossa/v0.3.6
 kind: Agent
 metadata:
   name: software-dev-swarm
@@ -172,7 +172,7 @@ state_management:
       - observation
 ```
 
-See [examples/ag2/](spec/v0.3.4/examples/ag2/) for AG2 examples, and [v0.3.5 examples](spec/v0.3/examples/) for new v0.3.5 features.
+See [examples/ag2/](spec/v0.3.4/examples/ag2/) for AG2 examples, and [v0.3.6 examples](spec/v0.3/examples/) for new v0.3.6 features.
 
 ### Validate Your Agent
 
@@ -304,7 +304,7 @@ Companies use OSSA to:
 2. **Validate** - Use OSSA CLI to validate and test
 3. **Scale** - Standardize all agents on OSSA
 4. **Integrate** - Connect to existing CI/CD and observability tools
-5. **Optimize** - Leverage v0.3.5 features (MoE, checkpointing) for cost and reliability gains
+5. **Optimize** - Leverage v0.3.6 features (MoE, checkpointing) for cost and reliability gains
 
 ### Migration Support
 
