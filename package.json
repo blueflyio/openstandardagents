@@ -1,6 +1,6 @@
 {
   "name": "@bluefly/openstandardagents",
-  "version": "1.0.1",
+  "version": "0.3.6",
   "exports": {
     "./schema": "./spec/v{{VERSION}}/ossa-{{VERSION}}.schema.json",
     "./schema/v0.3.3": "./spec/v{{VERSION}}/ossa-{{VERSION}}.schema.json",
