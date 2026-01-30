@@ -19,7 +19,7 @@ describe('ossa knowledge CLI', () => {
   beforeEach(async () => {
     testDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ossa-cli-test-'));
     // Assume ossa binary is built
-    ossaBin = path.resolve(__dirname, '../../dist/src/cli/index.js');
+    ossaBin = path.resolve(__dirname, '../../dist/cli/index.js');
   });
 
   afterEach(async () => {
