@@ -32,7 +32,7 @@ mirror:github:
       
       # Add GitHub remote
       git remote remove github 2>/dev/null || true
-      git remote add github https://${MIRROR_TOKEN}@github.com/blueflyio/ossa/openstandardagents.git
+      git remote add github https://${MIRROR_TOKEN}@github.com/blueflyio/openstandardagents.git
       
       # Sync main branch
       if [ "$CI_COMMIT_BRANCH" == "main" ] || [ -n "$CI_COMMIT_TAG" ]; then
