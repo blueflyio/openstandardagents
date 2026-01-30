@@ -1,7 +1,7 @@
 /**
  * Knowledge Service
  * Manages knowledge base indexing and querying for OSSA agents
- * 
+ *
  * SOLID Principles:
  * - Single Responsibility: Only handles knowledge operations
  * - Dependency Injection: Uses constructor injection
@@ -12,6 +12,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as crypto from 'crypto';
 import { glob } from 'glob';
+import { injectable, optional } from 'inversify';
 
 export interface KnowledgeDocument {
   id: string;
@@ -62,11 +63,11 @@ export class SimpleEmbeddingProvider implements EmbeddingProvider {
     // In production, use proper embeddings (OpenAI, Anthropic, etc.)
     const hash = crypto.createHash('sha256').update(text).digest();
     const embedding: number[] = [];
-    
+
     for (let i = 0; i < this.dimensions; i++) {
       embedding.push((hash[i % hash.length] / 255) * 2 - 1);
     }
-    
+
     return embedding;
   }
 
@@ -89,10 +90,11 @@ export class SimpleEmbeddingProvider implements EmbeddingProvider {
   }
 }
 
+@injectable()
 export class KnowledgeService {
   private embeddingProvider: EmbeddingProvider;
 
-  constructor(embeddingProvider?: EmbeddingProvider) {
+  constructor(@optional() embeddingProvider?: EmbeddingProvider) {
     this.embeddingProvider = embeddingProvider || new SimpleEmbeddingProvider();
   }
 
@@ -115,8 +117,9 @@ export class KnowledgeService {
 
     // Load existing index for incremental updates
     let existingIndex: KnowledgeIndex | null = null;
-    const outputPath = options.outputPath || path.join(knowledgePath, 'knowledge.json');
-    
+    const outputPath =
+      options.outputPath || path.join(knowledgePath, 'knowledge.json');
+
     if (options.incremental) {
       try {
         const indexContent = await fs.readFile(outputPath, 'utf-8');
@@ -146,7 +149,7 @@ export class KnowledgeService {
       const existingDoc = existingIndex?.documents.find(
         (d) => d.filePath === filePath
       );
-      
+
       let embedding: number[] | undefined;
       if (existingDoc && existingDoc.metadata.hash === hash) {
         // Document unchanged, reuse existing embedding
@@ -212,7 +215,8 @@ export class KnowledgeService {
     } = {}
   ): Promise<SearchResult[]> {
     const index = await this.loadIndex(indexPath);
-    const queryEmbedding = await this.embeddingProvider.generateEmbedding(query);
+    const queryEmbedding =
+      await this.embeddingProvider.generateEmbedding(query);
 
     const results: SearchResult[] = [];
 
@@ -253,13 +257,17 @@ export class KnowledgeService {
   /**
    * Generate excerpt around query terms
    */
-  private generateExcerpt(content: string, query: string, contextLength = 150): string {
+  private generateExcerpt(
+    content: string,
+    query: string,
+    contextLength = 150
+  ): string {
     const queryLower = query.toLowerCase();
     const contentLower = content.toLowerCase();
-    
+
     // Find first occurrence
     const index = contentLower.indexOf(queryLower);
-    
+
     if (index === -1) {
       // No exact match, return start of content
       return content.substring(0, contextLength) + '...';
@@ -267,13 +275,16 @@ export class KnowledgeService {
 
     // Get context around match
     const start = Math.max(0, index - contextLength / 2);
-    const end = Math.min(content.length, index + queryLower.length + contextLength / 2);
-    
+    const end = Math.min(
+      content.length,
+      index + queryLower.length + contextLength / 2
+    );
+
     let excerpt = content.substring(start, end);
-    
+
     if (start > 0) excerpt = '...' + excerpt;
     if (end < content.length) excerpt = excerpt + '...';
-    
+
     return excerpt;
   }
 
