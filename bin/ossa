@@ -5,4 +5,4 @@
  * Runs the compiled JavaScript from dist/
  */
 
-import '../dist/src/cli/index.js';
+import '../dist/cli/index.js';
