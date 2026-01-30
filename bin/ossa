@@ -2,28 +2,7 @@
 
 /**
  * OSSA CLI Entry Point
- * Enhanced with error handling, version detection, and better UX
+ * Runs the compiled JavaScript from dist/
  */
 
-import { fileURLToPath } from 'url';
-import { dirname, resolve } from 'path';
-import { existsSync } from 'fs';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-// Try to load compiled CLI
-const cliPath = resolve(__dirname, '../dist/cli/index.js');
-
-if (!existsSync(cliPath)) {
-  console.error('❌ OSSA CLI not built. Run: npm run build');
-  process.exit(1);
-}
-
-try {
-  await import(cliPath);
-} catch (error) {
-  console.error('❌ Failed to load OSSA CLI:');
-  console.error(error);
-  process.exit(1);
-}
+import '../dist/src/cli/index.js';
