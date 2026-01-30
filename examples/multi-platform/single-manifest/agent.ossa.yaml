@@ -14,10 +14,6 @@ spec:
   taxonomy:
     domain: agents
     subdomain: orchestration
-    deploymentPattern: container
-    integrationPattern: api-first
-    costProfile: medium
-    performanceTier: near-real-time
   tools:
     - type: mcp
       name: filesystem

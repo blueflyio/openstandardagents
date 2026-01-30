@@ -1,3 +1,20 @@
+# [0.3.6](https://gitlab.com/blueflyio/ossa/openstandardagents/compare/v0.3.5...v0.3.6) (2026-01-30)
+
+
+### Bug Fixes
+
+* clean stale local tags before release ([e442f27](https://gitlab.com/blueflyio/ossa/openstandardagents/commit/e442f27d4f7e8bb3376d78920a2e4572306f126e))
+* move ESM import fixer to src/tools ([ebe9d64](https://gitlab.com/blueflyio/ossa/openstandardagents/commit/ebe9d64717f9f5212dbd8de874a0e336e3bdf261))
+* resolve ESM module resolution and CI issues ([d43f3f6](https://gitlab.com/blueflyio/ossa/openstandardagents/commit/d43f3f65fc04b3ed33003226dd58198f558d1f28))
+* use compiled JS in bin/ossa, enhance semantic-release config ([a96b616](https://gitlab.com/blueflyio/ossa/openstandardagents/commit/a96b616d52b8ca631f3f60be632565281eb40025))
+* add @injectable and @optional decorators to KnowledgeService
+* register missing CLI commands (validate, generate, agents-md, knowledge, conformance, run)
+
+
+### Documentation
+
+* update README and examples to v0.3.6 ([1945331](https://gitlab.com/blueflyio/ossa/openstandardagents/commit/194533112b6e9e4b8e5a7a8b5e5a7a8b5e5a7a8b))
+
 # Changelog
 All notable changes to OSSA will be documented in this file.
 
@@ -166,6 +183,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed CI/CD configuration for proper Docker image usage
 - Fixed hardcoded version detection and validation
 
+[0.3.6]: https://github.com/blueflyio/openstandardagents/compare/v0.3.5...v0.3.6
 [0.3.5]: https://github.com/blueflyio/openstandardagents/compare/v0.3.4...v0.3.5
 [0.3.4]: https://github.com/blueflyio/openstandardagents/compare/v0.3.3...v0.3.4
 [0.3.3]: https://github.com/blueflyio/openstandardagents/releases/tag/v0.3.3
