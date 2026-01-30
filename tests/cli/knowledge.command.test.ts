@@ -53,7 +53,7 @@ describe('ossa knowledge CLI', () => {
       await fs.writeFile(path.join(testDir, 'doc.md'), '# Test');
 
       const { stdout } = await execAsync(
-        `node ${ossaBin} knowledge index ${testDir} --output-format json`
+        `node ${ossaBin} knowledge index ${testDir} --output json`
       );
 
       const output = JSON.parse(stdout);
@@ -132,7 +132,7 @@ describe('ossa knowledge CLI', () => {
 
     it('should support JSON output', async () => {
       const { stdout } = await execAsync(
-        `node ${ossaBin} knowledge query "agents" --knowledge ${testDir} --output-format json`
+        `node ${ossaBin} knowledge query "agents" --knowledge ${testDir} --output json`
       );
 
       const output = JSON.parse(stdout);
@@ -143,7 +143,7 @@ describe('ossa knowledge CLI', () => {
 
     it('should support limit option', async () => {
       const { stdout } = await execAsync(
-        `node ${ossaBin} knowledge query "agents" --knowledge ${testDir} --limit 1 --output-format json`
+        `node ${ossaBin} knowledge query "agents" --knowledge ${testDir} --limit 1 --output json`
       );
 
       const output = JSON.parse(stdout);
@@ -152,7 +152,7 @@ describe('ossa knowledge CLI', () => {
 
     it('should support threshold option', async () => {
       const { stdout } = await execAsync(
-        `node ${ossaBin} knowledge query "test" --knowledge ${testDir} --threshold 0.9 --output-format json`
+        `node ${ossaBin} knowledge query "test" --knowledge ${testDir} --threshold 0.9 --output json`
       );
 
       const output = JSON.parse(stdout);

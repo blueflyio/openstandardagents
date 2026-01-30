@@ -5,6 +5,9 @@
  * Command-line interface for OSSA operations.
  */
 
+// CRITICAL: Import reflect-metadata FIRST (required for InversifyJS decorators)
+import 'reflect-metadata';
+
 import { Command } from 'commander';
 import { createAuditCommand } from './commands/audit.js';
 import { validateCommand } from './commands/validate.command.js';

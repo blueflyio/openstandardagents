@@ -91,8 +91,8 @@
     "llms-ctx.txt"
   ],
   "publishConfig": {
-    "registry": "https://gitlab.com/api/v4/projects/76265294/packages/npm/",
-    "access": "restricted"
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
   },
   "repository": {
     "type": "git",
