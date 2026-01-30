@@ -185,7 +185,7 @@
     "postinstall": "node bin/postinstall || true",
     "// RELEASE & PUBLISH": "",
     "prerelease": "npm run quality && npm run test && npm run validate",
-    "prepublishOnly": "npm run build:clean && npm run test && npm run lint",
+    "prepublishOnly": "npm run build:clean && npm run test:unit && npm run test:smoke",
     "release:check": "npm run prerelease && echo '✅ Ready for release'",
     "release:verify": "tsx src/dev-cli/src/index.ts release verify",
     "release:prep": "tsx src/dev-cli/src/index.ts release prep v$(node -p \"require('./.version.json').latest_stable\")"
