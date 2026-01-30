@@ -12,7 +12,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as crypto from 'crypto';
 import { glob } from 'glob';
-import { injectable, optional } from 'inversify';
+import { injectable } from 'inversify';
 
 export interface KnowledgeDocument {
   id: string;
@@ -94,8 +94,8 @@ export class SimpleEmbeddingProvider implements EmbeddingProvider {
 export class KnowledgeService {
   private embeddingProvider: EmbeddingProvider;
 
-  constructor(@optional() embeddingProvider?: EmbeddingProvider) {
-    this.embeddingProvider = embeddingProvider || new SimpleEmbeddingProvider();
+  constructor() {
+    this.embeddingProvider = new SimpleEmbeddingProvider();
   }
 
   /**
