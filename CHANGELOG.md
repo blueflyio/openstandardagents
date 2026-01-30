@@ -15,38 +15,6 @@
 
 * update README and examples to v0.3.6 ([1945331](https://gitlab.com/blueflyio/ossa/openstandardagents/commit/194533112b6e9e4b8e5a7a8b5e5a7a8b5e5a7a8b))
 
-## [1.0.1](https://gitlab.com/blueflyio/ossa/openstandardagents/compare/v1.0.0...v1.0.1) (2026-01-29)
-
-
-### Bug Fixes
-
-* use compiled JS in bin/ossa, enhance semantic-release config ([12be69b](https://gitlab.com/blueflyio/ossa/openstandardagents/commit/12be69b5d856a7d210758905ffcaa52b5e60a5ea))
-
-# [1.0.0](https://gitlab.com/blueflyio/ossa/openstandardagents/compare/v0.3.7...v1.0.0) (2026-01-29)
-
-
-### Bug Fixes
-
-* **cli:** resolve TypeScript compilation errors ([583dc54](https://gitlab.com/blueflyio/ossa/openstandardagents/commit/583dc5416a3dbb3aa937e14b6641b0e92b653464))
-* **cli:** use tsx to run TypeScript source directly ([91f6b1f](https://gitlab.com/blueflyio/ossa/openstandardagents/commit/91f6b1f3705e66e9a312b346aee87a47d987511b))
-* correct template literal escaping in CLI commands ([e1af141](https://gitlab.com/blueflyio/ossa/openstandardagents/commit/e1af1414b851b9672868228db918373ec9b57021))
-* remove self-reference and regenerate package-lock.json ([2de65de](https://gitlab.com/blueflyio/ossa/openstandardagents/commit/2de65de88c0952200eda0a3c526306665d20641e))
-
-
-### BREAKING CHANGES
-
-* **cli:** CLI now requires tsx to run
-
-- bin/ossa: Use tsx shebang instead of node
-- bin/ossa: Import source .ts file directly (no build needed)
-- tests: Update all CLI paths to dist/src/cli/index.js
-
-Benefits:
-- No build required for development
-- Better ESM/import support
-- Faster iteration
-- Tests still use compiled version
-
 # Changelog
 All notable changes to OSSA will be documented in this file.
 
