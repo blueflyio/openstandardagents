@@ -1,23 +1,19 @@
-## [1.0.1](https://gitlab.com/blueflyio/ossa/openstandardagents/compare/v1.0.0...v1.0.1) (2026-01-30)
+# [0.3.6](https://gitlab.com/blueflyio/ossa/openstandardagents/compare/v0.3.5...v0.3.6) (2026-01-30)
 
 
 ### Bug Fixes
 
-* force version back to 0.3.6 (semantic-release interference) ([1ba7496](https://gitlab.com/blueflyio/ossa/openstandardagents/commit/1ba7496c986357f40ef812d3f178679c6c491c6f))
+* clean stale local tags before release ([e442f27](https://gitlab.com/blueflyio/ossa/openstandardagents/commit/e442f27d4f7e8bb3376d78920a2e4572306f126e))
+* move ESM import fixer to src/tools ([ebe9d64](https://gitlab.com/blueflyio/ossa/openstandardagents/commit/ebe9d64717f9f5212dbd8de874a0e336e3bdf261))
+* resolve ESM module resolution and CI issues ([d43f3f6](https://gitlab.com/blueflyio/ossa/openstandardagents/commit/d43f3f65fc04b3ed33003226dd58198f558d1f28))
+* use compiled JS in bin/ossa, enhance semantic-release config ([a96b616](https://gitlab.com/blueflyio/ossa/openstandardagents/commit/a96b616d52b8ca631f3f60be632565281eb40025))
+* add @injectable and @optional decorators to KnowledgeService
+* register missing CLI commands (validate, generate, agents-md, knowledge, conformance, run)
 
 
-### Reverts
+### Documentation
 
-* Revert "chore(release): 1.0.0 [skip ci]" ([ff74b1e](https://gitlab.com/blueflyio/ossa/openstandardagents/commit/ff74b1ee7ab091bfea1f84e25b77b5b6cc7192cf))
-* Revert "chore(release): 1.0.0 [skip ci]" ([22460bc](https://gitlab.com/blueflyio/ossa/openstandardagents/commit/22460bcd9b79a47e12927df5aed7fc33cab63680))
-
-## [1.0.1](https://gitlab.com/blueflyio/ossa/openstandardagents/compare/v1.0.0...v1.0.1) (2026-01-30)
-
-
-### Reverts
-
-* Revert "chore(release): 1.0.0 [skip ci]" ([ff74b1e](https://gitlab.com/blueflyio/ossa/openstandardagents/commit/ff74b1ee7ab091bfea1f84e25b77b5b6cc7192cf))
-* Revert "chore(release): 1.0.0 [skip ci]" ([22460bc](https://gitlab.com/blueflyio/ossa/openstandardagents/commit/22460bcd9b79a47e12927df5aed7fc33cab63680))
+* update README and examples to v0.3.6 ([1945331](https://gitlab.com/blueflyio/ossa/openstandardagents/commit/194533112b6e9e4b8e5a7a8b5e5a7a8b5e5a7a8b))
 
 ## [1.0.1](https://gitlab.com/blueflyio/ossa/openstandardagents/compare/v1.0.0...v1.0.1) (2026-01-29)
 
