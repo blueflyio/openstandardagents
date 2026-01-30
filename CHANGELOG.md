@@ -1,31 +1,3 @@
-# [1.0.0](https://gitlab.com/blueflyio/ossa/openstandardagents/compare/v0.3.7...v1.0.0) (2026-01-29)
-
-
-### Bug Fixes
-
-* **cli:** resolve TypeScript compilation errors ([583dc54](https://gitlab.com/blueflyio/ossa/openstandardagents/commit/583dc5416a3dbb3aa937e14b6641b0e92b653464))
-* **cli:** use tsx to run TypeScript source directly ([91f6b1f](https://gitlab.com/blueflyio/ossa/openstandardagents/commit/91f6b1f3705e66e9a312b346aee87a47d987511b))
-* correct template literal escaping in CLI commands ([e1af141](https://gitlab.com/blueflyio/ossa/openstandardagents/commit/e1af1414b851b9672868228db918373ec9b57021))
-* move ESM import fixer to src/tools ([ebe9d64](https://gitlab.com/blueflyio/ossa/openstandardagents/commit/ebe9d64717f9f5212dbd8de874a0e336e3bdf261))
-* remove self-reference and regenerate package-lock.json ([2de65de](https://gitlab.com/blueflyio/ossa/openstandardagents/commit/2de65de88c0952200eda0a3c526306665d20641e))
-* resolve ESM module resolution and CI issues ([d43f3f6](https://gitlab.com/blueflyio/ossa/openstandardagents/commit/d43f3f65fc04b3ed33003226dd58198f558d1f28)), closes [#395](https://gitlab.com/blueflyio/ossa/openstandardagents/issues/395)
-* use compiled JS in bin/ossa, enhance semantic-release config ([a96b616](https://gitlab.com/blueflyio/ossa/openstandardagents/commit/a96b616d52b8ca631f3f60be632565281eb40025))
-
-
-### BREAKING CHANGES
-
-* **cli:** CLI now requires tsx to run
-
-- bin/ossa: Use tsx shebang instead of node
-- bin/ossa: Import source .ts file directly (no build needed)
-- tests: Update all CLI paths to dist/src/cli/index.js
-
-Benefits:
-- No build required for development
-- Better ESM/import support
-- Faster iteration
-- Tests still use compiled version
-
 ## [1.0.1](https://gitlab.com/blueflyio/ossa/openstandardagents/compare/v1.0.0...v1.0.1) (2026-01-29)
 
 
