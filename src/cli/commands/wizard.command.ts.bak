@@ -392,13 +392,12 @@ export const wizardCommand = new Command('wizard')
         // ========================================================================
         // STEP 4: Tools
         // ========================================================================
-        printStep(4, 10, 'Tools & Capabilities');
+        printStep(4, 9, 'Tools & Capabilities');
 
         printInfo('Tools allow your agent to interact with external systems.');
         printInfo(
           'You can add MCP servers, function tools, or skip for now.\n'
         );
-        printInfo(chalk.gray(`Template suggests: ${template.defaults.tools.join(', ')}\n`));
 
         const addTools = await askYesNo('Do you want to add tools?', false);
         const tools: any[] = [];
@@ -482,7 +481,7 @@ export const wizardCommand = new Command('wizard')
         // ========================================================================
         // STEP 5: Safety Controls
         // ========================================================================
-        printStep(5, 10, 'Safety & Security Controls');
+        printStep(5, 9, 'Safety & Security Controls');
 
         printInfo(
           'Configure content filtering, PII detection, rate limiting, and guardrails.\n'
@@ -565,23 +564,16 @@ export const wizardCommand = new Command('wizard')
         // ========================================================================
         // STEP 6: Autonomy Level
         // ========================================================================
-        printStep(6, 10, 'Autonomy & Human-in-the-Loop');
+        printStep(6, 9, 'Autonomy & Human-in-the-Loop');
 
         printInfo(
           'Configure how autonomous the agent should be and when human approval is required.\n'
         );
-        printInfo(chalk.gray(`Template default: ${template.defaults.autonomy}\n`));
 
         const configureAutonomy = await askYesNo(
           'Do you want to configure autonomy settings?',
           false
         );
-
-        // Apply template autonomy defaults
-        const autonomy: any = {
-          level: template.defaults.autonomy,
-          requires_approval: template.defaults.autonomy === 'supervised',
-        };
 
         if (configureAutonomy) {
           const autonomyLevel = await askChoice(
@@ -632,7 +624,7 @@ export const wizardCommand = new Command('wizard')
         // ========================================================================
         // STEP 7: Observability
         // ========================================================================
-        printStep(7, 10, 'Observability & Monitoring');
+        printStep(7, 9, 'Observability & Monitoring');
 
         printInfo(
           'Configure tracing, metrics, and logging for production monitoring.\n'
@@ -687,7 +679,7 @@ export const wizardCommand = new Command('wizard')
         // ========================================================================
         // STEP 8: Platform Extensions
         // ========================================================================
-        printStep(8, 10, 'Platform Extensions');
+        printStep(8, 9, 'Platform Extensions');
 
         printInfo(
           'Enable platform-specific integrations (Cursor, OpenAI, LangChain, etc.).\n'

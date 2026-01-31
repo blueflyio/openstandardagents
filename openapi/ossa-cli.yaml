@@ -1,0 +1,688 @@
+openapi: 3.1.0
+info:
+  title: OSSA CLI API
+  version: 0.4.0
+  description: |
+    API specification for OSSA (Open Standard for Software Agents) CLI operations.
+
+    This spec defines all CLI commands as API operations, enabling:
+    - Type-safe TypeScript generation
+    - Runtime validation with express-openapi-validator
+    - API-First development (spec drives implementation)
+    - Zero type drift between spec and implementation
+
+  contact:
+    name: BlueFly.io
+    url: https://bluefly.io
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Local CLI API server
+
+tags:
+  - name: agents
+    description: Agent CRUD operations
+  - name: wizard
+    description: Interactive agent creation
+  - name: export
+    description: Export agents to platforms
+  - name: templates
+    description: Agent template management
+  - name: catalog
+    description: Agent discovery and sharing
+
+components:
+  schemas:
+    # Core OSSA Agent Schema
+    OssaAgent:
+      type: object
+      required:
+        - apiVersion
+        - kind
+        - metadata
+        - spec
+      properties:
+        apiVersion:
+          type: string
+          enum: ['ossa/v0.3.6', 'ossa/v0.4.0']
+          example: 'ossa/v0.4.0'
+        kind:
+          type: string
+          enum: ['Agent', 'Workflow', 'Task']
+          example: 'Agent'
+        metadata:
+          $ref: '#/components/schemas/AgentMetadata'
+        spec:
+          $ref: '#/components/schemas/AgentSpec'
+
+    AgentMetadata:
+      type: object
+      required:
+        - name
+        - version
+      properties:
+        name:
+          type: string
+          pattern: '^[a-z0-9-]+$'
+          minLength: 3
+          maxLength: 50
+          example: 'my-agent'
+        version:
+          type: string
+          pattern: '^\d+\.\d+\.\d+$'
+          example: '1.0.0'
+        description:
+          type: string
+          maxLength: 500
+          example: 'AI agent for data processing'
+        author:
+          type: string
+          example: 'jane@example.com'
+        license:
+          type: string
+          example: 'MIT'
+        tags:
+          type: array
+          items:
+            type: string
+          example: ['worker', 'data-processing']
+        created:
+          type: string
+          format: date-time
+        updated:
+          type: string
+          format: date-time
+
+    AgentSpec:
+      type: object
+      required:
+        - role
+      properties:
+        role:
+          type: string
+          description: System prompt / agent role description
+          minLength: 10
+          maxLength: 5000
+          example: 'You are a data processing agent that transforms CSV files'
+        llm:
+          $ref: '#/components/schemas/LLMConfig'
+        tools:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tool'
+        capabilities:
+          type: array
+          items:
+            type: string
+          example: ['data-processing', 'file-handling', 'api-calls']
+        workflow:
+          $ref: '#/components/schemas/Workflow'
+        autonomy:
+          $ref: '#/components/schemas/AutonomyConfig'
+
+    LLMConfig:
+      type: object
+      required:
+        - provider
+        - model
+      properties:
+        provider:
+          type: string
+          enum: ['openai', 'anthropic', 'cohere', 'huggingface', 'local']
+          example: 'anthropic'
+        model:
+          type: string
+          example: 'claude-sonnet-4-20250514'
+        temperature:
+          type: number
+          minimum: 0
+          maximum: 2
+          default: 0.7
+        maxTokens:
+          type: integer
+          minimum: 1
+          maximum: 100000
+          default: 4096
+
+    Tool:
+      type: object
+      required:
+        - name
+        - description
+      properties:
+        name:
+          type: string
+          pattern: '^[a-z_][a-z0-9_]*$'
+          example: 'process_data'
+        description:
+          type: string
+          maxLength: 500
+          example: 'Process and transform data'
+        type:
+          type: string
+          enum: ['function', 'api', 'mcp']
+          default: 'function'
+        inputSchema:
+          type: object
+          description: JSON Schema for tool input
+        server:
+          type: string
+          description: MCP server name (if type=mcp)
+
+    Workflow:
+      type: object
+      properties:
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkflowStep'
+
+    WorkflowStep:
+      type: object
+      required:
+        - task
+        - description
+      properties:
+        agent:
+          type: string
+          example: 'researcher'
+        task:
+          type: string
+          example: 'research'
+        description:
+          type: string
+          example: 'Research the topic'
+
+    AutonomyConfig:
+      type: object
+      properties:
+        level:
+          type: string
+          enum: ['fully_autonomous', 'supervised', 'human_in_loop']
+          default: 'supervised'
+        requiresApproval:
+          type: boolean
+          default: false
+
+    # Template Schema
+    AgentTemplate:
+      type: object
+      required:
+        - id
+        - name
+        - description
+        - category
+      properties:
+        id:
+          type: string
+          pattern: '^[a-z0-9-]+$'
+          example: 'worker-data-processor'
+        name:
+          type: string
+          example: 'Data Processor Worker'
+        description:
+          type: string
+          example: 'Worker agent specialized in data processing tasks'
+        category:
+          type: string
+          enum: ['worker', 'coordinator', 'specialist', 'reviewer', 'executor']
+          example: 'worker'
+        icon:
+          type: string
+          example: '🔧'
+        defaults:
+          $ref: '#/components/schemas/TemplateDefaults'
+        useCases:
+          type: array
+          items:
+            type: string
+          example: ['Process CSV files', 'Transform JSON data']
+        examples:
+          type: array
+          items:
+            type: string
+          example: ['data-ingestion-worker', 'etl-processor']
+
+    TemplateDefaults:
+      type: object
+      properties:
+        role:
+          type: string
+        autonomy:
+          type: string
+        capabilities:
+          type: array
+          items:
+            type: string
+        tools:
+          type: array
+          items:
+            type: string
+        llm:
+          $ref: '#/components/schemas/LLMConfig'
+
+    # Export Operations
+    ExportRequest:
+      type: object
+      required:
+        - manifest
+      properties:
+        manifest:
+          $ref: '#/components/schemas/OssaAgent'
+        platform:
+          type: string
+          enum: ['langchain', 'mcp', 'crewai', 'drupal', 'gitlab-duo']
+          example: 'mcp'
+        outputDir:
+          type: string
+          example: './exports'
+        dryRun:
+          type: boolean
+          default: false
+        validate:
+          type: boolean
+          default: true
+
+    ExportResult:
+      type: object
+      required:
+        - platform
+        - success
+        - files
+      properties:
+        platform:
+          type: string
+          example: 'mcp'
+        success:
+          type: boolean
+        files:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExportFile'
+        error:
+          type: string
+        metadata:
+          type: object
+          properties:
+            duration:
+              type: integer
+              description: Export duration in milliseconds
+            version:
+              type: string
+            warnings:
+              type: array
+              items:
+                type: string
+
+    ExportFile:
+      type: object
+      required:
+        - path
+        - content
+        - type
+      properties:
+        path:
+          type: string
+          example: 'mcp/server.ts'
+        content:
+          type: string
+        type:
+          type: string
+          enum: ['code', 'config', 'documentation', 'test', 'other']
+        language:
+          type: string
+          example: 'typescript'
+
+    BatchExportRequest:
+      type: object
+      required:
+        - manifest
+      properties:
+        manifest:
+          $ref: '#/components/schemas/OssaAgent'
+        platforms:
+          type: array
+          items:
+            type: string
+          example: ['langchain', 'mcp', 'crewai']
+        outputDir:
+          type: string
+          default: './exports'
+        parallel:
+          type: boolean
+          default: false
+        continueOnError:
+          type: boolean
+          default: false
+        dryRun:
+          type: boolean
+          default: false
+
+    BatchExportResult:
+      type: object
+      required:
+        - success
+        - results
+        - summary
+      properties:
+        success:
+          type: boolean
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExportResult'
+        summary:
+          type: object
+          required:
+            - total
+            - successful
+            - failed
+            - duration
+          properties:
+            total:
+              type: integer
+            successful:
+              type: integer
+            failed:
+              type: integer
+            duration:
+              type: integer
+
+    # Agent List Response
+    AgentList:
+      type: object
+      required:
+        - agents
+        - total
+      properties:
+        agents:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentSummary'
+        total:
+          type: integer
+        page:
+          type: integer
+        pageSize:
+          type: integer
+
+    AgentSummary:
+      type: object
+      required:
+        - name
+        - version
+        - description
+      properties:
+        name:
+          type: string
+        version:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        capabilities:
+          type: array
+          items:
+            type: string
+        created:
+          type: string
+          format: date-time
+        updated:
+          type: string
+          format: date-time
+
+    # Error Response
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          example: 'VALIDATION_ERROR'
+        message:
+          type: string
+          example: 'Agent name must be lowercase alphanumeric with hyphens'
+        details:
+          type: object
+        path:
+          type: string
+          example: 'metadata.name'
+
+paths:
+  # Agent CRUD Operations
+  /agents:
+    get:
+      operationId: listAgents
+      tags: [agents]
+      summary: List all agents
+      description: Get list of all agents in workspace with filtering and pagination
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: capability
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: List of agents
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentList'
+
+    post:
+      operationId: createAgent
+      tags: [agents]
+      summary: Create new agent
+      description: Create agent from manifest (used by wizard)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OssaAgent'
+      responses:
+        '201':
+          description: Agent created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OssaAgent'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /agents/{name}:
+    get:
+      operationId: getAgent
+      tags: [agents]
+      summary: Get agent by name
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Agent details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OssaAgent'
+        '404':
+          description: Agent not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      operationId: updateAgent
+      tags: [agents]
+      summary: Update agent
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OssaAgent'
+      responses:
+        '200':
+          description: Agent updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OssaAgent'
+
+    delete:
+      operationId: deleteAgent
+      tags: [agents]
+      summary: Delete agent
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Agent deleted
+        '404':
+          description: Agent not found
+
+  # Export Operations
+  /export:
+    post:
+      operationId: exportAgent
+      tags: [export]
+      summary: Export agent to platform
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportRequest'
+      responses:
+        '200':
+          description: Export successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportResult'
+
+  /export/batch:
+    post:
+      operationId: batchExport
+      tags: [export]
+      summary: Batch export to multiple platforms
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchExportRequest'
+      responses:
+        '200':
+          description: Batch export completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchExportResult'
+
+  /export/platforms:
+    get:
+      operationId: listPlatforms
+      tags: [export]
+      summary: List available export platforms
+      responses:
+        '200':
+          description: List of platforms
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    platform:
+                      type: string
+                    displayName:
+                      type: string
+                    description:
+                      type: string
+                    supportedVersions:
+                      type: array
+                      items:
+                        type: string
+
+  # Template Operations
+  /templates:
+    get:
+      operationId: listTemplates
+      tags: [templates]
+      summary: List all agent templates
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of templates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AgentTemplate'
+
+  /templates/{id}:
+    get:
+      operationId: getTemplate
+      tags: [templates]
+      summary: Get template by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Template details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentTemplate'
