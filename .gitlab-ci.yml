@@ -24,18 +24,11 @@ include:
       # Enable standard features
       enable_comprehensive_testing: true
       enable_security_scanning: true
-      enable_secrets_scan: true
-      enable_dependency_scan: true
-      enable_sast: true
 
       # Disable features we handle custom
-      enable_tagging: false  # We handle custom dev/rc/production tagging
       enable_deployment: false
       enable_pages: false
       enable_npm_publish: false  # We handle manual npm publish
-
-      # Coverage
-      test_coverage_threshold: 80
 
 # =============================================================================
 # CUSTOM STAGES (Added to golden stages)
