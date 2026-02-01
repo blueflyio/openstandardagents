@@ -17,6 +17,7 @@ import { GitLabConverter } from '../../adapters/gitlab/converter.js';
 import { DockerfileGenerator } from '../../adapters/docker/generators.js';
 import { KubernetesManifestGenerator } from '../../adapters/kubernetes/generator.js';
 import { KAgentCRDGenerator } from '../../sdks/kagent/crd-generator.js';
+import { registry } from '../../adapters/registry/platform-registry.js';
 import type { OssaAgent } from '../../types/index.js';
 
 export const exportCommand = new Command('export')
@@ -24,10 +25,11 @@ export const exportCommand = new Command('export')
   .argument('<manifest>', 'Path to OSSA agent manifest')
   .requiredOption(
     '-p, --platform <platform>',
-    'Target platform (kagent, langchain, crewai, temporal, n8n, gitlab, docker, kubernetes)'
+    'Target platform (kagent, langchain, crewai, temporal, n8n, gitlab, docker, kubernetes, npm)'
   )
   .option('-o, --output <file>', 'Output file path')
   .option('--format <format>', 'Output format (yaml, json, python)', 'yaml')
+  .option('--skill', 'Include Claude Skill (SKILL.md) - NPM platform only')
   .action(
     async (
       manifestPath: string,
@@ -35,6 +37,7 @@ export const exportCommand = new Command('export')
         platform: string;
         output?: string;
         format: string;
+        skill?: boolean;
       }
     ) => {
       try {
@@ -129,6 +132,43 @@ export const exportCommand = new Command('export')
             output = JSON.stringify(manifests, null, 2);
             defaultExtension = 'json';
             break;
+          }
+
+          case 'npm': {
+            // Use registry adapter for npm export
+            const adapter = registry.getAdapter('npm');
+            if (!adapter) {
+              throw new Error('NPM adapter not registered');
+            }
+
+            const result = await adapter.export(manifest, {
+              validate: true,
+              outputDir: path.dirname(options.output || './npm-package'),
+              includeSkill: options.skill || false,
+            });
+
+            if (!result.success) {
+              throw new Error(result.error || 'NPM export failed');
+            }
+
+            // Create output directory
+            const outputDir = options.output || `./npm-${manifest.metadata?.name || 'agent'}`;
+            fs.mkdirSync(outputDir, { recursive: true });
+
+            // Write all generated files
+            for (const file of result.files) {
+              const filePath = path.join(outputDir, file.path);
+              const fileDir = path.dirname(filePath);
+              fs.mkdirSync(fileDir, { recursive: true });
+              fs.writeFileSync(filePath, file.content);
+            }
+
+            console.log(chalk.green(`✓ NPM package exported to: ${outputDir}`));
+            console.log(chalk.gray(`  Files: ${result.files.map(f => f.path).join(', ')}`));
+            if (options.skill) {
+              console.log(chalk.green(`✓ Claude Skill included: SKILL.md`));
+            }
+            return; // Early return to skip single-file write
           }
 
           default:

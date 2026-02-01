@@ -232,6 +232,68 @@ const agent: OssaAgent = {
 };
 ```
 
+## What's New in v0.4.0 (LATEST)
+
+### NPM Package Export + Claude Skills Integration
+
+**Revolutionary agent distribution**: Export OSSA agents as installable npm packages with integrated Claude Code skills.
+
+```bash
+# Export agent as npm package with Claude Skill
+ossa export agent.ossa.yaml --platform npm --output ./npm-package --skill
+
+# Publish to npm
+cd npm-package && npm publish --access public
+
+# Anyone can install
+npm install @ossa/my-agent
+```
+
+**What you get:**
+- ✅ Complete npm package (package.json, index.js, index.d.ts)
+- ✅ TypeScript type definitions (full IDE support)
+- ✅ Original OSSA manifest embedded (agent.ossa.yaml)
+- ✅ Auto-generated documentation (README.md)
+- ✅ Claude Skill (SKILL.md) for instant Claude Code integration
+- ✅ License file (MIT/Apache-2.0/ISC)
+
+**Use in Node.js:**
+```javascript
+import agent from '@ossa/my-agent';
+
+// Access metadata
+console.log(agent.metadata.name);        // "my-agent"
+console.log(agent.metadata.capabilities); // ["web-search", "reasoning"]
+
+// Load OSSA manifest
+const manifestYaml = agent.manifest();
+
+// Pass to any OSSA-compatible runtime
+import { AgentRuntime } from '@bluefly/agent-buildkit';
+await runtime.loadFromYAML(manifestYaml);
+await runtime.execute({ input: "Hello" });
+```
+
+**Use as Claude Skill:**
+```bash
+# Extract skill from package
+cp npm-package/SKILL.md ~/.claude/skills/my-agent/
+
+# Claude Code auto-discovers and loads the skill
+claude --print "use my-agent to analyze this code"
+```
+
+**Benefits:**
+- 📦 **Standard Distribution**: Use npm's versioning, publishing, and discovery
+- 🔒 **Type Safety**: Full TypeScript support out of the box
+- 🚀 **Zero Runtime Lock-in**: Specification separated from execution
+- 🤖 **Skills Integration**: One command creates both package AND skill
+- 🏗️ **API-First Architecture**: OpenAPI-validated, Zod-enforced, SOLID design
+
+**See**: [TECHNICAL-SUMMARY-NPM-SKILLS.md](./TECHNICAL-SUMMARY-NPM-SKILLS.md) for deep technical details.
+
+---
+
 ## What's New in v0.3.6
 
 ### New Features

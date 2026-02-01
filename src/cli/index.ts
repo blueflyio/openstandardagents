@@ -17,6 +17,7 @@
 
 import { program } from 'commander';
 import 'reflect-metadata';
+import { initializeAdapters } from '../adapters/index.js';
 
 // Core OSSA commands (platform-agnostic)
 import { agentCardCommand } from './commands/agent-card.command.js';
@@ -169,6 +170,11 @@ program
     'OSSA CLI - Open Standard for Software Agents (The OpenAPI for agents)'
   )
   .version(getVersion());
+
+// ============================================================================
+// Initialize Export Adapters
+// ============================================================================
+initializeAdapters();
 
 // ============================================================================
 // Register Core OSSA Commands (Platform-Agnostic)
