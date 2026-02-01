@@ -1,0 +1,754 @@
+openapi: 3.1.0
+info:
+  title: OSSA Version Management API
+  version: 1.0.0
+  description: |
+    API for managing version placeholders in OSSA projects.
+
+    Handles substitution of `{{VERSION}}` placeholders with real semantic versions
+    before releases, and restoration of placeholders for development.
+
+    **Use Cases:**
+    - Pre-release: Replace `{{VERSION}}` → `v0.4.2`
+    - Post-release: Replace `v0.4.2` → `{{VERSION}}`
+    - CI/CD: Automate version substitution in pipelines
+    - Multi-project: Apply consistent versioning across repositories
+
+  contact:
+    name: OSSA Community
+    url: https://openstandardagents.org
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Local development
+  - url: https://api.openstandardagents.org/v1
+    description: Production
+
+tags:
+  - name: version
+    description: Version substitution and management operations
+  - name: detection
+    description: Version detection from project sources
+  - name: validation
+    description: Version format validation
+
+paths:
+  /version/substitute:
+    post:
+      operationId: substituteVersion
+      summary: Replace version placeholders with real version
+      description: |
+        Scans specified files and replaces all `{{VERSION}}` placeholders
+        with the provided semantic version.
+
+        **Process:**
+        1. Validate semantic version format
+        2. Scan files matching patterns
+        3. Replace `{{VERSION}}` with real version
+        4. Report files processed and replacements made
+
+        **Example:**
+        - Input: `apiVersion: ossa/v{{VERSION}}`
+        - Output: `apiVersion: ossa/v0.4.2`
+
+      tags:
+        - version
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubstituteRequest'
+            examples:
+              basic:
+                summary: Basic substitution
+                value:
+                  version: "0.4.2"
+              with_prefix:
+                summary: Version with 'v' prefix
+                value:
+                  version: "v0.4.2"
+              custom_paths:
+                summary: Custom file patterns
+                value:
+                  version: "0.4.2"
+                  paths:
+                    - "spec/**/*.json"
+                    - "docs/**/*.md"
+                  exclude:
+                    - "node_modules/**"
+                    - ".git/**"
+              dry_run:
+                summary: Preview changes without modifying files
+                value:
+                  version: "0.4.2"
+                  dry_run: true
+      responses:
+        '200':
+          description: Substitution completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubstituteResponse'
+              examples:
+                success:
+                  summary: Successful substitution
+                  value:
+                    success: true
+                    version_used: "v0.4.2"
+                    files_processed: 42
+                    replacements_made: 156
+                    files:
+                      - path: "spec/v0.4/agent.schema.json"
+                        replacements: 8
+                      - path: "docs/roadmap/phase-1-specification.md"
+                        replacements: 3
+                dry_run:
+                  summary: Dry run result
+                  value:
+                    success: true
+                    version_used: "v0.4.2"
+                    files_processed: 42
+                    replacements_made: 156
+                    dry_run: true
+                    message: "Dry run completed. No files were modified."
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid_version:
+                  summary: Invalid version format
+                  value:
+                    success: false
+                    error: "Invalid version format"
+                    message: "Version must be in semver format (e.g., '0.4.2' or 'v0.4.2')"
+                    code: "INVALID_VERSION_FORMAT"
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /version/restore:
+    post:
+      operationId: restoreVersion
+      summary: Restore version placeholders
+      description: |
+        Reverse operation of substitute - replaces real versions back to `{{VERSION}}` placeholders.
+
+        **Use Cases:**
+        - After release: Restore development placeholders
+        - Rollback: Undo version substitution
+        - Multi-version: Restore after building multiple versions
+
+        **Process:**
+        1. Scan files for the specified version
+        2. Replace version occurrences with `{{VERSION}}`
+        3. Report restorations made
+
+      tags:
+        - version
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RestoreRequest'
+            examples:
+              basic:
+                summary: Basic restoration
+                value:
+                  version: "0.4.2"
+              all_versions:
+                summary: Restore all versions to placeholder
+                value:
+                  restore_all: true
+      responses:
+        '200':
+          description: Restoration completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestoreResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /version/detect:
+    get:
+      operationId: detectVersion
+      summary: Detect current version from project sources
+      description: |
+        Auto-detect version from multiple sources in priority order:
+
+        1. Git tags (highest priority)
+        2. package.json
+        3. composer.json
+        4. VERSION file
+        5. pyproject.toml
+        6. Cargo.toml
+
+        **Returns:**
+        - Detected version
+        - Source where version was found
+        - All available versions from all sources
+
+      tags:
+        - detection
+      parameters:
+        - name: directory
+          in: query
+          description: Directory to search (default: current directory)
+          required: false
+          schema:
+            type: string
+            default: "."
+      responses:
+        '200':
+          description: Version detected successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DetectResponse'
+              examples:
+                from_git:
+                  summary: Version detected from git tag
+                  value:
+                    success: true
+                    version: "v0.4.2"
+                    source: "git_tag"
+                    all_sources:
+                      git_tag: "v0.4.2"
+                      package_json: "0.4.1"
+                from_package:
+                  summary: Version detected from package.json
+                  value:
+                    success: true
+                    version: "0.4.2"
+                    source: "package_json"
+                    all_sources:
+                      package_json: "0.4.2"
+        '404':
+          description: No version found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                not_found:
+                  summary: No version detected
+                  value:
+                    success: false
+                    error: "Version not found"
+                    message: "Could not detect version from any source"
+                    code: "VERSION_NOT_FOUND"
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /version/validate:
+    post:
+      operationId: validateVersion
+      summary: Validate semantic version format
+      description: |
+        Validates that a version string conforms to semantic versioning (semver) specification.
+
+        **Valid formats:**
+        - `0.4.2`
+        - `v0.4.2`
+        - `1.2.3-alpha.1`
+        - `2.0.0-rc.1+build.123`
+
+        **Invalid formats:**
+        - `0.4` (missing patch)
+        - `v0.4.2.1` (too many segments)
+        - `latest` (not semver)
+
+      tags:
+        - validation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidateRequest'
+            examples:
+              valid:
+                summary: Valid version
+                value:
+                  version: "0.4.2"
+              invalid:
+                summary: Invalid version
+                value:
+                  version: "0.4"
+      responses:
+        '200':
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidateResponse'
+              examples:
+                valid:
+                  summary: Version is valid
+                  value:
+                    success: true
+                    valid: true
+                    version: "0.4.2"
+                    parsed:
+                      major: 0
+                      minor: 4
+                      patch: 2
+                      prerelease: null
+                      build: null
+                invalid:
+                  summary: Version is invalid
+                  value:
+                    success: true
+                    valid: false
+                    version: "0.4"
+                    errors:
+                      - "Missing patch version"
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /version/bump:
+    post:
+      operationId: bumpVersion
+      summary: Bump version according to semver rules
+      description: |
+        Increment version number according to semantic versioning rules.
+
+        **Bump types:**
+        - `major`: 0.4.2 → 1.0.0
+        - `minor`: 0.4.2 → 0.5.0
+        - `patch`: 0.4.2 → 0.4.3
+        - `prerelease`: 0.4.2 → 0.4.3-alpha.1
+
+      tags:
+        - version
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BumpRequest'
+            examples:
+              patch:
+                summary: Bump patch version
+                value:
+                  version: "0.4.2"
+                  bump_type: "patch"
+              minor:
+                summary: Bump minor version
+                value:
+                  version: "0.4.2"
+                  bump_type: "minor"
+              prerelease:
+                summary: Bump to prerelease
+                value:
+                  version: "0.4.2"
+                  bump_type: "prerelease"
+                  prerelease_identifier: "alpha"
+      responses:
+        '200':
+          description: Version bumped successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BumpResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    SubstituteRequest:
+      type: object
+      required:
+        - version
+      properties:
+        version:
+          type: string
+          pattern: '^v?\d+\.\d+\.\d+(-[a-zA-Z0-9.]+)?(\+[a-zA-Z0-9.]+)?$'
+          description: Semantic version to substitute (with or without 'v' prefix)
+          example: "0.4.2"
+        paths:
+          type: array
+          items:
+            type: string
+          description: Glob patterns for files to process
+          default:
+            - "**/*.md"
+            - "**/*.json"
+            - "**/*.yaml"
+            - "**/*.yml"
+          example:
+            - "spec/**/*.json"
+            - "docs/**/*.md"
+        exclude:
+          type: array
+          items:
+            type: string
+          description: Glob patterns for files to exclude
+          default:
+            - "node_modules/**"
+            - ".git/**"
+            - "vendor/**"
+            - "dist/**"
+            - "build/**"
+          example:
+            - "node_modules/**"
+            - ".git/**"
+        dry_run:
+          type: boolean
+          default: false
+          description: Preview changes without modifying files
+        placeholder:
+          type: string
+          default: "{{VERSION}}"
+          description: Custom placeholder pattern to replace
+          example: "{{VERSION}}"
+
+    SubstituteResponse:
+      type: object
+      required:
+        - success
+        - version_used
+        - files_processed
+        - replacements_made
+      properties:
+        success:
+          type: boolean
+          description: Whether operation completed successfully
+        version_used:
+          type: string
+          description: The version that was substituted
+          example: "v0.4.2"
+        files_processed:
+          type: integer
+          description: Number of files scanned
+          example: 42
+        replacements_made:
+          type: integer
+          description: Total number of replacements made
+          example: 156
+        dry_run:
+          type: boolean
+          description: Whether this was a dry run
+        message:
+          type: string
+          description: Human-readable result message
+          example: "Successfully replaced 156 occurrences in 42 files"
+        files:
+          type: array
+          description: Details of each file processed
+          items:
+            type: object
+            required:
+              - path
+              - replacements
+            properties:
+              path:
+                type: string
+                description: Relative path to file
+                example: "spec/v0.4/agent.schema.json"
+              replacements:
+                type: integer
+                description: Number of replacements in this file
+                example: 8
+              preview:
+                type: array
+                description: Preview of changes (dry run only)
+                items:
+                  type: object
+                  properties:
+                    line:
+                      type: integer
+                    before:
+                      type: string
+                    after:
+                      type: string
+
+    RestoreRequest:
+      type: object
+      properties:
+        version:
+          type: string
+          pattern: '^v?\d+\.\d+\.\d+(-[a-zA-Z0-9.]+)?(\+[a-zA-Z0-9.]+)?$'
+          description: Specific version to restore to placeholder
+          example: "0.4.2"
+        restore_all:
+          type: boolean
+          default: false
+          description: Restore all versions to placeholder (not just specified version)
+        paths:
+          type: array
+          items:
+            type: string
+          description: Glob patterns for files to process
+        exclude:
+          type: array
+          items:
+            type: string
+          description: Glob patterns for files to exclude
+        placeholder:
+          type: string
+          default: "{{VERSION}}"
+          description: Placeholder pattern to restore
+      oneOf:
+        - required: [version]
+        - required: [restore_all]
+
+    RestoreResponse:
+      type: object
+      required:
+        - success
+        - files_processed
+        - replacements_made
+      properties:
+        success:
+          type: boolean
+        version_restored:
+          type: string
+          description: The version that was restored to placeholder
+          example: "v0.4.2"
+        files_processed:
+          type: integer
+          example: 42
+        replacements_made:
+          type: integer
+          example: 156
+        message:
+          type: string
+          example: "Successfully restored 156 occurrences to {{VERSION}} in 42 files"
+        files:
+          type: array
+          items:
+            type: object
+            properties:
+              path:
+                type: string
+              replacements:
+                type: integer
+
+    DetectRequest:
+      type: object
+      properties:
+        directory:
+          type: string
+          default: "."
+          description: Directory to search for version sources
+          example: "/path/to/project"
+        sources:
+          type: array
+          items:
+            type: string
+            enum:
+              - git_tag
+              - package_json
+              - composer_json
+              - VERSION_file
+              - pyproject_toml
+              - cargo_toml
+          description: Specific sources to check (checks all by default)
+
+    DetectResponse:
+      type: object
+      required:
+        - success
+        - version
+        - source
+      properties:
+        success:
+          type: boolean
+        version:
+          type: string
+          description: Detected version
+          example: "v0.4.2"
+        source:
+          type: string
+          enum:
+            - git_tag
+            - package_json
+            - composer_json
+            - VERSION_file
+            - pyproject_toml
+            - cargo_toml
+          description: Source where version was found
+          example: "git_tag"
+        all_sources:
+          type: object
+          description: All versions found from all sources
+          additionalProperties:
+            type: string
+          example:
+            git_tag: "v0.4.2"
+            package_json: "0.4.1"
+
+    ValidateRequest:
+      type: object
+      required:
+        - version
+      properties:
+        version:
+          type: string
+          description: Version string to validate
+          example: "0.4.2"
+
+    ValidateResponse:
+      type: object
+      required:
+        - success
+        - valid
+        - version
+      properties:
+        success:
+          type: boolean
+        valid:
+          type: boolean
+          description: Whether version is valid semver
+        version:
+          type: string
+          description: The version that was validated
+        parsed:
+          type: object
+          description: Parsed version components (if valid)
+          properties:
+            major:
+              type: integer
+              example: 0
+            minor:
+              type: integer
+              example: 4
+            patch:
+              type: integer
+              example: 2
+            prerelease:
+              type: string
+              nullable: true
+              example: "alpha.1"
+            build:
+              type: string
+              nullable: true
+              example: "build.123"
+        errors:
+          type: array
+          items:
+            type: string
+          description: Validation errors (if invalid)
+
+    BumpRequest:
+      type: object
+      required:
+        - version
+        - bump_type
+      properties:
+        version:
+          type: string
+          pattern: '^v?\d+\.\d+\.\d+(-[a-zA-Z0-9.]+)?(\+[a-zA-Z0-9.]+)?$'
+          description: Current version
+          example: "0.4.2"
+        bump_type:
+          type: string
+          enum:
+            - major
+            - minor
+            - patch
+            - prerelease
+          description: Type of version bump
+          example: "patch"
+        prerelease_identifier:
+          type: string
+          description: Identifier for prerelease (e.g., 'alpha', 'beta', 'rc')
+          example: "alpha"
+
+    BumpResponse:
+      type: object
+      required:
+        - success
+        - old_version
+        - new_version
+      properties:
+        success:
+          type: boolean
+        old_version:
+          type: string
+          description: Original version
+          example: "0.4.2"
+        new_version:
+          type: string
+          description: Bumped version
+          example: "0.4.3"
+        bump_type:
+          type: string
+          enum:
+            - major
+            - minor
+            - patch
+            - prerelease
+          example: "patch"
+
+    ErrorResponse:
+      type: object
+      required:
+        - success
+        - error
+        - message
+      properties:
+        success:
+          type: boolean
+          enum: [false]
+        error:
+          type: string
+          description: Error type
+          example: "Invalid version format"
+        message:
+          type: string
+          description: Human-readable error message
+          example: "Version must be in semver format (e.g., '0.4.2' or 'v0.4.2')"
+        code:
+          type: string
+          description: Machine-readable error code
+          example: "INVALID_VERSION_FORMAT"
+        details:
+          type: object
+          description: Additional error details
+          additionalProperties: true
+
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for authentication (if required)
+
+security:
+  - apiKey: []
+  - {}  # Allow unauthenticated access for local use
