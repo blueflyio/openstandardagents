@@ -93,7 +93,7 @@ class MigrationRunner {
       const pkg = JSON.parse(readFileSync(join(this.projectRoot, 'package.json'), 'utf-8'));
       const version = pkg.version;
 
-      // Check if version is a template placeholder (e.g., "{{VERSION}}")
+      // Check if version is a template placeholder (e.g., "0.3.6")
       if (version && !this.isTemplateVersion(version)) {
         return version;
       }
@@ -133,7 +133,7 @@ class MigrationRunner {
 
     // Ultimate fallback - should never reach here in normal operation
     console.error('❌ Could not determine current version from package.json or spec directory');
-    console.error('   package.json version is a placeholder ({{VERSION}}) and no spec directories found');
+    console.error('   package.json version is a placeholder (0.3.6) and no spec directories found');
     process.exit(1);
   }
 
