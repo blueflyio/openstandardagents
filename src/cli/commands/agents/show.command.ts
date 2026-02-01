@@ -80,14 +80,17 @@ async function loadAgent(
     }
   }
 
-  const content = fs.readFileSync(filePath!, 'utf-8');
+  if (!filePath) {
+    throw new Error(`File path not found for: ${nameOrPath}`);
+  }
+  const content = fs.readFileSync(filePath, 'utf-8');
   const manifest = yaml.parse(content) as OssaAgent;
 
   if (!manifest.apiVersion?.startsWith('ossa/')) {
     throw new Error(`Not a valid OSSA manifest: ${filePath}`);
   }
 
-  return { manifest, filePath: filePath! };
+  return { manifest, filePath };
 }
 
 /**
@@ -111,12 +114,12 @@ function displayAgent(manifest: OssaAgent, filePath: string): void {
     console.log(`  ${chalk.cyan('Description:')} ${metadata.description}`);
   }
 
-  if (metadata?.author) {
-    console.log(`  ${chalk.cyan('Author:')} ${metadata.author}`);
+  if (metadata?.annotations?.author) {
+    console.log(`  ${chalk.cyan('Author:')} ${metadata.annotations.author}`);
   }
 
-  if (metadata?.license) {
-    console.log(`  ${chalk.cyan('License:')} ${metadata.license}`);
+  if (metadata?.annotations?.license) {
+    console.log(`  ${chalk.cyan('License:')} ${metadata.annotations.license}`);
   }
 
   if (metadata?.tags && metadata.tags.length > 0) {

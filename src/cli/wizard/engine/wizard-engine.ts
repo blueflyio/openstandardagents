@@ -132,27 +132,24 @@ export class WizardEngine {
     }
 
     // Execute step
-    const result = await step.execute(this.context);
+    const result = await step.execute(this.context.state);
 
-    // Validate result
-    const validation = step.validate(result.value, this.context);
-    if (!validation.valid) {
-      this.ui.showValidationErrors(validation.errors || []);
-      // Retry the step
-      return this.executeStep(step);
-    }
-
-    // Show warnings if any
-    if (validation.warnings && validation.warnings.length > 0) {
-      this.ui.showWarnings(validation.warnings);
+    // Validate result if validator exists
+    if (step.validate) {
+      const validation = await step.validate(result);
+      if (!validation) {
+        // Retry the step
+        return this.executeStep(step);
+      }
     }
 
     // Update context
-    if (result.value !== undefined) {
-      this.context.data[step.id] = result.value;
-    }
+    this.context.state = result;
 
-    return result;
+    return {
+      action: 'next' as const,
+      value: result,
+    };
   }
 
   /**

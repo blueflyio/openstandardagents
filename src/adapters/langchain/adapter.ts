@@ -363,6 +363,7 @@ if (require.main === module) {
       dependencies: {
         '@langchain/openai': '^0.0.19',
         '@langchain/core': '^0.1.0',
+        '@langchain/anthropic': '^0.0.1',
         langchain: '^0.1.0',
         dotenv: '^16.0.0',
       },
