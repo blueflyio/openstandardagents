@@ -158,11 +158,19 @@ function getValueAtPath(manifest: unknown, path: string): unknown {
   }
 
   const parts = path.split('/').filter(Boolean);
+<<<<<<< HEAD
   let current: unknown = manifest;
 
   for (const part of parts) {
     if (current && typeof current === 'object' && part in current) {
       current = (current as Record<string, unknown>)[part];
+=======
+  let current: any = manifest;
+
+  for (const part of parts) {
+    if (current && typeof current === 'object' && part in current) {
+      current = current[part];
+>>>>>>> origin/recovery/cli-bot-sdk-restored
     } else {
       return undefined;
     }
