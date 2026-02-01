@@ -188,13 +188,15 @@ export class DrupalAdapter extends BaseAdapter {
           'spam-detection',
           'sentiment-analysis',
           'auto-moderation',
-        ],
+        ] as any,
         tools: [
           {
+            type: 'api',
             name: 'analyze_content',
             description: 'Analyze content for spam, toxicity, and quality',
           },
           {
+            type: 'api',
             name: 'moderate_node',
             description: 'Publish, unpublish, or flag a Drupal node',
           },
@@ -253,7 +255,7 @@ ossa:
     moduleName: string,
     className: string
   ): string {
-    const capabilities = (manifest.spec?.capabilities || []) as string[];
+    const capabilities = ((manifest.spec?.capabilities || []) as Array<string | any>).map(c => typeof c === 'string' ? c : c.name || '');
 
     return `<?php
 
@@ -485,7 +487,7 @@ ${tools.map((tool) => `    // Tool: ${tool.name || 'unknown'} - ${tool.descripti
    * Generate README.md
    */
   private generateReadme(manifest: OssaAgent, moduleName: string): string {
-    const capabilities = (manifest.spec?.capabilities || []) as string[];
+    const capabilities = ((manifest.spec?.capabilities || []) as Array<string | any>).map(c => typeof c === 'string' ? c : c.name || '');
     const tools = (manifest.spec?.tools || []) as any[];
 
     return `# ${manifest.metadata?.name || moduleName}

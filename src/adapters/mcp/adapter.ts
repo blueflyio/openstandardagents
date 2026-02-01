@@ -193,30 +193,17 @@ export class MCPAdapter extends BaseAdapter {
           'list-directory',
           'search-files',
           'process-data',
-        ],
+        ] as any,
         tools: [
           {
+            type: 'mcp',
             name: 'read_file',
             description: 'Read contents of a file',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                path: { type: 'string', description: 'File path' },
-              },
-              required: ['path'],
-            },
           },
           {
+            type: 'mcp',
             name: 'write_file',
             description: 'Write contents to a file',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                path: { type: 'string', description: 'File path' },
-                content: { type: 'string', description: 'File content' },
-              },
-              required: ['path', 'content'],
-            },
           },
         ],
       },
@@ -325,7 +312,7 @@ main().catch((error) => {
    * Generate tools.ts - Tool implementations
    */
   private generateToolsCode(manifest: OssaAgent): string {
-    const capabilities = (manifest.spec?.capabilities || []) as string[];
+    const capabilities = ((manifest.spec?.capabilities || []) as Array<string | any>).map((c: any) => typeof c === 'string' ? c : c.name || '');
     const tools = (manifest.spec?.tools || []) as any[];
 
     const toolDefinitions = tools.map((tool) => {
