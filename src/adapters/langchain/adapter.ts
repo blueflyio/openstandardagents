@@ -23,7 +23,7 @@ export class LangChainAdapter extends BaseAdapter {
   readonly platform = 'langchain';
   readonly displayName = 'LangChain';
   readonly description = 'LangChain agent framework (Python/TypeScript)';
-  readonly supportedVersions = ['v0.3.6', 'v0.4.0'];
+  readonly supportedVersions = ['v0.3.6', 'v{{VERSION}}'];
 
   private converter = new LangChainConverter();
 
@@ -182,7 +182,7 @@ export class LangChainAdapter extends BaseAdapter {
    */
   getExample(): OssaAgent {
     return {
-      apiVersion: 'ossa/v0.4.0',
+      apiVersion: 'ossa/v{{VERSION}}',
       kind: 'Agent',
       metadata: {
         name: 'langchain-example-agent',
@@ -425,7 +425,7 @@ ${config.tools.map((t) => `- **${t.name}**: ${t.description}`).join('\n')}
 
 ## Generated from OSSA
 
-This agent was generated from an OSSA v${manifest.apiVersion?.split('/')[1] || '0.4.0'} manifest.
+This agent was generated from an OSSA v${manifest.apiVersion?.split('/')[1] || '{{VERSION}}'} manifest.
 
 Original manifest: \`agent.ossa.yaml\`
 

@@ -43,7 +43,7 @@ export class GitLabDuoAdapter extends BaseAdapter {
   readonly platform = 'gitlab-duo';
   readonly displayName = 'GitLab Duo';
   readonly description = 'GitLab Duo Custom Agent with MCP integration';
-  readonly supportedVersions = ['v0.4.0'];
+  readonly supportedVersions = ['v{{VERSION}}'];
 
   /**
    * Export OSSA manifest to GitLab Duo format
@@ -160,7 +160,7 @@ export class GitLabDuoAdapter extends BaseAdapter {
    */
   getExample(): OssaAgent {
     return {
-      apiVersion: 'ossa/v0.4.0',
+      apiVersion: 'ossa/v{{VERSION}}',
       kind: 'Agent',
       metadata: {
         name: 'gitlab-duo-example',
@@ -365,7 +365,7 @@ ${config.mcp_servers.map((s) => `- **${s.name}** (${s.transport}): ${s.url || 's
 
 ## Generated from OSSA
 
-This agent was generated from an OSSA v${manifest.apiVersion?.split('/')[1] || '0.4.0'} manifest.
+This agent was generated from an OSSA v${manifest.apiVersion?.split('/')[1] || '{{VERSION}}'} manifest.
 
 Original manifest: \`agent.ossa.yaml\`
 
