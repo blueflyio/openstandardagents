@@ -916,6 +916,126 @@
               "additionalProperties": {
                 "type": "string"
               }
+            },
+            "self_assessment": {
+              "type": "object",
+              "description": "Agent self-assessment and risk evaluation for transparency and human oversight",
+              "properties": {
+                "confidence": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1,
+                  "description": "Overall confidence in task completion (0-1, ML standard)"
+                },
+                "scores": {
+                  "type": "object",
+                  "description": "Quality and adherence scores (0-100 scale)",
+                  "properties": {
+                    "code_quality": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 100,
+                      "description": "Code quality score"
+                    },
+                    "instruction_adherence": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 100,
+                      "description": "How well instructions were followed"
+                    },
+                    "context_completeness": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 100,
+                      "description": "Completeness of available context"
+                    }
+                  }
+                },
+                "risk_assessment": {
+                  "type": "object",
+                  "description": "OWASP-style risk assessment",
+                  "properties": {
+                    "overall_score": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 10,
+                      "description": "Overall risk score (0-10)"
+                    },
+                    "impact": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 10,
+                      "description": "Severity if something fails (0-10)"
+                    },
+                    "likelihood": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 10,
+                      "description": "Probability of failure (0-10)"
+                    },
+                    "level": {
+                      "type": "string",
+                      "enum": ["low", "medium", "high", "critical"],
+                      "description": "Risk level derived from score"
+                    },
+                    "categories": {
+                      "type": "object",
+                      "description": "Risk scores by category (0-10 each)",
+                      "properties": {
+                        "security": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 10
+                        },
+                        "data_integrity": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 10
+                        },
+                        "availability": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 10
+                        },
+                        "compliance": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 10
+                        },
+                        "financial": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 10
+                        },
+                        "operational": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 10
+                        }
+                      }
+                    },
+                    "mitigation_required": {
+                      "type": "boolean",
+                      "description": "Whether risk mitigation is required"
+                    }
+                  }
+                },
+                "uncertainty_areas": {
+                  "type": "array",
+                  "description": "Areas where the agent is uncertain",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "requires_human_review": {
+                  "type": "boolean",
+                  "description": "Whether human review is recommended"
+                },
+                "review_reason": {
+                  "type": "string",
+                  "description": "Explanation for why human review is needed"
+                }
+              }
             }
           }
         },
