@@ -1,4 +1,4 @@
-apiVersion: ossa/v0.4.0
+apiVersion: ossa/v{{VERSION}}
 kind: Agent
 metadata:
   name: test-export-agent

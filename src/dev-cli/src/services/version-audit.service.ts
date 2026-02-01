@@ -23,7 +23,7 @@ export interface VersionAuditResult {
 
 export class VersionAuditService {
   private readonly ROOT = process.cwd();
-  private readonly CURRENT_VERSION = '0.4.0'; // Read from .version.json
+  private readonly CURRENT_VERSION = '{{VERSION}}'; // Read from .version.json
   private readonly PLACEHOLDER = '{{VERSION}}';
   private readonly EXCLUDE_PATTERNS = [
     'node_modules',
@@ -31,6 +31,7 @@ export class VersionAuditService {
     '.git',
     'coverage',
     '.version.json',
+    'package.json',
     'package-lock.json',
     'CHANGELOG.md',
   ];
@@ -100,7 +101,7 @@ export class VersionAuditService {
       const lines = content.split('\n');
 
       lines.forEach((line, index) => {
-        // Look for version patterns like "0.4.0", "v0.4.0", "0.4.0"
+        // Look for version patterns like "{{VERSION}}", "v{{VERSION}}", "{{VERSION}}"
         const versionRegex = new RegExp(
           `(?<!\\{\\{)${version.replace(/\./g, '\\.')}(?!\\}\\})`,
           'g'

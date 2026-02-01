@@ -1,12 +1,12 @@
-# Validation Gaps Report for OSSA v0.4.0
+# Validation Gaps Report for OSSA v{{VERSION}}
 
 **Date**: 2026-01-31  
 **Branch**: `release/v0.4.x`  
-**Version**: 0.4.0
+**Version**: {{VERSION}}
 
 ## Summary
 
-- **Version**: ✅ Updated to 0.4.0
+- **Version**: ✅ Updated to {{VERSION}}
 - **Build Errors**: ❌ 60 TypeScript compilation errors
 - **Lint Errors**: ⚠️ 213 errors (many auto-fixable)
 - **Test Failures**: ⚠️ 6 test suites failed, 16 tests failed
@@ -63,10 +63,10 @@
 - Missing type definitions
 - Import path issues
 
-## Action Items for 0.4.0 Release
+## Action Items for {{VERSION}} Release
 
 ### High Priority (Blocking Release)
-1. ✅ Update version to 0.4.0
+1. ✅ Update version to {{VERSION}}
 2. ❌ Fix adapter export issues (export `OssaAgent`)
 3. ❌ Fix MCP adapter interface mismatches
 4. ❌ Fix wizard engine type errors

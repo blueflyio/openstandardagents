@@ -24,7 +24,7 @@ export class CrewAIAdapter extends BaseAdapter {
   readonly platform = 'crewai';
   readonly displayName = 'CrewAI';
   readonly description = 'CrewAI multi-agent framework (Python)';
-  readonly supportedVersions = ['v0.3.6', 'v0.4.0'];
+  readonly supportedVersions = ['v0.3.6', 'v{{VERSION}}'];
 
   private converter = new CrewAIConverter();
 
@@ -157,7 +157,7 @@ export class CrewAIAdapter extends BaseAdapter {
    */
   getExample(): OssaAgent {
     return {
-      apiVersion: 'ossa/v0.4.0',
+      apiVersion: 'ossa/v{{VERSION}}',
       kind: 'Agent',
       metadata: {
         name: 'crewai-research-team',
@@ -343,7 +343,7 @@ ${config.tasks.map((t: any, i: number) => `${i + 1}. **${t.description}**\n   - 
 
 ## Generated from OSSA
 
-This crew was generated from an OSSA v${manifest.apiVersion?.split('/')[1] || '0.4.0'} manifest.
+This crew was generated from an OSSA v${manifest.apiVersion?.split('/')[1] || '{{VERSION}}'} manifest.
 
 Original manifest: \`agent.ossa.yaml\`
 
