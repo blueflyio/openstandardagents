@@ -53,6 +53,11 @@
       "types": "./dist/mesh/index.d.ts",
       "import": "./dist/mesh/index.js",
       "require": "./dist/mesh/index.js"
+    },
+    "./version-management": {
+      "types": "./dist/version-management/index.d.ts",
+      "import": "./dist/version-management/index.js",
+      "require": "./dist/version-management/index.js"
     }
   },
   "description": "OSSA - Open Standard for Software Agents. The OpenAPI for agents. A specification standard (not a framework) that defines contracts/metadata for production agent systems.",
@@ -61,9 +66,9 @@
   "types": "dist/index.d.ts",
   "bin": {
     "ossa": "bin/ossa",
+    "ossa-dev": "bin/ossa-dev",
     "ossa-version": "bin/ossa-version",
-    "ossa-validate-all": "bin/ossa-validate-all",
-    "ossa-dev": "src/dev-cli/src/index.ts"
+    "ossa-validate-all": "bin/ossa-validate-all"
   },
   "files": [
     "dist/",
@@ -214,6 +219,8 @@
     "boxen": "^7.1.1",
     "chalk": "^5.6.2",
     "commander": "^11.1.0",
+    "express": "^4.18.2",
+    "fast-glob": "^3.3.2",
     "glob": "^11.0.3",
     "inquirer": "^9.2.12",
     "inversify": "^7.10.4",
@@ -235,6 +242,7 @@
     "@semantic-release/git": "^10.0.1",
     "@semantic-release/github": "^12.0.0",
     "@semantic-release/gitlab": "^13.2.9",
+    "@types/express": "^4.17.21",
     "@types/inquirer": "^9.0.9",
     "@types/jest": "^29.5.14",
     "@types/js-yaml": "^4.0.9",
