@@ -213,7 +213,7 @@ export class LangChainAdapter extends BaseAdapter {
           'web-search',
           'document-analysis',
           'conversational-memory',
-        ],
+        ] as any,
       },
     };
   }

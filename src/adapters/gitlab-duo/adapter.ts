@@ -169,7 +169,7 @@ export class GitLabDuoAdapter extends BaseAdapter {
       },
       spec: {
         role: 'You are a GitLab expert that helps with CI/CD, merge requests, and code review.',
-        capabilities: ['gitlab-api', 'code-review', 'ci-cd-debugging'],
+        capabilities: ['gitlab-api', 'code-review', 'ci-cd-debugging'] as any,
         tools: [
           {
             name: 'list_merge_requests',
