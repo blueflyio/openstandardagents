@@ -21,7 +21,7 @@ export const TaxonomyCategoryInputSchema = z.object({
   type: TaxonomyCategoryTypeSchema,
   level: z.number().int().min(1).max(5),
   parent_id: z.string().uuid().nullable().optional(),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
   tags: z.array(z.string()).optional(),
 });
 
