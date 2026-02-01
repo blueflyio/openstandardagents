@@ -18,7 +18,7 @@ This document consolidates three critical planning documents into a unified acti
 
 ---
 
-## 1. OSSA Specification v0.3.3 Implementation
+## 1. OSSA Specification v0.3.6 Implementation
 
 ### 1.1 Core Specification Components
 
@@ -48,7 +48,7 @@ This document consolidates three critical planning documents into a unified acti
 - **Contains**:
   ```
   spec/
-  ├── v0.3.3/
+  ├── v0.3.6/
   │   ├── agent.schema.json
   │   ├── task.schema.json
   │   ├── workflow.schema.json
@@ -398,10 +398,10 @@ spec:
 
 | Protocol | Status | Specification | Integration |
 |----------|--------|---------------|-------------|
-| **MCP** (Model Context Protocol) | Native | v0.3.3 | ✅ Complete |
-| **A2A** (Agent-to-Agent) | Native | v0.3.3 | ✅ Complete |
-| **AGENTS.md** | Context Source | v0.3.3 | ✅ Complete |
-| **Agent Skills** (SKILL.md) | Portable Skills | v0.3.3 | 🔄 In Progress |
+| **MCP** (Model Context Protocol) | Native | v0.3.6 | ✅ Complete |
+| **A2A** (Agent-to-Agent) | Native | v0.3.6 | ✅ Complete |
+| **AGENTS.md** | Context Source | v0.3.6 | ✅ Complete |
+| **Agent Skills** (SKILL.md) | Portable Skills | v0.3.6 | 🔄 In Progress |
 
 ### 7.2 MCP Integration
 
@@ -524,7 +524,7 @@ Reference agents are:
 - [ ] Add inline documentation to each
 - [ ] Create README for each reference agent
 - [ ] Add to conformance test fixtures
-- [ ] Validate against OSSA v0.3.3 schema
+- [ ] Validate against OSSA v0.3.6 schema
 - [ ] Add to specification documentation
 
 ---
@@ -578,7 +578,7 @@ Reference agents are:
 
 ### Week 2: Specification Cleanup
 - [ ] Validate all 6 reference agents
-- [ ] Publish @ossa/spec v0.3.3
+- [ ] Publish @ossa/spec v0.3.6
 - [ ] Update separation of duties documentation
 - [ ] Run CI pipelines on all repos
 

@@ -72,55 +72,30 @@ export class CrewAIAdapter extends BaseAdapter {
       // Generate agents.py - Individual agent definitions
       const agentsCode = this.generateAgentsCode(config, manifest);
       files.push(
-        this.createFile(
-          'crewai/agents.py',
-          agentsCode,
-          'code',
-          'python'
-        )
+        this.createFile('crewai/agents.py', agentsCode, 'code', 'python')
       );
 
       // Generate tasks.py - Task definitions
       const tasksCode = this.generateTasksCode(config, manifest);
       files.push(
-        this.createFile(
-          'crewai/tasks.py',
-          tasksCode,
-          'code',
-          'python'
-        )
+        this.createFile('crewai/tasks.py', tasksCode, 'code', 'python')
       );
 
       // Generate tools.py - Tool implementations
       const toolsCode = this.generateToolsCode(manifest);
       files.push(
-        this.createFile(
-          'crewai/tools.py',
-          toolsCode,
-          'code',
-          'python'
-        )
+        this.createFile('crewai/tools.py', toolsCode, 'code', 'python')
       );
 
       // Generate requirements.txt
       const requirements = this.generateRequirements();
       files.push(
-        this.createFile(
-          'crewai/requirements.txt',
-          requirements,
-          'config'
-        )
+        this.createFile('crewai/requirements.txt', requirements, 'config')
       );
 
       // Generate README
       const readme = this.generateReadme(manifest, config);
-      files.push(
-        this.createFile(
-          'crewai/README.md',
-          readme,
-          'documentation'
-        )
-      );
+      files.push(this.createFile('crewai/README.md', readme, 'documentation'));
 
       return this.createResult(true, files, undefined, {
         duration: Date.now() - startTime,
@@ -237,7 +212,9 @@ from crewai import Agent
 from tools import get_tools
 
 # Define agents
-${config.agents.map((agent: any) => `
+${config.agents
+  .map(
+    (agent: any) => `
 ${agent.role.replace(/[^a-zA-Z0-9]/g, '_')}_agent = Agent(
     role="${agent.role}",
     goal="${agent.goal}",
@@ -245,7 +222,9 @@ ${agent.role.replace(/[^a-zA-Z0-9]/g, '_')}_agent = Agent(
     tools=get_tools(),
     verbose=${agent.verbose ?? true},
     allow_delegation=True,
-)`).join('\n')}
+)`
+  )
+  .join('\n')}
 
 # Export all agents
 agents = [
@@ -267,12 +246,16 @@ from crewai import Task
 from agents import agents
 
 # Define tasks
-${config.tasks.map((task: any, index: number) => `
+${config.tasks
+  .map(
+    (task: any, index: number) => `
 task_${index + 1} = Task(
     description="""${task.description}""",
     agent=agents[${config.agents.findIndex((a: any) => a.role === task.agent) || 0}],
     expected_output="""${task.expected_output || 'Task completed'}""",
-)`).join('\n')}
+)`
+  )
+  .join('\n')}
 
 # Export all tasks
 tasks = [
@@ -295,13 +278,17 @@ Generated from OSSA manifest: ${manifest.metadata?.name || 'unknown'}
 from crewai_tools import tool
 from typing import Any
 
-${tools.map((t) => `
+${tools
+  .map(
+    (t) => `
 @tool
 def ${t.name || 'unknown_tool'}(input_data: str) -> str:
     """${t.description || 'Tool implementation'}"""
     # Implement tool logic here
     return f"Executed ${t.name || 'tool'} with: {input_data}"
-`).join('\n')}
+`
+  )
+  .join('\n')}
 
 def get_tools() -> list:
     """Return all available tools"""

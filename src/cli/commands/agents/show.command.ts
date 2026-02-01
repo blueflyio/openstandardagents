@@ -31,7 +31,9 @@ export const agentsShowCommand = new Command('show')
       }
     } catch (error) {
       console.error(
-        chalk.red(`Failed to show agent: ${error instanceof Error ? error.message : String(error)}`)
+        chalk.red(
+          `Failed to show agent: ${error instanceof Error ? error.message : String(error)}`
+        )
       );
       process.exit(1);
     }
@@ -40,7 +42,9 @@ export const agentsShowCommand = new Command('show')
 /**
  * Load agent by name or file path
  */
-async function loadAgent(nameOrPath: string): Promise<{ manifest: OssaAgent; filePath: string }> {
+async function loadAgent(
+  nameOrPath: string
+): Promise<{ manifest: OssaAgent; filePath: string }> {
   let filePath: string;
 
   // Check if it's a file path
@@ -76,14 +80,17 @@ async function loadAgent(nameOrPath: string): Promise<{ manifest: OssaAgent; fil
     }
   }
 
-  const content = fs.readFileSync(filePath!, 'utf-8');
+  if (!filePath) {
+    throw new Error(`File path not found for: ${nameOrPath}`);
+  }
+  const content = fs.readFileSync(filePath, 'utf-8');
   const manifest = yaml.parse(content) as OssaAgent;
 
   if (!manifest.apiVersion?.startsWith('ossa/')) {
     throw new Error(`Not a valid OSSA manifest: ${filePath}`);
   }
 
-  return { manifest, filePath: filePath! };
+  return { manifest, filePath };
 }
 
 /**
@@ -107,24 +114,30 @@ function displayAgent(manifest: OssaAgent, filePath: string): void {
     console.log(`  ${chalk.cyan('Description:')} ${metadata.description}`);
   }
 
-  if (metadata?.author) {
-    console.log(`  ${chalk.cyan('Author:')} ${metadata.author}`);
+  if (metadata?.annotations?.author) {
+    console.log(`  ${chalk.cyan('Author:')} ${metadata.annotations.author}`);
   }
 
-  if (metadata?.license) {
-    console.log(`  ${chalk.cyan('License:')} ${metadata.license}`);
+  if (metadata?.annotations?.license) {
+    console.log(`  ${chalk.cyan('License:')} ${metadata.annotations.license}`);
   }
 
   if (metadata?.tags && metadata.tags.length > 0) {
-    console.log(`  ${chalk.cyan('Tags:')} ${(metadata.tags as string[]).join(', ')}`);
+    console.log(
+      `  ${chalk.cyan('Tags:')} ${(metadata.tags as string[]).join(', ')}`
+    );
   }
 
   // File Info
   console.log(chalk.bold('\nFile Information:'));
-  console.log(`  ${chalk.cyan('Path:')} ${path.relative(process.cwd(), filePath)}`);
+  console.log(
+    `  ${chalk.cyan('Path:')} ${path.relative(process.cwd(), filePath)}`
+  );
   const stats = fs.statSync(filePath);
   console.log(`  ${chalk.cyan('Size:')} ${(stats.size / 1024).toFixed(2)} KB`);
-  console.log(`  ${chalk.cyan('Created:')} ${stats.birthtime.toLocaleString()}`);
+  console.log(
+    `  ${chalk.cyan('Created:')} ${stats.birthtime.toLocaleString()}`
+  );
   console.log(`  ${chalk.cyan('Modified:')} ${stats.mtime.toLocaleString()}`);
 
   // Spec Info
@@ -158,8 +171,14 @@ function displayAgent(manifest: OssaAgent, filePath: string): void {
     }
 
     // Capabilities
-    if (spec.capabilities && Array.isArray(spec.capabilities) && spec.capabilities.length > 0) {
-      console.log(`  ${chalk.cyan('Capabilities:')} (${spec.capabilities.length})`);
+    if (
+      spec.capabilities &&
+      Array.isArray(spec.capabilities) &&
+      spec.capabilities.length > 0
+    ) {
+      console.log(
+        `  ${chalk.cyan('Capabilities:')} (${spec.capabilities.length})`
+      );
       spec.capabilities.forEach((cap: any) => {
         console.log(`    • ${chalk.green(cap)}`);
       });
@@ -169,7 +188,9 @@ function displayAgent(manifest: OssaAgent, filePath: string): void {
     if (spec.tools && Array.isArray(spec.tools) && spec.tools.length > 0) {
       console.log(`  ${chalk.cyan('Tools:')} (${spec.tools.length})`);
       spec.tools.forEach((tool: any) => {
-        console.log(`    • ${chalk.green(tool.name || 'unnamed')} - ${chalk.gray(tool.description || 'No description')}`);
+        console.log(
+          `    • ${chalk.green(tool.name || 'unnamed')} - ${chalk.gray(tool.description || 'No description')}`
+        );
       });
     }
 
@@ -177,7 +198,9 @@ function displayAgent(manifest: OssaAgent, filePath: string): void {
     if (spec.workflow) {
       const workflow = spec.workflow as any;
       if (workflow.steps && Array.isArray(workflow.steps)) {
-        console.log(`  ${chalk.cyan('Workflow:')} (${workflow.steps.length} steps)`);
+        console.log(
+          `  ${chalk.cyan('Workflow:')} (${workflow.steps.length} steps)`
+        );
         workflow.steps.forEach((step: any, index: number) => {
           console.log(
             `    ${index + 1}. ${chalk.green(step.task || 'unnamed')} ${step.agent ? chalk.gray(`(${step.agent})`) : ''}`
@@ -195,7 +218,9 @@ function displayAgent(manifest: OssaAgent, filePath: string): void {
       console.log(`  ${chalk.cyan('Autonomy:')}`);
       console.log(`    Level: ${autonomy.level || 'N/A'}`);
       if (autonomy.requiresApproval !== undefined) {
-        console.log(`    Requires Approval: ${autonomy.requiresApproval ? 'Yes' : 'No'}`);
+        console.log(
+          `    Requires Approval: ${autonomy.requiresApproval ? 'Yes' : 'No'}`
+        );
       }
     }
   }

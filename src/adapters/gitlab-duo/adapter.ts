@@ -78,41 +78,25 @@ export class GitLabDuoAdapter extends BaseAdapter {
       // Generate agent-config.yaml
       const agentConfig = this.generateAgentConfig(config);
       files.push(
-        this.createFile(
-          'gitlab-duo/agent-config.yaml',
-          agentConfig,
-          'config'
-        )
+        this.createFile('gitlab-duo/agent-config.yaml', agentConfig, 'config')
       );
 
       // Generate MCP server configuration
       const mcpConfig = this.generateMCPConfig(config);
       files.push(
-        this.createFile(
-          'gitlab-duo/mcp-servers.json',
-          mcpConfig,
-          'config'
-        )
+        this.createFile('gitlab-duo/mcp-servers.json', mcpConfig, 'config')
       );
 
       // Generate README
       const readme = this.generateReadme(manifest, config);
       files.push(
-        this.createFile(
-          'gitlab-duo/README.md',
-          readme,
-          'documentation'
-        )
+        this.createFile('gitlab-duo/README.md', readme, 'documentation')
       );
 
       // Generate deployment script
       const deployScript = this.generateDeployScript(manifest);
       files.push(
-        this.createFile(
-          'gitlab-duo/deploy.sh',
-          deployScript,
-          'script'
-        )
+        this.createFile('gitlab-duo/deploy.sh', deployScript, 'other')
       );
 
       return this.createResult(true, files, undefined, {
@@ -147,7 +131,8 @@ export class GitLabDuoAdapter extends BaseAdapter {
     // Check for instructions/role
     if (!spec?.role && !spec?.instructions) {
       warnings.push({
-        message: 'No role or instructions found, agent may not have clear guidance',
+        message:
+          'No role or instructions found, agent may not have clear guidance',
         path: 'spec.role',
         suggestion: 'Add spec.role or spec.instructions field',
       });
@@ -156,7 +141,8 @@ export class GitLabDuoAdapter extends BaseAdapter {
     // Check for tools/capabilities
     if (!spec?.tools && !spec?.capabilities) {
       warnings.push({
-        message: 'No tools or capabilities defined, agent will have limited functionality',
+        message:
+          'No tools or capabilities defined, agent will have limited functionality',
         path: 'spec.tools',
         suggestion: 'Add spec.tools or spec.capabilities array',
       });
@@ -183,11 +169,7 @@ export class GitLabDuoAdapter extends BaseAdapter {
       },
       spec: {
         role: 'You are a GitLab expert that helps with CI/CD, merge requests, and code review.',
-        capabilities: [
-          'gitlab-api',
-          'code-review',
-          'ci-cd-debugging',
-        ],
+        capabilities: ['gitlab-api', 'code-review', 'ci-cd-debugging'],
         tools: [
           {
             name: 'list_merge_requests',
@@ -242,7 +224,7 @@ export class GitLabDuoAdapter extends BaseAdapter {
     // Convert capabilities to tools
     if (spec.capabilities && Array.isArray(spec.capabilities)) {
       spec.capabilities.forEach((cap: string) => {
-        if (!tools.find(t => t.name === cap)) {
+        if (!tools.find((t) => t.name === cap)) {
           tools.push({
             name: cap.replace(/-/g, '_'),
             description: `Capability: ${cap}`,
@@ -277,17 +259,31 @@ instructions: |
 
 # MCP Server References
 mcp_servers:
-${config.mcp_servers.map(server => `  - name: "${server.name}"
+${config.mcp_servers
+  .map(
+    (server) => `  - name: "${server.name}"
     transport: ${server.transport}
     ${server.transport === 'http' ? `url: "${server.url}"` : ''}
-    ${server.env ? `env:\n${Object.entries(server.env).map(([k, v]) => `      ${k}: "${v}"`).join('\n')}` : ''}`).join('\n')}
+    ${
+      server.env
+        ? `env:\n${Object.entries(server.env)
+            .map(([k, v]) => `      ${k}: "${v}"`)
+            .join('\n')}`
+        : ''
+    }`
+  )
+  .join('\n')}
 
 # Available Tools
 tools:
-${config.tools.map(tool => `  - name: "${tool.name}"
+${config.tools
+  .map(
+    (tool) => `  - name: "${tool.name}"
     description: "${tool.description}"
     mcp_server: "${tool.mcp_server}"
-    mcp_tool: "${tool.mcp_tool}"`).join('\n')}
+    mcp_tool: "${tool.mcp_tool}"`
+  )
+  .join('\n')}
 `;
   }
 
@@ -299,7 +295,7 @@ ${config.tools.map(tool => `  - name: "${tool.name}"
       mcpServers: {} as Record<string, any>,
     };
 
-    config.mcp_servers.forEach(server => {
+    config.mcp_servers.forEach((server) => {
       mcpConfig.mcpServers[server.name] = {
         command: server.transport === 'http' ? undefined : 'node',
         args: server.transport === 'http' ? undefined : ['server.js'],
@@ -308,7 +304,7 @@ ${config.tools.map(tool => `  - name: "${tool.name}"
       };
 
       // Clean up undefined values
-      Object.keys(mcpConfig.mcpServers[server.name]).forEach(key => {
+      Object.keys(mcpConfig.mcpServers[server.name]).forEach((key) => {
         if (mcpConfig.mcpServers[server.name][key] === undefined) {
           delete mcpConfig.mcpServers[server.name][key];
         }
@@ -359,13 +355,13 @@ ${manifest.spec?.role || (manifest.spec as any)?.instructions || 'Custom AI Agen
 
 ## Available Tools
 
-${config.tools.map(t => `- **${t.name}**: ${t.description}`).join('\n')}
+${config.tools.map((t) => `- **${t.name}**: ${t.description}`).join('\n')}
 
 ## MCP Integration
 
 This agent integrates with the following MCP servers:
 
-${config.mcp_servers.map(s => `- **${s.name}** (${s.transport}): ${s.url || 'stdio'}`).join('\n')}
+${config.mcp_servers.map((s) => `- **${s.name}** (${s.transport}): ${s.url || 'stdio'}`).join('\n')}
 
 ## Generated from OSSA
 
