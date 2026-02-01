@@ -11,6 +11,7 @@ import { MCPAdapter } from './mcp/adapter.js';
 import { CrewAIAdapter } from './crewai/adapter.js';
 import { GitLabDuoAdapter } from './gitlab-duo/adapter.js';
 import { DrupalAdapter } from './drupal/adapter.js';
+import { NPMAdapter } from './npm/adapter.js';
 
 /**
  * Initialize and register all export adapters
@@ -31,7 +32,10 @@ export function initializeAdapters(): void {
   // Register Drupal adapter
   registry.register(new DrupalAdapter());
 
-  console.log(`Registered ${registry.size} export adapters`);
+  // Register NPM adapter
+  registry.register(new NPMAdapter());
+
+  // console.log(`Registered ${registry.size} export adapters`);
 }
 
 // Export registry for use in commands
