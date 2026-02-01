@@ -41,7 +41,7 @@ export class VersionValidateService {
       if (
         pkg.version &&
         pkg.version !== versionInfo.current &&
-        !pkg.version.includes('{{VERSION}}')
+        !pkg.version.includes('0.3.6')
       ) {
         errors.push(
           `package.json version (${pkg.version}) doesn't match git tags/.version.json (${versionInfo.current})`
