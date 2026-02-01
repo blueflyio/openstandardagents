@@ -54,7 +54,9 @@ export class DrupalAdapter extends BaseAdapter {
         }
       }
 
-      const moduleName = this.sanitizeModuleName(manifest.metadata?.name || 'ossa_agent');
+      const moduleName = this.sanitizeModuleName(
+        manifest.metadata?.name || 'ossa_agent'
+      );
       const className = this.toClassName(moduleName);
       const files = [];
 
@@ -153,7 +155,8 @@ export class DrupalAdapter extends BaseAdapter {
     const name = manifest.metadata?.name;
     if (name && !/^[a-z0-9_]+$/.test(name)) {
       warnings.push({
-        message: 'Module name should only contain lowercase letters, numbers, and underscores',
+        message:
+          'Module name should only contain lowercase letters, numbers, and underscores',
         path: 'metadata.name',
         suggestion: `Use: ${this.sanitizeModuleName(name)}`,
       });
@@ -451,24 +454,31 @@ ${tools.map((tool) => `    // Tool: ${tool.name || 'unknown'} - ${tool.descripti
   /**
    * Generate composer.json
    */
-  private generateComposerJson(manifest: OssaAgent, moduleName: string): string {
-    return JSON.stringify({
-      name: `drupal/${moduleName}`,
-      type: 'drupal-module',
-      description: manifest.metadata?.description || 'OSSA agent module',
-      keywords: ['Drupal', 'OSSA', 'AI', 'Agent'],
-      license: manifest.metadata?.license || 'GPL-2.0-or-later',
-      require: {
-        'drupal/core': '^10 || ^11',
-      },
-      extra: {
-        ossa: {
-          version: manifest.metadata?.version,
-          apiVersion: manifest.apiVersion,
-          kind: manifest.kind,
+  private generateComposerJson(
+    manifest: OssaAgent,
+    moduleName: string
+  ): string {
+    return JSON.stringify(
+      {
+        name: `drupal/${moduleName}`,
+        type: 'drupal-module',
+        description: manifest.metadata?.description || 'OSSA agent module',
+        keywords: ['Drupal', 'OSSA', 'AI', 'Agent'],
+        license: manifest.metadata?.license || 'GPL-2.0-or-later',
+        require: {
+          'drupal/core': '^10 || ^11',
+        },
+        extra: {
+          ossa: {
+            version: manifest.metadata?.version,
+            apiVersion: manifest.apiVersion,
+            kind: manifest.kind,
+          },
         },
       },
-    }, null, 2);
+      null,
+      2
+    );
   }
 
   /**

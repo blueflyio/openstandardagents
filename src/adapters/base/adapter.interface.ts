@@ -10,6 +10,9 @@
 
 import type { OssaAgent } from '../../types/index.js';
 
+// Re-export OssaAgent for adapter usage
+export type { OssaAgent };
+
 /**
  * Export result containing generated files
  */

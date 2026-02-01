@@ -1,6 +1,11 @@
 // OSSA v0.4.0 - MCP (Model Context Protocol) Export Adapter
-import { BaseAdapter, ExportOptions, ExportResult, ExportFile } from '../base.adapter';
-import { OssaAgent } from '../../types/ossa';
+import {
+  BaseAdapter,
+  ExportOptions,
+  ExportResult,
+  ExportFile,
+  OssaAgent,
+} from '../base/adapter.interface.js';
 
 /**
  * MCP export adapter - generates JSON-RPC 2.0 MCP servers
@@ -12,7 +17,10 @@ export class MCPAdapter extends BaseAdapter {
   readonly supportedOssaVersions = ['0.4.0', '0.3.6'];
   readonly outputFormat = ['typescript'];
 
-  async convert(manifest: OssaAgent, options: ExportOptions): Promise<ExportResult> {
+  async convert(
+    manifest: OssaAgent,
+    options: ExportOptions
+  ): Promise<ExportResult> {
     const startTime = Date.now();
     const files: ExportFile[] = [];
 
@@ -43,14 +51,16 @@ export class MCPAdapter extends BaseAdapter {
         totalSizeBytes: files.reduce((sum, f) => sum + f.content.length, 0),
       };
 
-      return this.createSuccessResult(files, metadata);
-    } catch (error) {
-      return this.createErrorResult([`MCP export failed: ${error.message}`]);
+      return this.createResult(true, files, undefined, metadata);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      return this.createResult(false, [], `MCP export failed: ${errorMessage}`);
     }
   }
 
   private generateServerFile(manifest: OssaAgent): ExportFile {
-    const tools = manifest.agent.capabilities?.filter(c => c.type === 'tool') || [];
+    const tools =
+      manifest.agent.capabilities?.filter((c) => c.type === 'tool') || [];
 
     const content = `#!/usr/bin/env node
 /**
@@ -131,13 +141,16 @@ main().catch((error) => {
 });
 `;
 
-    return this.createFile('server.ts', content, 'code', 'typescript', true);
+    return this.createFile('server.ts', content, 'code', 'typescript');
   }
 
   private generateToolsFile(manifest: OssaAgent): ExportFile {
-    const tools = manifest.agent.capabilities?.filter(c => c.type === 'tool') || [];
+    const tools =
+      manifest.agent.capabilities?.filter((c) => c.type === 'tool') || [];
 
-    const toolDefinitions = tools.map(tool => `{
+    const toolDefinitions = tools
+      .map(
+        (tool) => `{
   name: '${tool.id}',
   description: '${tool.description || tool.id}',
   inputSchema: {
@@ -150,18 +163,27 @@ main().catch((error) => {
     },
     required: ['input'],
   },
-}`).join(',\n  ');
+}`
+      )
+      .join(',\n  ');
 
-    const toolImplementations = tools.map(tool => `
+    const toolImplementations = tools
+      .map(
+        (tool) => `
 async function ${this.toCamelCase(tool.id)}(args: any): Promise<any> {
   // TODO: Implement ${tool.id}
   console.log('Executing ${tool.id} with args:', args);
   return { result: 'Success', tool: '${tool.id}', input: args.input };
-}`).join('\n');
+}`
+      )
+      .join('\n');
 
-    const toolMap = tools.map(tool =>
-      `    case '${tool.id}': return ${this.toCamelCase(tool.id)}(args);`
-    ).join('\n');
+    const toolMap = tools
+      .map(
+        (tool) =>
+          `    case '${tool.id}': return ${this.toCamelCase(tool.id)}(args);`
+      )
+      .join('\n');
 
     const content = `/**
  * Tool implementations for ${manifest.metadata.name}
@@ -214,48 +236,56 @@ export interface MCPResponse {
   }
 
   private generatePackageJson(manifest: OssaAgent): ExportFile {
-    const content = JSON.stringify({
-      name: manifest.metadata.name,
-      version: manifest.metadata.version,
-      description: manifest.metadata.description,
-      type: 'module',
-      bin: {
-        [manifest.metadata.name]: './dist/server.js',
+    const content = JSON.stringify(
+      {
+        name: manifest.metadata.name,
+        version: manifest.metadata.version,
+        description: manifest.metadata.description,
+        type: 'module',
+        bin: {
+          [manifest.metadata.name]: './dist/server.js',
+        },
+        scripts: {
+          build: 'tsc',
+          start: 'node dist/server.js',
+          dev: 'tsx watch src/server.ts',
+        },
+        dependencies: {
+          '@modelcontextprotocol/sdk': '^0.5.0',
+        },
+        devDependencies: {
+          '@types/node': '^20.0.0',
+          typescript: '^5.3.0',
+          tsx: '^4.7.0',
+        },
       },
-      scripts: {
-        build: 'tsc',
-        start: 'node dist/server.js',
-        dev: 'tsx watch src/server.ts',
-      },
-      dependencies: {
-        '@modelcontextprotocol/sdk': '^0.5.0',
-      },
-      devDependencies: {
-        '@types/node': '^20.0.0',
-        typescript: '^5.3.0',
-        tsx: '^4.7.0',
-      },
-    }, null, 2);
+      null,
+      2
+    );
 
     return this.createFile('package.json', content, 'config', 'json');
   }
 
   private generateTsConfig(): ExportFile {
-    const content = JSON.stringify({
-      compilerOptions: {
-        target: 'ES2022',
-        module: 'Node16',
-        moduleResolution: 'Node16',
-        outDir: './dist',
-        rootDir: './src',
-        strict: true,
-        esModuleInterop: true,
-        skipLibCheck: true,
-        forceConsistentCasingInFileNames: true,
+    const content = JSON.stringify(
+      {
+        compilerOptions: {
+          target: 'ES2022',
+          module: 'Node16',
+          moduleResolution: 'Node16',
+          outDir: './dist',
+          rootDir: './src',
+          strict: true,
+          esModuleInterop: true,
+          skipLibCheck: true,
+          forceConsistentCasingInFileNames: true,
+        },
+        include: ['src/**/*'],
+        exclude: ['node_modules', 'dist'],
       },
-      include: ['src/**/*'],
-      exclude: ['node_modules', 'dist'],
-    }, null, 2);
+      null,
+      2
+    );
 
     return this.createFile('tsconfig.json', content, 'config', 'json');
   }
@@ -295,9 +325,10 @@ npm start
 
 ## Available Tools
 
-${manifest.agent.capabilities?.filter(c => c.type === 'tool').map(tool =>
-  `- **${tool.id}**: ${tool.description || 'No description'}`
-).join('\n')}
+${manifest.agent.capabilities
+  ?.filter((c) => c.type === 'tool')
+  .map((tool) => `- **${tool.id}**: ${tool.description || 'No description'}`)
+  .join('\n')}
 
 ## Generated from OSSA
 
@@ -306,7 +337,7 @@ This MCP server was generated from an OSSA v${manifest.apiVersion} manifest.
 Learn more: https://openstandardagents.org
 `;
 
-    return this.createFile('README.md', content, 'doc');
+    return this.createFile('README.md', content, 'documentation');
   }
 
   private generateTests(manifest: OssaAgent): ExportFile {
@@ -333,7 +364,9 @@ describe('${manifest.metadata.name} MCP Server', () => {
   }
 
   private toCamelCase(str: string): string {
-    return str.replace(/[-:]/g, '_').replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+    return str
+      .replace(/[-:]/g, '_')
+      .replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
   }
 
   getCapabilities() {

@@ -42,13 +42,17 @@ export const agentsListCommand = new Command('list')
       // Apply filters
       if (options.category) {
         filtered = filtered.filter((a) =>
-          a.capabilities?.some((cap) => cap.toLowerCase().includes(options.category.toLowerCase()))
+          a.capabilities?.some((cap) =>
+            cap.toLowerCase().includes(options.category.toLowerCase())
+          )
         );
       }
 
       if (options.capability) {
         filtered = filtered.filter((a) =>
-          a.capabilities?.some((cap) => cap.toLowerCase().includes(options.capability.toLowerCase()))
+          a.capabilities?.some((cap) =>
+            cap.toLowerCase().includes(options.capability.toLowerCase())
+          )
         );
       }
 
@@ -67,12 +71,18 @@ export const agentsListCommand = new Command('list')
 
       // Output results
       if (options.json) {
-        console.log(JSON.stringify({ total: filtered.length, agents: filtered }, null, 2));
+        console.log(
+          JSON.stringify({ total: filtered.length, agents: filtered }, null, 2)
+        );
       } else {
         displayAgents(filtered, options.verbose);
       }
     } catch (error) {
-      console.error(chalk.red(`Failed to list agents: ${error instanceof Error ? error.message : String(error)}`));
+      console.error(
+        chalk.red(
+          `Failed to list agents: ${error instanceof Error ? error.message : String(error)}`
+        )
+      );
       process.exit(1);
     }
   });
@@ -82,7 +92,12 @@ export const agentsListCommand = new Command('list')
  */
 async function findAgents(dir: string): Promise<AgentSummary[]> {
   const agents: AgentSummary[] = [];
-  const patterns = ['**/*.ossa.yaml', '**/*.ossa.yml', '**/agent.yaml', '**/agent.yml'];
+  const patterns = [
+    '**/*.ossa.yaml',
+    '**/*.ossa.yml',
+    '**/agent.yaml',
+    '**/agent.yml',
+  ];
 
   for (const pattern of patterns) {
     const glob = await import('glob');
@@ -97,16 +112,23 @@ async function findAgents(dir: string): Promise<AgentSummary[]> {
         const content = fs.readFileSync(file, 'utf-8');
         const manifest = yaml.parse(content) as OssaAgent;
 
-        if (manifest.apiVersion?.startsWith('ossa/') && manifest.kind === 'Agent') {
+        if (
+          manifest.apiVersion?.startsWith('ossa/') &&
+          manifest.kind === 'Agent'
+        ) {
           const stats = fs.statSync(file);
           agents.push({
-            name: manifest.metadata?.name || path.basename(file, path.extname(file)),
+            name:
+              manifest.metadata?.name ||
+              path.basename(file, path.extname(file)),
             version: manifest.metadata?.version || '0.0.0',
             description: manifest.metadata?.description || '',
             apiVersion: manifest.apiVersion,
             kind: manifest.kind,
             capabilities: manifest.spec?.capabilities as string[] | undefined,
-            tools: Array.isArray(manifest.spec?.tools) ? manifest.spec.tools.length : 0,
+            tools: Array.isArray(manifest.spec?.tools)
+              ? manifest.spec.tools.length
+              : 0,
             filePath: file,
             created: stats.birthtime,
             updated: stats.mtime,
@@ -132,7 +154,11 @@ function displayAgents(agents: AgentSummary[], verbose: boolean = false): void {
     return;
   }
 
-  console.log(chalk.blue.bold(`\n Found ${agents.length} agent${agents.length === 1 ? '' : 's'}:\n`));
+  console.log(
+    chalk.blue.bold(
+      `\n Found ${agents.length} agent${agents.length === 1 ? '' : 's'}:\n`
+    )
+  );
 
   agents.forEach((agent, index) => {
     // Basic info
@@ -158,7 +184,9 @@ function displayAgents(agents: AgentSummary[], verbose: boolean = false): void {
         console.log(`     ${chalk.gray(`Tools: ${agent.tools}`)}`);
       }
 
-      console.log(`     ${chalk.gray(`File: ${path.relative(process.cwd(), agent.filePath)}`)}`);
+      console.log(
+        `     ${chalk.gray(`File: ${path.relative(process.cwd(), agent.filePath)}`)}`
+      );
 
       if (agent.updated) {
         console.log(

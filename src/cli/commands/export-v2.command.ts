@@ -87,15 +87,9 @@ export const exportV2Command = new Command('export')
         // Require platform or --all
         if (!options.platform && !options.all) {
           console.error(
-            chalk.red(
-              'Error: Must specify --platform <name> or --all\n'
-            )
+            chalk.red('Error: Must specify --platform <name> or --all\n')
           );
-          console.log(
-            chalk.gray(
-              'Use --list to see available platforms'
-            )
-          );
+          console.log(chalk.gray('Use --list to see available platforms'));
           process.exit(1);
         }
 
@@ -109,9 +103,7 @@ export const exportV2Command = new Command('export')
         // Dry-run notification
         if (options.dryRun) {
           console.log(
-            chalk.yellow(
-              '⚠️  DRY RUN MODE - No files will be written\n'
-            )
+            chalk.yellow('⚠️  DRY RUN MODE - No files will be written\n')
           );
         }
 
@@ -131,7 +123,9 @@ export const exportV2Command = new Command('export')
           console.log(chalk.blue.bold('\nExport Results:\n'));
           result.results.forEach((r) => {
             const icon = r.success ? chalk.green('✓') : chalk.red('✗');
-            const status = r.success ? chalk.green('SUCCESS') : chalk.red('FAILED');
+            const status = r.success
+              ? chalk.green('SUCCESS')
+              : chalk.red('FAILED');
             console.log(`${icon} ${r.platform}: ${status}`);
 
             if (r.error) {
@@ -154,11 +148,7 @@ export const exportV2Command = new Command('export')
               `  Total: ${result.summary.total} | Success: ${chalk.green(result.summary.successful)} | Failed: ${chalk.red(result.summary.failed)}`
             )
           );
-          console.log(
-            chalk.gray(
-              `  Duration: ${result.summary.duration}ms`
-            )
-          );
+          console.log(chalk.gray(`  Duration: ${result.summary.duration}ms`));
 
           if (!result.success) {
             process.exit(1);
@@ -166,9 +156,7 @@ export const exportV2Command = new Command('export')
         }
         // Single platform export
         else if (options.platform) {
-          console.log(
-            chalk.blue(`Exporting to ${options.platform}...\n`)
-          );
+          console.log(chalk.blue(`Exporting to ${options.platform}...\n`));
 
           const result = await orchestrator.exportSingle(
             manifest,
@@ -189,9 +177,7 @@ export const exportV2Command = new Command('export')
 
             if (!options.dryRun) {
               console.log(
-                chalk.gray(
-                  `  Output: ${path.resolve(options.output)}`
-                )
+                chalk.gray(`  Output: ${path.resolve(options.output)}`)
               );
             }
 
@@ -219,9 +205,7 @@ export const exportV2Command = new Command('export')
 
             if (result.metadata?.duration) {
               console.log(
-                chalk.gray(
-                  `\nCompleted in ${result.metadata.duration}ms`
-                )
+                chalk.gray(`\nCompleted in ${result.metadata.duration}ms`)
               );
             }
           } else {
