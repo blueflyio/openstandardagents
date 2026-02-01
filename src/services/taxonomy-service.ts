@@ -21,7 +21,7 @@ export const TaxonomyCategoryInputSchema = z.object({
   type: TaxonomyCategoryTypeSchema,
   level: z.number().int().min(1).max(5),
   parent_id: z.string().uuid().nullable().optional(),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
   tags: z.array(z.string()).optional(),
 });
 
@@ -338,9 +338,12 @@ export class TaxonomyService {
     // Domain classification based on capabilities
     const domainCategories = this.store.listCategories({ type: 'domain' });
     for (const category of domainCategories) {
-      const matchingTags = category.tags?.filter((tag) =>
-        capabilities.some((cap) => cap.toLowerCase().includes(tag.toLowerCase()))
-      ) || [];
+      const matchingTags =
+        category.tags?.filter((tag) =>
+          capabilities.some((cap) =>
+            cap.toLowerCase().includes(tag.toLowerCase())
+          )
+        ) || [];
 
       if (matchingTags.length > 0) {
         const confidence = Math.min(matchingTags.length * 0.3, 0.9);

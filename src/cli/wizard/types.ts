@@ -114,4 +114,5 @@ export interface WizardOptions {
   verbose?: boolean;
   fromExample?: string;
   field?: string;
+  mode?: string;
 }

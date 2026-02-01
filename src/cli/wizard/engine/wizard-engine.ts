@@ -12,7 +12,12 @@
  * DRY: Reusable across different wizards
  */
 
-import type { WizardStep, WizardContext, WizardResult, WizardOptions } from '../types.js';
+import type {
+  WizardStep,
+  WizardContext,
+  WizardResult,
+  WizardOptions,
+} from '../types.js';
 import { WizardUI } from '../ui/wizard-ui.js';
 
 export class WizardEngine {
@@ -127,27 +132,24 @@ export class WizardEngine {
     }
 
     // Execute step
-    const result = await step.execute(this.context);
+    const result = await step.execute(this.context.state);
 
-    // Validate result
-    const validation = step.validate(result.value, this.context);
-    if (!validation.valid) {
-      this.ui.showValidationErrors(validation.errors || []);
-      // Retry the step
-      return this.executeStep(step);
-    }
-
-    // Show warnings if any
-    if (validation.warnings && validation.warnings.length > 0) {
-      this.ui.showWarnings(validation.warnings);
+    // Validate result if validator exists
+    if (step.validate) {
+      const validation = await step.validate(result);
+      if (!validation) {
+        // Retry the step
+        return this.executeStep(step);
+      }
     }
 
     // Update context
-    if (result.value !== undefined) {
-      this.context.data[step.id] = result.value;
-    }
+    this.context.state = result;
 
-    return result;
+    return {
+      action: 'next' as const,
+      value: result,
+    };
   }
 
   /**
@@ -189,18 +191,25 @@ export class WizardEngine {
     const saveFile = path.join(saveDir, `wizard-${Date.now()}.json`);
     await fs.promises.writeFile(
       saveFile,
-      JSON.stringify({
-        currentStepIndex: this.currentStepIndex,
-        context: this.context,
-        savedAt: new Date().toISOString(),
-      }, null, 2)
+      JSON.stringify(
+        {
+          currentStepIndex: this.currentStepIndex,
+          context: this.context,
+          savedAt: new Date().toISOString(),
+        },
+        null,
+        2
+      )
     );
   }
 
   /**
    * Resume from saved progress
    */
-  static async resume(saveFile: string, steps: WizardStep[]): Promise<WizardEngine> {
+  static async resume(
+    saveFile: string,
+    steps: WizardStep[]
+  ): Promise<WizardEngine> {
     const fs = await import('fs');
     const data = JSON.parse(await fs.promises.readFile(saveFile, 'utf-8'));
 
