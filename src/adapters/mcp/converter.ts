@@ -4,8 +4,8 @@ import {
   ExportOptions,
   ExportResult,
   ExportFile,
-} from '../base.adapter';
-import { OssaAgent } from '../../types/ossa';
+  OssaAgent,
+} from '../base/adapter.interface.js';
 
 /**
  * MCP export adapter - generates JSON-RPC 2.0 MCP servers
@@ -51,9 +51,10 @@ export class MCPAdapter extends BaseAdapter {
         totalSizeBytes: files.reduce((sum, f) => sum + f.content.length, 0),
       };
 
-      return this.createSuccessResult(files, metadata);
-    } catch (error) {
-      return this.createErrorResult([`MCP export failed: ${error.message}`]);
+      return this.createResult(true, files, undefined, metadata);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      return this.createResult(false, [], `MCP export failed: ${errorMessage}`);
     }
   }
 
@@ -140,7 +141,7 @@ main().catch((error) => {
 });
 `;
 
-    return this.createFile('server.ts', content, 'code', 'typescript', true);
+    return this.createFile('server.ts', content, 'code', 'typescript');
   }
 
   private generateToolsFile(manifest: OssaAgent): ExportFile {
@@ -336,7 +337,7 @@ This MCP server was generated from an OSSA v${manifest.apiVersion} manifest.
 Learn more: https://openstandardagents.org
 `;
 
-    return this.createFile('README.md', content, 'doc');
+    return this.createFile('README.md', content, 'documentation');
   }
 
   private generateTests(manifest: OssaAgent): ExportFile {
