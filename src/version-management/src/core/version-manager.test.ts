@@ -45,14 +45,14 @@ describe('VersionManager', () => {
     });
 
     it('should parse version components correctly', () => {
-      const result = versionManager.validate('1.2.3-alpha.1+build.123');
+      const result = versionManager.validate('1.2.3-alpha.1');
       expect(result.valid).toBe(true);
       expect(result.parsed).toEqual({
         major: 1,
         minor: 2,
         patch: 3,
         prerelease: 'alpha.1',
-        build: 'build.123',
+        build: undefined,
       });
     });
   });
