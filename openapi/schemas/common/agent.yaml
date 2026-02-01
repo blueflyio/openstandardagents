@@ -53,6 +53,20 @@ components:
           $ref: '#/components/schemas/AgentType'
         description:
           type: string
+        role:
+          type: string
+          description: Agent role/system prompt
+        instructions:
+          type: string
+          description: Additional instructions for the agent
+        workflow:
+          type: object
+          description: Workflow configuration for multi-agent collaboration
+          properties:
+            steps:
+              type: array
+              items:
+                type: object
         capabilities:
           type: array
           items:
@@ -91,11 +105,14 @@ components:
     Capability:
       type: object
       required:
-        - name
-        - category
+        - type
       properties:
+        type:
+          type: string
+          description: Capability type identifier
         name:
           type: string
+          description: Capability name
         category:
           type: string
           enum:
