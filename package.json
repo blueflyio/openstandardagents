@@ -144,6 +144,7 @@
     "version:validate": "tsx src/dev-cli/src/index.ts version validate",
     "version:sync": "tsx src/dev-cli/src/index.ts version sync",
     "version:detect": "tsx src/dev-cli/src/index.ts version detect",
+    "version:audit": "tsx src/dev-cli/src/index.ts version audit",
     "// INFRASTRUCTURE (TODO: Move to buildkit)": "",
     "env:list": "tsx src/dev-cli/src/index.ts env-cleanup --list",
     "env:cleanup": "tsx src/dev-cli/src/index.ts env-cleanup --stop-stuck",
