@@ -300,7 +300,7 @@ spec:
 
 ## 🔗 Related Documentation
 
-- [Master Roadmap](v0.3.x-to-v0.4.0.md)
+- [Master Roadmap](v0.3.x-to-v{{VERSION}}.md)
 - [Phase 2: Runtime Implementation](phase-2-runtime-implementation.md)
 - [Dependency Graph](dependency-graph.md)
 - [Success Metrics](success-metrics.md)

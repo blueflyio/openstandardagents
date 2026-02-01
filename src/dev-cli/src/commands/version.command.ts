@@ -12,6 +12,8 @@ import { VersionValidateService } from '../services/version-validate.service.js'
 import { VersionSyncService } from '../services/version-sync.service.js';
 import { VersionDetectionService } from '../services/version-detection.service.js';
 import { VersionAuditService } from '../services/version-audit.service.js';
+import { VersionStatusService } from '../services/version-status.service.js';
+import { VersionCheckService } from '../services/version-check.service.js';
 
 export const versionCommand = new Command('version')
   .alias('ver')
@@ -233,3 +235,79 @@ versionCommand
       process.exit(1);
     }
   });
+
+// version:status - Show version status and health
+versionCommand
+  .command("status")
+  .alias("s")
+  .description("Show comprehensive version status and health")
+  .action(async () => {
+    console.log(chalk.blue("📊 OSSA Version Status"));
+    console.log(chalk.gray("========================\n"));
+
+    const service = new VersionStatusService();
+    try {
+      const result = await service.getStatus();
+
+      console.log(chalk.gray("Version Information:"));
+      console.log(chalk.gray(`  • Current (.version.json): ${result.current}`));
+      console.log(chalk.gray(`  • Package.json: ${result.packageJson}`));
+      console.log(chalk.gray(`  • Latest Git Tag: ${result.gitTag}`));
+      console.log(chalk.gray(`\nSchema Status:`));
+      console.log(
+        result.schemaExists
+          ? chalk.green(`  ✅ Schema exists: ${result.specPath}/${result.schemaFile}`)
+          : chalk.red(`  ❌ Schema missing: ${result.specPath}/${result.schemaFile}`)
+      );
+
+      console.log(chalk.gray(`\nHealth Status:`));
+      if (result.health === "healthy") {
+        console.log(chalk.green("  ✅ Healthy"));
+      } else if (result.health === "warning") {
+        console.log(chalk.yellow("  ⚠️  Warning - versions may be inconsistent"));
+      } else {
+        console.log(chalk.red("  ❌ Error - schema missing or versions inconsistent"));
+      }
+    } catch (error) {
+      console.error(
+        chalk.red(
+          `\n❌ Error: ${error instanceof Error ? error.message : String(error)}`
+        )
+      );
+      process.exit(1);
+    }
+  });
+
+// version:check - Quick consistency check
+versionCommand
+  .command("check")
+  .alias("c")
+  .description("Quick version consistency check")
+  .action(async () => {
+    console.log(chalk.blue("🔍 OSSA Version Check"));
+    console.log(chalk.gray("======================\n"));
+
+    const service = new VersionCheckService();
+    try {
+      const result = await service.check();
+
+      if (result.status === "OK") {
+        console.log(chalk.green(`✅ ${result.message}`));
+      } else if (result.status === "WARN") {
+        console.log(chalk.yellow(`⚠️  ${result.message}`));
+        result.issues.forEach((issue) => console.log(chalk.yellow(`  • ${issue}`)));
+      } else {
+        console.log(chalk.red(`❌ ${result.message}`));
+        result.issues.forEach((issue) => console.log(chalk.red(`  • ${issue}`)));
+        process.exit(1);
+      }
+    } catch (error) {
+      console.error(
+        chalk.red(
+          `\n❌ Error: ${error instanceof Error ? error.message : String(error)}`
+        )
+      );
+      process.exit(1);
+    }
+  });
+

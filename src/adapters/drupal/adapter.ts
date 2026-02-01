@@ -26,7 +26,7 @@ export class DrupalAdapter extends BaseAdapter {
   readonly platform = 'drupal';
   readonly displayName = 'Drupal Module';
   readonly description = 'Drupal module with OSSA agent integration';
-  readonly supportedVersions = ['v0.4.0'];
+  readonly supportedVersions = ['v{{VERSION}}'];
 
   /**
    * Export OSSA manifest to Drupal module format
@@ -174,7 +174,7 @@ export class DrupalAdapter extends BaseAdapter {
    */
   getExample(): OssaAgent {
     return {
-      apiVersion: 'ossa/v0.4.0',
+      apiVersion: 'ossa/v{{VERSION}}',
       kind: 'Agent',
       metadata: {
         name: 'content_moderator',
@@ -220,7 +220,7 @@ dependencies:
 # OSSA metadata
 ossa:
   version: '${manifest.metadata?.version || '1.0.0'}'
-  api_version: '${manifest.apiVersion || 'ossa/v0.4.0'}'
+  api_version: '${manifest.apiVersion || 'ossa/v{{VERSION}}'}'
   kind: '${manifest.kind || 'Agent'}'
 `;
   }
@@ -536,7 +536,7 @@ Configure the module at: \`/admin/config/ossa/${moduleName}\`
 
 ## Generated from OSSA
 
-This module was generated from an OSSA v${manifest.apiVersion?.split('/')[1] || '0.4.0'} manifest.
+This module was generated from an OSSA v${manifest.apiVersion?.split('/')[1] || '{{VERSION}}'} manifest.
 
 Original manifest: \`config/ossa/agent.yml\`
 
