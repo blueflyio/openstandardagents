@@ -2,7 +2,7 @@
 
 **Status:** Not Started  
 **Timeline:** Weeks 5-6  
-**Version Target:** v0.3.4+
+**Version Target:** v{{VERSION}}+
 
 ---
 
