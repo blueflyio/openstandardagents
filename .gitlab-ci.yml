@@ -64,8 +64,7 @@ variables:
 version:dev:
   stage: version
   image: node:${NODE_VERSION}
-  tags:
-    - vast-ai
+  extends: .base-runner
   environment:
     name: development
     deployment_tier: development
@@ -110,8 +109,7 @@ version:dev:
 version:rc:
   stage: version
   image: node:${NODE_VERSION}
-  tags:
-    - vast-ai
+  extends: .base-runner
   environment:
     name: staging
     deployment_tier: staging
@@ -165,8 +163,7 @@ version:rc:
 release:production:
   stage: release
   image: node:${NODE_VERSION}
-  tags:
-    - vast-ai
+  extends: .base-runner
   environment:
     name: production
     deployment_tier: production
@@ -230,8 +227,7 @@ release:production:
 deploy:npm:
   stage: deploy
   image: node:${NODE_VERSION}
-  tags:
-    - vast-ai
+  extends: .base-runner
   environment:
     name: production
     deployment_tier: production
@@ -256,8 +252,7 @@ deploy:npm:
 deploy:gitlab-release:
   stage: deploy
   image: registry.gitlab.com/gitlab-org/release-cli:latest
-  tags:
-    - vast-ai
+  extends: .base-runner
   needs:
     - job: release:production
       artifacts: true
