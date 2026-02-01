@@ -82,31 +82,19 @@ export class LangChainAdapter extends BaseAdapter {
       // Generate requirements.txt
       const requirements = this.generateRequirements(config);
       files.push(
-        this.createFile(
-          'langchain/requirements.txt',
-          requirements,
-          'config'
-        )
+        this.createFile('langchain/requirements.txt', requirements, 'config')
       );
 
       // Generate package.json
       const packageJson = this.generatePackageJson(config, manifest);
       files.push(
-        this.createFile(
-          'langchain/package.json',
-          packageJson,
-          'config'
-        )
+        this.createFile('langchain/package.json', packageJson, 'config')
       );
 
       // Generate README
       const readme = this.generateReadme(manifest, config);
       files.push(
-        this.createFile(
-          'langchain/README.md',
-          readme,
-          'documentation'
-        )
+        this.createFile('langchain/README.md', readme, 'documentation')
       );
 
       return this.createResult(true, files, undefined, {
@@ -141,7 +129,12 @@ export class LangChainAdapter extends BaseAdapter {
     // Check LLM configuration
     if (spec?.llm) {
       const llm = spec.llm as any;
-      const supportedProviders = ['openai', 'anthropic', 'cohere', 'huggingface'];
+      const supportedProviders = [
+        'openai',
+        'anthropic',
+        'cohere',
+        'huggingface',
+      ];
 
       if (llm.provider && !supportedProviders.includes(llm.provider)) {
         warnings.push({
@@ -249,14 +242,18 @@ const llm = ${this.generateLLMInit(config)};
 
 // Define tools
 const tools: Tool[] = [
-${config.tools.map((tool) => `  {
+${config.tools
+  .map(
+    (tool) => `  {
     name: '${tool.name}',
     description: '${tool.description}',
     func: async (input: string) => {
       // Tool implementation
       return \`Executed ${tool.name} with: \${input}\`;
     },
-  }`).join(',\n')}
+  }`
+  )
+  .join(',\n')}
 ];
 
 // Create prompt template
@@ -334,10 +331,7 @@ if (require.main === module) {
    * Generate Python requirements.txt
    */
   private generateRequirements(config: LangChainAgentConfig): string {
-    const requirements = [
-      'langchain>=0.1.0',
-      'langchain-openai>=0.0.5',
-    ];
+    const requirements = ['langchain>=0.1.0', 'langchain-openai>=0.0.5'];
 
     if (config.llm.provider === 'anthropic') {
       requirements.push('langchain-anthropic>=0.0.1');
@@ -389,7 +383,10 @@ if (require.main === module) {
   /**
    * Generate README.md
    */
-  private generateReadme(manifest: OssaAgent, config: LangChainAgentConfig): string {
+  private generateReadme(
+    manifest: OssaAgent,
+    config: LangChainAgentConfig
+  ): string {
     return `# ${manifest.metadata?.name || 'LangChain Agent'}
 
 ${manifest.metadata?.description || 'LangChain agent generated from OSSA manifest'}

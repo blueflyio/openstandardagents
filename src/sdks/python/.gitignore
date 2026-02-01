@@ -45,7 +45,3 @@ dmypy.json
 
 # Ruff
 .ruff_cache/
-<<<<<<< HEAD
-.DS_Store
-=======
->>>>>>> origin/recovery/cli-bot-sdk-restored

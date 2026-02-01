@@ -201,17 +201,8 @@ export function outputJSON(data: unknown): void {
 /**
  * Check if output should be JSON
  */
-<<<<<<< HEAD
-export function isJSONOutput(options: {
-  output?: string;
-  outputFormat?: string;
-}): boolean {
-  // Check both output and outputFormat for backwards compatibility
-  return options.output === 'json' || options.outputFormat === 'json';
-=======
 export function isJSONOutput(options: { output?: string }): boolean {
   return options.output === 'json';
->>>>>>> origin/recovery/cli-bot-sdk-restored
 }
 
 // ============================================================================
