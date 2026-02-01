@@ -50,6 +50,16 @@ export interface ExportResult {
      * Warnings during export
      */
     warnings?: string[];
+
+    /**
+     * Whether Claude Skill was included
+     */
+    includeSkill?: boolean;
+
+    /**
+     * Additional platform-specific metadata
+     */
+    [key: string]: any;
   };
 
   /**
@@ -106,6 +116,11 @@ export interface ExportOptions {
    * Whether to include documentation
    */
   includeDocs?: boolean;
+
+  /**
+   * Whether to include Claude Skill (SKILL.md)
+   */
+  includeSkill?: boolean;
 
   /**
    * Platform-specific options
@@ -287,7 +302,7 @@ export abstract class BaseAdapter implements PlatformAdapter {
    */
   getExample(): OssaAgent {
     return {
-      apiVersion: 'ossa/v0.4.0',
+      apiVersion: 'ossa/v{{VERSION}}',
       kind: 'Agent',
       metadata: {
         name: 'example-agent',

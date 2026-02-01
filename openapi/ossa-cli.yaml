@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: OSSA CLI API
-  version: 0.4.0
+  version: {{VERSION}}
   description: |
     API specification for OSSA (Open Standard for Software Agents) CLI operations.
 
@@ -46,8 +46,8 @@ components:
       properties:
         apiVersion:
           type: string
-          enum: ['ossa/v0.3.6', 'ossa/v0.4.0']
-          example: 'ossa/v0.4.0'
+          enum: ['ossa/v0.3.6', 'ossa/v{{VERSION}}']
+          example: 'ossa/v{{VERSION}}'
         kind:
           type: string
           enum: ['Agent', 'Workflow', 'Task']

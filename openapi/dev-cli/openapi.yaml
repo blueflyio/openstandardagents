@@ -87,6 +87,44 @@ paths:
               schema:
                 $ref: '#/components/schemas/VersionAuditResponse'
 
+  /version/status:
+    get:
+      operationId: versionStatus
+      summary: Get version status and health
+      description: |
+        Shows comprehensive version status including:
+        - Current version from .version.json
+        - Git tag status
+        - Package.json version
+        - Schema files status
+        - Placeholder usage statistics
+      tags:
+        - Version Management
+      responses:
+        '200':
+          description: Version status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VersionStatusResponse'
+
+  /version/check:
+    get:
+      operationId: versionCheck
+      summary: Quick version consistency check
+      description: |
+        Fast check for version consistency across critical files.
+        Returns OK/WARN/ERROR status.
+      tags:
+        - Version Management
+      responses:
+        '200':
+          description: Check results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VersionCheckResponse'
+
   /version/sync:
     post:
       operationId: versionSync
@@ -349,6 +387,69 @@ components:
         suggested:
           type: string
           description: Suggested replacement with 0.3.6
+
+    VersionStatusResponse:
+      type: object
+      required:
+        - current
+        - packageJson
+        - gitTag
+        - schemaExists
+        - placeholderStats
+      properties:
+        current:
+          type: string
+          description: Current version from .version.json
+        packageJson:
+          type: string
+          description: Version from package.json
+        gitTag:
+          type: string
+          description: Latest git tag
+        schemaExists:
+          type: boolean
+          description: Whether schema files exist for current version
+        specPath:
+          type: string
+          description: Path to spec directory
+        schemaFile:
+          type: string
+          description: Schema filename
+        placeholderStats:
+          type: object
+          properties:
+            total:
+              type: integer
+              description: Total files with placeholders
+            hardcoded:
+              type: integer
+              description: Files with hardcoded versions
+        health:
+          type: string
+          enum: [healthy, warning, error]
+          description: Overall version health status
+
+    VersionCheckResponse:
+      type: object
+      required:
+        - status
+        - consistent
+      properties:
+        status:
+          type: string
+          enum: [OK, WARN, ERROR]
+          description: Check status
+        consistent:
+          type: boolean
+          description: Whether versions are consistent
+        issues:
+          type: array
+          items:
+            type: string
+          description: List of consistency issues
+        message:
+          type: string
+          description: Human-readable status message
 
     VersionSyncRequest:
       type: object

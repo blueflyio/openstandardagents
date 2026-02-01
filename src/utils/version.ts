@@ -121,11 +121,10 @@ function readVersionFromPackageJson(): string {
       // Use eval to prevent bundlers from seeing import.meta.url in environments that don't support it
       const metaUrl = eval('import.meta.url');
       const modulePath = fileURLToPath(metaUrl);
-      // The built file is in `dist/utils`, so we go up 3 levels to the project root
-      const searchDir = path.resolve(modulePath, '..', '..', '..');
-      pkgPath = findPackageJson(searchDir);
+      // Search upward from the module path (handles both local and npm install -g)
+      pkgPath = findPackageJson(path.dirname(modulePath));
     } catch (e) {
-      // Fallback if import.meta.url fails for some reason
+      // Fallback: Search from CWD (for development/testing)
       pkgPath = findPackageJson(process.cwd());
     }
   }

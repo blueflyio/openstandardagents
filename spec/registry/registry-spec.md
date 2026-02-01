@@ -1672,7 +1672,7 @@ OSSA CLI supports standard semver ranges:
 ```json
 {
   "dependencies": {
-    "@ossa/runtime": "^0.3.0",     // >= 0.3.0, < 0.4.0
+    "@ossa/runtime": "^0.3.0",     // >= 0.3.0, < {{VERSION}}
     "tool-agent": "~1.2.0",        // >= 1.2.0, < 1.3.0
     "other-agent": "1.x",          // >= 1.0.0, < 2.0.0
     "specific": "1.2.3",           // Exactly 1.2.3
