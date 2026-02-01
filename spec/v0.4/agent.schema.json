@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://openstandardagents.org/schemas/v0.3/manifest.json",
-  "title": "OSSA v0.3.x Agent Manifest Schema",
-  "description": "Open Standard for Software Agents (OSSA) v0.3.x series - The Next OpenAPI for Software Agents. A specification standard (not a framework) that defines contracts/metadata for production agent systems. v0.3.6 adds token efficiency (95% cost savings), GitLab Duo integration, and knowledge graph support. v0.3.6 adds revolutionary features: DID-based identity, agent genetics & breeding, lifecycle stages, economics & marketplace, and team collaboration.",
+  "$id": "https://openstandardagents.org/schemas/v{{VERSION}}/agent.schema.json",
+  "title": "OSSA v{{VERSION}} Agent Manifest Schema",
+  "description": "Open Standard for Software Agents (OSSA) v{{VERSION}} - The Next OpenAPI for Software Agents. A specification standard (not a framework) that defines contracts/metadata for production agent systems.",
   "type": "object",
   "required": [
     "apiVersion",
@@ -12,12 +12,12 @@
   "properties": {
     "apiVersion": {
       "type": "string",
-      "pattern": "^ossa/v(0\\.3(\\.[4-9]|\\.[0-9]+(-[a-zA-Z0-9.]+)?)?|0\\.2\\.[2-9](-dev)?|1)(\\.[0-9]+)?(-[a-zA-Z0-9.]+)?$",
-      "description": "OSSA API version (v0.3+ uses minor version pattern, supports Task and Workflow kinds)",
+      "pattern": "^ossa/v(0\\.4(\\.[0-9]+(-[a-zA-Z0-9.]+)?)?|0\\.3(\\.[4-9]|\\.[0-9]+(-[a-zA-Z0-9.]+)?)?|0\\.2\\.[2-9](-dev)?|1)(\\.[0-9]+)?(-[a-zA-Z0-9.]+)?$",
+      "description": "OSSA API version (v0.4+ uses minor version pattern, supports Task and Workflow kinds)",
       "examples": [
+        "ossa/v{{VERSION}}",
+        "ossa/v0.4",
         "ossa/v0.3",
-        "ossa/v0.3.5",
-        "ossa/v0.3.4",
         "ossa/v1"
       ]
     },
@@ -229,7 +229,7 @@
     },
     "Principal": {
       "type": "object",
-      "description": "Abstract identity principal definition (v0.3.6+)",
+      "description": "Abstract identity principal definition (v{{VERSION}})",
       "required": ["category", "mode", "credentialSource", "policy"],
       "properties": {
         "category": {
@@ -285,7 +285,7 @@
     },
     "Adapter": {
       "type": "object",
-      "description": "Platform-specific adapter configuration (v0.3.6+)",
+      "description": "Platform-specific adapter configuration (v{{VERSION}})",
       "required": ["type", "version", "config"],
       "properties": {
         "type": {
@@ -315,7 +315,7 @@
     },
     "AccessTier": {
       "type": "object",
-      "description": "Access tier configuration for separation of duties (v0.3.4+). Defines privilege levels and role separations for agents.",
+      "description": "Access tier configuration for separation of duties (v{{VERSION}}). Defines privilege levels and role separations for agents.",
       "required": [
         "tier"
       ],
@@ -527,7 +527,7 @@
     },
     "TaxonomyClassification": {
       "type": "object",
-      "description": "Hierarchical taxonomy classification for agents (v0.3.4+). Links to taxonomy.yaml spec.",
+      "description": "Hierarchical taxonomy classification for agents (v{{VERSION}}). Links to taxonomy.yaml spec.",
       "required": [
         "domain"
       ],
@@ -995,7 +995,7 @@
         },
         "composite": {
           "type": "object",
-          "description": "Composite identity configuration (v0.3.6+). Merges service account + human user for attribution and security. GitLab Duo Agent Platform feature, vendor-neutral.",
+          "description": "Composite identity configuration (v{{VERSION}}). Merges service account + human user for attribution and security. GitLab Duo Agent Platform feature, vendor-neutral.",
           "properties": {
             "enabled": {
               "type": "boolean",
@@ -1134,11 +1134,11 @@
             "economy",
             "custom"
           ],
-          "description": "Token efficiency tier (v0.3.6+): premium (no optimization), standard (basic pruning), economy (aggressive optimization), custom (explicit config)"
+          "description": "Token efficiency tier (v{{VERSION}}): premium (no optimization), standard (basic pruning), economy (aggressive optimization), custom (explicit config)"
         },
         "catalog": {
           "type": "object",
-          "description": "Agent catalog metadata for discovery and publication (v0.3.6+). Vendor-neutral support for GitLab AI Catalog, GitHub Marketplace, etc.",
+          "description": "Agent catalog metadata for discovery and publication (v{{VERSION}}). Vendor-neutral support for GitLab AI Catalog, GitHub Marketplace, etc.",
           "properties": {
             "published": {
               "type": "boolean",
@@ -1229,23 +1229,23 @@
         },
         "decentralized_identity": {
           "$ref": "#/definitions/DecentralizedIdentity",
-          "description": "DID-based decentralized identity for trust and reputation (v0.3.6+ Revolutionary Feature)"
+          "description": "DID-based decentralized identity for trust and reputation (v{{VERSION}} Revolutionary Feature)"
         },
         "genetics": {
           "$ref": "#/definitions/AgentGenetics",
-          "description": "Agent genetics for breeding and evolution (v0.3.6+ Revolutionary Feature)"
+          "description": "Agent genetics for breeding and evolution (v{{VERSION}} Revolutionary Feature)"
         },
         "lifecycle_stages": {
           "$ref": "#/definitions/AgentLifecycleStages",
-          "description": "Agent lifecycle stages from birth to retirement (v0.3.6+ Revolutionary Feature)"
+          "description": "Agent lifecycle stages from birth to retirement (v{{VERSION}} Revolutionary Feature)"
         },
         "economics": {
           "$ref": "#/definitions/AgentEconomics",
-          "description": "Agent economics for marketplace and wallet (v0.3.6+ Revolutionary Feature)"
+          "description": "Agent economics for marketplace and wallet (v{{VERSION}} Revolutionary Feature)"
         },
         "team_membership": {
           "$ref": "#/definitions/TeamMembership",
-          "description": "Team membership and collaboration (v0.3.6+ Revolutionary Feature)"
+          "description": "Team membership and collaboration (v{{VERSION}} Revolutionary Feature)"
         }
       },
       "additionalProperties": false
@@ -1642,7 +1642,7 @@
         },
         "messaging": {
           "$ref": "#/definitions/MessagingExtension",
-          "description": "Agent-to-agent messaging configuration (v0.3.4+)"
+          "description": "Agent-to-agent messaging configuration (v{{VERSION}})"
         },
         "functions": {
           "type": "array",
@@ -1653,30 +1653,30 @@
         },
         "identity": {
           "$ref": "#/definitions/AgentIdentity",
-          "description": "Agent identity configuration including service accounts, authentication, and observability (v0.3.4+)"
+          "description": "Agent identity configuration including service accounts, authentication, and observability (v{{VERSION}})"
         },
         "principal": {
           "$ref": "#/definitions/Principal",
-          "description": "Abstract identity principal definition (v0.3.6+). Preferred over 'identity' for new agents."
+          "description": "Abstract identity principal definition (v{{VERSION}}). Preferred over 'identity' for new agents."
         },
         "adapters": {
           "type": "array",
-          "description": "Platform-specific adapters for the Adapter Envelope pattern (v0.3.6+)",
+          "description": "Platform-specific adapters for the Adapter Envelope pattern (v{{VERSION}})",
           "items": {
             "$ref": "#/definitions/Adapter"
           }
         },
         "access": {
           "$ref": "#/definitions/AccessTier",
-          "description": "Access tier configuration for separation of duties (v0.3.4+). Defines privilege level and allowed operations."
+          "description": "Access tier configuration for separation of duties (v{{VERSION}}). Defines privilege level and allowed operations."
         },
         "separation": {
           "$ref": "#/definitions/SeparationOfDuties",
-          "description": "Role separation configuration to prevent conflicts of interest (v0.3.4+)"
+          "description": "Role separation configuration to prevent conflicts of interest (v{{VERSION}})"
         },
         "delegation": {
           "$ref": "#/definitions/DelegationConfig",
-          "description": "Delegation configuration for multi-agent hierarchies (v0.3.4+)"
+          "description": "Delegation configuration for multi-agent hierarchies (v{{VERSION}})"
         },
         "type": {
           "type": "string",
@@ -1690,11 +1690,11 @@
             "specialist",
             "critic"
           ],
-          "description": "Agent type classification aligned with access tiers (v0.3.4+)"
+          "description": "Agent type classification aligned with access tiers (v{{VERSION}})"
         },
         "taxonomy": {
           "$ref": "#/definitions/TaxonomyClassification",
-          "description": "Taxonomy classification for domain and cross-cutting concerns (v0.3.4+)"
+          "description": "Taxonomy classification for domain and cross-cutting concerns (v{{VERSION}})"
         },
         "compliance": {
           "type": "object",
@@ -1834,7 +1834,7 @@
         },
         "token_efficiency": {
           "$ref": "#/definitions/TokenEfficiency",
-          "description": "Token efficiency configuration (v0.3.6+). Enables 70-95% cost savings through intelligent optimization."
+          "description": "Token efficiency configuration (v{{VERSION}}). Enables 70-95% cost savings through intelligent optimization."
         },
         "completion": {
           "$ref": "#/definitions/CompletionSignalConfiguration"
@@ -2805,7 +2805,7 @@
     },
     "TokenBudget": {
       "type": "object",
-      "description": "Token budget configuration for cost control (v0.3.6+). Enforces hard limits on token usage.",
+      "description": "Token budget configuration for cost control (v{{VERSION}}). Enforces hard limits on token usage.",
       "properties": {
         "enabled": {
           "type": "boolean",
@@ -2855,7 +2855,7 @@
     },
     "TokenEfficiency": {
       "type": "object",
-      "description": "Comprehensive token efficiency configuration (v0.3.6+). Enables 70-95% cost savings through declarative optimization.",
+      "description": "Comprehensive token efficiency configuration (v{{VERSION}}). Enables 70-95% cost savings through declarative optimization.",
       "properties": {
         "enabled": {
           "type": "boolean",
@@ -2969,7 +2969,7 @@
     },
     "ToolOutputLimits": {
       "type": "object",
-      "description": "Tool output size limits for token efficiency (v0.3.6+). Prevents excessive tool outputs.",
+      "description": "Tool output size limits for token efficiency (v{{VERSION}}). Prevents excessive tool outputs.",
       "properties": {
         "enabled": {
           "type": "boolean",
@@ -3194,7 +3194,7 @@
     },
     "ContextManagement": {
       "type": "object",
-      "description": "Token efficiency configuration for context management (v0.3.6+). Enables 70-95% cost savings through intelligent context optimization.",
+      "description": "Token efficiency configuration for context management (v{{VERSION}}). Enables 70-95% cost savings through intelligent context optimization.",
       "properties": {
         "strategy": {
           "type": "string",
@@ -4167,7 +4167,7 @@
     },
     "AutoGenExtension": {
       "type": "object",
-      "description": "Microsoft AutoGen multi-agent framework extension for OSSA v0.3.4 - supports ConversableAgent, AssistantAgent, UserProxyAgent, GroupChat, and nested delegation patterns",
+      "description": "Microsoft AutoGen multi-agent framework extension for OSSA v{{VERSION}} - supports ConversableAgent, AssistantAgent, UserProxyAgent, GroupChat, and nested delegation patterns",
       "properties": {
         "agent_type": {
           "type": "string",
@@ -4943,7 +4943,7 @@
     },
     "MessagingExtension": {
       "type": "object",
-      "description": "Agent-to-agent messaging configuration (v0.3.4+)",
+      "description": "Agent-to-agent messaging configuration (v{{VERSION}})",
       "properties": {
         "transport": {
           "type": "string",
@@ -5990,7 +5990,7 @@
     },
     "LangChainExtension": {
       "type": "object",
-      "description": "LangChain/LangGraph integration extension for OSSA v0.3.4. Provides bidirectional mapping between LangChain constructs (LCEL chains, LangGraph state machines, agents, memory, callbacks) and OSSA primitives.",
+      "description": "LangChain/LangGraph integration extension for OSSA v{{VERSION}}. Provides bidirectional mapping between LangChain constructs (LCEL chains, LangGraph state machines, agents, memory, callbacks) and OSSA primitives.",
       "properties": {
         "enabled": {
           "type": "boolean",
@@ -7343,7 +7343,7 @@
     },
     "SemanticKernelExtension": {
       "type": "object",
-      "description": "Microsoft Semantic Kernel integration extension for OSSA v0.3.4. Provides bidirectional mapping between Semantic Kernel constructs (Kernel, Plugins, Functions, Planners, Memory, Connectors, Filters, Agents) and OSSA primitives.",
+      "description": "Microsoft Semantic Kernel integration extension for OSSA v{{VERSION}}. Provides bidirectional mapping between Semantic Kernel constructs (Kernel, Plugins, Functions, Planners, Memory, Connectors, Filters, Agents) and OSSA primitives.",
       "properties": {
         "enabled": {
           "type": "boolean",
@@ -8410,7 +8410,7 @@
     },
     "CrewAIExtension": {
       "type": "object",
-      "description": "CrewAI multi-agent orchestration framework extension for OSSA v0.3.4. Provides bidirectional mapping between CrewAI crews, agents, tasks, processes, and OSSA primitives including workflows, agents, tasks, delegation, memory, and observability.",
+      "description": "CrewAI multi-agent orchestration framework extension for OSSA v{{VERSION}}. Provides bidirectional mapping between CrewAI crews, agents, tasks, processes, and OSSA primitives including workflows, agents, tasks, delegation, memory, and observability.",
       "properties": {
         "crew_name": {
           "type": "string",
@@ -10300,7 +10300,7 @@
     },
     "PromptCaching": {
       "type": "object",
-      "description": "Prompt caching configuration for supported providers (v0.3.6+). Achieves up to 90% cost savings on repeated context.",
+      "description": "Prompt caching configuration for supported providers (v{{VERSION}}). Achieves up to 90% cost savings on repeated context.",
       "properties": {
         "enabled": {
           "type": "boolean",
@@ -13992,7 +13992,7 @@
     },
     "KnowledgeGraphEfficiency": {
       "type": "object",
-      "description": "Knowledge graph efficiency configuration (v0.3.6+). Achieves 98% token reduction through structured code indexing.",
+      "description": "Knowledge graph efficiency configuration (v{{VERSION}}). Achieves 98% token reduction through structured code indexing.",
       "properties": {
         "enabled": {
           "type": "boolean",
@@ -14355,7 +14355,7 @@
     },
     "DecentralizedIdentity": {
       "type": "object",
-      "description": "DID-based decentralized identity for agent verification, reputation, and trust networks (v0.3.6 Revolutionary Feature)",
+      "description": "DID-based decentralized identity for agent verification, reputation, and trust networks (v{{VERSION}} Revolutionary Feature)",
       "properties": {
         "did": {
           "type": "string",
@@ -14501,7 +14501,7 @@
     },
     "AgentGenetics": {
       "type": "object",
-      "description": "Agent genetics for breeding, evolution, and lineage tracking (v0.3.6 Revolutionary Feature)",
+      "description": "Agent genetics for breeding, evolution, and lineage tracking (v{{VERSION}} Revolutionary Feature)",
       "properties": {
         "generation": {
           "type": "integer",
@@ -14652,7 +14652,7 @@
     },
     "AgentLifecycleStages": {
       "type": "object",
-      "description": "Agent lifecycle stages from birth to retirement (v0.3.6 Revolutionary Feature)",
+      "description": "Agent lifecycle stages from birth to retirement (v{{VERSION}} Revolutionary Feature)",
       "required": [
         "current_stage",
         "birth"
@@ -14811,7 +14811,7 @@
     },
     "AgentEconomics": {
       "type": "object",
-      "description": "Agent economics for marketplace, wallet, and transactions (v0.3.6 Revolutionary Feature)",
+      "description": "Agent economics for marketplace, wallet, and transactions (v{{VERSION}} Revolutionary Feature)",
       "properties": {
         "wallet": {
           "type": "object",
@@ -14999,7 +14999,7 @@
     },
     "TeamMembership": {
       "type": "object",
-      "description": "Team membership and collaboration (v0.3.6 Revolutionary Feature)",
+      "description": "Team membership and collaboration (v{{VERSION}} Revolutionary Feature)",
       "required": [
         "team_id",
         "role"
@@ -15036,7 +15036,7 @@
     },
     "AgentLifecycle": {
       "type": "object",
-      "description": "Agent lifecycle management - career stages, growth, retirement (v0.3.6 Revolutionary Feature)",
+      "description": "Agent lifecycle management - career stages, growth, retirement (v{{VERSION}} Revolutionary Feature)",
       "properties": {
         "stage": {
           "type": "string",
@@ -15214,7 +15214,7 @@
     },
     "SwarmConfig": {
       "type": "object",
-      "description": "Swarm intelligence configuration - PSO, ACO, emergent behavior (v0.3.6 Revolutionary Feature)",
+      "description": "Swarm intelligence configuration - PSO, ACO, emergent behavior (v{{VERSION}} Revolutionary Feature)",
       "properties": {
         "swarm_id": {
           "type": "string"
@@ -15288,7 +15288,7 @@
     },
     "CollectiveMemory": {
       "type": "object",
-      "description": "Collective memory and knowledge sharing across agents (v0.3.6 Revolutionary Feature)",
+      "description": "Collective memory and knowledge sharing across agents (v{{VERSION}} Revolutionary Feature)",
       "properties": {
         "knowledge_graph": {
           "type": "object",
@@ -15454,7 +15454,7 @@
     },
     "TimeTravel": {
       "type": "object",
-      "description": "Time-travel debugging with checkpoints and timeline branching (v0.3.6 Revolutionary Feature)",
+      "description": "Time-travel debugging with checkpoints and timeline branching (v{{VERSION}} Revolutionary Feature)",
       "properties": {
         "enabled": {
           "type": "boolean",
@@ -15590,7 +15590,7 @@
     },
     "MetaLearning": {
       "type": "object",
-      "description": "Meta-learning: self-analysis, self-modification, teaching (v0.3.6 Revolutionary Feature)",
+      "description": "Meta-learning: self-analysis, self-modification, teaching (v{{VERSION}} Revolutionary Feature)",
       "properties": {
         "self_analysis": {
           "type": "object",
