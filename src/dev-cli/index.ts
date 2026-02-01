@@ -18,7 +18,6 @@ import { versionCommand } from './commands/version.command.js';
 import { specCommand } from './commands/spec.command.js';
 import { workflowCommand } from './commands/workflow.command.js';
 import { releaseCommand } from './commands/release.command.js';
-import { v035Command } from './commands/v035.command.js';
 import { migrateCommand } from './commands/migrate.command.js';
 import { createEnvCleanupCommand } from './commands/env-cleanup.command.js';
 
@@ -34,7 +33,6 @@ program.addCommand(versionCommand);
 program.addCommand(specCommand);
 program.addCommand(workflowCommand);
 program.addCommand(releaseCommand);
-program.addCommand(v035Command);
 program.addCommand(migrateCommand);
 program.addCommand(createEnvCleanupCommand()); // TODO: Move to buildkit
 
