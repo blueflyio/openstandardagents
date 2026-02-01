@@ -15,7 +15,7 @@
 
 include:
   # Golden component handles: validate, test, build, security
-  - component: $CI_SERVER_FQDN/blueflyio/gitlab_components/golden@release/v0.1.x
+  - component: gitlab.com/blueflyio/gitlab_components/golden@release/v0.1.x
     inputs:
       # Project configuration
       node_version: "22.14"
