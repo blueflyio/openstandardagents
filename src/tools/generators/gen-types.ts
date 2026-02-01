@@ -18,28 +18,28 @@ const ROOT = join(__dirname, '../../..');
 
 async function main() {
   try {
-    // Get version with validation
-    const version = getVersion();
+    const version = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf-8')).version;
     console.log(`📦 Current version: ${version}`);
 
-    // Build paths
-    const schemaPath = join(ROOT, getSchemaPath());
+    // Generate types from complete OpenAPI spec (agent-crud has agent schemas)
+    const openApiPath = join(ROOT, 'openapi/agent-crud.yaml');
     const outputPath = join(ROOT, 'src/generated/types.ts');
 
-    // Validate schema exists
-    if (!existsSync(schemaPath)) {
-      throw new Error(`Schema not found at ${schemaPath}`);
+    if (!existsSync(openApiPath)) {
+      throw new Error(`OpenAPI schema not found at ${openApiPath}`);
     }
-    console.log(`📄 Schema: ${schemaPath}`);
+    console.log(`📄 OpenAPI Spec: ${openApiPath}`);
 
-    // Generate types
-    console.log('🔄 Generating TypeScript types...');
-    const output = execSync(`npx json-schema-to-typescript ${schemaPath}`, {
-      encoding: 'utf8',
-    });
+    // Generate types using openapi-typescript
+    console.log('🔄 Generating TypeScript types from OpenAPI...');
+    execSync(
+      `npx openapi-typescript ${openApiPath} --output ${outputPath}`,
+      {
+        encoding: 'utf8',
+        stdio: 'inherit',
+      }
+    );
 
-    // Write output
-    writeFileSync(outputPath, output);
     console.log(`✅ Generated: ${outputPath}`);
   } catch (error) {
     console.error(
