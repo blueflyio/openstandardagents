@@ -2,7 +2,7 @@
 
 **Status:** In Progress  
 **Timeline:** Weeks 1-2  
-**Version Target:** v0.3.0
+**Version Target:** v{{VERSION}}
 
 ---
 
