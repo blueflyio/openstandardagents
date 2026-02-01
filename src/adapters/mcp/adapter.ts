@@ -228,7 +228,8 @@ export class MCPAdapter extends BaseAdapter {
    */
   private generateServerCode(manifest: OssaAgent): string {
     const agentName = manifest.metadata?.name || 'mcp-server';
-    const description = manifest.spec?.role || manifest.metadata?.description || 'MCP Server';
+    const description =
+      manifest.spec?.role || manifest.metadata?.description || 'MCP Server';
 
     return `#!/usr/bin/env node
 /**
@@ -330,10 +331,11 @@ main().catch((error) => {
     const toolDefinitions = tools.map((tool) => {
       const name = tool.name || 'unknown';
       const description = tool.description || `Tool: ${name}`;
-      const schema = tool.inputSchema || tool.schema || {
-        type: 'object',
-        properties: {},
-      };
+      const schema = tool.inputSchema ||
+        tool.schema || {
+          type: 'object',
+          properties: {},
+        };
 
       return {
         name,
@@ -343,24 +345,29 @@ main().catch((error) => {
     });
 
     // Generate tool interface
-    const toolsList = toolDefinitions.map((t) =>
-      `  {
+    const toolsList = toolDefinitions
+      .map(
+        (t) =>
+          `  {
     name: '${t.name}',
     description: '${t.description}',
     inputSchema: ${JSON.stringify(t.inputSchema, null, 6).replace(/\n/g, '\n    ')},
   }`
-    ).join(',\n');
+      )
+      .join(',\n');
 
     // Generate tool implementation cases
-    const toolCases = toolDefinitions.map((t) => {
-      const inputType = `args as { [key: string]: unknown }`;
-      return `    case '${t.name}':
+    const toolCases = toolDefinitions
+      .map((t) => {
+        const inputType = `args as { [key: string]: unknown }`;
+        return `    case '${t.name}':
       // Implement ${t.name} logic here
       return {
         success: true,
         result: \`Executed ${t.name} with: \${JSON.stringify(${inputType})}\`,
       };`;
-    }).join('\n\n');
+      })
+      .join('\n\n');
 
     return `/**
  * Tool Definitions and Implementations
@@ -442,7 +449,8 @@ export interface ServerConfig {
     const pkg = {
       name: manifest.metadata?.name || 'mcp-server',
       version: manifest.metadata?.version || '1.0.0',
-      description: manifest.metadata?.description || 'MCP Server generated from OSSA',
+      description:
+        manifest.metadata?.description || 'MCP Server generated from OSSA',
       type: 'module',
       main: 'server.js',
       bin: {
@@ -462,13 +470,7 @@ export interface ServerConfig {
         typescript: '^5.0.0',
         tsx: '^4.0.0',
       },
-      keywords: [
-        'mcp',
-        'model-context-protocol',
-        'claude',
-        'ossa',
-        'ai-agent',
-      ],
+      keywords: ['mcp', 'model-context-protocol', 'claude', 'ossa', 'ai-agent'],
       license: manifest.metadata?.license || 'MIT',
     };
 
@@ -505,7 +507,8 @@ export interface ServerConfig {
    */
   private generateReadme(manifest: OssaAgent): string {
     const agentName = manifest.metadata?.name || 'mcp-server';
-    const description = manifest.spec?.role || manifest.metadata?.description || 'MCP Server';
+    const description =
+      manifest.spec?.role || manifest.metadata?.description || 'MCP Server';
     const tools = (manifest.spec?.tools || []) as any[];
 
     return `# ${agentName}

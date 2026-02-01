@@ -12,7 +12,12 @@
  * DRY: Reusable across different wizards
  */
 
-import type { WizardStep, WizardContext, WizardResult, WizardOptions } from '../types.js';
+import type {
+  WizardStep,
+  WizardContext,
+  WizardResult,
+  WizardOptions,
+} from '../types.js';
 import { WizardUI } from '../ui/wizard-ui.js';
 
 export class WizardEngine {
@@ -189,18 +194,25 @@ export class WizardEngine {
     const saveFile = path.join(saveDir, `wizard-${Date.now()}.json`);
     await fs.promises.writeFile(
       saveFile,
-      JSON.stringify({
-        currentStepIndex: this.currentStepIndex,
-        context: this.context,
-        savedAt: new Date().toISOString(),
-      }, null, 2)
+      JSON.stringify(
+        {
+          currentStepIndex: this.currentStepIndex,
+          context: this.context,
+          savedAt: new Date().toISOString(),
+        },
+        null,
+        2
+      )
     );
   }
 
   /**
    * Resume from saved progress
    */
-  static async resume(saveFile: string, steps: WizardStep[]): Promise<WizardEngine> {
+  static async resume(
+    saveFile: string,
+    steps: WizardStep[]
+  ): Promise<WizardEngine> {
     const fs = await import('fs');
     const data = JSON.parse(await fs.promises.readFile(saveFile, 'utf-8'));
 

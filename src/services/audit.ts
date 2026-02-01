@@ -110,7 +110,10 @@ export class AgentAuditService {
   /**
    * Audit a single agent
    */
-  async auditAgent(agentPath: string, validationLevel: string = 'full'): Promise<AgentHealth> {
+  async auditAgent(
+    agentPath: string,
+    validationLevel: string = 'full'
+  ): Promise<AgentHealth> {
     const agentId = path.basename(agentPath);
     const health: AgentHealth = {
       id: agentId,
@@ -145,7 +148,8 @@ export class AgentAuditService {
       health.issues.push({
         severity: 'error',
         code: 'MANIFEST_MISSING',
-        message: 'No manifest file found (manifest.ossa.yaml or manifest.ossa.json)',
+        message:
+          'No manifest file found (manifest.ossa.yaml or manifest.ossa.json)',
       });
       return health;
     }
@@ -158,7 +162,8 @@ export class AgentAuditService {
     let manifest: any;
     try {
       const content = fs.readFileSync(manifestPath, 'utf-8');
-      manifest = manifestFormat === 'yaml' ? yaml.parse(content) : JSON.parse(content);
+      manifest =
+        manifestFormat === 'yaml' ? yaml.parse(content) : JSON.parse(content);
     } catch (error: any) {
       health.issues.push({
         severity: 'error',
@@ -189,9 +194,12 @@ export class AgentAuditService {
     }
 
     // Count capabilities, tools, triggers
-    health.capabilitiesCount = manifest.spec?.capabilities?.length || manifest.capabilities?.length || 0;
-    health.toolsCount = manifest.spec?.tools?.length || manifest.tools?.length || 0;
-    health.triggersCount = manifest.spec?.triggers?.length || manifest.triggers?.length || 0;
+    health.capabilitiesCount =
+      manifest.spec?.capabilities?.length || manifest.capabilities?.length || 0;
+    health.toolsCount =
+      manifest.spec?.tools?.length || manifest.tools?.length || 0;
+    health.triggersCount =
+      manifest.spec?.triggers?.length || manifest.triggers?.length || 0;
 
     // Check for missing sections
     if (health.capabilitiesCount === 0) {
@@ -317,10 +325,11 @@ export class AgentAuditService {
    */
   private calculateSummary(agents: AgentHealth[]): AuditReport['summary'] {
     const total = agents.length;
-    const healthy = agents.filter(a => a.status === 'healthy').length;
-    const warning = agents.filter(a => a.status === 'warning').length;
-    const error = agents.filter(a => a.status === 'error').length;
-    const healthPercentage = total > 0 ? Math.round((healthy / total) * 100) : 0;
+    const healthy = agents.filter((a) => a.status === 'healthy').length;
+    const warning = agents.filter((a) => a.status === 'warning').length;
+    const error = agents.filter((a) => a.status === 'error').length;
+    const healthPercentage =
+      total > 0 ? Math.round((healthy / total) * 100) : 0;
 
     return {
       total,

@@ -17,7 +17,8 @@ export const ENHANCED_TEMPLATES: TemplateDefinition[] = [
   {
     id: 'worker-data-processor',
     name: 'Data Processor Worker',
-    description: 'Process and transform data from various sources (CSV, JSON, APIs)',
+    description:
+      'Process and transform data from various sources (CSV, JSON, APIs)',
     category: 'worker',
     icon: '📊',
     difficulty: 'beginner',
@@ -159,7 +160,12 @@ export const ENHANCED_TEMPLATES: TemplateDefinition[] = [
         'progress-monitoring',
         'error-recovery',
       ],
-      tools: ['agent_registry', 'task_queue', 'workflow_engine', 'status_monitor'],
+      tools: [
+        'agent_registry',
+        'task_queue',
+        'workflow_engine',
+        'status_monitor',
+      ],
       llm: {
         provider: 'anthropic',
         model: 'claude-sonnet-4-20250514',
@@ -168,9 +174,17 @@ export const ENHANCED_TEMPLATES: TemplateDefinition[] = [
       },
       workflow: {
         steps: [
-          { agent: 'analyzer', task: 'analyze', description: 'Analyze requirements' },
+          {
+            agent: 'analyzer',
+            task: 'analyze',
+            description: 'Analyze requirements',
+          },
           { agent: 'executor', task: 'execute', description: 'Execute tasks' },
-          { agent: 'validator', task: 'validate', description: 'Validate results' },
+          {
+            agent: 'validator',
+            task: 'validate',
+            description: 'Validate results',
+          },
         ],
       },
     },
@@ -191,7 +205,11 @@ export const ENHANCED_TEMPLATES: TemplateDefinition[] = [
       'Batch job management',
       'High-throughput pipelines',
     ],
-    examples: ['parallel-processor', 'batch-coordinator', 'concurrent-executor'],
+    examples: [
+      'parallel-processor',
+      'batch-coordinator',
+      'concurrent-executor',
+    ],
     tags: ['parallel', 'concurrent', 'performance', 'batch'],
     popularity: 68,
     defaults: {
@@ -204,7 +222,12 @@ export const ENHANCED_TEMPLATES: TemplateDefinition[] = [
         'load-balancing',
         'result-aggregation',
       ],
-      tools: ['task_scheduler', 'resource_manager', 'sync_handler', 'aggregator'],
+      tools: [
+        'task_scheduler',
+        'resource_manager',
+        'sync_handler',
+        'aggregator',
+      ],
       llm: {
         provider: 'anthropic',
         model: 'claude-sonnet-4-20250514',
@@ -245,7 +268,12 @@ export const ENHANCED_TEMPLATES: TemplateDefinition[] = [
         'best-practices',
         'documentation-review',
       ],
-      tools: ['ast_parser', 'static_analyzer', 'security_scanner', 'metrics_calculator'],
+      tools: [
+        'ast_parser',
+        'static_analyzer',
+        'security_scanner',
+        'metrics_calculator',
+      ],
       llm: {
         provider: 'anthropic',
         model: 'claude-opus-4-20250514',
@@ -308,7 +336,11 @@ export const ENHANCED_TEMPLATES: TemplateDefinition[] = [
       'Threat detection',
       'Security policy enforcement',
     ],
-    examples: ['security-auditor', 'vulnerability-scanner', 'compliance-checker'],
+    examples: [
+      'security-auditor',
+      'vulnerability-scanner',
+      'compliance-checker',
+    ],
     tags: ['security', 'audit', 'compliance', 'vulnerability'],
     popularity: 79,
     defaults: {
@@ -321,7 +353,12 @@ export const ENHANCED_TEMPLATES: TemplateDefinition[] = [
         'threat-analysis',
         'remediation-planning',
       ],
-      tools: ['vuln_scanner', 'compliance_checker', 'threat_detector', 'audit_logger'],
+      tools: [
+        'vuln_scanner',
+        'compliance_checker',
+        'threat_detector',
+        'audit_logger',
+      ],
       llm: {
         provider: 'anthropic',
         model: 'claude-sonnet-4-20250514',
@@ -362,7 +399,12 @@ export const ENHANCED_TEMPLATES: TemplateDefinition[] = [
         'coverage-analysis',
         'report-generation',
       ],
-      tools: ['test_runner', 'coverage_analyzer', 'bug_tracker', 'report_generator'],
+      tools: [
+        'test_runner',
+        'coverage_analyzer',
+        'bug_tracker',
+        'report_generator',
+      ],
       llm: {
         provider: 'anthropic',
         model: 'claude-sonnet-4-20250514',
@@ -441,7 +483,13 @@ export const ENHANCED_TEMPLATES: TemplateDefinition[] = [
         'environment-management',
         'release-validation',
       ],
-      tools: ['kubectl', 'docker', 'helm', 'deployment_manager', 'health_checker'],
+      tools: [
+        'kubectl',
+        'docker',
+        'helm',
+        'deployment_manager',
+        'health_checker',
+      ],
       llm: {
         provider: 'anthropic',
         model: 'claude-sonnet-4-20250514',
@@ -520,7 +568,12 @@ export const ENHANCED_TEMPLATES: TemplateDefinition[] = [
         'ticket-creation',
         'sentiment-analysis',
       ],
-      tools: ['knowledge_base', 'ticket_system', 'sentiment_analyzer', 'chat_handler'],
+      tools: [
+        'knowledge_base',
+        'ticket_system',
+        'sentiment_analyzer',
+        'chat_handler',
+      ],
       llm: {
         provider: 'anthropic',
         model: 'claude-sonnet-4-20250514',
@@ -558,7 +611,12 @@ export const ENHANCED_TEMPLATES: TemplateDefinition[] = [
         'report-generation',
         'citation-management',
       ],
-      tools: ['web_search', 'document_reader', 'summarizer', 'citation_manager'],
+      tools: [
+        'web_search',
+        'document_reader',
+        'summarizer',
+        'citation_manager',
+      ],
       llm: {
         provider: 'anthropic',
         model: 'claude-sonnet-4-20250514',
