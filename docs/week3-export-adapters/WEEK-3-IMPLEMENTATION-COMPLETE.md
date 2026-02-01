@@ -345,10 +345,10 @@ src/adapters/
 
 **Location in Repo**:
 ```
-~/Sites/blueflyio/.worktrees/2026-01-30/openstandardagents/feature-v0.4.0-wizard-export/
+~/Sites/blueflyio/.worktrees/2026-01-30/openstandardagents/feature-v{{VERSION}}-wizard-export/
 ```
 
-**Branch**: `feature-v0.4.0-wizard-export`
+**Branch**: `feature-v{{VERSION}}-wizard-export`
 
 ---
 

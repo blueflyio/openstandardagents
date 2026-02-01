@@ -1,198 +1,160 @@
 /**
  * Version Audit Service
  *
- * Finds all hardcoded versions (not using 0.3.4 placeholder).
- * SOLID: Single Responsibility - Audit version usage
- * DRY: Reuses Zod schemas from schemas/version.schema.ts
+ * Finds hardcoded versions that should use placeholders
+ * API-First: Implements /version/audit from OpenAPI spec
  */
 
-import { readFileSync, readdirSync, statSync, existsSync } from 'fs';
-import { join, relative } from 'path';
-import { glob } from 'glob';
-import {
-  VersionAuditResponse,
-  HardcodedVersionFile,
-  HARDCODED_VERSION_PATTERN,
-  VERSION_PLACEHOLDER_PATTERN,
-} from '../schemas/version.schema.js';
+import { readFileSync, writeFileSync, readdirSync, statSync } from 'fs';
+import { join } from 'path';
+
+export interface HardcodedVersionFile {
+  path: string;
+  line: number;
+  content: string;
+  suggested: string;
+}
+
+export interface VersionAuditResult {
+  files: HardcodedVersionFile[];
+  total: number;
+  fixed?: number;
+}
 
 export class VersionAuditService {
-  private readonly rootDir: string;
-  private readonly excludePatterns: string[];
+  private readonly ROOT = process.cwd();
+  private readonly CURRENT_VERSION = '{{VERSION}}'; // Read from .version.json
+  private readonly PLACEHOLDER = '{{VERSION}}';
+  private readonly EXCLUDE_PATTERNS = [
+    'node_modules',
+    'dist',
+    '.git',
+    'coverage',
+    '.version.json',
+    'package.json',
+    'package-lock.json',
+    'CHANGELOG.md',
+  ];
 
-  constructor(rootDir: string = process.cwd()) {
-    this.rootDir = rootDir;
-    this.excludePatterns = [
-      'node_modules/**',
-      '.git/**',
-      'dist/**',
-      'coverage/**',
-      '.next/**',
-      'build/**',
-      'spec/v*/**', // Spec directories contain versioned files (expected)
-      '.version.json', // This IS the source of truth
-    ];
-  }
+  async audit(options: { fix?: boolean } = {}): Promise<VersionAuditResult> {
+    const hardcodedFiles: HardcodedVersionFile[] = [];
 
-  /**
-   * Audit for hardcoded versions
-   * CRUD: Read operation (audits files)
-   */
-  async audit(fix: boolean = false): Promise<VersionAuditResponse> {
-    const files: HardcodedVersionFile[] = [];
-    const filePatterns = [
-      '**/*.ts',
-      '**/*.js',
-      '**/*.json',
-      '**/*.yaml',
-      '**/*.yml',
-      '**/*.md',
-      '**/*.txt',
-    ];
+    // Read current version from .version.json
+    const versionConfig = JSON.parse(
+      readFileSync(join(this.ROOT, '.version.json'), 'utf-8')
+    );
+    const currentVersion = versionConfig.current;
 
-    for (const pattern of filePatterns) {
-      const matches = await glob(pattern, {
-        cwd: this.rootDir,
-        ignore: this.excludePatterns,
-        absolute: false,
-      });
+    // Scan files for hardcoded versions
+    this.scanDirectory(this.ROOT, currentVersion, hardcodedFiles);
 
-      for (const file of matches) {
-        const filePath = join(this.rootDir, file);
-        if (!existsSync(filePath)) continue;
-
-        const fileIssues = this.auditFile(filePath, file);
-        files.push(...fileIssues);
-      }
-    }
-
+    // Fix if requested
     let fixed = 0;
-    if (fix) {
-      fixed = await this.fixFiles(files);
+    if (options.fix) {
+      fixed = this.fixHardcodedVersions(hardcodedFiles, currentVersion);
     }
 
     return {
-      files,
-      total: files.length,
-      fixed: fix ? fixed : undefined,
+      files: hardcodedFiles,
+      total: hardcodedFiles.length,
+      fixed: options.fix ? fixed : undefined,
     };
   }
 
-  /**
-   * Audit a single file for hardcoded versions
-   */
-  private auditFile(
-    filePath: string,
-    relativePath: string
-  ): HardcodedVersionFile[] {
-    const issues: HardcodedVersionFile[] = [];
+  private scanDirectory(
+    dir: string,
+    version: string,
+    results: HardcodedVersionFile[]
+  ): void {
+    const entries = readdirSync(dir);
 
+    for (const entry of entries) {
+      const fullPath = join(dir, entry);
+
+      // Skip excluded patterns
+      if (this.EXCLUDE_PATTERNS.some((pattern) => fullPath.includes(pattern))) {
+        continue;
+      }
+
+      const stat = statSync(fullPath);
+
+      if (stat.isDirectory()) {
+        this.scanDirectory(fullPath, version, results);
+      } else if (this.shouldScanFile(fullPath)) {
+        this.scanFile(fullPath, version, results);
+      }
+    }
+  }
+
+  private shouldScanFile(path: string): boolean {
+    const extensions = ['.ts', '.js', '.json', '.yaml', '.yml', '.md'];
+    return extensions.some((ext) => path.endsWith(ext));
+  }
+
+  private scanFile(
+    path: string,
+    version: string,
+    results: HardcodedVersionFile[]
+  ): void {
     try {
-      const content = readFileSync(filePath, 'utf-8');
+      const content = readFileSync(path, 'utf-8');
       const lines = content.split('\n');
 
       lines.forEach((line, index) => {
-        // Skip if line already uses 0.3.4 placeholder
-        if (VERSION_PLACEHOLDER_PATTERN.test(line)) {
-          return;
-        }
+        // Look for version patterns like "{{VERSION}}", "v{{VERSION}}", "{{VERSION}}"
+        const versionRegex = new RegExp(
+          `(?<!\\{\\{)${version.replace(/\./g, '\\.')}(?!\\}\\})`,
+          'g'
+        );
 
-        // Check for hardcoded versions
-        const matches = Array.from(line.matchAll(HARDCODED_VERSION_PATTERN));
-        for (const match of matches) {
-          const version = match[1];
-
-          // Skip if it's a comment or example
-          if (this.isCommentOrExample(line)) {
-            continue;
-          }
-
-          // Skip if it's in a migration guide (expected to have old versions)
-          if (relativePath.includes('migrations/guides/')) {
-            continue;
-          }
-
-          // Skip if it's in package.json version field (handled separately)
-          if (relativePath === 'package.json' && line.includes('"version"')) {
-            continue;
-          }
-
-          issues.push({
-            path: relativePath,
+        if (versionRegex.test(line)) {
+          results.push({
+            path: path.replace(this.ROOT + '/', ''),
             line: index + 1,
             content: line.trim(),
-            suggested: line.replace(version, '0.3.4'),
+            suggested: line.replace(version, this.PLACEHOLDER),
           });
         }
       });
     } catch (error) {
-      // Skip files that can't be read (binary, etc.)
+      // Skip files that can't be read
     }
-
-    return issues;
   }
 
-  /**
-   * Check if line is a comment or example
-   */
-  private isCommentOrExample(line: string): boolean {
-    const trimmed = line.trim();
-    return (
-      trimmed.startsWith('#') ||
-      trimmed.startsWith('//') ||
-      trimmed.startsWith('*') ||
-      trimmed.startsWith('<!--') ||
-      trimmed.includes('example') ||
-      trimmed.includes('Example') ||
-      trimmed.includes('EXAMPLE')
-    );
-  }
+  private fixHardcodedVersions(
+    files: HardcodedVersionFile[],
+    version: string
+  ): number {
+    const fileGroups = new Map<string, HardcodedVersionFile[]>();
 
-  /**
-   * Fix files by replacing hardcoded versions with 0.3.4
-   */
-  private async fixFiles(files: HardcodedVersionFile[]): Promise<number> {
-    const filesToFix = new Map<string, HardcodedVersionFile[]>();
-
-    // Group by file
-    for (const issue of files) {
-      if (!filesToFix.has(issue.path)) {
-        filesToFix.set(issue.path, []);
+    // Group by file path
+    files.forEach((file) => {
+      if (!fileGroups.has(file.path)) {
+        fileGroups.set(file.path, []);
       }
-      filesToFix.get(issue.path)!.push(issue);
-    }
+      fileGroups.get(file.path)!.push(file);
+    });
 
     let fixed = 0;
-    for (const [filePath, issues] of filesToFix.entries()) {
-      const fullPath = join(this.rootDir, filePath);
-      if (!existsSync(fullPath)) continue;
 
+    // Fix each file
+    fileGroups.forEach((occurrences, path) => {
       try {
-        const content = readFileSync(fullPath, 'utf-8');
-        const lines = content.split('\n');
-        let changed = false;
+        const fullPath = join(this.ROOT, path);
+        let content = readFileSync(fullPath, 'utf-8');
 
-        for (const issue of issues) {
-          const lineIndex = issue.line - 1;
-          if (lineIndex >= 0 && lineIndex < lines.length) {
-            const originalLine = lines[lineIndex];
-            const newLine = issue.suggested;
-            if (originalLine !== newLine) {
-              lines[lineIndex] = newLine;
-              changed = true;
-            }
-          }
-        }
+        // Replace all occurrences
+        content = content.replace(
+          new RegExp(version.replace(/\./g, '\\.'), 'g'),
+          this.PLACEHOLDER
+        );
 
-        if (changed) {
-          const { writeFileSync } = await import('fs');
-          writeFileSync(fullPath, lines.join('\n'));
-          fixed++;
-        }
+        writeFileSync(fullPath, content, 'utf-8');
+        fixed++;
       } catch (error) {
         // Skip files that can't be written
       }
-    }
+    });
 
     return fixed;
   }
