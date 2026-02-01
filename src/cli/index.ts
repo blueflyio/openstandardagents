@@ -16,14 +16,21 @@ import { agentsMdCommand } from './commands/agents-md.command.js';
 import { knowledgeCommandGroup } from './commands/knowledge.command.js';
 import { conformanceCommand } from './commands/conformance.command.js';
 import { runCommand } from './commands/run.command.js';
+import { wizardCommand } from './commands/wizard.command.js';
+import { exportV2Command } from './commands/export-v2.command.js';
+import { agentsCommand } from './commands/agents.command.js';
+import { initializeAdapters } from '../adapters/index.js';
 
 async function main() {
+  // Initialize export adapters
+  initializeAdapters();
+
   const program = new Command();
 
   program
     .name('ossa')
     .description('OSSA - Open Standard for Software Agents CLI')
-    .version('0.3.6');
+    .version('0.4.0');
 
   // Register commands
   program.addCommand(createAuditCommand());
@@ -33,6 +40,9 @@ async function main() {
   program.addCommand(knowledgeCommandGroup);
   program.addCommand(conformanceCommand);
   program.addCommand(runCommand);
+  program.addCommand(wizardCommand);
+  program.addCommand(exportV2Command);
+  program.addCommand(agentsCommand);
 
   // Parse arguments
   await program.parseAsync(process.argv);
