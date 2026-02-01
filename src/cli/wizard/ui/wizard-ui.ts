@@ -18,13 +18,35 @@ export class WizardUI {
    */
   showWelcome(totalSteps: number): void {
     console.clear();
-    console.log(chalk.blue.bold('\n╔════════════════════════════════════════════════════════════╗'));
-    console.log(chalk.blue.bold('║                                                            ║'));
-    console.log(chalk.blue.bold('║         🤖  OSSA Agent Creation Wizard  🤖                ║'));
-    console.log(chalk.blue.bold('║                                                            ║'));
-    console.log(chalk.blue.bold('╚════════════════════════════════════════════════════════════╝\n'));
+    console.log(
+      chalk.blue.bold(
+        '\n╔════════════════════════════════════════════════════════════╗'
+      )
+    );
+    console.log(
+      chalk.blue.bold(
+        '║                                                            ║'
+      )
+    );
+    console.log(
+      chalk.blue.bold(
+        '║         🤖  OSSA Agent Creation Wizard  🤖                ║'
+      )
+    );
+    console.log(
+      chalk.blue.bold(
+        '║                                                            ║'
+      )
+    );
+    console.log(
+      chalk.blue.bold(
+        '╚════════════════════════════════════════════════════════════╝\n'
+      )
+    );
 
-    console.log(chalk.cyan(`  Create a production-ready AI agent in ${totalSteps} steps`));
+    console.log(
+      chalk.cyan(`  Create a production-ready AI agent in ${totalSteps} steps`)
+    );
     console.log(chalk.gray(`  Mode: ${this.options.mode || 'standard'}\n`));
 
     if (this.options.template) {
@@ -63,7 +85,9 @@ export class WizardUI {
     title: string,
     description: string
   ): void {
-    console.log(chalk.blue.bold(`\n┌─ Step ${stepNumber}/${totalSteps}: ${title}`));
+    console.log(
+      chalk.blue.bold(`\n┌─ Step ${stepNumber}/${totalSteps}: ${title}`)
+    );
     console.log(chalk.blue('│'));
     console.log(chalk.blue(`│  ${description}`));
     console.log(chalk.blue('└─\n'));
@@ -153,11 +177,31 @@ export class WizardUI {
    * Show completion screen
    */
   showCompletion(): void {
-    console.log(chalk.green.bold('\n╔════════════════════════════════════════════════════════════╗'));
-    console.log(chalk.green.bold('║                                                            ║'));
-    console.log(chalk.green.bold('║              ✨  Agent Created Successfully!  ✨           ║'));
-    console.log(chalk.green.bold('║                                                            ║'));
-    console.log(chalk.green.bold('╚════════════════════════════════════════════════════════════╝\n'));
+    console.log(
+      chalk.green.bold(
+        '\n╔════════════════════════════════════════════════════════════╗'
+      )
+    );
+    console.log(
+      chalk.green.bold(
+        '║                                                            ║'
+      )
+    );
+    console.log(
+      chalk.green.bold(
+        '║              ✨  Agent Created Successfully!  ✨           ║'
+      )
+    );
+    console.log(
+      chalk.green.bold(
+        '║                                                            ║'
+      )
+    );
+    console.log(
+      chalk.green.bold(
+        '╚════════════════════════════════════════════════════════════╝\n'
+      )
+    );
   }
 
   /**
@@ -172,7 +216,14 @@ export class WizardUI {
   /**
    * Show template selection
    */
-  showTemplateGrid(templates: Array<{ id: string; name: string; icon: string; description: string }>): void {
+  showTemplateGrid(
+    templates: Array<{
+      id: string;
+      name: string;
+      icon: string;
+      description: string;
+    }>
+  ): void {
     console.log(chalk.blue.bold('\n📚 Available Templates:\n'));
 
     templates.forEach((template, index) => {
@@ -194,9 +245,10 @@ export class WizardUI {
 
     Object.entries(data).forEach(([key, value]) => {
       const formattedKey = chalk.cyan(`  ${key}:`);
-      const formattedValue = typeof value === 'object'
-        ? chalk.gray(JSON.stringify(value))
-        : chalk.white(String(value));
+      const formattedValue =
+        typeof value === 'object'
+          ? chalk.gray(JSON.stringify(value))
+          : chalk.white(String(value));
 
       console.log(`${formattedKey} ${formattedValue}`);
     });

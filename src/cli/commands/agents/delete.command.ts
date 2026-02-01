@@ -30,9 +30,15 @@ export const agentsDeleteCommand = new Command('delete')
 
       // Display agent info
       console.log(chalk.yellow.bold('\n⚠️  About to delete:'));
-      console.log(chalk.cyan(`  Name: ${manifest.metadata?.name || 'Unknown'}`));
-      console.log(chalk.cyan(`  Version: ${manifest.metadata?.version || 'Unknown'}`));
-      console.log(chalk.cyan(`  File: ${path.relative(process.cwd(), filePath)}`));
+      console.log(
+        chalk.cyan(`  Name: ${manifest.metadata?.name || 'Unknown'}`)
+      );
+      console.log(
+        chalk.cyan(`  Version: ${manifest.metadata?.version || 'Unknown'}`)
+      );
+      console.log(
+        chalk.cyan(`  File: ${path.relative(process.cwd(), filePath)}`)
+      );
 
       if (options.dryRun) {
         console.log(chalk.green('\n✓ Dry-run mode: File would be deleted'));
@@ -41,7 +47,9 @@ export const agentsDeleteCommand = new Command('delete')
 
       // Confirm deletion
       if (!options.force) {
-        const confirmed = await askConfirmation('\nAre you sure you want to delete this agent?');
+        const confirmed = await askConfirmation(
+          '\nAre you sure you want to delete this agent?'
+        );
         if (!confirmed) {
           console.log(chalk.gray('Deletion cancelled'));
           return;
@@ -52,21 +60,31 @@ export const agentsDeleteCommand = new Command('delete')
       if (options.backup) {
         const backupPath = `${filePath}.backup.${Date.now()}`;
         fs.copyFileSync(filePath, backupPath);
-        console.log(chalk.gray(`\n Backup created: ${path.relative(process.cwd(), backupPath)}`));
+        console.log(
+          chalk.gray(
+            `\n Backup created: ${path.relative(process.cwd(), backupPath)}`
+          )
+        );
       }
 
       // Delete file
       fs.unlinkSync(filePath);
 
       console.log(chalk.green(`\n✓ Agent deleted successfully`));
-      console.log(chalk.gray(`  File: ${path.relative(process.cwd(), filePath)}`));
+      console.log(
+        chalk.gray(`  File: ${path.relative(process.cwd(), filePath)}`)
+      );
 
       if (options.backup) {
-        console.log(chalk.gray(`\n  Restore with: mv ${filePath}.backup.* ${filePath}`));
+        console.log(
+          chalk.gray(`\n  Restore with: mv ${filePath}.backup.* ${filePath}`)
+        );
       }
     } catch (error) {
       console.error(
-        chalk.red(`Failed to delete agent: ${error instanceof Error ? error.message : String(error)}`)
+        chalk.red(
+          `Failed to delete agent: ${error instanceof Error ? error.message : String(error)}`
+        )
       );
       process.exit(1);
     }
