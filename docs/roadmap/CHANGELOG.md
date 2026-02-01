@@ -1,6 +1,6 @@
 # Roadmap Changelog
 
-All notable changes to the OSSA v0.3.x → v0.4.0 roadmap will be documented in this file.
+All notable changes to the OSSA v0.3.x → v{{VERSION}} roadmap will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
@@ -45,14 +45,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 #### Roadmap Documentation Structure
 - Created `docs/roadmap/` directory for roadmap documentation
-- Master roadmap document (`v0.3.x-to-v0.4.0.md`)
+- Master roadmap document (`v0.3.x-to-v{{VERSION}}.md`)
 - Phase-specific tracking documents (phase-1 through phase-4)
 - Supporting documents (dependency-graph, cross-project-dependencies, success-metrics)
 - Roadmap index (`README.md`)
 - Roadmap changelog (`CHANGELOG.md`)
 
-#### Master Roadmap (`v0.3.x-to-v0.4.0.md`)
-- Vision statement: "OSSA v0.4.0: The OpenAPI for AI Agents"
+#### Master Roadmap (`v0.3.x-to-v{{VERSION}}.md`)
+- Vision statement: "OSSA v{{VERSION}}: The OpenAPI for AI Agents"
 - Project landscape (specification, implementation, related ecosystems)
 - Dependency graph (MR #397 → #133 → #132 → #126 → API Normalizer → #96 → Epic #9)
 - 4-phase timeline (8 weeks total)

@@ -1,4 +1,4 @@
-// OSSA v0.4.0 - Week 3: LangChain Export Adapter
+// OSSA v{{VERSION}} - Week 3: LangChain Export Adapter
 // Location: src/adapters/langchain/converter.ts
 
 import { BaseAdapter, ExportOptions, ExportResult, ExportFile } from '../base.adapter';
@@ -11,7 +11,7 @@ import { OssaAgent } from '../../types/ossa';
 export class LangChainAdapter extends BaseAdapter {
   readonly name = 'langchain';
   readonly version = '1.0.0';
-  readonly supportedOssaVersions = ['0.4.0', '0.3.6'];
+  readonly supportedOssaVersions = ['{{VERSION}}', '0.3.6'];
   readonly outputFormat = ['python', 'typescript'];
 
   async convert(manifest: OssaAgent, options: ExportOptions): Promise<ExportResult> {

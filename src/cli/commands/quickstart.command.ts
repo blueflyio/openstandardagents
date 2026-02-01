@@ -6,6 +6,7 @@
 import { Command } from 'commander';
 import * as fs from 'fs';
 import chalk from 'chalk';
+import { getApiVersion } from '../../utils/version.js';
 
 const AGENT_TEMPLATE = `# ╔═══════════════════════════════════════════════════════════════════════════════╗
 # ║                                                                               ║
@@ -30,7 +31,7 @@ const AGENT_TEMPLATE = `# ╔═════════════════
 # ──────────────────────────────────────────────────────────────────────────────────
 # API VERSION & KIND (Required)
 # ──────────────────────────────────────────────────────────────────────────────────
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v{{VERSION}}
 kind: Agent
 
 # ──────────────────────────────────────────────────────────────────────────────────
@@ -191,7 +192,11 @@ function createAgent(outputPath: string): void {
     return;
   }
 
-  fs.writeFileSync(outputPath, AGENT_TEMPLATE, 'utf-8');
+  // Replace {{VERSION}} placeholder with actual version
+  const version = getApiVersion().replace('ossa/v', '');
+  const content = AGENT_TEMPLATE.replace(/\{\{VERSION\}\}/g, version);
+
+  fs.writeFileSync(outputPath, content, 'utf-8');
   printSuccess(`Created: ${chalk.cyan(outputPath)}`);
 }
 
@@ -278,7 +283,7 @@ async function handleQuickstart(options: QuickstartOptions): Promise<void> {
 
     // Step 3: Show next steps
     printStep(3, 3, 'Ready to run!');
-    printSuccess('Schema: ossa/v0.3.0');
+    printSuccess(`Schema: ${getApiVersion()}`);
     printSuccess('Kind: Agent');
     printSuccess('Provider: ' + (options.provider || detectedProvider));
 

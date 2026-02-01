@@ -1,4 +1,4 @@
-// OSSA v0.4.0 - MCP (Model Context Protocol) Export Adapter
+// OSSA v{{VERSION}} - MCP (Model Context Protocol) Export Adapter
 import {
   BaseAdapter,
   ExportOptions,
@@ -14,7 +14,7 @@ import {
 export class MCPAdapter extends BaseAdapter {
   readonly name = 'mcp';
   readonly version = '1.0.0';
-  readonly supportedOssaVersions = ['0.4.0', '0.3.6'];
+  readonly supportedOssaVersions = ['{{VERSION}}', '0.3.6'];
   readonly outputFormat = ['typescript'];
 
   async convert(

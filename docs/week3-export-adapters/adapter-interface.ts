@@ -1,4 +1,4 @@
-// OSSA v0.4.0 - Week 3: Export Adapter Interface
+// OSSA v{{VERSION}} - Week 3: Export Adapter Interface
 // Location: src/adapters/base.adapter.ts
 
 import { OssaAgent } from '../types/ossa';

@@ -25,7 +25,7 @@ export class MCPAdapter extends BaseAdapter {
   readonly platform = 'mcp';
   readonly displayName = 'Model Context Protocol';
   readonly description = 'MCP server for Claude Code and other MCP clients';
-  readonly supportedVersions = ['v0.4.0'];
+  readonly supportedVersions = ['v{{VERSION}}'];
 
   /**
    * Export OSSA manifest to MCP server format
@@ -178,7 +178,7 @@ export class MCPAdapter extends BaseAdapter {
    */
   getExample(): OssaAgent {
     return {
-      apiVersion: 'ossa/v0.4.0',
+      apiVersion: 'ossa/v{{VERSION}}',
       kind: 'Agent',
       metadata: {
         name: 'mcp-example-server',
@@ -572,7 +572,7 @@ npm start
 
 ## Generated from OSSA
 
-This server was generated from an OSSA v${manifest.apiVersion?.split('/')[1] || '0.4.0'} manifest.
+This server was generated from an OSSA v${manifest.apiVersion?.split('/')[1] || '{{VERSION}}'} manifest.
 
 Original manifest: \`agent.ossa.yaml\`
 
