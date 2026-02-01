@@ -96,7 +96,7 @@ export class GitLabDuoAdapter extends BaseAdapter {
       // Generate deployment script
       const deployScript = this.generateDeployScript(manifest);
       files.push(
-        this.createFile('gitlab-duo/deploy.sh', deployScript, 'script')
+        this.createFile('gitlab-duo/deploy.sh', deployScript, 'other')
       );
 
       return this.createResult(true, files, undefined, {
