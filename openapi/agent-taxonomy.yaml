@@ -1,0 +1,323 @@
+openapi: 3.1.0
+info:
+  title: OSSA Agent Taxonomy API
+  version: 0.3.6
+  description: |
+    Agent classification and taxonomy system for OSSA v0.3.x.
+    Provides hierarchical categorization of agents by:
+    - Primary role (analyzer, executor, coordinator, reviewer)
+    - Domain expertise (devops, security, data, ml, etc.)
+    - Capability level (tier_1_read, tier_2_write, tier_3_full, tier_4_policy)
+    - Runtime environment (kubernetes, docker, serverless, local)
+
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Local development
+
+paths:
+  /taxonomy/categories:
+    get:
+      summary: List all taxonomy categories
+      operationId: listTaxonomyCategories
+      tags: [Taxonomy]
+      responses:
+        '200':
+          description: List of taxonomy categories
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  categories:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TaxonomyCategory'
+                  total:
+                    type: integer
+
+  /taxonomy/categories/{categoryId}:
+    get:
+      summary: Get category by ID
+      operationId: getTaxonomyCategory
+      tags: [Taxonomy]
+      parameters:
+        - name: categoryId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Taxonomy category details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaxonomyCategory'
+        '404':
+          description: Category not found
+
+    put:
+      summary: Update category
+      operationId: updateTaxonomyCategory
+      tags: [Taxonomy]
+      parameters:
+        - name: categoryId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaxonomyCategoryInput'
+      responses:
+        '200':
+          description: Category updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaxonomyCategory'
+
+    delete:
+      summary: Delete category
+      operationId: deleteTaxonomyCategory
+      tags: [Taxonomy]
+      parameters:
+        - name: categoryId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Category deleted
+        '404':
+          description: Category not found
+
+  /taxonomy/categories:
+    post:
+      summary: Create new category
+      operationId: createTaxonomyCategory
+      tags: [Taxonomy]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaxonomyCategoryInput'
+      responses:
+        '201':
+          description: Category created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaxonomyCategory'
+
+  /taxonomy/classify:
+    post:
+      summary: Classify an agent manifest
+      operationId: classifyAgent
+      tags: [Taxonomy]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                manifest:
+                  type: object
+                  description: OSSA agent manifest to classify
+      responses:
+        '200':
+          description: Classification result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentClassification'
+
+  /taxonomy/validate:
+    post:
+      summary: Validate taxonomy assignment
+      operationId: validateTaxonomy
+      tags: [Taxonomy]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                categoryId:
+                  type: string
+                manifest:
+                  type: object
+      responses:
+        '200':
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResult'
+
+components:
+  schemas:
+    TaxonomyCategory:
+      type: object
+      required:
+        - id
+        - name
+        - type
+        - level
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique category identifier
+        name:
+          type: string
+          description: Category name (e.g., "DevOps Automation", "Security Analysis")
+        description:
+          type: string
+          description: Category description
+        type:
+          type: string
+          enum: [role, domain, capability, runtime, custom]
+          description: Category type
+        level:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: Hierarchy level (1=top, 5=most specific)
+        parent_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: Parent category ID for hierarchical taxonomy
+        metadata:
+          type: object
+          additionalProperties: true
+          description: Additional category metadata
+        tags:
+          type: array
+          items:
+            type: string
+          description: Category tags for search/filter
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    TaxonomyCategoryInput:
+      type: object
+      required:
+        - name
+        - type
+        - level
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          enum: [role, domain, capability, runtime, custom]
+        level:
+          type: integer
+          minimum: 1
+          maximum: 5
+        parent_id:
+          type: string
+          format: uuid
+          nullable: true
+        metadata:
+          type: object
+          additionalProperties: true
+        tags:
+          type: array
+          items:
+            type: string
+
+    AgentClassification:
+      type: object
+      required:
+        - agent_id
+        - classifications
+        - confidence
+      properties:
+        agent_id:
+          type: string
+          description: Agent identifier
+        classifications:
+          type: array
+          items:
+            type: object
+            properties:
+              category_id:
+                type: string
+                format: uuid
+              category_name:
+                type: string
+              confidence:
+                type: number
+                format: float
+                minimum: 0
+                maximum: 1
+              reason:
+                type: string
+        confidence:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          description: Overall classification confidence
+        suggested_categories:
+          type: array
+          items:
+            type: string
+          description: Suggested categories based on manifest analysis
+
+    ValidationResult:
+      type: object
+      required:
+        - valid
+        - category_id
+      properties:
+        valid:
+          type: boolean
+          description: Whether taxonomy assignment is valid
+        category_id:
+          type: string
+          format: uuid
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+              severity:
+                type: string
+                enum: [error, warning, info]
+        warnings:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+        recommendations:
+          type: array
+          items:
+            type: string
+          description: Recommendations for improving taxonomy fit
