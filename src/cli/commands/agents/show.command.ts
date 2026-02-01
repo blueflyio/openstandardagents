@@ -45,7 +45,7 @@ export const agentsShowCommand = new Command('show')
 async function loadAgent(
   nameOrPath: string
 ): Promise<{ manifest: OssaAgent; filePath: string }> {
-  let filePath: string;
+  let filePath: string = '';
 
   // Check if it's a file path
   if (fs.existsSync(nameOrPath)) {

@@ -30,9 +30,19 @@ export class WizardEngine {
   constructor(steps: WizardStep[], options?: WizardOptions) {
     this.steps = steps;
     this.context = {
+      state: {
+        agent: {},
+        step: 0,
+        totalSteps: steps.length,
+        canUndo: false,
+        history: [],
+      },
+      options: options || {},
+      currentStep: 0,
+      totalSteps: steps.length,
       data: {},
       metadata: {
-        startedAt: new Date(),
+        startedAt: new Date().toISOString(),
         template: options?.template,
         mode: options?.mode || 'standard',
       },
@@ -91,7 +101,7 @@ export class WizardEngine {
       return {
         success: true,
         context: this.context,
-        completedAt: new Date(),
+        completedAt: new Date().toISOString(),
       };
     } catch (error) {
       this.ui.showError(error instanceof Error ? error.message : String(error));
@@ -126,9 +136,11 @@ export class WizardEngine {
     }
 
     // Get suggestions from step
-    const suggestions = await step.suggest(this.context);
-    if (suggestions && suggestions.length > 0) {
-      this.ui.showSuggestions(suggestions);
+    if (step.suggest) {
+      const suggestions = await step.suggest(this.context.state);
+      if (suggestions && suggestions.length > 0) {
+        this.ui.showSuggestions(suggestions);
+      }
     }
 
     // Execute step

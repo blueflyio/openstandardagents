@@ -12,10 +12,20 @@ import {
  * Compatible with Claude Code, Cursor, and other MCP clients
  */
 export class MCPAdapter extends BaseAdapter {
-  readonly name = 'mcp';
+  readonly platform = 'mcp';
+  readonly displayName = 'MCP Server';
+  readonly description = 'Export OSSA agents as Model Context Protocol servers';
+  readonly supportedVersions = ['{{VERSION}}', '0.3.6'];
   readonly version = '1.0.0';
   readonly supportedOssaVersions = ['{{VERSION}}', '0.3.6'];
   readonly outputFormat = ['typescript'];
+
+  async export(
+    manifest: OssaAgent,
+    options?: ExportOptions
+  ): Promise<ExportResult> {
+    return this.convert(manifest, options || {});
+  }
 
   async convert(
     manifest: OssaAgent,
@@ -44,8 +54,8 @@ export class MCPAdapter extends BaseAdapter {
         timestamp: new Date().toISOString(),
         ossaVersion: manifest.apiVersion,
         adapterVersion: this.version,
-        agentName: manifest.metadata.name,
-        agentVersion: manifest.metadata.version,
+        agentName: manifest.metadata?.name || 'unnamed-agent',
+        agentVersion: manifest.metadata?.version || '1.0.0',
         durationMs: Date.now() - startTime,
         fileCount: files.length,
         totalSizeBytes: files.reduce((sum, f) => sum + f.content.length, 0),
@@ -59,12 +69,11 @@ export class MCPAdapter extends BaseAdapter {
   }
 
   private generateServerFile(manifest: OssaAgent): ExportFile {
-    const tools =
-      manifest.agent.capabilities?.filter((c) => c.type === 'tool') || [];
+    const tools = manifest.spec?.tools || [];
 
     const content = `#!/usr/bin/env node
 /**
- * ${manifest.metadata.name} - MCP Server
+ * ${manifest.metadata?.name || 'unnamed-agent'} - MCP Server
  * Generated from OSSA v${manifest.apiVersion}
  * Protocol: JSON-RPC 2.0 (Model Context Protocol)
  */
@@ -80,8 +89,8 @@ import { tools, executeTool } from './tools.js';
 
 const server = new Server(
   {
-    name: '${manifest.metadata.name}',
-    version: '${manifest.metadata.version}',
+    name: '${manifest.metadata?.name || 'unnamed-agent'}',
+    version: '${manifest.metadata?.version || '1.0.0'}',
   },
   {
     capabilities: {
@@ -132,7 +141,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error('${manifest.metadata.name} MCP server running on stdio');
+  console.error('${manifest.metadata?.name || 'unnamed-agent'} MCP server running on stdio');
 }
 
 main().catch((error) => {
@@ -145,20 +154,19 @@ main().catch((error) => {
   }
 
   private generateToolsFile(manifest: OssaAgent): ExportFile {
-    const tools =
-      manifest.agent.capabilities?.filter((c) => c.type === 'tool') || [];
+    const tools = manifest.spec?.tools || [];
 
     const toolDefinitions = tools
       .map(
         (tool) => `{
-  name: '${tool.id}',
-  description: '${tool.description || tool.id}',
+  name: '${tool.name}',
+  description: '${tool.description || tool.name}',
   inputSchema: {
     type: 'object',
     properties: {
       input: {
         type: 'string',
-        description: 'Input data for ${tool.id}',
+        description: 'Input data for ${tool.name}',
       },
     },
     required: ['input'],
@@ -169,24 +177,29 @@ main().catch((error) => {
 
     const toolImplementations = tools
       .map(
-        (tool) => `
-async function ${this.toCamelCase(tool.id)}(args: any): Promise<any> {
-  // TODO: Implement ${tool.id}
-  console.log('Executing ${tool.id} with args:', args);
-  return { result: 'Success', tool: '${tool.id}', input: args.input };
-}`
+        (tool) => {
+          const toolName = tool.name || 'unnamed_tool';
+          return `
+async function ${this.toCamelCase(toolName)}(args: any): Promise<any> {
+  // TODO: Implement ${toolName}
+  console.log('Executing ${toolName} with args:', args);
+  return { result: 'Success', tool: '${toolName}', input: args.input };
+}`;
+        }
       )
       .join('\n');
 
     const toolMap = tools
       .map(
-        (tool) =>
-          `    case '${tool.id}': return ${this.toCamelCase(tool.id)}(args);`
+        (tool) => {
+          const toolName = tool.name || 'unnamed_tool';
+          return `    case '${toolName}': return ${this.toCamelCase(toolName)}(args);`;
+        }
       )
       .join('\n');
 
     const content = `/**
- * Tool implementations for ${manifest.metadata.name}
+ * Tool implementations for ${manifest.metadata?.name || 'unnamed-agent'}
  */
 
 export const tools = [
@@ -209,7 +222,7 @@ ${toolMap}
 
   private generateTypesFile(manifest: OssaAgent): ExportFile {
     const content = `/**
- * Type definitions for ${manifest.metadata.name}
+ * Type definitions for ${manifest.metadata?.name || 'unnamed-agent'}
  */
 
 export interface ToolResult {
@@ -238,12 +251,12 @@ export interface MCPResponse {
   private generatePackageJson(manifest: OssaAgent): ExportFile {
     const content = JSON.stringify(
       {
-        name: manifest.metadata.name,
-        version: manifest.metadata.version,
-        description: manifest.metadata.description,
+        name: manifest.metadata?.name || 'unnamed-agent',
+        version: manifest.metadata?.version || '1.0.0',
+        description: manifest.metadata?.description || 'OSSA-generated MCP server',
         type: 'module',
         bin: {
-          [manifest.metadata.name]: './dist/server.js',
+          [manifest.metadata?.name || 'unnamed-agent']: './dist/server.js',
         },
         scripts: {
           build: 'tsc',
@@ -291,9 +304,9 @@ export interface MCPResponse {
   }
 
   private generateReadme(manifest: OssaAgent): ExportFile {
-    const content = `# ${manifest.metadata.name} - MCP Server
+    const content = `# ${manifest.metadata?.name || 'unnamed-agent'} - MCP Server
 
-${manifest.metadata.description || 'MCP server generated from OSSA manifest'}
+${manifest.metadata?.description || 'OSSA-generated MCP server' || 'MCP server generated from OSSA manifest'}
 
 ## Installation
 
@@ -310,9 +323,9 @@ Add to your MCP config (\`~/.claude/mcp_servers.json\` or \`.cursor/mcp_servers.
 
 \`\`\`json
 {
-  "${manifest.metadata.name}": {
+  "${manifest.metadata?.name || 'unnamed-agent'}": {
     "command": "node",
-    "args": ["/path/to/${manifest.metadata.name}/dist/server.js"]
+    "args": ["/path/to/${manifest.metadata?.name || 'unnamed-agent'}/dist/server.js"]
   }
 }
 \`\`\`
@@ -325,9 +338,8 @@ npm start
 
 ## Available Tools
 
-${manifest.agent.capabilities
-  ?.filter((c) => c.type === 'tool')
-  .map((tool) => `- **${tool.id}**: ${tool.description || 'No description'}`)
+${(manifest.spec?.tools || [])
+  .map((tool: any) => `- **${tool.name}**: ${tool.description || 'No description'}`)
   .join('\n')}
 
 ## Generated from OSSA
@@ -344,7 +356,7 @@ Learn more: https://openstandardagents.org
     const content = `import { describe, test, expect } from 'vitest';
 import { tools, executeTool } from './tools';
 
-describe('${manifest.metadata.name} MCP Server', () => {
+describe('${manifest.metadata?.name || 'unnamed-agent'} MCP Server', () => {
   test('exports tools array', () => {
     expect(tools).toBeDefined();
     expect(Array.isArray(tools)).toBe(true);

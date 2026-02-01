@@ -187,10 +187,12 @@ export class CrewAIAdapter extends BaseAdapter {
         },
         tools: [
           {
+            type: 'api',
             name: 'web_search',
             description: 'Search the web for information',
           },
           {
+            type: 'api',
             name: 'document_analyzer',
             description: 'Analyze documents and extract insights',
           },
