@@ -11,6 +11,7 @@ import { VersionReleaseService } from '../services/version-release.service.js';
 import { VersionValidateService } from '../services/version-validate.service.js';
 import { VersionSyncService } from '../services/version-sync.service.js';
 import { VersionDetectionService } from '../services/version-detection.service.js';
+import { VersionAuditService } from '../services/version-audit.service.js';
 
 export const versionCommand = new Command('version')
   .alias('ver')
@@ -173,6 +174,56 @@ versionCommand
       console.log(
         chalk.gray(`\n✅ Updated .version.json with detected version`)
       );
+    } catch (error) {
+      console.error(
+        chalk.red(
+          `\n❌ Error: ${error instanceof Error ? error.message : String(error)}`
+        )
+      );
+      process.exit(1);
+    }
+  });
+
+// version:audit - Audit for hardcoded versions
+versionCommand
+  .command('audit')
+  .alias('a')
+  .description('Audit for hardcoded versions (not using placeholders)')
+  .option('--fix', 'Automatically replace hardcoded versions with {{VERSION}}', false)
+  .action(async (options: { fix: boolean }) => {
+    console.log(chalk.blue('🔍 OSSA Version Audit'));
+    console.log(chalk.gray('=======================\n'));
+
+    const service = new VersionAuditService();
+    try {
+      const result = await service.audit({ fix: options.fix });
+
+      if (result.total === 0) {
+        console.log(chalk.green('✅ No hardcoded versions found!'));
+      } else {
+        console.log(
+          chalk.yellow(
+            `⚠️  Found ${result.total} hardcoded version(s) in ${result.files.length} location(s):\n`
+          )
+        );
+
+        result.files.forEach((file) => {
+          console.log(chalk.gray(`  ${file.path}:${file.line}`));
+          console.log(chalk.red(`    - ${file.content}`));
+          console.log(chalk.green(`    + ${file.suggested}`));
+          console.log('');
+        });
+
+        if (options.fix && result.fixed) {
+          console.log(
+            chalk.green(`\n✅ Fixed ${result.fixed} file(s) automatically`)
+          );
+        } else if (!options.fix) {
+          console.log(
+            chalk.yellow('\nRun with --fix to automatically replace hardcoded versions')
+          );
+        }
+      }
     } catch (error) {
       console.error(
         chalk.red(
