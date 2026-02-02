@@ -6,11 +6,11 @@
     },
     {
       "name": "release/v0.3.x",
-      "prerelease": "rc"
+      "prerelease": true
     },
     {
       "name": "release/v+([0-9])?(.{+([0-9]),x}).x",
-      "prerelease": "rc"
+      "prerelease": true
     }
   ],
   "repositoryUrl": "https://gitlab.com/blueflyio/ossa/openstandardagents.git",
@@ -110,20 +110,6 @@
             "label": "OSSA ${nextRelease.version} npm package"
           }
         ]
-      }
-    ],
-    [
-      "@semantic-release/github",
-      {
-        "assets": [
-          {
-            "path": "dist/*.tgz",
-            "label": "OSSA ${nextRelease.version} npm package"
-          }
-        ],
-        "successComment": false,
-        "failComment": false,
-        "releasedLabels": false
       }
     ]
   ]
