@@ -62,7 +62,6 @@ export class EnhancedOSSAValidator {
     // Add schema validation errors
     if (schemaResult.errors) {
       // Convert Ajv errors to FormattedError
-      // @ts-expect-error - Ajv v8 API compatibility
       const ajvErrors = this.validator.ajvInstance.errors || [];
       allErrors.push(...formatAjvErrors(ajvErrors));
     }
