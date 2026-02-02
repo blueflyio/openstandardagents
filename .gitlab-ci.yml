@@ -29,13 +29,12 @@ include:
       enable_deployment: false
       enable_pages: false
       enable_npm_publish: false  # We handle manual npm publish
-      create_dev_tags: false      # We handle dev tagging in version:dev
-      create_rc_tags: false       # We handle RC tagging in version:rc
 
 # =============================================================================
 # CUSTOM STAGES (Added to golden stages)
 # =============================================================================
 stages:
+  - .pre
   - detect
   - validate
   - test
@@ -43,9 +42,11 @@ stages:
   - build
   - publish
   - heal
+  - tag      # Golden component needs this
   - version  # Custom: dev/rc tagging
   - release  # Custom: production release
   - deploy   # Custom: npm publish
+  - .post
 
 variables:
   NODE_VERSION: "22.14"
