@@ -27,6 +27,42 @@ See [DEMO.md](./DEMO.md) for the full story.
 
 ---
 
+## What's New in v0.4.0
+
+### Production-Grade CLI Options
+All critical commands now support enterprise-grade options:
+- `--dry-run` - Preview changes without modifying files
+- `--verbose` - Detailed debugging output for troubleshooting
+- `--quiet` - Minimal output for scripting and CI
+- `--json` - Machine-readable output for tooling
+- `--no-color` - CI-friendly plain text output
+- `--force` - Skip confirmation prompts
+
+Supported commands: `validate`, `lint`, `standardize`, `import`, `migrate`, `publish`, `export`
+
+### 12 New Commands Accessible
+Previously unregistered commands now available:
+- `agent-create` - Create new agents programmatically
+- `agent-wizard` - Interactive agent creation
+- `docs` - Generate agent documentation
+- `enhance` - Improve existing agents
+- `examples` - Generate usage examples
+- `knowledge` - Manage agent knowledge bases
+- `migrate-langchain` - Migrate LangChain agents
+- `release` - Release automation
+- `serve` - Local development server
+- `sync` - GitHub/GitLab sync
+- `audit` - Agent health checks
+
+### Build Quality Improvements
+- Zero TypeScript compilation errors
+- Proper ES module resolution (`.js` extensions)
+- CI environment auto-detection
+- Professional technical documentation
+- Fixed version detection in CLI
+
+---
+
 ## What is OSSA?
 
 OSSA is a **specification standard** that provides a common contract for defining AI agents, similar to how OpenAPI standardizes REST APIs. It's **not a framework** - it's a JSON Schema-based specification that enables:
