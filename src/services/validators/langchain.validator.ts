@@ -17,6 +17,7 @@ export class LangChainValidator {
   private validateLangChain: ReturnType<Ajv['compile']>;
 
   constructor() {
+// @ts-expect-error - Ajv v8 API compatibility
     this.ajv = new Ajv({ allErrors: true, strict: false });
     addFormats(this.ajv);
 
