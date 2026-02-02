@@ -22,7 +22,7 @@ describe('MigrationService', () => {
       expect(result.apiVersion).toBe(getApiVersion());
     });
 
-    it.skip('should migrate legacy v1.0 to k8s-style with full metadata', async () => {
+    it('should migrate legacy v1.0 to k8s-style with full metadata', async () => {
       const v1Input = {
         ossaVersion: '1.0',
         agent: {
@@ -53,8 +53,6 @@ describe('MigrationService', () => {
         },
       };
       const result = await service.migrate(v1Input);
-      console.log('DEBUG: result.apiVersion =', result.apiVersion);
-      console.log('DEBUG: getApiVersion() =', getApiVersion());
       expect(result.apiVersion).toBe(getApiVersion());
       expect(result.metadata.name).toBe('test-agent');
       expect(result.metadata.labels?.test).toBe('true');
