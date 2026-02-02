@@ -1,0 +1,142 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "version": "0.3.5",
+  "status": "stable",
+  "release_candidate": "0.3.5",
+  "stable_release_blocked": false,
+  "blockers": {
+    "kagent_extension_schema": {
+      "status": "done",
+      "description": "Kagent extension schema for GitLab Kubernetes Agents - CRITICAL",
+      "deliverables": [
+        "spec/v0.3/extensions/kagent/kagent.schema.json",
+        "src/services/validators/kagent.validator.ts",
+        "spec/v0.3/extensions/kagent/README.md",
+        "24 unit tests (all passing)",
+        "CI validation job (validate:kagent-examples)",
+        "6 production-ready examples",
+        "gitlab-kagent conformance profile"
+      ],
+      "completed_date": "2026-01-15",
+      "importance": "CRITICAL - GitLab Kubernetes Agent integration is the anchor enterprise use case"
+    },
+    "kagent_validator": {
+      "status": "done",
+      "description": "Kagent extension validator with CI gates - CRITICAL",
+      "deliverables": [
+        "src/services/validators/kagent.validator.ts",
+        "Integration into ValidationService",
+        "24 comprehensive unit tests",
+        "CI pipeline validation",
+        "All 6 examples validated successfully"
+      ],
+      "completed_date": "2026-01-15"
+    },
+    "public_registry_mvp": {
+      "status": "done",
+      "description": "Public agent registry for discovery and publishing",
+      "deliverables": [
+        "src/services/registry/bundle.service.ts",
+        "src/services/registry/index.service.ts",
+        "src/cli/commands/catalog/search.command.ts",
+        "src/cli/commands/catalog/info.command.ts",
+        "Enhanced publish command with bundling",
+        "2 example agents in registry",
+        "Integration tests"
+      ],
+      "completed_date": "2026-01-15"
+    },
+    "langchain_migrator": {
+      "status": "done",
+      "description": "LangChain → OSSA migration tool",
+      "deliverables": [
+        "src/services/migration/langchain-migration.service.ts",
+        "src/cli/commands/migrate-langchain.command.ts",
+        "4 complete migration examples (Python, TypeScript, Config)",
+        "Migration reports with confidence scoring",
+        "Comprehensive test suite"
+      ],
+      "completed_date": "2026-01-15"
+    },
+    "framework_extension_schemas": {
+      "status": "done",
+      "description": "Convert framework markdown docs to JSON schemas",
+      "target_frameworks": [
+        "MCP (Model Context Protocol)",
+        "A2A (Agent-to-Agent)",
+        "LangChain / LangGraph",
+        "AutoGen / AG2",
+        "CrewAI"
+      ],
+      "deliverables": [
+        "spec/v0.3/extensions/mcp/mcp.schema.json + validator",
+        "spec/v0.3/extensions/a2a/a2a.schema.json + validator",
+        "spec/v0.3/extensions/langchain/langchain.schema.json + enhanced validator",
+        "spec/v0.3/extensions/langgraph/langgraph.schema.json + enhanced validator",
+        "spec/v0.3/extensions/ag2/ag2.schema.json + enhanced validator",
+        "spec/v0.3/extensions/crewai/crewai.schema.json + enhanced validator",
+        "Examples and documentation for MCP and A2A"
+      ],
+      "completed_date": "2026-01-15"
+    },
+    "conformance_suite": {
+      "status": "done",
+      "description": "Conformance test suite for Linux Foundation adoption",
+      "deliverables": [
+        "src/services/conformance/conformance.service.ts",
+        "src/cli/commands/conformance.command.ts",
+        "spec/v0.3/conformance/profiles/ (baseline, enterprise, gitlab-kagent)",
+        "8+ test fixtures",
+        "75+ unit tests",
+        "CI jobs configuration",
+        "Complete documentation"
+      ],
+      "completed_date": "2026-01-15"
+    }
+  },
+  "milestones": {
+    "A": {
+      "name": "Kagent Extension Schema + Validation - CRITICAL",
+      "status": "done",
+      "completed_date": "2026-01-15",
+      "importance": "CRITICAL - Anchor enterprise integration for GitLab"
+    },
+    "B": {
+      "name": "Registry MVP",
+      "status": "done",
+      "completed_date": "2026-01-15"
+    },
+    "C": {
+      "name": "LangChain Migrator",
+      "status": "done",
+      "completed_date": "2026-01-15"
+    },
+    "D": {
+      "name": "Framework Extension Schemas",
+      "status": "done",
+      "completed_date": "2026-01-15"
+    },
+    "E": {
+      "name": "Conformance Suite",
+      "status": "done",
+      "completed_date": "2026-01-15"
+    }
+  },
+  "ci_gates": {
+    "block_stable_release": {
+      "enabled": false,
+      "description": "All adoption blockers complete - stable release unblocked",
+      "job_name": "validate:adoption-blockers"
+    }
+  },
+  "release_notes": {
+    "headline": "OSSA v0.3.5 - Enterprise-Ready with GitLab Kagent Integration",
+    "key_highlights": [
+      "KAGENT EXTENSION: Complete GitLab Kubernetes Agent integration (CRITICAL)",
+      "Registry MVP: Agent discovery and publishing",
+      "LangChain Migrator: Seamless migration from LangChain",
+      "6 Framework Extensions: MCP, A2A, LangChain, LangGraph, AG2, CrewAI",
+      "Conformance Suite: Linux Foundation adoption ready"
+    ]
+  }
+}

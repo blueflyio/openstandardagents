@@ -1,0 +1,119 @@
+apiVersion: ossa/v0.3.5
+kind: Flow
+metadata:
+  name: mr-review-flow
+  version: 1.0.0
+  description: "Multi-agent MR review flow with completion signals"
+spec:
+  flow_schema:
+    initial_state: ready
+    states:
+      - name: ready
+        description: "Waiting for MR event"
+      - name: reviewing
+        description: "Agent reviewing code"
+      - name: security-scanning
+        description: "Security vulnerability scan"
+      - name: completed
+        description: "Review complete"
+      - name: blocked
+        description: "Needs human intervention"
+
+  transitions:
+    - from: ready
+      to: reviewing
+      trigger:
+        type: webhook
+        event: merge_request.opened
+      condition: "event.project_id in allowed_projects"
+
+    - from: reviewing
+      to: security-scanning
+      trigger:
+        type: agent_signal
+        signal: complete
+        agent: "@mr-reviewer"
+      condition: "confidence >= 0.8"
+
+    - from: reviewing
+      to: blocked
+      trigger:
+        type: agent_signal
+        signal: blocked
+        agent: "@mr-reviewer"
+
+    - from: security-scanning
+      to: completed
+      trigger:
+        type: agent_signal
+        signal: complete
+        agent: "@vuln-scanner"
+
+  flow_events:
+    - name: merge_request.opened
+      type: webhook
+      source: gitlab
+      handler: agent-mesh
+
+    - name: review_complete
+      type: agent_signal
+      source: "@mr-reviewer"
+      signal: complete
+
+    - name: security_scan_complete
+      type: agent_signal
+      source: "@vuln-scanner"
+      signal: complete
+
+  nodes:
+    - id: webhook-receiver
+      type: webhook
+      config:
+        url: /webhooks/gitlab
+        method: POST
+
+    - id: mr-reviewer-agent
+      type: agent
+      agent_id: "@mr-reviewer"
+      config:
+        completion_signal: complete
+        checkpoint_interval: 5
+
+    - id: vuln-scanner-agent
+      type: agent
+      agent_id: "@vuln-scanner"
+      config:
+        completion_signal: complete
+
+    - id: result-aggregator
+      type: task
+      task_id: aggregate-review-results
+
+  edges:
+    - from: webhook-receiver
+      to: mr-reviewer-agent
+      condition: "event.type == 'merge_request.opened'"
+
+    - from: mr-reviewer-agent
+      to: vuln-scanner-agent
+      condition: "signal == 'complete'"
+
+    - from: vuln-scanner-agent
+      to: result-aggregator
+      condition: "signal == 'complete'"
+
+  adaptors:
+    langgraph:
+      export: true
+      state_schema:
+        type: object
+        properties:
+          mr_data: { type: object }
+          review_result: { type: object }
+          security_result: { type: object }
+    temporal:
+      export: true
+      workflow_id: mr-review-workflow
+    n8n:
+      export: true
+      format: json

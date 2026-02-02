@@ -1,0 +1,114 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openstandardagents.org/schemas/v0.3.5/bat-framework.json",
+  "title": "OSSA v0.3.5 BAT (Best Available Technology) Framework",
+  "description": "Systematic technology selection framework for agents",
+  "type": "object",
+  "definitions": {
+    "BATDimension": {
+      "type": "object",
+      "required": ["dimension", "options"],
+      "properties": {
+        "dimension": {
+          "type": "string",
+          "examples": ["reasoning_depth", "multimodal", "cost_sensitivity", "latency", "throughput"]
+        },
+        "required": {
+          "type": "boolean",
+          "default": true
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["value"],
+            "properties": {
+              "value": {
+                "type": "string"
+              },
+              "technologies": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Compatible technologies"
+              },
+              "cost_tier": {
+                "type": "string",
+                "enum": ["economy", "standard", "premium"]
+              },
+              "constraints": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "BATDecisionProcess": {
+      "type": "object",
+      "properties": {
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["step", "description"],
+            "properties": {
+              "step": {
+                "type": "string",
+                "examples": ["evaluate_requirements", "compare_technologies", "select_best_fit", "document_rationale"]
+              },
+              "description": {
+                "type": "string"
+              },
+              "automated": {
+                "type": "boolean",
+                "default": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "BATFramework": {
+      "type": "object",
+      "properties": {
+        "selection_criteria": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/BATDimension"
+          }
+        },
+        "decision_process": {
+          "$ref": "#/definitions/BATDecisionProcess"
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "enum": ["select_technology", "evaluate_requirements", "compare_technologies"]
+              },
+              "description": {
+                "type": "string"
+              },
+              "parameters": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      },
+      "required": ["selection_criteria"]
+    }
+  },
+  "properties": {
+    "bat": {
+      "$ref": "#/definitions/BATFramework"
+    }
+  }
+}

@@ -1,0 +1,244 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openstandardagents.org/schemas/v0.3.5/flow-kind.json",
+  "title": "OSSA v0.3.5 Flow Kind Specification",
+  "description": "Flow-based orchestration for multi-agent workflows",
+  "type": "object",
+  "definitions": {
+    "FlowState": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+        },
+        "description": {
+          "type": "string"
+        },
+        "entry_action": {
+          "type": "string",
+          "description": "Action to execute on state entry"
+        },
+        "exit_action": {
+          "type": "string",
+          "description": "Action to execute on state exit"
+        }
+      }
+    },
+    "FlowTransition": {
+      "type": "object",
+      "required": ["from", "to", "trigger"],
+      "properties": {
+        "from": {
+          "type": "string",
+          "description": "Source state name"
+        },
+        "to": {
+          "type": "string",
+          "description": "Target state name"
+        },
+        "trigger": {
+          "type": "object",
+          "required": ["type"],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["webhook", "agent_signal", "timer", "condition"]
+            },
+            "event": {
+              "type": "string",
+              "description": "Event name (for webhook/agent_signal)"
+            },
+            "agent": {
+              "type": "string",
+              "description": "Agent ID (for agent_signal)"
+            },
+            "signal": {
+              "type": "string",
+              "enum": ["continue", "complete", "blocked", "escalate", "checkpoint"]
+            },
+            "interval": {
+              "type": "string",
+              "description": "Timer interval (for timer type)"
+            },
+            "condition_expression": {
+              "type": "string",
+              "description": "Condition expression (for condition type)"
+            }
+          }
+        },
+        "condition": {
+          "type": "string",
+          "description": "Optional condition expression"
+        }
+      }
+    },
+    "FlowEvent": {
+      "type": "object",
+      "required": ["name", "type"],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["webhook", "agent_signal", "timer", "custom"]
+        },
+        "source": {
+          "type": "string",
+          "description": "Event source (e.g., gitlab, @mr-reviewer)"
+        },
+        "handler": {
+          "type": "string",
+          "description": "Handler service (e.g., agent-mesh)"
+        },
+        "schema": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Event payload schema"
+        }
+      }
+    },
+    "FlowNode": {
+      "type": "object",
+      "required": ["id", "type"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["webhook", "agent", "task", "condition", "aggregator"]
+        },
+        "agent_id": {
+          "type": "string",
+          "description": "Agent ID (for agent type)"
+        },
+        "task_id": {
+          "type": "string",
+          "description": "Task ID (for task type)"
+        },
+        "config": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "FlowEdge": {
+      "type": "object",
+      "required": ["from", "to"],
+      "properties": {
+        "from": {
+          "type": "string",
+          "description": "Source node ID"
+        },
+        "to": {
+          "type": "string",
+          "description": "Target node ID"
+        },
+        "condition": {
+          "type": "string",
+          "description": "Edge condition expression"
+        },
+        "weight": {
+          "type": "integer",
+          "description": "Edge weight for routing"
+        }
+      }
+    },
+    "FlowAdaptor": {
+      "type": "object",
+      "properties": {
+        "langgraph": {
+          "type": "object",
+          "properties": {
+            "export": {
+              "type": "boolean"
+            },
+            "state_schema": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        },
+        "temporal": {
+          "type": "object",
+          "properties": {
+            "export": {
+              "type": "boolean"
+            },
+            "workflow_id": {
+              "type": "string"
+            }
+          }
+        },
+        "n8n": {
+          "type": "object",
+          "properties": {
+            "export": {
+              "type": "boolean"
+            },
+            "format": {
+              "type": "string",
+              "enum": ["json", "yaml"]
+            }
+          }
+        }
+      }
+    },
+    "FlowSpec": {
+      "type": "object",
+      "required": ["flow_schema", "transitions"],
+      "properties": {
+        "flow_schema": {
+          "type": "object",
+          "required": ["initial_state", "states"],
+          "properties": {
+            "initial_state": {
+              "type": "string"
+            },
+            "states": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/FlowState"
+              }
+            }
+          }
+        },
+        "transitions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FlowTransition"
+          }
+        },
+        "flow_events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FlowEvent"
+          }
+        },
+        "nodes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FlowNode"
+          }
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FlowEdge"
+          }
+        },
+        "adaptors": {
+          "$ref": "#/definitions/FlowAdaptor"
+        }
+      }
+    }
+  },
+  "properties": {
+    "spec": {
+      "$ref": "#/definitions/FlowSpec"
+    }
+  }
+}

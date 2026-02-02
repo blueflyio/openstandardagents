@@ -1,0 +1,128 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openstandardagents.org/schemas/v0.3.5/capability-discovery.json",
+  "title": "OSSA v0.3.5 Dynamic Capability Discovery",
+  "description": "Runtime capability discovery for adaptive agents",
+  "type": "object",
+  "definitions": {
+    "Capability": {
+      "type": "object",
+      "required": ["name", "type"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["tool", "expert", "infrastructure", "agent"]
+        },
+        "description": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "available": {
+          "type": "boolean",
+          "default": true
+        },
+        "version": {
+          "type": "string"
+        }
+      }
+    },
+    "CapabilityDiscovery": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "registry": {
+          "type": "string",
+          "enum": ["agent-mesh", "mcp-registry", "local"],
+          "default": "agent-mesh"
+        },
+        "refresh_interval": {
+          "type": "string",
+          "default": "60s",
+          "description": "How often to refresh capability list"
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "enum": ["list_capabilities", "register_capability", "get_capability_details"]
+              },
+              "description": {
+                "type": "string"
+              },
+              "parameters": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "AgentContext": {
+      "type": "object",
+      "properties": {
+        "session": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "started_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "iteration_count": {
+              "type": "integer"
+            }
+          }
+        },
+        "available_capabilities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Capability"
+          }
+        },
+        "recent_activity": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string"
+              },
+              "timestamp": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "result": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "properties": {
+    "capabilities": {
+      "$ref": "#/definitions/CapabilityDiscovery"
+    },
+    "context": {
+      "$ref": "#/definitions/AgentContext"
+    }
+  }
+}
