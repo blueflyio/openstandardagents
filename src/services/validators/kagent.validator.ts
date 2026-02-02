@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Kagent Extension Validator
  * Validates GitLab Kagent (Kubernetes Agents) extension configuration

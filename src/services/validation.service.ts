@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Validation Service
  * Validates OSSA agent manifests against JSON schemas

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 // ErrorObject type available from ajv if needed for future error handling

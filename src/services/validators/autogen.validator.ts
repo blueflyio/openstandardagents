@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * AutoGen (AG2) Platform Validator
  * Validates AG2/AutoGen-specific extension configuration

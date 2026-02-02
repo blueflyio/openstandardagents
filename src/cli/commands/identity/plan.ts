@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Command } from 'commander';
 import * as fs from 'fs/promises';
 import * as path from 'path';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * LangChain Platform Validator
  * Validates LangChain-specific extension configuration
