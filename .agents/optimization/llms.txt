@@ -1,0 +1,23 @@
+# performance-optimizer
+
+> Optimize agent performance (memory, CPU, latency, cost)
+
+## Quick Reference
+
+- **Type**: OSSA Agent v0.4.0
+- **Category**: optimization
+- **Manifest**: performance-optimizer.ossa.yaml
+
+## Overview
+
+Optimize OSSA agent performance across multiple dimensions:
+- Memory usage optimization
+- CPU efficiency
+- API latency reduction
+- Cost optimization (LLM tokens, compute)
+
+## Related
+
+- Main OSSA documentation: /README.md
+- Agent manifest: ./performance-optimizer.ossa.yaml
+- Agent details: ./AGENTS.md
