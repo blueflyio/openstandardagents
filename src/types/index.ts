@@ -100,8 +100,11 @@ export interface OssaAgent {
     name: string;
     version?: string;
     description?: string;
+    author?: string;
+    license?: string;
     labels?: Record<string, string>;
     annotations?: Record<string, string>;
+    tags?: string[];
     lifecycle?: {
       state?: 'active' | 'deprecated' | 'retired';
       maturity?: 'alpha' | 'beta' | 'stable' | 'deprecated' | 'retired';
@@ -144,6 +147,11 @@ export interface OssaAgent {
   spec?: {
     // This 'spec' object is part of the k8s-style format
     role: string;
+    instructions?: string;
+    workflow?: {
+      steps?: Array<Record<string, unknown>>;
+      [key: string]: unknown;
+    };
     llm?: {
       provider: string;
       model: string;
@@ -158,6 +166,7 @@ export interface OssaAgent {
     tools?: Array<{
       type: string;
       name?: string;
+      description?: string;
       server?: string;
       namespace?: string;
       endpoint?: string;
@@ -169,6 +178,9 @@ export interface OssaAgent {
         type: string;
         credentials?: string;
       };
+      // Schema definitions for tool inputs and outputs
+      inputSchema?: Record<string, unknown> | string;
+      outputSchema?: Record<string, unknown> | string;
     }>;
     autonomy?: {
       level?: string;
@@ -267,7 +279,7 @@ export interface OssaAgent {
         };
       }>;
     };
-    capabilities?: Capability[];
+    capabilities?: (Capability | string)[]; // Allow both full Capability objects and string IDs
     policies?: Array<{
       name: string;
       type: string;

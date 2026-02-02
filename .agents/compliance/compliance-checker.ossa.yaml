@@ -1,0 +1,76 @@
+apiVersion: ossa/v0.4.0
+kind: Agent
+metadata:
+  name: compliance-checker
+  version: 1.0.0
+  description: Check regulatory compliance (GDPR, HIPAA, SOC2, ISO27001)
+  labels:
+    category: compliance
+    tier: production
+    criticality: critical
+spec:
+  role: |
+    Verify OSSA agents meet regulatory compliance requirements:
+    - GDPR (data protection)
+    - HIPAA (healthcare)
+    - SOC2 (security controls)
+    - ISO27001 (information security)
+    - PCI-DSS (payment card data)
+
+  capabilities:
+    - gdpr-compliance
+    - hipaa-compliance
+    - soc2-compliance
+    - iso27001-compliance
+    - pci-dss-compliance
+
+  tools:
+    - type: checker
+      name: gdpr_checker
+      description: Checks GDPR compliance
+
+    - type: checker
+      name: hipaa_checker
+      description: Checks HIPAA compliance
+
+    - type: checker
+      name: soc2_checker
+      description: Checks SOC2 compliance
+
+    - type: reporter
+      name: compliance_reporter
+      description: Generates compliance reports
+
+  inputs:
+    manifest_path:
+      type: string
+      required: true
+
+    compliance_frameworks:
+      type: array
+      items:
+        type: string
+        enum: [gdpr, hipaa, soc2, iso27001, pci-dss]
+      required: true
+
+    audit_mode:
+      type: string
+      enum: [quick, standard, comprehensive]
+      default: standard
+
+  outputs:
+    compliance_report:
+      type: object
+      description: Comprehensive compliance audit
+
+    violations:
+      type: array
+      description: Compliance violations found
+
+    remediation_steps:
+      type: array
+      description: Steps to achieve compliance
+
+  constraints:
+    execution_timeout: 180s
+    max_memory: 1GB

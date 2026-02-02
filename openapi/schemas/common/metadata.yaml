@@ -32,10 +32,19 @@ components:
       additionalProperties:
         type: string
       description: Key-value annotations for metadata
+      properties:
+        author:
+          type: string
+          description: Author of the agent
+        license:
+          type: string
+          description: License information
       example:
         deployed_by: buildkit-cli
         git_commit: abc123
         environment: production
+        author: "John Doe"
+        license: "Apache-2.0"
 
     HealthStatus:
       type: object

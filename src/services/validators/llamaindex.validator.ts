@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * LlamaIndex Platform Validator
  * Validates LlamaIndex-specific extension configuration

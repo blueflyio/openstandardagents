@@ -1,0 +1,23 @@
+# test-suite-generator
+
+> Generate comprehensive test suites for OSSA agents
+
+## Quick Reference
+
+- **Type**: OSSA Agent v0.4.0
+- **Category**: testing
+- **Manifest**: test-suite-generator.ossa.yaml
+
+## Overview
+
+Generate complete test suites including unit, integration, and E2E tests.
+Supports multiple test frameworks (Jest, Mocha, Pytest).
+Generates test fixtures and mocks.
+
+capabilities:
+
+## Related
+
+- Main OSSA documentation: /README.md
+- Agent manifest: ./test-suite-generator.ossa.yaml
+- Agent details: ./AGENTS.md

@@ -719,9 +719,9 @@ components:
           type: string
 
     AgentType:
-      $ref: '../schemas/common/agent.yaml#/components/schemas/AgentType'
+      $ref: './schemas/common/agent.yaml#/components/schemas/AgentType'
     AgentStatus:
-      $ref: '../schemas/common/agent.yaml#/components/schemas/AgentStatus'
+      $ref: './schemas/common/agent.yaml#/components/schemas/AgentStatus'
 
     AgentMetrics:
       type: object
@@ -745,7 +745,7 @@ components:
 
     # Error Schemas (RFC7807) - Using shared schema
     Problem:
-      $ref: '../schemas/common/errors.yaml#/components/schemas/Problem'
+      $ref: './schemas/common/errors.yaml#/components/schemas/Problem'
 
   responses:
     BadRequest:

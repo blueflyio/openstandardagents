@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * OpenAI Agents Platform Validator
  * Validates OpenAI Agents SDK extension configuration

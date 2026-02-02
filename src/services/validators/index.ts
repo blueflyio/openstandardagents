@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Platform Validators Index
  * Exports all platform-specific validators

@@ -1,162 +1,284 @@
 # =============================================================================
-# OSSA Specification CI/CD Pipeline
-# Open Standard for Scalable AI Agents - JSON Schema Specification
+# OSSA Specification CI/CD Pipeline - Using Golden Component
+# =============================================================================
+#
+# Versioning Strategy (HARDENED GITLAB FLOW):
+# - Feature → release/v0.4.x: Auto-creates v0.4.0-dev.N tags (development env)
+# - release/v0.4.x → main: Auto-creates v0.4.0-rc.N tags (staging env)
+# - Manual trigger on main: Creates v0.4.0 production release (production env)
+#
+# Publishing Strategy:
+# - GitHub: Only main + release branches, only RC + production tags
+# - npm: Only verified production releases (no RC, no dev)
+# - GitLab Releases: Only production tags
 # =============================================================================
 
+include:
+  # Golden component handles: validate, test, build, security
+  - component: $CI_SERVER_FQDN/blueflyio/gitlab_components/golden@release/v0.1.x
+    inputs:
+      # Project configuration
+      node_version: "22.14"
+      project_type: "nodejs"
+
+      # Enable standard features
+      enable_comprehensive_testing: true
+      enable_security_scanning: false  # Disable until compliance-engine published
+
+      # Disable features we handle custom
+      enable_deployment: false
+      enable_pages: false
+      enable_npm_publish: false  # We handle manual npm publish
+
+# =============================================================================
+# CUSTOM STAGES (Added to golden stages)
+# =============================================================================
 stages:
+  - .pre
+  - detect
   - validate
   - test
-  - release
+  - security
+  - build
+  - publish
+  - heal
+  - tag      # Golden component needs this
+  - version  # Custom: dev/rc tagging
+  - release  # Custom: production release
+  - deploy   # Custom: npm publish
+  - .post
 
 variables:
   NODE_VERSION: "22.14"
-  CI_USE_LOCAL_RUNNERS: "true" # Toggle this to switch between local and shared runners
-  GIT_DEPTH: 0 # Disable shallow cloning to prevent git corruption
-
-workflow:
-  rules:
-    - if: $CI_USE_LOCAL_RUNNERS == "true"
-      variables:
-        OSSA_RUNNER_TAG: "local"
-    - if: $CI_USE_LOCAL_RUNNERS != "true"
-      variables:
-        OSSA_RUNNER_TAG: "saas-linux-small-amd64" # GitLab SaaS shared runner
-    - when: always
+  GIT_DEPTH: 0  # Full history for versioning
 
 # =============================================================================
-# VALIDATE STAGE - Schema & Manifest Validation
+# VERSION STAGE - Auto-Versioning with GitLab Environments
 # =============================================================================
 
-validate:schema:
-  stage: validate
-  image: node:${NODE_VERSION}-alpine
-  tags:
-    - ${OSSA_RUNNER_TAG}
-  timeout: 10 minutes
-  before_script:
-    - npm ci --prefer-offline --no-audit --ignore-scripts
-  script:
-    - echo "Validating OSSA JSON Schema..."
-    - timeout 5m npm run validate:schema || echo "[WARN] Schema validation timed out - see issue #395"
-    - echo "Schema compiles successfully"
-  allow_failure: true
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH =~ /^release/
-    - if: $CI_COMMIT_BRANCH == "main"
-
-validate:examples:
-  stage: validate
-  image: node:${NODE_VERSION}-alpine
-  tags:
-    - ${OSSA_RUNNER_TAG}
-  timeout: 10 minutes
-  before_script:
-    - npm ci --prefer-offline --no-audit --ignore-scripts
-  script:
-    - echo "Validating example manifests..."
-    - timeout 5m npm run validate:examples || echo "[WARN] Some examples need fixes - see issue #395"
-    - echo "Example validation complete"
-  allow_failure: true
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH =~ /^release/
-    - if: $CI_COMMIT_BRANCH == "main"
-
-validate:ossa-templates:
-  stage: validate
-  image: node:${NODE_VERSION}-alpine
-  tags:
-    - ${OSSA_RUNNER_TAG}
-  timeout: 10 minutes
-  before_script:
-    - npm ci --prefer-offline --no-audit --ignore-scripts
-  script:
-    - echo "Validating power agent manifests..."
-    - |
-      timeout 5m bash -c '
-      for f in examples/ossa-templates/*.ossa.yaml; do
-        echo "Validating $f..."
-        npx ajv-cli validate -s spec/v0.3.3/ossa-0.3.3.schema.json --strict=false --allow-union-types -d "$f" || echo "SKIP: $f"
-      done
-      ' || echo "[WARN] Template validation timed out or failed - see issue #395"
-    - echo "OSSA template validation complete"
-  allow_failure: true
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH =~ /^release/
-    - if: $CI_COMMIT_BRANCH == "main"
-
-# =============================================================================
-# TEST STAGE - Unit & Integration Tests
-# =============================================================================
-
-.node-setup:
-  image: node:${NODE_VERSION}-alpine
-  tags:
-    - ${OSSA_RUNNER_TAG}
-  before_script:
-    - npm ci --prefer-offline --no-audit
-
-test:unit:
-  extends: .node-setup
-  stage: test
-  allow_failure: true
-  script:
-    # Build - allows failure for in-progress TypeScript work
-    - npm run build 2>&1 || echo "[WARN] Build has TypeScript errors (known issue in SDK work)"
-    # Run tests that don't require CLI
-    - npm run test -- --testPathIgnore="integration/cli"
-  artifacts:
-    when: always
-    reports:
-      junit: junit.xml
-    expire_in: 30 days
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH =~ /^release/
-    - if: $CI_COMMIT_BRANCH == "main"
-
-# =============================================================================
-# RELEASE STAGE - Automated Semantic Release
-# =============================================================================
-
-release:semantic:
-  stage: release
+# Dev version: Feature merged to release/v0.4.x → v0.4.0-dev.N
+version:dev:
+  stage: version
   image: node:${NODE_VERSION}
-  tags:
-    - ${OSSA_RUNNER_TAG}
+  extends: .base-runner
+  environment:
+    name: development
+    deployment_tier: development
+    action: prepare
   variables:
     GIT_AUTHOR_NAME: "OSSA Release Bot"
     GIT_AUTHOR_EMAIL: "release-bot@openstandardagents.org"
     GIT_COMMITTER_NAME: "OSSA Release Bot"
     GIT_COMMITTER_EMAIL: "release-bot@openstandardagents.org"
-    GITLAB_TOKEN: ${GITLAB_PUSH_TOKEN}
+  before_script:
+    - npm ci
+    - git config user.name "${GIT_AUTHOR_NAME}"
+    - git config user.email "${GIT_AUTHOR_EMAIL}"
+  script:
+    - echo "🏷️  Creating dev version tag..."
+    - |
+      # Get latest version from package.json
+      CURRENT_VERSION=$(node -p "require('./package.json').version")
+
+      # Get latest dev tag for this version
+      LATEST_DEV=$(git tag -l "${CURRENT_VERSION}-dev.*" | sort -V | tail -1)
+
+      if [ -z "$LATEST_DEV" ]; then
+        DEV_NUMBER=1
+      else
+        DEV_NUMBER=$(echo $LATEST_DEV | grep -oP '(?<=-dev\.)\d+' || echo "0")
+        DEV_NUMBER=$((DEV_NUMBER + 1))
+      fi
+
+      NEW_TAG="${CURRENT_VERSION}-dev.${DEV_NUMBER}"
+      echo "Creating tag: $NEW_TAG"
+
+      git tag -a "$NEW_TAG" -m "Development version $NEW_TAG"
+      git push https://oauth2:${GITLAB_PUSH_TOKEN}@gitlab.com/blueflyio/ossa/openstandardagents.git "$NEW_TAG"
+
+      echo "✅ Created dev tag: $NEW_TAG"
+      echo "🌍 Environment: development"
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /^release/ && $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_MESSAGE !~ /\[skip ci\]/
+
+# RC version: release/v0.4.x merged to main → v0.4.0-rc.N
+version:rc:
+  stage: version
+  image: node:${NODE_VERSION}
+  extends: .base-runner
+  environment:
+    name: staging
+    deployment_tier: staging
+    action: prepare
+  variables:
+    GIT_AUTHOR_NAME: "OSSA Release Bot"
+    GIT_AUTHOR_EMAIL: "release-bot@openstandardagents.org"
+    GIT_COMMITTER_NAME: "OSSA Release Bot"
+    GIT_COMMITTER_EMAIL: "release-bot@openstandardagents.org"
+  before_script:
+    - npm ci
+    - git config user.name "${GIT_AUTHOR_NAME}"
+    - git config user.email "${GIT_AUTHOR_EMAIL}"
+  script:
+    - echo "🏷️  Creating RC version tag..."
+    - |
+      # Get latest version from package.json
+      CURRENT_VERSION=$(node -p "require('./package.json').version")
+
+      # Get latest RC tag for this version
+      LATEST_RC=$(git tag -l "${CURRENT_VERSION}-rc.*" | sort -V | tail -1)
+
+      if [ -z "$LATEST_RC" ]; then
+        RC_NUMBER=1
+      else
+        RC_NUMBER=$(echo $LATEST_RC | grep -oP '(?<=-rc\.)\d+' || echo "0")
+        RC_NUMBER=$((RC_NUMBER + 1))
+      fi
+
+      NEW_TAG="${CURRENT_VERSION}-rc.${RC_NUMBER}"
+      echo "Creating RC tag: $NEW_TAG"
+
+      git tag -a "$NEW_TAG" -m "Release candidate $NEW_TAG"
+      git push https://oauth2:${GITLAB_PUSH_TOKEN}@gitlab.com/blueflyio/ossa/openstandardagents.git "$NEW_TAG"
+
+      # Push RC tag to GitHub
+      if [ -n "$GITHUB_TOKEN" ]; then
+        git push https://${GITHUB_TOKEN}@github.com/blueflyio/openstandardagents.git "$NEW_TAG"
+        echo "✅ Pushed RC tag to GitHub"
+      fi
+
+      echo "✅ Created RC tag: $NEW_TAG"
+      echo "🌍 Environment: staging"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_MESSAGE !~ /\[skip ci\]/
+
+# =============================================================================
+# RELEASE STAGE - Production Release (Manual Trigger with Button)
+# =============================================================================
+
+release:production:
+  stage: release
+  image: node:${NODE_VERSION}
+  extends: .base-runner
+  environment:
+    name: production
+    deployment_tier: production
+    url: https://www.npmjs.com/package/@bluefly/openstandardagents
+    action: start
+  variables:
+    GIT_AUTHOR_NAME: "OSSA Release Bot"
+    GIT_AUTHOR_EMAIL: "release-bot@openstandardagents.org"
+    GIT_COMMITTER_NAME: "OSSA Release Bot"
+    GIT_COMMITTER_EMAIL: "release-bot@openstandardagents.org"
   before_script:
     - npm ci
     - npm run build
+    - git config user.name "${GIT_AUTHOR_NAME}"
+    - git config user.email "${GIT_AUTHOR_EMAIL}"
     - |
-      # Clean up stale local tags from previous failed runs (local runner issue)
-      git tag -l | xargs -r git tag -d
-      git fetch --tags
-      echo "Cleaned stale local tags"
-    - |
-      # Publishing to GitLab Package Registry (private)
-      # Use GITLAB_TOKEN from CI/CD variables for package publishing
-      echo "//gitlab.com/api/v4/projects/76265294/packages/npm/:_authToken=${GITLAB_TOKEN}" > .npmrc
-      echo "@bluefly:registry=https://gitlab.com/api/v4/projects/76265294/packages/npm/" >> .npmrc
-      if [ -z "$GITLAB_TOKEN" ]; then
-        echo "ERROR: GITLAB_TOKEN not set in CI/CD variables"
+      # Validate required tokens
+      if [ -z "$NPM_TOKEN" ]; then
+        echo "❌ ERROR: NPM_TOKEN not set in CI/CD variables"
         exit 1
       fi
       if [ -z "$GITLAB_PUSH_TOKEN" ]; then
-        echo "ERROR: GITLAB_PUSH_TOKEN not set"
+        echo "❌ ERROR: GITLAB_PUSH_TOKEN not set"
         exit 1
       fi
-      echo "Publishing to GitLab Package Registry (private)"
+      if [ -z "$GITHUB_TOKEN" ]; then
+        echo "❌ ERROR: GITHUB_TOKEN not set"
+        exit 1
+      fi
+      echo "✅ Required tokens configured"
   script:
-    - echo "🚀 Running semantic-release..."
+    - echo "🚀 Running semantic-release for PRODUCTION..."
     - npx semantic-release
-  rules:
-    - if: $CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"
-    - if: $CI_COMMIT_BRANCH =~ /^release\/v[0-9]+\.[0-9]+\.x$/ && $CI_PIPELINE_SOURCE == "push"
+    - |
+      # Get the new version
+      NEW_VERSION=$(node -p "require('./package.json').version")
+      echo "✅ Released production version: v${NEW_VERSION}"
+
+      # Sync main and release branches to GitHub
+      echo "📤 Syncing branches to GitHub..."
+      git push https://${GITHUB_TOKEN}@github.com/blueflyio/openstandardagents.git main:main
+      git push https://${GITHUB_TOKEN}@github.com/blueflyio/openstandardagents.git release/v0.4.x:release/v0.4.x
+
+      # Push production tag to GitHub
+      git push https://${GITHUB_TOKEN}@github.com/blueflyio/openstandardagents.git "v${NEW_VERSION}"
+
+      echo "✅ Synced to GitHub: main, release/v0.4.x, v${NEW_VERSION}"
+      echo "🌍 Environment: production"
+  when: manual
+  only:
+    - main
+  artifacts:
+    paths:
+      - dist/*.tgz
+    expire_in: 90 days
+
+# =============================================================================
+# DEPLOY STAGE - npm Publish + GitLab Release
+# =============================================================================
+
+deploy:npm:
+  stage: deploy
+  image: node:${NODE_VERSION}
+  extends: .base-runner
+  environment:
+    name: production
+    deployment_tier: production
+    url: https://www.npmjs.com/package/@bluefly/openstandardagents
+    action: start
+  needs:
+    - job: release:production
+  before_script:
+    - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+  script:
+    - |
+      VERSION=$(node -p "require('./package.json').version")
+      echo "📦 Publishing to npm: v${VERSION}"
+
+      npm publish --access public
+
+      echo "✅ Published to npm: @bluefly/openstandardagents@${VERSION}"
+      echo "📍 https://www.npmjs.com/package/@bluefly/openstandardagents/v/${VERSION}"
+  only:
+    - main
+
+deploy:gitlab-release:
+  stage: deploy
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  extends: .base-runner
+  needs:
+    - job: release:production
+      artifacts: true
+    - job: deploy:npm
+  script:
+    - |
+      VERSION=$(cat package.json | grep '"version"' | head -1 | awk -F: '{ print $2 }' | sed 's/[",]//g' | tr -d '[[:space:]]')
+      echo "📝 Creating GitLab release for v${VERSION}..."
+  release:
+    tag_name: "v${VERSION}"
+    name: "Release v${VERSION}"
+    description: |
+      ## OSSA v${VERSION}
+
+      Open Standard for Software Agents
+
+      See [CHANGELOG.md](https://gitlab.com/blueflyio/ossa/openstandardagents/-/blob/main/CHANGELOG.md) for full release notes.
+
+      **Install:**
+      ```bash
+      npm install @bluefly/openstandardagents@${VERSION}
+      ```
+
+      **Links:**
+      - [npm package](https://www.npmjs.com/package/@bluefly/openstandardagents/v/${VERSION})
+      - [GitHub mirror](https://github.com/blueflyio/openstandardagents)
+      - [Documentation](https://openstandardagents.org)
+    assets:
+      links:
+        - name: "npm package"
+          url: "https://www.npmjs.com/package/@bluefly/openstandardagents/v/${VERSION}"
+  only:
+    - main

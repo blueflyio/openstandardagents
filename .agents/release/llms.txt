@@ -1,0 +1,23 @@
+# release-manager
+
+> Manage complete release lifecycle (version, changelog, publish, deploy)
+
+## Quick Reference
+
+- **Type**: OSSA Agent v0.4.0
+- **Category**: release
+- **Manifest**: release-manager.ossa.yaml
+
+## Overview
+
+Manage complete release lifecycle for OSSA agents:
+- Semantic versioning (major/minor/patch)
+- Changelog generation (Keep a Changelog format)
+- npm/Docker/K8s publishing
+- GitLab/GitHub release creation
+
+## Related
+
+- Main OSSA documentation: /README.md
+- Agent manifest: ./release-manager.ossa.yaml
+- Agent details: ./AGENTS.md

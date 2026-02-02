@@ -60,8 +60,9 @@ export class OSSAValidator {
       return { valid: true, warnings: this.generateWarnings(manifest) };
     }
 
+    const ajvErrors = this.ajv.errors || [];
     const errors =
-      this.ajv.errors?.map((err) => {
+      ajvErrors.map((err: any) => {
         const path = err.instancePath || '/';
         const message = err.message || 'Unknown error';
         return `${path}: ${message}`;

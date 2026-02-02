@@ -1,0 +1,64 @@
+apiVersion: ossa/v0.4.0
+kind: Agent
+metadata:
+  name: schema-validator
+  version: 1.0.0
+  description: Production-grade OSSA manifest validator with comprehensive error reporting
+  labels:
+    category: validation
+    tier: production
+    criticality: high
+spec:
+  role: |
+    Validate OSSA agent manifests against the official JSON Schema.
+    Provide detailed error reports, suggestions, and auto-fix capabilities.
+
+  capabilities:
+    - manifest-validation
+    - schema-compliance
+    - error-reporting
+    - auto-fix-suggestions
+    - version-compatibility-check
+
+  tools:
+    - type: validator
+      name: json_schema_validator
+      description: Validates manifest against OSSA JSON Schema
+
+    - type: analyzer
+      name: compatibility_checker
+      description: Checks compatibility across OSSA versions
+
+    - type: formatter
+      name: manifest_formatter
+      description: Auto-formats manifests to standard format
+
+  inputs:
+    manifest_path:
+      type: string
+      description: Path to OSSA manifest file
+      required: true
+
+    strict_mode:
+      type: boolean
+      description: Enable strict validation (fail on warnings)
+      default: false
+
+    auto_fix:
+      type: boolean
+      description: Automatically fix common issues
+      default: false
+
+  outputs:
+    validation_report:
+      type: object
+      description: Detailed validation results with errors and warnings
+
+    fixed_manifest:
+      type: string
+      description: Auto-fixed manifest (if auto_fix enabled)
+
+  constraints:
+    execution_timeout: 30s
+    max_memory: 512MB
+    required_tools: [validator, formatter]

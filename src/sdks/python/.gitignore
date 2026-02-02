@@ -45,4 +45,3 @@ dmypy.json
 
 # Ruff
 .ruff_cache/
-.DS_Store

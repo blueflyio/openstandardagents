@@ -19,6 +19,12 @@ import {
   isJSONOutput,
   outputJSON,
 } from '../utils/index.js';
+import {
+  addGlobalOptions,
+  addQueryOptions,
+  shouldUseColor,
+  ExitCode,
+} from '../utils/standard-options.js';
 import type {
   OssaAgent,
   SchemaVersion,
@@ -33,8 +39,6 @@ export const validateCommand = new Command('validate')
   )
   .option('--openapi', 'Validate as OpenAPI specification with OSSA extensions')
   .option('--check-messaging', 'Validate messaging extension (v0.3.0+)')
-  .option('-v, --verbose', 'Verbose output with detailed information')
-  .option('--output <format>', 'Output format (json|text)', 'text')
   .option(
     '-p, --platform <platform>',
     'Platform-specific validation (kagent, langchain, crewai, docker, kubernetes)'
@@ -42,8 +46,13 @@ export const validateCommand = new Command('validate')
   .option('--all', 'Validate for all platforms', false)
   .description(
     'Validate OSSA agent manifest or OpenAPI spec against JSON schema'
-  )
-  .action(
+  );
+
+// Apply production-grade standard options
+addGlobalOptions(validateCommand);
+addQueryOptions(validateCommand);
+
+validateCommand.action(
     async (
       path: string,
       options: {
@@ -51,9 +60,21 @@ export const validateCommand = new Command('validate')
         openapi?: boolean;
         checkMessaging?: boolean;
         verbose?: boolean;
+        quiet?: boolean;
+        json?: boolean;
+        color?: boolean;
         output?: string;
+        platform?: string;
+        all?: boolean;
       }
     ) => {
+      const useColor = shouldUseColor(options);
+      const log = (msg: string, color?: (s: string) => string) => {
+        if (options.quiet) return;
+        const output = useColor && color ? color(msg) : msg;
+        console.log(output);
+      };
+
       try {
         // Get services from DI container
         const manifestRepo = container.get(ManifestRepository);
@@ -61,11 +82,12 @@ export const validateCommand = new Command('validate')
 
         // Load file
         if (options.openapi) {
-          console.log(
-            chalk.blue(`Validating OpenAPI spec with OSSA extensions: ${path}`)
+          log(
+            `Validating OpenAPI spec with OSSA extensions: ${path}`,
+            chalk.blue
           );
         } else {
-          console.log(chalk.blue(`Validating OSSA agent: ${path}`));
+          log(`Validating OSSA agent: ${path}`, chalk.blue);
         }
         const manifest = await manifestRepo.load(path);
 
@@ -81,7 +103,8 @@ export const validateCommand = new Command('validate')
         }
 
         // Output results
-        if (isJSONOutput(options)) {
+        const isJSON = options.json || options.output === 'json';
+        if (isJSON) {
           // JSON output for machine consumption (uses shared utility)
           const m = result.manifest as OssaAgent;
           outputJSON({
@@ -104,14 +127,12 @@ export const validateCommand = new Command('validate')
                 }
               : undefined,
           });
-          process.exit(result.valid ? 0 : 1);
+          process.exit(result.valid ? ExitCode.SUCCESS : ExitCode.GENERAL_ERROR);
         }
 
         if (result.valid) {
           if (options.openapi) {
-            console.log(
-              chalk.green('✓ OpenAPI spec is valid with OSSA extensions')
-            );
+            log('✓ OpenAPI spec is valid with OSSA extensions', chalk.green);
           } else {
             // Extract version from result manifest or use provided option
             const m = result.manifest as OssaAgent;
@@ -119,27 +140,25 @@ export const validateCommand = new Command('validate')
               m?.apiVersion?.replace('ossa/', '') ||
               options.schema ||
               'unknown';
-            console.log(
-              chalk.green('✓ Agent manifest is valid OSSA ' + detectedVersion)
-            );
+            log('✓ Agent manifest is valid OSSA ' + detectedVersion, chalk.green);
           }
 
           if (options.verbose && result.manifest) {
-            console.log(chalk.gray('\nAgent Details:'));
+            log('\nAgent Details:', chalk.gray);
             const m = result.manifest;
             if (m.apiVersion) {
-              console.log(
-                `  Name: ${chalk.cyan(m.metadata?.name || 'unknown')}`
+              log(
+                `  Name: ${useColor ? chalk.cyan(m.metadata?.name || 'unknown') : m.metadata?.name || 'unknown'}`
               );
-              console.log(
-                `  Version: ${chalk.cyan(m.metadata?.version || 'unknown')}`
+              log(
+                `  Version: ${useColor ? chalk.cyan(m.metadata?.version || 'unknown') : m.metadata?.version || 'unknown'}`
               );
-              console.log(`  Role: ${chalk.cyan(m.spec?.role || 'unknown')}`);
+              log(`  Role: ${useColor ? chalk.cyan(m.spec?.role || 'unknown') : m.spec?.role || 'unknown'}`);
             } else if (m.agent) {
-              console.log(`  ID: ${chalk.cyan(m.agent.id)}`);
-              console.log(`  Name: ${chalk.cyan(m.agent.name)}`);
-              console.log(`  Version: ${chalk.cyan(m.agent.version)}`);
-              console.log(`  Role: ${chalk.cyan(m.agent.role)}`);
+              log(`  ID: ${useColor ? chalk.cyan(m.agent.id) : m.agent.id}`);
+              log(`  Name: ${useColor ? chalk.cyan(m.agent.name) : m.agent.name}`);
+              log(`  Version: ${useColor ? chalk.cyan(m.agent.version) : m.agent.version}`);
+              log(`  Role: ${useColor ? chalk.cyan(m.agent.role) : m.agent.role}`);
             }
             if (m.spec) {
               if (m.spec.tools) {
@@ -202,72 +221,71 @@ export const validateCommand = new Command('validate')
 
           // Show warnings if any
           if (result.warnings.length > 0) {
-            console.log(chalk.yellow('\n⚠  Warnings (Best Practices):'));
+            log('\n⚠  Warnings (Best Practices):', chalk.yellow);
             result.warnings.forEach((warning) => {
-              console.log(chalk.yellow(`  - ${warning}`));
+              log(`  - ${warning}`, chalk.yellow);
             });
           }
 
           // Platform-specific validation
-          const platforms = (options as { all?: boolean; platform?: string })
-            .all
+          const platforms = options.all
             ? ['kagent', 'langchain', 'crewai', 'docker', 'kubernetes']
-            : (options as { all?: boolean; platform?: string }).platform
-              ? [(options as { all?: boolean; platform?: string }).platform!]
+            : options.platform
+              ? [options.platform]
               : [];
 
           if (platforms.length > 0) {
-            console.log(chalk.blue('\nPlatform-specific validation:'));
+            log('\nPlatform-specific validation:', chalk.blue);
             for (const platform of platforms) {
               try {
                 await validateForPlatform(manifest, platform);
-                console.log(chalk.green(`  ✓ ${platform} validation passed`));
+                log(`  ✓ ${platform} validation passed`, chalk.green);
               } catch (error) {
-                console.error(
-                  chalk.red(
-                    `  ✗ ${platform} validation failed: ${error instanceof Error ? error.message : String(error)}`
-                  )
-                );
+                if (!options.quiet) {
+                  const msg = `  ✗ ${platform} validation failed: ${error instanceof Error ? error.message : String(error)}`;
+                  console.error(useColor ? chalk.red(msg) : msg);
+                }
               }
             }
           }
 
-          process.exit(0);
+          process.exit(ExitCode.SUCCESS);
         } else {
           // Use the new error formatter for better error messages
-          if (options.verbose) {
-            // Detailed, helpful error messages with manifest context
-            console.error(formatValidationErrors(result.errors, manifest));
-          } else {
-            // Compact error messages
-            console.error(chalk.red.bold('\n✗ Validation Failed'));
-            console.error(
-              chalk.red(`Found ${result.errors.length} error(s):\n`)
-            );
-            result.errors.forEach((error, index) => {
-              console.error(formatErrorCompact(error, index, manifest));
-            });
-            console.error(
-              chalk.gray('\nUse --verbose for detailed error information')
-            );
-            console.error(
-              chalk.blue('📚 Docs: https://openstandardagents.org/docs\n')
-            );
+          if (!options.quiet) {
+            if (options.verbose) {
+              // Detailed, helpful error messages with manifest context
+              console.error(formatValidationErrors(result.errors, manifest));
+            } else {
+              // Compact error messages
+              const errHeader = '\n✗ Validation Failed';
+              console.error(useColor ? chalk.red.bold(errHeader) : errHeader);
+              const errCount = `Found ${result.errors.length} error(s):\n`;
+              console.error(useColor ? chalk.red(errCount) : errCount);
+              result.errors.forEach((error, index) => {
+                console.error(formatErrorCompact(error, index, manifest));
+              });
+              const hint = '\nUse --verbose for detailed error information';
+              console.error(useColor ? chalk.gray(hint) : hint);
+              const docs = '📚 Docs: https://openstandardagents.org/docs\n';
+              console.error(useColor ? chalk.blue(docs) : docs);
+            }
           }
 
-          process.exit(1);
+          process.exit(ExitCode.GENERAL_ERROR);
         }
       } catch (error) {
-        console.error(
-          chalk.red('Error:'),
-          error instanceof Error ? error.message : String(error)
-        );
+        if (!options.quiet) {
+          const errMsg = `Error: ${error instanceof Error ? error.message : String(error)}`;
+          console.error(useColor ? chalk.red(errMsg) : errMsg);
 
-        if (options.verbose && error instanceof Error) {
-          console.error(chalk.gray(error.stack));
+          if (options.verbose && error instanceof Error) {
+            const stack = error.stack || '';
+            console.error(useColor ? chalk.gray(stack) : stack);
+          }
         }
 
-        process.exit(1);
+        process.exit(ExitCode.GENERAL_ERROR);
       }
     }
   );

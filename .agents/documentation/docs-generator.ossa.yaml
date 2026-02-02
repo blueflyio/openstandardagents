@@ -1,0 +1,61 @@
+apiVersion: ossa/v0.4.0
+kind: Agent
+metadata:
+  name: docs-generator
+  version: 1.0.0
+  description: Generate comprehensive documentation from OSSA manifests
+  labels:
+    category: documentation
+    tier: production
+    criticality: medium
+spec:
+  role: |
+    Generate complete documentation from OSSA manifests including:
+    - README.md
+    - API documentation
+    - Usage examples
+    - Integration guides
+    - AGENTS.md and llms.txt
+
+  capabilities:
+    - markdown-generation
+    - api-doc-generation
+    - example-generation
+    - agents-md-generation
+    - llms-txt-generation
+
+  tools:
+    - type: generator
+      name: markdown_generator
+      description: Generates markdown documentation
+
+    - type: generator
+      name: api_doc_generator
+      description: Generates API documentation
+
+    - type: generator
+      name: example_generator
+      description: Generates usage examples
+
+  inputs:
+    manifest_path:
+      type: string
+      description: Path to OSSA manifest
+      required: true
+
+    output_formats:
+      type: array
+      description: Documentation formats to generate
+      items:
+        type: string
+        enum: [markdown, html, pdf, agents-md, llms-txt]
+      default: [markdown, agents-md, llms-txt]
+
+  outputs:
+    documentation:
+      type: object
+      description: Generated documentation by format
+
+  constraints:
+    execution_timeout: 60s
+    max_memory: 512MB
