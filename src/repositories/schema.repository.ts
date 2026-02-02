@@ -108,6 +108,9 @@ export class SchemaRepository implements ISchemaRepository {
 
     // Try multiple naming patterns for schema files in both dist/spec and spec directories
     const possiblePaths = [
+      // Generic agent schema (vendor-neutral naming)
+      `spec/v${minorVersion}/agent.schema.json`,
+      `dist/spec/v${minorVersion}/agent.schema.json`,
       // Try exact version directory first (backwards compatibility)
       `dist/spec/v${version}/ossa-${version}.schema.json`,
       `dist/spec/v${version}/ossa-v${version}.schema.json`,
