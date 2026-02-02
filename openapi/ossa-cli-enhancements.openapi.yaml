@@ -29,6 +29,10 @@ tags:
     description: Knowledge base generation and management
   - name: enhancement
     description: Agent enhancement operations
+  - name: context
+    description: Context enrichment and analysis
+  - name: learning
+    description: Learning loops and feedback
   - name: examples
     description: Real example generation
 
@@ -37,6 +41,9 @@ paths:
     post:
       operationId: generateKnowledgeBase
       summary: Generate knowledge base from codebase
+      description: |
+        Analyzes codebase and generates rich knowledge base for agent.
+        Extracts patterns, examples, and domain knowledge.
       tags:
         - knowledge
       requestBody:
@@ -44,55 +51,53 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - agentName
-                - sourcePath
-              properties:
-                agentName:
-                  type: string
-                  example: code-quality-reviewer
-                sourcePath:
-                  type: string
-                  example: ~/Sites/blueflyio/compliance-engine
-                patterns:
-                  type: array
-                  items:
-                    type: string
-                  example: ["typescript", "react", "drupal"]
-                outputPath:
-                  type: string
-                syncBrain:
-                  type: boolean
-                  default: false
+              $ref: '#/components/schemas/KnowledgeGenerateRequest'
       responses:
         '200':
           description: Knowledge base generated successfully
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                  knowledgeBase:
-                    type: object
-                    properties:
-                      patterns:
-                        type: array
-                        items:
-                          type: string
-                      examples:
-                        type: integer
-                      contextFiles:
-                        type: integer
-                  outputPath:
-                    type: string
+                $ref: '#/components/schemas/KnowledgeGenerateResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /knowledge/sync:
+    post:
+      operationId: syncKnowledgeBase
+      summary: Sync knowledge base with agent-brain
+      description: |
+        Synchronizes agent knowledge base with agent-brain/Qdrant vector database.
+        Enables semantic search and pattern matching.
+      tags:
+        - knowledge
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KnowledgeSyncRequest'
+      responses:
+        '200':
+          description: Knowledge base synced successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KnowledgeSyncResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
   /enhance/agent:
     post:
       operationId: enhanceAgent
       summary: Enhance existing agent
+      description: |
+        Enhances existing agent with new capabilities, improved prompts,
+        better tools, and enriched knowledge base.
       tags:
         - enhancement
       requestBody:
@@ -100,30 +105,136 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - agentName
-              properties:
-                agentName:
-                  type: string
-                capabilities:
-                  type: array
-                  items:
-                    type: string
-                promptsFromCodebase:
-                  type: boolean
-                tools:
-                  type: array
-                  items:
-                    type: string
+              $ref: '#/components/schemas/AgentEnhancementRequest'
       responses:
         '200':
           description: Agent enhanced successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentEnhancementResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /enhance/prompts:
+    post:
+      operationId: enhancePrompts
+      summary: Enhance agent prompts with real examples
+      description: |
+        Improves agent prompts by generating real examples from codebase,
+        GitLab issues, and merge requests.
+      tags:
+        - enhancement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PromptEnhancementRequest'
+      responses:
+        '200':
+          description: Prompts enhanced successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PromptEnhancementResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /context/analyze:
+    post:
+      operationId: analyzeContext
+      summary: Analyze codebase for agent context
+      description: |
+        Analyzes codebase structure and extracts domain-specific patterns,
+        examples, and knowledge for agent context enrichment.
+      tags:
+        - context
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContextAnalysisRequest'
+      responses:
+        '200':
+          description: Context analyzed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContextAnalysisResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /learn/feedback:
+    post:
+      operationId: recordFeedback
+      summary: Record feedback and improve agent
+      description: |
+        Records feedback on agent performance and updates prompts/examples
+        based on success/failure patterns.
+      tags:
+        - learning
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeedbackRequest'
+      responses:
+        '200':
+          description: Feedback recorded and agent improved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedbackResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /learn/patterns:
+    post:
+      operationId: extractPatterns
+      summary: Extract patterns from successful runs
+      description: |
+        Analyzes logs and metrics to extract successful patterns
+        and update agent knowledge base.
+      tags:
+        - learning
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatternExtractionRequest'
+      responses:
+        '200':
+          description: Patterns extracted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatternExtractionResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
   /examples/generate:
     post:
       operationId: generateExamples
       summary: Generate real examples from codebase
+      description: |
+        Generates real working examples from codebase, GitLab issues,
+        and merge requests. Replaces empty templates with actual examples.
       tags:
         - examples
       requestBody:
@@ -131,18 +242,348 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - agentName
-              properties:
-                agentName:
-                  type: string
-                sourcePath:
-                  type: string
-                gitlabIssues:
-                  type: boolean
-                gitlabMRs:
-                  type: boolean
+              $ref: '#/components/schemas/ExampleGenerationRequest'
       responses:
         '200':
           description: Examples generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExampleGenerationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    KnowledgeGenerateRequest:
+      type: object
+      required:
+        - agentName
+        - sourcePath
+      properties:
+        agentName:
+          type: string
+          description: Name of the agent
+          example: code-quality-reviewer
+        sourcePath:
+          type: string
+          description: Path to source codebase
+          example: ~/Sites/blueflyio/compliance-engine
+        patterns:
+          type: array
+          items:
+            type: string
+          description: Pattern types to extract
+          example: ["typescript", "react", "drupal"]
+        outputPath:
+          type: string
+          description: Output directory path
+          example: packages/@ossa/code-quality-reviewer/knowledge/
+        syncBrain:
+          type: boolean
+          description: Sync with agent-brain/Qdrant
+          default: false
+
+    KnowledgeGenerateResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        knowledgeBase:
+          type: object
+          properties:
+            patterns:
+              type: array
+              items:
+                type: string
+            examples:
+              type: integer
+            contextFiles:
+              type: integer
+        outputPath:
+          type: string
+        brainSync:
+          type: boolean
+
+    KnowledgeSyncRequest:
+      type: object
+      required:
+        - agentName
+        - collectionName
+      properties:
+        agentName:
+          type: string
+        collectionName:
+          type: string
+          example: code-quality-patterns
+        knowledgePath:
+          type: string
+
+    KnowledgeSyncResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        vectorsIndexed:
+          type: integer
+        collectionName:
+          type: string
+
+    AgentEnhancementRequest:
+      type: object
+      required:
+        - agentName
+      properties:
+        agentName:
+          type: string
+        capabilities:
+          type: array
+          items:
+            type: string
+          description: New capabilities to add
+        promptsFromCodebase:
+          type: boolean
+          description: Generate prompts from codebase
+        tools:
+          type: array
+          items:
+            type: string
+          description: New tools to add
+        knowledgeFromIssues:
+          type: boolean
+          description: Extract knowledge from GitLab issues
+        examplesFromMRs:
+          type: boolean
+          description: Extract examples from merge requests
+
+    AgentEnhancementResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        agentName:
+          type: string
+        enhancements:
+          type: object
+          properties:
+            capabilitiesAdded:
+              type: integer
+            promptsImproved:
+              type: integer
+            toolsAdded:
+              type: integer
+            knowledgeEnriched:
+              type: boolean
+
+    PromptEnhancementRequest:
+      type: object
+      required:
+        - agentName
+      properties:
+        agentName:
+          type: string
+        fromCodebase:
+          type: boolean
+        fromGitLabIssues:
+          type: boolean
+        fromSuccessfulRuns:
+          type: boolean
+        codebasePath:
+          type: string
+
+    PromptEnhancementResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        promptsUpdated:
+          type: integer
+        examplesGenerated:
+          type: integer
+
+    ContextAnalysisRequest:
+      type: object
+      required:
+        - agentName
+        - codebasePath
+      properties:
+        agentName:
+          type: string
+        codebasePath:
+          type: string
+        extractPatterns:
+          type: boolean
+          default: true
+        extractExamples:
+          type: boolean
+          default: true
+        outputPath:
+          type: string
+
+    ContextAnalysisResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        patternsExtracted:
+          type: integer
+        examplesExtracted:
+          type: integer
+        contextFiles:
+          type: array
+          items:
+            type: string
+
+    FeedbackRequest:
+      type: object
+      required:
+        - agentName
+        - feedback
+      properties:
+        agentName:
+          type: string
+        feedback:
+          type: object
+          properties:
+            success:
+              type: boolean
+            task:
+              type: string
+            result:
+              type: string
+            improvements:
+              type: array
+              items:
+                type: string
+        updatePrompts:
+          type: boolean
+          default: true
+        updateExamples:
+          type: boolean
+          default: true
+
+    FeedbackResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        promptsUpdated:
+          type: integer
+        examplesUpdated:
+          type: integer
+        improvements:
+          type: array
+          items:
+            type: string
+
+    PatternExtractionRequest:
+      type: object
+      required:
+        - agentName
+      properties:
+        agentName:
+          type: string
+        fromLogs:
+          type: boolean
+        fromMetrics:
+          type: boolean
+        logPath:
+          type: string
+        metricsPath:
+          type: string
+        outputPath:
+          type: string
+
+    PatternExtractionResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        patternsExtracted:
+          type: integer
+        patterns:
+          type: array
+          items:
+            type: object
+            properties:
+              pattern:
+                type: string
+              successRate:
+                type: number
+              examples:
+                type: array
+                  items:
+                    type: string
+
+    ExampleGenerationRequest:
+      type: object
+      required:
+        - agentName
+      properties:
+        agentName:
+          type: string
+        sourcePath:
+          type: string
+        gitlabIssues:
+          type: boolean
+        gitlabMRs:
+          type: boolean
+        outputPath:
+          type: string
+
+    ExampleGenerationResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        examplesGenerated:
+          type: integer
+        examples:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              path:
+                type: string
+              validated:
+                type: boolean
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              details:
+                type: string
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Agent not found
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              details:
+                type: string

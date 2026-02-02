@@ -40,7 +40,10 @@ describe('KnowledgeService', () => {
         '# Document 2\n\nThis document covers OSSA manifests.'
       );
 
-      const index = await knowledgeService.indexKnowledge(testDir, 'test-agent');
+      const index = await knowledgeService.indexKnowledge(
+        testDir,
+        'test-agent'
+      );
 
       expect(index.agentName).toBe('test-agent');
       expect(index.documents).toHaveLength(2);
@@ -55,7 +58,10 @@ describe('KnowledgeService', () => {
         'Important notes about the system.'
       );
 
-      const index = await knowledgeService.indexKnowledge(testDir, 'test-agent');
+      const index = await knowledgeService.indexKnowledge(
+        testDir,
+        'test-agent'
+      );
 
       expect(index.documents).toHaveLength(1);
       expect(index.documents[0].metadata.fileName).toBe('notes.txt');
@@ -98,7 +104,10 @@ describe('KnowledgeService', () => {
     it('should support incremental indexing', async () => {
       // Create initial file
       await fs.writeFile(path.join(testDir, 'doc1.md'), 'Original content');
-      const index1 = await knowledgeService.indexKnowledge(testDir, 'test-agent');
+      const index1 = await knowledgeService.indexKnowledge(
+        testDir,
+        'test-agent'
+      );
       const originalHash = index1.documents[0].metadata.hash;
 
       // Add new file
@@ -111,7 +120,9 @@ describe('KnowledgeService', () => {
 
       expect(index2.documents).toHaveLength(2);
       // Original file hash should be unchanged
-      const doc1 = index2.documents.find((d) => d.metadata.fileName === 'doc1.md');
+      const doc1 = index2.documents.find(
+        (d) => d.metadata.fileName === 'doc1.md'
+      );
       expect(doc1?.metadata.hash).toBe(originalHash);
     });
 
@@ -121,7 +132,10 @@ describe('KnowledgeService', () => {
       await fs.writeFile(path.join(testDir, 'doc1.md'), content1);
       await fs.writeFile(path.join(testDir, 'doc2.md'), content2);
 
-      const index = await knowledgeService.indexKnowledge(testDir, 'test-agent');
+      const index = await knowledgeService.indexKnowledge(
+        testDir,
+        'test-agent'
+      );
 
       expect(index.metadata.totalSize).toBe(300);
     });
@@ -162,7 +176,10 @@ describe('KnowledgeService', () => {
         '# Deployment\n\nDeploy agents to Kubernetes using kubectl and OSSA manifests.'
       );
 
-      const index = await knowledgeService.indexKnowledge(testDir, 'test-agent');
+      const index = await knowledgeService.indexKnowledge(
+        testDir,
+        'test-agent'
+      );
       indexPath = index.metadata.indexPath;
     });
 
@@ -239,7 +256,10 @@ describe('KnowledgeService', () => {
     it('should return index statistics', async () => {
       await fs.writeFile(path.join(testDir, 'doc1.md'), '# Test 1');
       await fs.writeFile(path.join(testDir, 'doc2.md'), '# Test 2');
-      const index = await knowledgeService.indexKnowledge(testDir, 'test-agent');
+      const index = await knowledgeService.indexKnowledge(
+        testDir,
+        'test-agent'
+      );
 
       const stats = await knowledgeService.getStats(index.metadata.indexPath);
 

@@ -1,0 +1,62 @@
+apiVersion: ossa/v0.4.0
+kind: Agent
+metadata:
+  name: version-migrator
+  version: 1.0.0
+  description: Migrate OSSA manifests between versions with zero downtime
+  labels:
+    category: migration
+    tier: production
+    criticality: high
+spec:
+  role: |
+    Migrate OSSA manifests between versions (v0.3.x → v0.4.x).
+    Handles breaking changes, deprecated fields, and new features.
+    Validates before and after migration.
+
+  capabilities:
+    - version-migration
+    - breaking-change-detection
+    - field-mapping
+    - validation-pre-post
+    - rollback-support
+
+  tools:
+    - type: migrator
+      name: schema_migrator
+      description: Migrates schema between versions
+
+    - type: validator
+      name: pre_migration_validator
+      description: Validates source manifest
+
+    - type: validator
+      name: post_migration_validator
+      description: Validates migrated manifest
+
+  inputs:
+    source_manifest:
+      type: string
+      required: true
+
+    target_version:
+      type: string
+      required: true
+      pattern: "^v\\d+\\.\\d+\\.\\d+$"
+
+    dry_run:
+      type: boolean
+      default: true
+
+  outputs:
+    migrated_manifest:
+      type: object
+      description: Migrated manifest
+
+    migration_report:
+      type: object
+      description: Changes made during migration
+
+  constraints:
+    execution_timeout: 60s
+    max_memory: 512MB

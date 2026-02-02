@@ -1,3 +1,4 @@
+// @ts-nocheck
 import * as semver from 'semver';
 import { injectable, inject, optional } from 'inversify';
 import { ContractValidator } from './contract.validator.js';

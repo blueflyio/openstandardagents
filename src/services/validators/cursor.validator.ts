@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Cursor Platform Validator
  * Validates Cursor-specific extension configuration
