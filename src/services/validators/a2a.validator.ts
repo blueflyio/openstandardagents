@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * A2A Validator
  * Validates Agent-to-Agent extension

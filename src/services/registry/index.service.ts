@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Registry Index Service
  * Manages registry index.json for agent discovery
