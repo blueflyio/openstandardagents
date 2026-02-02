@@ -106,7 +106,7 @@
     "// BUILD & DEVELOPMENT": "",
     "prebuild": "npm run docs:process",
     "build": "tsc && npm run build:assets",
-    "build:assets": "cp -r spec dist/",
+    "build:assets": "cp -r spec dist/ && cp package.json dist/",
     "build:clean": "npm run clean && npm run build",
     "dev": "tsc --watch",
     "clean": "rm -rf dist coverage .tsbuildinfo",
