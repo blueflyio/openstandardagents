@@ -1,0 +1,8 @@
+#!/usr/bin/env node
+
+/**
+ * OSSA Dev CLI Entry Point
+ * Development tools for OSSA maintainers
+ */
+
+import '../dist/dev-cli/index.js';

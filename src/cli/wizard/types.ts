@@ -104,6 +104,9 @@ export interface WizardStep {
   execute: (state: WizardState) => Promise<WizardState>;
   validate?: (state: WizardState) => Promise<boolean>;
   skip?: (state: WizardState) => boolean;
+  examples?: string[];
+  help?: string;
+  suggest?: (state: WizardState) => Promise<string[]>;
 }
 
 export interface WizardOptions {
@@ -114,4 +117,42 @@ export interface WizardOptions {
   verbose?: boolean;
   fromExample?: string;
   field?: string;
+  mode?: string;
+}
+
+export interface WizardContext {
+  state: WizardState;
+  options: WizardOptions;
+  currentStep: number;
+  totalSteps: number;
+  data?: Record<string, any>;
+  metadata?: Record<string, any>;
+}
+
+export interface WizardResult {
+  success: boolean;
+  agent?: OssaAgent;
+  error?: string;
+  outputPath?: string;
+  saved?: boolean;
+  cancelled?: boolean;
+  context?: WizardContext;
+  completedAt?: string;
+}
+
+export interface TemplateDefinition {
+  id: string;
+  name: string;
+  description: string;
+  type?: AgentType;
+  template?: Partial<OssaAgent>;
+  tags: string[];
+  category: string;
+  icon?: string;
+  difficulty?: 'beginner' | 'intermediate' | 'advanced';
+  popularity?: number;
+  useCases?: string[];
+  estimatedTime?: string;
+  examples?: string[];
+  defaults?: Record<string, any>;
 }

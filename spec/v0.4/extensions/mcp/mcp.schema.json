@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openstandardagents.org/schemas/v0.3.5/extensions/mcp.json",
+  "title": "MCP Extension Schema",
+  "description": "Model Context Protocol extension for OSSA agents",
+  "type": "object",
+  "properties": {
+    "servers": {
+      "type": "array",
+      "description": "MCP server configurations",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "command": { "type": "string" },
+          "args": { "type": "array", "items": { "type": "string" } },
+          "env": { "type": "object", "additionalProperties": { "type": "string" } },
+          "transport": {
+            "type": "string",
+            "enum": ["stdio", "sse", "websocket"],
+            "default": "stdio"
+          }
+        },
+        "required": ["name", "command"],
+        "additionalProperties": false
+      }
+    },
+    "tools": {
+      "type": "array",
+      "description": "MCP tools exposed by servers",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "inputSchema": { "type": "object" },
+          "server": { "type": "string" }
+        },
+        "required": ["name", "description", "inputSchema"],
+        "additionalProperties": false
+      }
+    },
+    "resources": {
+      "type": "array",
+      "description": "MCP resources provided by servers",
+      "items": {
+        "type": "object",
+        "properties": {
+          "uri": { "type": "string", "format": "uri" },
+          "name": { "type": "string" },
+          "mimeType": { "type": "string" },
+          "description": { "type": "string" }
+        },
+        "required": ["uri", "name"],
+        "additionalProperties": false
+      }
+    },
+    "prompts": {
+      "type": "array",
+      "description": "MCP prompts provided by servers",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "arguments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string" },
+                "description": { "type": "string" },
+                "required": { "type": "boolean" }
+              }
+            }
+          }
+        },
+        "required": ["name"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,6 +1,14 @@
 /**
- * Export Command
+ * Export Command (Production-Grade)
  * Exports OSSA manifest to platform-specific format
+ *
+ * Features:
+ * - Dry-run mode (preview without writing files)
+ * - Verbose/quiet output modes
+ * - JSON output for automation
+ * - Force mode (skip confirmations)
+ * - Backup before overwrite
+ * - CI/CD optimized (no color in CI)
  */
 
 import chalk from 'chalk';
@@ -17,30 +25,77 @@ import { GitLabConverter } from '../../adapters/gitlab/converter.js';
 import { DockerfileGenerator } from '../../adapters/docker/generators.js';
 import { KubernetesManifestGenerator } from '../../adapters/kubernetes/generator.js';
 import { KAgentCRDGenerator } from '../../sdks/kagent/crd-generator.js';
+import { registry } from '../../adapters/registry/platform-registry.js';
 import type { OssaAgent } from '../../types/index.js';
+import {
+  addGlobalOptions,
+  addMutationOptions,
+  addPlatformOptions,
+  shouldUseColor,
+} from '../utils/standard-options.js';
 
 export const exportCommand = new Command('export')
   .description('Export OSSA manifest to platform-specific format')
   .argument('<manifest>', 'Path to OSSA agent manifest')
   .requiredOption(
     '-p, --platform <platform>',
-    'Target platform (kagent, langchain, crewai, temporal, n8n, gitlab, docker, kubernetes)'
+    'Target platform (kagent, langchain, crewai, temporal, n8n, gitlab, docker, kubernetes, npm)'
   )
   .option('-o, --output <file>', 'Output file path')
   .option('--format <format>', 'Output format (yaml, json, python)', 'yaml')
-  .action(
-    async (
-      manifestPath: string,
-      options: {
-        platform: string;
-        output?: string;
-        format: string;
-      }
-    ) => {
+  .option('--skill', 'Include Claude Skill (SKILL.md) - NPM platform only');
+
+// Add production-grade standard options
+addGlobalOptions(exportCommand);
+addMutationOptions(exportCommand);
+
+exportCommand.action(
+  async (
+    manifestPath: string,
+    options: {
+      platform: string;
+      output?: string;
+      format: string;
+      skill?: boolean;
+      verbose?: boolean;
+      quiet?: boolean;
+      color?: boolean;
+      json?: boolean;
+      dryRun?: boolean;
+      force?: boolean;
+      backup?: boolean;
+      backupDir?: string;
+    }
+  ) => {
+    const useColor = shouldUseColor(options);
       try {
-        console.log(chalk.blue(`Exporting agent: ${manifestPath}`));
-        console.log(chalk.blue(`Platform: ${options.platform}`));
-        console.log(chalk.blue(`Format: ${options.format}\n`));
+        // Logging helpers
+        const log = (msg: string) => {
+          if (options.quiet) return;
+          console.log(useColor ? chalk.blue(msg) : msg);
+        };
+
+        const logVerbose = (msg: string) => {
+          if (!options.verbose || options.quiet) return;
+          console.log(useColor ? chalk.gray(msg) : msg);
+        };
+
+        const logSuccess = (msg: string) => {
+          if (options.quiet) return;
+          console.log(useColor ? chalk.green(msg) : msg);
+        };
+
+        // Dry-run mode
+        if (options.dryRun) {
+          log('🔍 DRY RUN MODE - No files will be written');
+        }
+
+        log(`Exporting agent: ${manifestPath}`);
+        log(`Platform: ${options.platform}`);
+        log(`Format: ${options.format}\n`);
+
+        logVerbose(`Verbose mode enabled`);
+        logVerbose(`Color: ${useColor ? 'enabled' : 'disabled'}`);
 
         // Load manifest
         const manifestRepo = container.get(ManifestRepository);
@@ -131,6 +186,43 @@ export const exportCommand = new Command('export')
             break;
           }
 
+          case 'npm': {
+            // Use registry adapter for npm export
+            const adapter = registry.getAdapter('npm');
+            if (!adapter) {
+              throw new Error('NPM adapter not registered');
+            }
+
+            const result = await adapter.export(manifest, {
+              validate: true,
+              outputDir: path.dirname(options.output || './npm-package'),
+              includeSkill: options.skill || false,
+            });
+
+            if (!result.success) {
+              throw new Error(result.error || 'NPM export failed');
+            }
+
+            // Create output directory
+            const outputDir = options.output || `./npm-${manifest.metadata?.name || 'agent'}`;
+            fs.mkdirSync(outputDir, { recursive: true });
+
+            // Write all generated files
+            for (const file of result.files) {
+              const filePath = path.join(outputDir, file.path);
+              const fileDir = path.dirname(filePath);
+              fs.mkdirSync(fileDir, { recursive: true });
+              fs.writeFileSync(filePath, file.content);
+            }
+
+            console.log(chalk.green(`✓ NPM package exported to: ${outputDir}`));
+            console.log(chalk.gray(`  Files: ${result.files.map(f => f.path).join(', ')}`));
+            if (options.skill) {
+              console.log(chalk.green(`✓ Claude Skill included: SKILL.md`));
+            }
+            return; // Early return to skip single-file write
+          }
+
           default:
             throw new Error(`Unsupported platform: ${options.platform}`);
         }
@@ -141,10 +233,49 @@ export const exportCommand = new Command('export')
           `${manifest.metadata?.name || 'agent'}.${defaultExtension}`;
         const outputPath = path.resolve(outputFile);
 
-        // Write output
-        fs.writeFileSync(outputPath, output);
+        // Backup existing file if requested
+        if (!options.dryRun && options.backup && fs.existsSync(outputPath)) {
+          const backupDir = options.backupDir || './backups';
+          fs.mkdirSync(backupDir, { recursive: true });
+          const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+          const backupPath = path.join(
+            backupDir,
+            `${path.basename(outputFile)}.${timestamp}.bak`
+          );
+          fs.copyFileSync(outputPath, backupPath);
+          logVerbose(`Backup created: ${backupPath}`);
+        }
 
-        console.log(chalk.green(`✓ Exported to: ${outputPath}`));
+        // Write output (or simulate if dry-run)
+        if (options.dryRun) {
+          log(`\n📄 Would write to: ${outputPath}`);
+          logVerbose(`Output size: ${output.length} bytes`);
+          if (options.verbose) {
+            log('\n--- Preview (first 500 chars) ---');
+            console.log(output.substring(0, 500));
+            if (output.length > 500) {
+              console.log('...');
+            }
+            log('--- End Preview ---\n');
+          }
+        } else {
+          fs.writeFileSync(outputPath, output);
+          logSuccess(`✓ Exported to: ${outputPath}`);
+          logVerbose(`Output size: ${output.length} bytes`);
+        }
+
+        // JSON output for automation
+        if (options.json) {
+          const result = {
+            success: true,
+            manifest: manifestPath,
+            platform: options.platform,
+            output: outputPath,
+            dryRun: options.dryRun || false,
+            size: output.length,
+          };
+          console.log(JSON.stringify(result, null, 2));
+        }
       } catch (error) {
         console.error(
           chalk.red(

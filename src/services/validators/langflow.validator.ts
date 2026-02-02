@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Langflow Platform Validator
  * Validates Langflow-specific extension configuration

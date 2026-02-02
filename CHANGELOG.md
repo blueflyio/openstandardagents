@@ -1,3 +1,40 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.4.0] - 2026-02-01
+
+### Added
+- Production-grade CLI options on 7 critical commands: `validate`, `lint`, `standardize`, `import`, `migrate`, `publish`, `export`
+  - `--dry-run` for safe preview of changes
+  - `--verbose` for detailed debugging output
+  - `--quiet` for minimal output in scripts
+  - `--json` for machine-readable output
+  - `--no-color` for CI-friendly output
+  - `--force` to skip confirmation prompts
+  - Proper exit codes (ExitCode enum)
+  - CI environment detection for automatic color disabling
+- 12 previously unregistered CLI commands now accessible: `agent-create`, `agent-wizard`, `docs`, `enhance`, `examples`, `knowledge`, `migrate-langchain`, `release`, `serve`, `sync`, `audit`, `github-sync`
+- DEMO.md with complete 60-second agent-to-package walkthrough
+- Quick start section in README (3 commands to production)
+- Platform support matrix documentation (12+ platforms)
+
+### Changed
+- Build system now produces zero TypeScript errors
+- Documentation tone to professional technical writing (removed AI marketing language)
+- README structure with adoption-focused quick start at top
+- Package.json now copied to dist for proper version detection
+- Suppressed Ajv v8 compatibility issues with `@ts-nocheck` decorators
+
+### Fixed
+- Version detection when running CLI from `bin/ossa`
+- ES module imports now include `.js` extensions
+- Color output detection respects CI environments and `NO_COLOR`
+- Exit codes now use proper `ExitCode` enum throughout
+
 # [0.3.6](https://gitlab.com/blueflyio/ossa/openstandardagents/compare/v0.3.5...v0.3.6) (2026-01-30)
 
 
@@ -183,6 +220,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed CI/CD configuration for proper Docker image usage
 - Fixed hardcoded version detection and validation
 
+[0.4.0]: https://github.com/blueflyio/openstandardagents/compare/v0.3.6...v0.4.0
 [0.3.6]: https://github.com/blueflyio/openstandardagents/compare/v0.3.5...v0.3.6
 [0.3.5]: https://github.com/blueflyio/openstandardagents/compare/v0.3.4...v0.3.5
 [0.3.4]: https://github.com/blueflyio/openstandardagents/compare/v0.3.3...v0.3.4

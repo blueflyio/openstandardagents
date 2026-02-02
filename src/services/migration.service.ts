@@ -108,11 +108,11 @@ export class MigrationService {
   ) {}
 
   /**
-   * Get the current target apiVersion dynamically from package.json
+   * Get the current target apiVersion (OSSA spec version, not package version)
    */
   private getCurrentApiVersion(): string {
     const versionInfo = getVersionInfo();
-    return `ossa/v${versionInfo.version}`;
+    return versionInfo.apiVersion;
   }
 
   /**
@@ -164,7 +164,7 @@ export class MigrationService {
   private migrateToCurrentVersion(manifest: OssaAgent): OssaAgent {
     const migrated: OssaAgent = JSON.parse(JSON.stringify(manifest));
     const versionInfo = getVersionInfo();
-    const currentApiVersion = `ossa/v${versionInfo.version}`;
+    const currentApiVersion = versionInfo.apiVersion;
     const sourceVersion = manifest.apiVersion || 'unknown';
 
     // Update apiVersion to current
@@ -177,7 +177,7 @@ export class MigrationService {
     if (!migrated.metadata.labels) {
       migrated.metadata.labels = {};
     }
-    migrated.metadata.labels['ossa-version'] = `v${versionInfo.version}`;
+    migrated.metadata.labels['ossa-version'] = versionInfo.apiVersion;
 
     // Add migration annotation
     if (!migrated.metadata.annotations) {
@@ -309,7 +309,7 @@ export class MigrationService {
 
     const summary: MigrationSummary = {
       sourceVersion,
-      targetVersion: `v${versionInfo.version}`,
+      targetVersion: versionInfo.apiVersion,
       changes: [],
       addedFeatures: [],
       warnings: [],
@@ -358,9 +358,9 @@ export class MigrationService {
     }
 
     summary.changes.push(
-      `Updated apiVersion from ${sourceVersion} to ossa/v${versionInfo.version}`
+      `Updated apiVersion from ${sourceVersion} to ${versionInfo.apiVersion}`
     );
-    summary.changes.push(`Added ossa-version: v${versionInfo.version} label`);
+    summary.changes.push(`Added ossa-version: ${versionInfo.apiVersion} label`);
 
     return summary;
   }
@@ -387,7 +387,7 @@ export class MigrationService {
    */
   private migrateV1ToKubeStyle(v1: V1Manifest): OssaAgent {
     const versionInfo = getVersionInfo();
-    const currentApiVersion = `ossa/v${versionInfo.version}`;
+    const currentApiVersion = versionInfo.apiVersion;
 
     const migrated: OssaAgent = {
       apiVersion: currentApiVersion,
@@ -397,7 +397,7 @@ export class MigrationService {
         version: v1.agent.version || '0.1.0',
         description: v1.agent.description || '',
         labels: {
-          'ossa-version': `v${versionInfo.version}`,
+          'ossa-version': versionInfo.apiVersion,
         } as Record<string, string>,
         annotations: {
           'ossa.io/migration': `legacy-v1.0-to-${currentApiVersion}`,

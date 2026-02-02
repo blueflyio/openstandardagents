@@ -321,7 +321,7 @@ graph TD
 | v0.3.0 | ✅ v0.1.0 | ❌ | ❌ |
 | v0.3.0 | 🔄 v0.1.1 | ⚪ v1.0.0 | ⚪ v1.0.0 |
 | v0.3.4 | ⚪ v0.1.2 | ⚪ v1.1.0 | ⚪ v1.1.0 |
-| v0.4.0 | ⚪ v0.2.0 | ⚪ v2.0.0 | ⚪ v2.0.0 |
+| v{{VERSION}} | ⚪ v0.2.0 | ⚪ v2.0.0 | ⚪ v2.0.0 |
 
 **Legend:**
 - ✅ Released
@@ -366,7 +366,7 @@ graph TD
 
 ## 🔗 Related Documentation
 
-- [Master Roadmap](v0.3.x-to-v0.4.0.md)
+- [Master Roadmap](v0.3.x-to-v{{VERSION}}.md)
 - [Dependency Graph](dependency-graph.md)
 - [Phase 2: Runtime Implementation](phase-2-runtime-implementation.md)
 - [Phase 3: Production Use Cases](phase-3-production-use-cases.md)

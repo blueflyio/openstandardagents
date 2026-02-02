@@ -1,0 +1,243 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openstandardagents.org/schemas/v0.3.5/extensions/langchain/langchain.json",
+  "title": "LangChain Extension",
+  "description": "Native integration with LangChain framework for building LLM applications with chains, agents, memory, and RAG capabilities.",
+  "type": "object",
+  "properties": {
+    "enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Enable LangChain integration"
+    },
+    "chain_type": {
+      "type": "string",
+      "enum": ["llm", "retrieval", "agent", "sequential", "custom"],
+      "description": "Type of LangChain chain"
+    },
+    "memory": {
+      "$ref": "#/definitions/MemoryConfig",
+      "description": "Memory configuration for conversation history"
+    },
+    "retrieval": {
+      "$ref": "#/definitions/RetrievalConfig",
+      "description": "RAG retrieval configuration"
+    },
+    "callbacks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/CallbackHandler"
+      },
+      "description": "Callback handlers for chain execution"
+    },
+    "tools": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/LangChainTool"
+      },
+      "description": "LangChain tools for agent execution"
+    },
+    "verbose": {
+      "type": "boolean",
+      "default": false,
+      "description": "Enable verbose logging"
+    },
+    "return_intermediate_steps": {
+      "type": "boolean",
+      "default": false,
+      "description": "Return intermediate steps in agent execution"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Tags for tracing and observability"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Additional metadata for chains"
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "MemoryConfig": {
+      "type": "object",
+      "description": "Memory configuration",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["buffer", "summary", "conversation", "vector"],
+          "description": "Memory type"
+        },
+        "max_token_limit": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum tokens to store in memory"
+        },
+        "return_messages": {
+          "type": "boolean",
+          "default": true,
+          "description": "Return messages as objects vs strings"
+        },
+        "memory_key": {
+          "type": "string",
+          "default": "history",
+          "description": "Key to store memory in chain state"
+        },
+        "input_key": {
+          "type": "string",
+          "description": "Input key for memory"
+        },
+        "output_key": {
+          "type": "string",
+          "description": "Output key for memory"
+        },
+        "vectorstore": {
+          "$ref": "#/definitions/VectorStoreConfig",
+          "description": "Vector store configuration for vector memory"
+        }
+      },
+      "additionalProperties": false
+    },
+    "VectorStoreConfig": {
+      "type": "object",
+      "description": "Vector store configuration",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["qdrant", "pinecone", "chroma", "weaviate", "faiss"],
+          "description": "Vector store type"
+        },
+        "collection_name": {
+          "type": "string",
+          "description": "Collection/index name"
+        },
+        "embedding_model": {
+          "type": "string",
+          "description": "Embedding model name",
+          "examples": ["text-embedding-3-small", "text-embedding-ada-002"]
+        },
+        "dimension": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Embedding dimension"
+        },
+        "config": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Vector store specific configuration"
+        }
+      },
+      "additionalProperties": false
+    },
+    "RetrievalConfig": {
+      "type": "object",
+      "description": "RAG retrieval configuration",
+      "required": ["vectorstore"],
+      "properties": {
+        "vectorstore": {
+          "$ref": "#/definitions/VectorStoreConfig",
+          "description": "Vector store configuration"
+        },
+        "search_type": {
+          "type": "string",
+          "enum": ["similarity", "mmr", "similarity_score_threshold"],
+          "default": "similarity",
+          "description": "Search type"
+        },
+        "search_kwargs": {
+          "type": "object",
+          "properties": {
+            "k": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 4,
+              "description": "Number of documents to retrieve"
+            },
+            "score_threshold": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Minimum similarity score threshold"
+            },
+            "fetch_k": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Number of documents to fetch for MMR"
+            },
+            "lambda_mult": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "MMR diversity parameter"
+            }
+          },
+          "additionalProperties": true
+        },
+        "chain_type": {
+          "type": "string",
+          "enum": ["stuff", "map_reduce", "refine", "map_rerank"],
+          "default": "stuff",
+          "description": "Document processing chain type"
+        }
+      },
+      "additionalProperties": false
+    },
+    "CallbackHandler": {
+      "type": "object",
+      "description": "Callback handler configuration",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["langsmith", "wandb", "comet", "mlflow", "custom"],
+          "description": "Callback handler type"
+        },
+        "config": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Handler-specific configuration"
+        }
+      },
+      "additionalProperties": false
+    },
+    "LangChainTool": {
+      "type": "object",
+      "description": "LangChain tool definition",
+      "required": ["name", "description"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Tool name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Tool description for LLM"
+        },
+        "func": {
+          "type": "string",
+          "description": "Function reference or code"
+        },
+        "coroutine": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether function is async"
+        },
+        "return_direct": {
+          "type": "boolean",
+          "default": false,
+          "description": "Return tool output directly to user"
+        },
+        "args_schema": {
+          "type": "object",
+          "description": "JSON Schema for tool arguments"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

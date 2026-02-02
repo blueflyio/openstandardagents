@@ -2,7 +2,7 @@
 
 **Status:** Not Started  
 **Timeline:** Weeks 7-8  
-**Version Target:** v0.4.0
+**Version Target:** v{{VERSION}}
 
 ---
 
@@ -38,7 +38,7 @@ Add knowledge sources extension and achieve full convergence - making OSSA the "
 
 **Example:**
 ```yaml
-apiVersion: ossa/v0.4.0
+apiVersion: ossa/v{{VERSION}}
 kind: Agent
 metadata:
   name: knowledge-agent
@@ -86,12 +86,12 @@ spec:
 
 **Example:**
 ```yaml
-apiVersion: ossa/v0.4.0
+apiVersion: ossa/v{{VERSION}}
 kind: Task
 metadata:
   name: intelligent-task
 spec:
-  description: Task with all v0.4.0 features
+  description: Task with all v{{VERSION}} features
   
   # Dependencies
   dependencies:
@@ -159,7 +159,7 @@ template:
 
 **OSSA Equivalent:**
 ```yaml
-apiVersion: ossa/v0.4.0
+apiVersion: ossa/v{{VERSION}}
 kind: Workflow
 metadata:
   name: approval-workflow
@@ -225,7 +225,7 @@ spec:
 
 **OSSA Equivalent:**
 ```yaml
-apiVersion: ossa/v0.4.0
+apiVersion: ossa/v{{VERSION}}
 kind: Workflow
 metadata:
   name: webhook-workflow
@@ -250,7 +250,7 @@ spec:
 - Unified Task Schema Reference
 - Maestro Adapter Guide
 - N8n Adapter Guide
-- Migration Guide (v0.3.x → v0.4.0)
+- Migration Guide (v0.3.x → v{{VERSION}})
 - Framework Comparison Matrix
 - Best Practices Guide
 
@@ -307,7 +307,7 @@ spec:
 - [ ] Validate all examples
 - [ ] Performance testing
 - [ ] Security review
-- [ ] Release v0.4.0
+- [ ] Release v{{VERSION}}
 
 ---
 
@@ -329,7 +329,7 @@ spec:
 
 ```mermaid
 graph TD
-    A[OSSA v0.4.0 Unified Schema] --> B[LangChain Adapter]
+    A[OSSA v{{VERSION}} Unified Schema] --> B[LangChain Adapter]
     A --> C[CrewAI Adapter]
     A --> D[Langflow Adapter]
     A --> E[Drupal ECA Adapter]
@@ -379,7 +379,7 @@ graph LR
 
 ## 📚 Framework Comparison Matrix
 
-| Feature | LangChain | CrewAI | Langflow | Drupal ECA | Symfony | Maestro | N8n | OSSA v0.4.0 |
+| Feature | LangChain | CrewAI | Langflow | Drupal ECA | Symfony | Maestro | N8n | OSSA v{{VERSION}} |
 |---------|-----------|--------|----------|------------|---------|---------|-----|-------------|
 | Task Definition | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Workflow Orchestration | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
@@ -411,14 +411,14 @@ graph LR
 ## 📌 Next Steps
 
 1. **Week 7**: Implement all adapters and extensions
-2. **Week 8**: Complete documentation, testing, release v0.4.0
+2. **Week 8**: Complete documentation, testing, release v{{VERSION}}
 3. **Post-release**: Community feedback, adoption tracking, iteration
 
 ---
 
 ## 🔗 Related Documentation
 
-- [Master Roadmap](v0.3.x-to-v0.4.0.md)
+- [Master Roadmap](v0.3.x-to-v{{VERSION}}.md)
 - [Phase 3: Production Use Cases](phase-3-production-use-cases.md)
 - [Success Metrics](success-metrics.md)
 - [Issue #96: Knowledge Sources](https://gitlab.com/blueflyio/openstandardagents/-/issues/96)

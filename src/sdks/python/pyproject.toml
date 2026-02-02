@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ossa-sdk"
-version = "0.3.6"
+version = "0.3.5"
 description = "Python SDK for OSSA (Open Standard for Scalable Agents) - Build, validate, and execute AI agents"
 readme = "README.md"
 license = "Apache-2.0"
@@ -43,12 +43,6 @@ all-providers = [
     "google-generativeai>=0.8.0",
 ]
 
-# CloudEvents support
-events = [
-    "requests>=2.31.0",  # For HTTP sink
-    "kafka-python>=2.0.2",  # For Kafka sink
-]
-
 # Development tools
 dev = [
     "pytest>=7.0",
@@ -57,16 +51,13 @@ dev = [
     "mypy>=1.0",
     "ruff>=0.1",
     "black>=24.0",
-    "requests>=2.31.0",  # For testing HTTP sink
 ]
 
-# Complete installation with all providers and events
+# Complete installation with all providers
 all = [
     "anthropic>=0.39.0",
     "openai>=1.0",
     "google-generativeai>=0.8.0",
-    "requests>=2.31.0",
-    "kafka-python>=2.0.2",
     "pytest>=7.0",
     "pytest-cov>=4.0",
     "pytest-asyncio>=0.21",

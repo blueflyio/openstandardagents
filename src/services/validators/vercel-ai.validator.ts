@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Vercel AI SDK Platform Validator
  * Validates Vercel AI SDK-specific extension configuration

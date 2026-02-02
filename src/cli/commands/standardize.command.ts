@@ -40,6 +40,12 @@ import {
   outputJSON,
   isJSONOutput,
 } from '../utils/index.js';
+import {
+  addGlobalOptions,
+  addMutationOptions,
+  shouldUseColor,
+  ExitCode,
+} from '../utils/standard-options.js';
 import type { OssaAgent } from '../../types/index.js';
 
 interface StandardizationFix {
@@ -57,19 +63,34 @@ export const standardizeCommand = new Command('standardize')
     '[paths...]',
     'Paths to manifests or directories (default: current directory)'
   )
-  .option('--dry-run', 'Show what would be fixed without making changes')
-  .option('--json', 'Output as JSON')
-  .option('--fix-all', 'Apply all fixes automatically')
-  .action(
+  .option('--fix-all', 'Apply all fixes automatically');
+
+// Apply production-grade standard options
+addGlobalOptions(standardizeCommand);
+addMutationOptions(standardizeCommand);
+
+standardizeCommand.action(
     async (
       paths: string[] = [],
       options?: {
         dryRun?: boolean;
         json?: boolean;
         fixAll?: boolean;
+        verbose?: boolean;
+        quiet?: boolean;
+        color?: boolean;
+        force?: boolean;
+        output?: string;
       }
     ) => {
       try {
+        const useColor = shouldUseColor(options || {});
+        const log = (msg: string, color?: (s: string) => string) => {
+          if (options?.quiet) return;
+          const output = useColor && color ? color(msg) : msg;
+          console.log(output);
+        };
+
         const cwd = process.cwd();
         const manifestRepo = container.get(ManifestRepository);
         const validationService = container.get(ValidationService);
@@ -79,17 +100,15 @@ export const standardizeCommand = new Command('standardize')
         const manifestFiles = await findManifestFilesFromPaths(searchPaths);
 
         if (manifestFiles.length === 0) {
-          console.log(chalk.yellow('⚠ No OSSA manifests found'));
-          process.exit(0);
+          log('⚠ No OSSA manifests found', chalk.yellow);
+          process.exit(ExitCode.SUCCESS);
         }
 
-        console.log(
-          chalk.blue(`Standardizing ${manifestFiles.length} manifest(s)...`)
-        );
+        log(`Standardizing ${manifestFiles.length} manifest(s)...`, chalk.blue);
         if (options?.dryRun) {
-          console.log(chalk.yellow('DRY RUN: No changes will be made'));
+          log('DRY RUN: No changes will be made', chalk.yellow);
         }
-        console.log(chalk.gray('─'.repeat(50)));
+        log('─'.repeat(50), chalk.gray);
 
         const allFixes: Array<{
           file: string;
@@ -358,50 +377,47 @@ export const standardizeCommand = new Command('standardize')
               }
             }
           } catch (error: any) {
-            console.log(
-              chalk.red(`✗ Failed to process ${file}: ${error.message}`)
-            );
+            if (!options?.quiet) {
+              const errMsg = `✗ Failed to process ${file}: ${error.message}`;
+              console.log(useColor ? chalk.red(errMsg) : errMsg);
+            }
           }
         }
 
         // Output results
-        if (
-          options?.json ||
-          isJSONOutput({ output: options?.json ? 'json' : 'text' })
-        ) {
+        if (options?.json) {
           outputJSON({
             standardized: allFixes.length,
             total: manifestFiles.length,
             fixes: allFixes,
             dryRun: options?.dryRun || false,
           });
-          process.exit(0);
+          process.exit(ExitCode.SUCCESS);
         }
 
         // Display results
         if (allFixes.length === 0) {
-          console.log(
-            chalk.green('\n✓ All manifests are already standardized')
-          );
-          process.exit(0);
+          log('\n✓ All manifests are already standardized', chalk.green);
+          process.exit(ExitCode.SUCCESS);
         }
 
-        console.log('');
+        log('');
         for (const { file, fixes } of allFixes) {
-          console.log(chalk.cyan(`\n${file}`));
+          log(`\n${file}`, chalk.cyan);
           for (const fix of fixes) {
-            const icon = fix.applied ? chalk.green('✓') : chalk.yellow('○');
-            console.log(`  ${icon} ${fix.rule}: ${fix.message}`);
+            const icon = fix.applied ? '✓' : '○';
+            const iconColor = fix.applied ? chalk.green : chalk.yellow;
+            log(`  ${useColor ? iconColor(icon) : icon} ${fix.rule}: ${fix.message}`);
             if (fix.oldValue !== undefined) {
-              console.log(chalk.gray(`    Old: ${fix.oldValue}`));
+              log(`    Old: ${fix.oldValue}`, chalk.gray);
             }
             if (fix.newValue !== undefined) {
-              console.log(chalk.gray(`    New: ${fix.newValue}`));
+              log(`    New: ${fix.newValue}`, chalk.gray);
             }
           }
         }
 
-        console.log('');
+        log('');
         const totalFixes = allFixes.reduce((sum, f) => sum + f.fixes.length, 0);
         const appliedFixes = allFixes.reduce(
           (sum, f) => sum + f.fixes.filter((fix) => fix.applied).length,
@@ -409,21 +425,19 @@ export const standardizeCommand = new Command('standardize')
         );
 
         if (options?.dryRun) {
-          console.log(
-            chalk.yellow(
-              `Would apply ${totalFixes} fix(es) to ${allFixes.length} manifest(s)`
-            )
+          log(
+            `Would apply ${totalFixes} fix(es) to ${allFixes.length} manifest(s)`,
+            chalk.yellow
           );
-          console.log(chalk.gray('  Run without --dry-run to apply fixes'));
+          log('  Run without --dry-run to apply fixes', chalk.gray);
         } else {
-          console.log(
-            chalk.green(
-              `✓ Applied ${appliedFixes} fix(es) to ${allFixes.length} manifest(s)`
-            )
+          log(
+            `✓ Applied ${appliedFixes} fix(es) to ${allFixes.length} manifest(s)`,
+            chalk.green
           );
         }
 
-        process.exit(0);
+        process.exit(ExitCode.SUCCESS);
       } catch (error) {
         handleCommandError(error);
       }

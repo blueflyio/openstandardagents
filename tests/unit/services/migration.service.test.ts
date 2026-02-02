@@ -1,11 +1,12 @@
 import { describe, it, expect, beforeEach } from '@jest/globals';
 import { MigrationService } from '../../../src/services/migration.service.js';
-import { getApiVersion } from '../../../src/utils/version';
+import { getApiVersion, clearVersionCache } from '../../../src/utils/version';
 
 describe('MigrationService', () => {
   let service: MigrationService;
 
   beforeEach(() => {
+    clearVersionCache();
     service = new MigrationService();
   });
 

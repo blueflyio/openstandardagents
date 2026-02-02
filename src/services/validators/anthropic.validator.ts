@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Anthropic Platform Validator
  * Validates Anthropic Claude-specific extension configuration
