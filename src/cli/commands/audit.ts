@@ -8,8 +8,8 @@ import { Command } from 'commander';
 import * as fs from 'fs';
 import * as path from 'path';
 import chalk from 'chalk';
-import { AgentAuditService } from '../../services/audit';
-import type { AgentHealth, AuditReport } from '../../services/audit';
+import { AgentAuditService } from '../../services/audit.js';
+import type { AgentHealth, AuditReport } from '../../services/audit.js';
 
 export function createAuditCommand(): Command {
   const command = new Command('audit');
