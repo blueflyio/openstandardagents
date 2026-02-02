@@ -1,11 +1,12 @@
 import { describe, it, expect, beforeEach } from '@jest/globals';
 import { MigrationService } from '../../../src/services/migration.service.js';
-import { getApiVersion } from '../../../src/utils/version';
+import { getApiVersion, clearVersionCache } from '../../../src/utils/version';
 
 describe('MigrationService', () => {
   let service: MigrationService;
 
   beforeEach(() => {
+    clearVersionCache();
     service = new MigrationService();
   });
 
@@ -52,6 +53,8 @@ describe('MigrationService', () => {
         },
       };
       const result = await service.migrate(v1Input);
+      console.log('DEBUG: result.apiVersion =', result.apiVersion);
+      console.log('DEBUG: getApiVersion() =', getApiVersion());
       expect(result.apiVersion).toBe(getApiVersion());
       expect(result.metadata.name).toBe('test-agent');
       expect(result.metadata.labels?.test).toBe('true');
