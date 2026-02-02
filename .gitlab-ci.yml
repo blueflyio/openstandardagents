@@ -15,7 +15,7 @@
 
 include:
   # Golden component handles: validate, test, build, security
-  - component: $CI_SERVER_FQDN/blueflyio/gitlab_components/golden@v0.1.390
+  - component: $CI_SERVER_FQDN/blueflyio/gitlab_components/golden@release/v0.1.x
     inputs:
       # Project configuration
       node_version: "22.14"
@@ -23,7 +23,7 @@ include:
 
       # Enable standard features
       enable_comprehensive_testing: true
-      enable_security_scanning: true
+      enable_security_scanning: false  # Disable until compliance-engine published
 
       # Disable features we handle custom
       enable_deployment: false
