@@ -1,0 +1,23 @@
+# version-migrator
+
+> Migrate OSSA manifests between versions with zero downtime
+
+## Quick Reference
+
+- **Type**: OSSA Agent v0.4.0
+- **Category**: migration
+- **Manifest**: version-migrator.ossa.yaml
+
+## Overview
+
+Migrate OSSA manifests between versions (v0.3.x → v0.4.x).
+Handles breaking changes, deprecated fields, and new features.
+Validates before and after migration.
+
+capabilities:
+
+## Related
+
+- Main OSSA documentation: /README.md
+- Agent manifest: ./version-migrator.ossa.yaml
+- Agent details: ./AGENTS.md
