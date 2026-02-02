@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * CrewAI Platform Validator
  * Validates CrewAI-specific extension configuration

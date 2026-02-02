@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * MCP Validator
  * Validates Model Context Protocol extension

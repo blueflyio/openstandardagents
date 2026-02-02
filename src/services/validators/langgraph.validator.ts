@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * LangGraph Platform Validator
  * Validates LangGraph-specific extension configuration

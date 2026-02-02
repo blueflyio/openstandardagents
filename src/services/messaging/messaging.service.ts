@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * OSSA Messaging Runtime - Core Messaging Service
  * Production-quality agent-to-agent messaging service

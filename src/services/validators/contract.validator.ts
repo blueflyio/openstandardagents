@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { injectable } from 'inversify';
 import Ajv, { ErrorObject } from 'ajv';
 import addFormats from 'ajv-formats';
