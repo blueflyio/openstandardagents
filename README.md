@@ -251,7 +251,7 @@ const agent: OssaAgent = {
 };
 ```
 
-## What's New in v0.4.0 (LATEST)
+## What's New in v0.4.0 (Release Candidate)
 
 ### NPM Package Export + Claude Skills Integration
 
@@ -417,7 +417,6 @@ MIT License - see [LICENSE](./LICENSE) for details.
 
 - **Issues**: [GitLab Issues](https://gitlab.com/blueflyio/ossa/openstandardagents/-/issues)
 - **Discussions**: [GitLab Discussions](https://gitlab.com/blueflyio/ossa/openstandardagents/-/issues)
-- **Email**: support@openstandardagents.org
 
 ---
 
