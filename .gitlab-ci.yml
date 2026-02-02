@@ -84,6 +84,9 @@ test:unit:
 test:smoke:
   extends: .base-runner
   stage: test
+  needs:
+    - job: build
+      artifacts: true
   script:
     - npm run test:smoke
   rules:
