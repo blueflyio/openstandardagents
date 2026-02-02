@@ -1,42 +1,46 @@
-# EXAMPLE USAGE:
-#
-#   Refer for explanation to following link:
-#   https://lefthook.dev/configuration/
-#
-# pre-push:
-#   jobs:
-#     - name: packages audit
-#       tags:
-#         - frontend
-#         - security
-#       run: yarn audit
-#
-#     - name: gems audit
-#       tags:
-#         - backend
-#         - security
-#       run: bundle audit
-#
-# pre-commit:
-#   parallel: true
-#   jobs:
-#     - run: yarn eslint {staged_files}
-#       glob: "*.{js,ts,jsx,tsx}"
-#
-#     - name: rubocop
-#       glob: "*.rb"
-#       exclude:
-#         - config/application.rb
-#         - config/routes.rb
-#       run: bundle exec rubocop --force-exclusion {all_files}
-#
-#     - name: govet
-#       files: git ls-files -m
-#       glob: "*.go"
-#       run: go vet {files}
-#
-#     - script: "hello.js"
-#       runner: node
-#
-#     - script: "hello.go"
-#       runner: go run
+pre-commit:
+  parallel: true
+  commands:
+    validate-schema:
+      glob: "*.ossa.{yaml,yml}"
+      run: npm run validate:schemas
+
+    typecheck:
+      run: npm run typecheck
+
+    no-shell-scripts:
+      glob: "*.sh"
+      run: |
+        echo "❌ ERROR: Shell scripts (.sh files) are NOT allowed in this project."
+        echo ""
+        echo "Rules:"
+        echo "  - Use npm scripts in package.json"
+        echo "  - Use TypeScript tools in src/cli/ or src/tools/"
+        echo "  - Use GitLab CI Components"
+        echo "  - Use JavaScript/TypeScript git hooks in .husky/"
+        echo ""
+        echo "Blocked files:"
+        git diff --cached --name-only --diff-filter=ACM | grep '\.sh$'
+        echo ""
+        exit 1
+
+pre-push:
+  parallel: true
+  commands:
+    build:
+      run: npm run build
+
+    test-unit:
+      run: npm run test:unit
+
+    validate-sdks:
+      run: npm run validate:sdks
+
+    test-smoke:
+      run: npm run test:smoke
+
+    validate-all:
+      run: npm run validate
+
+    pre-push-banner:
+      run: echo "🚀 All checks passed! Pushing to remote..."
