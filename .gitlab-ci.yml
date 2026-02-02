@@ -198,9 +198,9 @@ version:rc:
       git tag -a "$NEW_TAG" -m "Release candidate $NEW_TAG"
       git push https://oauth2:${GITLAB_PUSH_TOKEN}@gitlab.com/blueflyio/ossa/openstandardagents.git "$NEW_TAG"
 
-      # Push RC tag to GitHub
+      # Push RC tag to GitHub (non-blocking)
       if [ -n "$GITHUB_TOKEN" ]; then
-        git push https://${GITHUB_TOKEN}@github.com/blueflyio/openstandardagents.git "$NEW_TAG"
+        git push https://${GITHUB_TOKEN}@github.com/blueflyio/openstandardagents.git "$NEW_TAG" || echo "⚠️  GitHub push failed (non-critical)"
         echo "✅ Pushed RC tag to GitHub"
       fi
 
@@ -255,15 +255,15 @@ release:production:
       NEW_VERSION=$(node -p "require('./package.json').version")
       echo "✅ Released production version: v${NEW_VERSION}"
 
-      # Sync main and release branches to GitHub
+      # Sync main and release branches to GitHub (non-blocking)
       echo "📤 Syncing branches to GitHub..."
-      git push https://${GITHUB_TOKEN}@github.com/blueflyio/openstandardagents.git main:main
-      git push https://${GITHUB_TOKEN}@github.com/blueflyio/openstandardagents.git release/v0.4.x:release/v0.4.x
+      git push https://${GITHUB_TOKEN}@github.com/blueflyio/openstandardagents.git main:main || echo "⚠️  GitHub main sync failed (non-critical)"
+      git push https://${GITHUB_TOKEN}@github.com/blueflyio/openstandardagents.git release/v0.4.x:release/v0.4.x || echo "⚠️  GitHub release branch sync failed (non-critical)"
 
-      # Push production tag to GitHub
-      git push https://${GITHUB_TOKEN}@github.com/blueflyio/openstandardagents.git "v${NEW_VERSION}"
+      # Push production tag to GitHub (non-blocking)
+      git push https://${GITHUB_TOKEN}@github.com/blueflyio/openstandardagents.git "v${NEW_VERSION}" || echo "⚠️  GitHub tag push failed (non-critical)"
 
-      echo "✅ Synced to GitHub: main, release/v0.4.x, v${NEW_VERSION}"
+      echo "✅ Attempted GitHub sync: main, release/v0.4.x, v${NEW_VERSION}"
       echo "🌍 Environment: production"
   when: manual
   only:
