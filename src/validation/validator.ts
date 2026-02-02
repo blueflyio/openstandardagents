@@ -21,13 +21,11 @@ export class OSSAValidator {
   private schema: Record<string, unknown>;
 
   constructor(schemaPath?: string) {
-// @ts-expect-error - Ajv v8 API compatibility
     this.ajv = new Ajv({
       allErrors: true,
       verbose: true,
       strict: false, // Allow additional properties for extensibility
     });
-    // @ts-expect-error - Ajv v8 API compatibility
     addFormats(this.ajv);
 
     // Load schema
@@ -56,14 +54,12 @@ export class OSSAValidator {
    * Validate an OSSA manifest
    */
   validate(manifest: Record<string, unknown>): ValidationResult {
-    // @ts-expect-error - Ajv v8 API compatibility
     const valid = this.ajv.validate(this.schema, manifest);
 
     if (valid) {
       return { valid: true, warnings: this.generateWarnings(manifest) };
     }
 
-    // @ts-expect-error - Ajv v8 API compatibility
     const ajvErrors = this.ajv.errors || [];
     const errors =
       ajvErrors.map((err: any) => {
