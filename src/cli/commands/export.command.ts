@@ -1,6 +1,14 @@
 /**
- * Export Command
+ * Export Command (Production-Grade)
  * Exports OSSA manifest to platform-specific format
+ *
+ * Features:
+ * - Dry-run mode (preview without writing files)
+ * - Verbose/quiet output modes
+ * - JSON output for automation
+ * - Force mode (skip confirmations)
+ * - Backup before overwrite
+ * - CI/CD optimized (no color in CI)
  */
 
 import chalk from 'chalk';
@@ -19,6 +27,12 @@ import { KubernetesManifestGenerator } from '../../adapters/kubernetes/generator
 import { KAgentCRDGenerator } from '../../sdks/kagent/crd-generator.js';
 import { registry } from '../../adapters/registry/platform-registry.js';
 import type { OssaAgent } from '../../types/index.js';
+import {
+  addGlobalOptions,
+  addMutationOptions,
+  addPlatformOptions,
+  shouldUseColor,
+} from '../utils/standard-options.js';
 
 export const exportCommand = new Command('export')
   .description('Export OSSA manifest to platform-specific format')
@@ -29,21 +43,59 @@ export const exportCommand = new Command('export')
   )
   .option('-o, --output <file>', 'Output file path')
   .option('--format <format>', 'Output format (yaml, json, python)', 'yaml')
-  .option('--skill', 'Include Claude Skill (SKILL.md) - NPM platform only')
-  .action(
-    async (
-      manifestPath: string,
-      options: {
-        platform: string;
-        output?: string;
-        format: string;
-        skill?: boolean;
-      }
-    ) => {
+  .option('--skill', 'Include Claude Skill (SKILL.md) - NPM platform only');
+
+// Add production-grade standard options
+addGlobalOptions(exportCommand);
+addMutationOptions(exportCommand);
+
+exportCommand.action(
+  async (
+    manifestPath: string,
+    options: {
+      platform: string;
+      output?: string;
+      format: string;
+      skill?: boolean;
+      verbose?: boolean;
+      quiet?: boolean;
+      color?: boolean;
+      json?: boolean;
+      dryRun?: boolean;
+      force?: boolean;
+      backup?: boolean;
+      backupDir?: string;
+    }
+  ) => {
+    const useColor = shouldUseColor(options);
       try {
-        console.log(chalk.blue(`Exporting agent: ${manifestPath}`));
-        console.log(chalk.blue(`Platform: ${options.platform}`));
-        console.log(chalk.blue(`Format: ${options.format}\n`));
+        // Logging helpers
+        const log = (msg: string) => {
+          if (options.quiet) return;
+          console.log(useColor ? chalk.blue(msg) : msg);
+        };
+
+        const logVerbose = (msg: string) => {
+          if (!options.verbose || options.quiet) return;
+          console.log(useColor ? chalk.gray(msg) : msg);
+        };
+
+        const logSuccess = (msg: string) => {
+          if (options.quiet) return;
+          console.log(useColor ? chalk.green(msg) : msg);
+        };
+
+        // Dry-run mode
+        if (options.dryRun) {
+          log('🔍 DRY RUN MODE - No files will be written');
+        }
+
+        log(`Exporting agent: ${manifestPath}`);
+        log(`Platform: ${options.platform}`);
+        log(`Format: ${options.format}\n`);
+
+        logVerbose(`Verbose mode enabled`);
+        logVerbose(`Color: ${useColor ? 'enabled' : 'disabled'}`);
 
         // Load manifest
         const manifestRepo = container.get(ManifestRepository);
@@ -181,10 +233,49 @@ export const exportCommand = new Command('export')
           `${manifest.metadata?.name || 'agent'}.${defaultExtension}`;
         const outputPath = path.resolve(outputFile);
 
-        // Write output
-        fs.writeFileSync(outputPath, output);
+        // Backup existing file if requested
+        if (!options.dryRun && options.backup && fs.existsSync(outputPath)) {
+          const backupDir = options.backupDir || './backups';
+          fs.mkdirSync(backupDir, { recursive: true });
+          const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+          const backupPath = path.join(
+            backupDir,
+            `${path.basename(outputFile)}.${timestamp}.bak`
+          );
+          fs.copyFileSync(outputPath, backupPath);
+          logVerbose(`Backup created: ${backupPath}`);
+        }
 
-        console.log(chalk.green(`✓ Exported to: ${outputPath}`));
+        // Write output (or simulate if dry-run)
+        if (options.dryRun) {
+          log(`\n📄 Would write to: ${outputPath}`);
+          logVerbose(`Output size: ${output.length} bytes`);
+          if (options.verbose) {
+            log('\n--- Preview (first 500 chars) ---');
+            console.log(output.substring(0, 500));
+            if (output.length > 500) {
+              console.log('...');
+            }
+            log('--- End Preview ---\n');
+          }
+        } else {
+          fs.writeFileSync(outputPath, output);
+          logSuccess(`✓ Exported to: ${outputPath}`);
+          logVerbose(`Output size: ${output.length} bytes`);
+        }
+
+        // JSON output for automation
+        if (options.json) {
+          const result = {
+            success: true,
+            manifest: manifestPath,
+            platform: options.platform,
+            output: outputPath,
+            dryRun: options.dryRun || false,
+            size: output.length,
+          };
+          console.log(JSON.stringify(result, null, 2));
+        }
       } catch (error) {
         console.error(
           chalk.red(
