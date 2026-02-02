@@ -1,0 +1,92 @@
+apiVersion: ossa/v0.4.0
+kind: Agent
+metadata:
+  name: release-manager
+  version: 1.0.0
+  description: Manage complete release lifecycle (version, changelog, publish, deploy)
+  labels:
+    category: release
+    tier: production
+    criticality: high
+spec:
+  role: |
+    Manage complete release lifecycle for OSSA agents:
+    - Semantic versioning (major/minor/patch)
+    - Changelog generation (Keep a Changelog format)
+    - npm/Docker/K8s publishing
+    - GitLab/GitHub release creation
+    - Rollback and recovery
+
+  capabilities:
+    - semantic-versioning
+    - changelog-generation
+    - multi-platform-publishing
+    - release-automation
+    - rollback-support
+
+  tools:
+    - type: versioner
+      name: semantic_versioner
+      description: Manages semantic versioning
+
+    - type: generator
+      name: changelog_generator
+      description: Generates changelogs from commits
+
+    - type: publisher
+      name: npm_publisher
+      description: Publishes to npm registry
+
+    - type: publisher
+      name: docker_publisher
+      description: Publishes Docker images
+
+    - type: publisher
+      name: gitlab_releaser
+      description: Creates GitLab releases
+
+  inputs:
+    manifest_path:
+      type: string
+      required: true
+
+    release_type:
+      type: string
+      enum: [major, minor, patch, prerelease]
+      required: true
+
+    publish_targets:
+      type: array
+      items:
+        type: string
+        enum: [npm, docker, kubernetes, gitlab, github]
+      default: [npm, gitlab]
+
+    dry_run:
+      type: boolean
+      description: Preview release without publishing
+      default: false
+
+  outputs:
+    release_report:
+      type: object
+      description: Release execution results
+
+    new_version:
+      type: string
+      description: New version number
+
+    published_artifacts:
+      type: array
+      description: List of published artifacts
+
+    release_urls:
+      type: object
+      description: URLs for published releases
+
+  constraints:
+    execution_timeout: 600s
+    max_memory: 2GB
+    required_env:
+      - NPM_TOKEN
+      - GITLAB_TOKEN
