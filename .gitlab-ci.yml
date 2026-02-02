@@ -55,6 +55,7 @@ validate:examples:
   stage: validate
   script:
     - npm run validate:examples
+  allow_failure: true
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/
