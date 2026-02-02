@@ -1,0 +1,23 @@
+# docs-generator
+
+> Generate comprehensive documentation from OSSA manifests
+
+## Quick Reference
+
+- **Type**: OSSA Agent v0.4.0
+- **Category**: documentation
+- **Manifest**: docs-generator.ossa.yaml
+
+## Overview
+
+Generate complete documentation from OSSA manifests including:
+- README.md
+- API documentation
+- Usage examples
+- Integration guides
+
+## Related
+
+- Main OSSA documentation: /README.md
+- Agent manifest: ./docs-generator.ossa.yaml
+- Agent details: ./AGENTS.md
