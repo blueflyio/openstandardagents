@@ -178,6 +178,9 @@ export interface OssaAgent {
         type: string;
         credentials?: string;
       };
+      // Schema definitions for tool inputs and outputs
+      inputSchema?: Record<string, unknown> | string;
+      outputSchema?: Record<string, unknown> | string;
     }>;
     autonomy?: {
       level?: string;
@@ -276,7 +279,7 @@ export interface OssaAgent {
         };
       }>;
     };
-    capabilities?: Capability[];
+    capabilities?: (Capability | string)[]; // Allow both full Capability objects and string IDs
     policies?: Array<{
       name: string;
       type: string;

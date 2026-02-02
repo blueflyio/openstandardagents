@@ -19,6 +19,12 @@ import {
   findManifestFilesFromPaths,
   handleCommandError,
 } from '../utils/index.js';
+import {
+  addGlobalOptions,
+  addQueryOptions,
+  shouldUseColor,
+  ExitCode,
+} from '../utils/standard-options.js';
 
 interface LintRule {
   id: string;
@@ -175,14 +181,17 @@ export const lintCommand = new Command('lint')
     'Output format (default, json, sarif)',
     'default'
   )
-  .option('-o, --output <file>', 'Output file (for json/sarif formats)')
   .option(
     '--max-warnings <number>',
     'Maximum warnings before exit with error',
     '0'
   )
-  .description('Lint OSSA agent manifests against best practices')
-  .action(
+  .description('Lint OSSA agent manifests against best practices');
+
+// Apply production-grade standard options
+addGlobalOptions(lintCommand);
+addQueryOptions(lintCommand);
+lintCommand.action(
     async (
       paths: string[],
       options: {
@@ -191,9 +200,20 @@ export const lintCommand = new Command('lint')
         format?: string;
         output?: string;
         maxWarnings?: string;
+        verbose?: boolean;
+        quiet?: boolean;
+        json?: boolean;
+        color?: boolean;
       }
     ) => {
       try {
+        const useColor = shouldUseColor(options);
+        const log = (msg: string, color?: (s: string) => string) => {
+          if (options.quiet) return;
+          const output = useColor && color ? color(msg) : msg;
+          console.log(output);
+        };
+
         const manifestRepo = container.get(ManifestRepository);
         const maxWarnings = parseInt(options.maxWarnings || '0', 10);
 
@@ -201,8 +221,8 @@ export const lintCommand = new Command('lint')
         const filesToLint = findManifestFilesFromPaths(paths);
 
         if (filesToLint.length === 0) {
-          console.log(chalk.yellow('No OSSA manifest files found'));
-          process.exit(0);
+          log('No OSSA manifest files found', chalk.yellow);
+          process.exit(ExitCode.SUCCESS);
         }
 
         // Filter rules if specific rule requested
@@ -211,12 +231,15 @@ export const lintCommand = new Command('lint')
           : lintRules;
 
         if (rulesToRun.length === 0) {
-          console.error(chalk.red(`Unknown rule: ${options.rule}`));
-          console.log(chalk.blue('Available rules:'));
-          lintRules.forEach((r) => {
-            console.log(`  - ${r.id}: ${r.name}`);
-          });
-          process.exit(1);
+          if (!options.quiet) {
+            const err = `Unknown rule: ${options.rule}`;
+            console.error(useColor ? chalk.red(err) : err);
+            log('Available rules:', chalk.blue);
+            lintRules.forEach((r) => {
+              log(`  - ${r.id}: ${r.name}`);
+            });
+          }
+          process.exit(ExitCode.MISUSE);
         }
 
         // Lint all files
@@ -249,7 +272,8 @@ export const lintCommand = new Command('lint')
         const infos = allIssues.filter((i) => i.severity === 'info');
 
         // Output results
-        if (options.format === 'json') {
+        const isJSON = options.json || options.format === 'json';
+        if (isJSON) {
           const output = {
             files: filesToLint.length,
             issues: allIssues.length,
@@ -260,7 +284,7 @@ export const lintCommand = new Command('lint')
           };
           if (options.output) {
             fs.writeFileSync(options.output, JSON.stringify(output, null, 2));
-            console.log(chalk.green(`Results written to ${options.output}`));
+            log(`Results written to ${options.output}`, chalk.green);
           } else {
             outputJSON(output);
           }
@@ -304,20 +328,16 @@ export const lintCommand = new Command('lint')
           };
           if (options.output) {
             fs.writeFileSync(options.output, JSON.stringify(sarif, null, 2));
-            console.log(
-              chalk.green(`SARIF results written to ${options.output}`)
-            );
+            log(`SARIF results written to ${options.output}`, chalk.green);
           } else {
             outputJSON(sarif);
           }
         } else {
           // Default format
-          console.log(
-            chalk.blue(`\nLinting ${filesToLint.length} file(s)...\n`)
-          );
+          log(`\nLinting ${filesToLint.length} file(s)...\n`, chalk.blue);
 
           if (allIssues.length === 0) {
-            console.log(chalk.green('No linting issues found!'));
+            log('No linting issues found!', chalk.green);
           } else {
             // Group by file
             const byFile = new Map<string, LintIssue[]>();
@@ -329,7 +349,7 @@ export const lintCommand = new Command('lint')
             }
 
             for (const [file, issues] of byFile) {
-              console.log(chalk.cyan(`\n${file}:`));
+              log(`\n${file}:`, chalk.cyan);
               for (const issue of issues) {
                 const color =
                   issue.severity === 'error'
@@ -343,29 +363,31 @@ export const lintCommand = new Command('lint')
                     : issue.severity === 'warning'
                       ? '⚠'
                       : 'ℹ';
-                console.log(
-                  color(`  ${icon} [${issue.rule}] ${issue.message}`) +
-                    (issue.path ? chalk.gray(` (${issue.path})`) : '') +
-                    (issue.fix ? chalk.gray(`\n      Fix: ${issue.fix}`) : '')
-                );
+                const issueMsg = `  ${icon} [${issue.rule}] ${issue.message}`;
+                const path = issue.path ? ` (${issue.path})` : '';
+                const fix = issue.fix ? `\n      Fix: ${issue.fix}` : '';
+                const fullMsg = useColor
+                  ? color(issueMsg) + (issue.path ? chalk.gray(path) : '') + (issue.fix ? chalk.gray(fix) : '')
+                  : issueMsg + path + fix;
+                if (!options.quiet) console.log(fullMsg);
               }
             }
 
-            console.log(chalk.blue(`\nSummary:`));
-            console.log(`  Errors: ${errors.length}`);
-            console.log(`  Warnings: ${warnings.length}`);
-            console.log(`  Info: ${infos.length}`);
+            log('\nSummary:', chalk.blue);
+            log(`  Errors: ${errors.length}`);
+            log(`  Warnings: ${warnings.length}`);
+            log(`  Info: ${infos.length}`);
           }
         }
 
         // Exit with appropriate code
         if (errors.length > 0) {
-          process.exit(1);
+          process.exit(ExitCode.GENERAL_ERROR);
         }
         if (warnings.length > maxWarnings) {
-          process.exit(1);
+          process.exit(ExitCode.GENERAL_ERROR);
         }
-        process.exit(0);
+        process.exit(ExitCode.SUCCESS);
       } catch (error) {
         handleCommandError(error);
       }

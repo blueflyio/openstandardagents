@@ -2,11 +2,30 @@
 
 **The OpenAPI for AI Agents**
 
-A specification standard (not a framework) that defines contracts and metadata for production agent systems.
+Turn any AI agent into a production-ready package. One manifest, 12+ platforms.
 
 [![npm version](https://badge.fury.io/js/%40bluefly%2Fopenstandardagents.svg)](https://www.npmjs.com/package/@bluefly/openstandardagents)
 [![GitLab Pipeline](https://gitlab.com/blueflyio/ossa/openstandardagents/badges/main/pipeline.svg)](https://gitlab.com/blueflyio/ossa/openstandardagents/-/pipelines)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+## Quick Start (60 seconds)
+
+```bash
+# Install
+npm install -g @bluefly/openstandardagents
+
+# Create agent
+ossa quickstart
+
+# Export to NPM package (or Docker, K8s, MCP, Cursor, Claude, etc.)
+ossa export my-agent.ossa.yaml --platform npm --output ./package
+```
+
+**Result**: Production-ready NPM package with `package.json`, entry point, TypeScript types, and docs.
+
+See [DEMO.md](./DEMO.md) for the full story.
+
+---
 
 ## What is OSSA?
 
