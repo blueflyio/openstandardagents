@@ -3,8 +3,10 @@
  *
  * Provides dynamic version detection from package.json
  *
- * CRITICAL: NO HARDCODED VERSION STRINGS ANYWHERE
- * All versions MUST be derived from package.json or environment variables.
+ * IMPORTANT: Package version vs OSSA Spec version
+ * - Package version (from package.json): The CLI tool version (can be 0.4.0, 0.5.0, etc.)
+ * - OSSA Spec version (OSSA_SPEC_VERSION): The agent manifest format version (0.3.6)
+ * These evolve independently - CLI can update without changing the spec.
  *
  * NOTE: This module is designed to work with both ESM and CommonJS (Jest).
  */
@@ -12,6 +14,13 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
+
+/**
+ * Current OSSA specification version
+ * This is the version used in manifest apiVersion fields
+ * Independent from package.json version (CLI tool version)
+ */
+const OSSA_SPEC_VERSION = '0.3.6';
 
 // Cache the version info once resolved
 let cachedVersionInfo: VersionInfo | null = null;
@@ -193,10 +202,11 @@ export function getVersionInfo(forceRefresh = false): VersionInfo {
 
   const version = readVersionFromPackageJson();
   const parsed = parseVersion(version);
+  const specParsed = parseVersion(OSSA_SPEC_VERSION);
 
   // USE MAJOR.MINOR for stability (ignore patch version for schema/api)
   // 0.3.6 -> v0.3
-  const schemaDir = `v${parsed.major}.${parsed.minor}`;
+  const schemaDir = `v${specParsed.major}.${specParsed.minor}`;
   const schemaFile = `ossa-${schemaDir}.schema.json`;
 
   cachedVersionInfo = {
@@ -205,7 +215,7 @@ export function getVersionInfo(forceRefresh = false): VersionInfo {
     schemaDir,
     schemaFile,
     schemaPath: `spec/${schemaDir}/${schemaFile}`,
-    apiVersion: `ossa/v${version}`,
+    apiVersion: `ossa/v${OSSA_SPEC_VERSION}`,
   };
 
   return cachedVersionInfo;

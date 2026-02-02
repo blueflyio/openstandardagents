@@ -123,16 +123,16 @@ describe('ossa knowledge CLI', () => {
 
     it('should query knowledge base', async () => {
       const { stdout } = await execAsync(
-        `node ${ossaBin} knowledge query "agents" --knowledge ${testDir}`
+        `node ${ossaBin} knowledge query "agents" --knowledge ${testDir} --threshold 0`
       );
 
-      expect(stdout).toContain('results');
+      expect(stdout).toContain('Results');
       expect(stdout).toMatch(/agents\.md|ossa\.md/);
     });
 
     it('should support JSON output', async () => {
       const { stdout } = await execAsync(
-        `node ${ossaBin} knowledge query "agents" --knowledge ${testDir} --output json`
+        `node ${ossaBin} knowledge query "agents" --knowledge ${testDir} --output json --threshold 0`
       );
 
       const output = JSON.parse(stdout);

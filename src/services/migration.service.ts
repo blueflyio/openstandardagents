@@ -164,7 +164,7 @@ export class MigrationService {
   private migrateToCurrentVersion(manifest: OssaAgent): OssaAgent {
     const migrated: OssaAgent = JSON.parse(JSON.stringify(manifest));
     const versionInfo = getVersionInfo();
-    const currentApiVersion = `ossa/v${versionInfo.version}`;
+    const currentApiVersion = versionInfo.apiVersion;
     const sourceVersion = manifest.apiVersion || 'unknown';
 
     // Update apiVersion to current
