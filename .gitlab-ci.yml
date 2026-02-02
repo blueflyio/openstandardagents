@@ -1,5 +1,5 @@
 # =============================================================================
-# OSSA Specification CI/CD Pipeline - Using Golden Component
+# OSSA Specification CI/CD Pipeline - Simple & Direct
 # =============================================================================
 #
 # Versioning Strategy (HARDENED GITLAB FLOW):
@@ -13,44 +13,97 @@
 # - GitLab Releases: Only production tags
 # =============================================================================
 
-include:
-  # Golden component handles: validate, test, build, security
-  - component: $CI_SERVER_FQDN/blueflyio/gitlab_components/golden@release/v0.1.x
-    inputs:
-      # Project configuration
-      node_version: "22.14"
-      project_type: "nodejs"
-
-      # Enable standard features
-      enable_comprehensive_testing: true
-      enable_security_scanning: false  # Disable until compliance-engine published
-
-      # Disable features we handle custom
-      enable_deployment: false
-      enable_pages: false
-      enable_npm_publish: false  # We handle manual npm publish
-
-# =============================================================================
-# CUSTOM STAGES (Added to golden stages)
-# =============================================================================
 stages:
-  - .pre
-  - detect
   - validate
   - test
-  - security
   - build
-  - publish
-  - heal
-  - tag      # Golden component needs this
-  - version  # Custom: dev/rc tagging
-  - release  # Custom: production release
-  - deploy   # Custom: npm publish
-  - .post
+  - version
+  - release
+  - deploy
 
 variables:
   NODE_VERSION: "22.14"
   GIT_DEPTH: 0  # Full history for versioning
+
+# =============================================================================
+# BASE JOB TEMPLATE
+# =============================================================================
+.base-runner:
+  image: node:${NODE_VERSION}
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - node_modules/
+      - .npm/
+  before_script:
+    - npm ci --cache .npm --prefer-offline
+
+# =============================================================================
+# VALIDATE STAGE
+# =============================================================================
+validate:schema:
+  extends: .base-runner
+  stage: validate
+  script:
+    - npm run validate:schema
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/
+
+validate:examples:
+  extends: .base-runner
+  stage: validate
+  script:
+    - npm run validate:examples
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/
+
+# =============================================================================
+# TEST STAGE
+# =============================================================================
+test:unit:
+  extends: .base-runner
+  stage: test
+  script:
+    - npm run test:unit
+  coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/cobertura-coverage.xml
+    paths:
+      - coverage/
+    expire_in: 30 days
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/
+
+test:smoke:
+  extends: .base-runner
+  stage: test
+  script:
+    - npm run test:smoke
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/
+
+# =============================================================================
+# BUILD STAGE
+# =============================================================================
+build:
+  extends: .base-runner
+  stage: build
+  script:
+    - npm run build
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 30 days
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/
 
 # =============================================================================
 # VERSION STAGE - Auto-Versioning with GitLab Environments
