@@ -69,6 +69,20 @@ import { langflowCommand } from './commands/langflow.command.js';
 import { langchainCommand } from './commands/langchain.command.js';
 import { frameworkCommand } from './commands/framework.command.js';
 
+// Additional commands (previously unregistered)
+import { agentCreateCommand } from './commands/agent-create.command.js';
+import { agentWizardCommand } from './commands/agent-wizard.command.js';
+import { docsCommand } from './commands/docs.command.js';
+import { enhanceCommand } from './commands/enhance.command.js';
+import { examplesCommand } from './commands/examples.command.js';
+import { knowledgeCommandGroup } from './commands/knowledge.command.js';
+// Note: knowledge-index and knowledge-query are subcommands within knowledgeCommandGroup
+import { migrateLangchainCommand } from './commands/migrate-langchain.command.js';
+import { releaseCommand } from './commands/release.command.js';
+import { serveCommand } from './commands/serve.command.js';
+import { syncCommand } from './commands/sync.command.js';
+import { auditCommand } from './commands/audit.js';
+
 // Extension system (SOLID: Open/Closed via registry pattern)
 import {
   shouldLoadExtensions,
@@ -242,6 +256,20 @@ program.addCommand(extensionTeamCommand);
 program.addCommand(langflowCommand);
 program.addCommand(langchainCommand);
 program.addCommand(frameworkCommand);
+
+// Previously unregistered commands - now registered
+program.addCommand(buildCommand); // Was imported but never registered!
+program.addCommand(agentCreateCommand);
+program.addCommand(agentWizardCommand);
+program.addCommand(docsCommand);
+program.addCommand(enhanceCommand);
+program.addCommand(examplesCommand);
+program.addCommand(knowledgeCommandGroup); // Includes index and query subcommands
+program.addCommand(migrateLangchainCommand);
+program.addCommand(releaseCommand);
+program.addCommand(serveCommand);
+program.addCommand(syncCommand);
+program.addCommand(auditCommand);
 
 // ============================================================================
 // Extension Loading
