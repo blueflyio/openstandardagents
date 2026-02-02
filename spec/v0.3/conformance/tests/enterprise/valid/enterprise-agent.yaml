@@ -1,0 +1,88 @@
+apiVersion: ossa/v0.3.5
+kind: Agent
+metadata:
+  name: enterprise-test-agent
+  description: Enterprise agent with full configuration
+  version: "2.1.0"
+  labels:
+    environment: staging
+    tier: enterprise
+  annotations:
+    owner: platform-team
+    compliance: SOC2
+spec:
+  role: assistant
+  type: service
+  identity:
+    id: enterprise-test-agent
+    version: "2.1.0"
+  completion:
+    criteria:
+      - type: task_completed
+        description: Task is successfully completed
+    timeout_ms: 300000
+  checkpointing:
+    enabled: true
+    interval_ms: 30000
+    strategy: incremental
+  monitoring:
+    metrics:
+      enabled: true
+      interval_ms: 60000
+    alerts:
+      enabled: true
+  security:
+    authentication:
+      required: true
+      method: api_key
+    authorization:
+      rbac: true
+  capabilities:
+    - name: analysis
+      description: Analyze data
+  llm:
+    provider: openai
+    model: gpt-4-turbo
+  autonomy:
+    level: semi_autonomous
+    approval_required: false
+  constraints:
+    cost:
+      max_cost_per_task: 1.0
+      currency: USD
+    performance:
+      max_execution_time_ms: 60000
+  observability:
+    tracing:
+      enabled: true
+    metrics:
+      enabled: true
+    logging:
+      enabled: true
+  extensions:
+    moe:
+      enabled: true
+      routing_strategy: least_cost
+      models:
+        - provider: openai
+          model: gpt-4o-mini
+          use_case: simple_queries
+        - provider: openai
+          model: gpt-4-turbo
+          use_case: complex_analysis
+    bat:
+      enabled: true
+      criteria:
+        - type: cost
+          weight: 0.4
+        - type: performance
+          weight: 0.3
+        - type: quality
+          weight: 0.3
+    feedback_loops:
+      enabled: true
+      mechanisms:
+        - type: user_feedback
+          collection_method: inline
+        - type: performance_metrics
+          interval_ms: 60000
