@@ -62,7 +62,6 @@ export class AgentAuditService {
   private ossaSchema: any;
 
   constructor() {
-    // @ts-expect-error - Ajv v8 API compatibility
     this.ajv = new Ajv({ allErrors: true, strict: false });
     // Load OSSA schema (would load from schema directory)
     this.ossaSchema = null; // TODO: Load actual schema
