@@ -7,6 +7,12 @@ import { RegistryService } from '../../services/registry.service.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { OssaAgent } from '../../types/index.js';
 import yaml from 'yaml';
+import {
+  addGlobalOptions,
+  addMutationOptions,
+  shouldUseColor,
+  ExitCode,
+} from '../utils/standard-options.js';
 
 export const publishCommand = new Command('publish')
   .description('Publish an OSSA agent to the registry')
@@ -15,20 +21,47 @@ export const publishCommand = new Command('publish')
     '-v, --version <version>',
     'Version to publish (defaults to manifest version)'
   )
-  .option('-r, --registry <path>', 'Registry path (defaults to .ossa-registry)')
-  .action(
+  .option('-r, --registry <path>', 'Registry path (defaults to .ossa-registry)');
+
+// Apply production-grade standard options
+addGlobalOptions(publishCommand);
+addMutationOptions(publishCommand);
+
+publishCommand.action(
     async (
       manifestPath: string,
-      options: { version?: string; registry?: string }
+      options: {
+        version?: string;
+        registry?: string;
+        verbose?: boolean;
+        quiet?: boolean;
+        dryRun?: boolean;
+        color?: boolean;
+        json?: boolean;
+      }
     ) => {
+      const useColor = shouldUseColor(options);
+      const log = (msg: string, color?: (s: string) => string) => {
+        if (options.quiet) return;
+        const output = useColor && color ? color(msg) : msg;
+        console.log(output);
+      };
+
       try {
         // Load manifest
         const manifestRepo = new ManifestRepository();
         const manifest = (await manifestRepo.load(manifestPath)) as OssaAgent;
 
         if (!manifest) {
-          console.error(chalk.red('Failed to load manifest'));
-          process.exit(1);
+          if (!options.quiet) {
+            const err = 'Failed to load manifest';
+            console.error(useColor ? chalk.red(err) : err);
+          }
+          process.exit(ExitCode.CANNOT_EXECUTE);
+        }
+
+        if (options.dryRun) {
+          log('🔍 DRY RUN MODE - Not publishing to registry', chalk.yellow);
         }
 
         // Initialize registry
@@ -39,37 +72,48 @@ export const publishCommand = new Command('publish')
           await customRegistry.initialize();
 
           // Publish
-          const entry = await customRegistry.publish({
-            manifest,
-            version: options.version,
-          });
+          if (!options.dryRun) {
+            const entry = await customRegistry.publish({
+              manifest,
+              version: options.version,
+            });
 
-          console.log(
-            chalk.green(`\n✓ Published: ${entry.id}@${entry.version}`)
-          );
-          console.log(chalk.gray(`  Description: ${entry.description}`));
-          console.log(chalk.gray(`  Published at: ${entry.published_at}`));
+            log(`\n✓ Published: ${entry.id}@${entry.version}`, chalk.green);
+            if (options.verbose) {
+              log(`  Description: ${entry.description}`, chalk.gray);
+              log(`  Published at: ${entry.published_at}`, chalk.gray);
+            }
+          } else {
+            const id = manifest.metadata?.name || 'unknown';
+            const version = options.version || manifest.metadata?.version || 'unknown';
+            log(`\nWould publish: ${id}@${version}`, chalk.blue);
+          }
         } else {
-          const entry = await registryService.publish({
-            manifest,
-            version: options.version,
-          });
+          if (!options.dryRun) {
+            const entry = await registryService.publish({
+              manifest,
+              version: options.version,
+            });
 
-          console.log(
-            chalk.green(`\n✓ Published: ${entry.id}@${entry.version}`)
-          );
-          console.log(chalk.gray(`  Description: ${entry.description}`));
-          console.log(chalk.gray(`  Published at: ${entry.published_at}`));
+            log(`\n✓ Published: ${entry.id}@${entry.version}`, chalk.green);
+            if (options.verbose) {
+              log(`  Description: ${entry.description}`, chalk.gray);
+              log(`  Published at: ${entry.published_at}`, chalk.gray);
+            }
+          } else {
+            const id = manifest.metadata?.name || 'unknown';
+            const version = options.version || manifest.metadata?.version || 'unknown';
+            log(`\nWould publish: ${id}@${version}`, chalk.blue);
+          }
         }
 
-        process.exit(0);
+        process.exit(ExitCode.SUCCESS);
       } catch (error) {
-        console.error(
-          chalk.red(
-            `\n✗ Error: ${error instanceof Error ? error.message : String(error)}`
-          )
-        );
-        process.exit(1);
+        if (!options.quiet) {
+          const errMsg = `\n✗ Error: ${error instanceof Error ? error.message : String(error)}`;
+          console.error(useColor ? chalk.red(errMsg) : errMsg);
+        }
+        process.exit(ExitCode.GENERAL_ERROR);
       }
     }
   );

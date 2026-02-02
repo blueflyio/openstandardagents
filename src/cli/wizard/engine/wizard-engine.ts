@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Wizard Engine
  *

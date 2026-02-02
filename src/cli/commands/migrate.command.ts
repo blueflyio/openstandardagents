@@ -9,6 +9,12 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
+import {
+  addGlobalOptions,
+  addMutationOptions,
+  shouldUseColor,
+  ExitCode,
+} from '../utils/standard-options.js';
 
 export const migrateCommand = new Command('migrate')
   .description('Migrate agents from other formats to OSSA')
@@ -17,21 +23,35 @@ export const migrateCommand = new Command('migrate')
     '-f, --from <format>',
     'Source format (langchain, crewai, autogen)'
   )
-  .option('-o, --output <file>', 'Output OSSA manifest file')
-  .option('--validate', 'Validate converted manifest', true)
-  .action(
+  .option('--validate', 'Validate converted manifest', true);
+
+// Apply production-grade standard options
+addGlobalOptions(migrateCommand);
+addMutationOptions(migrateCommand);
+
+migrateCommand.action(
     async (
       sourcePath: string,
       options: {
         from: string;
         output?: string;
         validate: boolean;
+        verbose?: boolean;
+        quiet?: boolean;
+        dryRun?: boolean;
+        color?: boolean;
+        json?: boolean;
       }
     ) => {
+      const useColor = shouldUseColor(options);
+      const log = (msg: string, color?: (s: string) => string) => {
+        if (options.quiet) return;
+        const output = useColor && color ? color(msg) : msg;
+        console.log(output);
+      };
+
       try {
-        console.log(
-          chalk.blue(`Migrating from ${options.from}: ${sourcePath}\n`)
-        );
+        log(`Migrating from ${options.from}: ${sourcePath}\n`, chalk.blue);
 
         // Read source file
         const sourceContent = fs.readFileSync(sourcePath, 'utf-8');
@@ -40,13 +60,13 @@ export const migrateCommand = new Command('migrate')
         let manifest: unknown;
         switch (options.from) {
           case 'langchain':
-            manifest = await migrateFromLangChain(sourceContent);
+            manifest = await migrateFromLangChain(sourceContent, options.quiet);
             break;
           case 'crewai':
-            manifest = await migrateFromCrewAI(sourceContent);
+            manifest = await migrateFromCrewAI(sourceContent, options.quiet);
             break;
           case 'autogen':
-            manifest = await migrateFromAutoGen(sourceContent);
+            manifest = await migrateFromAutoGen(sourceContent, options.quiet);
             break;
           default:
             throw new Error(`Unsupported source format: ${options.from}`);
@@ -60,33 +80,42 @@ export const migrateCommand = new Command('migrate')
             `${path.basename(sourcePath, path.extname(sourcePath))}.ossa.yaml`
           );
 
-        // Write manifest
-        const manifestRepo = container.get(ManifestRepository);
-        // Save manifest - save method signature: save(filePath: string, manifest: OssaAgent)
-        await manifestRepo.save(outputFile, manifest as any);
-
-        if (options.validate) {
-          console.log(chalk.yellow('\nValidating converted manifest...'));
-          // TODO: Add validation
-          console.log(chalk.green('✓ Manifest valid'));
+        if (options.dryRun) {
+          log('🔍 DRY RUN MODE - No files will be written', chalk.yellow);
         }
 
-        console.log(chalk.green(`\n✓ Migration complete!`));
-        console.log(chalk.blue(`  Output: ${outputFile}`));
+        // Write manifest
+        if (!options.dryRun) {
+          const manifestRepo = container.get(ManifestRepository);
+          // Save manifest - save method signature: save(filePath: string, manifest: OssaAgent)
+          await manifestRepo.save(outputFile, manifest as any);
+        }
+
+        if (options.validate) {
+          log('\nValidating converted manifest...', chalk.yellow);
+          // TODO: Add validation
+          log('✓ Manifest valid', chalk.green);
+        }
+
+        if (options.dryRun) {
+          log(`\nWould write to: ${outputFile}`, chalk.blue);
+        } else {
+          log('\n✓ Migration complete!', chalk.green);
+          log(`  Output: ${outputFile}`, chalk.blue);
+        }
       } catch (error) {
-        console.error(
-          chalk.red(
-            `Migration failed: ${error instanceof Error ? error.message : String(error)}`
-          )
-        );
-        process.exit(1);
+        if (!options.quiet) {
+          const errMsg = `Migration failed: ${error instanceof Error ? error.message : String(error)}`;
+          console.error(useColor ? chalk.red(errMsg) : errMsg);
+        }
+        process.exit(ExitCode.GENERAL_ERROR);
       }
     }
   );
 
-async function migrateFromLangChain(source: string): Promise<unknown> {
+async function migrateFromLangChain(source: string, quiet = false): Promise<unknown> {
   // TODO: Implement LangChain parser
-  console.log(chalk.yellow('  LangChain migration not yet implemented'));
+  if (!quiet) console.log(chalk.yellow('  LangChain migration not yet implemented'));
   return {
     apiVersion: 'ossa/v0.3.6',
     kind: 'Agent',
@@ -100,9 +129,9 @@ async function migrateFromLangChain(source: string): Promise<unknown> {
   };
 }
 
-async function migrateFromCrewAI(source: string): Promise<unknown> {
+async function migrateFromCrewAI(source: string, quiet = false): Promise<unknown> {
   // TODO: Implement CrewAI parser
-  console.log(chalk.yellow('  CrewAI migration not yet implemented'));
+  if (!quiet) console.log(chalk.yellow('  CrewAI migration not yet implemented'));
   return {
     apiVersion: 'ossa/v0.3.6',
     kind: 'Agent',
@@ -116,9 +145,9 @@ async function migrateFromCrewAI(source: string): Promise<unknown> {
   };
 }
 
-async function migrateFromAutoGen(source: string): Promise<unknown> {
+async function migrateFromAutoGen(source: string, quiet = false): Promise<unknown> {
   // TODO: Implement AutoGen parser
-  console.log(chalk.yellow('  AutoGen migration not yet implemented'));
+  if (!quiet) console.log(chalk.yellow('  AutoGen migration not yet implemented'));
   return {
     apiVersion: 'ossa/v0.3.6',
     kind: 'Agent',
