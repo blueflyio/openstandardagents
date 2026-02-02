@@ -17,6 +17,7 @@ stages:
   - validate
   - test
   - build
+  - smoke
   - version
   - release
   - deploy
@@ -83,7 +84,7 @@ test:unit:
 
 test:smoke:
   extends: .base-runner
-  stage: test
+  stage: smoke
   needs:
     - job: build
       artifacts: true
