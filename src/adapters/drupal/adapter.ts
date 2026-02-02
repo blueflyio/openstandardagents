@@ -191,10 +191,12 @@ export class DrupalAdapter extends BaseAdapter {
         ],
         tools: [
           {
+            type: 'function',
             name: 'analyze_content',
             description: 'Analyze content for spam, toxicity, and quality',
           },
           {
+            type: 'function',
             name: 'moderate_node',
             description: 'Publish, unpublish, or flag a Drupal node',
           },
@@ -253,7 +255,9 @@ ossa:
     moduleName: string,
     className: string
   ): string {
-    const capabilities = (manifest.spec?.capabilities || []) as string[];
+    const capabilities = (manifest.spec?.capabilities || []).map(c =>
+      typeof c === 'string' ? c : c.id
+    );
 
     return `<?php
 
@@ -485,7 +489,9 @@ ${tools.map((tool) => `    // Tool: ${tool.name || 'unknown'} - ${tool.descripti
    * Generate README.md
    */
   private generateReadme(manifest: OssaAgent, moduleName: string): string {
-    const capabilities = (manifest.spec?.capabilities || []) as string[];
+    const capabilities = (manifest.spec?.capabilities || []).map(c =>
+      typeof c === 'string' ? c : c.id
+    );
     const tools = (manifest.spec?.tools || []) as any[];
 
     return `# ${manifest.metadata?.name || moduleName}

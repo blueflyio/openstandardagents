@@ -196,6 +196,7 @@ export class MCPAdapter extends BaseAdapter {
         ],
         tools: [
           {
+            type: 'function',
             name: 'read_file',
             description: 'Read contents of a file',
             inputSchema: {
@@ -207,6 +208,7 @@ export class MCPAdapter extends BaseAdapter {
             },
           },
           {
+            type: 'function',
             name: 'write_file',
             description: 'Write contents to a file',
             inputSchema: {
@@ -325,7 +327,9 @@ main().catch((error) => {
    * Generate tools.ts - Tool implementations
    */
   private generateToolsCode(manifest: OssaAgent): string {
-    const capabilities = (manifest.spec?.capabilities || []) as string[];
+    const capabilities = (manifest.spec?.capabilities || []).map(c =>
+      typeof c === 'string' ? c : c.id
+    );
     const tools = (manifest.spec?.tools || []) as any[];
 
     const toolDefinitions = tools.map((tool) => {

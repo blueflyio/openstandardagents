@@ -7,6 +7,7 @@ interface ValidationError {
   message: string;
 }
 
+// @ts-expect-error - Ajv v8 API compatibility
 const ajv = new Ajv({ allErrors: true, strict: false });
 addFormats(ajv);
 

@@ -302,7 +302,9 @@ export class TestRunner {
   ): Promise<TestResult[]> {
     const results: TestResult[] = [];
     const capabilities = manifest.spec?.capabilities || [];
-    const capability = capabilities.find((c) => c.id === capabilityName);
+    const capability = capabilities.find((c) =>
+      typeof c === 'string' ? c === capabilityName : c.id === capabilityName
+    );
 
     if (!capability) {
       results.push({
@@ -320,7 +322,9 @@ export class TestRunner {
 
     try {
       // Test capability definition
-      if (!capability.description) {
+      const description =
+        typeof capability === 'string' ? undefined : capability.description;
+      if (!description) {
         throw new Error('Capability missing description');
       }
 

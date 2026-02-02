@@ -112,6 +112,7 @@ export class MessagingService {
     this.commandHandlers = new Map();
 
     // Initialize JSON Schema validator
+    // @ts-expect-error - Ajv v8 API compatibility
     this.ajv = new Ajv({
       strict: false,
       allErrors: true,
