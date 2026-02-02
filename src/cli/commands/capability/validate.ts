@@ -17,6 +17,7 @@ export const validateCapabilityCommand = new Command('capability')
   .action(async (filePath: string) => {
     console.log(`Validating capability contract: ${filePath}`);
 
+    // @ts-expect-error - Ajv v8 API compatibility
     const ajv = new Ajv({ allErrors: true });
     addFormats(ajv); // Add common formats like date-time, uri, email
 

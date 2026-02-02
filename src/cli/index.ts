@@ -81,7 +81,7 @@ import { migrateLangchainCommand } from './commands/migrate-langchain.command.js
 import { releaseCommand } from './commands/release.command.js';
 import { serveCommand } from './commands/serve.command.js';
 import { syncCommand } from './commands/sync.command.js';
-import { auditCommand } from './commands/audit.js';
+import { createAuditCommand } from './commands/audit.js';
 
 // Extension system (SOLID: Open/Closed via registry pattern)
 import {
@@ -269,7 +269,7 @@ program.addCommand(migrateLangchainCommand);
 program.addCommand(releaseCommand);
 program.addCommand(serveCommand);
 program.addCommand(syncCommand);
-program.addCommand(auditCommand);
+program.addCommand(createAuditCommand());
 
 // ============================================================================
 // Extension Loading
