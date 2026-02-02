@@ -51,21 +51,21 @@ npm install my-agent
 
 ---
 
-## What Makes This Revolutionary?
+## What Problem Does This Solve?
 
-### Before OSSA:
-- ❌ No standard for agent definitions
-- ❌ Platform lock-in (Cursor, Claude, OpenAI, etc.)
-- ❌ Manual packaging for each deployment
-- ❌ No versioning or dependency management
-- ❌ Copy-paste between platforms
+**Before OSSA:**
+- No standard format for agent definitions
+- Platform lock-in - rewrite for each platform
+- Manual packaging and deployment setup
+- No dependency management or versioning
+- Copy-paste agent configs between tools
 
-### With OSSA:
-- ✅ **One manifest, 12+ platforms**
-- ✅ **Export to**: NPM, Docker, Kubernetes, MCP, Cursor, Claude Desktop, Langchain, CrewAI, AutoGen, AG2, Langflow, OpenAI
-- ✅ **Production-grade CLI** with dry-run, validation, linting
-- ✅ **Type-safe** with Zod validation and TypeScript types
-- ✅ **OpenAPI for agents** - industry standard approach
+**With OSSA:**
+- One manifest works across 12+ platforms
+- Export to: NPM, Docker, Kubernetes, MCP, Cursor, Claude Desktop, Langchain, CrewAI, AutoGen, AG2, Langflow, OpenAI
+- Production CLI with validation, dry-run, JSON output
+- Type-safe manifests with Zod + TypeScript
+- OpenAPI-style approach for agents
 
 ---
 
@@ -203,12 +203,10 @@ ossa export agent.yaml --platform npm
 
 ---
 
-## The Vision
+## Why OSSA Exists
 
-**OSSA is to AI agents what OpenAPI is to REST APIs.**
+OpenAPI standardized REST API definitions. OSSA does the same for AI agents.
 
-Just as OpenAPI standardized API definitions and enabled an ecosystem of tools, OSSA standardizes agent definitions and enables a multi-platform agent ecosystem.
+One manifest format. Works everywhere. Production-ready tooling.
 
-**One manifest. Every platform. Production-ready.**
-
-That's OSSA v0.4.0.
+**OSSA v0.4.0** - Ready for production use.
