@@ -530,7 +530,10 @@ paths:
   /cli/test:
     post:
       summary: "Test agent (CLI: ossa test)"
-      description: Run tests for an agent
+      description: |
+        Run tests for an agent with optional mock LLM.
+        Supports pre-defined test scenarios and watch mode for development.
+        Mock mode allows testing without API keys using deterministic responses.
       operationId: cliTest
       tags: [Testing]
       requestBody:
@@ -1325,18 +1328,36 @@ components:
     # ============================================================================
     TestRequest:
       type: object
-      required:
-        - manifest
       properties:
         manifest:
           type: string
-        testFile:
+          description: Path to agent manifest (optional if using scenario)
+        testId:
           type: string
+          description: Run specific test by ID
+        mock:
+          type: boolean
+          description: Use mock LLM (no API keys required)
+          default: false
+        scenario:
+          type: string
+          description: Run pre-defined test scenario
+          enum:
+            - basic-interaction
+            - tool-usage
+            - error-handling
+            - code-generation
+            - content-processing
+            - performance
+            - edge-cases
+            - comprehensive
         watch:
           type: boolean
+          description: Watch mode - re-run tests on file changes
           default: false
         verbose:
           type: boolean
+          description: Verbose output
           default: false
 
     TestResponse:
