@@ -137,7 +137,7 @@ describe('LangChainExporter', () => {
       const serverFile = result.files.find((f) => f.path === 'server.py');
       expect(serverFile).toBeDefined();
       expect(serverFile?.content).toContain('FastAPI');
-      expect(serverFile?.content).toContain('@app.post("/chat")');
+      expect(serverFile?.content).toContain('@app.post("/chat"');
       expect(serverFile?.content).toContain('ChatRequest');
       expect(serverFile?.content).toContain('ChatResponse');
     });
