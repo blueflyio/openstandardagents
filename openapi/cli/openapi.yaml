@@ -50,6 +50,8 @@ tags:
     description: Generate manifests and code
   - name: Migration
     description: Migrate between OSSA versions
+  - name: Cost Estimation
+    description: Token counting and cost estimation
   - name: Agents
     description: Agent CRUD operations
   - name: Registry
@@ -241,6 +243,52 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MigrateResponse'
+
+  /cli/upgrade:
+    post:
+      summary: "Upgrade manifest to latest schema (CLI: ossa upgrade)"
+      description: |
+        Automatically upgrade manifest(s) to the latest OSSA schema version.
+        Supports dry-run mode, automatic backups, and recursive directory processing.
+      operationId: cliUpgrade
+      tags: [Migration]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpgradeRequest'
+      responses:
+        '200':
+          description: Upgrade result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpgradeResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /cli/estimate:
+    post:
+      summary: "Estimate costs (CLI: ossa estimate)"
+      description: |
+        Estimate token counts and projected costs for an agent.
+        Supports scenario-based projections and multi-model comparison.
+      operationId: cliEstimate
+      tags: [Cost Estimation]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EstimateRequest'
+      responses:
+        '200':
+          description: Cost estimation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EstimateResponse'
 
   # ============================================================================
   # AGENT CRUD COMMANDS
@@ -482,7 +530,10 @@ paths:
   /cli/test:
     post:
       summary: "Test agent (CLI: ossa test)"
-      description: Run tests for an agent
+      description: |
+        Run tests for an agent with optional mock LLM.
+        Supports pre-defined test scenarios and watch mode for development.
+        Mock mode allows testing without API keys using deterministic responses.
       operationId: cliTest
       tags: [Testing]
       requestBody:
@@ -917,7 +968,21 @@ components:
           type: string
         interactive:
           type: boolean
-          default: true
+          description: Use enhanced interactive wizard with decision tree
+          default: false
+        useCase:
+          type: string
+          description: Specify use case for automatic configuration
+          enum:
+            - code-review
+            - documentation
+            - customer-support
+            - content-management
+            - ide-assistant
+            - multi-agent
+            - research
+            - visual-workflow
+            - custom
 
     InitResponse:
       type: object
@@ -987,6 +1052,139 @@ components:
                 type: string
         manifest:
           type: object
+
+    UpgradeRequest:
+      type: object
+      required:
+        - path
+      properties:
+        path:
+          type: string
+          description: Path to manifest file or directory
+        dryRun:
+          type: boolean
+          description: Preview changes without modifying files
+          default: false
+        backup:
+          type: boolean
+          description: Create backup before upgrading
+          default: true
+        recursive:
+          type: boolean
+          description: Process all manifests in directory recursively
+          default: false
+        targetVersion:
+          type: string
+          description: Target OSSA version (default is latest)
+
+    UpgradeResponse:
+      type: object
+      properties:
+        upgraded:
+          type: integer
+          description: Number of manifests upgraded
+        skipped:
+          type: integer
+          description: Number of manifests already at target version
+        failed:
+          type: integer
+          description: Number of manifests that failed to upgrade
+        results:
+          type: array
+          items:
+            type: object
+            properties:
+              file:
+                type: string
+              status:
+                type: string
+                enum: [upgraded, skipped, failed]
+              message:
+                type: string
+              currentVersion:
+                type: string
+              targetVersion:
+                type: string
+
+    EstimateRequest:
+      type: object
+      properties:
+        manifest:
+          type: string
+          description: Path to manifest or manifest content
+        model:
+          type: string
+          description: Specific model to estimate for
+        provider:
+          type: string
+          description: LLM provider filter
+        interactions:
+          type: integer
+          description: Number of interactions for scenario projection
+          default: 100
+        timeframe:
+          type: string
+          enum: [day, week, month, year]
+          description: Timeframe for cost projection
+          default: month
+        compare:
+          type: boolean
+          description: Compare costs across multiple models
+          default: false
+
+    EstimateResponse:
+      type: object
+      properties:
+        manifest:
+          type: string
+          description: Manifest name
+        model:
+          type: string
+          description: Model used for estimation
+        tokens:
+          type: object
+          properties:
+            systemPrompt:
+              type: integer
+            tools:
+              type: integer
+            instructions:
+              type: integer
+            examples:
+              type: integer
+            total:
+              type: integer
+        costs:
+          type: object
+          properties:
+            perInteraction:
+              type: number
+              description: Cost per interaction in USD
+            projected:
+              type: object
+              properties:
+                day:
+                  type: number
+                week:
+                  type: number
+                month:
+                  type: number
+                year:
+                  type: number
+        comparisons:
+          type: array
+          description: Multi-model cost comparison (if compare=true)
+          items:
+            type: object
+            properties:
+              provider:
+                type: string
+              model:
+                type: string
+              perInteraction:
+                type: number
+              monthlyProjection:
+                type: number
 
     # ============================================================================
     # AGENT CRUD SCHEMAS
@@ -1130,18 +1328,36 @@ components:
     # ============================================================================
     TestRequest:
       type: object
-      required:
-        - manifest
       properties:
         manifest:
           type: string
-        testFile:
+          description: Path to agent manifest (optional if using scenario)
+        testId:
           type: string
+          description: Run specific test by ID
+        mock:
+          type: boolean
+          description: Use mock LLM (no API keys required)
+          default: false
+        scenario:
+          type: string
+          description: Run pre-defined test scenario
+          enum:
+            - basic-interaction
+            - tool-usage
+            - error-handling
+            - code-generation
+            - content-processing
+            - performance
+            - edge-cases
+            - comprehensive
         watch:
           type: boolean
+          description: Watch mode - re-run tests on file changes
           default: false
         verbose:
           type: boolean
+          description: Verbose output
           default: false
 
     TestResponse:
