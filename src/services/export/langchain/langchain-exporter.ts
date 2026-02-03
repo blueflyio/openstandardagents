@@ -478,7 +478,7 @@ if __name__ == "__main__":
 
     // Streaming dependencies
     const streamingConfig = options.streaming;
-    if (streamingConfig?.sse?.enabled !== false || streamingConfig?.websocket?.enabled !== false) {
+    if (streamingConfig?.sse?.enabled === true || streamingConfig?.websocket?.enabled === true) {
       requirements.push('# Streaming Support');
 
       if (streamingConfig?.sse?.enabled !== false) {
