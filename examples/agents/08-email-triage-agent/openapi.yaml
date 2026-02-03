@@ -1,0 +1,41 @@
+openapi: 3.1.0
+info:
+  title: Email Triage Agent API
+  version: 1.0.0
+  description: Email categorization and automation
+
+servers:
+  - url: http://localhost:8087
+
+paths:
+  /v1/triage:
+    post:
+      summary: Triage email
+      operationId: triageEmail
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - emailId
+              properties:
+                emailId:
+                  type: string
+      responses:
+        '200':
+          description: Email triaged
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  category:
+                    type: string
+                  priority:
+                    type: string
+                  suggestedResponse:
+                    type: string
+                  routeTo:
+                    type: string

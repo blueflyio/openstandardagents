@@ -1,0 +1,131 @@
+apiVersion: ossa/v0.3.6
+kind: Agent
+metadata:
+  name: content-moderator
+  version: 1.0.0
+  description: |
+    Content moderation agent using OpenAI with automated flagging and escalation.
+    Detects harmful content, hate speech, and policy violations.
+  labels:
+    platform: openai
+    export: openai-assistant
+    use-case: content-moderation
+    tier: production
+spec:
+  role: |
+    You are a content moderation specialist responsible for:
+    - Detecting harmful or inappropriate content
+    - Identifying policy violations
+    - Flagging content for human review
+    - Escalating critical issues
+    - Maintaining community safety
+
+  llm:
+    provider: openai
+    model: gpt-4o
+    temperature: 0.1
+    maxTokens: 1000
+
+  capabilities:
+    - check_content
+    - flag_violation
+    - escalate_issue
+    - categorize_content
+
+  tools:
+    - type: function
+      name: check_content
+      description: Analyze content for policy violations
+      parameters:
+        type: object
+        properties:
+          content:
+            type: string
+            description: Content to moderate
+          contentType:
+            type: string
+            enum: [text, image, video, audio]
+          context:
+            type: object
+        required:
+          - content
+          - contentType
+
+    - type: function
+      name: flag_violation
+      description: Flag content as violating policies
+      parameters:
+        type: object
+        properties:
+          contentId:
+            type: string
+          violationType:
+            type: string
+            enum: [hate_speech, violence, harassment, spam, adult_content, misinformation]
+          severity:
+            type: string
+            enum: [low, medium, high, critical]
+          evidence:
+            type: string
+        required:
+          - contentId
+          - violationType
+          - severity
+
+    - type: function
+      name: escalate_issue
+      description: Escalate to human moderator
+      parameters:
+        type: object
+        properties:
+          contentId:
+            type: string
+          reason:
+            type: string
+          priority:
+            type: string
+            enum: [normal, urgent, critical]
+        required:
+          - contentId
+          - reason
+
+  autonomy:
+    level: supervised
+    approval_required: true
+    approval_conditions:
+      - severity == 'critical'
+      - violationType == 'hate_speech'
+
+  safety:
+    input_filters:
+      - type: content_sanitization
+    output_validation:
+      - type: decision_audit
+        log_all_decisions: true
+
+  observability:
+    logging:
+      level: info
+      include_decisions: true
+    metrics:
+      enabled: true
+      metrics:
+        - content_moderated
+        - violations_flagged
+        - false_positives
+        - escalations
+
+extensions:
+  openai_assistant:
+    assistant_type: moderation
+    instructions: |
+      Analyze content for policy violations.
+      Be objective and consistent.
+      When in doubt, escalate to human review.
+    tools_mapping:
+      - ossa_capability: check_content
+        openai_function: check_content
+      - ossa_capability: flag_violation
+        openai_function: flag_violation
+      - ossa_capability: escalate_issue
+        openai_function: escalate
