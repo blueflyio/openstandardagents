@@ -417,7 +417,7 @@ Format as JSON:
 }
 
 // CLI entry point
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   const manifestPath = process.argv[2];
   const port = parseInt(process.argv[3] || '4000', 10);
 

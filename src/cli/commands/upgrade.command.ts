@@ -59,7 +59,13 @@ upgradeCommand.action(
       const targetVersion = options.targetVersion || getApiVersion();
 
       // Determine if path is file or directory
-      const stats = fs.statSync(inputPath);
+      let stats;
+      try {
+        stats = fs.statSync(inputPath);
+      } catch (error) {
+        log(chalk.red(`❌ Path not found: ${inputPath}`));
+        process.exit(ExitCode.MISUSE);
+      }
       const files: string[] = [];
 
       if (stats.isDirectory()) {
