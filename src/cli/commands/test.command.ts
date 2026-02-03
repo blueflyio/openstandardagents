@@ -233,7 +233,7 @@ export const testCommand = new Command('test')
 
         // Watch for file changes
         let timeout: NodeJS.Timeout | null = null;
-        fs.watch(manifestPath, async (eventType) => {
+        const watcher = fs.watch(manifestPath, async (eventType) => {
           if (eventType === 'change') {
             // Debounce file changes
             if (timeout) {
@@ -246,7 +246,15 @@ export const testCommand = new Command('test')
           }
         });
 
-        // Keep process running
+        // Keep process running with proper cleanup
+        process.on('SIGINT', () => {
+          watcher.close();
+          process.exit(0);
+        });
+        process.on('SIGTERM', () => {
+          watcher.close();
+          process.exit(0);
+        });
         await new Promise(() => {});
       } else {
         // Run tests once

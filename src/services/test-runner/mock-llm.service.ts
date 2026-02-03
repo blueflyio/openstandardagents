@@ -161,7 +161,7 @@ export class MockLLMService {
       return toolCalls;
     }
 
-    const prompt = request.prompt.toLowerCase();
+    const prompt = typeof request.prompt === 'string' ? request.prompt.toLowerCase() : '';
 
     // Simulate tool calls based on prompt keywords
     for (const tool of request.tools) {
