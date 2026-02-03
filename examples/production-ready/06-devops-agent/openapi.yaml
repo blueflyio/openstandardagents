@@ -1,0 +1,51 @@
+openapi: 3.1.0
+info:
+  title: DevOps Agent API
+  version: 1.0.0
+  description: Infrastructure management and deployment
+
+servers:
+  - url: http://localhost:8085
+
+paths:
+  /v1/deploy:
+    post:
+      summary: Deploy service
+      operationId: deployService
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - service
+                - version
+                - environment
+              properties:
+                service:
+                  type: string
+                version:
+                  type: string
+                environment:
+                  type: string
+                  enum: [dev, staging, production]
+                strategy:
+                  type: string
+                  enum: [rolling, blue_green, canary]
+      responses:
+        '200':
+          description: Deployment initiated
+
+  /v1/status:
+    get:
+      summary: Check system status
+      operationId: checkStatus
+      parameters:
+        - name: service
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: System status

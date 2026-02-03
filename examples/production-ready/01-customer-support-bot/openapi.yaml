@@ -1,0 +1,238 @@
+openapi: 3.1.0
+info:
+  title: Customer Support Bot API
+  version: 1.0.0
+  description: Production customer support agent API with conversation memory and ticket management
+  contact:
+    name: TechCorp Support
+    email: support@techcorp.com
+
+servers:
+  - url: http://localhost:8080
+    description: Local development
+  - url: https://support-bot.techcorp.com
+    description: Production
+
+paths:
+  /v1/chat:
+    post:
+      summary: Send message to support bot
+      operationId: sendMessage
+      tags:
+        - Chat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatRequest'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/session/{sessionId}/history:
+    get:
+      summary: Get conversation history
+      operationId: getHistory
+      tags:
+        - Session
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Conversation history
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationHistory'
+
+  /v1/tickets:
+    post:
+      summary: Create support ticket
+      operationId: createTicket
+      tags:
+        - Tickets
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TicketRequest'
+      responses:
+        '201':
+          description: Ticket created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketResponse'
+
+  /v1/health:
+    get:
+      summary: Health check
+      operationId: healthCheck
+      tags:
+        - System
+      responses:
+        '200':
+          description: Service healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
+components:
+  schemas:
+    ChatRequest:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: User message
+          example: "How do I reset my password?"
+        sessionId:
+          type: string
+          description: Session ID for conversation continuity
+          example: "sess_abc123"
+        userId:
+          type: string
+          description: User identifier
+          example: "user_xyz789"
+        metadata:
+          type: object
+          description: Additional context
+          properties:
+            channel:
+              type: string
+              example: "web"
+            userAgent:
+              type: string
+
+    ChatResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Agent response
+          example: "To reset your password, go to Settings > Security..."
+        sessionId:
+          type: string
+          example: "sess_abc123"
+        actions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Action'
+        metadata:
+          type: object
+          properties:
+            tokensUsed:
+              type: integer
+            responseTime:
+              type: number
+            confidence:
+              type: number
+
+    Action:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [ticket_created, email_sent, doc_searched]
+        data:
+          type: object
+
+    ConversationHistory:
+      type: object
+      properties:
+        sessionId:
+          type: string
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+
+    Message:
+      type: object
+      properties:
+        role:
+          type: string
+          enum: [user, assistant]
+        content:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    TicketRequest:
+      type: object
+      required:
+        - title
+        - description
+        - priority
+      properties:
+        title:
+          type: string
+          example: "Login issue"
+        description:
+          type: string
+          example: "Unable to login after password reset"
+        priority:
+          type: string
+          enum: [low, medium, high, urgent]
+        category:
+          type: string
+          example: "technical"
+
+    TicketResponse:
+      type: object
+      properties:
+        ticketId:
+          type: string
+          example: "TKT-12345"
+        status:
+          type: string
+          enum: [open, in_progress, resolved, closed]
+        createdAt:
+          type: string
+          format: date-time
+
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+        uptime:
+          type: number
+        dependencies:
+          type: object
+          properties:
+            redis:
+              type: string
+            openai:
+              type: string
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        code:
+          type: string
