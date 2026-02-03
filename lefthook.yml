@@ -3,7 +3,7 @@ pre-commit:
   commands:
     validate-schema:
       glob: "*.ossa.{yaml,yml}"
-      run: npm run validate:schema
+      run: npm run validate:schemas
 
     typecheck:
       run: npm run typecheck
