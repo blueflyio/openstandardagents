@@ -35,7 +35,7 @@ See [DEMO.md](https://github.com/blueflyio/openstandardagents/blob/main/DEMO.md)
 
 ---
 
-## What's New in v0.5.0 (Latest)
+## What's New in v0.4.1 (Latest)
 
 ### Production-Quality Exports with API Endpoints
 

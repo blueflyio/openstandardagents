@@ -4,7 +4,7 @@ Reduce AI agent operational costs by up to 90% with these optimization strategie
 
 ## Overview
 
-OSSA v0.5.0 includes comprehensive cost optimization features:
+OSSA v0.4.1 includes comprehensive cost optimization features:
 
 - **Prompt Caching**: 90% cost reduction on repeated context (Anthropic)
 - **Token Budgets**: Hard limits to prevent cost overruns
