@@ -18,5 +18,13 @@ global.console = {
   debug: jest.fn(),
 };
 
+// Mock inquirer to avoid ES module issues in tests
+jest.mock('inquirer', () => ({
+  default: {
+    prompt: jest.fn().mockResolvedValue({}),
+  },
+  prompt: jest.fn().mockResolvedValue({}),
+}));
+
 // Needed for TypeScript to recognize this as a module
 export {};

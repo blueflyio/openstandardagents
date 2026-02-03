@@ -5,6 +5,89 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.1] - 2026-02-02
+
+### Added
+
+**Production-Quality Exports:**
+- Complete REST API endpoints for all platform exports (LangChain, npm, Anthropic)
+- OpenAPI 3.1 specifications automatically generated for all exports
+- Interactive API documentation via Swagger UI and ReDoc
+- Client SDK generation support (TypeScript, Python, Go, Java, etc.)
+- Express server templates with authentication, rate limiting, and monitoring
+
+**LangChain Export:**
+- Dual language support (Python + TypeScript implementations)
+- Production-ready LangChain agent classes and tools
+- API endpoints: `/api/v1/execute`, `/api/v1/tools`, `/api/v1/status`
+- Requirements.txt and package.json with dependencies
+- Complete usage documentation
+
+**npm Package Export:**
+- Installable npm packages with TypeScript type definitions
+- Embedded OSSA manifest (agent.ossa.yaml)
+- API server with OpenAPI spec
+- Claude Code skill integration (SKILL.md)
+- Auto-generated README with examples
+- License file support (MIT, Apache-2.0, ISC)
+
+**Anthropic Claude Export:**
+- Native Anthropic SDK integration
+- Tool use support with handler registration
+- Streaming response support via Server-Sent Events
+- Prompt caching support (90% cost reduction)
+- Message history and context management
+- Cost tracking and usage metrics
+
+**Cost Optimization:**
+- Anthropic prompt caching (90% savings on cached portions)
+- Token budgets with hard limits and warnings
+- Cost estimation before execution
+- Temperature optimization recommendations
+- Model selection guidance for cost vs quality
+- Tool output limits to prevent expensive operations
+- Batch processing suggestions
+
+**Enhanced Validation:**
+- Best practices validation (temperature, maxTokens, etc.)
+- Security validation (input sanitization, output filtering)
+- Cost analysis and recommendations
+- Auto-fix capability for common issues
+- Enhanced linting with multiple rule categories
+
+**API Features:**
+- Standard endpoints: `/health`, `/api/v1/info`, `/api/v1/execute`, `/openapi`
+- Authentication: API key and JWT support
+- Rate limiting with configurable limits
+- CORS configuration
+- Request/response validation against OpenAPI spec
+- Error handling with consistent error responses
+- Metrics endpoint for Prometheus monitoring
+- WebSocket support for real-time communication
+
+**Documentation:**
+- Complete export guides: [LangChain](./docs/exports/langchain.md), [npm](./docs/exports/npm.md), [Anthropic](./docs/exports/anthropic.md)
+- API Endpoints guide: [docs/guides/api-endpoints.md](./docs/guides/api-endpoints.md)
+- OpenAPI Specifications guide: [docs/guides/openapi-specs.md](./docs/guides/openapi-specs.md)
+- Best Practices guide: [docs/guides/best-practices.md](./docs/guides/best-practices.md)
+- Cost Optimization guide: [docs/guides/cost-optimization.md](./docs/guides/cost-optimization.md)
+- Migration guide: [docs/migration/v0.4-to-v0.5.md](./docs/migration/v0.4-to-v0.5.md)
+
+### Changed
+- Export command now supports `--with-api` flag to include API endpoints
+- Export command now supports `--skill` flag to include Claude Code skills
+- All exports now include OpenAPI 3.1 specifications
+- Enhanced dry-run mode with detailed preview
+- Improved validation messages with actionable suggestions
+- Better error messages with context and fix suggestions
+
+### Fixed
+- Export path handling for nested directories
+- OpenAPI spec generation for complex schemas
+- TypeScript type generation for optional properties
+- API server port configuration
+- CORS handling for cross-origin requests
+
 ## [0.4.0] - 2026-02-01
 
 ### Added
@@ -220,6 +303,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed CI/CD configuration for proper Docker image usage
 - Fixed hardcoded version detection and validation
 
+[0.4.1]: https://github.com/blueflyio/openstandardagents/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/blueflyio/openstandardagents/compare/v0.3.6...v0.4.0
 [0.3.6]: https://github.com/blueflyio/openstandardagents/compare/v0.3.5...v0.3.6
 [0.3.5]: https://github.com/blueflyio/openstandardagents/compare/v0.3.4...v0.3.5

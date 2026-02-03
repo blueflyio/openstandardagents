@@ -1,0 +1,59 @@
+openapi: 3.1.0
+info:
+  title: Sales Assistant API
+  version: 1.0.0
+  description: Sales automation and CRM management
+
+servers:
+  - url: http://localhost:8084
+
+paths:
+  /v1/chat:
+    post:
+      summary: Chat with sales assistant
+      operationId: chat
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                sessionId:
+                  type: string
+      responses:
+        '200':
+          description: Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  actions:
+                    type: array
+
+  /v1/leads:
+    post:
+      summary: Create lead
+      operationId: createLead
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                company:
+                  type: string
+      responses:
+        '201':
+          description: Lead created
