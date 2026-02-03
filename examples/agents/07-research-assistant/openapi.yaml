@@ -1,0 +1,56 @@
+openapi: 3.1.0
+info:
+  title: Research Assistant API
+  version: 1.0.0
+  description: Academic research and paper analysis
+
+servers:
+  - url: http://localhost:8086
+
+paths:
+  /v1/search:
+    post:
+      summary: Search academic papers
+      operationId: searchPapers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - query
+              properties:
+                query:
+                  type: string
+                databases:
+                  type: array
+                  items:
+                    type: string
+                    enum: [pubmed, arxiv, semantic_scholar, google_scholar]
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  papers:
+                    type: array
+
+  /v1/summarize:
+    post:
+      summary: Summarize paper
+      operationId: summarizePaper
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                paperId:
+                  type: string
+      responses:
+        '200':
+          description: Summary

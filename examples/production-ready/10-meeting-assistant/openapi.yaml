@@ -1,0 +1,131 @@
+openapi: 3.1.0
+info:
+  title: Meeting Assistant API
+  version: 1.0.0
+  description: Meeting transcription, summarization, and action item extraction
+
+servers:
+  - url: http://localhost:8089
+
+paths:
+  /v1/process-recording:
+    post:
+      summary: Process meeting recording
+      operationId: processRecording
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - recordingUrl
+                - meetingTitle
+              properties:
+                recordingUrl:
+                  type: string
+                  format: uri
+                meetingTitle:
+                  type: string
+                attendees:
+                  type: array
+                  items:
+                    type: string
+                meetingDate:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Processing complete
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeetingResult'
+
+  /v1/transcribe:
+    post:
+      summary: Transcribe audio
+      operationId: transcribeAudio
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                language:
+                  type: string
+      responses:
+        '200':
+          description: Transcription complete
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  transcript:
+                    type: string
+                  speakers:
+                    type: array
+
+  /v1/extract-actions:
+    post:
+      summary: Extract action items
+      operationId: extractActions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                transcript:
+                  type: string
+      responses:
+        '200':
+          description: Action items extracted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  actionItems:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ActionItem'
+
+components:
+  schemas:
+    MeetingResult:
+      type: object
+      properties:
+        meetingId:
+          type: string
+        transcript:
+          type: string
+        summary:
+          type: string
+        actionItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActionItem'
+        minutesUrl:
+          type: string
+          format: uri
+
+    ActionItem:
+      type: object
+      properties:
+        description:
+          type: string
+        assignee:
+          type: string
+        dueDate:
+          type: string
+          format: date
+        priority:
+          type: string
+          enum: [low, medium, high]

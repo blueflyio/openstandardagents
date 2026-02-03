@@ -1,0 +1,150 @@
+openapi: 3.1.0
+info:
+  title: Code Review Agent API
+  version: 1.0.0
+  description: Automated code review service powered by Anthropic Claude
+
+servers:
+  - url: http://localhost:8081
+    description: Local development
+  - url: https://code-review.company.com
+    description: Production
+
+paths:
+  /v1/review/pr:
+    post:
+      summary: Review pull request
+      operationId: reviewPullRequest
+      tags:
+        - Review
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PRReviewRequest'
+      responses:
+        '200':
+          description: Review completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewResponse'
+
+  /v1/review/file:
+    post:
+      summary: Review individual file
+      operationId: reviewFile
+      tags:
+        - Review
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FileReviewRequest'
+      responses:
+        '200':
+          description: File review completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileReviewResponse'
+
+  /v1/health:
+    get:
+      summary: Health check
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  uptime:
+                    type: number
+
+components:
+  schemas:
+    PRReviewRequest:
+      type: object
+      required:
+        - repository
+        - prNumber
+      properties:
+        repository:
+          type: string
+          example: "owner/repo"
+        prNumber:
+          type: integer
+          example: 123
+        baseRef:
+          type: string
+          example: "main"
+        headRef:
+          type: string
+          example: "feature/new-feature"
+
+    FileReviewRequest:
+      type: object
+      required:
+        - code
+        - language
+      properties:
+        code:
+          type: string
+        language:
+          type: string
+          enum: [javascript, typescript, python, java, go, rust]
+        filePath:
+          type: string
+
+    ReviewResponse:
+      type: object
+      properties:
+        reviewId:
+          type: string
+        summary:
+          type: string
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/Issue'
+        qualityScore:
+          type: integer
+          minimum: 1
+          maximum: 10
+
+    FileReviewResponse:
+      type: object
+      properties:
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/Issue'
+        suggestions:
+          type: array
+          items:
+            type: string
+
+    Issue:
+      type: object
+      properties:
+        severity:
+          type: string
+          enum: [critical, high, medium, low, info]
+        category:
+          type: string
+          enum: [security, performance, style, bug, maintainability]
+        message:
+          type: string
+        line:
+          type: integer
+        file:
+          type: string
+        suggestion:
+          type: string
