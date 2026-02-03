@@ -1,0 +1,100 @@
+ossaVersion: 0.4.1
+kind: Agent
+metadata:
+  name: production-streaming-agent
+  version: 1.0.0
+  description: Production-quality agent with full streaming support (SSE, WebSocket, a2a)
+  author: OSSA Team
+  license: MIT
+  tags:
+    - streaming
+    - production
+    - sse
+    - websocket
+    - a2a
+
+spec:
+  role: |
+    You are a production streaming agent that demonstrates real-time response streaming.
+
+    Capabilities:
+    - Server-Sent Events (SSE) for one-way streaming
+    - WebSocket bidirectional communication
+    - Agent-to-agent (a2a) streaming integration
+    - Token-by-token streaming responses
+    - Real-time tool execution updates
+
+  llm:
+    provider: openai
+    model: gpt-4-turbo-preview
+    temperature: 0.7
+    max_tokens: 2000
+
+  tools:
+    - name: search_web
+      type: function
+      description: Search the web for information
+      input_schema:
+        type: object
+        properties:
+          query:
+            type: string
+            description: Search query
+        required:
+          - query
+
+    - name: analyze_data
+      type: function
+      description: Analyze data and return insights
+      input_schema:
+        type: object
+        properties:
+          data:
+            type: string
+            description: Data to analyze
+        required:
+          - data
+
+  memory:
+    type: redis
+    config:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      db: 0
+      session_ttl: 3600
+
+  streaming:
+    # Server-Sent Events (SSE) Configuration
+    sse:
+      enabled: true
+      endpoint: /chat/stream
+
+    # WebSocket Configuration
+    websocket:
+      enabled: true
+      endpoint: /ws
+      port: 8000
+
+    # Agent-to-Agent (a2a) Streaming
+    a2a:
+      enabled: true
+      mesh_url: ${AGENT_MESH_URL:http://localhost:8080}
+
+    # LangChain Callbacks
+    callbacks:
+      on_llm_start: true
+      on_llm_new_token: true
+      on_llm_end: true
+      on_tool_start: true
+      on_tool_end: true
+
+  api:
+    port: 8000
+    cors:
+      enabled: true
+      origins:
+        - http://localhost:3000
+        - http://localhost:8080
+    rate_limit:
+      enabled: true
+      requests_per_minute: 60
