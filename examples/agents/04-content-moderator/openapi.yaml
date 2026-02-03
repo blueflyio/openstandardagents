@@ -1,0 +1,50 @@
+openapi: 3.1.0
+info:
+  title: Content Moderator API
+  version: 1.0.0
+  description: Content moderation service
+
+servers:
+  - url: http://localhost:8083
+
+paths:
+  /v1/moderate:
+    post:
+      summary: Moderate content
+      operationId: moderateContent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - content
+                - contentType
+              properties:
+                content:
+                  type: string
+                contentType:
+                  type: string
+                  enum: [text, image, video, audio]
+      responses:
+        '200':
+          description: Moderation complete
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  safe:
+                    type: boolean
+                  violations:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                        severity:
+                          type: string
+                        confidence:
+                          type: number
