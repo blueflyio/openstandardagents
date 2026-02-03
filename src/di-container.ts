@@ -32,6 +32,7 @@ import { KnowledgeService } from './services/knowledge.service.js';
 import { TaxonomyValidatorService } from './services/taxonomy-validator.service.js';
 import { TemplateService } from './services/template.service.js';
 import { RegistryService } from './services/registry.service.js';
+import { WizardService } from './services/wizard/wizard.service.js';
 
 // Codegen Service and Generators
 import { CodegenService } from './services/codegen/codegen.service.js';
@@ -85,6 +86,7 @@ container.bind(KnowledgeService).toSelf();
 container.bind(TaxonomyValidatorService).toSelf().inSingletonScope();
 container.bind(TemplateService).toSelf().inSingletonScope();
 container.bind(RegistryService).toSelf().inSingletonScope();
+container.bind(WizardService).toSelf();
 
 // Bind codegen generators (must be bound before CodegenService)
 container.bind(ManifestGenerator).toSelf();

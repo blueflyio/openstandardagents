@@ -17,13 +17,73 @@ npm install -g @bluefly/openstandardagents
 # Create agent
 ossa quickstart
 
-# Export to NPM package (or Docker, K8s, MCP, Cursor, Claude, etc.)
-ossa export my-agent.ossa.yaml --platform npm --output ./package
+# Export to NPM package with REST API
+ossa export my-agent.ossa.yaml --platform npm --with-api --output ./package
+
+# Start API server
+cd package && npm install && npm start
+
+# Use via HTTP
+curl -X POST http://localhost:3000/api/v1/execute \
+  -H "Content-Type: application/json" \
+  -d '{"input":"Analyze this code"}'
 ```
 
-**Result**: Production-ready NPM package with `package.json`, entry point, TypeScript types, and docs.
+**Result**: Production-ready package with REST API, OpenAPI spec, TypeScript types, and interactive documentation.
 
-See [DEMO.md](./DEMO.md) for the full story.
+See [DEMO.md](https://github.com/blueflyio/openstandardagents/blob/main/DEMO.md) for the full story.
+
+---
+
+## What's New in v0.4.1 (Latest)
+
+### Production-Quality Exports with API Endpoints
+
+Export agents with complete REST APIs, OpenAPI specifications, and production features:
+
+```bash
+# Export with API endpoints
+ossa export agent.ossa.yaml --platform langchain --with-api
+ossa export agent.ossa.yaml --platform anthropic --with-api
+ossa export agent.ossa.yaml --platform npm --skill --with-api
+```
+
+**What you get:**
+- ✅ **REST API Endpoints**: HTTP access to your agents
+- ✅ **OpenAPI 3.1 Specs**: Complete API documentation
+- ✅ **Interactive Docs**: Swagger UI and ReDoc
+- ✅ **Client Generation**: Auto-generate TypeScript, Python, Go clients
+- ✅ **Cost Optimization**: Prompt caching (90% savings), token budgets
+- ✅ **Production Features**: Auth, rate limiting, monitoring
+
+### Cost Optimization
+
+Save up to 90% on API costs:
+
+```yaml
+spec:
+  llm:
+    provider: anthropic
+    model: claude-3-5-sonnet-20241022
+    temperature: 0.3
+    maxTokens: 2048
+
+  extensions:
+    anthropic:
+      prompt_caching:
+        enabled: true  # 90% cost reduction on cached portions
+
+  token_budget:
+    max_total_tokens: 100000
+    reset_interval: daily
+```
+
+**See Complete Guides:**
+- [LangChain Export](./docs/exports/langchain.md)
+- [Anthropic Export](./docs/exports/anthropic.md)
+- [npm Export](./docs/exports/npm.md)
+- [Cost Optimization](./docs/guides/cost-optimization.md)
+- [Migration Guide v0.4→v0.5](./docs/migration/v0.4-to-v0.5.md)
 
 ---
 

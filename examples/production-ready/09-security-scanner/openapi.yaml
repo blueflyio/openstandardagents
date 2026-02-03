@@ -1,0 +1,46 @@
+openapi: 3.1.0
+info:
+  title: Security Scanner API
+  version: 1.0.0
+  description: Automated security scanning and vulnerability detection
+
+servers:
+  - url: http://localhost:8088
+
+paths:
+  /v1/scan:
+    post:
+      summary: Scan repository
+      operationId: scanRepository
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - repository
+              properties:
+                repository:
+                  type: string
+                branch:
+                  type: string
+                scanTypes:
+                  type: array
+                  items:
+                    type: string
+                    enum: [sast, dependency, secrets, iac, container]
+      responses:
+        '200':
+          description: Scan complete
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  scanId:
+                    type: string
+                  findings:
+                    type: array
+                  reportUrl:
+                    type: string
