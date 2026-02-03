@@ -79,6 +79,7 @@
     "schemas/",
     "templates/",
     "README.md",
+    "DEMO.md",
     "LICENSE",
     "CHANGELOG.md",
     ".env.local",
@@ -95,10 +96,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/blueflyio/openstandardagents/"
+    "url": "https://gitlab.com/blueflyio/ossa/openstandardagents/"
   },
   "bugs": {
-    "url": "https://github.com/blueflyio/openstandardagents/issues"
+    "url": "https://gitlab.com/blueflyio/ossa/openstandardagents/-/issues"
   },
   "homepage": "https://openstandardagents.org",
   "scripts": {
@@ -112,10 +113,10 @@
     "clean": "rm -rf dist coverage .tsbuildinfo",
     "// TESTING": "",
     "test": "jest",
-    "test:unit": "jest tests/unit",
+    "test:unit": "jest tests/unit --forceExit",
     "test:integration": "jest tests/integration",
     "test:e2e": "jest tests/e2e --passWithNoTests",
-    "test:smoke": "jest tests/e2e --testPathPattern=smoke.spec.ts --runInBand",
+    "test:smoke": "jest tests/e2e --testPathPattern=smoke.spec.ts --runInBand --forceExit",
     "test:smoke:cli": "jest tests/e2e/cli.smoke.spec.ts",
     "test:smoke:npm-pack": "jest tests/e2e/npm-pack.smoke.spec.ts",
     "test:smoke:schema": "jest tests/e2e/schema-coverage.smoke.spec.ts",
