@@ -83,6 +83,7 @@ import { serveCommand } from './commands/serve.command.js';
 import { syncCommand } from './commands/sync.command.js';
 import { createAuditCommand } from './commands/audit.js';
 import { estimateCommand } from './commands/estimate.command.js';
+import { upgradeCommand } from './commands/upgrade.command.js';
 
 // Extension system (SOLID: Open/Closed via registry pattern)
 import {
@@ -204,6 +205,7 @@ program.addCommand(contractCommand);
 program.addCommand(generateCommand);
 program.addCommand(migrateCommand);
 program.addCommand(migrateBatchCommand);
+program.addCommand(upgradeCommand);
 program.addCommand(initCommand);
 program.addCommand(scaffoldCommand);
 program.addCommand(wizardCommand);
