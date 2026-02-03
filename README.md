@@ -23,7 +23,7 @@ ossa export my-agent.ossa.yaml --platform npm --output ./package
 
 **Result**: Production-ready NPM package with `package.json`, entry point, TypeScript types, and docs.
 
-See [DEMO.md](./DEMO.md) for the full story.
+See [DEMO.md](https://github.com/blueflyio/openstandardagents/blob/main/DEMO.md) for the full story.
 
 ---
 
