@@ -1,0 +1,74 @@
+openapi: 3.1.0
+info:
+  title: Data Analysis Agent API
+  version: 1.0.0
+  description: Data analysis and visualization service
+
+servers:
+  - url: http://localhost:8082
+
+paths:
+  /v1/analyze:
+    post:
+      summary: Analyze dataset
+      operationId: analyzeData
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                analysisType:
+                  type: string
+                  enum: [descriptive, correlation, regression, clustering, timeseries]
+      responses:
+        '200':
+          description: Analysis results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: object
+                  insights:
+                    type: array
+                    items:
+                      type: string
+                  visualizations:
+                    type: array
+
+  /v1/visualize:
+    post:
+      summary: Create visualization
+      operationId: visualizeData
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                chartType:
+                  type: string
+                  enum: [line, bar, scatter, heatmap, histogram, box]
+      responses:
+        '200':
+          description: Visualization created
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+
+  /v1/health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: Service healthy

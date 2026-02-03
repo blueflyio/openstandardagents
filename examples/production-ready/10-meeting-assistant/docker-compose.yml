@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  meeting-assistant:
+    build: .
+    container_name: meeting-assistant
+    ports:
+      - "8089:8089"
+      - "9099:9090"
+    environment:
+      - NODE_ENV=production
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - EMAIL_SERVICE_URL=${EMAIL_SERVICE_URL}
+      - ZOOM_API_KEY=${ZOOM_API_KEY}
+      - ZOOM_API_SECRET=${ZOOM_API_SECRET}
+    restart: unless-stopped
+    networks:
+      - meeting-network
+    volumes:
+      - recordings:/app/recordings
+
+networks:
+  meeting-network:
+    driver: bridge
+
+volumes:
+  recordings:

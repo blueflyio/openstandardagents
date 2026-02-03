@@ -92,7 +92,7 @@ workspaceCommand
       console.log(chalk.gray(`  Created ${registryFilePath}`));
 
       // Create policy file
-      const policyFilePath = path.join(workspaceDir, getWorkspacePolicyPath());
+      const policyFilePath = getWorkspacePolicyPath();
       const policyContent = yaml.stringify({
         apiVersion: getDefaultOSSAAPIVersion(),
         kind: getDefaultPolicyKind(),
