@@ -39,7 +39,7 @@ import { NPMExporter } from '@bluefly/openstandardagents/services/export/npm';
 import type { OssaAgent } from '@bluefly/openstandardagents';
 
 const manifest: OssaAgent = {
-  apiVersion: 'ossa/v0.4.0',
+  apiVersion: 'ossa/v0.4.1',
   kind: 'Agent',
   metadata: {
     name: 'my-agent',

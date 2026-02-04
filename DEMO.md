@@ -1,4 +1,4 @@
-# OSSA v0.4.0 - The Killer Demo
+# OSSA v0.4.1 - The Killer Demo
 
 ## Turn Any AI Agent into a Production NPM Package in 60 Seconds
 
@@ -209,4 +209,4 @@ OpenAPI standardized REST API definitions. OSSA does the same for AI agents.
 
 One manifest format. Works everywhere. Production-ready tooling.
 
-**OSSA v0.4.0** - Ready for production use.
+**OSSA v0.4.1** - Ready for production use.

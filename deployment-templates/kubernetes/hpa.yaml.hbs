@@ -1,0 +1,192 @@
+---
+# ============================================================================
+# Horizontal Pod Autoscaler for {{projectName}}
+# Automatically scales pods based on CPU/Memory/Custom metrics
+# ============================================================================
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{hpaName}}
+  namespace: {{namespace}}
+  labels:
+    app: {{appName}}
+    component: {{component}}
+    managed-by: kubernetes
+    part-of: {{projectName}}
+  annotations:
+    description: "Autoscaling for {{projectDescription}}"
+spec:
+  # ==========================================================================
+  # Scale Target
+  # ==========================================================================
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{deploymentName}}
+
+  # ==========================================================================
+  # Replica Limits
+  # ==========================================================================
+  minReplicas: {{minReplicas}}
+  maxReplicas: {{maxReplicas}}
+
+  # ==========================================================================
+  # Scaling Behavior (Optional - fine-grained control)
+  # ==========================================================================
+  {{#if scalingBehavior}}
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: {{scaleUpStabilizationWindow}}
+      policies:
+        - type: Percent
+          value: {{scaleUpPercent}}
+          periodSeconds: {{scaleUpPeriod}}
+        - type: Pods
+          value: {{scaleUpPods}}
+          periodSeconds: {{scaleUpPeriod}}
+      selectPolicy: Max
+
+    scaleDown:
+      stabilizationWindowSeconds: {{scaleDownStabilizationWindow}}
+      policies:
+        - type: Percent
+          value: {{scaleDownPercent}}
+          periodSeconds: {{scaleDownPeriod}}
+        - type: Pods
+          value: {{scaleDownPods}}
+          periodSeconds: {{scaleDownPeriod}}
+      selectPolicy: Min
+  {{/if}}
+
+  # ==========================================================================
+  # Metrics
+  # ==========================================================================
+  metrics:
+    {{#if cpuTarget}}
+    # CPU-based scaling
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{cpuTarget}}
+    {{/if}}
+
+    {{#if memoryTarget}}
+    # Memory-based scaling
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{memoryTarget}}
+    {{/if}}
+
+    {{#if customMetrics}}
+    # Custom metrics (requires metrics adapter, e.g., Prometheus)
+    {{#each customMetrics}}
+    - type: Pods
+      pods:
+        metric:
+          name: {{metricName}}
+        target:
+          type: AverageValue
+          averageValue: {{targetValue}}
+    {{/each}}
+    {{/if}}
+
+    {{#if externalMetrics}}
+    # External metrics (e.g., queue depth, external API metrics)
+    {{#each externalMetrics}}
+    - type: External
+      external:
+        metric:
+          name: {{metricName}}
+          selector:
+            matchLabels:
+              {{#each labels}}
+              {{@key}}: {{this}}
+              {{/each}}
+        target:
+          type: {{targetType}}
+          {{#if averageValue}}
+          averageValue: {{averageValue}}
+          {{/if}}
+          {{#if value}}
+          value: {{value}}
+          {{/if}}
+    {{/each}}
+    {{/if}}
+
+---
+# ============================================================================
+# Vertical Pod Autoscaler (Optional)
+# Automatically adjusts CPU and memory requests/limits
+# Note: VPA and HPA should not target the same metrics
+# ============================================================================
+{{#if enableVpa}}
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: {{vpaName}}
+  namespace: {{namespace}}
+  labels:
+    app: {{appName}}
+    component: {{component}}
+    managed-by: kubernetes
+    part-of: {{projectName}}
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{deploymentName}}
+
+  # Update policy
+  updatePolicy:
+    updateMode: {{vpaUpdateMode}}  # Auto, Initial, Off, or Recreate
+
+  # Resource policy
+  resourcePolicy:
+    containerPolicies:
+      - containerName: {{containerName}}
+        minAllowed:
+          cpu: {{vpaMinCpu}}
+          memory: {{vpaMinMemory}}
+        maxAllowed:
+          cpu: {{vpaMaxCpu}}
+          memory: {{vpaMaxMemory}}
+        controlledResources:
+          - cpu
+          - memory
+        {{#if vpaControlledValues}}
+        controlledValues: {{vpaControlledValues}}  # RequestsAndLimits or RequestsOnly
+        {{/if}}
+{{/if}}
+
+---
+# ============================================================================
+# PodDisruptionBudget
+# Ensures minimum availability during voluntary disruptions
+# ============================================================================
+{{#if enablePdb}}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{pdbName}}
+  namespace: {{namespace}}
+  labels:
+    app: {{appName}}
+    component: {{component}}
+    managed-by: kubernetes
+    part-of: {{projectName}}
+spec:
+  {{#if pdbMinAvailable}}
+  minAvailable: {{pdbMinAvailable}}  # Can be number or percentage (e.g., 50%)
+  {{else}}
+  maxUnavailable: {{pdbMaxUnavailable}}  # Can be number or percentage (e.g., 1)
+  {{/if}}
+  selector:
+    matchLabels:
+      app: {{appName}}
+      component: {{component}}
+{{/if}}

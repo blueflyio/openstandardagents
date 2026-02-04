@@ -9,7 +9,7 @@ Production best practices for OSSA agent development and deployment.
 Use semantic versioning for all agents:
 
 ```yaml
-apiVersion: ossa/v0.4.0
+apiVersion: ossa/v0.4.1
 kind: Agent
 metadata:
   name: code-reviewer
@@ -409,7 +409,7 @@ import { validateManifest } from '@bluefly/openstandardagents/validation';
 describe('Agent Manifest', () => {
   test('validates successfully', async () => {
     const manifest = {
-      apiVersion: "ossa/v0.4.0",
+      apiVersion: "ossa/v0.4.1",
       kind: "Agent",
       metadata: {
         name: "test-agent"

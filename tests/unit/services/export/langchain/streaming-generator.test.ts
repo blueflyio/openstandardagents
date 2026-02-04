@@ -169,9 +169,10 @@ describe('StreamingGenerator', () => {
       const result = generator.generate(mockManifest);
 
       expect(result).toContain('class StreamingCallbackHandler(BaseCallbackHandler)');
-      expect(result).toContain('def __init__(self, queue: asyncio.Queue)');
+      expect(result).toContain('def __init__(self, queue: asyncio.Queue, cost_tracker: Optional[Any] = None)');
       expect(result).toContain('self.queue = queue');
       expect(result).toContain('self.tokens = []');
+      expect(result).toContain('self.cost_tracker = cost_tracker');
     });
 
     it('should include on_llm_start callback', () => {

@@ -1,0 +1,106 @@
+---
+# ============================================================================
+# Kubernetes ConfigMap for {{projectName}}
+# Non-sensitive configuration data
+# ============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{configMapName}}
+  namespace: {{namespace}}
+  labels:
+    app: {{appName}}
+    component: {{component}}
+    managed-by: kubernetes
+    part-of: {{projectName}}
+  annotations:
+    description: "Configuration for {{projectDescription}}"
+data:
+  # ==========================================================================
+  # Application Configuration
+  # ==========================================================================
+  NODE_ENV: "{{nodeEnv}}"
+  LOG_LEVEL: "{{logLevel}}"
+  LOG_FORMAT: "{{logFormat}}"
+
+  {{#if apiConfig}}
+  # API Configuration
+  API_VERSION: "{{apiVersion}}"
+  API_PREFIX: "{{apiPrefix}}"
+  API_RATE_LIMIT: "{{apiRateLimit}}"
+  API_TIMEOUT: "{{apiTimeout}}"
+  {{/if}}
+
+  {{#if databaseConfig}}
+  # Database Configuration (non-sensitive)
+  DATABASE_HOST: "{{dbHost}}"
+  DATABASE_PORT: "{{dbPort}}"
+  DATABASE_NAME: "{{dbName}}"
+  DATABASE_POOL_MIN: "{{dbPoolMin}}"
+  DATABASE_POOL_MAX: "{{dbPoolMax}}"
+  DATABASE_SSL: "{{dbSsl}}"
+  {{/if}}
+
+  {{#if redisConfig}}
+  # Redis Configuration (non-sensitive)
+  REDIS_HOST: "{{redisHost}}"
+  REDIS_PORT: "{{redisPort}}"
+  REDIS_DB: "{{redisDb}}"
+  REDIS_KEY_PREFIX: "{{redisKeyPrefix}}"
+  {{/if}}
+
+  {{#if messagingConfig}}
+  # Messaging Configuration
+  KAFKA_BROKERS: "{{kafkaBrokers}}"
+  KAFKA_GROUP_ID: "{{kafkaGroupId}}"
+  RABBITMQ_HOST: "{{rabbitmqHost}}"
+  RABBITMQ_PORT: "{{rabbitmqPort}}"
+  {{/if}}
+
+  {{#if monitoringConfig}}
+  # Monitoring Configuration
+  METRICS_ENABLED: "{{metricsEnabled}}"
+  METRICS_PORT: "{{metricsPort}}"
+  METRICS_PATH: "{{metricsPath}}"
+  TRACING_ENABLED: "{{tracingEnabled}}"
+  TRACING_ENDPOINT: "{{tracingEndpoint}}"
+  {{/if}}
+
+  {{#if featureFlags}}
+  # Feature Flags
+  {{#each featureFlags}}
+  {{@key}}: "{{this}}"
+  {{/each}}
+  {{/if}}
+
+  {{#if customConfig}}
+  # Custom Configuration
+  {{#each customConfig}}
+  {{@key}}: "{{this}}"
+  {{/each}}
+  {{/if}}
+
+---
+# ============================================================================
+# Application Configuration File (Optional)
+# For complex configuration that needs to be mounted as a file
+# ============================================================================
+{{#if appConfigFile}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{configMapName}}-file
+  namespace: {{namespace}}
+  labels:
+    app: {{appName}}
+    component: {{component}}
+    managed-by: kubernetes
+    part-of: {{projectName}}
+  annotations:
+    description: "File-based configuration for {{projectDescription}}"
+data:
+  {{#each appConfigFile}}
+  {{filename}}: |
+{{indent 4 content}}
+  {{/each}}
+{{/if}}

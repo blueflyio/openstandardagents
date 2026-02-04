@@ -1,0 +1,144 @@
+---
+# ============================================================================
+# Kubernetes Ingress for {{projectName}}
+# Routes external traffic to the service
+# ============================================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ingressName}}
+  namespace: {{namespace}}
+  labels:
+    app: {{appName}}
+    component: {{component}}
+    managed-by: kubernetes
+    part-of: {{projectName}}
+  annotations:
+    # Ingress class
+    kubernetes.io/ingress.class: "{{ingressClass}}"
+
+    {{#if enableTls}}
+    # TLS/SSL configuration
+    cert-manager.io/cluster-issuer: "{{certIssuer}}"
+    {{/if}}
+
+    {{#if nginxIngress}}
+    # Nginx-specific annotations
+    nginx.ingress.kubernetes.io/ssl-redirect: "{{sslRedirect}}"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "{{forceSslRedirect}}"
+    nginx.ingress.kubernetes.io/proxy-body-size: "{{proxyBodySize}}"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "{{proxyConnectTimeout}}"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "{{proxySendTimeout}}"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "{{proxyReadTimeout}}"
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "{{proxyBufferSize}}"
+
+    {{#if enableCors}}
+    # CORS configuration
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "{{corsAllowMethods}}"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "{{corsAllowOrigin}}"
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "{{corsAllowCredentials}}"
+    {{/if}}
+
+    {{#if enableRateLimit}}
+    # Rate limiting
+    nginx.ingress.kubernetes.io/limit-rps: "{{limitRps}}"
+    nginx.ingress.kubernetes.io/limit-connections: "{{limitConnections}}"
+    {{/if}}
+
+    {{#if enableWhitelist}}
+    # IP whitelist
+    nginx.ingress.kubernetes.io/whitelist-source-range: "{{whitelistSourceRange}}"
+    {{/if}}
+
+    {{#if enableAuth}}
+    # Basic authentication
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: {{authSecret}}
+    nginx.ingress.kubernetes.io/auth-realm: "{{authRealm}}"
+    {{/if}}
+
+    {{#if customAnnotations}}
+    # Custom annotations
+    {{#each customAnnotations}}
+    {{@key}}: "{{this}}"
+    {{/each}}
+    {{/if}}
+    {{/if}}
+
+spec:
+  # ==========================================================================
+  # Ingress Class Name
+  # ==========================================================================
+  ingressClassName: {{ingressClass}}
+
+  # ==========================================================================
+  # TLS Configuration
+  # ==========================================================================
+  {{#if enableTls}}
+  tls:
+    {{#each tlsHosts}}
+    - hosts:
+        {{#each hosts}}
+        - {{this}}
+        {{/each}}
+      secretName: {{secretName}}
+    {{/each}}
+  {{/if}}
+
+  # ==========================================================================
+  # Routing Rules
+  # ==========================================================================
+  rules:
+    {{#each ingressHosts}}
+    - host: {{host}}
+      http:
+        paths:
+          {{#each paths}}
+          - path: {{path}}
+            pathType: {{pathType}}
+            backend:
+              service:
+                name: {{serviceName}}
+                port:
+                  {{#if portNumber}}
+                  number: {{portNumber}}
+                  {{else}}
+                  name: {{portName}}
+                  {{/if}}
+          {{/each}}
+    {{/each}}
+
+---
+# ============================================================================
+# Certificate (Optional - if using cert-manager)
+# Automatically provisions TLS certificates
+# ============================================================================
+{{#if useCertManager}}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{certificateName}}
+  namespace: {{namespace}}
+  labels:
+    app: {{appName}}
+    component: {{component}}
+    managed-by: kubernetes
+    part-of: {{projectName}}
+spec:
+  secretName: {{tlsSecretName}}
+  issuerRef:
+    name: {{certIssuer}}
+    kind: ClusterIssuer
+  commonName: {{commonName}}
+  dnsNames:
+    {{#each dnsNames}}
+    - {{this}}
+    {{/each}}
+  {{#if ipAddresses}}
+  ipAddresses:
+    {{#each ipAddresses}}
+    - {{this}}
+    {{/each}}
+  {{/if}}
+{{/if}}

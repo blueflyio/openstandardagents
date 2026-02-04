@@ -349,7 +349,7 @@ curl http://localhost:3000/metadata
   "version": "1.0.0",
   "description": "AI agent",
   "capabilities": ["code-review"],
-  "ossaVersion": "v0.4.0"
+  "ossaVersion": "v0.4.1"
 }
 ```
 

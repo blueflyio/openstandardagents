@@ -1,5 +1,5 @@
 /**
- * Export Command v2
+ * Export Command (Enhanced)
  * Enhanced export with adapter interface, batch mode, and dry-run
  */
 
@@ -12,7 +12,7 @@ import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { ExportOrchestrator } from '../../services/export/export-orchestrator.js';
 import { registry } from '../../adapters/registry/platform-registry.js';
 
-export const exportV2Command = new Command('export')
+export const exportEnhancedCommand = new Command('export-enhanced')
   .description('Export OSSA manifest to platform-specific format')
   .argument('<manifest>', 'Path to OSSA agent manifest')
   .option(

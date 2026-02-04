@@ -1,0 +1,50 @@
+{
+  "name": "ossa-buildkit-deployment-templates",
+  "version": "1.0.0",
+  "description": "One-click deployment templates for OSSA Buildkit - Railway, Render, and Fly.io",
+  "private": true,
+  "main": "generate-config.js",
+  "scripts": {
+    "generate": "node generate-config.js",
+    "generate:railway": "node generate-config.js --platform railway --values",
+    "generate:render": "node generate-config.js --platform render --values",
+    "generate:fly": "node generate-config.js --platform fly --values",
+    "generate:all": "node generate-config.js --all --values",
+    "render:docker": "node render-templates.js --type docker --values docker/docker-values.yaml --output ./rendered/docker/",
+    "render:k8s": "node render-templates.js --type kubernetes --values kubernetes/values.yaml.hbs --output ./rendered/k8s/",
+    "render:help": "node render-templates.js --help",
+    "install-deps": "npm install handlebars js-yaml",
+    "test:docker": "docker build --dry-run -f rendered/docker/Dockerfile .",
+    "test:k8s": "kubectl apply --dry-run=client -f rendered/k8s/",
+    "validate:k8s": "kubectl apply --dry-run=server -f rendered/k8s/"
+  },
+  "keywords": [
+    "ossa",
+    "railway",
+    "render",
+    "fly.io",
+    "docker",
+    "kubernetes",
+    "k8s",
+    "deployment",
+    "templates",
+    "handlebars",
+    "production",
+    "devops"
+  ],
+  "author": "BlueFly.io DevOps Team",
+  "license": "MIT",
+  "dependencies": {
+    "handlebars": "^4.7.8",
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/ossa-buildkit.git"
+  }
+}

@@ -30,7 +30,7 @@ export class KAgentCRDGenerator {
       (spec.role as string) || manifest.metadata?.description || '';
 
     // Extract tools
-    const tools = this.extractTools(spec.tools);
+    const tools = this.extractTools(spec.tools, options);
 
     // Build CRD
     const crd: KAgentCRD = {
@@ -63,17 +63,63 @@ export class KAgentCRDGenerator {
             maxTokens: llmConfig.maxTokens,
           }),
           ...(llmConfig?.topP !== undefined && { topP: llmConfig.topP }),
+          ...(options.apiKeySecret && { secretRef: options.apiKeySecret }),
         },
         ...(tools && tools.length > 0 && { tools }),
+
+        // Skills (from OSSA spec or options)
+        ...(options.skills && options.skills.length > 0 && { skills: options.skills }),
+
+        // A2A Protocol
         enableA2A: this.shouldEnableA2A(manifest),
+        ...(options.a2a && {
+          a2aProtocol: {
+            enabled: options.a2a.enabled,
+            endpoint: options.a2a.endpoint,
+            timeout: options.a2a.timeout || 30000,
+            retries: options.a2a.retries || 3,
+          },
+        }),
+
+        // Code execution
+        ...(options.codeExecution && {
+          codeExecution: {
+            enabled: options.codeExecution.enabled,
+            sandboxed: options.codeExecution.sandboxed !== false,
+            allowedLanguages: options.codeExecution.allowedLanguages || ['python', 'javascript'],
+          },
+        }),
+
+        // Resources
         ...(options.replicas !== undefined && {
           resources: {
             replicas: options.replicas,
             ...options.resources,
           },
         }),
+
+        // Security
         ...(options.securityContext && {
           securityContext: options.securityContext,
+        }),
+
+        // RBAC
+        ...(options.rbac && {
+          serviceAccountName: options.rbac.serviceAccountName || `${agentName}-sa`,
+          rbac: {
+            enabled: options.rbac.enabled,
+            rules: options.rbac.rules || this.getDefaultRBACRules(),
+          },
+        }),
+
+        // BYO Agent
+        ...(options.byoAgent && {
+          byoAgent: {
+            enabled: options.byoAgent.enabled,
+            image: options.byoAgent.image,
+            command: options.byoAgent.command,
+            args: options.byoAgent.args,
+          },
         }),
       },
     };
@@ -84,7 +130,7 @@ export class KAgentCRDGenerator {
   /**
    * Extract tools from OSSA spec
    */
-  private extractTools(tools: unknown): KAgentCRD['spec']['tools'] {
+  private extractTools(tools: unknown, options: KAgentDeploymentOptions = {}): KAgentCRD['spec']['tools'] {
     if (!tools || !Array.isArray(tools)) {
       return undefined;
     }
@@ -96,6 +142,16 @@ export class KAgentCRDGenerator {
             type: 'mcp',
             name: tool,
             server: tool,
+            ...(options.tls && {
+              tlsConfig: {
+                enabled: options.tls.enabled,
+                secretName: options.tls.secretName,
+                verifyServer: options.tls.verifyServer !== false,
+              },
+            }),
+            ...(options.headerPropagation && {
+              headerPropagation: options.headerPropagation,
+            }),
           };
         }
 
@@ -107,6 +163,16 @@ export class KAgentCRDGenerator {
             server: toolObj.server as string,
             namespace: toolObj.namespace as string,
             endpoint: toolObj.endpoint as string,
+            ...(options.tls && {
+              tlsConfig: {
+                enabled: options.tls.enabled,
+                secretName: options.tls.secretName,
+                verifyServer: options.tls.verifyServer !== false,
+              },
+            }),
+            ...(options.headerPropagation && {
+              headerPropagation: options.headerPropagation,
+            }),
           };
         }
 
@@ -122,5 +188,32 @@ export class KAgentCRDGenerator {
     const spec = manifest.spec as Record<string, unknown>;
     const a2a = spec.a2a as Record<string, unknown> | undefined;
     return a2a !== undefined && Object.keys(a2a).length > 0;
+  }
+
+  /**
+   * Get default RBAC rules for agent
+   */
+  private getDefaultRBACRules(): Array<{
+    apiGroups: string[];
+    resources: string[];
+    verbs: string[];
+  }> {
+    return [
+      {
+        apiGroups: ['kagent.dev'],
+        resources: ['agents', 'agents/status'],
+        verbs: ['get', 'list', 'watch', 'update', 'patch'],
+      },
+      {
+        apiGroups: [''],
+        resources: ['secrets'],
+        verbs: ['get', 'list'],
+      },
+      {
+        apiGroups: [''],
+        resources: ['configmaps'],
+        verbs: ['get', 'list', 'watch'],
+      },
+    ];
   }
 }

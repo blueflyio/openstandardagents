@@ -1,0 +1,140 @@
+apiVersion: ossa/v0.4
+kind: Agent
+metadata:
+  name: research-agent
+  version: 1.0.0
+  description: Research agent with multiple Claude Skills
+  labels:
+    ossa.io/created-by: wizard-v2
+    ossa.io/schema-validated: "true"
+spec:
+  role: |
+    You are a research assistant that helps users gather information,
+    analyze data, and provide insights on various topics.
+
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    temperature: 0.7
+
+  # Claude Skills Configuration
+  skills:
+    - id: research-skill
+      name: Research Skill
+      description: Research topics and gather comprehensive information from multiple sources
+      instructions: |
+        You are a research assistant. When given a topic, you should:
+
+        Capabilities:
+        - Search for relevant information from reliable sources
+        - Synthesize findings into clear summaries
+        - Identify key insights and patterns
+        - Cite sources appropriately
+
+        Guidelines:
+        - Prioritize authoritative and recent sources
+        - Provide balanced perspectives
+        - Highlight uncertainties or contradictions
+        - Format findings clearly
+      type: task
+      parameters:
+        type: object
+        properties:
+          topic:
+            type: string
+            description: The research topic or question
+          depth:
+            type: string
+            description: Research depth level
+        required:
+          - topic
+
+    - id: data-analysis-skill
+      name: Data Analysis Skill
+      description: Analyze datasets and generate statistical insights
+      instructions: |
+        You are a data analyst. When given data, you should:
+
+        Capabilities:
+        - Perform statistical analysis
+        - Identify trends and patterns
+        - Create data visualizations
+        - Generate actionable insights
+
+        Guidelines:
+        - Use appropriate statistical methods
+        - Validate assumptions
+        - Explain findings clearly
+        - Recommend next steps
+      type: analysis
+      parameters:
+        type: object
+        properties:
+          data_format:
+            type: string
+            description: Format of input data (csv, json, etc.)
+          analysis_type:
+            type: string
+            description: Type of analysis to perform
+        required:
+          - data_format
+
+    - id: summary-skill
+      name: Summary Skill
+      description: Create concise summaries of long documents or articles
+      instructions: |
+        You are a summarization expert. When given content, you should:
+
+        Capabilities:
+        - Extract key points and main ideas
+        - Maintain context and accuracy
+        - Adapt length to requirements
+        - Preserve critical details
+
+        Guidelines:
+        - Focus on essential information
+        - Use clear, concise language
+        - Maintain original meaning
+        - Structure logically
+      type: creative
+      parameters:
+        type: object
+        properties:
+          content:
+            type: string
+            description: The content to summarize
+          max_length:
+            type: number
+            description: Maximum length of summary in words
+        required:
+          - content
+
+  tools:
+    - type: mcp
+      name: filesystem
+      description: File system access
+      config:
+        server: npx -y @modelcontextprotocol/server-filesystem
+
+    - type: http
+      name: web-search
+      description: Web search capabilities
+      endpoint: https://api.example.com/search
+
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+    metrics:
+      enabled: true
+      exporter: prometheus
+    logging:
+      level: info
+
+  safety:
+    content_filtering:
+      enabled: true
+      categories:
+        - hate_speech
+        - violence
+      action: block

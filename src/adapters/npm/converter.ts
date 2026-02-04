@@ -48,11 +48,11 @@ export class NPMConverter {
         'LICENSE',
       ],
       peerDependencies: {
-        '@bluefly/openstandardagents': '^0.4.0',
+        '@bluefly/openstandardagents': '^0.4.1',
       },
       dependencies: {},
       ossaMetadata: {
-        apiVersion: manifest.apiVersion || 'ossa/v0.4.0',
+        apiVersion: manifest.apiVersion || 'ossa/v0.4.1',
         kind: manifest.kind || 'Agent',
         originalName: metadata.name,
       },
@@ -327,7 +327,7 @@ ${metadata.llm ? `
 
 ## Generated from OSSA
 
-This package was generated from an OSSA v${manifest.apiVersion?.split('/')[1] || '0.4.0'} manifest.
+This package was generated from an OSSA v${manifest.apiVersion?.split('/')[1] || '0.4.1'} manifest.
 
 Original manifest: \`agent.ossa.yaml\`
 

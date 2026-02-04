@@ -7,12 +7,12 @@
 
 ## 🎯 Objective
 
-Standardize all `.agents-workspace` directories across BlueFly projects to comply with OSSA v0.4.0 specification.
+Standardize all `.agents-workspace` directories across BlueFly projects to comply with OSSA v0.4.1 specification.
 
 **Why this matters**:
 - Ensures consistent workspace structure across all projects
 - Enables proper functioning of `ossa workspace` CLI commands
-- Required for v0.4.0 release compliance
+- Required for v0.4.1 release compliance
 - Facilitates agent discovery and orchestration
 
 ---
@@ -26,7 +26,7 @@ Standardize all `.agents-workspace` directories across BlueFly projects to compl
 4. 🟡 `platform-agents/.agents-workspace` - **60% compliant** (medium, identical to agent-registry)
 5. 🔴 `DEMO_agentdash/.agents-workspace` - **30% compliant** (hardest, v0.1.9-alpha.1 structure)
 
-### OSSA v0.4.0 Standard Structure (Target):
+### OSSA v0.4.1 Standard Structure (Target):
 ```
 .agents-workspace/
 ├── registry/
@@ -84,7 +84,7 @@ fs.writeFileSync(policyPath, content);
    const policyPath = path.join(workspaceDir, getWorkspacePolicyPath());
    ```
 4. Test fix with: `npx tsx src/cli/index.ts workspace init --name test-workspace --force`
-5. Verify created structure matches OSSA v0.4.0 standard
+5. Verify created structure matches OSSA v0.4.1 standard
 
 **Success Criteria**:
 - ✅ Command completes without errors
@@ -309,7 +309,7 @@ Step 5: Replace (if validation passes)
    cat manifests/agent-registry.yml
    cat registry.yml
 
-   # Combine and convert to v0.4.0 format
+   # Combine and convert to v0.4.1 format
    # Write to NEW-STRUCTURE/registry/index.yaml
    # apiVersion: ossa.dev/v1
    # kind: AgentRegistry
@@ -361,7 +361,7 @@ Step 5: Replace (if validation passes)
 **Success Criteria**:
 - ✅ All content successfully migrated
 - ✅ Backup preserved in `.agents-workspace.backup/`
-- ✅ New structure follows OSSA v0.4.0 standard
+- ✅ New structure follows OSSA v0.4.1 standard
 - ✅ All agents discovered correctly
 - ✅ No sensitive data exposed
 - ✅ `ossa workspace list` runs without errors
@@ -465,13 +465,13 @@ done
 
 **Option A: Single commit** (after all work complete)
 ```
-feat(workspace): standardize all .agents-workspace to OSSA v0.4.0
+feat(workspace): standardize all .agents-workspace to OSSA v0.4.1
 
 - Fix CLI workspace init path concatenation bug
 - Standardize openstandardagents workspace structure
 - Standardize agent-registry workspace structure
 - Standardize platform-agents workspace structure
-- Migrate DEMO_agentdash from v0.1.9-alpha.1 to v0.4.0
+- Migrate DEMO_agentdash from v0.1.9-alpha.1 to v0.4.1
 - Update all apiVersions to ossa.dev/v1
 - Remove non-standard directories and files
 
@@ -484,7 +484,7 @@ fix(cli): fix workspace init path concatenation bug
 feat(workspace): standardize openstandardagents workspace
 feat(workspace): standardize agent-registry workspace
 feat(workspace): standardize platform-agents workspace
-feat(workspace): migrate DEMO_agentdash to OSSA v0.4.0
+feat(workspace): migrate DEMO_agentdash to OSSA v0.4.1
 ```
 
 **Recommendation**: Option B (incremental) for better git history and easier rollback
