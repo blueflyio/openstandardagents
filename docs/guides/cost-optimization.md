@@ -19,7 +19,7 @@ OSSA v0.4.1 includes comprehensive cost optimization features:
 Enable 90% cost savings on cached prompt portions:
 
 ```yaml
-apiVersion: ossa/v0.4.0
+apiVersion: ossa/v0.4.1
 kind: Agent
 metadata:
   name: code-reviewer

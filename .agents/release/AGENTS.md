@@ -22,6 +22,6 @@ See `release-manager.ossa.yaml` for complete manifest specification.
 
 ## Agent Type
 
-OSSA v0.4.0 Strategic Production Agent
+OSSA v0.4.1 Strategic Production Agent
 
 Generated from: `release-manager.ossa.yaml`

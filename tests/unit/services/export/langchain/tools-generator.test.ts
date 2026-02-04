@@ -18,7 +18,7 @@ describe('ToolsGenerator - Production Quality (v0.4.1)', () => {
   describe('Pydantic Models', () => {
     it('should generate Pydantic models for tools with schemas', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.0',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -65,7 +65,7 @@ describe('ToolsGenerator - Production Quality (v0.4.1)', () => {
 
     it('should handle boolean default values correctly', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.0',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -118,7 +118,7 @@ describe('ToolsGenerator - Production Quality (v0.4.1)', () => {
 
     it('should handle enums in Pydantic models', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.0',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -162,7 +162,7 @@ describe('ToolsGenerator - Production Quality (v0.4.1)', () => {
   describe('Async Tool Support', () => {
     it('should generate async functions for API tools', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.0',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -206,7 +206,7 @@ describe('ToolsGenerator - Production Quality (v0.4.1)', () => {
 
     it('should generate async functions for MCP tools', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.0',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -249,7 +249,7 @@ describe('ToolsGenerator - Production Quality (v0.4.1)', () => {
 
     it('should generate sync functions for function tools', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.0',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -292,7 +292,7 @@ describe('ToolsGenerator - Production Quality (v0.4.1)', () => {
   describe('Production-Ready Features', () => {
     it('should include logging statements', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.0',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -334,7 +334,7 @@ describe('ToolsGenerator - Production Quality (v0.4.1)', () => {
 
     it('should include error handling', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.0',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -370,7 +370,7 @@ describe('ToolsGenerator - Production Quality (v0.4.1)', () => {
 
     it('should have no TODO comments', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.0',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -414,7 +414,7 @@ describe('ToolsGenerator - Production Quality (v0.4.1)', () => {
 
     it('should return structured Dict responses', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.0',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -450,7 +450,7 @@ describe('ToolsGenerator - Production Quality (v0.4.1)', () => {
   describe('Empty Tools', () => {
     it('should handle agents with no tools', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.0',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -477,7 +477,7 @@ describe('ToolsGenerator - Production Quality (v0.4.1)', () => {
   describe('Tool Registry', () => {
     it('should generate get_tools() function with all tools', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.0',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: {
           name: 'test-agent',

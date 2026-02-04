@@ -533,5 +533,189 @@ describe('LangChainExporter', () => {
       expect(toolsFile?.content).toContain('def tool_one(');
       expect(toolsFile?.content).toContain('def tool_two('); // Hyphen converted to underscore
     });
+
+    it('should generate LangGraph workflow for multi-agent manifest', async () => {
+      const manifest: OssaAgent = {
+        apiVersion: 'ossa/v0.3.6',
+        kind: 'Agent',
+        metadata: {
+          name: 'research-workflow',
+          version: '1.0.0',
+          description: 'Multi-agent research workflow',
+        },
+        spec: {
+          role: 'Orchestrator for research workflow',
+          workflow: {
+            steps: [
+              {
+                id: 'researcher',
+                name: 'Research Agent',
+                description: 'Conducts research on the topic',
+                kind: 'Agent',
+                depends_on: [],
+              },
+              {
+                id: 'writer',
+                name: 'Writer Agent',
+                description: 'Writes article based on research',
+                kind: 'Agent',
+                depends_on: ['researcher'],
+              },
+              {
+                id: 'critic',
+                name: 'Critic Agent',
+                description: 'Reviews and critiques the article',
+                kind: 'Agent',
+                depends_on: ['writer'],
+              },
+            ],
+          },
+        },
+      };
+
+      const result = await exporter.export(manifest);
+
+      expect(result.success).toBe(true);
+
+      // Should include langgraph.py file
+      const langGraphFile = result.files.find((f) => f.path === 'langgraph.py');
+      expect(langGraphFile).toBeDefined();
+      expect(langGraphFile?.content).toContain('from langgraph.graph import StateGraph');
+      expect(langGraphFile?.content).toContain('class AgentState(TypedDict)');
+      expect(langGraphFile?.content).toContain('def researcher_agent(state: AgentState)');
+      expect(langGraphFile?.content).toContain('def writer_agent(state: AgentState)');
+      expect(langGraphFile?.content).toContain('def critic_agent(state: AgentState)');
+      expect(langGraphFile?.content).toContain('workflow.add_node("researcher"');
+      expect(langGraphFile?.content).toContain('workflow.add_node("writer"');
+      expect(langGraphFile?.content).toContain('workflow.add_node("critic"');
+
+      // Should include langgraph in requirements
+      const reqFile = result.files.find((f) => f.path === 'requirements.txt');
+      expect(reqFile?.content).toContain('langgraph>=0.0.30');
+
+      // README should mention LangGraph
+      const readmeFile = result.files.find((f) => f.path === 'README.md');
+      expect(readmeFile?.content).toContain('LangGraph');
+      expect(readmeFile?.content).toContain('Multi-Agent');
+    });
+
+    it('should detect multi-agent workflow with dependencies', async () => {
+      const manifest: OssaAgent = {
+        apiVersion: 'ossa/v0.3.6',
+        kind: 'Agent',
+        metadata: {
+          name: 'dependent-agents',
+          version: '1.0.0',
+        },
+        spec: {
+          role: 'Main agent',
+          dependencies: {
+            agents: [
+              {
+                name: 'data-agent',
+                version: '1.0.0',
+              },
+              {
+                name: 'analytics-agent',
+                version: '1.0.0',
+              },
+            ],
+          },
+        },
+      };
+
+      const result = await exporter.export(manifest);
+
+      expect(result.success).toBe(true);
+
+      // Should generate langgraph.py for agents with dependencies
+      const langGraphFile = result.files.find((f) => f.path === 'langgraph.py');
+      expect(langGraphFile).toBeDefined();
+      expect(langGraphFile?.content).toContain('data_agent_agent');
+      expect(langGraphFile?.content).toContain('analytics_agent_agent');
+    });
+
+    it('should generate human-in-the-loop workflow when approval required', async () => {
+      const manifest: OssaAgent = {
+        apiVersion: 'ossa/v0.3.6',
+        kind: 'Agent',
+        metadata: {
+          name: 'approval-workflow',
+          version: '1.0.0',
+        },
+        spec: {
+          role: 'Agent requiring human approval',
+          workflow: {
+            steps: [
+              {
+                id: 'processor',
+                name: 'Process Data',
+                kind: 'Agent',
+              },
+            ],
+          },
+          autonomy: {
+            level: 'supervised',
+            approval_required: true,
+          },
+        },
+      };
+
+      const result = await exporter.export(manifest);
+
+      const langGraphFile = result.files.find((f) => f.path === 'langgraph.py');
+      expect(langGraphFile).toBeDefined();
+      expect(langGraphFile?.content).toContain('human_approval_node');
+      expect(langGraphFile?.content).toContain('approval_status');
+      expect(langGraphFile?.content).toContain('human_feedback');
+
+      const readmeFile = result.files.find((f) => f.path === 'README.md');
+      expect(readmeFile?.content).toContain('**Human Approval**: Yes');
+    });
+
+    it('should generate conditional workflow with router', async () => {
+      const manifest: OssaAgent = {
+        apiVersion: 'ossa/v0.3.6',
+        kind: 'Agent',
+        metadata: {
+          name: 'conditional-workflow',
+          version: '1.0.0',
+        },
+        spec: {
+          role: 'Conditional routing workflow',
+          workflow: {
+            steps: [
+              {
+                id: 'classifier',
+                name: 'Classifier',
+                kind: 'Agent',
+              },
+              {
+                id: 'handler_a',
+                name: 'Handler A',
+                kind: 'Agent',
+                condition: 'category == "A"',
+              },
+              {
+                id: 'handler_b',
+                name: 'Handler B',
+                kind: 'Agent',
+                condition: 'category == "B"',
+              },
+            ],
+          },
+        },
+      };
+
+      const result = await exporter.export(manifest);
+
+      const langGraphFile = result.files.find((f) => f.path === 'langgraph.py');
+      expect(langGraphFile).toBeDefined();
+      expect(langGraphFile?.content).toContain('def router(state: AgentState)');
+      expect(langGraphFile?.content).toContain('add_conditional_edges');
+
+      const readmeFile = result.files.find((f) => f.path === 'README.md');
+      expect(readmeFile?.content).toContain('**Conditional Logic**: Yes');
+    });
   });
 });

@@ -107,7 +107,7 @@ export class PackageJsonGenerator {
         access: 'public',
       },
       ossa: {
-        apiVersion: manifest.apiVersion || 'ossa/v0.4.0',
+        apiVersion: manifest.apiVersion || 'ossa/v0.4.1',
         kind: manifest.kind || 'Agent',
         originalName: metadata.name,
       },

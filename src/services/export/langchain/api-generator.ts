@@ -35,7 +35,7 @@ OpenAPI documentation available at /docs
 """
 
 from typing import Optional, List, Dict, Any
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, status
 from fastapi.responses import StreamingResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
@@ -46,6 +46,8 @@ import os
 
 from agent import create_agent, run
 from memory import get_memory, clear_memory, get_all_sessions, delete_session
+from streaming import stream_sse, stream_websocket, manager as ws_manager
+from callbacks import get_cost_tracker, print_cost_summary
 
 # FastAPI app
 app = FastAPI(
@@ -189,40 +191,60 @@ async def chat(request: ChatRequest) -> ChatResponse:
 @app.post("/chat/stream")
 async def chat_stream(request: ChatRequest):
     """
-    Stream chat responses from the agent
+    Stream chat responses from the agent via SSE with real-time cost tracking
 
     Args:
         request: Chat request with message and session ID
 
     Returns:
-        Server-sent events stream with agent response chunks
+        Server-sent events stream with agent response tokens and cost information
     """
-    async def generate():
-        try:
-            session_id = request.session_id or "default"
+    try:
+        session_id = request.session_id or "default"
+        cost_tracker = get_cost_tracker()
 
-            # For streaming, we'd need to use LangChain's streaming capabilities
-            # This is a simplified version
-            result = run(request.message)
+        # Use the streaming module's SSE implementation
+        return StreamingResponse(
+            stream_sse(request.message, agent, session_id, cost_tracker),
+            media_type="text/event-stream",
+            headers={
+                "Cache-Control": "no-cache",
+                "Connection": "keep-alive",
+                "X-Accel-Buffering": "no",
+                "Access-Control-Allow-Origin": "*",
+            }
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Streaming error: {str(e)}"
+        )
 
-            if result.get("success"):
-                # Stream response word by word
-                words = result.get("output", "").split()
-                for word in words:
-                    yield f"data: {json.dumps({'chunk': word + ' '})}\n\n"
-                    await asyncio.sleep(0.05)  # Simulate streaming delay
 
-                yield f"data: {json.dumps({'done': True})}\n\n"
-            else:
-                yield f"data: {json.dumps({'error': result.get('error', 'Unknown error')})}\n\n"
+@app.websocket("/chat/ws")
+async def chat_websocket(websocket: WebSocket, session_id: str = "default"):
+    """
+    WebSocket endpoint for bidirectional streaming with cancellation support
 
-        except Exception as e:
-            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+    Args:
+        websocket: WebSocket connection
+        session_id: Session identifier for conversation context
 
-    return StreamingResponse(
-        generate(),
-        media_type="text/event-stream",
-    )
+    WebSocket Message Format (Client -> Server):
+        {
+            "type": "message",  # or "cancel"
+            "message": "user message text"
+        }
+
+    WebSocket Message Format (Server -> Client):
+        {
+            "type": "token",  # or "llm_start", "llm_end", "done", "error", "cancelled"
+            "token": "response token",
+            "token_count": 42,
+            "cost": 0.00123
+        }
+    """
+    await stream_websocket(websocket, agent, session_id)
 
 
 @app.get("/health", response_model=HealthResponse)
@@ -292,6 +314,31 @@ async def clear_session(session_id: str) -> JSONResponse:
         )
 
 
+@app.get("/cost-summary")
+async def get_cost_summary():
+    """
+    Get cost tracking summary for the current session
+
+    Returns:
+        Token usage and cost information
+    """
+    cost_tracker = get_cost_tracker()
+    return cost_tracker.get_summary()
+
+
+@app.post("/cost-summary/reset")
+async def reset_cost_summary():
+    """
+    Reset cost tracking counters
+
+    Returns:
+        Confirmation message
+    """
+    cost_tracker = get_cost_tracker()
+    cost_tracker.reset()
+    return {"status": "success", "message": "Cost tracking reset"}
+
+
 @app.get("/")
 async def root():
     """
@@ -306,6 +353,12 @@ async def root():
         "docs": "/docs",
         "openapi": "/openapi.json",
         "health": "/health",
+        "endpoints": {
+            "chat": "/chat",
+            "stream_sse": "/chat/stream",
+            "stream_ws": "/chat/ws",
+            "cost_summary": "/cost-summary",
+        }
     }
 
 

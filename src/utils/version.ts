@@ -4,7 +4,7 @@
  * Provides dynamic version detection from package.json
  *
  * IMPORTANT: Package version vs OSSA Spec version
- * - Package version (from package.json): The CLI tool version (can be 0.4.0, 0.5.0, etc.)
+ * - Package version (from package.json): The CLI tool version (can be 0.4.1, 0.5.0, etc.)
  * - OSSA Spec version (OSSA_SPEC_VERSION): The agent manifest format version (0.3.6)
  * These evolve independently - CLI can update without changing the spec.
  *

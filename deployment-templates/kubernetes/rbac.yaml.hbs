@@ -1,0 +1,162 @@
+---
+# ============================================================================
+# Service Account for {{projectName}}
+# Provides identity for pods to interact with Kubernetes API
+# ============================================================================
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{serviceAccountName}}
+  namespace: {{namespace}}
+  labels:
+    app: {{appName}}
+    component: {{component}}
+    managed-by: kubernetes
+    part-of: {{projectName}}
+  annotations:
+    description: "Service account for {{projectDescription}}"
+{{#if serviceAccountAnnotations}}
+{{#each serviceAccountAnnotations}}
+    {{@key}}: "{{this}}"
+{{/each}}
+{{/if}}
+automountServiceAccountToken: {{automountServiceAccountToken}}
+
+---
+# ============================================================================
+# Role - Namespace-scoped permissions
+# ============================================================================
+{{#if createRole}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{roleName}}
+  namespace: {{namespace}}
+  labels:
+    app: {{appName}}
+    component: {{component}}
+    managed-by: kubernetes
+    part-of: {{projectName}}
+rules:
+  {{#each roleRules}}
+  - apiGroups:
+      {{#each apiGroups}}
+      - "{{this}}"
+      {{/each}}
+    resources:
+      {{#each resources}}
+      - {{this}}
+      {{/each}}
+    verbs:
+      {{#each verbs}}
+      - {{this}}
+      {{/each}}
+    {{#if resourceNames}}
+    resourceNames:
+      {{#each resourceNames}}
+      - {{this}}
+      {{/each}}
+    {{/if}}
+  {{/each}}
+
+---
+# ============================================================================
+# RoleBinding - Binds Role to ServiceAccount
+# ============================================================================
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{roleBindingName}}
+  namespace: {{namespace}}
+  labels:
+    app: {{appName}}
+    component: {{component}}
+    managed-by: kubernetes
+    part-of: {{projectName}}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{roleName}}
+subjects:
+  - kind: ServiceAccount
+    name: {{serviceAccountName}}
+    namespace: {{namespace}}
+{{/if}}
+
+---
+# ============================================================================
+# ClusterRole - Cluster-wide permissions (use sparingly)
+# ============================================================================
+{{#if createClusterRole}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{clusterRoleName}}
+  labels:
+    app: {{appName}}
+    component: {{component}}
+    managed-by: kubernetes
+    part-of: {{projectName}}
+rules:
+  {{#each clusterRoleRules}}
+  - apiGroups:
+      {{#each apiGroups}}
+      - "{{this}}"
+      {{/each}}
+    resources:
+      {{#each resources}}
+      - {{this}}
+      {{/each}}
+    verbs:
+      {{#each verbs}}
+      - {{this}}
+      {{/each}}
+    {{#if resourceNames}}
+    resourceNames:
+      {{#each resourceNames}}
+      - {{this}}
+      {{/each}}
+    {{/if}}
+  {{/each}}
+
+---
+# ============================================================================
+# ClusterRoleBinding - Binds ClusterRole to ServiceAccount
+# ============================================================================
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{clusterRoleBindingName}}
+  labels:
+    app: {{appName}}
+    component: {{component}}
+    managed-by: kubernetes
+    part-of: {{projectName}}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{clusterRoleName}}
+subjects:
+  - kind: ServiceAccount
+    name: {{serviceAccountName}}
+    namespace: {{namespace}}
+{{/if}}
+
+---
+# ============================================================================
+# Example: Minimal permissions for typical application
+# ============================================================================
+# Rules for reading ConfigMaps and Secrets:
+# - apiGroups: [""]
+#   resources: ["configmaps", "secrets"]
+#   verbs: ["get", "list", "watch"]
+#
+# Rules for leader election (if needed):
+# - apiGroups: ["coordination.k8s.io"]
+#   resources: ["leases"]
+#   verbs: ["get", "create", "update"]
+#
+# Rules for reading pods (for service discovery):
+# - apiGroups: [""]
+#   resources: ["pods"]
+#   verbs: ["get", "list", "watch"]

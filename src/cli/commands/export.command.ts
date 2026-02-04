@@ -18,6 +18,7 @@ import * as path from 'path';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { LangChainConverter } from '../../adapters/langchain/converter.js';
+import { LangChainExporter } from '../../services/export/langchain/langchain-exporter.js';
 import { CrewAIConverter } from '../../adapters/crewai/converter.js';
 import { TemporalConverter } from '../../adapters/temporal/converter.js';
 import { N8NConverter } from '../../adapters/n8n/converter.js';
@@ -26,6 +27,7 @@ import { DockerfileGenerator } from '../../adapters/docker/generators.js';
 import { KubernetesManifestGenerator } from '../../adapters/kubernetes/generator.js';
 import { KAgentCRDGenerator } from '../../sdks/kagent/crd-generator.js';
 import { registry } from '../../adapters/registry/platform-registry.js';
+import { DrupalModuleGenerator } from '../../adapters/drupal/generator.js';
 import type { OssaAgent } from '../../types/index.js';
 import {
   addGlobalOptions,
@@ -39,7 +41,7 @@ export const exportCommand = new Command('export')
   .argument('<manifest>', 'Path to OSSA agent manifest')
   .requiredOption(
     '-p, --platform <platform>',
-    'Target platform (kagent, langchain, crewai, temporal, n8n, gitlab, docker, kubernetes, npm)'
+    'Target platform (kagent, langchain, crewai, temporal, n8n, gitlab, docker, kubernetes, npm, drupal)'
   )
   .option('-o, --output <file>', 'Output file path')
   .option('--format <format>', 'Output format (yaml, json, python)', 'yaml')
@@ -117,11 +119,41 @@ exportCommand.action(
           }
 
           case 'langchain': {
-            const converter = new LangChainConverter();
+            // Use comprehensive LangChain exporter for full Python package
             if (options.format === 'python') {
-              output = converter.generatePythonCode(manifest);
-              defaultExtension = 'py';
+              const exporter = new LangChainExporter();
+              const result = await exporter.export(manifest, {
+                includeApi: true,
+                includeOpenApi: true,
+                includeDocker: true,
+                includeTests: true,
+              });
+
+              if (!result.success) {
+                throw new Error(result.error || 'LangChain export failed');
+              }
+
+              // Create output directory
+              const outputDir = options.output || `./langchain-${manifest.metadata?.name || 'agent'}`;
+              fs.mkdirSync(outputDir, { recursive: true });
+
+              // Write all generated files
+              for (const file of result.files) {
+                const filePath = path.join(outputDir, file.path);
+                const fileDir = path.dirname(filePath);
+                fs.mkdirSync(fileDir, { recursive: true });
+                fs.writeFileSync(filePath, file.content);
+              }
+
+              logSuccess(`✓ LangChain Python package exported to: ${outputDir}`);
+              logVerbose(`  Files: ${result.files.map(f => f.path).join(', ')}`);
+              logVerbose(`  Python version: ${result.metadata?.pythonVersion}`);
+              logVerbose(`  LangChain version: ${result.metadata?.langchainVersion}`);
+              logVerbose(`  Tools: ${result.metadata?.toolsCount}`);
+              return; // Early return to skip single-file write
             } else {
+              // Simple JSON export for non-Python format
+              const converter = new LangChainConverter();
               const config = converter.convert(manifest);
               output = JSON.stringify(config, null, 2);
               defaultExtension = 'json';
@@ -220,6 +252,63 @@ exportCommand.action(
             if (options.skill) {
               console.log(chalk.green(`✓ Claude Skill included: SKILL.md`));
             }
+            return; // Early return to skip single-file write
+          }
+
+          case 'drupal': {
+            log('Generating Drupal module with ossa/symfony-bundle integration...');
+
+            // Use DrupalModuleGenerator for full module package
+            const generator = new DrupalModuleGenerator();
+            const result = await generator.export(manifest, {
+              includeQueueWorker: true,
+              includeEntity: true,
+              includeController: true,
+              includeConfigForm: true,
+              includeHooks: true,
+              includeViews: true,
+              validate: true,
+            });
+
+            if (!result.success) {
+              throw new Error(result.error || 'Drupal module generation failed');
+            }
+
+            // Create output directory
+            const moduleName = manifest.metadata?.name?.toLowerCase().replace(/[^a-z0-9_]/g, '_') || 'ossa_agent';
+            const outputDir = options.output || `./${moduleName}`;
+
+            if (!options.dryRun) {
+              fs.mkdirSync(outputDir, { recursive: true });
+
+              // Write all generated files
+              for (const file of result.files) {
+                const filePath = path.join(outputDir, file.path);
+                const fileDir = path.dirname(filePath);
+                fs.mkdirSync(fileDir, { recursive: true });
+                fs.writeFileSync(filePath, file.content);
+                logVerbose(`  Created: ${file.path}`);
+              }
+
+              logSuccess(`✓ Drupal module exported to: ${outputDir}`);
+              logVerbose(`  Files: ${result.files.length} files generated`);
+              logVerbose(`  Module name: ${moduleName}`);
+              log('\n📦 Installation instructions:');
+              log(`  1. Copy module: cp -r ${moduleName} /path/to/drupal/web/modules/custom/`);
+              log(`  2. Install dependency: composer require ossa/symfony-bundle`);
+              log(`  3. Enable module: drush en ${moduleName}`);
+              log(`  4. Configure: Visit /admin/config/${moduleName}\n`);
+              log('📚 Documentation:');
+              log(`  README: ${moduleName}/README.md`);
+              log(`  Install guide: ${moduleName}/INSTALL.md`);
+            } else {
+              log(`\n🔍 DRY RUN: Would generate ${result.files.length} files in: ${outputDir}`);
+              logVerbose('Files to be created:');
+              for (const file of result.files) {
+                logVerbose(`  - ${file.path} (${file.content.length} bytes)`);
+              }
+            }
+
             return; // Early return to skip single-file write
           }
 

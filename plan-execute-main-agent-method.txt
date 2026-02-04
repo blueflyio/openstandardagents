@@ -1,0 +1,87 @@
+  /**
+   * Generate main agent.py wrapper for Plan-and-Execute architecture
+   */
+  private generatePlanExecuteMainAgent(manifest: OssaAgent): string {
+    const agentName = manifest.metadata?.name || 'agent';
+    const description = manifest.metadata?.description || 'AI Agent';
+    const version = manifest.metadata?.version || '1.0.0';
+
+    return `"""
+${agentName} - Plan-and-Execute Agent
+Generated from OSSA manifest
+
+Description: ${description}
+Version: ${version}
+Architecture: Plan-and-Execute (Planner + Executor)
+"""
+
+from typing import Any, Dict, Optional
+from plan_execute import run as plan_execute_run
+from memory import get_memory
+from callbacks import get_callbacks, get_cost_tracker, print_cost_summary
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+def create_agent():
+    """
+    Create Plan-and-Execute agent
+
+    Note: The actual agent is created in plan_execute.py
+    This is a wrapper for compatibility with standard agent interface
+    """
+    logger.info("Plan-and-Execute agent initialized")
+    return {
+        "type": "plan-execute",
+        "components": ["planner", "executor"],
+        "memory": get_memory(),
+        "callbacks": get_callbacks(),
+    }
+
+
+def run(goal: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """
+    Run the Plan-and-Execute agent
+
+    Args:
+        goal: The objective to achieve
+        context: Optional context information
+
+    Returns:
+        Execution results with plan and step outputs
+    """
+    logger.info(f"Running Plan-and-Execute agent for goal: {goal}")
+
+    # Delegate to plan_execute module
+    result = plan_execute_run(goal, context)
+
+    # Log cost summary
+    if "cost" in result:
+        logger.info(f"Total cost: {result['cost']}")
+
+    return result
+
+
+if __name__ == "__main__":
+    # Example usage
+    print(f"Starting {agentName} (Plan-and-Execute Architecture)...")
+    print("=" * 60)
+
+    response = run("Research and write a blog post about AI trends in 2024")
+
+    print("\\n" + "=" * 60)
+    print(f"Success: {response['success']}")
+    print(f"\\nFinal Output:")
+    print(response['output'])
+
+    if 'plan' in response:
+        print(f"\\nExecution Plan:")
+        for step in response['plan']['steps']:
+            print(f"  {step['id']}. {step['description']}")
+
+    if 'cost' in response:
+        print(f"\\nCost Summary: {response['cost']}")
+`;
+  }

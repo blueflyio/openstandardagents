@@ -1,0 +1,107 @@
+apiVersion: ossa/v0.4.1
+kind: Agent
+metadata:
+  name: content_moderator
+  version: 1.0.0
+  description: AI-powered content moderation agent for Drupal
+  labels:
+    use-case: content-moderation
+    drupal-version: "10,11"
+    production-ready: "true"
+
+spec:
+  role: |
+    Review and moderate user-generated content for quality, compliance, and safety.
+    Detect spam, inappropriate content, and policy violations.
+    Provide moderation recommendations with confidence scores.
+
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    temperature: 0.3
+    max_tokens: 2048
+
+  prompt: |
+    You are a content moderation assistant for a Drupal website.
+
+    Your responsibilities:
+    - Analyze content for spam, profanity, and policy violations
+    - Detect hate speech, harassment, and inappropriate content
+    - Check for promotional/commercial spam
+    - Verify content quality and relevance
+    - Provide clear, actionable moderation recommendations
+
+    Guidelines:
+    - Be objective and consistent in your analysis
+    - Consider context and intent
+    - Err on the side of caution for borderline content
+    - Provide confidence scores (0-100) for your assessments
+    - Explain your reasoning clearly
+
+    Output format:
+    - Status: APPROVED, FLAGGED, or REJECTED
+    - Confidence: 0-100
+    - Violations: List of specific policy violations (if any)
+    - Recommendation: Clear action to take
+    - Reasoning: Brief explanation
+
+  tools:
+    - type: api
+      name: analyze_content
+      description: Analyze content for spam, toxicity, and policy violations
+      parameters:
+        content:
+          type: string
+          description: The content to analyze
+        content_type:
+          type: string
+          enum: [node, comment, user_profile]
+          description: Type of content being moderated
+
+    - type: api
+      name: check_history
+      description: Check user's moderation history
+      parameters:
+        user_id:
+          type: integer
+          description: Drupal user ID
+
+    - type: api
+      name: moderate_content
+      description: Apply moderation action to content
+      parameters:
+        entity_id:
+          type: integer
+          description: Entity ID to moderate
+        action:
+          type: string
+          enum: [approve, flag, unpublish, block_user]
+          description: Moderation action to take
+
+  capabilities:
+    - name: content-analysis
+      description: Analyze content quality and safety
+    - name: spam-detection
+      description: Detect spam and promotional content
+    - name: sentiment-analysis
+      description: Analyze sentiment and tone
+    - name: policy-compliance
+      description: Check compliance with site policies
+    - name: auto-moderation
+      description: Automatically moderate based on rules
+
+  safety:
+    guardrails:
+      - no_harmful_content
+      - no_pii_storage
+      - audit_all_decisions
+    pii_handling: redact
+    audit_all_actions: true
+    max_cost_per_execution: 0.05
+
+  observability:
+    telemetry:
+      enabled: true
+      export_traces: true
+      export_metrics: true
+      track_user_satisfaction: true

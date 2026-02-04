@@ -19,7 +19,7 @@ describe('NPMExporter', () => {
 
     // Basic minimal manifest
     basicManifest = {
-      apiVersion: 'ossa/v0.4.0',
+      apiVersion: 'ossa/v0.4.1',
       kind: 'Agent',
       metadata: {
         name: 'test-agent',
@@ -32,7 +32,7 @@ describe('NPMExporter', () => {
 
     // Full featured manifest
     fullManifest = {
-      apiVersion: 'ossa/v0.4.0',
+      apiVersion: 'ossa/v0.4.1',
       kind: 'Agent',
       metadata: {
         name: 'advanced-agent',
