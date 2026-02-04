@@ -50,7 +50,7 @@ export interface DevServerMessage {
   /**
    * Message data
    */
-  data?: any;
+  data?: unknown;
 }
 
 export interface FileChangeMessage extends DevServerMessage {
@@ -79,7 +79,7 @@ export interface ErrorMessage extends DevServerMessage {
   type: 'error';
   data: {
     message: string;
-    details?: any;
+    details?: unknown;
   };
 }
 
@@ -120,7 +120,7 @@ export class DevWebSocketServer {
       throw new Error('WebSocket server is already running');
     }
 
-    const wsOptions: any = {
+    const wsOptions: { server?: Server; port?: number; path?: string } = {
       path: this.options.path,
     };
 
@@ -210,7 +210,7 @@ export class DevWebSocketServer {
   /**
    * Broadcast error
    */
-  broadcastError(errorMessage: string, details?: any): void {
+  broadcastError(errorMessage: string, details?: unknown): void {
     const message: ErrorMessage = {
       type: 'error',
       timestamp: new Date(),
@@ -253,7 +253,7 @@ export class DevWebSocketServer {
     }
 
     // Handle messages from client
-    ws.on('message', (data: any) => {
+    ws.on('message', (data: Buffer) => {
       try {
         const message = JSON.parse(data.toString());
         this.handleClientMessage(ws, message);
@@ -278,7 +278,7 @@ export class DevWebSocketServer {
   /**
    * Handle message from client
    */
-  private handleClientMessage(ws: WebSocket, message: any): void {
+  private handleClientMessage(ws: WebSocket, message: unknown): void {
     // Echo back for now (can add commands later)
     console.log('Received message from client:', message);
   }
