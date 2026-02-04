@@ -1,5 +1,5 @@
 /**
- * Tests for OSSA v0.3.0 Task Schema
+ * Tests for OSSA v0.4.1 Task Schema
  */
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
@@ -8,22 +8,22 @@ import * as path from 'path';
 import { isOssaTask, createTaskManifest } from '../../src/types/task';
 import { getApiVersion } from '../../src/utils/version';
 
-describe('OSSA v0.3.0 Task Schema', () => {
+describe('OSSA v0.4.1 Task Schema', () => {
   let ajv: Ajv;
   let schema: object;
 
   beforeAll(() => {
-    // Load the v0.3.x schema
+    // Load the v0.4 schema
     const schemaPath = path.join(
       __dirname,
-      '../../spec/v0.3/ossa-0.3.5.schema.json'
+      '../../spec/v0.4/agent.schema.json'
     );
     schema = JSON.parse(fs.readFileSync(schemaPath, 'utf-8'));
 
     // Setup AJV validator
     ajv = new Ajv({ strict: false, allErrors: true });
     addFormats(ajv);
-    ajv.addSchema(schema, 'ossa-0.3.0');
+    ajv.addSchema(schema, 'ossa-0.4');
   });
 
   describe('kind: Task validation', () => {
@@ -41,7 +41,7 @@ describe('OSSA v0.3.0 Task Schema', () => {
         },
       };
 
-      const validate = ajv.getSchema('ossa-0.3.0');
+      const validate = ajv.getSchema('ossa-0.4');
       const valid = validate!(manifest);
       expect(valid).toBe(true);
     });
@@ -147,7 +147,7 @@ describe('OSSA v0.3.0 Task Schema', () => {
         },
       };
 
-      const validate = ajv.getSchema('ossa-0.3.0');
+      const validate = ajv.getSchema('ossa-0.4');
       const valid = validate!(manifest);
       if (!valid) {
         console.error(
@@ -171,7 +171,7 @@ describe('OSSA v0.3.0 Task Schema', () => {
         },
       };
 
-      const validate = ajv.getSchema('ossa-0.3.0');
+      const validate = ajv.getSchema('ossa-0.4');
       const valid = validate!(manifest);
       expect(valid).toBe(false);
     });
@@ -190,7 +190,7 @@ describe('OSSA v0.3.0 Task Schema', () => {
         },
       };
 
-      const validate = ajv.getSchema('ossa-0.3.0');
+      const validate = ajv.getSchema('ossa-0.4');
       const valid = validate!(manifest);
       expect(valid).toBe(false);
     });
@@ -220,7 +220,7 @@ describe('OSSA v0.3.0 Task Schema', () => {
         },
       };
 
-      const validate = ajv.getSchema('ossa-0.3.0');
+      const validate = ajv.getSchema('ossa-0.4');
       const valid = validate!(manifest);
       expect(valid).toBe(true);
     });
@@ -239,7 +239,7 @@ describe('OSSA v0.3.0 Task Schema', () => {
         },
       };
 
-      const validate = ajv.getSchema('ossa-0.3.0');
+      const validate = ajv.getSchema('ossa-0.4');
       const valid = validate!(manifest);
       expect(valid).toBe(true);
     });
@@ -254,7 +254,7 @@ describe('OSSA v0.3.0 Task Schema', () => {
         spec: {},
       };
 
-      const validate = ajv.getSchema('ossa-0.3.0');
+      const validate = ajv.getSchema('ossa-0.4');
       const valid = validate!(manifest);
       expect(valid).toBe(false);
     });
@@ -292,7 +292,7 @@ describe('OSSA v0.3.0 Task Schema', () => {
       expect(task.apiVersion).toBe(getApiVersion());
       expect(task.metadata.name).toBe('my-task');
       expect(task.spec.capabilities).toContain('do_something');
-      const validate = ajv.getSchema('ossa-0.3.0');
+      const validate = ajv.getSchema('ossa-0.4');
       const valid = validate!(task);
       expect(valid).toBe(true);
     });

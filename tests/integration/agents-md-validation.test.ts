@@ -52,7 +52,7 @@ describe('agents.md Extension Integration', () => {
       },
     };
 
-    const result = await validationService.validate(manifest, '0.3.3');
+    const result = await validationService.validate(manifest, '0.4.1');
     if (result.errors.length > 0) {
       console.error(
         'Validation errors:',
@@ -101,7 +101,7 @@ describe('agents.md Extension Integration', () => {
       },
     };
 
-    const result = await validationService.validate(manifest, '0.3.3');
+    const result = await validationService.validate(manifest, '0.4.1');
     if (result.errors.length > 0) {
       console.error(
         'Validation errors:',
@@ -152,7 +152,7 @@ describe('agents.md Extension Integration', () => {
       },
     };
 
-    const result = await validationService.validate(manifest, '0.3.3');
+    const result = await validationService.validate(manifest, '0.4.1');
     if (result.errors.length > 0) {
       console.error(
         'Validation errors:',
@@ -202,7 +202,7 @@ describe('agents.md Extension Integration', () => {
       },
     };
 
-    const result = await validationService.validate(manifest, '0.3.3');
+    const result = await validationService.validate(manifest, '0.4.1');
     if (result.errors.length > 0) {
       console.error(
         'Validation errors:',
@@ -232,7 +232,7 @@ describe('agents.md Extension Integration', () => {
             continue;
           }
 
-          const result = await validationService.validate(manifest, '0.3.3');
+          const result = await validationService.validate(manifest, '0.4.1');
           if (result.errors.length > 0) {
             console.error(
               `Validation errors for ${file}:`,
@@ -279,7 +279,7 @@ describe('agents.md Extension Integration', () => {
       },
     };
 
-    const result = await validationService.validate(manifest, '0.3.3');
+    const result = await validationService.validate(manifest, '0.4.1');
     if (result.errors.length > 0) {
       console.error(
         'Validation errors:',
