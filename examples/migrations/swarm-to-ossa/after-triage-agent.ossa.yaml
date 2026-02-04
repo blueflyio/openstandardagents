@@ -10,7 +10,7 @@
 # - 50% less code
 # - Enterprise features built-in
 
-apiVersion: ossa/v0.3.6
+apiVersion: ossa/v0.4.1
 kind: Agent
 metadata:
   name: customer-service-triage
@@ -139,7 +139,7 @@ spec:
 
 ---
 # Sales Agent (equivalent to sales_agent in Swarm)
-apiVersion: ossa/v0.3.6
+apiVersion: ossa/v0.4.1
 kind: Agent
 metadata:
   name: sales-agent
@@ -223,7 +223,7 @@ spec:
 
 ---
 # Refunds Agent (equivalent to refunds_agent in Swarm)
-apiVersion: ossa/v0.3.6
+apiVersion: ossa/v0.4.1
 kind: Agent
 metadata:
   name: refunds-agent

@@ -20,7 +20,7 @@ describe('VersionDetectionService', () => {
   describe('detectVersion', () => {
     it('should detect version from apiVersion field (high confidence)', async () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3.5',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: { name: 'test' },
         spec: { role: 'test' },

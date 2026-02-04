@@ -3,7 +3,7 @@
 # This agent receives security incidents from multiple sources and coordinates
 # response activities across teams via OSSA messaging.
 
-apiVersion: ossa/v0.3.6
+apiVersion: ossa/v0.4.1
 kind: Agent
 metadata:
   name: incident-responder

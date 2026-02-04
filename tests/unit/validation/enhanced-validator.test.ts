@@ -25,7 +25,7 @@ describe('EnhancedValidator', () => {
   describe('validate()', () => {
     it('should validate a complete manifest successfully', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.3.6',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -123,7 +123,7 @@ describe('EnhancedValidator', () => {
 
     it('should detect security vulnerabilities', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.3.6',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: {
           name: 'insecure-agent',
@@ -171,7 +171,7 @@ describe('EnhancedValidator', () => {
 
     it('should detect exposed secrets', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.3.6',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: {
           name: 'agent-with-secret',
@@ -206,7 +206,7 @@ describe('EnhancedValidator', () => {
 
     it('should detect best practices issues', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.3.6',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: {
           name: 'minimal-agent',
@@ -242,7 +242,7 @@ describe('EnhancedValidator', () => {
 
     it('should estimate costs correctly', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.3.6',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: {
           name: 'cost-test-agent',
@@ -275,7 +275,7 @@ describe('EnhancedValidator', () => {
 
     it('should provide cost recommendations for expensive models', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.3.6',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: {
           name: 'expensive-agent',
@@ -306,7 +306,7 @@ describe('EnhancedValidator', () => {
     it('should validate multiple manifests', async () => {
       const manifests: OssaAgent[] = [
         {
-          apiVersion: 'ossa/v0.3.6',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-1' },
           spec: {
@@ -315,7 +315,7 @@ describe('EnhancedValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.6',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-2' },
           spec: {
@@ -336,7 +336,7 @@ describe('EnhancedValidator', () => {
   describe('getSummary()', () => {
     it('should generate validation summary', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.3.6',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: {
           name: 'summary-test',
@@ -368,7 +368,7 @@ describe('EnhancedValidator', () => {
   describe('generateTextReport()', () => {
     it('should generate human-readable text report', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.3.6',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: {
           name: 'report-test',
@@ -398,7 +398,7 @@ describe('EnhancedValidator', () => {
   describe('generateJsonReport()', () => {
     it('should generate JSON report', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.3.6',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: {
           name: 'json-test',
@@ -427,7 +427,7 @@ describe('EnhancedValidator', () => {
   describe('Integration tests', () => {
     it('should handle agent with all features correctly', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.3.6',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: {
           name: 'full-featured-agent',
@@ -528,7 +528,7 @@ describe('EnhancedValidator', () => {
 
     it('should handle Anthropic Claude Opus with cost warnings', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.3.6',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: {
           name: 'opus-agent',

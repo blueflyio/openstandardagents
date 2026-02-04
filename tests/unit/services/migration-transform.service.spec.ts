@@ -38,7 +38,7 @@ describe('MigrationTransformService', () => {
   describe('applyTransform', () => {
     it('should transform v0.3.3 to v0.3.4 (add checkpointing)', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.3.3',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -68,7 +68,7 @@ describe('MigrationTransformService', () => {
 
     it('should transform v0.3.4 to v0.3.5 (fix observability)', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.3.4',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -95,7 +95,7 @@ describe('MigrationTransformService', () => {
 
     it('should throw error for unknown transformation', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.3.3',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: { name: 'test' },
         spec: { role: 'test' },
@@ -110,7 +110,7 @@ describe('MigrationTransformService', () => {
   describe('validateMigration', () => {
     it('should detect lost critical fields', () => {
       const original: OssaAgent = {
-        apiVersion: 'ossa/v0.3.3',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: { name: 'test' },
         spec: {
@@ -123,7 +123,7 @@ describe('MigrationTransformService', () => {
       };
 
       const migrated: OssaAgent = {
-        apiVersion: 'ossa/v0.3.4',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: { name: 'test' },
         spec: {
@@ -139,7 +139,7 @@ describe('MigrationTransformService', () => {
 
     it('should return no warnings for valid migration', () => {
       const original: OssaAgent = {
-        apiVersion: 'ossa/v0.3.3',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: { name: 'test' },
         spec: {

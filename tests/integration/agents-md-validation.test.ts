@@ -16,7 +16,7 @@ describe('agents.md Extension Integration', () => {
 
   it('should validate agents_md extension in manifest', async () => {
     const manifest = {
-      apiVersion: 'ossa/v0.3.3',
+      apiVersion: 'ossa/v0.4.1',
       kind: 'Agent',
       metadata: {
         name: 'test-agent',
@@ -65,7 +65,7 @@ describe('agents.md Extension Integration', () => {
 
   it('should validate agents_md with Cursor extension integration', async () => {
     const manifest = {
-      apiVersion: 'ossa/v0.3.3',
+      apiVersion: 'ossa/v0.4.1',
       kind: 'Agent',
       metadata: {
         name: 'cursor-agents-md-agent',
@@ -113,7 +113,7 @@ describe('agents.md Extension Integration', () => {
 
   it('should validate agents_md with nested files for monorepo', async () => {
     const manifest = {
-      apiVersion: 'ossa/v0.3.3',
+      apiVersion: 'ossa/v0.4.1',
       kind: 'Agent',
       metadata: {
         name: 'monorepo-agent',
@@ -164,7 +164,7 @@ describe('agents.md Extension Integration', () => {
 
   it('should validate agents_md with bidirectional mapping', async () => {
     const manifest = {
-      apiVersion: 'ossa/v0.3.3',
+      apiVersion: 'ossa/v0.4.1',
       kind: 'Agent',
       metadata: {
         name: 'mapping-agent',
@@ -250,7 +250,7 @@ describe('agents.md Extension Integration', () => {
 
   it('should validate custom sections array', async () => {
     const manifest = {
-      apiVersion: 'ossa/v0.3.3',
+      apiVersion: 'ossa/v0.4.1',
       kind: 'Agent',
       metadata: {
         name: 'custom-sections-agent',

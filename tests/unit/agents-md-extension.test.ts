@@ -7,7 +7,7 @@ import { describe, it, expect } from '@jest/globals';
 
 describe('AgentsMdExtension Schema', () => {
   const validManifest = {
-    apiVersion: 'ossa/v0.3.3',
+    apiVersion: 'ossa/v0.4.1',
     kind: 'Agent',
     metadata: {
       name: 'test-agent',

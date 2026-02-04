@@ -14,7 +14,7 @@ describe('AnthropicExporter', () => {
     exporter = new AnthropicExporter();
 
     manifest = {
-      apiVersion: 'ossa/v0.3.6',
+      apiVersion: 'ossa/v0.4.1',
       kind: 'Agent',
       metadata: {
         name: 'test-agent',

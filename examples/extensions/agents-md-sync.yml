@@ -1,7 +1,7 @@
 # OSSA agents.md Extension - Sync Example
 # Demonstrates automatic synchronization configuration
 
-apiVersion: ossa/v0.3.5
+apiVersion: ossa/v0.4.1
 kind: Agent
 metadata:
   name: docs-agent

@@ -14,7 +14,7 @@ describe('OSSA v0.3.5 Completion Signals', () => {
 
   it('should validate valid completion signals', () => {
     const manifest = {
-      apiVersion: 'ossa/v0.3.5',
+      apiVersion: 'ossa/v0.4.1',
       kind: 'Agent',
       metadata: { name: 'test-agent' },
       spec: {
@@ -42,7 +42,7 @@ describe('OSSA v0.3.5 Completion Signals', () => {
 
   it('should reject invalid completion signal', () => {
     const manifest = {
-      apiVersion: 'ossa/v0.3.5',
+      apiVersion: 'ossa/v0.4.1',
       kind: 'Agent',
       metadata: { name: 'test-agent' },
       spec: {
@@ -74,7 +74,7 @@ describe('OSSA v0.3.5 Completion Signals', () => {
 
     for (const signal of signals) {
       const manifest = {
-        apiVersion: 'ossa/v0.3.5',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: { name: 'test-agent' },
         spec: {

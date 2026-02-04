@@ -9,7 +9,7 @@ describe.skip('LangGraphValidator', () => {
   beforeEach(() => {
     validator = new LangGraphValidator();
     baseManifest = {
-      apiVersion: 'ossa/v0.3.3',
+      apiVersion: 'ossa/v0.4.1',
       kind: 'Agent',
       metadata: {
         name: 'test-agent',

@@ -14,7 +14,7 @@ describe('OSSA v0.3.5 Mixture of Experts', () => {
 
   it('should validate valid MoE configuration', () => {
     const manifest = {
-      apiVersion: 'ossa/v0.3.5',
+      apiVersion: 'ossa/v0.4.1',
       kind: 'Agent',
       metadata: { name: 'test-agent' },
       spec: {
@@ -58,7 +58,7 @@ describe('OSSA v0.3.5 Mixture of Experts', () => {
 
     for (const strategy of strategies) {
       const manifest = {
-        apiVersion: 'ossa/v0.3.5',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: { name: 'test-agent' },
         spec: {
@@ -84,7 +84,7 @@ describe('OSSA v0.3.5 Mixture of Experts', () => {
 
   it('should reject expert without required fields', () => {
     const manifest = {
-      apiVersion: 'ossa/v0.3.5',
+      apiVersion: 'ossa/v0.4.1',
       kind: 'Agent',
       metadata: { name: 'test-agent' },
       spec: {

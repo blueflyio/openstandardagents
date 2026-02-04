@@ -1,4 +1,4 @@
-apiVersion: ossa/v0.3
+apiVersion: ossa/v0.4.1
 kind: Agent
 metadata:
   name: claude-code-reviewer
