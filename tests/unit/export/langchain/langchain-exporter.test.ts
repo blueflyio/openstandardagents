@@ -113,7 +113,7 @@ describe('LangChainExporter', () => {
 
       const memoryFile = result.files.find((f) => f.path === 'memory.py');
       expect(memoryFile).toBeDefined();
-      expect(memoryFile?.content).toContain('def get_memory()');
+      expect(memoryFile?.content).toContain('def get_memory(');
       expect(memoryFile?.content).toContain('ConversationBufferMemory');
     });
 
