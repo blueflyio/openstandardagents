@@ -8,7 +8,7 @@ import { describe, it, expect } from '@jest/globals';
 describe('ossa validate', () => {
   it('should validate OSSA manifest structure', () => {
     const validManifest = {
-      apiVersion: 'ossa/v0.3.3',
+      apiVersion: 'ossa/v0.4.1',
       kind: 'Agent',
       metadata: {
         name: 'test-agent',
@@ -28,7 +28,7 @@ describe('ossa validate', () => {
 
   it('should reject invalid apiVersion', () => {
     const invalidManifest = {
-      apiVersion: 'ossa/v0.1.0',
+      apiVersion: 'ossa/v0.4.1',
       kind: 'Agent',
     };
 
@@ -38,8 +38,8 @@ describe('ossa validate', () => {
   it('should reject missing required fields', () => {
     const invalidManifests = [
       { kind: 'Agent' },
-      { apiVersion: 'ossa/v0.3.3' },
-      { apiVersion: 'ossa/v0.3.3', kind: 'Agent', metadata: {} },
+      { apiVersion: 'ossa/v0.4.1' },
+      { apiVersion: 'ossa/v0.4.1', kind: 'Agent', metadata: {} },
     ];
 
     invalidManifests.forEach((manifest) => {

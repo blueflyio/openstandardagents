@@ -34,7 +34,7 @@ describe.skip('OSSA v0.3.5 Backward Compatibility', () => {
 
     // Create minimal v0.3.4 manifest
     const manifest = {
-      apiVersion: 'ossa/v0.3.4',
+      apiVersion: 'ossa/v0.4.1',
       kind: 'Agent',
       metadata: {
         name: 'test-agent',
@@ -63,7 +63,7 @@ describe.skip('OSSA v0.3.5 Backward Compatibility', () => {
 
     // Create v0.3.5 manifest without new features (backward compatible)
     const manifest = {
-      apiVersion: 'ossa/v0.3.5',
+      apiVersion: 'ossa/v0.4.1',
       kind: 'Agent',
       metadata: {
         name: 'test-agent',
@@ -93,7 +93,7 @@ describe.skip('OSSA v0.3.5 Backward Compatibility', () => {
 
     // Create v0.3.5 manifest with new features
     const manifest = {
-      apiVersion: 'ossa/v0.3.5',
+      apiVersion: 'ossa/v0.4.1',
       kind: 'Agent',
       metadata: {
         name: 'test-agent',
@@ -134,7 +134,7 @@ describe.skip('OSSA v0.3.5 Backward Compatibility', () => {
     const validate = ajv.compile(v035Schema);
 
     const flowManifest = {
-      apiVersion: 'ossa/v0.3.5',
+      apiVersion: 'ossa/v0.4.1',
       kind: 'Flow',
       metadata: {
         name: 'test-flow',
