@@ -1,0 +1,216 @@
+apiVersion: ossa/v0.4.0
+kind: Agent
+metadata:
+  name: production-agent-with-tools
+  version: 1.0.0
+  description: |
+    Production-ready agent with 6 tools showcasing v0.4.1 features:
+    - Async API calls
+    - Pydantic models for type validation
+    - MCP tool integration
+    - Production-quality error handling
+  labels:
+    platform: langchain
+    export: langchain
+    use-case: production-showcase
+    tier: production
+    version: v0.4.1
+
+spec:
+  role: |
+    You are a production assistant with multiple capabilities:
+    1. Search and analyze data
+    2. Make HTTP API calls
+    3. Execute MCP tools
+    4. Process text and generate reports
+    5. Send notifications
+
+  llm:
+    provider: openai
+    model: gpt-4o
+    temperature: 0.7
+    maxTokens: 2000
+
+  capabilities:
+    - search
+    - api_calls
+    - text_processing
+    - notifications
+    - mcp_tools
+
+  tools:
+    # API Tool - Async HTTP requests with Pydantic validation
+    - type: api
+      name: search_api
+      description: Search external knowledge base via REST API
+      endpoint: https://api.example.com/search
+      method: POST
+      parameters:
+        type: object
+        properties:
+          query:
+            type: string
+            description: Search query string
+          max_results:
+            type: integer
+            description: Maximum number of results
+            default: 10
+          filters:
+            type: object
+            description: Optional search filters
+        required:
+          - query
+
+    # Function Tool - Complex schema with Pydantic model
+    - type: function
+      name: analyze_text
+      description: Analyze text content and extract insights
+      parameters:
+        type: object
+        properties:
+          text:
+            type: string
+            description: Text content to analyze
+          analysis_types:
+            type: array
+            items:
+              type: string
+            description: Types of analysis (sentiment, entities, keywords)
+          language:
+            type: string
+            description: Language code (en, es, fr, etc.)
+            default: en
+          include_summary:
+            type: boolean
+            description: Include generated summary
+            default: true
+        required:
+          - text
+          - analysis_types
+
+    # Function Tool - Data processing with nested schema
+    - type: function
+      name: generate_report
+      description: Generate formatted report from data
+      parameters:
+        type: object
+        properties:
+          title:
+            type: string
+            description: Report title
+          sections:
+            type: array
+            items:
+              type: object
+            description: Report sections with content
+          format:
+            type: string
+            description: Output format
+            enum: [markdown, html, pdf]
+            default: markdown
+          include_charts:
+            type: boolean
+            description: Include data visualizations
+            default: false
+        required:
+          - title
+          - sections
+
+    # API Tool - Webhook notification
+    - type: api
+      name: send_notification
+      description: Send notification via webhook
+      endpoint: https://hooks.example.com/notify
+      method: POST
+      parameters:
+        type: object
+        properties:
+          message:
+            type: string
+            description: Notification message
+          priority:
+            type: string
+            enum: [low, medium, high, urgent]
+            description: Notification priority
+          channels:
+            type: array
+            items:
+              type: string
+            description: Notification channels (email, slack, sms)
+        required:
+          - message
+          - priority
+
+    # MCP Tool - Model Context Protocol integration
+    - type: mcp
+      name: mcp_database_query
+      description: Query database via MCP server
+      server: mcp-postgres-server
+      config:
+        server: mcp-postgres-server
+        timeout: 30
+      parameters:
+        type: object
+        properties:
+          query:
+            type: string
+            description: SQL query to execute
+          database:
+            type: string
+            description: Database name
+          read_only:
+            type: boolean
+            description: Execute in read-only mode
+            default: true
+        required:
+          - query
+          - database
+
+    # Function Tool - Simple tool without complex schema
+    - type: function
+      name: format_timestamp
+      description: Format timestamp to human-readable string
+      parameters:
+        type: object
+        properties:
+          timestamp:
+            type: integer
+            description: Unix timestamp
+          format:
+            type: string
+            description: Output format string
+            default: "%Y-%m-%d %H:%M:%S"
+          timezone:
+            type: string
+            description: Timezone (e.g., UTC, America/New_York)
+            default: UTC
+        required:
+          - timestamp
+
+  autonomy:
+    level: supervised
+    approval_required: false
+
+  memory:
+    enabled: true
+    type: conversation_buffer
+    window_size: 20
+
+  observability:
+    logging:
+      level: info
+      format: json
+    metrics:
+      enabled: true
+    tracing:
+      enabled: true
+      provider: opentelemetry
+
+extensions:
+  langchain:
+    agent_type: react
+    export_config:
+      format: python
+      include_dependencies: true
+      include_api_server: true
+      api_port: 8000
