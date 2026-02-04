@@ -19,6 +19,7 @@ import { ToolsGenerator } from './tools-generator.js';
 import { MemoryGenerator } from './memory-generator.js';
 import { ApiGenerator } from './api-generator.js';
 import { OpenApiGenerator } from './openapi-generator.js';
+import { StreamingGenerator, type StreamingConfig } from './streaming-generator.js';
 
 /**
  * LangChain export options
@@ -58,6 +59,11 @@ export interface LangChainExportOptions {
    * API port
    */
   apiPort?: number;
+
+  /**
+   * Streaming configuration
+   */
+  streaming?: StreamingConfig;
 }
 
 /**
@@ -101,12 +107,14 @@ export class LangChainExporter {
   private memoryGenerator: MemoryGenerator;
   private apiGenerator: ApiGenerator;
   private openApiGenerator: OpenApiGenerator;
+  private streamingGenerator: StreamingGenerator;
 
   constructor() {
     this.toolsGenerator = new ToolsGenerator();
     this.memoryGenerator = new MemoryGenerator();
     this.apiGenerator = new ApiGenerator();
     this.openApiGenerator = new OpenApiGenerator();
+    this.streamingGenerator = new StreamingGenerator();
   }
 
   /**
@@ -152,6 +160,15 @@ export class LangChainExporter {
       files.push({
         path: 'memory.py',
         content: memoryCode,
+        type: 'code',
+        language: 'python',
+      });
+
+      // Generate streaming support
+      const streamingCode = this.streamingGenerator.generate(manifest, options.streaming || {});
+      files.push({
+        path: 'streaming.py',
+        content: streamingCode,
         type: 'code',
         language: 'python',
       });
@@ -457,6 +474,22 @@ if __name__ == "__main__":
         'pydantic>=2.0.0',
         ''
       );
+    }
+
+    // Streaming dependencies
+    const streamingConfig = options.streaming;
+    if (streamingConfig?.sse?.enabled === true || streamingConfig?.websocket?.enabled === true) {
+      requirements.push('# Streaming Support');
+
+      if (streamingConfig?.sse?.enabled !== false) {
+        requirements.push('sse-starlette>=1.8.0  # Server-Sent Events');
+      }
+
+      if (streamingConfig?.websocket?.enabled !== false) {
+        requirements.push('websockets>=12.0  # WebSocket streaming');
+      }
+
+      requirements.push('');
     }
 
     requirements.push(
