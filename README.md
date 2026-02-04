@@ -396,7 +396,7 @@ claude --print "use my-agent to analyze this code"
 - **Full Documentation**: [openstandardagents.org](https://openstandardagents.org)
 - **API Reference**: [GitLab Pages](https://blueflyio.gitlab.io/ossa/openstandardagents)
 - **Examples**: [`examples/`](./examples) directory
-- **Migration Guide**: [`spec/v0.3/MIGRATION-v0.3.5-to-v0.3.6.md`](./spec/v0.3/MIGRATION-v0.3.5-to-v0.3.6.md)
+- **Migration Guide**: [`spec/v0.3/MIGRATION-v0.3.6-to-v0.4.x.md`](./spec/v0.3/MIGRATION-v0.3.6-to-v0.4.x.md)
 
 ## Real-World Use Cases
 
@@ -471,7 +471,7 @@ MIT License - see [LICENSE](./LICENSE) for details.
 - **GitLab**: [blueflyio/ossa/openstandardagents](https://gitlab.com/blueflyio/ossa/openstandardagents)
 - **GitHub Mirror**: [blueflyio/openstandardagents](https://github.com/blueflyio/openstandardagents)
 - **Website**: [openstandardagents.org](https://openstandardagents.org)
-- **Spec**: [JSON Schema](./spec/v0.3/ossa-0.3.6.schema.json)
+- **Spec**: [JSON Schema](./spec/v0.4/agent.schema.json)
 
 ## Support
 
