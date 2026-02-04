@@ -35,7 +35,7 @@ See [DEMO.md](https://github.com/blueflyio/openstandardagents/blob/main/DEMO.md)
 
 ---
 
-## What's New in v0.4.1 (Latest)
+## What's New in v0.4.x (Latest)
 
 ### Production-Quality Exports with API Endpoints
 
@@ -98,7 +98,7 @@ OSSA is a **specification standard** that provides a common contract for definin
 
 ## Real-World Benefits
 
-### 1. Agent Lifecycle Management (v0.4.1)
+### 1. Agent Lifecycle Management (v0.4.x)
 
 Track agents through their entire lifecycle from creation to retirement:
 
@@ -129,7 +129,7 @@ metadata:
 - Plan for agent retirement and knowledge transfer
 - Document career progression and achievements
 
-### 2. Agent Genetics & Breeding (v0.4.1)
+### 2. Agent Genetics & Breeding (v0.4.x)
 
 Create new agents by combining traits from successful parent agents:
 
@@ -159,7 +159,7 @@ metadata:
 - Track lineage and inherited traits
 - Optimize agent performance across generations
 
-### 3. Agent Marketplace & Economics (v0.4.1)
+### 3. Agent Marketplace & Economics (v0.4.x)
 
 Monetize agent capabilities and enable agent-to-agent transactions:
 
@@ -189,7 +189,7 @@ metadata:
 - Track agent resource consumption and costs
 - Enable pay-per-use agent services
 
-### 4. Decentralized Identity (v0.4.1)
+### 4. Decentralized Identity (v0.4.x)
 
 Give agents globally unique, verifiable identities:
 
@@ -311,7 +311,7 @@ const agent: OssaAgent = {
 };
 ```
 
-## What's New in v0.4.1 (Release Candidate)
+## What's New in v0.4.x
 
 ### NPM Package Export + Claude Skills Integration
 
