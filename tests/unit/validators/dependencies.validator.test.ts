@@ -13,7 +13,7 @@ describe('DependenciesValidator', () => {
     it('should return valid for manifests with no dependencies', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {},
@@ -32,7 +32,7 @@ describe('DependenciesValidator', () => {
     it('should return valid for manifests with compatible dependencies', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -48,7 +48,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-b', version: '1.2.0' },
           spec: {},
@@ -67,7 +67,7 @@ describe('DependenciesValidator', () => {
     it('should detect version conflicts', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -83,7 +83,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-b' },
           spec: {
@@ -99,7 +99,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'shared-dep', version: '1.5.0' },
           spec: {},
@@ -116,7 +116,7 @@ describe('DependenciesValidator', () => {
     it('should detect circular dependencies', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -132,7 +132,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-b' },
           spec: {
@@ -158,7 +158,7 @@ describe('DependenciesValidator', () => {
     it('should detect missing required dependencies', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -186,7 +186,7 @@ describe('DependenciesValidator', () => {
     it('should not flag missing optional dependencies', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -212,7 +212,7 @@ describe('DependenciesValidator', () => {
     it('should detect contract violations for missing events', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -231,7 +231,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-b' },
           spec: {
@@ -252,7 +252,7 @@ describe('DependenciesValidator', () => {
     it('should validate all contract events are published', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -271,7 +271,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-b' },
           spec: {
@@ -306,7 +306,7 @@ describe('DependenciesValidator', () => {
     it('should detect all types of issues simultaneously', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -332,7 +332,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-b' },
           spec: {
@@ -353,7 +353,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'shared-dep', version: '1.5.0' },
           spec: {},
@@ -373,7 +373,7 @@ describe('DependenciesValidator', () => {
     it('should return no conflicts for compatible versions', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -389,7 +389,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-b' },
           spec: {
@@ -414,7 +414,7 @@ describe('DependenciesValidator', () => {
     it('should detect conflicts between major versions', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -430,7 +430,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-b' },
           spec: {
@@ -457,7 +457,7 @@ describe('DependenciesValidator', () => {
     it('should detect conflicts with exact versions', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -473,7 +473,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-b' },
           spec: {
@@ -498,7 +498,7 @@ describe('DependenciesValidator', () => {
     it('should handle multiple conflicting versions', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -514,7 +514,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-b' },
           spec: {
@@ -530,7 +530,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-c' },
           spec: {
@@ -556,7 +556,7 @@ describe('DependenciesValidator', () => {
     it('should handle invalid semver ranges', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -572,7 +572,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-b' },
           spec: {
@@ -597,7 +597,7 @@ describe('DependenciesValidator', () => {
     it('should allow same version constraints', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -613,7 +613,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-b' },
           spec: {
@@ -638,7 +638,7 @@ describe('DependenciesValidator', () => {
     it('should handle tilde range compatibility', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -654,7 +654,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-b' },
           spec: {
@@ -681,7 +681,7 @@ describe('DependenciesValidator', () => {
     it('should return no cycles for acyclic dependencies', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -697,7 +697,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-b' },
           spec: {
@@ -713,7 +713,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-c' },
           spec: {},
@@ -728,7 +728,7 @@ describe('DependenciesValidator', () => {
     it('should detect simple 2-node cycle', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -744,7 +744,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-b' },
           spec: {
@@ -770,7 +770,7 @@ describe('DependenciesValidator', () => {
     it('should detect 3-node cycle', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -786,7 +786,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-b' },
           spec: {
@@ -802,7 +802,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-c' },
           spec: {
@@ -828,7 +828,7 @@ describe('DependenciesValidator', () => {
     it('should detect self-referencing cycle', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -853,7 +853,7 @@ describe('DependenciesValidator', () => {
     it('should detect multiple independent cycles', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -869,7 +869,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-b' },
           spec: {
@@ -885,7 +885,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-c' },
           spec: {
@@ -901,7 +901,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-d' },
           spec: {
@@ -926,7 +926,7 @@ describe('DependenciesValidator', () => {
     it('should handle complex dependency graphs without cycles', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -939,7 +939,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-b' },
           spec: {
@@ -949,7 +949,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-c' },
           spec: {
@@ -959,7 +959,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-d' },
           spec: {},
@@ -974,13 +974,13 @@ describe('DependenciesValidator', () => {
     it('should handle agents with no dependencies', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {},
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-b' },
           spec: {},
@@ -997,7 +997,7 @@ describe('DependenciesValidator', () => {
     it('should return no missing deps when all required deps exist', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -1013,7 +1013,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-b' },
           spec: {},
@@ -1032,7 +1032,7 @@ describe('DependenciesValidator', () => {
     it('should detect single missing required dependency', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -1063,7 +1063,7 @@ describe('DependenciesValidator', () => {
     it('should detect multiple missing dependencies', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -1097,7 +1097,7 @@ describe('DependenciesValidator', () => {
     it('should ignore optional missing dependencies', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -1126,7 +1126,7 @@ describe('DependenciesValidator', () => {
     it('should handle mix of found and missing dependencies', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -1147,7 +1147,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-b' },
           spec: {},
@@ -1167,7 +1167,7 @@ describe('DependenciesValidator', () => {
     it('should handle agents with no dependencies', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {},
@@ -1186,7 +1186,7 @@ describe('DependenciesValidator', () => {
     it('should handle agents with empty dependencies array', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -1211,7 +1211,7 @@ describe('DependenciesValidator', () => {
     it('should return no violations when contract is satisfied', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -1230,7 +1230,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-b' },
           spec: {
@@ -1253,7 +1253,7 @@ describe('DependenciesValidator', () => {
     it('should detect missing published event', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -1272,7 +1272,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-b' },
           spec: {
@@ -1298,7 +1298,7 @@ describe('DependenciesValidator', () => {
     it('should detect multiple missing events', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -1317,7 +1317,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-b' },
           spec: {
@@ -1340,7 +1340,7 @@ describe('DependenciesValidator', () => {
     it('should ignore dependencies without contracts', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -1356,7 +1356,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-b' },
           spec: {},
@@ -1375,7 +1375,7 @@ describe('DependenciesValidator', () => {
     it('should handle missing target agent', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -1407,7 +1407,7 @@ describe('DependenciesValidator', () => {
     it('should handle target agent with no messaging', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -1426,7 +1426,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-b' },
           spec: {},
@@ -1445,7 +1445,7 @@ describe('DependenciesValidator', () => {
     it('should handle target agent with empty publishes', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -1464,7 +1464,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-b' },
           spec: {
@@ -1487,7 +1487,7 @@ describe('DependenciesValidator', () => {
     it('should validate contract with multiple dependencies', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -1514,7 +1514,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-b' },
           spec: {
@@ -1524,7 +1524,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-c' },
           spec: {
@@ -1547,7 +1547,7 @@ describe('DependenciesValidator', () => {
     it('should validate extra published events are allowed', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -1566,7 +1566,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-b' },
           spec: {
@@ -1605,7 +1605,7 @@ describe('DependenciesValidator', () => {
     it('should generate DOT format for single agent', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {},
@@ -1620,7 +1620,7 @@ describe('DependenciesValidator', () => {
     it('should include dependency edges with versions', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -1636,7 +1636,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-b' },
           spec: {},
@@ -1653,7 +1653,7 @@ describe('DependenciesValidator', () => {
     it('should use dashed lines for optional dependencies', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -1669,7 +1669,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-b' },
           spec: {},
@@ -1685,7 +1685,7 @@ describe('DependenciesValidator', () => {
     it('should generate graph with multiple dependencies', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -1698,13 +1698,13 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-b' },
           spec: {},
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-c' },
           spec: {},
@@ -1720,7 +1720,7 @@ describe('DependenciesValidator', () => {
     it('should handle complex dependency graphs', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -1730,7 +1730,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-b' },
           spec: {
@@ -1740,7 +1740,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-c' },
           spec: {},
@@ -1756,7 +1756,7 @@ describe('DependenciesValidator', () => {
     it('should properly format DOT output', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -1778,13 +1778,13 @@ describe('DependenciesValidator', () => {
     it('should return single batch for independent agents', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {},
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-b' },
           spec: {},
@@ -1802,7 +1802,7 @@ describe('DependenciesValidator', () => {
     it('should order linear dependency chain', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -1812,7 +1812,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-b' },
           spec: {
@@ -1822,7 +1822,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-c' },
           spec: {},
@@ -1840,7 +1840,7 @@ describe('DependenciesValidator', () => {
     it('should create parallel batches for independent branches', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -1852,7 +1852,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-b' },
           spec: {
@@ -1864,7 +1864,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'shared-dep' },
           spec: {},
@@ -1883,7 +1883,7 @@ describe('DependenciesValidator', () => {
     it('should throw error for circular dependencies', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -1893,7 +1893,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-b' },
           spec: {
@@ -1912,7 +1912,7 @@ describe('DependenciesValidator', () => {
     it('should handle diamond dependency pattern', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {
@@ -1925,7 +1925,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-b' },
           spec: {
@@ -1935,7 +1935,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-c' },
           spec: {
@@ -1945,7 +1945,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-d' },
           spec: {},
@@ -1969,7 +1969,7 @@ describe('DependenciesValidator', () => {
     it('should handle complex multi-level dependencies', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'level-3' },
           spec: {
@@ -1982,7 +1982,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'level-2-a' },
           spec: {
@@ -1992,7 +1992,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'level-2-b' },
           spec: {
@@ -2002,7 +2002,7 @@ describe('DependenciesValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'level-1' },
           spec: {},
@@ -2021,19 +2021,19 @@ describe('DependenciesValidator', () => {
     it('should return all agents in deployment order', () => {
       const manifests: AgentManifest[] = [
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-a' },
           spec: {},
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-b' },
           spec: {},
         },
         {
-          apiVersion: 'ossa/v0.3.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'agent-c' },
           spec: {},

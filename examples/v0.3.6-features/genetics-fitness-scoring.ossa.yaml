@@ -19,7 +19,7 @@
 #   - Selection strategies (tournament, roulette, elite)
 #   - Pareto frontier analysis
 
-apiVersion: ossa/v0.3.6
+apiVersion: ossa/v0.4.1
 kind: Agent
 
 metadata:

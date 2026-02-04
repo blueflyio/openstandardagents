@@ -18,7 +18,7 @@ metadata:
     `;
     const result = safeParseYAML(yaml);
     expect(result).toEqual({
-      apiVersion: 'ossa/v0.3.3',
+      apiVersion: 'ossa/v0.4.1',
       kind: 'Agent',
       metadata: {
         name: 'test-agent',
@@ -198,7 +198,7 @@ describe('safeStringifyYAML', () => {
 
   it('should stringify complex OSSA manifest', () => {
     const manifest = {
-      apiVersion: 'ossa/v0.3.3',
+      apiVersion: 'ossa/v0.4.1',
       kind: 'Agent',
       metadata: {
         name: 'test-agent',
@@ -236,7 +236,7 @@ describe('safeStringifyYAML', () => {
 
   it('should round-trip parse and stringify', () => {
     const original = {
-      apiVersion: 'ossa/v0.3.3',
+      apiVersion: 'ossa/v0.4.1',
       metadata: {
         name: 'test',
         labels: {

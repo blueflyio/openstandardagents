@@ -33,7 +33,7 @@ describe('SkillRegistry', () => {
     it('should register a skill from a valid OSSA manifest', async () => {
       const manifestPath = join(tempDir, 'test-skill.ossa.yaml');
       const manifest = {
-        apiVersion: 'ossa/v0.3.5',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: {
           name: 'test-skill',
@@ -73,7 +73,7 @@ describe('SkillRegistry', () => {
     it('should throw error for manifest missing name', async () => {
       const manifestPath = join(tempDir, 'no-name-skill.ossa.yaml');
       const manifest = {
-        apiVersion: 'ossa/v0.3.5',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: {},
       };
@@ -108,7 +108,7 @@ describe('SkillRegistry', () => {
 
       const manifestPath = join(skillDir, 'discovered-skill.ossa.yaml');
       const manifest = {
-        apiVersion: 'ossa/v0.3.5',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: {
           name: 'discovered-skill',
@@ -145,7 +145,7 @@ describe('SkillRegistry', () => {
         'react-performance-expert.ossa.yaml'
       );
       const reactSkill = {
-        apiVersion: 'ossa/v0.3.5',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: {
           name: 'react-performance-expert',
@@ -219,7 +219,7 @@ describe('SkillRegistry', () => {
         'low-priority-skill.ossa.yaml'
       );
       const lowPrioritySkill = {
-        apiVersion: 'ossa/v0.3.5',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: {
           name: 'low-priority-skill',
@@ -357,7 +357,7 @@ describe('SkillRegistry', () => {
 
       const skillPath = join(skillDir, 'pattern-skill.ossa.yaml');
       const skill = {
-        apiVersion: 'ossa/v0.3.5',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: {
           name: 'pattern-skill',

@@ -36,7 +36,7 @@ describe('Wizard Service - Manifest Generation', () => {
   describe('Manifest Structure', () => {
     it('should create valid OSSA manifest structure', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.3.6',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -283,7 +283,7 @@ describe('Wizard Service - Manifest Generation', () => {
   describe('Platform Export', () => {
     it('should delegate export to GenerationService', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.3.6',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -310,7 +310,7 @@ describe('Wizard Service - Manifest Generation', () => {
   describe('Validation Integration', () => {
     it('should validate generated manifest', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.3.6',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: {
           name: 'test-agent',

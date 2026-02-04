@@ -26,7 +26,7 @@ describe.skip('IndexService', () => {
   });
 
   const createTestManifest = (name: string, version: string): OssaAgent => ({
-    apiVersion: 'ossa/v0.3.5',
+    apiVersion: 'ossa/v0.4.1',
     kind: 'Agent',
     metadata: {
       name,

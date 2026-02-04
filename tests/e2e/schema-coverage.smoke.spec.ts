@@ -192,7 +192,7 @@ describe('Smoke Test: Schema Validation Coverage', () => {
   describe('Validation Error Quality', () => {
     it('provides specific error messages for missing required fields', async () => {
       const invalidManifest = {
-        apiVersion: 'ossa/v0.3.5',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         // Missing metadata and spec
       };
@@ -216,7 +216,7 @@ describe('Smoke Test: Schema Validation Coverage', () => {
 
     it('provides specific error messages for invalid field types', async () => {
       const invalidManifest = {
-        apiVersion: 'ossa/v0.3.5',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: {
           name: 123, // Should be string

@@ -2,6 +2,7 @@ import { VersionManager } from './version-manager';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as os from 'os';
+import { API_VERSION } from '../../../src/version.js';
 
 describe('VersionManager', () => {
   let versionManager: VersionManager;

@@ -37,7 +37,7 @@ describe.skip('ConformanceService', () => {
   });
 
   const mockMinimalManifest: OssaAgent = {
-    apiVersion: 'ossa/v0.3.5',
+    apiVersion: 'ossa/v0.4.1',
     kind: 'Agent',
     metadata: {
       name: 'test-agent',

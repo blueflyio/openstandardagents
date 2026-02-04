@@ -1,4 +1,4 @@
-apiVersion: ossa/v0.3.6
+apiVersion: ossa/v0.4.1
 kind: Agent
 metadata:
   name: k8s-troubleshooter
@@ -11,7 +11,7 @@ metadata:
     infrastructure: "true"
     diagnostics: "true"
   annotations:
-    ossa.io/migration: legacy-v1.0-to-ossa/v0.3.4
+    ossa.io/migration: legacy-v1.0-to-ossa/v0.4.1
     ossa.io/migrated-date: 2026-01-10
 spec:
   role: monitoring

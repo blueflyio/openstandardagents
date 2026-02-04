@@ -1,6 +1,6 @@
 # Example: Simple ETL Workflow
 # Demonstrates sequential Tasks with data transformation
-apiVersion: ossa/v0.3.6
+apiVersion: ossa/v0.4.1
 kind: Workflow
 metadata:
   name: simple-etl

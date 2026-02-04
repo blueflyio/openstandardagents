@@ -8,7 +8,7 @@ describe('OpenAIAdapter', () => {
 
   beforeEach(() => {
     mockManifest = {
-      apiVersion: 'ossa/v0.3.3',
+      apiVersion: 'ossa/v0.4.1',
       kind: 'Agent',
       metadata: {
         name: 'test-agent',

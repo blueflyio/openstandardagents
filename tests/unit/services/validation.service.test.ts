@@ -14,7 +14,7 @@ describe.skip('ValidationService', () => {
   describe('validate', () => {
     it('should validate valid manifest', async () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: { name: 'test', version: '1.0.0' },
         spec: {
@@ -39,7 +39,7 @@ describe.skip('ValidationService', () => {
 
     it('should validate with specific version', async () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: { name: 'test', version: '1.0.0' },
         spec: {
@@ -56,7 +56,7 @@ describe.skip('ValidationService', () => {
 
     it('should use current version when not specified', async () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3',
+        apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
         metadata: { name: 'test', version: '1.0.0' },
         spec: {
@@ -76,7 +76,7 @@ describe.skip('ValidationService', () => {
     it('should validate multiple manifests', async () => {
       const manifests = [
         {
-          apiVersion: 'ossa/v0.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'test1', version: '1.0.0' },
           spec: {
@@ -88,7 +88,7 @@ describe.skip('ValidationService', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'test2', version: '1.0.0' },
           spec: {
@@ -109,7 +109,7 @@ describe.skip('ValidationService', () => {
     it('should handle mixed valid and invalid manifests', async () => {
       const manifests = [
         {
-          apiVersion: 'ossa/v0.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'test', version: '1.0.0' },
           spec: {
@@ -136,7 +136,7 @@ describe.skip('ValidationService', () => {
     it('should use specified version', async () => {
       const manifests = [
         {
-          apiVersion: 'ossa/v0.3',
+          apiVersion: 'ossa/v0.4.1',
           kind: 'Agent',
           metadata: { name: 'test', version: '1.0.0' },
           spec: {

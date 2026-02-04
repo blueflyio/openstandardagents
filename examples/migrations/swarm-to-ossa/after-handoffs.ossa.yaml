@@ -15,7 +15,7 @@
 # ============================================================================
 # Sales Agent - Entry Point
 # ============================================================================
-apiVersion: ossa/v0.3.6
+apiVersion: ossa/v0.4.1
 kind: Agent
 metadata:
   name: sales-agent
@@ -81,7 +81,7 @@ spec:
 # ============================================================================
 # Order Verification Agent
 # ============================================================================
-apiVersion: ossa/v0.3.6
+apiVersion: ossa/v0.4.1
 kind: Agent
 metadata:
   name: order-verification-agent
@@ -160,7 +160,7 @@ spec:
 # ============================================================================
 # Payment Processing Agent
 # ============================================================================
-apiVersion: ossa/v0.3.6
+apiVersion: ossa/v0.4.1
 kind: Agent
 metadata:
   name: payment-processing-agent
@@ -270,7 +270,7 @@ spec:
 # ============================================================================
 # Fulfillment Agent
 # ============================================================================
-apiVersion: ossa/v0.3.6
+apiVersion: ossa/v0.4.1
 kind: Agent
 metadata:
   name: fulfillment-agent
@@ -339,7 +339,7 @@ spec:
 # ============================================================================
 # Supervisor Agent
 # ============================================================================
-apiVersion: ossa/v0.3.6
+apiVersion: ossa/v0.4.1
 kind: Agent
 metadata:
   name: supervisor-agent
@@ -421,7 +421,7 @@ spec:
 # ============================================================================
 # Workflow Orchestration (Bonus: NOT POSSIBLE in Swarm!)
 # ============================================================================
-apiVersion: ossa/v0.3.6
+apiVersion: ossa/v0.4.1
 kind: Workflow
 metadata:
   name: order-processing-workflow
