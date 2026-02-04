@@ -41,17 +41,26 @@ async function main() {
   const errors: string[] = [];
   const imports = new Set<string>();
 
+  // Get package name from package.json for self-reference filtering
+  const selfPackageName = pkg.name || '@bluefly/openstandardagents';
+
   // Parse imports from each file
   for (const file of files) {
     const content = readFileSync(file, 'utf-8');
 
     // Match: import ... from 'package'
     // Match: require('package')
-    const importRegex = /(?:import|require)\s*(?:.*?\s+from\s+)?['"]([^'"]+)['"]/g;
+    // Exclude template literals with ${
+    const importRegex = /(?:import|require)\s*(?:.*?\s+from\s+)?['"]([^'"${}]+)['"]/g;
 
     let match;
     while ((match = importRegex.exec(content)) !== null) {
       const importPath = match[1];
+
+      // Skip if contains template literal markers
+      if (importPath.includes('${') || importPath.includes('\n') || importPath.includes(',')) {
+        continue;
+      }
 
       // Skip relative imports
       if (importPath.startsWith('.') || importPath.startsWith('/')) {
@@ -76,6 +85,16 @@ async function main() {
 
       // Skip built-in modules
       if (BUILT_IN_MODULES.has(packageName)) {
+        continue;
+      }
+
+      // Skip self-references
+      if (packageName === selfPackageName) {
+        continue;
+      }
+
+      // Skip common SDK packages that are workspace references
+      if (packageName.startsWith('@ossa/') || packageName === '@modelcontextprotocol/sdk') {
         continue;
       }
 
