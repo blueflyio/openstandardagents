@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.2] - 2026-02-04
+
+### Fixed
+- Added missing runtime dependencies preventing global installation:
+  - `cli-table3` - Required by CLI wizard UI (broken in v0.4.1)
+  - `uuid` - Required by taxonomy service
+  - `js-yaml` - Required by YAML generators and tools
+  - `langchain` - Required by LangChain adapter
+  - `@langchain/core` - Required by LangChain integration
+  - `@langchain/openai` - Required by LangChain LLM support
+  - `@langchain/anthropic` - Required by LangChain Anthropic support
+  - `@modelcontextprotocol/sdk` - Required by MCP adapter
+  - `@temporalio/workflow` - Required by Temporal adapter
+  - `@temporalio/activity` - Required by Temporal adapter
+
+### Added
+- Dependency validation tool (`tools/validate-dependencies.ts`) to catch missing dependencies
+- Pre-publish dependency check in `prepublishOnly` script
+- `validate:deps` npm script to manually validate dependencies
+
 ## [0.4.1] - 2026-02-04
 
 ### Added
