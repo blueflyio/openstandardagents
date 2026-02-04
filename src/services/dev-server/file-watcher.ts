@@ -65,7 +65,9 @@ export interface FileChangeEvent {
   };
 }
 
-export type FileChangeCallback = (event: FileChangeEvent) => void | Promise<void>;
+export type FileChangeCallback = (
+  event: FileChangeEvent
+) => void | Promise<void>;
 
 /**
  * File Watcher Service
@@ -82,7 +84,12 @@ export class FileWatcher {
     this.options = {
       debounceMs: 300,
       patterns: ['**/*.ossa.{yaml,yml}'],
-      ignored: ['**/node_modules/**', '**/.git/**', '**/dist/**', '**/build/**'],
+      ignored: [
+        '**/node_modules/**',
+        '**/.git/**',
+        '**/dist/**',
+        '**/build/**',
+      ],
       ...options,
     };
   }
@@ -201,7 +208,10 @@ export class FileWatcher {
       // Simple pattern matching (*.ossa.yaml, *.ossa.yml)
       if (pattern.includes('*')) {
         const regex = new RegExp(
-          pattern.replace(/\*\*/g, '.*').replace(/\*/g, '[^/]*').replace(/\./g, '\\.')
+          pattern
+            .replace(/\*\*/g, '.*')
+            .replace(/\*/g, '[^/]*')
+            .replace(/\./g, '\\.')
         );
         return regex.test(filePath);
       }
@@ -215,7 +225,7 @@ export class FileWatcher {
   private handleChange(
     type: 'add' | 'change' | 'unlink',
     filePath: string,
-    stats?: any
+    stats?: { size: number; mtime: Date }
   ): void {
     const absolutePath = path.resolve(filePath);
 

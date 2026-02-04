@@ -83,11 +83,13 @@ export const devCommand = new Command('dev')
         await new Promise(() => {
           // Never resolves - server runs until interrupted
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
         console.error(chalk.red('\n❌ Error starting dev server:'));
-        console.error(chalk.red(error.message));
+        console.error(chalk.red(errorMessage));
 
-        if (options.verbose && error.stack) {
+        if (options.verbose && error instanceof Error && error.stack) {
           console.error(chalk.gray(error.stack));
         }
 

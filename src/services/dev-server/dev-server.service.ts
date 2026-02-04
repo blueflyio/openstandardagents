@@ -12,7 +12,7 @@
  * SOLID: Single Responsibility - Dev server orchestration
  */
 
-import { createServer, Server } from 'http';
+import { createServer, Server, IncomingMessage, ServerResponse } from 'http';
 import { readFile } from 'fs/promises';
 import path from 'path';
 import { FileWatcher, type FileChangeEvent } from './file-watcher.js';
@@ -261,16 +261,21 @@ export class DevServer {
 
       // Broadcast validation result
       this.wsServer.broadcastValidation(result);
-    } catch (error: any) {
-      console.error(`Error validating ${filePath}:`, error.message);
-      this.wsServer.broadcastError(`Validation error: ${error.message}`);
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      console.error(`Error validating ${filePath}:`, errorMessage);
+      this.wsServer.broadcastError(`Validation error: ${errorMessage}`);
     }
   }
 
   /**
    * Handle HTTP requests
    */
-  private async handleRequest(req: any, res: any): Promise<void> {
+  private async handleRequest(
+    req: IncomingMessage,
+    res: ServerResponse
+  ): Promise<void> {
     const url = req.url || '/';
 
     if (url === '/' || url === '/index.html') {
@@ -290,14 +295,14 @@ export class DevServer {
   /**
    * Serve test UI HTML
    */
-  private async serveTestUI(res: any): Promise<void> {
+  private async serveTestUI(res: ServerResponse): Promise<void> {
     try {
       const htmlPath = path.join(__dirname, 'test-ui.html');
       const html = await readFile(htmlPath, 'utf-8');
 
       res.writeHead(200, { 'Content-Type': 'text/html' });
       res.end(html);
-    } catch (error) {
+    } catch (_error) {
       // Generate inline HTML if file not found
       const inlineHtml = this.generateInlineTestUI();
       res.writeHead(200, { 'Content-Type': 'text/html' });

@@ -146,7 +146,8 @@ export interface LiveValidatorOptions {
  */
 export class LiveValidator {
   private validationService: ValidationService;
-  private cache: Map<string, { hash: string; result: ValidationResult }> = new Map();
+  private cache: Map<string, { hash: string; result: ValidationResult }> =
+    new Map();
   private options: Required<LiveValidatorOptions>;
 
   constructor(options: LiveValidatorOptions = {}) {
@@ -190,16 +191,27 @@ export class LiveValidator {
 
       try {
         manifest = yaml.parse(content) as OssaAgent;
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const err = error as {
+          message: string;
+          linePos?: Array<{ line: number; col: number }>;
+        };
         errors.push({
           level: 'error',
-          message: `YAML parse error: ${error.message}`,
-          line: error.linePos?.[0]?.line,
-          column: error.linePos?.[0]?.col,
+          message: `YAML parse error: ${err.message}`,
+          line: err.linePos?.[0]?.line,
+          column: err.linePos?.[0]?.col,
           code: 'YAML_PARSE_ERROR',
         });
 
-        return this.createResult(filePath, false, errors, warnings, undefined, startTime);
+        return this.createResult(
+          filePath,
+          false,
+          errors,
+          warnings,
+          undefined,
+          startTime
+        );
       }
 
       // Schema validation
@@ -238,15 +250,17 @@ export class LiveValidator {
       }
 
       return result;
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Unexpected error
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       return this.createResult(
         filePath,
         false,
         [
           {
             level: 'error',
-            message: `Validation error: ${error.message}`,
+            message: `Validation error: ${errorMessage}`,
             code: 'VALIDATION_ERROR',
           },
         ],
@@ -295,10 +309,12 @@ export class LiveValidator {
           });
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       errors.push({
         level: 'error',
-        message: `Schema validation failed: ${error.message}`,
+        message: `Schema validation failed: ${errorMessage}`,
         code: 'SCHEMA_VALIDATION_FAILED',
       });
     }
@@ -350,14 +366,20 @@ export class LiveValidator {
   /**
    * Validate best practices
    */
-  private async validateBestPractices(manifest: OssaAgent): Promise<ValidationWarning[]> {
+  private async validateBestPractices(
+    manifest: OssaAgent
+  ): Promise<ValidationWarning[]> {
     const warnings: ValidationWarning[] = [];
 
     // Check description
-    if (!manifest.metadata?.description || manifest.metadata.description.length < 10) {
+    if (
+      !manifest.metadata?.description ||
+      manifest.metadata.description.length < 10
+    ) {
       warnings.push({
         level: 'warning',
-        message: 'Agent description should be descriptive (at least 10 characters)',
+        message:
+          'Agent description should be descriptive (at least 10 characters)',
         path: '/metadata/description',
         suggestion: 'Add a clear description of what this agent does',
       });
@@ -369,7 +391,8 @@ export class LiveValidator {
         level: 'warning',
         message: 'Agent role should be detailed (at least 20 characters)',
         path: '/spec/role',
-        suggestion: 'Provide a detailed role description for better agent behavior',
+        suggestion:
+          'Provide a detailed role description for better agent behavior',
       });
     }
 
@@ -389,7 +412,8 @@ export class LiveValidator {
         level: 'warning',
         message: 'Large number of tools (>10) may impact performance',
         path: '/spec/tools',
-        suggestion: 'Consider splitting into multiple agents or reducing tool count',
+        suggestion:
+          'Consider splitting into multiple agents or reducing tool count',
       });
     }
 
@@ -411,15 +435,30 @@ export class LiveValidator {
 
       // Navigate to path
       const parts = jsonPath.split('/').filter(Boolean);
-      let node: any = doc.contents;
+      let node: unknown = doc.contents;
 
       for (const part of parts) {
         if (!node) break;
-        node = node.get ? node.get(part) : node[part];
+        if (
+          typeof node === 'object' &&
+          node !== null &&
+          'get' in node &&
+          typeof (node as { get: (key: string) => unknown }).get === 'function'
+        ) {
+          node = (node as { get: (key: string) => unknown }).get(part);
+        } else if (typeof node === 'object' && node !== null && part in node) {
+          node = (node as Record<string, unknown>)[part];
+        }
       }
 
-      if (node?.range) {
-        const lines = content.substring(0, node.range[0]).split('\n');
+      if (
+        typeof node === 'object' &&
+        node !== null &&
+        'range' in node &&
+        Array.isArray((node as { range: unknown }).range)
+      ) {
+        const range = (node as { range: [number, number] }).range;
+        const lines = content.substring(0, range[0]).split('\n');
         return {
           line: lines.length,
           column: lines[lines.length - 1].length + 1,
