@@ -28,7 +28,7 @@ describe('VersionDetectionService', () => {
 
       const result = await service.detectVersion(manifest);
 
-      expect(result.version).toBe('0.3.5');
+      expect(result.version).toBe('0.4.1');
       expect(result.confidence).toBe('high');
       expect(result.source).toBe('apiVersion');
       expect(result.warnings).toHaveLength(0);
@@ -82,40 +82,40 @@ describe('VersionDetectionService', () => {
 
   describe('needsMigration', () => {
     it('should return false when versions match', () => {
-      const result = service.needsMigration('0.3.5', '0.3.5');
+      const result = service.needsMigration('0.4.1', '0.4.1');
       expect(result).toBe(false);
     });
 
     it('should return true when current < target', () => {
-      const result = service.needsMigration('0.3.3', '0.3.5');
+      const result = service.needsMigration('0.3.3', '0.4.1');
       expect(result).toBe(true);
     });
 
     it('should return false when current > target', () => {
-      const result = service.needsMigration('0.3.5', '0.3.3');
+      const result = service.needsMigration('0.4.1', '0.3.3');
       expect(result).toBe(false);
     });
 
     it('should return true for unknown version', () => {
-      const result = service.needsMigration('unknown', '0.3.5');
+      const result = service.needsMigration('unknown', '0.4.1');
       expect(result).toBe(true);
     });
   });
 
   describe('getMigrationPath', () => {
     it('should return empty array when no migration needed', () => {
-      const path = service.getMigrationPath('0.3.5', '0.3.5');
+      const path = service.getMigrationPath('0.4.1', '0.4.1');
       expect(path).toHaveLength(0);
     });
 
     it('should return direct path for patch upgrade', () => {
-      const path = service.getMigrationPath('0.3.3', '0.3.5');
+      const path = service.getMigrationPath('0.3.3', '0.4.1');
       expect(path.length).toBeGreaterThan(0);
-      expect(path[path.length - 1]).toBe('0.3.5');
+      expect(path[path.length - 1]).toBe('0.4.1');
     });
 
     it('should return empty array for downgrade', () => {
-      const path = service.getMigrationPath('0.3.5', '0.3.3');
+      const path = service.getMigrationPath('0.4.1', '0.3.3');
       expect(path).toHaveLength(0);
     });
   });

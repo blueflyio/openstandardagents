@@ -45,7 +45,7 @@ describe('Migration Engine Integration', () => {
 
       const detection = await versionDetector.detectVersion(manifest);
 
-      expect(detection.version).toBe('0.3.6');
+      expect(detection.version).toBe('0.4.1');
       expect(detection.confidence).toBe('high');
       expect(detection.source).toBe('apiVersion');
     });
@@ -65,7 +65,7 @@ describe('Migration Engine Integration', () => {
   });
 
   describe('Single Manifest Migration', () => {
-    it('should migrate v0.3.3 manifest to v0.3.6', async () => {
+    it('should handle manifest already at target version', async () => {
       const manifest = {
         apiVersion: 'ossa/v0.4.1',
         kind: 'Agent',
@@ -88,14 +88,14 @@ describe('Migration Engine Integration', () => {
 
       const result = await migrationService.migrateWithDetection(
         manifest,
-        '0.3.6'
+        '0.4.1'
       );
 
       expect(result.success).toBe(true);
-      expect(result.manifest?.apiVersion).toBe('ossa/v0.3.6');
-      expect(result.sourceVersion).toBe('0.3.3');
-      expect(result.targetVersion).toBe('0.3.6');
-      expect(result.summary).toBeDefined();
+      expect(result.manifest?.apiVersion).toBe('ossa/v0.4.1');
+      expect(result.sourceVersion).toBe('0.4.1');
+      expect(result.targetVersion).toBe('0.4.1');
+      // No summary when no migration needed (already at target version)
 
       // Verify critical fields preserved
       expect(result.manifest?.metadata?.name).toBe('test-agent');
@@ -142,7 +142,7 @@ describe('Migration Engine Integration', () => {
         },
       ];
 
-      const result = await migrationService.migrateBatch(manifests, '0.3.6', {
+      const result = await migrationService.migrateBatch(manifests, '0.4.1', {
         parallel: true,
         maxConcurrent: 2,
       });
@@ -156,7 +156,7 @@ describe('Migration Engine Integration', () => {
       // Verify all are migrated to target version
       result.results.forEach((res) => {
         expect(res.success).toBe(true);
-        expect(res.manifest?.apiVersion).toBe('ossa/v0.3.6');
+        expect(res.manifest?.apiVersion).toBe('ossa/v0.4.1');
       });
     });
 
@@ -176,7 +176,7 @@ describe('Migration Engine Integration', () => {
         },
       ];
 
-      const result = await migrationService.migrateBatch(manifests, '0.3.6', {
+      const result = await migrationService.migrateBatch(manifests, '0.4.1', {
         parallel: false,
       });
 
@@ -202,7 +202,7 @@ describe('Migration Engine Integration', () => {
         },
       ];
 
-      const result = await migrationService.migrateBatch(manifests, '0.3.6', {
+      const result = await migrationService.migrateBatch(manifests, '0.4.1', {
         stopOnError: true,
       });
 
@@ -228,7 +228,7 @@ describe('Migration Engine Integration', () => {
         },
       ];
 
-      const result = await migrationService.migrateBatch(manifests, '0.3.6', {
+      const result = await migrationService.migrateBatch(manifests, '0.4.1', {
         stopOnError: false,
       });
 

@@ -20,7 +20,7 @@ describe('ossa validate', () => {
       },
     };
 
-    expect(validManifest.apiVersion).toBe('ossa/v0.3.3');
+    expect(validManifest.apiVersion).toBe('ossa/v0.4.1');
     expect(validManifest.kind).toBe('Agent');
     expect(validManifest.metadata.name).toBeTruthy();
     expect(validManifest.spec).toBeDefined();
@@ -28,11 +28,11 @@ describe('ossa validate', () => {
 
   it('should reject invalid apiVersion', () => {
     const invalidManifest = {
-      apiVersion: 'ossa/v0.4.1',
+      apiVersion: 'ossa/v0.2.0',
       kind: 'Agent',
     };
 
-    expect(invalidManifest.apiVersion).not.toBe('ossa/v0.3.3');
+    expect(invalidManifest.apiVersion).not.toBe('ossa/v0.4.1');
   });
 
   it('should reject missing required fields', () => {
@@ -44,7 +44,7 @@ describe('ossa validate', () => {
 
     invalidManifests.forEach((manifest) => {
       const isValid =
-        manifest.apiVersion === 'ossa/v0.3.3' &&
+        manifest.apiVersion === 'ossa/v0.4.1' &&
         manifest.kind === 'Agent' &&
         (manifest as any).metadata?.name &&
         (manifest as any).spec;

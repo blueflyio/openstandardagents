@@ -11,7 +11,7 @@ import {
 describe('safeParseYAML', () => {
   it('should parse valid YAML', () => {
     const yaml = `
-apiVersion: ossa/v0.3.3
+apiVersion: ossa/v0.4.1
 kind: Agent
 metadata:
   name: test-agent
@@ -213,7 +213,7 @@ describe('safeStringifyYAML', () => {
       },
     };
     const result = safeStringifyYAML(manifest);
-    expect(result).toContain('apiVersion: ossa/v0.3.3');
+    expect(result).toContain('apiVersion: ossa/v0.4.1');
     expect(result).toContain('kind: Agent');
     expect(result).toContain('name: test-agent');
     expect(result).toContain('provider: openai');
