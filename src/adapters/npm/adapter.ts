@@ -26,7 +26,7 @@ export class NPMAdapter extends BaseAdapter {
   readonly platform = 'npm';
   readonly displayName = 'NPM Package';
   readonly description = 'Export agent as installable npm package';
-  readonly supportedVersions = ['v0.3.6', 'v0.4.0'];
+  readonly supportedVersions = ['v0.3.6', 'v0.4.1'];
 
   private converter = new NPMConverter();
   private _skillsService?: ClaudeSkillsService;
@@ -230,7 +230,7 @@ export class NPMAdapter extends BaseAdapter {
    */
   getExample(): OssaAgent {
     return {
-      apiVersion: 'ossa/v0.4.0',
+      apiVersion: 'ossa/v0.4.1',
       kind: 'Agent',
       metadata: {
         name: 'example-npm-agent',

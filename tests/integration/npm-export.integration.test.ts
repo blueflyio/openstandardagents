@@ -12,7 +12,7 @@ import * as yaml from 'yaml';
 describe('NPM Export Integration', () => {
   it('should generate valid package.json', async () => {
     const manifest: OssaAgent = {
-      apiVersion: 'ossa/v0.4.0',
+      apiVersion: 'ossa/v0.4.1',
       kind: 'Agent',
       metadata: {
         name: 'test-agent',
@@ -54,7 +54,7 @@ describe('NPM Export Integration', () => {
 
   it('should generate valid OpenAPI spec', async () => {
     const manifest: OssaAgent = {
-      apiVersion: 'ossa/v0.4.0',
+      apiVersion: 'ossa/v0.4.1',
       kind: 'Agent',
       metadata: {
         name: 'api-agent',
@@ -86,7 +86,7 @@ describe('NPM Export Integration', () => {
 
   it('should generate valid TypeScript files', async () => {
     const manifest: OssaAgent = {
-      apiVersion: 'ossa/v0.4.0',
+      apiVersion: 'ossa/v0.4.1',
       kind: 'Agent',
       metadata: {
         name: 'ts-agent',
@@ -128,7 +128,7 @@ describe('NPM Export Integration', () => {
 
   it('should generate working Dockerfile', async () => {
     const manifest: OssaAgent = {
-      apiVersion: 'ossa/v0.4.0',
+      apiVersion: 'ossa/v0.4.1',
       kind: 'Agent',
       metadata: {
         name: 'docker-agent',
@@ -158,7 +158,7 @@ describe('NPM Export Integration', () => {
 
   it('should generate valid docker-compose.yaml', async () => {
     const manifest: OssaAgent = {
-      apiVersion: 'ossa/v0.4.0',
+      apiVersion: 'ossa/v0.4.1',
       kind: 'Agent',
       metadata: {
         name: 'compose-agent',
@@ -192,7 +192,7 @@ describe('NPM Export Integration', () => {
 
   it('should generate complete publishable package', async () => {
     const manifest: OssaAgent = {
-      apiVersion: 'ossa/v0.4.0',
+      apiVersion: 'ossa/v0.4.1',
       kind: 'Agent',
       metadata: {
         name: 'complete-agent',

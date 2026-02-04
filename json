@@ -1,10 +1,10 @@
 {
   "version": "1.0.0",
-  "agentName": "ossa-cli-test-H9lIAq",
+  "agentName": "ossa-cli-test-uIF1oD",
   "documents": [
     {
       "id": "d8b8cbbec1ed15a6",
-      "filePath": "/var/folders/dx/jxsfkbqj0r993_l28f071f5w0000gn/T/ossa-cli-test-H9lIAq/doc.md",
+      "filePath": "/var/folders/dx/jxsfkbqj0r993_l28f071f5w0000gn/T/ossa-cli-test-uIF1oD/doc.md",
       "content": "# Test",
       "embedding": [
         0.6941176470588235,
@@ -140,7 +140,7 @@
         "fileName": "doc.md",
         "fileType": ".md",
         "size": 6,
-        "lastModified": "2026-02-03T11:05:56.210Z",
+        "lastModified": "2026-02-04T11:29:43.369Z",
         "hash": "d8b8cbbec1ed15a6679650ae561b127dc879340d3b6bb2105fc68d397489cd5e"
       }
     }
@@ -148,7 +148,7 @@
   "metadata": {
     "totalDocuments": 1,
     "totalSize": 6,
-    "lastIndexed": "2026-02-03T11:05:57.521Z",
+    "lastIndexed": "2026-02-04T11:29:48.126Z",
     "indexPath": "json"
   }
 }

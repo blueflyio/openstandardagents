@@ -92,7 +92,7 @@ console.log(agent.runtime);
 // {
 //   platform: 'npm',
 //   version: '1.0.0',
-//   ossaVersion: 'v0.4.0'
+//   ossaVersion: 'v0.4.1'
 // }
 ```
 
@@ -447,7 +447,7 @@ claude --print "use my-agent to review this code"
 **OSSA Manifest:**
 
 ```yaml
-apiVersion: ossa/v0.4.0
+apiVersion: ossa/v0.4.1
 kind: Agent
 metadata:
   name: code-reviewer
@@ -497,7 +497,7 @@ const manifest = reviewer.manifest();  // Full YAML
 **OSSA Manifest:**
 
 ```yaml
-apiVersion: ossa/v0.4.0
+apiVersion: ossa/v0.4.1
 kind: Agent
 metadata:
   name: data-analyst

@@ -1,0 +1,303 @@
+services:
+  # Main OSSA Buildkit Service
+  - type: web
+    name: {{serviceName}}
+    runtime: node
+    env: {{nodeEnv}}
+    region: {{region}}
+    plan: {{plan}}
+    branch: {{branch}}
+    buildCommand: {{buildCommand}}
+    startCommand: {{startCommand}}
+    healthCheckPath: /health
+    numInstances: {{replicas}}
+    autoDeploy: {{autoDeploy}}
+    preDeployCommand: {{preDeployCommand}}
+
+    envVars:
+      - key: NODE_ENV
+        value: {{nodeEnv}}
+
+      - key: PORT
+        value: {{port}}
+
+      - key: LOG_LEVEL
+        value: {{logLevel}}
+
+      - key: API_BASE_URL
+        sync: false
+
+      - key: DRUPAL_BASE_URL
+        sync: false
+
+      - key: DRUPAL_API_KEY
+        sync: false
+
+      - key: DATABASE_URL
+        fromDatabase:
+          name: {{serviceName}}-postgres
+          property: connectionString
+
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: {{serviceName}}-redis
+          property: connectionString
+
+      - key: QDRANT_URL
+        sync: false
+
+      - key: QDRANT_API_KEY
+        sync: false
+
+      - key: JWT_SECRET
+        generateValue: true
+        sync: false
+
+      - key: ENCRYPTION_KEY
+        generateValue: true
+        sync: false
+
+      - key: ALLOWED_ORIGINS
+        value: {{allowedOrigins}}
+
+      - key: RATE_LIMIT_WINDOW
+        value: {{rateLimitWindow}}
+
+      - key: RATE_LIMIT_MAX
+        value: {{rateLimitMax}}
+
+      - key: AGENT_REGISTRY_URL
+        sync: false
+
+      - key: VECTOR_DB_COLLECTION
+        value: {{vectorDbCollection}}
+
+      - key: MAX_CONCURRENT_AGENTS
+        value: {{maxConcurrentAgents}}
+
+      - key: AGENT_TIMEOUT_MS
+        value: {{agentTimeoutMs}}
+
+      - key: CACHE_TTL_SECONDS
+        value: {{cacheTtlSeconds}}
+
+      - key: ENABLE_METRICS
+        value: {{enableMetrics}}
+
+      - key: METRICS_PORT
+        value: {{metricsPort}}
+
+      - key: SENTRY_DSN
+        sync: false
+
+      - key: SENTRY_ENVIRONMENT
+        value: {{sentryEnvironment}}
+
+      - key: ENABLE_DEBUG
+        value: {{enableDebug}}
+
+    scaling:
+      minInstances: {{minReplicas}}
+      maxInstances: {{maxReplicas}}
+      targetMemoryPercent: {{targetMemory}}
+      targetCPUPercent: {{targetCpu}}
+
+    domains:
+      - {{customDomain}}
+
+    routes:
+      - type: http
+        source: /*
+        destination: /
+
+    disk:
+      name: {{serviceName}}-disk
+      mountPath: /app/data
+      sizeGB: {{diskSizeGb}}
+
+  # Bridge Server Service
+  - type: web
+    name: {{serviceName}}-bridge
+    runtime: node
+    env: {{nodeEnv}}
+    region: {{region}}
+    plan: {{bridgePlan}}
+    branch: {{branch}}
+    buildCommand: {{bridgeBuildCommand}}
+    startCommand: {{bridgeStartCommand}}
+    healthCheckPath: /health
+    numInstances: {{bridgeReplicas}}
+    autoDeploy: {{autoDeploy}}
+
+    envVars:
+      - key: NODE_ENV
+        value: {{nodeEnv}}
+
+      - key: PORT
+        value: {{bridgePort}}
+
+      - key: LOG_LEVEL
+        value: {{logLevel}}
+
+      - key: DRUPAL_BASE_URL
+        sync: false
+
+      - key: DRUPAL_API_KEY
+        sync: false
+
+      - key: BRIDGE_API_KEY
+        generateValue: true
+        sync: false
+
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: {{serviceName}}-redis
+          property: connectionString
+
+      - key: AGENT_REGISTRY_URL
+        sync: false
+
+      - key: MAX_PAYLOAD_SIZE
+        value: {{maxPayloadSize}}
+
+      - key: REQUEST_TIMEOUT_MS
+        value: {{requestTimeoutMs}}
+
+      - key: ENABLE_CORS
+        value: {{enableCors}}
+
+      - key: CORS_ORIGINS
+        value: {{corsOrigins}}
+
+    scaling:
+      minInstances: {{bridgeMinReplicas}}
+      maxInstances: {{bridgeMaxReplicas}}
+      targetMemoryPercent: {{bridgeTargetMemory}}
+      targetCPUPercent: {{bridgeTargetCpu}}
+
+    domains:
+      - {{bridgeCustomDomain}}
+
+databases:
+  # PostgreSQL Database
+  - name: {{serviceName}}-postgres
+    databaseName: {{postgresDb}}
+    user: {{postgresUser}}
+    plan: {{postgresPlan}}
+    region: {{region}}
+    ipAllowList: []
+
+    postgresMajorVersion: 16
+
+    envVars:
+      - key: POSTGRES_MAX_CONNECTIONS
+        value: {{postgresMaxConnections}}
+
+      - key: POSTGRES_SHARED_BUFFERS
+        value: {{postgresSharedBuffers}}
+
+# Redis Cache
+- type: redis
+  name: {{serviceName}}-redis
+  plan: {{redisPlan}}
+  region: {{region}}
+  ipAllowList: []
+  maxmemoryPolicy: {{redisMaxMemoryPolicy}}
+
+# Background Workers (Optional)
+- type: worker
+  name: {{serviceName}}-worker
+  runtime: node
+  env: {{nodeEnv}}
+  region: {{region}}
+  plan: {{workerPlan}}
+  branch: {{branch}}
+  buildCommand: {{buildCommand}}
+  startCommand: {{workerStartCommand}}
+  numInstances: {{workerReplicas}}
+  autoDeploy: {{autoDeploy}}
+
+  envVars:
+    - key: NODE_ENV
+      value: {{nodeEnv}}
+
+    - key: LOG_LEVEL
+      value: {{logLevel}}
+
+    - key: DATABASE_URL
+      fromDatabase:
+        name: {{serviceName}}-postgres
+        property: connectionString
+
+    - key: REDIS_URL
+      fromService:
+        type: redis
+        name: {{serviceName}}-redis
+        property: connectionString
+
+    - key: WORKER_CONCURRENCY
+      value: {{workerConcurrency}}
+
+    - key: WORKER_POLL_INTERVAL_MS
+      value: {{workerPollInterval}}
+
+  scaling:
+    minInstances: {{workerMinReplicas}}
+    maxInstances: {{workerMaxReplicas}}
+    targetMemoryPercent: {{workerTargetMemory}}
+    targetCPUPercent: {{workerTargetCpu}}
+
+# Cron Jobs (Optional)
+- type: cron
+  name: {{serviceName}}-cron-cleanup
+  runtime: node
+  env: {{nodeEnv}}
+  region: {{region}}
+  plan: starter
+  branch: {{branch}}
+  buildCommand: {{buildCommand}}
+  schedule: "{{cleanupCronSchedule}}"
+  startCommand: {{cleanupCronCommand}}
+
+  envVars:
+    - key: NODE_ENV
+      value: {{nodeEnv}}
+
+    - key: DATABASE_URL
+      fromDatabase:
+        name: {{serviceName}}-postgres
+        property: connectionString
+
+    - key: CLEANUP_RETENTION_DAYS
+      value: {{cleanupRetentionDays}}
+
+- type: cron
+  name: {{serviceName}}-cron-sync
+  runtime: node
+  env: {{nodeEnv}}
+  region: {{region}}
+  plan: starter
+  branch: {{branch}}
+  buildCommand: {{buildCommand}}
+  schedule: "{{syncCronSchedule}}"
+  startCommand: {{syncCronCommand}}
+
+  envVars:
+    - key: NODE_ENV
+      value: {{nodeEnv}}
+
+    - key: DATABASE_URL
+      fromDatabase:
+        name: {{serviceName}}-postgres
+        property: connectionString
+
+    - key: DRUPAL_BASE_URL
+      sync: false
+
+    - key: DRUPAL_API_KEY
+      sync: false
+
+    - key: SYNC_BATCH_SIZE
+      value: {{syncBatchSize}}

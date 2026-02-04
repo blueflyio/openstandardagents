@@ -469,3 +469,7 @@ export class DrupalAdapter {
 }
 
 export default DrupalAdapter;
+
+// Export the Drupal module generator
+export { DrupalModuleGenerator, type DrupalModuleGeneratorOptions } from './generator.js';
+export { DrupalAdapter as DrupalRuntimeAdapter } from './adapter.js';

@@ -1,0 +1,120 @@
+# ============================================================================
+# Docker Configuration Values
+# Sample values for rendering Dockerfile and docker-compose templates
+# ============================================================================
+
+# ==========================================================================
+# Project Metadata
+# ==========================================================================
+projectName: my-application
+projectDescription: Production-ready Node.js microservice
+vendor: BlueFly.io
+version: 1.0.0
+buildDate: 2026-02-04
+maintainer: devops@bluefly.io
+license: MIT
+sourceUrl: https://gitlab.com/blueflyio/my-application
+
+# ==========================================================================
+# Node.js Configuration
+# ==========================================================================
+nodeVersion: 20  # Node.js major version (16, 18, 20, 22)
+
+# ==========================================================================
+# Application Configuration
+# ==========================================================================
+appUser: appuser
+port: 3000
+timezone: UTC
+healthEndpoint: health
+
+# ==========================================================================
+# Build Configuration
+# ==========================================================================
+# Package manager selection (only one should be true)
+useYarn: false
+usePnpm: false
+# If all false, npm is used (default)
+
+yarnLock: false    # Set to true if using yarn.lock
+pnpmLock: false    # Set to true if using pnpm-lock.yaml
+
+# Build and start scripts
+buildScript: build          # npm run build
+startScript: index.js       # node dist/index.js
+devScript: dev              # npm run dev (for development stage)
+
+# Additional files to copy to production stage
+copyAdditionalFiles: false
+additionalFiles: []
+  # - config/
+  # - assets/
+
+# ==========================================================================
+# Docker Compose Configuration
+# ==========================================================================
+
+# Service naming
+serviceName: app
+containerName: my-app
+networkName: app-network
+networkSubnet: 172.20.0.0/16
+
+# Docker registry
+dockerRegistry: registry.gitlab.com
+imageName: my-application
+
+# Port mappings
+hostPort: 3000
+containerPort: 3000
+debugPort: 9229
+
+# Logging
+logLevel: info
+
+# Database configuration
+database: true
+dbName: myapp
+dbUser: myapp_user
+dbPassword: change_me_in_production
+dbHostPort: 5432
+postgresVersion: 16
+dbInitScripts: false
+
+# Redis configuration
+redis: true
+redisPassword: change_me_in_production
+redisHostPort: 6379
+redisVersion: 7
+
+# Nginx configuration
+nginx: false
+nginxVersion: 1.25
+nginxHostPort: 80
+nginxSslHostPort: 443
+ssl: false
+
+# Monitoring configuration
+monitoring: false
+prometheusVersion: latest
+prometheusPort: 9090
+grafanaVersion: latest
+grafanaPort: 3001
+grafanaPassword: admin
+grafanaPlugins: ""
+
+# Resource limits
+cpuLimit: "1.0"
+memoryLimit: 1G
+cpuReservation: "0.5"
+memoryReservation: 512M
+
+# Environment variables
+envVars:
+  NODE_OPTIONS: "--max-old-space-size=512"
+  TZ: UTC
+
+# ==========================================================================
+# TypeScript Configuration
+# ==========================================================================
+tsconfig: true

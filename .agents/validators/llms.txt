@@ -4,7 +4,7 @@
 
 ## Quick Reference
 
-- **Type**: OSSA Agent v0.4.0
+- **Type**: OSSA Agent v0.4.1
 - **Category**: validators
 - **Manifest**: schema-validator.ossa.yaml
 

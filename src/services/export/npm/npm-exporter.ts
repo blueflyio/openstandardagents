@@ -439,7 +439,7 @@ ${metadata.license || 'MIT'}
 
 ## Generated from OSSA
 
-This package was generated from OSSA v${manifest.apiVersion?.split('/')[1] || '0.4.0'} manifest.
+This package was generated from OSSA v${manifest.apiVersion?.split('/')[1] || '0.4.1'} manifest.
 
 - [OSSA Specification](https://openstandardagents.org)
 - [Documentation](https://docs.openstandardagents.org)

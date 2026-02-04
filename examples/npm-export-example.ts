@@ -13,7 +13,7 @@ import * as path from 'path';
  * Example OSSA agent manifest
  */
 const manifest: OssaAgent = {
-  apiVersion: 'ossa/v0.4.0',
+  apiVersion: 'ossa/v0.4.1',
   kind: 'Agent',
   metadata: {
     name: 'code-review-agent',
