@@ -5,9 +5,42 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.4.1] - 2026-02-02
+## [0.4.1] - 2026-02-04
 
 ### Added
+
+**Wizard Enhancements:**
+- Claude Skills system integration with skill creation, validation, and parameter support
+- Export target configuration for LangChain, KAgent, Drupal, and Symfony platforms
+- Testing & validation configuration with unit, integration, load, security, and cost testing
+- Multi-platform deployment support with platform-specific options (RBAC, TLS, caching)
+- Schema-compliant annotations storage using `buildkit.ossa.io/` namespace
+- Type-safe configuration interfaces and helper functions
+
+**LangServe Export (Optional):**
+- Production FastAPI + LangServe deployment templates (30 files, 4,350+ lines)
+- One-click deployment support: Docker, Kubernetes, Railway, Render, Fly.io
+- Multi-stage Docker builds with Alpine base for minimal image size
+- Kubernetes manifests with HPA, security contexts, and production best practices
+- Complete monitoring stack: Prometheus, Grafana, OpenTelemetry integration
+- Health check endpoints with readiness and liveness probes
+- OSSA manifest loader with runtime validation
+- Comprehensive deployment documentation (180+ pages, 200+ code examples)
+
+**Drupal Integration Architecture:**
+- Complete TypeScript ↔ PHP bridge architecture (150+ pages)
+- Runtime bridge server design for agent execution
+- Config export workflow for Drupal module generation
+- Module generation patterns with DRY principles via ai_agents base module
+- Comprehensive examples: 50+ production code samples
+- Architecture diagrams: 15+ ASCII diagrams
+- Integration guides: Quick start (5 minutes), complete technical specs
+
+**Testing Framework:**
+- GitLab CI Components with 7-stage pipeline
+- Zod schemas for validation at all layers
+- OWASP Top 10 security testing integration
+- Unit, integration, E2E, security, and performance test support
 
 **Production-Quality Exports:**
 - Complete REST API endpoints for all platform exports (LangChain, npm, Anthropic)
