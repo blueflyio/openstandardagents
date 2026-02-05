@@ -23,6 +23,7 @@ import { CrewAIConverter } from '../../adapters/crewai/converter.js';
 import { TemporalConverter } from '../../adapters/temporal/converter.js';
 import { N8NConverter } from '../../adapters/n8n/converter.js';
 import { GitLabConverter } from '../../adapters/gitlab/converter.js';
+import { GitLabAgentGenerator } from '../../adapters/gitlab/agent-generator.js';
 import { DockerfileGenerator } from '../../adapters/docker/generators.js';
 import { KubernetesManifestGenerator } from '../../adapters/kubernetes/generator.js';
 import { KAgentCRDGenerator } from '../../sdks/kagent/crd-generator.js';
@@ -41,7 +42,7 @@ export const exportCommand = new Command('export')
   .argument('<manifest>', 'Path to OSSA agent manifest')
   .requiredOption(
     '-p, --platform <platform>',
-    'Target platform (kagent, langchain, crewai, temporal, n8n, gitlab, docker, kubernetes, npm, drupal)'
+    'Target platform (kagent, langchain, crewai, temporal, n8n, gitlab, gitlab-agent, docker, kubernetes, npm, drupal)'
   )
   .option('-o, --output <file>', 'Output file path')
   .option('--format <format>', 'Output format (yaml, json, python)', 'yaml')
@@ -201,6 +202,64 @@ exportCommand.action(
             output = converter.generateYAML(manifest);
             defaultExtension = 'yml';
             break;
+          }
+
+          case 'gitlab-agent': {
+            log('Generating GitLab agent package with webhook handlers...');
+
+            // Use GitLabAgentGenerator for complete agent package
+            const generator = new GitLabAgentGenerator();
+            const result = await generator.generate(manifest);
+
+            if (!result.success) {
+              throw new Error(result.error || 'GitLab agent generation failed');
+            }
+
+            // Create output directory
+            const agentName = manifest.metadata?.name || 'agent';
+            const outputDir = options.output || `./${agentName}`;
+
+            if (!options.dryRun) {
+              fs.mkdirSync(outputDir, { recursive: true });
+
+              // Write all generated files
+              for (const file of result.files) {
+                const filePath = path.join(outputDir, file.path);
+                const fileDir = path.dirname(filePath);
+                fs.mkdirSync(fileDir, { recursive: true });
+                fs.writeFileSync(filePath, file.content);
+                logVerbose(`  Created: ${file.path}`);
+              }
+
+              logSuccess(`✓ GitLab agent exported to: ${outputDir}`);
+              logVerbose(`  Files: ${result.files.length} files generated`);
+              logVerbose(`  Agent: ${agentName}`);
+              logVerbose(`  Has webhook: ${result.metadata?.hasWebhook ? 'Yes' : 'No'}`);
+              logVerbose(`  Has LLM: ${result.metadata?.hasLLM ? 'Yes' : 'No'}`);
+              logVerbose(`  Tools: ${result.metadata?.toolsCount || 0}`);
+
+              log('\n📦 Installation instructions:');
+              log(`  1. Install dependencies: cd ${outputDir} && npm install`);
+              log(`  2. Configure environment: cp .env.example .env && edit .env`);
+              log(`  3. Build agent: npm run build`);
+              log(`  4. Run agent: npm start\n`);
+              log('🐳 Docker deployment:');
+              log(`  docker build -t ${agentName} ${outputDir}`);
+              log(`  docker run -p 9090:9090 --env-file ${outputDir}/.env ${agentName}\n`);
+              log('📚 Documentation:');
+              log(`  README: ${outputDir}/README.md`);
+              if (result.metadata?.hasWebhook) {
+                log(`  Webhook config: ${outputDir}/webhook-config.json`);
+              }
+            } else {
+              log(`\n🔍 DRY RUN: Would generate ${result.files.length} files in: ${outputDir}`);
+              logVerbose('Files to be created:');
+              for (const file of result.files) {
+                logVerbose(`  - ${file.path} (${file.content.length} bytes)`);
+              }
+            }
+
+            return; // Early return to skip single-file write
           }
 
           case 'docker': {
