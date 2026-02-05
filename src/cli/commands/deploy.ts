@@ -9,6 +9,7 @@ import { readFileSync } from 'fs';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { ValidationService } from '../../services/validation.service.js';
+import { getDeployDefaults } from '../../config/defaults.js';
 import {
   createDeploymentDriver,
   type DeploymentTarget,
@@ -37,17 +38,17 @@ export const deployCommand = new Command('deploy')
   .option(
     '--target <target>',
     'Deployment target (local|docker|kubernetes)',
-    'local'
+    getDeployDefaults().defaultTarget
   )
-  .option('--env <environment>', 'Target environment', 'dev')
+  .option('--env <environment>', 'Target environment', getDeployDefaults().environment)
   .option('--version <version>', 'Version to deploy')
   .option('--config <config-file>', 'Configuration file path')
   .option('--dry-run', 'Simulate deployment without executing', false)
   .option('--port <port>', 'Port number for local/docker deployment')
   .option('--docker-image <image>', 'Docker image to use')
-  .option('--docker-network <network>', 'Docker network', 'bridge')
-  .option('--namespace <namespace>', 'Kubernetes namespace', 'default')
-  .option('--replicas <count>', 'Number of replicas (K8s)', '1')
+  .option('--docker-network <network>', 'Docker network', getDeployDefaults().dockerNetwork)
+  .option('--namespace <namespace>', 'Kubernetes namespace', getDeployDefaults().defaultNamespace)
+  .option('--replicas <count>', 'Number of replicas (K8s)', String(getDeployDefaults().defaultReplicas))
   .description('Deploy agent to specified runtime')
   .action(
     async (
