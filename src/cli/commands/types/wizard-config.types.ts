@@ -61,7 +61,9 @@ export interface ValidationConfig {
 /**
  * Helper to get export config from annotations
  */
-export function getExportConfig(annotations?: Record<string, string>): ExportConfig | null {
+export function getExportConfig(
+  annotations?: Record<string, string>
+): ExportConfig | null {
   const configStr = annotations?.['buildkit.ossa.io/export-config'];
   if (!configStr) return null;
   try {
@@ -74,7 +76,9 @@ export function getExportConfig(annotations?: Record<string, string>): ExportCon
 /**
  * Helper to get testing config from annotations
  */
-export function getTestingConfig(annotations?: Record<string, string>): TestingConfig | null {
+export function getTestingConfig(
+  annotations?: Record<string, string>
+): TestingConfig | null {
   const configStr = annotations?.['buildkit.ossa.io/testing-config'];
   if (!configStr) return null;
   try {

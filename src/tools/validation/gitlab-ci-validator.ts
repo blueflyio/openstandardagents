@@ -103,15 +103,18 @@ export class GitLabCIValidator {
   }
 
   private checkDuplicateSetCommands(content: string): void {
-    const scriptBlocks = content.match(/script:\s*\n(\s+-\s+\|\s*\n(?:\s+.*\n?)*)/g) || [];
+    const scriptBlocks =
+      content.match(/script:\s*\n(\s+-\s+\|\s*\n(?:\s+.*\n?)*)/g) || [];
 
     for (const block of scriptBlocks) {
       const setCommands = (block.match(/set\s+-euo\s+pipefail/g) || []).length;
       if (setCommands > 1) {
         this.messages.push(
-          'ERROR: Script block has multiple \'set -euo pipefail\' commands'
+          "ERROR: Script block has multiple 'set -euo pipefail' commands"
         );
-        this.messages.push('  Each script block should only have one \'set -euo pipefail\'');
+        this.messages.push(
+          "  Each script block should only have one 'set -euo pipefail'"
+        );
         this.errors++;
       }
     }
@@ -125,7 +128,7 @@ export class GitLabCIValidator {
     const unquotedPattern = /\$\{[A-Z_]+\}[^"]/g;
     const matches = content.match(unquotedPattern) || [];
     const filtered = matches.filter(
-      m => !m.includes('"${') && !m.includes("'${") && !m.includes('\\${')
+      (m) => !m.includes('"${') && !m.includes("'${") && !m.includes('\\${')
     );
 
     if (filtered.length > 0) {
@@ -138,7 +141,9 @@ export class GitLabCIValidator {
   }
 
   private checkCurlErrorHandling(content: string): void {
-    const curlLines = content.split('\n').filter(l => l.includes('curl') && l.includes('CI_API_V4_URL'));
+    const curlLines = content
+      .split('\n')
+      .filter((l) => l.includes('curl') && l.includes('CI_API_V4_URL'));
 
     for (const line of curlLines) {
       const context = content.substring(
@@ -166,8 +171,12 @@ export class GitLabCIValidator {
     }
   }
 
-  private async validateViaGitLabAPI(ciFile: string, content: string): Promise<void> {
-    const token = process.env.GITLAB_TOKEN ||
+  private async validateViaGitLabAPI(
+    ciFile: string,
+    content: string
+  ): Promise<void> {
+    const token =
+      process.env.GITLAB_TOKEN ||
       (existsSync(`${process.env.HOME}/.tokens/gitlab`)
         ? readFileSync(`${process.env.HOME}/.tokens/gitlab`, 'utf-8').trim()
         : null);
@@ -180,10 +189,10 @@ export class GitLabCIValidator {
       const payload = JSON.stringify({ content });
       const response = execSync(
         `curl -s --request POST ` +
-        `--header "PRIVATE-TOKEN: ${token}" ` +
-        `--header "Content-Type: application/json" ` +
-        `--data '${payload}' ` +
-        `"https://gitlab.com/api/v4/ci/lint"`,
+          `--header "PRIVATE-TOKEN: ${token}" ` +
+          `--header "Content-Type: application/json" ` +
+          `--data '${payload}' ` +
+          `"https://gitlab.com/api/v4/ci/lint"`,
         { encoding: 'utf-8' }
       );
 
@@ -213,17 +222,21 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const validator = new GitLabCIValidator();
   const ciFile = process.argv[2] || '.gitlab-ci.yml';
 
-  validator.validate(ciFile).then(result => {
-    result.messages.forEach(msg => console.log(msg));
+  validator.validate(ciFile).then((result) => {
+    result.messages.forEach((msg) => console.log(msg));
 
     if (result.errors > 0) {
       console.log(`\nBLOCKED: ${result.errors} error(s) found in ${ciFile}`);
-      console.log('Fix these errors before committing to avoid wasting CI minutes');
+      console.log(
+        'Fix these errors before committing to avoid wasting CI minutes'
+      );
       process.exit(1);
     }
 
     if (result.warnings > 0) {
-      console.log(`\nWARNING: ${result.warnings} warning(s) found (commit will proceed)`);
+      console.log(
+        `\nWARNING: ${result.warnings} warning(s) found (commit will proceed)`
+      );
     }
 
     process.exit(0);

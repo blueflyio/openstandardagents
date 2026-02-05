@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 /**
  * Generate OpenAPI-style documentation for OSSA v0.3.5
- * 
+ *
  * Creates interactive documentation similar to Swagger UI for OpenAPI
  */
 
@@ -28,7 +28,8 @@ function generateV035Docs(): void {
   const features: FeatureDoc[] = [
     {
       name: 'Completion Signals',
-      description: 'Standardized agent termination conditions for intelligent workflow orchestration',
+      description:
+        'Standardized agent termination conditions for intelligent workflow orchestration',
       schema: 'completion-signals.schema.json',
       examples: ['forward-thinking-agent.ossa.yaml'],
       useCases: [
@@ -62,7 +63,8 @@ function generateV035Docs(): void {
     },
     {
       name: 'Mixture of Experts (MoE)',
-      description: 'Agent-controlled expert model selection for intelligent routing',
+      description:
+        'Agent-controlled expert model selection for intelligent routing',
       schema: 'mixture-of-experts.schema.json',
       examples: ['moe-example.ossa.yaml', 'forward-thinking-agent.ossa.yaml'],
       useCases: [
@@ -96,7 +98,8 @@ function generateV035Docs(): void {
     },
     {
       name: 'MOE Metrics',
-      description: 'Measure of Effectiveness metrics for performance evaluation',
+      description:
+        'Measure of Effectiveness metrics for performance evaluation',
       schema: 'moe-metrics.schema.json',
       examples: ['forward-thinking-agent.ossa.yaml', 'moe-example.ossa.yaml'],
       useCases: [
@@ -205,13 +208,13 @@ OSSA v0.3.5 introduces **10 major innovations** that transform the specification
 **Schema**: [${feature.schema}](./${feature.schema})
 
 **Examples**:
-${feature.examples.map(ex => `- [${ex}](./examples/${ex})`).join('\n')}
+${feature.examples.map((ex) => `- [${ex}](./examples/${ex})`).join('\n')}
 
 **Use Cases**:
-${feature.useCases.map(uc => `- ${uc}`).join('\n')}
+${feature.useCases.map((uc) => `- ${uc}`).join('\n')}
 
 **Benefits**:
-${feature.benefits.map(b => `- ${b}`).join('\n')}
+${feature.benefits.map((b) => `- ${b}`).join('\n')}
 
 ---
 
@@ -241,7 +244,7 @@ function generateAPIReference(outputDir: string, features: FeatureDoc[]): void {
 
 `;
 
-  features.forEach(feature => {
+  features.forEach((feature) => {
     apiRef += `### ${feature.name}
 
 **Schema File**: \`spec/v0.3/${feature.schema}\`
@@ -253,11 +256,13 @@ function generateAPIReference(outputDir: string, features: FeatureDoc[]): void {
       const schemaPath = join(process.cwd(), 'spec', 'v0.3.5', feature.schema);
       if (existsSync(schemaPath)) {
         const schema = JSON.parse(readFileSync(schemaPath, 'utf-8'));
-        
+
         if (schema.definitions) {
-          Object.keys(schema.definitions).slice(0, 5).forEach(def => {
-            apiRef += `- \`${def}\`: ${(schema.definitions[def] as any).description || 'No description'}\n`;
-          });
+          Object.keys(schema.definitions)
+            .slice(0, 5)
+            .forEach((def) => {
+              apiRef += `- \`${def}\`: ${(schema.definitions[def] as any).description || 'No description'}\n`;
+            });
         }
       }
     } catch (error) {

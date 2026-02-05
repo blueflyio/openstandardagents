@@ -68,7 +68,9 @@ export class AgentsMdGenerator {
     const packageJsonPath = path.join(projectPath, 'package.json');
     if (fs.existsSync(packageJsonPath)) {
       try {
-        const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
+        const packageJson = JSON.parse(
+          fs.readFileSync(packageJsonPath, 'utf-8')
+        );
         section += `${packageJson.description || 'No description available'}\n\n`;
         section += `**Version:** ${packageJson.version || 'unknown'}\n\n`;
       } catch {
@@ -85,7 +87,9 @@ export class AgentsMdGenerator {
     const packageJsonPath = path.join(projectPath, 'package.json');
     if (fs.existsSync(packageJsonPath)) {
       try {
-        const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
+        const packageJson = JSON.parse(
+          fs.readFileSync(packageJsonPath, 'utf-8')
+        );
         const scripts = packageJson.scripts || {};
 
         section += `\`\`\`bash\n`;
@@ -117,7 +121,9 @@ export class AgentsMdGenerator {
     const packageJsonPath = path.join(projectPath, 'package.json');
     if (fs.existsSync(packageJsonPath)) {
       try {
-        const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
+        const packageJson = JSON.parse(
+          fs.readFileSync(packageJsonPath, 'utf-8')
+        );
         const scripts = packageJson.scripts || {};
 
         section += `\`\`\`bash\n`;
@@ -213,19 +219,19 @@ export class AgentsMdGenerator {
     // Try to build a basic structure
     try {
       const items = fs.readdirSync(projectPath);
-      const dirs = items.filter(item => {
+      const dirs = items.filter((item) => {
         const stat = fs.statSync(path.join(projectPath, item));
         return stat.isDirectory() && !item.startsWith('.');
       });
 
-      dirs.forEach(dir => {
+      dirs.forEach((dir) => {
         section += `${dir}/\n`;
 
         // Show one level deep for src
         if (dir === 'src') {
           const srcPath = path.join(projectPath, dir);
           const srcItems = fs.readdirSync(srcPath);
-          srcItems.forEach(item => {
+          srcItems.forEach((item) => {
             const stat = fs.statSync(path.join(srcPath, item));
             if (stat.isDirectory()) {
               section += `  ${item}/\n`;

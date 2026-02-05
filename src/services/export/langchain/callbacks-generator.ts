@@ -129,7 +129,9 @@ Provides comprehensive callback handlers for:
     }
 
     if (config.langfuse) {
-      imports.push('from langfuse.callback import CallbackHandler as LangfuseHandler');
+      imports.push(
+        'from langfuse.callback import CallbackHandler as LangfuseHandler'
+      );
     }
 
     if (config.opentelemetry) {
@@ -279,7 +281,9 @@ class OpenTelemetryCallbackHandler(BaseCallbackHandler):
             span.end()`;
   }
 
-  private generateCustomHandlers(custom: NonNullable<CallbackConfig['custom']>): string {
+  private generateCustomHandlers(
+    custom: NonNullable<CallbackConfig['custom']>
+  ): string {
     return `class CustomCallbackHandler(BaseCallbackHandler):
     """Custom callback handler with event hooks"""
 
@@ -289,7 +293,9 @@ class OpenTelemetryCallbackHandler(BaseCallbackHandler):
         self.start_time = None
         self.events = []
 
-    ${custom.onStart ? `def on_chain_start(self, serialized: Dict[str, Any], inputs: Dict[str, Any], **kwargs):
+    ${
+      custom.onStart
+        ? `def on_chain_start(self, serialized: Dict[str, Any], inputs: Dict[str, Any], **kwargs):
         """Called when chain starts"""
         self.start_time = time.time()
         if self.log_level in ["debug", "info"]:
@@ -300,27 +306,41 @@ class OpenTelemetryCallbackHandler(BaseCallbackHandler):
     def on_agent_action(self, action: AgentAction, **kwargs):
         """Called when agent takes action"""
         if self.log_level in ["debug", "info"]:
-            print(f"  → Action: {action.tool} - {action.tool_input}")` : ''}
+            print(f"  → Action: {action.tool} - {action.tool_input}")`
+        : ''
+    }
 
-    ${custom.onEnd ? `def on_chain_end(self, outputs: Dict[str, Any], **kwargs):
+    ${
+      custom.onEnd
+        ? `def on_chain_end(self, outputs: Dict[str, Any], **kwargs):
         """Called when chain ends"""
         duration = time.time() - self.start_time if self.start_time else 0
         if self.log_level in ["debug", "info"]:
             print(f"✓ Chain completed: {duration:.2f}s")
             if self.log_level == "debug":
-                print(f"  Outputs: {outputs}")` : ''}
+                print(f"  Outputs: {outputs}")`
+        : ''
+    }
 
-    ${custom.onError ? `def on_chain_error(self, error: Exception, **kwargs):
+    ${
+      custom.onError
+        ? `def on_chain_error(self, error: Exception, **kwargs):
         """Called when chain errors"""
         print(f"✗ Chain error: {error}")
         if self.log_level == "debug":
             import traceback
-            traceback.print_exc()` : ''}
+            traceback.print_exc()`
+        : ''
+    }
 
-    ${custom.onToken ? `def on_llm_new_token(self, token: str, **kwargs):
+    ${
+      custom.onToken
+        ? `def on_llm_new_token(self, token: str, **kwargs):
         """Called when new token is generated"""
         if self.log_level == "debug":
-            print(token, end="", flush=True)` : ''}`;
+            print(token, end="", flush=True)`
+        : ''
+    }`;
   }
 
   private generateCostTrackingHandler(): string {

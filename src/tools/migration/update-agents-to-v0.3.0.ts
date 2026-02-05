@@ -119,40 +119,47 @@ function updateAgentManifest(filePath: string): boolean {
 
 function findAgentManifests(dir: string): string[] {
   const manifests: string[] = [];
-  
+
   function traverse(currentDir: string) {
     const entries = readdirSync(currentDir);
-    
+
     for (const entry of entries) {
       const fullPath = join(currentDir, entry);
       const stat = statSync(fullPath);
-      
-      if (stat.isDirectory() && !entry.startsWith('.') && entry !== 'node_modules') {
+
+      if (
+        stat.isDirectory() &&
+        !entry.startsWith('.') &&
+        entry !== 'node_modules'
+      ) {
         traverse(fullPath);
-      } else if (entry === 'manifest.ossa.yaml' || entry.endsWith('.ossa.yaml')) {
+      } else if (
+        entry === 'manifest.ossa.yaml' ||
+        entry.endsWith('.ossa.yaml')
+      ) {
         manifests.push(fullPath);
       }
     }
   }
-  
+
   traverse(dir);
   return manifests;
 }
 
 function main() {
   console.log('🚀 Updating all agents to OSSA v0.3.0 with ALL features\n');
-  
+
   const manifests = findAgentManifests(AGENTS_DIR);
   console.log(`Found ${manifests.length} agent manifests\n`);
-  
+
   let updated = 0;
   let skipped = 0;
   const errors = 0;
-  
+
   for (const manifestPath of manifests) {
     const relativePath = manifestPath.replace(process.cwd() + '/', '');
     console.log(`Processing: ${relativePath}`);
-    
+
     if (updateAgentManifest(manifestPath)) {
       updated++;
     } else {
@@ -160,7 +167,7 @@ function main() {
     }
     console.log('');
   }
-  
+
   console.log('\n📊 Summary:');
   console.log(`  ✅ Updated: ${updated}`);
   console.log(`  ⏭️  Skipped: ${skipped}`);
@@ -174,4 +181,3 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 }
 
 export { updateAgentManifest, findAgentManifests };
-

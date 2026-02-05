@@ -80,16 +80,25 @@ class OSSAAgentRunner {
       this.anthropic = new Anthropic({ apiKey });
     }
 
-    console.log(`[${this.manifest.metadata.name}] Initialized with manifest v${this.manifest.metadata.version}`);
+    console.log(
+      `[${this.manifest.metadata.name}] Initialized with manifest v${this.manifest.metadata.version}`
+    );
   }
 
   /**
    * Process incoming a2a message
    */
   private async processMessage(message: A2AMessage): Promise<any> {
-    console.log(`[${this.manifest.metadata.name}] Processing message from ${message.source_agent}`);
-    console.log(`[${this.manifest.metadata.name}] Event type: ${message.event_type}`);
-    console.log(`[${this.manifest.metadata.name}] Payload:`, JSON.stringify(message.payload, null, 2));
+    console.log(
+      `[${this.manifest.metadata.name}] Processing message from ${message.source_agent}`
+    );
+    console.log(
+      `[${this.manifest.metadata.name}] Event type: ${message.event_type}`
+    );
+    console.log(
+      `[${this.manifest.metadata.name}] Payload:`,
+      JSON.stringify(message.payload, null, 2)
+    );
 
     // Execute agent logic based on capabilities
     const agentName = this.manifest.metadata.name;
@@ -111,7 +120,9 @@ class OSSAAgentRunner {
   private async executeSocialResearch(message: A2AMessage): Promise<any> {
     const { package: packageName, version, gitlab_issue_url } = message.payload;
 
-    console.log(`[social-research-agent] Researching ${packageName}@${version}`);
+    console.log(
+      `[social-research-agent] Researching ${packageName}@${version}`
+    );
 
     // PRODUCTION: Call moltbook.com API
     // For now, use Claude to simulate research based on package info
@@ -145,10 +156,10 @@ Format your response as JSON with:
       model: this.manifest.spec.llm?.model || 'claude-sonnet-4-20250514',
       max_tokens: this.manifest.spec.llm?.max_tokens || 2048,
       temperature: this.manifest.spec.llm?.temperature || 0.3,
-      messages: [{ role: 'user', content: prompt }]
+      messages: [{ role: 'user', content: prompt }],
     });
 
-    const textBlock = response.content.find(block => block.type === 'text');
+    const textBlock = response.content.find((block) => block.type === 'text');
     if (!textBlock || textBlock.type !== 'text') {
       throw new Error('No text response from LLM');
     }
@@ -157,7 +168,11 @@ Format your response as JSON with:
     console.log(`[social-research-agent] Research complete:`, researchFindings);
 
     // Forward to whitepaper-writer-agent
-    if (this.manifest.extensions?.a2a?.sends_to?.includes('whitepaper-writer-agent')) {
+    if (
+      this.manifest.extensions?.a2a?.sends_to?.includes(
+        'whitepaper-writer-agent'
+      )
+    ) {
       await this.sendA2AMessage('whitepaper-writer-agent', {
         source_agent: this.manifest.metadata.name,
         target_agent: 'whitepaper-writer-agent',
@@ -166,15 +181,15 @@ Format your response as JSON with:
           package: packageName,
           version,
           gitlab_issue_url,
-          research_findings: researchFindings
+          research_findings: researchFindings,
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     }
 
     return {
       status: 'completed',
-      research_findings: researchFindings
+      research_findings: researchFindings,
     };
   }
 
@@ -182,9 +197,15 @@ Format your response as JSON with:
    * Whitepaper Writer Agent: Synthesize research into blog post
    */
   private async executeWhitepaperWriter(message: A2AMessage): Promise<any> {
-    const { package: packageName, version, research_findings } = message.payload;
+    const {
+      package: packageName,
+      version,
+      research_findings,
+    } = message.payload;
 
-    console.log(`[whitepaper-writer-agent] Writing blog post for ${packageName}@${version}`);
+    console.log(
+      `[whitepaper-writer-agent] Writing blog post for ${packageName}@${version}`
+    );
 
     if (!this.anthropic) {
       throw new Error('Anthropic client not initialized');
@@ -213,19 +234,25 @@ Write in an engaging, technical but accessible style.`;
       model: this.manifest.spec.llm?.model || 'claude-opus-4-20250514',
       max_tokens: this.manifest.spec.llm?.max_tokens || 4096,
       temperature: this.manifest.spec.llm?.temperature || 0.7,
-      messages: [{ role: 'user', content: prompt }]
+      messages: [{ role: 'user', content: prompt }],
     });
 
-    const textBlock = response.content.find(block => block.type === 'text');
+    const textBlock = response.content.find((block) => block.type === 'text');
     if (!textBlock || textBlock.type !== 'text') {
       throw new Error('No text response from LLM');
     }
     const blogPost = textBlock.text;
 
-    console.log(`[whitepaper-writer-agent] Blog post drafted (${blogPost.length} chars)`);
+    console.log(
+      `[whitepaper-writer-agent] Blog post drafted (${blogPost.length} chars)`
+    );
 
     // Forward to content-reviewer-agent
-    if (this.manifest.extensions?.a2a?.sends_to?.includes('content-reviewer-agent')) {
+    if (
+      this.manifest.extensions?.a2a?.sends_to?.includes(
+        'content-reviewer-agent'
+      )
+    ) {
       await this.sendA2AMessage('content-reviewer-agent', {
         source_agent: this.manifest.metadata.name,
         target_agent: 'content-reviewer-agent',
@@ -236,16 +263,16 @@ Write in an engaging, technical but accessible style.`;
           blog_post_markdown: blogPost,
           metadata: {
             word_count: blogPost.split(/\s+/).length,
-            reading_time: Math.ceil(blogPost.split(/\s+/).length / 200)
-          }
+            reading_time: Math.ceil(blogPost.split(/\s+/).length / 200),
+          },
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     }
 
     return {
       status: 'completed',
-      blog_post_markdown: blogPost
+      blog_post_markdown: blogPost,
     };
   }
 
@@ -253,9 +280,15 @@ Write in an engaging, technical but accessible style.`;
    * Content Reviewer Agent: Validate content quality
    */
   private async executeContentReviewer(message: A2AMessage): Promise<any> {
-    const { package: packageName, version, blog_post_markdown } = message.payload;
+    const {
+      package: packageName,
+      version,
+      blog_post_markdown,
+    } = message.payload;
 
-    console.log(`[content-reviewer-agent] Reviewing blog post for ${packageName}@${version}`);
+    console.log(
+      `[content-reviewer-agent] Reviewing blog post for ${packageName}@${version}`
+    );
 
     if (!this.anthropic) {
       throw new Error('Anthropic client not initialized');
@@ -291,31 +324,39 @@ Format as JSON:
       model: this.manifest.spec.llm?.model || 'claude-sonnet-4-20250514',
       max_tokens: this.manifest.spec.llm?.max_tokens || 2048,
       temperature: this.manifest.spec.llm?.temperature || 0.2,
-      messages: [{ role: 'user', content: prompt }]
+      messages: [{ role: 'user', content: prompt }],
     });
 
-    const textBlock = response.content.find(block => block.type === 'text');
+    const textBlock = response.content.find((block) => block.type === 'text');
     if (!textBlock || textBlock.type !== 'text') {
       throw new Error('No text response from LLM');
     }
     const review = JSON.parse(textBlock.text);
 
-    console.log(`[content-reviewer-agent] Review complete: Score ${review.quality_score}/100`);
+    console.log(
+      `[content-reviewer-agent] Review complete: Score ${review.quality_score}/100`
+    );
 
     return {
       status: 'completed',
-      review
+      review,
     };
   }
 
   /**
    * Send a2a message to another agent via Agent Mesh
    */
-  private async sendA2AMessage(targetAgent: string, message: A2AMessage): Promise<void> {
-    const meshUrl = this.manifest.extensions?.a2a?.mesh_url || 'http://agent-mesh:3005';
+  private async sendA2AMessage(
+    targetAgent: string,
+    message: A2AMessage
+  ): Promise<void> {
+    const meshUrl =
+      this.manifest.extensions?.a2a?.mesh_url || 'http://agent-mesh:3005';
     const url = `${meshUrl}/api/v1/agents/${targetAgent}/messages`;
 
-    console.log(`[${this.manifest.metadata.name}] Sending a2a message to ${targetAgent}`);
+    console.log(
+      `[${this.manifest.metadata.name}] Sending a2a message to ${targetAgent}`
+    );
 
     return new Promise((resolve, reject) => {
       const payload = JSON.stringify(message);
@@ -328,17 +369,19 @@ Format as JSON:
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Content-Length': Buffer.byteLength(payload)
+          'Content-Length': Buffer.byteLength(payload),
         },
-        timeout: 30000
+        timeout: 30000,
       };
 
       const req = http.request(options, (res) => {
         let data = '';
-        res.on('data', chunk => data += chunk);
+        res.on('data', (chunk) => (data += chunk));
         res.on('end', () => {
           if (res.statusCode === 200) {
-            console.log(`[${this.manifest.metadata.name}] Message sent successfully to ${targetAgent}`);
+            console.log(
+              `[${this.manifest.metadata.name}] Message sent successfully to ${targetAgent}`
+            );
             resolve();
           } else {
             reject(new Error(`Agent Mesh returned ${res.statusCode}: ${data}`));
@@ -365,19 +408,21 @@ Format as JSON:
       // Health check
       if (req.url === '/health') {
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({
-          status: 'healthy',
-          agent: this.manifest.metadata.name,
-          version: this.manifest.metadata.version,
-          timestamp: new Date().toISOString()
-        }));
+        res.end(
+          JSON.stringify({
+            status: 'healthy',
+            agent: this.manifest.metadata.name,
+            version: this.manifest.metadata.version,
+            timestamp: new Date().toISOString(),
+          })
+        );
         return;
       }
 
       // Receive a2a message
       if (req.url === '/messages' && req.method === 'POST') {
         let body = '';
-        req.on('data', chunk => body += chunk.toString());
+        req.on('data', (chunk) => (body += chunk.toString()));
         req.on('end', async () => {
           try {
             const message: A2AMessage = JSON.parse(body);
@@ -386,12 +431,17 @@ Format as JSON:
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify(result));
           } catch (err: any) {
-            console.error(`[${this.manifest.metadata.name}] Error processing message:`, err);
+            console.error(
+              `[${this.manifest.metadata.name}] Error processing message:`,
+              err
+            );
             res.writeHead(500, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({
-              error: 'Failed to process message',
-              details: err.message
-            }));
+            res.end(
+              JSON.stringify({
+                error: 'Failed to process message',
+                details: err.message,
+              })
+            );
           }
         });
         return;
@@ -403,8 +453,13 @@ Format as JSON:
     });
 
     this.server.listen(this.port, '0.0.0.0', () => {
-      console.log(`[${this.manifest.metadata.name}] Listening on port ${this.port}`);
-      console.log(`[${this.manifest.metadata.name}] Capabilities:`, this.manifest.spec.capabilities?.map(c => c.name).join(', '));
+      console.log(
+        `[${this.manifest.metadata.name}] Listening on port ${this.port}`
+      );
+      console.log(
+        `[${this.manifest.metadata.name}] Capabilities:`,
+        this.manifest.spec.capabilities?.map((c) => c.name).join(', ')
+      );
     });
   }
 

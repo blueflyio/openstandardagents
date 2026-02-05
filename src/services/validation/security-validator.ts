@@ -97,7 +97,8 @@ export class SecurityValidator {
     return {
       score,
       vulnerabilities,
-      passed: score >= 70 && !vulnerabilities.some((v) => v.severity === 'critical'),
+      passed:
+        score >= 70 && !vulnerabilities.some((v) => v.severity === 'critical'),
     };
   }
 
@@ -148,7 +149,11 @@ export class SecurityValidator {
 
       // Check if key name suggests it contains a secret
       if (SUSPICIOUS_ENV_VARS.some((pattern) => lowerKey.includes(pattern))) {
-        if (typeof value === 'string' && value.trim() !== '' && value !== '${...}') {
+        if (
+          typeof value === 'string' &&
+          value.trim() !== '' &&
+          value !== '${...}'
+        ) {
           vulnerabilities.push({
             severity: 'high',
             category: 'potential_secret',
@@ -214,7 +219,8 @@ export class SecurityValidator {
             category: 'insecure_endpoint',
             message: `Tool "${tool.name || `tool[${i}]`}" uses insecure HTTP endpoint`,
             path: `spec.tools[${i}].endpoint`,
-            recommendation: 'Use HTTPS instead of HTTP for all external endpoints.',
+            recommendation:
+              'Use HTTPS instead of HTTP for all external endpoints.',
             cwe: 'CWE-319',
           });
         }

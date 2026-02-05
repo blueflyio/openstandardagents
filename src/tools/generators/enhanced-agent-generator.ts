@@ -1,10 +1,10 @@
 #!/usr/bin/env tsx
 /**
  * Enhanced Agent Manifest Generator
- * 
+ *
  * Generates comprehensive OSSA agent manifests using the comprehensive template
  * with all v0.3.3+ features
- * 
+ *
  * Usage: npm run agent:generate -- --name "My Agent" --type worker
  */
 
@@ -29,7 +29,10 @@ class EnhancedAgentGenerator {
   private defaultTemplate: string;
 
   constructor() {
-    this.templatePath = join(process.cwd(), '.gitlab/agents/templates/TEMPLATE-v0.3.0-comprehensive.ossa.yaml');
+    this.templatePath = join(
+      process.cwd(),
+      '.gitlab/agents/templates/TEMPLATE-v0.3.0-comprehensive.ossa.yaml'
+    );
     this.defaultTemplate = this.loadTemplate();
   }
 
@@ -39,9 +42,11 @@ class EnhancedAgentGenerator {
         return readFileSync(this.templatePath, 'utf-8');
       }
     } catch (error) {
-      console.warn(`⚠️  Template not found at ${this.templatePath}, using default`);
+      console.warn(
+        `⚠️  Template not found at ${this.templatePath}, using default`
+      );
     }
-    
+
     // Fallback default template
     return `apiVersion: ossa/v0.3.3
 kind: Agent
@@ -91,7 +96,7 @@ spec:
     // Parse and customize based on type
     try {
       const parsed = yaml.load(manifest, { schema: yaml.JSON_SCHEMA }) as any;
-      
+
       // Set kind based on type
       if (options.type === 'task') {
         parsed.kind = 'Task';
@@ -109,33 +114,43 @@ spec:
 
       // Enhance role based on type
       if (parsed.spec.role) {
-        const rolePrefix = options.type === 'orchestrator' 
-          ? 'You are an orchestrator agent that coordinates multiple agents'
-          : options.type === 'task'
-          ? 'You are a deterministic task executor'
-          : 'You are an autonomous agent';
-        
+        const rolePrefix =
+          options.type === 'orchestrator'
+            ? 'You are an orchestrator agent that coordinates multiple agents'
+            : options.type === 'task'
+              ? 'You are a deterministic task executor'
+              : 'You are an autonomous agent';
+
         parsed.spec.role = `${rolePrefix} for ${description}.\n\n${parsed.spec.role}`;
       }
 
-      manifest = yaml.dump(parsed, { 
+      manifest = yaml.dump(parsed, {
         indent: 2,
         lineWidth: 120,
         quotingType: '"',
-        forceQuotes: false
+        forceQuotes: false,
       });
     } catch (error) {
-      console.warn(`⚠️  Failed to parse template, using simple replacement: ${(error as Error).message}`);
+      console.warn(
+        `⚠️  Failed to parse template, using simple replacement: ${(error as Error).message}`
+      );
     }
 
     return manifest;
   }
 
   async generate(options: AgentOptions): Promise<void> {
-    console.log(`🚀 Generating ${options.type || 'agent'} manifest: ${options.name}\n`);
+    console.log(
+      `🚀 Generating ${options.type || 'agent'} manifest: ${options.name}\n`
+    );
 
     const manifest = this.generateManifest(options);
-    const outputPath = options.output || join(process.cwd(), `.gitlab/agents/${this.normalizeName(options.name)}/manifest.ossa.yaml`);
+    const outputPath =
+      options.output ||
+      join(
+        process.cwd(),
+        `.gitlab/agents/${this.normalizeName(options.name)}/manifest.ossa.yaml`
+      );
 
     // Ensure output directory exists
     const outputDir = outputPath.split('/').slice(0, -1).join('/');
@@ -148,7 +163,9 @@ spec:
     console.log(`   Name: ${options.name}`);
     console.log(`   Type: ${options.type || 'agent'}`);
     console.log(`   Domain: ${options.domain || 'platform'}`);
-    console.log(`   Capability: ${options.capability || this.normalizeName(options.name)}`);
+    console.log(
+      `   Capability: ${options.capability || this.normalizeName(options.name)}`
+    );
   }
 }
 
@@ -158,7 +175,7 @@ function parseArgs(): AgentOptions {
     name: '',
   };
 
-  process.argv.slice(2).forEach(arg => {
+  process.argv.slice(2).forEach((arg) => {
     if (arg.startsWith('--name=')) {
       options.name = arg.split('=')[1];
     } else if (arg.startsWith('--type=')) {
@@ -182,7 +199,9 @@ function parseArgs(): AgentOptions {
 
   if (!options.name) {
     console.error('❌ --name is required');
-    console.log('Usage: npm run agent:generate -- --name "My Agent" [--type worker|orchestrator|task] [--domain platform]');
+    console.log(
+      'Usage: npm run agent:generate -- --name "My Agent" [--type worker|orchestrator|task] [--domain platform]'
+    );
     process.exit(1);
   }
 
@@ -195,4 +214,3 @@ generator.generate(options).catch((error) => {
   console.error('❌ Error generating agent:', error);
   process.exit(1);
 });
-

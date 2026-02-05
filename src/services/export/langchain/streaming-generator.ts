@@ -49,7 +49,11 @@ export class StreamingGenerator {
     const websocketEnabled = config.websocket?.enabled !== false;
     const a2aEnabled = config.a2a?.enabled === true;
 
-    const imports = this.generateImports(sseEnabled, websocketEnabled, a2aEnabled);
+    const imports = this.generateImports(
+      sseEnabled,
+      websocketEnabled,
+      a2aEnabled
+    );
     const callbacks = this.generateCallbacks(config);
     const sseCode = sseEnabled ? this.generateSSE() : '';
     const websocketCode = websocketEnabled ? this.generateWebSocket() : '';
@@ -96,7 +100,11 @@ def get_streaming_config() -> Dict[str, Any]:
   /**
    * Generate imports based on enabled features
    */
-  private generateImports(sse: boolean, websocket: boolean, a2a: boolean): string {
+  private generateImports(
+    sse: boolean,
+    websocket: boolean,
+    a2a: boolean
+  ): string {
     const baseImports = `from typing import Any, Dict, AsyncIterator, Optional
 from langchain.callbacks.base import BaseCallbackHandler
 from langchain.schema import LLMResult
@@ -106,17 +114,23 @@ import logging
 
 logger = logging.getLogger(__name__)`;
 
-    const sseImports = sse ? `
+    const sseImports = sse
+      ? `
 from fastapi.responses import StreamingResponse
-from starlette.responses import EventSourceResponse` : '';
+from starlette.responses import EventSourceResponse`
+      : '';
 
-    const websocketImports = websocket ? `
+    const websocketImports = websocket
+      ? `
 from fastapi import WebSocket, WebSocketDisconnect
-from websockets.exceptions import ConnectionClosed` : '';
+from websockets.exceptions import ConnectionClosed`
+      : '';
 
-    const a2aImports = a2a ? `
+    const a2aImports = a2a
+      ? `
 import httpx
-from datetime import datetime` : '';
+from datetime import datetime`
+      : '';
 
     return `${baseImports}${sseImports}${websocketImports}${a2aImports}`;
   }

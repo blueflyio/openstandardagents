@@ -1,12 +1,12 @@
 #!/usr/bin/env tsx
 /**
  * Complete CI/CD Setup - Check and Add Missing Variables
- * 
+ *
  * This script:
  * 1. Checks existing variables at group and project level
  * 2. Identifies missing required variables
  * 3. Prompts for and adds missing variables
- * 
+ *
  * Usage:
  *   GITLAB_TOKEN=<valid-token> tsx src/tools/complete-ci-setup.ts
  */
@@ -33,7 +33,8 @@ const REQUIRED_VARIABLES: Variable[] = [
     protected: false,
     masked: true,
     description: 'npmjs.org automation token for publishing packages',
-    getUrl: 'https://www.npmjs.com/settings/[username]/tokens (Generate "Automation" type)',
+    getUrl:
+      'https://www.npmjs.com/settings/[username]/tokens (Generate "Automation" type)',
   },
   {
     key: 'GITLAB_PUSH_TOKEN',
@@ -49,7 +50,8 @@ const REQUIRED_VARIABLES: Variable[] = [
     protected: false,
     masked: true,
     description: 'GitHub PAT with repo scope for creating releases',
-    getUrl: 'https://github.com/settings/tokens (Generate "classic" token with "repo" scope)',
+    getUrl:
+      'https://github.com/settings/tokens (Generate "classic" token with "repo" scope)',
   },
 ];
 
@@ -67,12 +69,16 @@ async function askQuestion(query: string): Promise<string> {
   });
 }
 
-async function fetchVariables(token: string, type: 'group' | 'project'): Promise<Array<{ key: string; location: string }>> {
+async function fetchVariables(
+  token: string,
+  type: 'group' | 'project'
+): Promise<Array<{ key: string; location: string }>> {
   const path = type === 'group' ? GROUP_PATH : PROJECT_PATH;
   const encoded = encodeURIComponent(path);
-  const url = type === 'group' 
-    ? `${GITLAB_API}/groups/${encoded}/variables`
-    : `${GITLAB_API}/projects/${encoded}/variables`;
+  const url =
+    type === 'group'
+      ? `${GITLAB_API}/groups/${encoded}/variables`
+      : `${GITLAB_API}/projects/${encoded}/variables`;
 
   try {
     const response = await fetch(url, {
@@ -81,20 +87,29 @@ async function fetchVariables(token: string, type: 'group' | 'project'): Promise
 
     if (!response.ok) {
       if (response.status === 401) {
-        throw new Error('Invalid or expired token. Please get a fresh token from GitLab.');
+        throw new Error(
+          'Invalid or expired token. Please get a fresh token from GitLab.'
+        );
       }
       const error = await response.text();
-      throw new Error(`Failed to fetch ${type} variables: ${response.status} - ${error}`);
+      throw new Error(
+        `Failed to fetch ${type} variables: ${response.status} - ${error}`
+      );
     }
 
     const vars = await response.json();
     return vars.map((v: { key: string }) => ({ key: v.key, location: type }));
   } catch (error) {
-    throw new Error(`Error fetching ${type} variables: ${error instanceof Error ? error.message : String(error)}`);
+    throw new Error(
+      `Error fetching ${type} variables: ${error instanceof Error ? error.message : String(error)}`
+    );
   }
 }
 
-async function createVariable(token: string, variable: Variable): Promise<void> {
+async function createVariable(
+  token: string,
+  variable: Variable
+): Promise<void> {
   const encoded = encodeURIComponent(PROJECT_PATH);
   const url = `${GITLAB_API}/projects/${encoded}/variables`;
 
@@ -114,7 +129,9 @@ async function createVariable(token: string, variable: Variable): Promise<void> 
 
   if (!response.ok) {
     const error = await response.text();
-    throw new Error(`Failed to create ${variable.key}: ${response.status} - ${error}`);
+    throw new Error(
+      `Failed to create ${variable.key}: ${response.status} - ${error}`
+    );
   }
 }
 
@@ -122,7 +139,7 @@ async function main() {
   console.log('🚀 OSSA CI/CD Complete Setup\n');
 
   let token = process.env.GITLAB_TOKEN || process.env.GITLAB_PUSH_TOKEN;
-  
+
   if (!token) {
     console.log('⚠️  No GitLab token found in environment.\n');
     token = await askQuestion('Enter GitLab token (with api scope): ');
@@ -141,7 +158,9 @@ async function main() {
     groupVars = await fetchVariables(token, 'group');
     console.log(`✅ Found ${groupVars.length} group-level variables`);
   } catch (error) {
-    console.error(`❌ ${error instanceof Error ? error.message : String(error)}`);
+    console.error(
+      `❌ ${error instanceof Error ? error.message : String(error)}`
+    );
     process.exit(1);
   }
 
@@ -149,13 +168,15 @@ async function main() {
     projectVars = await fetchVariables(token, 'project');
     console.log(`✅ Found ${projectVars.length} project-level variables\n`);
   } catch (error) {
-    console.error(`❌ ${error instanceof Error ? error.message : String(error)}`);
+    console.error(
+      `❌ ${error instanceof Error ? error.message : String(error)}`
+    );
     process.exit(1);
   }
 
   const allVars = new Map<string, string>();
-  groupVars.forEach(v => allVars.set(v.key, 'group'));
-  projectVars.forEach(v => allVars.set(v.key, 'project'));
+  groupVars.forEach((v) => allVars.set(v.key, 'group'));
+  projectVars.forEach((v) => allVars.set(v.key, 'project'));
 
   console.log('📊 Step 2: Analyzing required variables...\n');
 
@@ -203,7 +224,9 @@ async function main() {
       await createVariable(token, variable);
       console.log(`✅ Created ${variable.key} at project level`);
     } catch (error) {
-      console.error(`❌ Failed to create ${variable.key}: ${error instanceof Error ? error.message : String(error)}`);
+      console.error(
+        `❌ Failed to create ${variable.key}: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 

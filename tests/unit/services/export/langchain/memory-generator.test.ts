@@ -11,7 +11,10 @@
  * - Health checks
  */
 
-import { MemoryGenerator, type MemoryBackend } from '../../../../../src/services/export/langchain/memory-generator.js';
+import {
+  MemoryGenerator,
+  type MemoryBackend,
+} from '../../../../../src/services/export/langchain/memory-generator.js';
 import type { OssaAgent } from '../../../../../src/types/index.js';
 
 describe('MemoryGenerator - Production Quality (v0.4.1)', () => {

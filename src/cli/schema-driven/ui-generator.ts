@@ -4,7 +4,12 @@
  * TRUE API-FIRST APPROACH
  */
 
-import inquirer, { QuestionCollection, Question, ListQuestion, CheckboxQuestion } from 'inquirer';
+import inquirer, {
+  QuestionCollection,
+  Question,
+  ListQuestion,
+  CheckboxQuestion,
+} from 'inquirer';
 import chalk from 'chalk';
 import { SchemaLoader, SchemaDefinition, EnumOption } from './schema-loader.js';
 
@@ -273,7 +278,10 @@ export class UIGenerator {
       name,
       message: `${message} (comma-separated)`,
       filter: (input: string) => {
-        return input.split(',').map((s) => s.trim()).filter(Boolean);
+        return input
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean);
       },
       validate: isRequired
         ? (input: string) => {
@@ -381,7 +389,9 @@ export class UIGenerator {
         name: 'provider',
         message: chalk.blue('Select LLM Provider:'),
         choices: providers.map((p) => ({
-          name: p.description ? `${p.value} ${chalk.gray(`- ${p.description}`)}` : p.value,
+          name: p.description
+            ? `${p.value} ${chalk.gray(`- ${p.description}`)}`
+            : p.value,
           value: p.value,
         })),
       },
@@ -410,7 +420,9 @@ export class UIGenerator {
           message: 'Select tool type:',
           choices: [
             ...toolTypes.map((t) => ({
-              name: t.description ? `${t.value} ${chalk.gray(`- ${t.description}`)}` : t.value,
+              name: t.description
+                ? `${t.value} ${chalk.gray(`- ${t.description}`)}`
+                : t.value,
               value: t.value,
             })),
             { name: chalk.gray('Done adding tools'), value: 'done' },
@@ -424,7 +436,9 @@ export class UIGenerator {
       }
 
       // Generate tool-specific prompts based on type
-      const toolConfig = await this.generateForObject(`spec.tools`, { type: toolType });
+      const toolConfig = await this.generateForObject(`spec.tools`, {
+        type: toolType,
+      });
       tools.push({ type: toolType, ...toolConfig });
 
       console.log(chalk.green('✓'), `Added ${toolType} tool`);

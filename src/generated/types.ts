@@ -4,688 +4,705 @@
  */
 
 export interface paths {
-    "/agents": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * List agents
-         * @description Retrieve a paginated list of all registered agents with optional filtering
-         */
-        get: operations["listAgents"];
-        put?: never;
-        /**
-         * Create agent
-         * @description Register a new agent with the platform
-         */
-        post: operations["createAgent"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+  '/agents': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/agents/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get agent
-         * @description Retrieve detailed information about a specific agent
-         */
-        get: operations["getAgent"];
-        /**
-         * Update agent
-         * @description Update an existing agent's configuration
-         */
-        put: operations["updateAgent"];
-        post?: never;
-        /**
-         * Delete agent
-         * @description Unregister and remove an agent from the platform
-         */
-        delete: operations["deleteAgent"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /**
+     * List agents
+     * @description Retrieve a paginated list of all registered agents with optional filtering
+     */
+    get: operations['listAgents'];
+    put?: never;
+    /**
+     * Create agent
+     * @description Register a new agent with the platform
+     */
+    post: operations['createAgent'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/agents/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
+    /**
+     * Get agent
+     * @description Retrieve detailed information about a specific agent
+     */
+    get: operations['getAgent'];
+    /**
+     * Update agent
+     * @description Update an existing agent's configuration
+     */
+    put: operations['updateAgent'];
+    post?: never;
+    /**
+     * Delete agent
+     * @description Unregister and remove an agent from the platform
+     */
+    delete: operations['deleteAgent'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-    schemas: {
-        AgentCreate: {
-            /**
-             * @description OSSA specification version
-             * @constant
-             */
-            apiVersion: "ossa/v0.3.3";
-            /**
-             * @description Resource type identifier
-             * @constant
-             */
-            kind: "Agent";
-            metadata: components["schemas"]["AgentMetadata"];
-            spec: components["schemas"]["AgentSpec"];
-        };
-        /** @description Partial update of agent configuration. Only provided fields will be updated. */
-        AgentUpdate: {
-            metadata?: {
-                description?: string;
-                labels?: {
-                    [key: string]: string;
-                };
-            };
-            spec?: {
-                llm?: components["schemas"]["LLMConfig"];
-                runtime?: components["schemas"]["RuntimeConfig"];
-                capabilities?: components["schemas"]["Capability"][];
-            };
-        };
-        AgentResponse: {
-            /**
-             * Format: uuid
-             * @description Unique identifier for the agent
-             */
-            id: string;
-            /** @constant */
-            apiVersion: "ossa/v0.3.3";
-            /** @constant */
-            kind: "Agent";
-            metadata: components["schemas"]["AgentMetadata"];
-            spec: components["schemas"]["AgentSpec"];
-            status: components["schemas"]["AgentStatus"];
-            /**
-             * Format: date-time
-             * @description Timestamp when the agent was created
-             */
-            createdAt: string;
-            /**
-             * Format: date-time
-             * @description Timestamp when the agent was last updated
-             */
-            updatedAt: string;
-            /** @description User or system that created the agent */
-            createdBy?: string;
-            metrics?: components["schemas"]["AgentMetrics"];
-        };
-        AgentsList: {
-            agents: components["schemas"]["AgentResponse"][];
-            /** @description Total number of agents matching the query */
-            total: number;
-            /** @description Maximum number of results returned */
-            limit: number;
-            /** @description Number of results skipped */
-            offset: number;
-        };
-        AgentMetadata: {
-            /**
-             * @description Agent name (DNS label format)
-             * @example security-scanner
-             */
-            name: string;
-            /**
-             * @description Semantic version (full semver spec including pre-release and build metadata)
-             * @example 1.0.0
-             */
-            version: string;
-            /**
-             * @description Human-readable description of the agent
-             * @example Security vulnerability scanner for code repositories
-             */
-            description?: string;
-            /**
-             * @description Key-value labels for categorization
-             * @example {
-             *       "domain": "security",
-             *       "capability": "scanning",
-             *       "runtime": "kubernetes"
-             *     }
-             */
-            labels?: {
-                [key: string]: string;
-            };
-        };
-        AgentSpec: {
-            llm: components["schemas"]["LLMConfig"];
-            execution_profile?: components["schemas"]["ExecutionProfile"];
-            runtime: components["schemas"]["RuntimeConfig"];
-            capabilities: components["schemas"]["Capability"][];
-            functions?: components["schemas"]["Function"][];
-            extensions?: components["schemas"]["Extension"][];
-            /** @description Agent's primary role */
-            role?: string;
-            taxonomy?: components["schemas"]["Taxonomy"];
-            tools?: components["schemas"]["Tool"][];
-            knowledge_graph?: components["schemas"]["KnowledgeGraph"];
-        };
-        LLMConfig: {
-            /**
-             * @description LLM provider (supports env var substitution)
-             * @example anthropic
-             */
-            provider: string;
-            /**
-             * @description Model identifier
-             * @example claude-sonnet-4
-             */
-            model: string;
-            /**
-             * @description Execution profile for A2A compatibility
-             * @default balanced
-             * @enum {string}
-             */
-            profile: "fast" | "balanced" | "deep" | "safe";
-            /** @default 0.1 */
-            temperature: number;
-            /** @default 16000 */
-            maxTokens: number;
-            /** @default 0.9 */
-            topP: number;
-            fallback_models?: components["schemas"]["FallbackModel"][];
-            retry_config?: components["schemas"]["RetryConfig"];
-        };
-        FallbackModel: {
-            provider: string;
-            model: string;
-            /** @enum {string} */
-            condition: "on_error" | "on_rate_limit" | "on_timeout";
-        };
-        RetryConfig: {
-            /** @default 3 */
-            max_attempts: number;
-            /**
-             * @default exponential
-             * @enum {string}
-             */
-            backoff_strategy: "linear" | "exponential" | "fibonacci";
-        };
-        ExecutionProfile: {
-            /** @enum {string} */
-            default?: "fast" | "balanced" | "deep" | "safe";
-            profiles?: {
-                [key: string]: components["schemas"]["ProfileConfig"];
-            };
-        };
-        ProfileConfig: {
-            maxTokens?: number;
-            temperature?: number;
-            reasoning_enabled?: boolean;
-            validation_required?: boolean;
-            audit_log?: boolean;
-            description?: string;
-        };
-        RuntimeConfig: {
-            /**
-             * @description Runtime environment type
-             * @enum {string}
-             */
-            type: "unified" | "kubernetes" | "docker" | "serverless" | "local";
-            supports?: ("google-a2a" | "gitlab-duo" | "ossa-mesh" | "mcp" | "local-execution")[];
-            scheduling?: components["schemas"]["SchedulingConfig"];
-            resource_limits?: components["schemas"]["ResourceLimits"];
-        };
-        SchedulingConfig: {
-            /**
-             * @default fair
-             * @enum {string}
-             */
-            strategy: "fair" | "priority" | "round-robin";
-            /**
-             * @default normal
-             * @enum {string}
-             */
-            priority: "low" | "normal" | "high" | "critical";
-            /** @default 10 */
-            max_concurrent: number;
-            /** @default 300 */
-            timeout_seconds: number;
-        };
-        ResourceLimits: {
-            /** @default 512 */
-            memory_mb: number;
-            /** @default 500 */
-            cpu_millicores: number;
-        };
-        Capability: {
-            name: string;
-            /** @enum {string} */
-            type: "action" | "query" | "monitor" | "transform";
-            /** @enum {string} */
-            runtime?: "llm" | "code" | "hybrid";
-            description?: string;
-            /** @description JSON Schema for capability input */
-            input_schema?: Record<string, never>;
-        };
-        Function: {
-            name: string;
-            description: string;
-            /** @description OpenAI-style function parameters (JSON Schema) */
-            parameters: Record<string, never>;
-            /** @description Return value schema */
-            returns?: Record<string, never>;
-        };
-        Extension: {
-            /** @enum {string} */
-            type: "http" | "mcp" | "grpc" | "websocket";
-            name: string;
-            /** Format: uri */
-            endpoint: string;
-            /** @description Reference to credential in secrets manager */
-            credentials_ref?: string;
-        };
-        Taxonomy: {
-            domain?: string;
-            subdomain?: string;
-            capability?: string;
-        };
-        Tool: {
-            name: string;
-            description?: string;
-            source: components["schemas"]["ToolSource"];
-        };
-        ToolSource: {
-            /** @enum {string} */
-            type: "mcp" | "http" | "grpc";
-            /** Format: uri */
-            uri: string;
-        };
-        KnowledgeGraph: {
-            /** @default false */
-            enabled: boolean;
-            /** @enum {string} */
-            provider?: "neo4j" | "memgraph" | "dgraph";
-            connection?: components["schemas"]["GraphConnection"];
-        };
-        GraphConnection: {
-            /** Format: uri */
-            endpoint?: string;
-            credentials_ref?: string;
-        };
-        /**
-         * @description Agent type classification
-         * @enum {string}
-         */
-        AgentType: "orchestrator" | "worker" | "specialist" | "critic" | "monitor" | "gateway";
-        /**
-         * @description Current operational status of the agent
-         * @enum {string}
-         */
-        AgentStatus: "registered" | "active" | "inactive" | "suspended" | "deprecated";
-        AgentMetrics: {
-            /** @description Total number of requests processed */
-            requestCount?: number;
-            /** @description Total number of errors encountered */
-            errorCount?: number;
-            /** @description Average response time in milliseconds */
-            averageResponseTime?: number;
-            /** @description Uptime in seconds */
-            uptime?: number;
-            /**
-             * Format: date-time
-             * @description Timestamp of last activity
-             */
-            lastActive?: string;
-        };
-        /** @description RFC7807 Problem Details for HTTP APIs */
-        Problem: {
-            /**
-             * Format: uri
-             * @description URI reference identifying the problem type
-             * @default about:blank
-             */
-            type: string;
-            /** @description Short, human-readable summary */
-            title: string;
-            /**
-             * Format: int32
-             * @description HTTP status code
-             */
-            status: number;
-            /** @description Human-readable explanation */
-            detail?: string;
-            /**
-             * Format: uri
-             * @description URI reference identifying the specific occurrence
-             */
-            instance?: string;
-            /** @description Unique trace ID for debugging */
-            traceId: string;
-            /** @description Validation errors by field */
-            errors?: {
-                [key: string]: string[];
-            };
-        };
+  schemas: {
+    AgentCreate: {
+      /**
+       * @description OSSA specification version
+       * @constant
+       */
+      apiVersion: 'ossa/v0.3.3';
+      /**
+       * @description Resource type identifier
+       * @constant
+       */
+      kind: 'Agent';
+      metadata: components['schemas']['AgentMetadata'];
+      spec: components['schemas']['AgentSpec'];
     };
-    responses: {
-        /** @description Bad request - Invalid input parameters */
-        BadRequest: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                /**
-                 * @example {
-                 *       "type": "https://api.llm.bluefly.io/problems/bad-request",
-                 *       "title": "Bad Request",
-                 *       "status": 400,
-                 *       "detail": "Invalid query parameter 'limit' - must be between 1 and 100",
-                 *       "traceId": "550e8400-e29b-41d4-a716-446655440000"
-                 *     }
-                 */
-                "application/problem+json": components["schemas"]["Problem"];
-            };
+    /** @description Partial update of agent configuration. Only provided fields will be updated. */
+    AgentUpdate: {
+      metadata?: {
+        description?: string;
+        labels?: {
+          [key: string]: string;
         };
-        /** @description Validation error - Request body failed validation */
-        ValidationError: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                /**
-                 * @example {
-                 *       "type": "https://api.llm.bluefly.io/problems/validation-error",
-                 *       "title": "Validation Error",
-                 *       "status": 400,
-                 *       "detail": "Agent manifest validation failed",
-                 *       "traceId": "550e8400-e29b-41d4-a716-446655440001",
-                 *       "errors": {
-                 *         "metadata.name": [
-                 *           "Must match pattern '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'"
-                 *         ],
-                 *         "spec.capabilities": [
-                 *           "Must contain at least one capability"
-                 *         ]
-                 *       }
-                 *     }
-                 */
-                "application/problem+json": components["schemas"]["Problem"];
-            };
-        };
-        /** @description Unauthorized - Authentication required */
-        Unauthorized: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                /**
-                 * @example {
-                 *       "type": "https://api.llm.bluefly.io/problems/unauthorized",
-                 *       "title": "Unauthorized",
-                 *       "status": 401,
-                 *       "detail": "Valid authentication credentials required",
-                 *       "traceId": "550e8400-e29b-41d4-a716-446655440002"
-                 *     }
-                 */
-                "application/problem+json": components["schemas"]["Problem"];
-            };
-        };
-        /** @description Resource not found */
-        NotFound: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                /**
-                 * @example {
-                 *       "type": "https://api.llm.bluefly.io/problems/not-found",
-                 *       "title": "Not Found",
-                 *       "status": 404,
-                 *       "detail": "Agent with ID 550e8400-e29b-41d4-a716-446655440000 not found",
-                 *       "traceId": "550e8400-e29b-41d4-a716-446655440003"
-                 *     }
-                 */
-                "application/problem+json": components["schemas"]["Problem"];
-            };
-        };
-        /** @description Conflict - Resource already exists or constraint violation */
-        Conflict: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                /**
-                 * @example {
-                 *       "type": "https://api.llm.bluefly.io/problems/conflict",
-                 *       "title": "Conflict",
-                 *       "status": 409,
-                 *       "detail": "Agent with name 'security-scanner' already exists in version 1.0.0",
-                 *       "traceId": "550e8400-e29b-41d4-a716-446655440004"
-                 *     }
-                 */
-                "application/problem+json": components["schemas"]["Problem"];
-            };
-        };
-        /** @description Internal server error */
-        InternalServerError: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                /**
-                 * @example {
-                 *       "type": "https://api.llm.bluefly.io/problems/internal-error",
-                 *       "title": "Internal Server Error",
-                 *       "status": 500,
-                 *       "detail": "An unexpected error occurred while processing your request",
-                 *       "traceId": "550e8400-e29b-41d4-a716-446655440005"
-                 *     }
-                 */
-                "application/problem+json": components["schemas"]["Problem"];
-            };
-        };
+      };
+      spec?: {
+        llm?: components['schemas']['LLMConfig'];
+        runtime?: components['schemas']['RuntimeConfig'];
+        capabilities?: components['schemas']['Capability'][];
+      };
     };
+    AgentResponse: {
+      /**
+       * Format: uuid
+       * @description Unique identifier for the agent
+       */
+      id: string;
+      /** @constant */
+      apiVersion: 'ossa/v0.3.3';
+      /** @constant */
+      kind: 'Agent';
+      metadata: components['schemas']['AgentMetadata'];
+      spec: components['schemas']['AgentSpec'];
+      status: components['schemas']['AgentStatus'];
+      /**
+       * Format: date-time
+       * @description Timestamp when the agent was created
+       */
+      createdAt: string;
+      /**
+       * Format: date-time
+       * @description Timestamp when the agent was last updated
+       */
+      updatedAt: string;
+      /** @description User or system that created the agent */
+      createdBy?: string;
+      metrics?: components['schemas']['AgentMetrics'];
+    };
+    AgentsList: {
+      agents: components['schemas']['AgentResponse'][];
+      /** @description Total number of agents matching the query */
+      total: number;
+      /** @description Maximum number of results returned */
+      limit: number;
+      /** @description Number of results skipped */
+      offset: number;
+    };
+    AgentMetadata: {
+      /**
+       * @description Agent name (DNS label format)
+       * @example security-scanner
+       */
+      name: string;
+      /**
+       * @description Semantic version (full semver spec including pre-release and build metadata)
+       * @example 1.0.0
+       */
+      version: string;
+      /**
+       * @description Human-readable description of the agent
+       * @example Security vulnerability scanner for code repositories
+       */
+      description?: string;
+      /**
+       * @description Key-value labels for categorization
+       * @example {
+       *       "domain": "security",
+       *       "capability": "scanning",
+       *       "runtime": "kubernetes"
+       *     }
+       */
+      labels?: {
+        [key: string]: string;
+      };
+    };
+    AgentSpec: {
+      llm: components['schemas']['LLMConfig'];
+      execution_profile?: components['schemas']['ExecutionProfile'];
+      runtime: components['schemas']['RuntimeConfig'];
+      capabilities: components['schemas']['Capability'][];
+      functions?: components['schemas']['Function'][];
+      extensions?: components['schemas']['Extension'][];
+      /** @description Agent's primary role */
+      role?: string;
+      taxonomy?: components['schemas']['Taxonomy'];
+      tools?: components['schemas']['Tool'][];
+      knowledge_graph?: components['schemas']['KnowledgeGraph'];
+    };
+    LLMConfig: {
+      /**
+       * @description LLM provider (supports env var substitution)
+       * @example anthropic
+       */
+      provider: string;
+      /**
+       * @description Model identifier
+       * @example claude-sonnet-4
+       */
+      model: string;
+      /**
+       * @description Execution profile for A2A compatibility
+       * @default balanced
+       * @enum {string}
+       */
+      profile: 'fast' | 'balanced' | 'deep' | 'safe';
+      /** @default 0.1 */
+      temperature: number;
+      /** @default 16000 */
+      maxTokens: number;
+      /** @default 0.9 */
+      topP: number;
+      fallback_models?: components['schemas']['FallbackModel'][];
+      retry_config?: components['schemas']['RetryConfig'];
+    };
+    FallbackModel: {
+      provider: string;
+      model: string;
+      /** @enum {string} */
+      condition: 'on_error' | 'on_rate_limit' | 'on_timeout';
+    };
+    RetryConfig: {
+      /** @default 3 */
+      max_attempts: number;
+      /**
+       * @default exponential
+       * @enum {string}
+       */
+      backoff_strategy: 'linear' | 'exponential' | 'fibonacci';
+    };
+    ExecutionProfile: {
+      /** @enum {string} */
+      default?: 'fast' | 'balanced' | 'deep' | 'safe';
+      profiles?: {
+        [key: string]: components['schemas']['ProfileConfig'];
+      };
+    };
+    ProfileConfig: {
+      maxTokens?: number;
+      temperature?: number;
+      reasoning_enabled?: boolean;
+      validation_required?: boolean;
+      audit_log?: boolean;
+      description?: string;
+    };
+    RuntimeConfig: {
+      /**
+       * @description Runtime environment type
+       * @enum {string}
+       */
+      type: 'unified' | 'kubernetes' | 'docker' | 'serverless' | 'local';
+      supports?: (
+        | 'google-a2a'
+        | 'gitlab-duo'
+        | 'ossa-mesh'
+        | 'mcp'
+        | 'local-execution'
+      )[];
+      scheduling?: components['schemas']['SchedulingConfig'];
+      resource_limits?: components['schemas']['ResourceLimits'];
+    };
+    SchedulingConfig: {
+      /**
+       * @default fair
+       * @enum {string}
+       */
+      strategy: 'fair' | 'priority' | 'round-robin';
+      /**
+       * @default normal
+       * @enum {string}
+       */
+      priority: 'low' | 'normal' | 'high' | 'critical';
+      /** @default 10 */
+      max_concurrent: number;
+      /** @default 300 */
+      timeout_seconds: number;
+    };
+    ResourceLimits: {
+      /** @default 512 */
+      memory_mb: number;
+      /** @default 500 */
+      cpu_millicores: number;
+    };
+    Capability: {
+      name: string;
+      /** @enum {string} */
+      type: 'action' | 'query' | 'monitor' | 'transform';
+      /** @enum {string} */
+      runtime?: 'llm' | 'code' | 'hybrid';
+      description?: string;
+      /** @description JSON Schema for capability input */
+      input_schema?: Record<string, never>;
+    };
+    Function: {
+      name: string;
+      description: string;
+      /** @description OpenAI-style function parameters (JSON Schema) */
+      parameters: Record<string, never>;
+      /** @description Return value schema */
+      returns?: Record<string, never>;
+    };
+    Extension: {
+      /** @enum {string} */
+      type: 'http' | 'mcp' | 'grpc' | 'websocket';
+      name: string;
+      /** Format: uri */
+      endpoint: string;
+      /** @description Reference to credential in secrets manager */
+      credentials_ref?: string;
+    };
+    Taxonomy: {
+      domain?: string;
+      subdomain?: string;
+      capability?: string;
+    };
+    Tool: {
+      name: string;
+      description?: string;
+      source: components['schemas']['ToolSource'];
+    };
+    ToolSource: {
+      /** @enum {string} */
+      type: 'mcp' | 'http' | 'grpc';
+      /** Format: uri */
+      uri: string;
+    };
+    KnowledgeGraph: {
+      /** @default false */
+      enabled: boolean;
+      /** @enum {string} */
+      provider?: 'neo4j' | 'memgraph' | 'dgraph';
+      connection?: components['schemas']['GraphConnection'];
+    };
+    GraphConnection: {
+      /** Format: uri */
+      endpoint?: string;
+      credentials_ref?: string;
+    };
+    /**
+     * @description Agent type classification
+     * @enum {string}
+     */
+    AgentType:
+      | 'orchestrator'
+      | 'worker'
+      | 'specialist'
+      | 'critic'
+      | 'monitor'
+      | 'gateway';
+    /**
+     * @description Current operational status of the agent
+     * @enum {string}
+     */
+    AgentStatus:
+      | 'registered'
+      | 'active'
+      | 'inactive'
+      | 'suspended'
+      | 'deprecated';
+    AgentMetrics: {
+      /** @description Total number of requests processed */
+      requestCount?: number;
+      /** @description Total number of errors encountered */
+      errorCount?: number;
+      /** @description Average response time in milliseconds */
+      averageResponseTime?: number;
+      /** @description Uptime in seconds */
+      uptime?: number;
+      /**
+       * Format: date-time
+       * @description Timestamp of last activity
+       */
+      lastActive?: string;
+    };
+    /** @description RFC7807 Problem Details for HTTP APIs */
+    Problem: {
+      /**
+       * Format: uri
+       * @description URI reference identifying the problem type
+       * @default about:blank
+       */
+      type: string;
+      /** @description Short, human-readable summary */
+      title: string;
+      /**
+       * Format: int32
+       * @description HTTP status code
+       */
+      status: number;
+      /** @description Human-readable explanation */
+      detail?: string;
+      /**
+       * Format: uri
+       * @description URI reference identifying the specific occurrence
+       */
+      instance?: string;
+      /** @description Unique trace ID for debugging */
+      traceId: string;
+      /** @description Validation errors by field */
+      errors?: {
+        [key: string]: string[];
+      };
+    };
+  };
+  responses: {
+    /** @description Bad request - Invalid input parameters */
+    BadRequest: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        /**
+         * @example {
+         *       "type": "https://api.llm.bluefly.io/problems/bad-request",
+         *       "title": "Bad Request",
+         *       "status": 400,
+         *       "detail": "Invalid query parameter 'limit' - must be between 1 and 100",
+         *       "traceId": "550e8400-e29b-41d4-a716-446655440000"
+         *     }
+         */
+        'application/problem+json': components['schemas']['Problem'];
+      };
+    };
+    /** @description Validation error - Request body failed validation */
+    ValidationError: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        /**
+         * @example {
+         *       "type": "https://api.llm.bluefly.io/problems/validation-error",
+         *       "title": "Validation Error",
+         *       "status": 400,
+         *       "detail": "Agent manifest validation failed",
+         *       "traceId": "550e8400-e29b-41d4-a716-446655440001",
+         *       "errors": {
+         *         "metadata.name": [
+         *           "Must match pattern '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'"
+         *         ],
+         *         "spec.capabilities": [
+         *           "Must contain at least one capability"
+         *         ]
+         *       }
+         *     }
+         */
+        'application/problem+json': components['schemas']['Problem'];
+      };
+    };
+    /** @description Unauthorized - Authentication required */
+    Unauthorized: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        /**
+         * @example {
+         *       "type": "https://api.llm.bluefly.io/problems/unauthorized",
+         *       "title": "Unauthorized",
+         *       "status": 401,
+         *       "detail": "Valid authentication credentials required",
+         *       "traceId": "550e8400-e29b-41d4-a716-446655440002"
+         *     }
+         */
+        'application/problem+json': components['schemas']['Problem'];
+      };
+    };
+    /** @description Resource not found */
+    NotFound: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        /**
+         * @example {
+         *       "type": "https://api.llm.bluefly.io/problems/not-found",
+         *       "title": "Not Found",
+         *       "status": 404,
+         *       "detail": "Agent with ID 550e8400-e29b-41d4-a716-446655440000 not found",
+         *       "traceId": "550e8400-e29b-41d4-a716-446655440003"
+         *     }
+         */
+        'application/problem+json': components['schemas']['Problem'];
+      };
+    };
+    /** @description Conflict - Resource already exists or constraint violation */
+    Conflict: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        /**
+         * @example {
+         *       "type": "https://api.llm.bluefly.io/problems/conflict",
+         *       "title": "Conflict",
+         *       "status": 409,
+         *       "detail": "Agent with name 'security-scanner' already exists in version 1.0.0",
+         *       "traceId": "550e8400-e29b-41d4-a716-446655440004"
+         *     }
+         */
+        'application/problem+json': components['schemas']['Problem'];
+      };
+    };
+    /** @description Internal server error */
+    InternalServerError: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        /**
+         * @example {
+         *       "type": "https://api.llm.bluefly.io/problems/internal-error",
+         *       "title": "Internal Server Error",
+         *       "status": 500,
+         *       "detail": "An unexpected error occurred while processing your request",
+         *       "traceId": "550e8400-e29b-41d4-a716-446655440005"
+         *     }
+         */
+        'application/problem+json': components['schemas']['Problem'];
+      };
+    };
+  };
+  parameters: {
+    /**
+     * @description Unique identifier for the agent (UUID v4)
+     * @example 550e8400-e29b-41d4-a716-446655440000
+     */
+    AgentId: string;
+    /**
+     * @description Search query to filter agents by name or description
+     * @example security
+     */
+    Search: string;
+    /**
+     * @description Maximum number of results to return
+     * @example 20
+     */
+    Limit: number;
+    /**
+     * @description Number of results to skip for pagination
+     * @example 0
+     */
+    Offset: number;
+  };
+  requestBodies: never;
+  headers: never;
+  pathItems: never;
+}
+export type $defs = Record<string, never>;
+export interface operations {
+  listAgents: {
     parameters: {
-        /**
-         * @description Unique identifier for the agent (UUID v4)
-         * @example 550e8400-e29b-41d4-a716-446655440000
-         */
-        AgentId: string;
+      query?: {
         /**
          * @description Search query to filter agents by name or description
          * @example security
          */
-        Search: string;
+        search?: components['parameters']['Search'];
         /**
          * @description Maximum number of results to return
          * @example 20
          */
-        Limit: number;
+        limit?: components['parameters']['Limit'];
         /**
          * @description Number of results to skip for pagination
          * @example 0
          */
-        Offset: number;
+        offset?: components['parameters']['Offset'];
+        /** @description Filter by agent type */
+        type?: components['schemas']['AgentType'];
+        /** @description Filter by agent status */
+        status?: components['schemas']['AgentStatus'];
+        /** @description Filter by domain label */
+        domain?: string;
+        /** @description Filter by capability label */
+        capability?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    requestBodies: never;
-    headers: never;
-    pathItems: never;
-}
-export type $defs = Record<string, never>;
-export interface operations {
-    listAgents: {
-        parameters: {
-            query?: {
-                /**
-                 * @description Search query to filter agents by name or description
-                 * @example security
-                 */
-                search?: components["parameters"]["Search"];
-                /**
-                 * @description Maximum number of results to return
-                 * @example 20
-                 */
-                limit?: components["parameters"]["Limit"];
-                /**
-                 * @description Number of results to skip for pagination
-                 * @example 0
-                 */
-                offset?: components["parameters"]["Offset"];
-                /** @description Filter by agent type */
-                type?: components["schemas"]["AgentType"];
-                /** @description Filter by agent status */
-                status?: components["schemas"]["AgentStatus"];
-                /** @description Filter by domain label */
-                domain?: string;
-                /** @description Filter by capability label */
-                capability?: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      /** @description List of agents successfully retrieved */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            /** @description List of agents successfully retrieved */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AgentsList"];
-                };
-            };
-            400: components["responses"]["BadRequest"];
-            401: components["responses"]["Unauthorized"];
-            500: components["responses"]["InternalServerError"];
+        content: {
+          'application/json': components['schemas']['AgentsList'];
         };
+      };
+      400: components['responses']['BadRequest'];
+      401: components['responses']['Unauthorized'];
+      500: components['responses']['InternalServerError'];
     };
-    createAgent: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Agent creation request with full manifest */
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AgentCreate"];
-            };
-        };
-        responses: {
-            /** @description Agent successfully created */
-            201: {
-                headers: {
-                    /** @description URL of the created agent */
-                    Location?: string;
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AgentResponse"];
-                };
-            };
-            400: components["responses"]["ValidationError"];
-            401: components["responses"]["Unauthorized"];
-            409: components["responses"]["Conflict"];
-            500: components["responses"]["InternalServerError"];
-        };
+  };
+  createAgent: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    getAgent: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /**
-                 * @description Unique identifier for the agent (UUID v4)
-                 * @example 550e8400-e29b-41d4-a716-446655440000
-                 */
-                id: components["parameters"]["AgentId"];
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Agent details successfully retrieved */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AgentResponse"];
-                };
-            };
-            401: components["responses"]["Unauthorized"];
-            404: components["responses"]["NotFound"];
-            500: components["responses"]["InternalServerError"];
-        };
+    /** @description Agent creation request with full manifest */
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AgentCreate'];
+      };
     };
-    updateAgent: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /**
-                 * @description Unique identifier for the agent (UUID v4)
-                 * @example 550e8400-e29b-41d4-a716-446655440000
-                 */
-                id: components["parameters"]["AgentId"];
-            };
-            cookie?: never;
+    responses: {
+      /** @description Agent successfully created */
+      201: {
+        headers: {
+          /** @description URL of the created agent */
+          Location?: string;
+          [name: string]: unknown;
         };
-        /** @description Updated agent configuration */
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AgentUpdate"];
-            };
+        content: {
+          'application/json': components['schemas']['AgentResponse'];
         };
-        responses: {
-            /** @description Agent successfully updated */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AgentResponse"];
-                };
-            };
-            400: components["responses"]["ValidationError"];
-            401: components["responses"]["Unauthorized"];
-            404: components["responses"]["NotFound"];
-            409: components["responses"]["Conflict"];
-            500: components["responses"]["InternalServerError"];
-        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      409: components['responses']['Conflict'];
+      500: components['responses']['InternalServerError'];
     };
-    deleteAgent: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /**
-                 * @description Unique identifier for the agent (UUID v4)
-                 * @example 550e8400-e29b-41d4-a716-446655440000
-                 */
-                id: components["parameters"]["AgentId"];
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Agent successfully deleted */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            401: components["responses"]["Unauthorized"];
-            404: components["responses"]["NotFound"];
-            /** @description Conflict - Agent is currently in use */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["Problem"];
-                };
-            };
-            500: components["responses"]["InternalServerError"];
-        };
+  };
+  getAgent: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /**
+         * @description Unique identifier for the agent (UUID v4)
+         * @example 550e8400-e29b-41d4-a716-446655440000
+         */
+        id: components['parameters']['AgentId'];
+      };
+      cookie?: never;
     };
+    requestBody?: never;
+    responses: {
+      /** @description Agent details successfully retrieved */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AgentResponse'];
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      404: components['responses']['NotFound'];
+      500: components['responses']['InternalServerError'];
+    };
+  };
+  updateAgent: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /**
+         * @description Unique identifier for the agent (UUID v4)
+         * @example 550e8400-e29b-41d4-a716-446655440000
+         */
+        id: components['parameters']['AgentId'];
+      };
+      cookie?: never;
+    };
+    /** @description Updated agent configuration */
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AgentUpdate'];
+      };
+    };
+    responses: {
+      /** @description Agent successfully updated */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AgentResponse'];
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      500: components['responses']['InternalServerError'];
+    };
+  };
+  deleteAgent: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /**
+         * @description Unique identifier for the agent (UUID v4)
+         * @example 550e8400-e29b-41d4-a716-446655440000
+         */
+        id: components['parameters']['AgentId'];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Agent successfully deleted */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      401: components['responses']['Unauthorized'];
+      404: components['responses']['NotFound'];
+      /** @description Conflict - Agent is currently in use */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      500: components['responses']['InternalServerError'];
+    };
+  };
 }

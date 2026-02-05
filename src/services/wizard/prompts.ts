@@ -128,38 +128,45 @@ export const llmPrompts: QuestionCollection = [
     name: 'model',
     message: 'Select Model:',
     choices: (answers: Partial<WizardAnswers>) => {
-      const modelChoices: Record<string, Array<{ name: string; value: string }>> =
-        {
-          anthropic: [
-            { name: 'Claude Sonnet 4 (recommended)', value: 'claude-sonnet-4-20250514' },
-            { name: 'Claude Opus 4', value: 'claude-opus-4-20250514' },
-            { name: 'Claude Haiku 4', value: 'claude-haiku-4-20250514' },
-          ],
-          openai: [
-            { name: 'GPT-4o (recommended)', value: 'gpt-4o' },
-            { name: 'GPT-4 Turbo', value: 'gpt-4-turbo' },
-            { name: 'GPT-3.5 Turbo', value: 'gpt-3.5-turbo' },
-          ],
-          google: [
-            {
-              name: 'Gemini 2.0 Flash (recommended)',
-              value: 'gemini-2.0-flash-exp',
-            },
-            { name: 'Gemini 1.5 Pro', value: 'gemini-1.5-pro' },
-            { name: 'Gemini 1.5 Flash', value: 'gemini-1.5-flash' },
-          ],
-          mistral: [
-            { name: 'Mistral Large', value: 'mistral-large-latest' },
-            { name: 'Mixtral 8x7B', value: 'mixtral-8x7b-32768' },
-          ],
-          cohere: [
-            { name: 'Command R+', value: 'command-r-plus' },
-            { name: 'Command R', value: 'command-r' },
-          ],
-        };
-      return modelChoices[answers.llm_provider || 'anthropic'] || [
-        { name: 'Default', value: 'default' },
-      ];
+      const modelChoices: Record<
+        string,
+        Array<{ name: string; value: string }>
+      > = {
+        anthropic: [
+          {
+            name: 'Claude Sonnet 4 (recommended)',
+            value: 'claude-sonnet-4-20250514',
+          },
+          { name: 'Claude Opus 4', value: 'claude-opus-4-20250514' },
+          { name: 'Claude Haiku 4', value: 'claude-haiku-4-20250514' },
+        ],
+        openai: [
+          { name: 'GPT-4o (recommended)', value: 'gpt-4o' },
+          { name: 'GPT-4 Turbo', value: 'gpt-4-turbo' },
+          { name: 'GPT-3.5 Turbo', value: 'gpt-3.5-turbo' },
+        ],
+        google: [
+          {
+            name: 'Gemini 2.0 Flash (recommended)',
+            value: 'gemini-2.0-flash-exp',
+          },
+          { name: 'Gemini 1.5 Pro', value: 'gemini-1.5-pro' },
+          { name: 'Gemini 1.5 Flash', value: 'gemini-1.5-flash' },
+        ],
+        mistral: [
+          { name: 'Mistral Large', value: 'mistral-large-latest' },
+          { name: 'Mixtral 8x7B', value: 'mixtral-8x7b-32768' },
+        ],
+        cohere: [
+          { name: 'Command R+', value: 'command-r-plus' },
+          { name: 'Command R', value: 'command-r' },
+        ],
+      };
+      return (
+        modelChoices[answers.llm_provider || 'anthropic'] || [
+          { name: 'Default', value: 'default' },
+        ]
+      );
     },
   },
   {
@@ -355,7 +362,11 @@ export const allPrompts: QuestionCollection = [
   ...(Array.isArray(toolsPrompts) ? toolsPrompts : [toolsPrompts]),
   ...(Array.isArray(safetyPrompts) ? safetyPrompts : [safetyPrompts]),
   ...(Array.isArray(autonomyPrompts) ? autonomyPrompts : [autonomyPrompts]),
-  ...(Array.isArray(observabilityPrompts) ? observabilityPrompts : [observabilityPrompts]),
-  ...(Array.isArray(extensionsPrompts) ? extensionsPrompts : [extensionsPrompts]),
+  ...(Array.isArray(observabilityPrompts)
+    ? observabilityPrompts
+    : [observabilityPrompts]),
+  ...(Array.isArray(extensionsPrompts)
+    ? extensionsPrompts
+    : [extensionsPrompts]),
   ...(Array.isArray(exportPrompts) ? exportPrompts : [exportPrompts]),
 ];

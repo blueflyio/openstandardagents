@@ -11,7 +11,10 @@ export class NPMConverter {
    * Convert OSSA manifest to NPM package config
    */
   convert(manifest: OssaAgent): NPMPackageConfig {
-    const metadata = manifest.metadata || { name: 'unknown-agent', version: '1.0.0' };
+    const metadata = manifest.metadata || {
+      name: 'unknown-agent',
+      version: '1.0.0',
+    };
     const spec = manifest.spec || {};
     const annotations = metadata.annotations || {};
 
@@ -37,9 +40,7 @@ export class NPMConverter {
       repository,
       author: metadata.author as string | undefined,
       homepage: `https://openstandardagents.org/agents/${npmName}`,
-      bugs: repository
-        ? `${repository}/issues`
-        : undefined,
+      bugs: repository ? `${repository}/issues` : undefined,
       files: [
         'index.js',
         'index.d.ts',
@@ -63,7 +64,10 @@ export class NPMConverter {
    * Extract agent metadata for export
    */
   extractMetadata(manifest: OssaAgent): AgentExportMetadata {
-    const metadata = manifest.metadata || { name: 'unknown-agent', version: '1.0.0' };
+    const metadata = manifest.metadata || {
+      name: 'unknown-agent',
+      version: '1.0.0',
+    };
     const spec = manifest.spec || {};
 
     // Extract capabilities - handle both string array and Capability object array
@@ -111,9 +115,10 @@ export class NPMConverter {
       homepage: config.homepage,
       files: config.files,
       peerDependencies: config.peerDependencies,
-      dependencies: Object.keys(config.dependencies || {}).length > 0
-        ? config.dependencies
-        : undefined,
+      dependencies:
+        Object.keys(config.dependencies || {}).length > 0
+          ? config.dependencies
+          : undefined,
       publishConfig: {
         access: 'public',
       },
@@ -126,7 +131,10 @@ export class NPMConverter {
   /**
    * Generate index.js entry point
    */
-  generateEntryPoint(manifest: OssaAgent, metadata: AgentExportMetadata): string {
+  generateEntryPoint(
+    manifest: OssaAgent,
+    metadata: AgentExportMetadata
+  ): string {
     return `/**
  * ${metadata.name} - OSSA Agent Package
  * Version: ${metadata.version}
@@ -199,7 +207,9 @@ export interface AgentMetadata {
   ${metadata.llm ? 'llm: LLMConfig;' : ''}
 }
 
-${metadata.tools ? `
+${
+  metadata.tools
+    ? `
 /**
  * Agent tool definition
  */
@@ -208,9 +218,13 @@ export interface Tool {
   description: string;
   type?: string;
 }
-` : ''}
+`
+    : ''
+}
 
-${metadata.llm ? `
+${
+  metadata.llm
+    ? `
 /**
  * LLM configuration
  */
@@ -220,7 +234,9 @@ export interface LLMConfig {
   temperature?: number;
   maxTokens?: number;
 }
-` : ''}
+`
+    : ''
+}
 
 /**
  * Agent configuration
@@ -310,20 +326,28 @@ Use this specification with any OSSA-compatible runtime or export to other forma
 - **Role**: ${metadata.role}
 ${metadata.capabilities ? `- **Capabilities**: ${metadata.capabilities.join(', ')}` : ''}
 
-${metadata.tools && metadata.tools.length > 0 ? `
+${
+  metadata.tools && metadata.tools.length > 0
+    ? `
 ## Tools
 
-${metadata.tools.map(t => `- **${t.name}**: ${t.description}`).join('\n')}
-` : ''}
+${metadata.tools.map((t) => `- **${t.name}**: ${t.description}`).join('\n')}
+`
+    : ''
+}
 
-${metadata.llm ? `
+${
+  metadata.llm
+    ? `
 ## LLM Configuration
 
 - **Provider**: ${metadata.llm.provider || 'default'}
 - **Model**: ${metadata.llm.model || 'default'}
 - **Temperature**: ${metadata.llm.temperature ?? 'default'}
 - **Max Tokens**: ${metadata.llm.maxTokens ?? 'default'}
-` : ''}
+`
+    : ''
+}
 
 ## Generated from OSSA
 

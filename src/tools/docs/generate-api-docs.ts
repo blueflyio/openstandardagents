@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 /**
  * Generate API documentation from OpenAPI specifications
- * 
+ *
  * Usage: npm run docs:api:generate
  */
 
@@ -27,18 +27,22 @@ interface OpenAPISpec {
 const OPENAPI_DIR = join(process.cwd(), 'openapi');
 const OUTPUT_DIR = join(process.cwd(), 'website/content/docs/api-reference');
 
-function generateEndpointDoc(path: string, method: string, operation: any): string {
+function generateEndpointDoc(
+  path: string,
+  method: string,
+  operation: any
+): string {
   const methodUpper = method.toUpperCase();
   let doc = `### ${operation.summary || `${methodUpper} ${path}`}\n\n`;
-  
+
   doc += '```http\n';
   doc += `${methodUpper} ${path}\n`;
   doc += '```\n\n';
-  
+
   if (operation.description) {
     doc += `**Description**: ${operation.description}\n\n`;
   }
-  
+
   // Parameters
   if (operation.parameters && operation.parameters.length > 0) {
     doc += '**Parameters**:\n\n';
@@ -48,7 +52,7 @@ function generateEndpointDoc(path: string, method: string, operation: any): stri
     }
     doc += '\n';
   }
-  
+
   // Request body
   if (operation.requestBody) {
     doc += '**Request Body**:\n\n';
@@ -59,7 +63,7 @@ function generateEndpointDoc(path: string, method: string, operation: any): stri
       doc += '\n```\n\n';
     }
   }
-  
+
   // Responses
   if (operation.responses) {
     doc += '**Responses**:\n\n';
@@ -68,12 +72,16 @@ function generateEndpointDoc(path: string, method: string, operation: any): stri
       const content = (response as any).content;
       if (content && content['application/json']) {
         doc += '```json\n';
-        doc += JSON.stringify(content['application/json'].example || {}, null, 2);
+        doc += JSON.stringify(
+          content['application/json'].example || {},
+          null,
+          2
+        );
         doc += '\n```\n\n';
       }
     }
   }
-  
+
   // Example
   doc += '**Example**:\n\n';
   doc += '```bash\n';
@@ -83,21 +91,21 @@ function generateEndpointDoc(path: string, method: string, operation: any): stri
     doc += ' \\\n  -H "Content-Type: application/json" \\\n  -d @request.json';
   }
   doc += '\n```\n\n';
-  
+
   return doc;
 }
 
 function generateAPIDoc(spec: OpenAPISpec, filename: string): string {
   const apiName = spec.info.title;
   const apiVersion = spec.info.version;
-  
+
   let doc = `# ${apiName}\n\n`;
   doc += `**Version**: ${apiVersion}\n\n`;
-  
+
   if (spec.info.description) {
     doc += `${spec.info.description}\n\n`;
   }
-  
+
   doc += '## Base URL\n\n';
   if (spec.servers && spec.servers.length > 0) {
     for (const server of spec.servers) {
@@ -111,16 +119,17 @@ function generateAPIDoc(spec: OpenAPISpec, filename: string): string {
     doc += '`https://api.ossa.dev`\n';
   }
   doc += '\n';
-  
+
   // Authentication
   if (spec.components?.securitySchemes) {
     doc += '## Authentication\n\n';
-    doc += 'This API requires authentication. See [Authentication Guide](../authentication.md) for details.\n\n';
+    doc +=
+      'This API requires authentication. See [Authentication Guide](../authentication.md) for details.\n\n';
   }
-  
+
   // Endpoints
   doc += '## Endpoints\n\n';
-  
+
   for (const [path, methods] of Object.entries(spec.paths)) {
     for (const [method, operation] of Object.entries(methods)) {
       if (['get', 'post', 'put', 'patch', 'delete'].includes(method)) {
@@ -128,45 +137,47 @@ function generateAPIDoc(spec: OpenAPISpec, filename: string): string {
       }
     }
   }
-  
+
   // Related documentation
   doc += '## Related Documentation\n\n';
   doc += '- [CLI Reference](../cli-reference/index.md)\n';
   doc += '- [Schema Reference](../schema-reference/index.md)\n';
   doc += '- [Authentication Guide](../authentication.md)\n';
-  
+
   return doc;
 }
 
 function main() {
   console.log('🚀 Generating API documentation...\n');
-  
+
   // Create output directory
   mkdirSync(OUTPUT_DIR, { recursive: true });
-  
+
   // Process core APIs
   const coreDir = join(OPENAPI_DIR, 'core');
-  const coreFiles = readdirSync(coreDir).filter(f => f.endsWith('.yaml'));
-  
+  const coreFiles = readdirSync(coreDir).filter((f) => f.endsWith('.yaml'));
+
   console.log(`📁 Processing ${coreFiles.length} core API specs...\n`);
-  
+
   for (const file of coreFiles) {
     try {
       const specPath = join(coreDir, file);
       const specContent = readFileSync(specPath, 'utf-8');
       // Use JSON_SCHEMA to prevent arbitrary code execution (CWE-502)
-      const spec = yaml.load(specContent, { schema: yaml.JSON_SCHEMA }) as OpenAPISpec;
-      
+      const spec = yaml.load(specContent, {
+        schema: yaml.JSON_SCHEMA,
+      }) as OpenAPISpec;
+
       const docContent = generateAPIDoc(spec, file);
       const outputFile = join(OUTPUT_DIR, file.replace('.openapi.yaml', '.md'));
-      
+
       writeFileSync(outputFile, docContent);
       console.log(`✅ Generated: ${basename(outputFile)}`);
     } catch (error) {
       console.log(`⚠️  Skipped: ${file} (${(error as Error).message})`);
     }
   }
-  
+
   // Generate index
   const indexContent = `# API Reference
 
@@ -174,11 +185,16 @@ Welcome to the OSSA API Reference documentation.
 
 ## Core APIs
 
-${coreFiles.map(f => {
-  const name = f.replace('.openapi.yaml', '').replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-  const link = f.replace('.openapi.yaml', '.md');
-  return `- [${name}](${link})`;
-}).join('\n')}
+${coreFiles
+  .map((f) => {
+    const name = f
+      .replace('.openapi.yaml', '')
+      .replace(/-/g, ' ')
+      .replace(/\b\w/g, (l) => l.toUpperCase());
+    const link = f.replace('.openapi.yaml', '.md');
+    return `- [${name}](${link})`;
+  })
+  .join('\n')}
 
 ## Authentication
 
@@ -208,10 +224,10 @@ For API support, please:
 - Open an issue on [GitLab](https://gitlab.com/blueflyio/openstandardagents/-/issues)
 - Join our [Discord community](https://discord.gg/ossa)
 `;
-  
+
   writeFileSync(join(OUTPUT_DIR, 'index.md'), indexContent);
   console.log(`✅ Generated: index.md`);
-  
+
   console.log(`\n✨ API documentation generated successfully!`);
   console.log(`📂 Output: ${OUTPUT_DIR}`);
 }

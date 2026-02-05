@@ -12,6 +12,7 @@ import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { ValidationService } from '../../services/validation.service.js';
 import { RegistryService } from '../../services/registry/registry.service.js';
 import type { OssaAgent } from '../../types/index.js';
+import { agentsPersonaCommand } from './agents/persona.command.js';
 
 /**
  * Zod Schemas for CLI Input Validation
@@ -485,3 +486,9 @@ agentsCommandGroup
       }
     }
   );
+
+/**
+ * Persona Management Command
+ * Display and edit agent persona configuration
+ */
+agentsCommandGroup.addCommand(agentsPersonaCommand);

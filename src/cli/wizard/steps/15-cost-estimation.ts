@@ -41,7 +41,7 @@ const INFRASTRUCTURE_COSTS: Record<string, number> = {
 export async function costEstimationStep(
   state: WizardState
 ): Promise<WizardState> {
-  console_ui.step(15, state.totalSteps, 'Cost Estimation');
+  console_ui.step(16, state.totalSteps, 'Cost Estimation');
 
   const { estimateCosts } = await inquirer.prompt([
     {

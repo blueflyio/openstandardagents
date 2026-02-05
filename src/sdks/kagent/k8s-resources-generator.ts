@@ -108,7 +108,8 @@ export class K8sResourcesGenerator {
     namespace: string = 'default',
     options: KAgentDeploymentOptions = {}
   ): K8sManifest {
-    const serviceAccountName = options.rbac?.serviceAccountName || `${agentName}-sa`;
+    const serviceAccountName =
+      options.rbac?.serviceAccountName || `${agentName}-sa`;
 
     return {
       apiVersion: 'rbac.authorization.k8s.io/v1',
@@ -159,7 +160,8 @@ export class K8sResourcesGenerator {
         },
         annotations: {
           'ossa.ai/agent': agentName,
-          'ossa.ai/note': 'Replace tls.crt and tls.key with actual TLS certificate and key',
+          'ossa.ai/note':
+            'Replace tls.crt and tls.key with actual TLS certificate and key',
         },
       },
       data: {
@@ -177,7 +179,8 @@ export class K8sResourcesGenerator {
     namespace: string = 'default',
     provider: string = 'openai'
   ): K8sManifest {
-    const keyName = provider === 'anthropic' ? 'ANTHROPIC_API_KEY' : 'OPENAI_API_KEY';
+    const keyName =
+      provider === 'anthropic' ? 'ANTHROPIC_API_KEY' : 'OPENAI_API_KEY';
 
     return {
       apiVersion: 'v1',
@@ -303,25 +306,45 @@ export class K8sResourcesGenerator {
 
     // RBAC resources
     if (options.rbac?.enabled) {
-      resources.serviceAccount = this.generateServiceAccount(agentName, namespace, options);
+      resources.serviceAccount = this.generateServiceAccount(
+        agentName,
+        namespace,
+        options
+      );
       resources.role = this.generateRole(agentName, namespace, options);
-      resources.roleBinding = this.generateRoleBinding(agentName, namespace, options);
+      resources.roleBinding = this.generateRoleBinding(
+        agentName,
+        namespace,
+        options
+      );
     }
 
     // TLS Secret
     if (options.tls?.enabled) {
-      resources.tlsSecret = this.generateTLSSecret(agentName, namespace, options);
+      resources.tlsSecret = this.generateTLSSecret(
+        agentName,
+        namespace,
+        options
+      );
     }
 
     // API Key Secret
     if (options.apiKeySecret) {
       const provider = crd.spec.modelConfig.provider;
-      resources.apiKeySecret = this.generateAPIKeySecret(agentName, namespace, provider);
+      resources.apiKeySecret = this.generateAPIKeySecret(
+        agentName,
+        namespace,
+        provider
+      );
     }
 
     // Network Policy
     if (options.namespace && namespace !== 'default') {
-      resources.networkPolicy = this.generateNetworkPolicy(agentName, namespace, options);
+      resources.networkPolicy = this.generateNetworkPolicy(
+        agentName,
+        namespace,
+        options
+      );
     }
 
     return resources;
@@ -330,10 +353,7 @@ export class K8sResourcesGenerator {
   /**
    * Generate YAML for all resources
    */
-  generateYAML(
-    crd: KAgentCRD,
-    options: KAgentDeploymentOptions = {}
-  ): string {
+  generateYAML(crd: KAgentCRD, options: KAgentDeploymentOptions = {}): string {
     const resources = this.generateAll(crd, options);
     const yamls: string[] = [];
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Command execution utilities
- * 
+ *
  * Follows DRY principles for command execution
  */
 
@@ -16,9 +16,12 @@ interface ExecOptions {
 /**
  * Execute command and return output (or void if stdio is 'inherit')
  */
-export function execCommand(command: string, options: ExecOptions = {}): string {
+export function execCommand(
+  command: string,
+  options: ExecOptions = {}
+): string {
   const { encoding = 'utf8', stdio = 'pipe', cwd } = options;
-  
+
   try {
     if (stdio === 'inherit') {
       // When inheriting stdio, just execute - no output to return
@@ -28,7 +31,7 @@ export function execCommand(command: string, options: ExecOptions = {}): string 
       });
       return ''; // Return empty string when inheriting
     }
-    
+
     const output = execSync(command, {
       encoding: encoding as BufferEncoding,
       stdio: ['pipe', 'pipe', 'pipe'],

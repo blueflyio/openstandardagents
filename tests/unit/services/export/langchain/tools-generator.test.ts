@@ -59,8 +59,12 @@ describe('ToolsGenerator - Production Quality (v0.4.1)', () => {
 
       // Should contain Pydantic model
       expect(result).toContain('class SearchDocsInput(BaseModel):');
-      expect(result).toContain('query: str = Field(..., description="Search query")');
-      expect(result).toContain('max_results: Optional[int] = Field(10, description="Max results")');
+      expect(result).toContain(
+        'query: str = Field(..., description="Search query")'
+      );
+      expect(result).toContain(
+        'max_results: Optional[int] = Field(10, description="Max results")'
+      );
     });
 
     it('should handle boolean default values correctly', () => {

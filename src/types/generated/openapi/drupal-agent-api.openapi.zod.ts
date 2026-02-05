@@ -18,15 +18,19 @@ import * as CommonSchemas from './common-schemas.zod';
 export const contentCreateRequestSchema = z.object({
   type: z.string(),
   title: z.string(),
-  body: z.object({
-  value: z.string().optional(),
-  format: z.string().optional()
-}).optional(),
+  body: z
+    .object({
+      value: z.string().optional(),
+      format: z.string().optional(),
+    })
+    .optional(),
   fields: z.record(z.string(), z.unknown()).optional(),
-  agent_metadata: z.object({
-  created_by_agent: z.string().optional(),
-  session_id: z.string().optional()
-}).optional()
+  agent_metadata: z
+    .object({
+      created_by_agent: z.string().optional(),
+      session_id: z.string().optional(),
+    })
+    .optional(),
 });
 
 export type ContentCreateRequest = z.infer<typeof contentCreateRequestSchema>;
@@ -39,7 +43,7 @@ export const contentResponseSchema = z.object({
   body: z.string().optional(),
   url: z.string().url().optional(),
   created: z.string().datetime().optional(),
-  changed: z.string().datetime().optional()
+  changed: z.string().datetime().optional(),
 });
 
 export type ContentResponse = z.infer<typeof contentResponseSchema>;
@@ -48,7 +52,7 @@ export const contentUpdateRequestSchema = z.object({
   title: z.string().optional(),
   body: z.record(z.string(), z.unknown()).optional(),
   fields: z.record(z.string(), z.unknown()).optional(),
-  status: z.enum(["published", "draft", "archived"]).optional()
+  status: z.enum(['published', 'draft', 'archived']).optional(),
 });
 
 export type ContentUpdateRequest = z.infer<typeof contentUpdateRequestSchema>;

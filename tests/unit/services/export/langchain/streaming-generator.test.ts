@@ -2,7 +2,10 @@
  * Tests for LangChain Streaming Generator
  */
 
-import { StreamingGenerator, type StreamingConfig } from '../../../../../src/services/export/langchain/streaming-generator.js';
+import {
+  StreamingGenerator,
+  type StreamingConfig,
+} from '../../../../../src/services/export/langchain/streaming-generator.js';
 import type { OssaAgent } from '../../../../../src/types/index.js';
 
 describe('StreamingGenerator', () => {
@@ -113,7 +116,9 @@ describe('StreamingGenerator', () => {
       expect(result).toContain('class A2AStreamingClient');
       expect(result).toContain('async def stream_a2a(');
       expect(result).toContain('http://mesh.example.com');
-      expect(result).toContain('await self.client.post(endpoint, json=payload)');
+      expect(result).toContain(
+        'await self.client.post(endpoint, json=payload)'
+      );
     });
 
     it('should exclude a2a implementation when disabled', () => {
@@ -168,8 +173,12 @@ describe('StreamingGenerator', () => {
     it('should always include StreamingCallbackHandler class', () => {
       const result = generator.generate(mockManifest);
 
-      expect(result).toContain('class StreamingCallbackHandler(BaseCallbackHandler)');
-      expect(result).toContain('def __init__(self, queue: asyncio.Queue, cost_tracker: Optional[Any] = None)');
+      expect(result).toContain(
+        'class StreamingCallbackHandler(BaseCallbackHandler)'
+      );
+      expect(result).toContain(
+        'def __init__(self, queue: asyncio.Queue, cost_tracker: Optional[Any] = None)'
+      );
       expect(result).toContain('self.queue = queue');
       expect(result).toContain('self.tokens = []');
       expect(result).toContain('self.cost_tracker = cost_tracker');
@@ -249,8 +258,12 @@ describe('StreamingGenerator', () => {
     it('should include base imports', () => {
       const result = generator.generate(mockManifest);
 
-      expect(result).toContain('from typing import Any, Dict, AsyncIterator, Optional');
-      expect(result).toContain('from langchain.callbacks.base import BaseCallbackHandler');
+      expect(result).toContain(
+        'from typing import Any, Dict, AsyncIterator, Optional'
+      );
+      expect(result).toContain(
+        'from langchain.callbacks.base import BaseCallbackHandler'
+      );
       expect(result).toContain('from langchain.schema import LLMResult');
       expect(result).toContain('import asyncio');
       expect(result).toContain('import json');
@@ -265,8 +278,12 @@ describe('StreamingGenerator', () => {
 
       const result = generator.generate(mockManifest, config);
 
-      expect(result).toContain('from fastapi.responses import StreamingResponse');
-      expect(result).toContain('from starlette.responses import EventSourceResponse');
+      expect(result).toContain(
+        'from fastapi.responses import StreamingResponse'
+      );
+      expect(result).toContain(
+        'from starlette.responses import EventSourceResponse'
+      );
     });
 
     it('should exclude SSE imports when disabled', () => {
@@ -278,8 +295,12 @@ describe('StreamingGenerator', () => {
 
       const result = generator.generate(mockManifest, config);
 
-      expect(result).not.toContain('from fastapi.responses import StreamingResponse');
-      expect(result).not.toContain('from starlette.responses import EventSourceResponse');
+      expect(result).not.toContain(
+        'from fastapi.responses import StreamingResponse'
+      );
+      expect(result).not.toContain(
+        'from starlette.responses import EventSourceResponse'
+      );
     });
 
     it('should include WebSocket imports when enabled', () => {
@@ -289,8 +310,12 @@ describe('StreamingGenerator', () => {
 
       const result = generator.generate(mockManifest, config);
 
-      expect(result).toContain('from fastapi import WebSocket, WebSocketDisconnect');
-      expect(result).toContain('from websockets.exceptions import ConnectionClosed');
+      expect(result).toContain(
+        'from fastapi import WebSocket, WebSocketDisconnect'
+      );
+      expect(result).toContain(
+        'from websockets.exceptions import ConnectionClosed'
+      );
     });
 
     it('should exclude WebSocket imports when disabled', () => {
@@ -302,8 +327,12 @@ describe('StreamingGenerator', () => {
 
       const result = generator.generate(mockManifest, config);
 
-      expect(result).not.toContain('from fastapi import WebSocket, WebSocketDisconnect');
-      expect(result).not.toContain('from websockets.exceptions import ConnectionClosed');
+      expect(result).not.toContain(
+        'from fastapi import WebSocket, WebSocketDisconnect'
+      );
+      expect(result).not.toContain(
+        'from websockets.exceptions import ConnectionClosed'
+      );
     });
 
     it('should include a2a imports when enabled', () => {
@@ -342,7 +371,7 @@ describe('StreamingGenerator', () => {
       expect(result).toContain('try:');
       expect(result).toContain('except Exception as e:');
       expect(result).toContain('logger.error(f"SSE streaming error: {str(e)}"');
-      expect(result).toContain('yield f"data: {json.dumps({\'type\': \'error\'');
+      expect(result).toContain("yield f\"data: {json.dumps({'type': 'error'");
     });
 
     it('should include error handling in WebSocket stream', () => {
@@ -380,11 +409,17 @@ describe('StreamingGenerator', () => {
       const result = generator.generate(mockManifest);
 
       expect(result).toContain('"""');
-      expect(result).toContain('LangChain Streaming Support (Production Quality)');
+      expect(result).toContain(
+        'LangChain Streaming Support (Production Quality)'
+      );
       expect(result).toContain('Features:');
-      expect(result).toContain('- Server-Sent Events (SSE) for real-time responses');
+      expect(result).toContain(
+        '- Server-Sent Events (SSE) for real-time responses'
+      );
       expect(result).toContain('- WebSocket bidirectional streaming');
-      expect(result).toContain('- LangChain callbacks for token-by-token streaming');
+      expect(result).toContain(
+        '- LangChain callbacks for token-by-token streaming'
+      );
       expect(result).toContain('- Agent-to-agent (a2a) streaming integration');
       expect(result).toContain('- Comprehensive error handling');
       expect(result).toContain('- Reconnection logic');

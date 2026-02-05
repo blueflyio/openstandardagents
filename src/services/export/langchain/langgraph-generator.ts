@@ -58,20 +58,27 @@ export class LangGraphGenerator {
    */
   shouldUseLangGraph(manifest: OssaAgent): boolean {
     // Check for workflow structure
-    if (manifest.spec?.workflow?.steps && manifest.spec.workflow.steps.length > 0) {
+    if (
+      manifest.spec?.workflow?.steps &&
+      manifest.spec.workflow.steps.length > 0
+    ) {
       return true;
     }
 
     // Check for agent dependencies
-    if (manifest.spec?.dependencies?.agents && manifest.spec.dependencies.agents.length > 0) {
+    if (
+      manifest.spec?.dependencies?.agents &&
+      manifest.spec.dependencies.agents.length > 0
+    ) {
       return true;
     }
 
     // Check for multiple tools that could represent sub-agents
     const tools = manifest.spec?.tools || [];
-    const hasMultipleAgentTools = tools.filter(
-      (tool: any) => tool.type === 'agent' || tool.namespace === 'agents'
-    ).length > 1;
+    const hasMultipleAgentTools =
+      tools.filter(
+        (tool: any) => tool.type === 'agent' || tool.namespace === 'agents'
+      ).length > 1;
 
     if (hasMultipleAgentTools) {
       return true;
@@ -124,7 +131,7 @@ export class LangGraphGenerator {
     // Analyze dependencies
     if (manifest.spec?.dependencies?.agents) {
       for (const dep of manifest.spec.dependencies.agents) {
-        if (!agents.find(a => a.id === dep.name)) {
+        if (!agents.find((a) => a.id === dep.name)) {
           agents.push({
             id: dep.name,
             name: dep.name,
@@ -150,11 +157,14 @@ export class LangGraphGenerator {
       pattern = 'human-in-the-loop';
     } else if (hasSubworkflows) {
       pattern = 'hierarchical';
-    } else if (agents.some(a => a.dependencies.length > 1)) {
+    } else if (agents.some((a) => a.dependencies.length > 1)) {
       pattern = 'supervisor';
     } else if (hasConditionalLogic) {
       pattern = 'conditional';
-    } else if (agents.some(a => a.dependencies.length === 0) && agents.length > 1) {
+    } else if (
+      agents.some((a) => a.dependencies.length === 0) &&
+      agents.length > 1
+    ) {
       pattern = 'parallel';
     }
 
@@ -211,7 +221,7 @@ ${this.generateExecutionFunction()}
    */
   private generateStateClass(structure: WorkflowStructure): string {
     const fields = structure.stateFields
-      .map(field => {
+      .map((field) => {
         if (field === 'messages') {
           return '    messages: Annotated[Sequence[BaseMessage], operator.add]';
         } else if (field === 'next') {
@@ -235,7 +245,10 @@ ${fields}
   /**
    * Generate agent node functions
    */
-  private generateAgentFunctions(structure: WorkflowStructure, manifest: OssaAgent): string {
+  private generateAgentFunctions(
+    structure: WorkflowStructure,
+    manifest: OssaAgent
+  ): string {
     const functions: string[] = [];
 
     for (const agent of structure.agents) {
@@ -252,8 +265,12 @@ def ${functionName}_agent(state: AgentState) -> AgentState:
 
     # Get context from previous agents
     context = []
-${agent.dependencies.map(dep => `    if "${dep}_output" in state:
-        context.append(f"${dep} output: {state['${dep}_output']}")`).join('\n')}
+${agent.dependencies
+  .map(
+    (dep) => `    if "${dep}_output" in state:
+        context.append(f"${dep} output: {state['${dep}_output']}")`
+  )
+  .join('\n')}
 
     # Build prompt with role and context
     system_prompt = """${role}
@@ -337,34 +354,42 @@ Approve? (yes/no): """
       return '# No router needed for sequential workflow';
     }
 
-    const conditionalAgents = structure.agents.filter(a => a.isConditional);
-    const routingLogic = conditionalAgents.map(agent => {
-      return `    # Conditional routing for ${agent.name}
+    const conditionalAgents = structure.agents.filter((a) => a.isConditional);
+    const routingLogic = conditionalAgents
+      .map((agent) => {
+        return `    # Conditional routing for ${agent.name}
     if should_route_to_${this.sanitizeFunctionName(agent.id)}(state):
         return "${agent.id}"`;
-    }).join('\n');
+      })
+      .join('\n');
 
     return `
-def router(state: AgentState) -> Literal[${structure.agents.map(a => `"${a.id}"`).join(', ')}, "end"]:
+def router(state: AgentState) -> Literal[${structure.agents.map((a) => `"${a.id}"`).join(', ')}, "end"]:
     """
     Route to next agent based on state and conditions
     """
     messages = state["messages"]
     next_agent = state.get("next", "end")
 
-${structure.hasHumanApproval ? `    # Check approval status
+${
+  structure.hasHumanApproval
+    ? `    # Check approval status
     if state.get("approval_status") == "rejected":
         return "end"
-` : ''}
+`
+    : ''
+}
 ${routingLogic}
 
     # Default routing
-    if next_agent in [${structure.agents.map(a => `"${a.id}"`).join(', ')}]:
+    if next_agent in [${structure.agents.map((a) => `"${a.id}"`).join(', ')}]:
         return next_agent
 
     return "end"
 
-${conditionalAgents.map(agent => `
+${conditionalAgents
+  .map(
+    (agent) => `
 def should_route_to_${this.sanitizeFunctionName(agent.id)}(state: AgentState) -> bool:
     """
     Determine if workflow should route to ${agent.name}
@@ -372,19 +397,27 @@ def should_route_to_${this.sanitizeFunctionName(agent.id)}(state: AgentState) ->
     # TODO: Implement conditional logic based on state
     # For now, default to True
     return True
-`).join('\n')}
+`
+  )
+  .join('\n')}
 `;
   }
 
   /**
    * Generate workflow builder function
    */
-  private generateWorkflowBuilder(structure: WorkflowStructure, manifest: OssaAgent): string {
+  private generateWorkflowBuilder(
+    structure: WorkflowStructure,
+    manifest: OssaAgent
+  ): string {
     const workflowName = manifest.metadata?.name || 'workflow';
 
     // Build node additions
     const nodeAdditions = structure.agents
-      .map(agent => `    workflow.add_node("${agent.id}", ${this.sanitizeFunctionName(agent.id)}_agent)`)
+      .map(
+        (agent) =>
+          `    workflow.add_node("${agent.id}", ${this.sanitizeFunctionName(agent.id)}_agent)`
+      )
       .join('\n');
 
     // Add human approval node if needed
@@ -455,7 +488,10 @@ ${edges}
         "${structure.agents[0].id}",
         router,
         {
-${structure.agents.slice(1).map(a => `            "${a.id}": "${a.id}"`).join(',\n')},
+${structure.agents
+  .slice(1)
+  .map((a) => `            "${a.id}": "${a.id}"`)
+  .join(',\n')},
             "end": END
         }
     )`);
@@ -469,12 +505,14 @@ ${structure.agents.slice(1).map(a => `            "${a.id}": "${a.id}"`).join(',
       for (const agent of structure.agents) {
         if (agent.dependencies.length === 0) {
           // No dependencies - goes to END or next agent
-          const dependents = structure.agents.filter(a =>
+          const dependents = structure.agents.filter((a) =>
             a.dependencies.includes(agent.id)
           );
 
           if (dependents.length > 0) {
-            edges.push(`    workflow.add_edge("${agent.id}", "${dependents[0].id}")`);
+            edges.push(
+              `    workflow.add_edge("${agent.id}", "${dependents[0].id}")`
+            );
           } else {
             edges.push(`    workflow.add_edge("${agent.id}", END)`);
           }
@@ -484,8 +522,11 @@ ${structure.agents.slice(1).map(a => `            "${a.id}": "${a.id}"`).join(',
 
     // Add human approval edges if needed
     if (structure.hasHumanApproval) {
-      const lastAgentBeforeApproval = structure.agents[structure.agents.length - 2];
-      edges.push(`    workflow.add_edge("${lastAgentBeforeApproval?.id}", "human_approval")`);
+      const lastAgentBeforeApproval =
+        structure.agents[structure.agents.length - 2];
+      edges.push(
+        `    workflow.add_edge("${lastAgentBeforeApproval?.id}", "human_approval")`
+      );
       edges.push(`    workflow.add_edge("human_approval", END)`);
     }
 

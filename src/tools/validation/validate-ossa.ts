@@ -28,14 +28,21 @@ const VERSION = getVersion();
 const VERSION_DIR = `v${VERSION}`;
 
 // Load OSSA schema (auto-detected from version)
-const schemaPath = resolve(__dirname, `../spec/${VERSION_DIR}/ossa-${VERSION}.schema.json`);
+const schemaPath = resolve(
+  __dirname,
+  `../spec/${VERSION_DIR}/ossa-${VERSION}.schema.json`
+);
 
 let schema;
 try {
   schema = JSON.parse(readFileSync(schemaPath, 'utf-8'));
 } catch (error) {
   console.error(chalk.red(`Failed to load schema at ${schemaPath}`));
-  console.error(chalk.yellow(`Make sure spec/${VERSION_DIR}/ossa-${VERSION}.schema.json exists`));
+  console.error(
+    chalk.yellow(
+      `Make sure spec/${VERSION_DIR}/ossa-${VERSION}.schema.json exists`
+    )
+  );
   process.exit(1);
 }
 
@@ -106,7 +113,7 @@ function validatePowerSuiteConfig(config: PowerSuiteOssaConfig): {
     // Extract base version (e.g., "0.2.5" from "0.2.5-RC")
     const baseVersion = VERSION.split('-')[0];
     const ossaBaseVersion = ossa.version.split('-')[0];
-    
+
     if (!ossaBaseVersion.startsWith(baseVersion)) {
       errors.push(
         `Invalid ossa.version: expected "${VERSION}" or compatible version, got "${ossa.version}"`
@@ -178,8 +185,11 @@ function validatePowerSuiteConfig(config: PowerSuiteOssaConfig): {
     const baseVersion = VERSION.split('-')[0];
     const expectedStandard = `OSSA-${baseVersion}`;
     const expectedStandardRC = `OSSA-${VERSION}`;
-    
-    if (!standards.includes(expectedStandardRC) && !standards.includes(expectedStandard)) {
+
+    if (
+      !standards.includes(expectedStandardRC) &&
+      !standards.includes(expectedStandard)
+    ) {
       errors.push(
         `compliance.standards must include "${expectedStandardRC}" or "${expectedStandard}" for v${VERSION} compliance`
       );
@@ -270,4 +280,3 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 }
 
 export { validatePowerSuiteConfig, validateFile };
-

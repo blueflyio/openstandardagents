@@ -28,7 +28,9 @@ export class LlmsTxtGenerator {
     const packageJsonPath = path.join(projectPath, 'package.json');
     if (fs.existsSync(packageJsonPath)) {
       try {
-        const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
+        const packageJson = JSON.parse(
+          fs.readFileSync(packageJsonPath, 'utf-8')
+        );
         content += `**Description:** ${packageJson.description || 'No description'}\n`;
         content += `**Version:** ${packageJson.version || 'unknown'}\n`;
         content += `**License:** ${packageJson.license || 'unknown'}\n\n`;
@@ -82,7 +84,7 @@ export class LlmsTxtGenerator {
 
     let section = '';
 
-    keyFiles.forEach(file => {
+    keyFiles.forEach((file) => {
       const filePath = path.join(projectPath, file);
       if (fs.existsSync(filePath)) {
         section += `- ${file}\n`;
@@ -99,21 +101,25 @@ export class LlmsTxtGenerator {
 
     if (fs.existsSync(packageJsonPath)) {
       try {
-        const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
+        const packageJson = JSON.parse(
+          fs.readFileSync(packageJsonPath, 'utf-8')
+        );
         const deps = packageJson.dependencies || {};
         const devDeps = packageJson.devDependencies || {};
 
         section += `**Production:**\n`;
-        Object.keys(deps).forEach(dep => {
+        Object.keys(deps).forEach((dep) => {
           section += `- ${dep}: ${deps[dep]}\n`;
         });
         section += `\n`;
 
         if (Object.keys(devDeps).length > 0) {
           section += `**Development:**\n`;
-          Object.keys(devDeps).slice(0, 10).forEach(dep => {
-            section += `- ${dep}: ${devDeps[dep]}\n`;
-          });
+          Object.keys(devDeps)
+            .slice(0, 10)
+            .forEach((dep) => {
+              section += `- ${dep}: ${devDeps[dep]}\n`;
+            });
           if (Object.keys(devDeps).length > 10) {
             section += `- ... and ${Object.keys(devDeps).length - 10} more\n`;
           }
@@ -133,10 +139,12 @@ export class LlmsTxtGenerator {
 
     if (fs.existsSync(packageJsonPath)) {
       try {
-        const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
+        const packageJson = JSON.parse(
+          fs.readFileSync(packageJsonPath, 'utf-8')
+        );
         const scripts = packageJson.scripts || {};
 
-        Object.keys(scripts).forEach(script => {
+        Object.keys(scripts).forEach((script) => {
           section += `- \`npm run ${script}\`: ${scripts[script]}\n`;
         });
         section += `\n`;
@@ -179,7 +187,9 @@ export class LlmsTxtGenerator {
     const packageJsonPath = path.join(projectPath, 'package.json');
     if (fs.existsSync(packageJsonPath)) {
       try {
-        const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
+        const packageJson = JSON.parse(
+          fs.readFileSync(packageJsonPath, 'utf-8')
+        );
         const deps = packageJson.dependencies || {};
 
         if (deps.express) {

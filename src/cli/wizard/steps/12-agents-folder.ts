@@ -15,7 +15,7 @@ export async function createAgentsFolderStep(
   state: WizardState,
   options: WizardOptions
 ): Promise<WizardState> {
-  console_ui.step(12, state.totalSteps, 'Create .agents Folder Structure');
+  console_ui.step(13, state.totalSteps, 'Create .agents Folder Structure');
 
   const agentName = state.agent.metadata?.name;
   if (!agentName) {

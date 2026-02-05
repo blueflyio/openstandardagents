@@ -7,10 +7,15 @@
 import { Gitlab } from '@gitbeaker/rest';
 
 const PROJECT_ID = 'blueflyio/openstandardagents';
-const TOKEN = process.env.GITLAB_TOKEN || process.env.SERVICE_ACCOUNT_OSSA_TOKEN || process.env.GITLAB_PUSH_TOKEN;
+const TOKEN =
+  process.env.GITLAB_TOKEN ||
+  process.env.SERVICE_ACCOUNT_OSSA_TOKEN ||
+  process.env.GITLAB_PUSH_TOKEN;
 
 if (!TOKEN) {
-  console.error('❌ Error: GITLAB_TOKEN or SERVICE_ACCOUNT_OSSA_TOKEN required');
+  console.error(
+    '❌ Error: GITLAB_TOKEN or SERVICE_ACCOUNT_OSSA_TOKEN required'
+  );
   process.exit(1);
 }
 
@@ -28,26 +33,29 @@ interface ProtectionRule {
   allowed_to_merge?: Array<{ user_id?: number; group_id?: number }>;
 }
 
-async function protectBranch(branch: string, rules: ProtectionRule): Promise<void> {
+async function protectBranch(
+  branch: string,
+  rules: ProtectionRule
+): Promise<void> {
   try {
     console.log(`\n🔒 Protecting branch: ${branch}`);
-    
+
     // Check if branch is already protected
     const existing = await gitlab.ProtectedBranches.all(PROJECT_ID);
     const isProtected = existing.some((pb: any) => pb.name === branch);
-    
+
     if (isProtected) {
       console.log(`  ⚠️  ${branch} is already protected. Updating...`);
       await gitlab.ProtectedBranches.unprotect(PROJECT_ID, branch);
     }
-    
+
     // Protect the branch
     await gitlab.ProtectedBranches.protect(PROJECT_ID, branch, {
       push_access_levels: [{ access_level: 0 }], // No one can push
       merge_access_levels: [{ access_level: 40 }], // Maintainers can merge
       allow_force_push: false,
     });
-    
+
     console.log(`  ✅ ${branch} protected successfully`);
     console.log(`     - Push: Blocked (no direct pushes)`);
     console.log(`     - Merge: Maintainers only (via MR)`);
@@ -62,7 +70,7 @@ async function main() {
   console.log('🔒 Configuring GitLab Branch Protection Rules\n');
   console.log(`Project: ${PROJECT_ID}`);
   console.log(`Token: ${TOKEN.substring(0, 10)}...`);
-  
+
   try {
     // Protect main branch
     await protectBranch('main', {
@@ -71,7 +79,7 @@ async function main() {
       merge_access_levels: [{ access_level: 40 }], // Maintainers
       allow_force_push: false,
     });
-    
+
     // Protect development branch
     await protectBranch('development', {
       name: 'development',
@@ -79,13 +87,15 @@ async function main() {
       merge_access_levels: [{ access_level: 40 }], // Maintainers
       allow_force_push: false,
     });
-    
+
     console.log('\n✅ Branch protection configured successfully!');
     console.log('\nProtected branches:');
     console.log('  - main: No direct pushes, MR required');
     console.log('  - development: No direct pushes, MR required');
     console.log('\nView in GitLab:');
-    console.log(`  https://gitlab.com/${PROJECT_ID}/-/settings/repository#protected-branches`);
+    console.log(
+      `  https://gitlab.com/${PROJECT_ID}/-/settings/repository#protected-branches`
+    );
   } catch (error: any) {
     console.error('\n❌ Error configuring branch protection:', error.message);
     process.exit(1);

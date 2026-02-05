@@ -18,7 +18,9 @@ const ROOT = join(__dirname, '../../..');
 
 async function main() {
   try {
-    const version = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf-8')).version;
+    const version = JSON.parse(
+      readFileSync(join(ROOT, 'package.json'), 'utf-8')
+    ).version;
     console.log(`📦 Current version: ${version}`);
 
     // Generate types from complete OpenAPI spec (agent-crud has agent schemas)
@@ -32,13 +34,10 @@ async function main() {
 
     // Generate types using openapi-typescript
     console.log('🔄 Generating TypeScript types from OpenAPI...');
-    execSync(
-      `npx openapi-typescript ${openApiPath} --output ${outputPath}`,
-      {
-        encoding: 'utf8',
-        stdio: 'inherit',
-      }
-    );
+    execSync(`npx openapi-typescript ${openApiPath} --output ${outputPath}`, {
+      encoding: 'utf8',
+      stdio: 'inherit',
+    });
 
     console.log(`✅ Generated: ${outputPath}`);
   } catch (error) {
@@ -51,4 +50,3 @@ async function main() {
 }
 
 main();
-

@@ -69,7 +69,7 @@ export class TokenCounterService {
     breakdown['tools'] = tools;
 
     // Examples (if any)
-    let examples = 0;
+    const examples = 0;
     breakdown['examples'] = examples;
 
     // Extensions (if any add context)

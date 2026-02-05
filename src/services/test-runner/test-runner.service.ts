@@ -50,7 +50,9 @@ export class TestRunnerService {
     }
 
     const testsToRun = options.testId
-      ? tests.filter((t: unknown) => (t as { id?: string })?.id === options.testId)
+      ? tests.filter(
+          (t: unknown) => (t as { id?: string })?.id === options.testId
+        )
       : tests;
 
     if (testsToRun.length === 0) {
@@ -88,7 +90,10 @@ export class TestRunnerService {
     test: unknown,
     manifest: OssaAgent,
     useMock?: boolean
-  ): Promise<{ response?: string; toolCalls?: Array<{ name: string; arguments: Record<string, unknown> }> }> {
+  ): Promise<{
+    response?: string;
+    toolCalls?: Array<{ name: string; arguments: Record<string, unknown> }>;
+  }> {
     // If using mock LLM and test has a prompt, execute it
     if (useMock && this.mockLLM && (test as { prompt?: string })?.prompt) {
       return await this.runMockTest(test, manifest);
@@ -116,7 +121,10 @@ export class TestRunnerService {
   private async runMockTest(
     test: unknown,
     manifest: OssaAgent
-  ): Promise<{ response: string; toolCalls?: Array<{ name: string; arguments: Record<string, unknown> }> }> {
+  ): Promise<{
+    response: string;
+    toolCalls?: Array<{ name: string; arguments: Record<string, unknown> }>;
+  }> {
     if (!this.mockLLM) {
       throw new Error('Mock LLM not initialized');
     }
@@ -129,7 +137,10 @@ export class TestRunnerService {
     };
 
     const prompt = testTyped.prompt || '';
-    const spec = manifest.spec as { role?: string; tools?: Array<{ name: string; description?: string }> };
+    const spec = manifest.spec as {
+      role?: string;
+      tools?: Array<{ name: string; description?: string }>;
+    };
     const systemPrompt = spec?.role || '';
     const tools = spec?.tools || [];
 
@@ -144,7 +155,9 @@ export class TestRunnerService {
     if (testTyped.expectedPatterns) {
       for (const pattern of testTyped.expectedPatterns) {
         if (!response.content.toLowerCase().includes(pattern.toLowerCase())) {
-          throw new Error(`Response does not contain expected pattern: "${pattern}"`);
+          throw new Error(
+            `Response does not contain expected pattern: "${pattern}"`
+          );
         }
       }
     }

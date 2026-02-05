@@ -19,13 +19,28 @@ import { ToolsGenerator } from './tools-generator.js';
 import { MemoryGenerator } from './memory-generator.js';
 import { ApiGenerator } from './api-generator.js';
 import { OpenApiGenerator } from './openapi-generator.js';
-import { StreamingGenerator, type StreamingConfig } from './streaming-generator.js';
-import { CallbacksGenerator, type CallbackConfig } from './callbacks-generator.js';
-import { ErrorHandlingGenerator, type ErrorHandlingConfig } from './error-handling-generator.js';
+import {
+  StreamingGenerator,
+  type StreamingConfig,
+} from './streaming-generator.js';
+import {
+  CallbacksGenerator,
+  type CallbackConfig,
+} from './callbacks-generator.js';
+import {
+  ErrorHandlingGenerator,
+  type ErrorHandlingConfig,
+} from './error-handling-generator.js';
 import { TestGenerator, type TestGenerationOptions } from '../testing/index.js';
 import { LangGraphGenerator } from './langgraph-generator.js';
-import { LangServeGenerator, type LangServeConfig } from './langserve-generator.js';
-import { PlanExecuteGenerator, type PlanExecuteConfig } from './plan-execute-generator.js';
+import {
+  LangServeGenerator,
+  type LangServeConfig,
+} from './langserve-generator.js';
+import {
+  PlanExecuteGenerator,
+  type PlanExecuteConfig,
+} from './plan-execute-generator.js';
 
 /**
  * LangChain export options
@@ -192,14 +207,18 @@ export class LangChainExporter {
 
       // Determine agent architecture
       const architecture = options.agentArchitecture || 'react';
-      const isMultiAgentWorkflow = this.langGraphGenerator.shouldUseLangGraph(manifest);
+      const isMultiAgentWorkflow =
+        this.langGraphGenerator.shouldUseLangGraph(manifest);
 
       // Generate agent code based on architecture
       if (architecture === 'plan-execute') {
         // Generate Plan-and-Execute agents
         const planExecuteConfig = options.planExecute || {};
 
-        const plannerCode = this.planExecuteGenerator.generatePlanner(manifest, planExecuteConfig);
+        const plannerCode = this.planExecuteGenerator.generatePlanner(
+          manifest,
+          planExecuteConfig
+        );
         files.push({
           path: 'planner_agent.py',
           content: plannerCode,
@@ -207,7 +226,10 @@ export class LangChainExporter {
           language: 'python',
         });
 
-        const executorCode = this.planExecuteGenerator.generateExecutor(manifest, planExecuteConfig);
+        const executorCode = this.planExecuteGenerator.generateExecutor(
+          manifest,
+          planExecuteConfig
+        );
         files.push({
           path: 'executor_agent.py',
           content: executorCode,
@@ -215,7 +237,10 @@ export class LangChainExporter {
           language: 'python',
         });
 
-        const planExecuteCode = this.planExecuteGenerator.generatePlanExecute(manifest, planExecuteConfig);
+        const planExecuteCode = this.planExecuteGenerator.generatePlanExecute(
+          manifest,
+          planExecuteConfig
+        );
         files.push({
           path: 'plan_execute.py',
           content: planExecuteCode,
@@ -272,7 +297,10 @@ export class LangChainExporter {
       });
 
       // Generate streaming support
-      const streamingCode = this.streamingGenerator.generate(manifest, options.streaming || {});
+      const streamingCode = this.streamingGenerator.generate(
+        manifest,
+        options.streaming || {}
+      );
       files.push({
         path: 'streaming.py',
         content: streamingCode,
@@ -281,7 +309,10 @@ export class LangChainExporter {
       });
 
       // Generate callbacks and observability
-      const callbacksCode = this.callbacksGenerator.generate(manifest, options.callbacks || {});
+      const callbacksCode = this.callbacksGenerator.generate(
+        manifest,
+        options.callbacks || {}
+      );
       files.push({
         path: 'callbacks.py',
         content: callbacksCode,
@@ -290,7 +321,10 @@ export class LangChainExporter {
       });
 
       // Generate error handling
-      const errorHandlingCode = this.errorHandlingGenerator.generate(manifest, options.errorHandling || {});
+      const errorHandlingCode = this.errorHandlingGenerator.generate(
+        manifest,
+        options.errorHandling || {}
+      );
       files.push({
         path: 'error_handling.py',
         content: errorHandlingCode,
@@ -325,7 +359,10 @@ export class LangChainExporter {
         const langserveConfig = options.langserve || {};
 
         // Generate LangServe app
-        const langserveApp = this.langserveGenerator.generateApp(manifest, langserveConfig);
+        const langserveApp = this.langserveGenerator.generateApp(
+          manifest,
+          langserveConfig
+        );
         files.push({
           path: 'langserve_app.py',
           content: langserveApp,
@@ -335,18 +372,29 @@ export class LangChainExporter {
 
         // Generate deployment configs
         if (langserveConfig.includeDeployment !== false) {
-          const platforms = langserveConfig.deploymentPlatforms || ['docker', 'kubernetes', 'railway', 'render', 'fly'];
+          const platforms = langserveConfig.deploymentPlatforms || [
+            'docker',
+            'kubernetes',
+            'railway',
+            'render',
+            'fly',
+          ];
 
           // Docker configs
           if (platforms.includes('docker')) {
-            const langserveDockerfile = this.langserveGenerator.generateDockerfile(pythonVersion);
+            const langserveDockerfile =
+              this.langserveGenerator.generateDockerfile(pythonVersion);
             files.push({
               path: 'Dockerfile.langserve',
               content: langserveDockerfile,
               type: 'config',
             });
 
-            const langserveCompose = this.langserveGenerator.generateDockerCompose(manifest, langserveConfig);
+            const langserveCompose =
+              this.langserveGenerator.generateDockerCompose(
+                manifest,
+                langserveConfig
+              );
             files.push({
               path: 'docker-compose.langserve.yaml',
               content: langserveCompose,
@@ -357,7 +405,11 @@ export class LangChainExporter {
 
           // Kubernetes manifests
           if (platforms.includes('kubernetes')) {
-            const k8sManifests = this.langserveGenerator.generateKubernetesManifests(manifest, langserveConfig);
+            const k8sManifests =
+              this.langserveGenerator.generateKubernetesManifests(
+                manifest,
+                langserveConfig
+              );
             files.push({
               path: 'k8s/deployment.yaml',
               content: k8sManifests.deployment,
@@ -380,7 +432,10 @@ export class LangChainExporter {
 
           // Railway config
           if (platforms.includes('railway')) {
-            const railwayConfig = this.langserveGenerator.generateRailwayConfig(manifest, langserveConfig);
+            const railwayConfig = this.langserveGenerator.generateRailwayConfig(
+              manifest,
+              langserveConfig
+            );
             files.push({
               path: 'railway.json',
               content: railwayConfig,
@@ -391,7 +446,10 @@ export class LangChainExporter {
 
           // Render config
           if (platforms.includes('render')) {
-            const renderConfig = this.langserveGenerator.generateRenderConfig(manifest, langserveConfig);
+            const renderConfig = this.langserveGenerator.generateRenderConfig(
+              manifest,
+              langserveConfig
+            );
             files.push({
               path: 'render.yaml',
               content: renderConfig,
@@ -402,7 +460,10 @@ export class LangChainExporter {
 
           // Fly.io config
           if (platforms.includes('fly')) {
-            const flyConfig = this.langserveGenerator.generateFlyConfig(manifest, langserveConfig);
+            const flyConfig = this.langserveGenerator.generateFlyConfig(
+              manifest,
+              langserveConfig
+            );
             files.push({
               path: 'fly.toml',
               content: flyConfig,
@@ -411,7 +472,11 @@ export class LangChainExporter {
           }
 
           // Deployment README
-          const deploymentReadme = this.langserveGenerator.generateDeploymentReadme(manifest, langserveConfig);
+          const deploymentReadme =
+            this.langserveGenerator.generateDeploymentReadme(
+              manifest,
+              langserveConfig
+            );
           files.push({
             path: 'DEPLOYMENT.md',
             content: deploymentReadme,
@@ -676,7 +741,8 @@ if __name__ == "__main__":
     manifest: OssaAgent,
     options: LangChainExportOptions
   ): string {
-    const isMultiAgentWorkflow = this.langGraphGenerator.shouldUseLangGraph(manifest);
+    const isMultiAgentWorkflow =
+      this.langGraphGenerator.shouldUseLangGraph(manifest);
 
     const requirements = [
       '# LangChain Core',
@@ -933,7 +999,8 @@ volumes:
     const provider = llm?.provider || 'openai';
     const model = llm?.model || 'gpt-4';
     const toolsCount = manifest.spec?.tools?.length || 0;
-    const isMultiAgentWorkflow = this.langGraphGenerator.shouldUseLangGraph(manifest);
+    const isMultiAgentWorkflow =
+      this.langGraphGenerator.shouldUseLangGraph(manifest);
 
     let workflowInfo = '';
     if (isMultiAgentWorkflow) {
@@ -983,12 +1050,16 @@ cp .env.example .env
 \`\`\`bash
 python agent.py
 \`\`\`
-${isMultiAgentWorkflow ? `
+${
+  isMultiAgentWorkflow
+    ? `
 **LangGraph Workflow:**
 \`\`\`bash
 python langgraph.py
 \`\`\`
-` : ''}
+`
+    : ''
+}
 **FastAPI Server:**
 \`\`\`bash
 uvicorn server:app --reload

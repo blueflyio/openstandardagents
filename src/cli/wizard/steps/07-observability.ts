@@ -10,7 +10,7 @@ import { console_ui } from '../ui/console.js';
 export async function configureObservabilityStep(
   state: WizardState
 ): Promise<WizardState> {
-  console_ui.step(7, state.totalSteps, 'Observability & Monitoring');
+  console_ui.step(8, state.totalSteps, 'Observability & Monitoring');
 
   const { enableObservability } = await inquirer.prompt([
     {

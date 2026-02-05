@@ -57,10 +57,10 @@ export class SchemaLoader {
       resolvedPath = schemaPath;
     } else {
       // Find first existing path
-      const foundPath = possiblePaths.find(p => fs.existsSync(p));
+      const foundPath = possiblePaths.find((p) => fs.existsSync(p));
       if (!foundPath) {
         throw new Error(
-          `Schema not found. Tried:\n${possiblePaths.map(p => `  - ${p}`).join('\n')}`
+          `Schema not found. Tried:\n${possiblePaths.map((p) => `  - ${p}`).join('\n')}`
         );
       }
       resolvedPath = foundPath;
@@ -97,7 +97,9 @@ export class SchemaLoader {
    */
   private extractDefinitions(): void {
     if (this.schema.definitions) {
-      for (const [name, definition] of Object.entries(this.schema.definitions)) {
+      for (const [name, definition] of Object.entries(
+        this.schema.definitions
+      )) {
         this.definitions.set(name, definition as SchemaDefinition);
       }
     }
@@ -277,9 +279,7 @@ export class SchemaLoader {
   /**
    * Get numeric constraints (min/max) for a field
    */
-  getNumericConstraints(
-    path: string
-  ): { minimum?: number; maximum?: number } {
+  getNumericConstraints(path: string): { minimum?: number; maximum?: number } {
     const definition = this.getDefinition(path);
     return {
       minimum: definition?.minimum,

@@ -191,7 +191,11 @@ versionCommand
   .command('audit')
   .alias('a')
   .description('Audit for hardcoded versions (not using placeholders)')
-  .option('--fix', 'Automatically replace hardcoded versions with {{VERSION}}', false)
+  .option(
+    '--fix',
+    'Automatically replace hardcoded versions with {{VERSION}}',
+    false
+  )
   .action(async (options: { fix: boolean }) => {
     console.log(chalk.blue('🔍 OSSA Version Audit'));
     console.log(chalk.gray('=======================\n'));
@@ -222,7 +226,9 @@ versionCommand
           );
         } else if (!options.fix) {
           console.log(
-            chalk.yellow('\nRun with --fix to automatically replace hardcoded versions')
+            chalk.yellow(
+              '\nRun with --fix to automatically replace hardcoded versions'
+            )
           );
         }
       }
@@ -238,35 +244,43 @@ versionCommand
 
 // version:status - Show version status and health
 versionCommand
-  .command("status")
-  .alias("s")
-  .description("Show comprehensive version status and health")
+  .command('status')
+  .alias('s')
+  .description('Show comprehensive version status and health')
   .action(async () => {
-    console.log(chalk.blue("📊 OSSA Version Status"));
-    console.log(chalk.gray("========================\n"));
+    console.log(chalk.blue('📊 OSSA Version Status'));
+    console.log(chalk.gray('========================\n'));
 
     const service = new VersionStatusService();
     try {
       const result = await service.getStatus();
 
-      console.log(chalk.gray("Version Information:"));
+      console.log(chalk.gray('Version Information:'));
       console.log(chalk.gray(`  • Current (.version.json): ${result.current}`));
       console.log(chalk.gray(`  • Package.json: ${result.packageJson}`));
       console.log(chalk.gray(`  • Latest Git Tag: ${result.gitTag}`));
       console.log(chalk.gray(`\nSchema Status:`));
       console.log(
         result.schemaExists
-          ? chalk.green(`  ✅ Schema exists: ${result.specPath}/${result.schemaFile}`)
-          : chalk.red(`  ❌ Schema missing: ${result.specPath}/${result.schemaFile}`)
+          ? chalk.green(
+              `  ✅ Schema exists: ${result.specPath}/${result.schemaFile}`
+            )
+          : chalk.red(
+              `  ❌ Schema missing: ${result.specPath}/${result.schemaFile}`
+            )
       );
 
       console.log(chalk.gray(`\nHealth Status:`));
-      if (result.health === "healthy") {
-        console.log(chalk.green("  ✅ Healthy"));
-      } else if (result.health === "warning") {
-        console.log(chalk.yellow("  ⚠️  Warning - versions may be inconsistent"));
+      if (result.health === 'healthy') {
+        console.log(chalk.green('  ✅ Healthy'));
+      } else if (result.health === 'warning') {
+        console.log(
+          chalk.yellow('  ⚠️  Warning - versions may be inconsistent')
+        );
       } else {
-        console.log(chalk.red("  ❌ Error - schema missing or versions inconsistent"));
+        console.log(
+          chalk.red('  ❌ Error - schema missing or versions inconsistent')
+        );
       }
     } catch (error) {
       console.error(
@@ -280,25 +294,29 @@ versionCommand
 
 // version:check - Quick consistency check
 versionCommand
-  .command("check")
-  .alias("c")
-  .description("Quick version consistency check")
+  .command('check')
+  .alias('c')
+  .description('Quick version consistency check')
   .action(async () => {
-    console.log(chalk.blue("🔍 OSSA Version Check"));
-    console.log(chalk.gray("======================\n"));
+    console.log(chalk.blue('🔍 OSSA Version Check'));
+    console.log(chalk.gray('======================\n'));
 
     const service = new VersionCheckService();
     try {
       const result = await service.check();
 
-      if (result.status === "OK") {
+      if (result.status === 'OK') {
         console.log(chalk.green(`✅ ${result.message}`));
-      } else if (result.status === "WARN") {
+      } else if (result.status === 'WARN') {
         console.log(chalk.yellow(`⚠️  ${result.message}`));
-        result.issues.forEach((issue) => console.log(chalk.yellow(`  • ${issue}`)));
+        result.issues.forEach((issue) =>
+          console.log(chalk.yellow(`  • ${issue}`))
+        );
       } else {
         console.log(chalk.red(`❌ ${result.message}`));
-        result.issues.forEach((issue) => console.log(chalk.red(`  • ${issue}`)));
+        result.issues.forEach((issue) =>
+          console.log(chalk.red(`  • ${issue}`))
+        );
         process.exit(1);
       }
     } catch (error) {
@@ -310,4 +328,3 @@ versionCommand
       process.exit(1);
     }
   });
-

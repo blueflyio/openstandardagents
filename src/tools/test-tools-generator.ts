@@ -5,7 +5,9 @@ import * as fs from 'fs';
 import * as yaml from 'yaml';
 
 // Read the manifest
-const manifestPath = process.argv[2] || 'examples/export/langchain/production-agent-with-tools/agent.ossa.yaml';
+const manifestPath =
+  process.argv[2] ||
+  'examples/export/langchain/production-agent-with-tools/agent.ossa.yaml';
 const manifestContent = fs.readFileSync(manifestPath, 'utf-8');
 const manifest = yaml.parse(manifestContent);
 
