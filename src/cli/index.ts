@@ -25,6 +25,7 @@ import { agentsMdCommand } from './commands/agents-md.command.js';
 import { agentsCommandGroup } from './commands/agents.command.js';
 import { complianceCommand } from './commands/compliance.command.js';
 import { conformanceCommand } from './commands/conformance.command.js';
+import { governanceCommand } from './commands/governance.command.js';
 import { contractCommand } from './commands/contract.command.js';
 import { dependenciesCommand } from './commands/dependencies.command.js';
 import {
@@ -202,6 +203,7 @@ program.addCommand(quickstartCommand); // First for discoverability
 program.addCommand(validateCommand);
 program.addCommand(conformanceCommand);
 program.addCommand(complianceCommand);
+program.addCommand(governanceCommand);
 program.addCommand(dependenciesCommand);
 program.addCommand(contractCommand);
 program.addCommand(generateCommand);

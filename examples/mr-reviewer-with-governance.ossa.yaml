@@ -1,0 +1,130 @@
+apiVersion: ossa/v0.4.1
+kind: Agent
+metadata:
+  name: mr-reviewer
+  version: 1.0.0
+  description: Automated merge request reviewer with Cedar governance
+  labels:
+    category: code-review
+    risk-level: medium
+    environment: production
+
+spec:
+  role: |
+    You are an automated code reviewer that analyzes merge requests,
+    provides constructive feedback, and ensures code quality standards.
+
+    You operate under strict governance controls with Cedar policies
+    enforcing authorization and quality gates.
+
+  llm:
+    provider: anthropic
+    model: claude-sonnet-3-5
+    temperature: 0.3
+    maxTokens: 4000
+
+  # NEW: Governance configuration
+  governance:
+    authorization:
+      # Standard agent clearance (can use medium-risk tools)
+      clearance_level: 2
+
+      tool_permissions:
+        - tool: gitlab_api
+          risk_level: medium
+          requires_approval: false
+        - tool: llm_inference
+          risk_level: low
+          requires_approval: false
+        - tool: code_analysis
+          risk_level: medium
+          requires_approval: false
+
+      # Reference Cedar policies by ID
+      policy_references:
+        - agent-tool-medium-risk
+        - mr-review-policy
+
+    quality_requirements:
+      # High confidence required for production
+      confidence_threshold: 85
+      test_coverage_threshold: 80
+      security_score_threshold: 90
+      max_vulnerability_count: 0
+
+    compliance:
+      frameworks:
+        - SOC2
+      data_classification: internal
+      audit_logging_required: true
+
+  tools:
+    - name: gitlab_api
+      description: GitLab API for accessing MR data
+      risk_level: medium
+
+    - name: code_analysis
+      description: Static code analysis tools
+      risk_level: medium
+
+    - name: llm_inference
+      description: LLM inference for code review
+      risk_level: low
+
+  workflow:
+    steps:
+      - id: fetch_mr
+        name: Fetch MR Changes
+        description: Retrieve MR diff and metadata from GitLab
+        tool: gitlab_api
+
+      - id: analyze
+        name: Analyze Code
+        description: Run static analysis on changed files
+        tool: code_analysis
+        depends_on:
+          - fetch_mr
+
+      - id: review
+        name: Generate Review
+        description: Generate detailed code review using LLM
+        tool: llm_inference
+        depends_on:
+          - analyze
+
+      - id: post_comment
+        name: Post Review Comment
+        description: Post review feedback to MR
+        tool: gitlab_api
+        depends_on:
+          - review
+
+  monitoring:
+    metrics:
+      - name: review_quality_score
+        type: gauge
+        description: Quality score of generated reviews
+
+      - name: confidence_score
+        type: gauge
+        description: Confidence in review accuracy
+
+      - name: reviews_completed
+        type: counter
+        description: Total reviews completed
+
+  # Quality gates enforced by Cedar policies
+  deployment:
+    environments:
+      - name: staging
+        quality_gate:
+          min_confidence: 70
+          min_coverage: 60
+          min_security: 70
+
+      - name: production
+        quality_gate:
+          min_confidence: 85
+          min_coverage: 80
+          min_security: 90
+          max_vulnerabilities: 0

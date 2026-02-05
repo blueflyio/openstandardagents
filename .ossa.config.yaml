@@ -1,0 +1,20 @@
+# OSSA Configuration
+
+governance:
+  # Provider selection (cedar, opa, custom)
+  provider: cedar
+
+  # Cedar provider configuration
+  cedar:
+    # Read from environment variable (loaded from ai_assets.json)
+    endpoint: ${COMPLIANCE_ENGINE_URL}
+    timeout: 30000
+
+  # Configuration can be overridden via environment variables:
+  # COMPLIANCE_ENGINE_URL - Governance provider endpoint
+  # GOVERNANCE_PROVIDER_TIMEOUT - Request timeout in ms
+
+  # Future: OPA provider
+  # opa:
+  #   endpoint: ${OPA_URL}
+  #   timeout: 30000
