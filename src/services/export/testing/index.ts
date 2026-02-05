@@ -5,7 +5,4 @@
  */
 
 export { TestGenerator } from './test-generator.js';
-export type {
-  TestGenerationOptions,
-  TestSuite,
-} from './test-generator.js';
+export type { TestGenerationOptions, TestSuite } from './test-generator.js';

@@ -30,7 +30,8 @@ describe('EnhancedValidator', () => {
         metadata: {
           name: 'test-agent',
           version: '1.0.0',
-          description: 'A comprehensive test agent with all features configured properly',
+          description:
+            'A comprehensive test agent with all features configured properly',
           author: 'Test Author',
           tags: ['test', 'automation'],
         },
@@ -198,7 +199,8 @@ describe('EnhancedValidator', () => {
       const report = await enhancedValidator.validate(manifest);
 
       const exposedSecret = report.security.vulnerabilities.find(
-        (v) => v.category === 'exposed_secret' || v.category === 'potential_secret'
+        (v) =>
+          v.category === 'exposed_secret' || v.category === 'potential_secret'
       );
       expect(exposedSecret).toBeDefined();
       expect(exposedSecret?.severity).toBe('critical');
@@ -432,13 +434,15 @@ describe('EnhancedValidator', () => {
         metadata: {
           name: 'full-featured-agent',
           version: '2.1.0',
-          description: 'Complete agent with all OSSA features for comprehensive testing',
+          description:
+            'Complete agent with all OSSA features for comprehensive testing',
           author: 'Integration Test Suite',
           tags: ['integration', 'test', 'comprehensive'],
         },
         spec: {
           role: 'Multi-purpose Assistant',
-          instructions: 'Comprehensive agent with full observability and security',
+          instructions:
+            'Comprehensive agent with full observability and security',
           llm: {
             provider: 'anthropic',
             model: 'claude-sonnet-4',

@@ -231,7 +231,9 @@ def is_retryable(error: Exception) -> bool:
     return error_type in [ErrorType.RATE_LIMIT, ErrorType.TIMEOUT, ErrorType.NETWORK]`;
   }
 
-  private generateRetryDecorator(retry: NonNullable<ErrorHandlingConfig['retry']>): string {
+  private generateRetryDecorator(
+    retry: NonNullable<ErrorHandlingConfig['retry']>
+  ): string {
     return `T = TypeVar('T')
 
 
@@ -300,7 +302,9 @@ def with_retry(
     return decorator`;
   }
 
-  private generateCircuitBreaker(circuitBreaker: NonNullable<ErrorHandlingConfig['circuitBreaker']>): string {
+  private generateCircuitBreaker(
+    circuitBreaker: NonNullable<ErrorHandlingConfig['circuitBreaker']>
+  ): string {
     return `class CircuitBreakerState(Enum):
     """Circuit breaker states"""
     CLOSED = "closed"  # Normal operation
@@ -398,7 +402,9 @@ def get_circuit_breaker() -> CircuitBreaker:
     return _circuit_breaker`;
   }
 
-  private generateRateLimiter(rateLimit: NonNullable<ErrorHandlingConfig['rateLimit']>): string {
+  private generateRateLimiter(
+    rateLimit: NonNullable<ErrorHandlingConfig['rateLimit']>
+  ): string {
     return `class RateLimiter:
     """Token bucket rate limiter"""
 
@@ -444,7 +450,9 @@ def get_rate_limiter() -> RateLimiter:
     return _rate_limiter`;
   }
 
-  private generateFallbackHandler(fallback: NonNullable<ErrorHandlingConfig['fallback']>): string {
+  private generateFallbackHandler(
+    fallback: NonNullable<ErrorHandlingConfig['fallback']>
+  ): string {
     return `class FallbackHandler:
     """Fallback response handler"""
 
@@ -456,11 +464,15 @@ def get_rate_limiter() -> RateLimiter:
         """Get fallback response for failed request"""
         error_type = classify_error(error)
 
-        ${fallback.useCachedResponses ? `# Try cached response
+        ${
+          fallback.useCachedResponses
+            ? `# Try cached response
         cache_key = hash(input_text)
         if cache_key in self.cache:
             logger.info("Using cached fallback response")
-            return self.cache[cache_key]` : ''}
+            return self.cache[cache_key]`
+            : ''
+        }
 
         # Generate contextual fallback
         if error_type == ErrorType.RATE_LIMIT:
@@ -472,10 +484,14 @@ def get_rate_limiter() -> RateLimiter:
         else:
             return self.default_response
 
-    ${fallback.useCachedResponses ? `def cache_response(self, input_text: str, response: str):
+    ${
+      fallback.useCachedResponses
+        ? `def cache_response(self, input_text: str, response: str):
         """Cache successful response"""
         cache_key = hash(input_text)
-        self.cache[cache_key] = response` : ''}
+        self.cache[cache_key] = response`
+        : ''
+    }
 
 
 # Global fallback handler

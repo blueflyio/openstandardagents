@@ -68,7 +68,8 @@ export class KAgentCRDGenerator {
         ...(tools && tools.length > 0 && { tools }),
 
         // Skills (from OSSA spec or options)
-        ...(options.skills && options.skills.length > 0 && { skills: options.skills }),
+        ...(options.skills &&
+          options.skills.length > 0 && { skills: options.skills }),
 
         // A2A Protocol
         enableA2A: this.shouldEnableA2A(manifest),
@@ -86,7 +87,10 @@ export class KAgentCRDGenerator {
           codeExecution: {
             enabled: options.codeExecution.enabled,
             sandboxed: options.codeExecution.sandboxed !== false,
-            allowedLanguages: options.codeExecution.allowedLanguages || ['python', 'javascript'],
+            allowedLanguages: options.codeExecution.allowedLanguages || [
+              'python',
+              'javascript',
+            ],
           },
         }),
 
@@ -105,7 +109,8 @@ export class KAgentCRDGenerator {
 
         // RBAC
         ...(options.rbac && {
-          serviceAccountName: options.rbac.serviceAccountName || `${agentName}-sa`,
+          serviceAccountName:
+            options.rbac.serviceAccountName || `${agentName}-sa`,
           rbac: {
             enabled: options.rbac.enabled,
             rules: options.rbac.rules || this.getDefaultRBACRules(),
@@ -130,7 +135,10 @@ export class KAgentCRDGenerator {
   /**
    * Extract tools from OSSA spec
    */
-  private extractTools(tools: unknown, options: KAgentDeploymentOptions = {}): KAgentCRD['spec']['tools'] {
+  private extractTools(
+    tools: unknown,
+    options: KAgentDeploymentOptions = {}
+  ): KAgentCRD['spec']['tools'] {
     if (!tools || !Array.isArray(tools)) {
       return undefined;
     }

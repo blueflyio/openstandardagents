@@ -53,7 +53,13 @@ export interface LangServeConfig {
   /**
    * Cloud platforms to generate configs for
    */
-  deploymentPlatforms?: ('docker' | 'kubernetes' | 'railway' | 'render' | 'fly')[];
+  deploymentPlatforms?: (
+    | 'docker'
+    | 'kubernetes'
+    | 'railway'
+    | 'render'
+    | 'fly'
+  )[];
 }
 
 /**
@@ -252,7 +258,10 @@ CMD ["python", "langserve_app.py"]
   /**
    * Generate docker-compose.yaml for LangServe
    */
-  generateDockerCompose(manifest: OssaAgent, config: LangServeConfig = {}): string {
+  generateDockerCompose(
+    manifest: OssaAgent,
+    config: LangServeConfig = {}
+  ): string {
     const agentName = manifest.metadata?.name || 'agent';
     const port = config.port || 8000;
 
@@ -300,7 +309,10 @@ networks:
   /**
    * Generate Kubernetes deployment manifests
    */
-  generateKubernetesManifests(manifest: OssaAgent, config: LangServeConfig = {}): {
+  generateKubernetesManifests(
+    manifest: OssaAgent,
+    config: LangServeConfig = {}
+  ): {
     deployment: string;
     service: string;
     ingress: string;
@@ -426,7 +438,10 @@ spec:
   /**
    * Generate Railway configuration
    */
-  generateRailwayConfig(manifest: OssaAgent, config: LangServeConfig = {}): string {
+  generateRailwayConfig(
+    manifest: OssaAgent,
+    config: LangServeConfig = {}
+  ): string {
     const port = config.port || 8000;
 
     return `# Railway deployment configuration
@@ -455,7 +470,10 @@ spec:
   /**
    * Generate Render configuration
    */
-  generateRenderConfig(manifest: OssaAgent, config: LangServeConfig = {}): string {
+  generateRenderConfig(
+    manifest: OssaAgent,
+    config: LangServeConfig = {}
+  ): string {
     const agentName = manifest.metadata?.name || 'agent';
 
     return `# Render deployment configuration
@@ -569,10 +587,19 @@ sse-starlette>=1.8.0
   /**
    * Generate deployment README
    */
-  generateDeploymentReadme(manifest: OssaAgent, config: LangServeConfig = {}): string {
+  generateDeploymentReadme(
+    manifest: OssaAgent,
+    config: LangServeConfig = {}
+  ): string {
     const agentName = manifest.metadata?.name || 'agent';
     const routePath = config.routePath || '/agent';
-    const platforms = config.deploymentPlatforms || ['docker', 'kubernetes', 'railway', 'render', 'fly'];
+    const platforms = config.deploymentPlatforms || [
+      'docker',
+      'kubernetes',
+      'railway',
+      'render',
+      'fly',
+    ];
 
     let readme = `# ${agentName} - LangServe Deployment Guide
 

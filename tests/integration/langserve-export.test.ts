@@ -56,13 +56,19 @@ describe('LangServe Export Integration', () => {
     expect(result.files.length).toBeGreaterThan(0);
 
     // Verify LangServe app was generated
-    const langserveApp = result.files.find((f) => f.path === 'langserve_app.py');
+    const langserveApp = result.files.find(
+      (f) => f.path === 'langserve_app.py'
+    );
     expect(langserveApp).toBeDefined();
     expect(langserveApp?.content).toContain('from langserve import add_routes');
-    expect(langserveApp?.content).toContain('integration-test-agent - LangServe API');
+    expect(langserveApp?.content).toContain(
+      'integration-test-agent - LangServe API'
+    );
 
     // Verify deployment configs were generated
-    const dockerfileLangserve = result.files.find((f) => f.path === 'Dockerfile.langserve');
+    const dockerfileLangserve = result.files.find(
+      (f) => f.path === 'Dockerfile.langserve'
+    );
     expect(dockerfileLangserve).toBeDefined();
 
     const dockerComposeLangserve = result.files.find(
@@ -70,11 +76,15 @@ describe('LangServe Export Integration', () => {
     );
     expect(dockerComposeLangserve).toBeDefined();
 
-    const deploymentReadme = result.files.find((f) => f.path === 'DEPLOYMENT.md');
+    const deploymentReadme = result.files.find(
+      (f) => f.path === 'DEPLOYMENT.md'
+    );
     expect(deploymentReadme).toBeDefined();
 
     // Verify Kubernetes manifests
-    const k8sDeployment = result.files.find((f) => f.path === 'k8s/deployment.yaml');
+    const k8sDeployment = result.files.find(
+      (f) => f.path === 'k8s/deployment.yaml'
+    );
     expect(k8sDeployment).toBeDefined();
 
     const k8sService = result.files.find((f) => f.path === 'k8s/service.yaml');
@@ -84,7 +94,9 @@ describe('LangServe Export Integration', () => {
     expect(k8sIngress).toBeDefined();
 
     // Verify requirements include LangServe
-    const requirements = result.files.find((f) => f.path === 'requirements.txt');
+    const requirements = result.files.find(
+      (f) => f.path === 'requirements.txt'
+    );
     expect(requirements).toBeDefined();
     expect(requirements?.content).toContain('langserve[all]>=0.0.30');
   });
@@ -99,14 +111,20 @@ describe('LangServe Export Integration', () => {
     expect(result.success).toBe(true);
 
     // Verify LangServe files were NOT generated
-    const langserveApp = result.files.find((f) => f.path === 'langserve_app.py');
+    const langserveApp = result.files.find(
+      (f) => f.path === 'langserve_app.py'
+    );
     expect(langserveApp).toBeUndefined();
 
-    const dockerfileLangserve = result.files.find((f) => f.path === 'Dockerfile.langserve');
+    const dockerfileLangserve = result.files.find(
+      (f) => f.path === 'Dockerfile.langserve'
+    );
     expect(dockerfileLangserve).toBeUndefined();
 
     // Verify requirements don't include LangServe
-    const requirements = result.files.find((f) => f.path === 'requirements.txt');
+    const requirements = result.files.find(
+      (f) => f.path === 'requirements.txt'
+    );
     expect(requirements).toBeDefined();
     expect(requirements?.content).not.toContain('langserve[all]');
   });
@@ -133,11 +151,15 @@ describe('LangServe Export Integration', () => {
     expect(flyConfig).toBeDefined();
 
     // Should NOT have Kubernetes manifests
-    const k8sDeployment = result.files.find((f) => f.path === 'k8s/deployment.yaml');
+    const k8sDeployment = result.files.find(
+      (f) => f.path === 'k8s/deployment.yaml'
+    );
     expect(k8sDeployment).toBeUndefined();
 
     // Should NOT have Docker configs
-    const dockerfileLangserve = result.files.find((f) => f.path === 'Dockerfile.langserve');
+    const dockerfileLangserve = result.files.find(
+      (f) => f.path === 'Dockerfile.langserve'
+    );
     expect(dockerfileLangserve).toBeUndefined();
   });
 });

@@ -80,15 +80,11 @@ export class NPMAdapter extends BaseAdapter {
 
       // Generate index.js entry point
       const entryPoint = this.converter.generateEntryPoint(manifest, metadata);
-      files.push(
-        this.createFile('index.js', entryPoint, 'code', 'javascript')
-      );
+      files.push(this.createFile('index.js', entryPoint, 'code', 'javascript'));
 
       // Generate index.d.ts TypeScript types
       const types = this.converter.generateTypes(metadata);
-      files.push(
-        this.createFile('index.d.ts', types, 'code', 'typescript')
-      );
+      files.push(this.createFile('index.d.ts', types, 'code', 'typescript'));
 
       // Include original OSSA manifest
       const manifestYaml = yaml.stringify(manifest);
@@ -104,9 +100,7 @@ export class NPMAdapter extends BaseAdapter {
 
       // Generate .npmignore
       const npmIgnore = this.converter.generateNpmIgnore();
-      files.push(
-        this.createFile('.npmignore', npmIgnore, 'config', 'text')
-      );
+      files.push(this.createFile('.npmignore', npmIgnore, 'config', 'text'));
 
       // Generate LICENSE if specified
       if (manifest.metadata?.license) {
@@ -158,7 +152,9 @@ export class NPMAdapter extends BaseAdapter {
     // Check package name follows npm naming rules
     if (metadata?.name) {
       const npmNameRegex = /^[a-z0-9-]+$/;
-      const sanitizedName = metadata.name.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+      const sanitizedName = metadata.name
+        .toLowerCase()
+        .replace(/[^a-z0-9-]/g, '-');
 
       if (!npmNameRegex.test(sanitizedName)) {
         warnings.push({
@@ -184,7 +180,8 @@ export class NPMAdapter extends BaseAdapter {
     // Check for description
     if (!metadata?.description) {
       warnings.push({
-        message: 'Package description is recommended for better npm discoverability',
+        message:
+          'Package description is recommended for better npm discoverability',
         path: 'metadata.description',
         suggestion: 'Add metadata.description field',
       });
@@ -203,7 +200,8 @@ export class NPMAdapter extends BaseAdapter {
     const repository = annotations['repository'] as string | undefined;
     if (!repository) {
       warnings.push({
-        message: 'Repository URL not specified, npm package will not link to source code',
+        message:
+          'Repository URL not specified, npm package will not link to source code',
         path: 'metadata.annotations.repository',
         suggestion: 'Add metadata.annotations.repository field with git URL',
       });
@@ -339,7 +337,8 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.`,
    */
   private async generateClaudeSkill(manifest: OssaAgent): Promise<string> {
     const agentName = manifest.metadata?.name || 'unknown-agent';
-    const description = manifest.metadata?.description || manifest.spec?.role || 'OSSA agent';
+    const description =
+      manifest.metadata?.description || manifest.spec?.role || 'OSSA agent';
 
     // Extract trigger keywords from manifest
     const triggerKeywords: string[] = [];
@@ -392,8 +391,12 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.`,
     if (manifest.spec?.tools && manifest.spec.tools.length > 0) {
       content += `## Available Tools\n\n`;
       for (const tool of manifest.spec.tools) {
-        const toolName = typeof tool === 'string' ? tool : tool.name || 'unknown';
-        const toolDesc = typeof tool === 'object' && 'description' in tool ? tool.description : '';
+        const toolName =
+          typeof tool === 'string' ? tool : tool.name || 'unknown';
+        const toolDesc =
+          typeof tool === 'object' && 'description' in tool
+            ? tool.description
+            : '';
         content += `- **${toolName}**${toolDesc ? `: ${toolDesc}` : ''}\n`;
       }
       content += `\n`;

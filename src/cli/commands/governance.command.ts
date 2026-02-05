@@ -11,7 +11,14 @@ import * as path from 'path';
 import * as yaml from 'js-yaml';
 import chalk from 'chalk';
 
-const governanceClient = new GovernanceClient();
+// Lazy initialization - only create client when command is executed
+let governanceClient: GovernanceClient | null = null;
+function getGovernanceClient(): GovernanceClient {
+  if (!governanceClient) {
+    governanceClient = new GovernanceClient();
+  }
+  return governanceClient;
+}
 
 /**
  * Check if agent meets governance requirements
@@ -28,13 +35,23 @@ const checkCommand = new Command('check')
       const manifest = yaml.load(manifestContent) as any;
 
       if (!manifest.spec?.governance) {
-        console.log(chalk.yellow('⚠️  No governance configuration found in agent manifest'));
-        console.log(chalk.gray('Add a "governance" section to your agent manifest to use this feature.'));
+        console.log(
+          chalk.yellow(
+            '⚠️  No governance configuration found in agent manifest'
+          )
+        );
+        console.log(
+          chalk.gray(
+            'Add a "governance" section to your agent manifest to use this feature.'
+          )
+        );
         process.exit(0);
       }
 
       console.log(chalk.blue('🔍 Checking compliance...'));
-      const result = await governanceClient.checkCompliance(manifest.spec.governance);
+      const result = await getGovernanceClient().checkCompliance(
+        manifest.spec.governance
+      );
 
       if (result.compliant) {
         console.log(chalk.green('✅ COMPLIANT'));
@@ -44,12 +61,16 @@ const checkCommand = new Command('check')
 
       if (result.issues.length > 0) {
         console.log(chalk.red('\n🚫 Issues:'));
-        result.issues.forEach(issue => console.log(chalk.red(`  - ${issue}`)));
+        result.issues.forEach((issue) =>
+          console.log(chalk.red(`  - ${issue}`))
+        );
       }
 
       if (result.warnings.length > 0) {
         console.log(chalk.yellow('\n⚠️  Warnings:'));
-        result.warnings.forEach(warning => console.log(chalk.yellow(`  - ${warning}`)));
+        result.warnings.forEach((warning) =>
+          console.log(chalk.yellow(`  - ${warning}`))
+        );
       }
 
       process.exit(result.compliant ? 0 : 1);
@@ -80,7 +101,7 @@ const authorizeCommand = new Command('authorize')
       console.log(chalk.gray(`  Resource: ${options.resource}`));
       console.log(chalk.gray(`  Confidence: ${options.confidence}%\n`));
 
-      const result = await governanceClient.authorize({
+      const result = await getGovernanceClient().authorize({
         agent: options.agent,
         action: options.action,
         resource: options.resource,
@@ -99,7 +120,11 @@ const authorizeCommand = new Command('authorize')
           console.log(chalk.gray(`Reason: ${result.reason}`));
         }
         if (result.diagnostics?.policies_evaluated) {
-          console.log(chalk.gray(`\nPolicies evaluated: ${result.diagnostics.policies_evaluated.join(', ')}`));
+          console.log(
+            chalk.gray(
+              `\nPolicies evaluated: ${result.diagnostics.policies_evaluated.join(', ')}`
+            )
+          );
         }
         process.exit(1);
       }
@@ -114,7 +139,10 @@ const authorizeCommand = new Command('authorize')
  */
 const qualityGateCommand = new Command('quality-gate')
   .description('Evaluate quality gate for deployment')
-  .requiredOption('--environment <env>', 'Target environment (production|staging|development)')
+  .requiredOption(
+    '--environment <env>',
+    'Target environment (production|staging|development)'
+  )
   .requiredOption('--coverage <pct>', 'Test coverage percentage', parseInt)
   .requiredOption('--security-score <score>', 'Security scan score', parseInt)
   .requiredOption('--confidence <score>', 'Confidence score', parseInt)
@@ -127,9 +155,11 @@ const qualityGateCommand = new Command('quality-gate')
       console.log(chalk.gray(`  Test Coverage: ${options.coverage}%`));
       console.log(chalk.gray(`  Security Score: ${options.securityScore}%`));
       console.log(chalk.gray(`  Confidence: ${options.confidence}%`));
-      console.log(chalk.gray(`  Vulnerabilities: ${options.vulnerabilities}\n`));
+      console.log(
+        chalk.gray(`  Vulnerabilities: ${options.vulnerabilities}\n`)
+      );
 
-      const result = await governanceClient.evaluateQualityGate({
+      const result = await getGovernanceClient().evaluateQualityGate({
         pipeline_id: options.pipelineId,
         environment: options.environment,
         metrics: {
@@ -148,7 +178,9 @@ const qualityGateCommand = new Command('quality-gate')
 
         if (result.blocked_by && result.blocked_by.length > 0) {
           console.log(chalk.red('\n🚫 Blocked by:'));
-          result.blocked_by.forEach(policy => console.log(chalk.red(`  - ${policy}`)));
+          result.blocked_by.forEach((policy) =>
+            console.log(chalk.red(`  - ${policy}`))
+          );
         }
 
         if (result.policy_decision?.reason) {
@@ -167,7 +199,9 @@ const qualityGateCommand = new Command('quality-gate')
  * Export main governance command with subcommands
  */
 export const governanceCommand = new Command('governance')
-  .description('Governance operations (authorization, quality gates, compliance)')
+  .description(
+    'Governance operations (authorization, quality gates, compliance)'
+  )
   .addCommand(checkCommand)
   .addCommand(authorizeCommand)
   .addCommand(qualityGateCommand);

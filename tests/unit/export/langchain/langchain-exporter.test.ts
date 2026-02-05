@@ -580,12 +580,22 @@ describe('LangChainExporter', () => {
       // Should include langgraph.py file
       const langGraphFile = result.files.find((f) => f.path === 'langgraph.py');
       expect(langGraphFile).toBeDefined();
-      expect(langGraphFile?.content).toContain('from langgraph.graph import StateGraph');
+      expect(langGraphFile?.content).toContain(
+        'from langgraph.graph import StateGraph'
+      );
       expect(langGraphFile?.content).toContain('class AgentState(TypedDict)');
-      expect(langGraphFile?.content).toContain('def researcher_agent(state: AgentState)');
-      expect(langGraphFile?.content).toContain('def writer_agent(state: AgentState)');
-      expect(langGraphFile?.content).toContain('def critic_agent(state: AgentState)');
-      expect(langGraphFile?.content).toContain('workflow.add_node("researcher"');
+      expect(langGraphFile?.content).toContain(
+        'def researcher_agent(state: AgentState)'
+      );
+      expect(langGraphFile?.content).toContain(
+        'def writer_agent(state: AgentState)'
+      );
+      expect(langGraphFile?.content).toContain(
+        'def critic_agent(state: AgentState)'
+      );
+      expect(langGraphFile?.content).toContain(
+        'workflow.add_node("researcher"'
+      );
       expect(langGraphFile?.content).toContain('workflow.add_node("writer"');
       expect(langGraphFile?.content).toContain('workflow.add_node("critic"');
 

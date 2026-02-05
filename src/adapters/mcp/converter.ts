@@ -63,7 +63,8 @@ export class MCPAdapter extends BaseAdapter {
 
       return this.createResult(true, files, undefined, metadata);
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       return this.createResult(false, [], `MCP export failed: ${errorMessage}`);
     }
   }
@@ -176,26 +177,22 @@ main().catch((error) => {
       .join(',\n  ');
 
     const toolImplementations = tools
-      .map(
-        (tool) => {
-          const toolName = tool.name || 'unnamed_tool';
-          return `
+      .map((tool) => {
+        const toolName = tool.name || 'unnamed_tool';
+        return `
 async function ${this.toCamelCase(toolName)}(args: any): Promise<any> {
   // TODO: Implement ${toolName}
   console.log('Executing ${toolName} with args:', args);
   return { result: 'Success', tool: '${toolName}', input: args.input };
 }`;
-        }
-      )
+      })
       .join('\n');
 
     const toolMap = tools
-      .map(
-        (tool) => {
-          const toolName = tool.name || 'unnamed_tool';
-          return `    case '${toolName}': return ${this.toCamelCase(toolName)}(args);`;
-        }
-      )
+      .map((tool) => {
+        const toolName = tool.name || 'unnamed_tool';
+        return `    case '${toolName}': return ${this.toCamelCase(toolName)}(args);`;
+      })
       .join('\n');
 
     const content = `/**
@@ -253,7 +250,8 @@ export interface MCPResponse {
       {
         name: manifest.metadata?.name || 'unnamed-agent',
         version: manifest.metadata?.version || '1.0.0',
-        description: manifest.metadata?.description || 'OSSA-generated MCP server',
+        description:
+          manifest.metadata?.description || 'OSSA-generated MCP server',
         type: 'module',
         bin: {
           [manifest.metadata?.name || 'unnamed-agent']: './dist/server.js',
@@ -339,7 +337,9 @@ npm start
 ## Available Tools
 
 ${(manifest.spec?.tools || [])
-  .map((tool: any) => `- **${tool.name}**: ${tool.description || 'No description'}`)
+  .map(
+    (tool: any) => `- **${tool.name}**: ${tool.description || 'No description'}`
+  )
   .join('\n')}
 
 ## Generated from OSSA

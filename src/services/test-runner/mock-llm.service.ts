@@ -72,10 +72,7 @@ export class MockLLMService {
     }
 
     // Simulate random failures
-    if (
-      this.config.failureRate &&
-      Math.random() < this.config.failureRate
-    ) {
+    if (this.config.failureRate && Math.random() < this.config.failureRate) {
       throw new Error('Mock LLM: Simulated API failure');
     }
 
@@ -161,7 +158,8 @@ export class MockLLMService {
       return toolCalls;
     }
 
-    const prompt = typeof request.prompt === 'string' ? request.prompt.toLowerCase() : '';
+    const prompt =
+      typeof request.prompt === 'string' ? request.prompt.toLowerCase() : '';
 
     // Simulate tool calls based on prompt keywords
     for (const tool of request.tools) {

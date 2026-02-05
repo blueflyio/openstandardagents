@@ -79,9 +79,7 @@ describe('AnthropicExporter', () => {
       const result = await exporter.validate(manifest);
       expect(result.valid).toBe(false);
       expect(result.errors).toBeDefined();
-      expect(result.errors?.some((e) => e.path === 'metadata.name')).toBe(
-        true
-      );
+      expect(result.errors?.some((e) => e.path === 'metadata.name')).toBe(true);
     });
 
     it('should warn for missing LLM config', async () => {
@@ -98,9 +96,9 @@ describe('AnthropicExporter', () => {
       }
       const result = await exporter.validate(manifest);
       expect(result.warnings).toBeDefined();
-      expect(
-        result.warnings?.some((w) => w.path === 'spec.llm.provider')
-      ).toBe(true);
+      expect(result.warnings?.some((w) => w.path === 'spec.llm.provider')).toBe(
+        true
+      );
     });
 
     it('should fail for tools without names', async () => {

@@ -110,7 +110,9 @@ describe('LangServeGenerator', () => {
 
       expect(dockerfile).toContain('FROM python:3.11-slim');
       expect(dockerfile).toContain('COPY requirements.txt');
-      expect(dockerfile).toContain('pip install --no-cache-dir -r requirements.txt');
+      expect(dockerfile).toContain(
+        'pip install --no-cache-dir -r requirements.txt'
+      );
       expect(dockerfile).toContain('CMD ["python", "langserve_app.py"]');
     });
 
@@ -135,7 +137,7 @@ describe('LangServeGenerator', () => {
       const generator = new LangServeGenerator();
       const compose = generator.generateDockerCompose(mockManifest);
 
-      expect(compose).toContain('version: \'3.8\'');
+      expect(compose).toContain("version: '3.8'");
       expect(compose).toContain('test-agent:');
       expect(compose).toContain('build: .');
       expect(compose).toContain('OPENAI_API_KEY');

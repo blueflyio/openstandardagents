@@ -109,7 +109,8 @@ const AGENT_TEMPLATES: AgentTemplate[] = [
     manifest: {
       metadata: {
         name: 'code-reviewer',
-        description: 'Automated code review agent with best practices enforcement',
+        description:
+          'Automated code review agent with best practices enforcement',
       },
       spec: {
         role: `You are an expert code reviewer specializing in modern software development practices.
@@ -136,8 +137,16 @@ Guidelines:
           enabled: true,
           enforcement_hooks: {
             pre_write: { enabled: true, action: 'query' },
-            pre_commit: { enabled: true, action: 'block', check_critical: true },
-            pre_merge: { enabled: true, action: 'block', require_approval: true },
+            pre_commit: {
+              enabled: true,
+              action: 'block',
+              check_critical: true,
+            },
+            pre_merge: {
+              enabled: true,
+              action: 'block',
+              require_approval: true,
+            },
             build: { enabled: true, fail_on_violations: true },
           },
         },
@@ -150,11 +159,17 @@ Guidelines:
     description: 'Extract data from websites intelligently',
     category: 'data',
     icon: '🕷️',
-    features: ['HTTP tools', 'Data extraction', 'Rate limiting', 'Error handling'],
+    features: [
+      'HTTP tools',
+      'Data extraction',
+      'Rate limiting',
+      'Error handling',
+    ],
     manifest: {
       metadata: {
         name: 'web-scraper',
-        description: 'Intelligent web scraping agent with rate limiting and error handling',
+        description:
+          'Intelligent web scraping agent with rate limiting and error handling',
       },
       spec: {
         role: `You are a web scraping specialist that extracts structured data from websites.
@@ -202,11 +217,17 @@ Best practices:
     description: 'Analyze datasets and generate insights',
     category: 'analytics',
     icon: '📊',
-    features: ['Data processing', 'Statistical analysis', 'Visualization', 'RAG'],
+    features: [
+      'Data processing',
+      'Statistical analysis',
+      'Visualization',
+      'RAG',
+    ],
     manifest: {
       metadata: {
         name: 'data-analyst',
-        description: 'AI-powered data analysis agent with statistical expertise',
+        description:
+          'AI-powered data analysis agent with statistical expertise',
       },
       spec: {
         role: `You are an expert data analyst specializing in exploratory data analysis and insight generation.
@@ -296,7 +317,8 @@ Best practices:
     manifest: {
       metadata: {
         name: 'support-bot',
-        description: 'AI customer support agent with knowledge base integration',
+        description:
+          'AI customer support agent with knowledge base integration',
       },
       spec: {
         role: `You are a friendly and helpful customer support agent.
@@ -337,11 +359,17 @@ Guidelines:
     description: 'Blog posts, documentation, and marketing copy',
     category: 'content',
     icon: '✍️',
-    features: ['SEO optimization', 'Multi-format', 'Brand voice', 'Fact-checking'],
+    features: [
+      'SEO optimization',
+      'Multi-format',
+      'Brand voice',
+      'Fact-checking',
+    ],
     manifest: {
       metadata: {
         name: 'content-generator',
-        description: 'AI content creation agent for various formats and purposes',
+        description:
+          'AI content creation agent for various formats and purposes',
       },
       spec: {
         role: `You are a professional content creator specializing in engaging, high-quality written content.
@@ -430,7 +458,12 @@ Reporting:
     description: 'Automated test generation and execution',
     category: 'quality',
     icon: '🧪',
-    features: ['Test generation', 'Coverage analysis', 'E2E testing', 'Performance testing'],
+    features: [
+      'Test generation',
+      'Coverage analysis',
+      'E2E testing',
+      'Performance testing',
+    ],
     manifest: {
       metadata: {
         name: 'testing-agent',
@@ -726,7 +759,9 @@ class OSSAWizardV2 {
     printStep(1, this.state.getState().totalSteps, 'Select Agent Template');
 
     if (this.options.template) {
-      const template = AGENT_TEMPLATES.find((t) => t.id === this.options.template);
+      const template = AGENT_TEMPLATES.find(
+        (t) => t.id === this.options.template
+      );
       if (template) {
         this.state.setTemplate(template);
         printSuccess(`Using template: ${template.name}`);
@@ -779,7 +814,10 @@ class OSSAWizardV2 {
         default: this.state.getAgent().metadata?.name || 'my-agent',
         validate: (input: string) => {
           const valid = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/.test(input);
-          return valid || 'Must be DNS-1123 compliant (lowercase, alphanumeric, hyphens)';
+          return (
+            valid ||
+            'Must be DNS-1123 compliant (lowercase, alphanumeric, hyphens)'
+          );
         },
       },
       {
@@ -792,7 +830,9 @@ class OSSAWizardV2 {
         type: 'input',
         name: 'description',
         message: 'Description:',
-        default: this.state.getAgent().metadata?.description || 'An OSSA-compliant agent',
+        default:
+          this.state.getAgent().metadata?.description ||
+          'An OSSA-compliant agent',
       },
       {
         type: 'input',
@@ -849,7 +889,10 @@ class OSSAWizardV2 {
 
     const modelChoices: Record<string, any[]> = {
       anthropic: [
-        { name: 'Claude Sonnet 4 (Recommended)', value: 'claude-sonnet-4-20250514' },
+        {
+          name: 'Claude Sonnet 4 (Recommended)',
+          value: 'claude-sonnet-4-20250514',
+        },
         { name: 'Claude Opus 4', value: 'claude-opus-4-20250514' },
         { name: 'Claude Haiku 4', value: 'claude-haiku-4-20250514' },
       ],
@@ -859,7 +902,10 @@ class OSSAWizardV2 {
         { name: 'GPT-3.5 Turbo', value: 'gpt-3.5-turbo' },
       ],
       google: [
-        { name: 'Gemini 2.0 Flash (Recommended)', value: 'gemini-2.0-flash-exp' },
+        {
+          name: 'Gemini 2.0 Flash (Recommended)',
+          value: 'gemini-2.0-flash-exp',
+        },
         { name: 'Gemini 1.5 Pro', value: 'gemini-1.5-pro' },
       ],
       mistral: [
@@ -871,7 +917,12 @@ class OSSAWizardV2 {
         { name: 'Command R', value: 'command-r' },
       ],
       groq: [{ name: 'Llama 3.1 70B', value: 'llama-3.1-70b-versatile' }],
-      together: [{ name: 'Llama 3.1 70B', value: 'meta-llama/Llama-3.1-70B-Instruct-Turbo' }],
+      together: [
+        {
+          name: 'Llama 3.1 70B',
+          value: 'meta-llama/Llama-3.1-70B-Instruct-Turbo',
+        },
+      ],
     };
 
     const llmAnswers = await inquirer.prompt([
@@ -879,7 +930,9 @@ class OSSAWizardV2 {
         type: 'list',
         name: 'model',
         message: 'Select Model:',
-        choices: modelChoices[provider] || [{ name: 'Default', value: 'default' }],
+        choices: modelChoices[provider] || [
+          { name: 'Default', value: 'default' },
+        ],
       },
       {
         type: 'number',
@@ -1009,7 +1062,9 @@ class OSSAWizardV2 {
       'Configure reusable skills and capabilities'
     );
 
-    printInfo('Skills allow you to define reusable capabilities that can be shared across agents');
+    printInfo(
+      'Skills allow you to define reusable capabilities that can be shared across agents'
+    );
 
     const { addSkills } = await inquirer.prompt([
       {
@@ -1060,8 +1115,7 @@ class OSSAWizardV2 {
           message: 'Skill description:',
           validate: (input: string) => {
             return (
-              input.length >= 10 ||
-              'Description must be at least 10 characters'
+              input.length >= 10 || 'Description must be at least 10 characters'
             );
           },
         },
@@ -1686,13 +1740,15 @@ class OSSAWizardV2 {
           {
             type: 'confirm',
             name: 'includeCallbacks',
-            message: 'Include observability (LangSmith, LangFuse, OpenTelemetry)?',
+            message:
+              'Include observability (LangSmith, LangFuse, OpenTelemetry)?',
             default: true,
           },
           {
             type: 'confirm',
             name: 'includeErrorHandling',
-            message: 'Include production error handling (retry, circuit breaker)?',
+            message:
+              'Include production error handling (retry, circuit breaker)?',
             default: true,
           },
           {
@@ -1739,7 +1795,9 @@ class OSSAWizardV2 {
             type: 'input',
             name: 'moduleName',
             message: 'Drupal module name:',
-            default: this.state.getAgent().metadata?.name?.replace(/-/g, '_') || 'ossa_agent',
+            default:
+              this.state.getAgent().metadata?.name?.replace(/-/g, '_') ||
+              'ossa_agent',
             validate: (input: string) => {
               const valid = /^[a-z][a-z0-9_]*$/.test(input);
               return valid || 'Must be lowercase alphanumeric with underscores';
@@ -1766,10 +1824,12 @@ class OSSAWizardV2 {
             type: 'input',
             name: 'bundleName',
             message: 'Symfony bundle name:',
-            default: (this.state.getAgent().metadata?.name
-              ?.split('-')
-              .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
-              .join('') || 'Ossa') + 'Bundle',
+            default:
+              (this.state
+                .getAgent()
+                .metadata?.name?.split('-')
+                .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+                .join('') || 'Ossa') + 'Bundle',
           },
           {
             type: 'confirm',
@@ -2020,7 +2080,9 @@ ${agent.spec?.tools?.map((t: any) => `- ${t.name || t.type}`).join('\n') || 'No 
 ### Features
 
 ${this.state.getState().features.rag ? '- ✅ RAG & Vector Database\n' : ''}${
-      this.state.getState().features.communication ? '- ✅ Agent Communication (A2A)\n' : ''
+      this.state.getState().features.communication
+        ? '- ✅ Agent Communication (A2A)\n'
+        : ''
     }${this.state.getState().features.state_management ? '- ✅ State Management\n' : ''}${
       this.state.getState().features.observability ? '- ✅ Observability\n' : ''
     }${this.state.getState().features.cost_management ? '- ✅ Cost Management\n' : ''}
@@ -2147,7 +2209,9 @@ For more information, see AGENTS.md
     }
 
     console.log(chalk.gray(`\n6. Export to platform:`));
-    console.log(chalk.white(`   ossa export ${outputPath} --platform langchain`));
+    console.log(
+      chalk.white(`   ossa export ${outputPath} --platform langchain`)
+    );
 
     console.log(chalk.gray(`\n7. Deploy:`));
     console.log(chalk.white(`   # Follow platform-specific deployment guide`));

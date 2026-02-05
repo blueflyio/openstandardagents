@@ -80,7 +80,9 @@ class APIFirstWizard {
       printBanner();
       printWizardBanner();
 
-      printInfo('🎯 API-FIRST MODE: All inputs validated against OpenAPI schema');
+      printInfo(
+        '🎯 API-FIRST MODE: All inputs validated against OpenAPI schema'
+      );
       console.log('');
 
       // Step 1: Kind Selection (Agent, Task, Workflow, Flow)
@@ -213,7 +215,9 @@ class APIFirstWizard {
     // Validate immediately
     const validation = this.schema.validate(this.agent);
     if (!validation.valid) {
-      printWarning('Validation warnings detected - will fix at final validation');
+      printWarning(
+        'Validation warnings detected - will fix at final validation'
+      );
     }
   }
 
@@ -410,8 +414,7 @@ class APIFirstWizard {
           message: 'Skill description:',
           validate: (input: string) => {
             return (
-              input.length >= 10 ||
-              'Description must be at least 10 characters'
+              input.length >= 10 || 'Description must be at least 10 characters'
             );
           },
         },
@@ -648,7 +651,12 @@ class APIFirstWizard {
 
   private async configureExportTargets(): Promise<void> {
     this.nextStep('Export Configuration');
-    printStep(10, this.totalSteps, 'Export Targets', 'Schema-validated deployment configuration');
+    printStep(
+      10,
+      this.totalSteps,
+      'Export Targets',
+      'Schema-validated deployment configuration'
+    );
 
     const { configureExport } = await inquirer.prompt([
       {
@@ -708,13 +716,15 @@ class APIFirstWizard {
           {
             type: 'confirm',
             name: 'includeCallbacks',
-            message: 'Include observability (LangSmith, LangFuse, OpenTelemetry)?',
+            message:
+              'Include observability (LangSmith, LangFuse, OpenTelemetry)?',
             default: true,
           },
           {
             type: 'confirm',
             name: 'includeErrorHandling',
-            message: 'Include production error handling (retry, circuit breaker)?',
+            message:
+              'Include production error handling (retry, circuit breaker)?',
             default: true,
           },
           {
@@ -761,7 +771,8 @@ class APIFirstWizard {
             type: 'input',
             name: 'moduleName',
             message: 'Drupal module name:',
-            default: this.agent.metadata?.name?.replace(/-/g, '_') || 'ossa_agent',
+            default:
+              this.agent.metadata?.name?.replace(/-/g, '_') || 'ossa_agent',
             validate: (input: string) => {
               const valid = /^[a-z][a-z0-9_]*$/.test(input);
               return valid || 'Must be lowercase alphanumeric with underscores';
@@ -788,10 +799,11 @@ class APIFirstWizard {
             type: 'input',
             name: 'bundleName',
             message: 'Symfony bundle name:',
-            default: (this.agent.metadata?.name
-              ?.split('-')
-              .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
-              .join('') || 'Ossa') + 'Bundle',
+            default:
+              (this.agent.metadata?.name
+                ?.split('-')
+                .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+                .join('') || 'Ossa') + 'Bundle',
           },
           {
             type: 'confirm',
@@ -820,12 +832,19 @@ class APIFirstWizard {
       },
     };
 
-    printSuccess(`Export configured for ${platforms.length} platform(s) with schema validation`);
+    printSuccess(
+      `Export configured for ${platforms.length} platform(s) with schema validation`
+    );
   }
 
   private async configureTestingValidation(): Promise<void> {
     this.nextStep('Testing Configuration');
-    printStep(11, this.totalSteps, 'Testing & Validation', 'Schema-validated testing configuration');
+    printStep(
+      11,
+      this.totalSteps,
+      'Testing & Validation',
+      'Schema-validated testing configuration'
+    );
 
     const { enableTesting } = await inquirer.prompt([
       {
@@ -946,7 +965,9 @@ class APIFirstWizard {
       },
     };
 
-    printSuccess(`Testing configured: ${testConfig.types.join(', ')} with schema validation`);
+    printSuccess(
+      `Testing configured: ${testConfig.types.join(', ')} with schema validation`
+    );
   }
 
   private async generateOutput(options: APIFirstWizardOptions): Promise<void> {
@@ -1043,13 +1064,17 @@ For complete specification, see agent.ossa.yaml
     console.log(chalk.gray('   ossa run agent.ossa.yaml'));
 
     console.log(chalk.white('\n3. Export to platform:'));
-    console.log(chalk.gray('   ossa export agent.ossa.yaml --platform langchain'));
+    console.log(
+      chalk.gray('   ossa export agent.ossa.yaml --platform langchain')
+    );
 
     console.log(chalk.white('\n4. Deploy:'));
     console.log(chalk.gray('   # Follow platform-specific guide'));
 
     console.log('');
-    console.log(chalk.green.bold('🎉 Schema-validated agent ready for production!'));
+    console.log(
+      chalk.green.bold('🎉 Schema-validated agent ready for production!')
+    );
     console.log('');
   }
 }

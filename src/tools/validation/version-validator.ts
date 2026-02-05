@@ -47,11 +47,19 @@ export class VersionValidator {
     const pkg = JSON.parse(content);
 
     // Check version field - must use 0.3.4 placeholder
-    if (pkg.version && typeof pkg.version === 'string' && /^\d+\.\d+\.\d+/.test(pkg.version)) {
+    if (
+      pkg.version &&
+      typeof pkg.version === 'string' &&
+      /^\d+\.\d+\.\d+/.test(pkg.version)
+    ) {
       this.messages.push('ERROR: Hardcoded version detected in package.json');
       this.messages.push('');
-      this.messages.push('package.json MUST use 0.3.4 placeholder for dynamic versioning.');
-      this.messages.push('The version-sync CI job will replace 0.3.4 with the actual version.');
+      this.messages.push(
+        'package.json MUST use 0.3.4 placeholder for dynamic versioning.'
+      );
+      this.messages.push(
+        'The version-sync CI job will replace 0.3.4 with the actual version.'
+      );
       this.messages.push('');
       this.messages.push(`Current version line: "${pkg.version}"`);
       this.messages.push('');
@@ -64,7 +72,10 @@ export class VersionValidator {
     // Check schema path
     if (pkg.exports && pkg.exports['./schema']) {
       const schemaPath = pkg.exports['./schema'];
-      if (typeof schemaPath === 'string' && /\/v\d+\.\d+\.\d+/.test(schemaPath)) {
+      if (
+        typeof schemaPath === 'string' &&
+        /\/v\d+\.\d+\.\d+/.test(schemaPath)
+      ) {
         this.messages.push('ERROR: Hardcoded version in schema path detected');
         this.messages.push('');
         this.messages.push('Schema path MUST use 0.3.4 placeholder.');
@@ -72,7 +83,9 @@ export class VersionValidator {
         this.messages.push(`Current schema line: "${schemaPath}"`);
         this.messages.push('');
         this.messages.push('Change it to:');
-        this.messages.push('    "./schema": "./spec/v0.3.4/ossa-0.3.4.schema.json",');
+        this.messages.push(
+          '    "./schema": "./spec/v0.3.4/ossa-0.3.4.schema.json",'
+        );
         this.messages.push('');
         this.errors++;
       }
@@ -108,7 +121,9 @@ export class VersionValidator {
     ];
 
     for (const pattern of patterns) {
-      const files = await glob(pattern, { ignore: ['node_modules/**', '.git/**'] });
+      const files = await glob(pattern, {
+        ignore: ['node_modules/**', '.git/**'],
+      });
 
       for (const file of files) {
         if (!existsSync(file)) continue;
@@ -131,7 +146,9 @@ export class VersionValidator {
         // Check for hardcoded version patterns
         if (/\b(version|VERSION)\b.*\d+\.\d+\.\d+/.test(content)) {
           this.messages.push(`WARNING: Possible hardcoded version in ${file}`);
-          this.messages.push('  Consider using 0.3.4 placeholder if this is a version reference');
+          this.messages.push(
+            '  Consider using 0.3.4 placeholder if this is a version reference'
+          );
           this.messages.push('');
         }
       }
@@ -143,15 +160,19 @@ export class VersionValidator {
 if (import.meta.url === `file://${process.argv[1]}`) {
   const validator = new VersionValidator();
 
-  validator.validate().then(result => {
-    result.messages.forEach(msg => console.log(msg));
+  validator.validate().then((result) => {
+    result.messages.forEach((msg) => console.log(msg));
 
     if (result.errors > 0) {
       console.log('');
       console.log(`❌ BLOCKED: ${result.errors} hardcoded version(s) detected`);
       console.log('');
-      console.log('All versions MUST use 0.3.4 placeholder for dynamic CI replacement.');
-      console.log('The version-sync CI job will replace 0.3.4 with the actual version during build.');
+      console.log(
+        'All versions MUST use 0.3.4 placeholder for dynamic CI replacement.'
+      );
+      console.log(
+        'The version-sync CI job will replace 0.3.4 with the actual version during build.'
+      );
       process.exit(1);
     }
 

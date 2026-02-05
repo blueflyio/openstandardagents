@@ -10,7 +10,7 @@ import { console_ui } from '../ui/console.js';
 export async function configureAdvancedStep(
   state: WizardState
 ): Promise<WizardState> {
-  console_ui.step(9, state.totalSteps, 'Advanced Configuration');
+  console_ui.step(10, state.totalSteps, 'Advanced Configuration');
 
   // Safety Controls
   const { configureSafety } = await inquirer.prompt([

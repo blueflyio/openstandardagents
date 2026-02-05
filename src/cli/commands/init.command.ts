@@ -24,7 +24,10 @@ export const initCommand = new Command('init')
   .option('-o, --output <path>', 'Output file path', 'agent.ossa.json')
   .option('-y, --yes', 'Use defaults without prompting')
   .option('--interactive', 'Use enhanced interactive wizard')
-  .option('--use-case <type>', 'Specify use case (code-review, documentation, etc.)')
+  .option(
+    '--use-case <type>',
+    'Specify use case (code-review, documentation, etc.)'
+  )
   .description('Create a new OSSA agent manifest interactively')
   .action(
     async (name?: string, options?: { output?: string; yes?: boolean }) => {

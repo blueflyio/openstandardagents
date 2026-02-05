@@ -130,7 +130,8 @@ export class BestPracticesValidator {
         category: 'metadata',
         message: 'Missing version',
         path: 'metadata.version',
-        recommendation: 'Add version following semantic versioning (e.g., "1.0.0").',
+        recommendation:
+          'Add version following semantic versioning (e.g., "1.0.0").',
       });
     }
 
@@ -620,7 +621,10 @@ export class BestPracticesValidator {
   /**
    * Get issues by category
    */
-  getByCategory(issues: BestPracticeIssue[], category: string): BestPracticeIssue[] {
+  getByCategory(
+    issues: BestPracticeIssue[],
+    category: string
+  ): BestPracticeIssue[] {
     return issues.filter((i) => i.category === category);
   }
 }

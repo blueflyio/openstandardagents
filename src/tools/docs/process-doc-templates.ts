@@ -20,8 +20,14 @@ const replacements = {
   '0.3.3': versionConfig.latest_stable,
   '0.3.3': specVersion,
   '{{LAST_UPDATED}}': lastUpdated,
-  'spec/v0.3.3': versionConfig.spec_path.replace('{version}', versionConfig.current),
-  '{{SCHEMA_FILE}}': versionConfig.schema_file.replace('{version}', versionConfig.current),
+  'spec/v0.3.3': versionConfig.spec_path.replace(
+    '{version}',
+    versionConfig.current
+  ),
+  '{{SCHEMA_FILE}}': versionConfig.schema_file.replace(
+    '{version}',
+    versionConfig.current
+  ),
   '{{NPM_VERSION}}': packageJson.version,
 };
 
@@ -40,7 +46,7 @@ async function processTemplates() {
   for (const pattern of patterns) {
     const files = await glob(pattern, {
       ignore: ['node_modules/**', 'dist/**', 'coverage/**'],
-      nodir: true
+      nodir: true,
     });
 
     for (const file of files) {
@@ -65,11 +71,13 @@ async function processTemplates() {
   if (totalProcessed === 0) {
     console.log('ℹ️  No template placeholders found to process');
   } else {
-    console.log(`\n✅ Processed ${totalProcessed} file(s) with version ${versionConfig.current}`);
+    console.log(
+      `\n✅ Processed ${totalProcessed} file(s) with version ${versionConfig.current}`
+    );
   }
 }
 
-processTemplates().catch(err => {
+processTemplates().catch((err) => {
   console.error('❌ Error processing templates:', err);
   process.exit(1);
 });
