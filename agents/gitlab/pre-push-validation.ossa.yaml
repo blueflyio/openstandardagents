@@ -1,0 +1,129 @@
+ossa: 0.4.1
+metadata:
+  name: pre-push-validation
+  namespace: blueflyio
+  version: 1.0.0
+  description: >
+    Pre-push quality gate that validates production-grade score before pushing.
+    Runs comprehensive audit and blocks push if score is below threshold.
+  author: BlueFly Platform Team
+  license: MIT
+  tags:
+    - gitlab
+    - pre-push
+    - quality-gate
+    - audit
+  annotations:
+    gitlab.com/gate-level: "2"
+    gitlab.com/execution: local
+
+spec:
+  type: quality-gate
+  platform: local
+  runtime:
+    type: cli
+    command: ossa-audit
+
+  triggers:
+    - type: pre-push
+      location: local
+      hook: .husky/pre-push
+
+  audit:
+    scoreThreshold: 60
+    requiredChecks:
+      - typescript-compilation
+      - test-coverage
+      - console-log-count
+      - hardcoded-values
+      - error-handling
+      - type-safety
+
+    metrics:
+      - id: production-grade-score
+        name: Production-Grade Score
+        threshold: 60
+        weight: 1.0
+        calculation: |
+          Score based on:
+          - Logging: structured logging usage (weight: 0.15)
+          - Error Handling: OssaError usage (weight: 0.15)
+          - Configuration: env var usage (weight: 0.15)
+          - Type Safety: no @ts-ignore (weight: 0.15)
+          - Testing: coverage >= 80% (weight: 0.20)
+          - Code Quality: complexity, duplication (weight: 0.20)
+
+      - id: console-log-count
+        name: Console.log Count
+        threshold: 100
+        severity: error
+        action: block
+        message: "Found ${count} console.log calls (max: 100)"
+
+      - id: typescript-errors
+        name: TypeScript Errors
+        threshold: 0
+        severity: critical
+        action: block
+        message: "Found ${count} TypeScript errors (must be 0)"
+
+      - id: test-coverage
+        name: Test Coverage
+        threshold: 80
+        unit: percent
+        severity: error
+        action: block
+        message: "Test coverage ${coverage}% (min: 80%)"
+
+      - id: hardcoded-values
+        name: Hardcoded Values
+        threshold: 50
+        severity: warning
+        action: warn
+        message: "Found ${count} hardcoded values (recommended max: 50)"
+
+  actions:
+    onPass:
+      - type: log
+        message: "✅ Pre-push validation passed (score: ${score}/100)"
+      - type: allow
+        exitCode: 0
+
+    onFail:
+      - type: block
+        exitCode: 1
+      - type: report
+        format: console
+        template: |
+
+          ╔═══════════════════════════════════════════════════════════╗
+          ║  ❌ PRE-PUSH VALIDATION FAILED                            ║
+          ╚═══════════════════════════════════════════════════════════╝
+
+          Production-Grade Score: ${score}/100 (minimum: 60/100)
+
+          Failed Checks:
+          ${failedChecks.map(c => `  ❌ ${c.name}: ${c.actual} (threshold: ${c.threshold})`).join('\n')}
+
+          Improve your score before pushing:
+          1. Run: npm run audit
+          2. Fix critical issues
+          3. Try pushing again
+
+          Or bypass (not recommended): git push --no-verify
+
+  configuration:
+    auditCommand: npm run audit
+    reportPath: ./audit-report.json
+    cacheResults: true
+    cacheTTL: 300  # 5 minutes
+
+extensions:
+  gitlab:
+    integration:
+      husky: true
+      hookPath: .husky/pre-push
+    bypass:
+      allowed: true
+      reason: "Emergency fixes only"
+      requiresApproval: true

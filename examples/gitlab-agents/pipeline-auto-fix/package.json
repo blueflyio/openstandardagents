@@ -1,0 +1,29 @@
+{
+  "name": "@bluefly/pipeline-auto-fix",
+  "version": "1.0.0",
+  "description": "Automatically analyzes failed pipelines, identifies root causes, generates fixes, and creates MRs with solutions. Prevents pipelines from failing for days by auto-remediation.\n",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
+    "test": "echo \"No tests yet\""
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "@gitbeaker/rest": "^40.0.0",
+    "@anthropic-ai/sdk": "^0.32.1",
+    "pino": "^8.19.0",
+    "pino-pretty": "^11.0.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.11.19",
+    "typescript": "^5.3.3",
+    "tsx": "^4.7.1"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

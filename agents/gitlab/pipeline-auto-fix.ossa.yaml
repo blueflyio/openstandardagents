@@ -1,0 +1,333 @@
+ossa: 0.4.1
+metadata:
+  name: pipeline-auto-fix
+  namespace: blueflyio
+  version: 1.0.0
+  description: >
+    Automatically analyzes failed pipelines, identifies root causes, generates
+    fixes, and creates MRs with solutions. Prevents pipelines from failing for
+    days by auto-remediation.
+  author: BlueFly Platform Team
+  license: MIT
+  tags:
+    - gitlab
+    - pipeline
+    - auto-fix
+    - ci-cd
+  annotations:
+    gitlab.com/service-account: pipeline-remediation
+    gitlab.com/gate-level: "5"
+    gitlab.com/webhook-event: pipeline_events
+
+spec:
+  type: service-account
+  platform: gitlab
+  runtime:
+    type: webhook
+    port: 9090
+    path: /webhook/pipeline-auto-fix
+
+  triggers:
+    - type: webhook
+      event: pipeline_events
+      description: Triggered when pipeline fails
+      filter:
+        status: failed
+        ref:
+          - main
+          - development
+          - /^release\/.*/
+          - /^feature\/.*/
+      variables:
+        - PIPELINE_ID: "${pipeline_id}"
+        - PROJECT_ID: "${project_id}"
+        - REF: "${ref}"
+        - COMMIT_SHA: "${commit_sha}"
+
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-5
+    maxTokens: 32000
+    temperature: 0.1
+    systemPrompt: |
+      You are a CI/CD remediation specialist.
+
+      Your role:
+      1. Analyze pipeline failure logs
+      2. Identify root cause (TypeScript errors, test failures, lint errors, etc.)
+      3. Generate precise fixes
+      4. Create MR with fix and detailed explanation
+
+      Common failure types:
+      - TypeScript compilation errors
+      - Test failures
+      - Lint/format errors
+      - Dependency issues
+      - Configuration errors
+      - Build failures
+
+      Response format:
+      - Root cause analysis
+      - Fix strategy
+      - Code changes
+      - Commit message
+      - MR description
+
+  tools:
+    - name: getPipelineJobs
+      description: Get all jobs in the failed pipeline
+      parameters:
+        projectId: string
+        pipelineId: number
+      returns:
+        type: array
+
+    - name: getJobLog
+      description: Get log output for a specific job
+      parameters:
+        projectId: string
+        jobId: number
+      returns:
+        type: string
+
+    - name: getFileContent
+      description: Get current content of a file
+      parameters:
+        projectId: string
+        filePath: string
+        ref: string
+      returns:
+        type: string
+
+    - name: createBranch
+      description: Create a new branch for the fix
+      parameters:
+        projectId: string
+        branch: string
+        ref: string
+      returns:
+        type: object
+
+    - name: createCommit
+      description: Create commit with fixes
+      parameters:
+        projectId: string
+        branch: string
+        message: string
+        actions: array
+      returns:
+        type: object
+
+    - name: createMR
+      description: Create merge request with fix
+      parameters:
+        projectId: string
+        sourceBranch: string
+        targetBranch: string
+        title: string
+        description: string
+      returns:
+        type: object
+
+    - name: postComment
+      description: Post comment explaining the fix
+      parameters:
+        projectId: string
+        mrIid: number
+        body: string
+      returns:
+        type: object
+
+  workflow:
+    steps:
+      - id: fetch-jobs
+        name: Fetch Failed Jobs
+        action: tool-invoke
+        tool: getPipelineJobs
+        params:
+          projectId: "${PROJECT_ID}"
+          pipelineId: "${PIPELINE_ID}"
+        output: jobs
+
+      - id: get-logs
+        name: Get Failure Logs
+        action: parallel
+        tasks: []
+        description: "Dynamically generated from failed jobs"
+        output: logs
+
+      - id: analyze-failure
+        name: Analyze Root Cause
+        action: llm-invoke
+        input: |
+          Pipeline #${PIPELINE_ID} failed on ${REF}
+
+          Failed Jobs:
+          ${jobs.filter(j => j.status === 'failed').map(j => `- ${j.name} (stage: ${j.stage})`).join('\n')}
+
+          Logs:
+          ${logs.map((log, i) => `
+          === ${jobs[i].name} ===
+          ${log}
+          `).join('\n\n')}
+
+          Analyze and provide fix in JSON:
+          {
+            "root_cause": "string (detailed explanation)",
+            "error_type": "typescript|test|lint|dependency|build|config",
+            "affected_files": ["list of files that need changes"],
+            "fix_strategy": "string (how to fix)",
+            "code_changes": [
+              {
+                "file_path": "string",
+                "action": "update",
+                "current_content": "string (if known)",
+                "new_content": "string (fixed version)"
+              }
+            ],
+            "commit_message": "string (conventional commit format)",
+            "mr_title": "string (descriptive title)",
+            "mr_description": "string (markdown formatted)",
+            "confidence": number (0-100, how confident in this fix)
+          }
+        output: analysis
+
+      - id: verify-confidence
+        name: Check Fix Confidence
+        action: evaluate
+        condition: "analysis.confidence < 70"
+        onFalse:
+          action: notify
+          message: "Low confidence fix (${analysis.confidence}%) - manual review needed"
+          exit: true
+
+      - id: create-fix-branch
+        name: Create Fix Branch
+        action: tool-invoke
+        tool: createBranch
+        params:
+          projectId: "${PROJECT_ID}"
+          branch: "auto-fix/pipeline-${PIPELINE_ID}"
+          ref: "${REF}"
+        output: branch
+
+      - id: apply-fixes
+        name: Apply Code Fixes
+        action: tool-invoke
+        tool: createCommit
+        params:
+          projectId: "${PROJECT_ID}"
+          branch: "${branch.name}"
+          message: |
+            ${analysis.commit_message}
+
+            Auto-generated fix for pipeline #${PIPELINE_ID}
+
+            Root cause: ${analysis.root_cause}
+
+            Co-Authored-By: Pipeline Auto-Fix Agent <pipeline-remediation@blueflyagents.com>
+          actions: "${analysis.code_changes}"
+        output: commit
+
+      - id: create-fix-mr
+        name: Create Fix MR
+        action: tool-invoke
+        tool: createMR
+        params:
+          projectId: "${PROJECT_ID}"
+          sourceBranch: "${branch.name}"
+          targetBranch: "${REF}"
+          title: "${analysis.mr_title}"
+          description: |
+            ## 🤖 Auto-Fix for Pipeline #${PIPELINE_ID}
+
+            **Status**: Failed ❌ → Fixed ✅
+
+            ### Root Cause
+            ${analysis.root_cause}
+
+            ### Error Type
+            `${analysis.error_type}`
+
+            ### Fix Strategy
+            ${analysis.fix_strategy}
+
+            ### Files Changed
+            ${analysis.affected_files.map(f => `- \`${f}\``).join('\n')}
+
+            ### Commit
+            ${commit.short_id}: ${analysis.commit_message}
+
+            ### Testing
+            - [ ] Pipeline passes on this MR
+            - [ ] Code review approved
+            - [ ] Ready to merge
+
+            ---
+            🤖 Generated by: pipeline-auto-fix agent
+            📊 Confidence: ${analysis.confidence}%
+            🔗 Failed pipeline: [#${PIPELINE_ID}](${CI_PROJECT_URL}/-/pipelines/${PIPELINE_ID})
+        output: mr
+
+      - id: post-explanation
+        name: Post Detailed Comment
+        action: tool-invoke
+        tool: postComment
+        params:
+          projectId: "${PROJECT_ID}"
+          mrIid: "${mr.iid}"
+          body: |
+            ## 🔍 Detailed Analysis
+
+            ### Failed Jobs
+            ${jobs.filter(j => j.status === 'failed').map(j => `
+            **${j.name}** (${j.stage})
+            - Duration: ${j.duration}s
+            - Exit code: ${j.exit_code}
+            `).join('\n')}
+
+            ### Root Cause Deep Dive
+            ${analysis.root_cause}
+
+            ### Code Changes Explanation
+            ${analysis.code_changes.map(c => `
+            #### \`${c.file_path}\`
+            \`\`\`diff
+            - Old (line causing error)
+            + New (fixed line)
+            \`\`\`
+            `).join('\n')}
+
+            ### Verification
+            This MR will trigger a new pipeline. If it passes, the fix is confirmed.
+
+            **Confidence**: ${analysis.confidence}%
+            ${analysis.confidence < 90 ? '\n⚠️  Manual review recommended due to confidence level.' : ''}
+        output: commentPosted
+
+  errorHandling:
+    onAnalysisFailure:
+      - action: notify
+        channel: slack
+        message: "Could not auto-fix pipeline #${PIPELINE_ID} - manual intervention needed"
+    onLowConfidence:
+      - action: create-issue
+        title: "Pipeline #${PIPELINE_ID} failed - auto-fix confidence too low"
+        labels: ["ci-failure", "needs-review"]
+
+extensions:
+  gitlab:
+    serviceAccount: pipeline-remediation
+    permissions:
+      - read_code
+      - write_code
+      - create_branch
+      - create_merge_request
+      - write_comments
+    webhook:
+      url: http://api.blueflyagents.com/webhook/pipeline-auto-fix
+      events:
+        - pipeline_events
+    confidenceThresholds:
+      autoMR: 70
+      autoMerge: 95
