@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.3] - 2026-02-04
+
+### Fixed
+- **CRITICAL**: Added `.version.json` to npm package files array (missing in v0.4.2)
+  - v0.4.2 crashed on global install with: `OSSA_VERSION_ERROR: Could not determine version dynamically`
+  - Root cause: `.version.json` not included in published package
+  - Impact: Made v0.4.2 completely unusable for global installations
+
+### Added
+- Comprehensive package validation tests to prevent future broken releases
+- Pre-publish tarball installation test to verify global install works
+- File inclusion validation to ensure critical files are packaged
+
 ## [0.4.2] - 2026-02-04
 
 ### Fixed

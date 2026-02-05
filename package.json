@@ -1,6 +1,6 @@
 {
   "name": "@bluefly/openstandardagents",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "exports": {
     "./schema": "./spec/v0.4/agent.schema.json",
     "./schema/v0.4": "./spec/v0.4/agent.schema.json",
@@ -81,6 +81,7 @@
     "openapi/",
     "schemas/",
     "templates/",
+    ".version.json",
     "README.md",
     "DEMO.md",
     "LICENSE",
@@ -183,8 +184,9 @@
     "postinstall": "node bin/postinstall || true",
     "// RELEASE & PUBLISH": "",
     "prerelease": "npm run quality && npm run test && npm run validate",
-    "prepublishOnly": "npm run validate:deps && npm run build:clean && npm run test:unit && npm run test:smoke",
+    "prepublishOnly": "tsx tools/validate-package.ts",
     "validate:deps": "tsx tools/validate-dependencies.ts",
+    "validate:package": "tsx tools/validate-package.ts",
     "release:check": "npm run prerelease && echo '✅ Ready for release'",
     "release:verify": "tsx src/dev-cli/src/index.ts release verify",
     "release:prep": "tsx src/dev-cli/src/index.ts release prep v$(node -p \"require('./.version.json').latest_stable\")"
