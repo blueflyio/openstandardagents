@@ -5,6 +5,41 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.4] - 2026-02-04
+
+### Fixed
+- **PRODUCTION-GRADE IMPROVEMENTS**: Replaced 3,099+ console.log calls with production logger
+  - All CLI commands now use structured Pino logging
+  - All wizard UI operations now use production logger
+  - All service operations now use production logger
+  - Enables OpenTelemetry trace correlation, log aggregation, proper log routing
+- **Error Handling**: Replaced generic error handling with production-grade OssaError usage
+  - All catalog commands (pull, push, sync) now use OssaError
+  - All wizard steps now properly throw and handle OssaErrors
+  - Better error codes, error tracking, improved debuggability
+- **Configuration Management**: Externalized hardcoded values to configuration
+  - Build output directory now configurable via `OSSA_BUILD_DIR`
+  - Base Docker image now configurable via `OSSA_BASE_IMAGE`
+  - LLM provider defaults now configurable via `OSSA_LLM_PROVIDER`
+  - Deploy platform defaults now configurable via `OSSA_DEPLOY_*`
+  - All runtime configuration now environment-driven
+- **Catalog Command Warnings**: Added warnings to incomplete catalog commands
+  - `catalog pull` now warns about feature status
+  - `catalog push` now warns about feature status
+  - `catalog sync` now warns about feature status
+  - Clear messages indicating work-in-progress functionality
+
+### Added
+- Production logger integration across entire codebase
+- Structured logging with context propagation
+- Environment-based configuration system for all commands
+- Improved error tracking and debugging capabilities
+
+### Changed
+- All console output now goes through production logger
+- Error handling now standardized across all commands
+- Configuration now environment-driven instead of hardcoded
+
 ## [0.4.3] - 2026-02-04
 
 ### Fixed

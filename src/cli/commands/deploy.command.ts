@@ -8,6 +8,7 @@ import { Command } from 'commander';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { KAgentRuntimeAdapter } from '../../sdks/kagent/runtime-adapter.js';
+import { getDeployDefaults } from '../../config/defaults.js';
 
 export const deployCommand = new Command('deploy')
   .description('Deploy OSSA agent to specified platform(s)')
@@ -15,18 +16,18 @@ export const deployCommand = new Command('deploy')
   .option(
     '-p, --platform <platform>',
     'Target platform (kagent, docker, kubernetes)',
-    'kagent'
+    getDeployDefaults().defaultPlatform
   )
   .option('--all', 'Deploy to all configured platforms', false)
   .option(
     '--namespace <namespace>',
     'Kubernetes namespace (for kagent/kubernetes)',
-    'default'
+    getDeployDefaults().defaultNamespace
   )
   .option(
     '--replicas <number>',
     'Number of replicas (for kagent/kubernetes)',
-    '1'
+    String(getDeployDefaults().defaultReplicas)
   )
   .action(
     async (
