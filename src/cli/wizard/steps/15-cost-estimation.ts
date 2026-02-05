@@ -4,6 +4,7 @@
  */
 
 import inquirer from 'inquirer';
+import { logger } from '../../../utils/logger.js';
 import { WizardState } from '../types.js';
 import { console_ui } from '../ui/console.js';
 
@@ -119,13 +120,23 @@ export async function costEstimationStep(
   };
 
   // Display cost breakdown
-  console_ui.info('\nCost Estimation:');
-  console.log(`  LLM Costs: $${estimate.llmCost.toFixed(2)}/month`);
-  console.log(
-    `  Infrastructure: $${estimate.infrastructureCost.toFixed(2)}/month`
+  console_ui.info('Cost Estimation');
+  const costBreakdown = `
+  LLM Costs: $${estimate.llmCost.toFixed(2)}/month
+  Infrastructure: $${estimate.infrastructureCost.toFixed(2)}/month
+  Tool Costs: $${estimate.toolCost.toFixed(2)}/month
+  Total Monthly: $${estimate.totalMonthly.toFixed(2)}/month
+`;
+  logger.info(
+    {
+      action: 'cost-estimation',
+      llmCost: estimate.llmCost,
+      infrastructure: estimate.infrastructureCost,
+      tools: estimate.toolCost,
+      total: estimate.totalMonthly,
+    },
+    costBreakdown
   );
-  console.log(`  Tool Costs: $${estimate.toolCost.toFixed(2)}/month`);
-  console.log(`  Total Monthly: $${estimate.totalMonthly.toFixed(2)}/month`);
 
   // Store estimate
   if (!state.agent.spec) state.agent.spec = { role: '' };
@@ -133,11 +144,14 @@ export async function costEstimationStep(
 
   // Optimization suggestions
   if (estimate.totalMonthly > 500) {
-    console_ui.warning('\nCost Optimization Suggestions:');
-    console.log('  - Consider using a lower-cost model for non-critical tasks');
-    console.log('  - Use serverless deployment to reduce infrastructure costs');
-    console.log('  - Implement caching to reduce LLM API calls');
-    console.log('  - Batch requests when possible');
+    console_ui.warning('Cost Optimization Suggestions');
+    const suggestions = `
+  - Consider using a lower-cost model for non-critical tasks
+  - Use serverless deployment to reduce infrastructure costs
+  - Implement caching to reduce LLM API calls
+  - Batch requests when possible
+`;
+    logger.warn({ action: 'cost-optimization-needed', totalMonthly: estimate.totalMonthly }, suggestions);
   }
 
   return state;

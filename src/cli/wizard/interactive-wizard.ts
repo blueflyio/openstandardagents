@@ -5,6 +5,7 @@
 
 import inquirer from 'inquirer';
 import chalk from 'chalk';
+import { logger } from '../../utils/logger.js';
 import type { OssaAgent } from '../../types/index.js';
 import { getApiVersion } from '../../utils/version.js';
 import { USE_CASES, getRecommendedConfig } from './use-cases.js';
@@ -24,8 +25,7 @@ export interface WizardResult {
 
 export class InteractiveWizard {
   async run(options: WizardOptions = {}): Promise<WizardResult> {
-    console.log(chalk.bold.blue('\n🧙 OSSA Interactive Wizard\n'));
-    console.log(chalk.gray('Create a production-ready agent manifest\n'));
+    logger.info({ action: 'wizard-start' }, 'OSSA Interactive Wizard - Create a production-ready agent manifest');
 
     // Step 1: Use case detection
     let useCase: string | undefined;
@@ -92,9 +92,7 @@ export class InteractiveWizard {
     ]);
 
     const useCase = USE_CASES.find((uc) => uc.id === useCaseId)!;
-    console.log(
-      chalk.green(`\n✓ Use case selected: ${useCase.name}`)
-    );
+    logger.info({ useCase: useCase.name }, 'Use case selected');
 
     return useCaseId;
   }
@@ -127,9 +125,10 @@ export class InteractiveWizard {
       },
     ]);
 
-    console.log(chalk.green(`\n✓ Template selected: ${templateId}`));
-    console.log(
-      chalk.gray(`   Template path: platform-agents/${templates.find((t) => t.id === templateId)?.path}`)
+    const templatePath = templates.find((t) => t.id === templateId)?.path;
+    logger.info(
+      { template: templateId, path: templatePath },
+      'Template selected'
     );
 
     return templateId;
