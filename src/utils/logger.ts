@@ -110,7 +110,8 @@ function wrapWithTraceContext(logger: pino.Logger): pino.Logger {
   const originalChild = logger.child.bind(logger);
 
   // Override child method to inject trace context
-  logger.child = (bindings: pino.Bindings, options?: pino.ChildLoggerOptions): pino.Logger => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  logger.child = (bindings: pino.Bindings, options?: pino.ChildLoggerOptions): any => {
     const traceContext = getTraceContext();
     return originalChild({ ...traceContext, ...bindings }, options);
   };
@@ -289,7 +290,7 @@ export function measurePerformance<T>(
     return Promise.resolve(result);
   } catch (error) {
     perf.error(error as Error);
-    throw error;
+    return Promise.reject(error);
   }
 }
 
