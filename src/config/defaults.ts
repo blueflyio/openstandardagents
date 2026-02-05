@@ -262,3 +262,87 @@ export function getDefaultPolicyKind(): string {
 export function getDefaultOSSAAPIVersion(): string {
   return process.env.OSSA_API_VERSION || 'ossa.dev/v1';
 }
+
+/**
+ * Build command defaults
+ * Can be overridden via environment variables
+ */
+export function getBuildDefaults() {
+  return {
+    outputDir: process.env.OSSA_BUILD_OUTPUT_DIR || 'dist/build',
+    baseImage: process.env.OSSA_BASE_IMAGE || 'node:20-alpine',
+    platforms: [
+      'npm',
+      'langchain',
+      'crewai',
+      'anthropic',
+      'drupal',
+      'kagent',
+    ],
+  };
+}
+
+/**
+ * Runtime command defaults
+ * Can be overridden via environment variables
+ */
+export function getRuntimeDefaults() {
+  return {
+    defaultRuntime: process.env.OSSA_DEFAULT_RUNTIME || 'openai',
+    maxTurns: parseInt(process.env.OSSA_MAX_TURNS || '10', 10),
+    defaultProvider: process.env.OSSA_LLM_PROVIDER || 'openai',
+    defaultModel: process.env.OSSA_LLM_MODEL || 'gpt-4',
+  };
+}
+
+/**
+ * Deploy command defaults
+ * Can be overridden via environment variables
+ */
+export function getDeployDefaults() {
+  return {
+    defaultPlatform: process.env.OSSA_DEFAULT_DEPLOY_PLATFORM || 'kagent',
+    defaultTarget: process.env.OSSA_DEFAULT_DEPLOY_TARGET || 'local',
+    defaultNamespace: process.env.OSSA_DEFAULT_DEPLOY_NAMESPACE || 'default',
+    defaultReplicas: parseInt(process.env.OSSA_DEFAULT_DEPLOY_REPLICAS || '1', 10),
+    dockerNetwork: process.env.OSSA_DOCKER_NETWORK || 'bridge',
+    environment: process.env.OSSA_DEFAULT_ENVIRONMENT || 'dev',
+  };
+}
+
+/**
+ * Init command defaults
+ * Can be overridden via environment variables
+ */
+export function getInitDefaults() {
+  return {
+    outputPath: process.env.OSSA_INIT_OUTPUT_PATH || 'agent.ossa.json',
+    defaultVersion: process.env.OSSA_DEFAULT_VERSION || '1.0.0',
+    defaultLLMProvider: process.env.OSSA_INIT_LLM_PROVIDER || 'openai',
+    defaultLLMModels: {
+      openai: process.env.OSSA_INIT_OPENAI_MODEL || 'gpt-4',
+      anthropic: process.env.OSSA_INIT_ANTHROPIC_MODEL || 'claude-3-5-sonnet-20241022',
+      google: process.env.OSSA_INIT_GOOGLE_MODEL || 'gemini-pro',
+    },
+    defaultDescription: process.env.OSSA_DEFAULT_DESCRIPTION || 'OSSA-compliant agent',
+    defaultPlatforms: (process.env.OSSA_DEFAULT_PLATFORMS || 'cursor,openai')
+      .split(',')
+      .map((p) => p.trim())
+      .filter(Boolean),
+  };
+}
+
+/**
+ * Audit command defaults
+ * Can be overridden via environment variables
+ */
+export function getAuditDefaults() {
+  return {
+    scanPath: process.env.OSSA_AUDIT_SCAN_PATH || './packages/@ossa',
+    validationLevel: process.env.OSSA_AUDIT_LEVEL || 'full',
+    specVersion: process.env.OSSA_SPEC_VERSION || '0.3.5',
+    outputFormat: process.env.OSSA_AUDIT_FORMAT || 'table',
+    recursive: process.env.OSSA_AUDIT_RECURSIVE !== 'false',
+    includeExamples: process.env.OSSA_AUDIT_INCLUDE_EXAMPLES !== 'false',
+  };
+}

@@ -8,6 +8,8 @@ import { execSync } from 'child_process';
 import inquirer from 'inquirer';
 import type { WizardState, WizardOptions } from '../types.js';
 import { console_ui } from '../ui/console.js';
+import { ConfigurationError, isOssaError } from '../../../errors/index.js';
+import { logger } from '../../../utils/logger.js';
 
 export async function registerWorkspaceStep(
   state: WizardState,
@@ -72,8 +74,14 @@ export async function registerWorkspaceStep(
 
     return state;
   } catch (error) {
+    const ossaError = isOssaError(error)
+      ? error
+      : new ConfigurationError('Failed to register agent in workspace', {
+          originalError: error instanceof Error ? error.message : String(error),
+        });
+    logger.error({ err: ossaError }, 'Workspace registration failed');
     console_ui.error('Failed to register agent in workspace');
-    console_ui.error(error instanceof Error ? error.message : String(error));
+    console_ui.error(ossaError.message);
     return state;
   }
 }

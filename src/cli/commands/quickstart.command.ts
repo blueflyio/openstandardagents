@@ -7,6 +7,7 @@ import { Command } from 'commander';
 import * as fs from 'fs';
 import chalk from 'chalk';
 import { getApiVersion } from '../../utils/version.js';
+import { logger } from '../../utils/logger.js';
 
 const AGENT_TEMPLATE = `# ╔═══════════════════════════════════════════════════════════════════════════════╗
 # ║                                                                               ║
@@ -105,55 +106,44 @@ interface QuickstartOptions {
  * Prints a beautiful header
  */
 function printHeader(): void {
-  console.log();
-  console.log(chalk.cyan.bold('[RUN] OSSA Quickstart'));
-  console.log(chalk.cyan('══════════════════'));
-  console.log();
-  console.log(
-    chalk.gray('Open Standard for Software Agents - The OpenAPI for agents')
-  );
-  console.log(chalk.gray('Get running in 60 seconds...'));
-  console.log();
+  logger.info('[RUN] OSSA Quickstart');
+  logger.info('Open Standard for Software Agents - The OpenAPI for agents');
+  logger.info('Get running in 60 seconds...');
 }
 
 /**
  * Prints a step header
  */
 function printStep(step: number, total: number, message: string): void {
-  console.log();
-  console.log(chalk.white.bold(`[${step}/${total}] ${message}`));
-  console.log(chalk.gray('─'.repeat(70)));
+  logger.info(`[${step}/${total}] ${message}`);
 }
 
 /**
  * Prints success message
  */
 function printSuccess(message: string): void {
-  console.log(chalk.green('     ✓'), message);
+  logger.info(`✓ ${message}`);
 }
 
 /**
  * Prints info message
  */
 function printInfo(message: string): void {
-  console.log(chalk.blue('     ℹ'), message);
+  logger.info(`ℹ ${message}`);
 }
 
 /**
  * Prints warning message
  */
 function printWarning(message: string): void {
-  console.log(chalk.yellow('     ⚠'), message);
+  logger.warn(`⚠ ${message}`);
 }
 
 /**
  * Prints a box around text
  */
 function printBox(message: string): void {
-  const width = 70;
-  console.log(chalk.cyan('═'.repeat(width)));
-  console.log(chalk.cyan(message));
-  console.log(chalk.cyan('═'.repeat(width)));
+  logger.info(message);
 }
 
 /**
@@ -176,7 +166,7 @@ function checkApiKeys(): { hasKey: boolean; provider: string } {
   printWarning('No LLM API key detected');
   printInfo('Set one of: ANTHROPIC_API_KEY, OPENAI_API_KEY, GOOGLE_API_KEY');
   printInfo(
-    `Or use Ollama for local models (free): ${chalk.cyan('https://ollama.ai')}`
+    `Or use Ollama for local models (free): https://ollama.ai`
   );
 
   return { hasKey: false, provider: 'anthropic' };
@@ -197,70 +187,45 @@ function createAgent(outputPath: string): void {
   const content = AGENT_TEMPLATE.replace(/\{\{VERSION\}\}/g, version);
 
   fs.writeFileSync(outputPath, content, 'utf-8');
-  printSuccess(`Created: ${chalk.cyan(outputPath)}`);
+  printSuccess(`Created: ${outputPath}`);
 }
 
 /**
  * Show final success message with next steps
  */
 function showSuccessMessage(agentFile: string, provider: string): void {
-  console.log();
-  printBox(`\n🎉 ${chalk.bold('SUCCESS! Your first OSSA agent is ready.')}`);
-  console.log();
+  printBox('SUCCESS! Your first OSSA agent is ready.');
+  logger.info('Next steps:\n');
 
-  console.log(chalk.bold('Next steps:\n'));
-
-  console.log(chalk.bold('  1.'), 'Set your API key:');
+  logger.info('1. Set your API key:');
   switch (provider) {
     case 'anthropic':
-      console.log(`     ${chalk.cyan('export ANTHROPIC_API_KEY=sk-ant-...')}`);
-      console.log(
-        `     ${chalk.gray('Get key: https://console.anthropic.com')}`
-      );
+      logger.info('export ANTHROPIC_API_KEY=sk-ant-...');
+      logger.info('Get key: https://console.anthropic.com');
       break;
     case 'openai':
-      console.log(`     ${chalk.cyan('export OPENAI_API_KEY=sk-...')}`);
-      console.log(
-        `     ${chalk.gray('Get key: https://platform.openai.com/api-keys')}`
-      );
+      logger.info('export OPENAI_API_KEY=sk-...');
+      logger.info('Get key: https://platform.openai.com/api-keys');
       break;
     default:
-      console.log(`     ${chalk.cyan('export ANTHROPIC_API_KEY=sk-ant-...')}`);
-      console.log(
-        `     ${chalk.gray('Or use: OPENAI_API_KEY, GOOGLE_API_KEY')}`
-      );
+      logger.info('export ANTHROPIC_API_KEY=sk-ant-...');
+      logger.info('Or use: OPENAI_API_KEY, GOOGLE_API_KEY');
   }
-  console.log();
 
-  console.log(chalk.bold('  2.'), 'Run your agent:');
-  console.log(`     ${chalk.cyan(`ossa run ${agentFile} --interactive`)}`);
-  console.log();
+  logger.info('2. Run your agent:');
+  logger.info(`ossa run ${agentFile} --interactive`);
 
-  console.log(chalk.bold('  3.'), 'Explore examples:');
-  console.log(`     ${chalk.cyan('ossa init my-agent --template advanced')}`);
-  console.log(
-    `     ${chalk.gray('See: https://github.com/blueflyio/openstandardagents/tree/main/examples')}`
-  );
-  console.log();
+  logger.info('3. Explore examples:');
+  logger.info('ossa init my-agent --template advanced');
+  logger.info('See: https://github.com/blueflyio/openstandardagents/tree/main/examples');
 
-  console.log(chalk.bold('  4.'), 'Learn more:');
-  console.log(
-    `     ${chalk.gray('Docs:     ')}${chalk.cyan('https://openstandardagents.org/docs')}`
-  );
-  console.log(
-    `     ${chalk.gray('Spec:     ')}${chalk.cyan('https://openstandardagents.org/spec')}`
-  );
-  console.log(
-    `     ${chalk.gray('GitHub:   ')}${chalk.cyan('https://github.com/blueflyio/openstandardagents')}`
-  );
-  console.log(
-    `     ${chalk.gray('Discord:  ')}${chalk.cyan('https://discord.gg/ossa')}`
-  );
-  console.log();
+  logger.info('4. Learn more:');
+  logger.info('Docs:     https://openstandardagents.org/docs');
+  logger.info('Spec:     https://openstandardagents.org/spec');
+  logger.info('GitHub:   https://github.com/blueflyio/openstandardagents');
+  logger.info('Discord:  https://discord.gg/ossa');
 
-  printBox('');
-
-  console.log(chalk.gray("\nTip: Try 'ossa --help' to see all commands\n"));
+  logger.info("Tip: Try 'ossa --help' to see all commands");
 }
 
 /**
@@ -292,8 +257,7 @@ async function handleQuickstart(options: QuickstartOptions): Promise<void> {
 
     process.exit(0);
   } catch (error) {
-    console.error(chalk.red('\nError during quickstart:'));
-    console.error(error);
+    logger.error({ err: error }, 'Error during quickstart');
     process.exit(1);
   }
 }

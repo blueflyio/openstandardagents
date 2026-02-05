@@ -8,8 +8,11 @@ import { Command } from 'commander';
 import * as fs from 'fs';
 import * as path from 'path';
 import chalk from 'chalk';
+import { getAuditDefaults } from '../../config/defaults.js';
 import { AgentAuditService } from '../../services/audit.js';
 import type { AgentHealth, AuditReport } from '../../services/audit.js';
+import { ConfigurationError, isOssaError } from '../../errors/index.js';
+import { logger } from '../../utils/logger.js';
 
 export function createAuditCommand(): Command {
   const command = new Command('audit');
@@ -17,22 +20,23 @@ export function createAuditCommand(): Command {
   command.description('Audit OSSA agents for health and compliance');
 
   // audit scan command
+  const auditDefaults = getAuditDefaults();
   command
     .command('scan')
     .description('Scan folder for agents and generate health report')
-    .argument('[path]', 'Path to scan for agents', './packages/@ossa')
-    .option('-r, --recursive', 'Recursively scan subdirectories', true)
+    .argument('[path]', 'Path to scan for agents', auditDefaults.scanPath)
+    .option('-r, --recursive', 'Recursively scan subdirectories', auditDefaults.recursive)
     .option(
       '-l, --level <level>',
       'Validation level (basic|full|strict)',
-      'full'
+      auditDefaults.validationLevel
     )
-    .option('-v, --spec-version <version>', 'OSSA spec version', '0.3.5')
+    .option('-v, --spec-version <version>', 'OSSA spec version', auditDefaults.specVersion)
     .option('--no-examples', 'Exclude example agents from report')
     .option(
       '-f, --format <format>',
       'Output format (table|json|markdown)',
-      'table'
+      auditDefaults.outputFormat
     )
     .option('-o, --output <file>', 'Write report to file')
     .action(async (scanPath: string, options: any) => {
@@ -75,8 +79,14 @@ export function createAuditCommand(): Command {
             console.log(chalk.green(`\n✅ Report saved to ${options.output}`));
           }
         }
-      } catch (error: any) {
-        console.error(chalk.red(`❌ Error during audit: ${error.message}`));
+      } catch (error) {
+        const ossaError = isOssaError(error)
+          ? error
+          : new ConfigurationError('Audit scan failed', {
+              originalError: error instanceof Error ? error.message : String(error),
+            });
+        logger.error({ err: ossaError }, 'Audit scan operation failed');
+        console.error(chalk.red(`❌ Error during audit: ${ossaError.message}`));
         process.exit(1);
       }
     });
@@ -87,11 +97,11 @@ export function createAuditCommand(): Command {
     .description('Audit a specific agent')
     .argument('<id>', 'Agent ID')
     .option('-p, --path <path>', 'Path to agent directory')
-    .option('-l, --level <level>', 'Validation level', 'full')
+    .option('-l, --level <level>', 'Validation level', auditDefaults.validationLevel)
     .action(async (agentId: string, options: any) => {
       const auditService = new AgentAuditService();
 
-      const agentPath = options.path || `./packages/@ossa/${agentId}`;
+      const agentPath = options.path || `${auditDefaults.scanPath}/${agentId}`;
 
       if (!fs.existsSync(agentPath)) {
         console.error(chalk.red(`❌ Agent not found at: ${agentPath}`));
@@ -103,8 +113,15 @@ export function createAuditCommand(): Command {
       try {
         const health = await auditService.auditAgent(agentPath, options.level);
         printAgentHealth(health);
-      } catch (error: any) {
-        console.error(chalk.red(`❌ Error during audit: ${error.message}`));
+      } catch (error) {
+        const ossaError = isOssaError(error)
+          ? error
+          : new ConfigurationError(`Failed to audit agent: ${agentId}`, {
+              agentId,
+              originalError: error instanceof Error ? error.message : String(error),
+            });
+        logger.error({ err: ossaError }, 'Agent audit operation failed');
+        console.error(chalk.red(`❌ Error during audit: ${ossaError.message}`));
         process.exit(1);
       }
     });
