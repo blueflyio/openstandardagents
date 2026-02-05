@@ -259,7 +259,7 @@ export const testCommand = new Command('test')
       } else {
         // Run tests once
         const result = await runTests();
-        if (result.failed > 0) {
+        if (result && result.failed > 0) {
           process.exit(1);
         }
       }

@@ -83,7 +83,7 @@ export class ErrorHandlingGenerator {
 
     // Retry decorator
     if (config.retry?.enabled !== false) {
-      sections.push(this.generateRetryDecorator(config.retry));
+      sections.push(this.generateRetryDecorator(config.retry || {}));
     }
 
     // Circuit breaker

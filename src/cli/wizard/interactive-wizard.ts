@@ -218,7 +218,7 @@ export class InteractiveWizard {
 
     const modelChoices = this.getModelChoices(provider);
     const defaultModel =
-      recommended?.provider === provider ? recommended.model : modelChoices[0].value;
+      recommended?.provider === provider ? recommended?.model : modelChoices[0].value;
 
     const { model, temperature } = await inquirer.prompt([
       {
