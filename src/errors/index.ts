@@ -372,19 +372,24 @@ export function isOssaError(error: unknown): error is OssaError {
 /**
  * Convert any error to OssaError
  */
+/**
+ * Unknown error class for wrapping non-OSSA errors
+ */
+export class UnknownError extends OssaError {}
+
 export function toOssaError(error: unknown): OssaError {
   if (isOssaError(error)) {
     return error;
   }
 
   if (error instanceof Error) {
-    return new OssaError('OSSA-UNKNOWN-001', error.message, 500, {
+    return new UnknownError('OSSA-UNKNOWN-001', error.message, 500, {
       originalError: error.name,
       stack: error.stack,
     });
   }
 
-  return new OssaError('OSSA-UNKNOWN-002', 'An unknown error occurred', 500, {
+  return new UnknownError('OSSA-UNKNOWN-002', 'An unknown error occurred', 500, {
     error: String(error),
   });
 }

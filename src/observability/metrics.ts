@@ -343,7 +343,7 @@ export function startSystemMetricsCollection(): NodeJS.Timer {
  * Stop system metrics collection
  */
 export function stopSystemMetricsCollection(interval: NodeJS.Timer): void {
-  clearInterval(interval);
+  clearInterval(interval as unknown as NodeJS.Timeout);
 }
 
 /**
