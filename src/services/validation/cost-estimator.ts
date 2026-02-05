@@ -45,7 +45,7 @@ const PRICING_MAP: Record<string, Record<string, ModelPricing>> = {
   cohere: {
     'command-r-plus': { input: 0.003, output: 0.015 },
     'command-r': { input: 0.0005, output: 0.0015 },
-    'command': { input: 0.001, output: 0.002 },
+    command: { input: 0.001, output: 0.002 },
   },
   mistral: {
     'mistral-large': { input: 0.004, output: 0.012 },
@@ -217,7 +217,9 @@ export class CostEstimator {
       const inputTokens = Math.floor(constraints.maxTokensPerRequest * 0.7);
       const outputTokens = Math.floor(constraints.maxTokensPerRequest * 0.3);
       const requestsPerDay = constraints.maxTokensPerDay
-        ? Math.floor(constraints.maxTokensPerDay / constraints.maxTokensPerRequest)
+        ? Math.floor(
+            constraints.maxTokensPerDay / constraints.maxTokensPerRequest
+          )
         : DEFAULT_USAGE.requestsPerDay;
 
       return { inputTokens, outputTokens, requestsPerDay };
@@ -255,7 +257,11 @@ export class CostEstimator {
     }
 
     // Model-specific recommendations
-    if (provider === 'openai' && model.includes('gpt-4') && !model.includes('mini')) {
+    if (
+      provider === 'openai' &&
+      model.includes('gpt-4') &&
+      !model.includes('mini')
+    ) {
       recommendations.push(
         'Consider using gpt-4o-mini for cost savings (up to 99% reduction)'
       );
@@ -314,6 +320,8 @@ export class CostEstimator {
       estimates.push(this.estimate(altManifest));
     }
 
-    return estimates.sort((a, b) => a.estimatedDailyCost - b.estimatedDailyCost);
+    return estimates.sort(
+      (a, b) => a.estimatedDailyCost - b.estimatedDailyCost
+    );
   }
 }

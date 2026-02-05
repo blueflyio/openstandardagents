@@ -99,7 +99,9 @@ export function printCompletion() {
 
 export function printProgress(current: number, total: number, step: string) {
   const percentage = Math.round((current / total) * 100);
-  const bar = '█'.repeat(Math.floor(percentage / 5)) + '░'.repeat(20 - Math.floor(percentage / 5));
+  const bar =
+    '█'.repeat(Math.floor(percentage / 5)) +
+    '░'.repeat(20 - Math.floor(percentage / 5));
 
   console.log('');
   console.log(chalk.cyan('Progress:'));
@@ -110,9 +112,23 @@ export function printProgress(current: number, total: number, step: string) {
 
 export function printError(message: string) {
   console.log('');
-  console.log(chalk.red('╔═══════════════════════════════════════════════════════════════════════╗'));
-  console.log(chalk.red('║') + '  ' + chalk.bold.red('❌  ERROR') + '                                                          ' + chalk.red('║'));
-  console.log(chalk.red('╚═══════════════════════════════════════════════════════════════════════╝'));
+  console.log(
+    chalk.red(
+      '╔═══════════════════════════════════════════════════════════════════════╗'
+    )
+  );
+  console.log(
+    chalk.red('║') +
+      '  ' +
+      chalk.bold.red('❌  ERROR') +
+      '                                                          ' +
+      chalk.red('║')
+  );
+  console.log(
+    chalk.red(
+      '╚═══════════════════════════════════════════════════════════════════════╝'
+    )
+  );
   console.log('');
   console.log(chalk.red(message));
   console.log('');
@@ -133,10 +149,17 @@ export function printInfo(message: string) {
   console.log(chalk.blue('ℹ'), chalk.gray(message));
 }
 
-export function printStep(step: number, total: number, title: string, description?: string) {
+export function printStep(
+  step: number,
+  total: number,
+  title: string,
+  description?: string
+) {
   console.log('');
   console.log(chalk.cyan('═'.repeat(75)));
-  console.log(chalk.cyan(`Step ${step}/${total}:`) + ' ' + chalk.bold.white(title));
+  console.log(
+    chalk.cyan(`Step ${step}/${total}:`) + ' ' + chalk.bold.white(title)
+  );
   if (description) {
     console.log(chalk.gray(description));
   }

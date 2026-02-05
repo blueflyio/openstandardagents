@@ -55,7 +55,8 @@ export interface DrupalModuleGeneratorOptions extends ExportOptions {
 export class DrupalModuleGenerator extends BaseAdapter {
   readonly platform = 'drupal';
   readonly displayName = 'Drupal Module (Full)';
-  readonly description = 'Production-ready Drupal module with OSSA/Symfony integration';
+  readonly description =
+    'Production-ready Drupal module with OSSA/Symfony integration';
   readonly supportedVersions = ['v{{VERSION}}'];
 
   /**
@@ -520,7 +521,7 @@ ossa:
         keywords: ['Drupal', 'OSSA', 'AI', 'Agent', 'Symfony'],
         license: manifest.metadata?.license || 'GPL-2.0-or-later',
         require: {
-          'php': '>=8.2',
+          php: '>=8.2',
           'drupal/core': '^10 || ^11',
           'ossa/symfony-bundle': '^0.3',
         },
@@ -1644,8 +1645,9 @@ temperature: ${llmConfig.temperature || 0.7}
     moduleName: string,
     options: DrupalModuleGeneratorOptions
   ): string {
-    const capabilities = ((manifest.spec?.capabilities || []) as Array<string | any>)
-      .map(c => typeof c === 'string' ? c : c.name || '');
+    const capabilities = (
+      (manifest.spec?.capabilities || []) as Array<string | any>
+    ).map((c) => (typeof c === 'string' ? c : c.name || ''));
     const tools = (manifest.spec?.tools || []) as any[];
 
     return `# ${manifest.metadata?.name || moduleName}
@@ -1776,7 +1778,9 @@ ${capabilities.map((c) => `- ${c}`).join('\n')}
 
 ${tools.map((t) => `- **${t.name || 'unknown'}**: ${t.description || 'No description'}`).join('\n')}
 
-${options.includeQueueWorker ? `
+${
+  options.includeQueueWorker
+    ? `
 ## Queue Processing
 
 The module includes a queue worker for asynchronous agent execution:
@@ -1788,9 +1792,13 @@ drush cron
 # Process queue manually
 drush queue:run ${moduleName}_agent_queue
 \`\`\`
-` : ''}
+`
+    : ''
+}
 
-${options.includeEntity ? `
+${
+  options.includeEntity
+    ? `
 ## Results Storage
 
 All agent execution results are stored in the database and can be viewed at:
@@ -1802,18 +1810,24 @@ Results can also be queried via Views or entity queries:
 $storage = \\Drupal::entityTypeManager()->getStorage('${moduleName}_result');
 $results = $storage->loadMultiple();
 \`\`\`
-` : ''}
+`
+    : ''
+}
 
 ## Hooks
 
 This module implements the following Drupal hooks:
 
-${options.includeHooks ? `
+${
+  options.includeHooks
+    ? `
 - \`hook_help()\`: Provides help text
 - \`hook_cron()\`: Processes queue items
 - \`hook_entity_presave()\`: Triggers agent on entity save (if enabled)
 - \`hook_theme()\`: Registers theme templates
-` : ''}
+`
+    : ''
+}
 
 ## Architecture
 

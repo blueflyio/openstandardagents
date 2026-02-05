@@ -12,10 +12,7 @@ import type { OssaAgent } from '../../types/index.js';
 import { GenerationService } from '../generation.service.js';
 import { ValidationService } from '../validation.service.js';
 import { getApiVersion } from '../../utils/version.js';
-import {
-  allPrompts,
-  type WizardAnswers,
-} from './prompts.js';
+import { allPrompts, type WizardAnswers } from './prompts.js';
 
 export interface WizardResult {
   manifest: OssaAgent;
@@ -50,7 +47,9 @@ export class WizardService {
       manifest,
       answers,
       valid: validationResult.valid,
-      errors: validationResult.errors.map((e) => e.message || 'Validation error'),
+      errors: validationResult.errors.map(
+        (e) => e.message || 'Validation error'
+      ),
       warnings: validationResult.warnings,
     };
   }
@@ -130,9 +129,7 @@ export class WizardService {
    * @param toolTypes - Array of tool type selections
    * @returns Array of tool configurations
    */
-  private generateTools(
-    toolTypes: string[]
-  ): Array<{
+  private generateTools(toolTypes: string[]): Array<{
     type: string;
     name?: string;
     description?: string;
@@ -196,13 +193,20 @@ export class WizardService {
    * @param answers - Wizard answers
    * @returns Safety configuration object
    */
-  private generateSafetyConfig(answers: WizardAnswers): Record<string, unknown> {
+  private generateSafetyConfig(
+    answers: WizardAnswers
+  ): Record<string, unknown> {
     const safety: Record<string, unknown> = {};
 
     if (answers.contentFiltering) {
       safety.content_filtering = {
         enabled: true,
-        categories: ['hate_speech', 'violence', 'self_harm', 'illegal_activity'],
+        categories: [
+          'hate_speech',
+          'violence',
+          'self_harm',
+          'illegal_activity',
+        ],
         threshold: 'medium',
         action: 'block',
       };
@@ -289,9 +293,6 @@ export class WizardService {
     manifest: OssaAgent,
     platform: string
   ): Promise<Record<string, unknown>> {
-    return this.generationService.exportToPlatform(
-      manifest,
-      platform as any
-    );
+    return this.generationService.exportToPlatform(manifest, platform as any);
   }
 }

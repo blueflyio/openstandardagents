@@ -191,7 +191,9 @@ describe('NPMExporter', () => {
       const result = await exporter.export(basicManifest);
 
       const dockerfile = result.files.find((f) => f.path === 'Dockerfile');
-      const dockerCompose = result.files.find((f) => f.path === 'docker-compose.yaml');
+      const dockerCompose = result.files.find(
+        (f) => f.path === 'docker-compose.yaml'
+      );
 
       expect(dockerfile).toBeDefined();
       expect(dockerfile?.type).toBe('docker');
@@ -208,7 +210,9 @@ describe('NPMExporter', () => {
       });
 
       const dockerfile = result.files.find((f) => f.path === 'Dockerfile');
-      const dockerCompose = result.files.find((f) => f.path === 'docker-compose.yaml');
+      const dockerCompose = result.files.find(
+        (f) => f.path === 'docker-compose.yaml'
+      );
 
       expect(dockerfile).toBeUndefined();
       expect(dockerCompose).toBeUndefined();
@@ -243,14 +247,20 @@ describe('NPMExporter', () => {
       const result = await exporter.export(fullManifest);
 
       // Should generate tool files
-      const toolIndex = result.files.find((f) => f.path === 'src/tools/index.ts');
+      const toolIndex = result.files.find(
+        (f) => f.path === 'src/tools/index.ts'
+      );
       expect(toolIndex).toBeDefined();
 
-      const searchTool = result.files.find((f) => f.path === 'src/tools/search.ts');
+      const searchTool = result.files.find(
+        (f) => f.path === 'src/tools/search.ts'
+      );
       expect(searchTool).toBeDefined();
       expect(searchTool?.content).toContain('search');
 
-      const calcTool = result.files.find((f) => f.path === 'src/tools/calculator.ts');
+      const calcTool = result.files.find(
+        (f) => f.path === 'src/tools/calculator.ts'
+      );
       expect(calcTool).toBeDefined();
       expect(calcTool?.content).toContain('calculator');
     });
@@ -354,7 +364,9 @@ describe('NPMExporter', () => {
       for (const file of tsFiles) {
         // Basic syntax checks
         expect(file.content).not.toContain('undefined');
-        expect(file.content.split('{').length).toBe(file.content.split('}').length);
+        expect(file.content.split('{').length).toBe(
+          file.content.split('}').length
+        );
       }
     });
   });

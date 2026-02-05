@@ -312,7 +312,9 @@ main().catch((error) => {
    * Generate tools.ts - Tool implementations
    */
   private generateToolsCode(manifest: OssaAgent): string {
-    const capabilities = ((manifest.spec?.capabilities || []) as Array<string | any>).map((c: any) => typeof c === 'string' ? c : c.name || '');
+    const capabilities = (
+      (manifest.spec?.capabilities || []) as Array<string | any>
+    ).map((c: any) => (typeof c === 'string' ? c : c.name || ''));
     const tools = (manifest.spec?.tools || []) as any[];
 
     const toolDefinitions = tools.map((tool) => {

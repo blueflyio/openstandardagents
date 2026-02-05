@@ -119,7 +119,8 @@ ${tools.map((tool: any) => `        ${this.getToolFunctionName(tool)},`).join('\
           `    ${key}: ${pythonType} = Field(..., description="${description}")`
         );
       } else {
-        const defaultValue = prop.default !== undefined ? this.pythonValue(prop.default) : 'None';
+        const defaultValue =
+          prop.default !== undefined ? this.pythonValue(prop.default) : 'None';
         fields.push(
           `    ${key}: Optional[${pythonType}] = Field(${defaultValue}, description="${description}")`
         );
@@ -213,7 +214,8 @@ def get_tools() -> List:
     }
 
     // Default: generic tool with Pydantic model if schema exists
-    const hasSchema = tool.parameters?.properties || tool.input_schema?.properties;
+    const hasSchema =
+      tool.parameters?.properties || tool.input_schema?.properties;
     const pydanticClass = hasSchema ? this.toPascalCase(name) + 'Input' : null;
 
     if (pydanticClass) {
@@ -296,7 +298,8 @@ def ${functionName}(input_data: str) -> Dict[str, Any]:
     const server = tool.config?.server || tool.server || 'unknown-server';
     const pydanticClass = this.toPascalCase(name) + 'Input';
 
-    const hasSchema = tool.parameters?.properties || tool.input_schema?.properties;
+    const hasSchema =
+      tool.parameters?.properties || tool.input_schema?.properties;
 
     const params = hasSchema
       ? `input_data: ${pydanticClass}`
@@ -378,7 +381,8 @@ async def ${functionName}(${params}) -> Dict[str, Any]:
     const method = (tool.config?.method || tool.method || 'POST').toUpperCase();
     const pydanticClass = this.toPascalCase(name) + 'Input';
 
-    const hasSchema = tool.parameters?.properties || tool.input_schema?.properties;
+    const hasSchema =
+      tool.parameters?.properties || tool.input_schema?.properties;
 
     const params = hasSchema
       ? `input_data: ${pydanticClass}`
@@ -465,7 +469,8 @@ async def ${functionName}(${params}) -> Dict[str, Any]:
     const name = tool.name || 'unnamed_tool';
     const description = tool.description || 'Function tool';
     const functionName = this.getToolFunctionName(tool);
-    const inputSchema = tool.parameters || tool.input_schema || tool.inputSchema;
+    const inputSchema =
+      tool.parameters || tool.input_schema || tool.inputSchema;
     const pydanticClass = this.toPascalCase(name) + 'Input';
 
     const hasSchema = inputSchema?.properties;
@@ -542,7 +547,6 @@ def ${functionName}(input_data: str) -> Dict[str, Any]:
         }
 `;
   }
-
 
   /**
    * Convert JavaScript value to Python literal

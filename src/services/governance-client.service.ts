@@ -27,11 +27,16 @@ export class GovernanceClient {
 
   constructor(config?: GovernanceClientConfig) {
     // Read from environment (loaded from ai_assets.json)
-    this.providerUrl = config?.providerUrl || process.env.COMPLIANCE_ENGINE_URL || '';
+    this.providerUrl =
+      config?.providerUrl || process.env.COMPLIANCE_ENGINE_URL || '';
     if (!this.providerUrl) {
-      throw new Error('COMPLIANCE_ENGINE_URL environment variable must be set (from ai_assets.json)');
+      throw new Error(
+        'COMPLIANCE_ENGINE_URL environment variable must be set (from ai_assets.json)'
+      );
     }
-    this.timeout = config?.timeout || parseInt(process.env.GOVERNANCE_PROVIDER_TIMEOUT || '30000', 10);
+    this.timeout =
+      config?.timeout ||
+      parseInt(process.env.GOVERNANCE_PROVIDER_TIMEOUT || '30000', 10);
     this.retries = config?.retries || 3;
   }
 
@@ -50,7 +55,9 @@ export class GovernanceClient {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(`Compliance check failed: ${error.error || response.statusText}`);
+        throw new Error(
+          `Compliance check failed: ${error.error || response.statusText}`
+        );
       }
 
       return await response.json();
@@ -75,7 +82,9 @@ export class GovernanceClient {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(`Authorization failed: ${error.error || response.statusText}`);
+        throw new Error(
+          `Authorization failed: ${error.error || response.statusText}`
+        );
       }
 
       return await response.json();
@@ -88,7 +97,9 @@ export class GovernanceClient {
   /**
    * Evaluate quality gate
    */
-  async evaluateQualityGate(request: QualityGateRequest): Promise<QualityGateResult> {
+  async evaluateQualityGate(
+    request: QualityGateRequest
+  ): Promise<QualityGateResult> {
     try {
       const response = await this.fetchWithRetry('/v1/quality-gate', {
         method: 'POST',
@@ -100,7 +111,9 @@ export class GovernanceClient {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(`Quality gate evaluation failed: ${error.error || response.statusText}`);
+        throw new Error(
+          `Quality gate evaluation failed: ${error.error || response.statusText}`
+        );
       }
 
       return await response.json();
@@ -134,7 +147,9 @@ export class GovernanceClient {
       clearTimeout(timeoutId);
 
       if (attempt < this.retries) {
-        console.warn(`Request failed, retrying (${attempt}/${this.retries})...`);
+        console.warn(
+          `Request failed, retrying (${attempt}/${this.retries})...`
+        );
         await this.delay(1000 * attempt);
         return this.fetchWithRetry(path, options, attempt + 1);
       }
@@ -147,6 +162,6 @@ export class GovernanceClient {
    * Delay helper for retries
    */
   private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }

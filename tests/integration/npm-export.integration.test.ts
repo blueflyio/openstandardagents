@@ -172,7 +172,9 @@ describe('NPM Export Integration', () => {
     const exporter = new NPMExporter();
     const result = await exporter.export(manifest);
 
-    const dockerCompose = result.files.find((f) => f.path === 'docker-compose.yaml');
+    const dockerCompose = result.files.find(
+      (f) => f.path === 'docker-compose.yaml'
+    );
     expect(dockerCompose).toBeDefined();
 
     // Parse and validate docker-compose
@@ -246,7 +248,9 @@ describe('NPM Export Integration', () => {
     // Validate package name with scope
     expect(result.packageName).toBe('@test/complete-agent');
 
-    const pkg = JSON.parse(result.files.find((f) => f.path === 'package.json')!.content);
+    const pkg = JSON.parse(
+      result.files.find((f) => f.path === 'package.json')!.content
+    );
     expect(pkg.name).toBe('@test/complete-agent');
     expect(pkg.version).toBe('3.2.1');
     expect(pkg.files).toContain('dist/');

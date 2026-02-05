@@ -1886,9 +1886,16 @@ def reset_singletons():
       tool_name: tool.name,
       description: tool.description,
       sample_inputs: tool.parameters?.properties
-        ? Object.entries(tool.parameters.properties).map(([key, value]: [string, any]) => ({
-            [key]: value.type === 'string' ? 'test_value' : value.type === 'number' ? 123 : true,
-          }))
+        ? Object.entries(tool.parameters.properties).map(
+            ([key, value]: [string, any]) => ({
+              [key]:
+                value.type === 'string'
+                  ? 'test_value'
+                  : value.type === 'number'
+                    ? 123
+                    : true,
+            })
+          )
         : [],
       expected_output_type: tool.returns?.type || 'object',
     }));
@@ -1918,7 +1925,8 @@ def reset_singletons():
               {
                 role: 'assistant',
                 content: "I'll use my tools to assist you",
-                tool_calls: toolTestData.length > 0 ? [toolTestData[0].tool_name] : [],
+                tool_calls:
+                  toolTestData.length > 0 ? [toolTestData[0].tool_name] : [],
               },
             ],
           },
@@ -1942,7 +1950,10 @@ def reset_singletons():
   /**
    * Generate tests for Kubernetes/KAgent exports
    */
-  generateKubernetesTests(manifest: OssaAgent, options: TestGenerationOptions = {}): TestSuite {
+  generateKubernetesTests(
+    manifest: OssaAgent,
+    options: TestGenerationOptions = {}
+  ): TestSuite {
     const files: ExportFile[] = [];
     const configs: ExportFile[] = [];
     const fixtures: ExportFile[] = [];
@@ -2130,12 +2141,17 @@ class TestManifestContent:
   /**
    * Generate tests for Drupal exports
    */
-  generateDrupalTests(manifest: OssaAgent, options: TestGenerationOptions = {}): TestSuite {
+  generateDrupalTests(
+    manifest: OssaAgent,
+    options: TestGenerationOptions = {}
+  ): TestSuite {
     const files: ExportFile[] = [];
     const configs: ExportFile[] = [];
     const fixtures: ExportFile[] = [];
 
-    const moduleName = this.sanitizeModuleName(manifest.metadata?.name || 'ossa_agent');
+    const moduleName = this.sanitizeModuleName(
+      manifest.metadata?.name || 'ossa_agent'
+    );
 
     files.push({
       path: `tests/src/Kernel/${this.toClassName(moduleName)}Test.php`,
@@ -2164,7 +2180,10 @@ class TestManifestContent:
   /**
    * Generate Drupal kernel tests
    */
-  private generateDrupalKernelTests(manifest: OssaAgent, moduleName: string): string {
+  private generateDrupalKernelTests(
+    manifest: OssaAgent,
+    moduleName: string
+  ): string {
     const className = this.toClassName(moduleName);
 
     return `<?php
@@ -2265,7 +2284,10 @@ class ${className}Test extends KernelTestBase {
   /**
    * Generate Drupal functional tests
    */
-  private generateDrupalFunctionalTests(manifest: OssaAgent, moduleName: string): string {
+  private generateDrupalFunctionalTests(
+    manifest: OssaAgent,
+    moduleName: string
+  ): string {
     const className = this.toClassName(moduleName);
 
     return `<?php
@@ -2449,7 +2471,10 @@ class ${className}FunctionalTest extends BrowserTestBase {
   /**
    * Generate tests for Temporal workflows
    */
-  generateTemporalTests(manifest: OssaAgent, options: TestGenerationOptions = {}): TestSuite {
+  generateTemporalTests(
+    manifest: OssaAgent,
+    options: TestGenerationOptions = {}
+  ): TestSuite {
     const files: ExportFile[] = [];
     const configs: ExportFile[] = [];
     const fixtures: ExportFile[] = [];
@@ -2586,7 +2611,10 @@ class TestWorkflowReplay:
   /**
    * Generate tests for N8N workflows
    */
-  generateN8NTests(manifest: OssaAgent, options: TestGenerationOptions = {}): TestSuite {
+  generateN8NTests(
+    manifest: OssaAgent,
+    options: TestGenerationOptions = {}
+  ): TestSuite {
     const files: ExportFile[] = [];
     const configs: ExportFile[] = [];
     const fixtures: ExportFile[] = [];

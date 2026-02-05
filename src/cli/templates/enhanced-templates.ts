@@ -661,7 +661,8 @@ export function searchTemplates(query: string): TemplateDefinition[] {
       t.name.toLowerCase().includes(lowerQuery) ||
       t.description.toLowerCase().includes(lowerQuery) ||
       t.tags.some((tag: string) => tag.includes(lowerQuery)) ||
-      (t.useCases?.some((uc: string) => uc.toLowerCase().includes(lowerQuery)) || false)
+      t.useCases?.some((uc: string) => uc.toLowerCase().includes(lowerQuery)) ||
+      false
   );
 }
 

@@ -63,7 +63,7 @@ async function createAgentWizard(options: WizardOptions): Promise<void> {
       },
     },
     step: 1,
-    totalSteps: 10,
+    totalSteps: 11,
     canUndo: false,
     history: [],
   };
@@ -1139,6 +1139,7 @@ async function updateAgent(
         choices: [
           { name: 'Basic Information', value: 'basic' },
           { name: 'LLM Configuration', value: 'llm' },
+          { name: 'Persona & Personality', value: 'persona' },
           { name: 'Tools', value: 'tools' },
           { name: 'Autonomy', value: 'autonomy' },
           { name: 'Observability', value: 'observability' },
@@ -1166,6 +1167,11 @@ async function updateAgent(
         const { configureLLMStep } =
           await import('../wizard/steps/04-llm-config.js');
         await configureLLMStep(state);
+        break;
+      case 'persona':
+        const { configurePersonaStep } =
+          await import('../wizard/steps/04a-persona.js');
+        await configurePersonaStep(state);
         break;
       case 'tools':
         const { configureToolsStep } =

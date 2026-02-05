@@ -52,11 +52,7 @@ export function addMutationOptions(command: Command): Command {
  */
 export function addQueryOptions(command: Command): Command {
   return command
-    .option(
-      '--format <type>',
-      'Output format (json, yaml, table)',
-      'table'
-    )
+    .option('--format <type>', 'Output format (json, yaml, table)', 'table')
     .option('-l, --limit <n>', 'Limit number of results', parseInt)
     .option('-f, --filter <expr>', 'Filter expression');
 }
@@ -145,12 +141,7 @@ export function addInteractiveOption(command: Command): Command {
 export function addBatchOptions(command: Command): Command {
   return command
     .option('--batch', 'Enable batch processing mode', false)
-    .option(
-      '--parallel <n>',
-      'Number of parallel operations',
-      parseInt,
-      1
-    );
+    .option('--parallel <n>', 'Number of parallel operations', parseInt, 1);
 }
 
 /**

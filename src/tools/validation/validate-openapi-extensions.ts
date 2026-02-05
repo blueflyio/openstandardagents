@@ -33,14 +33,24 @@ const __dirname = dirname(__filename);
 // Schema path resolution
 const POSSIBLE_PATHS = [
   // Source structure: src/tools/validation -> ../../../spec
-  resolve(__dirname, '../../../spec/extensions/openapi/ossa-openapi-extensions.schema.json'),
+  resolve(
+    __dirname,
+    '../../../spec/extensions/openapi/ossa-openapi-extensions.schema.json'
+  ),
   // Dist structure: dist/tools/validation -> ../../spec
-  resolve(__dirname, '../../spec/extensions/openapi/ossa-openapi-extensions.schema.json'),
+  resolve(
+    __dirname,
+    '../../spec/extensions/openapi/ossa-openapi-extensions.schema.json'
+  ),
   // Legacy/Fallback
-  resolve(__dirname, '../spec/extensions/openapi/ossa-openapi-extensions.schema.json')
+  resolve(
+    __dirname,
+    '../spec/extensions/openapi/ossa-openapi-extensions.schema.json'
+  ),
 ];
 
-const SCHEMA_PATH = POSSIBLE_PATHS.find(p => existsSync(p)) || POSSIBLE_PATHS[0];
+const SCHEMA_PATH =
+  POSSIBLE_PATHS.find((p) => existsSync(p)) || POSSIBLE_PATHS[0];
 
 // Result types
 interface ValidationResult {
@@ -71,13 +81,9 @@ interface ValidationWarning {
 // Load schema
 function loadSchema(): Record<string, unknown> {
   if (!existsSync(SCHEMA_PATH)) {
+    console.error(chalk.red(`Schema not found at ${SCHEMA_PATH}`));
     console.error(
-      chalk.red(`Schema not found at ${SCHEMA_PATH}`)
-    );
-    console.error(
-      chalk.yellow(
-        'Run: npm run build to ensure schema files are in place'
-      )
+      chalk.yellow('Run: npm run build to ensure schema files are in place')
     );
     process.exit(2);
   }
@@ -91,9 +97,7 @@ function loadSchema(): Record<string, unknown> {
 }
 
 // Initialize AJV validator
-function createValidator(
-  schema: Record<string, unknown>
-): Ajv {
+function createValidator(schema: Record<string, unknown>): Ajv {
   const ajv = new Ajv({
     allErrors: true,
     strict: false,
@@ -108,9 +112,7 @@ function createValidator(
 }
 
 // Parse file content (YAML or JSON)
-function parseFile(
-  filePath: string
-): Record<string, unknown> {
+function parseFile(filePath: string): Record<string, unknown> {
   const content = readFileSync(filePath, 'utf-8');
   const ext = extname(filePath).toLowerCase();
 
@@ -129,14 +131,11 @@ function parseFile(
 }
 
 // Count OSSA extensions in operations
-function countOperationExtensions(
-  doc: Record<string, unknown>
-): number {
+function countOperationExtensions(doc: Record<string, unknown>): number {
   let count = 0;
-  const paths = doc.paths as Record<
-    string,
-    Record<string, unknown>
-  > | undefined;
+  const paths = doc.paths as
+    | Record<string, Record<string, unknown>>
+    | undefined;
 
   if (!paths) return 0;
 
@@ -153,9 +152,7 @@ function countOperationExtensions(
 
   for (const pathItem of Object.values(paths)) {
     for (const method of methods) {
-      const operation = pathItem[method] as
-        | Record<string, unknown>
-        | undefined;
+      const operation = pathItem[method] as Record<string, unknown> | undefined;
       if (operation) {
         if (operation['x-ossa-capability']) count++;
         if (operation['x-ossa-autonomy']) count++;
@@ -170,9 +167,7 @@ function countOperationExtensions(
 }
 
 // Generate warnings for missing recommended extensions
-function generateWarnings(
-  doc: Record<string, unknown>
-): ValidationWarning[] {
+function generateWarnings(doc: Record<string, unknown>): ValidationWarning[] {
   const warnings: ValidationWarning[] = [];
 
   // Check for x-ossa-metadata
@@ -183,10 +178,7 @@ function generateWarnings(
         'Missing x-ossa-metadata extension. Consider adding OSSA metadata for compliance tracking.',
     });
   } else {
-    const metadata = doc['x-ossa-metadata'] as Record<
-      string,
-      unknown
-    >;
+    const metadata = doc['x-ossa-metadata'] as Record<string, unknown>;
     if (!metadata.compliance) {
       warnings.push({
         path: '/x-ossa-metadata',
@@ -213,10 +205,9 @@ function generateWarnings(
   }
 
   // Check paths for operation-level extensions
-  const paths = doc.paths as Record<
-    string,
-    Record<string, unknown>
-  > | undefined;
+  const paths = doc.paths as
+    | Record<string, Record<string, unknown>>
+    | undefined;
   if (paths) {
     const methods = [
       'get',
@@ -261,10 +252,7 @@ function generateWarnings(
 }
 
 // Validate a single file
-function validateFile(
-  filePath: string,
-  ajv: Ajv
-): ValidationResult {
+function validateFile(filePath: string, ajv: Ajv): ValidationResult {
   const absolutePath = resolve(filePath);
 
   // Check file exists
@@ -431,9 +419,7 @@ function printResult(result: ValidationResult): void {
   if (result.warnings.length > 0) {
     console.log(chalk.yellow('\n  Warnings:'));
     for (const warning of result.warnings) {
-      console.log(
-        chalk.yellow(`    ${warning.path}: ${warning.message}`)
-      );
+      console.log(chalk.yellow(`    ${warning.path}: ${warning.message}`));
     }
   }
 }
@@ -446,10 +432,7 @@ function printSummary(results: ValidationResult[]): void {
 
   const validCount = results.filter((r) => r.valid).length;
   const invalidCount = results.length - validCount;
-  const totalWarnings = results.reduce(
-    (acc, r) => acc + r.warnings.length,
-    0
-  );
+  const totalWarnings = results.reduce((acc, r) => acc + r.warnings.length, 0);
   const totalOssaExtensions = results.reduce(
     (acc, r) =>
       acc +
@@ -469,9 +452,7 @@ function printSummary(results: ValidationResult[]): void {
   console.log(chalk.cyan(`  Total OSSA extensions: ${totalOssaExtensions}`));
 
   if (invalidCount === 0) {
-    console.log(
-      chalk.green('\n  All files are valid OSSA OpenAPI documents!')
-    );
+    console.log(chalk.green('\n  All files are valid OSSA OpenAPI documents!'));
   } else {
     console.log(
       chalk.red('\n  Some files failed validation. See errors above.')
@@ -484,11 +465,7 @@ function main(): void {
   const args = process.argv.slice(2);
 
   // Help message
-  if (
-    args.length === 0 ||
-    args.includes('--help') ||
-    args.includes('-h')
-  ) {
+  if (args.length === 0 || args.includes('--help') || args.includes('-h')) {
     console.log(chalk.blue('OSSA OpenAPI Extensions Validator\n'));
     console.log('Usage:');
     console.log(
@@ -500,9 +477,7 @@ function main(): void {
     console.log('Options:');
     console.log('  --help, -h     Show this help message');
     console.log('  --quiet, -q    Only show errors (no warnings)');
-    console.log(
-      '  --json         Output results as JSON\n'
-    );
+    console.log('  --json         Output results as JSON\n');
     console.log('Exit codes:');
     console.log('  0 - All files valid');
     console.log('  1 - Validation errors found');

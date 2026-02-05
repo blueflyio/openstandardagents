@@ -41,7 +41,7 @@ const MCP_SERVERS = [
 export async function configureToolsStep(
   state: WizardState
 ): Promise<WizardState> {
-  console_ui.step(5, state.totalSteps, 'Tools & Capabilities');
+  console_ui.step(6, state.totalSteps, 'Tools & Capabilities');
 
   console_ui.info(
     'Tools allow your agent to interact with external systems.\n'

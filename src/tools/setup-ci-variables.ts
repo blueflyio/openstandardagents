@@ -1,12 +1,12 @@
 #!/usr/bin/env tsx
 /**
  * Setup CI/CD Variables for OSSA Release
- * 
+ *
  * This script helps add required CI/CD variables to GitLab project.
- * 
+ *
  * Usage:
  *   GITLAB_TOKEN=<your-token> tsx src/tools/setup-ci-variables.ts
- * 
+ *
  * Or provide tokens interactively:
  *   tsx src/tools/setup-ci-variables.ts
  */
@@ -64,7 +64,10 @@ async function askQuestion(query: string): Promise<string> {
   });
 }
 
-async function getVariableValue(key: string, description: string): Promise<string> {
+async function getVariableValue(
+  key: string,
+  description: string
+): Promise<string> {
   const envValue = process.env[key];
   if (envValue) {
     console.log(`✅ Using ${key} from environment variable`);
@@ -195,7 +198,9 @@ async function updateVariable(
 
 async function main() {
   console.log('🚀 OSSA CI/CD Variables Setup\n');
-  console.log('This script will help you add required CI/CD variables to GitLab.\n');
+  console.log(
+    'This script will help you add required CI/CD variables to GitLab.\n'
+  );
 
   // Get GitLab token
   const gitlabToken =
@@ -210,7 +215,8 @@ async function main() {
 
   console.log('\n📋 Checking existing variables...\n');
 
-  const results: Array<{ variable: Variable; action: string; error?: string }> = [];
+  const results: Array<{ variable: Variable; action: string; error?: string }> =
+    [];
 
   for (const variable of REQUIRED_VARIABLES) {
     try {
@@ -225,11 +231,17 @@ async function main() {
       variable.value = value;
 
       // Check if variable exists
-      const check = await checkVariable(gitlabToken, PROJECT_PATH, variable.key);
+      const check = await checkVariable(
+        gitlabToken,
+        PROJECT_PATH,
+        variable.key
+      );
 
       if (check.exists) {
         if (check.location === 'group') {
-          console.log(`ℹ️  ${variable.key} exists at group level (skipping - add at project level if needed)\n`);
+          console.log(
+            `ℹ️  ${variable.key} exists at group level (skipping - add at project level if needed)\n`
+          );
           results.push({ variable, action: 'exists-group' });
         } else {
           // Update existing project-level variable
@@ -261,9 +273,10 @@ async function main() {
           : result.action === 'skipped'
             ? '⏭️'
             : '❌';
-    const actionText = result.action === 'exists-group' 
-      ? 'exists at group level (not modified)'
-      : result.action;
+    const actionText =
+      result.action === 'exists-group'
+        ? 'exists at group level (not modified)'
+        : result.action;
     console.log(`${icon} ${result.variable.key}: ${actionText}`);
     if (result.error) {
       console.log(`   Error: ${result.error}`);

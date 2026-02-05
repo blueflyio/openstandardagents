@@ -17,7 +17,7 @@ export async function generateOpenAPIStep(
   state: WizardState,
   options: WizardOptions
 ): Promise<WizardState> {
-  console_ui.step(13, state.totalSteps, 'Generate OpenAPI Specification');
+  console_ui.step(14, state.totalSteps, 'Generate OpenAPI Specification');
 
   const agentName = state.agent.metadata?.name;
   if (!agentName) {

@@ -30,7 +30,9 @@ export class DrupalExporter {
     return {
       success: true,
       skillId: `drupal-${manifest.metadata.name}`,
-      url: targetUrl ? `${targetUrl}/agent-skills/${manifest.metadata.name}` : undefined,
+      url: targetUrl
+        ? `${targetUrl}/agent-skills/${manifest.metadata.name}`
+        : undefined,
     };
   }
 
@@ -42,21 +44,21 @@ export class DrupalExporter {
       version: manifest.metadata.version,
       agent_type: manifest.agent.type,
       capabilities: manifest.agent.capabilities,
-      skills: manifest.skills?.map(skill => ({
+      skills: manifest.skills?.map((skill) => ({
         name: skill.name,
         description: skill.description,
         trigger: {
           type: skill.trigger.type,
           value: skill.trigger.value || skill.trigger.pattern,
         },
-        parameters: skill.parameters?.map(param => ({
+        parameters: skill.parameters?.map((param) => ({
           name: param.name,
           type: param.type,
           description: param.description,
           required: param.required || false,
           default: param.default,
         })),
-        examples: skill.examples?.map(ex => ({
+        examples: skill.examples?.map((ex) => ({
           input: ex.input,
           output: ex.output,
           description: ex.description,
@@ -64,7 +66,7 @@ export class DrupalExporter {
       })),
       integrations: {
         mcp_servers: manifest.integrations?.mcp?.servers || [],
-        apis: manifest.integrations?.apis?.map(api => ({
+        apis: manifest.integrations?.apis?.map((api) => ({
           name: api.name,
           url: api.url,
           auth_type: api.auth || 'none',

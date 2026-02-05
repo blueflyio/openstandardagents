@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 /**
  * Generate schema documentation from JSON Schema
- * 
+ *
  * Usage: npm run docs:schema:generate
  */
 
@@ -12,8 +12,8 @@ import { join, resolve } from 'path';
 function getLatestSchemaVersion(): { dir: string; file: string } {
   const specDir = join(process.cwd(), 'spec');
   const dirs = readdirSync(specDir, { withFileTypes: true })
-    .filter(d => d.isDirectory() && d.name.startsWith('v'))
-    .map(d => d.name)
+    .filter((d) => d.isDirectory() && d.name.startsWith('v'))
+    .map((d) => d.name)
     .sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));
 
   if (dirs.length === 0) {
@@ -24,7 +24,7 @@ function getLatestSchemaVersion(): { dir: string; file: string } {
   const version = latestDir.slice(1); // Remove 'v' prefix
   return {
     dir: latestDir,
-    file: `ossa-${version}.schema.json`
+    file: `ossa-${version}.schema.json`,
   };
 }
 
@@ -51,75 +51,65 @@ const SPEC_DIR = join(process.cwd(), 'spec', schemaVersion.dir);
 const OUTPUT_DIR = join(process.cwd(), 'docs/schema-reference');
 
 // Field documentation metadata
-const FIELD_DOCS: Record<string, {
-  why: string;
-  how: string;
-  where: string;
-  examples: string[];
-  relatedFields: string[];
-  relatedDocs: string[];
-}> = {
+const FIELD_DOCS: Record<
+  string,
+  {
+    why: string;
+    how: string;
+    where: string;
+    examples: string[];
+    relatedFields: string[];
+    relatedDocs: string[];
+  }
+> = {
   'agent.id': {
     why: 'Unique identifier for agent registration, API routing, and inter-agent communication',
     how: 'Use DNS-1123 subdomain format: lowercase alphanumeric with hyphens, max 63 chars',
-    where: 'Used in API endpoints (/agents/{id}), Kubernetes resources, and registry URLs',
-    examples: [
-      'my-agent',
-      'data-processor-v2',
-      'compliance-checker-prod'
-    ],
+    where:
+      'Used in API endpoints (/agents/{id}), Kubernetes resources, and registry URLs',
+    examples: ['my-agent', 'data-processor-v2', 'compliance-checker-prod'],
     relatedFields: ['agent.name', 'agent.version', 'agent.role'],
-    relatedDocs: ['../cli-reference/ossa-validate.md', '../api-reference/core-api.md']
+    relatedDocs: [
+      '../cli-reference/ossa-validate.md',
+      '../api-reference/core-api.md',
+    ],
   },
   'agent.name': {
     why: 'Human-readable name for display in UIs and documentation',
-    how: 'Use descriptive names that clearly indicate the agent\'s purpose',
+    how: "Use descriptive names that clearly indicate the agent's purpose",
     where: 'Displayed in agent lists, dashboards, and documentation',
     examples: [
       'Data Processing Agent',
       'Compliance Checker',
-      'Customer Support Bot'
+      'Customer Support Bot',
     ],
     relatedFields: ['agent.id', 'agent.description'],
-    relatedDocs: ['../guides/creating-agents.md']
+    relatedDocs: ['../guides/creating-agents.md'],
   },
   'agent.version': {
     why: 'Track agent versions for compatibility, rollback, and change management',
     how: 'Use semantic versioning (MAJOR.MINOR.PATCH)',
     where: 'Used in registry, deployment manifests, and API responses',
-    examples: [
-      '1.0.0',
-      '2.1.3',
-      '0.1.0-beta'
-    ],
+    examples: ['1.0.0', '2.1.3', '0.1.0-beta'],
     relatedFields: ['agent.id', 'ossaVersion'],
-    relatedDocs: ['../guides/versioning.md']
+    relatedDocs: ['../guides/versioning.md'],
   },
   'agent.role': {
     why: 'Classify agents by their function in the system for routing and orchestration',
     how: 'Choose from predefined roles or use custom roles',
     where: 'Used for agent discovery, filtering, and orchestration patterns',
-    examples: [
-      'worker',
-      'orchestrator',
-      'compliance',
-      'monitor'
-    ],
+    examples: ['worker', 'orchestrator', 'compliance', 'monitor'],
     relatedFields: ['agent.capabilities', 'agent.taxonomy'],
-    relatedDocs: ['../architecture/multi-agent-systems.md']
+    relatedDocs: ['../architecture/multi-agent-systems.md'],
   },
   'agent.capabilities': {
     why: 'Define what the agent can do, enabling capability-based routing and discovery',
     how: 'List all capabilities with input/output schemas and descriptions',
     where: 'Used by orchestrators to route tasks and by registry for discovery',
-    examples: [
-      'process_data',
-      'validate_compliance',
-      'generate_report'
-    ],
+    examples: ['process_data', 'validate_compliance', 'generate_report'],
     relatedFields: ['agent.tools', 'agent.role'],
-    relatedDocs: ['../guides/defining-capabilities.md']
-  }
+    relatedDocs: ['../guides/defining-capabilities.md'],
+  },
 };
 
 function generateFieldDoc(fieldPath: string, property: SchemaProperty): string {
@@ -129,40 +119,42 @@ function generateFieldDoc(fieldPath: string, property: SchemaProperty): string {
     where: 'No documentation available',
     examples: [],
     relatedFields: [],
-    relatedDocs: []
+    relatedDocs: [],
   };
-  
+
   let doc = `# ${fieldPath}\n\n`;
-  
+
   // Type and requirements
-  const typeStr = Array.isArray(property.type) ? property.type.join(' | ') : property.type;
+  const typeStr = Array.isArray(property.type)
+    ? property.type.join(' | ')
+    : property.type;
   doc += `**Type**: \`${typeStr}\`\n`;
   doc += `**Required**: ${property.required ? 'Yes' : 'No'}\n`;
   if (property.format) {
     doc += `**Format**: ${property.format}\n`;
   }
   doc += '\n';
-  
+
   // Description
   if (property.description) {
     doc += `## Description\n\n${property.description}\n\n`;
   }
-  
+
   // Why
   doc += `## Why This Field Exists\n\n${metadata.why}\n\n`;
-  
+
   // How
   doc += `## How to Use\n\n${metadata.how}\n\n`;
-  
+
   // Where
   doc += `## Where It's Used\n\n${metadata.where}\n\n`;
-  
+
   // Format requirements
   if (property.pattern) {
     doc += `## Format Requirements\n\n`;
     doc += `Must match pattern: \`${property.pattern}\`\n\n`;
   }
-  
+
   if (property.enum) {
     doc += `## Allowed Values\n\n`;
     for (const value of property.enum) {
@@ -170,7 +162,7 @@ function generateFieldDoc(fieldPath: string, property: SchemaProperty): string {
     }
     doc += '\n';
   }
-  
+
   if (property.minimum !== undefined || property.maximum !== undefined) {
     doc += `## Constraints\n\n`;
     if (property.minimum !== undefined) {
@@ -181,7 +173,7 @@ function generateFieldDoc(fieldPath: string, property: SchemaProperty): string {
     }
     doc += '\n';
   }
-  
+
   if (property.minLength !== undefined || property.maxLength !== undefined) {
     doc += `## Length Constraints\n\n`;
     if (property.minLength !== undefined) {
@@ -192,7 +184,7 @@ function generateFieldDoc(fieldPath: string, property: SchemaProperty): string {
     }
     doc += '\n';
   }
-  
+
   // Examples
   if (metadata.examples.length > 0) {
     doc += `## Examples\n\n`;
@@ -200,11 +192,11 @@ function generateFieldDoc(fieldPath: string, property: SchemaProperty): string {
       doc += `\`\`\`yaml\n${fieldPath}: ${example}\n\`\`\`\n\n`;
     }
   }
-  
+
   // Validation
   doc += `## Validation\n\n`;
   doc += `\`\`\`bash\nossa validate agent.ossa.yaml\n\`\`\`\n\n`;
-  
+
   // Related fields
   if (metadata.relatedFields.length > 0) {
     doc += `## Related Fields\n\n`;
@@ -214,7 +206,7 @@ function generateFieldDoc(fieldPath: string, property: SchemaProperty): string {
     }
     doc += '\n';
   }
-  
+
   // Related documentation
   if (metadata.relatedDocs.length > 0) {
     doc += `## Related Documentation\n\n`;
@@ -223,24 +215,24 @@ function generateFieldDoc(fieldPath: string, property: SchemaProperty): string {
     }
     doc += '\n';
   }
-  
+
   return doc;
 }
 
 function main() {
   console.log('🚀 Generating schema documentation...\n');
-  
+
   // Create output directory
   mkdirSync(OUTPUT_DIR, { recursive: true });
-  
+
   // Read schema dynamically
   const schemaPath = join(SPEC_DIR, schemaVersion.file);
   console.log(`📜 Using schema: ${schemaVersion.dir}/${schemaVersion.file}`);
   const schemaContent = readFileSync(schemaPath, 'utf-8');
   const schema = JSON.parse(schemaContent);
-  
+
   console.log(`📁 Processing schema fields...\n`);
-  
+
   // Generate documentation for documented fields
   let count = 0;
   for (const [fieldPath, metadata] of Object.entries(FIELD_DOCS)) {
@@ -248,18 +240,18 @@ function main() {
     const property: SchemaProperty = {
       type: 'string',
       description: `The ${fieldPath} field`,
-      required: true
+      required: true,
     };
-    
+
     const docContent = generateFieldDoc(fieldPath, property);
     const filename = fieldPath.replace(/\./g, '-') + '.md';
     const outputFile = join(OUTPUT_DIR, filename);
-    
+
     writeFileSync(outputFile, docContent);
     console.log(`✅ Generated: ${filename}`);
     count++;
   }
-  
+
   // Generate index
   const indexContent = `# Schema Reference
 
@@ -305,10 +297,10 @@ View the complete JSON Schema:
 - [API Reference](../api-reference/index.md)
 - [Creating Agents Guide](../guides/creating-agents.md)
 `;
-  
+
   writeFileSync(join(OUTPUT_DIR, 'index.md'), indexContent);
   console.log(`✅ Generated: index.md`);
-  
+
   console.log(`\n✨ Schema documentation generated successfully!`);
   console.log(`📂 Output: ${OUTPUT_DIR}`);
   console.log(`📊 Fields documented: ${count}`);

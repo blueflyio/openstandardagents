@@ -255,7 +255,9 @@ ossa:
     moduleName: string,
     className: string
   ): string {
-    const capabilities = ((manifest.spec?.capabilities || []) as Array<string | any>).map(c => typeof c === 'string' ? c : c.name || '');
+    const capabilities = (
+      (manifest.spec?.capabilities || []) as Array<string | any>
+    ).map((c) => (typeof c === 'string' ? c : c.name || ''));
 
     return `<?php
 
@@ -487,7 +489,9 @@ ${tools.map((tool) => `    // Tool: ${tool.name || 'unknown'} - ${tool.descripti
    * Generate README.md
    */
   private generateReadme(manifest: OssaAgent, moduleName: string): string {
-    const capabilities = ((manifest.spec?.capabilities || []) as Array<string | any>).map(c => typeof c === 'string' ? c : c.name || '');
+    const capabilities = (
+      (manifest.spec?.capabilities || []) as Array<string | any>
+    ).map((c) => (typeof c === 'string' ? c : c.name || ''));
     const tools = (manifest.spec?.tools || []) as any[];
 
     return `# ${manifest.metadata?.name || moduleName}

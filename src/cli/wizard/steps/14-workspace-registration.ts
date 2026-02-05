@@ -13,7 +13,7 @@ export async function registerWorkspaceStep(
   state: WizardState,
   options: WizardOptions
 ): Promise<WizardState> {
-  console_ui.step(14, state.totalSteps, 'Workspace Registration');
+  console_ui.step(15, state.totalSteps, 'Workspace Registration');
 
   const agentName = state.agent.metadata?.name;
   if (!agentName) {

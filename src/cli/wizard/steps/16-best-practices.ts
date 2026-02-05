@@ -19,7 +19,7 @@ interface BestPractice {
 export async function bestPracticesStep(
   state: WizardState
 ): Promise<WizardState> {
-  console_ui.step(16, state.totalSteps, 'Best Practices Review');
+  console_ui.step(17, state.totalSteps, 'Best Practices Review');
 
   const { reviewPractices } = await inquirer.prompt([
     {

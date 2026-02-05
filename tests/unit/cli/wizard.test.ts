@@ -157,7 +157,12 @@ describe('Wizard Service - Manifest Generation', () => {
       const safety = {
         content_filtering: {
           enabled: true,
-          categories: ['hate_speech', 'violence', 'self_harm', 'illegal_activity'],
+          categories: [
+            'hate_speech',
+            'violence',
+            'self_harm',
+            'illegal_activity',
+          ],
           threshold: 'medium',
           action: 'block',
         },

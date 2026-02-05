@@ -29,7 +29,9 @@ export class PackageJsonGenerator {
 
     // Sanitize package name
     const sanitizedName = this.sanitizePackageName(metadata.name);
-    const packageName = options.scope ? `${options.scope}/${sanitizedName}` : sanitizedName;
+    const packageName = options.scope
+      ? `${options.scope}/${sanitizedName}`
+      : sanitizedName;
 
     // Get dependencies based on provider
     const dependencies = this.getDependencies(provider, options.additionalDeps);
@@ -68,19 +70,17 @@ export class PackageJsonGenerator {
       ],
       author: metadata.author || undefined,
       license: metadata.license || 'MIT',
-      repository:
-        metadata.annotations?.repository
-          ? {
-              type: 'git',
-              url: metadata.annotations.repository as string,
-            }
-          : undefined,
-      bugs:
-        metadata.annotations?.repository
-          ? {
-              url: `${metadata.annotations.repository}/issues`,
-            }
-          : undefined,
+      repository: metadata.annotations?.repository
+        ? {
+            type: 'git',
+            url: metadata.annotations.repository as string,
+          }
+        : undefined,
+      bugs: metadata.annotations?.repository
+        ? {
+            url: `${metadata.annotations.repository}/issues`,
+          }
+        : undefined,
       homepage: metadata.annotations?.homepage
         ? (metadata.annotations.homepage as string)
         : undefined,

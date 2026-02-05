@@ -52,7 +52,7 @@ export class GitLabDuoExporter {
         temperature: manifest.agent.temperature,
         max_tokens: manifest.agent.max_tokens,
       },
-      tools: manifest.skills?.map(skill => ({
+      tools: manifest.skills?.map((skill) => ({
         name: skill.name,
         description: skill.description,
         trigger: {
@@ -69,9 +69,11 @@ export class GitLabDuoExporter {
             };
             return acc;
           }, {} as any),
-          required: skill.parameters?.filter(p => p.required).map(p => p.name) || [],
+          required:
+            skill.parameters?.filter((p) => p.required).map((p) => p.name) ||
+            [],
         },
-        examples: skill.examples?.map(ex => ({
+        examples: skill.examples?.map((ex) => ({
           input: ex.input,
           output: ex.output,
         })),
@@ -87,11 +89,6 @@ export class GitLabDuoExporter {
    * Validate GitLab Duo export format
    */
   validate(data: any): boolean {
-    return !!(
-      data.name &&
-      data.description &&
-      data.version &&
-      data.agent
-    );
+    return !!(data.name && data.description && data.version && data.agent);
   }
 }

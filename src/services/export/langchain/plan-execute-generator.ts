@@ -50,7 +50,8 @@ export class PlanExecuteGenerator {
     const agentName = manifest.metadata?.name || 'agent';
     const systemPrompt = manifest.spec?.role || '';
     const maxPlanningIterations = config.maxPlanningIterations || 3;
-    const planningPrompt = config.planningPrompt || this.getDefaultPlanningPrompt();
+    const planningPrompt =
+      config.planningPrompt || this.getDefaultPlanningPrompt();
 
     return `"""
 Planner Agent - Plan Generation
@@ -279,10 +280,14 @@ def create_planner() -> PlannerAgent:
   /**
    * Generate executor_agent.py - Executes plan steps
    */
-  generateExecutor(manifest: OssaAgent, config: PlanExecuteConfig = {}): string {
+  generateExecutor(
+    manifest: OssaAgent,
+    config: PlanExecuteConfig = {}
+  ): string {
     const agentName = manifest.metadata?.name || 'agent';
     const systemPrompt = manifest.spec?.role || '';
-    const executionPrompt = config.executionPrompt || this.getDefaultExecutionPrompt();
+    const executionPrompt =
+      config.executionPrompt || this.getDefaultExecutionPrompt();
 
     return `"""
 Executor Agent - Plan Execution
@@ -430,7 +435,10 @@ def create_executor(tools: List) -> ExecutorAgent:
   /**
    * Generate plan_execute.py - Main coordinator
    */
-  generatePlanExecute(manifest: OssaAgent, config: PlanExecuteConfig = {}): string {
+  generatePlanExecute(
+    manifest: OssaAgent,
+    config: PlanExecuteConfig = {}
+  ): string {
     const agentName = manifest.metadata?.name || 'agent';
     const maxExecutionSteps = config.maxExecutionSteps || 10;
     const enableReplanning = config.enableReplanning !== false;

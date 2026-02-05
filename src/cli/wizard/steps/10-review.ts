@@ -16,7 +16,7 @@ export async function reviewAndSaveStep(
   state: WizardState,
   options: WizardOptions
 ): Promise<WizardState> {
-  console_ui.step(10, state.totalSteps, 'Review & Save');
+  console_ui.step(11, state.totalSteps, 'Review & Save');
 
   // Show comprehensive summary
   console_ui.section('Agent Summary');

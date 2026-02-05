@@ -56,7 +56,10 @@ export const testCommand = new Command('test')
         } else {
           console.log(chalk.bold('\n📋 Available Test Scenarios:\n'));
           scenarios.forEach((scenario) => {
-            console.log(chalk.cyan(`  ${scenario.id.padEnd(20)} `), chalk.white(scenario.name));
+            console.log(
+              chalk.cyan(`  ${scenario.id.padEnd(20)} `),
+              chalk.white(scenario.name)
+            );
             console.log(chalk.gray(`    ${scenario.description}\n`));
           });
         }
@@ -87,10 +90,14 @@ export const testCommand = new Command('test')
           if (!jsonMode) {
             printInfo(`Loading agent: ${manifestPath}`);
             if (options.mock) {
-              console.log(chalk.yellow('  🧪 Using mock LLM (no API keys required)'));
+              console.log(
+                chalk.yellow('  🧪 Using mock LLM (no API keys required)')
+              );
             }
             if (options.scenario) {
-              console.log(chalk.yellow(`  📋 Running scenario: ${options.scenario}`));
+              console.log(
+                chalk.yellow(`  📋 Running scenario: ${options.scenario}`)
+              );
             }
           }
 
@@ -158,7 +165,11 @@ export const testCommand = new Command('test')
               if (!jsonMode) {
                 console.log(chalk.green(`✓ ${result.id}`));
                 if (options.verbose && result.response) {
-                  console.log(chalk.gray(`  Response: ${result.response.substring(0, 100)}...`));
+                  console.log(
+                    chalk.gray(
+                      `  Response: ${result.response.substring(0, 100)}...`
+                    )
+                  );
                 }
                 if (result.duration) {
                   console.log(chalk.gray(`  Duration: ${result.duration}ms\n`));
@@ -198,7 +209,8 @@ export const testCommand = new Command('test')
 
           return { passed, failed, total: passed + failed };
         } catch (error) {
-          const errorMsg = error instanceof Error ? error.message : String(error);
+          const errorMsg =
+            error instanceof Error ? error.message : String(error);
 
           if (jsonMode) {
             outputJSON({
@@ -222,11 +234,15 @@ export const testCommand = new Command('test')
       // Watch mode
       if (options.watch) {
         if (jsonMode) {
-          console.error(chalk.red('Watch mode is not supported with JSON output'));
+          console.error(
+            chalk.red('Watch mode is not supported with JSON output')
+          );
           process.exit(1);
         }
 
-        console.log(chalk.blue('\n👀 Watch mode enabled - watching for changes...\n'));
+        console.log(
+          chalk.blue('\n👀 Watch mode enabled - watching for changes...\n')
+        );
 
         // Run tests initially
         await runTests();
@@ -240,7 +256,9 @@ export const testCommand = new Command('test')
               clearTimeout(timeout);
             }
             timeout = setTimeout(async () => {
-              console.log(chalk.blue('\n📝 File changed - re-running tests...\n'));
+              console.log(
+                chalk.blue('\n📝 File changed - re-running tests...\n')
+              );
               await runTests();
             }, 500);
           }

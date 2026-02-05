@@ -129,7 +129,7 @@ export class OpenTelemetryAdapter {
     }
 
     // Dynamic import OpenTelemetry SDK (optional dependencies)
-// @ts-expect-error - Missing type declarations for @opentelemetry/resources
+    // @ts-expect-error - Missing type declarations for @opentelemetry/resources
     const { NodeSDK } = await import('@opentelemetry/sdk-node');
     const { Resource } = await import('@opentelemetry/resources');
 
@@ -224,7 +224,7 @@ export class OpenTelemetryAdapter {
           throw new Error('@opentelemetry/exporter-zipkin not installed');
         }
       }
-// @ts-expect-error - Missing type declarations for @opentelemetry/sdk-trace-base
+      // @ts-expect-error - Missing type declarations for @opentelemetry/sdk-trace-base
       case 'console': {
         try {
           const ConsoleExporter = await import('@opentelemetry/sdk-trace-base');
