@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  bridge-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ossa-bridge-server
+    ports:
+      - "9090:9090"
+    environment:
+      - NODE_ENV=production
+      - BRIDGE_PORT=9090
+      - BRIDGE_HOST=0.0.0.0
+      - OSSA_REGISTRY_PATH=/agents
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4318
+    volumes:
+      # Mount agent registry (read-only)
+      - ./agents:/agents:ro
+      # Optional: Mount logs
+      - ./logs:/app/logs
+    networks:
+      - ossa-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9090/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+  # Optional: OpenTelemetry Collector (for tracing)
+  # tempo:
+  #   image: grafana/tempo:latest
+  #   ports:
+  #     - "4318:4318"  # OTLP HTTP
+  #     - "3200:3200"  # Tempo UI
+  #   networks:
+  #     - ossa-network
+
+networks:
+  ossa-network:
+    driver: bridge
