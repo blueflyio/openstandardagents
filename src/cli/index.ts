@@ -61,6 +61,12 @@ import { updateCommand } from './commands/update.command.js';
 import { setupCommand } from './commands/setup.command.js';
 import { testCommand } from './commands/test.command.js';
 import { validateCommand } from './commands/validate.command.js';
+
+// Registry commands (GAID/DID)
+import { generateGaidCommand } from './commands/generate-gaid.command.js';
+import { registerCommand } from './commands/register.js';
+import { discoverCommand } from './commands/discover.js';
+import { verifyCommand } from './commands/verify.js';
 import { workspaceCommand } from './commands/workspace.command.js';
 import { taxonomyCommandGroup } from './commands/taxonomy.command.js';
 import { skillsCommandGroup } from './commands/skills.command.js';
@@ -201,6 +207,13 @@ initializeAdapters();
 
 program.addCommand(quickstartCommand); // First for discoverability
 program.addCommand(validateCommand);
+
+// Agent Registry commands (GAID/DID - Issue #391)
+program.addCommand(generateGaidCommand);
+program.addCommand(registerCommand);
+program.addCommand(discoverCommand);
+program.addCommand(verifyCommand);
+
 program.addCommand(conformanceCommand);
 program.addCommand(complianceCommand);
 program.addCommand(governanceCommand);
