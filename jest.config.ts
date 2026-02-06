@@ -31,16 +31,28 @@ const config: Config = {
   ],
   coverageThreshold: {
     global: {
-      branches: 30,
-      functions: 50,
-      lines: 45,
-      statements: 45,
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80,
     },
     './src/services': {
-      branches: 10,
-      functions: 39,  // Temporarily lowered from 41% for v0.3 schema consolidation - validation tests need rework
-      lines: 25,
-      statements: 25,
+      branches: 85,
+      functions: 85,
+      lines: 85,
+      statements: 85,
+    },
+    './src/utils': {
+      branches: 90,
+      functions: 90,
+      lines: 90,
+      statements: 90,
+    },
+    './src/errors': {
+      branches: 100,
+      functions: 100,
+      lines: 100,
+      statements: 100,
     },
   },
   moduleNameMapper: {

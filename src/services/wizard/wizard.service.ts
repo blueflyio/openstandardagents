@@ -94,14 +94,14 @@ export class WizardService {
     }
 
     // Add autonomy configuration
-    if (answers.configureAutonomy && answers.autonomyLevel) {
+    if (answers.configureAutonomy && answers.autonomyLevel && manifest.spec) {
       manifest.spec.autonomy = {
         level: answers.autonomyLevel as 'full' | 'assisted' | 'supervised',
       };
     }
 
     // Add observability
-    if (answers.addObservability) {
+    if (answers.addObservability && manifest.spec) {
       manifest.spec.observability = {
         tracing: {
           enabled: true,

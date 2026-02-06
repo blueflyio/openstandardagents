@@ -12,6 +12,8 @@ import { ManifestRepository } from '../../../repositories/manifest.repository.js
 import type { WizardState, WizardOptions } from '../types.js';
 import { console_ui } from '../ui/console.js';
 import * as yaml from 'yaml';
+import { GenerationError, isOssaError } from '../../../errors/index.js';
+import { logger } from '../../../utils/logger.js';
 
 export async function generateOpenAPIStep(
   state: WizardState,
@@ -72,8 +74,14 @@ export async function generateOpenAPIStep(
 
     return state;
   } catch (error) {
+    const ossaError = isOssaError(error)
+      ? error
+      : new GenerationError('Failed to generate OpenAPI specification', {
+          originalError: error instanceof Error ? error.message : String(error),
+        });
+    logger.error({ err: ossaError }, 'OpenAPI generation failed');
     console_ui.error('Failed to generate OpenAPI specification');
-    console_ui.error(error instanceof Error ? error.message : String(error));
+    console_ui.error(ossaError.message);
     return state;
   }
 }

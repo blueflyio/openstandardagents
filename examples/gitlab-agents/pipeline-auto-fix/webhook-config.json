@@ -1,0 +1,11 @@
+{
+  "url": "http://api.blueflyagents.com/webhook/pipeline-auto-fix",
+  "token": "${WEBHOOK_SECRET}",
+  "enable_ssl_verification": false,
+  "push_events": false,
+  "issues_events": false,
+  "merge_requests_events": false,
+  "note_events": false,
+  "pipeline_events": true,
+  "wiki_page_events": false
+}

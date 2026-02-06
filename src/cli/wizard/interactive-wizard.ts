@@ -5,6 +5,7 @@
 
 import inquirer from 'inquirer';
 import chalk from 'chalk';
+import { logger } from '../../utils/logger.js';
 import type { OssaAgent } from '../../types/index.js';
 import { getApiVersion } from '../../utils/version.js';
 import { USE_CASES, getRecommendedConfig } from './use-cases.js';
@@ -24,8 +25,7 @@ export interface WizardResult {
 
 export class InteractiveWizard {
   async run(options: WizardOptions = {}): Promise<WizardResult> {
-    console.log(chalk.bold.blue('\n🧙 OSSA Interactive Wizard\n'));
-    console.log(chalk.gray('Create a production-ready agent manifest\n'));
+    logger.info({ action: 'wizard-start' }, 'OSSA Interactive Wizard - Create a production-ready agent manifest');
 
     // Step 1: Use case detection
     let useCase: string | undefined;
@@ -37,8 +37,7 @@ export class InteractiveWizard {
 
     // Step 2: Template selection (if use case has templates)
     if (useCase && !options.skipTemplate && !options.useDefaults) {
-      const useCaseTemplates =
-        USE_CASES.find((uc) => uc.id === useCase)?.templates || [];
+      const useCaseTemplates = USE_CASES.find((uc) => uc.id === useCase)?.templates || [];
       if (useCaseTemplates.length > 0) {
         template = await this.selectTemplate(useCaseTemplates);
       }
@@ -70,23 +69,11 @@ export class InteractiveWizard {
         name: 'category',
         message: 'What type of agent are you building?',
         choices: [
-          {
-            name: '🤖 Development - Code review, IDE assistance',
-            value: 'development',
-          },
+          { name: '🤖 Development - Code review, IDE assistance', value: 'development' },
           { name: '💬 Assistant - Customer support, chat', value: 'assistant' },
-          {
-            name: '⚙️  Automation - Workflows, task orchestration',
-            value: 'automation',
-          },
-          {
-            name: '🔌 Integration - CMS, external systems',
-            value: 'integration',
-          },
-          {
-            name: '📊 Analysis - Research, data processing',
-            value: 'analysis',
-          },
+          { name: '⚙️  Automation - Workflows, task orchestration', value: 'automation' },
+          { name: '🔌 Integration - CMS, external systems', value: 'integration' },
+          { name: '📊 Analysis - Research, data processing', value: 'analysis' },
         ],
       },
     ]);
@@ -105,19 +92,15 @@ export class InteractiveWizard {
     ]);
 
     const useCase = USE_CASES.find((uc) => uc.id === useCaseId)!;
-    console.log(chalk.green(`\n✓ Use case selected: ${useCase.name}`));
+    logger.info({ useCase: useCase.name }, 'Use case selected');
 
     return useCaseId;
   }
 
-  private async selectTemplate(
-    templateIds: string[]
-  ): Promise<string | undefined> {
+  private async selectTemplate(templateIds: string[]): Promise<string | undefined> {
     if (templateIds.length === 0) return undefined;
 
-    const templates = TEMPLATE_CATALOG.filter((t) =>
-      templateIds.includes(t.id)
-    );
+    const templates = TEMPLATE_CATALOG.filter((t) => templateIds.includes(t.id));
 
     const { useTemplate } = await inquirer.prompt([
       {
@@ -142,11 +125,10 @@ export class InteractiveWizard {
       },
     ]);
 
-    console.log(chalk.green(`\n✓ Template selected: ${templateId}`));
-    console.log(
-      chalk.gray(
-        `   Template path: platform-agents/${templates.find((t) => t.id === templateId)?.path}`
-      )
+    const templatePath = templates.find((t) => t.id === templateId)?.path;
+    logger.info(
+      { template: templateId, path: templatePath },
+      'Template selected'
     );
 
     return templateId;
@@ -203,10 +185,7 @@ export class InteractiveWizard {
     return answers;
   }
 
-  private async configureLLM(
-    useCase?: string,
-    useDefaults?: boolean
-  ): Promise<{
+  private async configureLLM(useCase?: string, useDefaults?: boolean): Promise<{
     provider: string;
     model: string;
     temperature: number;
@@ -239,9 +218,7 @@ export class InteractiveWizard {
 
     const modelChoices = this.getModelChoices(provider);
     const defaultModel =
-      recommended?.provider === provider
-        ? recommended.model
-        : modelChoices[0].value;
+      recommended?.provider === provider ? recommended?.model : modelChoices[0].value;
 
     const { model, temperature } = await inquirer.prompt([
       {
@@ -266,9 +243,7 @@ export class InteractiveWizard {
     return { provider, model, temperature };
   }
 
-  private getModelChoices(
-    provider: string
-  ): Array<{ name: string; value: string }> {
+  private getModelChoices(provider: string): Array<{ name: string; value: string }> {
     const models: Record<string, Array<{ name: string; value: string }>> = {
       openai: [
         { name: 'GPT-4o (Recommended)', value: 'gpt-4o' },
@@ -323,12 +298,7 @@ export class InteractiveWizard {
   }
 
   private buildManifest(
-    basics: {
-      name: string;
-      displayName: string;
-      description: string;
-      version: string;
-    },
+    basics: { name: string; displayName: string; description: string; version: string },
     llm: { provider: string; model: string; temperature: number },
     platforms: string[]
   ): OssaAgent {

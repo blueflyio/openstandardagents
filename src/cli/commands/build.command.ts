@@ -21,6 +21,7 @@ import {
   DockerComposeGenerator,
 } from '../../adapters/docker/generators.js';
 import { KubernetesManifestGenerator } from '../../adapters/kubernetes/generator.js';
+import { getBuildDefaults } from '../../config/defaults.js';
 import type { OssaAgent } from '../../types/index.js';
 
 export const buildCommand = new Command('build')
@@ -34,7 +35,7 @@ export const buildCommand = new Command('build')
   .option(
     '-o, --output <dir>',
     'Output directory for build artifacts',
-    'dist/build'
+    getBuildDefaults().outputDir
   )
   .option('--validate', 'Validate manifest before building', true)
   .action(
@@ -202,7 +203,7 @@ async function buildForPlatform(
           );
         }
 
-        const baseImage = dockerConfig.baseImage || 'node:20-alpine';
+        const baseImage = dockerConfig.baseImage || getBuildDefaults().baseImage;
         const agentName = manifest.metadata?.name || 'agent';
         const workdir = dockerConfig.workdir || '/app';
 

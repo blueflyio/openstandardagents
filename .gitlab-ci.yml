@@ -32,14 +32,15 @@ variables:
 # =============================================================================
 # Automatically detects latest production tag and bumps patch version
 # Creates -dev.N and -rc.N tags automatically
-include:
-  - component: $CI_SERVER_FQDN/blueflyio/agent-platform/gitlab_components/release/smart-version-bump@main
-    inputs:
-      node_version: "22.14"
-      create_dev_tags: true
-      create_rc_tags: true
-      git_author_name: "OSSA Release Bot"
-      git_author_email: "release-bot@openstandardagents.org"
+# DISABLED: Component has missing dependency (runner-selector)
+# include:
+#   - component: $CI_SERVER_FQDN/blueflyio/agent-platform/gitlab_components/release/smart-version-bump@main
+#     inputs:
+#       node_version: "22.14"
+#       create_dev_tags: true
+#       create_rc_tags: true
+#       git_author_name: "OSSA Release Bot"
+#       git_author_email: "release-bot@openstandardagents.org"
 
 # =============================================================================
 # BASE JOB TEMPLATE
