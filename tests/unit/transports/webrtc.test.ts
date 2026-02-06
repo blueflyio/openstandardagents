@@ -7,6 +7,7 @@ import {
   InMemorySignalingServer,
 } from '../../../src/transports/webrtc';
 import { EventEmitter } from 'events';
+import { API_VERSION } from '../../../src/version.js';
 
 // Mock RTCPeerConnection for testing
 class MockRTCPeerConnection {

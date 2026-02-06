@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { AnthropicAdapter } from '../../../src/adapters/anthropic/runtime.js';
 import { AnthropicClient } from '../../../src/adapters/anthropic/client.js';
 import { ToolMapper } from '../../../src/adapters/anthropic/tools.js';
+import { API_VERSION } from '../../../src/version.js';
 import {
   createTextMessage,
   validateMessage,
@@ -22,7 +23,7 @@ describe('AnthropicAdapter', () => {
 
   beforeEach(() => {
     mockAgent = {
-      apiVersion: 'ossa/v0.4.1',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'test-agent',

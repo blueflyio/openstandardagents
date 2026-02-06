@@ -9,6 +9,7 @@ import { ConformanceProfileLoader } from '../../../../src/services/conformance/p
 import { FeatureDetector } from '../../../../src/services/conformance/feature-detector.service.js';
 import { ConformanceScoreCalculator } from '../../../../src/services/conformance/score-calculator.service.js';
 import type { OssaAgent } from '../../../../src/types/index.js';
+import { API_VERSION } from '../../../src/version.js';
 
 describe.skip('ConformanceService', () => {
   let container: Container;
@@ -37,7 +38,7 @@ describe.skip('ConformanceService', () => {
   });
 
   const mockMinimalManifest: OssaAgent = {
-    apiVersion: 'ossa/v0.4.1',
+    apiVersion: API_VERSION,
     kind: 'Agent',
     metadata: {
       name: 'test-agent',

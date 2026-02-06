@@ -3,6 +3,7 @@
  */
 
 import { SSETransport, SSEStreamClient } from '../../../src/transports/sse';
+import { API_VERSION } from '../../../src/version.js';
 
 // Mock EventSource for testing
 class MockEventSource {

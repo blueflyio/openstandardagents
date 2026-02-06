@@ -1,5 +1,6 @@
 import { describe, it, expect } from '@jest/globals';
 import { MessagingValidator } from '../../../../src/services/validators/messaging.validator.js';
+import { API_VERSION } from '../../../src/version.js';
 
 describe('MessagingValidator', () => {
   const validator = new MessagingValidator();

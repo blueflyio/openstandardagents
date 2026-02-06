@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from '@jest/globals';
 import { VercelAIValidator } from '../../../../src/services/validators/vercel-ai.validator.js';
 import type { OssaAgent } from '../../../../src/types/index.js';
+import { API_VERSION } from '../../../src/version.js';
 
 describe('VercelAIValidator', () => {
   let validator: VercelAIValidator;
@@ -9,7 +10,7 @@ describe('VercelAIValidator', () => {
   beforeEach(() => {
     validator = new VercelAIValidator();
     baseManifest = {
-      apiVersion: 'ossa/v0.4.1',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'test-agent',

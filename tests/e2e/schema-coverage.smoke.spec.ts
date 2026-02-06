@@ -14,6 +14,7 @@ import { join, relative } from 'path';
 import { z } from 'zod';
 import { ValidationService } from '../../src/services/validation.service';
 import * as yaml from 'yaml';
+import { API_VERSION } from '../../../src/version.js';
 
 const projectRoot = join(__dirname, '../..');
 const conformanceRoot = join(projectRoot, 'spec/v0.3/conformance/tests');
@@ -192,7 +193,7 @@ describe('Smoke Test: Schema Validation Coverage', () => {
   describe('Validation Error Quality', () => {
     it('provides specific error messages for missing required fields', async () => {
       const invalidManifest = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         // Missing metadata and spec
       };
@@ -216,7 +217,7 @@ describe('Smoke Test: Schema Validation Coverage', () => {
 
     it('provides specific error messages for invalid field types', async () => {
       const invalidManifest = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 123, // Should be string

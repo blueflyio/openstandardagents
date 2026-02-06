@@ -7,6 +7,7 @@ import { LangChainMigrationService } from '../../../../src/services/migration/la
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { tmpdir } from 'os';
+import { API_VERSION } from '../../../src/version.js';
 
 // Use temp directory for test files instead of test directory
 const testTempDir = tmpdir();

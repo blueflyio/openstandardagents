@@ -10,6 +10,7 @@ import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { GenerationService } from '../../../src/services/generation.service.js';
 import { ValidationService } from '../../../src/services/validation.service.js';
 import type { OssaAgent } from '../../../src/types/index.js';
+import { API_VERSION } from '../../../src/version.js';
 
 // Test the wizard service's manifest generation logic directly
 // without mocking inquirer (which is complex to mock in ESM)
@@ -36,7 +37,7 @@ describe('Wizard Service - Manifest Generation', () => {
   describe('Manifest Structure', () => {
     it('should create valid OSSA manifest structure', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -288,7 +289,7 @@ describe('Wizard Service - Manifest Generation', () => {
   describe('Platform Export', () => {
     it('should delegate export to GenerationService', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -315,7 +316,7 @@ describe('Wizard Service - Manifest Generation', () => {
   describe('Validation Integration', () => {
     it('should validate generated manifest', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',

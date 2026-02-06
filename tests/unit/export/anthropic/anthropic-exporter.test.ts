@@ -5,6 +5,7 @@
 import { describe, it, expect, beforeEach } from '@jest/globals';
 import { AnthropicExporter } from '../../../../src/services/export/anthropic/anthropic-exporter';
 import type { OssaAgent } from '../../../../src/types/index';
+import { API_VERSION } from '../../../src/version.js';
 
 describe('AnthropicExporter', () => {
   let exporter: AnthropicExporter;
@@ -14,7 +15,7 @@ describe('AnthropicExporter', () => {
     exporter = new AnthropicExporter();
 
     manifest = {
-      apiVersion: 'ossa/v0.4.1',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'test-agent',

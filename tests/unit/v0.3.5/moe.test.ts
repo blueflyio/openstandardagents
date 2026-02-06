@@ -7,6 +7,7 @@ import { V035FeatureValidator } from '../../../src/tools/validation/validate-v0.
 import { writeFileSync, unlinkSync } from 'fs';
 import { join } from 'path';
 import yaml from 'yaml';
+import { API_VERSION } from '../../../src/version.js';
 
 describe('OSSA v0.3.5 Mixture of Experts', () => {
   const validator = new V035FeatureValidator();
@@ -14,7 +15,7 @@ describe('OSSA v0.3.5 Mixture of Experts', () => {
 
   it('should validate valid MoE configuration', () => {
     const manifest = {
-      apiVersion: 'ossa/v0.4.1',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: { name: 'test-agent' },
       spec: {
@@ -58,7 +59,7 @@ describe('OSSA v0.3.5 Mixture of Experts', () => {
 
     for (const strategy of strategies) {
       const manifest = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: { name: 'test-agent' },
         spec: {
@@ -84,7 +85,7 @@ describe('OSSA v0.3.5 Mixture of Experts', () => {
 
   it('should reject expert without required fields', () => {
     const manifest = {
-      apiVersion: 'ossa/v0.4.1',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: { name: 'test-agent' },
       spec: {

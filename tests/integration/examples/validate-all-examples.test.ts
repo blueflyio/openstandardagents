@@ -9,6 +9,7 @@ import { glob } from 'glob';
 import { ValidationService } from '../../../src/services/validation.service.js';
 import { SchemaRepository } from '../../../src/repositories/schema.repository.js';
 import { ManifestRepository } from '../../../src/repositories/manifest.repository.js';
+import { API_VERSION } from '../../../src/version.js';
 
 describe.skip('All Examples Validation', () => {
   let validationService: ValidationService;
@@ -56,7 +57,7 @@ describe.skip('All Examples Validation', () => {
   describe('Generated manifests', () => {
     it('should validate generated chat agent', async () => {
       const manifest = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-chat',

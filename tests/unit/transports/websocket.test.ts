@@ -3,6 +3,7 @@
  */
 
 import { WebSocketTransport } from '../../../src/transports/websocket';
+import { API_VERSION } from '../../../src/version.js';
 
 // Mock CloseEvent for testing
 class CloseEvent extends Event {

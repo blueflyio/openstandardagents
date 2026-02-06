@@ -3,6 +3,7 @@
  */
 
 import { describe, it, expect } from '@jest/globals';
+import { API_VERSION } from '../../../src/version.js';
 import {
   safeParseYAML,
   safeStringifyYAML,
@@ -18,7 +19,7 @@ metadata:
     `;
     const result = safeParseYAML(yaml);
     expect(result).toEqual({
-      apiVersion: 'ossa/v0.4.1',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'test-agent',
@@ -198,7 +199,7 @@ describe('safeStringifyYAML', () => {
 
   it('should stringify complex OSSA manifest', () => {
     const manifest = {
-      apiVersion: 'ossa/v0.4.1',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'test-agent',
@@ -236,7 +237,7 @@ describe('safeStringifyYAML', () => {
 
   it('should round-trip parse and stringify', () => {
     const original = {
-      apiVersion: 'ossa/v0.4.1',
+      apiVersion: API_VERSION,
       metadata: {
         name: 'test',
         labels: {
