@@ -1,0 +1,168 @@
+apiVersion: ossa/v0.4.4
+kind: Agent
+metadata:
+  name: customer-service-swarm
+  version: 1.0.0
+  description: Multi-agent swarm for customer service with triage, sales, and support agents
+
+  # Agent Taxonomy
+  agentType: swarm                     # OpenAI Swarm-style multi-agent
+  agentKind: orchestrator              # Coordinates multiple agents
+
+  agentArchitecture:
+    pattern: swarm                     # Multi-agent with handoffs
+    capabilities:
+      - handoff                        # Agent-to-agent handoffs
+      - streaming                      # Streaming responses
+      - context                        # Shared context
+      - tools                          # Tool calling
+
+    coordination:
+      handoffStrategy: automatic       # Automatic handoff based on agent decision
+      leaderAgent: triage-agent        # Entry point agent
+      maxDepth: 10                     # Maximum handoff chain depth
+
+    runtime:
+      scalability: horizontal          # Scale by spawning agent instances
+      executionModel: streaming        # Streaming execution
+
+  labels:
+    domain: customer-service
+    team: support-engineering
+    pattern: swarm
+
+spec:
+  # Swarm configuration
+  swarm:
+    # Entry point agent
+    entryAgent: triage-agent
+
+    # Agent definitions
+    agents:
+      - name: triage-agent
+        agentKind: coordinator
+        description: Initial triage agent that routes to specialists
+        model:
+          provider: openai
+          name: gpt-4-turbo
+        system: |
+          You are a triage agent for customer service.
+          Analyze the customer request and route to:
+          - sales-agent: For pricing, purchasing, product info
+          - support-agent: For technical issues, bugs, how-to
+          - billing-agent: For billing, invoices, payments
+
+          Use handoff tools to transfer to the appropriate specialist.
+
+        tools:
+          - name: transfer_to_sales
+            description: Transfer to sales specialist
+            handoffTo: sales-agent
+
+          - name: transfer_to_support
+            description: Transfer to technical support
+            handoffTo: support-agent
+
+          - name: transfer_to_billing
+            description: Transfer to billing specialist
+            handoffTo: billing-agent
+
+      - name: sales-agent
+        agentKind: specialist
+        description: Sales specialist for product and pricing questions
+        model:
+          provider: openai
+          name: gpt-4-turbo
+        system: |
+          You are a sales specialist.
+          Help customers with:
+          - Product information and features
+          - Pricing and plans
+          - Purchasing and upgrades
+          - Product comparisons
+
+          You have access to product catalog and pricing tools.
+
+        tools:
+          - name: get_product_info
+            description: Get product details
+            endpoint: https://api.example.com/products
+
+          - name: get_pricing
+            description: Get pricing information
+            endpoint: https://api.example.com/pricing
+
+          - name: transfer_back_to_triage
+            description: Transfer back to triage if request is outside sales scope
+            handoffTo: triage-agent
+
+      - name: support-agent
+        agentKind: specialist
+        description: Technical support specialist
+        model:
+          provider: openai
+          name: gpt-4-turbo
+        system: |
+          You are a technical support specialist.
+          Help customers with:
+          - Technical issues and troubleshooting
+          - Bug reports
+          - How-to questions
+          - Feature requests
+
+          You can access documentation and create support tickets.
+
+        tools:
+          - name: search_docs
+            description: Search documentation
+            endpoint: https://api.example.com/docs/search
+
+          - name: create_ticket
+            description: Create support ticket
+            endpoint: https://api.example.com/tickets
+
+          - name: transfer_back_to_triage
+            description: Transfer back to triage
+            handoffTo: triage-agent
+
+      - name: billing-agent
+        agentKind: specialist
+        description: Billing and payment specialist
+        model:
+          provider: openai
+          name: gpt-4-turbo
+        system: |
+          You are a billing specialist.
+          Help customers with:
+          - Billing questions
+          - Invoice requests
+          - Payment issues
+          - Subscription management
+
+        tools:
+          - name: get_invoice
+            description: Retrieve customer invoice
+            endpoint: https://api.example.com/invoices
+
+          - name: update_payment_method
+            description: Update payment method (requires approval)
+            endpoint: https://api.example.com/payments
+
+          - name: transfer_back_to_triage
+            description: Transfer back to triage
+            handoffTo: triage-agent
+
+  # Shared context across swarm
+  context:
+    shared: true
+    session_timeout: 1h
+    max_turns: 100
+
+  # Monitoring
+  observability:
+    track_handoffs: true
+    track_agent_performance: true
+    metrics:
+      - handoff_count
+      - agent_utilization
+      - resolution_time

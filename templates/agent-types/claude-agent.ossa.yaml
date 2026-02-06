@@ -1,0 +1,83 @@
+apiVersion: ossa/v0.4.4
+kind: Agent
+metadata:
+  name: claude-assistant
+  version: 1.0.0
+  description: Claude-powered conversational assistant with vision and tool capabilities
+
+  # Agent Taxonomy
+  agentType: claude                    # Anthropic Claude runtime
+  agentKind: assistant                 # User-facing conversational agent
+
+  agentArchitecture:
+    pattern: single                    # Single agentic loop
+    capabilities:
+      - handoff                        # Can transfer to other agents
+      - streaming                      # Supports streaming responses
+      - context                        # Maintains conversation context
+      - tools                          # Can call external tools
+      - vision                         # Can process images
+      - code                           # Can execute code
+
+    runtime:
+      scalability: serverless          # Serverless/auto-scaling
+      executionModel: streaming        # Streaming execution
+      preferredRegion: us-east-1       # Preferred AWS region
+
+  labels:
+    domain: customer-service
+    team: support-engineering
+    environment: production
+
+spec:
+  # Claude-specific configuration
+  model:
+    provider: anthropic
+    name: claude-sonnet-4-5-20250929   # Latest Sonnet model
+    temperature: 0.7
+    max_tokens: 4096
+
+  system: |
+    You are a helpful, harmless, and honest AI assistant.
+    You aim to provide clear, accurate, and concise responses.
+    When you don't know something, you admit it.
+    You can see images and call tools to help answer questions.
+
+  # Tool definitions (Anthropic format)
+  tools:
+    - name: get_weather
+      description: Get current weather for a location
+      input_schema:
+        type: object
+        properties:
+          location:
+            type: string
+            description: City name (e.g., "San Francisco, CA")
+          unit:
+            type: string
+            enum: [celsius, fahrenheit]
+            description: Temperature unit
+        required: [location]
+
+    - name: search_web
+      description: Search the web for information
+      input_schema:
+        type: object
+        properties:
+          query:
+            type: string
+            description: Search query
+        required: [query]
+
+  # Context management
+  context:
+    session_timeout: 30m
+    max_turns: 50
+    memory_strategy: summarize        # Summarize old context
+
+  # Cost optimization
+  constraints:
+    cost:
+      maxTokensPerRequest: 4096
+      maxTokensPerDay: 100000
+      budget_alert_threshold: 0.80
