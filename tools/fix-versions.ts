@@ -11,7 +11,7 @@
  */
 
 import { readFileSync, writeFileSync, readdirSync, statSync } from 'fs';
-import { join, relative } from 'path';
+import { join, relative, dirname } from 'path';
 import { API_VERSION } from '../src/version.js';
 
 const IGNORE_PATTERNS = [
@@ -55,13 +55,16 @@ function fixFile(filepath: string) {
       const hasImport = content.includes('import') && content.includes('API_VERSION');
 
       if (!hasImport) {
+        // Calculate correct relative path to src/version.js based on file depth
+        const relativePath = relative(dirname(filepath), join(process.cwd(), 'src/version.js'));
+
         // Add import at the top after other imports
         const importRegex = /(import .* from .*;\n)+/;
         const match = content.match(importRegex);
         if (match) {
           const lastImportIndex = match.index! + match[0].length;
           content = content.slice(0, lastImportIndex) +
-                   `import { API_VERSION } from '../../../src/version.js';\n` +
+                   `import { API_VERSION } from '${relativePath}';\n` +
                    content.slice(lastImportIndex);
           changeCount++;
         }
