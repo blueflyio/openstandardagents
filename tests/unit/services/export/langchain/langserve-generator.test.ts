@@ -4,6 +4,7 @@
 
 import { LangServeGenerator } from '../../../../../src/services/export/langchain/langserve-generator.js';
 import type { OssaAgent } from '../../../../../src/types/index.js';
+import { API_VERSION } from '../../../src/version.js';
 
 describe('LangServeGenerator', () => {
   const mockManifest: OssaAgent = {

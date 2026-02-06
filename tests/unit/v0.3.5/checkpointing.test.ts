@@ -7,6 +7,7 @@ import { V035FeatureValidator } from '../../../src/tools/validation/validate-v0.
 import { writeFileSync, unlinkSync } from 'fs';
 import { join } from 'path';
 import yaml from 'yaml';
+import { API_VERSION } from '../../../src/version.js';
 
 describe('OSSA v0.3.5 Checkpointing', () => {
   const validator = new V035FeatureValidator();
@@ -14,7 +15,7 @@ describe('OSSA v0.3.5 Checkpointing', () => {
 
   it('should validate valid checkpointing configuration', () => {
     const manifest = {
-      apiVersion: 'ossa/v0.4.1',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: { name: 'test-agent' },
       spec: {
@@ -46,7 +47,7 @@ describe('OSSA v0.3.5 Checkpointing', () => {
 
     for (const interval of intervals) {
       const manifest = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: { name: 'test-agent' },
         spec: {
@@ -70,7 +71,7 @@ describe('OSSA v0.3.5 Checkpointing', () => {
 
   it('should reject invalid checkpoint backend', () => {
     const manifest = {
-      apiVersion: 'ossa/v0.4.1',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: { name: 'test-agent' },
       spec: {

@@ -13,6 +13,7 @@ import { execSync } from 'child_process';
 import { existsSync } from 'fs';
 import { join } from 'path';
 import { z } from 'zod';
+import { API_VERSION } from '../../../src/version.js';
 
 const projectRoot = join(__dirname, '../..');
 const cliPath = join(projectRoot, 'bin/ossa');

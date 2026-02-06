@@ -11,6 +11,7 @@ import { SchemaRepository } from '../../src/repositories/schema.repository.js';
 import type { OssaAgent, SchemaVersion } from '../../src/types/index.js';
 import * as fs from 'fs';
 import * as path from 'path';
+import { API_VERSION } from '../../../src/version.js';
 
 describe.skip('Schema Validation Integration', () => {
   const validationService = container.get(ValidationService);

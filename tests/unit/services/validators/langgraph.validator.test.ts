@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from '@jest/globals';
 import { LangGraphValidator } from '../../../../src/services/validators/langgraph.validator.js';
 import type { OssaAgent } from '../../../../src/types/index.js';
+import { API_VERSION } from '../../../src/version.js';
 
 describe.skip('LangGraphValidator', () => {
   let validator: LangGraphValidator;
@@ -9,7 +10,7 @@ describe.skip('LangGraphValidator', () => {
   beforeEach(() => {
     validator = new LangGraphValidator();
     baseManifest = {
-      apiVersion: 'ossa/v0.4.1',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'test-agent',

@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { AgentsMdService } from '../../../../src/services/agents-md/agents-md.service.js';
 import type { OssaAgent } from '../../../../src/types/index.js';
 import * as fs from 'fs/promises';
+import { API_VERSION } from '../../../src/version.js';
 
 // Mock fs module
 jest.mock('fs/promises');
@@ -17,7 +18,7 @@ describe('AgentsMdService', () => {
   describe('generateAgentsMd', () => {
     it('should generate AGENTS.md from manifest with all sections', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -81,7 +82,7 @@ describe('AgentsMdService', () => {
 
     it('should generate with custom sections', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -114,7 +115,7 @@ describe('AgentsMdService', () => {
 
     it('should skip disabled sections', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -146,7 +147,7 @@ describe('AgentsMdService', () => {
 
     it('should throw error if extension not enabled', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -168,7 +169,7 @@ describe('AgentsMdService', () => {
 
     it('should generate without comments when disabled', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -193,7 +194,7 @@ describe('AgentsMdService', () => {
 
     it('should format PR title with template variables', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -226,7 +227,7 @@ describe('AgentsMdService', () => {
   describe('writeAgentsMd', () => {
     it('should write AGENTS.md to default path', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -253,7 +254,7 @@ describe('AgentsMdService', () => {
 
     it('should write to custom output path', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -281,7 +282,7 @@ describe('AgentsMdService', () => {
   describe('validateAgentsMd', () => {
     it('should validate existing AGENTS.md', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -316,7 +317,7 @@ Test content`;
 
     it('should return warnings for missing sections', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -348,7 +349,7 @@ Test content`;
 
     it('should return error if file not found', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -420,7 +421,7 @@ See \`README.md\` and \`CONTRIBUTING.md\` for details.`;
   describe('syncAgentsMd', () => {
     it('should sync AGENTS.md from manifest', async () => {
       const mockManifest = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -450,7 +451,7 @@ See \`README.md\` and \`CONTRIBUTING.md\` for details.`;
 
     it('should throw error if sync not enabled', async () => {
       const mockManifest = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',

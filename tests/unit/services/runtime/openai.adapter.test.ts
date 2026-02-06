@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from '@jest/globals';
 import { OpenAIAdapter } from '../../../../src/services/runtime/openai.adapter.js';
 import type { OssaAgent } from '../../../../src/types/index.js';
+import { API_VERSION } from '../../../src/version.js';
 
 describe('OpenAIAdapter', () => {
   let adapter: OpenAIAdapter;
@@ -8,7 +9,7 @@ describe('OpenAIAdapter', () => {
 
   beforeEach(() => {
     mockManifest = {
-      apiVersion: 'ossa/v0.4.1',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'test-agent',

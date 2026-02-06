@@ -13,6 +13,7 @@ import { GitRollbackService } from '../../src/services/git-rollback.service.js';
 import { ValidationService } from '../../src/services/validation.service.js';
 import { SchemaRepository } from '../../src/repositories/schema.repository.js';
 import { GitService } from '../../src/services/git.service.js';
+import { API_VERSION } from '../../../src/version.js';
 
 describe('Migration Engine Integration', () => {
   let migrationService: MigrationService;
@@ -67,7 +68,7 @@ describe('Migration Engine Integration', () => {
   describe('Single Manifest Migration', () => {
     it('should handle manifest already at target version', async () => {
       const manifest = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -123,19 +124,19 @@ describe('Migration Engine Integration', () => {
     it('should migrate multiple manifests in parallel', async () => {
       const manifests = [
         {
-          apiVersion: 'ossa/v0.4.1',
+          apiVersion: API_VERSION,
           kind: 'Agent',
           metadata: { name: 'agent-1', labels: {}, annotations: {} },
           spec: { role: 'Agent 1' },
         },
         {
-          apiVersion: 'ossa/v0.4.1',
+          apiVersion: API_VERSION,
           kind: 'Agent',
           metadata: { name: 'agent-2', labels: {}, annotations: {} },
           spec: { role: 'Agent 2' },
         },
         {
-          apiVersion: 'ossa/v0.4.1',
+          apiVersion: API_VERSION,
           kind: 'Agent',
           metadata: { name: 'agent-3', labels: {}, annotations: {} },
           spec: { role: 'Agent 3' },
@@ -163,13 +164,13 @@ describe('Migration Engine Integration', () => {
     it('should handle sequential migration', async () => {
       const manifests = [
         {
-          apiVersion: 'ossa/v0.4.1',
+          apiVersion: API_VERSION,
           kind: 'Agent',
           metadata: { name: 'agent-1', labels: {}, annotations: {} },
           spec: { role: 'Agent 1' },
         },
         {
-          apiVersion: 'ossa/v0.4.1',
+          apiVersion: API_VERSION,
           kind: 'Agent',
           metadata: { name: 'agent-2', labels: {}, annotations: {} },
           spec: { role: 'Agent 2' },
@@ -188,14 +189,14 @@ describe('Migration Engine Integration', () => {
     it('should stop on error when configured', async () => {
       const manifests = [
         {
-          apiVersion: 'ossa/v0.4.1',
+          apiVersion: API_VERSION,
           kind: 'Agent',
           metadata: { name: 'agent-1', labels: {}, annotations: {} },
           spec: { role: 'Agent 1' },
         },
         { invalid: 'manifest' }, // Invalid manifest
         {
-          apiVersion: 'ossa/v0.4.1',
+          apiVersion: API_VERSION,
           kind: 'Agent',
           metadata: { name: 'agent-3', labels: {}, annotations: {} },
           spec: { role: 'Agent 3' },
@@ -214,14 +215,14 @@ describe('Migration Engine Integration', () => {
     it('should continue on error when configured', async () => {
       const manifests = [
         {
-          apiVersion: 'ossa/v0.4.1',
+          apiVersion: API_VERSION,
           kind: 'Agent',
           metadata: { name: 'agent-1', labels: {}, annotations: {} },
           spec: { role: 'Agent 1' },
         },
         { invalid: 'manifest' },
         {
-          apiVersion: 'ossa/v0.4.1',
+          apiVersion: API_VERSION,
           kind: 'Agent',
           metadata: { name: 'agent-3', labels: {}, annotations: {} },
           spec: { role: 'Agent 3' },
@@ -241,7 +242,7 @@ describe('Migration Engine Integration', () => {
   describe('Migration Validation', () => {
     it('should validate that critical fields are preserved', () => {
       const original = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -272,7 +273,7 @@ describe('Migration Engine Integration', () => {
 
     it('should warn about field type changes', () => {
       const original = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: { name: 'test', labels: {}, annotations: {} },
         spec: {

@@ -4,6 +4,7 @@
 
 import { describe, it, expect, beforeEach } from '@jest/globals';
 import { OssaError } from '../../../src/errors';
+import { API_VERSION } from '../../../src/version.js';
 
 // Create test error class
 class TestError extends OssaError {

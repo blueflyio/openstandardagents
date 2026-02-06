@@ -6,6 +6,7 @@ import { describe, it, expect, beforeEach } from '@jest/globals';
 import { LocalDeploymentDriver } from '../../../src/deploy/local-driver.js';
 import type { OssaAgent } from '../../../src/types/index.js';
 import type { DeploymentConfig } from '../../../src/deploy/types.js';
+import { API_VERSION } from '../../../src/version.js';
 
 describe('LocalDeploymentDriver', () => {
   let driver: LocalDeploymentDriver;
@@ -15,7 +16,7 @@ describe('LocalDeploymentDriver', () => {
   beforeEach(() => {
     driver = new LocalDeploymentDriver();
     mockManifest = {
-      apiVersion: 'ossa/v0.4.1',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'test-agent',

@@ -6,6 +6,7 @@
 import { describe, it, expect, beforeEach } from '@jest/globals';
 import { KagentValidator } from '../../../src/services/validators/kagent.validator.js';
 import type { OssaAgent } from '../../../src/types/index.js';
+import { API_VERSION } from '../../../src/version.js';
 
 describe('KagentValidator', () => {
   let validator: KagentValidator;
@@ -17,7 +18,7 @@ describe('KagentValidator', () => {
   describe('Basic Validation', () => {
     it('should return valid for agent without kagent extension', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: { name: 'basic-agent', version: '1.0.0' },
         spec: {
@@ -34,7 +35,7 @@ describe('KagentValidator', () => {
 
     it('should return valid for agent with minimal kagent extension', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: { name: 'kagent-agent', version: '1.0.0' },
         spec: {
@@ -58,7 +59,7 @@ describe('KagentValidator', () => {
 
     it('should return valid for agent with complete kagent configuration', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: { name: 'full-kagent-agent', version: '1.0.0' },
         spec: {
@@ -83,7 +84,7 @@ describe('KagentValidator', () => {
   describe('Kubernetes Configuration Validation', () => {
     it('should reject invalid kubernetes namespace', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: { name: 'bad-namespace-agent', version: '1.0.0' },
         spec: { role: 'Test' },
@@ -112,7 +113,7 @@ describe('KagentValidator', () => {
 
     it('should reject invalid cpu format', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: { name: 'bad-cpu-agent', version: '1.0.0' },
         spec: { role: 'Test' },
@@ -138,7 +139,7 @@ describe('KagentValidator', () => {
 
     it('should reject invalid memory format', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: { name: 'bad-memory-agent', version: '1.0.0' },
         spec: { role: 'Test' },
@@ -165,7 +166,7 @@ describe('KagentValidator', () => {
 
       validCpuFormats.forEach((cpu) => {
         const manifest: OssaAgent = {
-          apiVersion: 'ossa/v0.4.1',
+          apiVersion: API_VERSION,
           kind: 'Agent',
           metadata: { name: `cpu-${cpu}`, version: '1.0.0' },
           spec: { role: 'Test' },
@@ -196,7 +197,7 @@ describe('KagentValidator', () => {
 
       validMemoryFormats.forEach((memory) => {
         const manifest: OssaAgent = {
-          apiVersion: 'ossa/v0.4.1',
+          apiVersion: API_VERSION,
           kind: 'Agent',
           metadata: { name: `mem-${memory}`, version: '1.0.0' },
           spec: { role: 'Test' },
@@ -219,7 +220,7 @@ describe('KagentValidator', () => {
   describe('Cost Limits Validation', () => {
     it('should reject negative maxTokensPerDay', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: { name: 'negative-tokens-agent', version: '1.0.0' },
         spec: { role: 'Test' },
@@ -248,7 +249,7 @@ describe('KagentValidator', () => {
 
     it('should reject negative maxCostPerDay', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: { name: 'negative-cost-agent', version: '1.0.0' },
         spec: { role: 'Test' },
@@ -277,7 +278,7 @@ describe('KagentValidator', () => {
 
     it('should warn when no cost limits are set', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: { name: 'no-limits-agent', version: '1.0.0' },
         spec: { role: 'Test' },
@@ -302,7 +303,7 @@ describe('KagentValidator', () => {
 
     it('should accept zero cost limits', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: { name: 'zero-limits-agent', version: '1.0.0' },
         spec: { role: 'Test' },
@@ -330,7 +331,7 @@ describe('KagentValidator', () => {
   describe('Audit Log Validation', () => {
     it('should handle audit log configuration', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: { name: 'audit-log-agent', version: '1.0.0' },
         spec: { role: 'Test' },
@@ -362,7 +363,7 @@ describe('KagentValidator', () => {
   describe('Agent-to-Agent (A2A) Configuration', () => {
     it('should warn when A2A is enabled but no endpoints', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: { name: 'a2a-no-endpoints', version: '1.0.0' },
         spec: { role: 'Test' },
@@ -388,7 +389,7 @@ describe('KagentValidator', () => {
 
     it('should reject invalid endpoint URLs', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: { name: 'a2a-bad-url', version: '1.0.0' },
         spec: { role: 'Test' },
@@ -416,7 +417,7 @@ describe('KagentValidator', () => {
 
     it('should accept valid endpoint URLs', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: { name: 'a2a-valid-urls', version: '1.0.0' },
         spec: { role: 'Test' },
@@ -444,7 +445,7 @@ describe('KagentValidator', () => {
 
     it('should be valid when A2A is disabled', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: { name: 'a2a-disabled', version: '1.0.0' },
         spec: { role: 'Test' },
@@ -469,7 +470,7 @@ describe('KagentValidator', () => {
   describe('GitLab Integration Validation', () => {
     it('should warn when agentId is set but projectId is missing', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: { name: 'gitlab-missing-project', version: '1.0.0' },
         spec: { role: 'Test' },
@@ -494,7 +495,7 @@ describe('KagentValidator', () => {
 
     it('should reject negative projectId', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: { name: 'gitlab-bad-project-id', version: '1.0.0' },
         spec: { role: 'Test' },
@@ -522,7 +523,7 @@ describe('KagentValidator', () => {
 
     it('should accept valid GitLab integration config', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: { name: 'gitlab-valid', version: '1.0.0' },
         spec: { role: 'Test' },
@@ -548,7 +549,7 @@ describe('KagentValidator', () => {
   describe('Real-world Examples', () => {
     it('should validate Kubernetes cluster agent configuration', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'k8s-cluster-agent',
@@ -578,7 +579,7 @@ describe('KagentValidator', () => {
 
     it('should validate compliance validation agent configuration', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'compliance-validator',
@@ -607,7 +608,7 @@ describe('KagentValidator', () => {
   describe('Error Message Quality', () => {
     it('should provide clear error messages for invalid configurations', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: { name: 'test-agent', version: '1.0.0' },
         spec: { role: 'Test' },
@@ -636,7 +637,7 @@ describe('KagentValidator', () => {
 
     it('should provide actionable warning messages', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: { name: 'test-agent', version: '1.0.0' },
         spec: { role: 'Test' },

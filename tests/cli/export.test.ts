@@ -9,13 +9,14 @@ import { LangChainAdapter } from '../../src/adapters/langchain-adapter.js';
 import { CrewAIAdapter } from '../../src/adapters/crewai-adapter.js';
 import { LangflowAdapter } from '../../src/adapters/langflow-adapter.js';
 import { OpenAPIAdapter } from '../../src/adapters/openapi-adapter.js';
+import { API_VERSION } from '../../../src/version.js';
 
 describe('Export Adapters', () => {
   let testManifest: OssaAgent;
 
   beforeEach(() => {
     testManifest = {
-      apiVersion: 'ossa/v0.4.1',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'test-agent',
@@ -307,7 +308,7 @@ describe('Export Adapters', () => {
   describe('Error Handling', () => {
     it('should handle missing metadata gracefully', () => {
       const noMetadata: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         spec: {
           role: 'Test',
@@ -323,7 +324,7 @@ describe('Export Adapters', () => {
 
     it('should handle missing spec gracefully', () => {
       const noSpec: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test',

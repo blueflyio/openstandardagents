@@ -5,6 +5,7 @@
 import { describe, it, expect, beforeEach } from '@jest/globals';
 import { FeatureDetector } from '../../../../src/services/conformance/feature-detector.service.js';
 import type { OssaAgent } from '../../../../src/types/index.js';
+import { API_VERSION } from '../../../src/version.js';
 
 describe('FeatureDetector', () => {
   let detector: FeatureDetector;
@@ -14,7 +15,7 @@ describe('FeatureDetector', () => {
   });
 
   const mockManifest: OssaAgent = {
-    apiVersion: 'ossa/v0.4.1',
+    apiVersion: API_VERSION,
     kind: 'Agent',
     metadata: {
       name: 'test-agent',

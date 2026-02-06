@@ -7,6 +7,7 @@ import { createDeploymentDriver } from '../../../src/deploy/index.js';
 import { LocalDeploymentDriver } from '../../../src/deploy/local-driver.js';
 import { DockerDeploymentDriver } from '../../../src/deploy/docker-driver.js';
 import { KubernetesDeploymentDriver } from '../../../src/deploy/k8s-driver.js';
+import { API_VERSION } from '../../../src/version.js';
 
 describe('createDeploymentDriver', () => {
   it('should create local driver', () => {
