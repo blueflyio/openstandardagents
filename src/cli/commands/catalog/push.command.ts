@@ -15,7 +15,9 @@ import { logger } from '../../../utils/logger.js';
 
 export function createPushCommand(): Command {
   return new Command('push')
-    .description('Push agents to GitLab Catalog (⚠️ EXPERIMENTAL - Not yet functional)')
+    .description(
+      'Push agents to GitLab Catalog (⚠️ EXPERIMENTAL - Not yet functional)'
+    )
     .option('-a, --agent <id>', 'Push specific agent')
     .option('--all', 'Push all agents')
     .option('-n, --dry-run', 'Show what would be pushed')
@@ -24,7 +26,11 @@ export function createPushCommand(): Command {
       const options = PushOptionsSchema.parse(opts);
       const config = new CatalogConfig();
 
-      console.log(chalk.yellow('\n⚠️  EXPERIMENTAL FEATURE - This feature is not yet fully implemented.\n'));
+      console.log(
+        chalk.yellow(
+          '\n⚠️  EXPERIMENTAL FEATURE - This feature is not yet fully implemented.\n'
+        )
+      );
 
       const agentIds = config.resolveAgentIds(options.agent, options.all);
 
@@ -55,7 +61,8 @@ export function createPushCommand(): Command {
         const ossaError = isOssaError(error)
           ? error
           : new ConfigurationError('GitLab token not configured', {
-              originalError: error instanceof Error ? error.message : String(error),
+              originalError:
+                error instanceof Error ? error.message : String(error),
             });
         logger.error({ err: ossaError }, 'Failed to retrieve GitLab token');
         console.error(chalk.red(`Error: ${ossaError.message}`));
@@ -106,7 +113,8 @@ export function createPushCommand(): Command {
             ? error
             : new ConfigurationError(`Failed to push agent: ${agentId}`, {
                 agentId,
-                originalError: error instanceof Error ? error.message : String(error),
+                originalError:
+                  error instanceof Error ? error.message : String(error),
               });
           logger.error({ err: ossaError }, 'Push operation failed for agent');
           console.log(chalk.red(`✗ ${agentId} - ${ossaError.message}`));
@@ -147,9 +155,7 @@ async function pushToCatalog(
   // is not yet ready for actual use.
 
   console.log(
-    chalk.yellow(
-      `  ℹ  GitLab Catalog API integration is not yet implemented`
-    )
+    chalk.yellow(`  ℹ  GitLab Catalog API integration is not yet implemented`)
   );
 
   return {

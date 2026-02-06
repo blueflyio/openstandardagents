@@ -151,7 +151,13 @@ export async function costEstimationStep(
   - Implement caching to reduce LLM API calls
   - Batch requests when possible
 `;
-    logger.warn({ action: 'cost-optimization-needed', totalMonthly: estimate.totalMonthly }, suggestions);
+    logger.warn(
+      {
+        action: 'cost-optimization-needed',
+        totalMonthly: estimate.totalMonthly,
+      },
+      suggestions
+    );
   }
 
   return state;

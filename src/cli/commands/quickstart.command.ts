@@ -165,9 +165,7 @@ function checkApiKeys(): { hasKey: boolean; provider: string } {
 
   printWarning('No LLM API key detected');
   printInfo('Set one of: ANTHROPIC_API_KEY, OPENAI_API_KEY, GOOGLE_API_KEY');
-  printInfo(
-    `Or use Ollama for local models (free): https://ollama.ai`
-  );
+  printInfo(`Or use Ollama for local models (free): https://ollama.ai`);
 
   return { hasKey: false, provider: 'anthropic' };
 }
@@ -217,7 +215,9 @@ function showSuccessMessage(agentFile: string, provider: string): void {
 
   logger.info('3. Explore examples:');
   logger.info('ossa init my-agent --template advanced');
-  logger.info('See: https://github.com/blueflyio/openstandardagents/tree/main/examples');
+  logger.info(
+    'See: https://github.com/blueflyio/openstandardagents/tree/main/examples'
+  );
 
   logger.info('4. Learn more:');
   logger.info('Docs:     https://openstandardagents.org/docs');

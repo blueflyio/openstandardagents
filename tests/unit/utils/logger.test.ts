@@ -2,7 +2,14 @@
  * Unit tests for Logger utility
  */
 
-import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
+import {
+  describe,
+  it,
+  expect,
+  jest,
+  beforeEach,
+  afterEach,
+} from '@jest/globals';
 import { API_VERSION } from '../../../src/version.js';
 import {
   createLogger,
@@ -172,9 +179,13 @@ describe('Logger', () => {
     it('should measure synchronous function', async () => {
       const infoSpy = jest.spyOn(testLogger, 'info');
 
-      const result = await measurePerformance(testLogger, 'sync-operation', () => {
-        return 'result';
-      });
+      const result = await measurePerformance(
+        testLogger,
+        'sync-operation',
+        () => {
+          return 'result';
+        }
+      );
 
       expect(result).toBe('result');
       expect(infoSpy).toHaveBeenCalled();
@@ -183,10 +194,14 @@ describe('Logger', () => {
     it('should measure asynchronous function', async () => {
       const infoSpy = jest.spyOn(testLogger, 'info');
 
-      const result = await measurePerformance(testLogger, 'async-operation', async () => {
-        await new Promise((resolve) => setTimeout(resolve, 10));
-        return 'async-result';
-      });
+      const result = await measurePerformance(
+        testLogger,
+        'async-operation',
+        async () => {
+          await new Promise((resolve) => setTimeout(resolve, 10));
+          return 'async-result';
+        }
+      );
 
       expect(result).toBe('async-result');
       expect(infoSpy).toHaveBeenCalled();
@@ -363,10 +378,14 @@ describe('Logger', () => {
       expect(infoSpy).toHaveBeenCalled();
 
       // Measure performance
-      const result = await measurePerformance(testLogger, 'test-operation', async () => {
-        await new Promise((resolve) => setTimeout(resolve, 10));
-        return 'success';
-      });
+      const result = await measurePerformance(
+        testLogger,
+        'test-operation',
+        async () => {
+          await new Promise((resolve) => setTimeout(resolve, 10));
+          return 'success';
+        }
+      );
 
       expect(result).toBe('success');
 

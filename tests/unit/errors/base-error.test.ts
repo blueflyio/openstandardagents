@@ -84,7 +84,9 @@ describe('OssaError', () => {
       const json = error.toJSON();
       const timestamp = json.error.timestamp as string;
 
-      expect(timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+      expect(timestamp).toMatch(
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
+      );
       expect(new Date(timestamp).getTime()).toBe(error.timestamp.getTime());
     });
   });
@@ -199,7 +201,9 @@ describe('OssaError', () => {
 
     it('should maintain correct prototype chain', () => {
       expect(Object.getPrototypeOf(error)).toBe(TestError.prototype);
-      expect(Object.getPrototypeOf(TestError.prototype)).toBe(OssaError.prototype);
+      expect(Object.getPrototypeOf(TestError.prototype)).toBe(
+        OssaError.prototype
+      );
       expect(Object.getPrototypeOf(OssaError.prototype)).toBe(Error.prototype);
     });
   });
@@ -218,7 +222,10 @@ describe('OssaError', () => {
       const json = error.toJSON();
       const errorData = json.error;
 
-      const recreatedError = new TestError(errorData.message, errorData.details);
+      const recreatedError = new TestError(
+        errorData.message,
+        errorData.details
+      );
       recreatedError.statusCode = errorData.statusCode;
 
       expect(recreatedError.code).toBe(error.code);

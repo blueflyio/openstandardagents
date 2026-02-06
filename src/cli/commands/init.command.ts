@@ -22,7 +22,11 @@ function question(query: string): Promise<string> {
 
 export const initCommand = new Command('init')
   .argument('[name]', 'Agent name/identifier')
-  .option('-o, --output <path>', 'Output file path', getInitDefaults().outputPath)
+  .option(
+    '-o, --output <path>',
+    'Output file path',
+    getInitDefaults().outputPath
+  )
   .option('-y, --yes', 'Use defaults without prompting')
   .option('--interactive', 'Use enhanced interactive wizard')
   .option(
@@ -43,7 +47,10 @@ export const initCommand = new Command('init')
         let version = initDefaults.defaultVersion;
         let role: string;
         let llmProvider = initDefaults.defaultLLMProvider;
-        let llmModel = initDefaults.defaultLLMModels[initDefaults.defaultLLMProvider as keyof typeof initDefaults.defaultLLMModels] || initDefaults.defaultLLMModels.openai;
+        let llmModel =
+          initDefaults.defaultLLMModels[
+            initDefaults.defaultLLMProvider as keyof typeof initDefaults.defaultLLMModels
+          ] || initDefaults.defaultLLMModels.openai;
         let platforms: string[] = [];
 
         if (!useDefaults) {
@@ -66,12 +73,13 @@ export const initCommand = new Command('init')
                 `LLM Provider (openai/anthropic/google, default: ${initDefaults.defaultLLMProvider}): `
               )
             )) || initDefaults.defaultLLMProvider;
-          const defaultModelForProvider = initDefaults.defaultLLMModels[llmProvider as keyof typeof initDefaults.defaultLLMModels] || initDefaults.defaultLLMModels.openai;
+          const defaultModelForProvider =
+            initDefaults.defaultLLMModels[
+              llmProvider as keyof typeof initDefaults.defaultLLMModels
+            ] || initDefaults.defaultLLMModels.openai;
           llmModel =
             (await question(
-              chalk.blue(
-                `LLM Model (default: ${defaultModelForProvider}): `
-              )
+              chalk.blue(`LLM Model (default: ${defaultModelForProvider}): `)
             )) || defaultModelForProvider;
 
           const platformsInput =

@@ -232,10 +232,18 @@ export function recordHttpRequest(
   errorCode?: string
 ): void {
   httpRequestsTotal.inc({ method, route, status_code: statusCode });
-  httpRequestDuration.observe({ method, route, status_code: statusCode }, durationMs);
+  httpRequestDuration.observe(
+    { method, route, status_code: statusCode },
+    durationMs
+  );
 
   if (statusCode >= 400 && errorCode) {
-    httpErrorsTotal.inc({ method, route, status_code: statusCode, error_code: errorCode });
+    httpErrorsTotal.inc({
+      method,
+      route,
+      status_code: statusCode,
+      error_code: errorCode,
+    });
   }
 }
 
@@ -271,7 +279,11 @@ export function recordAgentMigration(
   toVersion: string,
   status: 'success' | 'failure'
 ): void {
-  agentMigrationsTotal.inc({ from_version: fromVersion, to_version: toVersion, status });
+  agentMigrationsTotal.inc({
+    from_version: fromVersion,
+    to_version: toVersion,
+    status,
+  });
 }
 
 /**
@@ -301,8 +313,16 @@ export function recordRegistryDownload(
 /**
  * Record error metrics
  */
-export function recordError(errorCode: string, errorType: string, statusCode: number): void {
-  errorsTotal.inc({ error_code: errorCode, error_type: errorType, status_code: statusCode });
+export function recordError(
+  errorCode: string,
+  errorType: string,
+  statusCode: number
+): void {
+  errorsTotal.inc({
+    error_code: errorCode,
+    error_type: errorType,
+    status_code: statusCode,
+  });
 }
 
 /**
