@@ -273,6 +273,12 @@ program.addCommand(workspaceCommand);
 program.addCommand(registryCommand);
 program.addCommand(agentCardCommand);
 
+// Agent Registry Commands (GAID/DID) - Issue #391
+program.addCommand(generateGaidCommand);
+program.addCommand(registerCommand);
+program.addCommand(discoverCommand);
+program.addCommand(verifyCommand);
+
 // Extension development commands
 program.addCommand(extensionTeamCommand);
 
