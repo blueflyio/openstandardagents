@@ -75,7 +75,10 @@ export function errorMetricsMiddleware() {
 /**
  * Metrics endpoint - exposes Prometheus metrics
  */
-export async function metricsEndpoint(req: Request, res: Response): Promise<void> {
+export async function metricsEndpoint(
+  req: Request,
+  res: Response
+): Promise<void> {
   try {
     const metrics = await getMetrics();
     res.set('Content-Type', 'text/plain; version=0.0.4; charset=utf-8');
@@ -110,7 +113,10 @@ export function registerHealthCheck(check: HealthCheck): void {
 /**
  * Health check endpoint - checks if service is healthy
  */
-export async function healthEndpoint(req: Request, res: Response): Promise<void> {
+export async function healthEndpoint(
+  req: Request,
+  res: Response
+): Promise<void> {
   const results: Record<string, { healthy: boolean; message?: string }> = {};
   let allHealthy = true;
 
@@ -164,7 +170,10 @@ export async function healthEndpoint(req: Request, res: Response): Promise<void>
 /**
  * Readiness check endpoint - checks if service is ready to accept traffic
  */
-export async function readinessEndpoint(req: Request, res: Response): Promise<void> {
+export async function readinessEndpoint(
+  req: Request,
+  res: Response
+): Promise<void> {
   // Check if service is ready
   const ready = true; // Can add more checks here
 
@@ -184,7 +193,10 @@ export async function readinessEndpoint(req: Request, res: Response): Promise<vo
 /**
  * Liveness check endpoint - checks if service is alive (for K8s)
  */
-export async function livenessEndpoint(req: Request, res: Response): Promise<void> {
+export async function livenessEndpoint(
+  req: Request,
+  res: Response
+): Promise<void> {
   // Simple liveness check (process is running)
   res.status(200).json({
     status: 'alive',
@@ -263,7 +275,8 @@ export function createExternalServiceHealthCheck(
       } catch (error) {
         return {
           healthy: false,
-          message: error instanceof Error ? error.message : 'Service unavailable',
+          message:
+            error instanceof Error ? error.message : 'Service unavailable',
         };
       }
     },

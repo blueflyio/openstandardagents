@@ -40,7 +40,8 @@ export interface LoggerConfig {
  */
 function createLoggerConfig(config: LoggerConfig = {}): pino.LoggerOptions {
   const isDevelopment = process.env.NODE_ENV !== 'production';
-  const level = config.level || process.env.LOG_LEVEL || (isDevelopment ? 'debug' : 'info');
+  const level =
+    config.level || process.env.LOG_LEVEL || (isDevelopment ? 'debug' : 'info');
 
   const baseConfig: pino.LoggerOptions = {
     name: config.name || 'ossa',
@@ -111,7 +112,10 @@ function wrapWithTraceContext(logger: pino.Logger): pino.Logger {
 
   // Override child method to inject trace context
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  logger.child = (bindings: pino.Bindings, options?: pino.ChildLoggerOptions): any => {
+  logger.child = (
+    bindings: pino.Bindings,
+    options?: pino.ChildLoggerOptions
+  ): any => {
     const traceContext = getTraceContext();
     return originalChild({ ...traceContext, ...bindings }, options);
   };
@@ -122,7 +126,11 @@ function wrapWithTraceContext(logger: pino.Logger): pino.Logger {
 /**
  * Get current OpenTelemetry trace context
  */
-function getTraceContext(): { traceId?: string; spanId?: string; traceFlags?: number } {
+function getTraceContext(): {
+  traceId?: string;
+  spanId?: string;
+  traceFlags?: number;
+} {
   const span = trace.getSpan(context.active());
   if (!span) {
     return {};
@@ -144,7 +152,9 @@ export const logger = createLogger();
 /**
  * Create child logger with context
  */
-export function createChildLogger(context: Record<string, unknown>): pino.Logger {
+export function createChildLogger(
+  context: Record<string, unknown>
+): pino.Logger {
   return logger.child(context);
 }
 
@@ -193,7 +203,11 @@ export function logRequest(logger: pino.Logger) {
 /**
  * Log error with full context
  */
-export function logError(logger: pino.Logger, error: Error, context?: Record<string, unknown>): void {
+export function logError(
+  logger: pino.Logger,
+  error: Error,
+  context?: Record<string, unknown>
+): void {
   logger.error({
     err: {
       type: error.name,

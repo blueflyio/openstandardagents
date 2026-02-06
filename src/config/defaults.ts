@@ -271,14 +271,7 @@ export function getBuildDefaults() {
   return {
     outputDir: process.env.OSSA_BUILD_OUTPUT_DIR || 'dist/build',
     baseImage: process.env.OSSA_BASE_IMAGE || 'node:20-alpine',
-    platforms: [
-      'npm',
-      'langchain',
-      'crewai',
-      'anthropic',
-      'drupal',
-      'kagent',
-    ],
+    platforms: ['npm', 'langchain', 'crewai', 'anthropic', 'drupal', 'kagent'],
   };
 }
 
@@ -304,7 +297,10 @@ export function getDeployDefaults() {
     defaultPlatform: process.env.OSSA_DEFAULT_DEPLOY_PLATFORM || 'kagent',
     defaultTarget: process.env.OSSA_DEFAULT_DEPLOY_TARGET || 'local',
     defaultNamespace: process.env.OSSA_DEFAULT_DEPLOY_NAMESPACE || 'default',
-    defaultReplicas: parseInt(process.env.OSSA_DEFAULT_DEPLOY_REPLICAS || '1', 10),
+    defaultReplicas: parseInt(
+      process.env.OSSA_DEFAULT_DEPLOY_REPLICAS || '1',
+      10
+    ),
     dockerNetwork: process.env.OSSA_DOCKER_NETWORK || 'bridge',
     environment: process.env.OSSA_DEFAULT_ENVIRONMENT || 'dev',
   };
@@ -321,10 +317,12 @@ export function getInitDefaults() {
     defaultLLMProvider: process.env.OSSA_INIT_LLM_PROVIDER || 'openai',
     defaultLLMModels: {
       openai: process.env.OSSA_INIT_OPENAI_MODEL || 'gpt-4',
-      anthropic: process.env.OSSA_INIT_ANTHROPIC_MODEL || 'claude-3-5-sonnet-20241022',
+      anthropic:
+        process.env.OSSA_INIT_ANTHROPIC_MODEL || 'claude-3-5-sonnet-20241022',
       google: process.env.OSSA_INIT_GOOGLE_MODEL || 'gemini-pro',
     },
-    defaultDescription: process.env.OSSA_DEFAULT_DESCRIPTION || 'OSSA-compliant agent',
+    defaultDescription:
+      process.env.OSSA_DEFAULT_DESCRIPTION || 'OSSA-compliant agent',
     defaultPlatforms: (process.env.OSSA_DEFAULT_PLATFORMS || 'cursor,openai')
       .split(',')
       .map((p) => p.trim())

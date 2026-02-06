@@ -15,7 +15,9 @@ import { logger } from '../../../utils/logger.js';
 
 export function createPullCommand(): Command {
   return new Command('pull')
-    .description('Pull agents from GitLab Catalog (⚠️ EXPERIMENTAL - Not yet functional)')
+    .description(
+      'Pull agents from GitLab Catalog (⚠️ EXPERIMENTAL - Not yet functional)'
+    )
     .option('-a, --agent <id>', 'Pull specific agent')
     .option('--all', 'Pull all agents from catalog')
     .option('--overwrite', 'Overwrite local files')
@@ -23,7 +25,11 @@ export function createPullCommand(): Command {
       const options = PullOptionsSchema.parse(opts);
       const config = new CatalogConfig();
 
-      console.log(chalk.yellow('\n⚠️  EXPERIMENTAL FEATURE - This feature is not yet fully implemented.\n'));
+      console.log(
+        chalk.yellow(
+          '\n⚠️  EXPERIMENTAL FEATURE - This feature is not yet fully implemented.\n'
+        )
+      );
       console.log(chalk.cyan('Pulling from GitLab Catalog...\n'));
 
       // Verify token exists
@@ -34,7 +40,8 @@ export function createPullCommand(): Command {
         const ossaError = isOssaError(error)
           ? error
           : new ConfigurationError('GitLab token not configured', {
-              originalError: error instanceof Error ? error.message : String(error),
+              originalError:
+                error instanceof Error ? error.message : String(error),
             });
         logger.error({ err: ossaError }, 'Failed to retrieve GitLab token');
         console.error(chalk.red(`Error: ${ossaError.message}`));
@@ -110,7 +117,8 @@ export function createPullCommand(): Command {
         const ossaError = isOssaError(error)
           ? error
           : new ConfigurationError('Failed to pull agents from catalog', {
-              originalError: error instanceof Error ? error.message : String(error),
+              originalError:
+                error instanceof Error ? error.message : String(error),
             });
         logger.error({ err: ossaError }, 'Pull operation failed');
         console.error(chalk.red(`Pull failed: ${ossaError.message}`));
@@ -139,9 +147,7 @@ async function listCatalogAgents(
   // For now, return empty array to indicate feature is not ready
 
   console.log(
-    chalk.yellow(
-      '  ℹ  GitLab Catalog API integration is not yet implemented'
-    )
+    chalk.yellow('  ℹ  GitLab Catalog API integration is not yet implemented')
   );
   return [];
 }

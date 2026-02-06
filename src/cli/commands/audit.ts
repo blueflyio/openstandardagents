@@ -25,13 +25,21 @@ export function createAuditCommand(): Command {
     .command('scan')
     .description('Scan folder for agents and generate health report')
     .argument('[path]', 'Path to scan for agents', auditDefaults.scanPath)
-    .option('-r, --recursive', 'Recursively scan subdirectories', auditDefaults.recursive)
+    .option(
+      '-r, --recursive',
+      'Recursively scan subdirectories',
+      auditDefaults.recursive
+    )
     .option(
       '-l, --level <level>',
       'Validation level (basic|full|strict)',
       auditDefaults.validationLevel
     )
-    .option('-v, --spec-version <version>', 'OSSA spec version', auditDefaults.specVersion)
+    .option(
+      '-v, --spec-version <version>',
+      'OSSA spec version',
+      auditDefaults.specVersion
+    )
     .option('--no-examples', 'Exclude example agents from report')
     .option(
       '-f, --format <format>',
@@ -83,7 +91,8 @@ export function createAuditCommand(): Command {
         const ossaError = isOssaError(error)
           ? error
           : new ConfigurationError('Audit scan failed', {
-              originalError: error instanceof Error ? error.message : String(error),
+              originalError:
+                error instanceof Error ? error.message : String(error),
             });
         logger.error({ err: ossaError }, 'Audit scan operation failed');
         console.error(chalk.red(`❌ Error during audit: ${ossaError.message}`));
@@ -97,7 +106,11 @@ export function createAuditCommand(): Command {
     .description('Audit a specific agent')
     .argument('<id>', 'Agent ID')
     .option('-p, --path <path>', 'Path to agent directory')
-    .option('-l, --level <level>', 'Validation level', auditDefaults.validationLevel)
+    .option(
+      '-l, --level <level>',
+      'Validation level',
+      auditDefaults.validationLevel
+    )
     .action(async (agentId: string, options: any) => {
       const auditService = new AgentAuditService();
 
@@ -118,7 +131,8 @@ export function createAuditCommand(): Command {
           ? error
           : new ConfigurationError(`Failed to audit agent: ${agentId}`, {
               agentId,
-              originalError: error instanceof Error ? error.message : String(error),
+              originalError:
+                error instanceof Error ? error.message : String(error),
             });
         logger.error({ err: ossaError }, 'Agent audit operation failed');
         console.error(chalk.red(`❌ Error during audit: ${ossaError.message}`));

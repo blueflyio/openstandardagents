@@ -203,7 +203,8 @@ async function buildForPlatform(
           );
         }
 
-        const baseImage = dockerConfig.baseImage || getBuildDefaults().baseImage;
+        const baseImage =
+          dockerConfig.baseImage || getBuildDefaults().baseImage;
         const agentName = manifest.metadata?.name || 'agent';
         const workdir = dockerConfig.workdir || '/app';
 

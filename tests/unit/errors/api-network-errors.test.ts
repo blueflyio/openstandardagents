@@ -185,7 +185,9 @@ describe('Configuration Errors', () => {
       const error = new MissingEnvVarError('DATABASE_URL');
       expect(error.code).toBe('OSSA-CFG-002');
       expect(error.statusCode).toBe(500);
-      expect(error.message).toBe('Required environment variable "DATABASE_URL" is not set');
+      expect(error.message).toBe(
+        'Required environment variable "DATABASE_URL" is not set'
+      );
     });
 
     it('should include envVar in details', () => {
@@ -251,7 +253,9 @@ describe('Export Errors', () => {
       const error = new PlatformNotSupportedError('unsupported-platform');
       expect(error.code).toBe('OSSA-EXP-002');
       expect(error.statusCode).toBe(400);
-      expect(error.message).toBe('Platform "unsupported-platform" is not supported');
+      expect(error.message).toBe(
+        'Platform "unsupported-platform" is not supported'
+      );
     });
 
     it('should include platform in details', () => {
@@ -340,7 +344,9 @@ describe('Knowledge Graph Errors', () => {
       const error = new VectorDBConnectionError(dbUrl);
       expect(error.code).toBe('OSSA-KG-002');
       expect(error.statusCode).toBe(503);
-      expect(error.message).toBe(`Failed to connect to vector database at "${dbUrl}"`);
+      expect(error.message).toBe(
+        `Failed to connect to vector database at "${dbUrl}"`
+      );
     });
 
     it('should include dbUrl in details', () => {

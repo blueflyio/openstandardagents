@@ -13,7 +13,9 @@ import { logger } from '../../../utils/logger.js';
 
 export function createSyncCommand(): Command {
   return new Command('sync')
-    .description('Synchronize local and remote catalog (⚠️ EXPERIMENTAL - Not yet functional)')
+    .description(
+      'Synchronize local and remote catalog (⚠️ EXPERIMENTAL - Not yet functional)'
+    )
     .option(
       '-d, --direction <dir>',
       'Sync direction: push, pull, bidirectional',
@@ -24,7 +26,11 @@ export function createSyncCommand(): Command {
       const options = SyncOptionsSchema.parse(opts);
       const config = new CatalogConfig();
 
-      console.log(chalk.yellow('\n⚠️  EXPERIMENTAL FEATURE - This feature is not yet fully implemented.\n'));
+      console.log(
+        chalk.yellow(
+          '\n⚠️  EXPERIMENTAL FEATURE - This feature is not yet fully implemented.\n'
+        )
+      );
       console.log(chalk.cyan(`Syncing catalog (${options.direction})...\n`));
 
       // Verify token exists
@@ -34,7 +40,8 @@ export function createSyncCommand(): Command {
         const ossaError = isOssaError(error)
           ? error
           : new ConfigurationError('GitLab token not configured', {
-              originalError: error instanceof Error ? error.message : String(error),
+              originalError:
+                error instanceof Error ? error.message : String(error),
             });
         logger.error({ err: ossaError }, 'Failed to retrieve GitLab token');
         console.error(chalk.red(`Error: ${ossaError.message}`));
@@ -49,7 +56,9 @@ export function createSyncCommand(): Command {
         // TODO: Implement catalog API
         const remoteAgents: string[] = [];
         console.log(
-          chalk.yellow('  ℹ  GitLab Catalog API integration is not yet implemented')
+          chalk.yellow(
+            '  ℹ  GitLab Catalog API integration is not yet implemented'
+          )
         );
 
         // Calculate diff
@@ -96,7 +105,8 @@ export function createSyncCommand(): Command {
         const ossaError = isOssaError(error)
           ? error
           : new ConfigurationError('Failed to synchronize catalog', {
-              originalError: error instanceof Error ? error.message : String(error),
+              originalError:
+                error instanceof Error ? error.message : String(error),
             });
         logger.error({ err: ossaError }, 'Sync operation failed');
         console.error(chalk.red(`Sync failed: ${ossaError.message}`));
