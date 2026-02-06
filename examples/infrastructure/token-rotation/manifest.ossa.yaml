@@ -1,0 +1,73 @@
+apiVersion: ossa/v0.4.4
+kind: Agent
+metadata:
+  name: token-rotation-manager
+  version: 1.0.0
+  description: Reference example for token rotation pattern
+  agentType: kagent
+  agentKind: executor
+  agentArchitecture:
+    pattern: single
+    capabilities:
+      - tools
+      - code
+      - memory
+    coordination:
+      style: autonomous
+      handoffStrategy: none
+    runtime:
+      scalability: single-instance
+      executionModel: batch
+
+spec:
+  role: |
+    Automated service account token rotation manager.
+
+    Rotates GitLab/GitHub service account tokens on schedule,
+    validates new tokens, and updates vault secrets.
+
+  llm:
+    provider: none # KAGENT doesn't need LLM
+
+  tools:
+    - name: validate_token
+      description: Validate a token has required scopes
+
+    - name: rotate_token
+      description: Rotate a service account token
+
+    - name: verify_token
+      description: Verify new token works correctly
+
+    - name: update_vault
+      description: Update Vault secret with new token
+
+  authentication:
+    type: service_account
+    scopes:
+      - api
+      - read_user
+      - write_repository
+    auto_refresh: true
+    self_rotate: true  # ⚠️ Key feature: Agent can rotate its own token
+    rotation_policy:
+      enabled: true
+      interval_days: 90  # Rotate every 90 days
+      notify_on_rotation: true
+      manage_service_accounts:  # ⚠️ Key feature: Manages other accounts
+        - gitlab_token_webhook_manager
+        - gitlab_token_ci_orchestrator
+        - gitlab_token_content_reviewer
+        - gitlab_token_security_scanner
+
+  schedule:
+    cron: "0 2 * * 0"  # Weekly Sunday 2:00 AM UTC
+    timezone: UTC
+
+  observability:
+    logging:
+      level: info
+      format: json
+    monitoring:
+      enabled: true
+      metrics_port: 9090

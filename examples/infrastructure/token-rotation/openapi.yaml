@@ -1,0 +1,133 @@
+openapi: 3.1.0
+info:
+  title: Token Rotation Manager API
+  version: 1.0.0
+  description: |
+    Minimal reference API for token rotation pattern.
+
+    For production API, see platform-agents/@ossa/token-rotation-manager/openapi.yaml
+
+servers:
+  - url: https://workflow.blueflyagents.com/v1
+    description: Production
+
+paths:
+  /token-rotation/validate:
+    post:
+      summary: Validate token scopes
+      description: Check if token has required scopes
+      operationId: validateToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, scopes]
+              properties:
+                token:
+                  type: string
+                  description: Token to validate
+                scopes:
+                  type: array
+                  items:
+                    type: string
+                  description: Required scopes
+      responses:
+        '200':
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valid:
+                    type: boolean
+                  missingScopes:
+                    type: array
+                    items:
+                      type: string
+
+  /token-rotation/rotate:
+    post:
+      summary: Rotate service account token
+      description: Generate new token for service account
+      operationId: rotateToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [serviceAccount]
+              properties:
+                serviceAccount:
+                  type: string
+                  description: Service account name
+      responses:
+        '200':
+          description: New token generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  expiresAt:
+                    type: string
+                    format: date-time
+
+  /token-rotation/verify:
+    post:
+      summary: Verify new token works
+      description: Test new token against API
+      operationId: verifyToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token]
+              properties:
+                token:
+                  type: string
+      responses:
+        '200':
+          description: Token verified
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valid:
+                    type: boolean
+                  scopes:
+                    type: array
+                    items:
+                      type: string
+
+  /token-rotation/status:
+    get:
+      summary: Get rotation status
+      description: Check when tokens were last rotated
+      operationId: getStatus
+      responses:
+        '200':
+          description: Rotation status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  lastRotation:
+                    type: string
+                    format: date-time
+                  nextRotation:
+                    type: string
+                    format: date-time
+                  managedAccounts:
+                    type: array
+                    items:
+                      type: string

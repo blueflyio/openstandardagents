@@ -9,7 +9,7 @@ import { LangChainAdapter } from '../../src/adapters/langchain-adapter.js';
 import { CrewAIAdapter } from '../../src/adapters/crewai-adapter.js';
 import { LangflowAdapter } from '../../src/adapters/langflow-adapter.js';
 import { OpenAPIAdapter } from '../../src/adapters/openapi-adapter.js';
-import { API_VERSION } from '../../../src/version.js';
+import { API_VERSION } from '../../src/version.js';
 
 describe('Export Adapters', () => {
   let testManifest: OssaAgent;

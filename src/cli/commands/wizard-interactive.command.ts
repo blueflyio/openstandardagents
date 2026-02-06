@@ -47,6 +47,10 @@ import {
   printWarning,
   printError,
 } from '../banner.js';
+import { v5 as uuidv5 } from 'uuid';
+import { AgentProtocolClient } from '../../services/agent-protocol-client.js';
+import type { AgentCard } from '../../services/agent-protocol-client.js';
+import * as crypto from 'crypto';
 
 // =============================================================================
 // TYPES & INTERFACES
@@ -2893,6 +2897,40 @@ Guidelines:
         message: 'Output file path:',
         default: this.options.output || 'agent.ossa.yaml',
       },
+      {
+        type: 'confirm',
+        name: 'generate_gaid',
+        message: '🆔 Generate Global Agent ID (GAID)?',
+        default: true,
+      },
+      {
+        type: 'input',
+        name: 'organization',
+        message: '  Organization name (for GAID):',
+        default: 'blueflyio',
+        when: (answers: any) => answers.generate_gaid,
+      },
+      {
+        type: 'input',
+        name: 'serial_prefix',
+        message: '  Serial number prefix (e.g., "AG", "BOT", "SYS"):',
+        default: 'AG',
+        when: (answers: any) => answers.generate_gaid,
+      },
+      {
+        type: 'confirm',
+        name: 'register_agent',
+        message: '📡 Register agent to platform registry?',
+        default: false,
+        when: (answers: any) => answers.generate_gaid,
+      },
+      {
+        type: 'input',
+        name: 'api_url',
+        message: '  Registry API URL:',
+        default: 'https://api.blueflyagents.com',
+        when: (answers: any) => answers.register_agent,
+      },
     ]);
 
     const agent = this.state.getAgent();
@@ -2906,6 +2944,122 @@ Guidelines:
 
     fs.writeFileSync(outputPath, yamlContent, 'utf-8');
     printSuccess(`Agent manifest written to: ${outputPath}`);
+
+    // Generate GAID if requested
+    if (outputAnswers.generate_gaid) {
+      printInfo('\n🆔 Generating Global Agent ID (GAID)...');
+
+      const org = outputAnswers.organization || 'blueflyio';
+      const prefix = outputAnswers.serial_prefix || 'AG';
+
+      // Generate deterministic UUID v5 based on agent metadata
+      const OSSA_NAMESPACE = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
+      const agentIdentity = JSON.stringify({
+        name: agent.metadata?.name || 'unnamed',
+        version: agent.metadata?.version || '0.1.0',
+        created: agent.metadata?.created || new Date().toISOString(),
+        organization: org,
+      });
+
+      const uuid = uuidv5(agentIdentity, OSSA_NAMESPACE);
+      const orgSanitized = org.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const gaid = `did:ossa:${orgSanitized}:${uuid.replace(/-/g, '')}`;
+
+      // Generate serial number (prefix + timestamp + random)
+      const timestamp = Date.now().toString(36).toUpperCase();
+      const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+      const serialNumber = `${prefix}-${timestamp}-${random}`;
+
+      // Update agent manifest with GAID and serial number
+      if (!agent.metadata) agent.metadata = {};
+      if (!agent.metadata.annotations) agent.metadata.annotations = {};
+      agent.metadata.annotations['ossa.org/gaid'] = gaid;
+      agent.metadata.annotations['ossa.org/serial-number'] = serialNumber;
+      agent.metadata.annotations['ossa.org/organization'] = org;
+      agent.metadata.annotations['ossa.org/registered-at'] = new Date().toISOString();
+
+      // Rewrite manifest with GAID
+      const updatedYamlContent = yaml.stringify(agent as OssaAgent, {
+        indent: 2,
+        lineWidth: 0,
+      });
+      fs.writeFileSync(outputPath, updatedYamlContent, 'utf-8');
+
+      printSuccess(`GAID generated: ${gaid}`);
+      printSuccess(`Serial Number: ${serialNumber}`);
+      printInfo(`  Organization: ${org}`);
+
+      // Register agent if requested
+      if (outputAnswers.register_agent) {
+        try {
+          printInfo('\n📡 Registering agent to platform registry...');
+
+          const apiUrl = outputAnswers.api_url || 'https://api.blueflyagents.com';
+          const client = new AgentProtocolClient({ baseURL: apiUrl });
+
+          // Generate signature
+          const manifestStr = JSON.stringify(agent);
+          const signature = crypto
+            .createHash('sha256')
+            .update(manifestStr)
+            .digest('hex');
+
+          // Create Agent Card
+          const card: AgentCard = {
+            gaid,
+            name: agent.metadata?.name || 'Unnamed Agent',
+            version: agent.metadata?.version || '0.1.0',
+            description: agent.metadata?.description,
+            author: agent.metadata?.author || org,
+            license: agent.metadata?.license,
+            tags: agent.metadata?.tags || [],
+            capabilities: agent.spec?.tools?.map((t: any) => t.name || t.type) || [],
+          };
+
+          const response = await client.registerAgent(agent as OssaAgent, card);
+
+          if (response.success) {
+            printSuccess(`✅ Agent registered successfully!`);
+            printInfo(`  GAID: ${response.gaid}`);
+            printInfo(`  Registry: ${apiUrl}`);
+
+            // Update manifest with registration info
+            if (!agent.metadata.annotations) agent.metadata.annotations = {};
+            agent.metadata.annotations['ossa.org/registered'] = 'true';
+            agent.metadata.annotations['ossa.org/registry-url'] = apiUrl;
+            agent.metadata.annotations['ossa.org/signature'] = signature;
+
+            // Rewrite manifest one more time with registration info
+            const finalYamlContent = yaml.stringify(agent as OssaAgent, {
+              indent: 2,
+              lineWidth: 0,
+            });
+            fs.writeFileSync(outputPath, finalYamlContent, 'utf-8');
+          } else {
+            printWarning(`Registration completed with message: ${response.message || 'Unknown'}`);
+          }
+        } catch (error) {
+          printWarning(
+            `Failed to register agent: ${error instanceof Error ? error.message : String(error)}`
+          );
+          printInfo('Agent manifest still saved locally with GAID.');
+        }
+      }
+
+      // Save GAID info to separate file
+      const gaidInfoPath = outputPath.replace(/\.ossa\.yaml$/, '.gaid.json');
+      const gaidInfo = {
+        gaid,
+        serialNumber,
+        organization: org,
+        generatedAt: new Date().toISOString(),
+        agentName: agent.metadata?.name,
+        agentVersion: agent.metadata?.version,
+        registered: outputAnswers.register_agent && agent.metadata?.annotations?.['ossa.org/registered'] === 'true',
+      };
+      fs.writeFileSync(gaidInfoPath, JSON.stringify(gaidInfo, null, 2), 'utf-8');
+      printInfo(`  GAID info saved to: ${gaidInfoPath}`);
+    }
 
     // Generate AGENTS.md if requested
     if (outputAnswers.generate_agents_md) {
@@ -3061,28 +3215,31 @@ For more information, see AGENTS.md
     console.log(chalk.gray(`\n1. Review your agent:`));
     console.log(chalk.white(`   cat ${outputPath}`));
 
-    console.log(chalk.gray(`\n2. Validate the manifest:`));
+    console.log(chalk.gray(`\n2. Verify agent identity (if GAID generated):`));
+    console.log(chalk.white(`   ossa verify <GAID>`));
+
+    console.log(chalk.gray(`\n3. Validate the manifest:`));
     console.log(chalk.white(`   ossa validate ${outputPath}`));
 
-    console.log(chalk.gray(`\n3. Test the agent:`));
+    console.log(chalk.gray(`\n4. Test the agent:`));
     console.log(chalk.white(`   ossa run ${outputPath}`));
 
     if (this.state.getState().features.rag) {
-      console.log(chalk.gray(`\n4. Set up vector database (RAG):`));
+      console.log(chalk.gray(`\n5. Set up vector database (RAG):`));
       console.log(chalk.white(`   # Configure your Qdrant/Pinecone instance`));
     }
 
     if (this.state.getState().features.communication) {
-      console.log(chalk.gray(`\n5. Set up message broker (A2A):`));
+      console.log(chalk.gray(`\n6. Set up message broker (A2A):`));
       console.log(chalk.white(`   # Start Redis/NATS for agent communication`));
     }
 
-    console.log(chalk.gray(`\n6. Export to platform:`));
+    console.log(chalk.gray(`\n7. Export to platform:`));
     console.log(
       chalk.white(`   ossa export ${outputPath} --platform langchain`)
     );
 
-    console.log(chalk.gray(`\n7. Deploy:`));
+    console.log(chalk.gray(`\n8. Deploy:`));
     console.log(chalk.white(`   # Follow platform-specific deployment guide`));
 
     console.log('');

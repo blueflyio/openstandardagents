@@ -14,7 +14,7 @@ import { join, relative } from 'path';
 import { z } from 'zod';
 import { ValidationService } from '../../src/services/validation.service';
 import * as yaml from 'yaml';
-import { API_VERSION } from '../../../src/version.js';
+import { API_VERSION } from '../../src/version.js';
 
 const projectRoot = join(__dirname, '../..');
 const conformanceRoot = join(projectRoot, 'spec/v0.3/conformance/tests');
