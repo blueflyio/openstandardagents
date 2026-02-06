@@ -198,14 +198,7 @@ export class ValidatorRegistry {
       valid: enforcement !== 'error',
       errors:
         enforcement === 'error'
-          ? [
-              {
-                instancePath: rule.when.path,
-                message: rule.then.message,
-                keyword: 'custom',
-                params: { ruleId: rule.id },
-              },
-            ]
+          ? [`${rule.when.path}: ${rule.then.message} (rule: ${rule.id})`]
           : [],
       warnings: enforcement === 'warning' ? [rule.then.message] : [],
       fixes: rule.then.fixes,
