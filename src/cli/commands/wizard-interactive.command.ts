@@ -696,10 +696,40 @@ class OSSAWizardV2 {
       // Step 2: Basic Information
       await this.configureBasicInfo();
 
-      // Step 3: LLM Configuration
+      // Step 3: System Prompt (THE MOST IMPORTANT FIELD)
+      await this.configureSystemPrompt();
+
+      // Step 4: LLM Configuration
       await this.configureLLM();
 
-      // Step 4: Feature Selection
+      // Step 5: Tools Configuration (CRITICAL)
+      await this.configureToolsCore();
+
+      // Step 6: Autonomy & Constraints
+      await this.configureAutonomy();
+      await this.configureConstraints();
+
+      // Step 7: Identity & Access Control
+      await this.configureIdentity();
+      await this.configureAccessControl();
+
+      // Step 8: Agent Type & Taxonomy
+      await this.configureAgentType();
+      await this.configureTaxonomy();
+
+      // Step 9: Compliance & Governance
+      await this.configureCompliance();
+
+      // Step 10: Lifecycle Management
+      await this.configureLifecycle();
+
+      // Step 11: Token Efficiency (v0.4 REVOLUTIONARY)
+      await this.configureTokenEfficiency();
+
+      // Step 12: Agent-to-Agent Communication (A2A) - MAJOR SELLING POINT
+      await this.configureMessagingA2A();
+
+      // Step 13: Feature Selection (Advanced/Optional)
       await this.selectFeatures();
 
       // Conditional steps based on features
@@ -860,10 +890,93 @@ class OSSAWizardV2 {
     printSuccess('Basic information configured');
   }
 
+  private async configureSystemPrompt(): Promise<void> {
+    this.state.nextStep('System Prompt');
+    printStep(
+      3,
+      this.state.getState().totalSteps,
+      'System Prompt & Instructions',
+      'THE MOST IMPORTANT FIELD - Define your agent behavior'
+    );
+
+    printInfo('💡 The system prompt defines your agent\'s personality, capabilities, and behavior.');
+    printInfo('   This is required for all exports and agent execution.');
+
+    const answers = await inquirer.prompt([
+      {
+        type: 'editor',
+        name: 'systemPrompt',
+        message: 'System Prompt (opens in your default editor):',
+        default: `You are an AI assistant specialized in helping users.
+
+Your capabilities:
+- Analyze and understand user requests
+- Provide accurate, helpful responses
+- Follow best practices and guidelines
+
+Your responsibilities:
+- Be helpful, harmless, and honest
+- Provide clear, actionable guidance
+- Admit when you don't know something
+
+Guidelines:
+- Always prioritize user safety and privacy
+- Provide sources and references when possible
+- Be concise but thorough in explanations`,
+        validate: (input: string) => {
+          if (!input || input.trim().length === 0) {
+            return 'System prompt is required - this defines your agent behavior!';
+          }
+          if (input.trim().length < 50) {
+            return 'System prompt should be at least 50 characters for meaningful behavior';
+          }
+          return true;
+        },
+      },
+      {
+        type: 'input',
+        name: 'primaryGoal',
+        message: 'Primary Goal (one sentence):',
+        default: 'Help users accomplish their tasks efficiently',
+      },
+      {
+        type: 'list',
+        name: 'tone',
+        message: 'Agent Tone/Personality:',
+        choices: [
+          { name: 'Professional', value: 'professional' },
+          { name: 'Friendly', value: 'friendly' },
+          { name: 'Technical', value: 'technical' },
+          { name: 'Casual', value: 'casual' },
+          { name: 'Formal', value: 'formal' },
+        ],
+        default: 'professional',
+      },
+    ]);
+
+    this.state.updateAgent({
+      spec: {
+        role: answers.systemPrompt,
+        prompts: {
+          system: answers.systemPrompt,
+        },
+        metadata: {
+          ...this.state.getAgent().metadata,
+          annotations: {
+            'ossa.io/primary-goal': answers.primaryGoal,
+            'ossa.io/tone': answers.tone,
+          },
+        },
+      },
+    });
+
+    printSuccess('System prompt configured - Your agent now has a personality!');
+  }
+
   private async configureLLM(): Promise<void> {
     this.state.nextStep('LLM Configuration');
     printStep(
-      3,
+      4,
       this.state.getState().totalSteps,
       'LLM Configuration',
       'Configure primary LLM, fallbacks, and cost controls'
@@ -989,6 +1102,762 @@ class OSSAWizardV2 {
     });
 
     printSuccess('LLM configuration complete');
+  }
+
+  private async configureToolsCore(): Promise<void> {
+    this.state.nextStep('Tools Configuration');
+    printStep(
+      this.state.getState().currentStep,
+      this.state.getState().totalSteps,
+      'Tools & Capabilities',
+      'Define what your agent can do'
+    );
+
+    printInfo('💡 Tools are the actions your agent can perform (API calls, code execution, etc.)');
+
+    const { toolChoice } = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'toolChoice',
+        message: 'Tool configuration approach:',
+        choices: [
+          { name: 'Add tools manually (custom functions)', value: 'manual' },
+          { name: 'Use MCP servers (Model Context Protocol)', value: 'mcp' },
+          { name: 'Add tools later (skip for now)', value: 'skip' },
+        ],
+        default: 'mcp',
+      },
+    ]);
+
+    if (toolChoice === 'manual') {
+      const { toolCount } = await inquirer.prompt([
+        {
+          type: 'number',
+          name: 'toolCount',
+          message: 'How many tools to add?',
+          default: 1,
+          validate: (input: number) => input > 0 && input <= 20 || 'Must be between 1 and 20',
+        },
+      ]);
+
+      const tools: any[] = [];
+      for (let i = 0; i < toolCount; i++) {
+        const toolAnswers = await inquirer.prompt([
+          {
+            type: 'input',
+            name: 'name',
+            message: `Tool ${i + 1} - Name:`,
+            validate: (input: string) => input.length > 0 || 'Tool name required',
+          },
+          {
+            type: 'input',
+            name: 'description',
+            message: `Tool ${i + 1} - Description:`,
+            validate: (input: string) => input.length > 0 || 'Description required',
+          },
+          {
+            type: 'list',
+            name: 'type',
+            message: `Tool ${i + 1} - Type:`,
+            choices: [
+              { name: 'HTTP API', value: 'http' },
+              { name: 'Function', value: 'function' },
+              { name: 'MCP Server', value: 'mcp' },
+              { name: 'Browser Automation', value: 'browser' },
+              { name: 'Kubernetes', value: 'kubernetes' },
+              { name: 'CLI Command', value: 'cli' },
+            ],
+          },
+        ]);
+
+        tools.push({
+          name: toolAnswers.name,
+          description: toolAnswers.description,
+          type: toolAnswers.type,
+        });
+      }
+
+      this.state.updateAgent({
+        spec: {
+          tools,
+        },
+      });
+
+      printSuccess(`${tools.length} tools configured`);
+    } else if (toolChoice === 'mcp') {
+      printInfo('📡 MCP servers provide pre-built tools via Model Context Protocol');
+      printInfo('   Configure MCP servers in the extensions.mcp section');
+      printSuccess('MCP server configuration marked for later setup');
+    } else {
+      printInfo('⏭️  Tools can be added later by editing the manifest');
+    }
+  }
+
+  private async configureAutonomy(): Promise<void> {
+    this.state.nextStep('Autonomy Configuration');
+    printStep(
+      this.state.getState().currentStep,
+      this.state.getState().totalSteps,
+      'Autonomy & Decision-Making',
+      'Configure agent independence and human oversight'
+    );
+
+    const answers = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'level',
+        message: 'Autonomy Level:',
+        choices: [
+          { name: 'Fully Autonomous - No human approval needed', value: 'full' },
+          { name: 'Semi-Autonomous - Approval for critical actions', value: 'semi' },
+          { name: 'Supervised - All actions require approval', value: 'supervised' },
+        ],
+        default: 'semi',
+      },
+      {
+        type: 'confirm',
+        name: 'enableHumanInLoop',
+        message: 'Enable human-in-the-loop for critical decisions?',
+        default: true,
+      },
+      {
+        type: 'number',
+        name: 'confidenceThreshold',
+        message: 'Minimum confidence threshold for autonomous actions (0.0-1.0):',
+        default: 0.7,
+        validate: (input: number) => (input >= 0 && input <= 1) || 'Must be between 0 and 1',
+      },
+    ]);
+
+    this.state.updateAgent({
+      spec: {
+        autonomy: {
+          level: answers.level,
+          approval_required: answers.level !== 'full',
+          human_in_loop: answers.enableHumanInLoop,
+          confidence_threshold: answers.confidenceThreshold,
+          escalation: {
+            enabled: answers.enableHumanInLoop,
+            threshold: answers.confidenceThreshold,
+          },
+        },
+      },
+    });
+
+    printSuccess('Autonomy configuration complete');
+  }
+
+  private async configureConstraints(): Promise<void> {
+    this.state.nextStep('Constraints Configuration');
+    printStep(
+      this.state.getState().currentStep,
+      this.state.getState().totalSteps,
+      'Constraints & Limits',
+      'Define operational boundaries'
+    );
+
+    const answers = await inquirer.prompt([
+      {
+        type: 'number',
+        name: 'maxExecutionTime',
+        message: 'Maximum execution time (seconds, 0 for unlimited):',
+        default: 300,
+        validate: (input: number) => input >= 0 || 'Must be >= 0',
+      },
+      {
+        type: 'number',
+        name: 'maxCostPerExecution',
+        message: 'Maximum cost per execution (USD, 0 for unlimited):',
+        default: 0.5,
+        validate: (input: number) => input >= 0 || 'Must be >= 0',
+      },
+      {
+        type: 'confirm',
+        name: 'allowInternet',
+        message: 'Allow internet access?',
+        default: true,
+      },
+      {
+        type: 'confirm',
+        name: 'allowFileSystem',
+        message: 'Allow file system access?',
+        default: false,
+      },
+    ]);
+
+    this.state.updateAgent({
+      spec: {
+        constraints: {
+          time: {
+            max_execution_time: answers.maxExecutionTime > 0 ? `${answers.maxExecutionTime}s` : undefined,
+          },
+          cost: {
+            max_cost_per_execution: answers.maxCostPerExecution,
+            currency: 'USD',
+          },
+          allowed_actions: {
+            internet_access: answers.allowInternet,
+            file_system_access: answers.allowFileSystem,
+          },
+        },
+      },
+    });
+
+    printSuccess('Constraints configured');
+  }
+
+  private async configureIdentity(): Promise<void> {
+    this.state.nextStep('Identity Configuration');
+    printStep(
+      this.state.getState().currentStep,
+      this.state.getState().totalSteps,
+      'Identity & Authentication',
+      'Configure agent identity and credentials'
+    );
+
+    const answers = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'serviceAccount',
+        message: 'Service Account Name (optional):',
+        default: '',
+      },
+      {
+        type: 'confirm',
+        name: 'enableDID',
+        message: 'Enable Decentralized Identity (DID)?',
+        default: false,
+      },
+    ]);
+
+    const identity: any = {};
+
+    if (answers.serviceAccount) {
+      identity.service_account = {
+        name: answers.serviceAccount,
+      };
+    }
+
+    if (answers.enableDID) {
+      printInfo('💡 DID enables cryptographic agent identity verification');
+      const didAnswers = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'method',
+          message: 'DID Method:',
+          choices: [
+            { name: 'did:key (Simple)', value: 'key' },
+            { name: 'did:web (Web-based)', value: 'web' },
+            { name: 'did:ethr (Ethereum)', value: 'ethr' },
+          ],
+          default: 'key',
+        },
+      ]);
+
+      identity.did = {
+        method: didAnswers.method,
+      };
+    }
+
+    if (Object.keys(identity).length > 0) {
+      this.state.updateAgent({
+        spec: {
+          identity,
+        },
+      });
+      printSuccess('Identity configured');
+    } else {
+      printInfo('⏭️  No identity configuration added');
+    }
+  }
+
+  private async configureAccessControl(): Promise<void> {
+    this.state.nextStep('Access Control');
+    printStep(
+      this.state.getState().currentStep,
+      this.state.getState().totalSteps,
+      'Access Control & Permissions',
+      'Define what the agent can access'
+    );
+
+    const answers = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'accessTier',
+        message: 'Access Tier:',
+        choices: [
+          { name: 'Tier 0 - Read-only (lowest privilege)', value: 'tier-0' },
+          { name: 'Tier 1 - Read + Write (standard)', value: 'tier-1' },
+          { name: 'Tier 2 - Read + Write + Delete', value: 'tier-2' },
+          { name: 'Tier 3 - Admin operations', value: 'tier-3' },
+        ],
+        default: 'tier-1',
+      },
+      {
+        type: 'confirm',
+        name: 'enableSeparationOfDuties',
+        message: 'Enable separation of duties?',
+        default: false,
+      },
+    ]);
+
+    this.state.updateAgent({
+      spec: {
+        access: {
+          tier: answers.accessTier,
+        },
+      },
+    });
+
+    if (answers.enableSeparationOfDuties) {
+      printInfo('💡 Separation of duties prevents conflicts of interest');
+      const sodAnswers = await inquirer.prompt([
+        {
+          type: 'checkbox',
+          name: 'conflictingRoles',
+          message: 'Select conflicting roles (agent cannot perform both):',
+          choices: [
+            { name: 'Approver + Executor', value: 'approver-executor' },
+            { name: 'Auditor + Operator', value: 'auditor-operator' },
+            { name: 'Reviewer + Author', value: 'reviewer-author' },
+          ],
+        },
+      ]);
+
+      this.state.updateAgent({
+        spec: {
+          separation: {
+            enabled: true,
+            conflicting_roles: sodAnswers.conflictingRoles,
+          },
+        },
+      });
+    }
+
+    printSuccess('Access control configured');
+  }
+
+  private async configureAgentType(): Promise<void> {
+    this.state.nextStep('Agent Type');
+    printStep(
+      this.state.getState().currentStep,
+      this.state.getState().totalSteps,
+      'Agent Type Classification',
+      'Define agent role in the system'
+    );
+
+    const answers = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'type',
+        message: 'Agent Type:',
+        choices: [
+          { name: 'Analyzer - Data analysis and insights', value: 'analyzer' },
+          { name: 'Worker - Task execution', value: 'worker' },
+          { name: 'Operator - System operations', value: 'operator' },
+          { name: 'Supervisor - Team coordination', value: 'supervisor' },
+          { name: 'Orchestrator - Workflow management', value: 'orchestrator' },
+          { name: 'Governor - Policy enforcement', value: 'governor' },
+          { name: 'Specialist - Domain expertise', value: 'specialist' },
+          { name: 'Critic - Review and feedback', value: 'critic' },
+        ],
+        default: 'worker',
+      },
+    ]);
+
+    this.state.updateAgent({
+      spec: {
+        type: answers.type,
+      },
+    });
+
+    printSuccess(`Agent type set to: ${answers.type}`);
+  }
+
+  private async configureTaxonomy(): Promise<void> {
+    this.state.nextStep('Taxonomy');
+    printStep(
+      this.state.getState().currentStep,
+      this.state.getState().totalSteps,
+      'Taxonomy Classification',
+      'Categorize agent capabilities'
+    );
+
+    const answers = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'domain',
+        message: 'Primary Domain:',
+        choices: [
+          { name: 'DevOps - CI/CD, deployment, infrastructure', value: 'devops' },
+          { name: 'Data Science - ML, analytics, insights', value: 'data-science' },
+          { name: 'Customer Support - Help desk, ticketing', value: 'support' },
+          { name: 'Finance - Accounting, billing, invoicing', value: 'finance' },
+          { name: 'HR - Recruiting, onboarding, management', value: 'hr' },
+          { name: 'Sales & Marketing - CRM, campaigns', value: 'sales' },
+          { name: 'Security - Scanning, compliance, audit', value: 'security' },
+          { name: 'General Purpose', value: 'general' },
+        ],
+      },
+      {
+        type: 'checkbox',
+        name: 'crossCutting',
+        message: 'Cross-cutting Concerns:',
+        choices: [
+          { name: 'Observability - Monitoring and logging', value: 'observability' },
+          { name: 'Security - Authentication and authorization', value: 'security' },
+          { name: 'Compliance - Regulatory requirements', value: 'compliance' },
+          { name: 'Cost Management - Budget tracking', value: 'cost' },
+        ],
+      },
+    ]);
+
+    this.state.updateAgent({
+      spec: {
+        taxonomy: {
+          domain: answers.domain,
+          cross_cutting: answers.crossCutting,
+        },
+      },
+    });
+
+    printSuccess('Taxonomy configured');
+  }
+
+  private async configureCompliance(): Promise<void> {
+    this.state.nextStep('Compliance');
+    printStep(
+      this.state.getState().currentStep,
+      this.state.getState().totalSteps,
+      'Compliance & Governance',
+      'Configure regulatory and audit requirements'
+    );
+
+    const answers = await inquirer.prompt([
+      {
+        type: 'checkbox',
+        name: 'frameworks',
+        message: 'Select applicable compliance frameworks:',
+        choices: [
+          { name: 'SOC2 - Service Organization Control 2', value: 'SOC2' },
+          { name: 'HIPAA - Healthcare data protection', value: 'HIPAA' },
+          { name: 'GDPR - European data privacy', value: 'GDPR' },
+          { name: 'FedRAMP - US federal cloud security', value: 'FedRAMP' },
+          { name: 'PCI-DSS - Payment card security', value: 'PCI-DSS' },
+          { name: 'ISO27001 - Information security', value: 'ISO27001' },
+        ],
+      },
+      {
+        type: 'list',
+        name: 'auditLogging',
+        message: 'Audit Logging:',
+        choices: [
+          { name: 'Required - All actions logged', value: 'required' },
+          { name: 'Optional - Best effort logging', value: 'optional' },
+          { name: 'Disabled - No audit logs', value: 'disabled' },
+        ],
+        default: 'optional',
+      },
+      {
+        type: 'list',
+        name: 'piiHandling',
+        message: 'PII (Personally Identifiable Information) Handling:',
+        choices: [
+          { name: 'Encrypt at Rest', value: 'encrypt_at_rest' },
+          { name: 'Anonymize', value: 'anonymize' },
+          { name: 'Redact', value: 'redact' },
+          { name: 'None', value: 'none' },
+        ],
+        default: 'none',
+      },
+    ]);
+
+    if (answers.frameworks.length > 0 || answers.auditLogging !== 'disabled') {
+      this.state.updateAgent({
+        spec: {
+          compliance: {
+            frameworks: answers.frameworks,
+            audit_logging: answers.auditLogging,
+            pii_handling: answers.piiHandling,
+          },
+        },
+      });
+      printSuccess('Compliance configuration complete');
+    } else {
+      printInfo('⏭️  No compliance requirements configured');
+    }
+  }
+
+  private async configureLifecycle(): Promise<void> {
+    this.state.nextStep('Lifecycle');
+    printStep(
+      this.state.getState().currentStep,
+      this.state.getState().totalSteps,
+      'Lifecycle Management',
+      'Configure execution limits and behavior'
+    );
+
+    const answers = await inquirer.prompt([
+      {
+        type: 'number',
+        name: 'maxTurns',
+        message: 'Maximum agentic turns/iterations (0 for unlimited):',
+        default: 10,
+        validate: (input: number) => input >= 0 || 'Must be >= 0',
+      },
+      {
+        type: 'input',
+        name: 'turnTimeout',
+        message: 'Timeout per turn (e.g., "300s", "5m"):',
+        default: '300s',
+        validate: (input: string) => /^[0-9]+(s|m|h)$/.test(input) || 'Must be format like "300s" or "5m"',
+      },
+      {
+        type: 'confirm',
+        name: 'enableCheckpointing',
+        message: 'Enable state checkpointing?',
+        default: true,
+      },
+    ]);
+
+    const lifecycle: any = {};
+
+    if (answers.maxTurns > 0) {
+      lifecycle.max_turns = answers.maxTurns;
+    }
+
+    lifecycle.turn_timeout = answers.turnTimeout;
+
+    if (answers.enableCheckpointing) {
+      const checkpointAnswers = await inquirer.prompt([
+        {
+          type: 'number',
+          name: 'interval',
+          message: 'Checkpoint every N turns:',
+          default: 5,
+          validate: (input: number) => input > 0 || 'Must be > 0',
+        },
+      ]);
+
+      lifecycle.checkpoint_interval = checkpointAnswers.interval;
+    }
+
+    this.state.updateAgent({
+      spec: {
+        lifecycle,
+      },
+    });
+
+    printSuccess('Lifecycle configuration complete');
+  }
+
+  private async configureTokenEfficiency(): Promise<void> {
+    this.state.nextStep('Token Efficiency');
+    printStep(
+      this.state.getState().currentStep,
+      this.state.getState().totalSteps,
+      'Token Efficiency (v0.4 REVOLUTIONARY)',
+      'Enable 70-95% cost savings'
+    );
+
+    printInfo('💰 Token efficiency features can reduce LLM costs by 70-95%!');
+    printInfo('   - Prompt caching');
+    printInfo('   - Context pruning');
+    printInfo('   - Batched inference');
+    printInfo('   - Compression');
+
+    const answers = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'enable',
+        message: 'Enable token efficiency optimizations?',
+        default: true,
+      },
+    ]);
+
+    if (answers.enable) {
+      const options = await inquirer.prompt([
+        {
+          type: 'checkbox',
+          name: 'features',
+          message: 'Select optimizations to enable:',
+          choices: [
+            { name: 'Prompt Caching - Cache repeated prompts (recommended)', value: 'prompt_caching', checked: true },
+            { name: 'Context Pruning - Remove less relevant context', value: 'context_pruning', checked: true },
+            { name: 'Batched Inference - Batch multiple requests', value: 'batched_inference', checked: false },
+            { name: 'Compression - Compress prompts/responses', value: 'compression', checked: false },
+          ],
+        },
+        {
+          type: 'number',
+          name: 'targetSavings',
+          message: 'Target cost savings (0.0-0.95 = 0-95%):',
+          default: 0.7,
+          validate: (input: number) => (input >= 0 && input <= 0.95) || 'Must be between 0 and 0.95',
+        },
+      ]);
+
+      this.state.updateAgent({
+        spec: {
+          token_efficiency: {
+            enabled: true,
+            strategies: options.features,
+            target_savings: options.targetSavings,
+          },
+        },
+      });
+
+      printSuccess(`Token efficiency enabled - targeting ${(options.targetSavings * 100).toFixed(0)}% cost savings!`);
+    } else {
+      printInfo('⏭️  Token efficiency optimizations skipped');
+    }
+  }
+
+  private async configureMessagingA2A(): Promise<void> {
+    this.state.nextStep('Agent-to-Agent Communication');
+    printStep(
+      this.state.getState().currentStep,
+      this.state.getState().totalSteps,
+      '🚀 A2A Communication (MAJOR SELLING POINT)',
+      'Enable multi-agent collaboration and messaging'
+    );
+
+    printInfo('💬 A2A (Agent-to-Agent) is one of the BIGGEST adoption drivers!');
+    printInfo('   - Multi-agent collaboration');
+    printInfo('   - Event-driven workflows');
+    printInfo('   - Distributed agent networks');
+    printInfo('   - Real-time agent coordination');
+
+    const answers = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'enable',
+        message: 'Enable Agent-to-Agent (A2A) communication?',
+        default: true,
+      },
+    ]);
+
+    if (answers.enable) {
+      const a2aConfig = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'protocol',
+          message: 'A2A Protocol:',
+          choices: [
+            { name: 'NATS (High-performance messaging)', value: 'nats' },
+            { name: 'RabbitMQ (Enterprise messaging)', value: 'rabbitmq' },
+            { name: 'Redis Pub/Sub (Simple, fast)', value: 'redis' },
+            { name: 'Kafka (High-throughput streaming)', value: 'kafka' },
+            { name: 'MQTT (IoT/lightweight)', value: 'mqtt' },
+            { name: 'Custom (Define your own)', value: 'custom' },
+          ],
+          default: 'nats',
+        },
+        {
+          type: 'checkbox',
+          name: 'capabilities',
+          message: 'A2A Capabilities:',
+          choices: [
+            { name: 'Request/Response - Synchronous agent calls', value: 'request_response', checked: true },
+            { name: 'Publish/Subscribe - Event broadcasting', value: 'pub_sub', checked: true },
+            { name: 'Task Queue - Distributed work', value: 'task_queue', checked: false },
+            { name: 'Stream Processing - Real-time data', value: 'streaming', checked: false },
+          ],
+        },
+        {
+          type: 'confirm',
+          name: 'enableDiscovery',
+          message: 'Enable agent discovery (find other agents)?',
+          default: true,
+        },
+        {
+          type: 'confirm',
+          name: 'enableTeams',
+          message: 'Enable team membership (multi-agent teams)?',
+          default: true,
+        },
+      ]);
+
+      const messaging: any = {
+        enabled: true,
+        protocol: a2aConfig.protocol,
+        capabilities: a2aConfig.capabilities,
+      };
+
+      if (a2aConfig.enableDiscovery) {
+        messaging.discovery = {
+          enabled: true,
+          mechanism: 'dns',
+        };
+      }
+
+      if (a2aConfig.enableTeams) {
+        const teamAnswers = await inquirer.prompt([
+          {
+            type: 'input',
+            name: 'teamName',
+            message: 'Team Name (optional):',
+            default: '',
+          },
+          {
+            type: 'list',
+            name: 'role',
+            message: 'Agent Role in Team:',
+            choices: [
+              { name: 'Leader - Coordinates team', value: 'leader' },
+              { name: 'Worker - Executes tasks', value: 'worker' },
+              { name: 'Specialist - Domain expert', value: 'specialist' },
+              { name: 'Observer - Monitors only', value: 'observer' },
+            ],
+            default: 'worker',
+          },
+        ]);
+
+        messaging.team = {
+          enabled: true,
+        };
+
+        if (teamAnswers.teamName) {
+          messaging.team.name = teamAnswers.teamName;
+        }
+
+        messaging.team.role = teamAnswers.role;
+      }
+
+      // Add message routing and filtering
+      const routingAnswers = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'enableRouting',
+          message: 'Configure message routing rules?',
+          default: false,
+        },
+      ]);
+
+      if (routingAnswers.enableRouting) {
+        messaging.routing = {
+          rules: [
+            {
+              pattern: '*',
+              action: 'process',
+            },
+          ],
+        };
+      }
+
+      this.state.updateAgent({
+        spec: {
+          messaging,
+        },
+      });
+
+      printSuccess(`A2A Communication configured with ${a2aConfig.protocol} protocol!`);
+      if (a2aConfig.enableTeams) {
+        printSuccess('✨ Multi-agent teams enabled - ready for collaboration!');
+      }
+    } else {
+      printInfo('⏭️  A2A communication disabled (agent will work solo)');
+    }
   }
 
   private async selectFeatures(): Promise<void> {
