@@ -6,6 +6,8 @@
 import inquirer from 'inquirer';
 import { WizardState } from '../types.js';
 import { console_ui } from '../ui/console.js';
+import { ValidationError, isOssaError } from '../../../errors/index.js';
+import { logger } from '../../../utils/logger.js';
 
 const MCP_SERVERS = [
   {
@@ -157,6 +159,13 @@ export async function configureToolsStep(
         });
         console_ui.success(`Added function: ${funcAnswers.name}`);
       } catch (e) {
+        const ossaError = isOssaError(e)
+          ? e
+          : new ValidationError('Invalid JSON schema for tool input', {
+              toolName: funcAnswers.name,
+              originalError: e instanceof Error ? e.message : String(e),
+            });
+        logger.error({ err: ossaError }, 'Failed to parse tool input schema');
         console_ui.error('Invalid JSON schema, skipping tool');
       }
     } else if (toolType === 'api') {

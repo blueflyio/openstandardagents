@@ -7,6 +7,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
+import { logger } from '../../../utils/logger.js';
 import { AgentsFolderService } from '../../../services/structure/agents-folder.service.js';
 import type { WizardState, WizardOptions } from '../types.js';
 import { console_ui } from '../ui/console.js';
@@ -102,17 +103,21 @@ export async function createAgentsFolderStep(
 
     // Show created structure
     console_ui.section('Created Structure');
-    console.log(chalk.gray('Directories:'));
-    structure.directories.forEach((dir) => {
-      const relative = path.relative(process.cwd(), dir);
-      console.log(chalk.gray(`  ✓ ${relative}/`));
-    });
+    const dirList = structure.directories
+      .map((dir) => {
+        const relative = path.relative(process.cwd(), dir);
+        return `  ✓ ${relative}/`;
+      })
+      .join('\n');
+    logger.info({ dirCount: structure.directories.length }, `Directories:\n${dirList}`);
 
-    console.log(chalk.gray('\nFiles:'));
-    structure.files.forEach((file) => {
-      const relative = path.relative(process.cwd(), file.path);
-      console.log(chalk.gray(`  ✓ ${relative} - ${file.description}`));
-    });
+    const fileList = structure.files
+      .map((file) => {
+        const relative = path.relative(process.cwd(), file.path);
+        return `  ✓ ${relative} - ${file.description}`;
+      })
+      .join('\n');
+    logger.info({ fileCount: structure.files.length }, `Files:\n${fileList}`);
 
     console_ui.info(`\nStructure created at: ${agentDir}`);
     console_ui.info('Next: Generate OpenAPI spec from manifest');

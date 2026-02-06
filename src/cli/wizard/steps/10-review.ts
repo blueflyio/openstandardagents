@@ -8,6 +8,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'yaml';
 import ora from 'ora';
+import { logger } from '../../../utils/logger.js';
 import { WizardState, WizardOptions } from '../types.js';
 import { console_ui, formatAgentType } from '../ui/console.js';
 import type { OssaAgent } from '../../../types/index.js';
@@ -59,7 +60,7 @@ export async function reviewAndSaveStep(
       indent: 2,
       lineWidth: 0,
     });
-    console.log('\n' + yamlContent);
+    logger.info({ action: 'show-yaml-preview' }, yamlContent);
   }
 
   // Determine output path
@@ -125,9 +126,13 @@ export async function reviewAndSaveStep(
     );
   }
 
-  console.log('');
+  const agentName = state.agent.metadata?.name || 'Unknown';
+  logger.info(
+    { action: 'agent-created', agentName },
+    `Agent "${agentName}" created successfully!`
+  );
   console_ui.box(
-    `Agent "${state.agent.metadata?.name}" created successfully!\n\nHappy building!`,
+    `Agent "${agentName}" created successfully!\n\nHappy building!`,
     'Success'
   );
 

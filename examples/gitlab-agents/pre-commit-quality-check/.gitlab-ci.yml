@@ -1,0 +1,34 @@
+# GitLab CI/CD for pre-commit-quality-check
+# Auto-generated from OSSA manifest
+
+stages:
+  - build
+  - deploy
+
+build:
+  stage: build
+  image: node:20-alpine
+  script:
+    - npm ci
+    - npm run build
+    - npm test
+  artifacts:
+    paths:
+      - dist/
+      - node_modules/
+    expire_in: 1 hour
+
+deploy:pre-commit-quality-check:
+  stage: deploy
+  image: docker:24
+  services:
+    - docker:24-dind
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - docker build -t registry.gitlab.com/$CI_PROJECT_PATH/pre-commit-quality-check:latest .
+    - docker push registry.gitlab.com/$CI_PROJECT_PATH/pre-commit-quality-check:latest
+    # Deploy to Kubernetes
+    - kubectl set image deployment/pre-commit-quality-check pre-commit-quality-check=registry.gitlab.com/$CI_PROJECT_PATH/pre-commit-quality-check:latest -n agents
+  only:
+    - main
