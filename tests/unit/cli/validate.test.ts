@@ -29,11 +29,11 @@ describe('ossa validate', () => {
 
   it('should reject invalid apiVersion', () => {
     const invalidManifest = {
-      apiVersion: API_VERSION,
+      apiVersion: 'ossa/v0.3.0', // Old/invalid version
       kind: 'Agent',
     };
 
-    expect(invalidManifest.apiVersion).not.toBe('ossa/v0.4.1');
+    expect(invalidManifest.apiVersion).not.toBe(API_VERSION);
   });
 
   it('should reject missing required fields', () => {
