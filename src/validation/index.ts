@@ -46,3 +46,33 @@ export {
   EnhancedOSSAValidator,
   EnhancedValidationResult,
 } from './enhanced-validator';
+
+// Validator Registry (v0.4.4)
+export {
+  ValidatorRegistry,
+  ValidatorManifest,
+  ValidationRule,
+  Condition,
+  Fix,
+  EnrichedValidationResult,
+  getValidatorRegistry,
+  resetValidatorRegistry,
+} from './validator-registry';
+
+// Progressive Validation (v0.4.4)
+export {
+  ProgressiveScorer,
+  ValidationScore,
+  DimensionScore,
+  RankedImprovement,
+  getProgressiveScorer,
+} from './progressive-scorer';
+
+// Validation Context (v0.4.4)
+export {
+  ValidationContext,
+  ValidationHistoryEntry,
+  ValidationPattern,
+  getValidationContext,
+  resetValidationContext,
+} from './validation-context';

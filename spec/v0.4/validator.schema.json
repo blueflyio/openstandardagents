@@ -1,0 +1,282 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openstandardagents.org/schemas/v0.4.4/validator.schema.json",
+  "title": "OSSA v0.4.4 Validator Manifest Schema",
+  "description": "Validators are first-class OSSA agents (kind: Validator) that validate other agent manifests. Validators compose using the same operators as agents (>>, <||>, ? :) and are discoverable via the agent registry.",
+  "type": "object",
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "properties": {
+    "apiVersion": {
+      "type": "string",
+      "const": "ossa/v0.4.4",
+      "description": "OSSA API version for validator manifests"
+    },
+    "kind": {
+      "type": "string",
+      "const": "Validator",
+      "description": "Resource type: Validator (validates other agents)"
+    },
+    "metadata": {
+      "type": "object",
+      "required": [
+        "name",
+        "agentType",
+        "agentKind"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Unique validator name (e.g., capability-compatibility-validator)"
+        },
+        "version": {
+          "type": "string",
+          "description": "Validator version (semver)",
+          "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
+        },
+        "description": {
+          "type": "string",
+          "description": "What this validator checks"
+        },
+        "agentType": {
+          "type": "string",
+          "const": "validator",
+          "description": "Validators have agentType: validator"
+        },
+        "agentKind": {
+          "type": "string",
+          "enum": [
+            "schema",
+            "semantic",
+            "platform",
+            "runtime",
+            "security",
+            "performance"
+          ],
+          "description": "Validator category: schema (JSON Schema), semantic (logic rules), platform (target compatibility), runtime (execution requirements), security (vulnerabilities), performance (optimization)"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Tags for validator discovery"
+        }
+      }
+    },
+    "spec": {
+      "type": "object",
+      "required": [
+        "validates",
+        "rules"
+      ],
+      "properties": {
+        "validates": {
+          "type": "object",
+          "required": [
+            "targetTypes",
+            "phases"
+          ],
+          "properties": {
+            "targetTypes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Agent types this validator applies to (e.g., ['claude', 'kagent'] or ['all'])",
+              "examples": [
+                ["claude", "kagent"],
+                ["all"]
+              ]
+            },
+            "phases": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "schema",
+                  "semantic",
+                  "platform",
+                  "runtime"
+                ]
+              },
+              "description": "Validation phases this validator runs in"
+            }
+          }
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ValidationRule"
+          },
+          "description": "Validation rules to execute"
+        },
+        "coordination": {
+          "type": "object",
+          "properties": {
+            "composable": {
+              "type": "boolean",
+              "description": "Whether this validator can compose with others",
+              "default": true
+            },
+            "operators": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [">>", "<||>", "? :"]
+              },
+              "description": "Composition operators supported (sequence >>, parallel <||>, conditional ? :)"
+            }
+          }
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Other validators this validator depends on"
+        }
+      }
+    }
+  },
+  "definitions": {
+    "ValidationRule": {
+      "type": "object",
+      "required": [
+        "id",
+        "when",
+        "then"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique rule identifier"
+        },
+        "when": {
+          "type": "object",
+          "required": [
+            "path"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "JSON path to check (e.g., 'metadata.agentType')"
+            },
+            "equals": {
+              "description": "Value must equal this"
+            },
+            "contains": {
+              "description": "Array must contain this value"
+            },
+            "matches": {
+              "type": "string",
+              "description": "Value must match this regex pattern"
+            },
+            "exists": {
+              "type": "boolean",
+              "description": "Path must exist (true) or not exist (false)"
+            }
+          }
+        },
+        "and": {
+          "type": "object",
+          "description": "Additional condition (both when and and must match)",
+          "$ref": "#/definitions/Condition"
+        },
+        "or": {
+          "type": "object",
+          "description": "Alternative condition (when or or must match)",
+          "$ref": "#/definitions/Condition"
+        },
+        "then": {
+          "type": "object",
+          "required": [
+            "enforcement",
+            "message"
+          ],
+          "properties": {
+            "enforcement": {
+              "type": "string",
+              "enum": ["error", "warning", "info"],
+              "description": "Severity level: error (blocks validation), warning (suggests improvement), info (informational)"
+            },
+            "message": {
+              "type": "string",
+              "description": "Human-readable validation message"
+            },
+            "rationale": {
+              "type": "string",
+              "description": "Why this rule exists (helps users understand the constraint)"
+            },
+            "fixes": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Fix"
+              },
+              "description": "Suggested fixes (auto-fix proposals)"
+            },
+            "documentation": {
+              "type": "string",
+              "format": "uri",
+              "description": "Link to documentation explaining this rule"
+            }
+          }
+        }
+      }
+    },
+    "Condition": {
+      "type": "object",
+      "required": [
+        "path"
+      ],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "equals": {},
+        "contains": {},
+        "matches": {
+          "type": "string"
+        },
+        "exists": {
+          "type": "boolean"
+        }
+      }
+    },
+    "Fix": {
+      "type": "object",
+      "required": [
+        "action",
+        "path"
+      ],
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": ["add", "change", "remove", "compose"],
+          "description": "Fix action: add (add new field), change (modify existing), remove (delete field), compose (suggest composition)"
+        },
+        "path": {
+          "type": "string",
+          "description": "JSON path to modify"
+        },
+        "value": {
+          "description": "New value (for add/change actions)"
+        },
+        "impact": {
+          "type": "string",
+          "description": "Expected score impact (e.g., '+0.20 compatibility')",
+          "pattern": "^[+-]\\d+\\.\\d{2} [a-z]+"
+        },
+        "effort": {
+          "type": "string",
+          "enum": ["low", "medium", "high"],
+          "description": "Implementation effort estimate"
+        }
+      }
+    }
+  }
+}

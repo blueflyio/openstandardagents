@@ -6,7 +6,7 @@
 import { describe, it, expect } from '@jest/globals';
 import { container } from '../../src/di-container.js';
 import { GenerationService } from '../../src/services/generation.service.js';
-import { API_VERSION } from '../../../src/version.js';
+import { API_VERSION } from '../../src/version.js';
 
 describe('Platform Export Integration', () => {
   const generationService = container.get(GenerationService);

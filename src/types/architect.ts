@@ -7,7 +7,7 @@
 import { Adapter, Principal } from './identity.js';
 import { Capability } from './index.js';
 
-export type AgentKind = 'Agent' | 'Task' | 'Workflow';
+export type BlueprintKind = 'Agent' | 'Task' | 'Workflow';
 
 export interface ArchitectureConstraint {
   type: 'cost' | 'performance' | 'compliance' | 'platform';
@@ -23,7 +23,7 @@ export interface ArchitectureConstraint {
 export interface Blueprint {
   title: string;
   summary: string;
-  kind: AgentKind;
+  kind: BlueprintKind;
 
   // High-level design decisions
   architecture: {

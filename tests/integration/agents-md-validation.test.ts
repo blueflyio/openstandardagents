@@ -9,7 +9,7 @@ import { ValidationService } from '../../src/services/validation.service.js';
 import { ManifestRepository } from '../../src/repositories/manifest.repository.js';
 import * as path from 'path';
 import * as fs from 'fs';
-import { API_VERSION } from '../../../src/version.js';
+import { API_VERSION } from '../../src/version.js';
 
 describe('agents.md Extension Integration', () => {
   const validationService = container.get(ValidationService);
