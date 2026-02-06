@@ -684,6 +684,11 @@
               "default": false,
               "description": "Automatically refresh token before expiry"
             },
+            "self_rotate": {
+              "type": "boolean",
+              "default": false,
+              "description": "Agent can rotate its own token (requires self_rotate scope)"
+            },
             "expiry_warning_days": {
               "type": "integer",
               "default": 7,
@@ -707,6 +712,13 @@
                 "notify_on_rotation": {
                   "type": "boolean",
                   "default": true
+                },
+                "manage_service_accounts": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "List of other service accounts this agent manages rotation for"
                 }
               }
             }
@@ -1366,6 +1378,146 @@
         "team_membership": {
           "$ref": "#/definitions/TeamMembership",
           "description": "Team membership and collaboration (v{{VERSION}} Revolutionary Feature)"
+        },
+        "agentType": {
+          "type": "string",
+          "enum": [
+            "claude",
+            "kagent",
+            "openai",
+            "langchain",
+            "crewai",
+            "autogen",
+            "llamaindex",
+            "haystack",
+            "semantic-kernel",
+            "vertex-ai",
+            "bedrock",
+            "pydantic-ai",
+            "swarm",
+            "custom"
+          ],
+          "description": "Agent runtime platform (v0.4.4+). Specifies which platform/framework will execute this agent. Used by exporters to generate platform-specific code and by runtime systems to select appropriate adapter."
+        },
+        "agentKind": {
+          "type": "string",
+          "enum": [
+            "assistant",
+            "orchestrator",
+            "worker",
+            "coordinator",
+            "supervisor",
+            "tool",
+            "reviewer",
+            "planner",
+            "executor",
+            "monitor",
+            "analyst",
+            "researcher",
+            "specialist"
+          ],
+          "description": "Agent functional role (v0.4.4+). Describes WHAT the agent does in the system. Used for intelligent routing, task assignment, and multi-agent orchestration."
+        },
+        "agentArchitecture": {
+          "type": "object",
+          "description": "Agent architecture pattern and capabilities (v0.4.4+). Describes HOW the agent is structured and what capabilities it supports.",
+          "properties": {
+            "pattern": {
+              "type": "string",
+              "enum": [
+                "single",
+                "swarm",
+                "pipeline",
+                "graph",
+                "hierarchical",
+                "reactive",
+                "cognitive"
+              ],
+              "description": "Architecture pattern: single (one agentic loop), swarm (multi-agent with handoffs), pipeline (sequential chain), graph (DAG workflow), hierarchical (manager/worker), reactive (event-driven), cognitive (multi-step reasoning)"
+            },
+            "capabilities": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "handoff",
+                  "streaming",
+                  "context",
+                  "tools",
+                  "vision",
+                  "code",
+                  "audio",
+                  "video",
+                  "function-calling",
+                  "parallel-tools",
+                  "memory",
+                  "retrieval",
+                  "web-search"
+                ]
+              },
+              "uniqueItems": true,
+              "description": "Agent capabilities supported by this agent type and architecture"
+            },
+            "coordination": {
+              "type": "object",
+              "description": "Multi-agent coordination configuration (for swarm/hierarchical patterns)",
+              "properties": {
+                "handoffStrategy": {
+                  "type": "string",
+                  "enum": [
+                    "manual",
+                    "automatic",
+                    "conditional",
+                    "supervised"
+                  ],
+                  "description": "How agents coordinate handoffs"
+                },
+                "leaderAgent": {
+                  "type": "string",
+                  "description": "Name of leader/orchestrator agent (for hierarchical pattern)"
+                },
+                "maxDepth": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 20,
+                  "default": 5,
+                  "description": "Maximum orchestration depth (number of handoffs)"
+                }
+              },
+              "additionalProperties": false
+            },
+            "runtime": {
+              "type": "object",
+              "description": "Runtime configuration hints for execution platforms",
+              "properties": {
+                "preferredRegion": {
+                  "type": "string",
+                  "description": "Preferred deployment region (e.g., us-east-1, eu-west-1)"
+                },
+                "scalability": {
+                  "type": "string",
+                  "enum": [
+                    "single-instance",
+                    "horizontal",
+                    "serverless"
+                  ],
+                  "description": "Scalability model"
+                },
+                "executionModel": {
+                  "type": "string",
+                  "enum": [
+                    "synchronous",
+                    "asynchronous",
+                    "streaming",
+                    "batch"
+                  ],
+                  "description": "Execution model"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false
