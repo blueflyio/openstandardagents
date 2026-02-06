@@ -45,7 +45,7 @@ export type {
 export * from './architect.js';
 export type {
   Blueprint,
-  AgentKind,
+  BlueprintKind,
   ArchitectureConstraint,
   ArchitectRecommendation,
 } from './architect.js';
