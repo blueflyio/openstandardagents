@@ -684,6 +684,11 @@
               "default": false,
               "description": "Automatically refresh token before expiry"
             },
+            "self_rotate": {
+              "type": "boolean",
+              "default": false,
+              "description": "Agent can rotate its own token (requires self_rotate scope)"
+            },
             "expiry_warning_days": {
               "type": "integer",
               "default": 7,
@@ -707,6 +712,13 @@
                 "notify_on_rotation": {
                   "type": "boolean",
                   "default": true
+                },
+                "manage_service_accounts": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "List of other service accounts this agent manages rotation for"
                 }
               }
             }
