@@ -15,5 +15,16 @@ export type {
   AuditReport,
 } from './services/audit.js';
 
+export { AgentProtocolClient } from './services/agent-protocol-client.js';
+export type {
+  AgentCard,
+  AgentSearchFilters,
+  AgentSearchQuery,
+  AgentSearchResult,
+  DIDResolutionResult,
+  AgentRegistrationResponse,
+  AgentProtocolClientConfig,
+} from './services/agent-protocol-client.js';
+
 // Export CLI (for programmatic use)
 export { createAuditCommand } from './cli/commands/audit.js';
