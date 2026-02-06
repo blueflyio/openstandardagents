@@ -51,8 +51,8 @@ function fixFile(filepath: string) {
 
     // For TypeScript/JavaScript test files
     if (filepath.endsWith('.test.ts') || filepath.endsWith('.spec.ts')) {
-      // Check if file already imports API_VERSION
-      const hasImport = content.includes('import') && content.includes('API_VERSION');
+      // Check if file already has the API_VERSION import statement
+      const hasImport = /import\s*\{\s*API_VERSION\s*\}\s*from\s*['"'].*version\.js['"]/.test(content);
 
       if (!hasImport) {
         // Calculate correct relative path to src/version.js based on file depth

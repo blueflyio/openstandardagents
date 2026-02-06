@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from '@jest/globals';
 import { VercelAIValidator } from '../../../../src/services/validators/vercel-ai.validator.js';
 import type { OssaAgent } from '../../../../src/types/index.js';
-import { API_VERSION } from '../../../src/version.js';
+import { API_VERSION } from '../../../../src/version.js';
 
 describe('VercelAIValidator', () => {
   let validator: VercelAIValidator;

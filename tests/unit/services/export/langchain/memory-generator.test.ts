@@ -16,7 +16,7 @@ import {
   type MemoryBackend,
 } from '../../../../../src/services/export/langchain/memory-generator.js';
 import type { OssaAgent } from '../../../../../src/types/index.js';
-import { API_VERSION } from '../../../src/version.js';
+import { API_VERSION } from '../../../../../src/version.js';
 
 describe('MemoryGenerator - Production Quality (v0.4.1)', () => {
   const generator = new MemoryGenerator();

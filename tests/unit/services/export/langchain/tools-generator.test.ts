@@ -11,7 +11,7 @@
 
 import { ToolsGenerator } from '../../../../../src/services/export/langchain/tools-generator.js';
 import type { OssaAgent } from '../../../../../src/types/index.js';
-import { API_VERSION } from '../../../src/version.js';
+import { API_VERSION } from '../../../../../src/version.js';
 
 describe('ToolsGenerator - Production Quality (v0.4.1)', () => {
   const generator = new ToolsGenerator();

@@ -4,7 +4,7 @@
 
 import { describe, it, expect, beforeEach } from '@jest/globals';
 import { ConformanceProfileLoader } from '../../../../src/services/conformance/profile-loader.service.js';
-import { API_VERSION } from '../../../src/version.js';
+import { API_VERSION } from '../../../../src/version.js';
 
 describe.skip('ConformanceProfileLoader', () => {
   let loader: ConformanceProfileLoader;

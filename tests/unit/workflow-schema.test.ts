@@ -5,7 +5,7 @@ import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import * as fs from 'fs';
 import * as path from 'path';
-import { API_VERSION } from '../../../src/version.js';
+import { API_VERSION } from '../../src/version.js';
 import {
   isOssaWorkflow,
   createWorkflowManifest,

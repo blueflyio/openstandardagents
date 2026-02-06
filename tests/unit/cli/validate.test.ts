@@ -29,7 +29,7 @@ describe('ossa validate', () => {
 
   it('should reject invalid apiVersion', () => {
     const invalidManifest = {
-      apiVersion: 'ossa/v0.3.0', // Old/invalid version
+      apiVersion: 'ossa/v0.3.0', // Old/invalid version for testing
       kind: 'Agent',
     };
 

@@ -4,7 +4,7 @@
 
 import { describe, it, expect, beforeEach } from '@jest/globals';
 import { ConformanceScoreCalculator } from '../../../../src/services/conformance/score-calculator.service.js';
-import { API_VERSION } from '../../../src/version.js';
+import { API_VERSION } from '../../../../src/version.js';
 import type {
   ConformanceProfile,
   FeatureDetectionResult,

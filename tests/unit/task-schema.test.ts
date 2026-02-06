@@ -7,7 +7,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { isOssaTask, createTaskManifest } from '../../src/types/task';
 import { getApiVersion } from '../../src/utils/version';
-import { API_VERSION } from '../../../src/version.js';
+import { API_VERSION } from '../../src/version.js';
 
 describe('OSSA v0.4.1 Task Schema', () => {
   let ajv: Ajv;

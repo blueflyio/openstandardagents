@@ -61,7 +61,8 @@ const config: Config = {
     '^@repositories/(.*)$': '<rootDir>/src/repositories/$1',
     '^@types/(.*)$': '<rootDir>/src/types/$1',
     '^@utils/(.*)$': '<rootDir>/src/utils/$1',
-    '^(\\.{1,2}/.*)\\.js$': '$1',
+    // Strip .js extension from all imports (ESM compatibility)
+    '^(.*)\\.js$': '$1',
   },
   transform: {
     '^.+\\.tsx?$': [

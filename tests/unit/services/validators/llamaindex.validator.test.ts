@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from '@jest/globals';
 import { LlamaIndexValidator } from '../../../../src/services/validators/llamaindex.validator.js';
 import type { OssaAgent } from '../../../../src/types/index.js';
-import { API_VERSION } from '../../../src/version.js';
+import { API_VERSION } from '../../../../src/version.js';
 
 describe('LlamaIndexValidator', () => {
   let validator: LlamaIndexValidator;

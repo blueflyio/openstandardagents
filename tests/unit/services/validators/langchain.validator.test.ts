@@ -4,7 +4,7 @@
 
 import { describe, it, expect } from '@jest/globals';
 import { LangChainValidator } from '../../../../src/services/validators/langchain.validator.js';
-import { API_VERSION } from '../../../src/version.js';
+import { API_VERSION } from '../../../../src/version.js';
 
 describe('LangChainValidator', () => {
   const validator = new LangChainValidator();
