@@ -1,0 +1,289 @@
+# OSSA v0.4.1 Agent with Knowledge Graph Extension
+# Portable, configurable - works with ANY git platform, vector DB, wiki format
+
+apiVersion: ossa/v0.4.1
+kind: Agent
+
+metadata:
+  name: drupal-content-moderator
+  namespace: mycompany
+  version: 1.0.0
+  description: Drupal content moderation agent with knowledge graph context
+  labels:
+    domain: drupal
+    tier: worker
+    has_knowledge_graph: "true"
+
+spec:
+  role: >
+    Review and moderate Drupal content for quality, security, and compliance.
+    Use knowledge graph to understand content relationships, wiki guidelines,
+    code implementations, and historical issues.
+
+  capabilities:
+    - name: content-analysis
+      description: Analyze content quality and compliance
+
+    - name: security-check
+      description: Check for security issues (XSS, SQL injection, etc.)
+
+    - name: guidelines-compliance
+      description: Verify compliance with wiki guidelines
+
+  tools:
+    - type: api
+      name: query_knowledge_graph
+      description: Query knowledge graph for context
+      input_schema:
+        type: object
+        properties:
+          semantic_query:
+            type: string
+            description: Natural language query
+          entity_types:
+            type: array
+            items:
+              type: string
+            description: Entity types to search
+          filters:
+            type: object
+            description: Filter criteria
+          include_relationships:
+            type: boolean
+            description: Include related entities
+        required: [semantic_query]
+
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    temperature: 0.3
+    max_tokens: 8192
+
+# =============================================================================
+# Knowledge Graph Extension (PORTABLE, CONFIGURABLE)
+# =============================================================================
+extensions:
+  knowledge_graph:
+    # Enable knowledge graph for this agent
+    enabled: true
+
+    # Data providers (supports ANY platform via env vars)
+    providers:
+      # Git platform (GitLab, GitHub, Gitea, etc.)
+      git:
+        type: gitlab  # or 'github', 'gitea', 'bitbucket'
+        url: ${GITLAB_URL:-https://gitlab.com}
+        token: ${GITLAB_TOKEN}
+        projects: ${GITLAB_PROJECT_IDS}
+        groups: ${GITLAB_GROUP_IDS}
+        api_version: v4
+
+      # Vector database (Qdrant, Pinecone, Weaviate, etc.)
+      vector_db:
+        type: qdrant  # or 'pinecone', 'weaviate', 'milvus'
+        url: ${QDRANT_URL}
+        collection: ${QDRANT_COLLECTION:-drupal-content-moderator-kg}
+        vector_size: 1536
+        distance_metric: cosine
+
+      # Wiki/documentation (Markdown, AsciiDoc, RST, etc.)
+      wiki:
+        type: markdown  # or 'asciidoc', 'rst', 'confluence'
+        path: ${WIKI_PATH}
+        format: md
+        recursive: true
+        exclude_patterns:
+          - node_modules
+          - .git
+          - vendor
+
+      # Source code indexing (optional)
+      codebase:
+        type: multi  # or 'typescript', 'php', 'python'
+        path: ${CODEBASE_PATH}
+        include_patterns:
+          - "**/*.php"
+          - "**/*.module"
+          - "**/*.inc"
+          - "**/*.ts"
+        exclude_patterns:
+          - node_modules
+          - vendor
+          - dist
+        parse_ast: true
+
+    # Entity types to index
+    entities:
+      # GitLab entities
+      - type: issue
+        enabled: true
+        embedding: true
+        filters:
+          labels: ["security", "content", "moderation"]
+
+      - type: merge_request
+        enabled: true
+        embedding: true
+        filters:
+          state: merged
+
+      - type: commit
+        enabled: false  # Skip commits for now
+        embedding: false
+
+      # Wiki entities
+      - type: wiki_page
+        enabled: true
+        embedding: true
+        fields:
+          - title
+          - content
+          - frontmatter
+
+      # Code entities
+      - type: file
+        enabled: true
+        embedding: false  # Don't embed large files
+        filters:
+          extensions: [".php", ".module", ".inc"]
+
+      - type: class
+        enabled: true
+        embedding: true
+
+      - type: function
+        enabled: true
+        embedding: true
+
+    # Relationships to track
+    relationships:
+      # Issue relationships
+      - from: issue
+        to: merge_request
+        type: fixes
+        bidirectional: false
+        extraction:
+          method: api  # GitLab API provides this
+
+      - from: issue
+        to: wiki_page
+        type: documented_by
+        extraction:
+          method: regex
+          pattern: '\[\[([^\]]+)\]\]'  # Wiki links in issue descriptions
+
+      # Wiki relationships
+      - from: wiki_page
+        to: wiki_page
+        type: links_to
+        bidirectional: false
+        extraction:
+          method: regex
+          pattern: '\[([^\]]+)\]\(([^)]+\.md)\)'  # Markdown links
+
+      - from: wiki_page
+        to: issue
+        type: references
+        extraction:
+          method: regex
+          pattern: '#(\d+)'  # Issue references (#123)
+
+      - from: wiki_page
+        to: merge_request
+        type: references
+        extraction:
+          method: regex
+          pattern: '!(\d+)'  # MR references (!456)
+
+      # Code relationships
+      - from: file
+        to: class
+        type: contains
+        extraction:
+          method: ast
+
+      - from: class
+        to: function
+        type: has_method
+        extraction:
+          method: ast
+
+      - from: function
+        to: function
+        type: calls
+        extraction:
+          method: ast
+
+    # Query configuration
+    query_config:
+      max_results: 10
+      similarity_threshold: 0.7
+      include_relationships: true
+      max_depth: 3
+      cache_ttl: 300
+
+    # Indexing configuration
+    indexing:
+      schedule: "0 2 * * *"  # Daily at 2 AM
+      incremental: true
+      batch_size: 100
+      parallel_workers: 4
+
+    # Embedding configuration
+    embeddings:
+      provider: openai  # or 'anthropic', 'cohere', 'local'
+      model: text-embedding-3-small
+      api_key: ${OPENAI_API_KEY}
+      dimensions: 1536
+
+# =============================================================================
+# Example Queries (How Agents Use Knowledge Graph)
+# =============================================================================
+
+# Query 1: Find content moderation guidelines
+# Agent: "What are the content moderation guidelines?"
+# KG Query:
+#   {
+#     semantic_query: "content moderation guidelines policy",
+#     entity_types: ["wiki_page"],
+#     include_relationships: true
+#   }
+# Result: wiki-page-content-policy.md + related issues + related code
+
+# Query 2: Find security vulnerabilities
+# Agent: "Are there known XSS vulnerabilities in the content module?"
+# KG Query:
+#   {
+#     semantic_query: "XSS cross-site scripting content module vulnerability",
+#     entity_types: ["issue", "merge_request", "wiki_page"],
+#     filters: { labels: ["security"] },
+#     include_relationships: true
+#   }
+# Result: issue-234 + mr-567 + wiki-security-guidelines.md + affected code files
+
+# Query 3: Find similar past issues
+# Agent: "Has this content issue been reported before?"
+# KG Query:
+#   {
+#     semantic_query: "spam content detection false positive",
+#     entity_types: ["issue"],
+#     filters: { state: "closed" },
+#     include_relationships: true
+#   }
+# Result: similar issues + their resolutions + related wiki docs
+
+# Query 4: Find code implementation
+# Agent: "How is content validation implemented?"
+# KG Query:
+#   {
+#     semantic_query: "content validation sanitize check",
+#     entity_types: ["function", "class", "file"],
+#     include_relationships: true
+#   }
+# Result: ContentValidator class + validate() function + usage examples
+
+# Query 5: Traverse graph for full context
+# Agent: "Show me the full context for issue #234"
+# KG Graph Traversal:
+#   issue-234 →[fixed_by]→ mr-567 →[modifies]→ file-ContentValidator.php →[contains]→ class-ContentValidator →[has_method]→ function-validate() →[documented_by]→ wiki-content-validation.md
+# Result: Full graph with all relationships

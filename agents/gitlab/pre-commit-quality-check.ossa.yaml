@@ -1,0 +1,163 @@
+ossa: 0.4.1
+metadata:
+  name: pre-commit-quality-check
+  namespace: blueflyio
+  version: 1.0.0
+  description: >
+    Pre-commit quality gate that blocks commits with production-grade issues.
+    Runs locally via git hooks to catch problems before they reach CI.
+  author: BlueFly Platform Team
+  license: MIT
+  tags:
+    - gitlab
+    - pre-commit
+    - quality-gate
+    - local
+  annotations:
+    gitlab.com/gate-level: "1"
+    gitlab.com/execution: local
+
+spec:
+  type: quality-gate
+  platform: local
+  runtime:
+    type: cli
+    command: ossa-quality-check
+
+  triggers:
+    - type: pre-commit
+      location: local
+      hook: .husky/pre-commit
+
+  checks:
+    - id: no-console-log
+      name: Block console.log in source code
+      severity: error
+      pattern: console\.log
+      include:
+        - "src/**/*.ts"
+        - "src/**/*.js"
+      exclude:
+        - "**/*.test.ts"
+        - "**/__tests__/**"
+        - "**/*.spec.ts"
+      message: |
+        ❌ console.log found in source code
+
+        Production code should use structured logging:
+
+        ```typescript
+        import { logger } from './utils/logger.js';
+        logger.info('message', { context });
+        ```
+
+    - id: no-hardcoded-credentials
+      name: Block hardcoded credentials
+      severity: critical
+      patterns:
+        - password\s*=\s*['"]\w+['"]
+        - api_key\s*=\s*['"]\w+['"]
+        - secret\s*=\s*['"]\w+['"]
+        - token\s*=\s*['"]\w+['"]
+        - AKIA[0-9A-Z]{16}  # AWS access key
+      message: |
+        🚨 CRITICAL: Hardcoded credentials detected
+
+        Use environment variables instead:
+
+        ```typescript
+        const apiKey = process.env.API_KEY;
+        ```
+
+    - id: no-hardcoded-urls
+      name: Block hardcoded URLs
+      severity: error
+      pattern: https?://(?!localhost|127\.0\.0\.1)[^\s"']+
+      exclude:
+        - "**/*.md"
+        - "**/*.test.ts"
+      message: |
+        ❌ Hardcoded URL found
+
+        Use configuration instead:
+
+        ```typescript
+        const baseUrl = process.env.API_BASE_URL;
+        ```
+
+    - id: no-ts-ignore
+      name: Block TypeScript ignores
+      severity: error
+      patterns:
+        - "@ts-ignore"
+        - "@ts-nocheck"
+      message: |
+        ❌ TypeScript error suppression found
+
+        Fix the type error instead of ignoring it.
+
+    - id: no-process-exit
+      name: Block process.exit without error codes
+      severity: warning
+      pattern: process\.exit\(\)
+      message: |
+        ⚠️  process.exit() without exit code
+
+        Use explicit exit codes:
+
+        ```typescript
+        process.exit(1);  // Error
+        process.exit(0);  // Success
+        ```
+
+    - id: no-catch-all
+      name: Block empty catch blocks
+      severity: error
+      pattern: catch\s*\([^)]*\)\s*{\s*}
+      message: |
+        ❌ Empty catch block
+
+        Handle errors properly:
+
+        ```typescript
+        catch (error) {
+          logger.error({ err: error }, 'Operation failed');
+          throw error;
+        }
+        ```
+
+  actions:
+    onViolation:
+      - type: block
+        exitCode: 1
+      - type: report
+        format: console
+        template: |
+
+          ╔═══════════════════════════════════════════════════════════╗
+          ║  ❌ PRE-COMMIT QUALITY CHECK FAILED                       ║
+          ╚═══════════════════════════════════════════════════════════╝
+
+          ${violations.map(v => `
+          ${v.severity === 'critical' ? '🚨' : '❌'} ${v.checkName}
+          File: ${v.file}:${v.line}
+
+          ${v.message}
+          `).join('\n')}
+
+          Fix these issues before committing.
+
+  configuration:
+    maxViolations: 0
+    failOnWarnings: false
+    reportFormat: human-readable
+    colorOutput: true
+
+extensions:
+  gitlab:
+    integration:
+      husky: true
+      hookPath: .husky/pre-commit
+    bypass:
+      allowed: false
+      reason: "Critical quality gate"
