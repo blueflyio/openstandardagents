@@ -13,7 +13,7 @@ import { GitRollbackService } from '../../src/services/git-rollback.service.js';
 import { ValidationService } from '../../src/services/validation.service.js';
 import { SchemaRepository } from '../../src/repositories/schema.repository.js';
 import { GitService } from '../../src/services/git.service.js';
-import { API_VERSION } from '../../../src/version.js';
+import { API_VERSION } from '../../src/version.js';
 
 describe('Migration Engine Integration', () => {
   let migrationService: MigrationService;

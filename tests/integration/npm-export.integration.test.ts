@@ -8,7 +8,7 @@ import { describe, it, expect } from '@jest/globals';
 import { NPMExporter } from '../../src/services/export/npm/npm-exporter.js';
 import type { OssaAgent } from '../../src/types/index.js';
 import * as yaml from 'yaml';
-import { API_VERSION } from '../../../src/version.js';
+import { API_VERSION } from '../../src/version.js';
 
 describe('NPM Export Integration', () => {
   it('should generate valid package.json', async () => {
