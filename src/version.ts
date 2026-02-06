@@ -4,18 +4,15 @@
  * NEVER hardcode versions in tests/examples/code.
  * ALWAYS import from this file.
  *
- * This file is auto-generated during build from .version.json
+ * This file reads from .version.json at runtime
  */
 
 import { readFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+import { resolve } from 'path';
 
 // Read version from .version.json (single source of truth)
-const versionJsonPath = join(__dirname, '../.version.json');
+// Use process.cwd() which works in both ESM and CommonJS, and in tests
+const versionJsonPath = resolve(process.cwd(), '.version.json');
 const versionData = JSON.parse(readFileSync(versionJsonPath, 'utf-8'));
 
 /**
