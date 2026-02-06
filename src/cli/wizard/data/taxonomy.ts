@@ -6,6 +6,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'yaml';
+import { logger } from '../../../utils/logger.js';
 
 interface TaxonomyDomain {
   description: string;
@@ -54,7 +55,10 @@ export function loadTaxonomy(): TaxonomySpec {
         cachedTaxonomy = parsed;
         return parsed;
       } catch (error) {
-        console.warn(`Failed to load taxonomy from ${taxonomyPath}:`, error);
+        logger.warn(
+          { path: taxonomyPath, error: error instanceof Error ? error.message : String(error) },
+          'Failed to load taxonomy'
+        );
       }
     }
   }

@@ -1,0 +1,386 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openstandardagents.org/schemas/extensions/knowledge-graph/v1.schema.json",
+  "title": "OSSA Knowledge Graph Extension",
+  "description": "Standard extension for agent knowledge graphs - portable, configurable, platform-agnostic",
+  "type": "object",
+  "properties": {
+    "enabled": {
+      "type": "boolean",
+      "description": "Enable knowledge graph for this agent",
+      "default": false
+    },
+    "providers": {
+      "type": "object",
+      "description": "Knowledge graph data providers",
+      "properties": {
+        "git": {
+          "type": "object",
+          "description": "Git platform provider (GitLab, GitHub, Gitea, etc.)",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["gitlab", "github", "gitea", "bitbucket", "custom"],
+              "description": "Git platform type"
+            },
+            "url": {
+              "type": "string",
+              "format": "uri",
+              "description": "Git platform base URL (supports env vars: ${GIT_URL})"
+            },
+            "token": {
+              "type": "string",
+              "description": "Authentication token (supports env vars: ${GIT_TOKEN})"
+            },
+            "projects": {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  { "type": "string" },
+                  { "type": "number" }
+                ]
+              },
+              "description": "Project IDs or names to index (supports env vars: ${GIT_PROJECT_IDS})"
+            },
+            "groups": {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  { "type": "string" },
+                  { "type": "number" }
+                ]
+              },
+              "description": "Group IDs or names to index (supports env vars: ${GIT_GROUP_IDS})"
+            },
+            "api_version": {
+              "type": "string",
+              "description": "API version (e.g., 'v4' for GitLab)",
+              "default": "v4"
+            }
+          },
+          "required": ["type", "url", "token"]
+        },
+        "vector_db": {
+          "type": "object",
+          "description": "Vector database provider",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["qdrant", "pinecone", "weaviate", "milvus", "custom"],
+              "description": "Vector database type"
+            },
+            "url": {
+              "type": "string",
+              "format": "uri",
+              "description": "Vector DB URL (supports env vars: ${VECTOR_DB_URL})"
+            },
+            "api_key": {
+              "type": "string",
+              "description": "API key (if required, supports env vars: ${VECTOR_DB_API_KEY})"
+            },
+            "collection": {
+              "type": "string",
+              "description": "Collection/index name (supports env vars: ${COLLECTION_NAME})",
+              "default": "knowledge-graph"
+            },
+            "vector_size": {
+              "type": "integer",
+              "description": "Embedding vector size",
+              "default": 1536
+            },
+            "distance_metric": {
+              "type": "string",
+              "enum": ["cosine", "euclidean", "dot_product"],
+              "description": "Distance metric for similarity",
+              "default": "cosine"
+            }
+          },
+          "required": ["type", "url", "collection"]
+        },
+        "wiki": {
+          "type": "object",
+          "description": "Wiki/documentation provider",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["markdown", "asciidoc", "rst", "confluence", "custom"],
+              "description": "Wiki format type"
+            },
+            "path": {
+              "type": "string",
+              "description": "Path to wiki repository (supports env vars: ${WIKI_PATH})"
+            },
+            "url": {
+              "type": "string",
+              "format": "uri",
+              "description": "Wiki URL (for hosted wikis like Confluence)"
+            },
+            "format": {
+              "type": "string",
+              "description": "File format (e.g., 'md', 'adoc', 'rst')",
+              "default": "md"
+            },
+            "recursive": {
+              "type": "boolean",
+              "description": "Recursively scan subdirectories",
+              "default": true
+            },
+            "exclude_patterns": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Glob patterns to exclude",
+              "default": ["node_modules", ".git", "vendor"]
+            }
+          },
+          "required": ["type", "path"]
+        },
+        "codebase": {
+          "type": "object",
+          "description": "Source code indexing provider",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["typescript", "javascript", "php", "python", "java", "go", "rust", "multi"],
+              "description": "Primary language (use 'multi' for polyglot)"
+            },
+            "path": {
+              "type": "string",
+              "description": "Path to codebase (supports env vars: ${CODEBASE_PATH})"
+            },
+            "include_patterns": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Glob patterns to include",
+              "default": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"]
+            },
+            "exclude_patterns": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Glob patterns to exclude",
+              "default": ["node_modules", "dist", "build", "vendor", ".git"]
+            },
+            "parse_ast": {
+              "type": "boolean",
+              "description": "Parse AST for deeper analysis",
+              "default": true
+            }
+          },
+          "required": ["type", "path"]
+        }
+      }
+    },
+    "entities": {
+      "type": "array",
+      "description": "Entity types to index",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "issue",
+              "merge_request",
+              "pull_request",
+              "commit",
+              "pipeline",
+              "user",
+              "group",
+              "project",
+              "file",
+              "class",
+              "function",
+              "discussion",
+              "wiki_page",
+              "wiki_section",
+              "custom"
+            ],
+            "description": "Entity type"
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "Enable indexing for this entity type",
+            "default": true
+          },
+          "embedding": {
+            "type": "boolean",
+            "description": "Generate embeddings for semantic search",
+            "default": true
+          },
+          "fields": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Fields to index (omit for all fields)"
+          },
+          "filters": {
+            "type": "object",
+            "description": "Filters to apply when indexing (e.g., state: 'opened')",
+            "additionalProperties": true
+          }
+        },
+        "required": ["type"]
+      }
+    },
+    "relationships": {
+      "type": "array",
+      "description": "Relationship types to track",
+      "items": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "description": "Source entity type"
+          },
+          "to": {
+            "type": "string",
+            "description": "Target entity type"
+          },
+          "type": {
+            "type": "string",
+            "description": "Relationship type (e.g., 'fixes', 'documents', 'calls')"
+          },
+          "bidirectional": {
+            "type": "boolean",
+            "description": "Create reverse relationship",
+            "default": false
+          },
+          "extraction": {
+            "type": "object",
+            "description": "How to extract this relationship",
+            "properties": {
+              "method": {
+                "type": "string",
+                "enum": ["api", "regex", "ast", "custom"],
+                "description": "Extraction method"
+              },
+              "pattern": {
+                "type": "string",
+                "description": "Regex pattern (if method is 'regex')"
+              }
+            }
+          }
+        },
+        "required": ["from", "to", "type"]
+      }
+    },
+    "query_config": {
+      "type": "object",
+      "description": "Query configuration",
+      "properties": {
+        "max_results": {
+          "type": "integer",
+          "description": "Maximum results per query",
+          "default": 10
+        },
+        "similarity_threshold": {
+          "type": "number",
+          "description": "Minimum similarity score (0-1)",
+          "default": 0.7
+        },
+        "include_relationships": {
+          "type": "boolean",
+          "description": "Include related entities in query results",
+          "default": true
+        },
+        "max_depth": {
+          "type": "integer",
+          "description": "Maximum relationship traversal depth",
+          "default": 3
+        },
+        "cache_ttl": {
+          "type": "integer",
+          "description": "Query cache TTL (seconds)",
+          "default": 300
+        }
+      }
+    },
+    "indexing": {
+      "type": "object",
+      "description": "Indexing configuration",
+      "properties": {
+        "schedule": {
+          "type": "string",
+          "description": "Cron schedule for automatic re-indexing (e.g., '0 2 * * *')"
+        },
+        "incremental": {
+          "type": "boolean",
+          "description": "Use incremental indexing (only index changes)",
+          "default": true
+        },
+        "batch_size": {
+          "type": "integer",
+          "description": "Batch size for bulk indexing",
+          "default": 100
+        },
+        "parallel_workers": {
+          "type": "integer",
+          "description": "Number of parallel workers",
+          "default": 4
+        }
+      }
+    },
+    "embeddings": {
+      "type": "object",
+      "description": "Embedding generation configuration",
+      "properties": {
+        "provider": {
+          "type": "string",
+          "enum": ["openai", "anthropic", "cohere", "local", "custom"],
+          "description": "Embedding provider",
+          "default": "openai"
+        },
+        "model": {
+          "type": "string",
+          "description": "Embedding model (e.g., 'text-embedding-3-small')",
+          "default": "text-embedding-3-small"
+        },
+        "api_key": {
+          "type": "string",
+          "description": "API key (supports env vars: ${EMBEDDING_API_KEY})"
+        },
+        "dimensions": {
+          "type": "integer",
+          "description": "Embedding dimensions",
+          "default": 1536
+        }
+      }
+    }
+  },
+  "required": ["enabled", "providers"],
+  "examples": [
+    {
+      "enabled": true,
+      "providers": {
+        "git": {
+          "type": "gitlab",
+          "url": "${GITLAB_URL}",
+          "token": "${GITLAB_TOKEN}",
+          "projects": "${GITLAB_PROJECT_IDS}"
+        },
+        "vector_db": {
+          "type": "qdrant",
+          "url": "${QDRANT_URL}",
+          "collection": "my-agent-kg"
+        },
+        "wiki": {
+          "type": "markdown",
+          "path": "${WIKI_PATH}",
+          "format": "md"
+        }
+      },
+      "entities": [
+        { "type": "issue", "enabled": true, "embedding": true },
+        { "type": "merge_request", "enabled": true, "embedding": true },
+        { "type": "wiki_page", "enabled": true, "embedding": true }
+      ],
+      "relationships": [
+        { "from": "issue", "to": "merge_request", "type": "fixes" },
+        { "from": "wiki_page", "to": "issue", "type": "documents" }
+      ],
+      "query_config": {
+        "max_results": 10,
+        "similarity_threshold": 0.7,
+        "include_relationships": true
+      }
+    }
+  ]
+}

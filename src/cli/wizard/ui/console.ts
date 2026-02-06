@@ -9,6 +9,7 @@
 import chalk from 'chalk';
 import boxen from 'boxen';
 import Table from 'cli-table3';
+import { logger } from '../../../utils/logger.js';
 
 export interface ConsoleUI {
   header(title: string, subtitle?: string): void;
@@ -29,58 +30,50 @@ export interface ConsoleUI {
 export const console_ui: ConsoleUI = {
   header(title: string, subtitle?: string): void {
     const content = subtitle ? `${title}\n${chalk.gray(subtitle)}` : title;
-    console.log(
-      boxen(content, {
-        padding: 1,
-        margin: 1,
-        borderStyle: 'double',
-        borderColor: 'cyan',
-        title: 'OSSA',
-        titleAlignment: 'center',
-      })
-    );
+    const output = boxen(content, {
+      padding: 1,
+      margin: 1,
+      borderStyle: 'double',
+      borderColor: 'cyan',
+      title: 'OSSA',
+      titleAlignment: 'center',
+    });
+    logger.info({ action: 'show-header', title }, output);
   },
 
   section(title: string): void {
-    console.log('');
-    console.log(chalk.blue.bold('═'.repeat(70)));
-    console.log(chalk.blue.bold(`  ${title}`));
-    console.log(chalk.blue.bold('═'.repeat(70)));
-    console.log('');
+    const output = `\n${'═'.repeat(70)}\n  ${title}\n${'═'.repeat(70)}\n`;
+    logger.info({ action: 'show-section', section: title }, output);
   },
 
   step(current: number, total: number, title: string): void {
-    console.log('');
-    console.log(
-      chalk.cyan.bold(`[Step ${current}/${total}]`) + chalk.white(` ${title}`)
-    );
-    console.log(chalk.gray('─'.repeat(70)));
+    const output = `\n[Step ${current}/${total}] ${title}\n${'─'.repeat(70)}`;
+    logger.info({ step: current, total, title }, output);
   },
 
   info(message: string): void {
-    console.log(chalk.blue(`  ℹ ${message}`));
+    logger.info({ action: 'ui-info' }, message);
   },
 
   success(message: string): void {
-    console.log(chalk.green(`  ✓ ${message}`));
+    logger.info({ action: 'ui-success' }, message);
   },
 
   warning(message: string): void {
-    console.log(chalk.yellow(`  ⚠ ${message}`));
+    logger.warn({ action: 'ui-warning' }, message);
   },
 
   error(message: string): void {
-    console.log(chalk.red(`  ✗ ${message}`));
+    logger.error({ action: 'ui-error' }, message);
   },
 
   example(text: string): void {
-    console.log(chalk.gray(`  Example: ${text}`));
+    logger.info({ action: 'show-example' }, `Example: ${text}`);
   },
 
   list(items: string[]): void {
-    items.forEach((item) => {
-      console.log(chalk.white(`  • ${item}`));
-    });
+    const output = items.map((item) => `  • ${item}`).join('\n');
+    logger.info({ itemCount: items.length }, output);
   },
 
   table(headers: string[], rows: string[][]): void {
@@ -89,27 +82,26 @@ export const console_ui: ConsoleUI = {
       style: { border: ['gray'] },
     });
     rows.forEach((row) => table.push(row));
-    console.log(table.toString());
+    logger.info({ rowCount: rows.length }, table.toString());
   },
 
   box(content: string, title?: string): void {
-    console.log(
-      boxen(content, {
-        padding: 1,
-        margin: { top: 1, bottom: 1, left: 2, right: 2 },
-        borderStyle: 'round',
-        borderColor: 'blue',
-        title: title,
-      })
-    );
+    const output = boxen(content, {
+      padding: 1,
+      margin: { top: 1, bottom: 1, left: 2, right: 2 },
+      borderStyle: 'round',
+      borderColor: 'blue',
+      title: title,
+    });
+    logger.info({ action: 'show-box', boxTitle: title }, output);
   },
 
   divider(): void {
-    console.log(chalk.gray('─'.repeat(70)));
+    logger.info({ action: 'divider' }, '─'.repeat(70));
   },
 
   spacer(): void {
-    console.log('');
+    logger.info({ action: 'spacer' }, '');
   },
 };
 

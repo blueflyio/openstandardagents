@@ -7,6 +7,7 @@ import chalk from 'chalk';
 import { Command } from 'commander';
 import * as fs from 'fs';
 import readline from 'readline';
+import { getInitDefaults } from '../../config/defaults.js';
 import type { OssaAgent } from '../../types/index.js';
 import { getApiVersion } from '../../utils/version.js';
 
@@ -21,7 +22,7 @@ function question(query: string): Promise<string> {
 
 export const initCommand = new Command('init')
   .argument('[name]', 'Agent name/identifier')
-  .option('-o, --output <path>', 'Output file path', 'agent.ossa.json')
+  .option('-o, --output <path>', 'Output file path', getInitDefaults().outputPath)
   .option('-y, --yes', 'Use defaults without prompting')
   .option('--interactive', 'Use enhanced interactive wizard')
   .option(
@@ -35,13 +36,14 @@ export const initCommand = new Command('init')
         const outputPath = options?.output || 'agent.ossa.json';
         const useDefaults = options?.yes || false;
 
+        const initDefaults = getInitDefaults();
         let agentName = name;
         let agentDisplayName: string;
         let description: string;
-        let version = '1.0.0';
+        let version = initDefaults.defaultVersion;
         let role: string;
-        let llmProvider = 'openai';
-        let llmModel = 'gpt-4';
+        let llmProvider = initDefaults.defaultLLMProvider;
+        let llmModel = initDefaults.defaultLLMModels[initDefaults.defaultLLMProvider as keyof typeof initDefaults.defaultLLMModels] || initDefaults.defaultLLMModels.openai;
         let platforms: string[] = [];
 
         if (!useDefaults) {
@@ -61,20 +63,16 @@ export const initCommand = new Command('init')
           llmProvider =
             (await question(
               chalk.blue(
-                'LLM Provider (openai/anthropic/google, default: openai): '
+                `LLM Provider (openai/anthropic/google, default: ${initDefaults.defaultLLMProvider}): `
               )
-            )) || 'openai';
+            )) || initDefaults.defaultLLMProvider;
+          const defaultModelForProvider = initDefaults.defaultLLMModels[llmProvider as keyof typeof initDefaults.defaultLLMModels] || initDefaults.defaultLLMModels.openai;
           llmModel =
             (await question(
               chalk.blue(
-                `LLM Model (default: ${llmProvider === 'openai' ? 'gpt-4' : llmProvider === 'anthropic' ? 'claude-3-5-sonnet-20241022' : 'gemini-pro'}): `
+                `LLM Model (default: ${defaultModelForProvider}): `
               )
-            )) ||
-            (llmProvider === 'openai'
-              ? 'gpt-4'
-              : llmProvider === 'anthropic'
-                ? 'claude-3-5-sonnet-20241022'
-                : 'gemini-pro');
+            )) || defaultModelForProvider;
 
           const platformsInput =
             (await question(
@@ -89,9 +87,9 @@ export const initCommand = new Command('init')
         } else {
           agentName = agentName || 'my-agent';
           agentDisplayName = agentName;
-          description = 'OSSA-compliant agent';
+          description = initDefaults.defaultDescription;
           role = 'You are a helpful AI agent.';
-          platforms = ['cursor', 'openai'];
+          platforms = initDefaults.defaultPlatforms;
         }
 
         const manifest: OssaAgent = {
