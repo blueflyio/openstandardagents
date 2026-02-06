@@ -8,7 +8,7 @@
 import { describe, it, expect, beforeEach } from '@jest/globals';
 import { NPMExporter } from '../../../../src/services/export/npm/npm-exporter.js';
 import type { OssaAgent } from '../../../../src/types/index.js';
-import { API_VERSION } from '../../../src/version.js';
+import { API_VERSION } from '../../../../src/version.js';
 
 describe('NPMExporter', () => {
   let exporter: NPMExporter;

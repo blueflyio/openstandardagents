@@ -7,7 +7,7 @@ import {
   type StreamingConfig,
 } from '../../../../../src/services/export/langchain/streaming-generator.js';
 import type { OssaAgent } from '../../../../../src/types/index.js';
-import { API_VERSION } from '../../../src/version.js';
+import { API_VERSION } from '../../../../../src/version.js';
 
 describe('StreamingGenerator', () => {
   let generator: StreamingGenerator;

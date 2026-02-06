@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { AgentsMdService } from '../../../../src/services/agents-md/agents-md.service.js';
 import type { OssaAgent } from '../../../../src/types/index.js';
 import * as fs from 'fs/promises';
-import { API_VERSION } from '../../../src/version.js';
+import { API_VERSION } from '../../../../src/version.js';
 
 // Mock fs module
 jest.mock('fs/promises');
