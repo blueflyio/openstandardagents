@@ -22,7 +22,7 @@ import type {
   Adapter,
   IValidationService,
   Blueprint,
-  AgentKind,
+  BlueprintKind,
   Principal,
 } from '../types/index.js';
 import { ValidationService } from './validation.service.js';
@@ -125,7 +125,7 @@ If the user mentions specific platforms (GitLab, Kagent, Drupal), include the re
     const intent = context.intent.toLowerCase();
 
     // 1. Determine Kind
-    let kind: AgentKind = 'Agent';
+    let kind: BlueprintKind = 'Agent';
     if (
       intent.includes('workflow') ||
       intent.includes('pipeline') ||
