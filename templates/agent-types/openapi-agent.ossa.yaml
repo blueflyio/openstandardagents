@@ -1,0 +1,121 @@
+apiVersion: ossa/v0.4.4
+kind: Agent
+metadata:
+  name: rest-api-agent
+  version: 1.0.0
+  description: OpenAPI-driven agent that interacts with REST APIs
+
+  # Agent Taxonomy
+  agentType: openapi                   # Generic OpenAPI agent
+  agentKind: tool                      # Provides API access capability
+
+  agentArchitecture:
+    pattern: single                    # Single agentic loop
+    capabilities:
+      - tools                          # Can call external APIs
+      - context                        # Maintains context
+      - retrieval                      # Can retrieve data
+
+    runtime:
+      scalability: serverless          # Serverless execution
+      executionModel: synchronous      # Synchronous API calls
+
+  labels:
+    domain: integration
+    team: platform-engineering
+    type: api-wrapper
+
+spec:
+  # OpenAPI specification reference
+  openapi:
+    spec_url: https://api.example.com/openapi.json
+    version: 3.1.0
+    authentication:
+      type: bearer
+      token_env: API_TOKEN              # Read from environment
+
+  # Agent configuration
+  role: REST API Agent
+  instructions: |
+    You are an API agent that can interact with REST APIs.
+    You have access to all endpoints defined in the OpenAPI spec.
+    Always validate responses and handle errors gracefully.
+
+  # Auto-generated tools from OpenAPI spec
+  tools:
+    # Example: Auto-generated from OpenAPI operations
+    - name: get_users
+      description: List all users
+      operationId: listUsers
+      method: GET
+      path: /api/v1/users
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+
+    - name: get_user_by_id
+      description: Get user by ID
+      operationId: getUser
+      method: GET
+      path: /api/v1/users/{userId}
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+
+    - name: create_user
+      description: Create new user
+      operationId: createUser
+      method: POST
+      path: /api/v1/users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                  format: email
+              required: [name, email]
+
+  # API client configuration
+  client:
+    base_url: https://api.example.com
+    timeout: 30s
+    retry:
+      max_attempts: 3
+      backoff: exponential
+      initial_delay: 1s
+    rate_limiting:
+      requests_per_second: 10
+      burst: 20
+
+  # Response handling
+  response:
+    validation: strict                 # Validate against OpenAPI schema
+    error_handling: retry              # Retry on transient errors
+    cache:
+      enabled: true
+      ttl: 300s                        # Cache for 5 minutes
+
+  # Security
+  security:
+    tls_verify: true
+    allowed_hosts:
+      - api.example.com
+    blocked_paths:
+      - /admin/*
+      - /internal/*
