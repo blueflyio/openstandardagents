@@ -1,0 +1,160 @@
+apiVersion: ossa/v0.4.4
+kind: Validator
+metadata:
+  name: coordination-consistency-validator
+  version: 1.0.0
+  description: Validates coordination patterns and agent architecture consistency
+  agentType: validator
+  agentKind: semantic
+  tags:
+    - coordination
+    - architecture
+    - patterns
+
+spec:
+  validates:
+    targetTypes:
+      - all
+    phases:
+      - semantic
+
+  rules:
+    # Pattern: swarm requires agents array
+    - id: swarm-requires-agents
+      when:
+        path: metadata.agentArchitecture.pattern
+        equals: swarm
+      and:
+        path: spec.agents
+        exists: false
+      then:
+        enforcement: error
+        message: "Swarm pattern requires spec.agents array with multiple agent definitions"
+        rationale: "Swarm coordination pattern requires at least 2 agents for collaboration"
+        fixes:
+          - action: add
+            path: spec.agents
+            value: []
+            impact: "+0.30 compatibility"
+            effort: medium
+        documentation: "https://openstandardagents.org/docs/patterns/swarm"
+
+    # Pattern: pipeline requires executionModel
+    - id: pipeline-requires-execution-model
+      when:
+        path: metadata.agentArchitecture.pattern
+        equals: pipeline
+      and:
+        path: metadata.agentArchitecture.runtime.executionModel
+        exists: false
+      then:
+        enforcement: warning
+        message: "Pipeline pattern should specify executionModel (sequential, parallel, or conditional)"
+        fixes:
+          - action: add
+            path: metadata.agentArchitecture.runtime.executionModel
+            value: sequential
+            impact: "+0.10 clarity"
+            effort: low
+
+    # Pattern: single with multiple agents is inconsistent
+    - id: single-pattern-multiple-agents
+      when:
+        path: metadata.agentArchitecture.pattern
+        equals: single
+      and:
+        path: spec.agents
+        exists: true
+      then:
+        enforcement: warning
+        message: "Pattern 'single' declared but spec.agents array found. Consider pattern: 'swarm' or 'pipeline'"
+        rationale: "Single pattern implies one agentic loop, not coordination of multiple agents"
+        fixes:
+          - action: change
+            path: metadata.agentArchitecture.pattern
+            value: swarm
+            impact: "+0.15 consistency"
+            effort: low
+          - action: remove
+            path: spec.agents
+            impact: "+0.10 consistency"
+            effort: medium
+
+    # agentKind: orchestrator should have coordination config
+    - id: orchestrator-needs-coordination
+      when:
+        path: metadata.agentKind
+        equals: orchestrator
+      and:
+        path: metadata.agentArchitecture.coordination
+        exists: false
+      then:
+        enforcement: warning
+        message: "Orchestrator agents should declare agentArchitecture.coordination config"
+        rationale: "Orchestrators coordinate multiple agents and should specify their coordination strategy"
+        fixes:
+          - action: add
+            path: metadata.agentArchitecture.coordination
+            value:
+              style: centralized
+              handoffStrategy: sequential
+            impact: "+0.15 observability"
+            effort: low
+
+    # agentKind: worker with coordination is unusual
+    - id: worker-with-coordination
+      when:
+        path: metadata.agentKind
+        equals: worker
+      and:
+        path: metadata.agentArchitecture.coordination
+        exists: true
+      then:
+        enforcement: info
+        message: "Workers typically don't coordinate other agents. Consider agentKind: 'orchestrator' if this agent manages others."
+        rationale: "Workers execute tasks, orchestrators coordinate agents"
+
+    # Hierarchical pattern requires agentKind: orchestrator or supervisor
+    - id: hierarchical-requires-supervisor
+      when:
+        path: metadata.agentArchitecture.pattern
+        equals: hierarchical
+      and:
+        path: metadata.agentKind
+        equals: worker
+      then:
+        enforcement: warning
+        message: "Hierarchical pattern typically requires agentKind: 'orchestrator' or 'supervisor', not 'worker'"
+        fixes:
+          - action: change
+            path: metadata.agentKind
+            value: orchestrator
+            impact: "+0.15 consistency"
+            effort: low
+
+    # Parallel coordination requires scalability config
+    - id: parallel-coordination-needs-scalability
+      when:
+        path: metadata.agentArchitecture.coordination.style
+        equals: parallel
+      and:
+        path: metadata.agentArchitecture.runtime.scalability
+        exists: false
+      then:
+        enforcement: warning
+        message: "Parallel coordination should specify runtime.scalability (horizontal or vertical)"
+        fixes:
+          - action: add
+            path: metadata.agentArchitecture.runtime.scalability
+            value: horizontal
+            impact: "+0.10 completeness"
+            effort: low
+
+  coordination:
+    composable: true
+    operators:
+      - ">>"  # Can run after other validators
+      - "<||>"  # Can run in parallel
+
+  dependencies:
+    - capability-compatibility-validator  # Run after capability checks
