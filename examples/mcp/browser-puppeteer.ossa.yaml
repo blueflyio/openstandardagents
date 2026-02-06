@@ -1,0 +1,234 @@
+apiVersion: ossa/v0.4.1
+kind: Agent
+metadata:
+  name: browser-automation-agent
+  version: 1.0.0
+  description: "Web scraping and browser automation agent with Puppeteer MCP server"
+  labels:
+    framework: mcp
+    capability: browser
+    capability: web-scraping
+    capability: automation
+    environment: production
+  annotations:
+    ai.bluefly.io/use-case: "Web scraping, testing, screenshots, PDF generation"
+    ai.bluefly.io/power-level: "HIGH - Browser automation makes agents significantly more powerful"
+
+spec:
+  model:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    parameters:
+      temperature: 0.7
+      maxTokens: 8192
+
+  instructions: |
+    You are a browser automation agent with full Puppeteer capabilities via MCP.
+    You can control a headless browser to interact with web pages, scrape content,
+    take screenshots, generate PDFs, and automate web workflows.
+
+    **Browser Capabilities:**
+    - Navigate to URLs and interact with pages
+    - Click buttons, fill forms, submit data
+    - Extract content from DOM elements
+    - Take screenshots (full page or specific elements)
+    - Generate PDFs from web pages
+    - Execute JavaScript in page context
+    - Handle authentication and cookies
+    - Wait for elements and network requests
+    - Capture network traffic
+
+    **Use Cases:**
+    - Web scraping and data extraction
+    - Automated testing of web applications
+    - Screenshot generation for reports
+    - PDF generation from web content
+    - Form automation and submission
+    - Web monitoring and change detection
+    - Competitive intelligence gathering
+    - SEO audits and analysis
+
+    **Best Practices:**
+    - Always respect robots.txt and rate limits
+    - Use proper wait strategies for dynamic content
+    - Handle errors and timeouts gracefully
+    - Clean up browser resources after use
+    - Respect privacy and terms of service
+
+  tools:
+    - name: puppeteer_navigate
+      description: "Navigate to a URL in the browser"
+      parameters:
+        type: object
+        required: [url]
+        properties:
+          url:
+            type: string
+            description: "URL to navigate to"
+          waitUntil:
+            type: string
+            enum: [load, domcontentloaded, networkidle0, networkidle2]
+            default: networkidle0
+            description: "Wait strategy for page load"
+
+    - name: puppeteer_screenshot
+      description: "Take a screenshot of the current page or element"
+      parameters:
+        type: object
+        properties:
+          selector:
+            type: string
+            description: "CSS selector for element screenshot (optional)"
+          fullPage:
+            type: boolean
+            default: false
+            description: "Capture full scrollable page"
+          path:
+            type: string
+            description: "Output file path (optional)"
+
+    - name: puppeteer_click
+      description: "Click an element on the page"
+      parameters:
+        type: object
+        required: [selector]
+        properties:
+          selector:
+            type: string
+            description: "CSS selector for element to click"
+
+    - name: puppeteer_type
+      description: "Type text into an input field"
+      parameters:
+        type: object
+        required: [selector, text]
+        properties:
+          selector:
+            type: string
+            description: "CSS selector for input field"
+          text:
+            type: string
+            description: "Text to type"
+
+    - name: puppeteer_evaluate
+      description: "Execute JavaScript in page context"
+      parameters:
+        type: object
+        required: [script]
+        properties:
+          script:
+            type: string
+            description: "JavaScript code to execute"
+
+    - name: puppeteer_content
+      description: "Get HTML content of page or element"
+      parameters:
+        type: object
+        properties:
+          selector:
+            type: string
+            description: "CSS selector (optional, defaults to full page)"
+
+    - name: puppeteer_pdf
+      description: "Generate PDF from current page"
+      parameters:
+        type: object
+        properties:
+          path:
+            type: string
+            description: "Output PDF file path"
+          format:
+            type: string
+            enum: [A4, Letter, Legal]
+            default: A4
+          printBackground:
+            type: boolean
+            default: true
+
+  extensions:
+    mcp:
+      servers:
+        - name: puppeteer
+          description: "Browser automation via Puppeteer MCP server"
+          transport:
+            type: stdio
+            command: npx
+            args:
+              - "-y"
+              - "@modelcontextprotocol/server-puppeteer"
+          version: "0.1.0"
+          capabilities:
+            tools:
+              listChanged: true
+            logging:
+              enabled: true
+              level: info
+          config:
+            headless: true
+            defaultViewport:
+              width: 1920
+              height: 1080
+            userAgent: "Mozilla/5.0 (compatible; OSSABot/1.0; +https://openstandardagents.com)"
+
+      capabilities:
+        tools:
+          listChanged: true
+        logging:
+          enabled: true
+          level: info
+
+  safety:
+    constraints:
+      - type: rate_limit
+        description: "Respect website rate limits"
+        config:
+          max_requests_per_minute: 30
+          max_concurrent_pages: 5
+
+      - type: content_filter
+        description: "Block access to sensitive or illegal content"
+        config:
+          blocked_domains:
+            - "*.onion"
+            - "*.i2p"
+          allowed_protocols:
+            - "http"
+            - "https"
+
+      - type: resource_limit
+        description: "Prevent browser resource exhaustion"
+        config:
+          max_page_size_mb: 50
+          max_memory_mb: 1024
+          timeout_seconds: 30
+
+  observability:
+    telemetry:
+      enabled: true
+      traces:
+        - navigation_events
+        - network_requests
+        - console_logs
+        - page_errors
+    metrics:
+      - name: pages_visited
+        type: counter
+        description: "Total pages navigated"
+      - name: screenshots_taken
+        type: counter
+        description: "Total screenshots captured"
+      - name: navigation_duration
+        type: histogram
+        description: "Page navigation time in ms"
+      - name: memory_usage
+        type: gauge
+        description: "Browser memory usage in MB"
+
+  autonomy:
+    level: semi_autonomous
+    requires_approval:
+      - "Submitting forms with sensitive data"
+      - "Downloading files"
+      - "Executing custom JavaScript"
+    delegation:
+      can_spawn_subagents: false

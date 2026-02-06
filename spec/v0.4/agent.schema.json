@@ -2874,6 +2874,7 @@
           "type": "string",
           "enum": [
             "mcp",
+            "browser",
             "kubernetes",
             "http",
             "api",
@@ -2891,7 +2892,7 @@
             "library",
             "custom"
           ],
-          "description": "Tool/trigger type: mcp (Model Context Protocol), kubernetes (K8s API), http (HTTP endpoints), api (REST APIs), grpc (gRPC), function (local), a2a (agent-to-agent), webhook (event triggers), schedule (cron triggers), pipeline (CI/CD events), workflow (status changes), artifact (file outputs), git-commit (commit outputs), ci-status (pipeline status), comment (MR/issue comments), library (reusable logic), custom"
+          "description": "Tool/trigger type: mcp (Model Context Protocol), browser (Puppeteer/Playwright automation), kubernetes (K8s API), http (HTTP endpoints), api (REST APIs), grpc (gRPC), function (local), a2a (agent-to-agent), webhook (event triggers), schedule (cron triggers), pipeline (CI/CD events), workflow (status changes), artifact (file outputs), git-commit (commit outputs), ci-status (pipeline status), comment (MR/issue comments), library (reusable logic), custom"
         },
         "name": {
           "type": "string",
