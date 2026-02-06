@@ -10,19 +10,22 @@ import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { ValidationService } from '../../services/validation.service.js';
 import { OpenAIAdapter } from '../../services/runtime/openai.adapter.js';
+import { getRuntimeDefaults } from '../../config/defaults.js';
 import {
   formatValidationErrors,
   formatErrorCompact,
 } from '../utils/error-formatter.js';
+import { ConfigurationError, isOssaError } from '../../errors/index.js';
+import { logger } from '../../utils/logger.js';
 // SchemaVersion not used in this file
 
 export const runCommand = new Command('run')
   .argument('<path>', 'Path to OSSA agent manifest (YAML or JSON)')
-  .option('-r, --runtime <runtime>', 'Runtime adapter (openai)', 'openai')
+  .option('-r, --runtime <runtime>', 'Runtime adapter (openai)', getRuntimeDefaults().defaultRuntime)
   .option('-v, --verbose', 'Verbose output with tool calls')
   .option('--no-validate', 'Skip validation before running')
   .option('-m, --message <message>', 'Single message mode (non-interactive)')
-  .option('--max-turns <turns>', 'Maximum tool call turns', '10')
+  .option('--max-turns <turns>', 'Maximum tool call turns', String(getRuntimeDefaults().maxTurns))
   .description('Run an OSSA agent interactively')
   .action(
     async (
@@ -156,9 +159,15 @@ export const runCommand = new Command('run')
               });
               console.log(chalk.cyan('\nAgent:'), response, '\n');
             } catch (error) {
+              const ossaError = isOssaError(error)
+                ? error
+                : new ConfigurationError('Agent chat failed', {
+                    originalError: error instanceof Error ? error.message : String(error),
+                  });
+              logger.error({ err: ossaError }, 'Chat operation failed');
               console.error(
                 chalk.red('\nError:'),
-                error instanceof Error ? error.message : String(error),
+                ossaError.message,
                 '\n'
               );
             }
@@ -169,9 +178,15 @@ export const runCommand = new Command('run')
 
         prompt();
       } catch (error) {
+        const ossaError = isOssaError(error)
+          ? error
+          : new ConfigurationError('Failed to run agent', {
+              originalError: error instanceof Error ? error.message : String(error),
+            });
+        logger.error({ err: ossaError }, 'Run command failed');
         console.error(
           chalk.red('Error:'),
-          error instanceof Error ? error.message : String(error)
+          ossaError.message
         );
 
         if (options.verbose && error instanceof Error) {

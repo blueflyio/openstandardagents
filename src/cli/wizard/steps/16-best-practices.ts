@@ -4,6 +4,7 @@
  */
 
 import inquirer from 'inquirer';
+import { logger } from '../../../utils/logger.js';
 import { WizardState } from '../types.js';
 import { console_ui } from '../ui/console.js';
 import { container } from '../../../di-container.js';
@@ -144,24 +145,24 @@ export async function bestPracticesStep(
     const infos = practices.filter((p) => p.severity === 'info');
 
     if (errors.length > 0) {
-      console.log('\n  Errors:');
-      errors.forEach((p) => {
-        console.log(`    [${p.category}] ${p.recommendation}`);
-      });
+      const errorsList = errors
+        .map((p) => `    [${p.category}] ${p.recommendation}`)
+        .join('\n');
+      logger.error({ errorCount: errors.length }, `Errors:\n${errorsList}`);
     }
 
     if (warnings.length > 0) {
-      console.log('\n  Warnings:');
-      warnings.forEach((p) => {
-        console.log(`    [${p.category}] ${p.recommendation}`);
-      });
+      const warningsList = warnings
+        .map((p) => `    [${p.category}] ${p.recommendation}`)
+        .join('\n');
+      logger.warn({ warningCount: warnings.length }, `Warnings:\n${warningsList}`);
     }
 
     if (infos.length > 0) {
-      console.log('\n  Suggestions:');
-      infos.forEach((p) => {
-        console.log(`    [${p.category}] ${p.recommendation}`);
-      });
+      const suggestionsList = infos
+        .map((p) => `    [${p.category}] ${p.recommendation}`)
+        .join('\n');
+      logger.info({ suggestionCount: infos.length }, `Suggestions:\n${suggestionsList}`);
     }
 
     // Ask if user wants to apply suggestions

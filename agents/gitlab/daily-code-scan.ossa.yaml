@@ -1,0 +1,320 @@
+ossa: 0.4.1
+metadata:
+  name: daily-code-scan
+  namespace: blueflyio
+  version: 1.0.0
+  description: >
+    Daily comprehensive code quality scan. Creates issues for regressions,
+    tracks metrics over time, and identifies technical debt. Runs at 2am daily.
+  author: BlueFly Platform Team
+  license: MIT
+  tags:
+    - gitlab
+    - scheduled
+    - code-quality
+    - monitoring
+  annotations:
+    gitlab.com/service-account: code-quality-reviewer
+    gitlab.com/gate-level: "6"
+    gitlab.com/schedule: "0 2 * * *"
+
+spec:
+  type: service-account
+  platform: gitlab
+  runtime:
+    type: scheduled
+    schedule: "0 2 * * *"  # Daily at 2am UTC
+
+  triggers:
+    - type: schedule
+      cron: "0 2 * * *"
+      timezone: UTC
+      description: Daily at 2am UTC
+
+  scan:
+    scope: full-codebase
+    thresholds:
+      consoleLogIncrease: 10
+      hardcodedValuesIncrease: 5
+      coverageDecrease: 2  # percent
+      complexityIncrease: 10
+      securityVulnerabilities: 1
+
+  metrics:
+    - id: production-grade-score
+      name: Production-Grade Score
+      type: gauge
+      target: 85
+      current: calculated
+
+    - id: console-log-count
+      name: Console.log Count
+      type: counter
+      target: 0
+      trend: decreasing
+
+    - id: hardcoded-values
+      name: Hardcoded Values
+      type: counter
+      target: 0
+      trend: decreasing
+
+    - id: test-coverage
+      name: Test Coverage
+      type: percentage
+      target: 95
+      trend: increasing
+
+    - id: type-safety-bypasses
+      name: Type Safety Bypasses
+      type: counter
+      target: 0
+      trend: decreasing
+
+    - id: cyclomatic-complexity
+      name: Avg Cyclomatic Complexity
+      type: gauge
+      target: 10
+      trend: decreasing
+
+    - id: security-vulnerabilities
+      name: Security Vulnerabilities
+      type: counter
+      target: 0
+      severity: critical
+
+  tools:
+    - name: runFullAudit
+      description: Run comprehensive codebase audit
+      parameters:
+        projectId: string
+        ref: string
+      returns:
+        type: object
+        properties:
+          score: number
+          metrics: object
+          violations: array
+
+    - name: getHistoricalMetrics
+      description: Get metrics from previous scans
+      parameters:
+        projectId: string
+        daysBack: number
+      returns:
+        type: array
+
+    - name: createIssue
+      description: Create GitLab issue for finding
+      parameters:
+        projectId: string
+        title: string
+        description: string
+        labels: array
+        severity: string
+      returns:
+        type: object
+
+    - name: updateMetricsDashboard
+      description: Update quality metrics dashboard
+      parameters:
+        projectId: string
+        metrics: object
+      returns:
+        type: object
+
+  workflow:
+    steps:
+      - id: run-audit
+        name: Run Full Audit
+        action: tool-invoke
+        tool: runFullAudit
+        params:
+          projectId: "${CI_PROJECT_ID}"
+          ref: main
+        output: audit
+
+      - id: fetch-history
+        name: Fetch Historical Metrics
+        action: tool-invoke
+        tool: getHistoricalMetrics
+        params:
+          projectId: "${CI_PROJECT_ID}"
+          daysBack: 7
+        output: history
+
+      - id: compare-metrics
+        name: Compare with History
+        action: evaluate
+        logic: |
+          Calculate changes:
+          - Score delta: audit.score - history[0].score
+          - Console.log delta: audit.consoleLog - history[0].consoleLog
+          - Coverage delta: audit.coverage - history[0].coverage
+          - Vulnerabilities: new count
+
+          Identify regressions (negative trends)
+        output: comparison
+
+      - id: identify-regressions
+        name: Identify Regressions
+        action: filter
+        input: "${comparison}"
+        filter: "delta < 0 || (metric === 'vulnerabilities' && value > 0)"
+        output: regressions
+
+      - id: create-regression-issues
+        name: Create Issues for Regressions
+        condition: "regressions.length > 0"
+        action: foreach
+        items: "${regressions}"
+        task:
+          action: tool-invoke
+          tool: createIssue
+          params:
+            projectId: "${CI_PROJECT_ID}"
+            title: "Code Quality: ${item.metric} ${item.trend}"
+            description: |
+              ## 📊 Daily Code Scan - Regression Detected
+
+              **Metric**: ${item.metric}
+              **Current**: ${item.current}
+              **Previous**: ${item.previous}
+              **Change**: ${item.delta} (${item.deltaPercent}%)
+              **Severity**: ${item.severity}
+
+              ### Details
+              ${item.details}
+
+              ### Affected Files
+              ${item.files.map(f => `- \`${f}\` (${f.violations} violations)`).join('\n')}
+
+              ### Recommendation
+              ${item.recommendation}
+
+              ### Auto-Fix Available
+              ${item.hasAutoFix ? '✅ Yes - Comment `/fix` to apply automated fix' : '❌ No - Manual fix required'}
+
+              ---
+              🤖 Detected by: daily-code-scan
+              📅 Scan date: ${new Date().toISOString()}
+              🔗 [Full Report](${CI_PROJECT_URL}/-/jobs/${CI_JOB_ID}/artifacts/file/audit-report.html)
+            labels:
+              - code-quality
+              - automated
+              - "${item.severity}"
+            severity: "${item.severity}"
+        output: issuesCreated
+
+      - id: update-dashboard
+        name: Update Metrics Dashboard
+        action: tool-invoke
+        tool: updateMetricsDashboard
+        params:
+          projectId: "${CI_PROJECT_ID}"
+          metrics:
+            timestamp: "${new Date().toISOString()}"
+            score: "${audit.score}"
+            consoleLog: "${audit.consoleLog}"
+            hardcodedValues: "${audit.hardcodedValues}"
+            coverage: "${audit.coverage}"
+            typeSafetyBypasses: "${audit.typeSafetyBypasses}"
+            complexity: "${audit.complexity}"
+            vulnerabilities: "${audit.vulnerabilities}"
+            trend: "${comparison.trend}"
+        output: dashboardUpdated
+
+      - id: generate-report
+        name: Generate Summary Report
+        action: template
+        template: |
+          # Daily Code Quality Report
+          **Date**: ${new Date().toISOString().split('T')[0]}
+          **Project**: ${CI_PROJECT_NAME}
+
+          ## Summary
+          Production-Grade Score: **${audit.score}/100** (${comparison.scoreDelta > 0 ? '↗️ +' : '↘️ '}${comparison.scoreDelta})
+
+          ## Metrics
+          | Metric | Current | Previous | Trend |
+          |--------|---------|----------|-------|
+          | Console.log | ${audit.consoleLog} | ${history[0].consoleLog} | ${comparison.consoleLogTrend} |
+          | Hardcoded Values | ${audit.hardcodedValues} | ${history[0].hardcodedValues} | ${comparison.hardcodedTrend} |
+          | Test Coverage | ${audit.coverage}% | ${history[0].coverage}% | ${comparison.coverageTrend} |
+          | Type Safety | ${audit.typeSafetyBypasses} bypasses | ${history[0].typeSafetyBypasses} | ${comparison.typeSafetyTrend} |
+          | Complexity | ${audit.complexity} avg | ${history[0].complexity} | ${comparison.complexityTrend} |
+          | Vulnerabilities | ${audit.vulnerabilities} | ${history[0].vulnerabilities} | ${comparison.vulnTrend} |
+
+          ## Issues Created
+          ${issuesCreated.length > 0 ? issuesCreated.map(i => `- [${i.title}](${i.web_url})`).join('\n') : 'None - all metrics stable or improving ✅'}
+
+          ## Next Steps
+          ${regressions.length > 0 ? `
+          ⚠️  ${regressions.length} regression(s) detected. Review created issues.
+          ` : `
+          ✅ No regressions detected. Keep up the good work!
+          `}
+
+          ---
+          🤖 Generated by: daily-code-scan
+          📊 [View Dashboard](${CI_PROJECT_URL}/-/quality/dashboard)
+        output: report
+
+      - id: save-artifacts
+        name: Save Report Artifacts
+        action: artifact
+        files:
+          - path: audit-report.json
+            content: "${JSON.stringify(audit, null, 2)}"
+          - path: audit-report.md
+            content: "${report}"
+          - path: metrics-history.json
+            content: "${JSON.stringify(history, null, 2)}"
+          - path: comparison.json
+            content: "${JSON.stringify(comparison, null, 2)}"
+        output: artifacts
+
+  notifications:
+    onRegressions:
+      - channel: slack
+        webhook: "${SLACK_WEBHOOK_URL}"
+        message: |
+          ⚠️  Code Quality Regressions Detected
+
+          Project: ${CI_PROJECT_NAME}
+          Score: ${audit.score}/100 (${comparison.scoreDelta})
+          Issues Created: ${issuesCreated.length}
+
+          [View Report](${CI_PROJECT_URL}/-/jobs/${CI_JOB_ID}/artifacts/file/audit-report.html)
+
+    onImprovement:
+      - channel: slack
+        webhook: "${SLACK_WEBHOOK_URL}"
+        message: |
+          ✅ Code Quality Improved!
+
+          Project: ${CI_PROJECT_NAME}
+          Score: ${audit.score}/100 (+${comparison.scoreDelta})
+
+          Great work team! 🎉
+
+extensions:
+  gitlab:
+    serviceAccount: code-quality-reviewer
+    permissions:
+      - read_code
+      - create_issue
+      - write_metrics
+    schedule:
+      cron: "0 2 * * *"
+      ref: main
+      variables:
+        SCAN_TYPE: daily
+        SEVERITY_THRESHOLD: medium
+    artifacts:
+      paths:
+        - audit-report.json
+        - audit-report.md
+        - metrics-history.json
+        - comparison.json
+      expire_in: 30 days
