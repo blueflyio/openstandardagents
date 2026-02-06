@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from '@jest/globals';
 import { AutoGenValidator } from '../../../../src/services/validators/autogen.validator.js';
-import { API_VERSION } from '../../../src/version.js';
+import { API_VERSION } from '../../../../src/version.js';
 
 describe('AutoGenValidator', () => {
   let validator: AutoGenValidator;

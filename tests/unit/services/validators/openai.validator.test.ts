@@ -4,7 +4,7 @@
 
 import { describe, it, expect } from '@jest/globals';
 import { OpenAIValidator } from '../../../../src/services/validators/openai.validator.js';
-import { API_VERSION } from '../../../src/version.js';
+import { API_VERSION } from '../../../../src/version.js';
 
 describe('OpenAIValidator', () => {
   const validator = new OpenAIValidator();
