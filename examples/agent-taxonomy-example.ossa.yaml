@@ -1,0 +1,89 @@
+apiVersion: ossa/v0.4.4
+kind: Agent
+metadata:
+  name: customer-service-orchestrator
+  version: 1.0.0
+  description: Multi-agent orchestrator for customer service workflows
+
+  # NEW in v0.4.4: Agent Taxonomy
+  agentType: claude                    # Runtime platform (claude, kagent, openai, etc.)
+  agentKind: orchestrator              # Functional role (what it does)
+
+  agentArchitecture:
+    pattern: swarm                     # Architecture pattern
+    capabilities:
+      - handoff                        # Can transfer to other agents
+      - streaming                      # Supports streaming responses
+      - context                        # Maintains conversation context
+      - tools                          # Can call external tools
+      - vision                         # Can process images
+
+    coordination:
+      handoffStrategy: automatic       # How agents coordinate
+      maxDepth: 5                      # Max orchestration depth
+
+    runtime:
+      scalability: horizontal          # Can scale horizontally
+      executionModel: streaming        # Streaming execution model
+      preferredRegion: us-east-1       # Preferred deployment region
+
+  labels:
+    domain: customer-service
+    team: support-engineering
+    environment: production
+
+spec:
+  model:
+    provider: anthropic
+    name: claude-sonnet-4-5-20250929
+    temperature: 0.7
+    max_tokens: 4096
+
+  system: |
+    You are an intelligent customer service orchestrator.
+    Route customer requests to appropriate specialist agents:
+    - sales-agent: For pricing and purchasing questions
+    - support-agent: For technical support issues
+    - billing-agent: For billing and payment questions
+
+  tools:
+    - name: transfer_to_sales
+      description: Transfer to sales specialist
+      input_schema:
+        type: object
+        properties:
+          reason:
+            type: string
+            description: Reason for transfer
+        required: [reason]
+
+    - name: transfer_to_support
+      description: Transfer to technical support
+      input_schema:
+        type: object
+        properties:
+          issue_type:
+            type: string
+            enum: [bug, feature, question]
+        required: [issue_type]
+
+    - name: transfer_to_billing
+      description: Transfer to billing specialist
+      input_schema:
+        type: object
+        properties:
+          billing_issue:
+            type: string
+        required: [billing_issue]
+
+  context:
+    session_timeout: 30m
+    max_turns: 20
+
+  handoffs:
+    - to: sales-agent
+      condition: "user asks about pricing or purchasing"
+    - to: support-agent
+      condition: "user has technical issues"
+    - to: billing-agent
+      condition: "user has billing questions"
