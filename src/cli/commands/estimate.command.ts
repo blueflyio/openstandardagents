@@ -135,7 +135,7 @@ estimateCommand.action(
       const manifest = await manifestRepo.load(path);
 
       log(
-        `\n💰 Cost Estimation for Agent: ${chalk.cyan(manifest.metadata.name)}`,
+        `\n💰 Cost Estimation for Agent: ${chalk.cyan(manifest.metadata?.name || 'Unknown')}`,
         chalk.bold
       );
       log('');

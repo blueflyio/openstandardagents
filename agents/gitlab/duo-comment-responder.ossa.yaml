@@ -1,0 +1,385 @@
+ossa: 0.4.1
+metadata:
+  name: duo-comment-responder
+  namespace: blueflyio
+  version: 1.0.0
+  description: >
+    Responds to GitLab Duo comments on merge requests. Enables agent-to-agent
+    dialogue where Claude analyzes Duo's suggestions, implements fixes, and
+    continues the conversation until issues are resolved.
+  author: BlueFly Platform Team
+  license: MIT
+  tags:
+    - gitlab
+    - duo
+    - code-quality
+    - automated-fixes
+  annotations:
+    gitlab.com/service-account: code-quality-reviewer
+    gitlab.com/webhook-event: note_events
+
+spec:
+  type: service-account
+  platform: gitlab
+  runtime:
+    type: webhook
+    port: 9090
+    path: /webhook/duo-comment-responder
+
+  triggers:
+    - type: webhook
+      event: note_events
+      description: Triggered when GitLab Duo posts a comment on an MR
+      filter:
+        note_author: "GitLab Duo Bot"
+        note_contains:
+          - "@claude"
+          - "review"
+          - "suggestion"
+          - "consider"
+          - "refactor"
+      variables:
+        - DUO_COMMENT_ID: "${note_id}"
+        - DUO_COMMENT_BODY: "${note_body}"
+        - MR_IID: "${merge_request_iid}"
+        - PROJECT_ID: "${project_id}"
+
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-5
+    maxTokens: 8192
+    temperature: 0.3
+    systemPrompt: |
+      You are a code quality reviewer working collaboratively with GitLab Duo.
+
+      Your role:
+      1. Analyze Duo's suggestions carefully
+      2. Agree or respectfully disagree with technical reasoning
+      3. Implement fixes when Duo identifies valid issues
+      4. Ask clarifying questions if Duo's suggestion is unclear
+      5. Post clear, professional responses
+      6. Create commits with detailed explanations
+
+      Guidelines:
+      - Be constructive and professional
+      - Explain your reasoning
+      - Show code examples in responses
+      - Use conventional commit messages
+      - Continue dialogue until issue is resolved
+
+      Remember: You and Duo are teammates working toward code quality.
+
+  tools:
+    - name: getMRFiles
+      description: Get list of files changed in the merge request
+      parameters:
+        projectId:
+          type: string
+          required: true
+        mrIid:
+          type: number
+          required: true
+      returns:
+        type: array
+        items:
+          type: object
+          properties:
+            old_path: string
+            new_path: string
+            diff: string
+
+    - name: getMRDiff
+      description: Get complete diff for merge request
+      parameters:
+        projectId:
+          type: string
+          required: true
+        mrIid:
+          type: number
+          required: true
+      returns:
+        type: object
+        properties:
+          diffs:
+            type: array
+
+    - name: getFileContent
+      description: Get current content of a specific file
+      parameters:
+        projectId:
+          type: string
+          required: true
+        filePath:
+          type: string
+          required: true
+        ref:
+          type: string
+          required: true
+          description: Branch name or commit SHA
+      returns:
+        type: string
+        description: File content
+
+    - name: postMRComment
+      description: Post a comment to the merge request
+      parameters:
+        projectId:
+          type: string
+          required: true
+        mrIid:
+          type: number
+          required: true
+        body:
+          type: string
+          required: true
+        replyToId:
+          type: number
+          required: false
+          description: Note ID to reply to (for threading)
+      returns:
+        type: object
+        properties:
+          id: number
+          body: string
+          author: object
+
+    - name: createCommit
+      description: Create a commit with changes to fix the issue
+      parameters:
+        projectId:
+          type: string
+          required: true
+        branch:
+          type: string
+          required: true
+        message:
+          type: string
+          required: true
+        actions:
+          type: array
+          required: true
+          items:
+            type: object
+            properties:
+              action:
+                type: string
+                enum: [create, delete, update]
+              file_path: string
+              content: string
+      returns:
+        type: object
+        properties:
+          id: string
+          short_id: string
+          message: string
+
+  workflow:
+    steps:
+      - id: extract-suggestion
+        name: Parse Duo's Comment
+        description: Extract the suggestion/issue from Duo's comment
+        action: parse
+        input: "${DUO_COMMENT_BODY}"
+        output: duoSuggestion
+        logic: |
+          Extract key information:
+          - What issue did Duo identify?
+          - What does Duo suggest?
+          - Is there a code example?
+          - What's the severity?
+
+      - id: fetch-context
+        name: Fetch MR Context
+        description: Get all necessary context about the merge request
+        action: parallel
+        tasks:
+          - tool: getMRFiles
+            params:
+              projectId: "${PROJECT_ID}"
+              mrIid: "${MR_IID}"
+            output: mrFiles
+          - tool: getMRDiff
+            params:
+              projectId: "${PROJECT_ID}"
+              mrIid: "${MR_IID}"
+            output: mrDiff
+
+      - id: analyze-suggestion
+        name: Analyze with LLM
+        description: Use Claude to analyze Duo's suggestion in context
+        action: llm-invoke
+        input: |
+          GitLab Duo commented:
+          "${duoSuggestion}"
+
+          MR Files Changed:
+          ${JSON.stringify(mrFiles, null, 2)}
+
+          MR Diff:
+          ${JSON.stringify(mrDiff, null, 2)}
+
+          Tasks:
+          1. Do you agree with Duo's suggestion? Why or why not?
+          2. If valid, what's the fix?
+          3. Draft a response comment
+          4. If code change needed, generate the updated code
+
+          Respond in JSON:
+          {
+            "agree": boolean,
+            "reasoning": "string",
+            "response_comment": "string (markdown formatted)",
+            "has_code_fix": boolean,
+            "code_changes": [
+              {
+                "file_path": "string",
+                "action": "update",
+                "content": "string"
+              }
+            ],
+            "commit_message": "string (if has_code_fix)"
+          }
+        output: analysis
+
+      - id: post-response
+        name: Post Response Comment
+        description: Post Claude's response to the MR
+        action: tool-invoke
+        tool: postMRComment
+        params:
+          projectId: "${PROJECT_ID}"
+          mrIid: "${MR_IID}"
+          body: "${analysis.response_comment}"
+          replyToId: "${DUO_COMMENT_ID}"
+        output: commentPosted
+
+      - id: apply-fix
+        name: Apply Code Fix
+        description: Create commit with fix if needed
+        condition: "analysis.has_code_fix === true"
+        action: tool-invoke
+        tool: createCommit
+        params:
+          projectId: "${PROJECT_ID}"
+          branch: "${CI_COMMIT_REF_NAME}"
+          message: "${analysis.commit_message}"
+          actions: "${analysis.code_changes}"
+        output: commitCreated
+
+      - id: post-fix-notification
+        name: Notify About Fix
+        description: Post follow-up comment with commit link
+        condition: "commitCreated !== null"
+        action: tool-invoke
+        tool: postMRComment
+        params:
+          projectId: "${PROJECT_ID}"
+          mrIid: "${MR_IID}"
+          body: |
+            ✅ Fix applied in commit ${commitCreated.short_id}
+
+            See: [${commitCreated.short_id}](${CI_PROJECT_URL}/-/commit/${commitCreated.id})
+
+            @GitLabDuo Please review the changes.
+        output: notificationPosted
+
+  errorHandling:
+    retries: 3
+    backoff: exponential
+    onError:
+      - action: log
+        level: error
+      - action: post-comment
+        template: |
+          ⚠️ I encountered an error while processing this suggestion:
+
+          ```
+          ${error.message}
+          ```
+
+          @${author} Please review manually.
+
+  observability:
+    logging:
+      level: info
+      format: json
+      destination: stdout
+    metrics:
+      enabled: true
+      provider: prometheus
+      metrics:
+        - name: duo_comments_received
+          type: counter
+          description: Total Duo comments received
+        - name: fixes_applied
+          type: counter
+          description: Total fixes applied
+        - name: processing_duration
+          type: histogram
+          description: Time to process Duo comment
+    tracing:
+      enabled: true
+      provider: opentelemetry
+      exporter: jaeger
+
+  security:
+    authentication:
+      required: true
+      type: token
+      tokenSource: header
+      tokenName: X-Gitlab-Token
+    authorization:
+      requiredPermissions:
+        - read_repository
+        - write_repository
+        - read_merge_request
+        - write_merge_request
+        - write_note
+    secrets:
+      - name: GITLAB_API_TOKEN
+        required: true
+        description: GitLab API token with repository and MR permissions
+      - name: ANTHROPIC_API_KEY
+        required: true
+        description: Anthropic API key for Claude access
+      - name: WEBHOOK_SECRET
+        required: true
+        description: Secret token for webhook validation
+
+extensions:
+  gitlab:
+    serviceAccount: code-quality-reviewer
+    permissions:
+      - read_code
+      - write_code
+      - write_comments
+      - create_commits
+    api:
+      baseUrl: http://api.blueflyagents.com
+      timeout: 30000
+      retries: 3
+    webhook:
+      url: http://api.blueflyagents.com/webhook/duo-comment-responder
+      events:
+        - note_events
+      ssl_verification: false  # Internal network via Tailscale
+    deployment:
+      platform: kubernetes
+      namespace: agents
+      replicas: 2
+      resources:
+        requests:
+          cpu: 250m
+          memory: 512Mi
+        limits:
+          cpu: 1000m
+          memory: 1Gi
+    monitoring:
+      healthcheck:
+        enabled: true
+        path: /health
+        interval: 30s
+      readiness:
+        enabled: true
+        path: /ready
+        interval: 10s

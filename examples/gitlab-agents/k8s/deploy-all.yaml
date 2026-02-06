@@ -1,0 +1,341 @@
+---
+# KAgent CRD Deployment for All 6 GitLab Quality Gate Agents
+# Deploy with: kubectl apply -f deploy-all.yaml
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gitlab-agents
+  labels:
+    app: gitlab-quality-gates
+
+---
+# Secret for GitLab and Anthropic credentials
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gitlab-agents-secrets
+  namespace: gitlab-agents
+type: Opaque
+stringData:
+  GITLAB_API_TOKEN: "glpat-REPLACE-WITH-YOUR-TOKEN"
+  ANTHROPIC_API_KEY: "sk-ant-REPLACE-WITH-YOUR-KEY"
+  WEBHOOK_SECRET: "REPLACE-WITH-RANDOM-SECRET"
+
+---
+# KAgent CRD: duo-comment-responder
+apiVersion: agents.bluefly.io/v1
+kind: KAgent
+metadata:
+  name: duo-comment-responder
+  namespace: gitlab-agents
+  labels:
+    app: gitlab-quality-gates
+    gate: "4"
+    agent-type: webhook
+spec:
+  agentName: duo-comment-responder
+  version: "1.0.0"
+  description: "Responds to GitLab Duo comments on MRs"
+
+  runtime:
+    image: registry.gitlab.com/blueflyio/ossa/openstandardagents/duo-comment-responder:latest
+    replicas: 2
+    resources:
+      requests:
+        cpu: "250m"
+        memory: "512Mi"
+      limits:
+        cpu: "1000m"
+        memory: "1Gi"
+
+  ports:
+    - name: http
+      containerPort: 9090
+      protocol: TCP
+
+  env:
+    - name: GITLAB_API_TOKEN
+      valueFrom:
+        secretKeyRef:
+          name: gitlab-agents-secrets
+          key: GITLAB_API_TOKEN
+    - name: ANTHROPIC_API_KEY
+      valueFrom:
+        secretKeyRef:
+          name: gitlab-agents-secrets
+          key: ANTHROPIC_API_KEY
+    - name: WEBHOOK_SECRET
+      valueFrom:
+        secretKeyRef:
+          name: gitlab-agents-secrets
+          key: WEBHOOK_SECRET
+    - name: PORT
+      value: "9090"
+    - name: LOG_LEVEL
+      value: "info"
+    - name: NODE_ENV
+      value: "production"
+
+  healthCheck:
+    enabled: true
+    path: /health
+    port: 9090
+    initialDelaySeconds: 10
+    periodSeconds: 30
+
+  readinessCheck:
+    enabled: true
+    path: /ready
+    port: 9090
+    initialDelaySeconds: 5
+    periodSeconds: 10
+
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 9090
+
+  ingress:
+    enabled: true
+    host: api.blueflyagents.com
+    path: /webhook/duo-comment-responder
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      nginx.ingress.kubernetes.io/ssl-redirect: "false"
+
+---
+# KAgent CRD: mr-reviewer
+apiVersion: agents.bluefly.io/v1
+kind: KAgent
+metadata:
+  name: mr-reviewer
+  namespace: gitlab-agents
+  labels:
+    app: gitlab-quality-gates
+    gate: "3"
+    agent-type: webhook
+spec:
+  agentName: mr-reviewer
+  version: "1.0.0"
+  description: "Comprehensive MR review agent"
+
+  runtime:
+    image: registry.gitlab.com/blueflyio/ossa/openstandardagents/mr-reviewer:latest
+    replicas: 3
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "1Gi"
+      limits:
+        cpu: "2000m"
+        memory: "2Gi"
+
+  ports:
+    - name: http
+      containerPort: 9090
+      protocol: TCP
+
+  env:
+    - name: GITLAB_API_TOKEN
+      valueFrom:
+        secretKeyRef:
+          name: gitlab-agents-secrets
+          key: GITLAB_API_TOKEN
+    - name: ANTHROPIC_API_KEY
+      valueFrom:
+        secretKeyRef:
+          name: gitlab-agents-secrets
+          key: ANTHROPIC_API_KEY
+    - name: WEBHOOK_SECRET
+      valueFrom:
+        secretKeyRef:
+          name: gitlab-agents-secrets
+          key: WEBHOOK_SECRET
+    - name: PORT
+      value: "9090"
+
+  healthCheck:
+    enabled: true
+    path: /health
+    port: 9090
+
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 9090
+
+  ingress:
+    enabled: true
+    host: api.blueflyagents.com
+    path: /webhook/mr-reviewer
+
+---
+# KAgent CRD: pipeline-auto-fix
+apiVersion: agents.bluefly.io/v1
+kind: KAgent
+metadata:
+  name: pipeline-auto-fix
+  namespace: gitlab-agents
+  labels:
+    app: gitlab-quality-gates
+    gate: "5"
+    agent-type: webhook
+spec:
+  agentName: pipeline-auto-fix
+  version: "1.0.0"
+  description: "Automatically fixes failed pipelines"
+
+  runtime:
+    image: registry.gitlab.com/blueflyio/ossa/openstandardagents/pipeline-auto-fix:latest
+    replicas: 2
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "1Gi"
+      limits:
+        cpu: "2000m"
+        memory: "2Gi"
+
+  ports:
+    - name: http
+      containerPort: 9090
+
+  env:
+    - name: GITLAB_API_TOKEN
+      valueFrom:
+        secretKeyRef:
+          name: gitlab-agents-secrets
+          key: GITLAB_API_TOKEN
+    - name: ANTHROPIC_API_KEY
+      valueFrom:
+        secretKeyRef:
+          name: gitlab-agents-secrets
+          key: ANTHROPIC_API_KEY
+    - name: WEBHOOK_SECRET
+      valueFrom:
+        secretKeyRef:
+          name: gitlab-agents-secrets
+          key: WEBHOOK_SECRET
+    - name: PORT
+      value: "9090"
+
+  healthCheck:
+    enabled: true
+    path: /health
+    port: 9090
+
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 9090
+
+  ingress:
+    enabled: true
+    host: api.blueflyagents.com
+    path: /webhook/pipeline-auto-fix
+
+---
+# KAgent CRD: daily-code-scan
+apiVersion: agents.bluefly.io/v1
+kind: KAgent
+metadata:
+  name: daily-code-scan
+  namespace: gitlab-agents
+  labels:
+    app: gitlab-quality-gates
+    gate: "6"
+    agent-type: scheduled
+spec:
+  agentName: daily-code-scan
+  version: "1.0.0"
+  description: "Daily comprehensive code quality scan"
+
+  runtime:
+    image: registry.gitlab.com/blueflyio/ossa/openstandardagents/daily-code-scan:latest
+    replicas: 1
+    resources:
+      requests:
+        cpu: "1000m"
+        memory: "2Gi"
+      limits:
+        cpu: "2000m"
+        memory: "4Gi"
+
+  schedule:
+    cron: "0 2 * * *"  # Daily at 2am UTC
+    timezone: "UTC"
+
+  env:
+    - name: GITLAB_API_TOKEN
+      valueFrom:
+        secretKeyRef:
+          name: gitlab-agents-secrets
+          key: GITLAB_API_TOKEN
+    - name: CI_PROJECT_ID
+      value: "YOUR_PROJECT_ID"
+
+  healthCheck:
+    enabled: false  # Scheduled job
+
+---
+# Service for external access
+apiVersion: v1
+kind: Service
+metadata:
+  name: gitlab-agents
+  namespace: gitlab-agents
+  labels:
+    app: gitlab-quality-gates
+spec:
+  selector:
+    app: gitlab-quality-gates
+  ports:
+    - name: http
+      port: 80
+      targetPort: 9090
+      protocol: TCP
+  type: ClusterIP
+
+---
+# Ingress for all agents
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gitlab-agents
+  namespace: gitlab-agents
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - api.blueflyagents.com
+      secretName: gitlab-agents-tls
+  rules:
+    - host: api.blueflyagents.com
+      http:
+        paths:
+          - path: /webhook/duo-comment-responder(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: duo-comment-responder
+                port:
+                  number: 80
+          - path: /webhook/mr-reviewer(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: mr-reviewer
+                port:
+                  number: 80
+          - path: /webhook/pipeline-auto-fix(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: pipeline-auto-fix
+                port:
+                  number: 80
