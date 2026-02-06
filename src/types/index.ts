@@ -51,6 +51,137 @@ export type {
 } from './architect.js';
 
 /**
+ * Agent Taxonomy Types (v0.4.4+)
+ * Defines WHO executes, WHAT they do, and HOW they're structured
+ */
+
+/**
+ * Agent Type - Runtime platform/framework for agent execution
+ * Specifies which platform will execute this agent
+ */
+export type AgentType =
+  | 'claude'           // Anthropic Claude agents
+  | 'kagent'           // Kubernetes-orchestrated agents
+  | 'openai'           // OpenAI GPT models
+  | 'langchain'        // LangChain agent framework
+  | 'crewai'           // CrewAI multi-agent crews
+  | 'autogen'          // Microsoft AutoGen
+  | 'llamaindex'       // LlamaIndex agents
+  | 'haystack'         // Haystack agents
+  | 'semantic-kernel'  // Microsoft Semantic Kernel
+  | 'vertex-ai'        // Google Vertex AI
+  | 'bedrock'          // AWS Bedrock
+  | 'pydantic-ai'      // Pydantic AI agents
+  | 'swarm'            // OpenAI Swarm
+  | 'custom';          // Custom implementations
+
+/**
+ * Agent Kind - Functional role of the agent
+ * Describes WHAT the agent does in the system
+ */
+export type AgentKind =
+  | 'assistant'        // User-facing conversational agent
+  | 'orchestrator'     // Coordinates multiple agents
+  | 'worker'           // Specialized task execution
+  | 'coordinator'      // Manages handoffs and routing
+  | 'supervisor'       // Monitors and intervenes in execution
+  | 'tool'             // Provides specific capability
+  | 'reviewer'         // Validates outputs
+  | 'planner'          // Creates execution plans
+  | 'executor'         // Executes plans
+  | 'monitor'          // Observes system state
+  | 'analyst'          // Analyzes data and patterns
+  | 'researcher'       // Conducts research tasks
+  | 'specialist';      // Domain-specific expert
+
+/**
+ * Architecture Pattern - How the agent is structured
+ */
+export type ArchitecturePattern =
+  | 'single'           // One agentic loop
+  | 'swarm'            // Multi-agent with handoffs
+  | 'pipeline'         // Sequential chain
+  | 'graph'            // DAG-based workflow
+  | 'hierarchical'     // Manager/worker structure
+  | 'reactive'         // Event-driven triggers
+  | 'cognitive';       // Multi-step reasoning
+
+/**
+ * Agent Capabilities - What the agent can do
+ */
+export type AgentCapability =
+  | 'handoff'          // Can transfer to other agents
+  | 'streaming'        // Supports streaming responses
+  | 'context'          // Maintains conversation context
+  | 'tools'            // Can call external tools
+  | 'vision'           // Can process images
+  | 'code'             // Can execute code
+  | 'audio'            // Can process audio
+  | 'video'            // Can process video
+  | 'function-calling' // Supports function calling
+  | 'parallel-tools'   // Can execute tools in parallel
+  | 'memory'           // Has persistent memory
+  | 'retrieval'        // Can retrieve from knowledge bases
+  | 'web-search';      // Can search the web
+
+/**
+ * Handoff Strategy - How agents coordinate handoffs
+ */
+export type HandoffStrategy =
+  | 'manual'           // Manual handoff by user
+  | 'automatic'        // Automatic handoff by agent
+  | 'conditional'      // Conditional based on rules
+  | 'supervised';      // Supervised by orchestrator
+
+/**
+ * Scalability Model - How the agent scales
+ */
+export type ScalabilityModel =
+  | 'single-instance'  // Single instance only
+  | 'horizontal'       // Horizontal scaling
+  | 'serverless';      // Serverless/auto-scaling
+
+/**
+ * Execution Model - How the agent executes
+ */
+export type ExecutionModel =
+  | 'synchronous'      // Synchronous execution
+  | 'asynchronous'     // Asynchronous execution
+  | 'streaming'        // Streaming execution
+  | 'batch';           // Batch processing
+
+/**
+ * Agent Architecture - Complete architecture definition
+ */
+export interface AgentArchitecture {
+  /** Architecture pattern */
+  pattern?: ArchitecturePattern;
+
+  /** Agent capabilities */
+  capabilities?: AgentCapability[];
+
+  /** Multi-agent coordination config */
+  coordination?: {
+    /** How agents coordinate handoffs */
+    handoffStrategy?: HandoffStrategy;
+    /** Leader/orchestrator agent name */
+    leaderAgent?: string;
+    /** Maximum orchestration depth */
+    maxDepth?: number;
+  };
+
+  /** Runtime configuration hints */
+  runtime?: {
+    /** Preferred deployment region */
+    preferredRegion?: string;
+    /** Scalability model */
+    scalability?: ScalabilityModel;
+    /** Execution model */
+    executionModel?: ExecutionModel;
+  };
+}
+
+/**
  * Capability definition (OpenAPI-style operation)
  */
 export interface Capability {
@@ -114,6 +245,10 @@ export interface OssaAgent {
         reason?: string;
       };
     };
+    // Agent Taxonomy (v0.4.4+)
+    agentType?: AgentType;
+    agentKind?: AgentKind;
+    agentArchitecture?: AgentArchitecture;
   };
 
   /**
