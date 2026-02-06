@@ -74,7 +74,10 @@ ${this.options.template ? `  ✓ Template: ${this.options.template}` : ''}
     if (examples.length === 0) return;
 
     const exampleList = examples.slice(0, 3).join('\n    • ');
-    logger.info({ exampleCount: examples.length }, `Examples:\n    • ${exampleList}`);
+    logger.info(
+      { exampleCount: examples.length },
+      `Examples:\n    • ${exampleList}`
+    );
   }
 
   /**
@@ -95,7 +98,10 @@ ${this.options.template ? `  ✓ Template: ${this.options.template}` : ''}
       .slice(0, 5)
       .map((s, i) => `${i + 1}. ${s}`)
       .join('\n    ');
-    logger.info({ suggestionCount: suggestions.length }, `Suggestions:\n    ${suggestionsList}`);
+    logger.info(
+      { suggestionCount: suggestions.length },
+      `Suggestions:\n    ${suggestionsList}`
+    );
   }
 
   /**
@@ -103,7 +109,10 @@ ${this.options.template ? `  ✓ Template: ${this.options.template}` : ''}
    */
   showValidationErrors(errors: string[]): void {
     const errorList = errors.join('\n    • ');
-    logger.error({ errorCount: errors.length }, `Validation Errors:\n    • ${errorList}`);
+    logger.error(
+      { errorCount: errors.length },
+      `Validation Errors:\n    • ${errorList}`
+    );
   }
 
   /**
@@ -111,7 +120,10 @@ ${this.options.template ? `  ✓ Template: ${this.options.template}` : ''}
    */
   showWarnings(warnings: string[]): void {
     const warningList = warnings.join('\n    • ');
-    logger.warn({ warningCount: warnings.length }, `Warnings:\n    • ${warningList}`);
+    logger.warn(
+      { warningCount: warnings.length },
+      `Warnings:\n    • ${warningList}`
+    );
   }
 
   /**
@@ -168,10 +180,7 @@ ${this.options.template ? `  ✓ Template: ${this.options.template}` : ''}
     }>
   ): void {
     const templateList = templates
-      .map(
-        (t, i) =>
-          `[${i + 1}] ${t.icon}  ${t.name}\n      ${t.description}`
-      )
+      .map((t, i) => `[${i + 1}] ${t.icon}  ${t.name}\n      ${t.description}`)
       .join('\n');
     logger.info(
       { templateCount: templates.length },

@@ -155,14 +155,20 @@ export async function bestPracticesStep(
       const warningsList = warnings
         .map((p) => `    [${p.category}] ${p.recommendation}`)
         .join('\n');
-      logger.warn({ warningCount: warnings.length }, `Warnings:\n${warningsList}`);
+      logger.warn(
+        { warningCount: warnings.length },
+        `Warnings:\n${warningsList}`
+      );
     }
 
     if (infos.length > 0) {
       const suggestionsList = infos
         .map((p) => `    [${p.category}] ${p.recommendation}`)
         .join('\n');
-      logger.info({ suggestionCount: infos.length }, `Suggestions:\n${suggestionsList}`);
+      logger.info(
+        { suggestionCount: infos.length },
+        `Suggestions:\n${suggestionsList}`
+      );
     }
 
     // Ask if user wants to apply suggestions

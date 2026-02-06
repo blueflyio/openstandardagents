@@ -109,7 +109,10 @@ export async function createAgentsFolderStep(
         return `  ✓ ${relative}/`;
       })
       .join('\n');
-    logger.info({ dirCount: structure.directories.length }, `Directories:\n${dirList}`);
+    logger.info(
+      { dirCount: structure.directories.length },
+      `Directories:\n${dirList}`
+    );
 
     const fileList = structure.files
       .map((file) => {

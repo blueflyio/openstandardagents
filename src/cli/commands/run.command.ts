@@ -21,11 +21,19 @@ import { logger } from '../../utils/logger.js';
 
 export const runCommand = new Command('run')
   .argument('<path>', 'Path to OSSA agent manifest (YAML or JSON)')
-  .option('-r, --runtime <runtime>', 'Runtime adapter (openai)', getRuntimeDefaults().defaultRuntime)
+  .option(
+    '-r, --runtime <runtime>',
+    'Runtime adapter (openai)',
+    getRuntimeDefaults().defaultRuntime
+  )
   .option('-v, --verbose', 'Verbose output with tool calls')
   .option('--no-validate', 'Skip validation before running')
   .option('-m, --message <message>', 'Single message mode (non-interactive)')
-  .option('--max-turns <turns>', 'Maximum tool call turns', String(getRuntimeDefaults().maxTurns))
+  .option(
+    '--max-turns <turns>',
+    'Maximum tool call turns',
+    String(getRuntimeDefaults().maxTurns)
+  )
   .description('Run an OSSA agent interactively')
   .action(
     async (
@@ -162,14 +170,11 @@ export const runCommand = new Command('run')
               const ossaError = isOssaError(error)
                 ? error
                 : new ConfigurationError('Agent chat failed', {
-                    originalError: error instanceof Error ? error.message : String(error),
+                    originalError:
+                      error instanceof Error ? error.message : String(error),
                   });
               logger.error({ err: ossaError }, 'Chat operation failed');
-              console.error(
-                chalk.red('\nError:'),
-                ossaError.message,
-                '\n'
-              );
+              console.error(chalk.red('\nError:'), ossaError.message, '\n');
             }
 
             prompt();
@@ -181,13 +186,11 @@ export const runCommand = new Command('run')
         const ossaError = isOssaError(error)
           ? error
           : new ConfigurationError('Failed to run agent', {
-              originalError: error instanceof Error ? error.message : String(error),
+              originalError:
+                error instanceof Error ? error.message : String(error),
             });
         logger.error({ err: ossaError }, 'Run command failed');
-        console.error(
-          chalk.red('Error:'),
-          ossaError.message
-        );
+        console.error(chalk.red('Error:'), ossaError.message);
 
         if (options.verbose && error instanceof Error) {
           console.error(chalk.gray(error.stack));

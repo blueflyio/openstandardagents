@@ -40,15 +40,31 @@ export const deployCommand = new Command('deploy')
     'Deployment target (local|docker|kubernetes)',
     getDeployDefaults().defaultTarget
   )
-  .option('--env <environment>', 'Target environment', getDeployDefaults().environment)
+  .option(
+    '--env <environment>',
+    'Target environment',
+    getDeployDefaults().environment
+  )
   .option('--version <version>', 'Version to deploy')
   .option('--config <config-file>', 'Configuration file path')
   .option('--dry-run', 'Simulate deployment without executing', false)
   .option('--port <port>', 'Port number for local/docker deployment')
   .option('--docker-image <image>', 'Docker image to use')
-  .option('--docker-network <network>', 'Docker network', getDeployDefaults().dockerNetwork)
-  .option('--namespace <namespace>', 'Kubernetes namespace', getDeployDefaults().defaultNamespace)
-  .option('--replicas <count>', 'Number of replicas (K8s)', String(getDeployDefaults().defaultReplicas))
+  .option(
+    '--docker-network <network>',
+    'Docker network',
+    getDeployDefaults().dockerNetwork
+  )
+  .option(
+    '--namespace <namespace>',
+    'Kubernetes namespace',
+    getDeployDefaults().defaultNamespace
+  )
+  .option(
+    '--replicas <count>',
+    'Number of replicas (K8s)',
+    String(getDeployDefaults().defaultReplicas)
+  )
   .description('Deploy agent to specified runtime')
   .action(
     async (

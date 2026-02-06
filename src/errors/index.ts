@@ -112,23 +112,19 @@ export class ExportError extends OssaError {
 
 export class PlatformNotSupportedError extends OssaError {
   constructor(platform: string, details?: Record<string, unknown>) {
-    super(
-      'OSSA-EXP-002',
-      `Platform "${platform}" is not supported`,
-      400,
-      { platform, ...details }
-    );
+    super('OSSA-EXP-002', `Platform "${platform}" is not supported`, 400, {
+      platform,
+      ...details,
+    });
   }
 }
 
 export class TemplateNotFoundError extends OssaError {
   constructor(template: string, details?: Record<string, unknown>) {
-    super(
-      'OSSA-EXP-003',
-      `Template "${template}" not found`,
-      404,
-      { template, ...details }
-    );
+    super('OSSA-EXP-003', `Template "${template}" not found`, 404, {
+      template,
+      ...details,
+    });
   }
 }
 
@@ -144,12 +140,10 @@ export class MigrationError extends OssaError {
 
 export class UnsupportedVersionError extends OssaError {
   constructor(version: string, details?: Record<string, unknown>) {
-    super(
-      'OSSA-MIG-002',
-      `Version "${version}" is not supported`,
-      400,
-      { version, ...details }
-    );
+    super('OSSA-MIG-002', `Version "${version}" is not supported`, 400, {
+      version,
+      ...details,
+    });
   }
 }
 
@@ -187,23 +181,19 @@ export class RegistryError extends OssaError {
 
 export class AgentNotFoundError extends OssaError {
   constructor(agentId: string, details?: Record<string, unknown>) {
-    super(
-      'OSSA-REG-002',
-      `Agent "${agentId}" not found in registry`,
-      404,
-      { agentId, ...details }
-    );
+    super('OSSA-REG-002', `Agent "${agentId}" not found in registry`, 404, {
+      agentId,
+      ...details,
+    });
   }
 }
 
 export class RegistryUnavailableError extends OssaError {
   constructor(registryUrl: string, details?: Record<string, unknown>) {
-    super(
-      'OSSA-REG-003',
-      `Registry at "${registryUrl}" is unavailable`,
-      503,
-      { registryUrl, ...details }
-    );
+    super('OSSA-REG-003', `Registry at "${registryUrl}" is unavailable`, 503, {
+      registryUrl,
+      ...details,
+    });
   }
 }
 
@@ -230,12 +220,10 @@ export class VectorDBConnectionError extends OssaError {
 
 export class EntityIndexingError extends OssaError {
   constructor(entityType: string, details?: Record<string, unknown>) {
-    super(
-      'OSSA-KG-003',
-      `Failed to index entity type "${entityType}"`,
-      500,
-      { entityType, ...details }
-    );
+    super('OSSA-KG-003', `Failed to index entity type "${entityType}"`, 500, {
+      entityType,
+      ...details,
+    });
   }
 }
 
@@ -244,19 +232,21 @@ export class EntityIndexingError extends OssaError {
 // ============================================================================
 
 export class ApiError extends OssaError {
-  constructor(message: string, statusCode: number, details?: Record<string, unknown>) {
+  constructor(
+    message: string,
+    statusCode: number,
+    details?: Record<string, unknown>
+  ) {
     super('OSSA-API-001', message, statusCode, details);
   }
 }
 
 export class RateLimitError extends OssaError {
   constructor(retryAfter?: number, details?: Record<string, unknown>) {
-    super(
-      'OSSA-API-002',
-      'Rate limit exceeded',
-      429,
-      { retryAfter, ...details }
-    );
+    super('OSSA-API-002', 'Rate limit exceeded', 429, {
+      retryAfter,
+      ...details,
+    });
   }
 }
 
@@ -295,12 +285,10 @@ export class MissingEnvVarError extends OssaError {
 
 export class InvalidConfigError extends OssaError {
   constructor(configKey: string, details?: Record<string, unknown>) {
-    super(
-      'OSSA-CFG-003',
-      `Invalid configuration for "${configKey}"`,
-      500,
-      { configKey, ...details }
-    );
+    super('OSSA-CFG-003', `Invalid configuration for "${configKey}"`, 500, {
+      configKey,
+      ...details,
+    });
   }
 }
 
@@ -316,23 +304,19 @@ export class NetworkError extends OssaError {
 
 export class TimeoutError extends OssaError {
   constructor(timeout: number, details?: Record<string, unknown>) {
-    super(
-      'OSSA-NET-002',
-      `Request timed out after ${timeout}ms`,
-      504,
-      { timeout, ...details }
-    );
+    super('OSSA-NET-002', `Request timed out after ${timeout}ms`, 504, {
+      timeout,
+      ...details,
+    });
   }
 }
 
 export class ConnectionRefusedError extends OssaError {
   constructor(url: string, details?: Record<string, unknown>) {
-    super(
-      'OSSA-NET-003',
-      `Connection refused to "${url}"`,
-      503,
-      { url, ...details }
-    );
+    super('OSSA-NET-003', `Connection refused to "${url}"`, 503, {
+      url,
+      ...details,
+    });
   }
 }
 
@@ -389,9 +373,14 @@ export function toOssaError(error: unknown): OssaError {
     });
   }
 
-  return new UnknownError('OSSA-UNKNOWN-002', 'An unknown error occurred', 500, {
-    error: String(error),
-  });
+  return new UnknownError(
+    'OSSA-UNKNOWN-002',
+    'An unknown error occurred',
+    500,
+    {
+      error: String(error),
+    }
+  );
 }
 
 /**

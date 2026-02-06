@@ -56,7 +56,10 @@ export function loadTaxonomy(): TaxonomySpec {
         return parsed;
       } catch (error) {
         logger.warn(
-          { path: taxonomyPath, error: error instanceof Error ? error.message : String(error) },
+          {
+            path: taxonomyPath,
+            error: error instanceof Error ? error.message : String(error),
+          },
           'Failed to load taxonomy'
         );
       }

@@ -42,7 +42,9 @@ describe('Registry Errors', () => {
       const error = new AgentNotFoundError('mycompany/my-agent');
       expect(error.code).toBe('OSSA-REG-002');
       expect(error.statusCode).toBe(404);
-      expect(error.message).toBe('Agent "mycompany/my-agent" not found in registry');
+      expect(error.message).toBe(
+        'Agent "mycompany/my-agent" not found in registry'
+      );
     });
 
     it('should include agentId in details', () => {
@@ -60,7 +62,9 @@ describe('Registry Errors', () => {
       });
 
       expect(error.details?.agentId).toBe('mycompany/my-agent');
-      expect(error.details?.registry).toBe('https://registry.openstandardagents.org');
+      expect(error.details?.registry).toBe(
+        'https://registry.openstandardagents.org'
+      );
       expect(error.details?.searchFilters).toEqual({
         domain: 'drupal',
         tier: 'worker',
@@ -143,7 +147,9 @@ describe('Registry Errors', () => {
     it('should have correct error names', () => {
       expect(new RegistryError('test').name).toBe('RegistryError');
       expect(new AgentNotFoundError('test').name).toBe('AgentNotFoundError');
-      expect(new RegistryUnavailableError('test').name).toBe('RegistryUnavailableError');
+      expect(new RegistryUnavailableError('test').name).toBe(
+        'RegistryUnavailableError'
+      );
     });
   });
 
@@ -171,14 +177,19 @@ describe('Registry Errors', () => {
     });
 
     it('should serialize RegistryUnavailableError', () => {
-      const error = new RegistryUnavailableError('https://registry.example.com', {
-        retryAfter: 60,
-      });
+      const error = new RegistryUnavailableError(
+        'https://registry.example.com',
+        {
+          retryAfter: 60,
+        }
+      );
       const json = error.toJSON();
 
       expect(json.error.code).toBe('OSSA-REG-003');
       expect(json.error.statusCode).toBe(503);
-      expect(json.error.details?.registryUrl).toBe('https://registry.example.com');
+      expect(json.error.details?.registryUrl).toBe(
+        'https://registry.example.com'
+      );
       expect(json.error.details?.retryAfter).toBe(60);
     });
   });
@@ -198,7 +209,9 @@ describe('Registry Errors', () => {
       expect(error.code).toBe('OSSA-REG-002');
       expect(error.statusCode).toBe(404);
       expect(error.details?.agentId).toBe('drupal/content-moderator');
-      expect(error.details?.suggestion).toBe('Try searching without version constraint');
+      expect(error.details?.suggestion).toBe(
+        'Try searching without version constraint'
+      );
     });
 
     it('should handle registry maintenance window', () => {

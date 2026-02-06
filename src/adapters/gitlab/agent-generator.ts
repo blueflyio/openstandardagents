@@ -132,7 +132,9 @@ export class GitLabAgentGenerator {
     const spec = manifest.spec as any;
     const hasLLM = !!spec.llm;
     const hasWebhook = this.hasWebhookTrigger(manifest);
-    const webhookTrigger = spec.triggers?.find((t: any) => t.type === 'webhook');
+    const webhookTrigger = spec.triggers?.find(
+      (t: any) => t.type === 'webhook'
+    );
 
     return `import express from 'express';
 import pino from 'pino';
@@ -160,10 +162,14 @@ const gitlabClient = new GitLabClient({
   baseUrl: process.env.GITLAB_API_URL || 'https://gitlab.com/api/v4',
 });
 
-${ hasLLM ? `const llmClient = new LLMClient({
+${
+  hasLLM
+    ? `const llmClient = new LLMClient({
   apiKey: process.env.ANTHROPIC_API_KEY!,
   model: '${spec.llm?.model || 'claude-sonnet-4-5'}',
-});` : ''}
+});`
+    : ''
+}
 
 const workflowExecutor = new WorkflowExecutor({
   gitlabClient,
@@ -181,7 +187,9 @@ app.get('/ready', (req, res) => {
   res.json({ status: 'ready', agent: '${agentName}' });
 });
 
-${hasWebhook ? `// Webhook endpoint
+${
+  hasWebhook
+    ? `// Webhook endpoint
 app.post('/webhook/${agentName}', async (req, res) => {
   const event: WebhookEvent = req.body;
 
@@ -196,10 +204,14 @@ app.post('/webhook/${agentName}', async (req, res) => {
 
   try {
     // Check if event matches filter
-    ${webhookTrigger?.filter ? `if (!matchesFilter(event, ${JSON.stringify(webhookTrigger.filter)})) {
+    ${
+      webhookTrigger?.filter
+        ? `if (!matchesFilter(event, ${JSON.stringify(webhookTrigger.filter)})) {
       logger.info({ event: event.object_kind }, 'Event filtered out');
       return res.status(200).json({ skipped: true });
-    }` : ''}
+    }`
+        : ''
+    }
 
     // Execute workflow
     const result = await workflowExecutor.execute(event);
@@ -216,7 +228,9 @@ app.post('/webhook/${agentName}', async (req, res) => {
 
 function matchesFilter(event: WebhookEvent, filter: any): boolean {
   // Implement filter matching logic based on manifest
-  ${webhookTrigger?.filter ? `
+  ${
+    webhookTrigger?.filter
+      ? `
   if (filter.note_author && event.object_attributes?.author?.username !== filter.note_author) {
     return false;
   }
@@ -228,10 +242,14 @@ function matchesFilter(event: WebhookEvent, filter: any): boolean {
     );
     if (!matches) return false;
   }
-  ` : ''}
+  `
+      : ''
+  }
 
   return true;
-}` : ''}
+}`
+    : ''
+}
 
 const PORT = process.env.PORT || 9090;
 app.listen(PORT, () => {
@@ -392,7 +410,7 @@ ${tools.map((tool: any) => this.generateToolMethod(tool)).join('\n\n')}
         return `  /**
    * ${tool.description || name}
    */
-  async ${name}(${paramNames.map(p => `${p}: any`).join(', ')}) {
+  async ${name}(${paramNames.map((p) => `${p}: any`).join(', ')}) {
     // TODO: Implement ${name}
     throw new Error('Not implemented: ${name}');
   }`;
@@ -568,9 +586,12 @@ ${workflow?.steps?.map((step: any, index: number) => this.generateStepExecution(
 
       case 'parallel':
         code += `      context.outputs.${stepId} = await Promise.all([\n`;
-        code += step.tasks?.map((task: any) =>
-          `        this.gitlabClient.${task.tool}(${this.generateToolParams(task.params)})`
-        ).join(',\n');
+        code += step.tasks
+          ?.map(
+            (task: any) =>
+              `        this.gitlabClient.${task.tool}(${this.generateToolParams(task.params)})`
+          )
+          .join(',\n');
         code += `\n      ]);\n`;
         break;
 
@@ -603,7 +624,11 @@ ${workflow?.steps?.map((step: any, index: number) => this.generateStepExecution(
 
     return Object.entries(params)
       .map(([key, value]) => {
-        if (typeof value === 'string' && value.startsWith('${') && value.endsWith('}')) {
+        if (
+          typeof value === 'string' &&
+          value.startsWith('${') &&
+          value.endsWith('}')
+        ) {
           const varName = value.slice(2, -1);
           return `context.variables.${varName}`;
         }
@@ -647,21 +672,30 @@ export interface WorkflowContext {
   private generateWebhookConfig(manifest: OssaAgent): string {
     const agentName = manifest.metadata?.name || 'agent';
     const spec = manifest.spec as any;
-    const webhookTrigger = spec.triggers?.find((t: any) => t.type === 'webhook');
+    const webhookTrigger = spec.triggers?.find(
+      (t: any) => t.type === 'webhook'
+    );
     const extensions = (manifest as any).extensions?.gitlab;
 
-    return JSON.stringify({
-      url: extensions?.webhook?.url || `http://api.blueflyagents.com/webhook/${agentName}`,
-      token: '${WEBHOOK_SECRET}',
-      enable_ssl_verification: extensions?.webhook?.ssl_verification ?? false,
-      push_events: false,
-      issues_events: webhookTrigger?.event === 'issues_events',
-      merge_requests_events: webhookTrigger?.event === 'merge_requests_events' ||
-                            webhookTrigger?.event === 'note_events',
-      note_events: webhookTrigger?.event === 'note_events',
-      pipeline_events: webhookTrigger?.event === 'pipeline_events',
-      wiki_page_events: false,
-    }, null, 2);
+    return JSON.stringify(
+      {
+        url:
+          extensions?.webhook?.url ||
+          `http://api.blueflyagents.com/webhook/${agentName}`,
+        token: '${WEBHOOK_SECRET}',
+        enable_ssl_verification: extensions?.webhook?.ssl_verification ?? false,
+        push_events: false,
+        issues_events: webhookTrigger?.event === 'issues_events',
+        merge_requests_events:
+          webhookTrigger?.event === 'merge_requests_events' ||
+          webhookTrigger?.event === 'note_events',
+        note_events: webhookTrigger?.event === 'note_events',
+        pipeline_events: webhookTrigger?.event === 'pipeline_events',
+        wiki_page_events: false,
+      },
+      null,
+      2
+    );
   }
 
   /**
@@ -740,58 +774,66 @@ CMD ["node", "dist/index.js"]
     const spec = manifest.spec as any;
     const hasLLM = !!spec.llm;
 
-    return JSON.stringify({
-      name: `@bluefly/${agentName}`,
-      version: manifest.metadata?.version || '1.0.0',
-      description: manifest.metadata?.description || '',
-      type: 'module',
-      main: 'dist/index.js',
-      scripts: {
-        build: 'tsc',
-        start: 'node dist/index.js',
-        dev: 'tsx watch src/index.ts',
-        test: 'echo "No tests yet"',
+    return JSON.stringify(
+      {
+        name: `@bluefly/${agentName}`,
+        version: manifest.metadata?.version || '1.0.0',
+        description: manifest.metadata?.description || '',
+        type: 'module',
+        main: 'dist/index.js',
+        scripts: {
+          build: 'tsc',
+          start: 'node dist/index.js',
+          dev: 'tsx watch src/index.ts',
+          test: 'echo "No tests yet"',
+        },
+        dependencies: {
+          express: '^4.18.2',
+          '@gitbeaker/rest': '^40.0.0',
+          ...(hasLLM && { '@anthropic-ai/sdk': '^0.32.1' }),
+          pino: '^8.19.0',
+          'pino-pretty': '^11.0.0',
+        },
+        devDependencies: {
+          '@types/express': '^4.17.21',
+          '@types/node': '^20.11.19',
+          typescript: '^5.3.3',
+          tsx: '^4.7.1',
+        },
+        engines: {
+          node: '>=20.0.0',
+        },
       },
-      dependencies: {
-        express: '^4.18.2',
-        '@gitbeaker/rest': '^40.0.0',
-        ...(hasLLM && { '@anthropic-ai/sdk': '^0.32.1' }),
-        pino: '^8.19.0',
-        'pino-pretty': '^11.0.0',
-      },
-      devDependencies: {
-        '@types/express': '^4.17.21',
-        '@types/node': '^20.11.19',
-        typescript: '^5.3.3',
-        tsx: '^4.7.1',
-      },
-      engines: {
-        node: '>=20.0.0',
-      },
-    }, null, 2);
+      null,
+      2
+    );
   }
 
   /**
    * Generate TypeScript config
    */
   private generateTSConfig(): string {
-    return JSON.stringify({
-      compilerOptions: {
-        target: 'ES2022',
-        module: 'ES2022',
-        moduleResolution: 'node',
-        lib: ['ES2022'],
-        outDir: './dist',
-        rootDir: './src',
-        strict: true,
-        esModuleInterop: true,
-        skipLibCheck: true,
-        forceConsistentCasingInFileNames: true,
-        resolveJsonModule: true,
+    return JSON.stringify(
+      {
+        compilerOptions: {
+          target: 'ES2022',
+          module: 'ES2022',
+          moduleResolution: 'node',
+          lib: ['ES2022'],
+          outDir: './dist',
+          rootDir: './src',
+          strict: true,
+          esModuleInterop: true,
+          skipLibCheck: true,
+          forceConsistentCasingInFileNames: true,
+          resolveJsonModule: true,
+        },
+        include: ['src/**/*'],
+        exclude: ['node_modules', 'dist'],
       },
-      include: ['src/**/*'],
-      exclude: ['node_modules', 'dist'],
-    }, null, 2);
+      null,
+      2
+    );
   }
 
   /**
@@ -894,7 +936,9 @@ Deploy to Kubernetes:
 kubectl apply -f k8s/deployment.yaml
 \`\`\`
 
-${hasWebhook ? `## GitLab Webhook Configuration
+${
+  hasWebhook
+    ? `## GitLab Webhook Configuration
 
 Configure the webhook in your GitLab project:
 
@@ -912,7 +956,9 @@ curl -X POST http://localhost:9090/webhook/${agentName} \\
   -H "X-Gitlab-Token: your-secret" \\
   -d @test-event.json
 \`\`\`
-` : ''}
+`
+    : ''
+}
 
 ## Health Checks
 
@@ -956,7 +1002,8 @@ ${manifest.metadata?.license || 'MIT'}
 
     const events: string[] = [];
     if (webhookTrigger.event === 'note_events') events.push('Comments');
-    if (webhookTrigger.event === 'merge_requests_events') events.push('Merge requests');
+    if (webhookTrigger.event === 'merge_requests_events')
+      events.push('Merge requests');
     if (webhookTrigger.event === 'issues_events') events.push('Issues');
     if (webhookTrigger.event === 'pipeline_events') events.push('Pipelines');
 

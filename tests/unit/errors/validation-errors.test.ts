@@ -53,7 +53,10 @@ describe('Validation Errors', () => {
           { path: 'spec.role', message: 'Must be string' },
         ],
       };
-      const error = new SchemaValidationError('Schema validation failed', details);
+      const error = new SchemaValidationError(
+        'Schema validation failed',
+        details
+      );
 
       expect(error.details).toEqual(details);
       expect(error.details?.schema).toBe('ossa/v0.4.1');
@@ -86,7 +89,10 @@ describe('Validation Errors', () => {
         column: 10,
         reason: 'Unexpected token',
       };
-      const error = new ManifestValidationError('Manifest parse error', details);
+      const error = new ManifestValidationError(
+        'Manifest parse error',
+        details
+      );
 
       expect(error.details).toEqual(details);
     });
@@ -118,7 +124,10 @@ describe('Validation Errors', () => {
         received: 'ossa/v0.3.6',
         field: 'apiVersion',
       };
-      const error = new VersionValidationError('Version not supported', details);
+      const error = new VersionValidationError(
+        'Version not supported',
+        details
+      );
 
       expect(error.details).toEqual(details);
     });
@@ -146,9 +155,15 @@ describe('Validation Errors', () => {
 
     it('should have correct error names', () => {
       expect(new ValidationError('test').name).toBe('ValidationError');
-      expect(new SchemaValidationError('test').name).toBe('SchemaValidationError');
-      expect(new ManifestValidationError('test').name).toBe('ManifestValidationError');
-      expect(new VersionValidationError('test').name).toBe('VersionValidationError');
+      expect(new SchemaValidationError('test').name).toBe(
+        'SchemaValidationError'
+      );
+      expect(new ManifestValidationError('test').name).toBe(
+        'ManifestValidationError'
+      );
+      expect(new VersionValidationError('test').name).toBe(
+        'VersionValidationError'
+      );
     });
   });
 
@@ -164,7 +179,9 @@ describe('Validation Errors', () => {
     });
 
     it('should serialize SchemaValidationError', () => {
-      const error = new SchemaValidationError('Test', { schema: 'ossa/v0.4.1' });
+      const error = new SchemaValidationError('Test', {
+        schema: 'ossa/v0.4.1',
+      });
       const json = error.toJSON();
 
       expect(json.error.code).toBe('OSSA-VAL-002');
