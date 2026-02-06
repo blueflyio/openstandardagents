@@ -16,6 +16,7 @@ import { execSync } from 'child_process';
 import { existsSync, mkdirSync, rmSync, readFileSync, statSync } from 'fs';
 import { join } from 'path';
 import { z } from 'zod';
+import { API_VERSION } from '../../../src/version.js';
 
 const projectRoot = join(__dirname, '../..');
 const tempDir = join(projectRoot, 'tmp-smoke-test');

@@ -5,6 +5,7 @@ import { GitService } from '../../src/services/git.service.js';
 import { jest } from '@jest/globals';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { API_VERSION } from '../../../src/version.js';
 
 // Mock fs and other dependencies
 jest.mock('fs/promises');

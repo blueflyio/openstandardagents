@@ -8,6 +8,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import { parse as parseYaml } from 'yaml';
+import { API_VERSION } from '../../../src/version.js';
 
 describe('ossa generate command', () => {
   let tempDir: string;

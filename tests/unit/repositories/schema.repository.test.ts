@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from '@jest/globals';
 import { SchemaRepository } from '../../../src/repositories/schema.repository.js';
+import { API_VERSION } from '../../../src/version.js';
 
 describe('SchemaRepository', () => {
   let repo: SchemaRepository;

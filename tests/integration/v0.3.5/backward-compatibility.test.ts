@@ -10,6 +10,7 @@ import { join } from 'path';
 import yaml from 'yaml';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
+import { API_VERSION } from '../../../src/version.js';
 
 describe.skip('OSSA v0.3.5 Backward Compatibility', () => {
   const rootDir = process.cwd();
@@ -34,7 +35,7 @@ describe.skip('OSSA v0.3.5 Backward Compatibility', () => {
 
     // Create minimal v0.3.4 manifest
     const manifest = {
-      apiVersion: 'ossa/v0.4.1',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'test-agent',
@@ -63,7 +64,7 @@ describe.skip('OSSA v0.3.5 Backward Compatibility', () => {
 
     // Create v0.3.5 manifest without new features (backward compatible)
     const manifest = {
-      apiVersion: 'ossa/v0.4.1',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'test-agent',
@@ -93,7 +94,7 @@ describe.skip('OSSA v0.3.5 Backward Compatibility', () => {
 
     // Create v0.3.5 manifest with new features
     const manifest = {
-      apiVersion: 'ossa/v0.4.1',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'test-agent',
@@ -134,7 +135,7 @@ describe.skip('OSSA v0.3.5 Backward Compatibility', () => {
     const validate = ajv.compile(v035Schema);
 
     const flowManifest = {
-      apiVersion: 'ossa/v0.4.1',
+      apiVersion: API_VERSION,
       kind: 'Flow',
       metadata: {
         name: 'test-flow',

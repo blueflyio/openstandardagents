@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from '@jest/globals';
 import { AutoGenValidator } from '../../../../src/services/validators/autogen.validator.js';
+import { API_VERSION } from '../../../src/version.js';
 
 describe('AutoGenValidator', () => {
   let validator: AutoGenValidator;
@@ -11,7 +12,7 @@ describe('AutoGenValidator', () => {
   describe('validate', () => {
     it('should validate manifest without autogen extension', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: { name: 'test', version: '1.0.0' },
         spec: { role: 'assistant' },
@@ -22,7 +23,7 @@ describe('AutoGenValidator', () => {
 
     it('should validate with disabled autogen', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: { name: 'test', version: '1.0.0' },
         spec: { role: 'assistant' },
@@ -34,7 +35,7 @@ describe('AutoGenValidator', () => {
 
     it('should validate with valid autogen config', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: { name: 'test', version: '1.0.0' },
         spec: { role: 'assistant' },

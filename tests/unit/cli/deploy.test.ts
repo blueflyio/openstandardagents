@@ -3,6 +3,7 @@
  */
 
 import { describe, it, expect } from '@jest/globals';
+import { API_VERSION } from '../../../src/version.js';
 
 describe('Deploy Commands', () => {
   describe('deployCommand', () => {

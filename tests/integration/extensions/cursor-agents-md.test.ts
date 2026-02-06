@@ -9,6 +9,7 @@ import type { OssaAgent } from '../../../src/types/index.js';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as os from 'os';
+import { API_VERSION } from '../../../src/version.js';
 
 describe('Cursor + agents.md Integration', () => {
   let service: AgentsMdService;
@@ -31,7 +32,7 @@ describe('Cursor + agents.md Integration', () => {
 
   it('should generate AGENTS.md with Cursor integration enabled', async () => {
     const manifest: OssaAgent = {
-      apiVersion: 'ossa/v0.4.1',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'cursor-agent',
@@ -78,7 +79,7 @@ describe('Cursor + agents.md Integration', () => {
 
   it('should reference AGENTS.md in Cursor workspace config', async () => {
     const manifest: OssaAgent = {
-      apiVersion: 'ossa/v0.4.1',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'cursor-agent',
@@ -135,7 +136,7 @@ Run tests with \`npm test\`.`;
 
   it('should generate Cursor-compatible content when cursor_integration is true', async () => {
     const manifest: OssaAgent = {
-      apiVersion: 'ossa/v0.4.1',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'cursor-agent',
@@ -179,7 +180,7 @@ Run tests with \`npm test\`.`;
     const agentsMdPath = path.join(tempDir, 'AGENTS.md');
 
     const manifest: OssaAgent = {
-      apiVersion: 'ossa/v0.4.1',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'dual-extension-agent',
@@ -259,7 +260,7 @@ Run tests with \`npm test\`.`;
 
   it('should validate AGENTS.md is included in Cursor context', async () => {
     const manifest: OssaAgent = {
-      apiVersion: 'ossa/v0.4.1',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'test-agent',

@@ -7,6 +7,7 @@ import { V035FeatureValidator } from '../../../src/tools/validation/validate-v0.
 import { writeFileSync, unlinkSync } from 'fs';
 import { join } from 'path';
 import yaml from 'yaml';
+import { API_VERSION } from '../../../src/version.js';
 
 describe('OSSA v0.3.5 Completion Signals', () => {
   const validator = new V035FeatureValidator();
@@ -14,7 +15,7 @@ describe('OSSA v0.3.5 Completion Signals', () => {
 
   it('should validate valid completion signals', () => {
     const manifest = {
-      apiVersion: 'ossa/v0.4.1',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: { name: 'test-agent' },
       spec: {
@@ -42,7 +43,7 @@ describe('OSSA v0.3.5 Completion Signals', () => {
 
   it('should reject invalid completion signal', () => {
     const manifest = {
-      apiVersion: 'ossa/v0.4.1',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: { name: 'test-agent' },
       spec: {
@@ -74,7 +75,7 @@ describe('OSSA v0.3.5 Completion Signals', () => {
 
     for (const signal of signals) {
       const manifest = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: { name: 'test-agent' },
         spec: {

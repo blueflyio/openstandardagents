@@ -8,6 +8,7 @@
 import { describe, it, expect, beforeEach } from '@jest/globals';
 import { NPMExporter } from '../../../../src/services/export/npm/npm-exporter.js';
 import type { OssaAgent } from '../../../../src/types/index.js';
+import { API_VERSION } from '../../../src/version.js';
 
 describe('NPMExporter', () => {
   let exporter: NPMExporter;
@@ -19,7 +20,7 @@ describe('NPMExporter', () => {
 
     // Basic minimal manifest
     basicManifest = {
-      apiVersion: 'ossa/v0.4.1',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'test-agent',
@@ -32,7 +33,7 @@ describe('NPMExporter', () => {
 
     // Full featured manifest
     fullManifest = {
-      apiVersion: 'ossa/v0.4.1',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'advanced-agent',

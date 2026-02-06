@@ -7,6 +7,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { isOssaTask, createTaskManifest } from '../../src/types/task';
 import { getApiVersion } from '../../src/utils/version';
+import { API_VERSION } from '../../../src/version.js';
 
 describe('OSSA v0.4.1 Task Schema', () => {
   let ajv: Ajv;
@@ -29,7 +30,7 @@ describe('OSSA v0.4.1 Task Schema', () => {
   describe('kind: Task validation', () => {
     it('should validate a minimal Task manifest', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Task',
         metadata: {
           name: 'minimal-task',
@@ -48,7 +49,7 @@ describe('OSSA v0.4.1 Task Schema', () => {
 
     it('should validate a full Task manifest with all fields', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Task',
         metadata: {
           name: 'publish-content',
@@ -160,7 +161,7 @@ describe('OSSA v0.4.1 Task Schema', () => {
 
     it('should reject Task without required execution field', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Task',
         metadata: {
           name: 'invalid-task',
@@ -178,7 +179,7 @@ describe('OSSA v0.4.1 Task Schema', () => {
 
     it('should reject invalid execution type', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Task',
         metadata: {
           name: 'invalid-task',
@@ -197,7 +198,7 @@ describe('OSSA v0.4.1 Task Schema', () => {
 
     it('should validate batch processing configuration', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Task',
         metadata: {
           name: 'batch-task',
@@ -229,7 +230,7 @@ describe('OSSA v0.4.1 Task Schema', () => {
   describe('kind differentiation', () => {
     it('should accept Agent kind', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -246,7 +247,7 @@ describe('OSSA v0.4.1 Task Schema', () => {
 
     it('should reject unknown kind', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Unknown',
         metadata: {
           name: 'test',
@@ -263,7 +264,7 @@ describe('OSSA v0.4.1 Task Schema', () => {
   describe('TypeScript type guards', () => {
     it('isOssaTask should return true for Task manifests', () => {
       const task = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Task',
         metadata: { name: 'test' },
         spec: { execution: { type: 'deterministic' } },
@@ -273,7 +274,7 @@ describe('OSSA v0.4.1 Task Schema', () => {
 
     it('isOssaTask should return false for Agent manifests', () => {
       const agent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: { name: 'test' },
         spec: { role: 'test' },

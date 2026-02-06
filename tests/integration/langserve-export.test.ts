@@ -4,6 +4,7 @@
 
 import { LangChainExporter } from '../../src/services/export/langchain/index.js';
 import type { OssaAgent } from '../../src/types/index.js';
+import { API_VERSION } from '../../../src/version.js';
 
 describe('LangServe Export Integration', () => {
   const mockManifest: OssaAgent = {

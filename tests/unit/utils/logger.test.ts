@@ -3,6 +3,7 @@
  */
 
 import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
+import { API_VERSION } from '../../../src/version.js';
 import {
   createLogger,
   createModuleLogger,

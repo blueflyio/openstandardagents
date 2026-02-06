@@ -6,6 +6,7 @@ import { describe, it, expect, beforeEach } from '@jest/globals';
 import { VersionDetectionService } from '../../../src/services/version-detection.service.js';
 import { ValidationService } from '../../../src/services/validation.service.js';
 import { SchemaRepository } from '../../../src/repositories/schema.repository.js';
+import { API_VERSION } from '../../../src/version.js';
 
 describe('VersionDetectionService', () => {
   let service: VersionDetectionService;
@@ -20,7 +21,7 @@ describe('VersionDetectionService', () => {
   describe('detectVersion', () => {
     it('should detect version from apiVersion field (high confidence)', async () => {
       const manifest = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: { name: 'test' },
         spec: { role: 'test' },

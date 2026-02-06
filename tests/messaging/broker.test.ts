@@ -7,6 +7,7 @@ import { randomUUID } from 'crypto';
 import { BrokerFactory } from '../../src/messaging/broker.js';
 import { MemoryMessageBroker } from '../../src/messaging/protocols/memory.js';
 import { Message, Subscription } from '../../src/messaging/types.js';
+import { API_VERSION } from '../../../src/version.js';
 
 describe('Message Broker', () => {
   let broker: MemoryMessageBroker;

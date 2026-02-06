@@ -4,6 +4,7 @@
 
 import { describe, it, expect, beforeEach } from '@jest/globals';
 import { ConformanceScoreCalculator } from '../../../../src/services/conformance/score-calculator.service.js';
+import { API_VERSION } from '../../../src/version.js';
 import type {
   ConformanceProfile,
   FeatureDetectionResult,
@@ -167,7 +168,7 @@ describe('ConformanceScoreCalculator', () => {
 
     it('should validate enum constraint', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'InvalidKind' as any,
         metadata: { name: 'test' },
         spec: {
@@ -194,7 +195,7 @@ describe('ConformanceScoreCalculator', () => {
 
     it('should validate type constraint', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: { name: 'test' },
         spec: {
@@ -226,7 +227,7 @@ describe('ConformanceScoreCalculator', () => {
 
     it('should validate minimum constraint', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: { name: 'test' },
         spec: {
@@ -259,7 +260,7 @@ describe('ConformanceScoreCalculator', () => {
 
     it('should not report violations for missing features', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: { name: 'test' },
         spec: {

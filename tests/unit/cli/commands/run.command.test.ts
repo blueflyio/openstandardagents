@@ -5,6 +5,7 @@
 
 import { jest } from '@jest/globals';
 import type { OssaAgent } from '../../../../src/types/index.js';
+import { API_VERSION } from '../../../src/version.js';
 
 // Mock dependencies before importing the command
 const mockLoad = jest.fn();
@@ -89,7 +90,7 @@ describe('Run Command', () => {
   describe('Validation', () => {
     it('should validate manifest by default', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -116,7 +117,7 @@ describe('Run Command', () => {
 
     it('should exit with error code 1 when validation fails', async () => {
       mockLoad.mockResolvedValue({
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: { name: 'test' },
         spec: {},
@@ -139,7 +140,7 @@ describe('Run Command', () => {
 
     it('should skip validation when --no-validate is used', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -166,7 +167,7 @@ describe('Run Command', () => {
   describe('Runtime Selection', () => {
     it('should use openai runtime by default', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -199,7 +200,7 @@ describe('Run Command', () => {
       delete process.env.OPENAI_API_KEY;
 
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -225,7 +226,7 @@ describe('Run Command', () => {
       process.env.OPENAI_API_KEY = 'sk-test-key-123';
 
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -250,7 +251,7 @@ describe('Run Command', () => {
   describe('Single Message Mode', () => {
     it('should execute single message and exit', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -275,7 +276,7 @@ describe('Run Command', () => {
 
     it('should pass verbose option to chat', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -300,7 +301,7 @@ describe('Run Command', () => {
 
     it('should pass maxTurns option to chat', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -334,7 +335,7 @@ describe('Run Command', () => {
 
     it('should handle chat errors gracefully', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -368,7 +369,7 @@ describe('Run Command', () => {
   describe('Agent Info Display', () => {
     it('should display agent name and model', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'my-agent',
@@ -396,7 +397,7 @@ describe('Run Command', () => {
 
     it('should display available tools', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'tool-agent',

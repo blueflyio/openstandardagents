@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from '@jest/globals';
 import { MigrationService } from '../../../src/services/migration.service.js';
 import { getApiVersion, clearVersionCache } from '../../../src/utils/version';
+import { API_VERSION } from '../../../src/version.js';
 
 describe('MigrationService', () => {
   let service: MigrationService;
@@ -13,7 +14,7 @@ describe('MigrationService', () => {
   describe('migrate', () => {
     it('should handle k8s-style format', async () => {
       const input = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: { name: 'test', version: '1.0.0' },
         spec: { role: 'test' },
@@ -133,7 +134,7 @@ describe('MigrationService', () => {
 
     it('should handle existing v0.2.2 format with all fields', async () => {
       const input = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: { name: 'test', version: '1.0.0' },
         spec: {
