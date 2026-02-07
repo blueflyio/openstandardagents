@@ -28,7 +28,7 @@ pre-commit:
         exit 1
 
 pre-push:
-  parallel: true
+  parallel: false
   commands:
     build:
       run: npm run build
@@ -39,11 +39,8 @@ pre-push:
     validate-sdks:
       run: npm run validate:sdks
 
-    test-smoke:
-      run: npm run test:smoke
-
     validate-all:
       run: npm run validate
 
-    pre-push-banner:
-      run: echo "🚀 All checks passed! Pushing to remote..."
+    test-smoke:
+      run: npm run test:smoke
