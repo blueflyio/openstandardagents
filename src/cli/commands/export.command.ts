@@ -24,6 +24,7 @@ import { TemporalConverter } from '../../adapters/temporal/converter.js';
 import { N8NConverter } from '../../adapters/n8n/converter.js';
 import { GitLabConverter } from '../../adapters/gitlab/converter.js';
 import { GitLabAgentGenerator } from '../../adapters/gitlab/agent-generator.js';
+import { GitLabDuoPackageGenerator } from '../../adapters/gitlab/package-generator.js';
 import { DockerfileGenerator } from '../../adapters/docker/generators.js';
 import { KubernetesManifestGenerator } from '../../adapters/kubernetes/generator.js';
 import { KAgentCRDGenerator } from '../../sdks/kagent/crd-generator.js';
@@ -211,65 +212,41 @@ exportCommand.action(
         }
 
         case 'gitlab-agent': {
-          log('Generating GitLab agent package with webhook handlers...');
+          log('Generating GitLab Duo agent package (triggers, flows, routers, MCP)...');
 
-          // Use GitLabAgentGenerator for complete agent package
-          const generator = new GitLabAgentGenerator();
-          const result = await generator.generate(manifest);
-
-          if (!result.success) {
-            throw new Error(result.error || 'GitLab agent generation failed');
-          }
-
-          // Create output directory
+          // Use GitLabDuoPackageGenerator for complete 34-file package
           const agentName = manifest.metadata?.name || 'agent';
           const outputDir = options.output || `./${agentName}`;
+          const duoGenerator = new GitLabDuoPackageGenerator();
+          const result = await duoGenerator.generate(manifest, {
+            outputDir: path.dirname(outputDir),
+            overwrite: true,
+          });
+
+          if (!result.success) {
+            throw new Error(result.errors?.join(', ') || 'GitLab Duo package generation failed');
+          }
 
           if (!options.dryRun) {
-            fs.mkdirSync(outputDir, { recursive: true });
+            logSuccess(`✓ GitLab Duo package exported to: ${result.packagePath}`);
+            log(`  ${result.generatedFiles?.length || 0} files generated`);
 
-            // Write all generated files
-            for (const file of result.files) {
-              const filePath = path.join(outputDir, file.path);
-              const fileDir = path.dirname(filePath);
-              fs.mkdirSync(fileDir, { recursive: true });
-              fs.writeFileSync(filePath, file.content);
-              logVerbose(`  Created: ${file.path}`);
-            }
+            log('\n📦 Package includes:');
+            log('  - 7 triggers (mention, assign, reviewer, schedule, pipeline, webhook, file_pattern)');
+            log('  - 4 flows (main, error, monitor, governance)');
+            log('  - 2 routers (conditional, multi-agent orchestration)');
+            log('  - MCP server configuration');
+            log('  - 8 documentation files');
+            log('  - CI/CD, Docker, source templates');
 
-            logSuccess(`✓ GitLab agent exported to: ${outputDir}`);
-            logVerbose(`  Files: ${result.files.length} files generated`);
-            logVerbose(`  Agent: ${agentName}`);
-            logVerbose(
-              `  Has webhook: ${result.metadata?.hasWebhook ? 'Yes' : 'No'}`
-            );
-            logVerbose(`  Has LLM: ${result.metadata?.hasLLM ? 'Yes' : 'No'}`);
-            logVerbose(`  Tools: ${result.metadata?.toolsCount || 0}`);
-
-            log('\n📦 Installation instructions:');
-            log(`  1. Install dependencies: cd ${outputDir} && npm install`);
-            log(
-              `  2. Configure environment: cp .env.example .env && edit .env`
-            );
-            log(`  3. Build agent: npm run build`);
-            log(`  4. Run agent: npm start\n`);
-            log('🐳 Docker deployment:');
-            log(`  docker build -t ${agentName} ${outputDir}`);
-            log(
-              `  docker run -p 9090:9090 --env-file ${outputDir}/.env ${agentName}\n`
-            );
-            log('📚 Documentation:');
-            log(`  README: ${outputDir}/README.md`);
-            if (result.metadata?.hasWebhook) {
-              log(`  Webhook config: ${outputDir}/webhook-config.json`);
-            }
+            log(`\n📚 Documentation: ${result.packagePath}/README.md`);
           } else {
             log(
-              `\n🔍 DRY RUN: Would generate ${result.files.length} files in: ${outputDir}`
+              `\n🔍 DRY RUN: Would generate ${result.generatedFiles?.length || 0} files in: ${outputDir}`
             );
             logVerbose('Files to be created:');
-            for (const file of result.files) {
-              logVerbose(`  - ${file.path} (${file.content.length} bytes)`);
+            for (const file of result.generatedFiles || []) {
+              logVerbose(`  - ${file}`);
             }
           }
 
