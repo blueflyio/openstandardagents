@@ -1,0 +1,205 @@
+# GitLab CI/CD Pipeline for OSSA Agent Deployment
+# Auto-deploy agents on manifest changes with health checks and rollback
+
+variables:
+  OSSA_CLI_VERSION: "latest"
+  AGENT_MANIFEST: "agent.ossa.yaml"
+  DEPLOY_PLATFORM: "kubernetes" # kubernetes, docker, or cloud
+  CLOUD_PROVIDER: "" # aws, gcp, or azure (if DEPLOY_PLATFORM=cloud)
+  KUBERNETES_NAMESPACE: "production"
+  DOCKER_REGISTRY: "${CI_REGISTRY_IMAGE}"
+  HEALTH_CHECK_TIMEOUT: "120" # seconds
+  ROLLBACK_ON_FAILURE: "true"
+
+stages:
+  - validate
+  - build
+  - deploy
+  - verify
+  - rollback
+
+# Install OSSA CLI
+.install_ossa: &install_ossa
+  - npm install -g @bluefly/openstandardagents@${OSSA_CLI_VERSION}
+
+# Validate OSSA manifest
+validate:manifest:
+  stage: validate
+  image: node:20-alpine
+  before_script:
+    - *install_ossa
+  script:
+    - echo "Validating OSSA manifest..."
+    - ossa validate ${AGENT_MANIFEST}
+  rules:
+    - changes:
+        - ${AGENT_MANIFEST}
+        - "**/*.ossa.yaml"
+        - "**/*.ossa.yml"
+
+# Build container image (for Kubernetes/Docker deployments)
+build:image:
+  stage: build
+  image: docker:24-dind
+  services:
+    - docker:24-dind
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - echo "Building container image..."
+    - docker build -t ${DOCKER_REGISTRY}:${CI_COMMIT_SHA} .
+    - docker tag ${DOCKER_REGISTRY}:${CI_COMMIT_SHA} ${DOCKER_REGISTRY}:latest
+    - docker push ${DOCKER_REGISTRY}:${CI_COMMIT_SHA}
+    - docker push ${DOCKER_REGISTRY}:latest
+  rules:
+    - if: '$DEPLOY_PLATFORM == "kubernetes" || $DEPLOY_PLATFORM == "docker"'
+      changes:
+        - ${AGENT_MANIFEST}
+        - "Dockerfile"
+        - "src/**/*"
+
+# Deploy to staging environment
+deploy:staging:
+  stage: deploy
+  image: node:20-alpine
+  environment:
+    name: staging
+    url: https://staging.example.com
+    on_stop: stop:staging
+  before_script:
+    - *install_ossa
+    - apk add --no-cache curl kubectl # Add platform-specific CLIs as needed
+  script:
+    - echo "Deploying to staging..."
+    - |
+      ossa deploy ${AGENT_MANIFEST} \
+        --platform ${DEPLOY_PLATFORM} \
+        ${CLOUD_PROVIDER:+--cloud ${CLOUD_PROVIDER}} \
+        --env staging \
+        --namespace staging \
+        --replicas 1 \
+        --registry ${DOCKER_REGISTRY}:${CI_COMMIT_SHA} \
+        --health-check \
+        --verify
+    - echo "DEPLOYMENT_ID=$(cat /tmp/ossa-deployment-id)" >> deploy.env
+  artifacts:
+    reports:
+      dotenv: deploy.env
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - ${AGENT_MANIFEST}
+
+# Deploy to production environment
+deploy:production:
+  stage: deploy
+  image: node:20-alpine
+  environment:
+    name: production
+    url: https://production.example.com
+    on_stop: stop:production
+  before_script:
+    - *install_ossa
+    - apk add --no-cache curl kubectl
+  script:
+    - echo "Deploying to production..."
+    - |
+      ossa deploy ${AGENT_MANIFEST} \
+        --platform ${DEPLOY_PLATFORM} \
+        ${CLOUD_PROVIDER:+--cloud ${CLOUD_PROVIDER}} \
+        --env production \
+        --namespace ${KUBERNETES_NAMESPACE} \
+        --replicas 3 \
+        --registry ${DOCKER_REGISTRY}:${CI_COMMIT_SHA} \
+        --health-check \
+        --verify
+    - echo "DEPLOYMENT_ID=$(cat /tmp/ossa-deployment-id)" >> deploy.env
+  artifacts:
+    reports:
+      dotenv: deploy.env
+  when: manual
+  only:
+    - main
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - ${AGENT_MANIFEST}
+
+# Health check verification
+verify:health:
+  stage: verify
+  image: node:20-alpine
+  before_script:
+    - *install_ossa
+  script:
+    - echo "Verifying deployment health..."
+    - |
+      for i in {1..12}; do
+        if ossa health-check ${DEPLOYMENT_ID}; then
+          echo "Health check passed!"
+          exit 0
+        fi
+        echo "Health check attempt $i failed, retrying..."
+        sleep 10
+      done
+      echo "Health check failed after ${HEALTH_CHECK_TIMEOUT} seconds"
+      exit 1
+  needs:
+    - job: deploy:production
+      artifacts: true
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - ${AGENT_MANIFEST}
+
+# Automatic rollback on failure
+rollback:production:
+  stage: rollback
+  image: node:20-alpine
+  environment:
+    name: production
+  before_script:
+    - *install_ossa
+  script:
+    - echo "Rolling back production deployment..."
+    - |
+      ossa rollback ${DEPLOYMENT_ID} \
+        --platform ${DEPLOY_PLATFORM} \
+        ${CLOUD_PROVIDER:+--cloud ${CLOUD_PROVIDER}} \
+        --force \
+        --verify
+  when: on_failure
+  needs:
+    - job: verify:health
+  rules:
+    - if: '$ROLLBACK_ON_FAILURE == "true" && $CI_COMMIT_BRANCH == "main"'
+
+# Stop staging environment
+stop:staging:
+  stage: deploy
+  image: node:20-alpine
+  environment:
+    name: staging
+    action: stop
+  before_script:
+    - *install_ossa
+  script:
+    - echo "Stopping staging environment..."
+    - ossa stop ${DEPLOYMENT_ID}
+  when: manual
+
+# Stop production environment
+stop:production:
+  stage: deploy
+  image: node:20-alpine
+  environment:
+    name: production
+    action: stop
+  before_script:
+    - *install_ossa
+  script:
+    - echo "Stopping production environment..."
+    - ossa stop ${DEPLOYMENT_ID}
+  when: manual
+  only:
+    - main

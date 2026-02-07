@@ -733,7 +733,16 @@ class OSSAWizardV2 {
       // Step 12: Agent-to-Agent Communication (A2A) - MAJOR SELLING POINT
       await this.configureMessagingA2A();
 
-      // Step 13: Feature Selection (Advanced/Optional)
+      // Step 13: Function Definitions (CRITICAL for function calling)
+      await this.configureFunctions();
+
+      // Step 14: Platform Adapters (Production integrations)
+      await this.configureAdapters();
+
+      // Step 15: Principal & Credentials (Security)
+      await this.configurePrincipal();
+
+      // Step 16: Feature Selection (Advanced/Optional)
       await this.selectFeatures();
 
       // Conditional steps based on features
@@ -1861,6 +1870,435 @@ Guidelines:
       }
     } else {
       printInfo('⏭️  A2A communication disabled (agent will work solo)');
+    }
+  }
+
+  private async configureFunctions(): Promise<void> {
+    this.state.nextStep('Function Definitions');
+    printStep(
+      this.state.getState().currentStep,
+      this.state.getState().totalSteps,
+      'Function Definitions (Function Calling)',
+      'Define callable functions with JSON Schema for structured outputs'
+    );
+
+    printInfo('🔧 Function calling enables:');
+    printInfo('   - Structured tool execution');
+    printInfo('   - Type-safe function calls');
+    printInfo('   - JSON Schema validation');
+    printInfo('   - Predictable outputs');
+
+    const answers = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'enable',
+        message: 'Define callable functions for this agent?',
+        default: false,
+      },
+    ]);
+
+    if (answers.enable) {
+      const functions: any[] = [];
+      let addMore = true;
+
+      while (addMore) {
+        const funcConfig = await inquirer.prompt([
+          {
+            type: 'input',
+            name: 'name',
+            message: 'Function Name (e.g., get_weather, search_documents):',
+            validate: (input: string) => input.length > 0 || 'Name is required',
+          },
+          {
+            type: 'input',
+            name: 'description',
+            message: 'Function Description:',
+            validate: (input: string) => input.length > 0 || 'Description is required',
+          },
+          {
+            type: 'list',
+            name: 'schemaType',
+            message: 'Define JSON Schema:',
+            choices: [
+              { name: 'Simple (string, number, boolean parameters)', value: 'simple' },
+              { name: 'Complex (objects, arrays, nested structures)', value: 'complex' },
+              { name: 'Skip (define schema later)', value: 'skip' },
+            ],
+            default: 'simple',
+          },
+        ]);
+
+        const func: any = {
+          name: funcConfig.name,
+          description: funcConfig.description,
+        };
+
+        if (funcConfig.schemaType === 'simple') {
+          const params = await inquirer.prompt([
+            {
+              type: 'input',
+              name: 'paramNames',
+              message: 'Parameter names (comma-separated, e.g. location,units,date):',
+              default: '',
+            },
+          ]);
+
+          if (params.paramNames) {
+            const paramList = params.paramNames.split(',').map((p: string) => p.trim()).filter((p: string) => p);
+            func.parameters = {
+              type: 'object',
+              properties: paramList.reduce((acc: any, param: string) => {
+                acc[param] = { type: 'string', description: `${param} parameter` };
+                return acc;
+              }, {}),
+              required: paramList,
+            };
+          }
+        } else if (funcConfig.schemaType === 'complex') {
+          printWarning('⚠️  Complex JSON Schema definition requires manual editing after generation');
+          func.parameters = {
+            type: 'object',
+            properties: {},
+            description: 'TODO: Define complex schema in manifest YAML',
+          };
+        }
+
+        functions.push(func);
+
+        const continueAnswer = await inquirer.prompt([
+          {
+            type: 'confirm',
+            name: 'continue',
+            message: 'Add another function?',
+            default: false,
+          },
+        ]);
+
+        addMore = continueAnswer.continue;
+      }
+
+      this.state.updateAgent({
+        spec: {
+          functions,
+        },
+      });
+
+      printSuccess(`✅ Added ${functions.length} function definition(s)`);
+    } else {
+      printInfo('⏭️  No functions defined (agent will not support function calling)');
+    }
+  }
+
+  private async configureAdapters(): Promise<void> {
+    this.state.nextStep('Platform Adapters');
+    printStep(
+      this.state.getState().currentStep,
+      this.state.getState().totalSteps,
+      'Platform Adapters (Production Integrations)',
+      'Configure platform-specific adapters for SCM, runtime, cloud'
+    );
+
+    printInfo('🔌 Adapters enable production integrations:');
+    printInfo('   - SCM: GitHub, GitLab, Bitbucket');
+    printInfo('   - Runtime: Kubernetes (kagent), Docker, Serverless');
+    printInfo('   - Cloud: AWS, GCP, Azure');
+    printInfo('   - Databases: PostgreSQL, MongoDB, Redis');
+
+    const answers = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'enable',
+        message: 'Configure platform adapters?',
+        default: false,
+      },
+    ]);
+
+    if (answers.enable) {
+      const adapters: any[] = [];
+      let addMore = true;
+
+      while (addMore) {
+        const adapterConfig = await inquirer.prompt([
+          {
+            type: 'list',
+            name: 'category',
+            message: 'Adapter Category:',
+            choices: [
+              { name: 'SCM - Source Code Management (GitHub, GitLab)', value: 'scm' },
+              { name: 'Runtime - Execution Environment (Kubernetes, Docker)', value: 'runtime' },
+              { name: 'Cloud - Cloud Provider (AWS, GCP, Azure)', value: 'cloud' },
+              { name: 'Database - Database Connection', value: 'database' },
+              { name: 'Service - External Service Integration', value: 'service' },
+            ],
+          },
+        ]);
+
+        let typeChoices: any[] = [];
+        if (adapterConfig.category === 'scm') {
+          typeChoices = [
+            { name: 'GitHub', value: 'scm.github' },
+            { name: 'GitLab', value: 'scm.gitlab' },
+            { name: 'Bitbucket', value: 'scm.bitbucket' },
+          ];
+        } else if (adapterConfig.category === 'runtime') {
+          typeChoices = [
+            { name: 'Kubernetes (kagent)', value: 'runtime.kagent' },
+            { name: 'Docker', value: 'runtime.docker' },
+            { name: 'Serverless (Lambda, Cloud Functions)', value: 'runtime.serverless' },
+          ];
+        } else if (adapterConfig.category === 'cloud') {
+          typeChoices = [
+            { name: 'AWS', value: 'cloud.aws' },
+            { name: 'Google Cloud Platform', value: 'cloud.gcp' },
+            { name: 'Microsoft Azure', value: 'cloud.azure' },
+          ];
+        } else if (adapterConfig.category === 'database') {
+          typeChoices = [
+            { name: 'PostgreSQL', value: 'database.postgresql' },
+            { name: 'MongoDB', value: 'database.mongodb' },
+            { name: 'Redis', value: 'database.redis' },
+          ];
+        } else {
+          typeChoices = [
+            { name: 'Custom Service', value: 'service.custom' },
+          ];
+        }
+
+        const typeAnswer = await inquirer.prompt([
+          {
+            type: 'list',
+            name: 'type',
+            message: 'Adapter Type:',
+            choices: typeChoices,
+          },
+          {
+            type: 'input',
+            name: 'version',
+            message: 'Adapter Version:',
+            default: '1.0.0',
+          },
+        ]);
+
+        const adapter: any = {
+          type: typeAnswer.type,
+          version: typeAnswer.version,
+          config: {},
+        };
+
+        // Add basic config hints
+        if (adapterConfig.category === 'scm') {
+          adapter.config = {
+            repository: 'TODO: repository URL or name',
+            branch: 'main',
+          };
+          adapter.secrets = {
+            token: {
+              type: 'secretRef',
+              ref: `secrets://${adapterConfig.category}/token`,
+            },
+          };
+        } else if (adapterConfig.category === 'runtime' && typeAnswer.type === 'runtime.kagent') {
+          adapter.config = {
+            namespace: 'default',
+            serviceAccount: 'agent-service-account',
+          };
+        } else if (adapterConfig.category === 'cloud') {
+          adapter.config = {
+            region: 'us-east-1',
+          };
+          adapter.secrets = {
+            credentials: {
+              type: 'secretRef',
+              ref: `secrets://${adapterConfig.category}/credentials`,
+            },
+          };
+        } else if (adapterConfig.category === 'database') {
+          adapter.config = {
+            host: 'localhost',
+            port: 5432,
+            database: 'default',
+          };
+          adapter.secrets = {
+            password: {
+              type: 'secretRef',
+              ref: `secrets://${adapterConfig.category}/password`,
+            },
+          };
+        }
+
+        adapters.push(adapter);
+        printInfo(`✅ Added ${typeAnswer.type} adapter`);
+
+        const continueAnswer = await inquirer.prompt([
+          {
+            type: 'confirm',
+            name: 'continue',
+            message: 'Add another adapter?',
+            default: false,
+          },
+        ]);
+
+        addMore = continueAnswer.continue;
+      }
+
+      this.state.updateAgent({
+        spec: {
+          adapters,
+        },
+      });
+
+      printSuccess(`✅ Configured ${adapters.length} platform adapter(s)`);
+      printWarning('⚠️  Remember to configure secrets for adapter authentication');
+    } else {
+      printInfo('⏭️  No adapters configured (agent will run standalone)');
+    }
+  }
+
+  private async configurePrincipal(): Promise<void> {
+    this.state.nextStep('Principal & Credentials');
+    printStep(
+      this.state.getState().currentStep,
+      this.state.getState().totalSteps,
+      'Principal & Credentials (Security)',
+      'Configure abstract identity and secure credential management'
+    );
+
+    printInfo('🔐 Principal defines agent identity and credentials:');
+    printInfo('   - Abstract credential management');
+    printInfo('   - Workload identity support');
+    printInfo('   - Policy-based access control');
+    printInfo('   - Secret rotation and lifecycle');
+
+    const answers = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'enable',
+        message: 'Configure principal (identity & credentials)?',
+        default: false,
+      },
+    ]);
+
+    if (answers.enable) {
+      const principalConfig = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'category',
+          message: 'Principal Category:',
+          choices: [
+            { name: 'SCM - Source Code Management', value: 'scm' },
+            { name: 'Cloud - Cloud Provider', value: 'cloud' },
+            { name: 'Database - Database Access', value: 'database' },
+            { name: 'Service - Service Integration', value: 'service' },
+          ],
+        },
+        {
+          type: 'list',
+          name: 'mode',
+          message: 'Identity Mode:',
+          choices: [
+            { name: 'App - Application identity (OAuth app, service principal)', value: 'app' },
+            { name: 'Service Account - Service account with IAM role', value: 'service_account' },
+            { name: 'User - User identity (for testing/development)', value: 'user' },
+            { name: 'Workload Identity - Cloud workload identity federation', value: 'workload_identity' },
+          ],
+          default: 'service_account',
+        },
+        {
+          type: 'list',
+          name: 'credentialType',
+          message: 'Credential Source Type:',
+          choices: [
+            { name: 'Secret Reference - Reference to secrets manager (recommended)', value: 'secretRef' },
+            { name: 'Workload Identity - Cloud-native identity federation', value: 'workloadIdentity' },
+            { name: 'Environment Variable - From env vars (dev only)', value: 'env' },
+            { name: 'External - External credential provider', value: 'external' },
+          ],
+          default: 'secretRef',
+        },
+      ]);
+
+      const policyConfig = await inquirer.prompt([
+        {
+          type: 'input',
+          name: 'permissions',
+          message: 'Permissions (comma-separated, e.g. contents.read,issues.write):',
+          default: 'contents.read',
+        },
+        {
+          type: 'input',
+          name: 'resources',
+          message: 'Resource Scope (optional, comma-separated repositories/resources):',
+          default: '',
+        },
+      ]);
+
+      const securityConfig = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'rotationType',
+          message: 'Credential Rotation Policy:',
+          choices: [
+            { name: 'Managed - Cloud provider manages rotation', value: 'managed' },
+            { name: 'Automatic - Rotate on schedule', value: 'automatic' },
+            { name: 'Manual - Manual rotation required', value: 'manual' },
+          ],
+          default: 'managed',
+        },
+        {
+          type: 'number',
+          name: 'ttlDays',
+          message: 'Credential TTL (time-to-live in days):',
+          default: 90,
+          validate: (input: number) => input > 0 || 'Must be > 0',
+        },
+      ]);
+
+      const credentialRef = principalConfig.credentialType === 'secretRef'
+        ? `secrets://${principalConfig.category}/credentials`
+        : principalConfig.credentialType === 'env'
+        ? `env:${principalConfig.category.toUpperCase()}_CREDENTIALS`
+        : 'workload-identity://default';
+
+      const permissions = policyConfig.permissions.split(',').map((p: string) => p.trim()).filter((p: string) => p);
+      const resources = policyConfig.resources ? policyConfig.resources.split(',').map((r: string) => r.trim()).filter((r: string) => r) : undefined;
+
+      const principal: any = {
+        category: principalConfig.category,
+        mode: principalConfig.mode,
+        credentialSource: {
+          type: principalConfig.credentialType,
+          ref: credentialRef,
+        },
+        policy: {
+          permissions,
+        },
+        controls: {
+          rotationPolicy: {
+            type: securityConfig.rotationType,
+            intervalDays: securityConfig.ttlDays,
+          },
+          ttl: `${securityConfig.ttlDays}d`,
+        },
+      };
+
+      if (resources && resources.length > 0) {
+        principal.policy.scope = {
+          resources,
+        };
+      }
+
+      this.state.updateAgent({
+        spec: {
+          principal,
+        },
+      });
+
+      printSuccess('✅ Principal configured');
+      printInfo(`   Mode: ${principalConfig.mode}`);
+      printInfo(`   Permissions: ${permissions.join(', ')}`);
+      printInfo(`   Rotation: ${securityConfig.rotationType} (${securityConfig.ttlDays} days)`);
+    } else {
+      printInfo('⏭️  No principal configured (agent will use default credentials)');
     }
   }
 

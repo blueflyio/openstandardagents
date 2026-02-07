@@ -1,0 +1,19 @@
+name: 'content_moderator'
+type: module
+description: 'AI-powered content moderation agent for Drupal with ai_agents integration'
+core_version_requirement: ^10 || ^11
+package: 'OSSA Agents'
+
+dependencies:
+  - drupal:ai_agents (>=1.3.0)
+  - drupal:typed_data
+  - drupal:key_value
+  - drupal:queue_ui
+
+# OSSA metadata
+ossa:
+  version: '1.0.0'
+  api_version: 'ossa/v0.4.x'
+  kind: 'Agent'
+  integration: 'ai_agents_1.3.x'
+  messenger: true
