@@ -1,0 +1,17 @@
+content_moderator.settings_tab:
+  title: Settings
+  route_name: content_moderator.settings
+  base_route: content_moderator.settings
+  weight: 0
+
+content_moderator.execute_tab:
+  title: Execute
+  route_name: content_moderator.execute
+  base_route: content_moderator.settings
+  weight: 10
+
+content_moderator.dashboard_tab:
+  title: Dashboard
+  route_name: content_moderator.dashboard
+  base_route: content_moderator.settings
+  weight: 5

@@ -18,18 +18,18 @@ export class ContentTools {
    * Create a new Drupal node
    */
   async createNode(input: NodeCreateInput): Promise<DrupalNode> {
-    const nodeData = {
+    const nodeData: any = {
       type: [{ target_id: input.type }],
       title: [{ value: input.title }],
       status: [{ value: input.status ?? true }],
     };
 
     if (input.body) {
-      nodeData['body'] = [{ value: input.body, format: 'basic_html' }];
+      nodeData.body = [{ value: input.body, format: 'basic_html' }];
     }
 
     if (input.uid) {
-      nodeData['uid'] = [{ target_id: input.uid }];
+      nodeData.uid = [{ target_id: input.uid }];
     }
 
     // Add any additional fields

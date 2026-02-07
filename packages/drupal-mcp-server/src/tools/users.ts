@@ -13,7 +13,7 @@ export class UserTools {
    * Create a new Drupal user
    */
   async createUser(input: UserCreateInput): Promise<DrupalUser> {
-    const userData = {
+    const userData: any = {
       name: [{ value: input.name }],
       mail: [{ value: input.mail }],
       pass: [{ value: input.pass }],
@@ -21,7 +21,7 @@ export class UserTools {
     };
 
     if (input.roles && input.roles.length > 0) {
-      userData['roles'] = input.roles.map((role) => ({ target_id: role }));
+      userData.roles = input.roles.map((role) => ({ target_id: role }));
     }
 
     const response = await this.client.post<DrupalResponse<DrupalUser>>('/user/register', userData);
