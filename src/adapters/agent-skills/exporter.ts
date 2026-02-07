@@ -15,6 +15,7 @@
 
 import type { OssaAgent } from '../../types/index.js';
 import * as yaml from 'yaml';
+import { getVersion } from '../../utils/version.js';
 
 export interface AgentSkillsExportResult {
   success: boolean;
@@ -191,7 +192,7 @@ ${this.generateLimitationsSection(manifest)}
 
 ---
 
-**Generated from OSSA v${metadata?.version || '0.4.4'}**
+**Generated from OSSA v${metadata?.version || getVersion()}**
 **Exported:** ${new Date().toISOString()}
 `.trim();
 

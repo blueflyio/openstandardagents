@@ -13,6 +13,7 @@ import { TypeScriptGenerator } from './typescript-generator.js';
 import { ExpressGenerator } from './express-generator.js';
 import { OpenAPIGenerator } from './openapi-generator.js';
 import { PackageJsonGenerator } from './package-json-generator.js';
+import { getApiVersion } from '../../../utils/version.js';
 
 export interface NPMExportOptions {
   /**
@@ -524,7 +525,7 @@ ${metadata.license || 'MIT'}
 
 ## Generated from OSSA
 
-This package was generated from OSSA v${manifest.apiVersion?.split('/')[1] || '0.4.1'} manifest.
+This package was generated from OSSA v${manifest.apiVersion?.split('/')[1] || getApiVersion()} manifest.
 
 - [OSSA Specification](https://openstandardagents.org)
 - [Documentation](https://docs.openstandardagents.org)

@@ -5,6 +5,7 @@
 
 import type { OssaAgent } from '../base/adapter.interface.js';
 import type { NPMPackageConfig, AgentExportMetadata } from './types.js';
+import { getApiVersion } from '../../utils/version.js';
 
 export class NPMConverter {
   /**
@@ -351,7 +352,7 @@ ${
 
 ## Generated from OSSA
 
-This package was generated from an OSSA v${manifest.apiVersion?.split('/')[1] || '0.4.1'} manifest.
+This package was generated from an OSSA v${manifest.apiVersion?.split('/')[1] || getApiVersion()} manifest.
 
 Original manifest: \`agent.ossa.yaml\`
 

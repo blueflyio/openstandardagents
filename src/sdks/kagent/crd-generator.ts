@@ -10,6 +10,7 @@ import type {
   KAgentDeploymentOptions,
   KubernetesManifestBundle,
 } from './types.js';
+import { getVersion, getApiVersion } from '../../utils/version.js';
 
 export class KAgentCRDGenerator {
   /**
@@ -80,7 +81,7 @@ export class KAgentCRDGenerator {
         name: agentName,
         namespace: options.namespace || 'default',
         labels: {
-          'ossa.ai/version': manifest.metadata?.version || '0.4.4',
+          'ossa.ai/version': manifest.metadata?.version || getVersion(),
           'ossa.ai/domain':
             ((spec.taxonomy as Record<string, unknown>)?.domain as string) ||
             'agents',
@@ -292,7 +293,7 @@ export class KAgentCRDGenerator {
                   },
                   {
                     name: 'OSSA_VERSION',
-                    value: '0.4.4',
+                    value: getVersion(),
                   },
                 ],
                 envFrom: [
