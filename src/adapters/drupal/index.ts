@@ -476,3 +476,9 @@ export {
   type DrupalModuleGeneratorOptions,
 } from './generator.js';
 export { DrupalAdapter as DrupalRuntimeAdapter } from './adapter.js';
+
+// Export production-grade exporter with ai_agents 1.3.x-dev integration
+export {
+  ProductionDrupalExporter,
+  type ProductionDrupalExportOptions,
+} from './production-exporter.js';

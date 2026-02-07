@@ -29,6 +29,8 @@ export interface KAgentCRD {
     tools?: Array<{
       type: string;
       name?: string;
+      description?: string;
+      risk_level?: string;
       server?: string;
       namespace?: string;
       endpoint?: string;
@@ -45,6 +47,13 @@ export interface KAgentCRD {
       port?: number;
       environment?: Record<string, string>;
     }>;
+    governance?: {
+      authorization?: Record<string, unknown>;
+      quality_requirements?: Record<string, unknown>;
+      compliance?: Record<string, unknown>;
+    };
+    workflow?: Record<string, unknown>;
+    monitoring?: Record<string, unknown>;
     enableA2A?: boolean;
     a2aProtocol?: {
       enabled: boolean;
@@ -72,6 +81,11 @@ export interface KAgentCRD {
       runAsNonRoot?: boolean;
       runAsUser?: number;
       fsGroup?: number;
+      readOnlyRootFilesystem?: boolean;
+      allowPrivilegeEscalation?: boolean;
+      capabilities?: {
+        drop?: string[];
+      };
     };
     serviceAccountName?: string; // For RBAC
     rbac?: {
@@ -89,6 +103,23 @@ export interface KAgentCRD {
       args?: string[];
     };
   };
+}
+
+/**
+ * Complete Kubernetes manifest bundle
+ */
+export interface KubernetesManifestBundle {
+  crd: KAgentCRD;
+  deployment: Record<string, unknown>;
+  service: Record<string, unknown>;
+  configMap: Record<string, unknown>;
+  secret: Record<string, unknown>;
+  serviceAccount: Record<string, unknown>;
+  role: Record<string, unknown>;
+  roleBinding: Record<string, unknown>;
+  horizontalPodAutoscaler: Record<string, unknown> | null;
+  networkPolicy: Record<string, unknown>;
+  readme: string;
 }
 
 /**
