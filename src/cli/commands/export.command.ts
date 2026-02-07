@@ -28,8 +28,7 @@ import { DockerfileGenerator } from '../../adapters/docker/generators.js';
 import { KubernetesManifestGenerator } from '../../adapters/kubernetes/generator.js';
 import { KAgentCRDGenerator } from '../../sdks/kagent/crd-generator.js';
 import { registry } from '../../adapters/registry/platform-registry.js';
-import { DrupalModuleGenerator } from '../../adapters/drupal/generator.js';
-import { ProductionDrupalExporter } from '../../adapters/drupal/production-exporter.js';
+import { DrupalManifestExporter } from '../../adapters/drupal/manifest-exporter.js';
 import type { OssaAgent } from '../../types/index.js';
 import {
   addGlobalOptions,
@@ -334,29 +333,27 @@ exportCommand.action(
 
         case 'drupal': {
           log(
-            'Generating production Drupal module with ai_agents 1.3.x-dev + Symfony Messenger...'
+            'Generating OSSA manifest package for Drupal (import via ai_agents_ossa)...'
           );
 
-          // Use ProductionDrupalExporter for full production-grade module
-          const exporter = new ProductionDrupalExporter();
+          // Use DrupalManifestExporter for minimal manifest package
+          // Drupal integration is handled by contrib modules:
+          //   drupal/ai_agents, drupal/ai_agents_ossa, drupal/eca, drupal/charts
+          const exporter = new DrupalManifestExporter();
           const result = await exporter.export(manifest, {
-            includeMessenger: true,
-            includeAdminUI: true,
-            includeTests: true,
-            includeDocs: true,
             validate: true,
           });
 
           if (!result.success) {
-            throw new Error(result.error || 'Drupal module generation failed');
+            throw new Error(result.error || 'Drupal manifest export failed');
           }
 
           // Create output directory
-          const moduleName =
+          const agentName =
             manifest.metadata?.name
               ?.toLowerCase()
               .replace(/[^a-z0-9_]/g, '_') || 'ossa_agent';
-          const outputDir = options.output || `./${moduleName}`;
+          const outputDir = options.output || `./${agentName}`;
 
           if (!options.dryRun) {
             fs.mkdirSync(outputDir, { recursive: true });
@@ -370,24 +367,26 @@ exportCommand.action(
               logVerbose(`  Created: ${file.path}`);
             }
 
-            logSuccess(`✓ Drupal module exported to: ${outputDir}`);
+            logSuccess(`\nDrupal manifest package exported to: ${outputDir}`);
             logVerbose(`  Files: ${result.files.length} files generated`);
-            logVerbose(`  Module name: ${moduleName}`);
-            log('\n📦 Installation instructions:');
+            logVerbose(`  Agent name: ${agentName}`);
+            log('\nInstallation instructions:');
             log(
-              `  1. Copy module: cp -r ${moduleName} /path/to/drupal/web/modules/custom/`
+              `  1. Install contrib: composer require drupal/ai_agents drupal/ai_agents_ossa drupal/eca drupal/charts`
             );
             log(
-              `  2. Install dependency: composer require ossa/symfony-bundle`
+              `  2. Enable modules: drush en ai_agents ai_agents_ossa eca charts`
             );
-            log(`  3. Enable module: drush en ${moduleName}`);
-            log(`  4. Configure: Visit /admin/config/${moduleName}\n`);
-            log('📚 Documentation:');
-            log(`  README: ${moduleName}/README.md`);
-            log(`  Install guide: ${moduleName}/INSTALL.md`);
+            log(
+              `  3. Import manifest: drush ai-agents:import ${agentName}/agent.ossa.yaml`
+            );
+            log(`  4. Configure at: /admin/config/ai/agents\n`);
+            log('Documentation:');
+            log(`  README: ${agentName}/README.md`);
+            log(`  Quick start: ${agentName}/INSTALL.txt`);
           } else {
             log(
-              `\n🔍 DRY RUN: Would generate ${result.files.length} files in: ${outputDir}`
+              `\nDRY RUN: Would generate ${result.files.length} files in: ${outputDir}`
             );
             logVerbose('Files to be created:');
             for (const file of result.files) {

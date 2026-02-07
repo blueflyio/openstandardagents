@@ -2,11 +2,17 @@
  * GitLab Duo Package Generator
  * Orchestrates complete GitLab Duo agent package generation from OSSA manifests
  *
- * Generates complete directory structure:
+ * Generates complete directory structure (30+ files):
  * {agent-name}-gitlab-duo/
  * ├── .gitlab/duo/
- * │   ├── flows/{name}.yaml
+ * │   ├── flows/main.yaml, error.yaml, monitor.yaml, governance.yaml
  * │   ├── agents/{name}.yaml
+ * │   ├── triggers/mention.yaml, assign.yaml, assign_reviewer.yaml,
+ * │   │          schedule.yaml, pipeline.yaml, webhook.yaml, file_pattern.yaml
+ * │   ├── routers/conditional.yaml, multi-agent.yaml
+ * │   ├── mcp-config.yaml
+ * │   ├── mcp-config.json
+ * │   ├── custom-tools.json
  * │   └── AGENTS.md
  * ├── src/
  * ├── Dockerfile
@@ -18,6 +24,7 @@
 
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import YAML from 'yaml';
 import type { OssaAgent } from '../../types/index.js';
 import { GitLabDuoFlowGenerator } from './flow-generator.js';
 import { ExternalAgentGenerator } from './external-agent-generator.js';
@@ -158,6 +165,13 @@ export class GitLabDuoPackageGenerator {
 
   /**
    * Generate all package files
+   *
+   * Generates a comprehensive GitLab Duo agent package:
+   * - 4 flows (main, error, monitor, governance)
+   * - 7 triggers (mention, assign, assign_reviewer, schedule, pipeline, webhook, file_pattern)
+   * - 2 routers (conditional, multi-agent)
+   * - 1 MCP config YAML
+   * - Agent definition, tools, documentation, and deployment files
    */
   private async generateAllFiles(
     manifest: OssaAgent,
@@ -166,14 +180,16 @@ export class GitLabDuoPackageGenerator {
     const files: GeneratedFile[] = [];
     const agentName = this.getAgentName(manifest);
 
-    // Generate Flow Registry YAML
-    const flowYaml = this.flowGenerator.generateYAML(manifest);
-    files.push({
-      path: `.gitlab/duo/flows/${agentName}.yaml`,
-      content: flowYaml,
-    });
+    // ── Flows (4 files) ──────────────────────────────────────
+    const flowFiles = this.flowGenerator.generateAllFlowFiles(manifest);
+    for (const [fileName, content] of flowFiles.entries()) {
+      files.push({
+        path: `.gitlab/duo/flows/${fileName}`,
+        content,
+      });
+    }
 
-    // Generate External Agent YAML
+    // ── External Agent YAML ──────────────────────────────────
     const externalAgentResult = this.externalAgentGenerator.generate(manifest);
     if (externalAgentResult.success && externalAgentResult.yaml) {
       files.push({
@@ -182,8 +198,8 @@ export class GitLabDuoPackageGenerator {
       });
     }
 
-    // Generate Triggers (7 types)
-    const triggerFiles = this.triggerGenerator.generateTriggerFiles(manifest);
+    // ── Triggers (7 files - all types) ───────────────────────
+    const triggerFiles = this.triggerGenerator.generateAllTriggerFiles(manifest);
     for (const [fileName, content] of triggerFiles.entries()) {
       files.push({
         path: `.gitlab/duo/triggers/${fileName}`,
@@ -191,85 +207,93 @@ export class GitLabDuoPackageGenerator {
       });
     }
 
-    // Generate MCP Configuration
+    // ── Routers (2 files) ────────────────────────────────────
+    const routerFiles = this.routerGenerator.generateAllRouterFiles(manifest);
+    for (const [fileName, content] of routerFiles.entries()) {
+      files.push({
+        path: `.gitlab/duo/routers/${fileName}`,
+        content,
+      });
+    }
+
+    // ── MCP Configuration (YAML) ─────────────────────────────
+    files.push({
+      path: `.gitlab/duo/mcp-config.yaml`,
+      content: this.generateMCPConfigYAML(manifest),
+    });
+
+    // ── MCP Configuration (JSON - for tooling compatibility) ─
     files.push({
       path: `.gitlab/duo/mcp-config.json`,
       content: this.generateMCPConfig(manifest),
     });
 
-    // Generate Custom Tools Definition
+    // ── Custom Tools Definition ──────────────────────────────
     files.push({
       path: `.gitlab/duo/custom-tools.json`,
       content: this.generateCustomTools(manifest),
     });
 
-    // Generate AGENTS.md
+    // ── AGENTS.md ────────────────────────────────────────────
     files.push({
       path: `.gitlab/duo/AGENTS.md`,
       content: this.generateAgentsMd(manifest),
     });
 
-    // Generate OSSA manifest
+    // ── OSSA manifest ────────────────────────────────────────
     files.push({
       path: 'agent.ossa.yaml',
       content: this.generateOssaManifest(manifest),
     });
 
-    // Generate README.md
+    // ── Documentation ────────────────────────────────────────
     files.push({
       path: 'README.md',
       content: this.generateReadme(manifest),
     });
 
-    // Generate DEPLOYMENT.md
     files.push({
       path: 'DEPLOYMENT.md',
       content: this.generateDeploymentGuide(manifest),
     });
 
-    // Generate SECURITY.md
     files.push({
       path: 'SECURITY.md',
       content: this.generateSecurityGuide(manifest),
     });
 
-    // Generate MONITORING.md
     files.push({
       path: 'MONITORING.md',
       content: this.generateMonitoringGuide(manifest),
     });
 
-    // Generate TROUBLESHOOTING.md
     files.push({
       path: 'TROUBLESHOOTING.md',
       content: this.generateTroubleshootingGuide(manifest),
     });
 
-    // Generate FAQ.md
     files.push({
       path: 'FAQ.md',
       content: this.generateFAQ(manifest),
     });
 
-    // Generate ARCHITECTURE.md
     files.push({
       path: 'ARCHITECTURE.md',
       content: this.generateArchitecture(manifest),
     });
 
-    // Generate API.md
     files.push({
       path: 'API.md',
       content: this.generateAPIDocumentation(manifest),
     });
 
-    // Generate package.json
+    // ── package.json ─────────────────────────────────────────
     files.push({
       path: 'package.json',
       content: this.generatePackageJson(manifest),
     });
 
-    // Generate Dockerfile (if enabled)
+    // ── Dockerfile (if enabled) ──────────────────────────────
     if (options.includeDocker !== false) {
       files.push({
         path: 'Dockerfile',
@@ -277,12 +301,12 @@ export class GitLabDuoPackageGenerator {
       });
     }
 
-    // Generate source templates (if enabled)
+    // ── Source templates (if enabled) ────────────────────────
     if (options.includeSourceTemplates) {
       files.push(...this.generateSourceTemplates(manifest));
     }
 
-    // Generate CI/CD configuration (if enabled)
+    // ── CI/CD configuration (if enabled) ─────────────────────
     if (options.includeCI) {
       files.push({
         path: '.gitlab-ci.yml',
@@ -290,7 +314,7 @@ export class GitLabDuoPackageGenerator {
       });
     }
 
-    // Generate .gitignore
+    // ── .gitignore ───────────────────────────────────────────
     files.push({
       path: '.gitignore',
       content: this.generateGitignore(),
@@ -479,8 +503,26 @@ export class GitLabDuoPackageGenerator {
     lines.push('');
     lines.push('```');
     lines.push('.gitlab/duo/');
-    lines.push(`  flows/${this.getAgentName(manifest)}.yaml     # Flow Registry configuration`);
+    lines.push('  flows/');
+    lines.push('    main.yaml                   # Primary agent flow');
+    lines.push('    error.yaml                  # Error handling with retry logic');
+    lines.push('    monitor.yaml                # Monitoring and observability');
+    lines.push('    governance.yaml             # Compliance and policy checks');
     lines.push(`  agents/${this.getAgentName(manifest)}.yaml    # External Agent configuration`);
+    lines.push('  triggers/');
+    lines.push('    mention.yaml                # @agent mention triggers');
+    lines.push('    assign.yaml                 # Issue/MR assignment triggers');
+    lines.push('    assign_reviewer.yaml        # MR reviewer assignment triggers');
+    lines.push('    schedule.yaml               # Cron-based scheduled triggers');
+    lines.push('    pipeline.yaml               # CI/CD pipeline triggers');
+    lines.push('    webhook.yaml                # External webhook triggers');
+    lines.push('    file_pattern.yaml           # File change pattern triggers');
+    lines.push('  routers/');
+    lines.push('    conditional.yaml            # Conditional routing logic');
+    lines.push('    multi-agent.yaml            # Multi-agent orchestration');
+    lines.push('  mcp-config.yaml               # MCP server configuration (YAML)');
+    lines.push('  mcp-config.json               # MCP server configuration (JSON)');
+    lines.push('  custom-tools.json             # Custom tool definitions');
     lines.push('  AGENTS.md                     # Agent documentation');
     lines.push('src/                            # Source code');
     lines.push('agent.ossa.yaml                 # OSSA manifest');
@@ -992,6 +1034,89 @@ export class GitLabDuoPackageGenerator {
     };
 
     return JSON.stringify(config, null, 2);
+  }
+
+  /**
+   * Generate MCP Configuration as YAML.
+   * Provides a structured, human-readable MCP server configuration
+   * with detailed comments for each server and its purpose.
+   */
+  private generateMCPConfigYAML(manifest: OssaAgent): string {
+    const spec = manifest.spec as Record<string, unknown>;
+    const tools = (spec.tools as Array<{ name?: string; type?: string; description?: string }>) || [];
+    const agentName = manifest.metadata?.name || 'agent';
+
+    const mcpServers: Record<string, unknown> = {};
+
+    // Map OSSA tools to MCP servers
+    for (const tool of tools) {
+      const toolName = tool.name || tool.type || 'unknown';
+
+      if (toolName.includes('gitlab')) {
+        mcpServers['gitlab'] = {
+          description: 'GitLab API operations (issues, MRs, comments, repository files)',
+          command: 'npx',
+          args: ['-y', '@modelcontextprotocol/server-gitlab'],
+          env: {
+            GITLAB_TOKEN: '${GITLAB_TOKEN}',
+            GITLAB_URL: '${GITLAB_URL:-https://gitlab.com}',
+          },
+          capabilities: ['issues', 'merge_requests', 'comments', 'repository_files', 'pipelines'],
+        };
+      } else if (toolName.includes('file') || toolName.includes('read') || toolName.includes('write')) {
+        mcpServers['filesystem'] = {
+          description: 'File system operations (read, write, list, search)',
+          command: 'npx',
+          args: ['-y', '@modelcontextprotocol/server-filesystem', '/workspace'],
+          capabilities: ['read_file', 'create_file_with_contents', 'update_file', 'list_dir'],
+        };
+      } else if (toolName.includes('search')) {
+        mcpServers['ripgrep'] = {
+          description: 'Code search using ripgrep for fast file content searching',
+          command: 'npx',
+          args: ['-y', '@modelcontextprotocol/server-ripgrep', '/workspace'],
+          capabilities: ['search_files', 'regex_search'],
+        };
+      }
+    }
+
+    // Always include memory server
+    mcpServers['memory'] = {
+      description: 'Persistent memory across agent sessions for context retention',
+      command: 'npx',
+      args: ['-y', '@modelcontextprotocol/server-memory'],
+      capabilities: ['store', 'retrieve', 'delete', 'list_memories'],
+    };
+
+    // Always include fetch server for external data
+    mcpServers['fetch'] = {
+      description: 'HTTP fetch for retrieving external documentation and API data',
+      command: 'npx',
+      args: ['-y', '@modelcontextprotocol/server-fetch'],
+      capabilities: ['fetch_url', 'parse_html', 'extract_text'],
+    };
+
+    const config = {
+      version: 'v1',
+      agent_name: agentName,
+      description: `MCP server configuration for ${agentName}. Defines the external tool servers that the agent can use during execution.`,
+      servers: mcpServers,
+      settings: {
+        startup_timeout_seconds: 30,
+        request_timeout_seconds: 60,
+        max_concurrent_servers: 5,
+        restart_on_failure: true,
+        log_level: 'info',
+      },
+      security: {
+        allowed_hosts: ['gitlab.com', '*.gitlab.com', 'ai-gateway.gitlab.com'],
+        deny_shell_execution: true,
+        max_file_size_bytes: 10_485_760,
+        workspace_root: '/workspace',
+      },
+    };
+
+    return YAML.stringify(config, { indent: 2, lineWidth: 0 });
   }
 
   /**
