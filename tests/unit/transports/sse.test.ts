@@ -20,13 +20,15 @@ class MockEventSource {
   onmessage: ((event: MessageEvent) => void) | null = null;
 
   private eventListeners = new Map<string, ((event: MessageEvent) => void)[]>();
+  private connectTimer: NodeJS.Timeout | null = null;
 
   constructor(url: string, options?: EventSourceInit) {
     this.url = url;
     this.withCredentials = options?.withCredentials || false;
 
     // Simulate async connection
-    setTimeout(() => {
+    this.connectTimer = setTimeout(() => {
+      if (this.readyState === MockEventSource.CLOSED) return;
       this.readyState = MockEventSource.OPEN;
       if (this.onopen) {
         this.onopen(new Event('open'));
@@ -59,6 +61,10 @@ class MockEventSource {
 
   close(): void {
     this.readyState = MockEventSource.CLOSED;
+    if (this.connectTimer) {
+      clearTimeout(this.connectTimer);
+      this.connectTimer = null;
+    }
   }
 
   simulateEvent(type: string, data: string, id?: string): void {
@@ -91,6 +97,7 @@ describe('SSETransport', () => {
   });
 
   afterEach(async () => {
+    transport.removeAllListeners();
     await transport.disconnect();
   });
 
@@ -114,6 +121,7 @@ describe('SSETransport', () => {
         'channels=content.published%2Cuser.login'
       );
 
+      channelTransport.removeAllListeners();
       await channelTransport.disconnect();
     });
 
@@ -311,6 +319,7 @@ describe('SSETransport', () => {
         if (called) return;
         called = true;
         expect(attempt).toBe(1);
+        reconnectTransport.removeAllListeners();
         reconnectTransport.disconnect();
         done();
       });
@@ -416,6 +425,7 @@ describe('SSEStreamClient', () => {
       expect(transport).toBeDefined();
       expect(transport.isConnected()).toBe(true);
 
+      transport.removeAllListeners();
       await transport.disconnect();
     });
 
@@ -426,6 +436,7 @@ describe('SSEStreamClient', () => {
       expect(transport).toBeDefined();
       expect(transport.isConnected()).toBe(true);
 
+      transport.removeAllListeners();
       await transport.disconnect();
     });
   });

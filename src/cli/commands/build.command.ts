@@ -7,7 +7,7 @@ import chalk from 'chalk';
 import { Command } from 'commander';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as yaml from 'js-yaml';
+import { stringify as yamlStringify } from 'yaml';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { KAgentCRDGenerator } from '../../sdks/kagent/crd-generator.js';
@@ -380,7 +380,7 @@ coverage
         };
 
         const deploymentPath = path.join(k8sDir, 'deployment.yaml');
-        fs.writeFileSync(deploymentPath, yaml.dump(deployment));
+        fs.writeFileSync(deploymentPath, yamlStringify(deployment));
         console.log(
           chalk.green(`  ✅ Generated deployment: ${deploymentPath}`)
         );
@@ -405,7 +405,7 @@ coverage
           };
 
           const servicePath = path.join(k8sDir, 'service.yaml');
-          fs.writeFileSync(servicePath, yaml.dump(service));
+          fs.writeFileSync(servicePath, yamlStringify(service));
           console.log(chalk.green(`  ✅ Generated service: ${servicePath}`));
           files.push(servicePath);
         }

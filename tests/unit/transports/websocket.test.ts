@@ -103,11 +103,11 @@ describe('WebSocketTransport', () => {
   });
 
   afterEach(async () => {
+    // Remove all event listeners to prevent leaks
+    transport.removeAllListeners();
     await transport.disconnect();
-    // Ensure all timers are cleared
-    jest.clearAllTimers();
-    // Wait for any pending async operations
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    // Wait for any pending async operations to complete
+    await new Promise((resolve) => setTimeout(resolve, 20));
   });
 
   describe('Connection Management', () => {
@@ -394,7 +394,9 @@ describe('WebSocketTransport', () => {
       // Wait for promise to settle
       await connectPromise;
 
-      // Test passes if error event was emitted (connection error handling works)
+      // Clean up the error transport
+      errorTransport.removeAllListeners();
+      await errorTransport.disconnect();
     });
 
     it('should emit error events', (done) => {

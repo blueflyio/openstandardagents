@@ -6,6 +6,11 @@
  *
  * SOLID: Single Responsibility - Manifest validation only
  * DRY: Single source of truth for validation rules
+ *
+ * TODO: Consolidate into ValidationZodService. This module duplicates
+ * validation logic that exists in src/services/validation-zod.service.ts.
+ * Adapters currently depend on these functions directly, so migration
+ * requires updating all adapter imports in a separate pass.
  */
 
 import type { OssaAgent } from '../../types/index.js';

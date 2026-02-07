@@ -8,7 +8,7 @@ import { Command } from 'commander';
 import { GovernanceClient } from '../../services/governance-client.service.js';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import * as yaml from 'js-yaml';
+import { parse as yamlParse } from 'yaml';
 import chalk from 'chalk';
 
 // Lazy initialization - only create client when command is executed
@@ -32,7 +32,7 @@ const checkCommand = new Command('check')
 
       const manifestPath = path.resolve(options.agent);
       const manifestContent = await fs.readFile(manifestPath, 'utf-8');
-      const manifest = yaml.load(manifestContent) as any;
+      const manifest = yamlParse(manifestContent) as any;
 
       if (!manifest.spec?.governance) {
         console.log(

@@ -1,7 +1,11 @@
-// @ts-nocheck
 /**
- * Validation Service
- * Validates OSSA agent manifests against JSON schemas
+ * Validation Service (AJV-based)
+ *
+ * @deprecated Use ValidationZodService instead. This service is retained for
+ * backward compatibility but all DI bindings resolve to ValidationZodService.
+ * AJV-based validation will be removed in a future major version.
+ *
+ * Validates OSSA agent manifests against JSON schemas using AJV.
  */
 
 import Ajv, { ErrorObject } from 'ajv';
@@ -41,7 +45,6 @@ export class ValidationService implements IValidationService {
   constructor(
     @inject(SchemaRepository) private schemaRepository: SchemaRepository
   ) {
-    // @ts-expect-error - Ajv v8 API compatibility
     this.ajv = new Ajv({
       allErrors: true,
       strict: false, // Allow custom x- keywords in v0.2.4+ schemas

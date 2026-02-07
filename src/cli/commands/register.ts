@@ -30,6 +30,8 @@ import {
 import type { Capability } from '../../types/index.js';
 import {
   addGlobalOptions,
+  addRegistryOptions,
+  resolveRegistryUrl,
   shouldUseColor,
   ExitCode,
 } from '../utils/standard-options.js';
@@ -60,23 +62,18 @@ export const registerCommand = new Command('register')
     'Custom path for agent ID card',
     'agent-card.yaml'
   )
-  .option(
-    '--api-url <url>',
-    'Override default Agent Protocol API URL',
-    'https://api.blueflyagents.com'
-  )
-  .option('--api-key <key>', 'API key for authentication (optional)')
   .description('Register OSSA agent to Agent Protocol registry');
 
 // Apply production-grade standard options
 addGlobalOptions(registerCommand);
+addRegistryOptions(registerCommand);
 
 registerCommand.action(
   async (
     manifestFile: string,
     options: {
       output?: string;
-      apiUrl?: string;
+      registry?: string;
       apiKey?: string;
       verbose?: boolean;
       quiet?: boolean;
@@ -238,9 +235,10 @@ registerCommand.action(
       };
 
       // Register with Agent Protocol API
-      log('Registering agent with Agent Protocol...', chalk.blue);
+      const registryUrl = resolveRegistryUrl(options);
+      log(`Registering agent with registry: ${registryUrl}`, chalk.blue);
       const client = new AgentProtocolClient({
-        baseURL: options.apiUrl,
+        baseURL: registryUrl,
         apiKey: options.apiKey,
       });
 
@@ -334,8 +332,8 @@ registerCommand.action(
             printWarning('Unable to connect to Agent Protocol API');
             console.error(
               useColor
-                ? chalk.gray(`  API URL: ${options.apiUrl}`)
-                : `  API URL: ${options.apiUrl}`
+                ? chalk.gray(`  Registry: ${registryUrl}`)
+                : `  Registry: ${registryUrl}`
             );
             console.error('');
             console.error(
@@ -350,13 +348,13 @@ registerCommand.action(
             );
             console.error(
               useColor
-                ? chalk.gray('  2. Verify the API URL is correct')
-                : '  2. Verify the API URL is correct'
+                ? chalk.gray('  2. Verify the registry URL is correct')
+                : '  2. Verify the registry URL is correct'
             );
             console.error(
               useColor
-                ? chalk.gray('  3. Try again with --api-url <url>')
-                : '  3. Try again with --api-url <url>'
+                ? chalk.gray('  3. Try again with --registry <url> or set OSSA_REGISTRY_URL')
+                : '  3. Try again with --registry <url> or set OSSA_REGISTRY_URL'
             );
           }
 
