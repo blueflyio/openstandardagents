@@ -6,6 +6,7 @@
  * DRY: Uses shared libraries for package.json, README, validation
  */
 
+import * as yaml from 'yaml';
 import { BaseAdapter } from '../base/adapter.interface.js';
 import type {
   OssaAgent,
@@ -121,6 +122,9 @@ export class LangChainAdapter extends BaseAdapter {
         this.createFile('langchain/README.md', readme, 'documentation')
       );
 
+      // Include source OSSA manifest for provenance
+      files.push(this.createFile('langchain/agent.ossa.yaml', yaml.stringify(manifest), 'config', 'yaml'));
+
       return this.createResult(true, files, undefined, {
         duration: Date.now() - startTime,
         version: '0.1.0',
@@ -219,7 +223,7 @@ export class LangChainAdapter extends BaseAdapter {
 
 import { ChatOpenAI } from '@langchain/openai';
 import { ChatAnthropic } from '@langchain/anthropic';
-import { AgentExecutor, createOpenAIToolsAgent } from 'langchain/agents';
+import { AgentExecutor, createToolCallingAgent } from 'langchain/agents';
 import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts';
 import { Tool } from '@langchain/core/tools';
 import { ConversationBufferMemory } from 'langchain/memory';
@@ -258,7 +262,7 @@ const memory = new ConversationBufferMemory({
 });
 
 // Create agent
-const agent = await createOpenAIToolsAgent({
+const agent = await createToolCallingAgent({
   llm,
   tools,
   prompt,

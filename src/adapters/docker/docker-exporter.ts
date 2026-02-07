@@ -14,6 +14,7 @@
  * DRY: Reuses generators for each component
  */
 
+import * as yaml from 'yaml';
 import type { OssaAgent } from '../../types/index.js';
 import type {
   ExportResult,
@@ -149,6 +150,14 @@ export class DockerExporter {
           language: 'nginx',
         });
       }
+
+      // Include source OSSA manifest for provenance
+      files.push({
+        path: 'agent.ossa.yaml',
+        content: yaml.stringify(manifest),
+        type: 'config',
+        language: 'yaml',
+      });
 
       // 8. Generate documentation
       files.push({

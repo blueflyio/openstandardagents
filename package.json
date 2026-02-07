@@ -83,16 +83,8 @@
     "templates/",
     ".version.json",
     "README.md",
-    "DEMO.md",
     "LICENSE",
-    "CHANGELOG.md",
-    ".env.local",
-    ".devfile.yaml",
-    ".wiki-config.json",
-    ".gitlab-ci-trigger",
-    "junit.xml",
-    "llms-ctx-full.txt",
-    "llms-ctx.txt"
+    "CHANGELOG.md"
   ],
   "publishConfig": {
     "access": "public",

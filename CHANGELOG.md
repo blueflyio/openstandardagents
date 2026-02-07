@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.4] - 2026-02-07
+
 ### Added
 
 **🚀 GitLab Duo Agent Platform Export (Comprehensive Implementation)**
@@ -93,6 +95,35 @@ Automatic generation of agents.md-compliant project context files for improved a
 - Now generates both Custom Flow and External Agent configurations
 - Original `.gitlab-ci.yml` export moved to `--format ci` flag
 - Default export now generates complete GitLab Duo package
+
+**5-Platform Multi-File Export:**
+- All 9 export platforms now produce complete multi-file output packages
+- kagent, langchain, crewai, docker, kubernetes all generate proper directory structures
+
+**Source Manifest Inclusion:**
+- All exports now include `agent.ossa.yaml` for provenance and re-export
+- Applies to: langchain, crewai, docker, mcp, agent-skills, kagent, kubernetes
+
+**Token Rotation CI:**
+- Added `.gitlab/ci/token-rotation.yml` scheduled job for token expiry monitoring
+- Checks NPM_TOKEN, GITHUB_TOKEN, GITLAB_PUSH_TOKEN validity
+
+### Fixed
+
+**Docker Compose Value Bug:**
+- Fixed `formatYAML()` in docker generators outputting literal `${value}` for all scalar values
+- Both `docker-compose.yml` and `docker-compose.prod.yml` now render actual values
+
+**LangChain Provider Mismatch:**
+- Python export now branches on provider: `ChatAnthropic` for anthropic, `ChatOpenAI` for openai
+- TypeScript export now uses provider-agnostic `createToolCallingAgent` instead of `createOpenAIToolsAgent`
+
+**CrewAI Provider Mismatch:**
+- `main.py` now validates correct API key based on manifest provider (ANTHROPIC_API_KEY vs OPENAI_API_KEY)
+- `.env.example` now shows the correct primary key based on configured LLM provider
+
+**Package Cleanup:**
+- Removed dev artifacts from npm `files` array: `junit.xml`, `.env.local`, `.devfile.yaml`, `.wiki-config.json`, `.gitlab-ci-trigger`, `DEMO.md`, `llms-ctx-full.txt`, `llms-ctx.txt`
 
 ## [0.4.5] - 2026-02-07
 
