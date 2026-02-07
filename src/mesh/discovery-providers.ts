@@ -11,6 +11,7 @@
 
 import { AgentCard } from './types.js';
 import { AgentRegistry } from './discovery.js';
+import { getApiVersion } from '../utils/version.js';
 
 /**
  * Discovery Provider Interface
@@ -359,7 +360,7 @@ export class ConsulDiscoveryProvider implements DiscoveryProvider {
       uri: service.Meta.uri || `agent://consul/${service.ID}`,
       name: service.Service,
       version: service.Meta.version || '1.0.0',
-      ossaVersion: service.Meta.ossaVersion || '0.4.1',
+      ossaVersion: service.Meta.ossaVersion || getApiVersion(),
       capabilities: service.Meta.capabilities?.split(',') || [],
       endpoints: {
         http: `http://${service.Address}:${service.Port}`,
@@ -529,7 +530,7 @@ export class KubernetesDiscoveryProvider implements DiscoveryProvider {
       uri: annotations['ossa.io/agent-uri'] || `agent://k8s/${service.metadata.name}`,
       name: service.metadata.name,
       version: labels['app.kubernetes.io/version'] || '1.0.0',
-      ossaVersion: annotations['ossa.io/version'] || '0.4.1',
+      ossaVersion: annotations['ossa.io/version'] || getApiVersion(),
       capabilities: (annotations['ossa.io/capabilities'] || '').split(',').filter(Boolean),
       endpoints: {
         http: `http://${service.spec.clusterIP}:${service.spec.ports[0]?.port || 80}`,
