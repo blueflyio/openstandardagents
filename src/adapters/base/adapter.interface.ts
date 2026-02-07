@@ -8,6 +8,7 @@
  * DRY: Reusable across all platform adapters
  */
 
+import * as yaml from 'yaml';
 import type { OssaAgent } from '../../types/index.js';
 
 // Re-export OssaAgent for adapter usage
@@ -348,5 +349,12 @@ export abstract class BaseAdapter implements PlatformAdapter {
       type,
       language,
     };
+  }
+
+  /**
+   * Helper: Create agent.ossa.yaml manifest file for provenance
+   */
+  protected createManifestFile(manifest: OssaAgent): ExportFile {
+    return this.createFile('agent.ossa.yaml', yaml.stringify(manifest), 'config', 'yaml');
   }
 }

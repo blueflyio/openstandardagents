@@ -468,7 +468,7 @@ export class DockerComposeGenerator {
         yaml += `${spaces}${key}:\n`;
         yaml += this.formatYAML(value, indent + 1);
       } else {
-        yaml += `${spaces}${key}: \${value}\n`;
+        yaml += `${spaces}${key}: ${value}\n`;
       }
     }
 

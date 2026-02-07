@@ -64,6 +64,12 @@ export class AgentSkillsExporter {
         content: readme,
       });
 
+      // Include source OSSA manifest for provenance
+      files.push({
+        path: 'agent.ossa.yaml',
+        content: yaml.stringify(manifest),
+      });
+
       // Generate scripts directory if tools exist
       if (options.includeScripts && manifest.spec?.tools && manifest.spec.tools.length > 0) {
         const setupScript = this.generateSetupScript(manifest);

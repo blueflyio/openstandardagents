@@ -9,6 +9,7 @@
  * DRY: Reuses BaseAdapter validation and existing converter
  */
 
+import * as yaml from 'yaml';
 import { BaseAdapter } from '../base/adapter.interface.js';
 import { getApiVersion } from '../../utils/version.js';
 import type {
@@ -129,6 +130,9 @@ export class CrewAIAdapter extends BaseAdapter {
 
       const deployment = this.generateDeploymentGuide(manifest);
       files.push(this.createFile('DEPLOYMENT.md', deployment, 'documentation'));
+
+      // Include source OSSA manifest for provenance
+      files.push(this.createFile('agent.ossa.yaml', yaml.stringify(manifest), 'config', 'yaml'));
 
       // 8. Examples
       const exampleUsage = this.generateExampleUsage(manifest);
@@ -509,6 +513,8 @@ def example_tool(query: str) -> str:
    */
   private generateMainCode(manifest: OssaAgent): string {
     const className = this.toPascalCase(manifest.metadata?.name || 'crew');
+    const llmProvider = (manifest.spec?.llm as any)?.provider || 'openai';
+    const primaryApiKey = llmProvider === 'anthropic' ? 'ANTHROPIC_API_KEY' : 'OPENAI_API_KEY';
 
     return `#!/usr/bin/env python3
 """
@@ -530,7 +536,7 @@ def main():
     load_dotenv()
 
     # Validate required environment variables
-    required_vars = ['OPENAI_API_KEY']  # Add your required vars
+    required_vars = ['${primaryApiKey}']
     missing_vars = [var for var in required_vars if not os.getenv(var)]
 
     if missing_vars:
@@ -598,11 +604,14 @@ langchain-community>=0.0.20
   private generateEnvExample(manifest: OssaAgent): string {
     const llmProvider = (manifest.spec?.llm as any)?.provider || 'openai';
 
+    const primaryKey = llmProvider === 'anthropic' ? 'ANTHROPIC_API_KEY=sk-ant-...' : 'OPENAI_API_KEY=sk-...';
+    const secondaryKey = llmProvider === 'anthropic' ? '# OPENAI_API_KEY=sk-...' : '# ANTHROPIC_API_KEY=sk-ant-...';
+
     return `# ${manifest.metadata?.name || 'CrewAI Crew'} Environment Configuration
 
 # LLM Provider API Keys
-OPENAI_API_KEY=sk-...
-${llmProvider === 'anthropic' ? 'ANTHROPIC_API_KEY=sk-ant-...' : '# ANTHROPIC_API_KEY=sk-ant-...'}
+${primaryKey}
+${secondaryKey}
 
 # CrewAI Configuration
 CREWAI_VERBOSE=true

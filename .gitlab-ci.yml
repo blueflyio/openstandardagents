@@ -42,6 +42,9 @@ variables:
 #       git_author_name: "OSSA Release Bot"
 #       git_author_email: "release-bot@openstandardagents.org"
 
+include:
+  - local: '.gitlab/ci/token-rotation.yml'
+
 # =============================================================================
 # BASE JOB TEMPLATE
 # =============================================================================
