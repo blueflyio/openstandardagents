@@ -477,8 +477,14 @@ export {
 } from './generator.js';
 export { DrupalAdapter as DrupalRuntimeAdapter } from './adapter.js';
 
-// Export production-grade exporter with ai_agents 1.3.x-dev integration
+// Export manifest exporter (minimal package - separation of duties)
+export {
+  DrupalManifestExporter,
+  type DrupalManifestExportOptions,
+} from './manifest-exporter.js';
+
+// Legacy: Production-grade exporter (generates full Drupal module - deprecated)
 export {
   ProductionDrupalExporter,
   type ProductionDrupalExportOptions,
-} from './production-exporter.js';
+} from './production-exporter.legacy.js';

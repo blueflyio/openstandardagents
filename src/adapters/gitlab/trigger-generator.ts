@@ -178,6 +178,7 @@ export class GitLabDuoTriggerGenerator {
 
   /**
    * Generate individual trigger files (one YAML per trigger type)
+   * Only generates triggers detected from the OSSA manifest
    */
   generateTriggerFiles(manifest: OssaAgent): Map<string, string> {
     const triggerManifest = this.generate(manifest);
@@ -197,6 +198,60 @@ export class GitLabDuoTriggerGenerator {
     }
 
     return files;
+  }
+
+  /**
+   * Generate all 7 trigger type files regardless of OSSA manifest content.
+   * Produces a complete trigger configuration package for the agent.
+   */
+  generateAllTriggerFiles(manifest: OssaAgent): Map<string, string> {
+    const agentName = this.sanitizeName(manifest.metadata?.name || 'agent');
+    const files = new Map<string, string>();
+
+    const allTriggers: TriggerConfig[] = [
+      this.generateMentionTrigger(manifest),
+      this.generateAssignTrigger(manifest),
+      this.generateAssignReviewerTrigger(manifest),
+      this.generateScheduleTrigger(manifest),
+      this.generatePipelineTrigger(manifest),
+      this.generateWebhookTrigger(manifest),
+      this.generateFilePatternTrigger(manifest),
+    ];
+
+    for (const trigger of allTriggers) {
+      const fileName = `${trigger.type}.yaml`;
+      const content = YAML.stringify(
+        {
+          version: 'v1',
+          agent_name: agentName,
+          trigger,
+          metadata: {
+            description: this.getTriggerDescription(trigger.type),
+            created_at: new Date().toISOString(),
+          },
+        },
+        { indent: 2, lineWidth: 0 }
+      );
+      files.set(fileName, content);
+    }
+
+    return files;
+  }
+
+  /**
+   * Human-readable description for each trigger type
+   */
+  private getTriggerDescription(type: TriggerType): string {
+    const descriptions: Record<TriggerType, string> = {
+      mention: 'Triggered when the agent is @mentioned in issue or MR comments',
+      assign: 'Triggered when an issue or MR is assigned to the agent',
+      assign_reviewer: 'Triggered when the agent is added as an MR reviewer',
+      schedule: 'Cron-based scheduled execution for recurring tasks',
+      pipeline: 'Triggered by CI/CD pipeline stage completion events',
+      webhook: 'Triggered by external HTTP webhook requests',
+      file_pattern: 'Triggered when files matching specific patterns are changed',
+    };
+    return descriptions[type];
   }
 
   /**

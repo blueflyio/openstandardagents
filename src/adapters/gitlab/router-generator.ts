@@ -12,6 +12,7 @@
 
 import type { OssaAgent } from '../../types/index.js';
 import type { FlowRouter } from './types.js';
+import YAML from 'yaml';
 
 export interface RouterCondition {
   input: string;
@@ -382,6 +383,209 @@ export class GitLabDuoRouterGenerator {
     }
 
     return routers;
+  }
+
+  /**
+   * Generate all router YAML files (conditional + multi-agent).
+   * Returns a map of filename -> YAML content.
+   */
+  generateAllRouterFiles(manifest: OssaAgent): Map<string, string> {
+    const files = new Map<string, string>();
+
+    files.set('conditional.yaml', this.generateConditionalRouterYAML(manifest));
+    files.set('multi-agent.yaml', this.generateMultiAgentRouterYAML(manifest));
+
+    return files;
+  }
+
+  /**
+   * Generate a conditional router YAML configuration.
+   * Routes agent output through different processing paths based on
+   * the content or classification of the agent's response.
+   */
+  private generateConditionalRouterYAML(manifest: OssaAgent): string {
+    const agentName = this.sanitizeName(manifest.metadata?.name || 'agent');
+
+    const config = {
+      version: 'v1',
+      name: `${manifest.metadata?.name || 'Agent'} - Conditional Router`,
+      description: `Routes execution based on ${manifest.metadata?.name || 'agent'} output classification. Supports branching to specialized handlers, approval gates, and priority-based routing.`,
+      agent_name: agentName,
+      router_type: 'conditional',
+      routes: [
+        {
+          name: 'output_classifier',
+          description: 'Routes based on agent output classification',
+          from: agentName,
+          condition: {
+            input: `${agentName}_output_type`,
+            routes: {
+              code_change: `${agentName}_code_reviewer`,
+              documentation: `${agentName}_doc_formatter`,
+              question: `${agentName}_knowledge_lookup`,
+              action_required: `${agentName}_action_executor`,
+              no_action: 'end',
+            },
+            default: 'end',
+          },
+        },
+        {
+          name: 'priority_router',
+          description: 'Routes based on task priority',
+          from: `${agentName}_priority_assessor`,
+          condition: {
+            input: 'priority_level',
+            routes: {
+              critical: `${agentName}_immediate_handler`,
+              high: `${agentName}_queued_handler`,
+              medium: `${agentName}_batch_handler`,
+              low: `${agentName}_deferred_handler`,
+            },
+            default: `${agentName}_batch_handler`,
+          },
+        },
+        {
+          name: 'approval_gate',
+          description: 'Routes based on approval decision for sensitive operations',
+          from: `${agentName}_approval_checker`,
+          condition: {
+            input: 'approval_status',
+            routes: {
+              approved: `${agentName}_executor`,
+              pending: `${agentName}_notification_sender`,
+              rejected: `${agentName}_rejection_handler`,
+              escalated: `${agentName}_escalation_handler`,
+            },
+            default: `${agentName}_notification_sender`,
+          },
+        },
+      ],
+      metadata: {
+        description: 'Conditional routing configuration for branching logic',
+        patterns: ['output_classification', 'priority_routing', 'approval_gating'],
+        created_at: new Date().toISOString(),
+      },
+    };
+
+    return YAML.stringify(config, { indent: 2, lineWidth: 0 });
+  }
+
+  /**
+   * Generate a multi-agent orchestration router YAML configuration.
+   * Coordinates multiple agents in parallel or sequential execution patterns
+   * with fan-out/fan-in and result aggregation.
+   */
+  private generateMultiAgentRouterYAML(manifest: OssaAgent): string {
+    const agentName = this.sanitizeName(manifest.metadata?.name || 'agent');
+
+    const config = {
+      version: 'v1',
+      name: `${manifest.metadata?.name || 'Agent'} - Multi-Agent Router`,
+      description: `Orchestrates multiple specialized agents for ${manifest.metadata?.name || 'agent'}. Supports parallel execution, sequential pipelines, and fan-out/fan-in patterns with result aggregation.`,
+      agent_name: agentName,
+      router_type: 'multi_agent',
+      orchestration: {
+        coordinator: {
+          name: `${agentName}_coordinator`,
+          description: 'Entry point that analyzes the task and delegates to specialized agents',
+          routes_to: ['parallel_workers', 'sequential_pipeline'],
+          decision_input: 'task_complexity',
+        },
+        parallel_workers: {
+          name: 'parallel_execution',
+          description: 'Fan-out to multiple agents that can run concurrently',
+          pattern: 'fan_out_fan_in',
+          splitter: `${agentName}_task_splitter`,
+          workers: [
+            {
+              name: `${agentName}_code_analyzer`,
+              description: 'Analyzes code quality, patterns, and potential issues',
+              accepts: 'code_files',
+            },
+            {
+              name: `${agentName}_security_scanner`,
+              description: 'Scans for security vulnerabilities and policy violations',
+              accepts: 'code_files',
+            },
+            {
+              name: `${agentName}_test_generator`,
+              description: 'Generates or validates test coverage',
+              accepts: 'code_files',
+            },
+            {
+              name: `${agentName}_doc_checker`,
+              description: 'Validates documentation completeness and accuracy',
+              accepts: 'doc_files',
+            },
+          ],
+          merger: `${agentName}_result_aggregator`,
+          failure_mode: 'continue_on_error',
+          timeout_seconds: 300,
+        },
+        sequential_pipeline: {
+          name: 'sequential_execution',
+          description: 'Pipeline of agents that must execute in order',
+          pattern: 'pipeline',
+          stages: [
+            {
+              name: `${agentName}_input_validator`,
+              description: 'Validates and normalizes the input before processing',
+              order: 1,
+            },
+            {
+              name: `${agentName}_processor`,
+              description: 'Core processing logic',
+              order: 2,
+              depends_on: `${agentName}_input_validator`,
+            },
+            {
+              name: `${agentName}_output_formatter`,
+              description: 'Formats the output for the target context (issue comment, MR review, etc.)',
+              order: 3,
+              depends_on: `${agentName}_processor`,
+            },
+            {
+              name: `${agentName}_quality_checker`,
+              description: 'Validates output quality before delivery',
+              order: 4,
+              depends_on: `${agentName}_output_formatter`,
+            },
+          ],
+        },
+        aggregator: {
+          name: `${agentName}_result_aggregator`,
+          description: 'Merges results from parallel workers into a single coherent output',
+          strategy: 'merge_all',
+          conflict_resolution: 'highest_confidence',
+          routes_to: 'end',
+        },
+      },
+      error_handling: {
+        on_worker_failure: 'continue_with_available',
+        on_coordinator_failure: 'fallback_to_single_agent',
+        max_total_retries: 3,
+        timeout_seconds: 600,
+        fallback_agent: agentName,
+      },
+      metadata: {
+        description: 'Multi-agent orchestration for parallel and sequential agent coordination',
+        patterns: ['fan_out_fan_in', 'pipeline', 'coordinator_worker'],
+        created_at: new Date().toISOString(),
+      },
+    };
+
+    return YAML.stringify(config, { indent: 2, lineWidth: 0 });
+  }
+
+  /**
+   * Sanitize name for use in router configurations
+   */
+  private sanitizeName(name: string): string {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9_]/g, '_')
+      .replace(/_{2,}/g, '_')
+      .replace(/^_|_$/g, '');
   }
 
   /**

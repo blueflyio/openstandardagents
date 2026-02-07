@@ -102,7 +102,7 @@ describe('GitLab Duo Package Generator Integration', () => {
 
       // Check required files exist
       const requiredFiles = [
-        '.gitlab/duo/flows/test-agent.yaml',
+        '.gitlab/duo/flows/main.yaml',
         '.gitlab/duo/agents/test-agent.yaml',
         '.gitlab/duo/AGENTS.md',
         'agent.ossa.yaml',
@@ -132,7 +132,7 @@ describe('GitLab Duo Package Generator Integration', () => {
 
       expect(result.success).toBe(true);
 
-      const flowPath = path.join(result.packagePath!, '.gitlab/duo/flows/test-agent.yaml');
+      const flowPath = path.join(result.packagePath!, '.gitlab/duo/flows/main.yaml');
       const flowContent = await fs.readFile(flowPath, 'utf8');
 
       // Check YAML structure
@@ -377,7 +377,7 @@ describe('GitLab Duo Package Generator Integration', () => {
 
       expect(result.success).toBe(true);
 
-      const flowPath = path.join(result.packagePath!, '.gitlab/duo/flows/test-agent.yaml');
+      const flowPath = path.join(result.packagePath!, '.gitlab/duo/flows/main.yaml');
       const flowContent = await fs.readFile(flowPath, 'utf8');
 
       // Should use ambient environment for autonomous agents
@@ -406,7 +406,7 @@ describe('GitLab Duo Package Generator Integration', () => {
 
       expect(result.success).toBe(true);
 
-      const flowPath = path.join(result.packagePath!, '.gitlab/duo/flows/test-agent.yaml');
+      const flowPath = path.join(result.packagePath!, '.gitlab/duo/flows/main.yaml');
       const flowContent = await fs.readFile(flowPath, 'utf8');
 
       // Should use chat environment for supervised agents
