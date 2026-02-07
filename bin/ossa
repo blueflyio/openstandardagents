@@ -5,4 +5,7 @@
  * Runs the compiled JavaScript from dist/
  */
 
+// CRITICAL: Import reflect-metadata FIRST before any inversify code loads
+import 'reflect-metadata';
+
 import '../dist/cli/index.js';

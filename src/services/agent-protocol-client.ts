@@ -6,7 +6,7 @@
  */
 
 import axios, { AxiosInstance, AxiosError } from 'axios';
-import { injectable } from 'inversify';
+import { injectable, unmanaged } from 'inversify';
 import type { OssaAgent } from '../types/index.js';
 
 /**
@@ -559,7 +559,7 @@ export class AgentProtocolClient {
   private client: AxiosInstance;
   private baseURL: string;
 
-  constructor(config?: AgentProtocolClientConfig) {
+  constructor(@unmanaged() config?: AgentProtocolClientConfig) {
     this.baseURL = config?.baseURL || 'https://api.blueflyagents.com';
 
     this.client = axios.create({
