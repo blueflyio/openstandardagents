@@ -12,6 +12,10 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import Table from 'cli-table3';
 import axios from 'axios';
+import {
+  addRegistryOptions,
+  resolveRegistryUrl,
+} from '../utils/standard-options.js';
 
 /**
  * Agent search result from agent-protocol API
@@ -45,14 +49,12 @@ class AgentProtocolClient {
   private baseUrl: string;
   private token?: string;
 
-  constructor() {
-    // Get configuration from environment
-    this.baseUrl =
-      process.env.AGENT_PROTOCOL_URL ||
-      process.env.AGENT_PROTOCOL_BASE_URL ||
-      'http://localhost:3000';
+  constructor(config?: { baseUrl?: string; apiKey?: string }) {
+    this.baseUrl = config?.baseUrl || 'https://api.blueflyagents.com';
     this.token =
-      process.env.AGENT_PROTOCOL_TOKEN || process.env.GITLAB_PRIVATE_TOKEN;
+      config?.apiKey ||
+      process.env.AGENT_PROTOCOL_TOKEN ||
+      process.env.GITLAB_PRIVATE_TOKEN;
   }
 
   /**
@@ -175,8 +177,11 @@ export const discoverCommand = new Command('discover')
   .option('--org <organization>', 'Filter by organization')
   .option('--min-trust <level>', 'Minimum trust level (0.0 - 1.0)', parseFloat)
   .option('--json', 'Output JSON format')
-  .option('--limit <number>', 'Maximum results', '10')
-  .action(
+  .option('--limit <number>', 'Maximum results', '10');
+
+addRegistryOptions(discoverCommand);
+
+discoverCommand.action(
     async (
       query: string | undefined,
       options: {
@@ -185,10 +190,16 @@ export const discoverCommand = new Command('discover')
         minTrust?: number;
         json?: boolean;
         limit?: string;
+        registry?: string;
+        apiKey?: string;
       }
     ) => {
+      const registryUrl = resolveRegistryUrl(options);
       try {
-        const client = new AgentProtocolClient();
+        const client = new AgentProtocolClient({
+          baseUrl: registryUrl,
+          apiKey: options.apiKey,
+        });
 
         const limit = options.limit ? parseInt(options.limit, 10) : 10;
 
@@ -215,7 +226,7 @@ export const discoverCommand = new Command('discover')
 
         // Show search parameters
         if (!options.json) {
-          console.log(chalk.blue('\nSearching agents...'));
+          console.log(chalk.blue(`\nSearching agents on ${registryUrl}...`));
           if (query) {
             console.log(chalk.gray(`  Query: ${query}`));
           }
@@ -299,15 +310,15 @@ export const discoverCommand = new Command('discover')
           if (error instanceof Error && error.message.includes('connect')) {
             console.log(chalk.yellow('\nTroubleshooting:'));
             console.log(
-              chalk.gray('  1. Ensure agent-protocol service is running')
+              chalk.gray(`  Registry: ${registryUrl}`)
+            );
+            console.log(
+              chalk.gray('  1. Check network connectivity and firewall rules')
             );
             console.log(
               chalk.gray(
-                '  2. Set AGENT_PROTOCOL_URL environment variable if needed'
+                '  2. Use --registry <url> or set OSSA_REGISTRY_URL'
               )
-            );
-            console.log(
-              chalk.gray('  3. Check network connectivity and firewall rules')
             );
           }
         }
