@@ -80,7 +80,6 @@ const config: Config = {
   ],
   verbose: true,
   testTimeout: 10000,
-  forceExit: true,
 };
 
 export default config;
