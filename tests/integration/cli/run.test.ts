@@ -7,6 +7,7 @@ import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
+import { API_VERSION } from '../../../src/version.js';
 
 describe('ossa run command', () => {
   let tempDir: string;
@@ -26,7 +27,7 @@ describe('ossa run command', () => {
     it('should validate manifest before running', () => {
       const manifestPath = path.join(tempDir, 'invalid.ossa.yaml');
       const manifest = `
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: INVALID_NAME
@@ -53,7 +54,7 @@ spec:
     it('should skip validation with --no-validate flag', () => {
       const manifestPath = path.join(tempDir, 'agent.ossa.yaml');
       const manifest = `
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: test-agent
@@ -89,7 +90,7 @@ spec:
     it('should exit with error when OPENAI_API_KEY is not set', () => {
       const manifestPath = path.join(tempDir, 'agent.ossa.yaml');
       const manifest = `
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: test-agent
@@ -113,7 +114,8 @@ spec:
         expect(true).toBe(false); // Should not reach here
       } catch (error: any) {
         expect(error.status).toBe(1);
-        const output = error.stderr?.toString() || error.stdout?.toString() || '';
+        const output =
+          error.stderr?.toString() || error.stdout?.toString() || '';
         expect(output).toContain('OPENAI_API_KEY');
       }
     });
@@ -123,7 +125,7 @@ spec:
     it('should use openai runtime by default', () => {
       const manifestPath = path.join(tempDir, 'agent.ossa.yaml');
       const manifest = `
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: test-agent
@@ -147,7 +149,8 @@ spec:
         });
       } catch (error: any) {
         // May fail due to invalid API key, but should attempt to use openai
-        const output = error.stderr?.toString() || error.stdout?.toString() || '';
+        const output =
+          error.stderr?.toString() || error.stdout?.toString() || '';
         expect(output).not.toContain('Runtime');
         expect(output).not.toContain('not supported');
       }
@@ -156,7 +159,7 @@ spec:
     it('should reject unsupported runtime', () => {
       const manifestPath = path.join(tempDir, 'agent.ossa.yaml');
       const manifest = `
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: test-agent
@@ -180,7 +183,8 @@ spec:
         expect(true).toBe(false); // Should not reach here
       } catch (error: any) {
         expect(error.status).toBe(1);
-        const output = error.stderr?.toString() || error.stdout?.toString() || '';
+        const output =
+          error.stderr?.toString() || error.stdout?.toString() || '';
         expect(output).toContain('not supported');
       }
     });
@@ -190,7 +194,7 @@ spec:
     it('should accept -m flag for single message', () => {
       const manifestPath = path.join(tempDir, 'agent.ossa.yaml');
       const manifest = `
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: test-agent
@@ -222,7 +226,7 @@ spec:
     it('should accept --message flag for single message', () => {
       const manifestPath = path.join(tempDir, 'agent.ossa.yaml');
       const manifest = `
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: test-agent
@@ -256,7 +260,7 @@ spec:
     it('should accept -v flag for verbose output', () => {
       const manifestPath = path.join(tempDir, 'agent.ossa.yaml');
       const manifest = `
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: test-agent
@@ -288,7 +292,7 @@ spec:
     it('should accept --verbose flag', () => {
       const manifestPath = path.join(tempDir, 'agent.ossa.yaml');
       const manifest = `
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: test-agent
@@ -322,7 +326,7 @@ spec:
     it('should accept --max-turns flag', () => {
       const manifestPath = path.join(tempDir, 'agent.ossa.yaml');
       const manifest = `
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: test-agent
@@ -366,7 +370,8 @@ spec:
         expect(true).toBe(false); // Should not reach here
       } catch (error: any) {
         expect(error.status).toBe(1);
-        const output = error.stderr?.toString() || error.stdout?.toString() || '';
+        const output =
+          error.stderr?.toString() || error.stdout?.toString() || '';
         expect(output.length).toBeGreaterThan(0);
       }
     });
@@ -410,7 +415,7 @@ spec:
     it('should display agent name when loading', () => {
       const manifestPath = path.join(tempDir, 'agent.ossa.yaml');
       const manifest = `
-apiVersion: ossa/v0.3.0
+apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
   name: my-test-agent
@@ -435,14 +440,19 @@ spec:
       } catch (error: any) {
         const output = error.stdout?.toString() || '';
         // Should show agent name in output
-        expect(output.includes('my-test-agent') || output.includes('Agent')).toBe(true);
+        expect(
+          output.includes('my-test-agent') || output.includes('Agent')
+        ).toBe(true);
       }
     });
   });
 
   describe('Example Manifests', () => {
     it('should run with example OpenAI agent', () => {
-      const examplePath = path.join(cwd, 'examples/openai/swarm-agent.ossa.json');
+      const examplePath = path.join(
+        cwd,
+        'examples/openai/swarm-agent.ossa.json'
+      );
 
       // Check if example exists
       if (!fs.existsSync(examplePath)) {

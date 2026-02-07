@@ -1,4 +1,4 @@
-# OSSA v0.3.x → v0.4.0 Dependency Graph
+# OSSA v0.3.x → v{{VERSION}} Dependency Graph
 
 **Last Updated:** 2025-12-10
 
@@ -11,10 +11,10 @@ graph TD
     A[OSSA Specification v0.3.0] --> B[MR #397: Task/Workflow Basics]
     B --> C[#133: Enhanced Task/Workflow Schema v0.3.0]
     C --> D[#132: Messaging Extension v0.3.0]
-    D --> E[#126: Symfony Messenger Adapter v0.3.2]
+    D --> E[#126: Symfony Messenger Adapter v0.3.4]
     E --> F[API Normalizer Integration v0.1.x]
-    F --> G[#96: Knowledge Sources v0.3.3]
-    G --> H[Epic #9: Unified Task Schema v0.4.0]
+    F --> G[#96: Knowledge Sources v0.3.4]
+    G --> H[Epic #9: Unified Task Schema v{{VERSION}}]
     
     C --> I[Examples: Sequential Workflows]
     C --> J[Examples: Parallel Workflows]
@@ -146,7 +146,7 @@ graph TD
 
 ## 🚧 Critical Path
 
-The critical path for v0.4.0 release:
+The critical path for v{{VERSION}} release:
 
 ```
 #133 → #132 → #126 → API Normalizer → #96 → Epic #9
@@ -232,7 +232,7 @@ While following the critical path, these can be done in parallel:
 - Messaging extension
 - 10+ examples
 
-### v0.3.2 Milestone
+### v0.3.4 Milestone
 **Required:**
 - ✅ v0.3.0
 - ⚪ #126
@@ -243,9 +243,9 @@ While following the critical path, these can be done in parallel:
 - Drupal ECA integration
 - Production workflows
 
-### v0.3.3 Milestone
+### v0.3.4 Milestone
 **Required:**
-- ✅ v0.3.2
+- ✅ v0.3.4
 - ⚪ #96
 
 **Deliverables:**
@@ -253,9 +253,9 @@ While following the critical path, these can be done in parallel:
 - Airweave integration
 - LangChain retrievers
 
-### v0.4.0 Milestone
+### v{{VERSION}} Milestone
 **Required:**
-- ✅ v0.3.3
+- ✅ v0.3.4
 - ⚪ Epic #9
 
 **Deliverables:**
@@ -268,7 +268,7 @@ While following the critical path, these can be done in parallel:
 
 ## 🔗 Related Documentation
 
-- [Master Roadmap](v0.3.x-to-v0.4.0.md)
+- [Master Roadmap](v0.3.x-to-v{{VERSION}}.md)
 - [Phase 1: Specification](phase-1-specification.md)
 - [Phase 2: Runtime Implementation](phase-2-runtime-implementation.md)
 - [Phase 3: Production Use Cases](phase-3-production-use-cases.md)

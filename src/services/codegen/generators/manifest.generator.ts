@@ -10,7 +10,11 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { glob } from 'glob';
 import * as yaml from 'yaml';
-import type { Generator, GenerateResult, DriftReport } from '../codegen.service.js';
+import type {
+  Generator,
+  GenerateResult,
+  DriftReport,
+} from '../codegen.service.js';
 import { getApiVersion } from '../../../utils/version.js';
 
 @injectable()
@@ -46,12 +50,18 @@ export class ManifestGenerator implements Generator {
 
     for (const file of files) {
       try {
-        const updated = await this.updateManifest(file, targetApiVersion, dryRun);
+        const updated = await this.updateManifest(
+          file,
+          targetApiVersion,
+          dryRun
+        );
         if (updated) {
           result.filesUpdated++;
         }
       } catch (error) {
-        result.errors.push(`${file}: ${error instanceof Error ? error.message : String(error)}`);
+        result.errors.push(
+          `${file}: ${error instanceof Error ? error.message : String(error)}`
+        );
       }
     }
 
@@ -79,7 +89,10 @@ export class ManifestGenerator implements Generator {
   /**
    * Check for version drift in manifests
    */
-  async checkDrift(version: string, apiVersion: string): Promise<DriftReport['filesWithOldVersion']> {
+  async checkDrift(
+    version: string,
+    apiVersion: string
+  ): Promise<DriftReport['filesWithOldVersion']> {
     const drift: DriftReport['filesWithOldVersion'] = [];
     const files = await this.listTargetFiles();
 

@@ -1,0 +1,134 @@
+apiVersion: ossa/v0.4.1
+kind: Agent
+metadata:
+  name: database-assistant
+  version: 1.0.0
+  description: "Database query assistant with MCP PostgreSQL server"
+  labels:
+    framework: mcp
+    capability: database
+    environment: production
+
+spec:
+  model:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    parameters:
+      temperature: 0.5
+      maxTokens: 8192
+
+  instructions: |
+    You are a database assistant with access to PostgreSQL via MCP.
+    You can query databases, analyze schemas, and help with SQL operations.
+
+    Use the database MCP server to:
+    - Execute SELECT queries
+    - Analyze table schemas
+    - Generate SQL queries
+    - Explain query results
+
+    IMPORTANT: Only execute read-only queries (SELECT).
+    Never execute destructive operations (DROP, DELETE, UPDATE) without explicit approval.
+
+  tools:
+    - name: execute_query
+      description: "Execute a SQL query (read-only)"
+      parameters:
+        type: object
+        required: [query]
+        properties:
+          query:
+            type: string
+            description: "SQL query to execute"
+          limit:
+            type: integer
+            description: "Maximum number of rows to return"
+            default: 100
+
+    - name: describe_table
+      description: "Describe table schema"
+      parameters:
+        type: object
+        required: [table]
+        properties:
+          table:
+            type: string
+            description: "Table name to describe"
+
+  extensions:
+    mcp:
+      servers:
+        - name: postgres
+          description: "PostgreSQL database access via MCP"
+          transport:
+            type: stdio
+            command: npx
+            args:
+              - "-y"
+              - "@modelcontextprotocol/server-postgres"
+          env:
+            DATABASE_URL: "${DATABASE_URL}"
+            PGAPPNAME: "ossa-database-assistant"
+          version: "0.1.0"
+          capabilities:
+            tools:
+              listChanged: false
+            logging:
+              enabled: true
+              level: info
+
+      prompts:
+        - name: "analyze-query"
+          description: "Analyze SQL query performance"
+          arguments:
+            - name: "query"
+              description: "SQL query to analyze"
+              required: true
+          messages:
+            - role: system
+              content: "You are a database performance expert."
+            - role: user
+              content: |
+                Analyze this SQL query for performance issues:
+
+                ```sql
+                {{query}}
+                ```
+
+                Provide recommendations for:
+                1. Missing indexes
+                2. Query optimization
+                3. Potential bottlenecks
+
+        - name: "generate-query"
+          description: "Generate SQL query from natural language"
+          arguments:
+            - name: "request"
+              description: "Natural language query request"
+              required: true
+            - name: "schema"
+              description: "Database schema context"
+              required: false
+          messages:
+            - role: system
+              content: "You are a SQL expert who generates safe, efficient queries."
+            - role: user
+              content: |
+                Generate a SQL query for this request:
+                {{request}}
+
+                {% if schema %}
+                Schema context:
+                {{schema}}
+                {% endif %}
+
+                Generate only SELECT queries. Include LIMIT clause for safety.
+
+      capabilities:
+        tools:
+          listChanged: false
+        prompts:
+          listChanged: false
+        logging:
+          enabled: true
+          level: info

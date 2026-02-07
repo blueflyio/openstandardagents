@@ -3,7 +3,7 @@
  * Type definitions for kind: Workflow - composition of Tasks and Agents
  */
 
-import { JSONSchemaDefinition } from './task';
+import { JSONSchemaDefinition } from './task.js';
 import { getApiVersion } from '../utils/version.js';
 
 /**
@@ -14,12 +14,22 @@ export type TriggerType = 'webhook' | 'cron' | 'event' | 'manual';
 /**
  * Workflow step kinds
  */
-export type WorkflowStepKind = 'Task' | 'Agent' | 'Parallel' | 'Conditional' | 'Loop';
+export type WorkflowStepKind =
+  | 'Task'
+  | 'Agent'
+  | 'Parallel'
+  | 'Conditional'
+  | 'Loop';
 
 /**
  * Failure handling actions
  */
-export type FailureAction = 'halt' | 'continue' | 'rollback' | 'notify' | 'compensate';
+export type FailureAction =
+  | 'halt'
+  | 'continue'
+  | 'rollback'
+  | 'notify'
+  | 'compensate';
 
 /**
  * Step error actions

@@ -1,6 +1,6 @@
 # Example: Batch Email Sender Task
 # A deterministic batch task that sends emails to multiple recipients
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.4.1
 kind: Task
 metadata:
   name: batch-email-sender

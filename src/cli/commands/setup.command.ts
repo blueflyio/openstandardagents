@@ -10,6 +10,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
 import { z } from 'zod';
+import { handleCommandError } from '../utils/index.js';
 
 /**
  * Zod Schema for Setup Options
@@ -45,7 +46,10 @@ class SetupService {
     return process.cwd();
   }
 
-  protected log(message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info'): void {
+  protected log(
+    message: string,
+    type: 'info' | 'success' | 'warning' | 'error' = 'info'
+  ): void {
     const colors = {
       info: chalk.blue,
       success: chalk.green,
@@ -55,7 +59,10 @@ class SetupService {
     console.log(colors[type](message));
   }
 
-  protected exec(command: string, options?: { cwd?: string; silent?: boolean }): string {
+  protected exec(
+    command: string,
+    options?: { cwd?: string; silent?: boolean }
+  ): string {
     try {
       const result = execSync(command, {
         cwd: options?.cwd || this.projectRoot,
@@ -89,7 +96,10 @@ class BranchProtectionService extends SetupService {
   private readonly hookFile = 'post-checkout';
 
   async setup(options: SetupOptions): Promise<void> {
-    this.log('🔒 Setting up branch protection for main and development...', 'info');
+    this.log(
+      '[LOCK] Setting up branch protection for main and development...',
+      'info'
+    );
     this.log('');
 
     // Ensure hooks directory exists
@@ -102,19 +112,25 @@ class BranchProtectionService extends SetupService {
     this.exec('git config core.hooksPath .git/hooks', { silent: true });
 
     this.log('');
-    this.log('✅ Branch protection installed!', 'success');
+    this.log('[PASS] Branch protection installed!', 'success');
     this.log('');
     this.log(`Protected branches: ${this.protectedBranches.join(', ')}`);
     this.log('');
-    this.log('The hook will automatically switch you back if you try to checkout these branches.');
+    this.log(
+      'The hook will automatically switch you back if you try to checkout these branches.'
+    );
     this.log('');
   }
 
   private async createPostCheckoutHook(force: boolean): Promise<void> {
-    const hookPath = path.resolve(this.projectRoot, this.hooksDir, this.hookFile);
+    const hookPath = path.resolve(
+      this.projectRoot,
+      this.hooksDir,
+      this.hookFile
+    );
 
     if (fs.existsSync(hookPath) && !force) {
-      this.log(`✅ Post-checkout hook already exists`, 'info');
+      this.log(`[PASS] Post-checkout hook already exists`, 'info');
       // Ensure it's executable
       fs.chmodSync(hookPath, 0o755);
       return;
@@ -123,7 +139,7 @@ class BranchProtectionService extends SetupService {
     const hookContent = this.generateHookContent();
     fs.writeFileSync(hookPath, hookContent, { mode: 0o755 });
 
-    this.log(`✅ Created post-checkout hook`, 'success');
+    this.log(`[PASS] Created post-checkout hook`, 'success');
   }
 
   private generateHookContent(): string {
@@ -154,7 +170,7 @@ PROTECTED_BRANCHES="main development"
 for PROTECTED in $PROTECTED_BRANCHES; do
   if [ "$CURRENT_BRANCH" = "$PROTECTED" ]; then
     echo ""
-    echo "❌ ERROR: Cannot work on '$PROTECTED' branch locally"
+    echo "[FAIL] ERROR: Cannot work on '$PROTECTED' branch locally"
     echo ""
     echo "This project enforces a feature branch workflow:"
     echo "  • Work is done on feature branches"
@@ -169,15 +185,15 @@ for PROTECTED in $PROTECTED_BRANCHES; do
     
     if [ -n "$PREVIOUS_BRANCH" ] && [ "$PREVIOUS_BRANCH" != "$PROTECTED" ]; then
       git checkout "$PREVIOUS_BRANCH" 2>/dev/null
-      echo "✅ Switched back to: $PREVIOUS_BRANCH"
+      echo "[PASS] Switched back to: $PREVIOUS_BRANCH"
     else
       # Try to find a feature branch
       FEATURE_BRANCH=$(git branch -a | grep -E "feat/|feature/" | head -1 | sed 's|.*/||' | xargs)
       if [ -n "$FEATURE_BRANCH" ]; then
         git checkout "$FEATURE_BRANCH" 2>/dev/null
-        echo "✅ Switched to feature branch: $FEATURE_BRANCH"
+        echo "[PASS] Switched to feature branch: $FEATURE_BRANCH"
       else
-        echo "⚠️  Could not auto-switch. Please manually checkout a feature branch:"
+        echo "[WARN]  Could not auto-switch. Please manually checkout a feature branch:"
         echo "   git checkout -b feat/your-feature development"
       fi
     fi
@@ -207,10 +223,14 @@ exit 0
  */
 class ReleaseAutomationService extends SetupService {
   private readonly requiredDependencies = ['@gitbeaker/rest', '@octokit/rest'];
-  private readonly requiredEnvVars = ['GITLAB_TOKEN', 'NPM_TOKEN', 'GITHUB_TOKEN'];
+  private readonly requiredEnvVars = [
+    'GITLAB_TOKEN',
+    'NPM_TOKEN',
+    'GITHUB_TOKEN',
+  ];
 
   async setup(_options: SetupOptions): Promise<void> {
-    this.log('🚀 Release Automation Setup', 'info');
+    this.log('[RUN] Release Automation Setup', 'info');
     this.log('==============================', 'info');
     this.log('');
 
@@ -231,7 +251,7 @@ class ReleaseAutomationService extends SetupService {
 
     this.log('');
     this.log('==============================', 'info');
-    this.log('✅ Setup checks complete!', 'success');
+    this.log('[PASS] Setup checks complete!', 'success');
     this.log('');
     this.log('Next steps:');
     this.log('  1. Configure webhooks in GitLab UI');
@@ -247,14 +267,23 @@ class ReleaseAutomationService extends SetupService {
         silent: true,
       }).trim();
       if (branch !== 'development') {
-        this.log(`⚠️  Warning: Not on development branch (current: ${branch})`, 'warning');
-        this.log('   Switch to development first: git checkout development', 'warning');
+        this.log(
+          `[WARN]  Warning: Not on development branch (current: ${branch})`,
+          'warning'
+        );
+        this.log(
+          '   Switch to development first: git checkout development',
+          'warning'
+        );
         throw new Error('Must be on development branch');
       }
-      this.log('✅ On development branch', 'success');
+      this.log('[PASS] On development branch', 'success');
       this.log('');
     } catch (error) {
-      if (error instanceof Error && error.message === 'Must be on development branch') {
+      if (
+        error instanceof Error &&
+        error.message === 'Must be on development branch'
+      ) {
         throw error;
       }
       throw new Error('Failed to check git branch');
@@ -262,20 +291,20 @@ class ReleaseAutomationService extends SetupService {
   }
 
   private async checkDependencies(): Promise<void> {
-    this.log('📦 Checking dependencies...', 'info');
+    this.log('[PKG] Checking dependencies...', 'info');
 
     for (const dep of this.requiredDependencies) {
       try {
         this.exec(`npm list ${dep}`, { silent: true });
-        this.log(`  ✅ ${dep}`, 'success');
+        this.log(`  [PASS] ${dep}`, 'success');
       } catch {
-        this.log(`  ❌ ${dep} not found`, 'error');
+        this.log(`  [FAIL] ${dep} not found`, 'error');
         this.log('   Run: npm install', 'error');
         throw new Error(`Missing dependency: ${dep}`);
       }
     }
 
-    this.log('✅ Dependencies installed', 'success');
+    this.log('[PASS] Dependencies installed', 'success');
     this.log('');
   }
 
@@ -285,7 +314,7 @@ class ReleaseAutomationService extends SetupService {
     this.log('Required variables (set in GitLab UI):');
     for (const varName of this.requiredEnvVars) {
       const exists = !!process.env[varName];
-      const status = exists ? '✅' : '❌';
+      const status = exists ? '[PASS]' : '[FAIL]';
       this.log(`  ${status} ${varName}${exists ? ' (set)' : ' (missing)'}`);
     }
     this.log('');
@@ -313,12 +342,12 @@ class ReleaseAutomationService extends SetupService {
   }
 
   private async runTests(): Promise<void> {
-    this.log('🧪 Running tests...', 'info');
+    this.log('[TEST] Running tests...', 'info');
     try {
       this.exec('npm test', { silent: false });
-      this.log('✅ All tests passing', 'success');
+      this.log('[PASS] All tests passing', 'success');
     } catch {
-      this.log('❌ Tests failed', 'error');
+      this.log('[FAIL] Tests failed', 'error');
       throw new Error('Tests failed');
     }
   }
@@ -337,7 +366,9 @@ export const setupCommand = new Command('setup')
  */
 const branchProtectionSubcommand = new Command('branch-protection')
   .alias('bp')
-  .description('Setup git hooks to prevent checking out main/development locally')
+  .description(
+    'Setup git hooks to prevent checking out main/development locally'
+  )
   .option('-f, --force', 'Force overwrite existing hooks')
   .option('-v, --verbose', 'Verbose output')
   .action(async (options: { force?: boolean; verbose?: boolean }) => {
@@ -350,8 +381,7 @@ const branchProtectionSubcommand = new Command('branch-protection')
         console.error(chalk.red('Validation error:'), error.issues);
         process.exit(1);
       }
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : error);
-      process.exit(1);
+      handleCommandError(error);
     }
   });
 
@@ -360,7 +390,9 @@ const branchProtectionSubcommand = new Command('branch-protection')
  */
 const releaseAutomationSubcommand = new Command('release-automation')
   .alias('ra')
-  .description('Setup release automation (dependencies, CI/CD variables, webhooks)')
+  .description(
+    'Setup release automation (dependencies, CI/CD variables, webhooks)'
+  )
   .option('-f, --force', 'Force setup even if checks fail')
   .option('-v, --verbose', 'Verbose output')
   .action(async (options: { force?: boolean; verbose?: boolean }) => {
@@ -373,8 +405,7 @@ const releaseAutomationSubcommand = new Command('release-automation')
         console.error(chalk.red('Validation error:'), error.issues);
         process.exit(1);
       }
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : error);
-      process.exit(1);
+      handleCommandError(error);
     }
   });
 

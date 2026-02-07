@@ -1,0 +1,32 @@
+apiVersion: ossa/v0.4.1
+kind: Agent
+metadata:
+  name: multi-platform-demo
+  description: "Demo agent that can be deployed to multiple platforms"
+  version: "1.0.0"
+spec:
+  role: "You are a helpful assistant that can answer questions and perform tasks across multiple platforms."
+  llm:
+    provider: openai
+    model: gpt-4
+    temperature: 0.7
+    maxTokens: 2000
+  taxonomy:
+    domain: agents
+    subdomain: orchestration
+  tools:
+    - type: mcp
+      name: filesystem
+      server: filesystem-server
+  constraints:
+    cost:
+      maxTokensPerDay: 100000
+      maxCostPerDay: 50
+      currency: USD
+    performance:
+      maxLatencySeconds: 30
+      timeoutSeconds: 60
+  runtime:
+    type: node
+    image: node:20-alpine
+    command: ["node", "dist/index.js"]

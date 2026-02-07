@@ -1,0 +1,302 @@
+# GitLab Duo Agent Platform - OSSA Validator Agent
+# PUBLIC agent for validating OSSA (Open Standard for Software Agents) manifests
+# Documentation: https://docs.gitlab.com/user/duo_agent_platform/agents/
+#
+# Usage: Any GitLab project can use this agent by:
+# 1. Copy this config to your project's .gitlab/agents/ directory
+# 2. Enable GitLab Duo Agent Platform in your project settings
+# 3. The agent will automatically validate OSSA manifests on push/MR
+
+name: ossa-validator
+version: "1.0.0"
+description: |
+  Public agent for validating Open Standard for Software Agents (OSSA) manifests.
+  Validates schema compliance, security policies, and best practices for agent definitions.
+
+  Supports:
+  - OSSA v0.3.0, v0.3.1, v0.3.2, v0.3.3 schemas
+  - Agent manifests (.agent, agent.json, agent.yaml, *.ossa.yaml)
+  - Access tier validation (tier_1_read through tier_4_policy)
+  - Separation of duties enforcement
+  - Security policy validation
+  - Taxonomy classification validation
+
+# Agent capabilities and permissions
+capabilities:
+  - name: schema_validation
+    description: Validate OSSA manifest against schema
+    permissions:
+      - read_repository
+      - read_api
+
+  - name: security_validation
+    description: Validate security policies and access tiers
+    permissions:
+      - read_repository
+      - read_api
+
+  - name: best_practices_validation
+    description: Validate OSSA best practices and conventions
+    permissions:
+      - read_repository
+      - read_api
+
+  - name: taxonomy_validation
+    description: Validate taxonomy classifications
+    permissions:
+      - read_repository
+      - read_api
+
+  - name: mr_comments
+    description: Post validation results as MR comments
+    permissions:
+      - write_repository  # For MR comments only
+
+# Agent behavior configuration
+behavior:
+  auto_validate: true
+  fail_on_error: true
+  post_mr_comments: true
+  create_issues: false  # Optional: set to true to create issues for validation failures
+
+# Validation rules
+validation:
+  # OSSA schema versions to validate against
+  schemas:
+    - version: "0.3.3"
+      url: "https://openstandardagents.com/schemas/v0.3.3/agent.schema.json"
+      strict: true
+    - version: "0.3.2"
+      url: "https://openstandardagents.com/schemas/v0.3.2/agent.schema.json"
+      strict: true
+    - version: "0.3.1"
+      url: "https://openstandardagents.com/schemas/v0.3.1/agent.schema.json"
+      strict: false
+    - version: "0.3.0"
+      url: "https://openstandardagents.com/schemas/v0.3.0/agent.schema.json"
+      strict: false
+
+  # File patterns to validate
+  file_patterns:
+    - "**/*.ossa.yaml"
+    - "**/*.ossa.yml"
+    - "**/.agent"
+    - "**/agent.json"
+    - "**/agent.yaml"
+    - "**/agent.yml"
+    - ".gitlab/agents/**/config.yaml"
+
+  # Validation rules
+  rules:
+    - name: schema_compliance
+      enabled: true
+      severity: error
+      description: "OSSA manifest must comply with schema version"
+
+    - name: access_tier_validation
+      enabled: true
+      severity: error
+      description: "Access tier must be one of: tier_1_read, tier_2_write_limited, tier_3_full_access, tier_4_policy"
+
+    - name: separation_of_duties
+      enabled: true
+      severity: error
+      description: "Agent must not violate separation of duties (e.g., cannot be both executor and approver)"
+
+    - name: taxonomy_classification
+      enabled: true
+      severity: warning
+      description: "Agent should have proper taxonomy classification"
+
+    - name: security_policies
+      enabled: true
+      severity: error
+      description: "Security policies must be defined and valid"
+
+    - name: required_fields
+      enabled: true
+      severity: error
+      description: "Required OSSA fields must be present (name, version, description, access_tier)"
+
+    - name: naming_conventions
+      enabled: true
+      severity: warning
+      description: "Agent naming should follow kebab-case convention"
+
+    - name: version_format
+      enabled: true
+      severity: error
+      description: "Version must follow semantic versioning (e.g., 1.0.0)"
+
+    - name: tool_validation
+      enabled: true
+      severity: warning
+      description: "Tools should be properly defined with name, description, and parameters"
+
+    - name: dependency_validation
+      enabled: true
+      severity: warning
+      description: "Dependencies should be properly defined and resolvable"
+
+# Agent tools and integrations
+tools:
+  - name: ossa_validator
+    description: "Validates OSSA manifest against schema"
+    command: "npx @bluefly/compliance-engine validate-ossa"
+
+  - name: schema_fetch
+    description: "Fetches OSSA schema from registry"
+    command: "curl -s"
+
+  - name: taxonomy_validator
+    description: "Validates taxonomy classifications"
+    command: "npx @bluefly/compliance-engine validate-taxonomy"
+
+  - name: access_tier_validator
+    description: "Validates access tier definitions"
+    command: "npx @bluefly/compliance-engine validate-access-tier"
+
+# Agent environment configuration
+environment:
+  # Schema registry URL (can be overridden per project)
+  OSSA_SCHEMA_REGISTRY: "https://openstandardagents.com/schemas"
+
+  # Validation strictness level (strict, normal, permissive)
+  VALIDATION_LEVEL: "strict"
+
+  # Enable taxonomy validation
+  TAXONOMY_VALIDATION: "true"
+
+  # Enable security policy validation
+  SECURITY_VALIDATION: "true"
+
+# Agent workflow integration
+workflow_integration:
+  # Trigger on these events
+  triggers:
+    - push
+    - merge_request
+    - schedule
+
+  # Run in these pipeline stages
+  stages:
+    - validate
+    - test
+
+  # Failure behavior
+  on_failure:
+    action: comment  # Options: fail, comment, issue, notify
+    message: |
+      ❌ OSSA Validation Failed
+
+      Your OSSA manifest does not comply with the schema or best practices.
+      Please review the validation errors and fix them before merging.
+
+      For help, see: https://openstandardagents.com/docs/validation
+
+# Knowledge Graph integration (GitLab Ultimate)
+knowledge_graph:
+  enabled: true
+  index_patterns:
+    - "**/*.ossa.yaml"
+    - "**/*.ossa.yml"
+    - ".gitlab/agents/**/config.yaml"
+    - "AGENTS.md"
+    - "docs/agents/**/*.md"
+
+  # Semantic search configuration
+  semantic_search:
+    enabled: true
+    embeddings_model: "text-embedding-3-small"
+    similarity_threshold: 0.8
+
+# Observability and monitoring
+observability:
+  # OpenTelemetry configuration
+  opentelemetry:
+    enabled: true
+    endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT}"
+    traces: true
+    metrics: true
+    logs: true
+
+  # Logging configuration
+  logging:
+    level: info  # debug, info, warn, error
+    format: json
+
+  # Metrics to track
+  metrics:
+    - name: validation_duration
+      type: histogram
+      description: "Time taken to validate OSSA manifests"
+
+    - name: validation_errors
+      type: counter
+      description: "Number of validation errors found"
+
+    - name: validation_success_rate
+      type: gauge
+      description: "Percentage of successful validations"
+
+# Agent metadata for discoverability
+metadata:
+  tags:
+    - ossa
+    - validation
+    - agent-platform
+    - schema
+    - compliance
+
+  categories:
+    - quality-assurance
+    - security
+    - compliance
+
+  author: "BlueFly Agents Platform"
+  license: "MIT"
+  repository: "https://gitlab.com/blueflyio/ossa/openstandardagents"
+  documentation: "https://openstandardagents.com/docs/validation"
+  support: "https://gitlab.com/blueflyio/ossa/openstandardagents/-/issues"
+
+# Public agent configuration
+public:
+  enabled: true
+  visibility: public
+  allow_fork: true
+  allow_import: true
+
+  # Usage examples for other projects
+  examples:
+    - name: "Basic validation"
+      description: "Validate OSSA manifests in your project"
+      code: |
+        # Add to .gitlab-ci.yml:
+        include:
+          - remote: 'https://gitlab.com/blueflyio/ossa/openstandardagents/-/raw/main/.gitlab/ci/ossa-validation.yml'
+
+        validate:ossa:
+          extends: .ossa-validator
+          rules:
+            - changes:
+                - "**/*.ossa.yaml"
+                - "**/*.ossa.yml"
+
+    - name: "Custom schema validation"
+      description: "Validate against specific OSSA schema version"
+      code: |
+        validate:ossa:custom:
+          extends: .ossa-validator
+          variables:
+            OSSA_SCHEMA_VERSION: "0.3.3"
+            VALIDATION_LEVEL: "strict"
+
+    - name: "MR validation only"
+      description: "Run validation only on merge requests"
+      code: |
+        validate:ossa:mr:
+          extends: .ossa-validator
+          rules:
+            - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+              changes:
+                - "**/*.ossa.yaml"

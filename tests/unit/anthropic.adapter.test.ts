@@ -5,13 +5,14 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { AnthropicAdapter } from '../../src/services/runtime/anthropic.adapter';
 import type { OssaManifest } from '../../src/services/runtime/anthropic.adapter';
+import { API_VERSION } from '../../src/version.js';
 
 describe('AnthropicAdapter', () => {
   let manifest: OssaManifest;
 
   beforeEach(() => {
     manifest = {
-      apiVersion: 'ossa/v0.3.0',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'test-agent',

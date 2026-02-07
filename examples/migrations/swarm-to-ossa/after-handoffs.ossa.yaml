@@ -1,0 +1,482 @@
+---
+# OSSA v0.3.6 - Advanced Handoff Patterns
+#
+# This is the OSSA equivalent of before-handoffs.py
+#
+# Benefits over OpenAI Swarm handoffs:
+# - Declarative handoff rules (YAML, not Python code)
+# - Conditional handoffs with expression syntax
+# - Automatic context propagation (no manual context_variables passing)
+# - Handoff observability (metrics, tracing, visualization)
+# - Handoff policies (max handoffs, approval requirements, rollback)
+# - Easy testing and validation
+# - GitOps-ready (version control, CI/CD)
+
+# ============================================================================
+# Sales Agent - Entry Point
+# ============================================================================
+apiVersion: ossa/v0.4.1
+kind: Agent
+metadata:
+  name: sales-agent
+  version: 1.0.0
+  description: "Sales agent that initiates order workflow"
+
+spec:
+  role: |
+    You are a sales agent helping customers place orders.
+
+    When a customer wants to order:
+    1. Collect order details (items, quantities)
+    2. Calculate order total
+    3. Initiate order verification process
+
+    Be friendly and helpful!
+
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-5
+    temperature: 0.7
+    max_tokens: 2048
+
+  # Declarative handoffs (replaces transfer_to_order_verification function)
+  handoffs:
+    - name: initiate_order_verification
+      target_agent: order-verification-agent
+      description: "Start order verification after collecting order details"
+
+      # Condition: When should this handoff happen?
+      condition: "has_order_details == true and order_total > 0"
+
+      # Trigger mode
+      trigger: automatic  # Handoff happens automatically when condition is met
+
+      # Context transfer: What data to pass?
+      context_transfer: full  # Transfer entire conversation history
+      context_fields:  # Specific fields to include
+        - customer_id
+        - order_items
+        - order_total
+        - customer_tier
+
+      # Handoff metadata (for observability)
+      metadata:
+        handoff_type: workflow_progression
+        business_stage: order_initiation
+
+  # Context propagation rules
+  context_propagation:
+    mode: selective
+    allowed_fields:
+      - customer_id
+      - customer_tier
+      - order_total
+      - order_items
+      - delivery_address
+    required_fields:  # These MUST be present for handoff
+      - customer_id
+      - order_total
+
+---
+# ============================================================================
+# Order Verification Agent
+# ============================================================================
+apiVersion: ossa/v0.4.1
+kind: Agent
+metadata:
+  name: order-verification-agent
+  version: 1.0.0
+  description: "Verifies order details and customer eligibility"
+
+spec:
+  role: |
+    You verify order details and customer eligibility.
+
+    Process:
+    1. Verify the order details provided by the customer
+    2. Check customer eligibility
+    3. Proceed to payment processing when verification is complete
+
+    If there are issues with the order, return to sales.
+
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-5
+    temperature: 0.3  # Lower temperature for verification accuracy
+    max_tokens: 2048
+
+  # Capabilities (replaces verify_order function)
+  capabilities:
+    - name: verify_order
+      description: "Verify order details and customer eligibility"
+      input_schema:
+        type: object
+        properties:
+          order_id:
+            type: string
+            description: "Order identifier"
+          customer_id:
+            type: string
+            description: "Customer identifier"
+        required: [order_id, customer_id]
+      output_schema:
+        type: object
+        properties:
+          verified:
+            type: boolean
+          verification_id:
+            type: string
+          message:
+            type: string
+
+  # Multiple handoff paths (replaces multiple transfer functions)
+  handoffs:
+    # Path 1: Success → Payment Processing
+    - name: proceed_to_payment
+      target_agent: payment-processing-agent
+      description: "Proceed to payment after successful verification"
+      condition: "verification_status == 'success'"
+      trigger: automatic
+      context_transfer: full
+
+    # Path 2: Failure → Back to Sales
+    - name: return_to_sales
+      target_agent: sales-agent
+      description: "Return to sales if verification fails"
+      condition: "verification_status == 'failed'"
+      trigger: automatic
+      context_transfer: full
+      metadata:
+        handoff_type: error_recovery
+        reason: verification_failed
+
+  # Handoff policies (NOT available in Swarm!)
+  handoff_policies:
+    max_handoff_depth: 10  # Prevent infinite handoff loops
+    timeout_seconds: 300   # Handoff must complete within 5 minutes
+    rollback_on_error: true  # Rollback to previous agent on error
+
+---
+# ============================================================================
+# Payment Processing Agent
+# ============================================================================
+apiVersion: ossa/v0.4.1
+kind: Agent
+metadata:
+  name: payment-processing-agent
+  version: 1.0.0
+  description: "Processes payments with conditional routing for high-value orders"
+
+spec:
+  role: |
+    You handle payment processing for orders.
+
+    Process:
+    1. Collect payment information
+    2. Process the payment securely
+    3. Proceed to fulfillment when payment is successful
+
+    For high-value orders (>$10,000), escalate to supervisor for approval first.
+    If payment fails, return to sales.
+
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-5
+    temperature: 0.2  # Very low for payment accuracy
+    max_tokens: 2048
+
+  # Capabilities
+  capabilities:
+    - name: process_payment
+      description: "Process payment for the order"
+      input_schema:
+        type: object
+        properties:
+          payment_method:
+            type: string
+            enum: [credit_card, debit_card, paypal, wire_transfer]
+          amount:
+            type: number
+            minimum: 0
+        required: [payment_method, amount]
+      output_schema:
+        type: object
+        properties:
+          transaction_id:
+            type: string
+          status:
+            type: string
+            enum: [success, failed, pending]
+          message:
+            type: string
+
+  # Conditional handoffs (replaces conditional_transfer_payment function)
+  handoffs:
+    # Path 1: High-value order → Supervisor (CONDITIONAL!)
+    - name: escalate_high_value_order
+      target_agent: supervisor-agent
+      description: "Escalate high-value orders to supervisor for approval"
+
+      # Complex condition with expression syntax (NOT possible in Swarm!)
+      condition: |
+        order_total > 10000 or
+        (customer_tier == 'new' and order_total > 5000) or
+        payment_method == 'wire_transfer'
+
+      trigger: automatic
+      context_transfer: full
+
+      # Approval requirement (NOT available in Swarm!)
+      requires_approval: true
+      approval_roles: [supervisor, finance_manager]
+
+      metadata:
+        handoff_type: escalation
+        escalation_reason: high_value_order
+
+    # Path 2: Standard order → Fulfillment
+    - name: proceed_to_fulfillment
+      target_agent: fulfillment-agent
+      description: "Proceed to fulfillment after successful payment"
+
+      # Condition: Standard order
+      condition: |
+        payment_status == 'success' and
+        order_total <= 10000
+
+      trigger: automatic
+      context_transfer: full
+
+    # Path 3: Payment failure → Back to Sales
+    - name: payment_failed_return
+      target_agent: sales-agent
+      description: "Return to sales if payment fails"
+      condition: "payment_status == 'failed'"
+      trigger: automatic
+      context_transfer: full
+      metadata:
+        handoff_type: error_recovery
+        reason: payment_failed
+
+  # Retry policy (NOT available in Swarm!)
+  retry_policy:
+    max_attempts: 3
+    backoff: exponential
+    retry_on_conditions:
+      - payment_status == 'timeout'
+      - payment_status == 'network_error'
+
+---
+# ============================================================================
+# Fulfillment Agent
+# ============================================================================
+apiVersion: ossa/v0.4.1
+kind: Agent
+metadata:
+  name: fulfillment-agent
+  version: 1.0.0
+  description: "Handles order fulfillment and delivery"
+
+spec:
+  role: |
+    You handle order fulfillment and delivery.
+
+    Process:
+    1. Schedule order fulfillment
+    2. Arrange delivery
+    3. Provide tracking information
+
+    Mark the issue as resolved when delivery is scheduled.
+
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-5
+    temperature: 0.5
+    max_tokens: 2048
+
+  # Capabilities
+  capabilities:
+    - name: schedule_fulfillment
+      description: "Schedule order fulfillment and delivery"
+      input_schema:
+        type: object
+        properties:
+          order_id:
+            type: string
+          delivery_address:
+            type: string
+        required: [order_id, delivery_address]
+      output_schema:
+        type: object
+        properties:
+          fulfillment_id:
+            type: string
+          tracking_number:
+            type: string
+          estimated_delivery:
+            type: string
+            format: date-time
+
+  # Handoffs
+  handoffs:
+    # Path 1: Customer wants changes → Back to Sales
+    - name: customer_modification_request
+      target_agent: sales-agent
+      description: "Return to sales if customer wants to modify order"
+      condition: "modification_requested == true"
+      trigger: manual  # Requires explicit decision
+      context_transfer: full
+
+  # Mark conversation as complete (NOT available in Swarm!)
+  completion_criteria:
+    auto_complete: true
+    completion_condition: "fulfillment_scheduled == true"
+    success_metrics:
+      - fulfillment_id_present
+      - tracking_number_generated
+
+---
+# ============================================================================
+# Supervisor Agent
+# ============================================================================
+apiVersion: ossa/v0.4.1
+kind: Agent
+metadata:
+  name: supervisor-agent
+  version: 1.0.0
+  description: "Supervisor for escalations and approvals"
+
+spec:
+  role: |
+    You are a supervisor handling escalated cases.
+
+    Your role:
+    1. Review escalated orders (especially high-value ones)
+    2. Approve or modify orders as needed
+    3. Resolve complex customer issues
+
+    You have authority to route to any agent as needed.
+
+  llm:
+    provider: anthropic
+    model: claude-opus-4-5  # Most powerful model for complex decisions
+    temperature: 0.4
+    max_tokens: 4096
+
+  # Capabilities
+  capabilities:
+    - name: approve_order
+      description: "Approve a high-value or escalated order"
+      input_schema:
+        type: object
+        properties:
+          order_id:
+            type: string
+          approval_note:
+            type: string
+        required: [order_id, approval_note]
+      output_schema:
+        type: object
+        properties:
+          approved:
+            type: boolean
+          approval_id:
+            type: string
+          note:
+            type: string
+
+  # Supervisor can route to any agent
+  handoffs:
+    - name: approve_and_process_payment
+      target_agent: payment-processing-agent
+      description: "Approve order and proceed to payment"
+      condition: "supervisor_decision == 'approve'"
+      trigger: manual
+      context_transfer: full
+
+    - name: approve_and_fulfill
+      target_agent: fulfillment-agent
+      description: "Approve order and proceed directly to fulfillment"
+      condition: "supervisor_decision == 'fast_track'"
+      trigger: manual
+      context_transfer: full
+
+    - name: reject_and_return_to_sales
+      target_agent: sales-agent
+      description: "Reject order and return to sales"
+      condition: "supervisor_decision == 'reject'"
+      trigger: manual
+      context_transfer: full
+      metadata:
+        handoff_type: rejection
+        requires_customer_notification: true
+
+  # Escalation tracking (NOT available in Swarm!)
+  escalation_policies:
+    track_escalations: true
+    max_escalations_per_session: 3
+    escalation_cooldown_seconds: 300
+
+---
+# ============================================================================
+# Workflow Orchestration (Bonus: NOT POSSIBLE in Swarm!)
+# ============================================================================
+apiVersion: ossa/v0.4.1
+kind: Workflow
+metadata:
+  name: order-processing-workflow
+  version: 1.0.0
+  description: "Complete order processing workflow with handoffs"
+
+spec:
+  # Define the workflow steps
+  steps:
+    - name: sales
+      agent: sales-agent
+      description: "Initial customer interaction"
+      outputs: [customer_id, order_items, order_total]
+
+    - name: verification
+      agent: order-verification-agent
+      description: "Verify order and customer"
+      when: "{{ steps.sales.outputs.order_total > 0 }}"
+      inputs:
+        customer_id: "{{ steps.sales.outputs.customer_id }}"
+        order_items: "{{ steps.sales.outputs.order_items }}"
+
+    - name: supervisor_approval
+      agent: supervisor-agent
+      description: "Supervisor approval for high-value orders"
+      when: "{{ steps.sales.outputs.order_total > 10000 }}"
+      inputs:
+        order_total: "{{ steps.sales.outputs.order_total }}"
+
+    - name: payment
+      agent: payment-processing-agent
+      description: "Process payment"
+      when: |
+        {{ steps.verification.outputs.verified == true and
+           (steps.supervisor_approval.outputs.approved == true or
+            steps.sales.outputs.order_total <= 10000) }}
+      inputs:
+        order_total: "{{ steps.sales.outputs.order_total }}"
+
+    - name: fulfillment
+      agent: fulfillment-agent
+      description: "Fulfill and deliver order"
+      when: "{{ steps.payment.outputs.status == 'success' }}"
+      inputs:
+        order_id: "{{ steps.verification.outputs.order_id }}"
+
+  # Workflow observability
+  observability:
+    metrics:
+      enabled: true
+      metrics:
+        - workflow_duration
+        - step_completion_rate
+        - handoff_count
+        - escalation_rate
+    tracing:
+      enabled: true
+      trace_all_handoffs: true

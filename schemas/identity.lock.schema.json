@@ -1,0 +1,59 @@
+{
+  "title": "Identity Lock Schema",
+  "description": "Schema for capturing resolved provider mappings and hashes for reproducibility and drift detection.",
+  "type": "object",
+  "properties": {
+    "agentName": {
+      "type": "string",
+      "description": "The name of the agent."
+    },
+    "resolvedIdentity": {
+      "type": "object",
+      "properties": {
+        "principal": {
+          "type": "object",
+          "properties": {
+            "category": {"type": "string"},
+            "mode": {"type": "string"},
+            "provider": {"type": "string"},
+            "region": {"type": "string"},
+            "roleName": {"type": "string"},
+            "scopes": {"type": "array", "items": {"type": "string"}},
+            "oidc": {
+              "type": "object",
+              "properties": {
+                "issuerUrl": {"type": "string"},
+                "audience": {"type": "string"}
+              },
+              "required": ["issuerUrl", "audience"]
+            }
+          },
+          "required": ["category", "mode", "provider", "roleName"]
+        },
+        "credentialSource": {
+          "type": "object",
+          "properties": {
+            "type": {"type": "string"},
+            "ref": {"type": "string"}
+          },
+          "required": ["type", "ref"]
+        },
+        "provisionedResourceId": {
+          "type": "string",
+          "description": "The unique identifier of the provisioned resource (e.g., ARN, GitLab SA ID)."
+        },
+        "hash": {
+          "type": "string",
+          "description": "A hash of the resolved configuration for drift detection."
+        }
+      },
+      "required": ["principal", "credentialSource", "provisionedResourceId", "hash"]
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when this lock file was generated."
+    }
+  },
+  "required": ["agentName", "resolvedIdentity", "timestamp"]
+}

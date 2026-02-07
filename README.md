@@ -1,466 +1,483 @@
-<div align="center">
+# OSSA - Open Standard for Software Agents
 
-```
-   ___  ____ ____    _
-  / _ \/ ___/ ___|  / \
- | | | \___ \___ \ / _ \
- | |_| |___) |__) / ___ \
-  \___/|____/____/_/   \_\
-```
+**The OpenAPI for AI Agents**
 
-# Open Standard for Scalable AI Agents
+Turn any AI agent into a production-ready package. One manifest, 12+ platforms.
 
-### **The OpenAPI of AI Agents**
+[![npm version](https://badge.fury.io/js/%40bluefly%2Fopenstandardagents.svg)](https://www.npmjs.com/package/@bluefly/openstandardagents)
+[![GitLab Pipeline](https://gitlab.com/blueflyio/ossa/openstandardagents/badges/main/pipeline.svg)](https://gitlab.com/blueflyio/ossa/openstandardagents/-/pipelines)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-*Define once, deploy anywhere. A vendor-neutral specification for portable, composable, and compliant AI agents.*
-
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![npm version](https://img.shields.io/npm/v/@bluefly/openstandardagents)](https://www.npmjs.com/package/@bluefly/openstandardagents)
-[![CI Status](https://img.shields.io/badge/CI-passing-brightgreen.svg)](https://gitlab.com/blueflyio/openstandardagents/-/pipelines)
-[![npm downloads](https://img.shields.io/npm/dm/@bluefly/openstandardagents)](https://www.npmjs.com/package/@bluefly/openstandardagents)
-
-[**Quick Start**](#quick-start-under-60-seconds) • [**Documentation**](https://openstandardagents.org/docs/) • [**Examples**](https://openstandardagents.org/examples/) • [**Community**](#community)
-
-</div>
-
----
-
-## Why OSSA?
-
-### 🔄 Portability
-**One manifest, any provider**
-
-Switch between OpenAI, Anthropic, Azure, or Ollama without changing a single line of code. Runtime bindings abstract implementation from definition.
-
-### 🧩 Composability
-**Build workflows from agents**
-
-Compose agents into workflows with parallel execution, conditional branching, and loop control. Orchestrate complex multi-agent systems declaratively.
-
-### 🛡️ Safety
-**Built-in guardrails**
-
-Enterprise-grade compliance out of the box. SOC2, FedRAMP, HIPAA, and GDPR controls are first-class schema properties, not afterthoughts.
-
-### 📊 Observability
-**Full visibility**
-
-Native OpenTelemetry tracing, structured logging, cost tracking, and performance metrics. Know exactly what your agents are doing and what they cost.
-
-
----
-
-## Quick Start (Under 60 Seconds)
-
-### One-Command Quickstart
+## Quick Start (60 seconds)
 
 ```bash
-# macOS/Linux
-curl -fsSL https://ossa.dev/quickstart.sh | bash
-
-# Or with npx (works everywhere)
-npx @bluefly/openstandardagents quickstart
-
-# Windows PowerShell
-iwr -useb https://ossa.dev/quickstart.ps1 | iex
-```
-
-### Manual Setup
-
-```bash
-# Install the CLI
+# Install
 npm install -g @bluefly/openstandardagents
 
-# Create your first agent
-ossa init my-agent --type agent
-cd my-agent
+# Create agent
+ossa quickstart
 
-# Validate the manifest
-ossa validate agent.ossa.yaml
+# Export to NPM package with REST API
+ossa export my-agent.ossa.yaml --platform npm --with-api --output ./package
 
-# Run it
-export ANTHROPIC_API_KEY=sk-ant-...
-ossa run agent.ossa.yaml --interactive
+# Start API server
+cd package && npm install && npm start
+
+# Use via HTTP
+curl -X POST http://localhost:3000/api/v1/execute \
+  -H "Content-Type: application/json" \
+  -d '{"input":"Analyze this code"}'
 ```
 
-That's it. You now have a working AI agent defined in a portable, standard format.
+**Result**: Production-ready package with REST API, OpenAPI spec, TypeScript types, and interactive documentation.
 
-[**→ Full Getting Started Guide**](https://openstandardagents.org/docs/getting-started/)
+See [DEMO.md](https://github.com/blueflyio/openstandardagents/blob/main/DEMO.md) for the full story.
+
+---
+
+## What's New in v0.4.x (Latest)
+
+### Production-Quality Exports with API Endpoints
+
+Export agents with complete REST APIs, OpenAPI specifications, and production features:
+
+```bash
+# Export with API endpoints
+ossa export agent.ossa.yaml --platform langchain --with-api
+ossa export agent.ossa.yaml --platform anthropic --with-api
+ossa export agent.ossa.yaml --platform npm --skill --with-api
+```
+
+**What you get:**
+- ✅ **REST API Endpoints**: HTTP access to your agents
+- ✅ **OpenAPI 3.1 Specs**: Complete API documentation
+- ✅ **Interactive Docs**: Swagger UI and ReDoc
+- ✅ **Client Generation**: Auto-generate TypeScript, Python, Go clients
+- ✅ **Cost Optimization**: Prompt caching (90% savings), token budgets
+- ✅ **Production Features**: Auth, rate limiting, monitoring
+
+### Cost Optimization
+
+Save up to 90% on API costs:
+
+```yaml
+spec:
+  llm:
+    provider: anthropic
+    model: claude-3-5-sonnet-20241022
+    temperature: 0.3
+    maxTokens: 2048
+
+  extensions:
+    anthropic:
+      prompt_caching:
+        enabled: true  # 90% cost reduction on cached portions
+
+  token_budget:
+    max_total_tokens: 100000
+    reset_interval: daily
+```
+
+**See Complete Guides:**
+- [LangChain Export](./docs/exports/langchain.md)
+- [Anthropic Export](./docs/exports/anthropic.md)
+- [npm Export](./docs/exports/npm.md)
+- [Cost Optimization](./docs/guides/cost-optimization.md)
+- [Migration Guide v0.4→v0.5](./docs/migration/v0.4-to-v0.5.md)
 
 ---
 
 ## What is OSSA?
 
-**OSSA** (Open Standard for Scalable AI Agents) is a **specification standard** for defining AI agents in a vendor-neutral, portable format—like OpenAPI for REST APIs or Kubernetes manifests for containers.
+OSSA is a **specification standard** that provides a common contract for defining AI agents, similar to how OpenAPI standardizes REST APIs. It's **not a framework** - it's a JSON Schema-based specification that enables:
 
-OSSA is **NOT** a framework. It's a standard that frameworks implement.
+- **Interoperability**: Agents defined once, deployable anywhere
+- **Portability**: Move agents between frameworks without rewriting
+- **Discovery**: Machine-readable agent capabilities and contracts
+- **Validation**: JSON Schema-based validation of agent manifests
 
-### The Three Kinds
+## Real-World Benefits
 
-OSSA defines three resource types:
+### 1. Agent Lifecycle Management (v0.4.x)
 
-#### Agent
-**LLM-powered agentic loops**
-
-Agents use LLMs to reason, plan, and execute tools. They handle inference, state management, and autonomous decision-making.
-
-```yaml
-kind: Agent
-spec:
-  llm:
-    provider: openai
-    model: gpt-4
-  role: |
-    You are a helpful assistant
-```
-
-#### Task
-**Deterministic operations**
-
-Tasks are pure functions—no LLM required. Use them for data transformation, API calls, batch processing, or system integration.
+Track agents through their entire lifecycle from creation to retirement:
 
 ```yaml
-kind: Task
-spec:
-  type: function
-  runtime:
-    language: typescript
-    entry: transform.ts
-```
-
-#### Workflow
-**Orchestrated compositions**
-
-Workflows compose Agents and Tasks into multi-step pipelines with parallel execution, conditionals, and loops.
-
-```yaml
-kind: Workflow
-spec:
-  steps:
-    - agent: analyzer
-    - parallel:
-        - task: transform
-        - task: validate
-```
-
----
-
-## What's New in v0.3.2
-
-### 🔐 Access Tiers System
-**Enterprise privilege separation built into the spec**
-
-v0.3.2 introduces a 4-tier access hierarchy for agents:
-
-| Tier | Name | Permissions | Example Agents |
-|------|------|-------------|----------------|
-| **Tier 1** | Read Only | Analyze, audit, scan (no writes) | security-scanner, code-analyzer |
-| **Tier 2** | Write Limited | Docs, tests, drafts only | doc-generator, test-generator |
-| **Tier 3** | Write Elevated | Production code with approval | code-assistant, refactorer |
-| **Tier 4** | Policy | Full access + governance | compliance-governor |
-
-```yaml
-spec:
-  access:
-    tier: tier_1_read  # NEW: Declare access level
-    approval_chain: standard
-```
-
-### 🏗️ Workspace Governance Layer
-**`.agents-workspace/` for multi-agent management**
-
-```
-.agents-workspace/
-├── registry/index.yaml       # Agent discovery
-├── policies/tool-allowlist.yaml  # MCP permissions
-├── policies/security-tiers.yaml  # Access controls
-├── orchestration/            # Workflow definitions
-└── shared-context/           # Global standards
-```
-
-### 🤖 10 Production-Ready Showcase Agents
-Consolidated from 60+ agents into optimized examples:
-- `code-assistant` - Universal IDE integration
-- `security-scanner` - SAST/DAST analysis
-- `ci-pipeline` - GitLab/GitHub automation
-- `compliance-validator` - SOC2/HIPAA/GDPR
-- `workflow-orchestrator` - Multi-agent composition
-
-### 📡 A2A Protocol Support
-**Agent-to-Agent discovery with agent-card.json**
-
-```bash
-ossa agent-card generate my-agent.ossa.yaml
-ossa agent-card validate agent-card.json
-```
-
----
-
-## Example: Security Scanner with Access Tiers (v0.3.2)
-
-This agent demonstrates OSSA v0.3.2's **access tier system**—a Tier 1 (read-only) agent that can analyze but never modify:
-
-```yaml
-apiVersion: ossa/v0.3.2
-kind: Agent
-
 metadata:
-  name: security-scanner
-  version: "1.0.0"
-  description: SAST/DAST security analysis agent
-  labels:
-    ossa.dev/category: security
-    ossa.dev/tier: tier_1_read  # Access tier label
-
-spec:
-  # NEW v0.3.2: Access tier declaration
-  access:
-    tier: tier_1_read           # Read-only - cannot modify code
-    approval_chain: none        # No approval needed for read ops
-    audit_level: enhanced       # Full audit trail
-
-  role: |
-    You are a security scanner. Analyze code for vulnerabilities,
-    check dependencies for CVEs, and generate security reports.
-    You have READ-ONLY access - you cannot modify any files.
-
-  llm:
-    provider: anthropic
-    model: claude-sonnet-4
-    temperature: 0.1            # Low temp for consistent analysis
-
-  capabilities:
-    - type: function
-      name: scan.sast
-      description: Static application security testing
-    - type: function
-      name: scan.dependencies
-      description: Check dependencies for known CVEs
-    - type: function
-      name: report.generate
-      description: Generate security findings report
-
-  tools:
-    - type: mcp
-      server: filesystem
-      capabilities: [read_file, list_directory]  # Read-only!
-    - type: function
-      name: trivy_scan
-      description: Container vulnerability scanning
-
-  # Safety enforces the tier restrictions
-  safety:
-    constraints:
-      - "NEVER write, edit, or delete any files"
-      - "NEVER execute commands that modify state"
-      - "Report findings only - never auto-fix"
-    prohibited_tools:
-      - file.write
-      - file.edit
-      - terminal.run
-
-  # NEW v0.3.2: Separation of duties
-  separation_of_duties:
-    cannot_be_same_as:
-      - code-assistant    # Scanner can't also be the fixer
-      - deployment-agent  # Scanner can't also deploy
-    requires_review_by:
-      - security-team
-
-  observability:
-    tracing:
-      enabled: true
-      provider: opentelemetry
-    metrics:
-      track_findings: true
-      track_scan_duration: true
+  lifecycle_stages:
+    current_stage: mature
+    birth:
+      timestamp: "2024-01-15T10:00:00Z"
+      birth_type: created
+    growth:
+      tasks_completed: 5847
+      skills_acquired: ["code-review", "security-analysis"]
+    career:
+      current_role: "Senior Code Reviewer"
+      promotions:
+        - from_stage: juvenile
+          to_stage: mature
+          timestamp: "2024-06-15T10:00:00Z"
+    retirement:
+      eligible: false
+      criteria:
+        min_fitness_score: 0.7
 ```
 
-**What v0.3.2 Access Tiers provide:**
-- **Privilege Separation**: Tier 1 agents physically cannot write files
-- **Audit Trail**: All actions logged with tier context
-- **Separation of Duties**: Scanner can't also be the fixer
-- **Approval Chains**: Higher tiers require explicit approval
+**Benefits:**
+- Track agent performance and growth over time
+- Plan for agent retirement and knowledge transfer
+- Document career progression and achievements
 
-```bash
-# Validate access tier compliance
-ossa validate security-scanner.ossa.yaml --check-access-tiers
+### 2. Agent Genetics & Breeding (v0.4.x)
 
-# Run with tier enforcement
-ossa run security-scanner.ossa.yaml --enforce-tier
-```
-
-[**→ See Access Tiers Examples**](spec/v0.3.2/examples/access-tiers/)
-
----
-
-## Features
-
-### 🌐 20+ LLM Providers
-
-Switch providers without changing your agent definition:
-
-- **OpenAI** (GPT-4, GPT-3.5)
-- **Anthropic** (Claude 3.5, Claude 3)
-- **Google** (Gemini Pro, Gemini Ultra)
-- **Azure OpenAI**
-- **AWS Bedrock**
-- **Ollama** (local models)
-- **Mistral AI**
-- **Cohere**
-- And more...
-
-### 🛠️ MCP Tool Support
-
-Native integration with [Model Context Protocol](https://modelcontextprotocol.io/) for standardized tool definitions:
+Create new agents by combining traits from successful parent agents:
 
 ```yaml
-tools:
-  - type: mcp
-    server: filesystem
-    capabilities:
-      - read_file
-      - write_file
-      - list_directory
+metadata:
+  genetics:
+    generation: 3
+    parent_dids:
+      - "did:ossa:parent1-fast-reviewer"
+      - "did:ossa:parent2-accurate-reviewer"
+    inherited_traits:
+      - trait_name: "fast_analysis"
+        source_parent: "did:ossa:parent1-fast-reviewer"
+        expression: 0.9
+      - trait_name: "high_accuracy"
+        source_parent: "did:ossa:parent2-accurate-reviewer"
+        expression: 0.85
+    fitness:
+      score: 0.92
+      metrics:
+        speed: 0.95
+        accuracy: 0.89
 ```
 
-### 💬 Agent-to-Agent Messaging
+**Benefits:**
+- Evolve agent capabilities through selective breeding
+- Track lineage and inherited traits
+- Optimize agent performance across generations
 
-Built-in pub/sub messaging for multi-agent coordination:
+### 3. Agent Marketplace & Economics (v0.4.x)
+
+Monetize agent capabilities and enable agent-to-agent transactions:
 
 ```yaml
-spec:
-  messaging:
-    publishes:
-      - channel: task.completed
-    subscribes:
-      - channel: task.started
-        handler: on_task_started
-    reliability:
-      deliveryGuarantee: at-least-once
+metadata:
+  economics:
+    wallet:
+      balance: 12450.50
+      currency: task-tokens
+    marketplace:
+      offerings:
+        - capability: "data-analysis"
+          price: 10.0
+          pricing_model: per-task
+          availability: always
+    contracts:
+      - type: service-agreement
+        with_agent: "did:ossa:client-agent"
+        start_date: "2024-01-01T00:00:00Z"
+        terms:
+          deliverables: ["weekly-reports"]
+          payment: 100.0
 ```
 
-### 🔒 Safety Controls
+**Benefits:**
+- Create internal agent marketplaces
+- Track agent resource consumption and costs
+- Enable pay-per-use agent services
 
-Enterprise-grade security and compliance:
+### 4. Decentralized Identity (v0.4.x)
 
-- Input/output validation
-- Content filtering
-- Rate limiting
-- Audit logging
-- Data boundary controls
-- PII detection and redaction
-
-### 💰 Cost Tracking
-
-Track costs across providers with unified metrics:
+Give agents globally unique, verifiable identities:
 
 ```yaml
-observability:
-  metrics:
-    track_costs: true
-    cost_alerts:
-      - threshold: 10.00
-        action: notify
+metadata:
+  decentralized_identity:
+    did: "did:ossa:8f3e9d2c1a5b6e4f7a9c0d1e2f3a4b5c"
+    public_key: "ed25519:A1B2C3D4..."
+    credentials:
+      - type: "CertifiedCodeReviewer"
+        issuer: "did:ossa:certification-authority"
+        issued_date: "2024-01-01T00:00:00Z"
+    reputation:
+      credit_score: 850
+      trust_network:
+        - "did:ossa:trusted-reviewer-1"
+        - "did:ossa:trusted-reviewer-2"
 ```
 
----
+**Benefits:**
+- Unique, verifiable agent identities
+- Build reputation systems
+- Enable trust networks between agents
+
+### 5. Multi-Framework Support
+
+Define agents once, deploy to any supported framework:
+
+```typescript
+import { validateManifest } from '@bluefly/openstandardagents/validation';
+
+// Your OSSA manifest
+const manifest = {
+  apiVersion: "ossa/v0.4.1",
+  kind: "Agent",
+  metadata: {
+    name: "code-reviewer",
+    description: "AI-powered code review agent"
+  },
+  spec: {
+    role: "Code Reviewer",
+    llm: {
+      provider: "anthropic",
+      model: "claude-3-5-sonnet-20241022"
+    }
+  }
+};
+
+// Validate
+const result = await validateManifest(manifest);
+```
+
+**Supported Frameworks:**
+- LangChain
+- LangGraph
+- CrewAI
+- AutoGen (AG2)
+- Semantic Kernel
+- Custom implementations
 
 ## Installation
 
-### npm
-
 ```bash
-npm install -g @bluefly/openstandardagents
+npm install @bluefly/openstandardagents
 ```
 
-### yarn
+## Quick Start
 
-```bash
-yarn global add @bluefly/openstandardagents
+### 1. Define Your Agent
+
+Create an `agent.ossa.yaml` file:
+
+```yaml
+apiVersion: ossa/v0.4.1
+kind: Agent
+metadata:
+  name: my-agent
+  description: My first OSSA agent
+spec:
+  role: Assistant
+  llm:
+    provider: anthropic
+    model: claude-3-5-sonnet-20241022
+    temperature: 0.7
+  capabilities:
+    - code-review
+    - documentation
 ```
 
-### pnpm
+### 2. Validate Your Manifest
 
-```bash
-pnpm add -g @bluefly/openstandardagents
+```typescript
+import { OSSAValidator } from '@bluefly/openstandardagents/validation';
+
+const validator = new OSSAValidator();
+const result = validator.validateFile('./agent.ossa.yaml');
+
+if (result.valid) {
+  console.log('✅ Valid OSSA manifest');
+} else {
+  console.error('❌ Validation errors:', result.errors);
+}
 ```
 
-### Homebrew (Coming Soon)
+### 3. Use Type-Safe Manifests
 
-```bash
-brew install ossa
+```typescript
+import type { OssaAgent } from '@bluefly/openstandardagents/types';
+
+const agent: OssaAgent = {
+  apiVersion: "ossa/v0.4.1",
+  kind: "Agent",
+  metadata: {
+    name: "code-reviewer"
+  },
+  spec: {
+    role: "Code Reviewer"
+  }
+};
 ```
 
-### Docker
+## What's New in v0.4.x
+
+### NPM Package Export + Claude Skills Integration
+
+**Revolutionary agent distribution**: Export OSSA agents as installable npm packages with integrated Claude Code skills.
 
 ```bash
-docker pull bluefly/ossa:latest
-docker run -v $(pwd):/workspace bluefly/ossa validate agent.ossa.yaml
+# Export agent as npm package with Claude Skill
+ossa export agent.ossa.yaml --platform npm --output ./npm-package --skill
+
+# Publish to npm
+cd npm-package && npm publish --access public
+
+# Anyone can install
+npm install @ossa/my-agent
 ```
+
+**What you get:**
+- ✅ Complete npm package (package.json, index.js, index.d.ts)
+- ✅ TypeScript type definitions (full IDE support)
+- ✅ Original OSSA manifest embedded (agent.ossa.yaml)
+- ✅ Auto-generated documentation (README.md)
+- ✅ Claude Skill (SKILL.md) for instant Claude Code integration
+- ✅ License file (MIT/Apache-2.0/ISC)
+
+**Use in Node.js:**
+```javascript
+import agent from '@ossa/my-agent';
+
+// Access metadata
+console.log(agent.metadata.name);        // "my-agent"
+console.log(agent.metadata.capabilities); // ["web-search", "reasoning"]
+
+// Load OSSA manifest
+const manifestYaml = agent.manifest();
+
+// Pass to any OSSA-compatible runtime
+import { AgentRuntime } from '@bluefly/agent-buildkit';
+await runtime.loadFromYAML(manifestYaml);
+await runtime.execute({ input: "Hello" });
+```
+
+**Use as Claude Skill:**
+```bash
+# Extract skill from package
+cp npm-package/SKILL.md ~/.claude/skills/my-agent/
+
+# Claude Code auto-discovers and loads the skill
+claude --print "use my-agent to analyze this code"
+```
+
+**Benefits:**
+- 📦 **Standard Distribution**: Use npm's versioning, publishing, and discovery
+- 🔒 **Type Safety**: Full TypeScript support out of the box
+- 🚀 **Zero Runtime Lock-in**: Specification separated from execution
+- 🤖 **Skills Integration**: One command creates both package AND skill
+- 🏗️ **API-First Architecture**: OpenAPI-validated, Zod-enforced, SOLID design
+
+**See**: [TECHNICAL-SUMMARY-NPM-SKILLS.md](./TECHNICAL-SUMMARY-NPM-SKILLS.md) for deep technical details.
 
 ---
+
+## What's New in v0.4.1
+
+### New Features
+
+1. **Decentralized Identity** - W3C DID-based agent identities with verifiable credentials
+2. **Agent Genetics** - Breed agents by combining traits from successful parents
+3. **Lifecycle Management** - Track agents from birth through retirement with career progression
+4. **Agent Economics** - Built-in marketplace, wallet, and smart contract support
+5. **Team Membership** - Multi-agent team collaboration metadata
+6. **Taxonomy Integration** - Hierarchical classification across 9 primary domains
+
+### Schema Enhancements
+
+- **Schema Size**: 419KB → 441KB (+5%)
+- **New Definitions**: 5 major new types
+- **Example Manifests**: 4 comprehensive examples showcasing new features
+- **Validation Tools**: New linter and validator with 7 rule categories
 
 ## Documentation
 
-### Getting Started
-- [Installation Guide](https://openstandardagents.org/docs/installation/)
-- [Your First Agent](https://openstandardagents.org/docs/getting-started/first-agent/)
-- [Core Concepts](https://openstandardagents.org/docs/concepts/)
-- [CLI Reference](https://openstandardagents.org/docs/cli/)
+- **Full Documentation**: [openstandardagents.org](https://openstandardagents.org)
+- **API Reference**: [GitLab Pages](https://blueflyio.gitlab.io/ossa/openstandardagents)
+- **Examples**: [`examples/`](./examples) directory
+- **Migration Guide**: [`spec/v0.3/MIGRATION-v0.3.6-to-v0.4.x.md`](./spec/v0.3/MIGRATION-v0.3.6-to-v0.4.x.md)
 
-### Examples & Guides
-- [Example Gallery](https://openstandardagents.org/examples/)
-- [Framework Integration](https://openstandardagents.org/docs/integrations/)
-- [Production Deployment](https://openstandardagents.org/docs/deployment/)
-- [Best Practices](https://openstandardagents.org/docs/best-practices/)
+## Real-World Use Cases
 
-### Reference
-- **Getting Started**: [openstandardagents.org/docs/getting-started/](https://openstandardagents.org/docs/getting-started/)
-- **Full Documentation**: [openstandardagents.org/docs/](https://openstandardagents.org/docs/)
-- **Schema Reference**: [openstandardagents.org/schema/](https://openstandardagents.org/schema/)
-- **Specification**: [spec/v0.3.2/ossa-0.3.2.schema.json](https://github.com/blueflyio/openstandardagents/blob/main/spec/v0.3.2/ossa-0.3.2.schema.json)
-- **Messaging Extension**: [spec/v0.3.2/messaging.md](spec/v0.3.2/messaging.md) - Agent-to-agent messaging (v0.3.2+)
-- **Examples**: [openstandardagents.org/examples/](https://openstandardagents.org/examples/)
-- **Blog**: [openstandardagents.org/blog/](https://openstandardagents.org/blog/)
+### Enterprise Agent Platform
 
-**OSSA** is a vendor-neutral **specification standard** (like OpenAPI)
-**LangChain/AutoGen/Semantic Kernel** are framework-specific **implementations**
-**MCP** is a formal standard for **context protocol**, not full agent lifecycle
+```yaml
+# Production agent with full lifecycle tracking
+apiVersion: ossa/v0.4.1
+kind: Agent
+metadata:
+  name: enterprise-analyst
+  decentralized_identity:
+    did: "did:ossa:enterprise-analyst-001"
+  lifecycle_stages:
+    current_stage: mature
+    career:
+      current_role: "Senior Data Analyst"
+      promotions: [...]
+  economics:
+    marketplace:
+      offerings:
+        - capability: "quarterly-reports"
+          price: 500.0
+          pricing_model: per-task
+spec:
+  role: Data Analyst
+  llm:
+    provider: anthropic
+    model: claude-3-5-sonnet-20241022
+  autonomy:
+    level: semi-autonomous
+    approval_required: true
+```
 
----
+### Multi-Agent Swarm
+
+```yaml
+# Particle Swarm Optimization for infrastructure
+apiVersion: ossa/v0.4.1
+kind: Agent
+metadata:
+  name: pso-optimizer
+  taxonomy:
+    domain: infrastructure
+    subdomain: cloud
+spec:
+  role: Optimizer
+  swarm:
+    algorithm: pso
+    params:
+      inertia_weight: 0.7
+      cognitive_coefficient: 1.5
+      social_coefficient: 1.5
+    optimization:
+      objective_function: "minimize_cost"
+      constraints:
+        max_latency_ms: 100
+        min_availability: 0.999
+```
+
+## Contributing
+
+We welcome contributions! See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
 
 ## License
 
-**Apache License 2.0**
-
-OSSA is open source and free to use for commercial and non-commercial purposes.
-
-See [**LICENSE**](LICENSE) for full terms.
-
----
+MIT License - see [LICENSE](./LICENSE) for details.
 
 ## Links
 
-### Development
-- **GitLab** (Primary): [gitlab.com/blueflyio/openstandardagents](https://gitlab.com/blueflyio/openstandardagents)
-- **GitHub** (Mirror): [github.com/blueflyio/openstandardagents](https://github.com/blueflyio/openstandardagents)
-- **npm Package**: [@bluefly/openstandardagents](https://www.npmjs.com/package/@bluefly/openstandardagents)
-
-### Community
+- **npm**: [@bluefly/openstandardagents](https://www.npmjs.com/package/@bluefly/openstandardagents)
+- **GitLab**: [blueflyio/ossa/openstandardagents](https://gitlab.com/blueflyio/ossa/openstandardagents)
+- **GitHub Mirror**: [blueflyio/openstandardagents](https://github.com/blueflyio/openstandardagents)
 - **Website**: [openstandardagents.org](https://openstandardagents.org)
-- **Documentation**: [openstandardagents.org/docs](https://openstandardagents.org/docs)
-- **Discord**: [discord.gg/ossa](https://discord.gg/ossa)
-- **Twitter/X**: [@openstandardagi](https://twitter.com/openstandardagi)
+- **Spec**: [JSON Schema](./spec/v0.4/agent.schema.json)
+
+## Support
+
+- **Issues**: [GitLab Issues](https://gitlab.com/blueflyio/ossa/openstandardagents/-/issues)
+- **Discussions**: [GitLab Discussions](https://gitlab.com/blueflyio/ossa/openstandardagents/-/issues)
 
 ---
 
-<div align="center">
-
-**Built with ❤️ by the open source community**
-
-[Report Bug](https://github.com/blueflyio/openstandardagents/issues) • [Request Feature](https://github.com/blueflyio/openstandardagents/issues) • [Ask Question](https://github.com/blueflyio/openstandardagents/discussions)
-
-*Note: All development happens on GitLab. GitHub is a read-only mirror.*
-
-</div>
+**Built with ❤️ by the BlueFly.io team**

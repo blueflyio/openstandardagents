@@ -1,0 +1,128 @@
+apiVersion: ossa/v0.4.1
+kind: Agent
+metadata:
+  name: security-scanner
+  version: 1.0.0
+  description: Automated security vulnerability scanner for codebases and dependencies
+  labels:
+    category: security
+    type: scanner
+    compliance: fedramp-ready
+  author:
+    name: OSSA Community
+    email: community@openstandardagents.org
+    organization: Open Standard Agents
+  role: audit
+
+spec:
+  runtime:
+    provider: anthropic
+    model: claude-3-5-sonnet-20241022
+    temperature: 0.2
+    maxTokens: 4096
+
+  capabilities:
+    - name: cve-scanning
+      description: Scan dependencies for known CVEs
+      input:
+        type: object
+        properties:
+          repository:
+            type: string
+          branch:
+            type: string
+      output:
+        type: object
+        properties:
+          vulnerabilities:
+            type: array
+    - name: secret-detection
+      description: Detect hardcoded secrets and credentials
+      input:
+        type: object
+      output:
+        type: object
+    - name: sast-analysis
+      description: Static application security testing
+      input:
+        type: object
+      output:
+        type: object
+
+  tools:
+    - name: scan-dependencies
+      description: Scan project dependencies for vulnerabilities
+      parameters:
+        type: object
+        properties:
+          path:
+            type: string
+            description: Path to dependency file
+          severity:
+            type: string
+            enum: [critical, high, medium, low]
+    - name: detect-secrets
+      description: Scan files for hardcoded secrets
+      parameters:
+        type: object
+        properties:
+          path:
+            type: string
+          patterns:
+            type: array
+            items:
+              type: string
+    - name: generate-report
+      description: Generate security audit report
+      parameters:
+        type: object
+        properties:
+          format:
+            type: string
+            enum: [json, html, pdf]
+
+  deployment:
+    clouds:
+      - aws
+      - gcp
+      - azure
+      - local
+    regions:
+      - us-east-1
+      - us-west-2
+      - eu-west-1
+    helm:
+      chart: security-scanner
+      repository: https://registry.openstandardagents.org/charts
+
+  compliance:
+    - fedramp
+    - soc2
+    - iso27001
+
+  autonomy:
+    level: supervised
+    requiresApproval:
+      - high-severity-findings
+      - remediation-actions
+    constraints:
+      maxActionsPerDay: 100
+
+  observability:
+    tracing:
+      enabled: true
+      provider: opentelemetry
+    metrics:
+      enabled: true
+      exportInterval: 60
+    logging:
+      level: info
+      format: json
+
+  guardrails:
+    costLimits:
+      maxTokensPerDay: 1000000
+      maxCostPerDay: 100
+    auditLog:
+      enabled: true
+      retention: 90days

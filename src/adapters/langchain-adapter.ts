@@ -35,15 +35,21 @@ export class LangChainAdapter {
    */
   static toLangChain(manifest: OssaAgent): LangChainAgent {
     const spec = manifest.spec || { role: '' };
-    const metadata = manifest.metadata || { name: 'unknown-agent' };
     const tools = spec.tools || [];
 
     // Convert OSSA tools to LangChain tools format
-    const langchainTools = tools.map((tool: any) => ({
-      name: tool.name || 'unknown',
-      description: tool.description || '',
-      parameters: tool.input_schema || tool.parameters || {},
-    }));
+    const langchainTools = tools.map(
+      (tool: {
+        name?: string;
+        description?: string;
+        input_schema?: Record<string, unknown>;
+        parameters?: Record<string, unknown>;
+      }) => ({
+        name: tool.name || 'unknown',
+        description: tool.description || '',
+        parameters: tool.input_schema || tool.parameters || {},
+      })
+    );
 
     // Determine agent type based on tools and capabilities
     const agentType = this.determineAgentType(spec.role || '', tools);
@@ -172,7 +178,8 @@ if __name__ == "__main__":
     const typeMap: Record<string, string> = {
       'zero-shot-react-description': 'ZERO_SHOT_REACT_DESCRIPTION',
       'conversational-react-description': 'CONVERSATIONAL_REACT_DESCRIPTION',
-      'chat-conversational-react-description': 'CHAT_CONVERSATIONAL_REACT_DESCRIPTION',
+      'chat-conversational-react-description':
+        'CHAT_CONVERSATIONAL_REACT_DESCRIPTION',
     };
     return typeMap[agentType] || 'ZERO_SHOT_REACT_DESCRIPTION';
   }

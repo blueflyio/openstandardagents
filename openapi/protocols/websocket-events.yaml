@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: OSSA WebSocket Events API
-  version: 0.3.2
+  version: 0.3.3
   description: |
     OpenAPI extension for WebSocket event definitions in OSSA.
     Defines event schemas for bidirectional agent-to-agent messaging over WebSocket.
@@ -122,7 +122,7 @@ components:
             version:
               type: string
               description: OSSA protocol version
-              example: ossa/v0.3.2
+              example: ossa/v0.3.3
 
     Message:
       summary: General message event

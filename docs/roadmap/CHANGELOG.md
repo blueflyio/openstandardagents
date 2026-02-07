@@ -1,6 +1,6 @@
 # Roadmap Changelog
 
-All notable changes to the OSSA v0.3.x → v0.4.0 roadmap will be documented in this file.
+All notable changes to the OSSA v0.3.x → v{{VERSION}} roadmap will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
@@ -45,14 +45,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 #### Roadmap Documentation Structure
 - Created `docs/roadmap/` directory for roadmap documentation
-- Master roadmap document (`v0.3.x-to-v0.4.0.md`)
+- Master roadmap document (`v0.3.x-to-v{{VERSION}}.md`)
 - Phase-specific tracking documents (phase-1 through phase-4)
 - Supporting documents (dependency-graph, cross-project-dependencies, success-metrics)
 - Roadmap index (`README.md`)
 - Roadmap changelog (`CHANGELOG.md`)
 
-#### Master Roadmap (`v0.3.x-to-v0.4.0.md`)
-- Vision statement: "OSSA v0.4.0: The OpenAPI for AI Agents"
+#### Master Roadmap (`v0.3.x-to-v{{VERSION}}.md`)
+- Vision statement: "OSSA v{{VERSION}}: The OpenAPI for AI Agents"
 - Project landscape (specification, implementation, related ecosystems)
 - Dependency graph (MR #397 → #133 → #132 → #126 → API Normalizer → #96 → Epic #9)
 - 4-phase timeline (8 weeks total)
@@ -122,7 +122,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Tracking checkboxes for all criteria
 
 #### Roadmap Index (`README.md`)
-- Overview of OSSA v0.3.0 → v0.4.0 evolution
+- Overview of OSSA v0.3.0 → v0.4.1 evolution
 - Quick navigation to all documents
 - Timeline overview
 - Related issues summary
@@ -153,12 +153,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **Issues**: #126, API Normalizer
 - **Deliverables**: Symfony adapter, Drupal ECA, state management
 
-### v0.3.3 - Production Use Cases (Target: Week 6)
+### v0.3.4 - Production Use Cases (Target: Week 6)
 - **Status**: Not Started
 - **Issues**: API Normalizer integration, multi-agent workflows
 - **Deliverables**: Production deployments, integration tests
 
-### v0.4.0 - Knowledge & Convergence (Target: Week 8)
+### v0.4.1 - Knowledge & Convergence (Target: Week 8)
 - **Status**: Not Started
 - **Issues**: #96, Epic #9
 - **Deliverables**: Knowledge sources, unified schema, framework adapters
@@ -188,7 +188,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **Impact**: Enables Phase 4 convergence work
 
 ### TBD - Phase 4 Completion
-- **Decision**: Release OSSA v0.4.0
+- **Decision**: Release OSSA v0.4.1
 - **Criteria**: One schema any framework, production examples exist
 - **Impact**: OSSA becomes "The OpenAPI for AI Agents"
 

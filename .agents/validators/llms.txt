@@ -1,0 +1,23 @@
+# schema-validator
+
+> Production-grade OSSA manifest validator with comprehensive error reporting
+
+## Quick Reference
+
+- **Type**: OSSA Agent v0.4.1
+- **Category**: validators
+- **Manifest**: schema-validator.ossa.yaml
+
+## Overview
+
+Validate OSSA agent manifests against the official JSON Schema.
+Provide detailed error reports, suggestions, and auto-fix capabilities.
+
+capabilities:
+- manifest-validation
+
+## Related
+
+- Main OSSA documentation: /README.md
+- Agent manifest: ./schema-validator.ossa.yaml
+- Agent details: ./AGENTS.md

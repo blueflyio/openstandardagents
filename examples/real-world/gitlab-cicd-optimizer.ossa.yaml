@@ -1,7 +1,8 @@
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.4.1
 kind: Agent
 metadata:
   name: gitlab-cicd-optimizer
+  version: "1.0.0"
   description: |
     Real-world agent that optimizes GitLab CI/CD pipelines by:
     - Analyzing pipeline performance
@@ -155,9 +156,16 @@ spec:
       provider: opentelemetry
       endpoint: "${env.OTEL_ENDPOINT}"
     metrics:
-      - name: pipelines_analyzed
-        type: counter
-      - name: recommendations_generated
-        type: counter
-      - name: average_pipeline_duration
-        type: gauge
+      enabled: true
+      exporter: prometheus
+      port: 9090
+      customMetrics:
+        - name: pipelines_analyzed
+          type: counter
+          description: Total number of pipelines analyzed
+        - name: recommendations_generated
+          type: counter
+          description: Total number of recommendations generated
+        - name: average_pipeline_duration
+          type: gauge
+          description: Average pipeline duration in seconds

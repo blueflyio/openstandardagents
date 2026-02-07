@@ -1,19 +1,19 @@
 {
   "branches": [
-    "main",
     {
-      "name": "release/v+([0-9]).+([0-9]).x",
+      "name": "main",
       "prerelease": false
     },
     {
-      "name": "development",
-      "prerelease": "dev"
+      "name": "release/v0.3.x",
+      "prerelease": "rc"
     },
     {
-      "name": "hotfix/+([0-9]).+([0-9]).+([0-9])",
-      "prerelease": "dev"
+      "name": "release/v+([0-9])?(.{+([0-9]),x}).x",
+      "prerelease": "rc"
     }
   ],
+  "repositoryUrl": "https://gitlab.com/blueflyio/ossa/openstandardagents.git",
   "plugins": [
     [
       "@semantic-release/commit-analyzer",
@@ -33,45 +33,15 @@
             "release": "patch"
           },
           {
-            "type": "revert",
-            "release": "patch"
-          },
-          {
             "type": "docs",
+            "scope": "README",
             "release": "patch"
-          },
-          {
-            "type": "chore",
-            "release": false
-          },
-          {
-            "type": "refactor",
-            "release": "patch"
-          },
-          {
-            "type": "test",
-            "release": false
-          },
-          {
-            "type": "build",
-            "release": false
-          },
-          {
-            "type": "ci",
-            "release": false
           },
           {
             "breaking": true,
             "release": "major"
           }
-        ],
-        "parserOpts": {
-          "noteKeywords": [
-            "BREAKING CHANGE",
-            "BREAKING CHANGES",
-            "BREAKING"
-          ]
-        }
+        ]
       }
     ],
     [
@@ -82,63 +52,24 @@
           "types": [
             {
               "type": "feat",
-              "section": "Added",
-              "hidden": false
+              "section": "✨ Features"
             },
             {
               "type": "fix",
-              "section": "Fixed",
-              "hidden": false
+              "section": "🐛 Bug Fixes"
             },
             {
               "type": "perf",
-              "section": "Changed",
-              "hidden": false
-            },
-            {
-              "type": "revert",
-              "section": "Removed",
-              "hidden": false
+              "section": "⚡ Performance"
             },
             {
               "type": "docs",
-              "section": "Changed",
-              "hidden": false
-            },
-            {
-              "type": "refactor",
-              "section": "Changed",
-              "hidden": false
-            },
-            {
-              "type": "deprecate",
-              "section": "Deprecated",
-              "hidden": false
-            },
-            {
-              "type": "security",
-              "section": "Security",
-              "hidden": false
-            },
-            {
-              "type": "test",
-              "section": "Changed",
-              "hidden": true
-            },
-            {
-              "type": "build",
-              "section": "Changed",
-              "hidden": true
-            },
-            {
-              "type": "ci",
-              "section": "Changed",
-              "hidden": true
+              "section": "📚 Documentation"
             },
             {
               "type": "chore",
-              "section": "Changed",
-              "hidden": true
+              "section": "🔧 Maintenance",
+              "hidden": false
             }
           ]
         }
@@ -148,13 +79,7 @@
       "@semantic-release/changelog",
       {
         "changelogFile": "CHANGELOG.md",
-        "changelogTitle": "# Changelog\n\nAll notable changes to OSSA (Open Standard for Scalable AI Agents) will be documented in this file.\n\nThe format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),\nand this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)."
-      }
-    ],
-    [
-      "@semantic-release/exec",
-      {
-        "prepareCmd": "node dist/cli/index.js release version sync --include-examples || bash .gitlab/scripts/sync-version-placeholders.sh ${nextRelease.version}"
+        "changelogTitle": "# Changelog\n\nAll notable changes to OSSA (Open Standard for Software Agents) will be documented in this file.\n\nThe format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),\nand this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)."
       }
     ],
     [
@@ -165,38 +90,40 @@
       }
     ],
     [
+      "@semantic-release/git",
+      {
+        "assets": [
+          "CHANGELOG.md",
+          "package.json",
+          "package-lock.json"
+        ],
+        "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+      }
+    ],
+    [
       "@semantic-release/gitlab",
       {
         "gitlabUrl": "https://gitlab.com",
         "assets": [
           {
             "path": "dist/*.tgz",
-            "label": "Distribution Package"
-          },
-          {
-            "path": "CHANGELOG.md",
-            "label": "Changelog"
+            "label": "OSSA ${nextRelease.version} npm package"
           }
-        ],
-        "successComment": "\ud83c\udf89 This ${issue.pull_request ? 'MR is included' : 'issue has been resolved'} in version ${nextRelease.version}\n\nThe release is available on:\n- [npm package](https://www.npmjs.com/package/@bluefly/openstandardagents)\n- [GitLab release](${releases[0].url})\n- [Documentation](https://openstandardagents.org)\n\nYour **${issue.pull_request ? 'merge request' : 'issue'}** is included in this release!"
+        ]
       }
     ],
     [
-      "@semantic-release/git",
+      "@semantic-release/github",
       {
         "assets": [
-          "CHANGELOG.md",
-          "package.json",
-          "package-lock.json",
-          "README.md",
-          ".version.json",
-          ".wiki-config.json",
-          "spec/**/*.yaml",
-          "spec/**/*.json",
-          ".gitlab/**/*.yaml",
-          ".gitlab/**/*.yml"
+          {
+            "path": "dist/*.tgz",
+            "label": "OSSA ${nextRelease.version} npm package"
+          }
         ],
-        "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+        "successComment": false,
+        "failComment": false,
+        "releasedLabels": false
       }
     ]
   ]

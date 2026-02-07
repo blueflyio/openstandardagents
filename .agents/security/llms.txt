@@ -1,0 +1,23 @@
+# security-auditor
+
+> Comprehensive security audit for OSSA agents (OWASP, CVE, secrets)
+
+## Quick Reference
+
+- **Type**: OSSA Agent v0.4.1
+- **Category**: security
+- **Manifest**: security-auditor.ossa.yaml
+
+## Overview
+
+Perform comprehensive security audits on OSSA agents:
+- OWASP Top 10 vulnerabilities
+- CVE scanning
+- Secret detection
+- Permission analysis
+
+## Related
+
+- Main OSSA documentation: /README.md
+- Agent manifest: ./security-auditor.ossa.yaml
+- Agent details: ./AGENTS.md

@@ -2,7 +2,7 @@
 
 **Status:** Not Started  
 **Timeline:** Weeks 5-6  
-**Version Target:** v0.3.2+
+**Version Target:** v{{VERSION}}+
 
 ---
 
@@ -306,7 +306,7 @@ graph LR
 
 ## 🔗 Related Documentation
 
-- [Master Roadmap](v0.3.x-to-v0.4.0.md)
+- [Master Roadmap](v0.3.x-to-v{{VERSION}}.md)
 - [Phase 2: Runtime Implementation](phase-2-runtime-implementation.md)
 - [Phase 4: Knowledge & Convergence](phase-4-knowledge-convergence.md)
 - [Multi-Agent Examples](../../examples/multi-agent/)

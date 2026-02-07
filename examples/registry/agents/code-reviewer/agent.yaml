@@ -1,0 +1,159 @@
+apiVersion: ossa/v0.4.1
+kind: Agent
+metadata:
+  name: code-reviewer
+  version: 1.0.0
+  description: Intelligent code review agent for quality assurance and best practices
+  labels:
+    category: development
+    type: reviewer
+    framework: multi
+  author:
+    name: OSSA Community
+    email: community@openstandardagents.org
+    organization: Open Standard Agents
+  role: workflow
+
+spec:
+  runtime:
+    provider: anthropic
+    model: claude-3-5-sonnet-20241022
+    temperature: 0.3
+    maxTokens: 8192
+
+  capabilities:
+    - name: code-analysis
+      description: Analyze code quality and identify issues
+      input:
+        type: object
+        properties:
+          code:
+            type: string
+          language:
+            type: string
+      output:
+        type: object
+        properties:
+          issues:
+            type: array
+          suggestions:
+            type: array
+    - name: best-practices
+      description: Check compliance with coding best practices
+      input:
+        type: object
+      output:
+        type: object
+    - name: security-review
+      description: Review code for security vulnerabilities
+      input:
+        type: object
+      output:
+        type: object
+
+  tools:
+    - name: analyze-diff
+      description: Analyze git diff for code changes
+      parameters:
+        type: object
+        properties:
+          diff:
+            type: string
+          context:
+            type: object
+    - name: check-style
+      description: Check code style and formatting
+      parameters:
+        type: object
+        properties:
+          files:
+            type: array
+          language:
+            type: string
+    - name: suggest-improvements
+      description: Suggest code improvements
+      parameters:
+        type: object
+        properties:
+          code:
+            type: string
+          focus:
+            type: string
+            enum: [performance, readability, maintainability]
+    - name: generate-review
+      description: Generate comprehensive code review
+      parameters:
+        type: object
+        properties:
+          format:
+            type: string
+            enum: [markdown, html, json]
+
+  deployment:
+    clouds:
+      - aws
+      - gcp
+      - azure
+      - local
+      - hybrid
+    regions:
+      - us-east-1
+      - us-west-2
+      - eu-west-1
+      - ap-southeast-1
+    helm:
+      chart: code-reviewer
+      repository: https://registry.openstandardagents.org/charts
+
+  compliance:
+    - soc2
+    - iso27001
+
+  autonomy:
+    level: autonomous
+    requiresApproval:
+      - merge-requests
+      - breaking-changes
+    constraints:
+      maxActionsPerHour: 50
+
+  observability:
+    tracing:
+      enabled: true
+      provider: opentelemetry
+      samplingRate: 1.0
+    metrics:
+      enabled: true
+      exportInterval: 30
+      customMetrics:
+        - reviews_completed
+        - issues_found
+        - suggestions_made
+    logging:
+      level: info
+      format: json
+
+  guardrails:
+    costLimits:
+      maxTokensPerDay: 2000000
+      maxCostPerDay: 200
+    rateLimits:
+      requestsPerMinute: 60
+      requestsPerHour: 1000
+    auditLog:
+      enabled: true
+      retention: 180days
+
+  integrations:
+    - name: gitlab
+      type: webhook
+      config:
+        events:
+          - merge_request
+          - push
+    - name: github
+      type: webhook
+      config:
+        events:
+          - pull_request
+          - push

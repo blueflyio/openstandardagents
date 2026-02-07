@@ -1,5 +1,5 @@
 /**
- * Tests for OSSA v0.3.0 Task Schema
+ * Tests for OSSA v0.4.1 Task Schema
  */
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
@@ -7,26 +7,30 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { isOssaTask, createTaskManifest } from '../../src/types/task';
 import { getApiVersion } from '../../src/utils/version';
+import { API_VERSION } from '../../src/version.js';
 
-describe('OSSA v0.3.0 Task Schema', () => {
+describe('OSSA v0.4.1 Task Schema', () => {
   let ajv: Ajv;
   let schema: object;
 
   beforeAll(() => {
-    // Load the v0.3.0 schema
-    const schemaPath = path.join(__dirname, '../../spec/v0.3.0/ossa-0.3.0.schema.json');
+    // Load the v0.4 schema
+    const schemaPath = path.join(
+      __dirname,
+      '../../spec/v0.4/agent.schema.json'
+    );
     schema = JSON.parse(fs.readFileSync(schemaPath, 'utf-8'));
 
     // Setup AJV validator
     ajv = new Ajv({ strict: false, allErrors: true });
     addFormats(ajv);
-    ajv.addSchema(schema, 'ossa-0.3.0');
+    ajv.addSchema(schema, 'ossa-0.4');
   });
 
   describe('kind: Task validation', () => {
     it('should validate a minimal Task manifest', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: API_VERSION,
         kind: 'Task',
         metadata: {
           name: 'minimal-task',
@@ -38,14 +42,14 @@ describe('OSSA v0.3.0 Task Schema', () => {
         },
       };
 
-      const validate = ajv.getSchema('ossa-0.3.0');
+      const validate = ajv.getSchema('ossa-0.4');
       const valid = validate!(manifest);
       expect(valid).toBe(true);
     });
 
     it('should validate a full Task manifest with all fields', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: API_VERSION,
         kind: 'Task',
         metadata: {
           name: 'publish-content',
@@ -137,23 +141,27 @@ describe('OSSA v0.3.0 Task Schema', () => {
               handler: 'Drupal\\node\\Entity\\Node::setPublished',
             },
             send_notification: {
-              handler: 'Drupal\\ai_agents\\Service\\NotificationService::notify',
+              handler:
+                'Drupal\\ai_agents\\Service\\NotificationService::notify',
             },
           },
         },
       };
 
-      const validate = ajv.getSchema('ossa-0.3.0');
+      const validate = ajv.getSchema('ossa-0.4');
       const valid = validate!(manifest);
       if (!valid) {
-        console.error('Validation errors:', JSON.stringify(validate!.errors, null, 2));
+        console.error(
+          'Validation errors:',
+          JSON.stringify(validate!.errors, null, 2)
+        );
       }
       expect(valid).toBe(true);
     });
 
     it('should reject Task without required execution field', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: API_VERSION,
         kind: 'Task',
         metadata: {
           name: 'invalid-task',
@@ -164,14 +172,14 @@ describe('OSSA v0.3.0 Task Schema', () => {
         },
       };
 
-      const validate = ajv.getSchema('ossa-0.3.0');
+      const validate = ajv.getSchema('ossa-0.4');
       const valid = validate!(manifest);
       expect(valid).toBe(false);
     });
 
     it('should reject invalid execution type', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: API_VERSION,
         kind: 'Task',
         metadata: {
           name: 'invalid-task',
@@ -183,14 +191,14 @@ describe('OSSA v0.3.0 Task Schema', () => {
         },
       };
 
-      const validate = ajv.getSchema('ossa-0.3.0');
+      const validate = ajv.getSchema('ossa-0.4');
       const valid = validate!(manifest);
       expect(valid).toBe(false);
     });
 
     it('should validate batch processing configuration', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: API_VERSION,
         kind: 'Task',
         metadata: {
           name: 'batch-task',
@@ -213,7 +221,7 @@ describe('OSSA v0.3.0 Task Schema', () => {
         },
       };
 
-      const validate = ajv.getSchema('ossa-0.3.0');
+      const validate = ajv.getSchema('ossa-0.4');
       const valid = validate!(manifest);
       expect(valid).toBe(true);
     });
@@ -222,7 +230,7 @@ describe('OSSA v0.3.0 Task Schema', () => {
   describe('kind differentiation', () => {
     it('should accept Agent kind', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -232,14 +240,14 @@ describe('OSSA v0.3.0 Task Schema', () => {
         },
       };
 
-      const validate = ajv.getSchema('ossa-0.3.0');
+      const validate = ajv.getSchema('ossa-0.4');
       const valid = validate!(manifest);
       expect(valid).toBe(true);
     });
 
     it('should reject unknown kind', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: API_VERSION,
         kind: 'Unknown',
         metadata: {
           name: 'test',
@@ -247,7 +255,7 @@ describe('OSSA v0.3.0 Task Schema', () => {
         spec: {},
       };
 
-      const validate = ajv.getSchema('ossa-0.3.0');
+      const validate = ajv.getSchema('ossa-0.4');
       const valid = validate!(manifest);
       expect(valid).toBe(false);
     });
@@ -256,7 +264,7 @@ describe('OSSA v0.3.0 Task Schema', () => {
   describe('TypeScript type guards', () => {
     it('isOssaTask should return true for Task manifests', () => {
       const task = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: API_VERSION,
         kind: 'Task',
         metadata: { name: 'test' },
         spec: { execution: { type: 'deterministic' } },
@@ -266,7 +274,7 @@ describe('OSSA v0.3.0 Task Schema', () => {
 
     it('isOssaTask should return false for Agent manifests', () => {
       const agent = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: { name: 'test' },
         spec: { role: 'test' },
@@ -285,7 +293,7 @@ describe('OSSA v0.3.0 Task Schema', () => {
       expect(task.apiVersion).toBe(getApiVersion());
       expect(task.metadata.name).toBe('my-task');
       expect(task.spec.capabilities).toContain('do_something');
-      const validate = ajv.getSchema('ossa-0.3.0');
+      const validate = ajv.getSchema('ossa-0.4');
       const valid = validate!(task);
       expect(valid).toBe(true);
     });

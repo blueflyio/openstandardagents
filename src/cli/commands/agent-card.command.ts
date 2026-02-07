@@ -5,6 +5,10 @@
  *   ossa agent-card generate   - Generate agent-card.json from manifest
  *   ossa agent-card validate   - Validate agent-card.json
  *   ossa agent-card serve      - Serve agent card at /.well-known/agent-card.json
+ *
+ * SOLID Principles:
+ * - Uses shared output utilities (DRY)
+ * - Single Responsibility: Only handles agent card operations
  */
 
 import { Command } from 'commander';
@@ -14,6 +18,7 @@ import * as path from 'path';
 import * as yaml from 'yaml';
 import { glob } from 'glob';
 import { getVersion } from '../../utils/version.js';
+import { outputJSON, handleCommandError } from '../utils/index.js';
 
 interface A2AAgentCard {
   protocolVersion: string;
@@ -40,12 +45,15 @@ interface A2AAgentCard {
     inputModes?: string[];
     outputModes?: string[];
   }>;
-  securitySchemes?: Record<string, {
-    type: string;
-    scheme?: string;
-    in?: string;
-    name?: string;
-  }>;
+  securitySchemes?: Record<
+    string,
+    {
+      type: string;
+      scheme?: string;
+      in?: string;
+      name?: string;
+    }
+  >;
   security?: Array<Record<string, string[]>>;
   supportedInterfaces?: Array<{
     url: string;
@@ -53,8 +61,9 @@ interface A2AAgentCard {
   }>;
 }
 
-export const agentCardCommand = new Command('agent-card')
-  .description('Manage A2A Protocol agent cards for discovery');
+export const agentCardCommand = new Command('agent-card').description(
+  'Manage A2A Protocol agent cards for discovery'
+);
 
 // ============================================================================
 // Subcommand: agent-card generate
@@ -89,7 +98,11 @@ agentCardCommand
 
       if (!manifestPath || !fs.existsSync(manifestPath)) {
         console.log(chalk.red('✗ No OSSA manifest found'));
-        console.log(chalk.gray('  Provide manifest path or run in directory with .agents/'));
+        console.log(
+          chalk.gray(
+            '  Provide manifest path or run in directory with .agents/'
+          )
+        );
         process.exit(1);
       }
 
@@ -107,13 +120,19 @@ agentCardCommand
       const agentCard: A2AAgentCard = {
         protocolVersion: '1.0',
         name: manifest.metadata.name,
-        description: manifest.metadata.description || `${manifest.metadata.name} - OSSA Agent`,
-        url: options?.url || `https://agents.example.com/${manifest.metadata.name}`,
+        description:
+          manifest.metadata.description ||
+          `${manifest.metadata.name} - OSSA Agent`,
+        url:
+          options?.url ||
+          `https://agents.example.com/${manifest.metadata.name}`,
         version: manifest.metadata.version || getVersion(),
         capabilities: {
           streaming: manifest.spec?.capabilities?.streaming ?? true,
-          pushNotifications: manifest.spec?.capabilities?.pushNotifications ?? false,
-          stateTransitionHistory: manifest.spec?.capabilities?.stateTransitionHistory ?? true,
+          pushNotifications:
+            manifest.spec?.capabilities?.pushNotifications ?? false,
+          stateTransitionHistory:
+            manifest.spec?.capabilities?.stateTransitionHistory ?? true,
         },
         skills: [],
         securitySchemes: {
@@ -128,13 +147,22 @@ agentCardCommand
       // Add provider
       if (options?.provider || manifest.spec?.identity?.provider) {
         agentCard.provider = {
-          organization: options?.provider || manifest.spec?.identity?.provider?.organization || 'Unknown',
-          url: options?.providerUrl || manifest.spec?.identity?.provider?.url || 'https://example.com',
+          organization:
+            options?.provider ||
+            manifest.spec?.identity?.provider?.organization ||
+            'Unknown',
+          url:
+            options?.providerUrl ||
+            manifest.spec?.identity?.provider?.url ||
+            'https://example.com',
         };
       }
 
       // Add documentation URL
-      if (manifest.metadata?.annotations?.['ossa.dev/documentation'] || manifest.spec?.identity?.documentationUrl) {
+      if (
+        manifest.metadata?.annotations?.['ossa.dev/documentation'] ||
+        manifest.spec?.identity?.documentationUrl
+      ) {
         agentCard.documentationUrl =
           manifest.metadata?.annotations?.['ossa.dev/documentation'] ||
           manifest.spec?.identity?.documentationUrl;
@@ -143,23 +171,24 @@ agentCardCommand
       // Convert capabilities to skills
       if (manifest.spec?.capabilities) {
         for (const cap of manifest.spec.capabilities) {
-          const skill = typeof cap === 'string'
-            ? {
-                id: cap.replace(/\./g, '-'),
-                name: cap.split('.').pop() || cap,
-                description: `${cap} capability`,
-                tags: cap.split('.'),
-                examples: [],
-              }
-            : {
-                id: cap.name?.replace(/\./g, '-') || 'unknown',
-                name: cap.name || 'Unknown',
-                description: cap.description || '',
-                tags: cap.tags || [],
-                examples: cap.examples || [],
-                inputModes: cap.inputModes,
-                outputModes: cap.outputModes,
-              };
+          const skill =
+            typeof cap === 'string'
+              ? {
+                  id: cap.replace(/\./g, '-'),
+                  name: cap.split('.').pop() || cap,
+                  description: `${cap} capability`,
+                  tags: cap.split('.'),
+                  examples: [],
+                }
+              : {
+                  id: cap.name?.replace(/\./g, '-') || 'unknown',
+                  name: cap.name || 'Unknown',
+                  description: cap.description || '',
+                  tags: cap.tags || [],
+                  examples: cap.examples || [],
+                  inputModes: cap.inputModes,
+                  outputModes: cap.outputModes,
+                };
 
           agentCard.skills.push(skill);
         }
@@ -182,10 +211,12 @@ agentCardCommand
 
       // Add supported interfaces
       if (manifest.spec?.interfaces) {
-        agentCard.supportedInterfaces = manifest.spec.interfaces.map((iface: { url: string; binding: string }) => ({
-          url: iface.url,
-          binding: iface.binding,
-        }));
+        agentCard.supportedInterfaces = manifest.spec.interfaces.map(
+          (iface: { url: string; binding: string }) => ({
+            url: iface.url,
+            binding: iface.binding,
+          })
+        );
       } else {
         agentCard.supportedInterfaces = [
           {
@@ -216,8 +247,7 @@ agentCardCommand
 
       process.exit(0);
     } catch (error) {
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
-      process.exit(1);
+      handleCommandError(error);
     }
   });
 
@@ -272,7 +302,8 @@ agentCardCommand
         for (const skill of card.skills) {
           if (!skill.id) errors.push(`Skill missing id`);
           if (!skill.name) errors.push(`Skill missing name`);
-          if (!skill.description) warnings.push(`Skill "${skill.id}" missing description`);
+          if (!skill.description)
+            warnings.push(`Skill "${skill.id}" missing description`);
         }
       }
 
@@ -296,18 +327,17 @@ agentCardCommand
 
       if (errors.length > 0) {
         console.log(chalk.red(`\n✗ Errors (${errors.length}):`));
-        errors.forEach(e => console.log(`  ${chalk.red('•')} ${e}`));
+        errors.forEach((e) => console.log(`  ${chalk.red('•')} ${e}`));
       }
 
       if (warnings.length > 0) {
         console.log(chalk.yellow(`\n⚠ Warnings (${warnings.length}):`));
-        warnings.forEach(w => console.log(`  ${chalk.yellow('•')} ${w}`));
+        warnings.forEach((w) => console.log(`  ${chalk.yellow('•')} ${w}`));
       }
 
       process.exit(errors.length > 0 ? 1 : 0);
     } catch (error) {
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
-      process.exit(1);
+      handleCommandError(error);
     }
   });
 
@@ -333,12 +363,11 @@ agentCardCommand
       if (options?.yaml) {
         console.log(yaml.stringify(card));
       } else {
-        console.log(JSON.stringify(card, null, 2));
+        outputJSON(card);
       }
 
       process.exit(0);
     } catch (error) {
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
-      process.exit(1);
+      handleCommandError(error);
     }
   });

@@ -1,45 +1,45 @@
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.4.1
 kind: Agent
 metadata:
   name: sequential-pipeline
-  version: "1.0.0"
+  version: 1.0.0
   description: Sequential pipeline with 3 agents processing data in chain
 spec:
   role: Orchestrator for sequential data processing pipeline
   llm:
     provider: openai
     model: gpt-4o-mini
-  
   tools:
-    - type: function
-      name: call_researcher
-      description: Call the researcher agent to gather information
-      parameters:
-        type: object
-        properties:
-          query:
-            type: string
-            description: Research query
-        required: [query]
-    
-    - type: function
-      name: call_analyzer
-      description: Call the analyzer agent to process research results
-      parameters:
-        type: object
-        properties:
-          data:
-            type: string
-            description: Data to analyze
-        required: [data]
-    
-    - type: function
-      name: call_writer
-      description: Call the writer agent to create final output
-      parameters:
-        type: object
-        properties:
-          analysis:
-            type: string
-            description: Analysis to write about
-        required: [analysis]
+  - type: function
+    name: call_researcher
+    description: Call the researcher agent to gather information
+    parameters:
+      type: object
+      properties:
+        query:
+          type: string
+          description: Research query
+      required:
+      - query
+  - type: function
+    name: call_analyzer
+    description: Call the analyzer agent to process research results
+    parameters:
+      type: object
+      properties:
+        data:
+          type: string
+          description: Data to analyze
+      required:
+      - data
+  - type: function
+    name: call_writer
+    description: Call the writer agent to create final output
+    parameters:
+      type: object
+      properties:
+        analysis:
+          type: string
+          description: Analysis to write about
+      required:
+      - analysis

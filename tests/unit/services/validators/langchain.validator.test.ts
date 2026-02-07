@@ -4,6 +4,7 @@
 
 import { describe, it, expect } from '@jest/globals';
 import { LangChainValidator } from '../../../../src/services/validators/langchain.validator.js';
+import { API_VERSION } from '../../../../src/version.js';
 
 describe('LangChainValidator', () => {
   const validator = new LangChainValidator();
@@ -102,7 +103,10 @@ describe('LangChainValidator', () => {
         langchain: {
           enabled: true,
           chain_type: 'agent',
-          callbacks: ['callback1', 'callback2'],
+          callbacks: [
+            { type: 'langsmith' },
+            { type: 'wandb', config: { project: 'test' } },
+          ],
         },
       },
     };

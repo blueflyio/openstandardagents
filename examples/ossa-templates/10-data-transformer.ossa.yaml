@@ -1,0 +1,102 @@
+apiVersion: ossa/v0.4.1
+kind: Task
+metadata:
+  name: data-transformer
+  version: 1.0.0
+  description: Data transformation and ETL pipeline task
+  labels:
+    ossa.dev/category: data
+    ossa.dev/tier: standard-example
+    ossa.dev/execution: deterministic
+  annotations:
+    ossa.dev/documentation: https://openstandardagents.org/tasks/data-transformer
+spec:
+  execution:
+    type: deterministic
+    runtime: any
+  capabilities:
+  - data_extract
+  - data_transform
+  - data_validate
+  - data_load
+  batch:
+    enabled: true
+    parallelism: 10
+    chunk_size: 1000
+    retry:
+      max_attempts: 3
+      backoff_strategy: exponential
+  input:
+    type: object
+    required:
+    - source
+    - destination
+    properties:
+      source:
+        type: object
+        properties:
+          type:
+            type: string
+            enum:
+            - file
+            - api
+            - database
+          path:
+            type: string
+          format:
+            type: string
+            enum:
+            - json
+            - csv
+            - yaml
+            - xml
+      destination:
+        type: object
+        properties:
+          type:
+            type: string
+            enum:
+            - file
+            - api
+            - database
+          path:
+            type: string
+          format:
+            type: string
+      transformations:
+        type: array
+        items:
+          type: object
+          properties:
+            field:
+              type: string
+            operation:
+              type: string
+              enum:
+              - rename
+              - map
+              - filter
+              - aggregate
+              - join
+            config:
+              type: object
+  output:
+    type: object
+    properties:
+      records_processed:
+        type: integer
+      records_succeeded:
+        type: integer
+      records_failed:
+        type: integer
+      errors:
+        type: array
+        items:
+          type: object
+          properties:
+            record_id:
+              type: string
+            error:
+              type: string
+      duration_ms:
+        type: integer

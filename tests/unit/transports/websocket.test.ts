@@ -3,6 +3,7 @@
  */
 
 import { WebSocketTransport } from '../../../src/transports/websocket';
+import { API_VERSION } from '../../../src/version.js';
 
 // Mock CloseEvent for testing
 class CloseEvent extends Event {
@@ -10,7 +11,10 @@ class CloseEvent extends Event {
   reason: string;
   wasClean: boolean;
 
-  constructor(type: string, init?: { code?: number; reason?: string; wasClean?: boolean }) {
+  constructor(
+    type: string,
+    init?: { code?: number; reason?: string; wasClean?: boolean }
+  ) {
     super(type);
     this.code = init?.code || 1000;
     this.reason = init?.reason || '';
@@ -42,7 +46,9 @@ class MockWebSocket {
         if (this.onerror) {
           // Use ErrorEvent for better Jest compatibility
           // Create an Event-like object that Jest can handle
-          const errorEvent = Object.assign(new Event('error'), { message: 'Connection failed' });
+          const errorEvent = Object.assign(new Event('error'), {
+            message: 'Connection failed',
+          });
           this.onerror(errorEvent);
         }
       }, 5);
@@ -163,11 +169,15 @@ describe('WebSocketTransport', () => {
     });
 
     it('should send message with metadata', async () => {
-      await transport.send('message', { test: 'data' }, {
-        correlationId: 'test-correlation',
-        priority: 'high',
-        ttl: 60,
-      });
+      await transport.send(
+        'message',
+        { test: 'data' },
+        {
+          correlationId: 'test-correlation',
+          priority: 'high',
+          ttl: 60,
+        }
+      );
 
       const ws = (transport as any).ws as MockWebSocket;
       const message = ws.getLastMessage() as any;
@@ -202,25 +212,29 @@ describe('WebSocketTransport', () => {
       });
 
       const ws = (transport as any).ws as MockWebSocket;
-      ws.simulateMessage(JSON.stringify({
-        type: 'message',
-        id: 'msg-123',
-        timestamp: new Date().toISOString(),
-        payload: { received: 'data' },
-        metadata: { agentId: 'agent://test/agent-2' },
-      }));
+      ws.simulateMessage(
+        JSON.stringify({
+          type: 'message',
+          id: 'msg-123',
+          timestamp: new Date().toISOString(),
+          payload: { received: 'data' },
+          metadata: { agentId: 'agent://test/agent-2' },
+        })
+      );
     });
 
     it('should handle ping/pong', async () => {
       const ws = (transport as any).ws as MockWebSocket;
 
-      ws.simulateMessage(JSON.stringify({
-        type: 'ping',
-        id: 'ping-123',
-        timestamp: new Date().toISOString(),
-        payload: {},
-        metadata: { agentId: 'server' },
-      }));
+      ws.simulateMessage(
+        JSON.stringify({
+          type: 'ping',
+          id: 'ping-123',
+          timestamp: new Date().toISOString(),
+          payload: {},
+          metadata: { agentId: 'server' },
+        })
+      );
 
       // Should respond with pong
       await new Promise((resolve) => setTimeout(resolve, 10));
@@ -239,7 +253,9 @@ describe('WebSocketTransport', () => {
       const ws = (transport as any).ws as MockWebSocket;
 
       // Start capability invocation
-      const responsePromise = transport.invokeCapability('test_capability', { input: 'data' });
+      const responsePromise = transport.invokeCapability('test_capability', {
+        input: 'data',
+      });
 
       await new Promise((resolve) => setTimeout(resolve, 10));
 
@@ -249,16 +265,18 @@ describe('WebSocketTransport', () => {
       expect(call.payload.capability).toBe('test_capability');
 
       // Simulate response
-      ws.simulateMessage(JSON.stringify({
-        type: 'message',
-        id: 'resp-123',
-        timestamp: new Date().toISOString(),
-        payload: { result: 'success' },
-        metadata: {
-          agentId: 'agent://test/agent-2',
-          correlationId: call.metadata.correlationId,
-        },
-      }));
+      ws.simulateMessage(
+        JSON.stringify({
+          type: 'message',
+          id: 'resp-123',
+          timestamp: new Date().toISOString(),
+          payload: { result: 'success' },
+          metadata: {
+            agentId: 'agent://test/agent-2',
+            correlationId: call.metadata.correlationId,
+          },
+        })
+      );
 
       const result = await responsePromise;
       expect(result).toEqual({ result: 'success' });
@@ -266,9 +284,13 @@ describe('WebSocketTransport', () => {
 
     it('should timeout on capability call', async () => {
       await expect(
-        transport.invokeCapability('test_capability', { input: 'data' }, {
-          timeout: 100,
-        })
+        transport.invokeCapability(
+          'test_capability',
+          { input: 'data' },
+          {
+            timeout: 100,
+          }
+        )
       ).rejects.toThrow('Capability call timeout');
     });
   });
@@ -302,34 +324,44 @@ describe('WebSocketTransport', () => {
     it('should wait for acknowledgment when requested', async () => {
       const ws = (transport as any).ws as MockWebSocket;
 
-      const sendPromise = transport.send('message', { test: 'data' }, {
-        waitForAck: true,
-      });
+      const sendPromise = transport.send(
+        'message',
+        { test: 'data' },
+        {
+          waitForAck: true,
+        }
+      );
 
       await new Promise((resolve) => setTimeout(resolve, 10));
 
       const message = ws.getLastMessage() as any;
 
       // Simulate ACK
-      ws.simulateMessage(JSON.stringify({
-        type: 'ack',
-        id: 'ack-123',
-        timestamp: new Date().toISOString(),
-        payload: {
-          messageId: message.id,
-          status: 'received',
-        },
-        metadata: { agentId: 'server' },
-      }));
+      ws.simulateMessage(
+        JSON.stringify({
+          type: 'ack',
+          id: 'ack-123',
+          timestamp: new Date().toISOString(),
+          payload: {
+            messageId: message.id,
+            status: 'received',
+          },
+          metadata: { agentId: 'server' },
+        })
+      );
 
       await expect(sendPromise).resolves.toBeUndefined();
     });
 
     it('should timeout waiting for acknowledgment', async () => {
       await expect(
-        transport.send('message', { test: 'data' }, {
-          waitForAck: true,
-        })
+        transport.send(
+          'message',
+          { test: 'data' },
+          {
+            waitForAck: true,
+          }
+        )
       ).rejects.toThrow('ACK timeout');
     });
   });
@@ -346,22 +378,22 @@ describe('WebSocketTransport', () => {
       errorTransport.on('error', () => {
         errorFired = true;
       });
-      
+
       // Start connection - error should fire at 5ms, rejecting promise
       // Catch the promise rejection to prevent unhandled rejection
       const connectPromise = errorTransport.connect().catch(() => {
         // Expected rejection - handled
       });
-      
+
       // Wait for error event to fire (mock fires at 5ms)
       await new Promise((resolve) => setTimeout(resolve, 10));
-      
+
       // Error should have been emitted
       expect(errorFired).toBe(true);
-      
+
       // Wait for promise to settle
       await connectPromise;
-      
+
       // Test passes if error event was emitted (connection error handling works)
     });
 
@@ -373,16 +405,18 @@ describe('WebSocketTransport', () => {
 
       transport.connect().then(() => {
         const ws = (transport as any).ws as MockWebSocket;
-        ws.simulateMessage(JSON.stringify({
-          type: 'error',
-          id: 'err-123',
-          timestamp: new Date().toISOString(),
-          payload: {
-            code: 'TEST_ERROR',
-            message: 'Test error',
-          },
-          metadata: { agentId: 'server' },
-        }));
+        ws.simulateMessage(
+          JSON.stringify({
+            type: 'error',
+            id: 'err-123',
+            timestamp: new Date().toISOString(),
+            payload: {
+              code: 'TEST_ERROR',
+              message: 'Test error',
+            },
+            metadata: { agentId: 'server' },
+          })
+        );
       });
     });
   });

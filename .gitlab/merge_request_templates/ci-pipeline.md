@@ -1,152 +1,125 @@
-## ⚙️ CI/CD Pipeline Change
+## CI/CD Pipeline Changes
 
-### Pipeline Information
+<!-- Template for changes to GitLab CI/CD configuration -->
+
+## Pipeline Information
 
 | Field | Value |
 |-------|-------|
-| **File(s) Changed** | <!-- .gitlab-ci.yml, .gitlab/ci/*.yml --> |
-| **Component** | <!-- If modifying a CI component --> |
-| **Environment** | <!-- dev / staging / production / all --> |
+| Files Changed | `.gitlab-ci.yml` / `.gitlab/ci/*.yml` |
+| Component | |
+| Affected Environments | `development` / `staging` / `production` |
 
-### Change Type
+## Type of Change
 
-- [ ] 🆕 New pipeline/job
-- [ ] 📝 Job modification
-- [ ] 🔧 Variable/secret change
-- [ ] 🏃 Runner configuration
-- [ ] 📦 Artifact/cache change
-- [ ] 🔌 Integration update
-- [ ] 🛡️ Security scan update
-- [ ] ♻️ Pipeline optimization
+- [ ] New pipeline/job
+- [ ] Job modification
+- [ ] Variable/secret changes
+- [ ] Runner configuration
+- [ ] Artifact configuration
+- [ ] External integration
+- [ ] Security scan configuration
+- [ ] Performance optimization
+- [ ] Cache optimization
 
-## Summary
+## Related Issues
 
-<!-- Describe the CI/CD changes -->
+Closes #
 
 ## Pipeline Changes
 
+<!-- Include the key changes to the CI configuration -->
 ```yaml
-# Key changes (paste relevant YAML)
+# Key changes
 ```
 
----
+## Agent Validation
 
-## 🤖 CI/CD Agent Suite
+### Enabled by Default
+- [x] `@bot-mr-reviewer` - Code review
+- [x] `@bot-gitlab-ci-fixer` - CI/CD validation
 
-### Automated Validation
-- [x] `@bot-mr-reviewer` — General review
-- [x] `@bot-gitlab-ci-fixer` — CI syntax validation (auto-enabled)
-- [ ] `@bot-ossa-validator` — Validate OSSA manifests in pipeline
-- [ ] `@bot-component-builder` — Generate/update CI component
-
-### Agent Commands
-
+### CI Commands
 ```
-/ci validate                 # Validate .gitlab-ci.yml syntax
-/ci lint                     # Full CI linting
-/ci simulate                 # Dry-run pipeline simulation
-/fix pipeline               # Auto-fix common CI issues
-/fix pipeline --aggressive   # Aggressive auto-fix
-/component build <n>      # Generate CI component
-/component validate          # Validate component syntax
-/component publish           # Publish to component registry
+/ci validate              - Validate CI YAML syntax
+/ci lint                  - Lint CI configuration
+/ci simulate              - Simulate pipeline execution
+/fix pipeline             - Auto-fix common issues
+/fix pipeline --aggressive - Aggressive auto-fix
 ```
-
----
 
 ## CI/CD Checklist
 
 ### Syntax & Structure
-- [ ] YAML syntax valid
-- [ ] Job names follow conventions
-- [ ] Stages properly defined
-- [ ] Dependencies correctly specified
-- [ ] Rules/only/except logic correct
+- [ ] YAML syntax is valid
+- [ ] Job names follow naming convention
+- [ ] Stage ordering is correct
+- [ ] Dependencies are properly defined
 
 ### Security
-- [ ] No secrets in plain text
-- [ ] CI variables used for sensitive data
-- [ ] Proper variable masking
-- [ ] Runner tags appropriate
-- [ ] No privilege escalation
+- [ ] No secrets hardcoded in pipeline
+- [ ] Sensitive variables are masked
+- [ ] Runner tags are appropriate
+- [ ] Protected branch rules respected
 
 ### Performance
-- [ ] Appropriate caching strategy
-- [ ] Artifacts properly scoped
-- [ ] Parallel jobs where possible
-- [ ] Timeout values set
-- [ ] Resource tags appropriate
+- [ ] Caching configured appropriately
+- [ ] Artifacts have proper expiration
+- [ ] Jobs run in parallel where possible
+- [ ] Unnecessary jobs are conditional
 
-### Components (if applicable)
-- [ ] Component inputs documented
-- [ ] Defaults sensible
-- [ ] Version pinned appropriately
-- [ ] Backwards compatible
-
----
+### Testing
+- [ ] Pipeline passes on feature branch
+- [ ] All jobs complete successfully
+- [ ] No timeout issues
 
 ## Pipeline Diagram
 
+<!-- Visualize the pipeline flow -->
 ```mermaid
 graph LR
-    A[build] --> B[test]
-    B --> C[security-scan]
-    C --> D[deploy-staging]
-    D --> E{Manual Approval}
-    E --> F[deploy-production]
+    A[validate] --> B[build]
+    B --> C[test]
+    C --> D[deploy]
 ```
-
----
 
 ## Environment Variables
 
-| Variable | Environment | Description |
-|----------|-------------|-------------|
-| `MY_VAR` | All | Description |
+| Variable | Environment | Purpose |
+|----------|-------------|---------|
+| | | |
 
 ## Affected Jobs
 
-| Job | Stage | Change |
-|-----|-------|--------|
-| `build` | build | Modified |
-| `test:unit` | test | New |
+| Job Name | Stage | Changes |
+|----------|-------|---------|
+| | | |
 
----
+## Local Testing
 
-## Testing
-
-### Local Testing
 ```bash
-# Validate locally
+# Validate CI syntax locally
 gitlab-ci-lint .gitlab-ci.yml
 
-# Simulate pipeline
-gitlab-ci-local --list
+# Or use GitLab API
+curl --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
+  --data-urlencode "content=$(cat .gitlab-ci.yml)" \
+  "https://gitlab.com/api/v4/ci/lint"
 ```
-
-### Pipeline Run
-- [ ] Pipeline passes on this MR
-- [ ] No regression in existing jobs
-- [ ] New jobs execute correctly
-
----
 
 ## Rollback Plan
 
-```yaml
-# Previous working configuration
-# (paste relevant YAML for quick rollback)
+<!-- How to revert if pipeline breaks -->
+```bash
+# Revert to previous working configuration
+git revert <commit-sha>
 ```
 
----
+## Documentation
 
-## Related Documentation
+- [ ] Pipeline documentation updated
+- [ ] Variable documentation updated
+- [ ] Runbook updated (if applicable)
 
-- [ ] CI/CD documentation updated
-- [ ] README updated (if new workflows)
-- [ ] Runbook updated (production changes)
-
----
-
-/label ~"ci-cd" ~"infrastructure" ~"needs-validation"
-/assign_reviewer @bot-mr-reviewer @bot-gitlab-ci-fixer
+/label ~ci-cd ~pipeline ~needs-review ~agent-assisted
+/assign_reviewer @bot-gitlab-ci-fixer @bot-mr-reviewer

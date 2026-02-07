@@ -2,7 +2,7 @@ openapi: 3.1.0
 jsonSchemaDialect: https://spec.openapis.org/oas/3.1/dialect/base
 info:
   title: OSSA Agent Identity & Authentication API
-  version: 0.3.2
+  version: 0.3.3
   description: |
     # OSSA Agent Identity & Authentication API
 
@@ -157,7 +157,7 @@ paths:
                   value:
                     agent_id: "data-processor-agent"
                     instance_id: "550e8400-e29b-41d4-a716-446655440000"
-                    version: "ossa/v0.3.2"
+                    version: "ossa/v0.3.3"
                     kind: "Agent"
                     status: "active"
                     tenant_id: "tenant-123"
@@ -468,22 +468,22 @@ components:
 
   schemas:
     AgentIdentity:
-      $ref: 'https://openstandardagents.org/schemas/v0.3.2/identity.json#/definitions/AgentIdentity'
+      $ref: 'https://openstandardagents.org/schemas/v0.3.3/identity.json#/definitions/AgentIdentity'
 
     AuthenticationRequest:
-      $ref: 'https://openstandardagents.org/schemas/v0.3.2/identity.json#/definitions/AuthenticationRequest'
+      $ref: 'https://openstandardagents.org/schemas/v0.3.3/identity.json#/definitions/AuthenticationRequest'
 
     TokenResponse:
-      $ref: 'https://openstandardagents.org/schemas/v0.3.2/identity.json#/definitions/TokenResponse'
+      $ref: 'https://openstandardagents.org/schemas/v0.3.3/identity.json#/definitions/TokenResponse'
 
     SecurityContext:
-      $ref: 'https://openstandardagents.org/schemas/v0.3.2/identity.json#/definitions/SecurityContext'
+      $ref: 'https://openstandardagents.org/schemas/v0.3.3/identity.json#/definitions/SecurityContext'
 
     TokenRevocationRequest:
-      $ref: 'https://openstandardagents.org/schemas/v0.3.2/identity.json#/definitions/TokenRevocationRequest'
+      $ref: 'https://openstandardagents.org/schemas/v0.3.3/identity.json#/definitions/TokenRevocationRequest'
 
     TokenRevocationResponse:
-      $ref: 'https://openstandardagents.org/schemas/v0.3.2/identity.json#/definitions/TokenRevocationResponse'
+      $ref: 'https://openstandardagents.org/schemas/v0.3.3/identity.json#/definitions/TokenRevocationResponse'
 
     Error:
       type: object

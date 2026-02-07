@@ -18,9 +18,18 @@
  * dynamically from package.json via getVersionInfo().
  */
 
-import { injectable } from 'inversify';
+import { injectable, inject } from 'inversify';
 import type { OssaAgent, SchemaVersion } from '../types/index.js';
 import { getVersionInfo } from '../utils/version.js';
+import {
+  VersionDetectionService,
+  type VersionDetectionResult,
+} from './version-detection.service.js';
+import { MigrationTransformService } from './migration-transform.service.js';
+import {
+  GitRollbackService,
+  type RollbackPoint,
+} from './git-rollback.service.js';
 
 /**
  * Migration changes summary for user feedback
@@ -31,6 +40,31 @@ export interface MigrationSummary {
   changes: string[];
   addedFeatures: string[];
   warnings: string[];
+}
+
+/**
+ * Batch migration result
+ */
+export interface BatchMigrationResult {
+  success: boolean;
+  total: number;
+  succeeded: number;
+  failed: number;
+  results: MigrationResult[];
+  rollbackPoint?: RollbackPoint;
+}
+
+/**
+ * Individual migration result
+ */
+export interface MigrationResult {
+  success: boolean;
+  manifest?: OssaAgent;
+  sourceVersion: string;
+  targetVersion: string;
+  error?: string;
+  warnings: string[];
+  summary?: MigrationSummary;
 }
 
 /**
@@ -65,12 +99,20 @@ interface V1Manifest {
 
 @injectable()
 export class MigrationService {
+  constructor(
+    @inject(VersionDetectionService)
+    private versionDetector: VersionDetectionService,
+    @inject(MigrationTransformService)
+    private transformService: MigrationTransformService,
+    @inject(GitRollbackService) private gitRollback: GitRollbackService
+  ) {}
+
   /**
-   * Get the current target apiVersion dynamically from package.json
+   * Get the current target apiVersion (OSSA spec version, not package version)
    */
   private getCurrentApiVersion(): string {
     const versionInfo = getVersionInfo();
-    return `ossa/v${versionInfo.version}`;
+    return versionInfo.apiVersion;
   }
 
   /**
@@ -79,7 +121,10 @@ export class MigrationService {
    * @param targetVersion - Target version (defaults to 'current' which reads from package.json)
    * @returns Migrated manifest
    */
-  async migrate(manifest: unknown, _targetVersion: SchemaVersion = 'current'): Promise<OssaAgent> {
+  async migrate(
+    manifest: unknown,
+    _targetVersion: SchemaVersion = 'current'
+  ): Promise<OssaAgent> {
     const m = manifest as Record<string, unknown>;
     const currentApiVersion = this.getCurrentApiVersion();
 
@@ -119,7 +164,7 @@ export class MigrationService {
   private migrateToCurrentVersion(manifest: OssaAgent): OssaAgent {
     const migrated: OssaAgent = JSON.parse(JSON.stringify(manifest));
     const versionInfo = getVersionInfo();
-    const currentApiVersion = `ossa/v${versionInfo.version}`;
+    const currentApiVersion = versionInfo.apiVersion;
     const sourceVersion = manifest.apiVersion || 'unknown';
 
     // Update apiVersion to current
@@ -132,14 +177,17 @@ export class MigrationService {
     if (!migrated.metadata.labels) {
       migrated.metadata.labels = {};
     }
-    migrated.metadata.labels['ossa-version'] = `v${versionInfo.version}`;
+    migrated.metadata.labels['ossa-version'] = versionInfo.apiVersion;
 
     // Add migration annotation
     if (!migrated.metadata.annotations) {
       migrated.metadata.annotations = {};
     }
-    migrated.metadata.annotations['ossa.io/migration'] = `${sourceVersion}-to-${currentApiVersion}`;
-    migrated.metadata.annotations['ossa.io/migrated-date'] = new Date().toISOString().split('T')[0];
+    migrated.metadata.annotations['ossa.io/migration'] =
+      `${sourceVersion}-to-${currentApiVersion}`;
+    migrated.metadata.annotations['ossa.io/migrated-date'] = new Date()
+      .toISOString()
+      .split('T')[0];
 
     // Enhance LLM config with new features
     if (migrated.spec) {
@@ -164,7 +212,10 @@ export class MigrationService {
         // Normalize temperature/maxTokens field names
         if (llm.parameters) {
           const params = llm.parameters as Record<string, unknown>;
-          if (params.temperature !== undefined && llm.temperature === undefined) {
+          if (
+            params.temperature !== undefined &&
+            llm.temperature === undefined
+          ) {
             llm.temperature = params.temperature;
           }
           if (params.max_tokens !== undefined && llm.maxTokens === undefined) {
@@ -258,7 +309,7 @@ export class MigrationService {
 
     const summary: MigrationSummary = {
       sourceVersion,
-      targetVersion: `v${versionInfo.version}`,
+      targetVersion: versionInfo.apiVersion,
       changes: [],
       addedFeatures: [],
       warnings: [],
@@ -269,21 +320,29 @@ export class MigrationService {
     if (spec?.llm) {
       const llm = spec.llm as Record<string, unknown>;
       if (llm.fallback_models) {
-        summary.addedFeatures.push('Fallback models for multi-provider resilience');
+        summary.addedFeatures.push(
+          'Fallback models for multi-provider resilience'
+        );
       }
       if (llm.retry_config) {
-        summary.addedFeatures.push('Retry configuration with exponential backoff');
+        summary.addedFeatures.push(
+          'Retry configuration with exponential backoff'
+        );
       }
       if (llm.cost_tracking) {
         summary.addedFeatures.push('Cost tracking with budget alerts');
       }
       if (String(llm.provider).includes('${')) {
-        summary.addedFeatures.push('Runtime-configurable LLM via environment variables');
+        summary.addedFeatures.push(
+          'Runtime-configurable LLM via environment variables'
+        );
       }
     }
 
     if (spec?.safety) {
-      summary.addedFeatures.push('Safety configuration (content filtering, guardrails)');
+      summary.addedFeatures.push(
+        'Safety configuration (content filtering, guardrails)'
+      );
     }
 
     if (spec?.observability) {
@@ -299,9 +358,9 @@ export class MigrationService {
     }
 
     summary.changes.push(
-      `Updated apiVersion from ${sourceVersion} to ossa/v${versionInfo.version}`
+      `Updated apiVersion from ${sourceVersion} to ${versionInfo.apiVersion}`
     );
-    summary.changes.push(`Added ossa-version: v${versionInfo.version} label`);
+    summary.changes.push(`Added ossa-version: ${versionInfo.apiVersion} label`);
 
     return summary;
   }
@@ -328,7 +387,7 @@ export class MigrationService {
    */
   private migrateV1ToKubeStyle(v1: V1Manifest): OssaAgent {
     const versionInfo = getVersionInfo();
-    const currentApiVersion = `ossa/v${versionInfo.version}`;
+    const currentApiVersion = versionInfo.apiVersion;
 
     const migrated: OssaAgent = {
       apiVersion: currentApiVersion,
@@ -338,7 +397,7 @@ export class MigrationService {
         version: v1.agent.version || '0.1.0',
         description: v1.agent.description || '',
         labels: {
-          'ossa-version': `v${versionInfo.version}`,
+          'ossa-version': versionInfo.apiVersion,
         } as Record<string, string>,
         annotations: {
           'ossa.io/migration': `legacy-v1.0-to-${currentApiVersion}`,
@@ -351,7 +410,11 @@ export class MigrationService {
     };
 
     // Convert tags to labels
-    if (v1.agent.tags && Array.isArray(v1.agent.tags) && migrated.metadata?.labels) {
+    if (
+      v1.agent.tags &&
+      Array.isArray(v1.agent.tags) &&
+      migrated.metadata?.labels
+    ) {
       v1.agent.tags.forEach((tag) => {
         if (typeof tag === 'string') {
           migrated.metadata!.labels![tag] = 'true';
@@ -362,7 +425,9 @@ export class MigrationService {
     // Copy metadata
     if (v1.metadata && migrated.metadata?.annotations) {
       if (v1.metadata.authors) {
-        migrated.metadata.annotations.author = Array.isArray(v1.metadata.authors)
+        migrated.metadata.annotations.author = Array.isArray(
+          v1.metadata.authors
+        )
           ? v1.metadata.authors.join(', ')
           : String(v1.metadata.authors);
       }
@@ -370,7 +435,9 @@ export class MigrationService {
         migrated.metadata.annotations.license = String(v1.metadata.license);
       }
       if (v1.metadata.repository) {
-        migrated.metadata.annotations.repository = String(v1.metadata.repository);
+        migrated.metadata.annotations.repository = String(
+          v1.metadata.repository
+        );
       }
     }
 
@@ -386,12 +453,15 @@ export class MigrationService {
 
     // Convert LLM config with normalization
     if (v1.agent.llm && migrated.spec) {
-      const llm = v1.agent.llm as Record<string, unknown>;
+      const llm = v1.agent.llm;
       migrated.spec.llm = {
-        provider: (llm.provider === 'auto' ? 'openai' : String(llm.provider || 'openai')) as string,
+        provider:
+          llm.provider === 'auto' ? 'openai' : String(llm.provider || 'openai'),
         model: String(llm.model || ''),
-        temperature: typeof llm.temperature === 'number' ? llm.temperature : undefined,
-        maxTokens: typeof llm.maxTokens === 'number' ? llm.maxTokens : undefined,
+        temperature:
+          typeof llm.temperature === 'number' ? llm.temperature : undefined,
+        maxTokens:
+          typeof llm.maxTokens === 'number' ? llm.maxTokens : undefined,
         topP: typeof llm.topP === 'number' ? llm.topP : undefined,
       };
     }
@@ -403,7 +473,9 @@ export class MigrationService {
       migrated.spec &&
       migrated.metadata
     ) {
-      const mcpRecord = v1.agent.integration?.mcp as Record<string, unknown> | undefined;
+      const mcpRecord = v1.agent.integration?.mcp as
+        | Record<string, unknown>
+        | undefined;
       const metadataName = migrated.metadata.name;
       migrated.spec.tools = v1.agent.capabilities.map((cap) => ({
         type: 'mcp',
@@ -421,9 +493,7 @@ export class MigrationService {
 
     // Handle observability with proper structure
     if ((v1.agent.observability || v1.agent.monitoring) && migrated.spec) {
-      const obs = (v1.agent.observability || v1.agent.monitoring) as
-        | Record<string, unknown>
-        | undefined;
+      const obs = v1.agent.observability || v1.agent.monitoring;
       if (obs) {
         const metricsValue = obs.metrics;
         let normalizedMetrics: Record<string, unknown>;
@@ -488,7 +558,11 @@ export class MigrationService {
     }
 
     // kagent extension
-    if (v1.agent.runtime?.type === 'k8s' && migrated.spec && migrated.metadata) {
+    if (
+      v1.agent.runtime?.type === 'k8s' &&
+      migrated.spec &&
+      migrated.metadata
+    ) {
       const specRecord = migrated.spec as Record<string, unknown>;
       if (!specRecord.extensions) {
         specRecord.extensions = {};
@@ -508,7 +582,8 @@ export class MigrationService {
       if (!specRecord.extensions) {
         specRecord.extensions = {};
       }
-      (specRecord.extensions as Record<string, unknown>).runtime = v1.agent.runtime;
+      (specRecord.extensions as Record<string, unknown>).runtime =
+        v1.agent.runtime;
     }
 
     // Integration extension
@@ -517,7 +592,8 @@ export class MigrationService {
       if (!specRecord.extensions) {
         specRecord.extensions = {};
       }
-      (specRecord.extensions as Record<string, unknown>).integration = v1.agent.integration;
+      (specRecord.extensions as Record<string, unknown>).integration =
+        v1.agent.integration;
     }
 
     return migrated;
@@ -525,9 +601,13 @@ export class MigrationService {
 
   private detectDomain(agent: Record<string, unknown>): string {
     const tags = Array.isArray(agent.tags) ? agent.tags : [];
-    const text = [agent.id, agent.name, agent.description, ...tags].join(' ').toLowerCase();
-    if (text.includes('infrastructure') || text.includes('k8s')) return 'infrastructure';
-    if (text.includes('security') || text.includes('compliance')) return 'security';
+    const text = [agent.id, agent.name, agent.description, ...tags]
+      .join(' ')
+      .toLowerCase();
+    if (text.includes('infrastructure') || text.includes('k8s'))
+      return 'infrastructure';
+    if (text.includes('security') || text.includes('compliance'))
+      return 'security';
     if (text.includes('data') || text.includes('vector')) return 'data';
     if (text.includes('chat')) return 'conversation';
     if (text.includes('workflow')) return 'automation';
@@ -536,7 +616,8 @@ export class MigrationService {
 
   private detectSubdomain(agent: Record<string, unknown>): string {
     const text = [agent.id, agent.name].join(' ').toLowerCase();
-    if (text.includes('kubernetes') || text.includes('k8s')) return 'kubernetes';
+    if (text.includes('kubernetes') || text.includes('k8s'))
+      return 'kubernetes';
     if (text.includes('protocol') || text.includes('mcp')) return 'protocol';
     if (text.includes('workflow')) return 'workflow';
     return 'general';
@@ -584,5 +665,239 @@ export class MigrationService {
     }
 
     return false;
+  }
+
+  /**
+   * Migrate single manifest with version detection
+   * Enhanced version that uses VersionDetectionService and MigrationTransformService
+   */
+  async migrateWithDetection(
+    manifest: unknown,
+    targetVersion?: string
+  ): Promise<MigrationResult> {
+    try {
+      // Detect source version
+      const detection = await this.versionDetector.detectVersion(manifest);
+
+      if (detection.version === 'unknown') {
+        return {
+          success: false,
+          sourceVersion: 'unknown',
+          targetVersion: targetVersion || 'current',
+          error: 'Unable to detect manifest version',
+          warnings: detection.warnings,
+        };
+      }
+
+      // Determine target version
+      const target = targetVersion || getVersionInfo().version;
+
+      // Check if migration needed
+      if (!this.versionDetector.needsMigration(detection.version, target)) {
+        return {
+          success: true,
+          manifest: manifest as OssaAgent,
+          sourceVersion: detection.version,
+          targetVersion: target,
+          warnings: ['Manifest already at target version'],
+        };
+      }
+
+      // Perform migration
+      const migrated = await this.migrate(
+        manifest,
+        (targetVersion as SchemaVersion) || 'current'
+      );
+
+      // Get summary
+      const summary = this.getMigrationSummary(manifest, migrated);
+
+      // Validate migration
+      const validationWarnings = this.transformService.validateMigration(
+        manifest as OssaAgent,
+        migrated
+      );
+
+      return {
+        success: true,
+        manifest: migrated,
+        sourceVersion: detection.version,
+        targetVersion: target,
+        warnings: [...detection.warnings, ...validationWarnings],
+        summary,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        sourceVersion: 'unknown',
+        targetVersion: targetVersion || 'current',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        warnings: [],
+      };
+    }
+  }
+
+  /**
+   * Migrate multiple manifests in batch with parallel execution
+   * @param manifests - Array of manifests to migrate
+   * @param targetVersion - Target version (defaults to current)
+   * @param options - Batch migration options
+   */
+  async migrateBatch(
+    manifests: unknown[],
+    targetVersion?: string,
+    options?: {
+      parallel?: boolean;
+      maxConcurrent?: number;
+      stopOnError?: boolean;
+      gitRollback?: boolean;
+      workingDirectory?: string;
+    }
+  ): Promise<BatchMigrationResult> {
+    const {
+      parallel = true,
+      maxConcurrent = 5,
+      stopOnError = false,
+      gitRollback = false,
+      workingDirectory = process.cwd(),
+    } = options || {};
+
+    let rollbackPoint: RollbackPoint | undefined;
+
+    // Create git rollback point if requested
+    if (gitRollback && this.gitRollback.isGitRepository(workingDirectory)) {
+      try {
+        rollbackPoint = await this.gitRollback.createMigrationBranch(
+          workingDirectory,
+          `batch-migration-${targetVersion || 'current'}`
+        );
+      } catch (error) {
+        // Non-fatal: continue without rollback support
+        console.warn('Could not create rollback point:', error);
+      }
+    }
+
+    const results: MigrationResult[] = [];
+    let succeeded = 0;
+    let failed = 0;
+
+    try {
+      if (parallel) {
+        // Parallel execution with concurrency limit
+        const chunks = this.chunkArray(manifests, maxConcurrent);
+
+        for (const chunk of chunks) {
+          const chunkResults = await Promise.all(
+            chunk.map((manifest) =>
+              this.migrateWithDetection(manifest, targetVersion)
+            )
+          );
+
+          results.push(...chunkResults);
+
+          // Count successes/failures
+          for (const result of chunkResults) {
+            if (result.success) {
+              succeeded++;
+            } else {
+              failed++;
+              if (stopOnError) {
+                throw new Error(`Migration failed: ${result.error}`);
+              }
+            }
+          }
+        }
+      } else {
+        // Sequential execution
+        for (const manifest of manifests) {
+          const result = await this.migrateWithDetection(
+            manifest,
+            targetVersion
+          );
+          results.push(result);
+
+          if (result.success) {
+            succeeded++;
+          } else {
+            failed++;
+            if (stopOnError) {
+              throw new Error(`Migration failed: ${result.error}`);
+            }
+          }
+        }
+      }
+
+      return {
+        success: failed === 0,
+        total: manifests.length,
+        succeeded,
+        failed,
+        results,
+        rollbackPoint,
+      };
+    } catch (error) {
+      // Error occurred - rollback if enabled
+      if (rollbackPoint) {
+        await this.gitRollback.rollback(workingDirectory, rollbackPoint);
+      }
+
+      return {
+        success: false,
+        total: manifests.length,
+        succeeded,
+        failed,
+        results,
+        rollbackPoint,
+      };
+    }
+  }
+
+  /**
+   * Finalize batch migration (commit changes)
+   */
+  async finalizeBatchMigration(
+    batchResult: BatchMigrationResult,
+    workingDirectory: string = process.cwd()
+  ): Promise<boolean> {
+    if (!batchResult.rollbackPoint) {
+      return true; // No rollback point, nothing to finalize
+    }
+
+    const result = await this.gitRollback.finalizeMigration(
+      workingDirectory,
+      batchResult.rollbackPoint
+    );
+
+    return result.success;
+  }
+
+  /**
+   * Rollback batch migration
+   */
+  async rollbackBatchMigration(
+    batchResult: BatchMigrationResult,
+    workingDirectory: string = process.cwd()
+  ): Promise<boolean> {
+    if (!batchResult.rollbackPoint) {
+      return false; // No rollback point
+    }
+
+    const result = await this.gitRollback.rollback(
+      workingDirectory,
+      batchResult.rollbackPoint
+    );
+
+    return result.success;
+  }
+
+  /**
+   * Chunk array for parallel processing
+   */
+  private chunkArray<T>(array: T[], chunkSize: number): T[][] {
+    const chunks: T[][] = [];
+    for (let i = 0; i < array.length; i += chunkSize) {
+      chunks.push(array.slice(i, i + chunkSize));
+    }
+    return chunks;
   }
 }

@@ -2,7 +2,7 @@
 
 **Status:** Not Started  
 **Timeline:** Weeks 3-4  
-**Version Target:** v0.3.2
+**Version Target:** v{{VERSION}}
 
 ---
 
@@ -307,7 +307,7 @@ spec:
 
 ## 🔗 Related Documentation
 
-- [Master Roadmap](v0.3.x-to-v0.4.0.md)
+- [Master Roadmap](v0.3.x-to-v{{VERSION}}.md)
 - [Phase 1: Specification](phase-1-specification.md)
 - [Phase 3: Production Use Cases](phase-3-production-use-cases.md)
 - [Dependency Graph](dependency-graph.md)

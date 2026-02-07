@@ -1,0 +1,11 @@
+apiVersion: ossa/v0.3.5
+kind: Agent
+metadata:
+  name: already-migrated
+  version: 1.0.0
+  description: Already at target version
+spec:
+  role: Already migrated agent
+  llm:
+    provider: openai
+    model: gpt-4

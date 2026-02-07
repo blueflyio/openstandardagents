@@ -1,0 +1,422 @@
+---
+# ============================================================================
+# Kubernetes Deployment for {{projectName}}
+# Production-ready configuration with security best practices
+# ============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{deploymentName}}
+  namespace: {{namespace}}
+  labels:
+    app: {{appName}}
+    version: {{version}}
+    component: {{component}}
+    managed-by: kubernetes
+    part-of: {{projectName}}
+  annotations:
+    description: "{{projectDescription}}"
+    maintainer: "{{maintainer}}"
+    kubernetes.io/change-cause: "{{changeCause}}"
+spec:
+  # ==========================================================================
+  # Replica Configuration
+  # ==========================================================================
+  replicas: {{replicas}}
+  revisionHistoryLimit: 10
+
+  # ==========================================================================
+  # Deployment Strategy
+  # ==========================================================================
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+
+  # ==========================================================================
+  # Selector
+  # ==========================================================================
+  selector:
+    matchLabels:
+      app: {{appName}}
+      component: {{component}}
+
+  # ==========================================================================
+  # Pod Template
+  # ==========================================================================
+  template:
+    metadata:
+      labels:
+        app: {{appName}}
+        version: {{version}}
+        component: {{component}}
+      annotations:
+        prometheus.io/scrape: "{{prometheusEnabled}}"
+        prometheus.io/port: "{{metricsPort}}"
+        prometheus.io/path: "/metrics"
+
+    spec:
+      # ========================================================================
+      # Security Context (Pod Level)
+      # ========================================================================
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+        seccompProfile:
+          type: RuntimeDefault
+
+      # ========================================================================
+      # Service Account
+      # ========================================================================
+      serviceAccountName: {{serviceAccountName}}
+      automountServiceAccountToken: {{mountServiceAccountToken}}
+
+      # ========================================================================
+      # DNS Policy
+      # ========================================================================
+      dnsPolicy: ClusterFirst
+      dnsConfig:
+        options:
+          - name: ndots
+            value: "2"
+
+      # ========================================================================
+      # Restart Policy
+      # ========================================================================
+      restartPolicy: Always
+
+      # ========================================================================
+      # Termination Grace Period
+      # ========================================================================
+      terminationGracePeriodSeconds: 30
+
+      # ========================================================================
+      # Node Selection (Optional)
+      # ========================================================================
+      {{#if nodeSelector}}
+      nodeSelector:
+        {{#each nodeSelector}}
+        {{@key}}: {{this}}
+        {{/each}}
+      {{/if}}
+
+      # ========================================================================
+      # Affinity Rules (Optional)
+      # ========================================================================
+      {{#if enableAffinity}}
+      affinity:
+        # Pod anti-affinity for high availability
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - {{appName}}
+                topologyKey: kubernetes.io/hostname
+
+        # Node affinity (optional)
+        {{#if nodeAffinity}}
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  {{#each nodeAffinity}}
+                  - key: {{@key}}
+                    operator: In
+                    values:
+                      {{#each this}}
+                      - {{this}}
+                      {{/each}}
+                  {{/each}}
+        {{/if}}
+      {{/if}}
+
+      # ========================================================================
+      # Tolerations (Optional)
+      # ========================================================================
+      {{#if tolerations}}
+      tolerations:
+        {{#each tolerations}}
+        - key: {{key}}
+          operator: {{operator}}
+          value: {{value}}
+          effect: {{effect}}
+        {{/each}}
+      {{/if}}
+
+      # ========================================================================
+      # Init Containers (Optional)
+      # ========================================================================
+      {{#if initContainers}}
+      initContainers:
+        # Database migration init container
+        - name: db-migration
+          image: {{dockerRegistry}}/{{imageName}}:{{imageTag}}
+          imagePullPolicy: {{imagePullPolicy}}
+          command: ["npm", "run", "migrate"]
+          envFrom:
+            - configMapRef:
+                name: {{configMapName}}
+            - secretRef:
+                name: {{secretName}}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1001
+            capabilities:
+              drop:
+                - ALL
+      {{/if}}
+
+      # ========================================================================
+      # Containers
+      # ========================================================================
+      containers:
+        # ======================================================================
+        # Main Application Container
+        # ======================================================================
+        - name: {{containerName}}
+          image: {{dockerRegistry}}/{{imageName}}:{{imageTag}}
+          imagePullPolicy: {{imagePullPolicy}}
+
+          # ====================================================================
+          # Ports
+          # ====================================================================
+          ports:
+            - name: http
+              containerPort: {{containerPort}}
+              protocol: TCP
+            {{#if metricsPort}}
+            - name: metrics
+              containerPort: {{metricsPort}}
+              protocol: TCP
+            {{/if}}
+
+          # ====================================================================
+          # Environment Variables
+          # ====================================================================
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: PORT
+              value: "{{containerPort}}"
+            - name: LOG_LEVEL
+              value: "{{logLevel}}"
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            {{#each customEnvVars}}
+            - name: {{@key}}
+              value: "{{this}}"
+            {{/each}}
+
+          # ====================================================================
+          # Environment From ConfigMap and Secret
+          # ====================================================================
+          envFrom:
+            - configMapRef:
+                name: {{configMapName}}
+            - secretRef:
+                name: {{secretName}}
+
+          # ====================================================================
+          # Resource Limits and Requests
+          # ====================================================================
+          resources:
+            requests:
+              cpu: {{cpuRequest}}
+              memory: {{memoryRequest}}
+            limits:
+              cpu: {{cpuLimit}}
+              memory: {{memoryLimit}}
+
+          # ====================================================================
+          # Security Context (Container Level)
+          # ====================================================================
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1001
+            capabilities:
+              drop:
+                - ALL
+
+          # ====================================================================
+          # Volume Mounts
+          # ====================================================================
+          volumeMounts:
+            # Temporary directory (writable)
+            - name: tmp
+              mountPath: /tmp
+            # Application logs (writable)
+            - name: logs
+              mountPath: /app/logs
+            {{#if additionalVolumeMounts}}
+            {{#each additionalVolumeMounts}}
+            - name: {{name}}
+              mountPath: {{mountPath}}
+              {{#if readOnly}}
+              readOnly: {{readOnly}}
+              {{/if}}
+              {{#if subPath}}
+              subPath: {{subPath}}
+              {{/if}}
+            {{/each}}
+            {{/if}}
+
+          # ====================================================================
+          # Liveness Probe
+          # ====================================================================
+          livenessProbe:
+            httpGet:
+              path: {{livenessPath}}
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: {{livenessInitialDelay}}
+            periodSeconds: {{livenessPeriod}}
+            timeoutSeconds: {{livenessTimeout}}
+            successThreshold: 1
+            failureThreshold: {{livenessFailureThreshold}}
+
+          # ====================================================================
+          # Readiness Probe
+          # ====================================================================
+          readinessProbe:
+            httpGet:
+              path: {{readinessPath}}
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: {{readinessInitialDelay}}
+            periodSeconds: {{readinessPeriod}}
+            timeoutSeconds: {{readinessTimeout}}
+            successThreshold: 1
+            failureThreshold: {{readinessFailureThreshold}}
+
+          # ====================================================================
+          # Startup Probe (for slow-starting applications)
+          # ====================================================================
+          {{#if enableStartupProbe}}
+          startupProbe:
+            httpGet:
+              path: {{startupPath}}
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: {{startupInitialDelay}}
+            periodSeconds: {{startupPeriod}}
+            timeoutSeconds: {{startupTimeout}}
+            successThreshold: 1
+            failureThreshold: {{startupFailureThreshold}}
+          {{/if}}
+
+          # ====================================================================
+          # Lifecycle Hooks
+          # ====================================================================
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - sleep 15
+
+        {{#if sidecarContainers}}
+        # ======================================================================
+        # Sidecar Container (Optional - e.g., log forwarder)
+        # ======================================================================
+        {{#each sidecarContainers}}
+        - name: {{name}}
+          image: {{image}}
+          imagePullPolicy: {{imagePullPolicy}}
+          resources:
+            requests:
+              cpu: {{cpuRequest}}
+              memory: {{memoryRequest}}
+            limits:
+              cpu: {{cpuLimit}}
+              memory: {{memoryLimit}}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1001
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: logs
+              mountPath: {{logPath}}
+              readOnly: true
+        {{/each}}
+        {{/if}}
+
+      # ========================================================================
+      # Volumes
+      # ========================================================================
+      volumes:
+        # Temporary directory
+        - name: tmp
+          emptyDir:
+            medium: Memory
+            sizeLimit: 100Mi
+        # Application logs
+        - name: logs
+          emptyDir:
+            sizeLimit: 500Mi
+        {{#if additionalVolumes}}
+        {{#each additionalVolumes}}
+        - name: {{name}}
+          {{#if configMap}}
+          configMap:
+            name: {{configMap}}
+            {{#if defaultMode}}
+            defaultMode: {{defaultMode}}
+            {{/if}}
+          {{else if secret}}
+          secret:
+            secretName: {{secret}}
+            {{#if defaultMode}}
+            defaultMode: {{defaultMode}}
+            {{/if}}
+          {{else if persistentVolumeClaim}}
+          persistentVolumeClaim:
+            claimName: {{persistentVolumeClaim}}
+          {{else if emptyDir}}
+          emptyDir:
+            {{#if medium}}
+            medium: {{medium}}
+            {{/if}}
+            {{#if sizeLimit}}
+            sizeLimit: {{sizeLimit}}
+            {{/if}}
+          {{/if}}
+        {{/each}}
+        {{/if}}
+
+      # ========================================================================
+      # Image Pull Secrets
+      # ========================================================================
+      {{#if imagePullSecrets}}
+      imagePullSecrets:
+        {{#each imagePullSecrets}}
+        - name: {{this}}
+        {{/each}}
+      {{/if}}

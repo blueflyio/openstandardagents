@@ -10,16 +10,30 @@ import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { ValidationService } from '../../services/validation.service.js';
 import { OpenAIAdapter } from '../../services/runtime/openai.adapter.js';
-import { formatValidationErrors, formatErrorCompact } from '../utils/error-formatter.js';
+import { getRuntimeDefaults } from '../../config/defaults.js';
+import {
+  formatValidationErrors,
+  formatErrorCompact,
+} from '../utils/error-formatter.js';
+import { ConfigurationError, isOssaError } from '../../errors/index.js';
+import { logger } from '../../utils/logger.js';
 // SchemaVersion not used in this file
 
 export const runCommand = new Command('run')
   .argument('<path>', 'Path to OSSA agent manifest (YAML or JSON)')
-  .option('-r, --runtime <runtime>', 'Runtime adapter (openai)', 'openai')
+  .option(
+    '-r, --runtime <runtime>',
+    'Runtime adapter (openai)',
+    getRuntimeDefaults().defaultRuntime
+  )
   .option('-v, --verbose', 'Verbose output with tool calls')
   .option('--no-validate', 'Skip validation before running')
   .option('-m, --message <message>', 'Single message mode (non-interactive)')
-  .option('--max-turns <turns>', 'Maximum tool call turns', '10')
+  .option(
+    '--max-turns <turns>',
+    'Maximum tool call turns',
+    String(getRuntimeDefaults().maxTurns)
+  )
   .description('Run an OSSA agent interactively')
   .action(
     async (
@@ -50,13 +64,21 @@ export const runCommand = new Command('run')
             if (options.verbose) {
               console.error(formatValidationErrors(result.errors, manifest));
             } else {
-              console.error(chalk.red.bold('\n✗ Agent manifest validation failed'));
-              console.error(chalk.red(`Found ${result.errors.length} error(s):\n`));
+              console.error(
+                chalk.red.bold('\n✗ Agent manifest validation failed')
+              );
+              console.error(
+                chalk.red(`Found ${result.errors.length} error(s):\n`)
+              );
               result.errors.forEach((error, index) => {
                 console.error(formatErrorCompact(error, index, manifest));
               });
-              console.error(chalk.gray('\nUse --verbose for detailed error information'));
-              console.error(chalk.blue('📚 Docs: https://openstandardagents.org/docs\n'));
+              console.error(
+                chalk.gray('\nUse --verbose for detailed error information')
+              );
+              console.error(
+                chalk.blue('📚 Docs: https://openstandardagents.org/docs\n')
+              );
             }
             process.exit(1);
           }
@@ -68,15 +90,21 @@ export const runCommand = new Command('run')
 
         // Check runtime
         if (options.runtime !== 'openai') {
-          console.error(chalk.red(`Runtime '${options.runtime}' not supported yet`));
+          console.error(
+            chalk.red(`Runtime '${options.runtime}' not supported yet`)
+          );
           console.error(chalk.yellow('Available runtimes: openai'));
           process.exit(1);
         }
 
         // Check for API key
         if (!process.env.OPENAI_API_KEY) {
-          console.error(chalk.red('Error: OPENAI_API_KEY environment variable not set'));
-          console.error(chalk.yellow('Set it with: export OPENAI_API_KEY=sk-...'));
+          console.error(
+            chalk.red('Error: OPENAI_API_KEY environment variable not set')
+          );
+          console.error(
+            chalk.yellow('Set it with: export OPENAI_API_KEY=sk-...')
+          );
           process.exit(1);
         }
 
@@ -105,7 +133,9 @@ export const runCommand = new Command('run')
         }
 
         // Interactive REPL mode
-        console.log(chalk.gray('\nEntering interactive mode. Type "exit" to quit.\n'));
+        console.log(
+          chalk.gray('\nEntering interactive mode. Type "exit" to quit.\n')
+        );
 
         const rl = readline.createInterface({
           input: process.stdin,
@@ -116,7 +146,10 @@ export const runCommand = new Command('run')
           rl.question(chalk.yellow('You: '), async (input) => {
             const trimmed = input.trim();
 
-            if (trimmed.toLowerCase() === 'exit' || trimmed.toLowerCase() === 'quit') {
+            if (
+              trimmed.toLowerCase() === 'exit' ||
+              trimmed.toLowerCase() === 'quit'
+            ) {
               console.log(chalk.gray('\nGoodbye!'));
               rl.close();
               process.exit(0);
@@ -134,11 +167,14 @@ export const runCommand = new Command('run')
               });
               console.log(chalk.cyan('\nAgent:'), response, '\n');
             } catch (error) {
-              console.error(
-                chalk.red('\nError:'),
-                error instanceof Error ? error.message : String(error),
-                '\n'
-              );
+              const ossaError = isOssaError(error)
+                ? error
+                : new ConfigurationError('Agent chat failed', {
+                    originalError:
+                      error instanceof Error ? error.message : String(error),
+                  });
+              logger.error({ err: ossaError }, 'Chat operation failed');
+              console.error(chalk.red('\nError:'), ossaError.message, '\n');
             }
 
             prompt();
@@ -147,7 +183,14 @@ export const runCommand = new Command('run')
 
         prompt();
       } catch (error) {
-        console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
+        const ossaError = isOssaError(error)
+          ? error
+          : new ConfigurationError('Failed to run agent', {
+              originalError:
+                error instanceof Error ? error.message : String(error),
+            });
+        logger.error({ err: ossaError }, 'Run command failed');
+        console.error(chalk.red('Error:'), ossaError.message);
 
         if (options.verbose && error instanceof Error) {
           console.error(chalk.gray(error.stack));

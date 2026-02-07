@@ -2,7 +2,8 @@
  * OSSA Deploy Command Tests
  */
 
-import { describe, it, expect, jest, beforeEach } from '@jest/globals';
+import { describe, it, expect } from '@jest/globals';
+import { API_VERSION } from '../../../src/version.js';
 
 describe('Deploy Commands', () => {
   describe('deployCommand', () => {

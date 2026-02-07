@@ -1,5 +1,5 @@
 /**
- * OSSA v0.3.1 Messaging Extension - In-Memory Transport
+ * OSSA v0.3.3 Messaging Extension - In-Memory Transport
  * In-memory message broker for development and testing
  */
 
@@ -86,7 +86,10 @@ export class MemoryMessageBroker extends AbstractMessageBroker {
   /**
    * Subscribe to messages on a channel
    */
-  async subscribe(subscription: Subscription, handler: MessageHandler): Promise<SubscriptionHandle> {
+  async subscribe(
+    subscription: Subscription,
+    handler: MessageHandler
+  ): Promise<SubscriptionHandle> {
     const handle: ActiveSubscription = {
       id: randomUUID(),
       channel: subscription.channel,
@@ -115,7 +118,7 @@ export class MemoryMessageBroker extends AbstractMessageBroker {
   async unsubscribe(handle: SubscriptionHandle): Promise<void> {
     // Remove from active subscriptions
     this.activeSubscriptions.delete(handle.id);
-    
+
     // Remove from channel subscriptions (base class handles this)
     await super.unsubscribe(handle);
   }
@@ -141,7 +144,9 @@ export class MemoryMessageBroker extends AbstractMessageBroker {
     if (!requeue) {
       // Remove message from storage
       for (const [channel, channelMessages] of this.messages.entries()) {
-        const index = channelMessages.findIndex((m) => m.message.id === messageId);
+        const index = channelMessages.findIndex(
+          (m) => m.message.id === messageId
+        );
         if (index !== -1) {
           const [message] = channelMessages.splice(index, 1);
 
@@ -171,7 +176,10 @@ export class MemoryMessageBroker extends AbstractMessageBroker {
   /**
    * Deliver message to matching subscribers
    */
-  private async deliverMessage(channel: string, message: Message): Promise<void> {
+  private async deliverMessage(
+    channel: string,
+    message: Message
+  ): Promise<void> {
     const matchingSubscriptions = this.findMatchingSubscriptions(channel);
 
     for (const sub of matchingSubscriptions) {
@@ -184,7 +192,10 @@ export class MemoryMessageBroker extends AbstractMessageBroker {
       try {
         await this.executeHandler(sub, message);
       } catch (error) {
-        console.error(`Error in message handler for channel ${channel}:`, error);
+        console.error(
+          `Error in message handler for channel ${channel}:`,
+          error
+        );
 
         // Handle retry logic
         if (sub.subscription.config?.retryOnError) {
@@ -197,7 +208,10 @@ export class MemoryMessageBroker extends AbstractMessageBroker {
   /**
    * Execute message handler
    */
-  private async executeHandler(sub: ActiveSubscription, message: Message): Promise<void> {
+  private async executeHandler(
+    sub: ActiveSubscription,
+    message: Message
+  ): Promise<void> {
     const timeout = sub.subscription.config?.timeout || 30000;
 
     // Create timeout promise
@@ -206,10 +220,7 @@ export class MemoryMessageBroker extends AbstractMessageBroker {
     });
 
     // Execute handler with timeout
-    await Promise.race([
-      sub.handler(message),
-      timeoutPromise,
-    ]);
+    await Promise.race([sub.handler(message), timeoutPromise]);
 
     // Auto-acknowledge if configured
     if (sub.subscription.config?.autoAcknowledge) {
@@ -220,9 +231,17 @@ export class MemoryMessageBroker extends AbstractMessageBroker {
   /**
    * Handle message retry
    */
-  private async handleRetry(sub: ActiveSubscription, message: Message, error: Error): Promise<void> {
+  private async handleRetry(
+    sub: ActiveSubscription,
+    message: Message,
+    error: Error
+  ): Promise<void> {
     const maxRetries = sub.subscription.config?.maxRetries || 3;
-    const retryCount = parseInt(String(message.metadata?.headers?.['x-retry-count'] || '0'), 10) || 0;
+    const retryCount =
+      parseInt(
+        String(message.metadata?.headers?.['x-retry-count'] || '0'),
+        10
+      ) || 0;
 
     if (retryCount < maxRetries) {
       // Calculate backoff delay
@@ -253,7 +272,10 @@ export class MemoryMessageBroker extends AbstractMessageBroker {
   /**
    * Calculate backoff delay for retries
    */
-  private calculateBackoffDelay(retryCount: number, backoff?: SubscriptionConfig['retryBackoff']): number {
+  private calculateBackoffDelay(
+    retryCount: number,
+    backoff?: SubscriptionConfig['retryBackoff']
+  ): number {
     if (!backoff || backoff.strategy === 'none') {
       return 0;
     }
@@ -326,7 +348,7 @@ export class MemoryMessageBroker extends AbstractMessageBroker {
         // Keep unacknowledged messages
         if (!m.acknowledged) return true;
         // Keep recent messages
-        return (now - m.timestamp) < maxAge;
+        return now - m.timestamp < maxAge;
       });
 
       if (filtered.length !== messages.length) {

@@ -1,0 +1,185 @@
+apiVersion: ossa/v0.4.4
+kind: Validator
+metadata:
+  name: transport-compatibility-validator
+  version: 1.0.0
+  description: Validates transport protocol configuration and compatibility
+  agentType: validator
+  agentKind: platform
+  tags:
+    - transport
+    - networking
+    - protocols
+
+spec:
+  validates:
+    targetTypes:
+      - all
+    phases:
+      - platform
+
+  rules:
+    # KAGENT prefers gRPC transport
+    - id: kagent-grpc-preferred
+      when:
+        path: metadata.agentType
+        equals: kagent
+      and:
+        path: spec.transport.protocol
+        exists: false
+      then:
+        enforcement: info
+        message: "KAGENT agents typically use gRPC transport for Kubernetes-native communication"
+        rationale: "gRPC provides efficient binary protocol with bidirectional streaming, well-suited for K8s"
+        fixes:
+          - action: add
+            path: spec.transport
+            value:
+              protocol: grpc
+              host: "0.0.0.0"
+              port: 50051
+            impact: "+0.10 performance"
+            effort: low
+        documentation: "https://openstandardagents.org/docs/agent-types/kagent"
+
+    # Claude/OpenAI typically use HTTP/REST
+    - id: llm-agents-http-transport
+      when:
+        path: metadata.agentType
+        equals: claude
+      or:
+        path: metadata.agentType
+        equals: openai
+      and:
+        path: spec.transport
+        exists: false
+      then:
+        enforcement: info
+        message: "LLM agents (Claude, OpenAI) typically use HTTP/REST transport"
+        rationale: "Provider APIs use HTTP REST, no need for custom transport unless coordinating with other agents"
+
+    # Streaming capability requires appropriate transport
+    - id: streaming-transport-requirements
+      when:
+        path: metadata.agentArchitecture.capabilities
+        contains: streaming
+      and:
+        path: spec.transport.protocol
+        equals: http
+      and:
+        path: spec.transport.streaming
+        exists: false
+      then:
+        enforcement: warning
+        message: "Streaming capability with HTTP transport should configure spec.transport.streaming (SSE or WebSocket)"
+        rationale: "HTTP streaming requires Server-Sent Events (SSE) or WebSocket protocol"
+        fixes:
+          - action: add
+            path: spec.transport.streaming
+            value:
+              type: sse
+            impact: "+0.10 completeness"
+            effort: low
+
+    # gRPC transport should specify protobuf definitions
+    - id: grpc-requires-protobuf
+      when:
+        path: spec.transport.protocol
+        equals: grpc
+      and:
+        path: spec.transport.protobuf
+        exists: false
+      then:
+        enforcement: warning
+        message: "gRPC transport should reference protobuf definitions (spec.transport.protobuf)"
+        fixes:
+          - action: add
+            path: spec.transport.protobuf
+            value:
+              package: agent.v1
+              service: AgentService
+            impact: "+0.10 completeness"
+            effort: medium
+
+    # Authentication should be configured for production
+    - id: production-requires-auth
+      when:
+        path: metadata.labels.environment
+        equals: production
+      and:
+        path: spec.transport.authentication
+        exists: false
+      then:
+        enforcement: error
+        message: "Production agents must configure transport authentication"
+        rationale: "Unauthenticated transports in production are a security risk"
+        fixes:
+          - action: add
+            path: spec.transport.authentication
+            value:
+              type: bearer
+              tokenRotation: enabled
+            impact: "+0.40 security"
+            effort: medium
+        documentation: "https://openstandardagents.org/docs/security/authentication"
+
+    # TLS should be enabled for production
+    - id: production-requires-tls
+      when:
+        path: metadata.labels.environment
+        equals: production
+      and:
+        path: spec.transport.tls
+        equals: false
+      then:
+        enforcement: error
+        message: "Production agents must enable TLS/SSL encryption"
+        rationale: "Unencrypted transport in production exposes sensitive data"
+        fixes:
+          - action: change
+            path: spec.transport.tls
+            value: true
+            impact: "+0.35 security"
+            effort: low
+
+    # Port conflicts: Check common ports
+    - id: avoid-privileged-ports
+      when:
+        path: spec.transport.port
+        # Can't do numeric comparison in JSON Schema
+        # This is a reminder for runtime validation
+      then:
+        enforcement: info
+        message: "Avoid privileged ports (< 1024) unless necessary. Common agent ports: 8080 (HTTP), 50051 (gRPC)"
+        rationale: "Privileged ports require root access, complicating deployment"
+        documentation: "https://openstandardagents.org/docs/deployment/ports"
+
+    # Swarm agents need agent-to-agent transport
+    - id: swarm-requires-a2a-transport
+      when:
+        path: metadata.agentArchitecture.pattern
+        equals: swarm
+      and:
+        path: spec.transport.a2a
+        exists: false
+      then:
+        enforcement: warning
+        message: "Swarm pattern should configure agent-to-agent transport (spec.transport.a2a)"
+        rationale: "Swarm agents communicate directly and need A2A transport config"
+        fixes:
+          - action: add
+            path: spec.transport.a2a
+            value:
+              protocol: grpc
+              discovery: dns
+            impact: "+0.20 coordination"
+            effort: medium
+
+  coordination:
+    composable: true
+    operators:
+      - ">>"
+      - "<||>"
+
+  dependencies:
+    - capability-compatibility-validator

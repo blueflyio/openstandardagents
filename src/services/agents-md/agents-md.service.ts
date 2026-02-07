@@ -5,8 +5,7 @@
 
 import { injectable } from 'inversify';
 import * as fs from 'fs/promises';
-import * as path from 'path';
-import type { OssaAgent, AgentsMdExtension, AgentsMdSection } from '../../types/index.js';
+import type { OssaAgent, AgentsMdSection } from '../../types/index.js';
 
 /**
  * Service for generating and managing agents.md files from OSSA manifests
@@ -19,7 +18,7 @@ export class AgentsMdService {
    * @returns Generated AGENTS.md content as string
    */
   async generateAgentsMd(manifest: OssaAgent): Promise<string> {
-    const extension = manifest.extensions?.agents_md as AgentsMdExtension | undefined;
+    const extension = manifest.extensions?.agents_md;
 
     if (!extension?.enabled) {
       throw new Error('agents_md extension is not enabled in manifest');
@@ -30,8 +29,12 @@ export class AgentsMdService {
 
     // Add header comment if enabled
     if (includeComments) {
-      sections.push('<!-- Generated from OSSA manifest - DO NOT EDIT MANUALLY -->');
-      sections.push('<!-- To update, modify the OSSA manifest and regenerate -->');
+      sections.push(
+        '<!-- Generated from OSSA manifest - DO NOT EDIT MANUALLY -->'
+      );
+      sections.push(
+        '<!-- To update, modify the OSSA manifest and regenerate -->'
+      );
       sections.push('');
     }
 
@@ -48,7 +51,10 @@ export class AgentsMdService {
 
     // Generate testing section
     if (extension.sections?.testing?.enabled !== false) {
-      const testSection = this.generateTestingSection(manifest, extension.sections?.testing);
+      const testSection = this.generateTestingSection(
+        manifest,
+        extension.sections?.testing
+      );
       if (testSection) {
         sections.push(testSection);
       }
@@ -71,7 +77,10 @@ export class AgentsMdService {
   /**
    * Generate development environment section
    */
-  private generateDevEnvironmentSection(manifest: OssaAgent, config?: AgentsMdSection): string {
+  private generateDevEnvironmentSection(
+    manifest: OssaAgent,
+    config?: AgentsMdSection
+  ): string {
     const lines: string[] = ['# Dev environment tips'];
 
     // Use custom content if provided
@@ -87,14 +96,18 @@ export class AgentsMdService {
 
       manifest.spec.tools.forEach((tool) => {
         if (tool.type === 'mcp' && tool.server) {
-          lines.push(`- **${tool.name || tool.server}**: MCP server integration`);
+          lines.push(
+            `- **${tool.name || tool.server}**: MCP server integration`
+          );
           if (tool.namespace) {
             lines.push(`  - Namespace: \`${tool.namespace}\``);
           }
         } else if (tool.type === 'http' && tool.endpoint) {
           lines.push(`- **${tool.name || 'HTTP Tool'}**: ${tool.endpoint}`);
         } else if (tool.type === 'kubernetes') {
-          lines.push(`- **${tool.name || 'Kubernetes Tool'}**: Kubernetes integration`);
+          lines.push(
+            `- **${tool.name || 'Kubernetes Tool'}**: Kubernetes integration`
+          );
         }
       });
     } else {
@@ -111,7 +124,10 @@ export class AgentsMdService {
   /**
    * Generate testing section
    */
-  private generateTestingSection(manifest: OssaAgent, config?: AgentsMdSection): string {
+  private generateTestingSection(
+    manifest: OssaAgent,
+    config?: AgentsMdSection
+  ): string {
     const lines: string[] = ['# Testing instructions'];
 
     // Use custom content if provided
@@ -148,7 +164,9 @@ export class AgentsMdService {
       lines.push('');
       lines.push('- Run all tests before committing: `npm test`');
       lines.push('- Ensure code coverage meets project standards');
-      lines.push('- Validate against OSSA schema: `ossa validate manifest.yaml`');
+      lines.push(
+        '- Validate against OSSA schema: `ossa validate manifest.yaml`'
+      );
     }
 
     return lines.join('\n');
@@ -157,7 +175,10 @@ export class AgentsMdService {
   /**
    * Generate PR instructions section
    */
-  private generatePRInstructionsSection(manifest: OssaAgent, config?: AgentsMdSection): string {
+  private generatePRInstructionsSection(
+    manifest: OssaAgent,
+    config?: AgentsMdSection
+  ): string {
     const lines: string[] = ['# PR instructions'];
 
     // Use custom content if provided
@@ -229,7 +250,7 @@ export class AgentsMdService {
    * @param outputPath - Optional output path (defaults to extension config)
    */
   async writeAgentsMd(manifest: OssaAgent, outputPath?: string): Promise<void> {
-    const extension = manifest.extensions?.agents_md as AgentsMdExtension | undefined;
+    const extension = manifest.extensions?.agents_md;
     const targetPath = outputPath || extension?.output_path || 'AGENTS.md';
 
     const content = await this.generateAgentsMd(manifest);
@@ -261,13 +282,7 @@ export class AgentsMdService {
     // Read the file
     const content = await fs.readFile(agentsMdPath, 'utf-8');
 
-    // Check for required sections
-    const requiredSections = [
-      '# Dev environment tips',
-      '# Testing instructions',
-      '# PR instructions',
-    ];
-    const extension = manifest.extensions?.agents_md as AgentsMdExtension | undefined;
+    const extension = manifest.extensions?.agents_md;
 
     if (extension?.sections?.dev_environment?.enabled !== false) {
       if (!content.includes('# Dev environment tips')) {
@@ -292,7 +307,9 @@ export class AgentsMdService {
       // Regenerate and compare
       const expected = await this.generateAgentsMd(manifest);
       if (content.trim() !== expected.trim()) {
-        warnings.push('AGENTS.md content differs from manifest - consider regenerating');
+        warnings.push(
+          'AGENTS.md content differs from manifest - consider regenerating'
+        );
       }
     }
 
@@ -334,7 +351,7 @@ export class AgentsMdService {
     }
 
     // Extract tool hints from commands mentioned
-    const tools: Array<{ type: string; name: string }> = [];
+    const tools: NonNullable<NonNullable<OssaAgent['spec']>['tools']> = [];
 
     // Look for npm commands
     if (content.includes('npm test') || content.includes('npm run')) {
@@ -347,7 +364,7 @@ export class AgentsMdService {
     }
 
     if (tools.length > 0 && manifest.spec) {
-      manifest.spec.tools = tools as any;
+      manifest.spec.tools = tools;
     }
 
     // Populate cursor extension context files
@@ -378,12 +395,15 @@ export class AgentsMdService {
    * @param manifestPath - Path to OSSA manifest
    * @param watch - Whether to watch for changes
    */
-  async syncAgentsMd(manifestPath: string, watch: boolean = false): Promise<void> {
+  async syncAgentsMd(
+    manifestPath: string,
+    watch: boolean = false
+  ): Promise<void> {
     // Load manifest
     const manifestContent = await fs.readFile(manifestPath, 'utf-8');
     const manifest = JSON.parse(manifestContent) as OssaAgent;
 
-    const extension = manifest.extensions?.agents_md as AgentsMdExtension | undefined;
+    const extension = manifest.extensions?.agents_md;
 
     if (!extension?.enabled) {
       throw new Error('agents_md extension is not enabled');

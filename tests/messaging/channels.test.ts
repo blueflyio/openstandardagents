@@ -1,9 +1,13 @@
 /**
- * Tests for OSSA v0.3.1 Channel Management
+ * Tests for OSSA v0.3.3 Channel Management
  */
 
 import { describe, it, expect, beforeEach } from '@jest/globals';
-import { ChannelManager, ChannelFactory } from '../../src/messaging/channels.js';
+import { API_VERSION } from '../../../src/version.js';
+import {
+  ChannelManager,
+  ChannelFactory,
+} from '../../src/messaging/channels.js';
 import { Channel } from '../../src/messaging/types.js';
 
 describe('Channel Manager', () => {
@@ -62,7 +66,9 @@ describe('Channel Manager', () => {
         type: 'direct',
       };
 
-      await expect(channelManager.create(channel)).rejects.toThrow('Invalid channel name format');
+      await expect(channelManager.create(channel)).rejects.toThrow(
+        'Invalid channel name format'
+      );
     });
 
     it('should reject direct channel with wrong naming convention', async () => {
@@ -71,7 +77,9 @@ describe('Channel Manager', () => {
         type: 'direct',
       };
 
-      await expect(channelManager.create(channel)).rejects.toThrow('Direct channel must follow format');
+      await expect(channelManager.create(channel)).rejects.toThrow(
+        'Direct channel must follow format'
+      );
     });
 
     it('should reject broadcast channel without broadcast prefix', async () => {
@@ -80,7 +88,9 @@ describe('Channel Manager', () => {
         type: 'broadcast',
       };
 
-      await expect(channelManager.create(channel)).rejects.toThrow('Broadcast channel must start with');
+      await expect(channelManager.create(channel)).rejects.toThrow(
+        'Broadcast channel must start with'
+      );
     });
 
     it('should reject duplicate channel creation', async () => {
@@ -90,7 +100,9 @@ describe('Channel Manager', () => {
       };
 
       await channelManager.create(channel);
-      await expect(channelManager.create(channel)).rejects.toThrow('Channel already exists');
+      await expect(channelManager.create(channel)).rejects.toThrow(
+        'Channel already exists'
+      );
     });
 
     it('should validate QoS settings', async () => {
@@ -102,7 +114,9 @@ describe('Channel Manager', () => {
         },
       };
 
-      await expect(channelManager.create(channel)).rejects.toThrow('maxRetries must be between 0 and 100');
+      await expect(channelManager.create(channel)).rejects.toThrow(
+        'maxRetries must be between 0 and 100'
+      );
     });
 
     it('should validate config settings', async () => {
@@ -114,7 +128,9 @@ describe('Channel Manager', () => {
         },
       };
 
-      await expect(channelManager.create(channel)).rejects.toThrow('maxMessageSize must be between');
+      await expect(channelManager.create(channel)).rejects.toThrow(
+        'maxMessageSize must be between'
+      );
     });
   });
 
@@ -164,7 +180,9 @@ describe('Channel Manager', () => {
       await channelManager.create(channel);
 
       expect(await channelManager.exists('agents.test.channel')).toBe(true);
-      expect(await channelManager.exists('agents.nonexistent.channel')).toBe(false);
+      expect(await channelManager.exists('agents.nonexistent.channel')).toBe(
+        false
+      );
     });
   });
 
@@ -176,14 +194,18 @@ describe('Channel Manager', () => {
       };
 
       await channelManager.create(channel);
-      await expect(channelManager.delete('agents.test.channel')).resolves.not.toThrow();
+      await expect(
+        channelManager.delete('agents.test.channel')
+      ).resolves.not.toThrow();
 
       const retrieved = await channelManager.get('agents.test.channel');
       expect(retrieved).toBeUndefined();
     });
 
     it('should reject deleting non-existent channel', async () => {
-      await expect(channelManager.delete('agents.nonexistent.channel')).rejects.toThrow('Channel not found');
+      await expect(
+        channelManager.delete('agents.nonexistent.channel')
+      ).rejects.toThrow('Channel not found');
     });
   });
 
@@ -206,16 +228,27 @@ describe('Channel Manager', () => {
 
     it('should reject updating non-existent channel', async () => {
       await expect(
-        channelManager.update('agents.nonexistent.channel', { description: 'test' })
+        channelManager.update('agents.nonexistent.channel', {
+          description: 'test',
+        })
       ).rejects.toThrow('Channel not found');
     });
   });
 
   describe('Channel Filtering', () => {
     beforeEach(async () => {
-      await channelManager.create({ name: 'agents.test1.channel', type: 'topic' });
-      await channelManager.create({ name: 'agents.test2.channel', type: 'direct' });
-      await channelManager.create({ name: 'agents.broadcast.shutdown', type: 'broadcast' });
+      await channelManager.create({
+        name: 'agents.test1.channel',
+        type: 'topic',
+      });
+      await channelManager.create({
+        name: 'agents.test2.channel',
+        type: 'direct',
+      });
+      await channelManager.create({
+        name: 'agents.broadcast.shutdown',
+        type: 'broadcast',
+      });
     });
 
     it('should get channels by type', async () => {
@@ -233,7 +266,9 @@ describe('Channel Manager', () => {
     });
 
     it('should find channels by pattern', async () => {
-      const testChannels = await channelManager.findByPattern('agents.test*.channel');
+      const testChannels = await channelManager.findByPattern(
+        'agents.test*.channel'
+      );
       expect(testChannels.length).toBeGreaterThanOrEqual(2);
 
       const allChannels = await channelManager.findByPattern('agents.#');

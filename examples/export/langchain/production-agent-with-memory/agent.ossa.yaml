@@ -1,0 +1,97 @@
+apiVersion: ossa/v0.4.1
+kind: Agent
+metadata:
+  name: production-agent-with-memory
+  version: 1.0.0
+  description: |
+    Production-ready agent with advanced memory features showcasing v0.4.1:
+    - Conversation buffer with window management
+    - Conversation summary with token limits
+    - Entity memory for entity tracking
+    - Redis persistence for multi-instance deployments
+    - PostgreSQL persistence for analytics and compliance
+  labels:
+    platform: langchain
+    export: langchain
+    use-case: production-showcase
+    tier: production
+    version: v0.4.1
+
+spec:
+  role: |
+    You are a production assistant with advanced memory capabilities.
+    You maintain conversation context across sessions and track entities.
+
+  llm:
+    provider: openai
+    model: gpt-4o
+    temperature: 0.7
+    maxTokens: 2000
+
+  # Memory Configuration (Full OSSA spec)
+  memory:
+    enabled: true
+    type: conversation_buffer
+    window_size: 20
+    max_token_limit: 4000
+    return_messages: true
+
+    # Persistence Configuration
+    persistence:
+      enabled: true
+      backend: redis  # or: postgres
+      ttl: 86400  # 24 hours
+      connection:
+        url: ${REDIS_URL}  # or ${POSTGRES_URL}
+        pool_size: 10
+        timeout: 30
+
+  tools:
+    - type: function
+      name: remember_fact
+      description: Remember an important fact
+      parameters:
+        type: object
+        properties:
+          fact:
+            type: string
+            description: Fact to remember
+        required:
+          - fact
+
+    - type: function
+      name: recall_conversation
+      description: Recall previous conversation
+      parameters:
+        type: object
+        properties:
+          query:
+            type: string
+            description: What to recall
+        required:
+          - query
+
+  autonomy:
+    level: supervised
+    approval_required: false
+
+  observability:
+    logging:
+      level: info
+      format: json
+    metrics:
+      enabled: true
+    tracing:
+      enabled: true
+      provider: opentelemetry
+
+extensions:
+  langchain:
+    agent_type: react
+    memory_type: conversation_buffer  # buffer, summary, entity
+    export_config:
+      format: python
+      include_dependencies: true
+      include_api_server: true
+      api_port: 8000
+      memory_backend: redis  # buffer, summary, entity, redis, postgres

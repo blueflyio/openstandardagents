@@ -15,7 +15,10 @@ export class GitHubSyncService {
       validated.github.repo
     );
 
-    this.gitlab = new GitLabClient(validated.gitlab.token, validated.gitlab.projectId);
+    this.gitlab = new GitLabClient(
+      validated.gitlab.token,
+      validated.gitlab.projectId
+    );
   }
 
   /**
@@ -61,7 +64,9 @@ export class GitHubSyncService {
 
     // Comment on all PRs
     await Promise.all(
-      prs.map((pr) => this.github.createComment(pr.number, this.buildBatchPRComment(mr)))
+      prs.map((pr) =>
+        this.github.createComment(pr.number, this.buildBatchPRComment(mr))
+      )
     );
 
     return mr;
@@ -100,7 +105,7 @@ ${prList}
   }
 
   private buildPRComment(mr: GitLabMR): string {
-    return `✅ **Synced to GitLab**
+    return `[PASS] **Synced to GitLab**
 
 This PR has been synced to our internal GitLab for review and testing.
 
@@ -113,7 +118,7 @@ Once merged on GitLab, changes will automatically sync back here and this PR wil
   }
 
   private buildBatchPRComment(mr: GitLabMR): string {
-    return `🤖 **Batched for Review**
+    return `[BOT] **Batched for Review**
 
 This PR has been batched with other updates for testing on GitLab.
 

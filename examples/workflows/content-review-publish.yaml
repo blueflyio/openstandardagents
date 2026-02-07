@@ -1,6 +1,6 @@
 # Example: Content Review and Publish Workflow
 # Demonstrates mixed Task + Agent composition
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.4.1
 kind: Workflow
 metadata:
   name: content-review-publish

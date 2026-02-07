@@ -1,8 +1,8 @@
 # OSSA Roadmap Documentation
 
-**Welcome to the OSSA v0.3.x → v0.4.0 Evolution Roadmap**
+**Welcome to the OSSA v0.3.x → v{{VERSION}} Evolution Roadmap**
 
-This directory contains comprehensive documentation for the OSSA evolution from v0.3.0 to v0.4.0, transforming OSSA into "The OpenAPI for AI Agents".
+This directory contains comprehensive documentation for the OSSA evolution from v0.3.0 to v{{VERSION}}, transforming OSSA into "The OpenAPI for AI Agents".
 
 ---
 
@@ -10,7 +10,7 @@ This directory contains comprehensive documentation for the OSSA evolution from 
 
 ### Master Documents
 
-- **[Master Roadmap](v0.3.x-to-v0.4.0.md)** - Complete overview of the v0.3.x → v0.4.0 evolution
+- **[Master Roadmap](v0.3.x-to-v{{VERSION}}.md)** - Complete overview of the v0.3.x → v{{VERSION}} evolution
 - **[Dependency Graph](dependency-graph.md)** - Visual dependency mapping and critical path
 - **[Cross-Project Dependencies](cross-project-dependencies.md)** - Integration between OSSA, API Normalizer, Symfony
 - **[Success Metrics](success-metrics.md)** - Tracking progress and KPIs
@@ -26,9 +26,9 @@ This directory contains comprehensive documentation for the OSSA evolution from 
 
 ## 🎯 Vision
 
-**OSSA v0.4.0: The OpenAPI for AI Agents**
+**OSSA v{{VERSION}}: The OpenAPI for AI Agents**
 
-Just as OpenAPI standardized REST API contracts, OSSA v0.4.0 will standardize agent communication contracts, enabling:
+Just as OpenAPI standardized REST API contracts, OSSA v{{VERSION}} will standardize agent communication contracts, enabling:
 
 - **One schema, any framework** - Define once, deploy everywhere
 - **One definition, multiple runtimes** - Portable across ecosystems
@@ -61,14 +61,14 @@ Just as OpenAPI standardized REST API contracts, OSSA v0.4.0 will standardize ag
 |-------|-------|---------|-------|--------|
 | [#132](https://gitlab.com/blueflyio/openstandardagents/-/issues/132) | Agent-to-Agent Messaging Extension | v0.3.0 | 1 | 🔄 In Progress |
 | [#133](https://gitlab.com/blueflyio/openstandardagents/-/issues/133) | Enhanced Task/Workflow Schema | v0.3.0 | 1 | 🔄 In Progress |
-| [#96](https://gitlab.com/blueflyio/openstandardagents/-/issues/96) | Knowledge Sources Extension | v0.3.3 | 4 | ⚪ Closed |
-| [Epic #9](https://gitlab.com/groups/blueflyio/-/epics/9) | Unified Task Schema | v0.4.0 | 4 | ⚪ Not Started |
+| [#96](https://gitlab.com/blueflyio/openstandardagents/-/issues/96) | Knowledge Sources Extension | v0.3.4 | 4 | ⚪ Closed |
+| [Epic #9](https://gitlab.com/groups/blueflyio/-/epics/9) | Unified Task Schema | v{{VERSION}} | 4 | ⚪ Not Started |
 
 ### Implementation Issues
 
 | Issue | Title | Version | Phase | Status |
 |-------|-------|---------|-------|--------|
-| [#126](https://gitlab.com/blueflyio/openstandardagents/-/issues/126) | Symfony Messenger Adapter | v0.3.2 | 2 | ⚪ Closed |
+| [#126](https://gitlab.com/blueflyio/openstandardagents/-/issues/126) | Symfony Messenger Adapter | v0.3.4 | 2 | ⚪ Closed |
 | TBD | API Normalizer OSSA Integration | v0.1.x | 2-3 | ⚪ Not Started |
 
 ---

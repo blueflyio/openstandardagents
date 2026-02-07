@@ -9,6 +9,7 @@ import { ValidationService } from '../../src/services/validation.service.js';
 import { ManifestRepository } from '../../src/repositories/manifest.repository.js';
 import * as path from 'path';
 import * as fs from 'fs';
+import { API_VERSION } from '../../src/version.js';
 
 describe('agents.md Extension Integration', () => {
   const validationService = container.get(ValidationService);
@@ -16,7 +17,7 @@ describe('agents.md Extension Integration', () => {
 
   it('should validate agents_md extension in manifest', async () => {
     const manifest = {
-      apiVersion: 'ossa/v0.2.9',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'test-agent',
@@ -52,9 +53,12 @@ describe('agents.md Extension Integration', () => {
       },
     };
 
-    const result = await validationService.validate(manifest, '0.2.9');
+    const result = await validationService.validate(manifest, '0.4.1');
     if (result.errors.length > 0) {
-      console.error('Validation errors:', JSON.stringify(result.errors, null, 2));
+      console.error(
+        'Validation errors:',
+        JSON.stringify(result.errors, null, 2)
+      );
     }
     expect(result.valid).toBe(true);
     expect(result.errors).toHaveLength(0);
@@ -62,7 +66,7 @@ describe('agents.md Extension Integration', () => {
 
   it('should validate agents_md with Cursor extension integration', async () => {
     const manifest = {
-      apiVersion: 'ossa/v0.2.9',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'cursor-agents-md-agent',
@@ -98,16 +102,19 @@ describe('agents.md Extension Integration', () => {
       },
     };
 
-    const result = await validationService.validate(manifest, '0.2.9');
+    const result = await validationService.validate(manifest, '0.4.1');
     if (result.errors.length > 0) {
-      console.error('Validation errors:', JSON.stringify(result.errors, null, 2));
+      console.error(
+        'Validation errors:',
+        JSON.stringify(result.errors, null, 2)
+      );
     }
     expect(result.valid).toBe(true);
   });
 
   it('should validate agents_md with nested files for monorepo', async () => {
     const manifest = {
-      apiVersion: 'ossa/v0.2.9',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'monorepo-agent',
@@ -146,16 +153,19 @@ describe('agents.md Extension Integration', () => {
       },
     };
 
-    const result = await validationService.validate(manifest, '0.2.9');
+    const result = await validationService.validate(manifest, '0.4.1');
     if (result.errors.length > 0) {
-      console.error('Validation errors:', JSON.stringify(result.errors, null, 2));
+      console.error(
+        'Validation errors:',
+        JSON.stringify(result.errors, null, 2)
+      );
     }
     expect(result.valid).toBe(true);
   });
 
   it('should validate agents_md with bidirectional mapping', async () => {
     const manifest = {
-      apiVersion: 'ossa/v0.2.9',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'mapping-agent',
@@ -193,9 +203,12 @@ describe('agents.md Extension Integration', () => {
       },
     };
 
-    const result = await validationService.validate(manifest, '0.2.9');
+    const result = await validationService.validate(manifest, '0.4.1');
     if (result.errors.length > 0) {
-      console.error('Validation errors:', JSON.stringify(result.errors, null, 2));
+      console.error(
+        'Validation errors:',
+        JSON.stringify(result.errors, null, 2)
+      );
     }
     expect(result.valid).toBe(true);
   });
@@ -216,13 +229,16 @@ describe('agents.md Extension Integration', () => {
           const manifest = await manifestRepo.load(fullPath);
 
           // Only validate v0.2.9 manifests
-          if (!manifest.apiVersion?.includes('0.2.9')) {
+          if (!manifest.apiVersion?.includes('0.3.3')) {
             continue;
           }
 
-          const result = await validationService.validate(manifest, '0.2.9');
+          const result = await validationService.validate(manifest, '0.4.1');
           if (result.errors.length > 0) {
-            console.error(`Validation errors for ${file}:`, JSON.stringify(result.errors, null, 2));
+            console.error(
+              `Validation errors for ${file}:`,
+              JSON.stringify(result.errors, null, 2)
+            );
           }
           expect(result.errors).toHaveLength(0);
         } catch (error) {
@@ -235,7 +251,7 @@ describe('agents.md Extension Integration', () => {
 
   it('should validate custom sections array', async () => {
     const manifest = {
-      apiVersion: 'ossa/v0.2.9',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'custom-sections-agent',
@@ -251,7 +267,8 @@ describe('agents.md Extension Integration', () => {
             custom: [
               {
                 title: 'Architecture',
-                content: 'This is a microservices architecture using event sourcing.',
+                content:
+                  'This is a microservices architecture using event sourcing.',
               },
               {
                 title: 'Deployment',
@@ -263,9 +280,12 @@ describe('agents.md Extension Integration', () => {
       },
     };
 
-    const result = await validationService.validate(manifest, '0.2.9');
+    const result = await validationService.validate(manifest, '0.4.1');
     if (result.errors.length > 0) {
-      console.error('Validation errors:', JSON.stringify(result.errors, null, 2));
+      console.error(
+        'Validation errors:',
+        JSON.stringify(result.errors, null, 2)
+      );
     }
     expect(result.valid).toBe(true);
   });

@@ -1,52 +1,61 @@
-import chalk from 'chalk';
 import { Command } from 'commander';
-import axios from 'axios';
+import chalk from 'chalk';
+import { container } from '../../di-container.js';
+import { RegistryService } from '../../services/registry.service.js';
 
 export const searchCommand = new Command('search')
-  .argument('<query>', 'Search query')
-  .option('--limit <number>', 'Max results', '20')
-  .description('Search for agents in the OSSA registry')
-  .action(async (query: string, options: { limit?: string }) => {
-    try {
-      const token = process.env.GITLAB_TOKEN || process.env.GITLAB_PRIVATE_TOKEN;
-      const projectId = process.env.GITLAB_PROJECT_ID || '76265294';
-      const gitlabUrl = process.env.GITLAB_URL || 'https://gitlab.com';
-      if (!token) {
-        console.error(chalk.red('✗ GITLAB_TOKEN required'));
+  .description('Search for OSSA agents in the registry')
+  .option('-q, --query <query>', 'Search query')
+  .option('-d, --domain <domain>', 'Filter by domain')
+  .option('-t, --type <type>', 'Filter by agent type')
+  .option('-l, --limit <limit>', 'Limit results', '20')
+  .option('-r, --registry <path>', 'Registry path (defaults to .ossa-registry)')
+  .action(
+    async (options: {
+      query?: string;
+      domain?: string;
+      type?: string;
+      limit?: string;
+      registry?: string;
+    }) => {
+      try {
+        const registryService = options.registry
+          ? new RegistryService(options.registry)
+          : container.get<RegistryService>(RegistryService);
+
+        await registryService.initialize();
+
+        const results = await registryService.search({
+          query: options.query,
+          domain: options.domain,
+          type: options.type,
+          limit: options.limit ? parseInt(options.limit, 10) : 20,
+        });
+
+        if (results.length === 0) {
+          console.log(chalk.yellow('\nNo agents found'));
+          process.exit(0);
+        }
+
+        console.log(chalk.blue(`\nFound ${results.length} agent(s):\n`));
+        results.forEach((agent) => {
+          console.log(chalk.bold(`${agent.name}@${agent.version}`));
+          console.log(chalk.gray(`  ID: ${agent.id}`));
+          console.log(chalk.gray(`  Description: ${agent.description}`));
+          if (agent.metadata?.domain) {
+            console.log(chalk.gray(`  Domain: ${agent.metadata.domain}`));
+          }
+          console.log('');
+        });
+
+        process.exit(0);
+      } catch (error) {
+        console.error(
+          chalk.red(
+            `\n✗ Error: ${error instanceof Error ? error.message : String(error)}`
+          )
+        );
         process.exit(1);
       }
-      console.log(chalk.blue(`Searching: "${query}"`));
-      const response = await axios.get(`${gitlabUrl}/api/v4/projects/${projectId}/releases`, {
-        headers: { 'PRIVATE-TOKEN': token },
-        params: { per_page: parseInt(options.limit || '20', 10) },
-      });
-      const releases = response.data;
-      const matches = releases.filter(
-        (r: any) =>
-          r.name.toLowerCase().includes(query.toLowerCase()) ||
-          r.description?.toLowerCase().includes(query.toLowerCase()) ||
-          r.tag_name.toLowerCase().includes(query.toLowerCase())
-      );
-      if (matches.length === 0) {
-        console.log(chalk.yellow(`No agents found matching "${query}"`));
-        return;
-      }
-      console.log(chalk.green(`\nFound ${matches.length} agent(s):\n`));
-      matches.forEach((release: any) => {
-        const parts = release.tag_name.split('-v');
-        const agentName = parts[0];
-        const version = parts[1] || 'latest';
-        console.log(chalk.cyan(`  ${agentName}@${version}`));
-        console.log(chalk.gray(`    ${release.description?.substring(0, 100) || ''}...`));
-        console.log(
-          chalk.gray(`    Published: ${new Date(release.created_at).toLocaleDateString()}\n`)
-        );
-      });
-    } catch (error) {
-      console.error(
-        chalk.red('✗ Search failed:'),
-        error instanceof Error ? error.message : String(error)
-      );
-      process.exit(1);
     }
-  });
+  );

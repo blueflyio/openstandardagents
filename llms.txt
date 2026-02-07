@@ -1,47 +1,33 @@
-# Open Standard for Scalable Agents (OSSA)
+# BlueFly Agent Platform
 
-> OSSA is a vendor-neutral, open specification for defining, deploying, and orchestrating AI agents across platforms. It provides a standardized schema for agent capabilities, triggers, outputs, and lifecycle management integrated with GitLab Ultimate and Duo Platform.
+> AI agents and autonomous workflow automation platform built on OSSA v0.4.1
 
-Key features:
-- Vendor-neutral agent definitions using YAML schemas
-- GitLab Duo Platform integration with 12 specialized agents
-- Kubernetes-native deployment with GitOps
-- Multi-agent orchestration with meta-orchestrator
-- Self-healing automation across 8 healing agents
-- AgentFlow lifecycle with custom fields
-- Semantic versioning and milestone-driven releases
+## Project Overview
 
-## Core Specification
+BlueFly is an enterprise agent platform providing:
+- **Agent Runtime**: MCP-based tool execution (agent-protocol)
+- **Agent Mesh**: A2A communication and service discovery (agent-mesh)
+- **Agent Brain**: Vector database for context and memory (Qdrant)
+- **Compliance Engine**: Cedar policy-based authorization
+- **Platform Agents**: 18 canonical OSSA agents for DevOps, security, testing
 
-- [OSSA Schema v0.2.9](https://gitlab.com/blueflyio/openstandardagents/-/blob/main/spec/ossa-schema.yaml): Complete agent definition schema with capabilities, triggers, and outputs
-- [AgentFlow Lifecycle](https://gitlab.com/blueflyio/openstandardagents/-/wikis/AgentFlow-Lifecycle): 9-state workflow (Triage → To Do → In Progress → Done/Canceled)
-- [Custom Fields](https://gitlab.com/blueflyio/openstandardagents/-/wikis/Custom-Field-Enforcement): 8 fields for agent coordination (agent_assigned, agent_status, commit_type, priority, release_type)
-- [Bot Waves](https://gitlab.com/blueflyio/openstandardagents/-/wikis/Specialized-Bot-Deployment): 5-wave orchestration model for parallel agent execution
+## Quick Start
 
-## Agents
+See AGENTS.md for development workflow and git rules.
+See package.json for available npm scripts.
+See openapi/ for API specifications (single source of truth).
 
-- [12 OSSA Agents Registry](https://gitlab.com/blueflyio/openstandardagents/-/wikis/Specialized-Bot-Deployment): Canonical list (wiki-aggregator, ts-prod, ts-local, ossa-local, native-local, ml-prod, ml-local, infra-prod, gitlab-lib-ci, gitlab-lib-local, drupal-prod, drupal-local)
-- [Meta-Orchestrator](https://gitlab.com/blueflyio/openstandardagents/-/issues/83): Agent that manages all other agents with routing logic and wave coordination
-- [Wiki Healer](https://gitlab.com/blueflyio/openstandardagents/-/issues/75): Autonomous documentation agent with continuous wiki sync
-- [Security Healer](https://gitlab.com/blueflyio/openstandardagents/-/issues/82): Vulnerability scanning with SAST, DAST, dependency, secret, and container scanning
-- [Test Generator](https://gitlab.com/blueflyio/openstandardagents/-/issues/81): Coverage-driven test generation with property-based testing
+## Technology Stack
 
-## Integration
+- **Runtime**: Node.js 20, TypeScript 5
+- **Database**: PostgreSQL 16, TimescaleDB, Qdrant
+- **CI/CD**: GitLab Ultimate with custom components
 
-- [GitLab Duo Platform](https://gitlab.com/blueflyio/openstandardagents/-/issues/73): Complete integration with Issue-to-MR flow, Software Development flow, and Security Analyst
-- [AutoDevOps](https://docs.gitlab.com/topics/autodevops/): Auto Build, Test, Deploy, Security scanning, Review Apps, and Release Evidence
-- [Release Automation](https://gitlab.com/blueflyio/openstandardagents/-/issues/74): Milestone-driven releases with semantic versioning and changelog generation
-- [Repository Audit](https://gitlab.com/blueflyio/openstandardagents/-/issues/84): Automated compliance checks across 10 categories
+## Repository
 
-## Examples
+gitlab.com/blueflyio - 35+ focused projects
+openstandardagents.org - OSSA v0.4.1 specification
 
-- [OSSA Schema Examples](https://gitlab.com/blueflyio/openstandardagents/-/tree/main/examples): 35+ example agent definitions
-- [Healing Agents](https://gitlab.com/blueflyio/openstandardagents/-/tree/main/schemas): 8 self-healing agent schemas (wiki, architecture, spec, infra, dependency, service-discovery, test, security)
-- [GitLab Components](https://gitlab.com/blueflyio/agent-platform/gitlab_components): Reusable CI/CD components for agent workflows
+## Status (Feb 2026)
 
-## Optional
-
-- [Buildkit Integration](https://gitlab.com/blueflyio/openstandardagents/-/wikis/Buildkit): Task queue orchestration with claim, heartbeat, and release commands
-- [Compliance Profiles](https://gitlab.com/blueflyio/openstandardagents/-/issues/71): FedRAMP, SOC2, ISO42001 compliance specifications
-- [Type System](https://gitlab.com/blueflyio/openstandardagents/-/issues/70): Formal OSSA type system specification
-- [Testing Framework](https://gitlab.com/blueflyio/openstandardagents/-/issues/72): AgentTest resource for agent validation
+Platform: 85% built | Agents: 18 OSSA manifests ready | UI: 95% complete

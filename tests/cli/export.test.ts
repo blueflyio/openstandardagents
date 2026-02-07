@@ -9,13 +9,14 @@ import { LangChainAdapter } from '../../src/adapters/langchain-adapter.js';
 import { CrewAIAdapter } from '../../src/adapters/crewai-adapter.js';
 import { LangflowAdapter } from '../../src/adapters/langflow-adapter.js';
 import { OpenAPIAdapter } from '../../src/adapters/openapi-adapter.js';
+import { API_VERSION } from '../../src/version.js';
 
 describe('Export Adapters', () => {
   let testManifest: OssaAgent;
 
   beforeEach(() => {
     testManifest = {
-      apiVersion: 'ossa/v0.3.0',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'test-agent',
@@ -193,7 +194,9 @@ describe('Export Adapters', () => {
       expect(result.edges.length).toBeGreaterThan(0);
 
       // Check for LLM to agent edge
-      const llmToAgent = result.edges.find((e) => e.source === 'llm-1' && e.target === 'agent-1');
+      const llmToAgent = result.edges.find(
+        (e) => e.source === 'llm-1' && e.target === 'agent-1'
+      );
       expect(llmToAgent).toBeDefined();
     });
 
@@ -294,7 +297,9 @@ describe('Export Adapters', () => {
       const result = OpenAPIAdapter.toOpenAPI(testManifest);
 
       const searchSchema =
-        result.paths['/tools/search'].post.requestBody?.content['application/json'].schema;
+        result.paths['/tools/search'].post.requestBody?.content[
+          'application/json'
+        ].schema;
       expect(searchSchema).toBeDefined();
       expect(searchSchema.type).toBe('object');
     });
@@ -303,7 +308,7 @@ describe('Export Adapters', () => {
   describe('Error Handling', () => {
     it('should handle missing metadata gracefully', () => {
       const noMetadata: OssaAgent = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         spec: {
           role: 'Test',
@@ -319,7 +324,7 @@ describe('Export Adapters', () => {
 
     it('should handle missing spec gracefully', () => {
       const noSpec: OssaAgent = {
-        apiVersion: 'ossa/v0.3.0',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test',

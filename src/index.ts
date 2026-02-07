@@ -1,36 +1,30 @@
 /**
- * OSSA Main Export
- * Export all services, repositories, and types for library usage
+ * OSSA - Open Standard for Software Agents
+ *
+ * Main entry point for programmatic access.
  */
 
-// Types
-export * from './types/index.js';
-export * from './types/openapi-extensions.js';
+// CRITICAL: Import reflect-metadata FIRST (required for InversifyJS decorators)
+import 'reflect-metadata';
 
-// Transports
-export * from './transports/index.js';
+// Export services
+export { AgentAuditService } from './services/audit.js';
+export type {
+  AuditOptions,
+  AgentHealth,
+  AuditReport,
+} from './services/audit.js';
 
-// Version utilities (dynamic version detection)
-export {
-  getVersionInfo,
-  getVersion,
-  getSchemaPath,
-  getApiVersion,
-  getSchemaDir,
-  isPrerelease,
-  getSupportedVersions,
-  resolveSchemaPath,
-  type VersionInfo,
-} from './utils/version.js';
+export { AgentProtocolClient } from './services/agent-protocol-client.js';
+export type {
+  AgentCard,
+  AgentSearchFilters,
+  AgentSearchQuery,
+  AgentSearchResult,
+  DIDResolutionResult,
+  AgentRegistrationResponse,
+  AgentProtocolClientConfig,
+} from './services/agent-protocol-client.js';
 
-// Repositories
-export { SchemaRepository } from './repositories/schema.repository.js';
-export { ManifestRepository } from './repositories/manifest.repository.js';
-
-// Services
-export { ValidationService } from './services/validation.service.js';
-export { GenerationService } from './services/generation.service.js';
-export { MigrationService } from './services/migration.service.js';
-
-// DI Container
-export { container, getService, resetContainer } from './di-container.js';
+// Export CLI (for programmatic use)
+export { createAuditCommand } from './cli/commands/audit.js';

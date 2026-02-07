@@ -1,7 +1,8 @@
-apiVersion: ossa/v0.3.2
+apiVersion: ossa/v0.4.1
 kind: Agent
 metadata:
   name: rag-documentation-assistant
+  version: "1.0.0"
   description: |
     Production RAG agent that answers questions about your codebase using:
     - Vector embeddings of documentation
@@ -224,12 +225,5 @@ spec:
       enabled: true
       provider: opentelemetry
     metrics:
-      - name: questions_answered
-        type: counter
-        labels: [user_id, confidence_bucket]
-      - name: retrieval_latency
-        type: histogram
-      - name: generation_latency
-        type: histogram
-      - name: knowledge_base_size
-        type: gauge
+      enabled: true
+      port: 9090

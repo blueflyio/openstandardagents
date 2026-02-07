@@ -4,6 +4,7 @@
 
 import { describe, it, expect } from '@jest/globals';
 import { OpenAIValidator } from '../../../../src/services/validators/openai.validator.js';
+import { API_VERSION } from '../../../../src/version.js';
 
 describe('OpenAIValidator', () => {
   const validator = new OpenAIValidator();
@@ -50,7 +51,12 @@ describe('OpenAIValidator', () => {
   });
 
   it('should validate all valid models', () => {
-    const validModels = ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-3.5-turbo'];
+    const validModels = [
+      'gpt-4o',
+      'gpt-4o-mini',
+      'gpt-4-turbo',
+      'gpt-3.5-turbo',
+    ];
 
     validModels.forEach((model) => {
       const manifest = {

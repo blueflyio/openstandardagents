@@ -6,6 +6,7 @@ import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
+import { API_VERSION } from '../../../src/version.js';
 import {
   validateFilePath,
   validateDirectoryPath,
@@ -50,7 +51,9 @@ describe('validateFilePath', () => {
 
   it('should throw error for non-existent file', () => {
     const nonExistentFile = path.join(tempDir, 'non-existent.txt');
-    expect(() => validateFilePath(nonExistentFile)).toThrow(PathValidationError);
+    expect(() => validateFilePath(nonExistentFile)).toThrow(
+      PathValidationError
+    );
     expect(() => validateFilePath(nonExistentFile)).toThrow('File not found');
   });
 
@@ -76,7 +79,9 @@ describe('validateFilePath', () => {
     const outsideFile = path.join(os.tmpdir(), 'outside.txt');
     fs.writeFileSync(outsideFile, 'test');
 
-    expect(() => validateFilePath(outsideFile, restrictedBase)).toThrow(PathValidationError);
+    expect(() => validateFilePath(outsideFile, restrictedBase)).toThrow(
+      PathValidationError
+    );
     expect(() => validateFilePath(outsideFile, restrictedBase)).toThrow(
       'attempts to escape base directory'
     );
@@ -133,13 +138,19 @@ describe('validateDirectoryPath', () => {
 
   it('should throw error for non-existent directory', () => {
     const nonExistentDir = path.join(tempDir, 'non-existent');
-    expect(() => validateDirectoryPath(nonExistentDir)).toThrow(PathValidationError);
-    expect(() => validateDirectoryPath(nonExistentDir)).toThrow('Directory not found');
+    expect(() => validateDirectoryPath(nonExistentDir)).toThrow(
+      PathValidationError
+    );
+    expect(() => validateDirectoryPath(nonExistentDir)).toThrow(
+      'Directory not found'
+    );
   });
 
   it('should throw error for file instead of directory', () => {
     expect(() => validateDirectoryPath(tempFile)).toThrow(PathValidationError);
-    expect(() => validateDirectoryPath(tempFile)).toThrow('Path is not a directory');
+    expect(() => validateDirectoryPath(tempFile)).toThrow(
+      'Path is not a directory'
+    );
   });
 
   it('should prevent path traversal when basePath is provided', () => {
@@ -147,7 +158,9 @@ describe('validateDirectoryPath', () => {
     fs.mkdirSync(subDir);
 
     const outsideDir = os.tmpdir();
-    expect(() => validateDirectoryPath(outsideDir, tempDir)).toThrow(PathValidationError);
+    expect(() => validateDirectoryPath(outsideDir, tempDir)).toThrow(
+      PathValidationError
+    );
     expect(() => validateDirectoryPath(outsideDir, tempDir)).toThrow(
       'attempts to escape base directory'
     );

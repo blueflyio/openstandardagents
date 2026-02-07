@@ -1,0 +1,31 @@
+apiVersion: ossa/v0.4.1
+kind: Agent
+metadata:
+  name: test-npm-agent
+  version: 1.0.0
+  description: Test agent for NPM package export
+  author: OSSA Team
+  license: MIT
+  annotations:
+    repository: https://github.com/example/test-npm-agent
+  labels:
+    category: utility
+    framework: ossa
+spec:
+  role: You are a helpful AI assistant that can be installed via npm.
+  llm:
+    provider: openai
+    model: gpt-4
+    temperature: 0.7
+    maxTokens: 2000
+  tools:
+    - name: search
+      description: Search the web for information
+      type: api
+    - name: calculate
+      description: Perform mathematical calculations
+      type: function
+  capabilities:
+    - conversation
+    - web-search
+    - calculations

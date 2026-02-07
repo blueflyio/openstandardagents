@@ -1,0 +1,1625 @@
+openapi: 3.1.0
+jsonSchemaDialect: https://spec.openapis.org/oas/3.1/dialect/base
+info:
+  title: OSSA CLI Commands API
+  version: 0.3.3
+  description: |
+    # OSSA CLI Commands OpenAPI Specification
+
+    **100% OpenAPI-compliant** specification for all OSSA CLI commands.
+    Every CLI command maps to an API operation, ensuring type safety,
+    validation, and consistency between CLI and REST API operations.
+
+    ## Design Principles
+    - **OpenAPI First**: Spec drives CLI command definitions
+    - **CRUD Complete**: Full Create, Read, Update, Delete operations
+    - **DRY**: Single source of truth for command schemas
+    - **SOLID**: Command separation and dependency injection
+    - **Zod Validation**: Runtime validation for all inputs
+
+    ## CLI Command Mapping
+    Every CLI command maps to an API endpoint:
+    - `ossa validate <path>` → `POST /cli/validate`
+    - `ossa export <path> --to cursor` → `POST /cli/export`
+    - `ossa agent list` → `GET /cli/agents`
+
+    ## Output Modes
+    All commands support `--output json` for machine-readable output.
+
+  contact:
+    name: OSSA Standards Team
+    url: https://github.com/blueflyio/openstandardagents
+  license:
+    name: Apache-2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Local development (ossa serve)
+  - url: https://api.openstandardagents.org/v1
+    description: Production OSSA API
+
+tags:
+  - name: Validation
+    description: Manifest validation operations
+  - name: Export
+    description: Export to platform-specific formats
+  - name: Import
+    description: Import from platform-specific formats
+  - name: Generation
+    description: Generate manifests and code
+  - name: Migration
+    description: Migrate between OSSA versions
+  - name: Cost Estimation
+    description: Token counting and cost estimation
+  - name: Agents
+    description: Agent CRUD operations
+  - name: Registry
+    description: Package registry operations
+  - name: Schema
+    description: Schema operations
+  - name: Testing
+    description: Test and lint operations
+  - name: Deployment
+    description: Deploy and run operations
+  - name: llms.txt
+    description: LLM context file operations
+
+paths:
+  # ============================================================================
+  # VALIDATION COMMANDS
+  # ============================================================================
+  /cli/validate:
+    post:
+      summary: "Validate manifest (CLI: ossa validate)"
+      description: |
+        Validate OSSA agent/task/workflow manifest against JSON schema.
+        Supports OpenAPI extensions validation with --openapi flag.
+      operationId: cliValidate
+      tags: [Validation]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidateRequest'
+      responses:
+        '200':
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidateResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /cli/lint:
+    post:
+      summary: "Lint manifest (CLI: ossa lint)"
+      description: Lint OSSA manifest for best practices and style
+      operationId: cliLint
+      tags: [Validation]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LintRequest'
+      responses:
+        '200':
+          description: Lint result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LintResponse'
+
+  /cli/diff:
+    post:
+      summary: "Diff manifests (CLI: ossa diff)"
+      description: Compare two OSSA manifests and show differences
+      operationId: cliDiff
+      tags: [Validation]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DiffRequest'
+      responses:
+        '200':
+          description: Diff result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiffResponse'
+
+  # ============================================================================
+  # EXPORT/IMPORT COMMANDS
+  # ============================================================================
+  /cli/export:
+    post:
+      summary: "Export manifest (CLI: ossa export)"
+      description: |
+        Export OSSA manifest to platform-specific format.
+        Supported platforms: cursor, openai, anthropic, langchain, crewai,
+        autogen, langflow, langgraph, llamaindex, vercel-ai
+      operationId: cliExport
+      tags: [Export]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportRequest'
+      responses:
+        '200':
+          description: Export result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /cli/import:
+    post:
+      summary: "Import manifest (CLI: ossa import)"
+      description: Import from platform-specific format to OSSA manifest
+      operationId: cliImport
+      tags: [Import]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImportRequest'
+      responses:
+        '200':
+          description: Import result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportResponse'
+
+  # ============================================================================
+  # GENERATION COMMANDS
+  # ============================================================================
+  /cli/init:
+    post:
+      summary: "Initialize manifest (CLI: ossa init)"
+      description: Create a new OSSA agent/task/workflow manifest
+      operationId: cliInit
+      tags: [Generation]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InitRequest'
+      responses:
+        '201':
+          description: Manifest created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitResponse'
+
+  /cli/generate:
+    post:
+      summary: "Generate code (CLI: ossa generate)"
+      description: Generate code, types, or configurations from OSSA manifest
+      operationId: cliGenerate
+      tags: [Generation]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateRequest'
+      responses:
+        '200':
+          description: Generation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerateResponse'
+
+  /cli/migrate:
+    post:
+      summary: "Migrate manifest (CLI: ossa migrate)"
+      description: Migrate OSSA manifest between versions
+      operationId: cliMigrate
+      tags: [Migration]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MigrateRequest'
+      responses:
+        '200':
+          description: Migration result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MigrateResponse'
+
+  /cli/upgrade:
+    post:
+      summary: "Upgrade manifest to latest schema (CLI: ossa upgrade)"
+      description: |
+        Automatically upgrade manifest(s) to the latest OSSA schema version.
+        Supports dry-run mode, automatic backups, and recursive directory processing.
+      operationId: cliUpgrade
+      tags: [Migration]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpgradeRequest'
+      responses:
+        '200':
+          description: Upgrade result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpgradeResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /cli/estimate:
+    post:
+      summary: "Estimate costs (CLI: ossa estimate)"
+      description: |
+        Estimate token counts and projected costs for an agent.
+        Supports scenario-based projections and multi-model comparison.
+      operationId: cliEstimate
+      tags: [Cost Estimation]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EstimateRequest'
+      responses:
+        '200':
+          description: Cost estimation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EstimateResponse'
+
+  # ============================================================================
+  # AGENT CRUD COMMANDS
+  # ============================================================================
+  /cli/agents:
+    get:
+      summary: "List agents (CLI: ossa agents list)"
+      description: List all agents with filtering
+      operationId: cliAgentList
+      tags: [Agents]
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: kind
+          in: query
+          schema:
+            $ref: '#/components/schemas/Kind'
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: List of agents
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentsList'
+
+    post:
+      summary: "Create agent (CLI: ossa agents create)"
+      description: Create a new agent from manifest
+      operationId: cliAgentCreate
+      tags: [Agents]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentCreateRequest'
+      responses:
+        '201':
+          description: Agent created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /cli/agents/{name}:
+    get:
+      summary: "Get agent (CLI: ossa agents get)"
+      description: Get detailed information about an agent
+      operationId: cliAgentGet
+      tags: [Agents]
+      parameters:
+        - $ref: '#/components/parameters/AgentName'
+      responses:
+        '200':
+          description: Agent details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      summary: "Update agent (CLI: ossa agents update)"
+      description: Update an existing agent
+      operationId: cliAgentUpdate
+      tags: [Agents]
+      parameters:
+        - $ref: '#/components/parameters/AgentName'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentUpdateRequest'
+      responses:
+        '200':
+          description: Agent updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      summary: "Delete agent (CLI: ossa agents delete)"
+      description: Delete an agent
+      operationId: cliAgentDelete
+      tags: [Agents]
+      parameters:
+        - $ref: '#/components/parameters/AgentName'
+        - name: force
+          in: query
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '204':
+          description: Agent deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================================================
+  # REGISTRY COMMANDS
+  # ============================================================================
+  /cli/registry/publish:
+    post:
+      summary: "Publish agent (CLI: ossa publish)"
+      description: Publish agent to registry
+      operationId: cliPublish
+      tags: [Registry]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublishRequest'
+      responses:
+        '200':
+          description: Publish result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublishResponse'
+
+  /cli/registry/search:
+    get:
+      summary: "Search registry (CLI: ossa search)"
+      description: Search for agents in registry
+      operationId: cliSearch
+      tags: [Registry]
+      parameters:
+        - name: query
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+
+  /cli/registry/install:
+    post:
+      summary: "Install agent (CLI: ossa install)"
+      description: Install agent from registry
+      operationId: cliInstall
+      tags: [Registry]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InstallRequest'
+      responses:
+        '200':
+          description: Install result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstallResponse'
+
+  /cli/registry/info/{name}:
+    get:
+      summary: "Get agent info (CLI: ossa info)"
+      description: Get detailed information about a registry agent
+      operationId: cliInfo
+      tags: [Registry]
+      parameters:
+        - $ref: '#/components/parameters/AgentName'
+      responses:
+        '200':
+          description: Agent info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InfoResponse'
+
+  # ============================================================================
+  # SCHEMA COMMANDS
+  # ============================================================================
+  /cli/schema:
+    get:
+      summary: "Get schema (CLI: ossa schema)"
+      description: Get OSSA JSON schema
+      operationId: cliSchema
+      tags: [Schema]
+      parameters:
+        - name: version
+          in: query
+          schema:
+            type: string
+            default: "0.3.3"
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [json, yaml]
+            default: json
+      responses:
+        '200':
+          description: Schema content
+          content:
+            application/json:
+              schema:
+                type: object
+
+  # ============================================================================
+  # TESTING COMMANDS
+  # ============================================================================
+  /cli/test:
+    post:
+      summary: "Test agent (CLI: ossa test)"
+      description: |
+        Run tests for an agent with optional mock LLM.
+        Supports pre-defined test scenarios and watch mode for development.
+        Mock mode allows testing without API keys using deterministic responses.
+      operationId: cliTest
+      tags: [Testing]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TestRequest'
+      responses:
+        '200':
+          description: Test results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestResponse'
+
+  # ============================================================================
+  # DEPLOYMENT COMMANDS
+  # ============================================================================
+  /cli/deploy:
+    post:
+      summary: "Deploy agent (CLI: ossa deploy)"
+      description: Deploy agent to runtime environment
+      operationId: cliDeploy
+      tags: [Deployment]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeployRequest'
+      responses:
+        '200':
+          description: Deployment result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeployResponse'
+
+  /cli/run:
+    post:
+      summary: "Run agent (CLI: ossa run)"
+      description: Run agent locally or in development mode
+      operationId: cliRun
+      tags: [Deployment]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RunRequest'
+      responses:
+        '200':
+          description: Run result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunResponse'
+
+  /cli/status:
+    get:
+      summary: "Get deployment status (CLI: ossa status)"
+      description: Get deployment status for an agent
+      operationId: cliStatus
+      tags: [Deployment]
+      parameters:
+        - name: name
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Status result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusResponse'
+
+  /cli/stop:
+    post:
+      summary: "Stop agent (CLI: ossa stop)"
+      description: Stop a running agent
+      operationId: cliStop
+      tags: [Deployment]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StopRequest'
+      responses:
+        '200':
+          description: Stop result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StopResponse'
+
+  /cli/rollback:
+    post:
+      summary: "Rollback deployment (CLI: ossa rollback)"
+      description: Rollback to previous deployment
+      operationId: cliRollback
+      tags: [Deployment]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RollbackRequest'
+      responses:
+        '200':
+          description: Rollback result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RollbackResponse'
+
+  # ============================================================================
+  # LLMS.TXT COMMANDS
+  # ============================================================================
+  /cli/llms-txt/generate:
+    post:
+      summary: "Generate llms.txt (CLI: ossa llms-txt generate)"
+      description: Generate llms.txt file from OSSA manifest
+      operationId: cliLlmsTxtGenerate
+      tags: [llms.txt]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LlmsTxtGenerateRequest'
+      responses:
+        '200':
+          description: llms.txt generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LlmsTxtGenerateResponse'
+
+  /cli/llms-txt/validate:
+    post:
+      summary: "Validate llms.txt (CLI: ossa llms-txt validate)"
+      description: Validate llms.txt file against OSSA manifest
+      operationId: cliLlmsTxtValidate
+      tags: [llms.txt]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LlmsTxtValidateRequest'
+      responses:
+        '200':
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LlmsTxtValidateResponse'
+
+  /cli/llms-txt/sync:
+    post:
+      summary: "Sync llms.txt (CLI: ossa llms-txt sync)"
+      description: Sync llms.txt with manifest changes
+      operationId: cliLlmsTxtSync
+      tags: [llms.txt]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LlmsTxtSyncRequest'
+      responses:
+        '200':
+          description: Sync completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LlmsTxtSyncResponse'
+
+components:
+  parameters:
+    AgentName:
+      name: name
+      in: path
+      required: true
+      description: Agent name
+      schema:
+        type: string
+        pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+
+  schemas:
+    # ============================================================================
+    # ENUMS
+    # ============================================================================
+    Kind:
+      type: string
+      enum: [Agent, Task, Workflow]
+      description: OSSA manifest kind
+
+    ExportPlatform:
+      type: string
+      enum:
+        - cursor
+        - openai
+        - anthropic
+        - langchain
+        - crewai
+        - autogen
+        - langflow
+        - langgraph
+        - llamaindex
+        - vercel-ai
+      description: Export target platform
+
+    GenerateTarget:
+      type: string
+      enum:
+        - types
+        - zod
+        - openapi
+        - helm
+        - dockerfile
+        - kubernetes
+        - mcp
+      description: Code generation target
+
+    # ============================================================================
+    # VALIDATION SCHEMAS
+    # ============================================================================
+    ValidateRequest:
+      type: object
+      required:
+        - manifest
+      properties:
+        manifest:
+          type: string
+          description: Path to manifest file or manifest content
+        schemaVersion:
+          type: string
+          description: Schema version to validate against
+          default: "0.3.3"
+        openapi:
+          type: boolean
+          description: Validate as OpenAPI with OSSA extensions
+          default: false
+        checkMessaging:
+          type: boolean
+          description: Validate messaging extension
+          default: false
+        verbose:
+          type: boolean
+          default: false
+
+    ValidateResponse:
+      type: object
+      required:
+        - valid
+      properties:
+        valid:
+          type: boolean
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+        warnings:
+          type: array
+          items:
+            type: string
+        manifest:
+          type: object
+          description: Parsed manifest (if valid)
+
+    ValidationError:
+      type: object
+      properties:
+        path:
+          type: string
+        message:
+          type: string
+        keyword:
+          type: string
+
+    LintRequest:
+      type: object
+      required:
+        - manifest
+      properties:
+        manifest:
+          type: string
+        fix:
+          type: boolean
+          default: false
+
+    LintResponse:
+      type: object
+      properties:
+        passed:
+          type: boolean
+        issues:
+          type: array
+          items:
+            type: object
+            properties:
+              severity:
+                type: string
+                enum: [error, warning, info]
+              path:
+                type: string
+              message:
+                type: string
+              rule:
+                type: string
+        fixed:
+          type: object
+          description: Fixed manifest (if fix=true)
+
+    DiffRequest:
+      type: object
+      required:
+        - source
+        - target
+      properties:
+        source:
+          type: string
+        target:
+          type: string
+        format:
+          type: string
+          enum: [unified, json, side-by-side]
+          default: unified
+
+    DiffResponse:
+      type: object
+      properties:
+        hasChanges:
+          type: boolean
+        diff:
+          type: string
+        changes:
+          type: array
+          items:
+            type: object
+            properties:
+              path:
+                type: string
+              type:
+                type: string
+                enum: [added, removed, modified]
+              before:
+                type: string
+              after:
+                type: string
+
+    # ============================================================================
+    # EXPORT/IMPORT SCHEMAS
+    # ============================================================================
+    ExportRequest:
+      type: object
+      required:
+        - manifest
+        - platform
+      properties:
+        manifest:
+          type: string
+          description: Path to manifest or manifest content
+        platform:
+          $ref: '#/components/schemas/ExportPlatform'
+        output:
+          type: string
+          description: Output file path
+        all:
+          type: boolean
+          description: Export to all platforms
+          default: false
+
+    ExportResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        platform:
+          type: string
+        output:
+          type: string
+        content:
+          type: object
+          description: Exported content
+
+    ImportRequest:
+      type: object
+      required:
+        - source
+        - platform
+      properties:
+        source:
+          type: string
+        platform:
+          $ref: '#/components/schemas/ExportPlatform'
+        output:
+          type: string
+
+    ImportResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        manifest:
+          type: object
+        output:
+          type: string
+
+    # ============================================================================
+    # GENERATION SCHEMAS
+    # ============================================================================
+    InitRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+        kind:
+          $ref: '#/components/schemas/Kind'
+        template:
+          type: string
+          enum: [minimal, standard, enterprise]
+          default: standard
+        output:
+          type: string
+        interactive:
+          type: boolean
+          description: Use enhanced interactive wizard with decision tree
+          default: false
+        useCase:
+          type: string
+          description: Specify use case for automatic configuration
+          enum:
+            - code-review
+            - documentation
+            - customer-support
+            - content-management
+            - ide-assistant
+            - multi-agent
+            - research
+            - visual-workflow
+            - custom
+
+    InitResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        path:
+          type: string
+        manifest:
+          type: object
+
+    GenerateRequest:
+      type: object
+      required:
+        - manifest
+        - target
+      properties:
+        manifest:
+          type: string
+        target:
+          $ref: '#/components/schemas/GenerateTarget'
+        output:
+          type: string
+
+    GenerateResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        files:
+          type: array
+          items:
+            type: object
+            properties:
+              path:
+                type: string
+              content:
+                type: string
+
+    MigrateRequest:
+      type: object
+      required:
+        - manifest
+      properties:
+        manifest:
+          type: string
+        targetVersion:
+          type: string
+          default: "0.3.3"
+        dryRun:
+          type: boolean
+          default: false
+
+    MigrateResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        changes:
+          type: array
+          items:
+            type: object
+            properties:
+              path:
+                type: string
+              description:
+                type: string
+        manifest:
+          type: object
+
+    UpgradeRequest:
+      type: object
+      required:
+        - path
+      properties:
+        path:
+          type: string
+          description: Path to manifest file or directory
+        dryRun:
+          type: boolean
+          description: Preview changes without modifying files
+          default: false
+        backup:
+          type: boolean
+          description: Create backup before upgrading
+          default: true
+        recursive:
+          type: boolean
+          description: Process all manifests in directory recursively
+          default: false
+        targetVersion:
+          type: string
+          description: Target OSSA version (default is latest)
+
+    UpgradeResponse:
+      type: object
+      properties:
+        upgraded:
+          type: integer
+          description: Number of manifests upgraded
+        skipped:
+          type: integer
+          description: Number of manifests already at target version
+        failed:
+          type: integer
+          description: Number of manifests that failed to upgrade
+        results:
+          type: array
+          items:
+            type: object
+            properties:
+              file:
+                type: string
+              status:
+                type: string
+                enum: [upgraded, skipped, failed]
+              message:
+                type: string
+              currentVersion:
+                type: string
+              targetVersion:
+                type: string
+
+    EstimateRequest:
+      type: object
+      properties:
+        manifest:
+          type: string
+          description: Path to manifest or manifest content
+        model:
+          type: string
+          description: Specific model to estimate for
+        provider:
+          type: string
+          description: LLM provider filter
+        interactions:
+          type: integer
+          description: Number of interactions for scenario projection
+          default: 100
+        timeframe:
+          type: string
+          enum: [day, week, month, year]
+          description: Timeframe for cost projection
+          default: month
+        compare:
+          type: boolean
+          description: Compare costs across multiple models
+          default: false
+
+    EstimateResponse:
+      type: object
+      properties:
+        manifest:
+          type: string
+          description: Manifest name
+        model:
+          type: string
+          description: Model used for estimation
+        tokens:
+          type: object
+          properties:
+            systemPrompt:
+              type: integer
+            tools:
+              type: integer
+            instructions:
+              type: integer
+            examples:
+              type: integer
+            total:
+              type: integer
+        costs:
+          type: object
+          properties:
+            perInteraction:
+              type: number
+              description: Cost per interaction in USD
+            projected:
+              type: object
+              properties:
+                day:
+                  type: number
+                week:
+                  type: number
+                month:
+                  type: number
+                year:
+                  type: number
+        comparisons:
+          type: array
+          description: Multi-model cost comparison (if compare=true)
+          items:
+            type: object
+            properties:
+              provider:
+                type: string
+              model:
+                type: string
+              perInteraction:
+                type: number
+              monthlyProjection:
+                type: number
+
+    # ============================================================================
+    # AGENT CRUD SCHEMAS
+    # ============================================================================
+    AgentsList:
+      type: object
+      properties:
+        agents:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentResponse'
+        total:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          type: integer
+
+    AgentCreateRequest:
+      type: object
+      required:
+        - manifest
+      properties:
+        manifest:
+          type: string
+          description: Path to manifest or manifest content
+        dryRun:
+          type: boolean
+          default: false
+
+    AgentUpdateRequest:
+      type: object
+      properties:
+        manifest:
+          type: string
+        metadata:
+          type: object
+        spec:
+          type: object
+
+    AgentResponse:
+      type: object
+      properties:
+        name:
+          type: string
+        version:
+          type: string
+        kind:
+          $ref: '#/components/schemas/Kind'
+        apiVersion:
+          type: string
+        manifest:
+          type: object
+
+    # ============================================================================
+    # REGISTRY SCHEMAS
+    # ============================================================================
+    PublishRequest:
+      type: object
+      required:
+        - manifest
+      properties:
+        manifest:
+          type: string
+        registry:
+          type: string
+          default: npm
+        dryRun:
+          type: boolean
+          default: false
+
+    PublishResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        name:
+          type: string
+        version:
+          type: string
+        url:
+          type: string
+
+    SearchResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              version:
+                type: string
+              description:
+                type: string
+        total:
+          type: integer
+
+    InstallRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        version:
+          type: string
+        output:
+          type: string
+
+    InstallResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        name:
+          type: string
+        version:
+          type: string
+        path:
+          type: string
+
+    InfoResponse:
+      type: object
+      properties:
+        name:
+          type: string
+        version:
+          type: string
+        description:
+          type: string
+        author:
+          type: string
+        manifest:
+          type: object
+
+    # ============================================================================
+    # TESTING SCHEMAS
+    # ============================================================================
+    TestRequest:
+      type: object
+      properties:
+        manifest:
+          type: string
+          description: Path to agent manifest (optional if using scenario)
+        testId:
+          type: string
+          description: Run specific test by ID
+        mock:
+          type: boolean
+          description: Use mock LLM (no API keys required)
+          default: false
+        scenario:
+          type: string
+          description: Run pre-defined test scenario
+          enum:
+            - basic-interaction
+            - tool-usage
+            - error-handling
+            - code-generation
+            - content-processing
+            - performance
+            - edge-cases
+            - comprehensive
+        watch:
+          type: boolean
+          description: Watch mode - re-run tests on file changes
+          default: false
+        verbose:
+          type: boolean
+          description: Verbose output
+          default: false
+
+    TestResponse:
+      type: object
+      properties:
+        passed:
+          type: boolean
+        total:
+          type: integer
+        passed_count:
+          type: integer
+        failed_count:
+          type: integer
+        tests:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              passed:
+                type: boolean
+              duration:
+                type: number
+              error:
+                type: string
+
+    # ============================================================================
+    # DEPLOYMENT SCHEMAS
+    # ============================================================================
+    DeployRequest:
+      type: object
+      required:
+        - manifest
+      properties:
+        manifest:
+          type: string
+        environment:
+          type: string
+          enum: [local, dev, staging, production]
+          default: local
+        driver:
+          type: string
+          enum: [local, docker, kubernetes]
+          default: local
+        dryRun:
+          type: boolean
+          default: false
+
+    DeployResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        deploymentId:
+          type: string
+        environment:
+          type: string
+        url:
+          type: string
+
+    RunRequest:
+      type: object
+      required:
+        - manifest
+      properties:
+        manifest:
+          type: string
+        input:
+          type: object
+        verbose:
+          type: boolean
+          default: false
+
+    RunResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        output:
+          type: object
+        duration:
+          type: number
+
+    StatusResponse:
+      type: object
+      properties:
+        name:
+          type: string
+        status:
+          type: string
+          enum: [running, stopped, error, deploying]
+        deploymentId:
+          type: string
+        uptime:
+          type: integer
+        lastActive:
+          type: string
+          format: date-time
+
+    StopRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        force:
+          type: boolean
+          default: false
+
+    StopResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        name:
+          type: string
+
+    RollbackRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        version:
+          type: string
+        deploymentId:
+          type: string
+
+    RollbackResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        previousVersion:
+          type: string
+        currentVersion:
+          type: string
+
+    # ============================================================================
+    # LLMS.TXT SCHEMAS
+    # ============================================================================
+    LlmsTxtGenerateRequest:
+      type: object
+      required:
+        - manifest
+      properties:
+        manifest:
+          type: string
+        output:
+          type: string
+          default: llms.txt
+        verbose:
+          type: boolean
+          default: false
+
+    LlmsTxtGenerateResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        output:
+          type: string
+        content:
+          type: string
+
+    LlmsTxtValidateRequest:
+      type: object
+      required:
+        - llmsTxt
+        - manifest
+      properties:
+        llmsTxt:
+          type: string
+        manifest:
+          type: string
+        verbose:
+          type: boolean
+          default: false
+
+    LlmsTxtValidateResponse:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        warnings:
+          type: array
+          items:
+            type: string
+
+    LlmsTxtSyncRequest:
+      type: object
+      required:
+        - manifest
+      properties:
+        manifest:
+          type: string
+        watch:
+          type: boolean
+          default: false
+        verbose:
+          type: boolean
+          default: false
+
+    LlmsTxtSyncResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        output:
+          type: string
+        watching:
+          type: boolean
+
+    # ============================================================================
+    # ERROR SCHEMAS
+    # ============================================================================
+    Problem:
+      type: object
+      description: RFC7807 Problem Details
+      properties:
+        type:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri
+        traceId:
+          type: string
+
+  responses:
+    ValidationError:
+      description: Validation error
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+
+x-ossa-metadata:
+  version: 0.3.3
+  compliance:
+    level: enterprise
+    frameworks:
+      - OSSA v0.3.3
+      - OpenAPI 3.1
+      - RFC7807
+  governance:
+    approved: true
+    approvedBy: OSSA Standards Team
+    approvalDate: 2026-01-09

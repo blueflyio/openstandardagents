@@ -1,0 +1,40 @@
+apiVersion: ossa/v0.4.1
+kind: Agent
+metadata:
+  name: typescript-conversational
+  version: 0.1.0
+  description: Migrated from LangChain openai-functions agent
+  labels:
+    ossa-version: v0.3.6
+    migration-source: langchain
+  annotations:
+    ossa.io/migration: langchain-to-ossa
+    ossa.io/migrated-date: "2026-01-15"
+    ossa.io/source-file: 02-typescript-conversational-before.ts
+spec:
+  role: OpenAI Functions Agent - uses OpenAI function calling to select and use tools
+  llm:
+    provider: openai
+    model: gpt-4
+    temperature: 0.5
+    maxTokens: 1500
+  tools:
+    - type: function
+      name: send_email
+      description: Send an email to a recipient. Use this when asked to send emails.
+    - type: function
+      name: check_calendar
+      description: Check calendar for available time slots. Use this when scheduling meetings.
+    - type: function
+      name: search_knowledge_base
+      description: Search internal knowledge base for information. Use this for company policies, procedures, or documentation.
+  autonomy:
+    level: assisted
+  extensions:
+    langchain:
+      memory_type: BufferMemory
+      memory_config:
+        returnMessages: true
+        memoryKey: chat_history
+        inputKey: input
+        outputKey: output

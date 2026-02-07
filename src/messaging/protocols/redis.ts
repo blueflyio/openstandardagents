@@ -1,5 +1,5 @@
 /**
- * OSSA v0.3.1 Messaging Extension - Redis Transport
+ * OSSA v0.3.3 Messaging Extension - Redis Transport
  * Redis-based message broker for production use
  */
 
@@ -85,7 +85,10 @@ export class RedisMessageBroker extends AbstractMessageBroker {
   /**
    * Subscribe to messages on a channel
    */
-  async subscribe(subscription: Subscription, handler: MessageHandler): Promise<SubscriptionHandle> {
+  async subscribe(
+    subscription: Subscription,
+    handler: MessageHandler
+  ): Promise<SubscriptionHandle> {
     await this.connect();
 
     const handle: SubscriptionHandle = {
@@ -148,7 +151,10 @@ export class RedisMessageBroker extends AbstractMessageBroker {
   /**
    * Publish to Redis Pub/Sub
    */
-  private async publishToPubSub(channel: string, message: string): Promise<void> {
+  private async publishToPubSub(
+    channel: string,
+    message: string
+  ): Promise<void> {
     // In production: await this.client.publish(channel, message);
     console.log(`Publishing to ${channel}:`, message);
   }
@@ -156,7 +162,10 @@ export class RedisMessageBroker extends AbstractMessageBroker {
   /**
    * Publish to Redis Stream
    */
-  private async publishToStream(streamKey: string, message: Message): Promise<void> {
+  private async publishToStream(
+    streamKey: string,
+    message: Message
+  ): Promise<void> {
     // In production:
     // await this.client.xAdd(streamKey, '*', {
     //   data: JSON.stringify(message),
@@ -205,20 +214,23 @@ export class RedisMessageBroker extends AbstractMessageBroker {
   /**
    * Validate configuration
    */
-  private validateConfig(config: Record<string, unknown>): RedisTransportConfig {
+  private validateConfig(
+    config: Record<string, unknown>
+  ): RedisTransportConfig {
     if (!config.url || typeof config.url !== 'string') {
       throw new Error('Redis URL is required');
     }
 
     return {
-      url: config.url as string,
+      url: config.url,
       db: (config.db as number) || 0,
       keyPrefix: (config.keyPrefix as string) || 'ossa:messages:',
       connectionTimeout: (config.connectionTimeout as number) || 5000,
-      retryStrategy: config.retryStrategy as RedisTransportConfig['retryStrategy'] || {
-        maxRetries: 3,
-        backoff: 'exponential',
-      },
+      retryStrategy:
+        (config.retryStrategy as RedisTransportConfig['retryStrategy']) || {
+          maxRetries: 3,
+          backoff: 'exponential',
+        },
     };
   }
 
@@ -229,12 +241,17 @@ export class RedisMessageBroker extends AbstractMessageBroker {
   private createMockRedisClient(): any {
     return {
       publish: async (channel: string, message: string) => {
-        console.log(`[Mock Redis] PUBLISH ${channel}: ${message.substring(0, 100)}...`);
+        console.log(
+          `[Mock Redis] PUBLISH ${channel}: ${message.substring(0, 100)}...`
+        );
       },
       xAdd: async (key: string, id: string, fields: Record<string, string>) => {
         console.log(`[Mock Redis] XADD ${key} ${id}:`, fields);
       },
-      pSubscribe: async (pattern: string, _callback: (message: string, channel: string) => void) => {
+      pSubscribe: async (
+        pattern: string,
+        _callback: (message: string, channel: string) => void
+      ) => {
         console.log(`[Mock Redis] PSUBSCRIBE ${pattern}`);
       },
       xAck: async (key: string, group: string, id: string) => {

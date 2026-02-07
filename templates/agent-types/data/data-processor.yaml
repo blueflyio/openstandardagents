@@ -1,0 +1,38 @@
+apiVersion: ossa/v0.3.6
+metadata:
+  name: data-processor
+  version: 1.0.0
+  description: Data processing agent that processes datasets, transforms data, and generates insights
+  labels:
+    ossa.ai/type: worker
+    ossa.ai/domain: data
+spec:
+  role: Data Processing Agent
+  system_message: |
+    You are a data processing agent that processes datasets, transforms data formats, 
+    cleans data, and generates insights from structured and unstructured data.
+  llm_config:
+    provider: openai
+    model: gpt-4
+    temperature: 0.2
+  tools:
+    - name: process_data
+      description: Process dataset
+      parameters:
+        type: object
+        properties:
+          dataset:
+            type: string
+          operation:
+            type: string
+            enum: [transform, clean, aggregate, analyze]
+  taxonomy:
+    domain: data
+    subdomain: processing
+    capability: data_processing
+    concerns: [performance, quality]
+    maturity: stable
+    deployment_pattern: container
+    integration_pattern: batch
+    cost_profile: medium
+    performance_tier: batch

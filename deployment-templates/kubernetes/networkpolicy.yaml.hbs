@@ -1,0 +1,261 @@
+---
+# ============================================================================
+# Network Policy for {{projectName}}
+# Controls network traffic to and from pods
+# ============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{networkPolicyName}}
+  namespace: {{namespace}}
+  labels:
+    app: {{appName}}
+    component: {{component}}
+    managed-by: kubernetes
+    part-of: {{projectName}}
+  annotations:
+    description: "Network policy for {{projectDescription}}"
+spec:
+  # ==========================================================================
+  # Pod Selector - Which pods this policy applies to
+  # ==========================================================================
+  podSelector:
+    matchLabels:
+      app: {{appName}}
+      component: {{component}}
+
+  # ==========================================================================
+  # Policy Types
+  # ==========================================================================
+  policyTypes:
+    - Ingress
+    - Egress
+
+  # ==========================================================================
+  # Ingress Rules - Incoming traffic
+  # ==========================================================================
+  ingress:
+    {{#if allowIngressFromNamespace}}
+    # Allow traffic from pods in the same namespace
+    - from:
+        - podSelector: {}
+      ports:
+        - protocol: TCP
+          port: {{containerPort}}
+    {{/if}}
+
+    {{#if allowIngressFromIngress}}
+    # Allow traffic from ingress controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: {{ingressNamespace}}
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: {{ingressController}}
+      ports:
+        - protocol: TCP
+          port: {{containerPort}}
+    {{/if}}
+
+    {{#if customIngressRules}}
+    # Custom ingress rules
+    {{#each customIngressRules}}
+    - from:
+        {{#if namespaceSelector}}
+        - namespaceSelector:
+            matchLabels:
+              {{#each namespaceSelector}}
+              {{@key}}: {{this}}
+              {{/each}}
+        {{/if}}
+        {{#if podSelector}}
+        - podSelector:
+            matchLabels:
+              {{#each podSelector}}
+              {{@key}}: {{this}}
+              {{/each}}
+        {{/if}}
+        {{#if ipBlock}}
+        - ipBlock:
+            cidr: {{ipBlock.cidr}}
+            {{#if ipBlock.except}}
+            except:
+              {{#each ipBlock.except}}
+              - {{this}}
+              {{/each}}
+            {{/if}}
+        {{/if}}
+      {{#if ports}}
+      ports:
+        {{#each ports}}
+        - protocol: {{protocol}}
+          port: {{port}}
+          {{#if endPort}}
+          endPort: {{endPort}}
+          {{/if}}
+        {{/each}}
+      {{/if}}
+    {{/each}}
+    {{/if}}
+
+  # ==========================================================================
+  # Egress Rules - Outgoing traffic
+  # ==========================================================================
+  egress:
+    {{#if allowEgressToNamespace}}
+    # Allow traffic to pods in the same namespace
+    - to:
+        - podSelector: {}
+    {{/if}}
+
+    {{#if allowDnsEgress}}
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: kube-system
+        - podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    {{/if}}
+
+    {{#if allowDatabaseEgress}}
+    # Allow traffic to database
+    - to:
+        {{#if databaseInCluster}}
+        - podSelector:
+            matchLabels:
+              app: {{databaseApp}}
+        {{else}}
+        - ipBlock:
+            cidr: {{databaseCidr}}
+        {{/if}}
+      ports:
+        - protocol: TCP
+          port: {{databasePort}}
+    {{/if}}
+
+    {{#if allowRedisEgress}}
+    # Allow traffic to Redis
+    - to:
+        {{#if redisInCluster}}
+        - podSelector:
+            matchLabels:
+              app: {{redisApp}}
+        {{else}}
+        - ipBlock:
+            cidr: {{redisCidr}}
+        {{/if}}
+      ports:
+        - protocol: TCP
+          port: {{redisPort}}
+    {{/if}}
+
+    {{#if allowExternalEgress}}
+    # Allow traffic to external services (e.g., APIs)
+    - to:
+        {{#each externalEgressCidrs}}
+        - ipBlock:
+            cidr: {{this}}
+        {{/each}}
+      ports:
+        - protocol: TCP
+          port: 443  # HTTPS
+        - protocol: TCP
+          port: 80   # HTTP
+    {{/if}}
+
+    {{#if customEgressRules}}
+    # Custom egress rules
+    {{#each customEgressRules}}
+    - to:
+        {{#if namespaceSelector}}
+        - namespaceSelector:
+            matchLabels:
+              {{#each namespaceSelector}}
+              {{@key}}: {{this}}
+              {{/each}}
+        {{/if}}
+        {{#if podSelector}}
+        - podSelector:
+            matchLabels:
+              {{#each podSelector}}
+              {{@key}}: {{this}}
+              {{/each}}
+        {{/if}}
+        {{#if ipBlock}}
+        - ipBlock:
+            cidr: {{ipBlock.cidr}}
+            {{#if ipBlock.except}}
+            except:
+              {{#each ipBlock.except}}
+              - {{this}}
+              {{/each}}
+            {{/if}}
+        {{/if}}
+      {{#if ports}}
+      ports:
+        {{#each ports}}
+        - protocol: {{protocol}}
+          port: {{port}}
+          {{#if endPort}}
+          endPort: {{endPort}}
+          {{/if}}
+        {{/each}}
+      {{/if}}
+    {{/each}}
+    {{/if}}
+
+---
+# ============================================================================
+# Default Deny All Policy (Optional - Security Best Practice)
+# Apply this first, then add specific allow policies
+# ============================================================================
+{{#if createDenyAllPolicy}}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: {{namespace}}
+  labels:
+    managed-by: kubernetes
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+{{/if}}
+
+---
+# ============================================================================
+# Allow DNS Policy (Required if using default deny)
+# ============================================================================
+{{#if createDenyAllPolicy}}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns
+  namespace: {{namespace}}
+  labels:
+    managed-by: kubernetes
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+{{/if}}

@@ -7,6 +7,7 @@ import { describe, it, expect } from '@jest/globals';
 import { container } from '../../src/di-container.js';
 import { GenerationService } from '../../src/services/generation.service.js';
 import { getApiVersion } from '../../src/utils/version.js';
+import { API_VERSION } from '../../../src/version.js';
 
 describe('Platform Import Integration', () => {
   const generationService = container.get(GenerationService);
@@ -20,7 +21,10 @@ describe('Platform Import Integration', () => {
       },
     };
 
-    const ossaManifest = await generationService.importFromPlatform(cursorData, 'cursor');
+    const ossaManifest = await generationService.importFromPlatform(
+      cursorData,
+      'cursor'
+    );
     expect(ossaManifest.apiVersion).toBe(currentApiVersion);
     expect(ossaManifest.kind).toBe('Agent');
     expect(ossaManifest.extensions.cursor).toBeDefined();
@@ -46,7 +50,10 @@ describe('Platform Import Integration', () => {
       ],
     };
 
-    const ossaManifest = await generationService.importFromPlatform(openaiData, 'openai');
+    const ossaManifest = await generationService.importFromPlatform(
+      openaiData,
+      'openai'
+    );
     expect(ossaManifest.apiVersion).toBe(currentApiVersion);
     expect(ossaManifest.metadata.name).toBe('openai-agent');
     expect(ossaManifest.spec.role).toBe('You are a helpful assistant.');
@@ -62,7 +69,10 @@ describe('Platform Import Integration', () => {
       tools: ['tool1', 'tool2'],
     };
 
-    const ossaManifest = await generationService.importFromPlatform(crewaiData, 'crewai');
+    const ossaManifest = await generationService.importFromPlatform(
+      crewaiData,
+      'crewai'
+    );
     expect(ossaManifest.apiVersion).toBe(currentApiVersion);
     expect(ossaManifest.extensions.crewai).toBeDefined();
     expect(ossaManifest.extensions.crewai.role).toBe('Worker');
@@ -77,11 +87,16 @@ describe('Platform Import Integration', () => {
       tools: [],
     };
 
-    const ossaManifest = await generationService.importFromPlatform(anthropicData, 'anthropic');
+    const ossaManifest = await generationService.importFromPlatform(
+      anthropicData,
+      'anthropic'
+    );
     expect(ossaManifest.apiVersion).toBe(currentApiVersion);
     expect(ossaManifest.spec.role).toBe('You are helpful.');
     expect(ossaManifest.extensions.anthropic).toBeDefined();
-    expect(ossaManifest.extensions.anthropic.model).toBe('claude-3-5-sonnet-20241022');
+    expect(ossaManifest.extensions.anthropic.model).toBe(
+      'claude-3-5-sonnet-20241022'
+    );
   });
 
   it('should handle missing optional fields', async () => {
@@ -89,7 +104,10 @@ describe('Platform Import Integration', () => {
       name: 'minimal-agent',
     };
 
-    const ossaManifest = await generationService.importFromPlatform(minimalData, 'openai');
+    const ossaManifest = await generationService.importFromPlatform(
+      minimalData,
+      'openai'
+    );
     expect(ossaManifest.apiVersion).toBe(currentApiVersion);
     expect(ossaManifest.metadata.name).toBe('minimal-agent');
   });

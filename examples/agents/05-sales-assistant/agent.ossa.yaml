@@ -1,0 +1,146 @@
+apiVersion: ossa/v0.4.1
+kind: Agent
+metadata:
+  name: sales-assistant
+  version: 1.0.0
+  description: |
+    Sales assistant agent with CRM integration and entity memory.
+    Manages leads, tracks interactions, and sends automated follow-ups.
+  labels:
+    platform: langchain
+    export: langchain
+    use-case: sales
+    tier: production
+spec:
+  role: |
+    You are a professional sales assistant specializing in:
+    - Lead qualification and nurturing
+    - CRM management and data entry
+    - Automated follow-up communication
+    - Meeting scheduling and coordination
+    - Sales pipeline management
+
+  llm:
+    provider: openai
+    model: gpt-4o
+    temperature: 0.7
+    maxTokens: 1500
+
+  capabilities:
+    - search_crm
+    - create_lead
+    - send_followup
+    - schedule_meeting
+    - update_pipeline
+
+  tools:
+    - type: function
+      name: search_crm
+      description: Search CRM for contacts and accounts
+      parameters:
+        type: object
+        properties:
+          query:
+            type: string
+          filters:
+            type: object
+            properties:
+              status:
+                type: string
+              industry:
+                type: string
+              revenue_range:
+                type: string
+
+    - type: function
+      name: create_lead
+      description: Create new lead in CRM
+      parameters:
+        type: object
+        properties:
+          name:
+            type: string
+          email:
+            type: string
+          company:
+            type: string
+          phone:
+            type: string
+          source:
+            type: string
+          notes:
+            type: string
+        required:
+          - name
+          - email
+
+    - type: function
+      name: send_followup
+      description: Send automated follow-up email
+      parameters:
+        type: object
+        properties:
+          leadId:
+            type: string
+          template:
+            type: string
+            enum: [intro, demo_followup, pricing, closing]
+          personalization:
+            type: object
+        required:
+          - leadId
+          - template
+
+    - type: function
+      name: schedule_meeting
+      description: Schedule meeting with lead
+      parameters:
+        type: object
+        properties:
+          leadId:
+            type: string
+          meetingType:
+            type: string
+            enum: [discovery, demo, negotiation, closing]
+          duration:
+            type: integer
+          suggestedTimes:
+            type: array
+            items:
+              type: string
+              format: date-time
+        required:
+          - leadId
+          - meetingType
+
+  memory:
+    enabled: true
+    type: entity_memory
+    entities:
+      - type: lead
+        fields: [name, company, status, last_contact, notes]
+      - type: interaction
+        fields: [date, type, summary, outcome]
+
+  observability:
+    logging:
+      level: info
+    metrics:
+      enabled: true
+      metrics:
+        - leads_created
+        - emails_sent
+        - meetings_scheduled
+        - conversion_rate
+
+extensions:
+  langchain:
+    agent_type: react
+    memory_type: entity
+    tools_mapping:
+      - ossa_capability: search_crm
+        langchain_tool: crm_search
+      - ossa_capability: create_lead
+        langchain_tool: create_lead
+      - ossa_capability: send_followup
+        langchain_tool: send_email

@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: AIFlow Bridge Agent API
-  version: 0.3.2
+  version: 0.3.3
   description: |
     OSSA agent with AIFlow-Agent bridge for social crypto analysis.
     Integrates with Twitter, Telegram, and Discord for autonomous social media presence.
@@ -15,10 +15,10 @@ x-ossa-metadata:
       - OpenAPI 3.1
 
 x-ossa:
-  version: 0.2.5-RC
+  version: 0.3.3
   agent:
     id: crypto-analyst-agent
-    type: chat
+    type: specialist
     compliance:
       standards:
         - openapi-first

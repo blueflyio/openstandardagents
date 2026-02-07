@@ -1,23 +1,23 @@
-## 🚨 HOTFIX - Expedited Review Required
+## :rotating_light: HOTFIX - Expedited Review Required
 
-> ⚠️ **This is a hotfix requiring expedited review. All assigned agents will process with HIGH priority.**
+<!-- This template is for emergency fixes that require immediate attention -->
 
-### Incident Information
+## Incident Information
 
 | Field | Value |
 |-------|-------|
-| **Severity** | <!-- P1 / P2 / P3 --> |
-| **Incident ID** | <!-- INC-XXXX or link --> |
-| **Environment** | <!-- production / staging --> |
-| **Start Time** | <!-- YYYY-MM-DD HH:MM UTC --> |
-| **Duration** | <!-- How long has issue persisted --> |
+| Severity | `critical` / `high` / `medium` |
+| Incident ID | |
+| Environment | `production` / `staging` |
+| Started | |
+| Duration | |
 
-### Impact
+## Impact
 
-- [ ] 🔴 Service outage (P1)
-- [ ] 🟠 Degraded performance (P2)
-- [ ] 🟡 Non-critical bug (P3)
-- [ ] 🔒 Security vulnerability
+- [ ] Complete service outage
+- [ ] Partial service degradation
+- [ ] Non-critical functionality affected
+- [ ] Security vulnerability
 
 ## Root Cause
 
@@ -25,35 +25,29 @@
 
 ## Fix Description
 
-<!-- What this hotfix does to resolve the issue -->
+<!-- What does this fix do? -->
 
 ## Changes
 
 ```diff
-# Key code changes
+# Key changes
 ```
 
----
-
-## 🤖 Expedited Agent Review
+## Expedited Agent Review
 
 <!-- All agents process hotfixes with HIGH priority -->
 
-- [x] `@bot-mr-reviewer` — **EXPEDITED** security + code review
-- [x] `@bot-gitlab-ci-fixer` — CI validation (if pipeline changes)
-- [x] `@bot-drupal-standards` — Quick standards check (Drupal only)
-- [x] `@bot-config-auditor` — Config validation (if config changes)
+### Required (Expedited)
+- [x] `@bot-mr-reviewer` - Expedited code review
+- [x] `@bot-gitlab-ci-fixer` - CI validation (if CI changes)
 
 ### Priority Commands
-
 ```
-/review urgent              # Trigger immediate review
-/review security --quick    # Fast security scan
-/fix pipeline --hotfix     # Fix CI with hotfix context
-/validate --quick          # Quick schema validation
+/review urgent                  - Urgent expedited review
+/review security --quick        - Quick security check
+/fix pipeline --hotfix          - Hotfix pipeline mode
+/validate --quick               - Quick validation
 ```
-
----
 
 ## Hotfix Checklist
 
@@ -62,78 +56,63 @@
 - [ ] Fix tested locally
 - [ ] No unrelated changes included
 - [ ] Rollback plan documented
-- [ ] Incident channel notified
 
-### Security (if security fix)
-- [ ] Vulnerability details NOT in commit message
-- [ ] CVE assigned (if applicable)
+### Security (if security-related)
+- [ ] Vulnerability patched
+- [ ] No new vulnerabilities introduced
+- [ ] CVE documented (if applicable)
 - [ ] Security team notified
-- [ ] Disclosure timeline agreed
 
 ### Testing
 - [ ] Fix resolves the issue
 - [ ] No regression introduced
 - [ ] Pipeline passes
-- [ ] Smoke test in staging (if possible)
+- [ ] Smoke test completed
 
 ### Post-Merge
-- [ ] Monitor deployment
+- [ ] Monitor production after deploy
 - [ ] Verify fix in production
 - [ ] Update incident ticket
 - [ ] Schedule follow-up cleanup MR
 
----
-
 ## Rollback Plan
 
+### Immediate Rollback
 ```bash
-# Immediate rollback commands
+# If fix causes issues, immediately revert
 git revert <commit-sha>
-# OR
-kubectl rollout undo deployment/<name>
-# OR  
-drush cr && drush cim --partial
+git push origin main
 ```
 
-### Rollback Trigger Conditions
-- [ ] Error rate increases after deploy
-- [ ] P95 latency exceeds threshold
-- [ ] New errors in monitoring
-- [ ] Customer reports persist
-
----
+### Rollback Triggers
+- [ ] Error rate increases
+- [ ] New errors appear
+- [ ] Performance degradation
+- [ ] User reports of issues
 
 ## Deployment Plan
 
-- [ ] **Step 1**: Merge to `main`
-- [ ] **Step 2**: Auto-deploy to staging
-- [ ] **Step 3**: Verify fix in staging (5 min)
-- [ ] **Step 4**: Manual deploy to production
-- [ ] **Step 5**: Monitor for 15 minutes
-- [ ] **Step 6**: Close incident
-
----
+| Step | Action | Owner | ETA |
+|------|--------|-------|-----|
+| 1 | Merge MR | | |
+| 2 | Deploy to staging | | |
+| 3 | Smoke test staging | | |
+| 4 | Deploy to production | | |
+| 5 | Monitor production | | |
+| 6 | Close incident | | |
 
 ## Communication
 
-- [ ] Incident channel updated
-- [ ] Status page updated (if public outage)
-- [ ] Stakeholders notified
+- [ ] Team notified of hotfix
+- [ ] Stakeholders informed
+- [ ] Status page updated (if applicable)
 - [ ] Post-mortem scheduled
-
----
 
 ## Follow-up Tasks
 
-<!-- Create issues for technical debt / proper fix -->
+<!-- List any technical debt or improvements to address later -->
+- [ ]
+- [ ]
 
-- [ ] #XXX - Proper long-term fix
-- [ ] #XXX - Add regression test
-- [ ] #XXX - Update monitoring/alerting
-- [ ] #XXX - Post-mortem documentation
-
----
-
-/label ~"hotfix" ~"priority::1" ~"expedited-review"
+/label ~hotfix ~critical ~expedited ~needs-review
 /assign_reviewer @bot-mr-reviewer
-/milestone %"Hotfix"

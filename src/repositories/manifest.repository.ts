@@ -7,7 +7,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { stringify as stringifyYaml } from 'yaml';
 import { injectable } from 'inversify';
-import type { IManifestRepository, OssaAgent } from '../types/index';
+import type { IManifestRepository, OssaAgent } from '../types/index.js';
 import { validateFilePath } from '../utils/path-validator.js';
 import { safeParseYAML } from '../utils/yaml-parser.js';
 
@@ -32,7 +32,9 @@ export class ManifestRepository implements IManifestRepository {
         // Use safe YAML parsing to prevent injection attacks
         return safeParseYAML(content);
       } else {
-        throw new Error(`Unsupported file format: ${ext}. Must be .json, .yaml, or .yml`);
+        throw new Error(
+          `Unsupported file format: ${ext}. Must be .json, .yaml, or .yml`
+        );
       }
     } catch (error) {
       throw new Error(
@@ -60,19 +62,26 @@ export class ManifestRepository implements IManifestRepository {
 
     let content: string;
 
-    try {
-      if (ext === '.json') {
-        content = JSON.stringify(manifest, null, 2);
-      } else if (ext === '.yaml' || ext === '.yml') {
-        content = stringifyYaml(manifest, {
-          indent: 2,
-          lineWidth: 0,
-          minContentWidth: 0,
-        });
-      } else {
-        throw new Error(`Unsupported file format: ${ext}. Must be .json, .yaml, or .yml`);
-      }
+    if (ext === '.json') {
+      content = JSON.stringify(manifest, null, 2);
+    } else if (ext === '.yaml' || ext === '.yml') {
+      // Use YAML stringify with options that ensure proper handling of strings with special characters
+      // Environment variable patterns like ${VAR:-default} need to be preserved correctly
+      content = stringifyYaml(manifest, null, {
+        indent: 2,
+        lineWidth: 0,
+        minContentWidth: 0,
+        // Use 'QUOTE_DOUBLE' to ensure strings with special chars are quoted
+        // This prevents YAML parsers from misinterpreting ${VAR:-default} patterns
+        defaultStringType: 'QUOTE_DOUBLE' as any,
+      });
+    } else {
+      throw new Error(
+        `Unsupported file format: ${ext}. Must be .json, .yaml, or .yml`
+      );
+    }
 
+    try {
       fs.writeFileSync(resolvedPath, content, 'utf-8');
     } catch (error) {
       throw new Error(

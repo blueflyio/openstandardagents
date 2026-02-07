@@ -8,6 +8,10 @@
  *   ossa registry discover   - Auto-discover agents in workspace
  *   ossa registry export     - Export registry as JSON/YAML
  *   ossa registry validate   - Validate all registered agents
+ *
+ * SOLID Principles:
+ * - Uses shared output utilities (DRY)
+ * - Single Responsibility: Only handles registry operations
  */
 
 import { Command } from 'commander';
@@ -16,6 +20,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'yaml';
 import { glob } from 'glob';
+import { outputJSON, handleCommandError } from '../utils/index.js';
 
 interface AgentEntry {
   name: string;
@@ -49,8 +54,9 @@ interface Registry {
   };
 }
 
-export const registryCommand = new Command('registry')
-  .description('Manage agent registry (discovery and catalog)');
+export const registryCommand = new Command('registry').description(
+  'Manage agent registry (discovery and catalog)'
+);
 
 // ============================================================================
 // Subcommand: registry list
@@ -76,20 +82,23 @@ registryCommand
 
       // Apply filters
       if (options.filter) {
-        agents = agents.filter(a =>
-          a.capabilities.some(c => c.toLowerCase().includes(options.filter.toLowerCase()))
+        agents = agents.filter((a) =>
+          a.capabilities.some((c) =>
+            c.toLowerCase().includes(options.filter.toLowerCase())
+          )
         );
       }
 
       if (options.kind) {
-        agents = agents.filter(a =>
-          (a.kind || 'Agent').toLowerCase() === options.kind.toLowerCase()
+        agents = agents.filter(
+          (a) =>
+            (a.kind || 'Agent').toLowerCase() === options.kind.toLowerCase()
         );
       }
 
       // Output format
       if (options.json) {
-        console.log(JSON.stringify(agents, null, 2));
+        outputJSON(agents);
         process.exit(0);
       }
 
@@ -111,18 +120,23 @@ registryCommand
       }
 
       // Group by kind
-      const byKind = agents.reduce((acc, agent) => {
-        const kind = agent.kind || 'Agent';
-        if (!acc[kind]) acc[kind] = [];
-        acc[kind].push(agent);
-        return acc;
-      }, {} as Record<string, typeof agents>);
+      const byKind = agents.reduce(
+        (acc, agent) => {
+          const kind = agent.kind || 'Agent';
+          if (!acc[kind]) acc[kind] = [];
+          acc[kind].push(agent);
+          return acc;
+        },
+        {} as Record<string, typeof agents>
+      );
 
       for (const [kind, kindAgents] of Object.entries(byKind)) {
         const kindColor =
-          kind === 'Workflow' ? chalk.magenta :
-          kind === 'Task' ? chalk.yellow :
-          chalk.cyan;
+          kind === 'Workflow'
+            ? chalk.magenta
+            : kind === 'Task'
+              ? chalk.yellow
+              : chalk.cyan;
 
         console.log(`\n${kindColor(`[${kind}]`)} (${kindAgents.length})`);
 
@@ -130,7 +144,9 @@ registryCommand
           console.log(`  ${chalk.white(agent.name)}`);
           console.log(chalk.gray(`    Path: ${agent.path}`));
           if (agent.capabilities.length > 0) {
-            console.log(chalk.gray(`    Capabilities: ${agent.capabilities.join(', ')}`));
+            console.log(
+              chalk.gray(`    Capabilities: ${agent.capabilities.join(', ')}`)
+            );
           }
         }
       }
@@ -140,8 +156,7 @@ registryCommand
 
       process.exit(0);
     } catch (error) {
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
-      process.exit(1);
+      handleCommandError(error);
     }
   });
 
@@ -174,11 +189,14 @@ registryCommand
         process.exit(1);
       }
 
-      const projectName = options.name || path.basename(path.dirname(resolvedPath));
+      const projectName =
+        options.name || path.basename(path.dirname(resolvedPath));
       const relativePath = `./${path.relative(process.cwd(), resolvedPath)}`;
 
       // Check if already exists
-      const existingIndex = registry.agents.findIndex(p => p.path === relativePath);
+      const existingIndex = registry.agents.findIndex(
+        (p) => p.path === relativePath
+      );
 
       const agents: AgentEntry[] = [];
       for (const manifestFile of manifests) {
@@ -227,8 +245,7 @@ registryCommand
 
       process.exit(0);
     } catch (error) {
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
-      process.exit(1);
+      handleCommandError(error);
     }
   });
 
@@ -247,8 +264,8 @@ registryCommand
         process.exit(1);
       }
 
-      const index = registry.agents.findIndex(p =>
-        p.project === name || p.path.includes(name)
+      const index = registry.agents.findIndex(
+        (p) => p.project === name || p.path.includes(name)
       );
 
       if (index < 0) {
@@ -264,8 +281,7 @@ registryCommand
 
       process.exit(0);
     } catch (error) {
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
-      process.exit(1);
+      handleCommandError(error);
     }
   });
 
@@ -274,12 +290,13 @@ registryCommand
 // ============================================================================
 registryCommand
   .command('discover')
-  .description('Auto-discover agents in workspace (alias for workspace discover)')
+  .description(
+    'Auto-discover agents in workspace (alias for workspace discover)'
+  )
   .option('--depth <number>', 'Max directory depth', '3')
   .option('--dry-run', 'Show what would be discovered')
   .action(async (options) => {
     // Import and call workspace discover
-    const { exec } = await import('child_process');
     const args = ['workspace', 'discover'];
     if (options.dryRun) args.push('--dry-run');
     if (options.depth) args.push('--depth', options.depth);
@@ -302,7 +319,12 @@ registryCommand
     for (const pattern of patterns) {
       const files = await glob(pattern, {
         cwd,
-        ignore: ['node_modules/**', '**/node_modules/**', 'dist/**', '.agents-workspace/**'],
+        ignore: [
+          'node_modules/**',
+          '**/node_modules/**',
+          'dist/**',
+          '.agents-workspace/**',
+        ],
         maxDepth: parseInt(options.depth, 10),
       });
 
@@ -317,7 +339,7 @@ registryCommand
         const projectName = path.basename(projectDir);
         const relativePath = path.dirname(path.relative(cwd, fullPath));
 
-        let projectEntry = found.find(p => p.path === `./${relativePath}`);
+        let projectEntry = found.find((p) => p.path === `./${relativePath}`);
         if (!projectEntry) {
           projectEntry = {
             project: projectName,
@@ -353,9 +375,10 @@ registryCommand
     for (const project of found) {
       console.log(chalk.cyan(project.project));
       for (const agent of project.agents) {
-        const kindBadge = agent.kind !== 'Agent' && agent.kind
-          ? chalk.yellow(` [${agent.kind}]`)
-          : '';
+        const kindBadge =
+          agent.kind !== 'Agent' && agent.kind
+            ? chalk.yellow(` [${agent.kind}]`)
+            : '';
         console.log(`  • ${agent.name}${kindBadge}`);
       }
     }
@@ -391,9 +414,10 @@ registryCommand
         process.exit(1);
       }
 
-      const output = options.format === 'json'
-        ? JSON.stringify(registry, null, 2)
-        : yaml.stringify(registry);
+      const output =
+        options.format === 'json'
+          ? JSON.stringify(registry, null, 2)
+          : yaml.stringify(registry);
 
       if (options.output) {
         fs.writeFileSync(options.output, output);
@@ -404,8 +428,7 @@ registryCommand
 
       process.exit(0);
     } catch (error) {
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
-      process.exit(1);
+      handleCommandError(error);
     }
   });
 
@@ -462,7 +485,9 @@ registryCommand
               valid++;
             }
           } catch (e) {
-            errors.push(`${agent.name}: Parse error - ${e instanceof Error ? e.message : String(e)}`);
+            errors.push(
+              `${agent.name}: Parse error - ${e instanceof Error ? e.message : String(e)}`
+            );
             invalid++;
           }
         }
@@ -483,8 +508,7 @@ registryCommand
 
       process.exit(1);
     } catch (error) {
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
-      process.exit(1);
+      handleCommandError(error);
     }
   });
 

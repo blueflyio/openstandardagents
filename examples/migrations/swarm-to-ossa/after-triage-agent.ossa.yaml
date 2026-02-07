@@ -1,0 +1,315 @@
+---
+# OSSA v0.3.6 - Customer Service Triage Agent
+#
+# This is the OSSA equivalent of before-triage-agent.py
+#
+# Benefits over OpenAI Swarm:
+# - Declarative YAML (version control, CI/CD, GitOps)
+# - Deploy to ANY platform (Anthropic, OpenAI, LangChain, CrewAI, AutoGen)
+# - Production-ready (auth, observability, rate limiting, governance)
+# - 50% less code
+# - Enterprise features built-in
+
+apiVersion: ossa/v0.4.1
+kind: Agent
+metadata:
+  name: customer-service-triage
+  version: 1.0.0
+  description: "Customer service triage agent that routes requests to specialized agents"
+
+  # Agent Catalog (for discovery and reuse)
+  catalog:
+    published: true
+    catalog_id: ossa-customer-service-triage
+    visibility: public
+    categories:
+      - customer-service
+      - triage
+      - multi-agent
+    tags:
+      - customer-support
+      - routing
+      - handoffs
+    documentation_url: https://docs.example.com/agents/customer-service-triage
+
+  labels:
+    department: customer-service
+    tier: production
+    version: v1
+
+spec:
+  # Agent role and behavior
+  role: |
+    You are a friendly customer service triage agent.
+
+    Your role is to:
+    1. Greet customers warmly
+    2. Understand their request or issue
+    3. Route them to the appropriate specialist:
+       - Sales Agent: For product inquiries, purchases, or general questions
+       - Refunds Agent: For returns, refunds, or order issues
+
+    Be concise and efficient in your routing.
+
+  # LLM Configuration
+  llm:
+    provider: anthropic  # or "openai" to keep using OpenAI
+    model: claude-sonnet-4-5
+    temperature: 0.7
+    max_tokens: 2048
+
+  # Handoffs (Swarm's "transfer functions" → OSSA handoffs)
+  # This replaces transfer_to_sales_agent() and transfer_to_refunds_agent()
+  handoffs:
+    - name: route_to_sales
+      target_agent: sales-agent
+      description: "Route customer to sales agent for purchases and product questions"
+      condition: "intent == 'purchase' or intent == 'product_info' or intent == 'general_question'"
+      trigger: automatic  # Handoff happens automatically when condition is met
+      context_transfer: full  # Transfer entire conversation history
+
+    - name: route_to_refunds
+      target_agent: refunds-agent
+      description: "Route customer to refunds agent for returns and refunds"
+      condition: "intent == 'refund' or intent == 'return' or intent == 'complaint'"
+      trigger: automatic
+      context_transfer: full
+
+  # Context variables (Swarm's context_variables → OSSA context)
+  context_propagation:
+    mode: selective  # Only propagate specified fields
+    allowed_fields:
+      - user_id
+      - account_type
+      - session_id
+      - conversation_history
+    sensitive_fields:  # These require encryption in transit
+      - payment_info
+      - personal_data
+
+  # Authentication & Authorization (NOT available in Swarm)
+  identity:
+    provider: oauth2
+    authentication:
+      method: oauth2
+      scopes:
+        - read:user
+        - write:support_ticket
+      auto_refresh: true
+
+  # Observability (NOT available in Swarm)
+  observability:
+    metrics:
+      enabled: true
+      export_interval: 30s
+      metrics:
+        - handoff_rate
+        - response_time
+        - customer_satisfaction
+    tracing:
+      enabled: true
+      sampler: always_on
+    logging:
+      level: info
+      structured: true
+      include_context: true
+
+  # Rate Limiting (NOT available in Swarm)
+  constraints:
+    rate_limits:
+      requests_per_minute: 100
+      requests_per_hour: 1000
+      tokens_per_day: 500000
+    max_conversation_turns: 50
+    timeout_seconds: 30
+
+  # Cost Control (NOT available in Swarm)
+  token_efficiency:
+    enabled: true
+    target_savings: 0.5  # 50% token reduction
+    context_management:
+      strategy: adaptive
+      pruning:
+        enabled: true
+        threshold: 0.3  # Remove low-relevance context
+    caching:
+      enabled: true
+      strategy: semantic
+      ttl: 3600
+
+---
+# Sales Agent (equivalent to sales_agent in Swarm)
+apiVersion: ossa/v0.4.1
+kind: Agent
+metadata:
+  name: sales-agent
+  version: 1.0.0
+  description: "Sales specialist agent for product questions and orders"
+
+spec:
+  role: |
+    You are a knowledgeable sales agent.
+
+    Your role is to:
+    1. Answer product questions
+    2. Help customers make purchases
+    3. Provide recommendations
+    4. Execute orders when customers are ready
+
+    Be helpful and enthusiastic about our products!
+
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-5
+    temperature: 0.8  # More creative for sales
+    max_tokens: 2048
+
+  # Capabilities (Swarm's "functions" → OSSA capabilities)
+  # This replaces execute_order() function
+  capabilities:
+    - name: execute_order
+      description: "Execute a product order for the customer"
+      input_schema:
+        type: object
+        properties:
+          product_id:
+            type: string
+            description: "The product identifier"
+            pattern: "^[A-Z0-9-]+$"
+          quantity:
+            type: integer
+            description: "Number of items to order"
+            minimum: 1
+            maximum: 100
+            default: 1
+        required:
+          - product_id
+      output_schema:
+        type: object
+        properties:
+          order_id:
+            type: string
+            description: "Generated order identifier"
+          total_price:
+            type: number
+            description: "Total order price in USD"
+          status:
+            type: string
+            enum: [confirmed, pending, failed]
+          message:
+            type: string
+            description: "Order confirmation message"
+
+  # Handoffs back to triage or to refunds
+  handoffs:
+    - name: escalate_to_refunds
+      target_agent: refunds-agent
+      condition: "customer_wants_refund == true"
+      trigger: manual  # Sales agent must explicitly decide to handoff
+
+    - name: return_to_triage
+      target_agent: customer-service-triage
+      condition: "request_type == 'other'"
+      trigger: automatic
+
+  # Observability
+  observability:
+    metrics:
+      enabled: true
+      metrics:
+        - orders_executed
+        - average_order_value
+        - conversion_rate
+
+---
+# Refunds Agent (equivalent to refunds_agent in Swarm)
+apiVersion: ossa/v0.4.1
+kind: Agent
+metadata:
+  name: refunds-agent
+  version: 1.0.0
+  description: "Refunds specialist agent for returns and refunds"
+
+spec:
+  role: |
+    You are an empathetic refunds specialist.
+
+    Your role is to:
+    1. Listen to customer concerns
+    2. Process refund requests
+    3. Explain refund policies clearly
+    4. Resolve issues with care
+
+    Be understanding and process refunds quickly.
+
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-5
+    temperature: 0.6  # Balanced for empathy and accuracy
+    max_tokens: 2048
+
+  # Capabilities (Swarm's "functions" → OSSA capabilities)
+  # This replaces process_refund() function
+  capabilities:
+    - name: process_refund
+      description: "Process a refund request for an item"
+      input_schema:
+        type: object
+        properties:
+          item_id:
+            type: string
+            description: "The item identifier to refund"
+            pattern: "^[A-Z0-9-]+$"
+          reason:
+            type: string
+            description: "Reason for the refund"
+            minLength: 10
+            maxLength: 500
+        required:
+          - item_id
+          - reason
+      output_schema:
+        type: object
+        properties:
+          refund_id:
+            type: string
+            description: "Generated refund identifier"
+          status:
+            type: string
+            enum: [processed, pending, rejected]
+          amount:
+            type: number
+            description: "Refund amount in USD"
+          message:
+            type: string
+            description: "Refund confirmation message"
+
+  # Handoffs back to sales or triage
+  handoffs:
+    - name: upsell_opportunity
+      target_agent: sales-agent
+      condition: "customer_wants_replacement == true"
+      trigger: automatic
+
+    - name: return_to_triage
+      target_agent: customer-service-triage
+      condition: "issue_resolved == false"
+      trigger: manual
+
+  # Compliance & Governance (NOT available in Swarm)
+  compliance:
+    data_retention:
+      policy: gdpr
+      retention_days: 90
+    audit_logging:
+      enabled: true
+      log_all_interactions: true
+
+  # Observability
+  observability:
+    metrics:
+      enabled: true
+      metrics:
+        - refunds_processed
+        - average_refund_amount
+        - customer_satisfaction_score

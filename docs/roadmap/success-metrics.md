@@ -6,7 +6,7 @@
 
 ## 📊 Overview
 
-This document tracks success metrics for each phase of the OSSA v0.3.x → v0.4.0 evolution.
+This document tracks success metrics for each phase of the OSSA v0.3.x → v{{VERSION}} evolution.
 
 ---
 
@@ -312,16 +312,16 @@ Overall Progress:               [█░░░░░░░░░] 10%
 
 ```
 v0.3.0 (Phase 1): [████░░░░░░] 40%
-v0.3.2 (Phase 2): [░░░░░░░░░░]  0%
-v0.3.3 (Phase 3): [░░░░░░░░░░]  0%
-v0.4.0 (Phase 4): [░░░░░░░░░░]  0%
+v0.3.4 (Phase 2): [░░░░░░░░░░]  0%
+v0.3.4 (Phase 3): [░░░░░░░░░░]  0%
+v{{VERSION}} (Phase 4): [░░░░░░░░░░]  0%
 ```
 
 ---
 
 ## 🔗 Related Documentation
 
-- [Master Roadmap](v0.3.x-to-v0.4.0.md)
+- [Master Roadmap](v0.3.x-to-v{{VERSION}}.md)
 - [Phase 1: Specification](phase-1-specification.md)
 - [Phase 2: Runtime Implementation](phase-2-runtime-implementation.md)
 - [Phase 3: Production Use Cases](phase-3-production-use-cases.md)

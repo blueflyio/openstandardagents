@@ -6,13 +6,14 @@
 import { describe, it, expect } from '@jest/globals';
 import { container } from '../../src/di-container.js';
 import { GenerationService } from '../../src/services/generation.service.js';
+import { API_VERSION } from '../../src/version.js';
 
 describe('Platform Export Integration', () => {
   const generationService = container.get(GenerationService);
   // const manifestRepo = container.get(ManifestRepository); // Not used in tests
 
   const baseManifest = {
-    apiVersion: 'ossa/v0.2.4',
+    apiVersion: API_VERSION,
     kind: 'Agent',
     metadata: {
       name: 'test-agent',
@@ -46,7 +47,10 @@ describe('Platform Export Integration', () => {
       },
     };
 
-    const exported = await generationService.exportToPlatform(manifest, 'cursor');
+    const exported = await generationService.exportToPlatform(
+      manifest,
+      'cursor'
+    );
     expect(exported).toHaveProperty('agent_type');
     expect(exported.agent_type).toBe('composer');
   });
@@ -62,7 +66,10 @@ describe('Platform Export Integration', () => {
       },
     };
 
-    const exported = await generationService.exportToPlatform(manifest, 'openai');
+    const exported = await generationService.exportToPlatform(
+      manifest,
+      'openai'
+    );
     expect(exported).toHaveProperty('name');
     expect(exported).toHaveProperty('instructions');
     expect(exported).toHaveProperty('model');
@@ -81,7 +88,10 @@ describe('Platform Export Integration', () => {
       },
     };
 
-    const exported = await generationService.exportToPlatform(manifest, 'crewai');
+    const exported = await generationService.exportToPlatform(
+      manifest,
+      'crewai'
+    );
     expect(exported).toHaveProperty('role');
     expect(exported).toHaveProperty('goal');
     expect(exported).toHaveProperty('agent_type');
@@ -106,7 +116,10 @@ describe('Platform Export Integration', () => {
       },
     };
 
-    const exported = await generationService.exportToPlatform(manifest, 'anthropic');
+    const exported = await generationService.exportToPlatform(
+      manifest,
+      'anthropic'
+    );
     expect(exported).toHaveProperty('name');
     expect(exported).toHaveProperty('system');
     expect(exported).toHaveProperty('model');
@@ -123,13 +136,19 @@ describe('Platform Export Integration', () => {
       },
     };
 
-    const exported = await generationService.exportToPlatform(manifest, 'langchain');
+    const exported = await generationService.exportToPlatform(
+      manifest,
+      'langchain'
+    );
     expect(exported).toHaveProperty('type');
     expect(exported).toHaveProperty('chain_type');
   });
 
   it('should handle missing extensions gracefully', async () => {
-    const exported = await generationService.exportToPlatform(baseManifest, 'cursor');
+    const exported = await generationService.exportToPlatform(
+      baseManifest,
+      'cursor'
+    );
     expect(exported).toBeDefined();
     expect(exported.agent_type).toBeDefined();
   });

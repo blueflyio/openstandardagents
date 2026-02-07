@@ -144,14 +144,20 @@ export class DrupalAdapter {
     }
   }
 
-  private async sessionLogin(username: string, password: string): Promise<string> {
-    const response = await fetch(`${this.config.baseUrl}/user/login?_format=json`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ name: username, pass: password }),
-    });
+  private async sessionLogin(
+    username: string,
+    password: string
+  ): Promise<string> {
+    const response = await fetch(
+      `${this.config.baseUrl}/user/login?_format=json`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: username, pass: password }),
+      }
+    );
 
     if (!response.ok) {
       throw new Error(`Drupal login failed: ${response.statusText}`);
@@ -164,14 +170,19 @@ export class DrupalAdapter {
   /**
    * Execute via ECA (Event-Condition-Action)
    */
-  private async executeECA(manifest: OSSAManifest): Promise<DrupalExecutionResult> {
+  private async executeECA(
+    manifest: OSSAManifest
+  ): Promise<DrupalExecutionResult> {
     const ecaModel = this.convertToECAModel(manifest);
 
-    const response = await fetch(`${this.config.baseUrl}/api/ossa/eca/execute`, {
-      method: 'POST',
-      headers: this.getHeaders(),
-      body: JSON.stringify(ecaModel),
-    });
+    const response = await fetch(
+      `${this.config.baseUrl}/api/ossa/eca/execute`,
+      {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify(ecaModel),
+      }
+    );
 
     const result = (await response.json()) as {
       execution_id: string;
@@ -189,14 +200,19 @@ export class DrupalAdapter {
   /**
    * Execute via Maestro (BPM Workflow)
    */
-  private async executeMaestro(manifest: OSSAManifest): Promise<DrupalExecutionResult> {
+  private async executeMaestro(
+    manifest: OSSAManifest
+  ): Promise<DrupalExecutionResult> {
     const maestroProcess = this.convertToMaestroProcess(manifest);
 
-    const response = await fetch(`${this.config.baseUrl}/api/ossa/maestro/start`, {
-      method: 'POST',
-      headers: this.getHeaders(),
-      body: JSON.stringify(maestroProcess),
-    });
+    const response = await fetch(
+      `${this.config.baseUrl}/api/ossa/maestro/start`,
+      {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify(maestroProcess),
+      }
+    );
 
     const result = (await response.json()) as {
       process_id: string;
@@ -214,14 +230,19 @@ export class DrupalAdapter {
   /**
    * Execute via FlowDrop (Visual DAG)
    */
-  private async executeFlowDrop(manifest: OSSAManifest): Promise<DrupalExecutionResult> {
+  private async executeFlowDrop(
+    manifest: OSSAManifest
+  ): Promise<DrupalExecutionResult> {
     const flowDropDAG = this.convertToFlowDropDAG(manifest);
 
-    const response = await fetch(`${this.config.baseUrl}/api/ossa/flowdrop/execute`, {
-      method: 'POST',
-      headers: this.getHeaders(),
-      body: JSON.stringify(flowDropDAG),
-    });
+    const response = await fetch(
+      `${this.config.baseUrl}/api/ossa/flowdrop/execute`,
+      {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify(flowDropDAG),
+      }
+    );
 
     const result = (await response.json()) as {
       execution_id: string;
@@ -239,14 +260,19 @@ export class DrupalAdapter {
   /**
    * Execute via AI Agent Runner
    */
-  private async executeAIAgentRunner(manifest: OSSAManifest): Promise<DrupalExecutionResult> {
+  private async executeAIAgentRunner(
+    manifest: OSSAManifest
+  ): Promise<DrupalExecutionResult> {
     const agentConfig = this.convertToAgentRunnerConfig(manifest);
 
-    const response = await fetch(`${this.config.baseUrl}/api/ossa/agent-runner/start`, {
-      method: 'POST',
-      headers: this.getHeaders(),
-      body: JSON.stringify(agentConfig),
-    });
+    const response = await fetch(
+      `${this.config.baseUrl}/api/ossa/agent-runner/start`,
+      {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify(agentConfig),
+      }
+    );
 
     const result = (await response.json()) as {
       agent_id: string;
@@ -264,14 +290,19 @@ export class DrupalAdapter {
   /**
    * Execute via Minikanban
    */
-  private async executeMinikanban(manifest: OSSAManifest): Promise<DrupalExecutionResult> {
+  private async executeMinikanban(
+    manifest: OSSAManifest
+  ): Promise<DrupalExecutionResult> {
     const kanbanTasks = this.convertToMinikanbanTasks(manifest);
 
-    const response = await fetch(`${this.config.baseUrl}/api/ossa/minikanban/create`, {
-      method: 'POST',
-      headers: this.getHeaders(),
-      body: JSON.stringify(kanbanTasks),
-    });
+    const response = await fetch(
+      `${this.config.baseUrl}/api/ossa/minikanban/create`,
+      {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify(kanbanTasks),
+      }
+    );
 
     const result = (await response.json()) as {
       board_id: string;
@@ -438,3 +469,10 @@ export class DrupalAdapter {
 }
 
 export default DrupalAdapter;
+
+// Export the Drupal module generator
+export {
+  DrupalModuleGenerator,
+  type DrupalModuleGeneratorOptions,
+} from './generator.js';
+export { DrupalAdapter as DrupalRuntimeAdapter } from './adapter.js';

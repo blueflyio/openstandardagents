@@ -8,6 +8,7 @@ import Ajv from 'ajv';
 import * as fs from 'fs';
 import * as path from 'path';
 import type { OssaAgent } from '../../../src/types/index.js';
+import { API_VERSION } from '../../../src/version.js';
 
 describe('AgentsMdExtension Schema Validation', () => {
   let ajv: Ajv;
@@ -15,7 +16,10 @@ describe('AgentsMdExtension Schema Validation', () => {
 
   beforeAll(() => {
     // Load schema
-    const schemaPath = path.resolve(__dirname, '../../../spec/v0.2.8/ossa-0.2.8.schema.json');
+    const schemaPath = path.resolve(
+      __dirname,
+      '../../../spec/v0.4/agent.schema.json'
+    );
     schema = JSON.parse(fs.readFileSync(schemaPath, 'utf-8'));
 
     ajv = new Ajv({ strict: false, allErrors: true });
@@ -24,7 +28,7 @@ describe('AgentsMdExtension Schema Validation', () => {
 
   it('should validate manifest with agents_md extension', () => {
     const manifest: OssaAgent = {
-      apiVersion: 'ossa/v0.2.8',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'test-agent',
@@ -36,7 +40,7 @@ describe('AgentsMdExtension Schema Validation', () => {
         agents_md: {
           enabled: true,
           generate: true,
-          output_path: 'AGENTS.md',
+          file_path: 'AGENTS.md',
         },
       },
     };
@@ -53,7 +57,7 @@ describe('AgentsMdExtension Schema Validation', () => {
 
   it('should validate manifest with all agents_md properties', () => {
     const manifest: OssaAgent = {
-      apiVersion: 'ossa/v0.2.8',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'test-agent',
@@ -65,7 +69,7 @@ describe('AgentsMdExtension Schema Validation', () => {
         agents_md: {
           enabled: true,
           generate: true,
-          output_path: '.github/AGENTS.md',
+          file_path: '.github/AGENTS.md',
           sections: {
             dev_environment: {
               enabled: true,
@@ -102,7 +106,7 @@ describe('AgentsMdExtension Schema Validation', () => {
 
   it('should validate manifest with minimal agents_md config', () => {
     const manifest: OssaAgent = {
-      apiVersion: 'ossa/v0.2.8',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'test-agent',
@@ -125,7 +129,7 @@ describe('AgentsMdExtension Schema Validation', () => {
 
   it('should validate AgentsMdSection schema', () => {
     const manifest: OssaAgent = {
-      apiVersion: 'ossa/v0.2.8',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'test-agent',
@@ -162,7 +166,7 @@ describe('AgentsMdExtension Schema Validation', () => {
 
   it('should validate sync configuration', () => {
     const manifest: OssaAgent = {
-      apiVersion: 'ossa/v0.2.8',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'test-agent',
@@ -189,7 +193,7 @@ describe('AgentsMdExtension Schema Validation', () => {
 
   it('should validate cursor_integration flag', () => {
     const manifest: OssaAgent = {
-      apiVersion: 'ossa/v0.2.8',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'test-agent',
@@ -213,7 +217,7 @@ describe('AgentsMdExtension Schema Validation', () => {
 
   it('should validate manifest with both agents_md and cursor extensions', () => {
     const manifest: OssaAgent = {
-      apiVersion: 'ossa/v0.2.8',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'test-agent',
@@ -224,7 +228,7 @@ describe('AgentsMdExtension Schema Validation', () => {
       extensions: {
         agents_md: {
           enabled: true,
-          output_path: 'AGENTS.md',
+          file_path: 'AGENTS.md',
           cursor_integration: true,
         },
         cursor: {
@@ -249,7 +253,7 @@ describe('AgentsMdExtension Schema Validation', () => {
 
   it('should validate Cursor extension with agents_md_path', () => {
     const manifest: OssaAgent = {
-      apiVersion: 'ossa/v0.2.8',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'test-agent',
@@ -279,9 +283,9 @@ describe('AgentsMdExtension Schema Validation', () => {
     expect(valid).toBe(true);
   });
 
-  it('should allow additional properties in agents_md extension', () => {
+  it('should reject additional properties in agents_md extension', () => {
     const manifest: OssaAgent = {
-      apiVersion: 'ossa/v0.2.8',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'test-agent',
@@ -300,8 +304,8 @@ describe('AgentsMdExtension Schema Validation', () => {
     const validate = ajv.compile(schema);
     const valid = validate(manifest);
 
-    // Should be valid because additionalProperties: true
-    expect(valid).toBe(true);
+    // Schema has additionalProperties: false so custom properties are rejected
+    expect(valid).toBe(false);
   });
 
   it('should validate example manifests', () => {

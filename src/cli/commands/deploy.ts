@@ -9,6 +9,7 @@ import { readFileSync } from 'fs';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { ValidationService } from '../../services/validation.service.js';
+import { getDeployDefaults } from '../../config/defaults.js';
 import {
   createDeploymentDriver,
   type DeploymentTarget,
@@ -37,17 +38,33 @@ export const deployCommand = new Command('deploy')
   .option(
     '--target <target>',
     'Deployment target (local|docker|kubernetes)',
-    'local'
+    getDeployDefaults().defaultTarget
   )
-  .option('--env <environment>', 'Target environment', 'dev')
+  .option(
+    '--env <environment>',
+    'Target environment',
+    getDeployDefaults().environment
+  )
   .option('--version <version>', 'Version to deploy')
   .option('--config <config-file>', 'Configuration file path')
   .option('--dry-run', 'Simulate deployment without executing', false)
   .option('--port <port>', 'Port number for local/docker deployment')
   .option('--docker-image <image>', 'Docker image to use')
-  .option('--docker-network <network>', 'Docker network', 'bridge')
-  .option('--namespace <namespace>', 'Kubernetes namespace', 'default')
-  .option('--replicas <count>', 'Number of replicas (K8s)', '1')
+  .option(
+    '--docker-network <network>',
+    'Docker network',
+    getDeployDefaults().dockerNetwork
+  )
+  .option(
+    '--namespace <namespace>',
+    'Kubernetes namespace',
+    getDeployDefaults().defaultNamespace
+  )
+  .option(
+    '--replicas <count>',
+    'Number of replicas (K8s)',
+    String(getDeployDefaults().defaultReplicas)
+  )
   .description('Deploy agent to specified runtime')
   .action(
     async (
@@ -67,7 +84,11 @@ export const deployCommand = new Command('deploy')
     ) => {
       try {
         // Validate target
-        const validTargets: DeploymentTarget[] = ['local', 'docker', 'kubernetes'];
+        const validTargets: DeploymentTarget[] = [
+          'local',
+          'docker',
+          'kubernetes',
+        ];
         const target = options.target as DeploymentTarget;
         if (!validTargets.includes(target)) {
           console.error(
@@ -126,7 +147,9 @@ export const deployCommand = new Command('deploy')
         if (options.replicas) {
           const replicas = parseInt(options.replicas);
           if (isNaN(replicas) || replicas <= 0) {
-            console.error(chalk.red(`✗ Invalid replicas count: ${options.replicas}`));
+            console.error(
+              chalk.red(`✗ Invalid replicas count: ${options.replicas}`)
+            );
             process.exit(1);
           }
           deployConfig.replicas = replicas;
@@ -146,7 +169,9 @@ export const deployCommand = new Command('deploy')
         if (deployResult.success) {
           console.log(chalk.green(`\n✓ ${deployResult.message}`));
           if (deployResult.instanceId) {
-            console.log(chalk.cyan(`  Instance ID: ${deployResult.instanceId}`));
+            console.log(
+              chalk.cyan(`  Instance ID: ${deployResult.instanceId}`)
+            );
           }
           if (deployResult.endpoint) {
             console.log(chalk.cyan(`  Endpoint: ${deployResult.endpoint}`));
@@ -155,7 +180,9 @@ export const deployCommand = new Command('deploy')
             console.log(chalk.gray('\n  Deployment details:'));
             Object.entries(deployResult.metadata).forEach(([key, value]) => {
               console.log(
-                chalk.gray(`    ${key}: ${typeof value === 'object' ? JSON.stringify(value, null, 2).split('\n').join('\n    ') : value}`)
+                chalk.gray(
+                  `    ${key}: ${typeof value === 'object' ? JSON.stringify(value, null, 2).split('\n').join('\n    ') : value}`
+                )
               );
             });
           }
@@ -213,7 +240,11 @@ export const statusCommand = new Command('status')
       health?: boolean;
     }) => {
       try {
-        const validTargets: DeploymentTarget[] = ['local', 'docker', 'kubernetes'];
+        const validTargets: DeploymentTarget[] = [
+          'local',
+          'docker',
+          'kubernetes',
+        ];
         const target = options.target as DeploymentTarget;
         if (!validTargets.includes(target)) {
           console.error(chalk.red(`✗ Invalid target: ${options.target}`));
@@ -224,9 +255,7 @@ export const statusCommand = new Command('status')
 
         if (options.list) {
           // List all instances
-          console.log(
-            chalk.cyan.bold(`\nRunning Instances (${target}):\n`)
-          );
+          console.log(chalk.cyan.bold(`\nRunning Instances (${target}):\n`));
           const instances = await driver.listInstances();
 
           if (instances.length === 0) {
@@ -246,7 +275,9 @@ export const statusCommand = new Command('status')
             console.log(`    ID:       ${instance.id}`);
             console.log(`    Status:   ${statusColor(instance.status)}`);
             console.log(`    Version:  ${instance.version}`);
-            console.log(`    Deployed: ${new Date(instance.deployedAt).toLocaleString()}`);
+            console.log(
+              `    Deployed: ${new Date(instance.deployedAt).toLocaleString()}`
+            );
             if (instance.endpoint) {
               console.log(`    Endpoint: ${instance.endpoint}`);
             }
@@ -255,7 +286,9 @@ export const statusCommand = new Command('status')
               const healthColor = instance.health.healthy
                 ? chalk.green
                 : chalk.red;
-              console.log(`    Health:   ${healthColor(instance.health.status)}`);
+              console.log(
+                `    Health:   ${healthColor(instance.health.status)}`
+              );
               if (instance.health.metrics?.uptime !== undefined) {
                 console.log(
                   `    Uptime:   ${Math.floor(instance.health.metrics.uptime / 60)}m`
@@ -279,7 +312,9 @@ export const statusCommand = new Command('status')
                 : chalk.yellow;
           console.log(`  Status:   ${statusColor(instance.status)}`);
           console.log(`  Version:  ${instance.version}`);
-          console.log(`  Deployed: ${new Date(instance.deployedAt).toLocaleString()}`);
+          console.log(
+            `  Deployed: ${new Date(instance.deployedAt).toLocaleString()}`
+          );
           if (instance.endpoint) {
             console.log(`  Endpoint: ${instance.endpoint}`);
           }
@@ -353,7 +388,11 @@ export const rollbackCommand = new Command('rollback')
       }
     ) => {
       try {
-        const validTargets: DeploymentTarget[] = ['local', 'docker', 'kubernetes'];
+        const validTargets: DeploymentTarget[] = [
+          'local',
+          'docker',
+          'kubernetes',
+        ];
         const target = options.target as DeploymentTarget;
         if (!validTargets.includes(target)) {
           console.error(chalk.red(`✗ Invalid target: ${options.target}`));
@@ -410,7 +449,11 @@ export const stopCommand = new Command('stop')
       }
     ) => {
       try {
-        const validTargets: DeploymentTarget[] = ['local', 'docker', 'kubernetes'];
+        const validTargets: DeploymentTarget[] = [
+          'local',
+          'docker',
+          'kubernetes',
+        ];
         const target = options.target as DeploymentTarget;
         if (!validTargets.includes(target)) {
           console.error(chalk.red(`✗ Invalid target: ${options.target}`));

@@ -1,0 +1,114 @@
+apiVersion: ossa/v0.4.1
+kind: Agent
+metadata:
+  name: code-assistant
+  version: 1.0.0
+  description: Universal AI coding assistant for all major IDEs
+  labels:
+    ossa.dev/category: development
+    ossa.dev/tier: standard-example
+    ossa.dev/ide: universal
+  annotations:
+    ossa.dev/documentation: https://openstandardagents.org/agents/code-assistant
+spec:
+  capabilities:
+  - name: code.complete
+    description: Intelligent code completion with context awareness
+  - name: code.refactor
+    description: Automated refactoring with safety checks
+  - name: code.explain
+    description: Explain code functionality and architecture
+  - name: code.generate
+    description: Generate code from natural language descriptions
+  - name: code.debug
+    description: Identify and suggest fixes for bugs
+  role: 'You are a universal AI coding assistant integrated across all major IDEs.
+
+    Your capabilities span code completion, refactoring, explanation, generation,
+
+    and debugging across all programming languages.
+
+
+    Key behaviors:
+
+    1. Context-aware completions based on project patterns
+
+    2. Safe refactoring with preview and undo support
+
+    3. Clear explanations with examples
+
+    4. Idiomatic code generation following project conventions
+
+    5. Root cause analysis for debugging
+
+    '
+  llm:
+    provider: ${OSSA_LLM_PROVIDER:-anthropic}
+    model: ${OSSA_LLM_MODEL:-claude-sonnet-4}
+    temperature: ${OSSA_LLM_TEMPERATURE:-0.3}
+    maxTokens: ${OSSA_LLM_MAX_TOKENS:-8192}
+  tools:
+  - name: file.read
+    description: Read file contents with line numbers
+    handler:
+      runtime: ide
+      capability: fs.read
+    type: function
+  - name: file.edit
+    description: Edit file with diff preview
+    handler:
+      runtime: ide
+      capability: fs.edit
+    type: function
+  - name: search.code
+    description: Search codebase with regex
+    handler:
+      runtime: ide
+      capability: search.code
+    type: function
+  - name: search.files
+    description: Find files by glob pattern
+    handler:
+      runtime: ide
+      capability: search.files
+    type: function
+  - name: terminal.run
+    description: Execute terminal commands
+    handler:
+      runtime: ide
+      capability: terminal.execute
+    type: function
+  safety:
+    constraints:
+    - Never execute destructive commands without confirmation
+    - Never expose secrets or credentials in responses
+    - Respect .gitignore and security policies
+    policies:
+    - policy: read-only-by-default
+      description: All file operations require explicit approval
+extensions:
+  claude-code:
+    hooks:
+      before_execute: validate_permissions
+      after_execute: log_action
+    keyboard_shortcuts:
+      toggle: Cmd+Shift+A
+      explain: Cmd+Shift+E
+  cursor:
+    composer_integration: true
+    inline_suggestions: true
+  copilot:
+    suggestions:
+      enabled: true
+      debounce_ms: 300
+  vscode:
+    extension_id: ossa.code-assistant
+    commands:
+    - ossa.explain
+    - ossa.refactor
+    - ossa.generate
+  jetbrains:
+    plugin_id: org.ossa.code-assistant
+    actions:
+    - OSSAExplainAction
+    - OSSARefactorAction

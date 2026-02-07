@@ -1,0 +1,156 @@
+# syntax=docker/dockerfile:1.4
+# Multi-stage Dockerfile for {{projectName}}
+# Production-optimized with security best practices
+
+# ============================================================================
+# Stage 1: Base image with security updates
+# ============================================================================
+FROM node:{{nodeVersion}}-alpine AS base
+
+# Install security updates and required packages
+RUN apk update && \
+    apk upgrade --no-cache && \
+    apk add --no-cache \
+    dumb-init \
+    ca-certificates \
+    tzdata && \
+    rm -rf /var/cache/apk/*
+
+# Set working directory
+WORKDIR /app
+
+# Create non-root user and group
+RUN addgroup -g 1001 -S {{appUser}} && \
+    adduser -S -u 1001 -G {{appUser}} {{appUser}} && \
+    chown -R {{appUser}}:{{appUser}} /app
+
+# ============================================================================
+# Stage 2: Dependencies installation
+# ============================================================================
+FROM base AS dependencies
+
+# Copy package files
+COPY --chown={{appUser}}:{{appUser}} package*.json ./
+{{#if yarnLock}}
+COPY --chown={{appUser}}:{{appUser}} yarn.lock ./
+{{/if}}
+{{#if pnpmLock}}
+COPY --chown={{appUser}}:{{appUser}} pnpm-lock.yaml ./
+{{/if}}
+
+# Install dependencies with cache mount
+{{#if useYarn}}
+RUN --mount=type=cache,target=/root/.yarn,id=yarn-cache \
+    yarn install --frozen-lockfile --production=false
+{{else if usePnpm}}
+RUN --mount=type=cache,target=/root/.pnpm-store,id=pnpm-cache \
+    npm install -g pnpm && \
+    pnpm install --frozen-lockfile --production=false
+{{else}}
+RUN --mount=type=cache,target=/root/.npm,id=npm-cache \
+    npm ci --include=dev
+{{/if}}
+
+# ============================================================================
+# Stage 3: Build stage
+# ============================================================================
+FROM dependencies AS builder
+
+# Copy source code
+COPY --chown={{appUser}}:{{appUser}} . .
+
+# Build application
+{{#if buildScript}}
+RUN npm run {{buildScript}}
+{{else}}
+RUN npm run build
+{{/if}}
+
+# Prune development dependencies
+{{#if useYarn}}
+RUN yarn install --frozen-lockfile --production=true
+{{else if usePnpm}}
+RUN pnpm prune --prod
+{{else}}
+RUN npm prune --production
+{{/if}}
+
+# ============================================================================
+# Stage 4: Production runtime
+# ============================================================================
+FROM base AS production
+
+# Set environment to production
+ENV NODE_ENV=production \
+    PORT={{port}} \
+    TZ={{timezone}}
+
+# Copy built application from builder
+COPY --chown={{appUser}}:{{appUser}} --from=builder /app/dist ./dist
+COPY --chown={{appUser}}:{{appUser}} --from=builder /app/node_modules ./node_modules
+COPY --chown={{appUser}}:{{appUser}} --from=builder /app/package*.json ./
+
+{{#if copyAdditionalFiles}}
+# Copy additional required files
+{{#each additionalFiles}}
+COPY --chown={{../appUser}}:{{../appUser}} --from=builder /app/{{this}} ./{{this}}
+{{/each}}
+{{/if}}
+
+# Switch to non-root user
+USER {{appUser}}
+
+# Expose application port
+EXPOSE {{port}}
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD node -e "require('http').get('http://localhost:{{port}}/{{healthEndpoint}}', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
+
+# Use dumb-init to handle PID 1 responsibilities
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
+
+# Start application
+{{#if startScript}}
+CMD ["node", "dist/{{startScript}}"]
+{{else}}
+CMD ["npm", "start"]
+{{/if}}
+
+# ============================================================================
+# Stage 5: Development runtime (optional)
+# ============================================================================
+FROM dependencies AS development
+
+# Set environment to development
+ENV NODE_ENV=development \
+    PORT={{port}} \
+    TZ={{timezone}}
+
+# Copy source code
+COPY --chown={{appUser}}:{{appUser}} . .
+
+# Switch to non-root user
+USER {{appUser}}
+
+# Expose application port and debug port
+EXPOSE {{port}} 9229
+
+# Start in development mode with hot reload
+{{#if devScript}}
+CMD ["npm", "run", "{{devScript}}"]
+{{else}}
+CMD ["npm", "run", "dev"]
+{{/if}}
+
+# ============================================================================
+# Metadata and labels
+# ============================================================================
+LABEL org.opencontainers.image.title="{{projectName}}" \
+      org.opencontainers.image.description="{{projectDescription}}" \
+      org.opencontainers.image.vendor="{{vendor}}" \
+      org.opencontainers.image.version="{{version}}" \
+      org.opencontainers.image.created="{{buildDate}}" \
+      org.opencontainers.image.source="{{sourceUrl}}" \
+      org.opencontainers.image.licenses="{{license}}" \
+      maintainer="{{maintainer}}"

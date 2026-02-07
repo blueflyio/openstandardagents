@@ -1,25 +1,41 @@
 /**
  * OSSA Contract Command
  * Cross-agent contract testing and validation
+ *
+ * SOLID Principles:
+ * - Uses shared manifest loading utilities (DRY)
+ * - Uses shared output utilities (DRY)
+ * - Single Responsibility: Only handles contract validation
  */
 
 import chalk from 'chalk';
 import { Command } from 'commander';
-import * as fs from 'fs';
 import * as path from 'path';
-import { glob } from 'glob';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { ContractValidator } from '../../services/validators/contract.validator.js';
+import {
+  outputJSON,
+  loadManifestsByGlob,
+  handleCommandError,
+  printPatternInfo,
+  exitNoManifestsFound,
+} from '../utils/index.js';
 
 /**
  * ossa contract validate <pattern>
  * Validate all agent contracts
  */
 const validateContractsCommand = new Command('validate')
-  .argument('<pattern>', 'Glob pattern for agent manifests (e.g., .gitlab/agents/**/*.ossa.yaml)')
+  .argument(
+    '<pattern>',
+    'Glob pattern for agent manifests (e.g., .gitlab/agents/**/*.ossa.yaml)'
+  )
   .option('-v, --verbose', 'Verbose output with detailed validation info')
-  .option('--runtime-events <events...>', 'Runtime events to validate against (comma-separated)')
+  .option(
+    '--runtime-events <events...>',
+    'Runtime events to validate against (comma-separated)'
+  )
   .option(
     '--runtime-commands <commands...>',
     'Runtime commands to validate against (comma-separated)'
@@ -35,35 +51,24 @@ const validateContractsCommand = new Command('validate')
       }
     ) => {
       try {
-        console.log(chalk.blue(`\n🔍 Validating agent contracts...`));
-        console.log(chalk.gray(`Pattern: ${pattern}\n`));
+        console.log(chalk.blue(`\n[CHECK] Validating agent contracts...`));
+        printPatternInfo(pattern, 0);
 
-        // Find all manifests
-        const files = await glob(pattern, { absolute: true });
-        if (files.length === 0) {
-          console.log(chalk.yellow('⚠️  No agent manifests found matching pattern'));
-          process.exit(1);
+        // Load all manifests using shared utility
+        const { loaded, errors } = await loadManifestsByGlob(pattern, {
+          verbose: options.verbose,
+        });
+
+        // Update count display
+        console.log(
+          chalk.gray(`Found ${loaded.length + errors.length} manifests\n`)
+        );
+
+        if (loaded.length === 0) {
+          exitNoManifestsFound('matching pattern');
         }
 
-        console.log(chalk.gray(`Found ${files.length} manifests\n`));
-
-        // Load all manifests
-        const manifestRepo = container.get(ManifestRepository);
-        const manifests: any[] = [];
-
-        for (const file of files) {
-          try {
-            const manifest = await manifestRepo.load(file);
-            manifests.push(manifest);
-          } catch (error: any) {
-            console.log(chalk.yellow(`⚠️  Skipping ${path.basename(file)}: ${error.message}`));
-          }
-        }
-
-        if (manifests.length === 0) {
-          console.log(chalk.red('❌ No valid manifests found'));
-          process.exit(1);
-        }
+        const manifests = loaded.map((l) => l.manifest);
 
         // Validate contracts
         const validator = container.get(ContractValidator);
@@ -71,7 +76,7 @@ const validateContractsCommand = new Command('validate')
 
         // Output results
         if (result.valid) {
-          console.log(chalk.green('\n✅ All agent contracts are valid!\n'));
+          console.log(chalk.green('\n[PASS] All agent contracts are valid!\n'));
           if (options.verbose) {
             console.log(chalk.gray(`Validated ${manifests.length} agents`));
 
@@ -91,11 +96,13 @@ const validateContractsCommand = new Command('validate')
 
             console.log(chalk.gray(`Total events published: ${totalEvents}`));
             console.log(chalk.gray(`Total commands exposed: ${totalCommands}`));
-            console.log(chalk.gray(`Total subscriptions: ${totalSubscriptions}`));
+            console.log(
+              chalk.gray(`Total subscriptions: ${totalSubscriptions}`)
+            );
           }
 
           if (result.warnings.length > 0) {
-            console.log(chalk.yellow('\n⚠️  Warnings:'));
+            console.log(chalk.yellow('\n[WARN]  Warnings:'));
             for (const warning of result.warnings) {
               console.log(chalk.yellow(`  - ${warning}`));
             }
@@ -104,7 +111,7 @@ const validateContractsCommand = new Command('validate')
 
           process.exit(0);
         } else {
-          console.log(chalk.red('\n❌ Contract validation failed!\n'));
+          console.log(chalk.red('\n[FAIL] Contract validation failed!\n'));
 
           // Group errors by type
           const errorsByType = new Map<string, any[]>();
@@ -118,7 +125,7 @@ const validateContractsCommand = new Command('validate')
           // Show missing events
           const missingEvents = errorsByType.get('missing_event') || [];
           if (missingEvents.length > 0) {
-            console.log(chalk.yellow('⚠️  Missing Events:'));
+            console.log(chalk.yellow('[WARN]  Missing Events:'));
             for (const error of missingEvents) {
               console.log(chalk.red(`  ${error.agent}: ${error.message}`));
             }
@@ -128,7 +135,7 @@ const validateContractsCommand = new Command('validate')
           // Show missing commands
           const missingCommands = errorsByType.get('missing_command') || [];
           if (missingCommands.length > 0) {
-            console.log(chalk.yellow('⚠️  Missing Commands:'));
+            console.log(chalk.yellow('[WARN]  Missing Commands:'));
             for (const error of missingCommands) {
               console.log(chalk.red(`  ${error.agent}: ${error.message}`));
             }
@@ -138,20 +145,23 @@ const validateContractsCommand = new Command('validate')
           // Show schema mismatches
           const schemaMismatches = errorsByType.get('schema_mismatch') || [];
           if (schemaMismatches.length > 0) {
-            console.log(chalk.yellow('⚠️  Schema Mismatches:'));
+            console.log(chalk.yellow('[WARN]  Schema Mismatches:'));
             for (const error of schemaMismatches) {
               console.log(chalk.red(`  ${error.agent}: ${error.message}`));
               if (options.verbose && error.details) {
-                console.log(chalk.gray(`    ${JSON.stringify(error.details, null, 2)}`));
+                console.log(
+                  chalk.gray(`    ${JSON.stringify(error.details, null, 2)}`)
+                );
               }
             }
             console.log();
           }
 
           // Show signature mismatches
-          const signatureMismatches = errorsByType.get('signature_mismatch') || [];
+          const signatureMismatches =
+            errorsByType.get('signature_mismatch') || [];
           if (signatureMismatches.length > 0) {
-            console.log(chalk.yellow('⚠️  Signature Mismatches:'));
+            console.log(chalk.yellow('[WARN]  Signature Mismatches:'));
             for (const error of signatureMismatches) {
               console.log(chalk.red(`  ${error.agent}: ${error.message}`));
             }
@@ -160,7 +170,7 @@ const validateContractsCommand = new Command('validate')
 
           // Show warnings
           if (result.warnings.length > 0) {
-            console.log(chalk.yellow('⚠️  Warnings:'));
+            console.log(chalk.yellow('[WARN]  Warnings:'));
             for (const warning of result.warnings) {
               console.log(chalk.yellow(`  - ${warning}`));
             }
@@ -169,12 +179,8 @@ const validateContractsCommand = new Command('validate')
 
           process.exit(1);
         }
-      } catch (error: any) {
-        console.error(chalk.red(`\n❌ Error: ${error.message}\n`));
-        if (options.verbose && error.stack) {
-          console.error(chalk.gray(error.stack));
-        }
-        process.exit(1);
+      } catch (error) {
+        handleCommandError(error, { verbose: options.verbose });
       }
     }
   );
@@ -188,91 +194,101 @@ const testContractCommand = new Command('test')
   .argument('<provider>', 'Path to provider agent manifest')
   .option('-v, --verbose', 'Verbose output with detailed information')
   .description('Test contract compatibility between two agents')
-  .action(async (consumerPath: string, providerPath: string, options: { verbose?: boolean }) => {
-    try {
-      console.log(chalk.blue('\n🔍 Testing contract between agents...\n'));
-
-      // Load manifests
-      const manifestRepo = container.get(ManifestRepository);
-      const consumer = await manifestRepo.load(consumerPath);
-      const provider = await manifestRepo.load(providerPath);
-
-      const consumerName = consumer.metadata?.name || path.basename(consumerPath);
-      const providerName = provider.metadata?.name || path.basename(providerPath);
-
-      console.log(chalk.gray(`Consumer: ${consumerName}`));
-      console.log(chalk.gray(`Provider: ${providerName}\n`));
-
-      // Test contract
-      const validator = container.get(ContractValidator);
-      const result = validator.testContractBetweenAgents(consumer, provider);
-
-      // Output results
-      if (result.valid) {
+  .action(
+    async (
+      consumerPath: string,
+      providerPath: string,
+      options: { verbose?: boolean }
+    ) => {
+      try {
         console.log(
-          chalk.green(`✅ Contract between ${consumerName} and ${providerName} is valid!\n`)
+          chalk.blue('\n[CHECK] Testing contract between agents...\n')
         );
 
-        if (options.verbose) {
-          // Show what the consumer expects
-          const consumerMessaging = consumer.spec?.messaging;
-          if (consumerMessaging?.subscribes) {
-            console.log(chalk.gray('Consumer subscriptions:'));
-            for (const sub of consumerMessaging.subscribes) {
-              console.log(chalk.cyan(`  - ${sub.channel}`));
+        // Load manifests
+        const manifestRepo = container.get(ManifestRepository);
+        const consumer = await manifestRepo.load(consumerPath);
+        const provider = await manifestRepo.load(providerPath);
+
+        const consumerName =
+          consumer.metadata?.name || path.basename(consumerPath);
+        const providerName =
+          provider.metadata?.name || path.basename(providerPath);
+
+        console.log(chalk.gray(`Consumer: ${consumerName}`));
+        console.log(chalk.gray(`Provider: ${providerName}\n`));
+
+        // Test contract
+        const validator = container.get(ContractValidator);
+        const result = validator.testContractBetweenAgents(consumer, provider);
+
+        // Output results
+        if (result.valid) {
+          console.log(
+            chalk.green(
+              `[PASS] Contract between ${consumerName} and ${providerName} is valid!\n`
+            )
+          );
+
+          if (options.verbose) {
+            // Show what the consumer expects
+            const consumerMessaging = consumer.spec?.messaging;
+            if (consumerMessaging?.subscribes) {
+              console.log(chalk.gray('Consumer subscriptions:'));
+              for (const sub of consumerMessaging.subscribes) {
+                console.log(chalk.cyan(`  - ${sub.channel}`));
+              }
+              console.log();
+            }
+
+            // Show what the provider publishes
+            const providerMessaging = provider.spec?.messaging;
+            if (providerMessaging?.publishes) {
+              console.log(chalk.gray('Provider publications:'));
+              for (const pub of providerMessaging.publishes) {
+                console.log(chalk.cyan(`  - ${pub.channel}`));
+              }
+              console.log();
+            }
+          }
+
+          if (result.warnings.length > 0) {
+            console.log(chalk.yellow('[WARN]  Warnings:'));
+            for (const warning of result.warnings) {
+              console.log(chalk.yellow(`  - ${warning}`));
             }
             console.log();
           }
 
-          // Show what the provider publishes
-          const providerMessaging = provider.spec?.messaging;
-          if (providerMessaging?.publishes) {
-            console.log(chalk.gray('Provider publications:'));
-            for (const pub of providerMessaging.publishes) {
-              console.log(chalk.cyan(`  - ${pub.channel}`));
+          process.exit(0);
+        } else {
+          console.log(chalk.red(`[FAIL] Contract incompatibility detected!\n`));
+
+          for (const error of result.errors) {
+            console.log(chalk.red(`  ${error.type}: ${error.message}`));
+            if (options.verbose && error.details) {
+              console.log(
+                chalk.gray(`    ${JSON.stringify(error.details, null, 2)}`)
+              );
+            }
+          }
+          console.log();
+
+          if (result.warnings.length > 0) {
+            console.log(chalk.yellow('[WARN]  Warnings:'));
+            for (const warning of result.warnings) {
+              console.log(chalk.yellow(`  - ${warning}`));
             }
             console.log();
           }
+
+          process.exit(1);
         }
-
-        if (result.warnings.length > 0) {
-          console.log(chalk.yellow('⚠️  Warnings:'));
-          for (const warning of result.warnings) {
-            console.log(chalk.yellow(`  - ${warning}`));
-          }
-          console.log();
-        }
-
-        process.exit(0);
-      } else {
-        console.log(chalk.red(`❌ Contract incompatibility detected!\n`));
-
-        for (const error of result.errors) {
-          console.log(chalk.red(`  ${error.type}: ${error.message}`));
-          if (options.verbose && error.details) {
-            console.log(chalk.gray(`    ${JSON.stringify(error.details, null, 2)}`));
-          }
-        }
-        console.log();
-
-        if (result.warnings.length > 0) {
-          console.log(chalk.yellow('⚠️  Warnings:'));
-          for (const warning of result.warnings) {
-            console.log(chalk.yellow(`  - ${warning}`));
-          }
-          console.log();
-        }
-
-        process.exit(1);
+      } catch (error) {
+        handleCommandError(error, { verbose: options.verbose });
       }
-    } catch (error: any) {
-      console.error(chalk.red(`\n❌ Error: ${error.message}\n`));
-      if (options.verbose && error.stack) {
-        console.error(chalk.gray(error.stack));
-      }
-      process.exit(1);
     }
-  });
+  );
 
 /**
  * ossa contract breaking-changes <old-version> <new-version>
@@ -285,9 +301,13 @@ const breakingChangesCommand = new Command('breaking-changes')
   .option('-f, --format <format>', 'Output format: text, json', 'text')
   .description('Detect breaking changes between agent versions')
   .action(
-    async (oldPath: string, newPath: string, options: { verbose?: boolean; format?: string }) => {
+    async (
+      oldPath: string,
+      newPath: string,
+      options: { verbose?: boolean; format?: string }
+    ) => {
       try {
-        console.log(chalk.blue('\n🔍 Detecting breaking changes...\n'));
+        console.log(chalk.blue('\n[CHECK] Detecting breaking changes...\n'));
 
         // Load manifests
         const manifestRepo = container.get(ManifestRepository);
@@ -304,19 +324,26 @@ const breakingChangesCommand = new Command('breaking-changes')
 
         // Detect breaking changes
         const validator = container.get(ContractValidator);
-        const result = validator.detectBreakingChanges(oldManifest, newManifest);
+        const result = validator.detectBreakingChanges(
+          oldManifest,
+          newManifest
+        );
 
         // Output results
         if (options.format === 'json') {
-          console.log(JSON.stringify(result, null, 2));
+          outputJSON(result);
           process.exit(result.hasBreakingChanges ? 1 : 0);
         }
 
         if (!result.hasBreakingChanges) {
-          console.log(chalk.green('✅ No breaking changes detected!\n'));
+          console.log(chalk.green('[PASS] No breaking changes detected!\n'));
 
           if (result.changes.length > 0) {
-            console.log(chalk.blue(`Found ${result.changes.length} non-breaking change(s):`));
+            console.log(
+              chalk.blue(
+                `Found ${result.changes.length} non-breaking change(s):`
+              )
+            );
             for (const change of result.changes) {
               console.log(
                 chalk.yellow(
@@ -329,14 +356,20 @@ const breakingChangesCommand = new Command('breaking-changes')
 
           process.exit(0);
         } else {
-          console.log(chalk.red(`❌ Breaking changes detected!\n`));
+          console.log(chalk.red(`[FAIL] Breaking changes detected!\n`));
           console.log(chalk.red(`Total: ${result.summary.total} changes`));
           console.log(chalk.red(`Major (breaking): ${result.summary.major}`));
-          console.log(chalk.yellow(`Minor (non-breaking): ${result.summary.minor}\n`));
+          console.log(
+            chalk.yellow(`Minor (non-breaking): ${result.summary.minor}\n`)
+          );
 
           // Group by severity
-          const majorChanges = result.changes.filter((c) => c.severity === 'major');
-          const minorChanges = result.changes.filter((c) => c.severity === 'minor');
+          const majorChanges = result.changes.filter(
+            (c) => c.severity === 'major'
+          );
+          const minorChanges = result.changes.filter(
+            (c) => c.severity === 'minor'
+          );
 
           if (majorChanges.length > 0) {
             console.log(chalk.red.bold('Major Breaking Changes:'));
@@ -345,7 +378,9 @@ const breakingChangesCommand = new Command('breaking-changes')
               console.log(chalk.gray(`    Resource: ${change.resource}`));
               if (options.verbose) {
                 console.log(
-                  chalk.gray(`    Old: ${change.oldVersion} → New: ${change.newVersion}`)
+                  chalk.gray(
+                    `    Old: ${change.oldVersion} → New: ${change.newVersion}`
+                  )
                 );
               }
             }
@@ -355,25 +390,25 @@ const breakingChangesCommand = new Command('breaking-changes')
           if (minorChanges.length > 0) {
             console.log(chalk.yellow.bold('Minor Changes:'));
             for (const change of minorChanges) {
-              console.log(chalk.yellow(`  ${change.type}: ${change.description}`));
+              console.log(
+                chalk.yellow(`  ${change.type}: ${change.description}`)
+              );
               console.log(chalk.gray(`    Resource: ${change.resource}`));
             }
             console.log();
           }
 
-          console.log(chalk.red('💡 Breaking changes may require:'));
-          console.log(chalk.gray('  - Major version bump (semantic versioning)'));
+          console.log(chalk.red('[TIP] Breaking changes may require:'));
+          console.log(
+            chalk.gray('  - Major version bump (semantic versioning)')
+          );
           console.log(chalk.gray('  - Update all dependent agents'));
           console.log(chalk.gray('  - Migration guide for consumers\n'));
 
           process.exit(1);
         }
-      } catch (error: any) {
-        console.error(chalk.red(`\n❌ Error: ${error.message}\n`));
-        if (options.verbose && error.stack) {
-          console.error(chalk.gray(error.stack));
-        }
-        process.exit(1);
+      } catch (error) {
+        handleCommandError(error, { verbose: options.verbose });
       }
     }
   );
@@ -398,9 +433,13 @@ const extractContractCommand = new Command('extract')
 
       // Output
       if (options.format === 'json') {
-        console.log(JSON.stringify(contract, null, 2));
+        outputJSON(contract);
       } else {
-        console.log(chalk.blue(`\n📋 Contract for ${contract.name} v${contract.version}\n`));
+        console.log(
+          chalk.blue(
+            `\n[LIST] Contract for ${contract.name} v${contract.version}\n`
+          )
+        );
 
         if (contract.publishes.length > 0) {
           console.log(chalk.yellow('Published Events:'));
@@ -441,7 +480,9 @@ const extractContractCommand = new Command('extract')
               console.log(chalk.gray(`    Idempotent: true`));
             }
             if (command.timeoutSeconds) {
-              console.log(chalk.gray(`    Timeout: ${command.timeoutSeconds}s`));
+              console.log(
+                chalk.gray(`    Timeout: ${command.timeoutSeconds}s`)
+              );
             }
           }
           console.log();
@@ -452,14 +493,15 @@ const extractContractCommand = new Command('extract')
           contract.subscribes.length === 0 &&
           contract.commands.length === 0
         ) {
-          console.log(chalk.yellow('⚠️  Agent has no messaging contract defined\n'));
+          console.log(
+            chalk.yellow('[WARN]  Agent has no messaging contract defined\n')
+          );
         }
       }
 
       process.exit(0);
-    } catch (error: any) {
-      console.error(chalk.red(`\n❌ Error: ${error.message}\n`));
-      process.exit(1);
+    } catch (error) {
+      handleCommandError(error);
     }
   });
 

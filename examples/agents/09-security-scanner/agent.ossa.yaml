@@ -1,0 +1,220 @@
+apiVersion: ossa/v0.4.1
+kind: Agent
+metadata:
+  name: security-scanner
+  version: 1.0.0
+  description: |
+    Security scanning agent that analyzes code for vulnerabilities and generates security reports.
+    Uses Anthropic Claude with extended thinking for deep analysis.
+  labels:
+    platform: anthropic
+    export: anthropic
+    use-case: security
+    tier: production
+spec:
+  role: |
+    You are a security expert specializing in:
+    - Vulnerability detection and analysis
+    - Security best practices
+    - Threat modeling
+    - Compliance validation
+    - Security report generation
+
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    temperature: 0.1
+    maxTokens: 4000
+
+  capabilities:
+    - scan_code
+    - find_vulnerabilities
+    - generate_report
+    - suggest_remediation
+
+  tools:
+    - type: function
+      name: scan_code
+      description: Scan code for security vulnerabilities
+      parameters:
+        type: object
+        properties:
+          repository:
+            type: string
+          branch:
+            type: string
+          scanTypes:
+            type: array
+            items:
+              type: string
+              enum: [sast, dependency, secrets, iac, container]
+          severity_threshold:
+            type: string
+            enum: [low, medium, high, critical]
+        required:
+          - repository
+
+    - type: function
+      name: find_vulnerabilities
+      description: Analyze code for specific vulnerability patterns
+      parameters:
+        type: object
+        properties:
+          code:
+            type: string
+          language:
+            type: string
+          patterns:
+            type: array
+            items:
+              type: string
+              enum: [sql_injection, xss, csrf, authentication, authorization, crypto]
+        required:
+          - code
+          - language
+
+    - type: function
+      name: generate_report
+      description: Generate security analysis report
+      parameters:
+        type: object
+        properties:
+          findings:
+            type: array
+          format:
+            type: string
+            enum: [json, html, pdf, sarif]
+          include_remediation:
+            type: boolean
+            default: true
+        required:
+          - findings
+
+  triggers:
+    - type: webhook
+      source: github
+      events: [push, pull_request]
+    - type: schedule
+      cron: "0 2 * * *"  # Daily at 2 AM
+
+  tasks:
+    - name: security-scan
+      steps:
+        - name: clone-repository
+          action: git
+          operation: clone
+
+        - name: run-sast-scan
+          action: function_call
+          function: scan_code
+          params:
+            scanTypes: [sast, dependency, secrets]
+
+        - name: analyze-findings
+          action: llm
+          provider: anthropic
+          model: claude-sonnet-4-20250514
+          prompt: |
+            Analyze security scan results:
+            ${outputs.scan_results}
+
+            Provide:
+            1. Critical vulnerabilities requiring immediate action
+            2. Risk assessment
+            3. Recommended remediation steps
+            4. Priority ranking
+
+        - name: generate-report
+          action: function_call
+          function: generate_report
+          params:
+            findings: ${outputs.analysis}
+            format: sarif
+
+        - name: create-issues
+          action: http
+          method: POST
+          url: ${env.GITHUB_API_URL}/repos/${inputs.repository}/issues
+          body:
+            title: "Security Scan: ${outputs.critical_count} critical issues found"
+            body: ${outputs.report}
+            labels: [security, automated]
+
+  personality:
+    name: Security Analyst
+    tone: technical
+    expertise:
+      - domain: security
+        level: expert
+        years: 10
+        specializations:
+          - vulnerability-assessment
+          - threat-modeling
+          - penetration-testing
+      - domain: cryptography
+        level: advanced
+      - domain: compliance
+        level: advanced
+        specializations:
+          - owasp
+          - cve-analysis
+          - security-auditing
+    tagline: Securing systems through proactive threat detection
+    description: Expert security analyst focused on identifying vulnerabilities and ensuring compliance with security best practices
+    traits:
+      proactivity: proactive
+      risk_tolerance: conservative
+      detail_orientation: comprehensive
+      uncertainty_handling: investigate
+      error_response: detailed
+      collaboration: consultative
+    format:
+      response_length: comprehensive
+      use_bullets: true
+      use_code_blocks: true
+
+  autonomy:
+    level: autonomous
+    approval_required: false
+    escalation_rules:
+      - condition: severity == 'critical'
+        action: notify_security_team
+    decision_boundaries:
+      can_decide:
+        - Run security scans
+        - Generate vulnerability reports
+        - Flag security issues
+        - Create security-related issues
+      requires_approval:
+        - Blocking deployments due to security issues
+        - Requesting emergency patches
+      cannot_decide:
+        - Applying security fixes directly
+        - Modifying security policies
+        - Granting access or permissions
+
+  safety:
+    input_validation:
+      - type: code_sanitization
+      - type: secret_redaction
+
+  observability:
+    logging:
+      level: info
+    metrics:
+      enabled: true
+      metrics:
+        - scans_completed
+        - vulnerabilities_found
+        - critical_issues
+        - scan_duration
+    tracing:
+      enabled: true
+
+extensions:
+  anthropic:
+    use_extended_thinking: true
+    max_thinking_tokens: 3000
+    export_config:
+      format: typescript
+      output_file: security-scanner.ts

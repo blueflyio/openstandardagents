@@ -1,0 +1,54 @@
+apiVersion: ossa/v0.4.1
+kind: Agent
+metadata:
+  name: customer-support-agent
+  version: 0.1.0
+  description: Migrated from LangChain zero-shot agent
+  labels:
+    ossa-version: v0.3.6
+    migration-source: langchain
+  annotations:
+    ossa.io/migration: langchain-to-ossa
+    ossa.io/migrated-date: "2026-01-15"
+    ossa.io/source-file: 04-config-based-before.yaml
+spec:
+  role: |
+    You are a helpful customer support agent. Your role is to:
+    - Help customers with order inquiries
+    - Answer questions using the FAQ knowledge base
+    - Escalate complex issues by creating support tickets
+
+    Always be polite, professional, and empathetic.
+
+  llm:
+    provider: openai
+    model: gpt-4-turbo
+    temperature: 0.4
+    maxTokens: 2000
+
+  tools:
+    - type: function
+      name: get_order_status
+      description: Retrieve the status of a customer order by order ID
+
+    - type: function
+      name: cancel_order
+      description: Cancel an order if it hasn't shipped yet
+
+    - type: function
+      name: search_faq
+      description: Search the FAQ knowledge base for answers to common questions
+
+    - type: function
+      name: create_ticket
+      description: Create a support ticket for issues that require human intervention
+
+  autonomy:
+    level: assisted
+
+  extensions:
+    langchain:
+      memory_type: ConversationBufferMemory
+      memory_config:
+        memory_key: chat_history
+        return_messages: true

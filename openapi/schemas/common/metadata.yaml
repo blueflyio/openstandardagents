@@ -1,0 +1,71 @@
+openapi: 3.1.0
+components:
+  schemas:
+    Timestamps:
+      type: object
+      properties:
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the resource was created
+        updatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the resource was last updated
+        deletedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the resource was deleted (soft delete)
+
+    Labels:
+      type: object
+      additionalProperties:
+        type: string
+      description: Key-value labels for categorization and filtering
+      example:
+        domain: security
+        capability: scanning
+        runtime: kubernetes
+
+    Annotations:
+      type: object
+      additionalProperties:
+        type: string
+      description: Key-value annotations for metadata
+      properties:
+        author:
+          type: string
+          description: Author of the agent
+        license:
+          type: string
+          description: License information
+      example:
+        deployed_by: buildkit-cli
+        git_commit: abc123
+        environment: production
+        author: "John Doe"
+        license: "Apache-2.0"
+
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+        version:
+          type: string
+        uptime:
+          type: integer
+        timestamp:
+          type: string
+          format: date-time
+        checks:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              status:
+                type: string
+                enum: [pass, fail]
+              message:
+                type: string

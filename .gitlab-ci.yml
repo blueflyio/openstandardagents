@@ -1,138 +1,270 @@
-# GitLab CI/CD Pipeline for OSSA
-# Release Branch Strategy
-# - Code flows: Feature → release/v0.X.x → main (CI validates, auto-release on merge to main)
-# - Website deployment - Manual button (independent of releases)
-# - NPM releases - Milestone-gated + ENABLE_RELEASE variable required
+# =============================================================================
+# OSSA Specification CI/CD Pipeline - Simple & Direct
+# =============================================================================
 #
-# Workflow
-# 1. Feature branches → merge to release/v0.X.x (CI validates)
-# 2. Release branches → merge to main via merge train (CI validates)
-# 3. Click "Deploy Website" button → GitLab Pages deploys
-# 4. To release - Set ENABLE_RELEASE=true + close milestone → automatic npm publish + git tag
+# Versioning Strategy (SMART VERSION BUMP):
+# - Feature → release/v0.4.x: Smart-detects latest prod tag, bumps patch, creates v0.4.X-dev.N
+# - release/v0.4.x → main: Auto-creates v0.4.X-rc.N tags (staging env)
+# - Manual trigger on main: Creates v0.4.X production release (production env)
+# - Next feature: Automatically bumps to next patch (v0.4.X+1-dev.1)
 #
-# Release Gate
-# Releases require BOTH conditions
-#   - Milestone must be 100% complete and closed
-
-include:
-  - local: '.gitlab/ci/agents.yml'
-  - local: '.gitlab/ci/branch-policy.yml'
-  - local: '.gitlab/ci/webhook-agents.yml'  # OSSA v0.2.9 webhook-triggered agents
-  - local: '.gitlab/ci/merge-train-optimized.yml'  # Optimized merge train pipeline
-  - local: '.gitlab/ci/release-merge-trains.yml'
-  - local: '.gitlab/ci/milestone-workflow.yml'  # Milestone-driven workflow enforcement
-  - local: '.gitlab/ci/fix-mr-targets.yml'  # Fix MRs targeting main branch
-  - local: '.gitlab/ci/ossa-version-management.yml'  # Dynamic OSSA version detection and injection
-  - local: '.gitlab/ci/release-workflow.yml'  # Dev tag automation and GitLab Release creation
-  # Security scanning from Auto DevOps
-  - template: Jobs/SAST.gitlab-ci.yml
-  - template: Jobs/Secret-Detection.gitlab-ci.yml
-  - template: Jobs/Dependency-Scanning.gitlab-ci.yml
-  # Merge trains enabled via workflow rules (see workflow section at bottom)
-  # Component available but private - uncomment when gitlab_components is public
-  # - component: gitlab.com/blueflyio/gitlab_components/merge-train@main
-  # OSSA Runners
-  - local: '.gitlab/ci/ossa-runners.yml'
-  # Modular CI sections
-  - local: '.gitlab/ci/version-detection.yml'
-  - local: '.gitlab/ci/validation-jobs.yml'
-  - local: '.gitlab/ci/build-jobs.yml'
-  - local: '.gitlab/ci/test-jobs.yml'
-  - local: '.gitlab/ci/quality-gates.yml'
-  - local: '.gitlab/ci/release-jobs.yml'
-  - local: '.gitlab/ci/mirror-jobs.yml'
-  - local: '.gitlab/ci/content-professionalization.yml'
-  - local: '.gitlab/ci/post-release.yml'
-  - local: '.gitlab/ci/rc-validation.yml'
-  - local: '.gitlab/ci/rc-promotion.yml'
-  - local: '.gitlab/ci/utilities.yml'
-  - local: '.gitlab/ci/openapi-validation.yml'  # OpenAPI & OSSA extensions validation (#176)
-  - local: '.gitlab/ci/release-environments.yml'  # Release environment deployments (#376)
-
-# Override SAST template jobs - run independently without blocking
-semgrep-sast:
-  needs: []
-  allow_failure: true
-
-secret_detection:
-  needs: []
-  allow_failure: true
-
-gemnasium-dependency_scanning:
-  needs: []
-  allow_failure: true
+# Publishing Strategy:
+# - GitHub: Only main + release branches, only RC + production tags
+# - npm: Only verified production releases (no RC, no dev)
+# - GitLab Releases: Only production tags
+# =============================================================================
 
 stages:
-  - .pre           # GitLab reserved pre-stage (used by create-release-mrs)
-  - setup          # Version detection and sync happen here (earliest stage)
-  - version-detect # Used by included CI files (release-workflow.yml, version-bump-agent.yml)
-  - validate       # Validation jobs (can use version from setup)
-  - build          # Build jobs (can use version from setup)
-  - test           # Test jobs (can use version from setup)
-  - quality        # Quality gates
-  - deploy         # Deployment
-  - release        # Release automation
-  - rc-validation  # RC validation stage (smoke tests, integration tests, staging deployment)
-  - mirror         # Mirror to external repos
-  - .post          # GitLab reserved post-stage (post-release jobs)
-
-# Use SaaS runners (GitLab Ultimate minutes)
-default:
-  # Cache npm dependencies (file-based key for better invalidation)
-  cache:
-    key:
-      files:
-        - package-lock.json
-      prefix: ${CI_COMMIT_REF_SLUG}
-    paths:
-      - .npm/
-      - node_modules/
-    policy: pull-push
-  tags:
-    - saas-linux-small-amd64
-  # Default timeout and retry for reliability
-  timeout: 1h
-  retry:
-    max: 2
-    when:
-      - runner_system_failure
-      - stuck_or_timeout_failure
-      - api_failure
+  - validate
+  - test
+  - build
+  - smoke
+  - version
+  - release
+  - deploy
 
 variables:
-  NODE_VERSION: "22"
-  NPM_CONFIG_LEGACY_PEER_DEPS: "1"
-  HUSKY: "0"
-  LEFTHOOK: "0"
-  # GITLAB_PUSH_TOKEN is now set directly as CI/CD variable (not derived)
-  # This avoids variable expansion issues with masked tokens
-  DEPLOY_TOKEN_USERNAME: "gitlab+deploy-token-10466652"
-  # Performance optimizations
-  FF_USE_FASTZIP: "true"
-  TRANSFER_METER_FREQUENCY: "5s"
-  GIT_DEPTH: "0"
+  NODE_VERSION: "22.14"
+  GIT_DEPTH: 0  # Full history for versioning
 
-# ============================================================================
-# WORKFLOW - MERGE TRAINS ENABLED
-# ============================================================================
-# Merge trains prevent branch divergence by:
-# 1. Queuing MRs instead of racing to merge
-# 2. Testing merged state before allowing merge
-# 3. Auto-rebasing when target branch updates
-# 4. Failing fast on conflicts
-#
-# Enabled for: development, main branches
-# Eliminates: Manual sync commits between releases
-# See: https://docs.gitlab.com/ee/ci/pipelines/merge_trains.html
-# ============================================================================
+# =============================================================================
+# SMART VERSION BUMP COMPONENT
+# =============================================================================
+# Automatically detects latest production tag and bumps patch version
+# Creates -dev.N and -rc.N tags automatically
+# DISABLED: Component has missing dependency (runner-selector)
+# include:
+#   - component: $CI_SERVER_FQDN/blueflyio/agent-platform/gitlab_components/release/smart-version-bump@main
+#     inputs:
+#       node_version: "22.14"
+#       create_dev_tags: true
+#       create_rc_tags: true
+#       git_author_name: "OSSA Release Bot"
+#       git_author_email: "release-bot@openstandardagents.org"
 
-workflow:
+# =============================================================================
+# BASE JOB TEMPLATE
+# =============================================================================
+.base-runner:
+  image: node:${NODE_VERSION}
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - node_modules/
+      - .npm/
+  before_script:
+    - npm ci --cache .npm --prefer-offline
+
+# =============================================================================
+# VALIDATE STAGE
+# =============================================================================
+validate:schema:
+  extends: .base-runner
+  stage: validate
+  script:
+    - npm run validate:schema
   rules:
-    # Merge train pipelines (highest priority - combined state testing)
-    - if: $CI_MERGE_REQUEST_EVENT_TYPE == "merge_train"
-    # Pre-merge validation (merged result pipelines)
-    - if: $CI_MERGE_REQUEST_EVENT_TYPE == "merged_result"
-    # Regular MR pipelines
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    # Branch, tag, and scheduled/webhook pipelines (consolidated)
-    - if: $CI_COMMIT_BRANCH || $CI_COMMIT_TAG || $CI_PIPELINE_SOURCE =~ /(schedule|web|trigger)/
+    - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/
+
+validate:examples:
+  extends: .base-runner
+  stage: validate
+  script:
+    - npm run validate:examples
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/
+
+# =============================================================================
+# TEST STAGE
+# =============================================================================
+test:unit:
+  extends: .base-runner
+  stage: test
+  script:
+    - npm run test:unit
+  coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/cobertura-coverage.xml
+    paths:
+      - coverage/
+    expire_in: 30 days
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/
+
+test:smoke:
+  extends: .base-runner
+  stage: smoke
+  needs:
+    - job: build
+      artifacts: true
+  script:
+    - npm run test:smoke
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/
+
+# =============================================================================
+# BUILD STAGE
+# =============================================================================
+build:
+  extends: .base-runner
+  stage: build
+  script:
+    - npm run build
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 30 days
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/
+
+# =============================================================================
+# VERSION STAGE - Now handled by smart-version-bump component
+# =============================================================================
+# Component automatically:
+# - Detects latest production tag
+# - Bumps patch version for new development cycles
+# - Creates -dev.N tags on release branches
+# - Creates -rc.N tags on main branch
+# - Updates package.json automatically
+#
+# See: gitlab_components/release/smart-version-bump
+# =============================================================================
+
+# =============================================================================
+# RELEASE STAGE - Production Release (Manual Trigger with Button)
+# =============================================================================
+
+release:production:
+  stage: release
+  image: node:${NODE_VERSION}
+  extends: .base-runner
+  environment:
+    name: production
+    deployment_tier: production
+    url: https://www.npmjs.com/package/@bluefly/openstandardagents
+    action: start
+  variables:
+    GIT_AUTHOR_NAME: "OSSA Release Bot"
+    GIT_AUTHOR_EMAIL: "release-bot@openstandardagents.org"
+    GIT_COMMITTER_NAME: "OSSA Release Bot"
+    GIT_COMMITTER_EMAIL: "release-bot@openstandardagents.org"
+  before_script:
+    - npm ci
+    - npm run build
+    - git config user.name "${GIT_AUTHOR_NAME}"
+    - git config user.email "${GIT_AUTHOR_EMAIL}"
+    - |
+      # Validate required tokens
+      if [ -z "$NPM_TOKEN" ]; then
+        echo "❌ ERROR: NPM_TOKEN not set in CI/CD variables"
+        exit 1
+      fi
+      if [ -z "$GITLAB_PUSH_TOKEN" ]; then
+        echo "❌ ERROR: GITLAB_PUSH_TOKEN not set"
+        exit 1
+      fi
+      if [ -z "$GITHUB_TOKEN" ]; then
+        echo "❌ ERROR: GITHUB_TOKEN not set"
+        exit 1
+      fi
+      echo "✅ Required tokens configured"
+  script:
+    - echo "🚀 Running semantic-release for PRODUCTION..."
+    - npx semantic-release
+    - |
+      # Get the new version
+      NEW_VERSION=$(node -p "require('./package.json').version")
+      echo "✅ Released production version: v${NEW_VERSION}"
+
+      # Sync main and release branches to GitHub
+      echo "📤 Syncing branches to GitHub..."
+      git push https://${GITHUB_TOKEN}@github.com/blueflyio/openstandardagents.git main:main
+      git push https://${GITHUB_TOKEN}@github.com/blueflyio/openstandardagents.git release/v0.4.x:release/v0.4.x
+
+      # Push production tag to GitHub
+      git push https://${GITHUB_TOKEN}@github.com/blueflyio/openstandardagents.git "v${NEW_VERSION}"
+
+      echo "✅ Synced to GitHub: main, release/v0.4.x, v${NEW_VERSION}"
+      echo "🌍 Environment: production"
+  when: manual
+  only:
+    - main
+  artifacts:
+    paths:
+      - dist/*.tgz
+    expire_in: 90 days
+
+# =============================================================================
+# DEPLOY STAGE - npm Publish + GitLab Release
+# =============================================================================
+
+deploy:npm:
+  stage: deploy
+  image: node:${NODE_VERSION}
+  extends: .base-runner
+  environment:
+    name: production
+    deployment_tier: production
+    url: https://www.npmjs.com/package/@bluefly/openstandardagents
+    action: start
+  needs:
+    - job: release:production
+  before_script:
+    - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+  script:
+    - |
+      VERSION=$(node -p "require('./package.json').version")
+      echo "📦 Publishing to npm: v${VERSION}"
+
+      npm publish --access public
+
+      echo "✅ Published to npm: @bluefly/openstandardagents@${VERSION}"
+      echo "📍 https://www.npmjs.com/package/@bluefly/openstandardagents/v/${VERSION}"
+  only:
+    - main
+
+deploy:gitlab-release:
+  stage: deploy
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  extends: .base-runner
+  needs:
+    - job: release:production
+      artifacts: true
+    - job: deploy:npm
+  script:
+    - |
+      VERSION=$(cat package.json | grep '"version"' | head -1 | awk -F: '{ print $2 }' | sed 's/[",]//g' | tr -d '[[:space:]]')
+      echo "📝 Creating GitLab release for v${VERSION}..."
+  release:
+    tag_name: "v${VERSION}"
+    name: "Release v${VERSION}"
+    description: |
+      ## OSSA v${VERSION}
+
+      Open Standard for Software Agents
+
+      See [CHANGELOG.md](https://gitlab.com/blueflyio/ossa/openstandardagents/-/blob/main/CHANGELOG.md) for full release notes.
+
+      **Install:**
+      ```bash
+      npm install @bluefly/openstandardagents@${VERSION}
+      ```
+
+      **Links:**
+      - [npm package](https://www.npmjs.com/package/@bluefly/openstandardagents/v/${VERSION})
+      - [GitHub mirror](https://github.com/blueflyio/openstandardagents)
+      - [Documentation](https://openstandardagents.org)
+    assets:
+      links:
+        - name: "npm package"
+          url: "https://www.npmjs.com/package/@bluefly/openstandardagents/v/${VERSION}"
+  only:
+    - main

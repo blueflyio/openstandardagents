@@ -1,0 +1,133 @@
+apiVersion: ossa/v0.4.1
+kind: Agent
+metadata:
+  name: research-workflow
+  version: 1.0.0
+  description: Multi-agent research and writing workflow with human review
+  labels:
+    type: workflow
+    pattern: multi-agent
+spec:
+  role: |
+    You are an orchestrator for a research and writing workflow.
+    You coordinate multiple specialized agents to produce high-quality content.
+
+  llm:
+    provider: openai
+    model: gpt-4
+    temperature: 0.7
+    maxTokens: 2000
+
+  workflow:
+    steps:
+      - id: researcher
+        name: Research Agent
+        description: Conducts thorough research on the given topic using available tools
+        kind: Agent
+        depends_on: []
+
+      - id: writer
+        name: Writer Agent
+        description: Writes a comprehensive article based on research findings
+        kind: Agent
+        depends_on:
+          - researcher
+
+      - id: critic
+        name: Critic Agent
+        description: Reviews and provides constructive feedback on the article
+        kind: Agent
+        depends_on:
+          - writer
+        condition: quality_score < 8
+
+      - id: editor
+        name: Editor Agent
+        description: Final editing and polish of the article
+        kind: Agent
+        depends_on:
+          - writer
+          - critic
+
+  tools:
+    - name: web_search
+      type: function
+      description: Search the web for information
+      parameters:
+        type: object
+        properties:
+          query:
+            type: string
+            description: Search query
+          num_results:
+            type: integer
+            description: Number of results to return
+            default: 5
+        required:
+          - query
+
+    - name: read_url
+      type: function
+      description: Read content from a URL
+      parameters:
+        type: object
+        properties:
+          url:
+            type: string
+            description: URL to read
+        required:
+          - url
+
+    - name: save_document
+      type: function
+      description: Save document to storage
+      parameters:
+        type: object
+        properties:
+          title:
+            type: string
+            description: Document title
+          content:
+            type: string
+            description: Document content
+          format:
+            type: string
+            enum:
+              - markdown
+              - html
+              - text
+        required:
+          - title
+          - content
+
+  autonomy:
+    level: supervised
+    approval_required: true
+    allowed_actions:
+      - web_search
+      - read_url
+      - save_document
+    blocked_actions:
+      - delete_file
+      - modify_system
+
+  constraints:
+    cost:
+      maxTokensPerRequest: 4000
+      maxCostPerDay: 10.00
+      currency: USD
+    performance:
+      maxLatencySeconds: 30
+      maxErrorRate: 0.05
+
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+      endpoint: http://localhost:4317
+    metrics:
+      enabled: true
+      exporter: prometheus
+    logging:
+      level: info
+      format: json

@@ -33,8 +33,23 @@ const COMMON_TYPOS: Record<string, string[]> = {
  * Known enum values for validation
  */
 const KNOWN_ENUMS: Record<string, string[]> = {
-  provider: ['anthropic', 'openai', 'google', 'cohere', 'mistral', 'meta', 'local'],
-  role: ['chat', 'worker', 'workflow', 'compliance', 'orchestrator', 'specialist'],
+  provider: [
+    'anthropic',
+    'openai',
+    'google',
+    'cohere',
+    'mistral',
+    'meta',
+    'local',
+  ],
+  role: [
+    'chat',
+    'worker',
+    'workflow',
+    'compliance',
+    'orchestrator',
+    'specialist',
+  ],
   kind: ['Agent', 'Task', 'Workflow', 'Policy'],
   deliveryGuarantee: ['at-least-once', 'at-most-once', 'exactly-once'],
   priority: ['low', 'normal', 'high', 'critical'],
@@ -104,12 +119,18 @@ function levenshteinDistance(a: string, b: string): number {
 /**
  * Find the closest match from a list of valid values
  */
-function findClosestMatch(invalid: string, validValues: string[]): string | null {
+function findClosestMatch(
+  invalid: string,
+  validValues: string[]
+): string | null {
   let minDistance = Infinity;
   let closest: string | null = null;
 
   for (const valid of validValues) {
-    const distance = levenshteinDistance(invalid.toLowerCase(), valid.toLowerCase());
+    const distance = levenshteinDistance(
+      invalid.toLowerCase(),
+      valid.toLowerCase()
+    );
     // Only suggest if distance is reasonable (less than 40% of the word length)
     if (distance < minDistance && distance <= Math.max(3, valid.length * 0.4)) {
       minDistance = distance;
@@ -153,7 +174,11 @@ function getValueAtPath(manifest: unknown, path: string): unknown {
 /**
  * Format a single validation error with helpful context
  */
-function formatError(error: ErrorObject, index: number, manifest?: unknown): string {
+function formatError(
+  error: ErrorObject,
+  index: number,
+  manifest?: unknown
+): string {
   const path = error.instancePath || '/';
   const fieldName = extractFieldName(path);
   const lines: string[] = [];
@@ -165,20 +190,24 @@ function formatError(error: ErrorObject, index: number, manifest?: unknown): str
   }
 
   // Error header with number
-  lines.push(chalk.red(`\n${index + 1}. Validation Error at ${chalk.bold(path)}`));
+  lines.push(
+    chalk.red(`\n${index + 1}. Validation Error at ${chalk.bold(path)}`)
+  );
   lines.push('');
 
   // Handle different error types
   switch (error.keyword) {
     case 'required': {
       const missingProp = error.params?.missingProperty as string;
-      lines.push(chalk.red(`   Missing required field: ${chalk.bold(missingProp)}`));
+      lines.push(
+        chalk.red(`   Missing required field: ${chalk.bold(missingProp)}`)
+      );
       lines.push('');
 
       // Check for common typos
       if (COMMON_TYPOS[missingProp]) {
         const typos = COMMON_TYPOS[missingProp];
-        lines.push(chalk.yellow(`   💡 Did you mean one of these?`));
+        lines.push(chalk.yellow(`   [TIP] Did you mean one of these?`));
         typos.forEach((typo) => {
           lines.push(chalk.yellow(`      • ${typo}`));
         });
@@ -195,7 +224,9 @@ function formatError(error: ErrorObject, index: number, manifest?: unknown): str
 
     case 'type': {
       const expectedType = error.params?.type as string;
-      const actualType = Array.isArray(actualValue) ? 'array' : typeof actualValue;
+      const actualType = Array.isArray(actualValue)
+        ? 'array'
+        : typeof actualValue;
 
       lines.push(chalk.red(`   Type mismatch:`));
       lines.push(chalk.red(`      Expected: ${chalk.bold(expectedType)}`));
@@ -204,11 +235,17 @@ function formatError(error: ErrorObject, index: number, manifest?: unknown): str
 
       // Helpful suggestion
       if (expectedType === 'array' && actualType === 'string') {
-        lines.push(chalk.yellow(`   💡 This field expects an array. Try:`));
-        lines.push(chalk.yellow(`      ${fieldName}: [${JSON.stringify(actualValue)}]`));
+        lines.push(chalk.yellow(`   [TIP] This field expects an array. Try:`));
+        lines.push(
+          chalk.yellow(`      ${fieldName}: [${JSON.stringify(actualValue)}]`)
+        );
         lines.push('');
       } else if (expectedType === 'string' && actualType === 'array') {
-        lines.push(chalk.yellow(`   💡 This field expects a single value, not an array`));
+        lines.push(
+          chalk.yellow(
+            `   [TIP] This field expects a single value, not an array`
+          )
+        );
         lines.push('');
       }
       break;
@@ -223,9 +260,13 @@ function formatError(error: ErrorObject, index: number, manifest?: unknown): str
       // Special handling for apiVersion pattern
       if (fieldName === 'apiVersion') {
         lines.push(
-          chalk.yellow(`   💡 apiVersion should follow format: ${chalk.bold('ossa/v0.3.0')}`)
+          chalk.yellow(
+            `   [TIP] apiVersion should follow format: ${chalk.bold('ossa/v0.3.0')}`
+          )
         );
-        lines.push(chalk.yellow(`      Your value: ${JSON.stringify(actualValue)}`));
+        lines.push(
+          chalk.yellow(`      Your value: ${JSON.stringify(actualValue)}`)
+        );
         lines.push('');
       }
       break;
@@ -233,14 +274,18 @@ function formatError(error: ErrorObject, index: number, manifest?: unknown): str
 
     case 'additionalProperties': {
       const additionalProp = error.params?.additionalProperty as string;
-      lines.push(chalk.red(`   Unexpected property: ${chalk.bold(additionalProp)}`));
+      lines.push(
+        chalk.red(`   Unexpected property: ${chalk.bold(additionalProp)}`)
+      );
       lines.push('');
 
       // Check if it's a typo
       const knownFields = Object.keys(COMMON_TYPOS);
       const suggestion = findClosestMatch(additionalProp, knownFields);
       if (suggestion) {
-        lines.push(chalk.yellow(`   💡 Did you mean "${chalk.bold(suggestion)}"?`));
+        lines.push(
+          chalk.yellow(`   [TIP] Did you mean "${chalk.bold(suggestion)}"?`)
+        );
         lines.push('');
       }
       break;
@@ -278,7 +323,10 @@ function formatError(error: ErrorObject, index: number, manifest?: unknown): str
 /**
  * Format multiple validation errors into a helpful error message
  */
-export function formatValidationErrors(errors: ErrorObject[], manifest?: unknown): string {
+export function formatValidationErrors(
+  errors: ErrorObject[],
+  manifest?: unknown
+): string {
   const lines: string[] = [];
 
   // Header
@@ -293,13 +341,17 @@ export function formatValidationErrors(errors: ErrorObject[], manifest?: unknown
   // Footer with helpful tips
   lines.push(chalk.gray('─'.repeat(70)));
   lines.push('');
-  lines.push(chalk.cyan('💡 Common fixes:'));
+  lines.push(chalk.cyan('[TIP] Common fixes:'));
   lines.push(chalk.cyan('   • Check spelling of field names (case-sensitive)'));
   lines.push(chalk.cyan('   • Verify apiVersion format: ossa/v0.3.0'));
   lines.push(chalk.cyan('   • Use --verbose for detailed error information'));
-  lines.push(chalk.cyan('   • Check examples/claude-code/ for reference manifests'));
+  lines.push(
+    chalk.cyan('   • Check examples/claude-code/ for reference manifests')
+  );
   lines.push('');
-  lines.push(chalk.blue('📚 Full documentation: https://openstandardagents.org/docs'));
+  lines.push(
+    chalk.blue('📚 Full documentation: https://openstandardagents.org/docs')
+  );
   lines.push('');
 
   return lines.join('\n');
@@ -308,7 +360,10 @@ export function formatValidationErrors(errors: ErrorObject[], manifest?: unknown
 /**
  * Create a helpful suggestion based on manifest content
  */
-export function suggestFix(manifest: unknown, error: ErrorObject): string | null {
+export function suggestFix(
+  manifest: unknown,
+  error: ErrorObject
+): string | null {
   if (!manifest || typeof manifest !== 'object') {
     return null;
   }
@@ -317,12 +372,18 @@ export function suggestFix(manifest: unknown, error: ErrorObject): string | null
   const suggestions: string[] = [];
 
   // Check for common mistakes
-  if (error.keyword === 'required' && error.params?.missingProperty === 'apiVersion') {
+  if (
+    error.keyword === 'required' &&
+    error.params?.missingProperty === 'apiVersion'
+  ) {
     suggestions.push('Add apiVersion field:');
     suggestions.push('  apiVersion: ossa/v0.3.0');
   }
 
-  if (error.keyword === 'required' && error.params?.missingProperty === 'kind') {
+  if (
+    error.keyword === 'required' &&
+    error.params?.missingProperty === 'kind'
+  ) {
     suggestions.push('Add kind field:');
     suggestions.push('  kind: Agent');
   }
@@ -338,8 +399,12 @@ export function suggestFix(manifest: unknown, error: ErrorObject): string | null
       if (provider && model) {
         const validModels = PROVIDER_MODELS[provider];
         if (validModels && !validModels.some((m) => model.includes(m))) {
-          suggestions.push(`Warning: Model "${model}" may not be valid for provider "${provider}"`);
-          suggestions.push(`Valid ${provider} models: ${validModels.join(', ')}`);
+          suggestions.push(
+            `Warning: Model "${model}" may not be valid for provider "${provider}"`
+          );
+          suggestions.push(
+            `Valid ${provider} models: ${validModels.join(', ')}`
+          );
         }
       }
     }
@@ -351,7 +416,11 @@ export function suggestFix(manifest: unknown, error: ErrorObject): string | null
 /**
  * Format a single error for compact output (non-verbose)
  */
-export function formatErrorCompact(error: ErrorObject, index: number, manifest?: unknown): string {
+export function formatErrorCompact(
+  error: ErrorObject,
+  index: number,
+  manifest?: unknown
+): string {
   const path = error.instancePath || 'root';
   const fieldName = extractFieldName(path);
 
@@ -371,7 +440,9 @@ export function formatErrorCompact(error: ErrorObject, index: number, manifest?:
     message = `invalid value ${JSON.stringify(actualValue)}`;
   } else if (error.keyword === 'type') {
     const expectedType = error.params?.type as string;
-    const actualType = Array.isArray(actualValue) ? 'array' : typeof actualValue;
+    const actualType = Array.isArray(actualValue)
+      ? 'array'
+      : typeof actualValue;
     message = `expected ${expectedType}, got ${actualType}`;
   }
 

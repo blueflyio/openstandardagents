@@ -1,0 +1,194 @@
+apiVersion: ossa/v0.4.1
+kind: Agent
+metadata:
+  name: distributed-coordinator
+  version: 1.0.0
+  description: "Distributed agent coordinator with service discovery"
+  labels:
+    framework: a2a
+    capability: orchestration
+    environment: production
+
+spec:
+  model:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    parameters:
+      temperature: 0.7
+      maxTokens: 8192
+
+  instructions: |
+    You are a distributed agent coordinator that orchestrates tasks across
+    multiple specialized agents using A2A communication.
+
+    Responsibilities:
+    - Discover available agents via service registry
+    - Route tasks to appropriate agents based on capabilities
+    - Monitor task progress and handle completion signals
+    - Manage agent handoffs and escalations
+
+    Use service discovery to find agents dynamically and route tasks efficiently.
+
+  tools:
+    - type: function
+      name: discover_agents
+      description: "Discover available agents with specific capabilities"
+      input_schema:
+        type: object
+        properties:
+          capabilities:
+            type: array
+            items:
+              type: string
+            description: "Required agent capabilities"
+
+    - type: function
+      name: delegate_task
+      description: "Delegate task to another agent"
+      input_schema:
+        type: object
+        required: [agentId, task]
+        properties:
+          agentId:
+            type: string
+            description: "Target agent ID"
+          task:
+            type: object
+            description: "Task details"
+
+  extensions:
+    a2a:
+      enabled: true
+
+      protocol:
+        type: json-rpc
+        version: "2.0"
+        messageFormat: json
+        compression: true
+        timeout: 30
+
+      discovery:
+        enabled: true
+        mechanism: registry
+        registryUrl: "https://registry.example.com/agents"
+        refreshInterval: 60
+        healthCheck:
+          enabled: true
+          interval: 30
+          timeout: 5
+          endpoint: "/health"
+
+      endpoints:
+        - agentId: "@security-scanner"
+          url: "http://security-scanner:8080/a2a"
+          capabilities: ["security-scan", "vulnerability-check", "sast", "dast"]
+          priority: 10
+          weight: 100
+
+        - agentId: "@performance-analyzer"
+          url: "http://performance-analyzer:8080/a2a"
+          capabilities: ["performance-analysis", "profiling", "load-testing"]
+          priority: 5
+          weight: 80
+
+        - agentId: "@documentation-agent"
+          url: "http://documentation-agent:8080/a2a"
+          capabilities: ["documentation", "api-docs", "readme-generation"]
+          priority: 3
+          weight: 60
+
+      routing:
+        strategy: capability-based
+        defaultAgent: "@fallback-agent"
+        routingRules:
+          - name: "security-routing"
+            condition: "message.type == 'security-scan'"
+            target: "@security-scanner"
+            priority: 10
+
+          - name: "performance-routing"
+            condition: "message.type == 'performance-analysis'"
+            target: "@performance-analyzer"
+            priority: 5
+
+          - name: "documentation-routing"
+            condition: "message.type == 'documentation'"
+            target: "@documentation-agent"
+            priority: 3
+
+      delegation:
+        enabled: true
+        maxDepth: 3
+        timeout: 300
+        handoff:
+          enabled: true
+          preserveContext: true
+          handoffRules:
+            - name: "security-escalation"
+              condition: "signal == 'escalate' && capability == 'security'"
+              target: "@senior-security-expert"
+              message: "Escalating security issue to senior expert"
+
+      completionSignals:
+        enabled: true
+        signals: ["continue", "complete", "blocked", "escalate", "checkpoint"]
+        handlers:
+          - signal: escalate
+            action: handoff
+            target: "@senior-coordinator"
+            config:
+              notifyUser: true
+
+          - signal: blocked
+            action: notify
+            config:
+              channels: ["slack", "email"]
+
+          - signal: checkpoint
+            action: checkpoint
+            config:
+              storage: agent-brain
+              compression: true
+
+      checkpointSync:
+        enabled: true
+        storage: agent-brain
+        syncInterval: 60
+        compression: true
+
+      authentication:
+        type: mtls
+        mtls:
+          certPath: "/certs/agent-coordinator.crt"
+          keyPath: "/certs/agent-coordinator.key"
+          caPath: "/certs/ca.crt"
+          verifyPeer: true
+
+      retryPolicy:
+        enabled: true
+        maxRetries: 3
+        backoff: exponential
+        initialDelay: 1
+        maxDelay: 60
+        retryableErrors:
+          - "UNAVAILABLE"
+          - "TIMEOUT"
+          - "CONNECTION_ERROR"
+
+      circuitBreaker:
+        enabled: true
+        failureThreshold: 5
+        successThreshold: 2
+        timeout: 60
+
+      observability:
+        tracing:
+          enabled: true
+          provider: opentelemetry
+          samplingRate: 0.1
+        metrics:
+          enabled: true
+          endpoint: "/metrics"
+        logging:
+          level: info
+          format: json

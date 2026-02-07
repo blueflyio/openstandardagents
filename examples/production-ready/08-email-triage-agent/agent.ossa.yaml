@@ -1,0 +1,133 @@
+apiVersion: ossa/v0.4.1
+kind: Agent
+metadata:
+  name: email-triage-agent
+  version: 1.0.0
+  description: |
+    Email triage agent that reads, categorizes, and responds to emails automatically.
+    Exported as npm package for integration with email systems.
+  labels:
+    platform: npm
+    export: npm
+    use-case: email-automation
+    tier: production
+spec:
+  role: |
+    You are an email management assistant responsible for:
+    - Reading and categorizing incoming emails
+    - Prioritizing messages by importance and urgency
+    - Drafting appropriate responses
+    - Routing emails to correct departments
+    - Flagging emails requiring human attention
+
+  llm:
+    provider: openai
+    model: gpt-4o
+    temperature: 0.6
+    maxTokens: 1000
+
+  capabilities:
+    - read_email
+    - categorize_email
+    - draft_response
+    - route_email
+
+  tools:
+    - type: function
+      name: read_email
+      description: Read email content and metadata
+      parameters:
+        type: object
+        properties:
+          emailId:
+            type: string
+          includeAttachments:
+            type: boolean
+            default: false
+        required:
+          - emailId
+
+    - type: function
+      name: categorize_email
+      description: Categorize email by type and priority
+      parameters:
+        type: object
+        properties:
+          email:
+            type: object
+          categories:
+            type: array
+            items:
+              type: string
+              enum: [support, sales, billing, hr, legal, spam]
+          priority:
+            type: string
+            enum: [low, medium, high, urgent]
+        required:
+          - email
+
+    - type: function
+      name: draft_response
+      description: Draft email response
+      parameters:
+        type: object
+        properties:
+          emailId:
+            type: string
+          responseType:
+            type: string
+            enum: [auto_reply, acknowledgment, answer, referral]
+          tone:
+            type: string
+            enum: [professional, friendly, formal]
+        required:
+          - emailId
+          - responseType
+
+    - type: function
+      name: route_email
+      description: Route email to appropriate team/person
+      parameters:
+        type: object
+        properties:
+          emailId:
+            type: string
+          destination:
+            type: string
+          notes:
+            type: string
+
+  autonomy:
+    level: supervised
+    approval_required: false
+    auto_approve_conditions:
+      - category == 'spam'
+      - responseType == 'auto_reply'
+    approval_conditions:
+      - priority == 'urgent'
+      - category == 'legal'
+
+  safety:
+    output_validation:
+      - type: tone_check
+        required_tone: [professional, friendly]
+      - type: pii_protection
+        redact_sensitive: true
+
+  observability:
+    logging:
+      level: info
+    metrics:
+      enabled: true
+      metrics:
+        - emails_processed
+        - emails_categorized
+        - responses_sent
+        - routing_accuracy
+
+extensions:
+  npm:
+    package_name: "@company/email-triage-agent"
+    export_format: esm
+    include_types: true
+    entry_point: index.js

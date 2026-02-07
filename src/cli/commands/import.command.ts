@@ -9,21 +9,59 @@ import * as fs from 'fs';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { GenerationService } from '../../services/generation.service.js';
+import { handleCommandError } from '../utils/index.js';
+import {
+  addGlobalOptions,
+  addMutationOptions,
+  shouldUseColor,
+  ExitCode,
+} from '../utils/standard-options.js';
 
 export const importCommand = new Command('import')
   .argument('<path>', 'Path to platform-specific agent file')
-  .option('-f, --from <platform>', 'Source platform (cursor,openai,crewai,langchain,etc)', 'cursor')
-  .option('-o, --output <path>', 'Output OSSA manifest path', 'agent.ossa.json')
-  .description('Import platform-specific agent format to OSSA manifest')
-  .action(async (filePath: string, options?: { from?: string; output?: string }) => {
+  .option(
+    '-f, --from <platform>',
+    'Source platform (cursor,openai,crewai,langchain,etc)',
+    'cursor'
+  )
+  .description('Import platform-specific agent format to OSSA manifest');
+
+// Apply production-grade standard options
+addGlobalOptions(importCommand);
+addMutationOptions(importCommand);
+
+importCommand.action(
+  async (
+    filePath: string,
+    options?: {
+      from?: string;
+      output?: string;
+      verbose?: boolean;
+      quiet?: boolean;
+      dryRun?: boolean;
+      color?: boolean;
+      json?: boolean;
+    }
+  ) => {
     try {
+      const useColor = shouldUseColor(options || {});
+      const log = (msg: string, color?: (s: string) => string) => {
+        if (options?.quiet) return;
+        const output = useColor && color ? color(msg) : msg;
+        console.log(output);
+      };
+
       const manifestRepo = container.get(ManifestRepository);
       const generationService = container.get(GenerationService);
 
       const platformData = await manifestRepo.load(filePath);
       const platform = options?.from || 'cursor';
 
-      console.log(chalk.blue(`Importing ${platform} agent to OSSA format...`));
+      log(`Importing ${platform} agent to OSSA format...`, chalk.blue);
+
+      if (options?.dryRun) {
+        log('🔍 DRY RUN MODE - No files will be written', chalk.yellow);
+      }
 
       const ossaManifest = await generationService.importFromPlatform(
         platformData as Record<string, unknown>,
@@ -41,17 +79,28 @@ export const importCommand = new Command('import')
       );
 
       const outputPath = options?.output || 'agent.ossa.json';
-      fs.writeFileSync(outputPath, JSON.stringify(ossaManifest, null, 2));
 
-      console.log(chalk.green(`✓ Imported to OSSA manifest: ${outputPath}`));
-      console.log(chalk.gray(`  Name: ${ossaManifest.metadata?.name || ossaManifest.agent?.id}`));
-      console.log(
-        chalk.gray(`  Version: ${ossaManifest.metadata?.version || ossaManifest.agent?.version}`)
-      );
+      if (!options?.dryRun) {
+        fs.writeFileSync(outputPath, JSON.stringify(ossaManifest, null, 2));
+      }
 
-      process.exit(0);
+      if (options?.dryRun) {
+        log(`Would write to: ${outputPath}`, chalk.blue);
+      } else {
+        log(`✓ Imported to OSSA manifest: ${outputPath}`, chalk.green);
+      }
+
+      if (options?.verbose) {
+        const name = ossaManifest.metadata?.name || ossaManifest.agent?.id;
+        const version =
+          ossaManifest.metadata?.version || ossaManifest.agent?.version;
+        log(`  Name: ${name}`, chalk.gray);
+        log(`  Version: ${version}`, chalk.gray);
+      }
+
+      process.exit(ExitCode.SUCCESS);
     } catch (error) {
-      console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
-      process.exit(1);
+      handleCommandError(error);
     }
-  });
+  }
+);

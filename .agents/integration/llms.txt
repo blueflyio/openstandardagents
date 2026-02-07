@@ -1,0 +1,23 @@
+# integration-tester
+
+> Test OSSA agent integrations across all platforms
+
+## Quick Reference
+
+- **Type**: OSSA Agent v0.4.1
+- **Category**: integration
+- **Manifest**: integration-tester.ossa.yaml
+
+## Overview
+
+Test OSSA agent integrations across platforms:
+- npm package installation and execution
+- Docker container startup and API response
+- Kubernetes deployment and scaling
+- MCP server connection and tool calls
+
+## Related
+
+- Main OSSA documentation: /README.md
+- Agent manifest: ./integration-tester.ossa.yaml
+- Agent details: ./AGENTS.md

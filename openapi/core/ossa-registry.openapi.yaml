@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: OSSA Agent Registry API
-  version: 0.3.2
+  version: 0.3.3
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
@@ -265,41 +265,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Certification'
-        - $ref: '#/components/parameters/AgentId'
-      responses:
-        '200':
-          description: Certifications
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  certifications:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Certification'
-
-    post:
-      operationId: addCertification
-      summary: Add certification
-      tags: [Certifications]
-      security:
-        - ApiKeyAuth: []
-      parameters:
-        - $ref: '#/components/parameters/AgentId'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CertificationRequest'
-      responses:
-        '201':
-          description: Certification added
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Certification'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /agents/{agentId}/deploy:
     post:

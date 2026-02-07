@@ -57,7 +57,7 @@ export class QdrantService {
   async initializeCollection(): Promise<void> {
     try {
       await this.client.getCollection(this.collectionName);
-      console.log(`✅ Collection ${this.collectionName} exists`);
+      console.log(`[PASS] Collection ${this.collectionName} exists`);
     } catch (error) {
       console.log(`Creating collection ${this.collectionName}...`);
       await this.client.createCollection(this.collectionName, {
@@ -66,7 +66,7 @@ export class QdrantService {
           distance: 'Cosine',
         },
       });
-      console.log(`✅ Collection ${this.collectionName} created`);
+      console.log(`[PASS] Collection ${this.collectionName} created`);
     }
   }
 
@@ -137,10 +137,19 @@ export class QdrantService {
     mrIid?: number
   ): Promise<AgentContext> {
     // Search for relevant memories
-    const relevantMemories = await this.searchSimilar(queryEmbedding, agentName, 10);
+    const relevantMemories = await this.searchSimilar(
+      queryEmbedding,
+      agentName,
+      10
+    );
 
     // Search for similar cases (same issue/MR types)
-    const similarCases = await this.searchSimilarCases(queryEmbedding, projectId, issueIid, mrIid);
+    const similarCases = await this.searchSimilarCases(
+      queryEmbedding,
+      projectId,
+      issueIid,
+      mrIid
+    );
 
     return {
       agent_name: agentName,

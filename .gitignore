@@ -1,526 +1,126 @@
-# =============================================================================
-# OSSA - OpenAPI AI Agents Standard .gitignore
-# =============================================================================
-
-# =============================================================================
 # Dependencies
-# =============================================================================
-
-# Node.js dependencies
 node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-lerna-debug.log*
-
-# Package manager lock files (keep package-lock.json for reproducible builds)
-yarn.lock
-pnpm-lock.yaml
-
-# =============================================================================
-# Build Artifacts
-# =============================================================================
-
-# Compiled output
-dist/
-coverage/
-*.tsbuildinfo
-
-# Development directories (not part of npm package)
-.cursor/
-.claude/
-.worktrees/
-
-# Python dependencies
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-env/
-venv/
-ENV/
-.venv
-
-# =============================================================================
-# Environment & Configuration
-# =============================================================================
-
-# Environment files
-.env
-.env.*.local
-.env.development
-.env.test
-.env.production
-.env.staging
-
-# Configuration files
-config.local.*
-secrets.*
-*.config.local.*
-
-# Generated version files
-.version.json
-
-# =============================================================================
-# Build & Compiled Assets
-# =============================================================================
+.pnpm-store/
 
 # Build outputs
 dist/
 build/
+.next/
 out/
-lib/
-!scripts/lib/
-*.tsbuildinfo
 
-# Compiled JavaScript
-*.js.map
-*.d.ts
-*.d.ts.map
+# Environment
+.env
+.env.local
+.env.*.local
+build.env
 
-# Bundled files
-bundle.js
-bundle.min.js
-*.bundle.*
+# IDE
+.idea/
+.vscode/
+.cursor/
+*.swp
+*.swo
+.DS_Store
 
-# =============================================================================
-# Testing & Quality Assurance
-# =============================================================================
-
-# Test results and coverage
-coverage/
-.nyc_output/
-test-results/
-*.lcov
-*.coverage
-
-# Jest
-.jest/
-
-# Playwright
-playwright/.auth/
-playwright-report/
-playwright/.cache/
-test-results/
-
-# Python testing
-.pytest_cache/
-.coverage
-htmlcov/
-.tox/
-.nox/
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-
-# =============================================================================
-# Logs & Reports
-# =============================================================================
-
-# Application logs
+# Logs
 logs/
 *.log
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-lerna-debug.log*
+pnpm-debug.log*
 
-# Performance monitoring
-*.cpuprofile
-*.heapprofile
-*.heapsnapshot
+# Test coverage
+coverage/
+.nyc_output/
+test-results/
+junit.xml
 
-# =============================================================================
-# IDE & Editor Files
-# =============================================================================
+# Test build artifacts
+tests/**/*.js
+tests/**/*.d.ts
+tests/**/*.js.map
+tests/**/*.d.ts.map
+!tests/**/*.test.ts
+!tests/**/*.spec.ts
 
-# IDE specific files
-.vscode/
-.idea/
-.cursor/
-.claude/
-.claude-agents/
-*.swp
-*.swo
-*~
-.project
-.classpath
-.settings/
-*.sublime-project
-*.sublime-workspace
-
-# =============================================================================
-# Operating System Files
-# =============================================================================
-
-# macOS
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Windows
-Thumbs.db
-Thumbs.db:encryptable
-ehthumbs.db
-ehthumbs_vista.db
-*.tmp
-*.temp
-Desktop.ini
-$RECYCLE.BIN/
-
-# Linux
-*~
-.fuse_hidden*
-.directory
-.Trash-*
-.nfs*
-
-# =============================================================================
-# Temporary & Backup Files
-# =============================================================================
-
-# Backup files
-*.bak
-*.backup
-*-backup.*
-*.old
-*.orig
-*.rej
-
-# Temporary files
-*.tmp
-*.temp
-.tmp/
-.temp/
-tmp/
-
-# =============================================================================
-# Cache & Temporary Directories
-# =============================================================================
-
-# Cache directories
+# Cache
 .cache/
+.turbo/
 .eslintcache
-.stylelintcache
-.parcel-cache
-.next/
-.nuxt/
-.vuepress/dist
-.serverless/
 
-# npm cache
-.npm
-.yarn-integrity
+# Shell scripts (FORBIDDEN - use .gitlab-ci.yml instead)
+*.sh
+*.bash
+*.sh.old
+*.bash.old
+**/*.sh
+**/*.bash
 
-# Python cache
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.pytest_cache/
-.mypy_cache/
+# OS
+Thumbs.db
+*.tmp
+*.temp
 
-# =============================================================================
-# Documentation & Development
-# =============================================================================
+# Synced content (generated from @bluefly/openstandardagents package)
+# NOTE: schemas MUST be committed for GitLab Pages deployment
+# website/public/schemas/  <- REMOVED - needed for deployment
+website/public/examples/
 
-# Generated documentation
-docs/_build/
-docs/.doctrees/
-site/
+# Spec folder - NOW TRACKED (was fetched, now committed)
+# spec/  <- REMOVED - spec must be tracked
+worktrees/
 
-# Development notes
-TODO.md
-NOTES.md
-*.todo
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+.cache/ms-playwright/
+bots/ossa-discord/dist/
+pnpm-lock.yaml
+pnpm-workspace.yaml
 
-# =============================================================================
-# Database & Storage
-# =============================================================================
+# IDE personal files (keep commands/ and rules/)
+.cursor/plans/
+.cursor/memory/
+.cursor/hooks/
+.cursor/scripts/
+.kiro/
+.claude/
 
-# Database files
-*.sqlite
-*.sqlite3
-*.db
+# Agent runtime state (regenerated at runtime)
+.agents-workspace/
 
-# =============================================================================
-# Archive Files
-# =============================================================================
+# Migration state file contains environment-specific absolute paths
+# Should be regenerated at build time rather than committed to version control
+# Prevents deployment failures when repository is cloned to different locations
+.migration-state.json
 
-# Compressed files
-*.zip
-*.tar.gz
-*.tar.bz2
-*.rar
-*.7z
-*.tgz
-
-# =============================================================================
-# Safe Deletion & Project Specific
-# =============================================================================
-
-# Safe deletion folder - move files here instead of using rm -rf
+# Released specs are immutable - do not track changes
+spec/v0.3.0/
+spec/v0.3.1/
+spec/v0.3.2/
 __DELETE_LATER/
 
-# Agent BuildKit
-.buildkit/cache/
-.buildkit/logs/
-.buildkit/temp/
+# IDE/Editor Configs (Comprehensive Coverage for Portability)
+# These configs are developer-specific and should never be committed
+.cursor/
+.cursor/*
+.cursor/**/*
+.claude/
+.claude/*
+.claude/**/*
+.cursorrules
+.cursorignore
+.vscode/settings.json
+.idea/workspace.xml
+.idea/tasks.xml
 
-# TDDAI
-.tdd-state.json
-.tddai/cache/
+# Runtime State Files (Generated Dynamically)
+# These contain machine-specific paths and should be regenerated at runtime
+.migration-state.json
+.agents-workspace/
+.kiro/
 
-# Legacy fix scripts
-scripts/legacy-fixes/
-
-# =============================================================================
-# Runtime & Process Files
-# =============================================================================
-
-# Runtime data
-pids/
-*.pid
-*.seed
-*.pid.lock
-
-# Optional npm cache directory
-.npm
-
-# Optional eslint cache
-.eslintcache
-
-# Optional REPL history
-.node_repl_history
-
-# Output of 'npm pack'
-*.tgz
-
-# Yarn Integrity file
-.yarn-integrity
-
-# =============================================================================
-# AI/ML Specific
-# =============================================================================
-
-# AI/ML artifacts
-/ml-artifacts/
-/training-data/
-/model-checkpoints/
-*.h5
-*.pkl
-*.pth
-*.onnx
-*.pb
-*.tfrecord
-*.safetensors
-checkpoints/
-runs/
-wandb/
-mlruns/
-
-# =============================================================================
-# Data Files
-# =============================================================================
-
-# Data files (not schema/config files)
-*.csv
-*.parquet
-*.feather
-data/raw/
-data/processed/
-
-# Ignore large data JSONs but allow configs and schemas
-data/**/*.json
-logs/**/*.json
-*.data.json
-# Spec files are generated in CI - do not commit versioned specs
-spec/v*/
-!spec/v0.3.0/.gitkeep
-!spec/v0.3.1/**/*
-!spec/v0.3.2/**/*
-!spec/extensions/**/*
-!spec/registry/**/*
-!spec/schema/**/*
-
-!docs/**/*.json
-!examples/**/*.json
-!openapi/**/*.json
-!.gitlab/**/*.json
-!.claude/**/*.json
-!.cursor/**/*.json
-!website/content/**/*.json
-!website/public/**/*.json
-
-# =============================================================================
-# Security & Certificates
-# =============================================================================
-
-# API keys and secrets
-*.key
-*.pem
-*.p12
-*.pfx
-
-# SSL certificates
-*.crt
-*.csr
-
-# =============================================================================
-# Docker & Container
-# =============================================================================
-
-# Docker
-.dockerignore
-docker-compose.override.yml
-
-# =============================================================================
-# CI/CD & Automation
-# =============================================================================
-
-# GitLab CI/CD artifacts
-/artifacts/
-/build-artifacts/
-/deployment-artifacts/
-/.gitlab-ci-local/
-
-# =============================================================================
-# Monorepo Specific
-# =============================================================================
-
-# Lerna
-lerna-debug.log*
-
-# Rush
-common/temp/
-
-# =============================================================================
-# Python Specific
-# =============================================================================
-
-# Distribution / packaging
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-pip-wheel-metadata/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
-
-# PyInstaller
-*.manifest
-*.spec
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-.pytest_cache/
-
-# Translations
-*.mo
-*.pot
-
-# Django stuff:
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
-
-# Flask stuff:
-instance/
-.webassets-cache
-
-# Scrapy stuff:
-.scrapy
-
-# Sphinx documentation
-docs/_build/
-
-# PyBuilder
-target/
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# IPython
-profile_default/
-ipython_config.py
-
-# pyenv
-.python-version
-
-# pipenv
-#Pipfile.lock
-
-# PEP 582
-__pypackages__/
-
-# Celery stuff
-celerybeat-schedule
-celerybeat.pid
-
-# SageMath parsed files
-*.sage.py
-
-# Spyder project settings
-.spyderproject
-.spyproject
-
-# Rope project settings
-.ropeproject
-
-# mkdocs documentation
-/site
-
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Pyre type checker
-.pyre/
-# Wiki is now version controlled in .gitlab/wiki/
-# (was previously ignored, now tracked for v0.2.3)
+# macOS-specific files
 .DS_Store
-
-# =============================================================================
-# Repo Hygiene - Worktrees and Submodules
-# =============================================================================
-
-# Local worktrees (must never be committed)
-.worktrees/
-.workingtrees/
-**/.worktrees/
-**/.workingtrees/
-
-# Git submodules (wiki must not be a submodule)
-.gitmodules
-build.env
-.env.local
+.AppleDouble
+.LSOverride

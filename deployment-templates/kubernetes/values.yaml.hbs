@@ -1,0 +1,355 @@
+# ============================================================================
+# Sample Values File for {{projectName}} Kubernetes Deployment
+# This file contains all configuration values used by the Handlebars templates
+# ============================================================================
+
+# ==========================================================================
+# Project Metadata
+# ==========================================================================
+projectName: my-application
+projectDescription: Production-ready Node.js microservice
+vendor: BlueFly.io
+version: 1.0.0
+maintainer: devops@bluefly.io
+license: MIT
+sourceUrl: https://gitlab.com/blueflyio/my-application
+
+# ==========================================================================
+# Kubernetes Configuration
+# ==========================================================================
+namespace: production
+appName: my-app
+component: api
+serviceName: my-app-service
+deploymentName: my-app
+containerName: my-app
+configMapName: my-app-config
+secretName: my-app-secret
+
+# ==========================================================================
+# Docker Image Configuration
+# ==========================================================================
+dockerRegistry: registry.gitlab.com/blueflyio
+imageName: my-application
+imageTag: latest
+imagePullPolicy: IfNotPresent
+imagePullSecrets:
+  - gitlab-registry
+
+# ==========================================================================
+# Deployment Configuration
+# ==========================================================================
+replicas: 3
+containerPort: 3000
+servicePort: 80
+serviceType: ClusterIP  # ClusterIP, NodePort, LoadBalancer
+
+# ==========================================================================
+# Resource Limits and Requests
+# ==========================================================================
+cpuRequest: 100m
+cpuLimit: 500m
+memoryRequest: 128Mi
+memoryLimit: 512Mi
+
+# ==========================================================================
+# Health Probes
+# ==========================================================================
+livenessPath: /health
+livenessInitialDelay: 30
+livenessPeriod: 10
+livenessTimeout: 5
+livenessFailureThreshold: 3
+
+readinessPath: /ready
+readinessInitialDelay: 10
+readinessPeriod: 10
+readinessTimeout: 5
+readinessFailureThreshold: 3
+
+enableStartupProbe: true
+startupPath: /health
+startupInitialDelay: 0
+startupPeriod: 10
+startupTimeout: 5
+startupFailureThreshold: 30
+
+# ==========================================================================
+# Horizontal Pod Autoscaler
+# ==========================================================================
+hpaName: my-app-hpa
+minReplicas: 2
+maxReplicas: 10
+cpuTarget: 70
+memoryTarget: 80
+
+scalingBehavior: true
+scaleUpStabilizationWindow: 0
+scaleUpPercent: 100
+scaleUpPods: 4
+scaleUpPeriod: 15
+
+scaleDownStabilizationWindow: 300
+scaleDownPercent: 50
+scaleDownPods: 1
+scaleDownPeriod: 60
+
+# ==========================================================================
+# Vertical Pod Autoscaler (Optional)
+# ==========================================================================
+enableVpa: false
+vpaName: my-app-vpa
+vpaUpdateMode: Auto  # Auto, Initial, Off, Recreate
+vpaMinCpu: 50m
+vpaMinMemory: 64Mi
+vpaMaxCpu: 2000m
+vpaMaxMemory: 2Gi
+vpaControlledValues: RequestsAndLimits
+
+# ==========================================================================
+# Pod Disruption Budget
+# ==========================================================================
+enablePdb: true
+pdbName: my-app-pdb
+pdbMinAvailable: 1
+# pdbMaxUnavailable: 1  # Use either minAvailable OR maxUnavailable
+
+# ==========================================================================
+# Ingress Configuration
+# ==========================================================================
+ingressName: my-app-ingress
+ingressClass: nginx
+enableTls: true
+certIssuer: letsencrypt-prod
+nginxIngress: true
+sslRedirect: true
+forceSslRedirect: true
+proxyBodySize: 10m
+proxyConnectTimeout: 60
+proxySendTimeout: 60
+proxyReadTimeout: 60
+proxyBufferSize: 4k
+
+# CORS Configuration
+enableCors: true
+corsAllowMethods: GET, POST, PUT, DELETE, OPTIONS
+corsAllowOrigin: https://app.example.com
+corsAllowCredentials: true
+
+# Rate Limiting
+enableRateLimit: true
+limitRps: 100
+limitConnections: 10
+
+# IP Whitelist
+enableWhitelist: false
+whitelistSourceRange: 10.0.0.0/8,172.16.0.0/12
+
+# Basic Auth
+enableAuth: false
+authSecret: my-app-auth
+authRealm: Authentication Required
+
+# Ingress Hosts and Paths
+ingressHosts:
+  - host: api.example.com
+    paths:
+      - path: /
+        pathType: Prefix
+        serviceName: my-app-service
+        portNumber: 80
+
+# TLS Configuration
+tlsHosts:
+  - hosts:
+      - api.example.com
+    secretName: api-example-com-tls
+
+# Cert Manager
+useCertManager: true
+certificateName: api-example-com-cert
+tlsSecretName: api-example-com-tls
+commonName: api.example.com
+dnsNames:
+  - api.example.com
+  - www.api.example.com
+
+# ==========================================================================
+# Service Account and RBAC
+# ==========================================================================
+serviceAccountName: my-app-sa
+automountServiceAccountToken: false
+mountServiceAccountToken: false
+
+createRole: true
+roleName: my-app-role
+roleBindingName: my-app-role-binding
+
+roleRules:
+  - apiGroups: [""]
+    resources: ["configmaps", "secrets"]
+    verbs: ["get", "list", "watch"]
+
+createClusterRole: false
+
+# ==========================================================================
+# Network Policy
+# ==========================================================================
+networkPolicyName: my-app-netpol
+allowIngressFromNamespace: true
+allowIngressFromIngress: true
+ingressNamespace: ingress-nginx
+ingressController: ingress-nginx
+
+allowEgressToNamespace: true
+allowDnsEgress: true
+
+allowDatabaseEgress: true
+databaseInCluster: true
+databaseApp: postgres
+databasePort: 5432
+
+allowRedisEgress: true
+redisInCluster: true
+redisApp: redis
+redisPort: 6379
+
+allowExternalEgress: true
+externalEgressCidrs:
+  - 0.0.0.0/0  # Allow all external traffic (restrict in production)
+
+createDenyAllPolicy: false
+
+# ==========================================================================
+# ConfigMap Data
+# ==========================================================================
+nodeEnv: production
+logLevel: info
+logFormat: json
+
+apiConfig: true
+apiVersion: v1
+apiPrefix: /api
+apiRateLimit: 100
+apiTimeout: 30000
+
+databaseConfig: true
+dbHost: postgres-service
+dbPort: 5432
+dbName: myapp
+dbPoolMin: 2
+dbPoolMax: 10
+dbSsl: true
+
+redisConfig: true
+redisHost: redis-service
+redisPort: 6379
+redisDb: 0
+redisKeyPrefix: myapp:
+
+monitoringConfig: true
+metricsEnabled: true
+metricsPort: 9090
+metricsPath: /metrics
+tracingEnabled: true
+tracingEndpoint: http://jaeger-collector:14268/api/traces
+
+prometheusEnabled: true
+
+featureFlags:
+  FEATURE_NEW_API: "true"
+  FEATURE_EXPERIMENTAL: "false"
+
+# ==========================================================================
+# Secret Data (base64 encoded at deploy time)
+# ==========================================================================
+databaseSecrets: true
+dbUser: myapp_user
+dbPassword: change_me_in_production
+
+redisSecrets: true
+redisPassword: change_me_in_production
+
+jwtSecrets: true
+jwtSecret: change_me_in_production_use_strong_random_string
+
+apiKeys:
+  API_KEY_SERVICE_A: change_me
+  API_KEY_SERVICE_B: change_me
+
+# ==========================================================================
+# Affinity and Tolerations
+# ==========================================================================
+enableAffinity: true
+
+nodeSelector:
+  node.kubernetes.io/instance-type: t3.medium
+
+nodeAffinity:
+  disktype:
+    - ssd
+
+tolerations:
+  - key: node.kubernetes.io/not-ready
+    operator: Exists
+    effect: NoExecute
+    tolerationSeconds: 300
+
+# ==========================================================================
+# Additional Volumes and Volume Mounts
+# ==========================================================================
+additionalVolumes:
+  - name: app-config
+    configMap: my-app-config-file
+    defaultMode: 0644
+
+additionalVolumeMounts:
+  - name: app-config
+    mountPath: /app/config
+    readOnly: true
+
+# ==========================================================================
+# Init Containers
+# ==========================================================================
+initContainers: true
+
+# ==========================================================================
+# Sidecar Containers
+# ==========================================================================
+sidecarContainers:
+  - name: log-forwarder
+    image: fluent/fluent-bit:2.0
+    imagePullPolicy: IfNotPresent
+    cpuRequest: 50m
+    cpuLimit: 100m
+    memoryRequest: 64Mi
+    memoryLimit: 128Mi
+    logPath: /app/logs
+
+# ==========================================================================
+# Custom Environment Variables
+# ==========================================================================
+customEnvVars:
+  CUSTOM_VAR_1: value1
+  CUSTOM_VAR_2: value2
+
+# ==========================================================================
+# Session Affinity
+# ==========================================================================
+sessionAffinity: false
+sessionAffinityTimeout: 10800
+
+# ==========================================================================
+# Headless Service
+# ==========================================================================
+enableHeadlessService: false
+
+# ==========================================================================
+# Timezone
+# ==========================================================================
+timezone: UTC
+
+# ==========================================================================
+# Change Cause (for rollout history)
+# ==========================================================================
+changeCause: Initial deployment

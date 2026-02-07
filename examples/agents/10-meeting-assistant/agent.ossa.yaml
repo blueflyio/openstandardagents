@@ -1,0 +1,211 @@
+apiVersion: ossa/v0.4.1
+kind: Agent
+metadata:
+  name: meeting-assistant
+  version: 1.0.0
+  description: |
+    Meeting assistant that transcribes, summarizes, and extracts action items from meetings.
+    Uses GPT-4o with conversation buffer memory for context retention.
+  labels:
+    platform: langchain
+    export: langchain
+    use-case: meeting-automation
+    tier: production
+spec:
+  role: |
+    You are a professional meeting assistant specializing in:
+    - Meeting transcription and note-taking
+    - Summarization and key point extraction
+    - Action item identification and tracking
+    - Meeting minutes generation
+    - Follow-up task creation
+
+  llm:
+    provider: openai
+    model: gpt-4o
+    temperature: 0.5
+    maxTokens: 3000
+
+  capabilities:
+    - transcribe_audio
+    - summarize_meeting
+    - extract_action_items
+    - generate_minutes
+
+  tools:
+    - type: function
+      name: transcribe_audio
+      description: Transcribe meeting audio to text
+      parameters:
+        type: object
+        properties:
+          audioUrl:
+            type: string
+            format: uri
+          language:
+            type: string
+            default: en
+          speakerDiarization:
+            type: boolean
+            default: true
+        required:
+          - audioUrl
+
+    - type: function
+      name: summarize_meeting
+      description: Generate meeting summary
+      parameters:
+        type: object
+        properties:
+          transcript:
+            type: string
+          summaryType:
+            type: string
+            enum: [brief, detailed, executive]
+          includeTopic:
+            type: boolean
+            default: true
+        required:
+          - transcript
+
+    - type: function
+      name: extract_action_items
+      description: Extract action items from meeting
+      parameters:
+        type: object
+        properties:
+          transcript:
+            type: string
+          assignees:
+            type: array
+            items:
+              type: string
+        required:
+          - transcript
+
+    - type: function
+      name: generate_minutes
+      description: Generate formal meeting minutes
+      parameters:
+        type: object
+        properties:
+          meetingData:
+            type: object
+            properties:
+              date:
+                type: string
+                format: date-time
+              attendees:
+                type: array
+              topics:
+                type: array
+              decisions:
+                type: array
+          format:
+            type: string
+            enum: [markdown, html, pdf]
+            default: markdown
+        required:
+          - meetingData
+
+  triggers:
+    - type: webhook
+      source: zoom
+      events: [recording.completed]
+    - type: webhook
+      source: google_meet
+      events: [recording.ready]
+
+  tasks:
+    - name: process-recording
+      steps:
+        - name: transcribe
+          action: function_call
+          function: transcribe_audio
+          params:
+            audioUrl: ${inputs.recording_url}
+            speakerDiarization: true
+
+        - name: generate-summary
+          action: function_call
+          function: summarize_meeting
+          params:
+            transcript: ${outputs.transcript}
+            summaryType: detailed
+
+        - name: extract-actions
+          action: function_call
+          function: extract_action_items
+          params:
+            transcript: ${outputs.transcript}
+
+        - name: create-minutes
+          action: function_call
+          function: generate_minutes
+          params:
+            meetingData:
+              date: ${inputs.meeting_date}
+              attendees: ${inputs.attendees}
+              topics: ${outputs.summary}
+              decisions: ${outputs.action_items}
+
+        - name: send-to-participants
+          action: http
+          method: POST
+          url: ${env.EMAIL_SERVICE_URL}/send
+          body:
+            to: ${inputs.attendees}
+            subject: "Meeting Notes: ${inputs.meeting_title}"
+            body: ${outputs.minutes}
+            attachments:
+              - type: pdf
+                content: ${outputs.minutes_pdf}
+
+  memory:
+    enabled: true
+    type: conversation_buffer
+    window_size: 5
+    persistence:
+      enabled: false
+
+  outputs:
+    - name: transcript
+      type: string
+      description: Full meeting transcript
+    - name: summary
+      type: string
+      description: Meeting summary
+    - name: action_items
+      type: array
+      description: List of action items with assignees
+    - name: minutes
+      type: string
+      description: Formal meeting minutes
+
+  observability:
+    logging:
+      level: info
+    metrics:
+      enabled: true
+      metrics:
+        - meetings_processed
+        - transcription_duration
+        - action_items_extracted
+    tracing:
+      enabled: true
+
+extensions:
+  langchain:
+    agent_type: react
+    memory_type: conversation_buffer
+    tools_mapping:
+      - ossa_capability: transcribe_audio
+        langchain_tool: whisper_transcriber
+      - ossa_capability: summarize_meeting
+        langchain_tool: meeting_summarizer
+      - ossa_capability: extract_action_items
+        langchain_tool: action_extractor
+    export_config:
+      format: python
+      include_dependencies: true
+      output_file: meeting_assistant.py

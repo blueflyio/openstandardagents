@@ -12,27 +12,41 @@ import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { ValidationService } from '../../services/validation.service.js';
 import { RegistryService } from '../../services/registry/registry.service.js';
 import type { OssaAgent } from '../../types/index.js';
+import { agentsPersonaCommand } from './agents/persona.command.js';
 
 /**
  * Zod Schemas for CLI Input Validation
  */
-const AgentIdSchema = z.string().min(1).max(100).regex(/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/);
-const AgentVersionSchema = z.string().regex(/^\d+\.\d+\.\d+(-[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)*)?(\+[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)*)?$/);
+const AgentIdSchema = z
+  .string()
+  .min(1)
+  .max(100)
+  .regex(/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/);
+const AgentVersionSchema = z
+  .string()
+  .regex(
+    /^\d+\.\d+\.\d+(-[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)*)?(\+[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)*)?$/
+  );
 const AgentPathSchema = z.string().min(1);
-const AgentUpdateSchema = z.object({
-  description: z.string().optional(),
-  labels: z.record(z.string(), z.string()).optional(),
-  llm: z.object({
-    temperature: z.number().min(0).max(2).optional(),
-    maxTokens: z.number().min(1).max(200000).optional(),
-  }).optional(),
-}).partial();
+const AgentUpdateSchema = z
+  .object({
+    description: z.string().optional(),
+    labels: z.record(z.string(), z.string()).optional(),
+    llm: z
+      .object({
+        temperature: z.number().min(0).max(2).optional(),
+        maxTokens: z.number().min(1).max(200000).optional(),
+      })
+      .optional(),
+  })
+  .partial();
 
 /**
  * Agent CRUD Command Group
  */
-export const agentsCommandGroup = new Command('agents')
-  .description('Manage OSSA agents (CRUD operations)');
+export const agentsCommandGroup = new Command('agents').description(
+  'Manage OSSA agents (CRUD operations)'
+);
 
 /**
  * Create Agent Command
@@ -62,7 +76,9 @@ agentsCommandGroup
 
         if (!result.valid) {
           console.error(chalk.red('✗ Validation failed'));
-          result.errors.forEach((error) => console.error(chalk.red(`  - ${error}`)));
+          result.errors.forEach((error) =>
+            console.error(chalk.red(`  - ${error}`))
+          );
           process.exit(1);
         }
 
@@ -88,7 +104,10 @@ agentsCommandGroup
           return;
         }
 
-        const token = options.token || process.env.GITLAB_TOKEN || process.env.GITLAB_PRIVATE_TOKEN;
+        const token =
+          options.token ||
+          process.env.GITLAB_TOKEN ||
+          process.env.GITLAB_PRIVATE_TOKEN;
         if (!token) {
           console.error(chalk.red('✗ Authentication token required'));
           process.exit(1);
@@ -101,13 +120,19 @@ agentsCommandGroup
 
         await registryService.publish(validatedPath, agentName, agentVersion);
 
-        console.log(chalk.green(`\n✓ Agent created successfully: ${agentName}@${agentVersion}`));
+        console.log(
+          chalk.green(
+            `\n✓ Agent created successfully: ${agentName}@${agentVersion}`
+          )
+        );
         console.log(chalk.gray(`  Registry: ${options.registry || 'gitlab'}`));
       } catch (error) {
         if (error instanceof z.ZodError) {
           console.error(chalk.red('✗ Validation error:'));
           error.issues.forEach((issue) => {
-            console.error(chalk.red(`  - ${issue.path.join('.')}: ${issue.message}`));
+            console.error(
+              chalk.red(`  - ${issue.path.join('.')}: ${issue.message}`)
+            );
           });
         } else {
           console.error(
@@ -142,10 +167,16 @@ agentsCommandGroup
       domain?: string;
     }) => {
       try {
-        const limit = z.coerce.number().int().min(1).max(100).parse(options.limit || '20');
+        const limit = z.coerce
+          .number()
+          .int()
+          .min(1)
+          .max(100)
+          .parse(options.limit || '20');
         const searchQuery = options.search || '';
 
-        const token = process.env.GITLAB_TOKEN || process.env.GITLAB_PRIVATE_TOKEN;
+        const token =
+          process.env.GITLAB_TOKEN || process.env.GITLAB_PRIVATE_TOKEN;
         if (!token) {
           console.error(chalk.red('✗ GITLAB_TOKEN required'));
           process.exit(1);
@@ -156,11 +187,19 @@ agentsCommandGroup
           token,
         });
 
-        console.log(chalk.blue(`Searching agents${searchQuery ? `: "${searchQuery}"` : ''}...`));
+        console.log(
+          chalk.blue(
+            `Searching agents${searchQuery ? `: "${searchQuery}"` : ''}...`
+          )
+        );
         const agents = await registryService.search(searchQuery, limit);
 
         if (agents.length === 0) {
-          console.log(chalk.yellow(`No agents found${searchQuery ? ` matching "${searchQuery}"` : ''}`));
+          console.log(
+            chalk.yellow(
+              `No agents found${searchQuery ? ` matching "${searchQuery}"` : ''}`
+            )
+          );
           return;
         }
 
@@ -168,17 +207,23 @@ agentsCommandGroup
         agents.forEach((agent) => {
           console.log(chalk.cyan(`  ${agent.name}@${agent.version}`));
           if (agent.description) {
-            console.log(chalk.gray(`    ${agent.description.substring(0, 100)}...`));
+            console.log(
+              chalk.gray(`    ${agent.description.substring(0, 100)}...`)
+            );
           }
           console.log(
-            chalk.gray(`    Published: ${new Date(agent.publishedAt).toLocaleDateString()}\n`)
+            chalk.gray(
+              `    Published: ${new Date(agent.publishedAt).toLocaleDateString()}\n`
+            )
           );
         });
       } catch (error) {
         if (error instanceof z.ZodError) {
           console.error(chalk.red('✗ Validation error:'));
           error.issues.forEach((issue) => {
-            console.error(chalk.red(`  - ${issue.path.join('.')}: ${issue.message}`));
+            console.error(
+              chalk.red(`  - ${issue.path.join('.')}: ${issue.message}`)
+            );
           });
         } else {
           console.error(
@@ -203,7 +248,8 @@ agentsCommandGroup
   .action(async (agent: string) => {
     try {
       const parts = agent.split('@');
-      const agentName = parts.length > 1 ? parts.slice(0, -1).join('@') : parts[0];
+      const agentName =
+        parts.length > 1 ? parts.slice(0, -1).join('@') : parts[0];
       const version = parts.length > 1 ? parts[parts.length - 1] : 'latest';
 
       AgentIdSchema.parse(agentName);
@@ -211,7 +257,8 @@ agentsCommandGroup
         AgentVersionSchema.parse(version);
       }
 
-      const token = process.env.GITLAB_TOKEN || process.env.GITLAB_PRIVATE_TOKEN;
+      const token =
+        process.env.GITLAB_TOKEN || process.env.GITLAB_PRIVATE_TOKEN;
       if (!token) {
         console.error(chalk.red('✗ GITLAB_TOKEN required'));
         process.exit(1);
@@ -222,7 +269,9 @@ agentsCommandGroup
         token,
       });
 
-      console.log(chalk.blue(`\nFetching info for ${agentName}@${version}...\n`));
+      console.log(
+        chalk.blue(`\nFetching info for ${agentName}@${version}...\n`)
+      );
       const agentInfo = await registryService.getInfo(agentName, version);
 
       console.log(chalk.cyan.bold('Agent Information\n'));
@@ -230,11 +279,15 @@ agentsCommandGroup
       console.log(chalk.white(`  Version:     ${agentInfo.version}`));
       console.log(chalk.white(`  Tag:         ${agentInfo.tag}`));
       console.log(
-        chalk.white(`  Published:   ${new Date(agentInfo.publishedAt).toLocaleString()}`)
+        chalk.white(
+          `  Published:   ${new Date(agentInfo.publishedAt).toLocaleString()}`
+        )
       );
       if (agentInfo.description) {
         console.log(
-          chalk.white(`\n  Description:\n    ${agentInfo.description.replace(/\n/g, '\n    ')}`)
+          chalk.white(
+            `\n  Description:\n    ${agentInfo.description.replace(/\n/g, '\n    ')}`
+          )
         );
       }
       console.log('');
@@ -242,7 +295,9 @@ agentsCommandGroup
       if (error instanceof z.ZodError) {
         console.error(chalk.red('✗ Validation error:'));
         error.issues.forEach((issue) => {
-          console.error(chalk.red(`  - ${issue.path.join('.')}: ${issue.message}`));
+          console.error(
+            chalk.red(`  - ${issue.path.join('.')}: ${issue.message}`)
+          );
         });
       } else {
         console.error(
@@ -263,7 +318,11 @@ agentsCommandGroup
   .alias('edit')
   .argument('<agent>', 'Agent identifier (name@version)')
   .option('--description <desc>', 'Update description')
-  .option('--label <key=value>', 'Add or update label (can be used multiple times)', [])
+  .option(
+    '--label <key=value>',
+    'Add or update label (can be used multiple times)',
+    []
+  )
   .option('--temperature <num>', 'Update LLM temperature', parseFloat)
   .option('--max-tokens <num>', 'Update LLM max tokens', parseInt)
   .option('--dry-run', 'Preview changes without updating')
@@ -304,7 +363,10 @@ agentsCommandGroup
             updatePayload.labels![key] = value;
           });
         }
-        if (options.temperature !== undefined || options.maxTokens !== undefined) {
+        if (
+          options.temperature !== undefined ||
+          options.maxTokens !== undefined
+        ) {
           updatePayload.llm = {};
           if (options.temperature !== undefined) {
             updatePayload.llm.temperature = options.temperature;
@@ -324,15 +386,26 @@ agentsCommandGroup
         }
 
         console.log(chalk.blue(`Updating agent: ${agentName}@${version}`));
-        console.log(chalk.yellow('⚠️  Update functionality requires API implementation'));
-        console.log(chalk.gray('  Validated update payload:'), JSON.stringify(validated, null, 2));
+        console.log(
+          chalk.yellow(
+            '[WARN]  Update functionality requires API implementation'
+          )
+        );
+        console.log(
+          chalk.gray('  Validated update payload:'),
+          JSON.stringify(validated, null, 2)
+        );
 
-        console.log(chalk.green(`\n✓ Update validated (API implementation pending)`));
+        console.log(
+          chalk.green(`\n✓ Update validated (API implementation pending)`)
+        );
       } catch (error) {
         if (error instanceof z.ZodError) {
           console.error(chalk.red('✗ Validation error:'));
           error.issues.forEach((issue) => {
-            console.error(chalk.red(`  - ${issue.path.join('.')}: ${issue.message}`));
+            console.error(
+              chalk.red(`  - ${issue.path.join('.')}: ${issue.message}`)
+            );
           });
         } else {
           console.error(
@@ -377,19 +450,31 @@ agentsCommandGroup
         }
 
         if (!options.force) {
-          console.log(chalk.yellow(`⚠️  This will delete agent: ${agentName}@${version}`));
+          console.log(
+            chalk.yellow(
+              `[WARN]  This will delete agent: ${agentName}@${version}`
+            )
+          );
           console.log(chalk.yellow('   Use --force to skip confirmation'));
         }
 
         console.log(chalk.blue(`Deleting agent: ${agentName}@${version}`));
-        console.log(chalk.yellow('⚠️  Delete functionality requires API implementation'));
+        console.log(
+          chalk.yellow(
+            '[WARN]  Delete functionality requires API implementation'
+          )
+        );
 
-        console.log(chalk.green(`\n✓ Delete validated (API implementation pending)`));
+        console.log(
+          chalk.green(`\n✓ Delete validated (API implementation pending)`)
+        );
       } catch (error) {
         if (error instanceof z.ZodError) {
           console.error(chalk.red('✗ Validation error:'));
           error.issues.forEach((issue) => {
-            console.error(chalk.red(`  - ${issue.path.join('.')}: ${issue.message}`));
+            console.error(
+              chalk.red(`  - ${issue.path.join('.')}: ${issue.message}`)
+            );
           });
         } else {
           console.error(
@@ -401,3 +486,9 @@ agentsCommandGroup
       }
     }
   );
+
+/**
+ * Persona Management Command
+ * Display and edit agent persona configuration
+ */
+agentsCommandGroup.addCommand(agentsPersonaCommand);

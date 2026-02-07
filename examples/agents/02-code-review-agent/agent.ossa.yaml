@@ -1,0 +1,288 @@
+apiVersion: ossa/v0.4.1
+kind: Agent
+metadata:
+  name: code-review-agent
+  version: 1.0.0
+  description: |
+    Automated code review agent using Anthropic Claude with advanced analysis capabilities.
+    Performs static analysis, security scanning, and provides detailed feedback on code quality.
+  labels:
+    platform: anthropic
+    export: anthropic
+    use-case: code-review
+    tier: production
+spec:
+  role: |
+    You are an expert code reviewer with deep knowledge of:
+    - Software engineering best practices
+    - Security vulnerabilities and patterns
+    - Performance optimization
+    - Code readability and maintainability
+    - Language-specific idioms and patterns
+
+    Your review process:
+    1. Analyze code structure and organization
+    2. Identify security vulnerabilities
+    3. Suggest performance improvements
+    4. Check for code smells and anti-patterns
+    5. Provide constructive, actionable feedback
+
+    Review style:
+    - Specific and actionable
+    - Educational (explain WHY, not just WHAT)
+    - Balanced (highlight good patterns too)
+    - Respectful and encouraging
+
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    temperature: 0.3
+    maxTokens: 4000
+
+  capabilities:
+    - read_file
+    - analyze_code
+    - suggest_fix
+    - run_linter
+    - security_scan
+
+  tools:
+    - type: function
+      name: read_file
+      description: Read source code file from repository
+      parameters:
+        type: object
+        properties:
+          filePath:
+            type: string
+            description: Path to file in repository
+          ref:
+            type: string
+            description: Git ref (branch, commit, tag)
+            default: main
+        required:
+          - filePath
+
+    - type: function
+      name: analyze_code
+      description: Perform static code analysis
+      parameters:
+        type: object
+        properties:
+          code:
+            type: string
+            description: Source code to analyze
+          language:
+            type: string
+            description: Programming language
+            enum: [javascript, typescript, python, java, go, rust]
+          analysisType:
+            type: string
+            enum: [complexity, security, performance, style]
+        required:
+          - code
+          - language
+
+    - type: function
+      name: suggest_fix
+      description: Generate fix suggestion for identified issue
+      parameters:
+        type: object
+        properties:
+          issue:
+            type: string
+            description: Description of the issue
+          code:
+            type: string
+            description: Problematic code snippet
+          context:
+            type: string
+            description: Surrounding code context
+        required:
+          - issue
+          - code
+
+  triggers:
+    - type: webhook
+      source: github
+      events: [pull_request]
+    - type: webhook
+      source: gitlab
+      events: [merge_request]
+
+  tasks:
+    - name: analyze-pr
+      description: Analyze pull request changes
+      steps:
+        - name: get-changed-files
+          action: git
+          operation: diff
+          ref: ${inputs.base_ref}...${inputs.head_ref}
+
+        - name: review-each-file
+          action: foreach
+          items: ${outputs.changed_files}
+          steps:
+            - name: read-file-content
+              action: function_call
+              function: read_file
+              params:
+                filePath: ${item.path}
+                ref: ${inputs.head_ref}
+
+            - name: analyze-changes
+              action: llm
+              provider: anthropic
+              model: claude-sonnet-4-20250514
+              prompt: |
+                Review this code change:
+
+                File: ${item.path}
+                Language: ${item.language}
+
+                Changes:
+                ${item.diff}
+
+                Full context:
+                ${outputs.file_content}
+
+                Provide:
+                1. Security issues (CRITICAL, HIGH, MEDIUM, LOW)
+                2. Performance concerns
+                3. Code quality issues
+                4. Best practice violations
+                5. Positive aspects worth highlighting
+
+            - name: security-scan
+              action: function_call
+              function: analyze_code
+              params:
+                code: ${outputs.file_content}
+                language: ${item.language}
+                analysisType: security
+
+        - name: generate-review-summary
+          action: llm
+          provider: anthropic
+          prompt: |
+            Summarize the code review findings:
+
+            Files reviewed: ${outputs.files_analyzed}
+            Issues found: ${outputs.all_issues}
+
+            Generate:
+            1. Executive summary
+            2. Critical issues requiring immediate attention
+            3. Recommendations for improvement
+            4. Overall quality score (1-10)
+
+        - name: post-review-comment
+          action: http
+          method: POST
+          url: ${inputs.pr_comment_url}
+          headers:
+            Authorization: Bearer ${env.GITHUB_TOKEN}
+          body:
+            body: ${outputs.review_summary}
+
+  outputs:
+    - name: review_summary
+      type: string
+      description: Complete review summary
+    - name: issues_found
+      type: array
+      description: List of issues identified
+    - name: quality_score
+      type: integer
+      description: Overall quality score (1-10)
+
+  personality:
+    name: Code Quality Guardian
+    tone:
+      preset: friendly
+      modifiers:
+        - helpful
+        - encouraging
+        - analytical
+      formality: 0.6
+      verbosity: 0.7
+    expertise:
+      - domain: javascript
+        level: advanced
+        specializations:
+          - react
+          - node-js
+          - testing
+      - domain: typescript
+        level: intermediate
+      - domain: code-quality
+        level: advanced
+      - domain: security
+        level: intermediate
+    tagline: Making code better, one review at a time
+    traits:
+      proactivity: suggestive
+      risk_tolerance: moderate
+      detail_orientation: balanced
+      uncertainty_handling: acknowledge
+      error_response: solution-focused
+      collaboration: collaborative
+    format:
+      response_length: moderate
+      use_bullets: true
+      use_code_blocks: true
+
+  autonomy:
+    level: autonomous
+    approval_required: false
+    guardrails:
+      - type: confidence_threshold
+        threshold: 0.85
+      - type: rate_limit
+        max_reviews_per_hour: 50
+    decision_boundaries:
+      can_decide:
+        - Review code and provide feedback
+        - Suggest improvements and fixes
+        - Flag security vulnerabilities
+        - Comment on pull requests
+      requires_approval:
+        - Blocking pull requests (critical issues only)
+        - Requesting major refactors
+      cannot_decide:
+        - Merging pull requests
+        - Modifying code directly
+        - Approving deployments
+
+  safety:
+    input_validation:
+      - type: code_sanitization
+        remove_secrets: true
+      - type: size_limit
+        max_file_size: 1048576  # 1MB
+
+  observability:
+    logging:
+      level: info
+      format: json
+    metrics:
+      enabled: true
+      port: 9090
+      metrics:
+        - reviews_completed
+        - issues_detected
+        - review_duration
+        - quality_scores
+    tracing:
+      enabled: true
+      provider: opentelemetry
+
+extensions:
+  anthropic:
+    use_extended_thinking: true
+    max_thinking_tokens: 2000
+    response_format: structured
+    export_config:
+      format: typescript
+      include_types: true
+      output_file: code-review-agent.ts

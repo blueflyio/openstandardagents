@@ -1,5 +1,5 @@
 /**
- * Tests for OSSA v0.3.1 Message Broker
+ * Tests for OSSA v0.3.3 Message Broker
  */
 
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
@@ -7,12 +7,13 @@ import { randomUUID } from 'crypto';
 import { BrokerFactory } from '../../src/messaging/broker.js';
 import { MemoryMessageBroker } from '../../src/messaging/protocols/memory.js';
 import { Message, Subscription } from '../../src/messaging/types.js';
+import { API_VERSION } from '../../../src/version.js';
 
 describe('Message Broker', () => {
   let broker: MemoryMessageBroker;
 
   beforeEach(async () => {
-    broker = await BrokerFactory.create('memory', {}) as MemoryMessageBroker;
+    broker = (await BrokerFactory.create('memory', {})) as MemoryMessageBroker;
   });
 
   afterEach(async () => {
@@ -30,7 +31,9 @@ describe('Message Broker', () => {
         payload: { data: 'test' },
       };
 
-      await expect(broker.publish('agents.test.message', message)).resolves.not.toThrow();
+      await expect(
+        broker.publish('agents.test.message', message)
+      ).resolves.not.toThrow();
     });
 
     it('should reject message with invalid channel format', async () => {
@@ -43,7 +46,9 @@ describe('Message Broker', () => {
         payload: { data: 'test' },
       };
 
-      await expect(broker.publish('invalid-channel', message)).rejects.toThrow('Invalid channel name');
+      await expect(broker.publish('invalid-channel', message)).rejects.toThrow(
+        'Invalid channel name'
+      );
     });
 
     it('should reject message with invalid sender format', async () => {
@@ -56,7 +61,9 @@ describe('Message Broker', () => {
         payload: { data: 'test' },
       };
 
-      await expect(broker.publish('agents.test.message', message)).rejects.toThrow('Invalid sender format');
+      await expect(
+        broker.publish('agents.test.message', message)
+      ).rejects.toThrow('Invalid sender format');
     });
 
     it('should reject message without required fields', async () => {
@@ -66,7 +73,9 @@ describe('Message Broker', () => {
         // Missing sender, timestamp, type, payload
       } as Message;
 
-      await expect(broker.publish('agents.test.message', message)).rejects.toThrow();
+      await expect(
+        broker.publish('agents.test.message', message)
+      ).rejects.toThrow();
     });
   });
 

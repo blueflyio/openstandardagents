@@ -1,15 +1,30 @@
 /**
  * OSSA Lint Command
  * Lint OSSA agent manifests against best practices
+ *
+ * SOLID Principles:
+ * - Uses shared output utilities (DRY)
+ * - Uses shared manifest loading utilities (DRY)
+ * - Single Responsibility: Only handles linting
  */
 
 import chalk from 'chalk';
 import { Command } from 'commander';
 import * as fs from 'fs';
-import * as path from 'path';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import type { OssaAgent } from '../../types/index.js';
+import {
+  outputJSON,
+  findManifestFilesFromPaths,
+  handleCommandError,
+} from '../utils/index.js';
+import {
+  addGlobalOptions,
+  addQueryOptions,
+  shouldUseColor,
+  ExitCode,
+} from '../utils/standard-options.js';
 
 interface LintRule {
   id: string;
@@ -33,10 +48,14 @@ const lintRules: LintRule[] = [
     severity: 'error',
     check: (manifest: OssaAgent) => {
       const issues: LintIssue[] = [];
-      if (manifest.spec?.llm?.model && !manifest.spec.llm.model.includes('${')) {
+      if (
+        manifest.spec?.llm?.model &&
+        !manifest.spec.llm.model.includes('${')
+      ) {
         issues.push({
           rule: 'no-hardcoded-models',
-          message: 'Model name should use environment variable (e.g., ${LLM_MODEL:-gpt-4})',
+          message:
+            'Model name should use environment variable (e.g., ${LLM_MODEL:-gpt-4})',
           severity: 'error',
           path: 'spec.llm.model',
           fix: `Replace with: \${LLM_MODEL:-${manifest.spec.llm.model}}`,
@@ -133,8 +152,9 @@ const lintRules: LintRule[] = [
     check: (manifest: OssaAgent) => {
       const issues: LintIssue[] = [];
       const labels = manifest.metadata?.labels || {};
-      const isProduction = Object.values(labels).some((v: unknown) => 
-        typeof v === 'string' && v.toLowerCase().includes('production')
+      const isProduction = Object.values(labels).some(
+        (v: unknown) =>
+          typeof v === 'string' && v.toLowerCase().includes('production')
       );
       if (isProduction && !manifest.spec?.constraints?.cost) {
         issues.push({
@@ -150,233 +170,228 @@ const lintRules: LintRule[] = [
 ];
 
 export const lintCommand = new Command('lint')
-  .argument('[paths...]', 'Paths to OSSA manifests (default: current directory)')
+  .argument(
+    '[paths...]',
+    'Paths to OSSA manifests (default: current directory)'
+  )
   .option('--fix', 'Auto-fix issues where possible')
   .option('--rule <rule>', 'Run specific rule only')
-  .option('--format <format>', 'Output format (default, json, sarif)', 'default')
-  .option('-o, --output <file>', 'Output file (for json/sarif formats)')
-  .option('--max-warnings <number>', 'Maximum warnings before exit with error', '0')
-  .description('Lint OSSA agent manifests against best practices')
-  .action(
-    async (
-      paths: string[],
-      options: {
-        fix?: boolean;
-        rule?: string;
-        format?: string;
-        output?: string;
-        maxWarnings?: string;
+  .option(
+    '--format <format>',
+    'Output format (default, json, sarif)',
+    'default'
+  )
+  .option(
+    '--max-warnings <number>',
+    'Maximum warnings before exit with error',
+    '0'
+  )
+  .description('Lint OSSA agent manifests against best practices');
+
+// Apply production-grade standard options
+addGlobalOptions(lintCommand);
+addQueryOptions(lintCommand);
+lintCommand.action(
+  async (
+    paths: string[],
+    options: {
+      fix?: boolean;
+      rule?: string;
+      format?: string;
+      output?: string;
+      maxWarnings?: string;
+      verbose?: boolean;
+      quiet?: boolean;
+      json?: boolean;
+      color?: boolean;
+    }
+  ) => {
+    try {
+      const useColor = shouldUseColor(options);
+      const log = (msg: string, color?: (s: string) => string) => {
+        if (options.quiet) return;
+        const output = useColor && color ? color(msg) : msg;
+        console.log(output);
+      };
+
+      const manifestRepo = container.get(ManifestRepository);
+      const maxWarnings = parseInt(options.maxWarnings || '0', 10);
+
+      // Determine files to lint (using shared utility)
+      const filesToLint = findManifestFilesFromPaths(paths);
+
+      if (filesToLint.length === 0) {
+        log('No OSSA manifest files found', chalk.yellow);
+        process.exit(ExitCode.SUCCESS);
       }
-    ) => {
-      try {
-        const manifestRepo = container.get(ManifestRepository);
-        const maxWarnings = parseInt(options.maxWarnings || '0', 10);
 
-        // Determine files to lint
-        const filesToLint: string[] = [];
-        if (paths.length === 0) {
-          // Default: find all .ossa.yaml and .ossa.yml files in current directory
-          const cwd = process.cwd();
-          const findFiles = (dir: string): void => {
-            const entries = fs.readdirSync(dir, { withFileTypes: true });
-            for (const entry of entries) {
-              const fullPath = path.join(dir, entry.name);
-              if (entry.isDirectory() && entry.name !== 'node_modules' && entry.name !== 'dist') {
-                findFiles(fullPath);
-              } else if (
-                entry.isFile() &&
-                (entry.name.endsWith('.ossa.yaml') || entry.name.endsWith('.ossa.yml'))
-              ) {
-                filesToLint.push(fullPath);
-              }
-            }
-          };
-          findFiles(cwd);
-        } else {
-          // Use provided paths
-          for (const p of paths) {
-            if (fs.existsSync(p) && fs.statSync(p).isDirectory()) {
-              // Recursively find .ossa.yaml files
-              const findFiles = (dir: string): void => {
-                const entries = fs.readdirSync(dir, { withFileTypes: true });
-                for (const entry of entries) {
-                  const fullPath = path.join(dir, entry.name);
-                  if (entry.isDirectory() && entry.name !== 'node_modules' && entry.name !== 'dist') {
-                    findFiles(fullPath);
-                  } else if (
-                    entry.isFile() &&
-                    (entry.name.endsWith('.ossa.yaml') || entry.name.endsWith('.ossa.yml'))
-                  ) {
-                    filesToLint.push(fullPath);
-                  }
-                }
-              };
-              findFiles(p);
-            } else {
-              filesToLint.push(p);
-            }
-          }
-        }
+      // Filter rules if specific rule requested
+      const rulesToRun = options.rule
+        ? lintRules.filter((r) => r.id === options.rule)
+        : lintRules;
 
-        if (filesToLint.length === 0) {
-          console.log(chalk.yellow('No OSSA manifest files found'));
-          process.exit(0);
-        }
-
-        // Filter rules if specific rule requested
-        const rulesToRun = options.rule
-          ? lintRules.filter((r) => r.id === options.rule)
-          : lintRules;
-
-        if (rulesToRun.length === 0) {
-          console.error(chalk.red(`Unknown rule: ${options.rule}`));
-          console.log(chalk.blue('Available rules:'));
+      if (rulesToRun.length === 0) {
+        if (!options.quiet) {
+          const err = `Unknown rule: ${options.rule}`;
+          console.error(useColor ? chalk.red(err) : err);
+          log('Available rules:', chalk.blue);
           lintRules.forEach((r) => {
-            console.log(`  - ${r.id}: ${r.name}`);
+            log(`  - ${r.id}: ${r.name}`);
           });
-          process.exit(1);
         }
+        process.exit(ExitCode.MISUSE);
+      }
 
-        // Lint all files
-        const allIssues: Array<LintIssue & { file: string }> = [];
-        for (const file of filesToLint) {
-          try {
-            const manifest = await manifestRepo.load(file);
-            for (const rule of rulesToRun) {
-              const issues = rule.check(manifest);
-              allIssues.push(
-                ...issues.map((issue) => ({
-                  ...issue,
-                  file,
-                }))
-              );
-            }
-          } catch (error: any) {
-            allIssues.push({
-              rule: 'parse-error',
-              message: `Failed to parse manifest: ${error.message}`,
-              severity: 'error',
-              file,
-            });
+      // Lint all files
+      const allIssues: Array<LintIssue & { file: string }> = [];
+      for (const file of filesToLint) {
+        try {
+          const manifest = await manifestRepo.load(file);
+          for (const rule of rulesToRun) {
+            const issues = rule.check(manifest);
+            allIssues.push(
+              ...issues.map((issue) => ({
+                ...issue,
+                file,
+              }))
+            );
           }
+        } catch (error: any) {
+          allIssues.push({
+            rule: 'parse-error',
+            message: `Failed to parse manifest: ${error.message}`,
+            severity: 'error',
+            file,
+          });
         }
+      }
 
-        // Count issues by severity
-        const errors = allIssues.filter((i) => i.severity === 'error');
-        const warnings = allIssues.filter((i) => i.severity === 'warning');
-        const infos = allIssues.filter((i) => i.severity === 'info');
+      // Count issues by severity
+      const errors = allIssues.filter((i) => i.severity === 'error');
+      const warnings = allIssues.filter((i) => i.severity === 'warning');
+      const infos = allIssues.filter((i) => i.severity === 'info');
 
-        // Output results
-        if (options.format === 'json') {
-          const output = {
-            files: filesToLint.length,
-            issues: allIssues.length,
-            errors: errors.length,
-            warnings: warnings.length,
-            infos: infos.length,
-            results: allIssues,
-          };
-          const jsonStr = JSON.stringify(output, null, 2);
-          if (options.output) {
-            fs.writeFileSync(options.output, jsonStr);
-            console.log(chalk.green(`Results written to ${options.output}`));
-          } else {
-            console.log(jsonStr);
-          }
-        } else if (options.format === 'sarif') {
-          // SARIF format for CI integration
-          const sarif = {
-            version: '2.1.0',
-            $schema: 'https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json',
-            runs: [
-              {
-                tool: {
-                  driver: {
-                    name: 'OSSA Lint',
-                    version: '0.3.0',
-                  },
+      // Output results
+      const isJSON = options.json || options.format === 'json';
+      if (isJSON) {
+        const output = {
+          files: filesToLint.length,
+          issues: allIssues.length,
+          errors: errors.length,
+          warnings: warnings.length,
+          infos: infos.length,
+          results: allIssues,
+        };
+        if (options.output) {
+          fs.writeFileSync(options.output, JSON.stringify(output, null, 2));
+          log(`Results written to ${options.output}`, chalk.green);
+        } else {
+          outputJSON(output);
+        }
+      } else if (options.format === 'sarif') {
+        // SARIF format for CI integration
+        const sarif = {
+          version: '2.1.0',
+          $schema:
+            'https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json',
+          runs: [
+            {
+              tool: {
+                driver: {
+                  name: 'OSSA Lint',
+                  version: '0.3.0',
                 },
-                results: allIssues.map((issue) => ({
-                  ruleId: issue.rule,
-                  level: issue.severity === 'error' ? 'error' : issue.severity === 'warning' ? 'warning' : 'note',
-                  message: {
-                    text: issue.message,
-                  },
-                  locations: [
-                    {
-                      physicalLocation: {
-                        artifactLocation: {
-                          uri: issue.file,
-                        },
+              },
+              results: allIssues.map((issue) => ({
+                ruleId: issue.rule,
+                level:
+                  issue.severity === 'error'
+                    ? 'error'
+                    : issue.severity === 'warning'
+                      ? 'warning'
+                      : 'note',
+                message: {
+                  text: issue.message,
+                },
+                locations: [
+                  {
+                    physicalLocation: {
+                      artifactLocation: {
+                        uri: issue.file,
                       },
                     },
-                  ],
-                })),
-              },
-            ],
-          };
-          const jsonStr = JSON.stringify(sarif, null, 2);
-          if (options.output) {
-            fs.writeFileSync(options.output, jsonStr);
-            console.log(chalk.green(`SARIF results written to ${options.output}`));
-          } else {
-            console.log(jsonStr);
-          }
+                  },
+                ],
+              })),
+            },
+          ],
+        };
+        if (options.output) {
+          fs.writeFileSync(options.output, JSON.stringify(sarif, null, 2));
+          log(`SARIF results written to ${options.output}`, chalk.green);
         } else {
-          // Default format
-          console.log(chalk.blue(`\nLinting ${filesToLint.length} file(s)...\n`));
+          outputJSON(sarif);
+        }
+      } else {
+        // Default format
+        log(`\nLinting ${filesToLint.length} file(s)...\n`, chalk.blue);
 
-          if (allIssues.length === 0) {
-            console.log(chalk.green('No linting issues found!'));
-          } else {
-            // Group by file
-            const byFile = new Map<string, LintIssue[]>();
-            for (const issue of allIssues) {
-              if (!byFile.has(issue.file)) {
-                byFile.set(issue.file, []);
-              }
-              byFile.get(issue.file)!.push(issue);
+        if (allIssues.length === 0) {
+          log('No linting issues found!', chalk.green);
+        } else {
+          // Group by file
+          const byFile = new Map<string, LintIssue[]>();
+          for (const issue of allIssues) {
+            if (!byFile.has(issue.file)) {
+              byFile.set(issue.file, []);
             }
-
-            for (const [file, issues] of byFile) {
-              console.log(chalk.cyan(`\n${file}:`));
-              for (const issue of issues) {
-                const color =
-                  issue.severity === 'error'
-                    ? chalk.red
-                    : issue.severity === 'warning'
-                      ? chalk.yellow
-                      : chalk.blue;
-                const icon = issue.severity === 'error' ? '✗' : issue.severity === 'warning' ? '⚠' : 'ℹ';
-                console.log(
-                  color(`  ${icon} [${issue.rule}] ${issue.message}`) +
-                    (issue.path ? chalk.gray(` (${issue.path})`) : '') +
-                    (issue.fix ? chalk.gray(`\n      Fix: ${issue.fix}`) : '')
-                );
-              }
-            }
-
-            console.log(chalk.blue(`\nSummary:`));
-            console.log(`  Errors: ${errors.length}`);
-            console.log(`  Warnings: ${warnings.length}`);
-            console.log(`  Info: ${infos.length}`);
+            byFile.get(issue.file)!.push(issue);
           }
-        }
 
-        // Exit with appropriate code
-        if (errors.length > 0) {
-          process.exit(1);
+          for (const [file, issues] of byFile) {
+            log(`\n${file}:`, chalk.cyan);
+            for (const issue of issues) {
+              const color =
+                issue.severity === 'error'
+                  ? chalk.red
+                  : issue.severity === 'warning'
+                    ? chalk.yellow
+                    : chalk.blue;
+              const icon =
+                issue.severity === 'error'
+                  ? '✗'
+                  : issue.severity === 'warning'
+                    ? '⚠'
+                    : 'ℹ';
+              const issueMsg = `  ${icon} [${issue.rule}] ${issue.message}`;
+              const path = issue.path ? ` (${issue.path})` : '';
+              const fix = issue.fix ? `\n      Fix: ${issue.fix}` : '';
+              const fullMsg = useColor
+                ? color(issueMsg) +
+                  (issue.path ? chalk.gray(path) : '') +
+                  (issue.fix ? chalk.gray(fix) : '')
+                : issueMsg + path + fix;
+              if (!options.quiet) console.log(fullMsg);
+            }
+          }
+
+          log('\nSummary:', chalk.blue);
+          log(`  Errors: ${errors.length}`);
+          log(`  Warnings: ${warnings.length}`);
+          log(`  Info: ${infos.length}`);
         }
-        if (warnings.length > maxWarnings) {
-          process.exit(1);
-        }
-        process.exit(0);
-      } catch (error: any) {
-        console.error(chalk.red('[ERROR]'), error.message);
-        if (error.stack) {
-          console.error(chalk.gray(error.stack));
-        }
-        process.exit(1);
       }
+
+      // Exit with appropriate code
+      if (errors.length > 0) {
+        process.exit(ExitCode.GENERAL_ERROR);
+      }
+      if (warnings.length > maxWarnings) {
+        process.exit(ExitCode.GENERAL_ERROR);
+      }
+      process.exit(ExitCode.SUCCESS);
+    } catch (error) {
+      handleCommandError(error);
     }
-  );
+  }
+);

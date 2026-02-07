@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from '@jest/globals';
 import { LlamaIndexValidator } from '../../../../src/services/validators/llamaindex.validator.js';
 import type { OssaAgent } from '../../../../src/types/index.js';
+import { API_VERSION } from '../../../../src/version.js';
 
 describe('LlamaIndexValidator', () => {
   let validator: LlamaIndexValidator;
@@ -9,7 +10,7 @@ describe('LlamaIndexValidator', () => {
   beforeEach(() => {
     validator = new LlamaIndexValidator();
     baseManifest = {
-      apiVersion: 'ossa/v0.3.0',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'test-agent',
@@ -115,7 +116,9 @@ describe('LlamaIndexValidator', () => {
       const result = validator.validate(manifest);
       expect(result.valid).toBe(false);
       expect(result.errors).toHaveLength(1);
-      expect(result.errors[0].message).toContain('index_config must be an object');
+      expect(result.errors[0].message).toContain(
+        'index_config must be an object'
+      );
     });
 
     it('should validate chunk_size is at least 1', () => {
@@ -133,7 +136,9 @@ describe('LlamaIndexValidator', () => {
       const result = validator.validate(manifest);
       expect(result.valid).toBe(false);
       expect(result.errors).toHaveLength(1);
-      expect(result.errors[0].message).toContain('chunk_size must be at least 1');
+      expect(result.errors[0].message).toContain(
+        'chunk_size must be at least 1'
+      );
     });
 
     it('should validate chunk_size is a number', () => {
@@ -150,7 +155,9 @@ describe('LlamaIndexValidator', () => {
       };
       const result = validator.validate(manifest);
       expect(result.valid).toBe(false);
-      expect(result.errors[0].message).toContain('chunk_size must be at least 1');
+      expect(result.errors[0].message).toContain(
+        'chunk_size must be at least 1'
+      );
     });
 
     it('should accept valid chunk_size', () => {
@@ -184,7 +191,9 @@ describe('LlamaIndexValidator', () => {
       const result = validator.validate(manifest);
       expect(result.valid).toBe(false);
       expect(result.errors).toHaveLength(1);
-      expect(result.errors[0].message).toContain('chunk_overlap must be at least 0');
+      expect(result.errors[0].message).toContain(
+        'chunk_overlap must be at least 0'
+      );
     });
 
     it('should validate chunk_overlap is a number', () => {
@@ -201,7 +210,9 @@ describe('LlamaIndexValidator', () => {
       };
       const result = validator.validate(manifest);
       expect(result.valid).toBe(false);
-      expect(result.errors[0].message).toContain('chunk_overlap must be at least 0');
+      expect(result.errors[0].message).toContain(
+        'chunk_overlap must be at least 0'
+      );
     });
 
     it('should accept valid chunk_overlap', () => {
@@ -233,7 +244,9 @@ describe('LlamaIndexValidator', () => {
       const result = validator.validate(manifest);
       expect(result.valid).toBe(false);
       expect(result.errors).toHaveLength(1);
-      expect(result.errors[0].message).toContain('similarity_top_k must be at least 1');
+      expect(result.errors[0].message).toContain(
+        'similarity_top_k must be at least 1'
+      );
     });
 
     it('should validate similarity_top_k is a number', () => {
@@ -248,7 +261,9 @@ describe('LlamaIndexValidator', () => {
       };
       const result = validator.validate(manifest);
       expect(result.valid).toBe(false);
-      expect(result.errors[0].message).toContain('similarity_top_k must be at least 1');
+      expect(result.errors[0].message).toContain(
+        'similarity_top_k must be at least 1'
+      );
     });
 
     it('should accept valid similarity_top_k', () => {
@@ -266,7 +281,13 @@ describe('LlamaIndexValidator', () => {
     });
 
     it('should accept all valid response_mode values', () => {
-      const validModes = ['default', 'compact', 'tree_summarize', 'refine', 'simple_summarize'];
+      const validModes = [
+        'default',
+        'compact',
+        'tree_summarize',
+        'refine',
+        'simple_summarize',
+      ];
 
       for (const mode of validModes) {
         const manifest = {
@@ -296,7 +317,9 @@ describe('LlamaIndexValidator', () => {
       const result = validator.validate(manifest);
       expect(result.valid).toBe(false);
       expect(result.errors).toHaveLength(1);
-      expect(result.errors[0].message).toContain('response_mode must be one of');
+      expect(result.errors[0].message).toContain(
+        'response_mode must be one of'
+      );
     });
 
     it('should warn if index_config is missing', () => {

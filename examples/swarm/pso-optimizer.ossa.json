@@ -1,0 +1,171 @@
+{
+  "apiVersion": "ossa/v0.4.1",
+  "kind": "Agent",
+  "metadata": {
+    "name": "infrastructure-optimizer-swarm",
+    "namespace": "optimization",
+    "version": "2.1.0",
+    "description": "Particle Swarm Optimization coordinator for infrastructure cost optimization across multi-cloud environments",
+    "labels": {
+      "domain": "infrastructure",
+      "subdomain": "cloud",
+      "optimization": "pso",
+      "swarm-type": "coordinator"
+    },
+    "taxonomy": {
+      "domain": "infrastructure",
+      "subdomain": "cloud",
+      "capability": "cost_optimization",
+      "concerns": ["cost", "performance", "reliability"]
+    },
+    "catalog": {
+      "published": true,
+      "catalog_id": "ossa-swarm-pso-optimizer-001",
+      "visibility": "internal",
+      "categories": ["infrastructure", "optimization", "finops"],
+      "tags": ["pso", "swarm-intelligence", "cost-optimization", "multi-cloud"],
+      "pricing": {
+        "model": "enterprise"
+      }
+    },
+    "decentralized_identity": {
+      "did": "did:ossa:swarm-pso-coordinator-abc123def456",
+      "public_key": "ed25519:pso-coordinator-key",
+      "reputation": {
+        "credit_score": 875,
+        "trust_network": [
+          "did:ossa:finops-authority",
+          "did:ossa:cloud-optimization-guild"
+        ]
+      }
+    },
+    "lifecycle_stages": {
+      "current_stage": "mature",
+      "birth": {
+        "timestamp": "2025-09-15T00:00:00Z",
+        "birth_type": "created"
+      },
+      "growth": {
+        "tasks_completed": 1245,
+        "skills_acquired": ["multi_cloud_optimization", "cost_prediction", "workload_migration"]
+      },
+      "career": {
+        "current_role": "swarm_coordinator"
+      }
+    },
+    "team_membership": {
+      "team_id": "infrastructure-optimization-swarm",
+      "role": "leader",
+      "responsibilities": [
+        "Coordinate particle agents in swarm",
+        "Manage optimization objectives",
+        "Report optimization results",
+        "Adapt swarm parameters dynamically"
+      ],
+      "joined_at": "2025-09-15T00:00:00Z"
+    }
+  },
+  "spec": {
+    "type": "orchestrator",
+    "description": "PSO-based swarm coordinator for distributed infrastructure optimization",
+    "capabilities": [
+      {
+        "name": "optimize_infrastructure",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "optimization_goal": {
+              "type": "string",
+              "enum": ["minimize_cost", "maximize_performance", "balance_cost_performance"]
+            },
+            "constraints": {
+              "type": "object",
+              "properties": {
+                "max_budget": {"type": "number"},
+                "min_availability": {"type": "number"},
+                "latency_threshold_ms": {"type": "number"}
+              }
+            },
+            "search_space": {
+              "type": "object",
+              "description": "Cloud resources and configurations to optimize",
+              "additionalProperties": true
+            }
+          }
+        },
+        "output_schema": {
+          "type": "object",
+          "properties": {
+            "optimal_configuration": {"type": "object"},
+            "cost_savings": {"type": "number"},
+            "iterations": {"type": "integer"},
+            "convergence_metrics": {"type": "object"}
+          }
+        }
+      }
+    ],
+    "swarm": {
+      "algorithm": "particle_swarm_optimization",
+      "config": {
+        "num_particles": 50,
+        "max_iterations": 100,
+        "inertia_weight": 0.7,
+        "cognitive_coefficient": 1.5,
+        "social_coefficient": 1.5,
+        "velocity_clamp": 0.5,
+        "convergence_threshold": 0.001
+      },
+      "particle_agents": [
+        {
+          "agent_id": "particle-001",
+          "agent_did": "did:ossa:particle-aws-optimizer",
+          "specialization": "aws_cost_optimization"
+        },
+        {
+          "agent_id": "particle-002",
+          "agent_did": "did:ossa:particle-gcp-optimizer",
+          "specialization": "gcp_cost_optimization"
+        },
+        {
+          "agent_id": "particle-003",
+          "agent_did": "did:ossa:particle-azure-optimizer",
+          "specialization": "azure_cost_optimization"
+        }
+      ],
+      "fitness_function": {
+        "type": "weighted_multi_objective",
+        "weights": {
+          "cost_reduction": 0.6,
+          "performance_improvement": 0.3,
+          "availability": 0.1
+        }
+      },
+      "communication": {
+        "topology": "fully_connected",
+        "update_frequency": "per_iteration",
+        "message_bus": "nats://agent-mesh:4222"
+      }
+    },
+    "runtime": {
+      "model": "claude-sonnet-4-5",
+      "temperature": 0.3,
+      "max_tokens": 12000
+    },
+    "observability": {
+      "metrics": {
+        "enabled": true,
+        "export_interval": "30s",
+        "metrics": [
+          "swarm_convergence_rate",
+          "particle_velocity_distribution",
+          "best_fitness_over_time",
+          "cost_savings_achieved"
+        ]
+      },
+      "logging": {
+        "level": "info",
+        "structured": true
+      }
+    }
+  }
+}

@@ -1,4 +1,5 @@
 import { GitHubSyncService } from '../../src/services/github-sync/sync.service';
+import { API_VERSION } from '../../src/version.js';
 
 jest.mock('@octokit/rest', () => ({
   Octokit: jest.fn().mockImplementation(() => ({

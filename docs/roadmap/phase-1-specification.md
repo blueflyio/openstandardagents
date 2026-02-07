@@ -2,7 +2,7 @@
 
 **Status:** In Progress  
 **Timeline:** Weeks 1-2  
-**Version Target:** v0.3.0
+**Version Target:** v{{VERSION}}
 
 ---
 
@@ -191,7 +191,7 @@ spec:
 ### 5. JSON Schema Updates
 
 **Files to update:**
-- `spec/v0.3.0/ossa-0.3.1.schema.json`
+- `spec/v0.3.0/ossa-0.3.4.schema.json`
 - Add `Task` enhancements
 - Add `Workflow` enhancements
 - Add `MessagingExtension` definitions
@@ -300,7 +300,7 @@ spec:
 
 ## 🔗 Related Documentation
 
-- [Master Roadmap](v0.3.x-to-v0.4.0.md)
+- [Master Roadmap](v0.3.x-to-v{{VERSION}}.md)
 - [Phase 2: Runtime Implementation](phase-2-runtime-implementation.md)
 - [Dependency Graph](dependency-graph.md)
 - [Success Metrics](success-metrics.md)
