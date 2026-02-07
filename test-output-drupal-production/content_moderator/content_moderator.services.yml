@@ -1,0 +1,21 @@
+services:
+  # Agent executor service
+  content_moderator.agent_executor:
+    class: Drupal\content_moderator\Service\AgentExecutor
+    arguments:
+      - '@logger.factory'
+      - '@config.factory'
+      - '@entity_type.manager'
+      - '@ai_agents.manager'
+    tags:
+      - { name: ossa_agent_executor }
+
+  # Symfony Messenger handler
+  content_moderator.message_handler:
+    class: Drupal\content_moderator\MessageHandler\AgentExecutionHandler
+    arguments:
+      - '@content_moderator.agent_executor'
+      - '@entity_type.manager'
+      - '@logger.factory'
+    tags:
+      - { name: messenger.message_handler }

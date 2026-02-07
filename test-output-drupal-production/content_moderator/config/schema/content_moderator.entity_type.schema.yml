@@ -1,0 +1,25 @@
+content_moderator.entity_type.schema:
+  type: config_entity
+  label: 'Agent execution entity schema'
+  mapping:
+    id:
+      type: string
+      label: 'ID'
+    input:
+      type: text
+      label: 'Input'
+    output:
+      type: text
+      label: 'Output'
+    success:
+      type: boolean
+      label: 'Success'
+    error:
+      type: text
+      label: 'Error'
+    created:
+      type: timestamp
+      label: 'Created'
+    completed:
+      type: timestamp
+      label: 'Completed'

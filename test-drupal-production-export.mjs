@@ -11,7 +11,7 @@
  * - Production-ready features
  */
 
-import { ProductionDrupalExporter } from './src/adapters/drupal/production-exporter.js';
+import { ProductionDrupalExporter } from './dist/adapters/drupal/production-exporter.js';
 import { promises as fs } from 'fs';
 import path from 'path';
 

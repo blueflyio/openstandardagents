@@ -1,6 +1,6 @@
 {
   "demonstration": "OSSA Complete Workflow",
-  "timestamp": "2026-02-07T06:24:48.419Z",
+  "timestamp": "2026-02-07T06:30:12.986Z",
   "agent": {
     "name": "mr-reviewer",
     "version": "1.0.0",
@@ -17,9 +17,9 @@
     "security": 95
   },
   "performance": {
-    "duration": "19ms",
-    "avgPerPlatform": "3ms",
-    "filesPerSecond": 2421
+    "duration": "30ms",
+    "avgPerPlatform": "5ms",
+    "filesPerSecond": 1533
   },
   "outputDirectory": "/Users/thomas.scola/Sites/blueflyio/.worktrees/openstandardagents/issue-cleanup/tmp/ossa-demo"
 }
