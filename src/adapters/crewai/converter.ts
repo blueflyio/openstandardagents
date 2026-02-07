@@ -19,9 +19,12 @@ export class CrewAIConverter {
     const workflow = spec.workflow as
       | {
           steps?: Array<{
+            id?: string;
+            name?: string;
             agent?: string;
             task?: string;
             description?: string;
+            tool?: string;
           }>;
         }
       | undefined;
@@ -30,43 +33,53 @@ export class CrewAIConverter {
     const agents: CrewAIAgentConfig[] = [];
     const tasks: CrewAITaskConfig[] = [];
 
-    if (workflow?.steps) {
-      // Multi-agent workflow
+    if (workflow?.steps && workflow.steps.length > 0) {
+      // Multi-agent workflow - convert workflow steps to agents/tasks
       for (const step of workflow.steps) {
-        if (step.agent && !agents.find((a) => a.role === step.agent)) {
+        const stepName = step.name || step.id || step.task || 'Task';
+        const stepDesc = step.description || stepName;
+
+        // Create an agent for this step if agent field exists, or use step name as role
+        const agentRole = step.agent || this.sanitizeRoleName(stepName);
+
+        if (!agents.find((a) => a.role === agentRole)) {
           agents.push({
-            role: step.agent,
-            goal: step.description || `Execute ${step.task || 'task'}`,
-            backstory: `Agent responsible for ${step.task || 'workflow step'}`,
+            role: agentRole,
+            goal: `Successfully complete ${stepName} step`,
+            backstory: `Specialized agent for ${stepDesc}`,
             verbose: true,
           });
         }
 
-        if (step.task) {
-          tasks.push({
-            description: step.description || step.task,
-            agent: step.agent || agents[0]?.role || 'agent',
-            expected_output: `Completed ${step.task}`,
-          });
-        }
+        // Create task for this step
+        tasks.push({
+          description: stepDesc,
+          agent: agentRole,
+          expected_output: `Completed ${stepName}${step.tool ? ` using ${step.tool}` : ''}`,
+        });
       }
-    } else {
-      // Single agent
+    }
+
+    // If no agents were created, create a single default agent
+    if (agents.length === 0) {
+      const mainRole = this.extractRoleFromSpec(spec, manifest.metadata?.name);
       agents.push({
-        role: (spec.role as string) || manifest.metadata?.name || 'agent',
+        role: mainRole,
         goal:
           manifest.metadata?.description ||
-          (spec.role as string) ||
-          'Execute tasks',
-        backstory: manifest.metadata?.description || 'AI agent',
+          'Execute tasks effectively',
+        backstory: (spec.role as string) || manifest.metadata?.description || 'AI agent',
         verbose: true,
       });
 
-      tasks.push({
-        description: (spec.role as string) || 'Execute agent tasks',
-        agent: agents[0].role,
-        expected_output: 'Task completed',
-      });
+      // Create default task if none exist
+      if (tasks.length === 0) {
+        tasks.push({
+          description: manifest.metadata?.description || 'Execute agent tasks',
+          agent: mainRole,
+          expected_output: 'Task completed successfully',
+        });
+      }
     }
 
     return {
@@ -75,6 +88,35 @@ export class CrewAIConverter {
       process: 'sequential',
       verbose: true,
     };
+  }
+
+  /**
+   * Sanitize role name for CrewAI (remove special chars, convert to title case)
+   */
+  private sanitizeRoleName(name: string): string {
+    return name
+      .split(/[-_\s]/)
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  }
+
+  /**
+   * Extract role from spec, trying multiple fields
+   */
+  private extractRoleFromSpec(spec: Record<string, unknown>, fallback?: string): string {
+    // Try to extract from role field (could be multiline)
+    if (spec.role && typeof spec.role === 'string') {
+      const lines = spec.role.split('\n').filter(l => l.trim());
+      if (lines.length > 0) {
+        const firstLine = lines[0].trim();
+        // If first line is reasonable length, use it as role
+        if (firstLine.length < 100 && firstLine.length > 5) {
+          return firstLine;
+        }
+      }
+    }
+
+    return fallback || 'AI Agent';
   }
 
   /**
