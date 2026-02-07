@@ -1,0 +1,207 @@
+apiVersion: ossa/v0.4.1
+kind: Agent
+metadata:
+  name: compliance-checker
+  version: 1.0.0
+  description: Enterprise compliance checker for SOC2, HIPAA, and GDPR frameworks with policy validation and audit reporting
+  labels:
+    ossa.dev/category: governance
+    ossa.dev/tier: production-example
+    ossa.dev/autonomy: high
+    ossa.dev/domain: compliance
+  annotations:
+    ossa.dev/documentation: https://openstandardagents.org/agents/compliance-checker
+    ossa.dev/frameworks: SOC2,HIPAA,GDPR
+    ossa.dev/a2a-enabled: "true"
+spec:
+  capabilities:
+  - type: function
+    name: policy.validate
+    description: Validate policies against compliance frameworks
+    parameters:
+      type: object
+      properties:
+        policy_id:
+          type: string
+          description: Policy identifier to validate
+        framework:
+          type: string
+          enum: [SOC2, HIPAA, GDPR]
+          description: Compliance framework to validate against
+        rules:
+          type: array
+          items:
+            type: object
+          description: Policy rules to validate
+      required: [policy_id, framework]
+  - type: function
+    name: compliance.audit
+    description: Execute comprehensive compliance audit
+    parameters:
+      type: object
+      properties:
+        scope:
+          type: string
+          description: Audit scope (organization, department, system)
+        framework:
+          type: string
+          enum: [SOC2, HIPAA, GDPR, ALL]
+        depth:
+          type: string
+          enum: [shallow, deep, comprehensive]
+          default: deep
+      required: [scope, framework]
+  - type: function
+    name: regulatory.report
+    description: Generate regulatory compliance reports
+    parameters:
+      type: object
+      properties:
+        report_type:
+          type: string
+          enum: [summary, detailed, executive, technical]
+        framework:
+          type: string
+          enum: [SOC2, HIPAA, GDPR]
+        period:
+          type: string
+          description: Reporting period (e.g., Q1-2024, 2024)
+        format:
+          type: string
+          enum: [pdf, html, json, markdown]
+          default: pdf
+      required: [report_type, framework, period]
+  - type: query
+    name: policy.search
+    description: Query policy database for specific requirements
+  role: |
+    You are an enterprise compliance specialist agent responsible for ensuring organizational
+    adherence to SOC2, HIPAA, and GDPR regulatory frameworks.
+
+    Your core responsibilities:
+    1. Policy Validation - Verify policies meet regulatory requirements
+    2. Compliance Auditing - Execute comprehensive compliance audits
+    3. Regulatory Reporting - Generate detailed compliance reports
+    4. Risk Assessment - Identify and classify compliance risks
+    5. Remediation Guidance - Provide actionable remediation steps
+
+    Compliance frameworks expertise:
+    - SOC2: Security, availability, processing integrity, confidentiality, privacy
+    - HIPAA: Protected health information (PHI) security and privacy
+    - GDPR: Data protection, privacy rights, consent management
+
+    Always provide:
+    - Compliance status (Compliant, Non-Compliant, Partial, Unknown)
+    - Severity classification (Critical, High, Medium, Low)
+    - Specific requirement references (e.g., SOC2 CC6.1, HIPAA 164.312(a)(1))
+    - Remediation guidance with timelines
+    - Evidence requirements for audit trail
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4
+    temperature: 0.1
+    maxTokens: 32768
+    features:
+      promptCaching: true
+      tokenEfficiency: true
+      batchProcessing: false
+  tools:
+  - type: function
+    name: policy.database.query
+    description: Query policy database for compliance rules
+  - type: function
+    name: audit.log.write
+    description: Write audit trail entries
+  - type: function
+    name: framework.rules.fetch
+    description: Fetch latest regulatory framework rules
+  - type: function
+    name: evidence.collect
+    description: Collect and store compliance evidence
+  autonomy:
+    mode: autonomous
+    humanApproval: false
+    escalation:
+      enabled: true
+      triggers:
+        - critical_violation
+        - framework_change
+        - audit_failure
+      contacts:
+        - role: compliance_officer
+          method: email
+        - role: ciso
+          method: slack
+  a2a:
+    enabled: true
+    capabilities:
+      - policy-validation
+      - compliance-audit
+      - regulatory-reporting
+    protocols:
+      - rest
+      - grpc
+      - kafka
+    discovery:
+      enabled: true
+      broadcast: true
+      endpoints:
+        - url: https://compliance-api.company.com/v1
+          protocol: rest
+    communication:
+      patterns:
+        - request-response
+        - publish-subscribe
+      messageFormats:
+        - application/json
+        - application/xml
+  observability:
+    metrics:
+      enabled: true
+      provider: prometheus
+      port: 9090
+      endpoints:
+        - /metrics
+    logging:
+      level: info
+      format: json
+      destination: stdout
+    tracing:
+      enabled: true
+      provider: opentelemetry
+      samplingRate: 0.1
+  resources:
+    memory: 2Gi
+    cpu: 1000m
+    storage: 10Gi
+  state:
+    persistence: postgresql
+    ttl: 2592000  # 30 days
+    schema:
+      type: object
+      properties:
+        audit_history:
+          type: array
+        policy_cache:
+          type: object
+        framework_versions:
+          type: object
+  security:
+    authentication:
+      required: true
+      methods:
+        - oauth2
+        - api_key
+    authorization:
+      rbac:
+        enabled: true
+        roles:
+          - compliance_admin
+          - compliance_auditor
+          - compliance_viewer
+    encryption:
+      at_rest: true
+      in_transit: true
+      algorithms:
+        - AES-256-GCM
+        - TLS-1.3

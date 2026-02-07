@@ -1,0 +1,34 @@
+{#
+/**
+ * @file
+ * Template for agent execution result.
+ *
+ * Available variables:
+ * - execution: The agent execution entity
+ * - result: The parsed result data
+ */
+#}
+<div class="agent-execution-result">
+  <h2>{{ 'Execution Result'|t }}</h2>
+
+  <div class="execution-meta">
+    <p><strong>{{ 'ID'|t }}:</strong> {{ execution.id.value }}</p>
+    <p><strong>{{ 'Status'|t }}:</strong> {{ execution.success.value ? 'Success'|t : 'Failed'|t }}</p>
+    <p><strong>{{ 'Created'|t }}:</strong> {{ execution.created.value|format_date('medium') }}</p>
+    {% if execution.completed.value %}
+      <p><strong>{{ 'Completed'|t }}:</strong> {{ execution.completed.value|format_date('medium') }}</p>
+    {% endif %}
+  </div>
+
+  {% if execution.success.value %}
+    <div class="execution-output">
+      <h3>{{ 'Output'|t }}</h3>
+      <pre>{{ result|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>
+    </div>
+  {% else %}
+    <div class="execution-error">
+      <h3>{{ 'Error'|t }}</h3>
+      <p>{{ execution.error.value }}</p>
+    </div>
+  {% endif %}
+</div>

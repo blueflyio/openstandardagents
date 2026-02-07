@@ -29,6 +29,7 @@ import { KubernetesManifestGenerator } from '../../adapters/kubernetes/generator
 import { KAgentCRDGenerator } from '../../sdks/kagent/crd-generator.js';
 import { registry } from '../../adapters/registry/platform-registry.js';
 import { DrupalModuleGenerator } from '../../adapters/drupal/generator.js';
+import { ProductionDrupalExporter } from '../../adapters/drupal/production-exporter.js';
 import type { OssaAgent } from '../../types/index.js';
 import {
   addGlobalOptions,
@@ -42,7 +43,7 @@ export const exportCommand = new Command('export')
   .argument('<manifest>', 'Path to OSSA agent manifest')
   .requiredOption(
     '-p, --platform <platform>',
-    'Target platform (kagent, langchain, crewai, temporal, n8n, gitlab, gitlab-agent, docker, kubernetes, npm, drupal)'
+    'Target platform (kagent, langchain, crewai, temporal, n8n, gitlab, gitlab-agent, docker, kubernetes, npm, drupal, agent-skills)'
   )
   .option('-o, --output <file>', 'Output file path')
   .option('--format <format>', 'Output format (yaml, json, python)', 'yaml')
@@ -333,18 +334,16 @@ exportCommand.action(
 
         case 'drupal': {
           log(
-            'Generating Drupal module with ossa/symfony-bundle integration...'
+            'Generating production Drupal module with ai_agents 1.3.x-dev + Symfony Messenger...'
           );
 
-          // Use DrupalModuleGenerator for full module package
-          const generator = new DrupalModuleGenerator();
-          const result = await generator.export(manifest, {
-            includeQueueWorker: true,
-            includeEntity: true,
-            includeController: true,
-            includeConfigForm: true,
-            includeHooks: true,
-            includeViews: true,
+          // Use ProductionDrupalExporter for full production-grade module
+          const exporter = new ProductionDrupalExporter();
+          const result = await exporter.export(manifest, {
+            includeMessenger: true,
+            includeAdminUI: true,
+            includeTests: true,
+            includeDocs: true,
             validate: true,
           });
 
@@ -394,6 +393,57 @@ exportCommand.action(
             for (const file of result.files) {
               logVerbose(`  - ${file.path} (${file.content.length} bytes)`);
             }
+          }
+
+          return; // Early return to skip single-file write
+        }
+
+        case 'agent-skills': {
+          log('Generating Agent Skills package (SKILL.md format)...');
+
+          // Use AgentSkillsExporter for complete skills package
+          const { AgentSkillsExporter } = await import('../../adapters/agent-skills/exporter.js');
+          const exporter = new AgentSkillsExporter();
+          const result = await exporter.export(manifest, {
+            includeScripts: true,
+            includeReferences: true,
+            includeAssets: false,
+          });
+
+          if (!result.success) {
+            throw new Error(result.error || 'Agent Skills export failed');
+          }
+
+          // Create output directory
+          const skillName = manifest.metadata?.name || 'agent-skill';
+          const outputDir = options.output || `./${skillName}`;
+
+          if (!options.dryRun) {
+            fs.mkdirSync(outputDir, { recursive: true });
+
+            // Write all generated files
+            for (const file of result.files) {
+              const filePath = path.join(outputDir, file.path);
+              const fileDir = path.dirname(filePath);
+              fs.mkdirSync(fileDir, { recursive: true });
+              fs.writeFileSync(filePath, file.content);
+              logVerbose(`  Created: ${file.path}`);
+            }
+
+            logSuccess(`✓ Agent Skills package exported to: ${outputDir}`);
+            logVerbose(`  Files: ${result.files.length} files generated`);
+            logVerbose(`  Skill name: ${skillName}`);
+            logVerbose(`  Version: ${result.metadata?.version}`);
+            logVerbose(`  Tools: ${result.metadata?.toolsCount || 0}`);
+
+            log('\n📦 Usage instructions:');
+            log(`  1. Review SKILL.md in ${outputDir}/`);
+            log(`  2. Use with Claude Code: claude --skill ${skillName}`);
+            log(`  3. Share on GitHub: https://github.com/anthropics/awesome-agent-skills`);
+            log(`  4. Compatible with 25+ AI tools (OpenAI Codex, Cursor, etc.)`);
+          } else {
+            log('DRY RUN: Would generate:');
+            result.files.forEach(file => log(`  - ${file.path}`));
           }
 
           return; // Early return to skip single-file write

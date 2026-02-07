@@ -5,6 +5,10 @@
 
 export { GitLabConverter } from './converter.js';
 export { GitLabDuoFlowGenerator } from './flow-generator.js';
+export { ExternalAgentGenerator } from './external-agent-generator.js';
+export { GitLabDuoPackageGenerator } from './package-generator.js';
+export { GitLabDuoTriggerGenerator } from './trigger-generator.js';
+export { GitLabDuoRouterGenerator } from './router-generator.js';
 export type {
   GitLabJobConfig,
   GitLabPipelineConfig,
@@ -18,3 +22,7 @@ export type {
   FlowPrompt,
   ExternalAgentConfig,
 } from './types.js';
+export type {
+  PackageGenerationOptions,
+  PackageGenerationResult,
+} from './package-generator.js';

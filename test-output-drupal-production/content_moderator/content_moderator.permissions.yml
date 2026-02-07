@@ -1,0 +1,16 @@
+administer content_moderator:
+  title: 'Administer content_moderator agent'
+  description: 'Configure and manage content_moderator agent settings'
+  restrict access: true
+
+execute content_moderator:
+  title: 'Execute content_moderator agent'
+  description: 'Run content_moderator agent executions'
+
+view content_moderator executions:
+  title: 'View content_moderator executions'
+  description: 'View agent execution history and results'
+
+view own content_moderator executions:
+  title: 'View own content_moderator executions'
+  description: 'View own agent execution history'

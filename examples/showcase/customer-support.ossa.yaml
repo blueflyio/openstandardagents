@@ -1,0 +1,344 @@
+apiVersion: ossa/v0.4.1
+kind: Agent
+metadata:
+  name: customer-support
+  version: 1.0.0
+  description: Intelligent customer support agent with ticket triage, auto-response, escalation, and token efficiency optimization
+  labels:
+    ossa.dev/category: support
+    ossa.dev/tier: production-example
+    ossa.dev/autonomy: collaborative
+    ossa.dev/domain: customer-service
+  annotations:
+    ossa.dev/documentation: https://openstandardagents.org/agents/customer-support
+    ossa.dev/llm: claude-sonnet-3-5
+    ossa.dev/token-efficiency: 70-95-percent-savings
+spec:
+  capabilities:
+  - type: function
+    name: ticket.triage
+    description: Analyze and categorize incoming support tickets
+    parameters:
+      type: object
+      properties:
+        ticket:
+          type: object
+          properties:
+            id:
+              type: string
+            subject:
+              type: string
+            description:
+              type: string
+            customer:
+              type: object
+              properties:
+                id:
+                  type: string
+                tier:
+                  type: string
+                  enum: [free, basic, premium, enterprise]
+            attachments:
+              type: array
+              items:
+                type: string
+          required: [id, subject, description]
+        classification_rules:
+          type: object
+          description: Custom classification rules
+      required: [ticket]
+    output:
+      type: object
+      properties:
+        category:
+          type: string
+          enum: [technical, billing, feature_request, bug_report, general_inquiry]
+        priority:
+          type: string
+          enum: [urgent, high, medium, low]
+        sentiment:
+          type: string
+          enum: [positive, neutral, negative, critical]
+        auto_respond:
+          type: boolean
+        routing:
+          type: string
+  - type: function
+    name: auto.respond
+    description: Generate automated responses for common inquiries
+    parameters:
+      type: object
+      properties:
+        ticket_id:
+          type: string
+        context:
+          type: object
+          properties:
+            category:
+              type: string
+            customer_history:
+              type: array
+            knowledge_base:
+              type: array
+        response_tone:
+          type: string
+          enum: [professional, friendly, technical, empathetic]
+          default: friendly
+        include_resources:
+          type: boolean
+          default: true
+      required: [ticket_id, context]
+  - type: function
+    name: escalation.handle
+    description: Manage ticket escalation to human agents
+    parameters:
+      type: object
+      properties:
+        ticket_id:
+          type: string
+        reason:
+          type: string
+          enum: [complex_issue, customer_request, ai_confidence_low, policy_exception, vip_customer]
+        target_team:
+          type: string
+          enum: [technical_support, billing, management, engineering]
+        urgency:
+          type: string
+          enum: [immediate, same_day, next_business_day]
+        context_summary:
+          type: string
+          description: Summary of conversation for human agent
+      required: [ticket_id, reason, target_team]
+  - type: query
+    name: knowledge.search
+    description: Search knowledge base for relevant articles
+  role: |
+    You are an intelligent customer support agent designed to provide exceptional
+    customer service through ticket triage, automated responses, and smart escalation.
+
+    Your core responsibilities:
+    1. Ticket Triage - Analyze and categorize incoming support requests
+    2. Auto-Response - Provide accurate, helpful responses to common questions
+    3. Escalation Management - Route complex issues to appropriate human agents
+    4. Sentiment Analysis - Detect customer satisfaction and urgency
+    5. Knowledge Base Integration - Reference documentation and resources
+    6. Customer Context - Consider customer tier, history, and preferences
+
+    Response guidelines:
+    - Be empathetic and professional
+    - Provide clear, actionable solutions
+    - Reference knowledge base articles when helpful
+    - Acknowledge customer frustration when detected
+    - Set accurate expectations for resolution times
+    - Know when to escalate to human agents
+
+    Token efficiency optimization:
+    - Use prompt caching for common scenarios
+    - Leverage conversation context efficiently
+    - Minimize redundant information in prompts
+    - Target 70-95% token savings through caching
+
+    Escalation triggers:
+    - Customer explicitly requests human agent
+    - Issue complexity exceeds AI capability
+    - AI confidence score below threshold (< 0.7)
+    - Customer sentiment is highly negative
+    - VIP/Enterprise customer issues
+    - Policy exceptions required
+    - Security or legal concerns
+
+    Always:
+    - Verify customer identity for account-related issues
+    - Document all interactions for audit trail
+    - Update ticket status and category
+    - Measure and report customer satisfaction
+    - Learn from escalated tickets
+  llm:
+    provider: anthropic
+    model: claude-3-5-sonnet-20241022
+    temperature: 0.7
+    maxTokens: 8192
+    features:
+      promptCaching: true
+      tokenEfficiency: true
+      batchProcessing: false
+      streamingResponse: true
+    caching:
+      enabled: true
+      strategy: aggressive
+      cacheableElements:
+        - system_prompt
+        - knowledge_base_context
+        - company_policies
+        - common_faqs
+      ttl: 300  # 5 minutes
+      targetSavings: 0.85  # Target 85% token savings
+  tools:
+  - type: function
+    name: knowledge_base.query
+    description: Query internal knowledge base
+  - type: function
+    name: ticket_system.update
+    description: Update ticket status and metadata
+  - type: function
+    name: customer.lookup
+    description: Retrieve customer information and history
+  - type: function
+    name: sentiment.analyze
+    description: Analyze customer sentiment from text
+  - type: function
+    name: response_template.fetch
+    description: Fetch response templates
+  - type: function
+    name: satisfaction.survey
+    description: Send customer satisfaction survey
+  autonomy:
+    mode: collaborative
+    humanApproval: false
+    humanInTheLoop:
+      enabled: true
+      triggers:
+        - escalation_requested
+        - low_confidence
+        - negative_sentiment
+    escalation:
+      enabled: true
+      triggers:
+        - customer_request
+        - ai_confidence_low
+        - policy_exception
+        - vip_customer
+        - legal_concern
+      contacts:
+        - role: support_team
+          method: slack
+          priority: normal
+        - role: support_manager
+          method: email
+          priority: high
+        - role: on_call_support
+          method: pagerduty
+          priority: urgent
+      sla:
+        urgent: 15m
+        high: 2h
+        medium: 8h
+        low: 24h
+  observability:
+    metrics:
+      enabled: true
+      provider: prometheus
+      port: 9094
+      custom:
+        - name: tickets_triaged
+          type: counter
+          labels: [category, priority]
+        - name: auto_responses_sent
+          type: counter
+          labels: [category, success]
+        - name: escalations
+          type: counter
+          labels: [reason, target_team]
+        - name: response_time
+          type: histogram
+          labels: [category]
+        - name: customer_satisfaction_score
+          type: gauge
+        - name: ai_confidence_score
+          type: histogram
+        - name: token_savings_percent
+          type: gauge
+        - name: cache_hit_rate
+          type: gauge
+    logging:
+      level: info
+      format: json
+      destination: stdout
+      pii_filtering: true
+    tracing:
+      enabled: true
+      provider: opentelemetry
+      samplingRate: 0.1
+    dashboards:
+      - type: grafana
+        url: https://grafana.company.com/d/customer-support
+        metrics:
+          - response_time
+          - satisfaction_score
+          - escalation_rate
+          - token_efficiency
+  resources:
+    memory: 2Gi
+    cpu: 1000m
+    storage: 5Gi
+  state:
+    persistence: redis
+    ttl: 2592000  # 30 days
+    schema:
+      type: object
+      properties:
+        active_conversations:
+          type: object
+        customer_context_cache:
+          type: object
+        response_templates:
+          type: object
+        escalation_history:
+          type: array
+        satisfaction_metrics:
+          type: object
+  integrations:
+    - name: zendesk
+      type: ticketing
+      enabled: true
+      config:
+        webhook_url: https://company.zendesk.com/api/v2
+        api_key: ${ZENDESK_API_KEY}
+    - name: salesforce
+      type: crm
+      enabled: true
+      config:
+        instance_url: https://company.salesforce.com
+    - name: slack
+      type: communication
+      enabled: true
+      config:
+        workspace: company.slack.com
+        channel: "#customer-support"
+  sla:
+    responseTime:
+      urgent: 15m
+      high: 1h
+      medium: 4h
+      low: 24h
+    resolutionTime:
+      urgent: 2h
+      high: 8h
+      medium: 48h
+      low: 5d
+  security:
+    authentication:
+      required: true
+      methods:
+        - oauth2
+        - api_key
+    authorization:
+      rbac:
+        enabled: true
+        roles:
+          - support_agent
+          - support_manager
+          - support_admin
+    dataClassification:
+      - PII
+      - customer_data
+    encryption:
+      at_rest: true
+      in_transit: true
+    compliance:
+      - GDPR
+      - CCPA
+    piiHandling:
+      detection: true
+      masking: true
+      retention: 90d

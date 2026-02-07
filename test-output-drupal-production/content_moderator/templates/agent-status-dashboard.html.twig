@@ -1,0 +1,56 @@
+{#
+/**
+ * @file
+ * Template for agent status dashboard.
+ *
+ * Available variables:
+ * - stats: Execution statistics
+ * - recent_executions: Recent execution entities
+ */
+#}
+<div class="agent-dashboard">
+  <h2>{{ 'Agent Dashboard'|t }}</h2>
+
+  <div class="dashboard-stats">
+    <div class="stat-card">
+      <h3>{{ 'Total Executions'|t }}</h3>
+      <p class="stat-value">{{ stats.total }}</p>
+    </div>
+    <div class="stat-card">
+      <h3>{{ 'Successful'|t }}</h3>
+      <p class="stat-value">{{ stats.successful }}</p>
+    </div>
+    <div class="stat-card">
+      <h3>{{ 'Failed'|t }}</h3>
+      <p class="stat-value">{{ stats.failed }}</p>
+    </div>
+    <div class="stat-card">
+      <h3>{{ 'Success Rate'|t }}</h3>
+      <p class="stat-value">{{ stats.success_rate }}%</p>
+    </div>
+  </div>
+
+  <div class="recent-executions">
+    <h3>{{ 'Recent Executions'|t }}</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>{{ 'ID'|t }}</th>
+          <th>{{ 'Status'|t }}</th>
+          <th>{{ 'Created'|t }}</th>
+          <th>{{ 'Actions'|t }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for execution in recent_executions %}
+          <tr>
+            <td>{{ execution.id.value }}</td>
+            <td>{{ execution.success.value ? 'Success'|t : 'Failed'|t }}</td>
+            <td>{{ execution.created.value|format_date('short') }}</td>
+            <td><a href="{{ path('content_moderator.execution.view', {'content_moderator_execution': execution.id.value}) }}">{{ 'View'|t }}</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>

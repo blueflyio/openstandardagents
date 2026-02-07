@@ -1,0 +1,108 @@
+# Symfony Messenger Configuration for OSSA Agent Execution
+#
+# This configuration defines transports, routing, retry strategies,
+# and failed message handling for async agent execution.
+#
+# @package @bluefly/openstandardagents
+# @since 0.5.0
+
+framework:
+  messenger:
+    # Failure Transport - Where failed messages go
+    failure_transport: failed
+
+    # Define message transports
+    transports:
+      # Async transport for agent execution
+      agent_async:
+        dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+        options:
+          # Auto-setup tables/queues on first use
+          auto_setup: true
+          # Queue name (for RabbitMQ, Redis, etc.)
+          queue_name: ossa_agents
+        # Serializer for message encoding
+        serializer: 'messenger.transport.symfony_serializer'
+        # Retry strategy for failed messages
+        retry_strategy:
+          # Maximum number of retry attempts
+          max_retries: 3
+          # Delay in milliseconds before first retry
+          delay: 1000
+          # Multiplier for exponential backoff (delay * multiplier^retry)
+          multiplier: 2
+          # Maximum delay in milliseconds
+          max_delay: 30000
+          # Service to calculate delays (optional, for custom logic)
+          # service: 'app.messenger.retry_strategy'
+
+      # Batch transport for batch agent execution
+      agent_batch:
+        dsn: '%env(MESSENGER_BATCH_TRANSPORT_DSN)%'
+        options:
+          auto_setup: true
+          queue_name: ossa_batch_agents
+        serializer: 'messenger.transport.symfony_serializer'
+        retry_strategy:
+          max_retries: 2
+          delay: 2000
+          multiplier: 2
+          max_delay: 60000
+
+      # Failed messages transport
+      failed:
+        dsn: 'doctrine://default?queue_name=failed'
+        options:
+          auto_setup: true
+
+    # Route messages to transports
+    routing:
+      # Route AgentExecutionMessage to agent_async transport
+      'Drupal\ai_agent_ossa\Message\AgentExecutionMessage': agent_async
+
+      # Route AgentBatchMessage to agent_batch transport
+      'Drupal\ai_agent_ossa\Message\AgentBatchMessage': agent_batch
+
+    # Default bus (optional)
+    default_bus: messenger.bus.default
+
+    # Define message buses
+    buses:
+      messenger.bus.default:
+        middleware:
+          # Dispatch after current bus has completed
+          - 'doctrine_transaction'
+          # Validation middleware (custom)
+          - 'app.messenger.validation_middleware'
+          # Logging middleware (custom)
+          - 'app.messenger.logging_middleware'
+          # Authentication middleware (custom)
+          - 'app.messenger.authentication_middleware'
+          # Rate limiting middleware (custom)
+          - 'app.messenger.rate_limit_middleware'
+
+# Environment Variables Reference:
+#
+# MESSENGER_TRANSPORT_DSN - Main transport DSN
+# Examples:
+#   - doctrine://default                          (Database, default)
+#   - amqp://guest:guest@localhost:5672/%2f      (RabbitMQ)
+#   - redis://localhost:6379/messages            (Redis)
+#   - sqs://default                              (Amazon SQS)
+#
+# MESSENGER_BATCH_TRANSPORT_DSN - Batch transport DSN
+# (Same format as MESSENGER_TRANSPORT_DSN)
+#
+# Example .env file:
+#
+# # Use Doctrine (database) transport
+# MESSENGER_TRANSPORT_DSN=doctrine://default
+# MESSENGER_BATCH_TRANSPORT_DSN=doctrine://default
+#
+# # Use RabbitMQ
+# MESSENGER_TRANSPORT_DSN=amqp://user:password@rabbitmq:5672/%2f
+# MESSENGER_BATCH_TRANSPORT_DSN=amqp://user:password@rabbitmq:5672/%2f
+#
+# # Use Redis
+# MESSENGER_TRANSPORT_DSN=redis://redis:6379/messages
+# MESSENGER_BATCH_TRANSPORT_DSN=redis://redis:6379/batch
