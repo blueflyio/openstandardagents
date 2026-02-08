@@ -1,5 +1,8 @@
 # OSSA - Open Standard for Software Agents
 
+> **Development happens on [GitLab](https://gitlab.com/blueflyio/ossa/openstandardagents).** This repo is a read-only mirror.
+> [Source](https://gitlab.com/blueflyio/ossa/openstandardagents) | [Issues](https://gitlab.com/blueflyio/ossa/openstandardagents/-/issues) | [npm](https://www.npmjs.com/package/@bluefly/openstandardagents)
+
 A specification standard for defining, validating, and exporting AI agent manifests to multiple platforms. One YAML manifest, multiple deployment targets.
 
 [![npm version](https://badge.fury.io/js/%40bluefly%2Fopenstandardagents.svg)](https://www.npmjs.com/package/@bluefly/openstandardagents)
