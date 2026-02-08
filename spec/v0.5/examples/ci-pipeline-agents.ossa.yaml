@@ -1,0 +1,123 @@
+# OSSA v0.5 Example: CI Pipeline Agent Team
+#
+# Demonstrates parallel execution and coordinated sub-agents
+# for a CI/CD pipeline automation use case.
+
+apiVersion: ossa/v0.5
+kind: Agent
+metadata:
+  name: ci-coordinator
+  version: 1.0.0
+  labels:
+    category: devops
+    use-case: ci-cd
+
+spec:
+  description: |
+    CI/CD pipeline coordinator that orchestrates specialized agents
+    for building, testing, security scanning, and deployment.
+
+  role: |
+    You are a CI/CD coordinator. You manage a team of specialized agents:
+    - builder: Compiles code and creates artifacts
+    - tester: Runs test suites
+    - security: Scans for vulnerabilities
+    - deployer: Handles deployment
+
+    Coordinate these agents to complete pipeline stages efficiently.
+    Run independent tasks in parallel when possible.
+
+  model:
+    tier: capable
+
+  permissions:
+    mode: delegator  # Coordination only
+
+  tools:
+    allow: [read, task]  # Can only read and spawn sub-agents
+    deny: [write, edit, execute]
+
+  # =========================================================================
+  # Specialized Pipeline Agents
+  # =========================================================================
+  subAgents:
+    - name: builder
+      description: "Build and compile code. Creates artifacts."
+      model:
+        tier: fast
+      tools:
+        allow: [read, execute]
+        deny: [write, edit]
+      permissions:
+        mode: supervised
+      execution:
+        timeout: "15m"
+
+    - name: tester
+      description: "Run test suites and report results."
+      model:
+        tier: fast
+      tools:
+        allow: [read, execute]
+      permissions:
+        mode: readonly
+      execution:
+        mode: background
+        timeout: "30m"
+
+    - name: security
+      description: "Security scanning and vulnerability detection."
+      model:
+        tier: capable
+      tools:
+        allow: [read, execute, search]
+      permissions:
+        mode: readonly
+      execution:
+        mode: background
+        timeout: "20m"
+      memory:
+        scope: project
+        categories:
+          - vulnerability-patterns
+          - false-positives
+
+    - name: deployer
+      description: "Deploy to environments. Requires approval."
+      model:
+        tier: capable
+      tools:
+        allow: [read, execute]
+      permissions:
+        mode: supervised  # Always requires approval
+      delegation:
+        explicit: true  # Only when explicitly requested
+
+  # =========================================================================
+  # Pipeline Orchestration
+  # =========================================================================
+  delegation:
+    strategy: rules
+
+    rules:
+      # Build first
+      - when: "pipeline starts or code changes"
+        delegate: builder
+
+      # Test and scan in parallel after build
+      - when: "build succeeds"
+        delegate: tester
+      - when: "build succeeds"
+        delegate: security
+
+      # Deploy only after all checks pass
+      - when: "tests pass AND security scan clean"
+        delegate: deployer
+        constraints:
+          - "requires explicit approval"
+          - "only to staging by default"
+
+    parallel:
+      enabled: true
+      maxConcurrent: 3
+      strategy: coordinated  # Agents see each other's status

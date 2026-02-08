@@ -1,0 +1,25 @@
+# OSSA v0.5 Example: Minimal Sub-Agent
+#
+# Simplest possible sub-agent configuration.
+# Shows required fields only.
+
+apiVersion: ossa/v0.5
+kind: Agent
+metadata:
+  name: simple-assistant
+  version: 1.0.0
+
+spec:
+  description: "Assistant with a fast search helper"
+
+  role: "You are a helpful assistant."
+
+  subAgents:
+    - name: searcher
+      description: "Fast file search. Use for finding code."
+      model:
+        tier: fast
+      tools:
+        allow: [read, search, glob]
+      permissions:
+        mode: readonly

@@ -1,0 +1,287 @@
+# OSSA v0.5 Example: Code Assistant with Sub-Agents
+#
+# Demonstrates the full sub-agent specification with:
+# - Model tiers (fast, capable, powerful)
+# - Permission modes (readonly, supervised, autonomous)
+# - Delegation rules
+# - Persistent memory
+# - Lifecycle hooks
+
+apiVersion: ossa/v0.5
+kind: Agent
+metadata:
+  name: code-assistant
+  version: 1.0.0
+  labels:
+    category: development
+    tier: enterprise
+
+spec:
+  description: |
+    Full-stack development assistant with specialized sub-agents
+    for exploration, planning, implementation, and testing.
+
+  role: |
+    You are a senior developer assistant. You have access to specialized
+    sub-agents that handle specific tasks more efficiently:
+
+    - **explorer**: Fast codebase search (use for understanding code)
+    - **planner**: Research and planning (use before complex tasks)
+    - **implementer**: Code modifications (use for writing code)
+    - **tester**: Test execution (use after changes)
+
+    Delegate to these agents when appropriate. They will return
+    summarized results to minimize context usage.
+
+  model:
+    tier: capable
+    preferredProvider: anthropic
+
+  tools:
+    - name: read
+    - name: write
+    - name: edit
+    - name: execute
+    - name: search
+    - name: glob
+
+  # =========================================================================
+  # Sub-Agent Definitions
+  # =========================================================================
+  subAgents:
+    # -----------------------------------------------------------------------
+    # Explorer: Fast, read-only codebase search
+    # -----------------------------------------------------------------------
+    - name: explorer
+      description: |
+        Fast codebase search and analysis. Use proactively when:
+        - Understanding code structure or architecture
+        - Finding files, functions, or classes
+        - Researching how something works
+        - Gathering context before making changes
+
+      model:
+        tier: fast
+        inherit: false
+
+      tools:
+        allow: [read, search, glob]
+        deny: [write, edit, execute]
+
+      permissions:
+        mode: readonly
+
+      delegation:
+        trigger: "codebase exploration, file search, understanding code"
+        proactive: true
+
+      execution:
+        mode: background
+        maxTurns: 50
+        timeout: "5m"
+
+    # -----------------------------------------------------------------------
+    # Planner: Research and architecture decisions
+    # -----------------------------------------------------------------------
+    - name: planner
+      description: |
+        Research and planning agent. Use before complex implementations to:
+        - Understand scope and requirements
+        - Analyze existing patterns in the codebase
+        - Create implementation plans
+        - Consider architectural tradeoffs
+
+      model:
+        tier: capable
+
+      tools:
+        allow: [read, search, glob]
+        deny: [write, edit, execute]
+
+      permissions:
+        mode: readonly
+
+      delegation:
+        trigger: "planning, architecture decisions, understanding requirements"
+        proactive: true
+
+      memory:
+        scope: project
+        path: .ossa/memory/planner/
+        categories:
+          - architectural-decisions
+          - planning-context
+          - codebase-patterns
+
+      role: |
+        You are a planning specialist. Before implementation:
+        1. Research the codebase thoroughly
+        2. Identify patterns and conventions
+        3. Consider edge cases and tradeoffs
+        4. Create a clear, actionable plan
+
+        Update your memory with architectural insights for future sessions.
+
+    # -----------------------------------------------------------------------
+    # Implementer: Code modifications
+    # -----------------------------------------------------------------------
+    - name: implementer
+      description: |
+        Code implementation specialist. Use for:
+        - Writing new code
+        - Modifying existing code
+        - Bug fixes
+        - Refactoring
+
+      model:
+        tier: capable
+
+      tools:
+        inherit: true
+
+      permissions:
+        mode: supervised
+
+      delegation:
+        trigger: "code implementation, bug fixes, feature development"
+        explicit: true
+
+      hooks:
+        afterToolUse:
+          - matcher: "write|edit"
+            command: "./scripts/run-linter.sh"
+
+      role: |
+        You are a senior developer. Follow these practices:
+        - Write clean, maintainable code
+        - Follow existing patterns in the codebase
+        - Add appropriate error handling
+        - Write meaningful comments for complex logic
+        - Consider edge cases
+
+    # -----------------------------------------------------------------------
+    # Tester: Test execution and verification
+    # -----------------------------------------------------------------------
+    - name: tester
+      description: |
+        Testing specialist. Use after implementation to:
+        - Run test suites
+        - Verify changes work correctly
+        - Check test coverage
+        - Identify regressions
+
+      model:
+        tier: fast
+
+      tools:
+        allow: [read, execute, search]
+        deny: [write, edit]
+
+      permissions:
+        mode: readonly
+
+      delegation:
+        trigger: "running tests, verifying changes, checking coverage"
+        proactive: true
+
+      execution:
+        mode: background
+        timeout: "10m"
+
+      role: |
+        You are a QA specialist. When testing:
+        1. Run the relevant test suite
+        2. Analyze failures carefully
+        3. Summarize results concisely
+        4. Suggest fixes for failures
+
+    # -----------------------------------------------------------------------
+    # DB Reader: Read-only database access
+    # -----------------------------------------------------------------------
+    - name: db-reader
+      description: |
+        Database query specialist with read-only access.
+        Use for data analysis and reporting.
+
+      model:
+        tier: capable
+
+      tools:
+        allow: [execute, read]
+
+      permissions:
+        mode: readonly
+
+      delegation:
+        trigger: "database queries, data analysis, SQL operations"
+
+      hooks:
+        beforeToolUse:
+          - matcher: "execute"
+            command: "./scripts/validate-readonly-sql.sh"
+            blocking: true
+
+      role: |
+        You have read-only database access. You can run SELECT queries
+        but cannot INSERT, UPDATE, DELETE, or modify schema.
+
+        If asked to modify data, explain that you only have read access.
+
+  # =========================================================================
+  # Delegation Configuration
+  # =========================================================================
+  delegation:
+    strategy: automatic
+
+    rules:
+      - when: "task involves searching or understanding code"
+        delegate: explorer
+
+      - when: "complex task requiring planning"
+        delegate: planner
+        then: implementer
+
+      - when: "code changes complete"
+        delegate: tester
+
+      - when: "need database information"
+        delegate: db-reader
+
+    parallel:
+      enabled: true
+      maxConcurrent: 3
+      strategy: independent
+
+  # =========================================================================
+  # Memory Configuration
+  # =========================================================================
+  memory:
+    scope: project
+    path: .ossa/memory/
+    format: markdown
+    maxSize: "10MB"
+    retention:
+      maxAge: "30d"
+    categories:
+      - session-context
+      - user-preferences
+      - project-conventions
+
+  # =========================================================================
+  # Lifecycle Hooks
+  # =========================================================================
+  hooks:
+    onStart:
+      - command: "./scripts/load-project-context.sh"
+        timeout: "30s"
+
+    onComplete:
+      - command: "./scripts/save-session-summary.sh"
+
+    onSubAgentStart:
+      - matcher: ".*"
+        command: "./scripts/log-subagent-start.sh"
+
+    onSubAgentComplete:
+      - matcher: ".*"
+        command: "./scripts/log-subagent-complete.sh"
