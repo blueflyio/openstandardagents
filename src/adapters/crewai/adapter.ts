@@ -20,6 +20,7 @@ import type {
   ValidationError,
   ValidationWarning,
 } from '../base/adapter.interface.js';
+import { generatePythonToolParams } from '../base/tool-params.js';
 import { CrewAIConverter } from './converter.js';
 
 export class CrewAIAdapter extends BaseAdapter {
@@ -333,6 +334,26 @@ ${config.tasks.map((_: any, index: number) => `    task_${index + 1}`).join(',\n
    */
   private generateToolsCode(manifest: OssaAgent): string {
     const tools = (manifest.spec?.tools || []) as any[];
+    const allImports = new Set<string>();
+
+    const toolDefs = tools.map((t) => {
+      const { params, imports, docParams } = generatePythonToolParams(t);
+      imports.forEach((i) => allImports.add(i));
+
+      return `
+@tool
+def ${t.name || 'unknown_tool'}(${params}) -> str:
+    """${t.description || 'Tool implementation'}
+
+    Args:
+${docParams}
+    """
+    # TODO: Implement tool logic
+    return f"Executed ${t.name || 'tool'}"
+`;
+    });
+
+    const extraImports = allImports.size > 0 ? '\n' + Array.from(allImports).join('\n') : '';
 
     return `"""
 CrewAI Tool Implementations
@@ -340,19 +361,9 @@ Generated from OSSA manifest: ${manifest.metadata?.name || 'unknown'}
 """
 
 from crewai_tools import tool
-from typing import Any
+from typing import Any${extraImports}
 
-${tools
-  .map(
-    (t) => `
-@tool
-def ${t.name || 'unknown_tool'}(input_data: str) -> str:
-    """${t.description || 'Tool implementation'}"""
-    # Implement tool logic here
-    return f"Executed ${t.name || 'tool'} with: {input_data}"
-`
-  )
-  .join('\n')}
+${toolDefs.join('\n')}
 
 def get_tools() -> list:
     """Return all available tools"""
@@ -452,6 +463,33 @@ class ${className}:
    */
   private generateCustomToolsCode(manifest: OssaAgent): string {
     const tools = (manifest.spec?.tools || []) as any[];
+    const allImports = new Set<string>();
+
+    const toolDefs = tools.map((t) => {
+      const { params, imports, docParams } = generatePythonToolParams(t);
+      imports.forEach((i) => allImports.add(i));
+
+      return `@tool("${t.name || 'unknown_tool'}")
+def ${t.name || 'unknown_tool'}(${params}) -> str:
+    """
+    ${t.description || 'Tool implementation'}
+
+    Args:
+${docParams}
+
+    Returns:
+        Tool execution result
+    """
+    # TODO: Implement ${t.name || 'tool'} logic here
+    try:
+        result = f"Executed ${t.name || 'tool'}"
+        return result
+    except Exception as e:
+        return f"Error executing ${t.name || 'tool'}: {str(e)}"
+`;
+    });
+
+    const extraImports = allImports.size > 0 ? '\n' + Array.from(allImports).join('\n') : '';
 
     return `"""
 Custom Tool Implementations
@@ -461,33 +499,11 @@ Implement your custom tools here following CrewAI's tool decorator pattern.
 """
 
 from crewai_tools import tool
-from typing import Any, Optional
+from typing import Any, Optional${extraImports}
 import os
 
 
-${tools
-  .map(
-    (t) => `@tool("${t.name || 'unknown_tool'}")
-def ${t.name || 'unknown_tool'}(input_data: str) -> str:
-    """
-    ${t.description || 'Tool implementation'}
-
-    Args:
-        input_data: Input data for the tool
-
-    Returns:
-        Tool execution result
-    """
-    # TODO: Implement ${t.name || 'tool'} logic here
-    # Example implementation:
-    try:
-        result = f"Executed ${t.name || 'tool'} with input: {input_data}"
-        return result
-    except Exception as e:
-        return f"Error executing ${t.name || 'tool'}: {str(e)}"
-`
-  )
-  .join('\n\n')}
+${toolDefs.join('\n\n')}
 
 
 # Add more custom tools as needed
