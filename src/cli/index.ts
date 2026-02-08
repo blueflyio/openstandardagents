@@ -23,6 +23,7 @@ import { initializeAdapters } from '../adapters/index.js';
 import { agentCardCommand } from './commands/agent-card.command.js';
 import { agentsMdCommand } from './commands/agents-md.command.js';
 import { agentsCommandGroup } from './commands/agents.command.js';
+import { agentsLocalCommandGroup } from './commands/agents-local.command.js';
 import { complianceCommand } from './commands/compliance.command.js';
 import { conformanceCommand } from './commands/conformance.command.js';
 import { governanceCommand } from './commands/governance.command.js';
@@ -230,6 +231,7 @@ program.addCommand(generateCommand); // Generate code from manifest
 program.addCommand(agentCreateCommand); // Create new agent interactively
 program.addCommand(agentWizardCommand); // Guided agent creation
 program.addCommand(agentsCommandGroup); // Agent management subcommands
+program.addCommand(agentsLocalCommandGroup); // Local .agents/ folder management
 program.addCommand(exportCommand); // Export manifest to other formats
 program.addCommand(importCommand); // Import from other formats
 program.addCommand(enhanceCommand); // Enhance existing manifest
