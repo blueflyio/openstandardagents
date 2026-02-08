@@ -1,0 +1,45 @@
+# GitLab Duo External Agent Configuration
+# Agent: deployment-agent
+# Generated from OSSA manifest v1.0.0
+
+# External agents run in GitLab CI/CD pipelines and use AI Gateway
+# for model access. This YAML defines the agent execution environment.
+
+name: deployment-agent
+description: Deployment automation agent with custom variables
+
+# Docker image for agent execution
+image: node:22-slim
+
+# Commands to execute agent
+commands:
+  - npm ci
+  - npm run build
+  - node dist/index.js
+
+# Environment variables required by agent
+variables:
+  - AI_FLOW_CONTEXT
+  - AI_FLOW_EVENT
+  - AI_FLOW_INPUT
+  - DEPLOY_TOKEN
+  - GITLAB_HOST
+  - GITLAB_TOKEN
+  - HELM_VERSION
+  - KUBERNETES_CONTEXT
+
+# Inject AI Gateway token for model access
+injectGatewayToken: true
+
+# LLM configuration for AI Gateway
+llm:
+  provider: anthropic
+  model: claude-sonnet-4-20250514
+
+# Usage:
+# 1. Register agent: glab duo agent register external-agent.yaml
+# 2. Test agent: glab duo agent test deployment-agent
+# 3. Deploy agent: Agent runs in GitLab CI/CD when triggered
+
+# Documentation:
+# https://docs.gitlab.com/ee/user/gitlab_duo/external_agents.html

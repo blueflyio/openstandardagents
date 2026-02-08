@@ -3,9 +3,10 @@
  * Exports OSSA agent manifests to LangChain format (Python + TypeScript)
  *
  * SOLID: Single Responsibility - LangChain export only
- * DRY: Reuses BaseAdapter validation and helpers
+ * DRY: Uses shared libraries for package.json, README, validation
  */
 
+import * as yaml from 'yaml';
 import { BaseAdapter } from '../base/adapter.interface.js';
 import type {
   OssaAgent,
@@ -16,8 +17,19 @@ import type {
   ValidationError,
   ValidationWarning,
 } from '../base/adapter.interface.js';
+import {
+  generatePackageJson,
+  generateReadme,
+} from '../base/common-file-generator.js';
+import {
+  validateLLM,
+  validateTools,
+} from '../base/manifest-validator.js';
 import { LangChainConverter } from './converter.js';
 import type { LangChainAgentConfig } from './types.js';
+
+/** LangChain-supported LLM providers */
+const LANGCHAIN_PROVIDERS = ['openai', 'anthropic', 'cohere', 'huggingface'];
 
 export class LangChainAdapter extends BaseAdapter {
   readonly platform = 'langchain';
@@ -85,17 +97,33 @@ export class LangChainAdapter extends BaseAdapter {
         this.createFile('langchain/requirements.txt', requirements, 'config')
       );
 
-      // Generate package.json
-      const packageJson = this.generatePackageJson(config, manifest);
+      // Generate package.json via shared library
+      const packageJson = generatePackageJson(manifest, 'langchain', {
+        dependencies: config.llm.provider === 'anthropic'
+          ? { '@langchain/anthropic': '^0.0.1' }
+          : undefined,
+      });
       files.push(
         this.createFile('langchain/package.json', packageJson, 'config')
       );
 
-      // Generate README
-      const readme = this.generateReadme(manifest, config);
+      // Generate README via shared library
+      const toolsList = config.tools
+        .map((t) => `- **${t.name}**: ${t.description}`)
+        .join('\n');
+      const readme = generateReadme(manifest, 'langchain', {
+        installation: `pip install -r requirements.txt\npython ${manifest.metadata?.name || 'agent'}.py\n# or\nnpm install\nnpm start`,
+        usage: `python ${manifest.metadata?.name || 'agent'}.py\n# or\nnpm start`,
+        additional: toolsList
+          ? [{ title: 'Tools', content: toolsList }]
+          : undefined,
+      });
       files.push(
         this.createFile('langchain/README.md', readme, 'documentation')
       );
+
+      // Include source OSSA manifest for provenance
+      files.push(this.createFile('langchain/agent.ossa.yaml', yaml.stringify(manifest), 'config', 'yaml'));
 
       return this.createResult(true, files, undefined, {
         duration: Date.now() - startTime,
@@ -123,52 +151,15 @@ export class LangChainAdapter extends BaseAdapter {
     if (baseValidation.errors) errors.push(...baseValidation.errors);
     if (baseValidation.warnings) warnings.push(...baseValidation.warnings);
 
-    // LangChain-specific validation
-    const spec = manifest.spec;
+    // LLM validation via shared library
+    const llmResult = validateLLM(manifest.spec?.llm, LANGCHAIN_PROVIDERS);
+    errors.push(...llmResult.errors);
+    warnings.push(...llmResult.warnings);
 
-    // Check LLM configuration
-    if (spec?.llm) {
-      const llm = spec.llm as any;
-      const supportedProviders = [
-        'openai',
-        'anthropic',
-        'cohere',
-        'huggingface',
-      ];
-
-      if (llm.provider && !supportedProviders.includes(llm.provider)) {
-        warnings.push({
-          message: `LLM provider '${llm.provider}' may not be supported. Supported: ${supportedProviders.join(', ')}`,
-          path: 'spec.llm.provider',
-          suggestion: `Use one of: ${supportedProviders.join(', ')}`,
-        });
-      }
-
-      if (!llm.model) {
-        warnings.push({
-          message: 'LLM model not specified, will use default',
-          path: 'spec.llm.model',
-          suggestion: 'Add spec.llm.model field',
-        });
-      }
-    } else {
-      warnings.push({
-        message: 'No LLM configuration found, will use OpenAI GPT-4 default',
-        path: 'spec.llm',
-        suggestion: 'Add spec.llm configuration',
-      });
-    }
-
-    // Check tools
-    if (spec?.tools && Array.isArray(spec.tools)) {
-      if (spec.tools.length === 0) {
-        warnings.push({
-          message: 'No tools defined, agent will have limited capabilities',
-          path: 'spec.tools',
-          suggestion: 'Add tools for agent functionality',
-        });
-      }
-    }
+    // Tools validation via shared library
+    const toolsResult = validateTools(manifest.spec?.tools);
+    errors.push(...toolsResult.errors);
+    warnings.push(...toolsResult.warnings);
 
     return {
       valid: errors.length === 0,
@@ -232,7 +223,7 @@ export class LangChainAdapter extends BaseAdapter {
 
 import { ChatOpenAI } from '@langchain/openai';
 import { ChatAnthropic } from '@langchain/anthropic';
-import { AgentExecutor, createOpenAIToolsAgent } from 'langchain/agents';
+import { AgentExecutor, createToolCallingAgent } from 'langchain/agents';
 import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts';
 import { Tool } from '@langchain/core/tools';
 import { ConversationBufferMemory } from 'langchain/memory';
@@ -271,7 +262,7 @@ const memory = new ConversationBufferMemory({
 });
 
 // Create agent
-const agent = await createOpenAIToolsAgent({
+const agent = await createToolCallingAgent({
   llm,
   tools,
   prompt,
@@ -342,96 +333,5 @@ if (require.main === module) {
     requirements.push('python-dotenv>=1.0.0');
 
     return requirements.join('\n') + '\n';
-  }
-
-  /**
-   * Generate package.json for TypeScript version
-   */
-  private generatePackageJson(
-    config: LangChainAgentConfig,
-    manifest: OssaAgent
-  ): string {
-    const pkg = {
-      name: manifest.metadata?.name || 'langchain-agent',
-      version: manifest.metadata?.version || '1.0.0',
-      description: manifest.metadata?.description || 'LangChain agent',
-      type: 'module',
-      scripts: {
-        start: 'node --loader ts-node/esm agent.ts',
-        build: 'tsc',
-      },
-      dependencies: {
-        '@langchain/openai': '^0.0.19',
-        '@langchain/core': '^0.1.0',
-        '@langchain/anthropic': '^0.0.1',
-        langchain: '^0.1.0',
-        dotenv: '^16.0.0',
-      },
-      devDependencies: {
-        '@types/node': '^20.0.0',
-        typescript: '^5.0.0',
-        'ts-node': '^10.9.0',
-      },
-    };
-
-    if (config.llm.provider === 'anthropic') {
-      pkg.dependencies['@langchain/anthropic'] = '^0.0.1';
-    }
-
-    return JSON.stringify(pkg, null, 2);
-  }
-
-  /**
-   * Generate README.md
-   */
-  private generateReadme(
-    manifest: OssaAgent,
-    config: LangChainAgentConfig
-  ): string {
-    return `# ${manifest.metadata?.name || 'LangChain Agent'}
-
-${manifest.metadata?.description || 'LangChain agent generated from OSSA manifest'}
-
-## Description
-
-${manifest.spec?.role || 'AI Agent'}
-
-## Setup
-
-### Python
-
-\`\`\`bash
-pip install -r requirements.txt
-python ${manifest.metadata?.name || 'agent'}.py
-\`\`\`
-
-### TypeScript
-
-\`\`\`bash
-npm install
-npm start
-\`\`\`
-
-## Configuration
-
-- **LLM Provider**: ${config.llm.provider}
-- **Model**: ${config.llm.model}
-- **Temperature**: ${config.llm.temperature ?? 0.7}
-- **Max Tokens**: ${config.llm.maxTokens ?? 2000}
-
-## Tools
-
-${config.tools.map((t) => `- **${t.name}**: ${t.description}`).join('\n')}
-
-## Generated from OSSA
-
-This agent was generated from an OSSA v${manifest.apiVersion?.split('/')[1] || '{{VERSION}}'} manifest.
-
-Original manifest: \`agent.ossa.yaml\`
-
-## License
-
-${manifest.metadata?.license || 'MIT'}
-`;
   }
 }

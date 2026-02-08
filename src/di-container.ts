@@ -3,7 +3,7 @@
  * Configure and export the DI container
  */
 
-import { Container } from 'inversify';
+import { Container, type Newable } from 'inversify';
 import 'reflect-metadata';
 
 // Repositories
@@ -65,9 +65,13 @@ export const container = new Container();
 container.bind(SchemaRepository).toSelf().inSingletonScope();
 container.bind(ManifestRepository).toSelf().inSingletonScope();
 
-// Bind services - Use Zod-based validation (DRY, SOLID, ZOD, OPENAPI-FIRST)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-container.bind(ValidationService).to(ValidationZodService as any);
+// Bind validation: ValidationZodService is the single validation implementation.
+// Both classes implement IValidationService. The Newable cast is required because
+// Inversify's .to() expects a subclass of the bound type, but ValidationZodService
+// is a sibling implementation, not a subclass.
+container
+  .bind(ValidationService)
+  .to(ValidationZodService as unknown as Newable<ValidationService>);
 container.bind(GenerationService).toSelf();
 container.bind(MigrationService).toSelf();
 container.bind(MigrationTransformService).toSelf();
@@ -133,8 +137,9 @@ export function resetContainer(): void {
   // Rebind all services
   container.bind(SchemaRepository).toSelf().inSingletonScope();
   container.bind(ManifestRepository).toSelf().inSingletonScope();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  container.bind(ValidationService).to(ValidationZodService as any);
+  container
+    .bind(ValidationService)
+    .to(ValidationZodService as unknown as Newable<ValidationService>);
   container.bind(GenerationService).toSelf();
   container.bind(MigrationService).toSelf();
   container.bind(MigrationTransformService).toSelf();

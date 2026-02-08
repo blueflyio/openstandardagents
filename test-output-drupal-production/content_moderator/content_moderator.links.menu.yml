@@ -1,0 +1,17 @@
+content_moderator.settings:
+  title: 'content_moderator settings'
+  route_name: content_moderator.settings
+  parent: system.admin_config_ossa
+  weight: 10
+
+content_moderator.execute:
+  title: 'Execute agent'
+  route_name: content_moderator.execute
+  parent: system.admin_ossa
+  weight: 20
+
+content_moderator.dashboard:
+  title: 'content_moderator dashboard'
+  route_name: content_moderator.dashboard
+  parent: system.admin_ossa
+  weight: 15

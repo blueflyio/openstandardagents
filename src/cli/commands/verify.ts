@@ -14,6 +14,10 @@ import axios from 'axios';
 import * as fs from 'fs';
 import * as yaml from 'yaml';
 import * as crypto from 'crypto';
+import {
+  addRegistryOptions,
+  resolveRegistryUrl,
+} from '../utils/standard-options.js';
 
 /**
  * DID resolution result from agent-protocol API
@@ -64,14 +68,12 @@ class AgentProtocolClient {
   private baseUrl: string;
   private token?: string;
 
-  constructor() {
-    // Get configuration from environment
-    this.baseUrl =
-      process.env.AGENT_PROTOCOL_URL ||
-      process.env.AGENT_PROTOCOL_BASE_URL ||
-      'http://localhost:3000';
+  constructor(config?: { baseUrl?: string; apiKey?: string }) {
+    this.baseUrl = config?.baseUrl || 'https://api.blueflyagents.com';
     this.token =
-      process.env.AGENT_PROTOCOL_TOKEN || process.env.GITLAB_PRIVATE_TOKEN;
+      config?.apiKey ||
+      process.env.AGENT_PROTOCOL_TOKEN ||
+      process.env.GITLAB_PRIVATE_TOKEN;
   }
 
   /**
@@ -306,20 +308,29 @@ export const verifyCommand = new Command('verify')
     '--card <path>',
     'Path to local agent-card.yaml for signature verification'
   )
-  .option('--json', 'Output JSON format')
-  .action(
+  .option('--json', 'Output JSON format');
+
+addRegistryOptions(verifyCommand);
+
+verifyCommand.action(
     async (
       gaid: string,
       options: {
         card?: string;
         json?: boolean;
+        registry?: string;
+        apiKey?: string;
       }
     ) => {
+      const registryUrl = resolveRegistryUrl(options);
       try {
-        const client = new AgentProtocolClient();
+        const client = new AgentProtocolClient({
+          baseUrl: registryUrl,
+          apiKey: options.apiKey,
+        });
 
         if (!options.json) {
-          console.log(chalk.blue(`\nVerifying agent: ${gaid}...`));
+          console.log(chalk.blue(`\nVerifying agent: ${gaid} on ${registryUrl}...`));
         }
 
         // Resolve DID
@@ -400,15 +411,15 @@ export const verifyCommand = new Command('verify')
           if (error instanceof Error && error.message.includes('connect')) {
             console.log(chalk.yellow('\nTroubleshooting:'));
             console.log(
-              chalk.gray('  1. Ensure agent-protocol service is running')
+              chalk.gray(`  Registry: ${registryUrl}`)
+            );
+            console.log(
+              chalk.gray('  1. Check network connectivity and firewall rules')
             );
             console.log(
               chalk.gray(
-                '  2. Set AGENT_PROTOCOL_URL environment variable if needed'
+                '  2. Use --registry <url> or set OSSA_REGISTRY_URL'
               )
-            );
-            console.log(
-              chalk.gray('  3. Check network connectivity and firewall rules')
             );
           } else if (
             error instanceof Error &&

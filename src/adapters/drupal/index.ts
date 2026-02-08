@@ -476,3 +476,15 @@ export {
   type DrupalModuleGeneratorOptions,
 } from './generator.js';
 export { DrupalAdapter as DrupalRuntimeAdapter } from './adapter.js';
+
+// Export manifest exporter (minimal package - separation of duties)
+export {
+  DrupalManifestExporter,
+  type DrupalManifestExportOptions,
+} from './manifest-exporter.js';
+
+// Legacy: Production-grade exporter (generates full Drupal module - deprecated)
+export {
+  ProductionDrupalExporter,
+  type ProductionDrupalExportOptions,
+} from './production-exporter.legacy.js';

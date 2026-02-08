@@ -11,6 +11,7 @@
  * DRY: Reuses BaseAdapter validation and helpers
  */
 
+import * as yaml from 'yaml';
 import { BaseAdapter } from '../base/adapter.interface.js';
 import type {
   OssaAgent,
@@ -110,6 +111,16 @@ export class MCPAdapter extends BaseAdapter {
           `mcp/${agentName}/README.md`,
           this.generateReadme(manifest),
           'documentation'
+        )
+      );
+
+      // Include source OSSA manifest for provenance
+      files.push(
+        this.createFile(
+          `mcp/${agentName}/agent.ossa.yaml`,
+          yaml.stringify(manifest),
+          'config',
+          'yaml'
         )
       );
 

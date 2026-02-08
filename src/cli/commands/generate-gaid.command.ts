@@ -17,6 +17,7 @@ import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import {
   addGlobalOptions,
+  addRegistryOptions,
   shouldUseColor,
   ExitCode,
 } from '../utils/standard-options.js';
@@ -48,6 +49,7 @@ export const generateGaidCommand = new Command('generate-gaid')
 
 // Apply production-grade standard options
 addGlobalOptions(generateGaidCommand);
+addRegistryOptions(generateGaidCommand);
 
 generateGaidCommand.action(
   async (
@@ -55,6 +57,8 @@ generateGaidCommand.action(
     options: {
       org?: string;
       dryRun?: boolean;
+      registry?: string;
+      apiKey?: string;
       verbose?: boolean;
       quiet?: boolean;
       json?: boolean;

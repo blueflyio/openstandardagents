@@ -52,13 +52,30 @@ export class LangChainConverter {
       })
       .join('\n\n');
 
+    const provider = config.llm.provider || 'openai';
+    const isAnthropic = provider === 'anthropic';
+
+    const llmImport = isAnthropic
+      ? 'from langchain_anthropic import ChatAnthropic'
+      : 'from langchain_openai import ChatOpenAI';
+
+    const llmClass = isAnthropic ? 'ChatAnthropic' : 'ChatOpenAI';
+
+    const agentFactory = isAnthropic
+      ? 'from langchain.agents import AgentExecutor, create_tool_calling_agent'
+      : 'from langchain.agents import AgentExecutor, create_openai_tools_agent';
+
+    const agentCreate = isAnthropic
+      ? 'create_tool_calling_agent'
+      : 'create_openai_tools_agent';
+
     return `"""
 LangChain Agent: ${config.name}
 Generated from OSSA manifest
 """
 
-from langchain.agents import AgentExecutor, create_openai_tools_agent
-from langchain_openai import ChatOpenAI
+${agentFactory}
+${llmImport}
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.tools import Tool
 import json
@@ -74,7 +91,7 @@ def execute_ossa_tool(tool_name: str, input_data: str) -> str:
         return json.dumps({"error": str(e)})
 
 # Initialize LLM
-llm = ChatOpenAI(
+llm = ${llmClass}(
     model="${config.llm.model}",
     temperature=${config.llm.temperature ?? 0.7},
     max_tokens=${config.llm.maxTokens ?? 2000},
@@ -116,7 +133,7 @@ prompt = ChatPromptTemplate.from_messages([
 ])
 
 # Create agent
-agent = create_openai_tools_agent(llm, tools, prompt)
+agent = ${agentCreate}(llm, tools, prompt)
 agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
 
 # Run agent

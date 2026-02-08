@@ -1,6 +1,6 @@
 {
   "name": "@bluefly/openstandardagents",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "exports": {
     "./schema": "./spec/v0.4/agent.schema.json",
     "./schema/v0.4": "./spec/v0.4/agent.schema.json",
@@ -83,16 +83,8 @@
     "templates/",
     ".version.json",
     "README.md",
-    "DEMO.md",
     "LICENSE",
-    "CHANGELOG.md",
-    ".env.local",
-    ".devfile.yaml",
-    ".wiki-config.json",
-    ".gitlab-ci-trigger",
-    "junit.xml",
-    "llms-ctx-full.txt",
-    "llms-ctx.txt"
+    "CHANGELOG.md"
   ],
   "publishConfig": {
     "access": "public",

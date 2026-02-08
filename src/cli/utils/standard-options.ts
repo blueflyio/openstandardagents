@@ -180,6 +180,43 @@ export function addStandardValidationOptions(command: Command): Command {
 }
 
 /**
+ * Registry connection options for commands that interact with the agent registry
+ * - registry: Base URL for the agent registry API
+ * - api-key: API key for authentication
+ *
+ * Resolution order:
+ * 1. --registry flag (highest priority)
+ * 2. OSSA_REGISTRY_URL environment variable
+ * 3. Default: https://api.blueflyagents.com
+ */
+export const DEFAULT_REGISTRY_URL = 'https://api.blueflyagents.com';
+
+export function addRegistryOptions(command: Command): Command {
+  return command
+    .option(
+      '--registry <url>',
+      'Agent registry URL (env: OSSA_REGISTRY_URL)',
+    )
+    .option('--api-key <key>', 'API key for registry authentication');
+}
+
+/**
+ * Resolve registry URL from flag, environment variable, or default.
+ *
+ * @param options - Command options (may contain registry flag)
+ * @returns Resolved registry base URL
+ */
+export function resolveRegistryUrl(options: { registry?: string }): string {
+  if (options.registry) {
+    return options.registry;
+  }
+  if (process.env.OSSA_REGISTRY_URL) {
+    return process.env.OSSA_REGISTRY_URL;
+  }
+  return DEFAULT_REGISTRY_URL;
+}
+
+/**
  * Exit codes (POSIX standard)
  */
 export enum ExitCode {

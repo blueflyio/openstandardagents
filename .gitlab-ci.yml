@@ -1,17 +1,14 @@
 # =============================================================================
-# OSSA Specification CI/CD Pipeline - Simple & Direct
+# OSSA Specification CI/CD Pipeline
 # =============================================================================
 #
-# Versioning Strategy (SMART VERSION BUMP):
-# - Feature → release/v0.4.x: Smart-detects latest prod tag, bumps patch, creates v0.4.X-dev.N
-# - release/v0.4.x → main: Auto-creates v0.4.X-rc.N tags (staging env)
-# - Manual trigger on main: Creates v0.4.X production release (production env)
-# - Next feature: Automatically bumps to next patch (v0.4.X+1-dev.1)
+# Source of truth: GitLab (gitlab.com/blueflyio/ossa/openstandardagents)
+# GitHub mirror: Read-only, synced by CI on release (not project mirroring)
+# npm: Published manually or via CI (requires OTP for 2FA)
 #
-# Publishing Strategy:
-# - GitHub: Only main + release branches, only RC + production tags
-# - npm: Only verified production releases (no RC, no dev)
-# - GitLab Releases: Only production tags
+# Branches:
+#   release/v0.4.x  - Active development
+#   main            - Production releases
 # =============================================================================
 
 stages:
@@ -19,28 +16,16 @@ stages:
   - test
   - build
   - smoke
-  - version
   - release
   - deploy
+  - sync
 
 variables:
   NODE_VERSION: "22.14"
-  GIT_DEPTH: 0  # Full history for versioning
+  GIT_DEPTH: 0
 
-# =============================================================================
-# SMART VERSION BUMP COMPONENT
-# =============================================================================
-# Automatically detects latest production tag and bumps patch version
-# Creates -dev.N and -rc.N tags automatically
-# DISABLED: Component has missing dependency (runner-selector)
-# include:
-#   - component: $CI_SERVER_FQDN/blueflyio/agent-platform/gitlab_components/release/smart-version-bump@main
-#     inputs:
-#       node_version: "22.14"
-#       create_dev_tags: true
-#       create_rc_tags: true
-#       git_author_name: "OSSA Release Bot"
-#       git_author_email: "release-bot@openstandardagents.org"
+include:
+  - local: '.gitlab/ci/token-rotation.yml'
 
 # =============================================================================
 # BASE JOB TEMPLATE
@@ -97,18 +82,6 @@ test:unit:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/
 
-test:smoke:
-  extends: .base-runner
-  stage: smoke
-  needs:
-    - job: build
-      artifacts: true
-  script:
-    - npm run test:smoke
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/
-
 # =============================================================================
 # BUILD STAGE
 # =============================================================================
@@ -126,22 +99,23 @@ build:
     - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/
 
 # =============================================================================
-# VERSION STAGE - Now handled by smart-version-bump component
+# SMOKE STAGE
 # =============================================================================
-# Component automatically:
-# - Detects latest production tag
-# - Bumps patch version for new development cycles
-# - Creates -dev.N tags on release branches
-# - Creates -rc.N tags on main branch
-# - Updates package.json automatically
-#
-# See: gitlab_components/release/smart-version-bump
-# =============================================================================
+test:smoke:
+  extends: .base-runner
+  stage: smoke
+  needs:
+    - job: build
+      artifacts: true
+  script:
+    - npm run test:smoke
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/
 
 # =============================================================================
-# RELEASE STAGE - Production Release (Manual Trigger with Button)
+# RELEASE STAGE - Production Release (Manual)
 # =============================================================================
-
 release:production:
   stage: release
   image: node:${NODE_VERSION}
@@ -162,38 +136,21 @@ release:production:
     - git config user.name "${GIT_AUTHOR_NAME}"
     - git config user.email "${GIT_AUTHOR_EMAIL}"
     - |
-      # Validate required tokens
       if [ -z "$NPM_TOKEN" ]; then
-        echo "❌ ERROR: NPM_TOKEN not set in CI/CD variables"
+        echo "ERROR: NPM_TOKEN not set in CI/CD variables"
         exit 1
       fi
       if [ -z "$GITLAB_PUSH_TOKEN" ]; then
-        echo "❌ ERROR: GITLAB_PUSH_TOKEN not set"
+        echo "ERROR: GITLAB_PUSH_TOKEN not set"
         exit 1
       fi
-      if [ -z "$GITHUB_TOKEN" ]; then
-        echo "❌ ERROR: GITHUB_TOKEN not set"
-        exit 1
-      fi
-      echo "✅ Required tokens configured"
+      echo "Required tokens configured"
   script:
-    - echo "🚀 Running semantic-release for PRODUCTION..."
+    - echo "Running semantic-release for production..."
     - npx semantic-release
     - |
-      # Get the new version
       NEW_VERSION=$(node -p "require('./package.json').version")
-      echo "✅ Released production version: v${NEW_VERSION}"
-
-      # Sync main and release branches to GitHub
-      echo "📤 Syncing branches to GitHub..."
-      git push https://${GITHUB_TOKEN}@github.com/blueflyio/openstandardagents.git main:main
-      git push https://${GITHUB_TOKEN}@github.com/blueflyio/openstandardagents.git release/v0.4.x:release/v0.4.x
-
-      # Push production tag to GitHub
-      git push https://${GITHUB_TOKEN}@github.com/blueflyio/openstandardagents.git "v${NEW_VERSION}"
-
-      echo "✅ Synced to GitHub: main, release/v0.4.x, v${NEW_VERSION}"
-      echo "🌍 Environment: production"
+      echo "Released production version: v${NEW_VERSION}"
   when: manual
   only:
     - main
@@ -205,7 +162,6 @@ release:production:
 # =============================================================================
 # DEPLOY STAGE - npm Publish + GitLab Release
 # =============================================================================
-
 deploy:npm:
   stage: deploy
   image: node:${NODE_VERSION}
@@ -222,49 +178,83 @@ deploy:npm:
   script:
     - |
       VERSION=$(node -p "require('./package.json').version")
-      echo "📦 Publishing to npm: v${VERSION}"
-
+      echo "Publishing to npm: v${VERSION}"
       npm publish --access public
-
-      echo "✅ Published to npm: @bluefly/openstandardagents@${VERSION}"
-      echo "📍 https://www.npmjs.com/package/@bluefly/openstandardagents/v/${VERSION}"
+      echo "Published: @bluefly/openstandardagents@${VERSION}"
   only:
     - main
 
 deploy:gitlab-release:
   stage: deploy
   image: registry.gitlab.com/gitlab-org/release-cli:latest
-  extends: .base-runner
   needs:
     - job: release:production
       artifacts: true
     - job: deploy:npm
+  before_script:
+    - apk add --no-cache nodejs npm
   script:
-    - |
-      VERSION=$(cat package.json | grep '"version"' | head -1 | awk -F: '{ print $2 }' | sed 's/[",]//g' | tr -d '[[:space:]]')
-      echo "📝 Creating GitLab release for v${VERSION}..."
+    - VERSION=$(node -p "require('./package.json').version")
+    - echo "Creating GitLab release for v${VERSION}..."
   release:
     tag_name: "v${VERSION}"
     name: "Release v${VERSION}"
     description: |
       ## OSSA v${VERSION}
 
-      Open Standard for Software Agents
+      See [CHANGELOG.md](CHANGELOG.md) for release notes.
 
-      See [CHANGELOG.md](https://gitlab.com/blueflyio/ossa/openstandardagents/-/blob/main/CHANGELOG.md) for full release notes.
-
-      **Install:**
       ```bash
       npm install @bluefly/openstandardagents@${VERSION}
       ```
 
-      **Links:**
-      - [npm package](https://www.npmjs.com/package/@bluefly/openstandardagents/v/${VERSION})
+      - [npm](https://www.npmjs.com/package/@bluefly/openstandardagents/v/${VERSION})
       - [GitHub mirror](https://github.com/blueflyio/openstandardagents)
-      - [Documentation](https://openstandardagents.org)
     assets:
       links:
         - name: "npm package"
           url: "https://www.npmjs.com/package/@bluefly/openstandardagents/v/${VERSION}"
   only:
     - main
+
+# =============================================================================
+# SYNC STAGE - Mirror to GitHub (read-only)
+# =============================================================================
+# Replaces GitLab project mirroring setting.
+# GITHUB_TOKEN must be set in CI/CD variables (fine-grained PAT with Contents write).
+# Syncs main + release branch + tags. Runs after deploy or on schedule.
+# =============================================================================
+sync:github:
+  stage: sync
+  image: alpine/git:latest
+  variables:
+    GIT_STRATEGY: clone
+    GIT_DEPTH: 0
+  before_script:
+    - git config user.name "OSSA Release Bot"
+    - git config user.email "release-bot@openstandardagents.org"
+  script:
+    - |
+      if [ -z "$GITHUB_TOKEN" ]; then
+        echo "GITHUB_TOKEN not set - skipping GitHub sync"
+        exit 0
+      fi
+
+      GITHUB_URL="https://x-access-token:${GITHUB_TOKEN}@github.com/blueflyio/openstandardagents.git"
+
+      echo "Syncing main to GitHub..."
+      git push "$GITHUB_URL" origin/main:main --force 2>&1 || echo "WARN: main sync failed (non-fatal)"
+
+      echo "Syncing release/v0.4.x to GitHub..."
+      git push "$GITHUB_URL" origin/release/v0.4.x:release/v0.4.x --force 2>&1 || echo "WARN: release sync failed (non-fatal)"
+
+      echo "Syncing tags to GitHub..."
+      git push "$GITHUB_URL" --tags --force 2>&1 || echo "WARN: tag sync failed (non-fatal)"
+
+      echo "GitHub sync complete"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: on_success
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: always
+  allow_failure: true

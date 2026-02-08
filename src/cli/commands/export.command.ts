@@ -15,25 +15,24 @@ import chalk from 'chalk';
 import { Command } from 'commander';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as yaml from 'yaml';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
-import { LangChainConverter } from '../../adapters/langchain/converter.js';
-import { LangChainExporter } from '../../services/export/langchain/langchain-exporter.js';
-import { CrewAIConverter } from '../../adapters/crewai/converter.js';
+import { LangChainAdapter } from '../../adapters/langchain/adapter.js';
+import { CrewAIAdapter } from '../../adapters/crewai/adapter.js';
 import { TemporalConverter } from '../../adapters/temporal/converter.js';
 import { N8NConverter } from '../../adapters/n8n/converter.js';
 import { GitLabConverter } from '../../adapters/gitlab/converter.js';
-import { GitLabAgentGenerator } from '../../adapters/gitlab/agent-generator.js';
-import { DockerfileGenerator } from '../../adapters/docker/generators.js';
+import { GitLabDuoPackageGenerator } from '../../adapters/gitlab/package-generator.js';
+import { DockerExporter } from '../../adapters/docker/docker-exporter.js';
 import { KubernetesManifestGenerator } from '../../adapters/kubernetes/generator.js';
 import { KAgentCRDGenerator } from '../../sdks/kagent/crd-generator.js';
 import { registry } from '../../adapters/registry/platform-registry.js';
-import { DrupalModuleGenerator } from '../../adapters/drupal/generator.js';
+import { DrupalManifestExporter } from '../../adapters/drupal/manifest-exporter.js';
 import type { OssaAgent } from '../../types/index.js';
 import {
   addGlobalOptions,
   addMutationOptions,
-  addPlatformOptions,
   shouldUseColor,
 } from '../utils/standard-options.js';
 
@@ -42,7 +41,7 @@ export const exportCommand = new Command('export')
   .argument('<manifest>', 'Path to OSSA agent manifest')
   .requiredOption(
     '-p, --platform <platform>',
-    'Target platform (kagent, langchain, crewai, temporal, n8n, gitlab, gitlab-agent, docker, kubernetes, npm, drupal)'
+    'Target platform (kagent, langchain, crewai, temporal, n8n, gitlab, gitlab-agent, docker, kubernetes, npm, drupal, agent-skills)'
   )
   .option('-o, --output <file>', 'Output file path')
   .option('--format <format>', 'Output format (yaml, json, python)', 'yaml')
@@ -109,76 +108,185 @@ exportCommand.action(
 
       switch (options.platform) {
         case 'kagent': {
-          const generator = new KAgentCRDGenerator();
-          const crd = generator.generate(manifest);
-          output =
-            options.format === 'json'
-              ? JSON.stringify(crd, null, 2)
-              : JSON.stringify(crd, null, 2);
-          defaultExtension = 'yaml';
-          break;
+          log('Generating kagent.dev Kubernetes manifest bundle...');
+
+          const kagentGenerator = new KAgentCRDGenerator();
+          const bundle = kagentGenerator.generateBundle(manifest);
+
+          const agentName = manifest.metadata?.name || 'agent';
+          const outputDir = options.output || `./${agentName}-kagent`;
+
+          if (!options.dryRun) {
+            fs.mkdirSync(outputDir, { recursive: true });
+
+            // Write CRD
+            fs.writeFileSync(
+              path.join(outputDir, 'agent-crd.yaml'),
+              yaml.stringify(bundle.crd)
+            );
+
+            // Write Deployment
+            fs.writeFileSync(
+              path.join(outputDir, 'deployment.yaml'),
+              yaml.stringify(bundle.deployment)
+            );
+
+            // Write Service
+            fs.writeFileSync(
+              path.join(outputDir, 'service.yaml'),
+              yaml.stringify(bundle.service)
+            );
+
+            // Write ConfigMap
+            fs.writeFileSync(
+              path.join(outputDir, 'configmap.yaml'),
+              yaml.stringify(bundle.configMap)
+            );
+
+            // Write Secret
+            fs.writeFileSync(
+              path.join(outputDir, 'secret.yaml'),
+              yaml.stringify(bundle.secret)
+            );
+
+            // Write RBAC
+            fs.mkdirSync(path.join(outputDir, 'rbac'), { recursive: true });
+            fs.writeFileSync(
+              path.join(outputDir, 'rbac/serviceaccount.yaml'),
+              yaml.stringify(bundle.serviceAccount)
+            );
+            fs.writeFileSync(
+              path.join(outputDir, 'rbac/role.yaml'),
+              yaml.stringify(bundle.role)
+            );
+            fs.writeFileSync(
+              path.join(outputDir, 'rbac/rolebinding.yaml'),
+              yaml.stringify(bundle.roleBinding)
+            );
+
+            // Write HPA (if present)
+            if (bundle.horizontalPodAutoscaler) {
+              fs.writeFileSync(
+                path.join(outputDir, 'hpa.yaml'),
+                yaml.stringify(bundle.horizontalPodAutoscaler)
+              );
+            }
+
+            // Write NetworkPolicy
+            fs.writeFileSync(
+              path.join(outputDir, 'networkpolicy.yaml'),
+              yaml.stringify(bundle.networkPolicy)
+            );
+
+            // Write README
+            fs.writeFileSync(
+              path.join(outputDir, 'README.md'),
+              bundle.readme
+            );
+
+            // Write source OSSA manifest for provenance
+            fs.writeFileSync(
+              path.join(outputDir, 'agent.ossa.yaml'),
+              yaml.stringify(manifest)
+            );
+
+            logSuccess(`\nkagent.dev manifest bundle exported to: ${outputDir}`);
+            const fileCount = 10 + (bundle.horizontalPodAutoscaler ? 1 : 0);
+            log(`  ${fileCount} files generated`);
+          } else {
+            log(`\nDRY RUN: Would generate kagent bundle in: ${outputDir}`);
+          }
+
+          return;
         }
 
         case 'langchain': {
-          // Use comprehensive LangChain exporter for full Python package
-          if (options.format === 'python') {
-            const exporter = new LangChainExporter();
-            const result = await exporter.export(manifest, {
-              includeApi: true,
-              includeOpenApi: true,
-              includeDocker: true,
-              includeTests: true,
-            });
+          log('Generating LangChain agent package (Python + TypeScript)...');
 
-            if (!result.success) {
-              throw new Error(result.error || 'LangChain export failed');
-            }
+          const langchainAdapter = new LangChainAdapter();
+          const langchainResult = await langchainAdapter.export(manifest, {
+            validate: true,
+          });
 
-            // Create output directory
-            const outputDir =
-              options.output ||
-              `./langchain-${manifest.metadata?.name || 'agent'}`;
-            fs.mkdirSync(outputDir, { recursive: true });
+          if (!langchainResult.success) {
+            throw new Error(langchainResult.error || 'LangChain export failed');
+          }
 
-            // Write all generated files
-            for (const file of result.files) {
-              const filePath = path.join(outputDir, file.path);
+          const langchainOutputDir =
+            options.output ||
+            `./langchain-${manifest.metadata?.name || 'agent'}`;
+
+          if (!options.dryRun) {
+            fs.mkdirSync(langchainOutputDir, { recursive: true });
+
+            for (const file of langchainResult.files) {
+              const filePath = path.join(langchainOutputDir, file.path);
               const fileDir = path.dirname(filePath);
               fs.mkdirSync(fileDir, { recursive: true });
               fs.writeFileSync(filePath, file.content);
+              logVerbose(`  Created: ${file.path}`);
             }
 
-            logSuccess(`✓ LangChain Python package exported to: ${outputDir}`);
-            logVerbose(
-              `  Files: ${result.files.map((f) => f.path).join(', ')}`
-            );
-            logVerbose(`  Python version: ${result.metadata?.pythonVersion}`);
-            logVerbose(
-              `  LangChain version: ${result.metadata?.langchainVersion}`
-            );
-            logVerbose(`  Tools: ${result.metadata?.toolsCount}`);
-            return; // Early return to skip single-file write
+            logSuccess(`\nLangChain package exported to: ${langchainOutputDir}`);
+            log(`  ${langchainResult.files.length} files generated`);
           } else {
-            // Simple JSON export for non-Python format
-            const converter = new LangChainConverter();
-            const config = converter.convert(manifest);
-            output = JSON.stringify(config, null, 2);
-            defaultExtension = 'json';
+            log(`\nDRY RUN: Would generate ${langchainResult.files.length} files in: ${langchainOutputDir}`);
+            logVerbose('Files to be created:');
+            for (const file of langchainResult.files) {
+              logVerbose(`  - ${file.path} (${file.content.length} bytes)`);
+            }
           }
-          break;
+
+          return;
         }
 
         case 'crewai': {
-          const converter = new CrewAIConverter();
-          if (options.format === 'python') {
-            output = converter.generatePythonCode(manifest);
-            defaultExtension = 'py';
-          } else {
-            const config = converter.convert(manifest);
-            output = JSON.stringify(config, null, 2);
-            defaultExtension = 'json';
+          log('Generating CrewAI multi-agent package...');
+
+          const crewaiAdapter = new CrewAIAdapter();
+          const crewaiResult = await crewaiAdapter.export(manifest, {
+            validate: true,
+            includeTests: true,
+          });
+
+          if (!crewaiResult.success) {
+            throw new Error(crewaiResult.error || 'CrewAI export failed');
           }
-          break;
+
+          const crewaiOutputDir =
+            options.output ||
+            `./crewai-${manifest.metadata?.name || 'agent'}`;
+
+          if (!options.dryRun) {
+            fs.mkdirSync(crewaiOutputDir, { recursive: true });
+
+            for (const file of crewaiResult.files) {
+              const filePath = path.join(crewaiOutputDir, file.path);
+              const fileDir = path.dirname(filePath);
+              fs.mkdirSync(fileDir, { recursive: true });
+              fs.writeFileSync(filePath, file.content);
+              logVerbose(`  Created: ${file.path}`);
+            }
+
+            logSuccess(`\nCrewAI package exported to: ${crewaiOutputDir}`);
+            log(`  ${crewaiResult.files.length} files generated`);
+            log('\n  Package includes:');
+            log('  - agents/ (agent definitions)');
+            log('  - tasks/ (task definitions)');
+            log('  - tools/ (custom tools)');
+            log('  - crew/ (orchestration)');
+            log('  - examples/ (usage examples)');
+            log('  - tests/ (test suite)');
+            log('  - README.md, DEPLOYMENT.md');
+          } else {
+            log(`\nDRY RUN: Would generate ${crewaiResult.files.length} files in: ${crewaiOutputDir}`);
+            logVerbose('Files to be created:');
+            for (const file of crewaiResult.files) {
+              logVerbose(`  - ${file.path} (${file.content.length} bytes)`);
+            }
+          }
+
+          return;
         }
 
         case 'temporal': {
@@ -211,65 +319,41 @@ exportCommand.action(
         }
 
         case 'gitlab-agent': {
-          log('Generating GitLab agent package with webhook handlers...');
+          log('Generating GitLab Duo agent package (triggers, flows, routers, MCP)...');
 
-          // Use GitLabAgentGenerator for complete agent package
-          const generator = new GitLabAgentGenerator();
-          const result = await generator.generate(manifest);
-
-          if (!result.success) {
-            throw new Error(result.error || 'GitLab agent generation failed');
-          }
-
-          // Create output directory
+          // Use GitLabDuoPackageGenerator for complete 34-file package
           const agentName = manifest.metadata?.name || 'agent';
           const outputDir = options.output || `./${agentName}`;
+          const duoGenerator = new GitLabDuoPackageGenerator();
+          const result = await duoGenerator.generate(manifest, {
+            outputDir: path.dirname(outputDir),
+            overwrite: true,
+          });
+
+          if (!result.success) {
+            throw new Error(result.errors?.join(', ') || 'GitLab Duo package generation failed');
+          }
 
           if (!options.dryRun) {
-            fs.mkdirSync(outputDir, { recursive: true });
+            logSuccess(`✓ GitLab Duo package exported to: ${result.packagePath}`);
+            log(`  ${result.generatedFiles?.length || 0} files generated`);
 
-            // Write all generated files
-            for (const file of result.files) {
-              const filePath = path.join(outputDir, file.path);
-              const fileDir = path.dirname(filePath);
-              fs.mkdirSync(fileDir, { recursive: true });
-              fs.writeFileSync(filePath, file.content);
-              logVerbose(`  Created: ${file.path}`);
-            }
+            log('\n📦 Package includes:');
+            log('  - 7 triggers (mention, assign, reviewer, schedule, pipeline, webhook, file_pattern)');
+            log('  - 4 flows (main, error, monitor, governance)');
+            log('  - 2 routers (conditional, multi-agent orchestration)');
+            log('  - MCP server configuration');
+            log('  - 8 documentation files');
+            log('  - CI/CD, Docker, source templates');
 
-            logSuccess(`✓ GitLab agent exported to: ${outputDir}`);
-            logVerbose(`  Files: ${result.files.length} files generated`);
-            logVerbose(`  Agent: ${agentName}`);
-            logVerbose(
-              `  Has webhook: ${result.metadata?.hasWebhook ? 'Yes' : 'No'}`
-            );
-            logVerbose(`  Has LLM: ${result.metadata?.hasLLM ? 'Yes' : 'No'}`);
-            logVerbose(`  Tools: ${result.metadata?.toolsCount || 0}`);
-
-            log('\n📦 Installation instructions:');
-            log(`  1. Install dependencies: cd ${outputDir} && npm install`);
-            log(
-              `  2. Configure environment: cp .env.example .env && edit .env`
-            );
-            log(`  3. Build agent: npm run build`);
-            log(`  4. Run agent: npm start\n`);
-            log('🐳 Docker deployment:');
-            log(`  docker build -t ${agentName} ${outputDir}`);
-            log(
-              `  docker run -p 9090:9090 --env-file ${outputDir}/.env ${agentName}\n`
-            );
-            log('📚 Documentation:');
-            log(`  README: ${outputDir}/README.md`);
-            if (result.metadata?.hasWebhook) {
-              log(`  Webhook config: ${outputDir}/webhook-config.json`);
-            }
+            log(`\n📚 Documentation: ${result.packagePath}/README.md`);
           } else {
             log(
-              `\n🔍 DRY RUN: Would generate ${result.files.length} files in: ${outputDir}`
+              `\n🔍 DRY RUN: Would generate ${result.generatedFiles?.length || 0} files in: ${outputDir}`
             );
             logVerbose('Files to be created:');
-            for (const file of result.files) {
-              logVerbose(`  - ${file.path} (${file.content.length} bytes)`);
+            for (const file of result.generatedFiles || []) {
+              logVerbose(`  - ${file}`);
             }
           }
 
@@ -277,18 +361,77 @@ exportCommand.action(
         }
 
         case 'docker': {
-          const generator = new DockerfileGenerator();
-          output = generator.generate(manifest);
-          defaultExtension = 'Dockerfile';
-          break;
+          log('Generating Docker deployment package...');
+
+          const dockerExporter = new DockerExporter();
+          const dockerResult = await dockerExporter.export(manifest);
+
+          if (!dockerResult.success) {
+            throw new Error(dockerResult.error || 'Docker export failed');
+          }
+
+          const agentName = manifest.metadata?.name || 'agent';
+          const dockerOutputDir = options.output || `./${agentName}-docker`;
+
+          if (!options.dryRun) {
+            fs.mkdirSync(dockerOutputDir, { recursive: true });
+
+            for (const file of dockerResult.files) {
+              const filePath = path.join(dockerOutputDir, file.path);
+              const fileDir = path.dirname(filePath);
+              fs.mkdirSync(fileDir, { recursive: true });
+              fs.writeFileSync(filePath, file.content);
+              logVerbose(`  Created: ${file.path}`);
+            }
+
+            logSuccess(`\nDocker package exported to: ${dockerOutputDir}`);
+            log(`  ${dockerResult.files.length} files generated`);
+          } else {
+            log(`\nDRY RUN: Would generate ${dockerResult.files.length} files in: ${dockerOutputDir}`);
+            logVerbose('Files to be created:');
+            for (const file of dockerResult.files) {
+              logVerbose(`  - ${file.path} (${file.content.length} bytes)`);
+            }
+          }
+
+          return;
         }
 
         case 'kubernetes': {
-          const generator = new KubernetesManifestGenerator();
-          const manifests = generator.generateAll(manifest);
-          output = JSON.stringify(manifests, null, 2);
-          defaultExtension = 'json';
-          break;
+          log('Generating Kubernetes Kustomize deployment structure...');
+
+          const k8sGenerator = new KubernetesManifestGenerator();
+          const kustomizeStructure = await k8sGenerator.generateKustomizeStructure(manifest);
+
+          const agentName = manifest.metadata?.name || 'agent';
+          const k8sOutputDir = options.output || `./${agentName}-kubernetes`;
+
+          if (!options.dryRun) {
+            // Use the generator's built-in write method for proper Kustomize structure
+            await k8sGenerator.writeKustomizeStructure(kustomizeStructure, k8sOutputDir);
+
+            // Write source OSSA manifest for provenance
+            fs.writeFileSync(
+              path.join(k8sOutputDir, 'agent.ossa.yaml'),
+              yaml.stringify(manifest)
+            );
+
+            logSuccess(`\nKubernetes Kustomize package exported to: ${k8sOutputDir}`);
+            log('  Package includes:');
+            log('  - base/ (deployment, service, configmap, secret, kustomization)');
+            log('  - rbac/ (serviceaccount, role, rolebinding)');
+            log('  - overlays/dev/ (development patches)');
+            log('  - overlays/staging/ (staging patches)');
+            log('  - overlays/production/ (production patches, HPA, NetworkPolicy)');
+            log('  - monitoring/ (ServiceMonitor, Grafana dashboard)');
+            log('  - examples/ (deployment, customization)');
+            log('  - docs/ (README, DEPLOYMENT)');
+          } else {
+            log(`\nDRY RUN: Would generate Kustomize structure in: ${k8sOutputDir}`);
+            log('  Directories: base/, rbac/, overlays/{dev,staging,production}/, monitoring/, examples/, docs/');
+          }
+
+          return;
         }
 
         case 'npm': {
@@ -333,31 +476,27 @@ exportCommand.action(
 
         case 'drupal': {
           log(
-            'Generating Drupal module with ossa/symfony-bundle integration...'
+            'Generating OSSA manifest package for Drupal (import via ai_agents_ossa)...'
           );
 
-          // Use DrupalModuleGenerator for full module package
-          const generator = new DrupalModuleGenerator();
-          const result = await generator.export(manifest, {
-            includeQueueWorker: true,
-            includeEntity: true,
-            includeController: true,
-            includeConfigForm: true,
-            includeHooks: true,
-            includeViews: true,
+          // Use DrupalManifestExporter for minimal manifest package
+          // Drupal integration is handled by contrib modules:
+          //   drupal/ai_agents, drupal/ai_agents_ossa, drupal/eca, drupal/charts
+          const exporter = new DrupalManifestExporter();
+          const result = await exporter.export(manifest, {
             validate: true,
           });
 
           if (!result.success) {
-            throw new Error(result.error || 'Drupal module generation failed');
+            throw new Error(result.error || 'Drupal manifest export failed');
           }
 
           // Create output directory
-          const moduleName =
+          const agentName =
             manifest.metadata?.name
               ?.toLowerCase()
               .replace(/[^a-z0-9_]/g, '_') || 'ossa_agent';
-          const outputDir = options.output || `./${moduleName}`;
+          const outputDir = options.output || `./${agentName}`;
 
           if (!options.dryRun) {
             fs.mkdirSync(outputDir, { recursive: true });
@@ -371,29 +510,82 @@ exportCommand.action(
               logVerbose(`  Created: ${file.path}`);
             }
 
-            logSuccess(`✓ Drupal module exported to: ${outputDir}`);
+            logSuccess(`\nDrupal manifest package exported to: ${outputDir}`);
             logVerbose(`  Files: ${result.files.length} files generated`);
-            logVerbose(`  Module name: ${moduleName}`);
-            log('\n📦 Installation instructions:');
+            logVerbose(`  Agent name: ${agentName}`);
+            log('\nInstallation instructions:');
             log(
-              `  1. Copy module: cp -r ${moduleName} /path/to/drupal/web/modules/custom/`
+              `  1. Install contrib: composer require drupal/ai_agents drupal/ai_agents_ossa drupal/eca drupal/charts`
             );
             log(
-              `  2. Install dependency: composer require ossa/symfony-bundle`
+              `  2. Enable modules: drush en ai_agents ai_agents_ossa eca charts`
             );
-            log(`  3. Enable module: drush en ${moduleName}`);
-            log(`  4. Configure: Visit /admin/config/${moduleName}\n`);
-            log('📚 Documentation:');
-            log(`  README: ${moduleName}/README.md`);
-            log(`  Install guide: ${moduleName}/INSTALL.md`);
+            log(
+              `  3. Import manifest: drush ai-agents:import ${agentName}/agent.ossa.yaml`
+            );
+            log(`  4. Configure at: /admin/config/ai/agents\n`);
+            log('Documentation:');
+            log(`  README: ${agentName}/README.md`);
+            log(`  Quick start: ${agentName}/INSTALL.txt`);
           } else {
             log(
-              `\n🔍 DRY RUN: Would generate ${result.files.length} files in: ${outputDir}`
+              `\nDRY RUN: Would generate ${result.files.length} files in: ${outputDir}`
             );
             logVerbose('Files to be created:');
             for (const file of result.files) {
               logVerbose(`  - ${file.path} (${file.content.length} bytes)`);
             }
+          }
+
+          return; // Early return to skip single-file write
+        }
+
+        case 'agent-skills': {
+          log('Generating Agent Skills package (SKILL.md format)...');
+
+          // Use AgentSkillsExporter for complete skills package
+          const { AgentSkillsExporter } = await import('../../adapters/agent-skills/exporter.js');
+          const exporter = new AgentSkillsExporter();
+          const result = await exporter.export(manifest, {
+            includeScripts: true,
+            includeReferences: true,
+            includeAssets: false,
+          });
+
+          if (!result.success) {
+            throw new Error(result.error || 'Agent Skills export failed');
+          }
+
+          // Create output directory
+          const skillName = manifest.metadata?.name || 'agent-skill';
+          const outputDir = options.output || `./${skillName}`;
+
+          if (!options.dryRun) {
+            fs.mkdirSync(outputDir, { recursive: true });
+
+            // Write all generated files
+            for (const file of result.files) {
+              const filePath = path.join(outputDir, file.path);
+              const fileDir = path.dirname(filePath);
+              fs.mkdirSync(fileDir, { recursive: true });
+              fs.writeFileSync(filePath, file.content);
+              logVerbose(`  Created: ${file.path}`);
+            }
+
+            logSuccess(`✓ Agent Skills package exported to: ${outputDir}`);
+            logVerbose(`  Files: ${result.files.length} files generated`);
+            logVerbose(`  Skill name: ${skillName}`);
+            logVerbose(`  Version: ${result.metadata?.version}`);
+            logVerbose(`  Tools: ${result.metadata?.toolsCount || 0}`);
+
+            log('\n📦 Usage instructions:');
+            log(`  1. Review SKILL.md in ${outputDir}/`);
+            log(`  2. Use with Claude Code: claude --skill ${skillName}`);
+            log(`  3. Share on GitHub: https://github.com/anthropics/awesome-agent-skills`);
+            log(`  4. Compatible with 25+ AI tools (OpenAI Codex, Cursor, etc.)`);
+          } else {
+            log('DRY RUN: Would generate:');
+            result.files.forEach(file => log(`  - ${file.path}`));
           }
 
           return; // Early return to skip single-file write

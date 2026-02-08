@@ -1,2 +1,12 @@
-# Keep .agents directory in git
-# Individual agent directories are gitignored
+# .agents/ - Agent definitions (version controlled)
+#
+# Structure:
+#   registry.yaml                  - Auto-generated agent index
+#   <agent-name>/agent.ossa.yaml   - OSSA manifest (one per agent)
+#   _shared/                       - Cross-agent resources (optional)
+#
+# Commands:
+#   ossa agents list               - List all agents
+#   ossa agents add <name>         - Create new agent
+#   ossa agents sync               - Rebuild registry.yaml
+#   ossa agents export <name> -p <platform>  - Export agent
