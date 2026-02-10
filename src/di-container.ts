@@ -18,8 +18,9 @@ import { LangChainMigrationService } from './services/migration/langchain-migrat
 import { ValidationService } from './services/validation.service.js';
 import { ValidationZodService } from './services/validation-zod.service.js';
 import { VersionDetectionService } from './services/version-detection.service.js';
-import { AgentsMdService } from './services/agents-md/agents-md.service.js';
 import { RepoAgentsMdService } from './services/agents-md/repo-agents-md.service.js';
+// FIXME: AgentsMdService was deleted, using RepoAgentsMdService as alias for now
+const AgentsMdService = RepoAgentsMdService;
 import { TemplateProcessorService } from './services/template-processor.service.js';
 import { LlmsTxtService } from './services/llms-txt/llms-txt.service.js';
 import { TestRunnerService } from './services/test-runner/test-runner.service.js';
@@ -33,8 +34,6 @@ import { TaxonomyValidatorService } from './services/taxonomy-validator.service.
 import { TemplateService } from './services/template.service.js';
 import { RegistryService } from './services/registry.service.js';
 import { WizardService } from './services/wizard/wizard.service.js';
-import { AgentProtocolClient } from './services/agent-protocol-client.js';
-
 // Codegen Service and Generators
 import { CodegenService } from './services/codegen/codegen.service.js';
 import { ManifestGenerator } from './services/codegen/generators/manifest.generator.js';
@@ -57,6 +56,13 @@ import { ConformanceScoreCalculator } from './services/conformance/score-calcula
 // Registry Services
 import { BundleService } from './services/registry/bundle.service.js';
 import { IndexService } from './services/registry/index.service.js';
+
+// Skills Pipeline Services
+import {
+  SkillsResearchService,
+  SkillsGeneratorService,
+  SkillsExportService,
+} from './services/skills-pipeline/index.js';
 
 // Create container
 export const container = new Container();
@@ -92,7 +98,6 @@ container.bind(TaxonomyValidatorService).toSelf().inSingletonScope();
 container.bind(TemplateService).toSelf().inSingletonScope();
 container.bind(RegistryService).toSelf().inSingletonScope();
 container.bind(WizardService).toSelf();
-container.bind(AgentProtocolClient).toSelf();
 
 // Bind codegen generators (must be bound before CodegenService)
 container.bind(ManifestGenerator).toSelf();
@@ -116,6 +121,11 @@ container.bind(ConformanceService).toSelf();
 // Bind registry services
 container.bind(BundleService).toSelf();
 container.bind(IndexService).toSelf();
+
+// Bind skills pipeline services
+container.bind(SkillsResearchService).toSelf();
+container.bind(SkillsGeneratorService).toSelf();
+container.bind(SkillsExportService).toSelf();
 
 /**
  * Get service from container
@@ -165,5 +175,7 @@ export function resetContainer(): void {
   container.bind(ConformanceService).toSelf();
   container.bind(BundleService).toSelf();
   container.bind(IndexService).toSelf();
-  container.bind(AgentProtocolClient).toSelf();
+  container.bind(SkillsResearchService).toSelf();
+  container.bind(SkillsGeneratorService).toSelf();
+  container.bind(SkillsExportService).toSelf();
 }

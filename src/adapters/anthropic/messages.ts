@@ -1,6 +1,6 @@
 /**
  * Message Format Conversion
- * Convert between OSSA and Anthropic message formats
+ * Convert between OSSA and Anthropic SDK message formats
  */
 
 import type {
@@ -43,121 +43,80 @@ export type OssaMessageContent =
 export type AnthropicContentBlock = TextBlock | ToolUseBlock;
 
 /**
- * Convert OSSA messages to Anthropic format
+ * Convert OSSA messages to Anthropic SDK format
  */
 export function convertToAnthropicMessages(messages: OssaMessage[]): {
   system?: string;
   messages: MessageParam[];
 } {
-  // Extract system message if present
+  // Extract system message
   let system: string | undefined;
   const conversationMessages: OssaMessage[] = [];
 
   for (const msg of messages) {
     if (msg.role === 'system') {
-      // Combine multiple system messages
-      if (typeof msg.content === 'string') {
-        system = system ? `${system}\n\n${msg.content}` : msg.content;
-      } else {
-        // Extract text from content blocks
-        const textBlocks = msg.content.filter((b) => b.type === 'text');
-        const text = textBlocks
-          .map((b) => (b as { text: string }).text)
-          .join('\n');
-        system = system ? `${system}\n\n${text}` : text;
-      }
+      const text =
+        typeof msg.content === 'string'
+          ? msg.content
+          : msg.content
+              .filter((b) => b.type === 'text')
+              .map((b) => (b as { text: string }).text)
+              .join('\n');
+      system = system ? `${system}\n\n${text}` : text;
     } else {
       conversationMessages.push(msg);
     }
   }
 
-  // Convert conversation messages
-  const anthropicMessages: MessageParam[] = conversationMessages.map((msg) => {
-    if (typeof msg.content === 'string') {
-      return {
-        role: msg.role as 'user' | 'assistant',
-        content: msg.content,
-      };
-    }
+  // Convert messages to SDK format
+  const anthropicMessages: MessageParam[] = conversationMessages.map((msg) => ({
+    role: msg.role as 'user' | 'assistant',
+    content:
+      typeof msg.content === 'string'
+        ? msg.content
+        : msg.content.map((block) => {
+            if (block.type === 'text') {
+              return { type: 'text' as const, text: block.text };
+            }
+            if (block.type === 'image') {
+              const [mediaType, data] = block.source.split(',');
+              return {
+                type: 'image' as const,
+                source: {
+                  type: 'base64' as const,
+                  media_type: (block.mediaType ||
+                    mediaType.split(':')[1].split(';')[0]) as
+                    | 'image/jpeg'
+                    | 'image/png'
+                    | 'image/gif'
+                    | 'image/webp',
+                  data: data || block.source,
+                },
+              };
+            }
+            if (block.type === 'tool_use') {
+              return {
+                type: 'tool_use' as const,
+                id: block.id,
+                name: block.name,
+                input: block.input,
+              };
+            }
+            // tool_result
+            return {
+              type: 'tool_result' as const,
+              tool_use_id: block.tool_use_id,
+              content: block.content,
+              is_error: block.is_error,
+            };
+          }),
+  }));
 
-    // Convert content blocks
-    const content: Array<
-      | { type: 'text'; text: string }
-      | {
-          type: 'image';
-          source: {
-            type: 'base64';
-            media_type: 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp';
-            data: string;
-          };
-        }
-      | {
-          type: 'tool_use';
-          id: string;
-          name: string;
-          input: Record<string, unknown>;
-        }
-      | {
-          type: 'tool_result';
-          tool_use_id: string;
-          content: string;
-          is_error?: boolean;
-        }
-    > = [];
-
-    for (const block of msg.content) {
-      if (block.type === 'text') {
-        content.push({
-          type: 'text',
-          text: block.text,
-        });
-      } else if (block.type === 'image') {
-        // Convert image URL to base64 if needed
-        const [mediaType, data] = block.source.split(',');
-        content.push({
-          type: 'image',
-          source: {
-            type: 'base64',
-            media_type: (block.mediaType ||
-              mediaType.split(':')[1].split(';')[0]) as
-              | 'image/jpeg'
-              | 'image/png'
-              | 'image/gif'
-              | 'image/webp',
-            data: data || block.source,
-          },
-        });
-      } else if (block.type === 'tool_use') {
-        content.push({
-          type: 'tool_use',
-          id: block.id,
-          name: block.name,
-          input: block.input,
-        });
-      } else if (block.type === 'tool_result') {
-        content.push({
-          type: 'tool_result',
-          tool_use_id: block.tool_use_id,
-          content: block.content,
-          is_error: block.is_error,
-        });
-      }
-    }
-
-    return {
-      role: msg.role as 'user' | 'assistant',
-      content,
-    };
-  });
-
-  return {
-    system,
-    messages: anthropicMessages,
-  };
+  return { system, messages: anthropicMessages };
 }
 
 /**
- * Convert Anthropic message to OSSA format
+ * Convert Anthropic SDK message to OSSA format
  */
 export function convertFromAnthropicMessage(
   anthropicMessage: MessageParam
@@ -174,19 +133,14 @@ export function convertFromAnthropicMessage(
 
   for (const block of anthropicMessage.content) {
     if (block.type === 'text') {
-      content.push({
-        type: 'text',
-        text: block.text,
-      });
+      content.push({ type: 'text', text: block.text });
     } else if (block.type === 'image') {
-      // Convert image to data URL
-      const source =
-        block.source.type === 'base64'
-          ? `data:${block.source.media_type};base64,${block.source.data}`
-          : '';
       content.push({
         type: 'image',
-        source,
+        source:
+          block.source.type === 'base64'
+            ? `data:${block.source.media_type};base64,${block.source.data}`
+            : '',
         mediaType:
           block.source.type === 'base64' ? block.source.media_type : undefined,
       });
@@ -208,12 +162,10 @@ export function convertFromAnthropicMessage(
         is_error: block.is_error,
       });
     }
+    // Ignore other block types (thinking, document, server_tool_use, etc.)
   }
 
-  return {
-    role: anthropicMessage.role,
-    content,
-  };
+  return { role: anthropicMessage.role, content };
 }
 
 /**
@@ -408,30 +360,19 @@ export function mergeMessages(messages: OssaMessage[]): OssaMessage[] {
 
     if (current.role === next.role && current.role !== 'system') {
       // Merge content
-      if (
-        typeof current.content === 'string' &&
+      const currentBlocks =
+        typeof current.content === 'string'
+          ? [{ type: 'text' as const, text: current.content }]
+          : current.content;
+      const nextBlocks =
         typeof next.content === 'string'
-      ) {
-        current = {
-          ...current,
-          content: `${current.content}\n\n${next.content}`,
-        };
-      } else {
-        // Convert to array format
-        const currentBlocks =
-          typeof current.content === 'string'
-            ? [{ type: 'text' as const, text: current.content }]
-            : current.content;
-        const nextBlocks =
-          typeof next.content === 'string'
-            ? [{ type: 'text' as const, text: next.content }]
-            : next.content;
+          ? [{ type: 'text' as const, text: next.content }]
+          : next.content;
 
-        current = {
-          ...current,
-          content: [...currentBlocks, ...nextBlocks],
-        };
-      }
+      current = {
+        ...current,
+        content: [...currentBlocks, ...nextBlocks],
+      };
     } else {
       merged.push(current);
       current = next;

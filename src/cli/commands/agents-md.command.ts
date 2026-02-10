@@ -8,6 +8,7 @@ import chalk from 'chalk';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { AgentsMdService } from '../../services/agents-md/agents-md.service.js';
+import { RepoAgentsMdService } from '../../services/agents-md/repo-agents-md.service.js';
 import type { OssaAgent } from '../../types/index.js';
 import { handleCommandError } from '../utils/index.js';
 

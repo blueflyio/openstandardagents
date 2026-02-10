@@ -2,6 +2,8 @@
  * GitLab Duo Package Generator
  * Orchestrates complete GitLab Duo agent package generation from OSSA manifests
  *
+ * Extends BasePackageGenerator for shared npm package logic
+ *
  * Generates complete directory structure (30+ files):
  * {agent-name}-gitlab-duo/
  * ├── .gitlab/duo/
@@ -26,6 +28,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import YAML from 'yaml';
 import type { OssaAgent } from '../../types/index.js';
+import { BasePackageGenerator } from '../npm/package-generator.js';
 import { GitLabDuoFlowGenerator } from './flow-generator.js';
 import { ExternalAgentGenerator } from './external-agent-generator.js';
 import { GitLabDuoTriggerGenerator } from './trigger-generator.js';
@@ -56,13 +59,14 @@ export interface GeneratedFile {
   content: string;
 }
 
-export class GitLabDuoPackageGenerator {
+export class GitLabDuoPackageGenerator extends BasePackageGenerator {
   private flowGenerator: GitLabDuoFlowGenerator;
   private externalAgentGenerator: ExternalAgentGenerator;
   private triggerGenerator: GitLabDuoTriggerGenerator;
   private routerGenerator: GitLabDuoRouterGenerator;
 
   constructor() {
+    super();
     this.flowGenerator = new GitLabDuoFlowGenerator();
     this.externalAgentGenerator = new ExternalAgentGenerator();
     this.triggerGenerator = new GitLabDuoTriggerGenerator();
@@ -149,18 +153,12 @@ export class GitLabDuoPackageGenerator {
   }
 
   /**
-   * Get agent name from manifest
+   * Get sanitized agent name from manifest
+   * Overrides base class to support legacy manifest.agent.name fallback
    */
-  private getAgentName(manifest: OssaAgent): string {
-    return (
-      manifest.metadata?.name ||
-      manifest.agent?.name ||
-      'agent'
-    )
-      .toLowerCase()
-      .replace(/[^a-z0-9-]/g, '-')
-      .replace(/--+/g, '-')
-      .replace(/^-|-$/g, '');
+  protected getAgentName(manifest: OssaAgent): string {
+    const name = manifest.metadata?.name || manifest.agent?.name || 'agent';
+    return this.sanitizePackageName(name);
   }
 
   /**
@@ -290,7 +288,7 @@ export class GitLabDuoPackageGenerator {
     // ── package.json ─────────────────────────────────────────
     files.push({
       path: 'package.json',
-      content: this.generatePackageJson(manifest),
+      content: this.generatePackageJsonForManifest(manifest),
     });
 
     // ── Dockerfile (if enabled) ──────────────────────────────
@@ -680,15 +678,16 @@ export class GitLabDuoPackageGenerator {
   /**
    * Generate package.json
    */
-  private generatePackageJson(manifest: OssaAgent): string {
-    const agentName = this.getAgentName(manifest);
-    const version = manifest.metadata?.version || '1.0.0';
-    const description = manifest.metadata?.description || '';
-
-    const packageJson = {
-      name: `@gitlab-duo/${agentName}`,
-      version,
-      description,
+  /**
+   * Generate GitLab Duo package.json
+   * Uses base class generatePackageJson with GitLab-specific configuration
+   */
+  private generatePackageJsonForManifest(manifest: OssaAgent): string {
+    return super.generatePackageJson({
+      scope: '@gitlab-duo',
+      name: this.getAgentName(manifest),
+      version: this.getAgentVersion(manifest),
+      description: this.getAgentDescription(manifest),
       type: 'module',
       main: './dist/index.js',
       types: './dist/index.d.ts',
@@ -717,11 +716,9 @@ export class GitLabDuoPackageGenerator {
         'ai-agent',
         'ossa',
       ],
-      author: manifest.metadata?.author || '',
-      license: manifest.metadata?.license || 'MIT',
-    };
-
-    return JSON.stringify(packageJson, null, 2);
+      author: this.getAgentAuthor(manifest),
+      license: this.getAgentLicense(manifest),
+    });
   }
 
   /**
@@ -871,28 +868,12 @@ export class GitLabDuoPackageGenerator {
   /**
    * Generate tsconfig.json
    */
-  private generateTsConfig(): string {
-    const config = {
-      compilerOptions: {
-        target: 'ES2022',
-        module: 'ES2022',
-        lib: ['ES2022'],
-        moduleResolution: 'node',
-        outDir: './dist',
-        rootDir: './src',
-        strict: true,
-        esModuleInterop: true,
-        skipLibCheck: true,
-        forceConsistentCasingInFileNames: true,
-        declaration: true,
-        declarationMap: true,
-        sourceMap: true,
-      },
-      include: ['src/**/*'],
-      exclude: ['node_modules', 'dist'],
-    };
-
-    return JSON.stringify(config, null, 2);
+  /**
+   * Generate TypeScript configuration
+   * Uses base class implementation
+   */
+  protected generateTsConfig(): string {
+    return super.generateTsConfig();
   }
 
   /**
@@ -948,42 +929,10 @@ export class GitLabDuoPackageGenerator {
 
   /**
    * Generate .gitignore
+   * Uses base class implementation
    */
-  private generateGitignore(): string {
-    const lines: string[] = [];
-
-    lines.push('# Dependencies');
-    lines.push('node_modules/');
-    lines.push('');
-
-    lines.push('# Build output');
-    lines.push('dist/');
-    lines.push('build/');
-    lines.push('');
-
-    lines.push('# Logs');
-    lines.push('*.log');
-    lines.push('logs/');
-    lines.push('');
-
-    lines.push('# Environment');
-    lines.push('.env');
-    lines.push('.env.local');
-    lines.push('');
-
-    lines.push('# IDE');
-    lines.push('.vscode/');
-    lines.push('.idea/');
-    lines.push('*.swp');
-    lines.push('*.swo');
-    lines.push('');
-
-    lines.push('# OS');
-    lines.push('.DS_Store');
-    lines.push('Thumbs.db');
-    lines.push('');
-
-    return lines.join('\n');
+  protected generateGitignore(): string {
+    return super.generateGitignore();
   }
 
   /**

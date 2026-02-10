@@ -48,9 +48,6 @@ import {
   printError,
 } from '../banner.js';
 import { v5 as uuidv5 } from 'uuid';
-import { AgentProtocolClient } from '../../services/agent-protocol-client.js';
-import type { AgentCard } from '../../services/agent-protocol-client.js';
-import * as crypto from 'crypto';
 
 // =============================================================================
 // TYPES & INTERFACES
@@ -3427,61 +3424,10 @@ Guidelines:
       printSuccess(`Serial Number: ${serialNumber}`);
       printInfo(`  Organization: ${org}`);
 
-      // Register agent if requested
+      // Registration removed - AgentProtocolClient migrated to @bluefly/agent-protocol
       if (outputAnswers.register_agent) {
-        try {
-          printInfo('\n📡 Registering agent to platform registry...');
-
-          const apiUrl = outputAnswers.api_url || 'https://api.blueflyagents.com';
-          const client = new AgentProtocolClient({ baseURL: apiUrl });
-
-          // Generate signature
-          const manifestStr = JSON.stringify(agent);
-          const signature = crypto
-            .createHash('sha256')
-            .update(manifestStr)
-            .digest('hex');
-
-          // Create Agent Card
-          const card: AgentCard = {
-            gaid,
-            name: agent.metadata?.name || 'Unnamed Agent',
-            version: agent.metadata?.version || '0.1.0',
-            description: agent.metadata?.description,
-            author: agent.metadata?.author || org,
-            license: agent.metadata?.license,
-            tags: agent.metadata?.tags || [],
-            capabilities: agent.spec?.tools?.map((t: any) => t.name || t.type) || [],
-          };
-
-          const response = await client.registerAgent(agent as OssaAgent, card);
-
-          if (response.success) {
-            printSuccess(`✅ Agent registered successfully!`);
-            printInfo(`  GAID: ${response.gaid}`);
-            printInfo(`  Registry: ${apiUrl}`);
-
-            // Update manifest with registration info
-            if (!agent.metadata.annotations) agent.metadata.annotations = {};
-            agent.metadata.annotations['ossa.org/registered'] = 'true';
-            agent.metadata.annotations['ossa.org/registry-url'] = apiUrl;
-            agent.metadata.annotations['ossa.org/signature'] = signature;
-
-            // Rewrite manifest one more time with registration info
-            const finalYamlContent = yaml.stringify(agent as OssaAgent, {
-              indent: 2,
-              lineWidth: 0,
-            });
-            fs.writeFileSync(outputPath, finalYamlContent, 'utf-8');
-          } else {
-            printWarning(`Registration completed with message: ${response.message || 'Unknown'}`);
-          }
-        } catch (error) {
-          printWarning(
-            `Failed to register agent: ${error instanceof Error ? error.message : String(error)}`
-          );
-          printInfo('Agent manifest still saved locally with GAID.');
-        }
+        printWarning('Agent registration requires @bluefly/agent-protocol package (not included in OSSA spec).');
+        printInfo('Use: npx @bluefly/agent-protocol register <manifest-file>');
       }
 
       // Save GAID info to separate file
