@@ -13,7 +13,7 @@ const versionJsonPath = join(__dirname, '../../.version.json');
 const versionData = JSON.parse(readFileSync(versionJsonPath, 'utf-8'));
 
 /**
- * API version string for manifests (e.g., "ossa/v0.4.1")
+ * API version string for manifests (e.g., "ossa/v0.4.5")
  */
 export const API_VERSION = `ossa/v${versionData.spec_version}`;
 

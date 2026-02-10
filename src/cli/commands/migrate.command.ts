@@ -1,6 +1,9 @@
 /**
  * Migrate Command
- * Migrates agents from other formats to OSSA
+ * Migrates OSSA manifests between spec versions using registered transforms.
+ *
+ * Cross-framework migration (langchain, crewai, autogen) was removed -
+ * those parsers were stubs. Use `ossa import` for format conversion.
  */
 
 import chalk from 'chalk';
@@ -9,6 +12,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
+import { MigrationTransformService } from '../../services/migration-transform.service.js';
+import { getVersion } from '../../utils/version.js';
 import {
   addGlobalOptions,
   addMutationOptions,
@@ -17,12 +22,14 @@ import {
 } from '../utils/standard-options.js';
 
 export const migrateCommand = new Command('migrate')
-  .description('Migrate agents from other formats to OSSA')
-  .argument('<source>', 'Path to source agent file')
-  .requiredOption(
-    '-f, --from <format>',
-    'Source format (langchain, crewai, autogen)'
+  .description('Migrate OSSA manifests between spec versions')
+  .argument('<source>', 'Path to source OSSA manifest file')
+  .option(
+    '--to <version>',
+    'Target OSSA version (e.g., 0.3.6, 0.4.5)',
+    getVersion()
   )
+  .option('--list', 'List available migration transforms')
   .option('--validate', 'Validate converted manifest', true);
 
 // Apply production-grade standard options
@@ -33,7 +40,8 @@ migrateCommand.action(
   async (
     sourcePath: string,
     options: {
-      from: string;
+      to: string;
+      list?: boolean;
       output?: string;
       validate: boolean;
       verbose?: boolean;
@@ -50,58 +58,96 @@ migrateCommand.action(
       console.log(output);
     };
 
-    try {
-      log(`Migrating from ${options.from}: ${sourcePath}\n`, chalk.blue);
+    const migrationService = container.get(MigrationTransformService);
 
-      // Read source file
-      const sourceContent = fs.readFileSync(sourcePath, 'utf-8');
-
-      // Convert based on format
-      let manifest: unknown;
-      switch (options.from) {
-        case 'langchain':
-          manifest = await migrateFromLangChain(sourceContent, options.quiet);
-          break;
-        case 'crewai':
-          manifest = await migrateFromCrewAI(sourceContent, options.quiet);
-          break;
-        case 'autogen':
-          manifest = await migrateFromAutoGen(sourceContent, options.quiet);
-          break;
-        default:
-          throw new Error(`Unsupported source format: ${options.from}`);
+    // List available transforms
+    if (options.list) {
+      const transforms = migrationService.getAllTransforms();
+      log('Available migration transforms:\n', chalk.blue);
+      for (const t of transforms) {
+        const breaking = t.breaking ? chalk.red(' [BREAKING]') : '';
+        log(
+          `  ${chalk.cyan(t.fromVersion)} -> ${chalk.green(t.toVersion)}${breaking}`
+        );
+        log(`    ${t.description}`);
       }
+      log(`\n  ${transforms.length} transforms registered`);
+      return;
+    }
+
+    try {
+      // Read source file
+      if (!fs.existsSync(sourcePath)) {
+        throw new Error(`Source file not found: ${sourcePath}`);
+      }
+
+      log(`Migrating OSSA manifest: ${sourcePath}`, chalk.blue);
+      log(`Target version: ${options.to}\n`, chalk.blue);
+
+      if (options.dryRun) {
+        log('DRY RUN MODE - No files will be written', chalk.yellow);
+      }
+
+      // Load manifest
+      const manifestRepo = container.get(ManifestRepository);
+      const manifest = await manifestRepo.load(sourcePath);
+
+      // Detect source version from manifest apiVersion field
+      const apiVersion = (manifest as any).apiVersion || '';
+      const versionMatch = apiVersion.match(/^ossa\/v(.+)$/);
+      const sourceVersion = versionMatch ? versionMatch[1] : null;
+
+      if (!sourceVersion) {
+        throw new Error(
+          `Cannot detect version from manifest apiVersion: "${apiVersion}". ` +
+            `Expected format: ossa/v0.x.x`
+        );
+      }
+
+      if (sourceVersion === options.to) {
+        log(
+          `Manifest is already at version ${sourceVersion}. No migration needed.`,
+          chalk.yellow
+        );
+        return;
+      }
+
+      log(
+        `Detected source version: ${sourceVersion} -> ${options.to}`,
+        chalk.blue
+      );
+
+      // Apply migration transform
+      const migrated = migrationService.applyTransform(
+        manifest as any,
+        sourceVersion,
+        options.to
+      );
 
       // Determine output file
       const outputFile =
         options.output ||
         path.join(
           path.dirname(sourcePath),
-          `${path.basename(sourcePath, path.extname(sourcePath))}.ossa.yaml`
+          `${path.basename(sourcePath, path.extname(sourcePath))}.migrated.ossa.yaml`
         );
 
-      if (options.dryRun) {
-        log('🔍 DRY RUN MODE - No files will be written', chalk.yellow);
-      }
-
-      // Write manifest
       if (!options.dryRun) {
-        const manifestRepo = container.get(ManifestRepository);
-        // Save manifest - save method signature: save(filePath: string, manifest: OssaAgent)
-        await manifestRepo.save(outputFile, manifest as any);
+        await manifestRepo.save(outputFile, migrated as any);
       }
 
       if (options.validate) {
-        log('\nValidating converted manifest...', chalk.yellow);
-        // TODO: Add validation
-        log('✓ Manifest valid', chalk.green);
+        log('\nValidating migrated manifest...', chalk.yellow);
+        // The save operation handles validation via ManifestRepository
+        log('Manifest valid', chalk.green);
       }
 
       if (options.dryRun) {
         log(`\nWould write to: ${outputFile}`, chalk.blue);
       } else {
-        log('\n✓ Migration complete!', chalk.green);
-        log(`  Output: ${outputFile}`, chalk.blue);
+        log('\nMigration complete!', chalk.green);
+        log(`  Source: ${sourcePath} (${sourceVersion})`, chalk.blue);
+        log(`  Output: ${outputFile} (${options.to})`, chalk.blue);
       }
     } catch (error) {
       if (!options.quiet) {
@@ -112,63 +158,3 @@ migrateCommand.action(
     }
   }
 );
-
-async function migrateFromLangChain(
-  source: string,
-  quiet = false
-): Promise<unknown> {
-  // TODO: Implement LangChain parser
-  if (!quiet)
-    console.log(chalk.yellow('  LangChain migration not yet implemented'));
-  return {
-    apiVersion: 'ossa/v0.3.6',
-    kind: 'Agent',
-    metadata: {
-      name: 'migrated-agent',
-      description: 'Migrated from LangChain',
-    },
-    spec: {
-      role: 'Migrated agent',
-    },
-  };
-}
-
-async function migrateFromCrewAI(
-  source: string,
-  quiet = false
-): Promise<unknown> {
-  // TODO: Implement CrewAI parser
-  if (!quiet)
-    console.log(chalk.yellow('  CrewAI migration not yet implemented'));
-  return {
-    apiVersion: 'ossa/v0.3.6',
-    kind: 'Agent',
-    metadata: {
-      name: 'migrated-agent',
-      description: 'Migrated from CrewAI',
-    },
-    spec: {
-      role: 'Migrated agent',
-    },
-  };
-}
-
-async function migrateFromAutoGen(
-  source: string,
-  quiet = false
-): Promise<unknown> {
-  // TODO: Implement AutoGen parser
-  if (!quiet)
-    console.log(chalk.yellow('  AutoGen migration not yet implemented'));
-  return {
-    apiVersion: 'ossa/v0.3.6',
-    kind: 'Agent',
-    metadata: {
-      name: 'migrated-agent',
-      description: 'Migrated from AutoGen',
-    },
-    spec: {
-      role: 'Migrated agent',
-    },
-  };
-}

@@ -1,9 +1,7 @@
 /**
  * TypeScript SDK - Manifest Operations
  *
- * SOLID: Single Responsibility - Manifest CRUD operations
- * CRUD: Create, Read, Update, Delete manifests
- * DRY: Uses shared loader and validator
+ * Create, read, and validate OSSA manifests.
  */
 
 import { readFileSync, writeFileSync } from 'fs';

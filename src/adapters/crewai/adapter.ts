@@ -348,8 +348,7 @@ def ${t.name || 'unknown_tool'}(${params}) -> str:
     Args:
 ${docParams}
     """
-    # TODO: Implement tool logic
-    return f"Executed ${t.name || 'tool'}"
+    raise NotImplementedError("Tool '${t.name || 'tool'}' requires implementation")
 `;
     });
 
@@ -480,12 +479,7 @@ ${docParams}
     Returns:
         Tool execution result
     """
-    # TODO: Implement ${t.name || 'tool'} logic here
-    try:
-        result = f"Executed ${t.name || 'tool'}"
-        return result
-    except Exception as e:
-        return f"Error executing ${t.name || 'tool'}: {str(e)}"
+    raise NotImplementedError("Tool '${t.name || 'tool'}' requires implementation")
 `;
     });
 
@@ -519,7 +513,7 @@ def example_tool(query: str) -> str:
     Returns:
         Tool result
     """
-    return f"Processed query: {query}"
+    raise NotImplementedError("Example tool requires implementation")
 ` : ''}
 `;
   }

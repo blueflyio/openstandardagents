@@ -29,7 +29,7 @@ ossa export my-agent.ossa.yaml --platform gitlab --format flow -o .gitlab/duo/fl
 ### OSSA Manifest Example
 
 ```yaml
-apiVersion: ossa/v0.4.4
+apiVersion: ossa/v0.4.5
 kind: Agent
 metadata:
   name: code-review-agent

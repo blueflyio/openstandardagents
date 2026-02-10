@@ -16,11 +16,11 @@ const lastUpdated = new Date().toISOString().split('T')[0];
 const specVersion = versionConfig.spec_version || versionConfig.current;
 
 const replacements = {
-  '0.3.3': versionConfig.current,
-  '0.3.3': versionConfig.latest_stable,
-  '0.3.3': specVersion,
+  '{{CURRENT_VERSION}}': versionConfig.current,
+  '{{LATEST_STABLE}}': versionConfig.latest_stable,
+  '{{SPEC_VERSION}}': specVersion,
   '{{LAST_UPDATED}}': lastUpdated,
-  'spec/v0.3.3': versionConfig.spec_path.replace(
+  '{{SPEC_PATH}}': versionConfig.spec_path.replace(
     '{version}',
     versionConfig.current
   ),

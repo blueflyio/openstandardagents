@@ -18,7 +18,7 @@
 #   - Inbreeding analysis
 #   - Elite breeding strategies
 
-apiVersion: ossa/v0.4.1
+apiVersion: ossa/v0.4.5
 kind: Agent
 
 metadata:

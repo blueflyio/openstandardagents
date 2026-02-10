@@ -20,7 +20,6 @@ import 'reflect-metadata';
 import { initializeAdapters } from '../adapters/index.js';
 
 // Core OSSA commands (platform-agnostic)
-import { agentCardCommand } from './commands/agent-card.command.js';
 import { agentsMdCommand } from './commands/agents-md.command.js';
 import { agentsCommandGroup } from './commands/agents.command.js';
 import { agentsLocalCommandGroup } from './commands/agents-local.command.js';
@@ -59,7 +58,6 @@ import { runCommand } from './commands/run.command.js';
 import { schemaCommand } from './commands/schema.command.js';
 import { searchCommand } from './commands/search.command.js';
 import { updateCommand } from './commands/update.command.js';
-import { setupCommand } from './commands/setup.command.js';
 import { testCommand } from './commands/test.command.js';
 import { validateCommand } from './commands/validate.command.js';
 
@@ -79,7 +77,6 @@ import { langchainCommand } from './commands/langchain.command.js';
 import { frameworkCommand } from './commands/framework.command.js';
 
 // Additional commands (previously unregistered)
-import { agentCreateCommand } from './commands/agent-create.command.js';
 import { agentWizardCommand } from './commands/agent-wizard.command.js';
 import { docsCommand } from './commands/docs.command.js';
 import { enhanceCommand } from './commands/enhance.command.js';
@@ -206,144 +203,89 @@ program
 initializeAdapters();
 
 // ============================================================================
-// Register Core OSSA Commands (Platform-Agnostic)
-// Commands are organized by category for easy navigation and maintenance
+// Register Core OSSA Commands
 // ============================================================================
 
-// ────────────────────────────────────────────────────────────────────────────
-// 🚀 GETTING STARTED
-// Quick start, setup, and initialization commands for new users
-// ────────────────────────────────────────────────────────────────────────────
-program.addCommand(quickstartCommand); // Interactive quick start guide
-program.addCommand(initCommand); // Initialize new OSSA manifest
-program.addCommand(setupCommand); // Environment setup and configuration
-program.addCommand(wizardCommand); // Interactive manifest creation wizard
-program.addCommand(wizardAPIFirstCommand); // API-first workflow wizard
-program.addCommand(scaffoldCommand); // Generate project scaffolding
-program.addCommand(examplesCommand); // Browse example manifests
+// --- Core workflow (shown prominently in help) ---
+program.addCommand(wizardCommand);
+program.addCommand(initCommand);
+program.addCommand(validateCommand);
+program.addCommand(exportCommand);
+program.addCommand(lintCommand);
+program.addCommand(diffCommand);
+program.addCommand(buildCommand);
+program.addCommand(migrateCommand);
 
-// ────────────────────────────────────────────────────────────────────────────
-// 📝 AGENT MANAGEMENT
-// Create, validate, and manage agent manifests
-// ────────────────────────────────────────────────────────────────────────────
-program.addCommand(validateCommand); // Validate OSSA manifest
-program.addCommand(generateCommand); // Generate code from manifest
-program.addCommand(agentCreateCommand); // Create new agent interactively
-program.addCommand(agentWizardCommand); // Guided agent creation
-program.addCommand(agentsCommandGroup); // Agent management subcommands
-program.addCommand(agentsLocalCommandGroup); // Local .agents/ folder management
-program.addCommand(exportCommand); // Export manifest to other formats
-program.addCommand(importCommand); // Import from other formats
-program.addCommand(enhanceCommand); // Enhance existing manifest
-program.addCommand(diffCommand); // Compare manifests
-program.addCommand(infoCommand); // Display manifest information
-program.addCommand(schemaCommand); // Schema operations
-program.addCommand(agentCardCommand); // Agent card generation
+// --- Agent management ---
+program.addCommand(agentsCommandGroup);
+program.addCommand(agentsLocalCommandGroup);
+program.addCommand(generateGaidCommand);
 
-// ────────────────────────────────────────────────────────────────────────────
-// 🔐 IDENTITY & REGISTRY
-// Global Agent ID (GAID) and decentralized identity (DID) operations
-// ────────────────────────────────────────────────────────────────────────────
-program.addCommand(generateGaidCommand); // Generate unique agent GAID
-program.addCommand(registerCommand); // Register agent in registry
-program.addCommand(discoverCommand); // Discover registered agents
-program.addCommand(verifyCommand); // Verify agent identity/signature
-program.addCommand(registryCommand); // Registry management operations
+// --- Development ---
+program.addCommand(generateCommand);
+program.addCommand(devCommand);
+program.addCommand(serveCommand);
+program.addCommand(runCommand);
+program.addCommand(testCommand);
 
-// ────────────────────────────────────────────────────────────────────────────
-// 🏗️ DEVELOPMENT
-// Build, test, serve, and development tools
-// ────────────────────────────────────────────────────────────────────────────
-program.addCommand(buildCommand); // Build agent project
-program.addCommand(devCommand); // Development server with hot reload
-program.addCommand(serveCommand); // Serve agent locally
-program.addCommand(runCommand); // Execute agent runtime
-program.addCommand(testCommand); // Run agent tests
-program.addCommand(lintCommand); // Lint manifest and code
-program.addCommand(standardizeCommand); // Apply standard formatting
+// --- Distribution ---
+program.addCommand(publishCommand);
+program.addCommand(installCommand);
+program.addCommand(updateCommand);
+program.addCommand(searchCommand);
 
-// ────────────────────────────────────────────────────────────────────────────
-// 📦 DISTRIBUTION
-// Publish, install, update, and release management
-// ────────────────────────────────────────────────────────────────────────────
-program.addCommand(publishCommand); // Publish to registry
-program.addCommand(installCommand); // Install agent dependencies
-program.addCommand(updateCommand); // Update installed agents
-program.addCommand(searchCommand); // Search agent registry
-program.addCommand(releaseCommand); // Create release
+// --- Deployment ---
+program.addCommand(deployCommand);
+program.addCommand(statusCommand);
+program.addCommand(rollbackCommand);
+program.addCommand(stopCommand);
 
-// ────────────────────────────────────────────────────────────────────────────
-// 🚢 DEPLOYMENT
-// Deploy, monitor, and manage production agents
-// ────────────────────────────────────────────────────────────────────────────
-program.addCommand(deployCommand); // Deploy agent to environment
-program.addCommand(statusCommand); // Check deployment status
-program.addCommand(rollbackCommand); // Rollback deployment
-program.addCommand(stopCommand); // Stop running agent
+// --- Documentation ---
+program.addCommand(agentsMdCommand);
+program.addCommand(llmsTxtCommand);
+program.addCommand(docsCommand);
 
-// ────────────────────────────────────────────────────────────────────────────
-// 🔧 ADVANCED
-// Migration, compliance, governance, and specialized operations
-// ────────────────────────────────────────────────────────────────────────────
-program.addCommand(migrateCommand); // Migrate between OSSA versions
-program.addCommand(migrateBatchCommand); // Batch migration operations
-program.addCommand(migrateLangchainCommand); // Migrate from LangChain
-program.addCommand(upgradeCommand); // Upgrade OSSA version
-program.addCommand(syncCommand); // Sync across environments
-program.addCommand(createAuditCommand()); // Create audit report
+// --- Skills & Templates ---
+program.addCommand(skillsCommandGroup);
+program.addCommand(templateCommandGroup);
 
-// ────────────────────────────────────────────────────────────────────────────
-// ⚖️ COMPLIANCE & GOVERNANCE
-// Standards compliance, security, and governance operations
-// ────────────────────────────────────────────────────────────────────────────
-program.addCommand(conformanceCommand); // Check standard conformance
-program.addCommand(complianceCommand); // Compliance verification
-program.addCommand(governanceCommand); // Governance policy checks
-program.addCommand(contractCommand); // Contract verification
-program.addCommand(dependenciesCommand); // Dependency analysis
+// --- Compliance & Governance ---
+program.addCommand(conformanceCommand);
+program.addCommand(complianceCommand);
+program.addCommand(governanceCommand);
+program.addCommand(contractCommand);
 
-// ────────────────────────────────────────────────────────────────────────────
-// 🧠 KNOWLEDGE & TAXONOMY
-// Knowledge management, taxonomy, and classification
-// ────────────────────────────────────────────────────────────────────────────
-program.addCommand(knowledgeCommandGroup); // Knowledge operations (index, query)
-program.addCommand(taxonomyCommandGroup); // Taxonomy management
+// --- Advanced (hidden from main --help, still fully accessible) ---
+for (const cmd of [
+  quickstartCommand, wizardAPIFirstCommand, scaffoldCommand,
+  examplesCommand, agentWizardCommand, importCommand,
+  enhanceCommand, infoCommand, schemaCommand, registerCommand, discoverCommand,
+  verifyCommand, registryCommand, standardizeCommand, releaseCommand,
+  migrateBatchCommand, migrateLangchainCommand, upgradeCommand, syncCommand,
+  dependenciesCommand, knowledgeCommandGroup, taxonomyCommandGroup,
+  langflowCommand, langchainCommand, frameworkCommand, workspaceCommand,
+  extensionTeamCommand, estimateCommand,
+]) {
+  program.addCommand(cmd, { hidden: true });
+}
 
-// ────────────────────────────────────────────────────────────────────────────
-// 💡 SKILLS & TEMPLATES
-// Claude Skills integration and template management
-// ────────────────────────────────────────────────────────────────────────────
-program.addCommand(skillsCommandGroup); // Claude Skills operations
-program.addCommand(templateCommandGroup); // Template management
+// Audit command (factory function)
+program.addCommand(createAuditCommand(), { hidden: true });
 
-// ────────────────────────────────────────────────────────────────────────────
-// 🔌 FRAMEWORK INTEGRATION
-// Integration with LangFlow, LangChain, and other frameworks
-// ────────────────────────────────────────────────────────────────────────────
-program.addCommand(langflowCommand); // LangFlow integration
-program.addCommand(langchainCommand); // LangChain integration
-program.addCommand(frameworkCommand); // Generic framework adapter
-
-// ────────────────────────────────────────────────────────────────────────────
-// 📚 DOCUMENTATION
-// Documentation generation and management
-// ────────────────────────────────────────────────────────────────────────────
-program.addCommand(agentsMdCommand); // Generate AGENTS.md
-program.addCommand(llmsTxtCommand); // Generate llms.txt
-program.addCommand(docsCommand); // Generate documentation
-
-// ────────────────────────────────────────────────────────────────────────────
-// 🏢 WORKSPACE & TEAMS
-// Multi-project workspace and team collaboration
-// ────────────────────────────────────────────────────────────────────────────
-program.addCommand(workspaceCommand); // Workspace management
-program.addCommand(extensionTeamCommand); // Team extension development
-
-// ────────────────────────────────────────────────────────────────────────────
-// 💰 UTILITIES
-// Cost estimation and other utility commands
-// ────────────────────────────────────────────────────────────────────────────
-program.addCommand(estimateCommand); // Estimate operation costs
+// Custom help footer showing categories
+program.addHelpText('after', `
+  Core:       wizard, init, validate, export, lint, diff, build, migrate
+  Agents:     agents, agents-local, agent-card, generate-gaid
+  Dev:        generate, dev, serve, run, test
+  Distribute: publish, install, update, search
+  Deploy:     deploy, status, rollback, stop
+  Docs:       agents-md, llms-txt, docs
+  Skills:     skills, template
+  Compliance: conformance, compliance, governance, contract
+  More:       Use "ossa <command> --help" for any command. 30+ additional
+              commands available: quickstart, setup, scaffold, import, enhance,
+              registry, migrate-batch, langchain, langflow, and more.
+`);
 
 // ============================================================================
 // Extension Loading
