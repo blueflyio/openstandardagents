@@ -9,6 +9,7 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import { existsSync, readFileSync } from 'fs';
 import { glob } from 'glob';
+import { getApiVersion } from '../../utils/version.js';
 
 export const frameworkCommand = new Command('framework')
   .alias('fw')
@@ -176,7 +177,7 @@ frameworkCommand
 
 async function generateExampleManifest(framework: string) {
   const baseManifest = {
-    apiVersion: 'ossa/v0.3.3',
+    apiVersion: getApiVersion(),
     kind: 'Agent',
     metadata: {
       name: `${framework}-example-agent`,

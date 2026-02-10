@@ -5,6 +5,7 @@
 
 import type { OssaAgent } from '../../types/index.js';
 import type { KubernetesConfig, KustomizeStructure } from './types.js';
+import { getApiVersion } from '../../utils/version.js';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as yaml from 'yaml';
@@ -107,7 +108,7 @@ export class KubernetesManifestGenerator {
       'app.kubernetes.io/component': 'agent',
       'app.kubernetes.io/part-of': 'ossa-platform',
       'app.kubernetes.io/managed-by': 'kustomize',
-      'ossa.ai/version': manifest.apiVersion || 'ossa/v0.4.1',
+      'ossa.ai/version': manifest.apiVersion || getApiVersion(),
     };
 
     return {
@@ -1047,7 +1048,7 @@ This directory contains production-grade Kubernetes manifests for deploying the 
 
 **Version:** ${version}
 
-**Generated from:** OSSA Manifest v${manifest.apiVersion || 'ossa/v0.4.1'}
+**Generated from:** OSSA Manifest v${manifest.apiVersion || getApiVersion()}
 
 ## Directory Structure
 

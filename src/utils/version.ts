@@ -1,12 +1,12 @@
 /**
  * OSSA Version Utilities
  *
- * Provides dynamic version detection from package.json
+ * Provides dynamic version detection from package.json.
+ * The package version IS the spec version — they track together.
  *
- * IMPORTANT: Package version vs OSSA Spec version
- * - Package version (from package.json): The CLI tool version (can be 0.4.1, 0.5.0, etc.)
- * - OSSA Spec version (OSSA_SPEC_VERSION): The agent manifest format version (0.3.6)
- * These evolve independently - CLI can update without changing the spec.
+ * - getVersion() → '0.4.5' (from package.json)
+ * - getApiVersion() → 'ossa/v0.4.5' (for manifest apiVersion fields)
+ * - getSchemaDir() → 'v0.4' (for JSON Schema file resolution)
  *
  * NOTE: This module is designed to work with both ESM and CommonJS (Jest).
  */
@@ -15,18 +15,11 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 
-/**
- * Current OSSA specification version
- * This is the version used in manifest apiVersion fields
- * Independent from package.json version (CLI tool version)
- */
-const OSSA_SPEC_VERSION = '0.3.6';
-
 // Cache the version info once resolved
 let cachedVersionInfo: VersionInfo | null = null;
 
 export interface VersionInfo {
-  /** Full version string (e.g., "0.3.0") - dynamically derived */
+  /** Full version string (e.g., "0.4.5") - from package.json */
   version: string;
   /** Major version */
   major: number;
@@ -36,9 +29,9 @@ export interface VersionInfo {
   patch: number;
   /** Prerelease tag if any (e.g., "RC", "beta") */
   prerelease?: string;
-  /** Schema directory name (e.g., "v0.3.0") */
+  /** Schema directory name (e.g., "v0.4") */
   schemaDir: string;
-  /** Schema filename (e.g., "ossa-0.3.0.schema.json") */
+  /** Schema filename (e.g., "agent.schema.json") */
   schemaFile: string;
   /** Full schema path relative to project root */
   schemaPath: string;
@@ -202,12 +195,11 @@ export function getVersionInfo(forceRefresh = false): VersionInfo {
 
   const version = readVersionFromPackageJson();
   const parsed = parseVersion(version);
-  const specParsed = parseVersion(OSSA_SPEC_VERSION);
 
-  // USE MAJOR.MINOR for stability (ignore patch version for schema/api)
-  // 0.3.6 -> v0.3
-  const schemaDir = `v${specParsed.major}.${specParsed.minor}`;
-  const schemaFile = `ossa-${schemaDir}.schema.json`;
+  // Schema dir uses MAJOR.MINOR from the package version
+  // 0.4.5 -> v0.4, schema at spec/v0.4/agent.schema.json
+  const schemaDir = `v${parsed.major}.${parsed.minor}`;
+  const schemaFile = `agent.schema.json`;
 
   cachedVersionInfo = {
     version,
@@ -215,7 +207,7 @@ export function getVersionInfo(forceRefresh = false): VersionInfo {
     schemaDir,
     schemaFile,
     schemaPath: `spec/${schemaDir}/${schemaFile}`,
-    apiVersion: `ossa/v${OSSA_SPEC_VERSION}`,
+    apiVersion: `ossa/v${version}`,
   };
 
   return cachedVersionInfo;
@@ -243,7 +235,7 @@ export function getApiVersion(): string {
 }
 
 /**
- * Get the schema directory (e.g., "v0.3.0")
+ * Get the schema directory (e.g., "v0.4")
  */
 export function getSchemaDir(): string {
   return getVersionInfo().schemaDir;

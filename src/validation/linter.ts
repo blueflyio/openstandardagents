@@ -1,8 +1,8 @@
 /**
- * OSSA v0.3.6 Manifest Linter
+ * OSSA Manifest Linter
  *
- * Best practices linter for OSSA agent manifests
- * Checks taxonomy applicability, type-domain matching, revolutionary features usage, and more
+ * Best practices linter for OSSA agent manifests.
+ * Checks taxonomy applicability, type-domain matching, and feature usage.
  */
 
 import { readFileSync } from 'fs';
@@ -93,7 +93,7 @@ export class OSSALinter {
 
   constructor(taxonomyPath?: string) {
     // Load taxonomy spec if available
-    const defaultTaxonomyPath = join(__dirname, '../spec/v0.3.6/taxonomy.yaml');
+    const defaultTaxonomyPath = join(__dirname, '../spec/v0.4/taxonomy.yaml');
     const resolvedPath = taxonomyPath || defaultTaxonomyPath;
 
     try {

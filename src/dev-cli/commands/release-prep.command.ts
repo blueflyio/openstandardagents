@@ -1,11 +1,7 @@
 /**
  * Release Preparation Command
  *
- * Comprehensive pre-release validation for v0.3.3
- * Validates GitLab, GitHub, and npmjs readiness
- *
- * SOLID: Single Responsibility - Release preparation only
- * DRY: Reuses ReleaseVerifyService and ReleasePrepService
+ * Pre-release validation for GitLab, GitHub, and npmjs readiness.
  */
 
 import { Command } from 'commander';
@@ -19,8 +15,8 @@ export const releasePrepCommand = new Command('prep')
   );
 
 releasePrepCommand
-  .command('v0.3.3')
-  .description('Prepare v0.3.3 release')
+  .command('current')
+  .description('Prepare current version for release')
   .option('--dry-run', 'Dry run mode (validate only, no changes)', false)
   .option('--skip-github', 'Skip GitHub validation', false)
   .option('--skip-npm', 'Skip NPM validation', false)
@@ -40,7 +36,7 @@ releasePrepCommand
       const service = new ReleasePrepService();
       try {
         const result = await service.prepare({
-          version: '0.3.3',
+          version: '0.4.5',
           dryRun: options.dryRun,
           skipGitHub: options.skipGithub,
           skipNPM: options.skipNpm,

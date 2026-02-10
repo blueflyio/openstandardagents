@@ -329,12 +329,8 @@ export class OllamaAdapter {
       }
     }
 
-    // Default: return a placeholder response
-    return JSON.stringify({
-      message: `Tool '${name}' executed`,
-      args,
-      note: 'No handler registered for this tool',
-    });
+    // No handler registered - fail explicitly
+    throw new Error(`No handler registered for tool: ${name}`);
   }
 
   /**

@@ -93,7 +93,7 @@ describe('Migration Engine Integration', () => {
       );
 
       expect(result.success).toBe(true);
-      expect(result.manifest?.apiVersion).toBe('ossa/v0.4.1');
+      expect(result.manifest?.apiVersion).toBe('ossa/v0.4.5');
       expect(result.sourceVersion).toBe('0.4.1');
       expect(result.targetVersion).toBe('0.4.1');
       // No summary when no migration needed (already at target version)
@@ -157,7 +157,7 @@ describe('Migration Engine Integration', () => {
       // Verify all are migrated to target version
       result.results.forEach((res) => {
         expect(res.success).toBe(true);
-        expect(res.manifest?.apiVersion).toBe('ossa/v0.4.1');
+        expect(res.manifest?.apiVersion).toBe('ossa/v0.4.5');
       });
     });
 

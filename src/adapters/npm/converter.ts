@@ -54,7 +54,7 @@ export class NPMConverter {
       },
       dependencies: {},
       ossaMetadata: {
-        apiVersion: manifest.apiVersion || 'ossa/v0.4.1',
+        apiVersion: manifest.apiVersion || getApiVersion(),
         kind: manifest.kind || 'Agent',
         originalName: metadata.name,
       },
