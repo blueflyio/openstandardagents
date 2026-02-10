@@ -355,6 +355,11 @@ export abstract class BaseAdapter implements PlatformAdapter {
    * Helper: Create agent.ossa.yaml manifest file for provenance
    */
   protected createManifestFile(manifest: OssaAgent): ExportFile {
-    return this.createFile('agent.ossa.yaml', yaml.stringify(manifest), 'config', 'yaml');
+    return this.createFile(
+      'agent.ossa.yaml',
+      yaml.stringify(manifest),
+      'config',
+      'yaml'
+    );
   }
 }

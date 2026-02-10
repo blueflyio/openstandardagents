@@ -9,4 +9,7 @@ export {
   AgentExecutionMessage,
   type AgentExecutionMessageData,
 } from './AgentExecutionMessage.js';
-export { AgentBatchMessage, type AgentBatchMessageData } from './AgentBatchMessage.js';
+export {
+  AgentBatchMessage,
+  type AgentBatchMessageData,
+} from './AgentBatchMessage.js';

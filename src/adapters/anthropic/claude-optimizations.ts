@@ -39,7 +39,8 @@ export function generateClaudeOptimizations(
   manifest: OssaAgent
 ): ClaudeOptimizations {
   const capabilities = manifest.metadata?.agentArchitecture?.capabilities || [];
-  const executionModel = manifest.metadata?.agentArchitecture?.runtime?.executionModel;
+  const executionModel =
+    manifest.metadata?.agentArchitecture?.runtime?.executionModel;
 
   const optimizations: ClaudeOptimizations = {};
 
@@ -123,7 +124,8 @@ export function generateClaudeClientCode(
   // Prompt caching setup
   if (optimizations.promptCaching?.enabled) {
     code += '// Prompt caching (reduces costs by up to 90%)\n';
-    code += 'async function createMessageWithCaching(messages, systemPrompt) {\n';
+    code +=
+      'async function createMessageWithCaching(messages, systemPrompt) {\n';
     code += '  return await client.messages.create({\n';
     code += "    model: 'claude-sonnet-4.5-20250929',\n";
     code += '    max_tokens: 4096,\n';
@@ -131,7 +133,8 @@ export function generateClaudeClientCode(
     code += '      {\n';
     code += '        type: "text",\n';
     code += '        text: systemPrompt,\n';
-    code += '        cache_control: { type: "ephemeral" }, // Cache system prompt\n';
+    code +=
+      '        cache_control: { type: "ephemeral" }, // Cache system prompt\n';
     code += '      },\n';
     code += '    ],\n';
     code += '    messages,\n';
@@ -163,7 +166,8 @@ export function generateClaudeClientCode(
     code += '      {\n';
     code += "        role: 'user',\n";
     code += '        content: [\n';
-    code += '          { type: "image", source: { type: "url", url: imageUrl } },\n';
+    code +=
+      '          { type: "image", source: { type: "url", url: imageUrl } },\n';
     code += '          { type: "text", text: prompt },\n';
     code += '        ],\n';
     code += '      },\n';
@@ -174,7 +178,8 @@ export function generateClaudeClientCode(
 
   code += 'export { client';
   if (optimizations.streaming?.enabled) code += ', streamResponse';
-  if (optimizations.promptCaching?.enabled) code += ', createMessageWithCaching';
+  if (optimizations.promptCaching?.enabled)
+    code += ', createMessageWithCaching';
   if (optimizations.tools?.enabled) code += ', executeWithTools';
   if (optimizations.vision?.enabled) code += ', analyzeImage';
   code += ' };\n';
@@ -192,8 +197,10 @@ export function generateClaudeBestPractices(
 
   if (optimizations.promptCaching?.enabled) {
     section += '### Prompt Caching\n\n';
-    section += 'This agent is configured with **prompt caching** to reduce costs:\n\n';
-    section += '- Cache system prompts with `cache_control: { type: "ephemeral" }`\n';
+    section +=
+      'This agent is configured with **prompt caching** to reduce costs:\n\n';
+    section +=
+      '- Cache system prompts with `cache_control: { type: "ephemeral" }`\n';
     section += '- Cached prompts cost **90% less** for repeated use\n';
     section += '- Cache persists for 5 minutes\n\n';
   }
@@ -212,9 +219,11 @@ export function generateClaudeBestPractices(
     section += 'Claude supports parallel tool calls:\n\n';
     section += '```typescript\n';
     section += 'const tools = [\n';
-    section += '  { name: "get_weather", description: "...", input_schema: {...} },\n';
+    section +=
+      '  { name: "get_weather", description: "...", input_schema: {...} },\n';
     section += '];\n';
-    section += 'const response = await client.messages.create({ tools, ... });\n';
+    section +=
+      'const response = await client.messages.create({ tools, ... });\n';
     section += '```\n\n';
   }
 

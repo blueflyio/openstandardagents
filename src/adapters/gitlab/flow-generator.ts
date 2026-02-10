@@ -86,7 +86,10 @@ export class GitLabDuoFlowGenerator {
   /**
    * Generate components (AgentComponent for now)
    */
-  private generateComponents(manifest: OssaAgent, agentName: string): FlowComponent[] {
+  private generateComponents(
+    manifest: OssaAgent,
+    agentName: string
+  ): FlowComponent[] {
     const spec = manifest.spec as Record<string, unknown>;
     const tools = (spec.tools as Array<{ name?: string }>) || [];
 
@@ -162,7 +165,10 @@ export class GitLabDuoFlowGenerator {
   /**
    * Generate routers (simple linear flow for single-component)
    */
-  private generateRouters(manifest: OssaAgent, agentName: string): FlowRouter[] {
+  private generateRouters(
+    manifest: OssaAgent,
+    agentName: string
+  ): FlowRouter[] {
     // For single-component flows, just route to end
     return [
       {
@@ -175,7 +181,10 @@ export class GitLabDuoFlowGenerator {
   /**
    * Generate inline prompt definitions
    */
-  private generatePrompts(manifest: OssaAgent, agentName: string): FlowPrompt[] {
+  private generatePrompts(
+    manifest: OssaAgent,
+    agentName: string
+  ): FlowPrompt[] {
     const spec = manifest.spec as Record<string, unknown>;
     const role = (spec.role as string) || 'You are a helpful AI assistant';
     const llm = spec.llm as
@@ -233,7 +242,11 @@ export class GitLabDuoFlowGenerator {
       return 'openai';
     }
 
-    if (normalized.includes('google') || normalized.includes('vertex') || normalized.includes('gemini')) {
+    if (
+      normalized.includes('google') ||
+      normalized.includes('vertex') ||
+      normalized.includes('gemini')
+    ) {
       return 'vertexai';
     }
 
@@ -244,7 +257,9 @@ export class GitLabDuoFlowGenerator {
   /**
    * Get default model for provider
    */
-  private getDefaultModel(provider: 'anthropic' | 'openai' | 'vertexai'): string {
+  private getDefaultModel(
+    provider: 'anthropic' | 'openai' | 'vertexai'
+  ): string {
     const defaults: Record<string, string> = {
       anthropic: 'claude-sonnet-4-20250514',
       openai: 'gpt-4o-mini',
@@ -269,10 +284,16 @@ export class GitLabDuoFlowGenerator {
     files.set('error.yaml', this.generateErrorFlowYAML(manifest, agentName));
 
     // Monitoring/observability flow
-    files.set('monitor.yaml', this.generateMonitorFlowYAML(manifest, agentName));
+    files.set(
+      'monitor.yaml',
+      this.generateMonitorFlowYAML(manifest, agentName)
+    );
 
     // Governance/compliance flow
-    files.set('governance.yaml', this.generateGovernanceFlowYAML(manifest, agentName));
+    files.set(
+      'governance.yaml',
+      this.generateGovernanceFlowYAML(manifest, agentName)
+    );
 
     return files;
   }
@@ -282,9 +303,19 @@ export class GitLabDuoFlowGenerator {
    * This flow intercepts errors from the main flow, attempts retries with
    * exponential backoff, and provides graceful degradation.
    */
-  private generateErrorFlowYAML(manifest: OssaAgent, agentName: string): string {
+  private generateErrorFlowYAML(
+    manifest: OssaAgent,
+    agentName: string
+  ): string {
     const spec = manifest.spec as Record<string, unknown>;
-    const llm = spec.llm as { provider?: string; model?: string; temperature?: number; maxTokens?: number } | undefined;
+    const llm = spec.llm as
+      | {
+          provider?: string;
+          model?: string;
+          temperature?: number;
+          maxTokens?: number;
+        }
+      | undefined;
     const modelClassProvider = this.mapProvider(llm?.provider || 'anthropic');
 
     const errorFlow: GitLabDuoFlow = {
@@ -314,10 +345,16 @@ export class GitLabDuoFlowGenerator {
           tool_name: 'retry_with_backoff',
           toolset: ['retry_with_backoff'],
           inputs: [
-            { from: `${agentName}_error_classifier:retry_config`, as: 'config' },
+            {
+              from: `${agentName}_error_classifier:retry_config`,
+              as: 'config',
+            },
             { from: 'context:original_input', as: 'input' },
           ],
-          ui_log_events: ['on_tool_execution_success', 'on_tool_execution_failed'],
+          ui_log_events: [
+            'on_tool_execution_success',
+            'on_tool_execution_failed',
+          ],
           ui_role_as: 'tool',
         },
         {
@@ -326,7 +363,10 @@ export class GitLabDuoFlowGenerator {
           prompt_id: `${agentName}_fallback_prompt`,
           prompt_version: null,
           inputs: [
-            { from: `${agentName}_error_classifier:error_classification`, as: 'error_details' },
+            {
+              from: `${agentName}_error_classifier:error_classification`,
+              as: 'error_details',
+            },
             { from: 'context:original_input', as: 'original_task' },
           ],
           toolset: ['add_comment', 'create_issue'],
@@ -429,9 +469,19 @@ Never expose internal error details, stack traces, or sensitive information.`,
    * This flow collects execution metrics, tracks performance, and emits
    * structured telemetry for dashboards and alerting.
    */
-  private generateMonitorFlowYAML(manifest: OssaAgent, agentName: string): string {
+  private generateMonitorFlowYAML(
+    manifest: OssaAgent,
+    agentName: string
+  ): string {
     const spec = manifest.spec as Record<string, unknown>;
-    const llm = spec.llm as { provider?: string; model?: string; temperature?: number; maxTokens?: number } | undefined;
+    const llm = spec.llm as
+      | {
+          provider?: string;
+          model?: string;
+          temperature?: number;
+          maxTokens?: number;
+        }
+      | undefined;
     const modelClassProvider = this.mapProvider(llm?.provider || 'anthropic');
 
     const monitorFlow: GitLabDuoFlow = {
@@ -459,7 +509,10 @@ Never expose internal error details, stack traces, or sensitive information.`,
           prompt_id: `${agentName}_health_analyzer_prompt`,
           prompt_version: null,
           inputs: [
-            { from: `${agentName}_metrics_collector:metrics`, as: 'metrics_data' },
+            {
+              from: `${agentName}_metrics_collector:metrics`,
+              as: 'metrics_data',
+            },
             { from: 'context:thresholds', as: 'alert_thresholds' },
           ],
           toolset: ['read_file', 'search_files'],
@@ -472,10 +525,19 @@ Never expose internal error details, stack traces, or sensitive information.`,
           tool_name: 'dispatch_alert',
           toolset: ['dispatch_alert', 'add_comment', 'create_issue'],
           inputs: [
-            { from: `${agentName}_health_analyzer:alerts`, as: 'alert_payload' },
-            { from: `${agentName}_health_analyzer:health_status`, as: 'status' },
+            {
+              from: `${agentName}_health_analyzer:alerts`,
+              as: 'alert_payload',
+            },
+            {
+              from: `${agentName}_health_analyzer:health_status`,
+              as: 'status',
+            },
           ],
-          ui_log_events: ['on_tool_execution_success', 'on_tool_execution_failed'],
+          ui_log_events: [
+            'on_tool_execution_success',
+            'on_tool_execution_failed',
+          ],
           ui_role_as: 'tool',
         },
       ],
@@ -552,9 +614,19 @@ Respond with structured JSON:
    * This flow validates agent actions against policies, checks permissions,
    * and ensures compliance with organizational rules before execution proceeds.
    */
-  private generateGovernanceFlowYAML(manifest: OssaAgent, agentName: string): string {
+  private generateGovernanceFlowYAML(
+    manifest: OssaAgent,
+    agentName: string
+  ): string {
     const spec = manifest.spec as Record<string, unknown>;
-    const llm = spec.llm as { provider?: string; model?: string; temperature?: number; maxTokens?: number } | undefined;
+    const llm = spec.llm as
+      | {
+          provider?: string;
+          model?: string;
+          temperature?: number;
+          maxTokens?: number;
+        }
+      | undefined;
     const modelClassProvider = this.mapProvider(llm?.provider || 'anthropic');
 
     const governanceFlow: GitLabDuoFlow = {
@@ -584,11 +656,17 @@ Respond with structured JSON:
           tool_name: 'check_permissions',
           toolset: ['check_permissions'],
           inputs: [
-            { from: `${agentName}_policy_validator:required_permissions`, as: 'permissions' },
+            {
+              from: `${agentName}_policy_validator:required_permissions`,
+              as: 'permissions',
+            },
             { from: 'context:user_role', as: 'user_role' },
             { from: 'context:project_path', as: 'project' },
           ],
-          ui_log_events: ['on_tool_execution_success', 'on_tool_execution_failed'],
+          ui_log_events: [
+            'on_tool_execution_success',
+            'on_tool_execution_failed',
+          ],
           ui_role_as: 'tool',
         },
         {
@@ -597,8 +675,14 @@ Respond with structured JSON:
           tool_name: 'write_audit_log',
           toolset: ['write_audit_log', 'add_comment'],
           inputs: [
-            { from: `${agentName}_policy_validator:policy_decision`, as: 'decision' },
-            { from: `${agentName}_permission_checker:permission_result`, as: 'permission_check' },
+            {
+              from: `${agentName}_policy_validator:policy_decision`,
+              as: 'decision',
+            },
+            {
+              from: `${agentName}_permission_checker:permission_result`,
+              as: 'permission_check',
+            },
             { from: 'context:action_request', as: 'original_action' },
             { from: 'context:execution_id', as: 'execution_id' },
           ],
@@ -611,8 +695,14 @@ Respond with structured JSON:
           prompt_id: `${agentName}_compliance_reporter_prompt`,
           prompt_version: null,
           inputs: [
-            { from: `${agentName}_policy_validator:policy_decision`, as: 'policy_result' },
-            { from: `${agentName}_permission_checker:permission_result`, as: 'permission_result' },
+            {
+              from: `${agentName}_policy_validator:policy_decision`,
+              as: 'policy_result',
+            },
+            {
+              from: `${agentName}_permission_checker:permission_result`,
+              as: 'permission_result',
+            },
             { from: 'context:action_request', as: 'proposed_action' },
           ],
           toolset: ['add_comment', 'create_issue'],

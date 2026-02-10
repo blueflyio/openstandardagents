@@ -36,12 +36,14 @@ export interface MessengerStatsService {
   /**
    * Get recent activity
    */
-  getRecentActivity(limit?: number): Promise<Array<{
-    messageType: string;
-    status: 'success' | 'failed';
-    timestamp: string;
-    duration: number;
-  }>>;
+  getRecentActivity(limit?: number): Promise<
+    Array<{
+      messageType: string;
+      status: 'success' | 'failed';
+      timestamp: string;
+      duration: number;
+    }>
+  >;
 }
 
 export class MessengerStatsCommand {
@@ -50,7 +52,7 @@ export class MessengerStatsCommand {
     private readonly logger: {
       info(message: string): void;
       error(message: string, error?: Error): void;
-    },
+    }
   ) {}
 
   /**
@@ -98,14 +100,14 @@ export class MessengerStatsCommand {
     // Transport stats
     console.log('\n=== Transport Stats ===\n');
     console.log(
-      `${'Transport'.padEnd(20)} ${'Messages'.padEnd(12)} ${'Failed'.padEnd(12)} ${'Avg Time'.padEnd(12)} ${'Success Rate'}`,
+      `${'Transport'.padEnd(20)} ${'Messages'.padEnd(12)} ${'Failed'.padEnd(12)} ${'Avg Time'.padEnd(12)} ${'Success Rate'}`
     );
     console.log('-'.repeat(80));
 
     for (const stats of allStats) {
       const successRate = `${(stats.successRate * 100).toFixed(1)}%`;
       console.log(
-        `${stats.name.padEnd(20)} ${String(stats.messageCount).padEnd(12)} ${String(stats.failedCount).padEnd(12)} ${String(stats.avgProcessingTime).padEnd(12)} ${successRate}`,
+        `${stats.name.padEnd(20)} ${String(stats.messageCount).padEnd(12)} ${String(stats.failedCount).padEnd(12)} ${String(stats.avgProcessingTime).padEnd(12)} ${successRate}`
       );
     }
 
@@ -118,14 +120,14 @@ export class MessengerStatsCommand {
     // Recent activity
     console.log('\n=== Recent Activity (Last 10) ===\n');
     console.log(
-      `${'Message Type'.padEnd(40)} ${'Status'.padEnd(12)} ${'Duration'.padEnd(12)} ${'Timestamp'}`,
+      `${'Message Type'.padEnd(40)} ${'Status'.padEnd(12)} ${'Duration'.padEnd(12)} ${'Timestamp'}`
     );
     console.log('-'.repeat(100));
 
     for (const activity of recentActivity) {
       const messageType = activity.messageType.substring(0, 37) + '...';
       console.log(
-        `${messageType.padEnd(40)} ${activity.status.padEnd(12)} ${String(activity.duration).padEnd(12)} ${activity.timestamp}`,
+        `${messageType.padEnd(40)} ${activity.status.padEnd(12)} ${String(activity.duration).padEnd(12)} ${activity.timestamp}`
       );
     }
 

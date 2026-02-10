@@ -14,7 +14,10 @@
  */
 
 import type { OssaAgent } from '../../types/index.js';
-import type { ValidationError, ValidationWarning } from './adapter.interface.js';
+import type {
+  ValidationError,
+  ValidationWarning,
+} from './adapter.interface.js';
 
 /**
  * Validation result from shared validator

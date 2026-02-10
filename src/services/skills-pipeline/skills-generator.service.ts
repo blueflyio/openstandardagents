@@ -79,8 +79,13 @@ export class SkillsGeneratorService {
    * Generate Claude Skill from input file
    */
   async generate(options: GenerationOptions): Promise<GenerationResult> {
-    const { inputPath, format, output, outputFormat = 'claude-skill', dryRun } =
-      options;
+    const {
+      inputPath,
+      format,
+      output,
+      outputFormat = 'claude-skill',
+      dryRun,
+    } = options;
 
     try {
       // Detect input format
@@ -102,12 +107,7 @@ export class SkillsGeneratorService {
       return {
         success: true,
         outputPath,
-        files: [
-          'SKILL.md',
-          'templates/',
-          'knowledge/',
-          'examples/',
-        ],
+        files: ['SKILL.md', 'templates/', 'knowledge/', 'examples/'],
         message: dryRun
           ? 'Dry run completed (no files written)'
           : `Skill generated successfully at ${outputPath}`,
@@ -263,7 +263,8 @@ export class SkillsGeneratorService {
 
     const frontmatter: SkillFrontmatter = {
       name: (metadata as any).name || 'unnamed-skill',
-      description: (metadata as any).description || spec.role || 'No description',
+      description:
+        (metadata as any).description || spec.role || 'No description',
       trigger_keywords: this.extractKeywords(manifest),
       version: (metadata as any).version,
       author: (metadata as any).author,
@@ -415,8 +416,12 @@ export class SkillsGeneratorService {
     if (tools.length > 0) {
       content += `## Available Tools\n\n`;
       for (const tool of tools) {
-        const toolName = typeof tool === 'string' ? tool : tool.name || 'unknown';
-        const toolDesc = typeof tool === 'object' && tool.description ? `: ${tool.description}` : '';
+        const toolName =
+          typeof tool === 'string' ? tool : tool.name || 'unknown';
+        const toolDesc =
+          typeof tool === 'object' && tool.description
+            ? `: ${tool.description}`
+            : '';
         content += `- **${toolName}**${toolDesc}\n`;
       }
       content += `\n`;

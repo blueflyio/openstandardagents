@@ -86,7 +86,7 @@ export interface MetricsStorage {
     transport: string,
     startTime: Date,
     endTime: Date,
-    interval: 'minute' | 'hour' | 'day',
+    interval: 'minute' | 'hour' | 'day'
   ): Promise<Array<{ timestamp: string; value: number }>>;
 }
 
@@ -96,7 +96,7 @@ export class MetricsCollector {
     private readonly logger: {
       debug(message: string, context?: Record<string, unknown>): void;
       error(message: string, error: Error): void;
-    },
+    }
   ) {}
 
   /**
@@ -106,7 +106,7 @@ export class MetricsCollector {
     messageType: string,
     transport: string,
     startTime: Date,
-    success: boolean,
+    success: boolean
   ): Promise<void> {
     try {
       const endTime = new Date();
@@ -154,7 +154,7 @@ export class MetricsCollector {
     transport: string,
     startTime: Date,
     endTime: Date,
-    interval: 'minute' | 'hour' | 'day' = 'hour',
+    interval: 'minute' | 'hour' | 'day' = 'hour'
   ): Promise<Array<{ timestamp: string; value: number }>> {
     return this.storage.getTimeSeries(transport, startTime, endTime, interval);
   }

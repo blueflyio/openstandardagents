@@ -65,10 +65,9 @@ export class CrewAIConverter {
       const mainRole = this.extractRoleFromSpec(spec, manifest.metadata?.name);
       agents.push({
         role: mainRole,
-        goal:
-          manifest.metadata?.description ||
-          'Execute tasks effectively',
-        backstory: (spec.role as string) || manifest.metadata?.description || 'AI agent',
+        goal: manifest.metadata?.description || 'Execute tasks effectively',
+        backstory:
+          (spec.role as string) || manifest.metadata?.description || 'AI agent',
         verbose: true,
       });
 
@@ -96,17 +95,20 @@ export class CrewAIConverter {
   private sanitizeRoleName(name: string): string {
     return name
       .split(/[-_\s]/)
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(' ');
   }
 
   /**
    * Extract role from spec, trying multiple fields
    */
-  private extractRoleFromSpec(spec: Record<string, unknown>, fallback?: string): string {
+  private extractRoleFromSpec(
+    spec: Record<string, unknown>,
+    fallback?: string
+  ): string {
     // Try to extract from role field (could be multiline)
     if (spec.role && typeof spec.role === 'string') {
-      const lines = spec.role.split('\n').filter(l => l.trim());
+      const lines = spec.role.split('\n').filter((l) => l.trim());
       if (lines.length > 0) {
         const firstLine = lines[0].trim();
         // If first line is reasonable length, use it as role

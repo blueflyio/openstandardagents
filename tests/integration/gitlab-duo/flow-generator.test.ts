@@ -64,9 +64,15 @@ describe('GitLabDuoFlowGenerator', () => {
       // Verify prompts
       expect(flow.prompts).toHaveLength(1);
       expect(flow.prompts![0].prompt_id).toBe('test_agent_prompt');
-      expect(flow.prompts![0].model.params.model_class_provider).toBe('anthropic');
-      expect(flow.prompts![0].model.params.model).toBe('claude-sonnet-4-20250514');
-      expect(flow.prompts![0].prompt_template.system).toBe('You are a helpful code review assistant');
+      expect(flow.prompts![0].model.params.model_class_provider).toBe(
+        'anthropic'
+      );
+      expect(flow.prompts![0].model.params.model).toBe(
+        'claude-sonnet-4-20250514'
+      );
+      expect(flow.prompts![0].prompt_template.system).toBe(
+        'You are a helpful code review assistant'
+      );
 
       // Verify flow entry point
       expect(flow.flow.entry_point).toBe('test_agent');

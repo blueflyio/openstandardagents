@@ -67,7 +67,8 @@ export class BasePackageGenerator {
     if (options.main) pkg.main = options.main;
     if (options.types) pkg.types = options.types;
     if (options.scripts) pkg.scripts = options.scripts;
-    if (options.keywords && options.keywords.length > 0) pkg.keywords = options.keywords;
+    if (options.keywords && options.keywords.length > 0)
+      pkg.keywords = options.keywords;
     if (options.author) pkg.author = options.author;
     if (options.license) pkg.license = options.license;
 
@@ -89,10 +90,16 @@ export class BasePackageGenerator {
     if (options.dependencies && Object.keys(options.dependencies).length > 0) {
       pkg.dependencies = options.dependencies;
     }
-    if (options.devDependencies && Object.keys(options.devDependencies).length > 0) {
+    if (
+      options.devDependencies &&
+      Object.keys(options.devDependencies).length > 0
+    ) {
       pkg.devDependencies = options.devDependencies;
     }
-    if (options.peerDependencies && Object.keys(options.peerDependencies).length > 0) {
+    if (
+      options.peerDependencies &&
+      Object.keys(options.peerDependencies).length > 0
+    ) {
       pkg.peerDependencies = options.peerDependencies;
     }
     if (options.engines && Object.keys(options.engines).length > 0) {
@@ -101,9 +108,25 @@ export class BasePackageGenerator {
 
     // Add any additional fields not explicitly handled
     const handledKeys = new Set([
-      'scope', 'name', 'version', 'description', 'type', 'main', 'types',
-      'scripts', 'keywords', 'author', 'license', 'repository', 'bugs',
-      'homepage', 'files', 'dependencies', 'devDependencies', 'peerDependencies', 'engines'
+      'scope',
+      'name',
+      'version',
+      'description',
+      'type',
+      'main',
+      'types',
+      'scripts',
+      'keywords',
+      'author',
+      'license',
+      'repository',
+      'bugs',
+      'homepage',
+      'files',
+      'dependencies',
+      'devDependencies',
+      'peerDependencies',
+      'engines',
     ]);
 
     for (const [key, value] of Object.entries(options)) {

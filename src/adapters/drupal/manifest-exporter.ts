@@ -422,8 +422,7 @@ SUPPORT
         name: `ossa/${agentName}`,
         type: 'ossa-agent',
         description:
-          manifest.metadata?.description ||
-          'OSSA agent manifest for Drupal',
+          manifest.metadata?.description || 'OSSA agent manifest for Drupal',
         keywords: ['OSSA', 'AI', 'Agent', 'Drupal', 'ai_agents'],
         license: manifest.metadata?.license || 'GPL-2.0-or-later',
         require: {

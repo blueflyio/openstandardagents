@@ -33,6 +33,7 @@ import type { OssaAgent } from '../../types/index.js';
 import {
   addGlobalOptions,
   addMutationOptions,
+  addBackupOptions,
   shouldUseColor,
 } from '../utils/standard-options.js';
 
@@ -46,11 +47,18 @@ export const exportCommand = new Command('export')
   .option('-o, --output <file>', 'Output file path')
   .option('--format <format>', 'Output format (yaml, json, python)', 'yaml')
   .option('--skill', 'Include Claude Skill (SKILL.md) - NPM platform only')
-  .option('--list-platforms', 'Show all supported export platforms and their status');
+  .option(
+    '--list-platforms',
+    'Show all supported export platforms and their status'
+  );
 
 // Add production-grade standard options
 addGlobalOptions(exportCommand);
 addMutationOptions(exportCommand);
+addBackupOptions(exportCommand);
+
+// Add validation skip option
+exportCommand.option('--no-validate', 'Skip manifest validation before export');
 
 exportCommand.action(
   async (
@@ -68,6 +76,7 @@ exportCommand.action(
       force?: boolean;
       backup?: boolean;
       backupDir?: string;
+      validate?: boolean;
       listPlatforms?: boolean;
     }
   ) => {
@@ -76,27 +85,86 @@ exportCommand.action(
     // Handle --list-platforms
     if (options.listPlatforms) {
       const platforms = [
-        { name: 'kagent',       status: 'production', desc: 'kagent.dev Kubernetes CRD bundle (10+ files)' },
-        { name: 'langchain',    status: 'production', desc: 'LangChain Python + TypeScript agent package' },
-        { name: 'crewai',       status: 'production', desc: 'CrewAI multi-agent Python package' },
-        { name: 'temporal',     status: 'beta',       desc: 'Temporal workflow configuration' },
-        { name: 'n8n',          status: 'beta',       desc: 'n8n workflow JSON export' },
-        { name: 'gitlab',       status: 'production', desc: 'GitLab CI/CD YAML configuration' },
-        { name: 'gitlab-agent', status: 'production', desc: 'GitLab Duo agent package (34 files)' },
-        { name: 'docker',       status: 'production', desc: 'Docker deployment package' },
-        { name: 'kubernetes',   status: 'production', desc: 'Kubernetes Kustomize structure' },
-        { name: 'npm',          status: 'production', desc: 'Installable npm package with optional Claude Skill' },
-        { name: 'drupal',       status: 'production', desc: 'Drupal manifest for ai_agents_ossa module' },
-        { name: 'agent-skills', status: 'production', desc: 'Agent Skills package (SKILL.md format)' },
+        {
+          name: 'kagent',
+          status: 'production',
+          desc: 'kagent.dev Kubernetes CRD bundle (10+ files)',
+        },
+        {
+          name: 'langchain',
+          status: 'production',
+          desc: 'LangChain Python + TypeScript agent package',
+        },
+        {
+          name: 'crewai',
+          status: 'production',
+          desc: 'CrewAI multi-agent Python package',
+        },
+        {
+          name: 'temporal',
+          status: 'beta',
+          desc: 'Temporal workflow configuration',
+        },
+        { name: 'n8n', status: 'beta', desc: 'n8n workflow JSON export' },
+        {
+          name: 'gitlab',
+          status: 'production',
+          desc: 'GitLab CI/CD YAML configuration',
+        },
+        {
+          name: 'gitlab-agent',
+          status: 'production',
+          desc: 'GitLab Duo agent package (34 files)',
+        },
+        {
+          name: 'docker',
+          status: 'production',
+          desc: 'Docker deployment package',
+        },
+        {
+          name: 'kubernetes',
+          status: 'production',
+          desc: 'Kubernetes Kustomize structure',
+        },
+        {
+          name: 'npm',
+          status: 'production',
+          desc: 'Installable npm package with optional Claude Skill',
+        },
+        {
+          name: 'drupal',
+          status: 'production',
+          desc: 'Drupal manifest for ai_agents_ossa module',
+        },
+        {
+          name: 'agent-skills',
+          status: 'production',
+          desc: 'Agent Skills package (SKILL.md format)',
+        },
       ];
 
-      console.log(useColor ? chalk.bold('\nOSSA Export Platforms\n') : '\nOSSA Export Platforms\n');
+      console.log(
+        useColor
+          ? chalk.bold('\nOSSA Export Platforms\n')
+          : '\nOSSA Export Platforms\n'
+      );
 
       for (const p of platforms) {
-        const statusColor = p.status === 'production' ? chalk.green : p.status === 'beta' ? chalk.yellow : chalk.red;
-        const statusLabel = useColor ? statusColor(`[${p.status}]`) : `[${p.status}]`;
-        const nameLabel = useColor ? chalk.cyan(p.name.padEnd(14)) : p.name.padEnd(14);
-        console.log(`  ${nameLabel} ${statusLabel.padEnd(useColor ? 30 : 14)} ${p.desc}`);
+        const statusColor =
+          p.status === 'production'
+            ? chalk.green
+            : p.status === 'beta'
+              ? chalk.yellow
+              : chalk.red;
+        const statusLabel = useColor
+          ? statusColor(`[${p.status}]`)
+          : `[${p.status}]`;
+        const nameLabel = useColor
+          ? chalk.cyan(p.name.padEnd(14))
+          : p.name.padEnd(14);
+        console.log(
+          `  ${nameLabel} ${statusLabel.padEnd(useColor ? 30 : 14)} ${p.desc}`
+        );
       }
 
       console.log('');
@@ -105,12 +173,22 @@ exportCommand.action(
 
     // Validate required args when not listing platforms
     if (!manifestPath) {
-      console.error(useColor ? chalk.red('Error: manifest path is required') : 'Error: manifest path is required');
+      console.error(
+        useColor
+          ? chalk.red('Error: manifest path is required')
+          : 'Error: manifest path is required'
+      );
       process.exit(1);
     }
 
     if (!options.platform) {
-      console.error(useColor ? chalk.red('Error: --platform is required. Use --list-platforms to see available platforms.') : 'Error: --platform is required');
+      console.error(
+        useColor
+          ? chalk.red(
+              'Error: --platform is required. Use --list-platforms to see available platforms.'
+            )
+          : 'Error: --platform is required'
+      );
       process.exit(1);
     }
 
@@ -223,10 +301,7 @@ exportCommand.action(
             );
 
             // Write README
-            fs.writeFileSync(
-              path.join(outputDir, 'README.md'),
-              bundle.readme
-            );
+            fs.writeFileSync(path.join(outputDir, 'README.md'), bundle.readme);
 
             // Write source OSSA manifest for provenance
             fs.writeFileSync(
@@ -234,7 +309,9 @@ exportCommand.action(
               yaml.stringify(manifest)
             );
 
-            logSuccess(`\nkagent.dev manifest bundle exported to: ${outputDir}`);
+            logSuccess(
+              `\nkagent.dev manifest bundle exported to: ${outputDir}`
+            );
             const fileCount = 10 + (bundle.horizontalPodAutoscaler ? 1 : 0);
             log(`  ${fileCount} files generated`);
           } else {
@@ -271,10 +348,14 @@ exportCommand.action(
               logVerbose(`  Created: ${file.path}`);
             }
 
-            logSuccess(`\nLangChain package exported to: ${langchainOutputDir}`);
+            logSuccess(
+              `\nLangChain package exported to: ${langchainOutputDir}`
+            );
             log(`  ${langchainResult.files.length} files generated`);
           } else {
-            log(`\nDRY RUN: Would generate ${langchainResult.files.length} files in: ${langchainOutputDir}`);
+            log(
+              `\nDRY RUN: Would generate ${langchainResult.files.length} files in: ${langchainOutputDir}`
+            );
             logVerbose('Files to be created:');
             for (const file of langchainResult.files) {
               logVerbose(`  - ${file.path} (${file.content.length} bytes)`);
@@ -298,8 +379,7 @@ exportCommand.action(
           }
 
           const crewaiOutputDir =
-            options.output ||
-            `./crewai-${manifest.metadata?.name || 'agent'}`;
+            options.output || `./crewai-${manifest.metadata?.name || 'agent'}`;
 
           if (!options.dryRun) {
             fs.mkdirSync(crewaiOutputDir, { recursive: true });
@@ -323,7 +403,9 @@ exportCommand.action(
             log('  - tests/ (test suite)');
             log('  - README.md, DEPLOYMENT.md');
           } else {
-            log(`\nDRY RUN: Would generate ${crewaiResult.files.length} files in: ${crewaiOutputDir}`);
+            log(
+              `\nDRY RUN: Would generate ${crewaiResult.files.length} files in: ${crewaiOutputDir}`
+            );
             logVerbose('Files to be created:');
             for (const file of crewaiResult.files) {
               logVerbose(`  - ${file.path} (${file.content.length} bytes)`);
@@ -363,7 +445,9 @@ exportCommand.action(
         }
 
         case 'gitlab-agent': {
-          log('Generating GitLab Duo agent package (triggers, flows, routers, MCP)...');
+          log(
+            'Generating GitLab Duo agent package (triggers, flows, routers, MCP)...'
+          );
 
           // Use GitLabDuoPackageGenerator for complete 34-file package
           const agentName = manifest.metadata?.name || 'agent';
@@ -375,15 +459,22 @@ exportCommand.action(
           });
 
           if (!result.success) {
-            throw new Error(result.errors?.join(', ') || 'GitLab Duo package generation failed');
+            throw new Error(
+              result.errors?.join(', ') ||
+                'GitLab Duo package generation failed'
+            );
           }
 
           if (!options.dryRun) {
-            logSuccess(`✓ GitLab Duo package exported to: ${result.packagePath}`);
+            logSuccess(
+              `✓ GitLab Duo package exported to: ${result.packagePath}`
+            );
             log(`  ${result.generatedFiles?.length || 0} files generated`);
 
             log('\n📦 Package includes:');
-            log('  - 7 triggers (mention, assign, reviewer, schedule, pipeline, webhook, file_pattern)');
+            log(
+              '  - 7 triggers (mention, assign, reviewer, schedule, pipeline, webhook, file_pattern)'
+            );
             log('  - 4 flows (main, error, monitor, governance)');
             log('  - 2 routers (conditional, multi-agent orchestration)');
             log('  - MCP server configuration');
@@ -431,7 +522,9 @@ exportCommand.action(
             logSuccess(`\nDocker package exported to: ${dockerOutputDir}`);
             log(`  ${dockerResult.files.length} files generated`);
           } else {
-            log(`\nDRY RUN: Would generate ${dockerResult.files.length} files in: ${dockerOutputDir}`);
+            log(
+              `\nDRY RUN: Would generate ${dockerResult.files.length} files in: ${dockerOutputDir}`
+            );
             logVerbose('Files to be created:');
             for (const file of dockerResult.files) {
               logVerbose(`  - ${file.path} (${file.content.length} bytes)`);
@@ -445,14 +538,18 @@ exportCommand.action(
           log('Generating Kubernetes Kustomize deployment structure...');
 
           const k8sGenerator = new KubernetesManifestGenerator();
-          const kustomizeStructure = await k8sGenerator.generateKustomizeStructure(manifest);
+          const kustomizeStructure =
+            await k8sGenerator.generateKustomizeStructure(manifest);
 
           const agentName = manifest.metadata?.name || 'agent';
           const k8sOutputDir = options.output || `./${agentName}-kubernetes`;
 
           if (!options.dryRun) {
             // Use the generator's built-in write method for proper Kustomize structure
-            await k8sGenerator.writeKustomizeStructure(kustomizeStructure, k8sOutputDir);
+            await k8sGenerator.writeKustomizeStructure(
+              kustomizeStructure,
+              k8sOutputDir
+            );
 
             // Write source OSSA manifest for provenance
             fs.writeFileSync(
@@ -460,19 +557,29 @@ exportCommand.action(
               yaml.stringify(manifest)
             );
 
-            logSuccess(`\nKubernetes Kustomize package exported to: ${k8sOutputDir}`);
+            logSuccess(
+              `\nKubernetes Kustomize package exported to: ${k8sOutputDir}`
+            );
             log('  Package includes:');
-            log('  - base/ (deployment, service, configmap, secret, kustomization)');
+            log(
+              '  - base/ (deployment, service, configmap, secret, kustomization)'
+            );
             log('  - rbac/ (serviceaccount, role, rolebinding)');
             log('  - overlays/dev/ (development patches)');
             log('  - overlays/staging/ (staging patches)');
-            log('  - overlays/production/ (production patches, HPA, NetworkPolicy)');
+            log(
+              '  - overlays/production/ (production patches, HPA, NetworkPolicy)'
+            );
             log('  - monitoring/ (ServiceMonitor, Grafana dashboard)');
             log('  - examples/ (deployment, customization)');
             log('  - docs/ (README, DEPLOYMENT)');
           } else {
-            log(`\nDRY RUN: Would generate Kustomize structure in: ${k8sOutputDir}`);
-            log('  Directories: base/, rbac/, overlays/{dev,staging,production}/, monitoring/, examples/, docs/');
+            log(
+              `\nDRY RUN: Would generate Kustomize structure in: ${k8sOutputDir}`
+            );
+            log(
+              '  Directories: base/, rbac/, overlays/{dev,staging,production}/, monitoring/, examples/, docs/'
+            );
           }
 
           return;
@@ -588,7 +695,8 @@ exportCommand.action(
           log('Generating Agent Skills package (SKILL.md format)...');
 
           // Use AgentSkillsExporter for complete skills package
-          const { AgentSkillsExporter } = await import('../../adapters/agent-skills/exporter.js');
+          const { AgentSkillsExporter } =
+            await import('../../adapters/agent-skills/exporter.js');
           const exporter = new AgentSkillsExporter();
           const result = await exporter.export(manifest, {
             includeScripts: true,
@@ -625,11 +733,15 @@ exportCommand.action(
             log('\n📦 Usage instructions:');
             log(`  1. Review SKILL.md in ${outputDir}/`);
             log(`  2. Use with Claude Code: claude --skill ${skillName}`);
-            log(`  3. Share on GitHub: https://github.com/anthropics/awesome-agent-skills`);
-            log(`  4. Compatible with 25+ AI tools (OpenAI Codex, Cursor, etc.)`);
+            log(
+              `  3. Share on GitHub: https://github.com/anthropics/awesome-agent-skills`
+            );
+            log(
+              `  4. Compatible with 25+ AI tools (OpenAI Codex, Cursor, etc.)`
+            );
           } else {
             log('DRY RUN: Would generate:');
-            result.files.forEach(file => log(`  - ${file.path}`));
+            result.files.forEach((file) => log(`  - ${file.path}`));
           }
 
           return; // Early return to skip single-file write

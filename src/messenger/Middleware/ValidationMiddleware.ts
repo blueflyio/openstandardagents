@@ -24,7 +24,10 @@ export class ValidationMiddleware {
   /**
    * Process message through middleware
    */
-  public async handle(envelope: MessageEnvelope, stack: MiddlewareStack): Promise<MessageEnvelope> {
+  public async handle(
+    envelope: MessageEnvelope,
+    stack: MiddlewareStack
+  ): Promise<MessageEnvelope> {
     const message = envelope.message;
 
     // Validate AgentExecutionMessage
@@ -44,7 +47,9 @@ export class ValidationMiddleware {
   /**
    * Check if message is AgentExecutionMessage
    */
-  private isAgentExecutionMessage(message: unknown): message is AgentExecutionMessage {
+  private isAgentExecutionMessage(
+    message: unknown
+  ): message is AgentExecutionMessage {
     return (
       typeof message === 'object' &&
       message !== null &&
@@ -73,7 +78,9 @@ export class ValidationMiddleware {
     const input = message.getInput();
 
     if (!agentId || typeof agentId !== 'string' || agentId.trim() === '') {
-      throw new Error('AgentExecutionMessage: agentId must be a non-empty string');
+      throw new Error(
+        'AgentExecutionMessage: agentId must be a non-empty string'
+      );
     }
 
     if (!input || typeof input !== 'object') {
@@ -81,12 +88,24 @@ export class ValidationMiddleware {
     }
 
     const context = message.getContext();
-    if (context.timeout && (typeof context.timeout !== 'number' || context.timeout < 0)) {
-      throw new Error('AgentExecutionMessage: timeout must be a positive number');
+    if (
+      context.timeout &&
+      (typeof context.timeout !== 'number' || context.timeout < 0)
+    ) {
+      throw new Error(
+        'AgentExecutionMessage: timeout must be a positive number'
+      );
     }
 
-    if (context.priority && (typeof context.priority !== 'number' || context.priority < 1 || context.priority > 10)) {
-      throw new Error('AgentExecutionMessage: priority must be between 1 and 10');
+    if (
+      context.priority &&
+      (typeof context.priority !== 'number' ||
+        context.priority < 1 ||
+        context.priority > 10)
+    ) {
+      throw new Error(
+        'AgentExecutionMessage: priority must be between 1 and 10'
+      );
     }
   }
 
@@ -103,7 +122,9 @@ export class ValidationMiddleware {
 
     for (const agentId of agentIds) {
       if (!agentId || typeof agentId !== 'string' || agentId.trim() === '') {
-        throw new Error('AgentBatchMessage: all agentIds must be non-empty strings');
+        throw new Error(
+          'AgentBatchMessage: all agentIds must be non-empty strings'
+        );
       }
     }
 
@@ -113,11 +134,18 @@ export class ValidationMiddleware {
 
     const options = message.getOptions();
     if (options.mode !== 'parallel' && options.mode !== 'sequential') {
-      throw new Error('AgentBatchMessage: mode must be "parallel" or "sequential"');
+      throw new Error(
+        'AgentBatchMessage: mode must be "parallel" or "sequential"'
+      );
     }
 
-    if (options.maxParallel && (typeof options.maxParallel !== 'number' || options.maxParallel < 1)) {
-      throw new Error('AgentBatchMessage: maxParallel must be a positive number');
+    if (
+      options.maxParallel &&
+      (typeof options.maxParallel !== 'number' || options.maxParallel < 1)
+    ) {
+      throw new Error(
+        'AgentBatchMessage: maxParallel must be a positive number'
+      );
     }
   }
 }

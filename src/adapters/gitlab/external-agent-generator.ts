@@ -102,10 +102,7 @@ export class ExternalAgentGenerator {
   /**
    * Check if agent uses Node.js runtime
    */
-  private isNodeRuntime(
-    manifest: OssaAgent,
-    runtimeType?: string
-  ): boolean {
+  private isNodeRuntime(manifest: OssaAgent, runtimeType?: string): boolean {
     if (runtimeType === 'nodejs' || runtimeType === 'node') {
       return true;
     }
@@ -113,18 +110,14 @@ export class ExternalAgentGenerator {
     // Check tools for Node.js indicators
     const tools = manifest.spec?.tools || [];
     return tools.some(
-      (tool: { type?: string }) =>
-        tool.type === 'mcp' || tool.type === 'npm'
+      (tool: { type?: string }) => tool.type === 'mcp' || tool.type === 'npm'
     );
   }
 
   /**
    * Check if agent uses Python runtime
    */
-  private isPythonRuntime(
-    manifest: OssaAgent,
-    runtimeType?: string
-  ): boolean {
+  private isPythonRuntime(manifest: OssaAgent, runtimeType?: string): boolean {
     if (runtimeType === 'python' || runtimeType === 'py') {
       return true;
     }
@@ -149,17 +142,15 @@ export class ExternalAgentGenerator {
   /**
    * Check if agent uses Ruby runtime
    */
-  private isRubyRuntime(
-    manifest: OssaAgent,
-    runtimeType?: string
-  ): boolean {
+  private isRubyRuntime(manifest: OssaAgent, runtimeType?: string): boolean {
     if (runtimeType === 'ruby' || runtimeType === 'rb') {
       return true;
     }
 
     const tools = manifest.spec?.tools || [];
     return tools.some(
-      (tool: { type?: string }) => tool.type === 'gem' || tool.type === 'bundler'
+      (tool: { type?: string }) =>
+        tool.type === 'gem' || tool.type === 'bundler'
     );
   }
 
@@ -256,10 +247,7 @@ export class ExternalAgentGenerator {
   /**
    * Extract variables from workflow step
    */
-  private extractStepVariables(
-    step: unknown,
-    variables: Set<string>
-  ): void {
+  private extractStepVariables(step: unknown, variables: Set<string>): void {
     if (!step || typeof step !== 'object') return;
 
     const stepObj = step as Record<string, unknown>;
@@ -314,10 +302,7 @@ export class ExternalAgentGenerator {
   /**
    * Generate external agent YAML
    */
-  generateYAML(
-    config: ExternalAgentConfig,
-    manifest: OssaAgent
-  ): string {
+  generateYAML(config: ExternalAgentConfig, manifest: OssaAgent): string {
     const name = manifest.metadata?.name || 'agent';
     const description =
       manifest.metadata?.description || 'External agent for GitLab Duo';
@@ -327,10 +312,16 @@ export class ExternalAgentGenerator {
     // Header comment
     lines.push('# GitLab Duo External Agent Configuration');
     lines.push(`# Agent: ${name}`);
-    lines.push(`# Generated from OSSA manifest v${manifest.metadata?.version || '1.0.0'}`);
+    lines.push(
+      `# Generated from OSSA manifest v${manifest.metadata?.version || '1.0.0'}`
+    );
     lines.push('');
-    lines.push('# External agents run in GitLab CI/CD pipelines and use AI Gateway');
-    lines.push('# for model access. This YAML defines the agent execution environment.');
+    lines.push(
+      '# External agents run in GitLab CI/CD pipelines and use AI Gateway'
+    );
+    lines.push(
+      '# for model access. This YAML defines the agent execution environment.'
+    );
     lines.push('');
 
     // Agent metadata
@@ -418,11 +409,11 @@ export class ExternalAgentGenerator {
 
     // Usage instructions
     lines.push('# Usage:');
-    lines.push('# 1. Register agent: glab duo agent register external-agent.yaml');
-    lines.push('# 2. Test agent: glab duo agent test ' + name);
     lines.push(
-      '# 3. Deploy agent: Agent runs in GitLab CI/CD when triggered'
+      '# 1. Register agent: glab duo agent register external-agent.yaml'
     );
+    lines.push('# 2. Test agent: glab duo agent test ' + name);
+    lines.push('# 3. Deploy agent: Agent runs in GitLab CI/CD when triggered');
     lines.push('');
     lines.push('# Documentation:');
     lines.push(

@@ -23,7 +23,13 @@ export interface ValidatorManifest {
     version?: string;
     description?: string;
     agentType: 'validator';
-    agentKind: 'schema' | 'semantic' | 'platform' | 'runtime' | 'security' | 'performance';
+    agentKind:
+      | 'schema'
+      | 'semantic'
+      | 'platform'
+      | 'runtime'
+      | 'security'
+      | 'performance';
     tags?: string[];
   };
   spec: {
@@ -296,10 +302,7 @@ export class ValidatorRegistry {
   /**
    * Get value by JSON path
    */
-  private getValueByPath(
-    obj: Record<string, unknown>,
-    path: string
-  ): unknown {
+  private getValueByPath(obj: Record<string, unknown>, path: string): unknown {
     const parts = path.split('.');
     let current: unknown = obj;
 

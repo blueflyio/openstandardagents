@@ -249,7 +249,8 @@ export class GitLabDuoTriggerGenerator {
       schedule: 'Cron-based scheduled execution for recurring tasks',
       pipeline: 'Triggered by CI/CD pipeline stage completion events',
       webhook: 'Triggered by external HTTP webhook requests',
-      file_pattern: 'Triggered when files matching specific patterns are changed',
+      file_pattern:
+        'Triggered when files matching specific patterns are changed',
     };
     return descriptions[type];
   }
@@ -257,7 +258,10 @@ export class GitLabDuoTriggerGenerator {
   /**
    * Generate trigger from type string
    */
-  private generateTriggerFromType(manifest: OssaAgent, type: string): TriggerConfig | null {
+  private generateTriggerFromType(
+    manifest: OssaAgent,
+    type: string
+  ): TriggerConfig | null {
     const normalized = type.toLowerCase().replace(/[_-]/g, '');
 
     switch (normalized) {
@@ -295,7 +299,10 @@ export class GitLabDuoTriggerGenerator {
 
     return {
       type: 'mention',
-      patterns: [`@${this.sanitizeName(agentName)}`, `@agent-${this.sanitizeName(agentName)}`],
+      patterns: [
+        `@${this.sanitizeName(agentName)}`,
+        `@agent-${this.sanitizeName(agentName)}`,
+      ],
       contexts: ['issue', 'merge_request', 'comment'],
       permissions: {
         min_role: 'reporter',
@@ -328,7 +335,9 @@ export class GitLabDuoTriggerGenerator {
   /**
    * Generate assign reviewer trigger (MR reviewer assignment)
    */
-  private generateAssignReviewerTrigger(manifest: OssaAgent): AssignReviewerTrigger {
+  private generateAssignReviewerTrigger(
+    manifest: OssaAgent
+  ): AssignReviewerTrigger {
     const spec = manifest.spec as Record<string, unknown>;
     const automation = spec.automation as
       | {
@@ -388,7 +397,11 @@ export class GitLabDuoTriggerGenerator {
     return {
       type: 'pipeline',
       stages: automation?.stages || ['test', 'deploy'],
-      on_status: (automation?.onStatus as ('success' | 'failed' | 'manual')[]) || ['success'],
+      on_status: (automation?.onStatus as (
+        | 'success'
+        | 'failed'
+        | 'manual'
+      )[]) || ['success'],
       conditions: {
         branch: automation?.branch || 'main',
       },
@@ -431,10 +444,11 @@ export class GitLabDuoTriggerGenerator {
     return {
       type: 'file_pattern',
       patterns: automation?.filePatterns || ['**/*.ts', '**/*.js'],
-      events: (automation?.events as ('created' | 'modified' | 'deleted')[]) || [
-        'created',
-        'modified',
-      ],
+      events: (automation?.events as (
+        | 'created'
+        | 'modified'
+        | 'deleted'
+      )[]) || ['created', 'modified'],
       conditions: {
         branch: automation?.branch || 'main',
         exclude_patterns: ['node_modules/**', 'dist/**'],

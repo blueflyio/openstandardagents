@@ -33,18 +33,14 @@ export const generateGaidCommand = new Command('generate-gaid')
     '-o, --org <organization>',
     'Organization name (required for GAID generation)'
   )
-  .option(
-    '--dry-run',
-    'Preview GAID without updating manifest file',
-    false
-  )
+  .option('--dry-run', 'Preview GAID without updating manifest file', false)
   .description(
     'Generate Global Agent Identifier (GAID) for OSSA agent manifest\n\n' +
-    'GAID Format: did:ossa:{org}:{uuid}\n' +
-    'UUID: Deterministic v5 UUID generated from org + agent name\n\n' +
-    'Example:\n' +
-    '  ossa generate-gaid agent.ossa.yaml --org bluefly\n' +
-    '  ossa generate-gaid agent.ossa.yaml --org acme --dry-run'
+      'GAID Format: did:ossa:{org}:{uuid}\n' +
+      'UUID: Deterministic v5 UUID generated from org + agent name\n\n' +
+      'Example:\n' +
+      '  ossa generate-gaid agent.ossa.yaml --org bluefly\n' +
+      '  ossa generate-gaid agent.ossa.yaml --org acme --dry-run'
   );
 
 // Apply production-grade standard options
@@ -83,23 +79,28 @@ generateGaidCommand.action(
       // Extract agent name from manifest
       const agentName = manifest.metadata?.name || manifest.agent?.name;
       if (!agentName) {
-        const errMsg = 'Error: Manifest must have metadata.name or agent.name field';
+        const errMsg =
+          'Error: Manifest must have metadata.name or agent.name field';
         console.error(useColor ? chalk.red(errMsg) : errMsg);
         process.exit(ExitCode.GENERAL_ERROR);
       }
 
       // Get organization from option or manifest
-      const org = options.org ||
-                  manifest.metadata?.annotations?.['ossa.org/organization'] ||
-                  (manifest.agent as any)?.author?.organization;
+      const org =
+        options.org ||
+        manifest.metadata?.annotations?.['ossa.org/organization'] ||
+        (manifest.agent as any)?.author?.organization;
 
       if (!org) {
-        const errMsg = 'Error: Organization must be specified via --org option or manifest metadata';
+        const errMsg =
+          'Error: Organization must be specified via --org option or manifest metadata';
         console.error(useColor ? chalk.red(errMsg) : errMsg);
         console.error('');
         console.error('Specify organization in one of these ways:');
         console.error('  1. Command option: --org bluefly');
-        console.error('  2. Manifest annotation: metadata.annotations["ossa.org/organization"]');
+        console.error(
+          '  2. Manifest annotation: metadata.annotations["ossa.org/organization"]'
+        );
         console.error('  3. Legacy format: agent.author.organization');
         process.exit(ExitCode.GENERAL_ERROR);
       }
@@ -113,15 +114,21 @@ generateGaidCommand.action(
 
       // Display GAID
       if (options.json) {
-        console.log(JSON.stringify({
-          gaid,
-          organization: org,
-          agentName,
-          seed,
-          uuid,
-          manifestPath,
-          dryRun: options.dryRun,
-        }, null, 2));
+        console.log(
+          JSON.stringify(
+            {
+              gaid,
+              organization: org,
+              agentName,
+              seed,
+              uuid,
+              manifestPath,
+              dryRun: options.dryRun,
+            },
+            null,
+            2
+          )
+        );
       } else {
         log('\n✓ Generated GAID', chalk.green);
         log(`  Organization: ${useColor ? chalk.cyan(org) : org}`);
@@ -158,9 +165,15 @@ generateGaidCommand.action(
 
         if (!options.json) {
           log(`✓ Updated manifest: ${manifestPath}`, chalk.green);
-          log(`  Added: metadata.annotations["ossa.org/gaid"] = "${gaid}"`, chalk.gray);
+          log(
+            `  Added: metadata.annotations["ossa.org/gaid"] = "${gaid}"`,
+            chalk.gray
+          );
           if (options.org) {
-            log(`  Added: metadata.annotations["ossa.org/organization"] = "${org}"`, chalk.gray);
+            log(
+              `  Added: metadata.annotations["ossa.org/organization"] = "${org}"`,
+              chalk.gray
+            );
           }
         }
       } else {

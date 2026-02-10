@@ -118,7 +118,7 @@ export class KubernetesManifestGenerator {
         name,
         labels,
         annotations: {
-          'description': manifest.metadata?.description || '',
+          description: manifest.metadata?.description || '',
           'ossa.ai/category':
             (manifest.metadata?.labels as Record<string, string>)?.category ||
             'general',
@@ -639,7 +639,8 @@ LLM_API_KEY=your-llm-api-key-here
               {
                 namespaceSelector: {
                   matchLabels: {
-                    'kubernetes.io/metadata.name': config.namespace || 'default',
+                    'kubernetes.io/metadata.name':
+                      config.namespace || 'default',
                   },
                 },
               },
@@ -815,11 +816,7 @@ LLM_API_KEY=your-llm-api-key-here
     return {
       apiVersion: 'kustomize.config.k8s.io/v1beta1',
       kind: 'Kustomization',
-      resources: [
-        'serviceaccount.yaml',
-        'role.yaml',
-        'rolebinding.yaml',
-      ],
+      resources: ['serviceaccount.yaml', 'role.yaml', 'rolebinding.yaml'],
       commonLabels: {
         'app.kubernetes.io/name': name,
       },
@@ -833,10 +830,7 @@ LLM_API_KEY=your-llm-api-key-here
     return {
       apiVersion: 'kustomize.config.k8s.io/v1beta1',
       kind: 'Kustomization',
-      resources: [
-        'servicemonitor.yaml',
-        'grafana-dashboard.yaml',
-      ],
+      resources: ['servicemonitor.yaml', 'grafana-dashboard.yaml'],
       commonLabels: {
         'app.kubernetes.io/name': name,
       },

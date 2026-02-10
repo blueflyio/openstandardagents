@@ -8,12 +8,19 @@
  * @since 0.5.0
  */
 
-import type { MessageEnvelope, MiddlewareStack } from './ValidationMiddleware.js';
+import type {
+  MessageEnvelope,
+  MiddlewareStack,
+} from './ValidationMiddleware.js';
 
 export interface LoggingMiddlewareDependencies {
   logger: {
     info(message: string, context?: Record<string, unknown>): void;
-    error(message: string, error?: Error, context?: Record<string, unknown>): void;
+    error(
+      message: string,
+      error?: Error,
+      context?: Record<string, unknown>
+    ): void;
     debug(message: string, context?: Record<string, unknown>): void;
   };
 }
@@ -24,7 +31,10 @@ export class LoggingMiddleware {
   /**
    * Process message through middleware
    */
-  public async handle(envelope: MessageEnvelope, stack: MiddlewareStack): Promise<MessageEnvelope> {
+  public async handle(
+    envelope: MessageEnvelope,
+    stack: MiddlewareStack
+  ): Promise<MessageEnvelope> {
     const messageType = this.getMessageType(envelope.message);
     const startTime = Date.now();
 
@@ -64,7 +74,11 @@ export class LoggingMiddleware {
     }
 
     // Try to get constructor name
-    if ('constructor' in message && message.constructor && 'name' in message.constructor) {
+    if (
+      'constructor' in message &&
+      message.constructor &&
+      'name' in message.constructor
+    ) {
       return message.constructor.name as string;
     }
 

@@ -25,7 +25,9 @@ describe('GitLab Duo Package Generator Integration', () => {
     await fs.rm(tempDir, { recursive: true, force: true });
   });
 
-  const createTestManifest = (overrides: Partial<OssaAgent> = {}): OssaAgent => ({
+  const createTestManifest = (
+    overrides: Partial<OssaAgent> = {}
+  ): OssaAgent => ({
     apiVersion: API_VERSION,
     kind: 'Agent',
     metadata: {
@@ -132,7 +134,10 @@ describe('GitLab Duo Package Generator Integration', () => {
 
       expect(result.success).toBe(true);
 
-      const flowPath = path.join(result.packagePath!, '.gitlab/duo/flows/main.yaml');
+      const flowPath = path.join(
+        result.packagePath!,
+        '.gitlab/duo/flows/main.yaml'
+      );
       const flowContent = await fs.readFile(flowPath, 'utf8');
 
       // Check YAML structure
@@ -153,7 +158,10 @@ describe('GitLab Duo Package Generator Integration', () => {
 
       expect(result.success).toBe(true);
 
-      const agentPath = path.join(result.packagePath!, '.gitlab/duo/agents/test-agent.yaml');
+      const agentPath = path.join(
+        result.packagePath!,
+        '.gitlab/duo/agents/test-agent.yaml'
+      );
       const agentContent = await fs.readFile(agentPath, 'utf8');
 
       // Check YAML structure
@@ -172,7 +180,10 @@ describe('GitLab Duo Package Generator Integration', () => {
 
       expect(result.success).toBe(true);
 
-      const agentsMdPath = path.join(result.packagePath!, '.gitlab/duo/AGENTS.md');
+      const agentsMdPath = path.join(
+        result.packagePath!,
+        '.gitlab/duo/AGENTS.md'
+      );
       const agentsMdContent = await fs.readFile(agentsMdPath, 'utf8');
 
       // Check markdown structure
@@ -377,7 +388,10 @@ describe('GitLab Duo Package Generator Integration', () => {
 
       expect(result.success).toBe(true);
 
-      const flowPath = path.join(result.packagePath!, '.gitlab/duo/flows/main.yaml');
+      const flowPath = path.join(
+        result.packagePath!,
+        '.gitlab/duo/flows/main.yaml'
+      );
       const flowContent = await fs.readFile(flowPath, 'utf8');
 
       // Should use ambient environment for autonomous agents
@@ -406,7 +420,10 @@ describe('GitLab Duo Package Generator Integration', () => {
 
       expect(result.success).toBe(true);
 
-      const flowPath = path.join(result.packagePath!, '.gitlab/duo/flows/main.yaml');
+      const flowPath = path.join(
+        result.packagePath!,
+        '.gitlab/duo/flows/main.yaml'
+      );
       const flowContent = await fs.readFile(flowPath, 'utf8');
 
       // Should use chat environment for supervised agents
@@ -436,7 +453,10 @@ describe('GitLab Duo Package Generator Integration', () => {
 
       expect(result.success).toBe(true);
 
-      const agentPath = path.join(result.packagePath!, '.gitlab/duo/agents/test-agent.yaml');
+      const agentPath = path.join(
+        result.packagePath!,
+        '.gitlab/duo/agents/test-agent.yaml'
+      );
       const agentContent = await fs.readFile(agentPath, 'utf8');
 
       expect(agentContent).toContain('python:3.12-slim');
@@ -480,7 +500,10 @@ describe('GitLab Duo Package Generator Integration', () => {
 
       expect(result.success).toBe(true);
 
-      const agentsMdPath = path.join(result.packagePath!, '.gitlab/duo/AGENTS.md');
+      const agentsMdPath = path.join(
+        result.packagePath!,
+        '.gitlab/duo/AGENTS.md'
+      );
       const agentsMdContent = await fs.readFile(agentsMdPath, 'utf8');
 
       expect(agentsMdContent).toContain('Read file contents from repository');
@@ -507,7 +530,10 @@ describe('GitLab Duo Package Generator Integration', () => {
 
       expect(result.success).toBe(true);
 
-      const agentsMdPath = path.join(result.packagePath!, '.gitlab/duo/AGENTS.md');
+      const agentsMdPath = path.join(
+        result.packagePath!,
+        '.gitlab/duo/AGENTS.md'
+      );
       const agentsMdContent = await fs.readFile(agentsMdPath, 'utf8');
 
       expect(agentsMdContent).toContain('anthropic');

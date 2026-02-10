@@ -71,7 +71,11 @@ export class AgentSkillsExporter {
       });
 
       // Generate scripts directory if tools exist
-      if (options.includeScripts && manifest.spec?.tools && manifest.spec.tools.length > 0) {
+      if (
+        options.includeScripts &&
+        manifest.spec?.tools &&
+        manifest.spec.tools.length > 0
+      ) {
         const setupScript = this.generateSetupScript(manifest);
         files.push({
           path: 'scripts/setup.sh',
@@ -80,7 +84,10 @@ export class AgentSkillsExporter {
       }
 
       // Generate references if knowledge sources exist
-      if (options.includeReferences && (manifest.spec as any)?.knowledge_sources) {
+      if (
+        options.includeReferences &&
+        (manifest.spec as any)?.knowledge_sources
+      ) {
         const references = this.generateReferences(manifest);
         files.push({
           path: 'references/knowledge-sources.md',
@@ -293,13 +300,19 @@ echo "✅ Setup complete!"
 
     return `# Knowledge Sources
 
-${knowledgeSources.map((source: any) => `
+${
+  knowledgeSources
+    .map(
+      (source: any) => `
 ## ${source.name || 'Unnamed Source'}
 
 - **Type:** ${source.type || 'Not specified'}
 - **Location:** ${source.location || 'Not specified'}
 - **Description:** ${source.description || 'No description'}
-`).join('\n') || 'No knowledge sources configured'}
+`
+    )
+    .join('\n') || 'No knowledge sources configured'
+}
 `;
   }
 
@@ -332,7 +345,8 @@ ${knowledgeSources.map((source: any) => `
     if (spec?.llm?.provider) tags.push(spec.llm.provider);
     if (spec?.type?.agent_type) tags.push(spec.type.agent_type);
     if (spec?.taxonomy?.domain) tags.push(spec.taxonomy.domain);
-    if (spec?.taxonomy?.cross_cutting) tags.push(...spec.taxonomy.cross_cutting);
+    if (spec?.taxonomy?.cross_cutting)
+      tags.push(...spec.taxonomy.cross_cutting);
     if (spec?.messaging?.enabled) tags.push('a2a', 'messaging');
 
     return tags;
@@ -390,13 +404,17 @@ ${knowledgeSources.map((source: any) => `
       return '*No tools configured*';
     }
 
-    return tools.map((tool: any) => `
+    return tools
+      .map(
+        (tool: any) => `
 ### ${tool.name || 'Unnamed Tool'}
 
 ${tool.description || 'No description'}
 
 ${tool.capabilities ? `**Capabilities:** ${tool.capabilities.join(', ')}` : ''}
-`).join('\n');
+`
+      )
+      .join('\n');
   }
 
   /**
@@ -451,11 +469,15 @@ claude --skill ${manifest.metadata?.name || 'skill-name'} --tools read,write "Yo
     const limitations: string[] = [];
 
     if (spec?.constraints?.max_execution_time_seconds) {
-      limitations.push(`- Maximum execution time: ${spec.constraints.max_execution_time_seconds} seconds`);
+      limitations.push(
+        `- Maximum execution time: ${spec.constraints.max_execution_time_seconds} seconds`
+      );
     }
 
     if (spec?.constraints?.max_memory_mb) {
-      limitations.push(`- Maximum memory: ${spec.constraints.max_memory_mb} MB`);
+      limitations.push(
+        `- Maximum memory: ${spec.constraints.max_memory_mb} MB`
+      );
     }
 
     if (spec?.lifecycle?.max_turns) {
@@ -511,7 +533,8 @@ claude --skill ${manifest.metadata?.name || 'skill-name'} --tools read,write "Yo
     }
 
     if (spec?.resources) {
-      if (spec.resources.memory) requirements.push(`- Memory: ${spec.resources.memory}`);
+      if (spec.resources.memory)
+        requirements.push(`- Memory: ${spec.resources.memory}`);
       if (spec.resources.cpu) requirements.push(`- CPU: ${spec.resources.cpu}`);
       if (spec.resources.gpu) requirements.push(`- GPU: ${spec.resources.gpu}`);
     }

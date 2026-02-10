@@ -250,7 +250,9 @@ skillsCommandGroup
           console.log(chalk.gray(`   Source: ${skill.sourceUrl}`));
           if (skill.triggers.length > 0) {
             console.log(
-              chalk.cyan(`   Triggers: ${skill.triggers.slice(0, 3).join(', ')}`)
+              chalk.cyan(
+                `   Triggers: ${skill.triggers.slice(0, 3).join(', ')}`
+              )
             );
           }
           if (skill.installCommand) {
@@ -260,9 +262,7 @@ skillsCommandGroup
         });
 
         console.log(
-          chalk.gray(
-            `\nIndex location: ${researchService.getIndexPath()}`
-          )
+          chalk.gray(`\nIndex location: ${researchService.getIndexPath()}`)
         );
       } catch (error) {
         console.error(chalk.red('✗ Research failed'));
@@ -280,9 +280,16 @@ skillsCommandGroup
   .command('generate-enhanced')
   .alias('gen')
   .argument('<input-path>', 'Path to OSSA manifest, Oracle spec, or AGENTS.md')
-  .option('--format <format>', 'Input format: ossa, oracle, agents-md (auto-detect if not specified)')
+  .option(
+    '--format <format>',
+    'Input format: ossa, oracle, agents-md (auto-detect if not specified)'
+  )
   .option('--output <path>', 'Output directory', './generated-skill')
-  .option('--output-format <format>', 'Output format: claude-skill, npm-package', 'claude-skill')
+  .option(
+    '--output-format <format>',
+    'Output format: claude-skill, npm-package',
+    'claude-skill'
+  )
   .option('--dry-run', 'Preview without writing files')
   .description('Generate Claude Skill from various agent specification formats')
   .action(
@@ -337,9 +344,7 @@ skillsCommandGroup
         if (!options.dryRun) {
           console.log(chalk.gray('\n  Next steps:'));
           console.log(
-            chalk.gray(
-              `    ossa skills export ${result.outputPath} --install`
-            )
+            chalk.gray(`    ossa skills export ${result.outputPath} --install`)
           );
         }
       } catch (error) {
@@ -357,7 +362,11 @@ skillsCommandGroup
 skillsCommandGroup
   .command('export')
   .argument('<skill-path>', 'Path to Claude Skill directory or SKILL.md')
-  .option('--scope <scope>', 'npm scope (e.g., @claude-skills)', '@claude-skills')
+  .option(
+    '--scope <scope>',
+    'npm scope (e.g., @claude-skills)',
+    '@claude-skills'
+  )
   .option('--publish', 'Publish to npm registry (requires authentication)')
   .option('--dry-run', 'Preview without writing files')
   .option('--install', 'Install to ~/.claude/skills/ after export')
@@ -412,16 +421,10 @@ skillsCommandGroup
         if (!options.dryRun && !options.install) {
           console.log(chalk.gray('\n  Next steps:'));
           if (options.publish) {
-            console.log(
-              chalk.gray(`    npm publish ${result.outputPath}`)
-            );
+            console.log(chalk.gray(`    npm publish ${result.outputPath}`));
           } else {
-            console.log(
-              chalk.gray(`    cd ${result.outputPath} && npm link`)
-            );
-            console.log(
-              chalk.gray('    Or: npm install <path-to-package>')
-            );
+            console.log(chalk.gray(`    cd ${result.outputPath} && npm link`));
+            console.log(chalk.gray('    Or: npm install <path-to-package>'));
           }
         }
       } catch (error) {

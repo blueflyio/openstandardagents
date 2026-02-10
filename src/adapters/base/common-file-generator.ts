@@ -224,9 +224,7 @@ export function generatePackageJson(
   const pkg: Record<string, unknown> = {
     name,
     version: manifest.metadata?.version || '1.0.0',
-    description:
-      manifest.metadata?.description ||
-      `OSSA agent for ${platform}`,
+    description: manifest.metadata?.description || `OSSA agent for ${platform}`,
     type: options?.type ?? 'module',
     main: options?.main ?? 'index.js',
   };
@@ -260,11 +258,18 @@ export function generatePackageJson(
     pkg.devDependencies = devDeps;
   }
 
-  if (options?.peerDependencies && Object.keys(options.peerDependencies).length > 0) {
+  if (
+    options?.peerDependencies &&
+    Object.keys(options.peerDependencies).length > 0
+  ) {
     pkg.peerDependencies = options.peerDependencies;
   }
 
-  pkg.keywords = [...defaultKeywords, ...labels, ...(options?.extraKeywords || [])];
+  pkg.keywords = [
+    ...defaultKeywords,
+    ...labels,
+    ...(options?.extraKeywords || []),
+  ];
   pkg.license = manifest.metadata?.license || 'MIT';
 
   if (manifest.metadata?.author) {
@@ -453,7 +458,8 @@ export function generateReadme(
 ): string {
   const name = manifest.metadata?.name || 'OSSA Agent';
   const description =
-    manifest.metadata?.description || `${platform} agent generated from OSSA manifest`;
+    manifest.metadata?.description ||
+    `${platform} agent generated from OSSA manifest`;
   const role = manifest.spec?.role || 'AI Agent';
   const license = manifest.metadata?.license || 'MIT';
   const apiVersion = manifest.apiVersion?.split('/')[1] || 'v0.4.1';
@@ -480,9 +486,12 @@ export function generateReadme(
     toolsList: toolsList || undefined,
     llmProvider: llm?.provider as string | undefined,
     llmModel: llm?.model as string | undefined,
-    llmTemperature: llm?.temperature !== undefined ? String(llm.temperature) : undefined,
-    llmMaxTokens: llm?.maxTokens !== undefined ? String(llm.maxTokens) : undefined,
-    installCommand: sections?.installation || getDefaultInstallCommand(platform),
+    llmTemperature:
+      llm?.temperature !== undefined ? String(llm.temperature) : undefined,
+    llmMaxTokens:
+      llm?.maxTokens !== undefined ? String(llm.maxTokens) : undefined,
+    installCommand:
+      sections?.installation || getDefaultInstallCommand(platform),
     usageCode: sections?.usage || getDefaultUsage(platform, name),
   };
 

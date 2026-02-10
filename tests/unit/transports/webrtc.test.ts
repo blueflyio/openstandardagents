@@ -19,7 +19,8 @@ class MockRTCPeerConnection {
   private localDescription: RTCSessionDescriptionInit | null = null;
   private remoteDescription: RTCSessionDescriptionInit | null = null;
   private dataChannels: MockRTCDataChannel[] = [];
-  private pendingTimers: (NodeJS.Timeout | ReturnType<typeof setInterval>)[] = [];
+  private pendingTimers: (NodeJS.Timeout | ReturnType<typeof setInterval>)[] =
+    [];
 
   constructor(public config: RTCConfiguration) {}
 
@@ -109,7 +110,10 @@ class MockRTCPeerConnection {
       };
       // Check periodically or when connection state changes
       const checkInterval = setInterval(() => {
-        if (this.connectionState === 'connected' || this.connectionState === 'closed') {
+        if (
+          this.connectionState === 'connected' ||
+          this.connectionState === 'closed'
+        ) {
           if (this.connectionState === 'connected') {
             openWhenConnected();
           }

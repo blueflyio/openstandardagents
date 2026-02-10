@@ -16,10 +16,7 @@
 
 import * as yaml from 'yaml';
 import type { OssaAgent } from '../../types/index.js';
-import type {
-  ExportResult,
-  ExportFile,
-} from '../base/adapter.interface.js';
+import type { ExportResult, ExportFile } from '../base/adapter.interface.js';
 import type { DockerExportOptions } from './types.js';
 import {
   DockerfileGenerator,
@@ -86,7 +83,10 @@ export class DockerExporter {
       if (options.includeComposeProd !== false) {
         files.push({
           path: 'docker-compose.prod.yml',
-          content: this.composeGenerator.generateProduction([manifest], options),
+          content: this.composeGenerator.generateProduction(
+            [manifest],
+            options
+          ),
           type: 'config',
           language: 'yaml',
         });

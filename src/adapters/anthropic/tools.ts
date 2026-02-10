@@ -193,8 +193,7 @@ export class ToolMapper {
   }): Tool {
     const config = tool.config || {};
     const name = tool.name || 'unnamed_tool';
-    const description =
-      (config.description as string) || `Function: ${name}`;
+    const description = (config.description as string) || `Function: ${name}`;
     const inputSchema = (config.input_schema as Record<string, unknown>) || {
       type: 'object',
       properties: {},

@@ -8,7 +8,10 @@
  * @since 0.5.0
  */
 
-import type { MessageEnvelope, MiddlewareStack } from './ValidationMiddleware.js';
+import type {
+  MessageEnvelope,
+  MiddlewareStack,
+} from './ValidationMiddleware.js';
 import type { AgentExecutionMessage } from '../Message/AgentExecutionMessage.js';
 import type { AgentBatchMessage } from '../Message/AgentBatchMessage.js';
 
@@ -25,7 +28,10 @@ export class AuthenticationMiddleware {
   /**
    * Process message through middleware
    */
-  public async handle(envelope: MessageEnvelope, stack: MiddlewareStack): Promise<MessageEnvelope> {
+  public async handle(
+    envelope: MessageEnvelope,
+    stack: MiddlewareStack
+  ): Promise<MessageEnvelope> {
     const message = envelope.message;
 
     // Check if message requires authentication
@@ -43,8 +49,7 @@ export class AuthenticationMiddleware {
   private requiresAuthentication(message: unknown): boolean {
     // All agent execution messages require authentication
     return (
-      this.isAgentExecutionMessage(message) ||
-      this.isAgentBatchMessage(message)
+      this.isAgentExecutionMessage(message) || this.isAgentBatchMessage(message)
     );
   }
 
@@ -73,13 +78,17 @@ export class AuthenticationMiddleware {
 
     // Check execute agent permission
     if (!this.deps.currentUser.hasPermission('execute ossa agents')) {
-      throw new Error('Permission denied: User does not have permission to execute agents');
+      throw new Error(
+        'Permission denied: User does not have permission to execute agents'
+      );
     }
 
     // For batch messages, check batch permission
     if (this.isAgentBatchMessage(message)) {
       if (!this.deps.currentUser.hasPermission('execute ossa batch agents')) {
-        throw new Error('Permission denied: User does not have permission to execute batch agents');
+        throw new Error(
+          'Permission denied: User does not have permission to execute batch agents'
+        );
       }
     }
   }
@@ -87,7 +96,9 @@ export class AuthenticationMiddleware {
   /**
    * Check if message is AgentExecutionMessage
    */
-  private isAgentExecutionMessage(message: unknown): message is AgentExecutionMessage {
+  private isAgentExecutionMessage(
+    message: unknown
+  ): message is AgentExecutionMessage {
     return (
       typeof message === 'object' &&
       message !== null &&

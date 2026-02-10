@@ -84,7 +84,12 @@ export class CrewAIAdapter extends BaseAdapter {
 
       const customToolsCode = this.generateCustomToolsCode(manifest);
       files.push(
-        this.createFile('tools/custom_tools.py', customToolsCode, 'code', 'python')
+        this.createFile(
+          'tools/custom_tools.py',
+          customToolsCode,
+          'code',
+          'python'
+        )
       );
 
       // 4. crew/ directory - Crew setup and orchestration
@@ -100,30 +105,20 @@ export class CrewAIAdapter extends BaseAdapter {
 
       // 5. main.py - Entry point
       const mainCode = this.generateMainCode(manifest);
-      files.push(
-        this.createFile('main.py', mainCode, 'code', 'python')
-      );
+      files.push(this.createFile('main.py', mainCode, 'code', 'python'));
 
       // 6. Configuration files
       const requirements = this.generateRequirements();
-      files.push(
-        this.createFile('requirements.txt', requirements, 'config')
-      );
+      files.push(this.createFile('requirements.txt', requirements, 'config'));
 
       const envExample = this.generateEnvExample(manifest);
-      files.push(
-        this.createFile('.env.example', envExample, 'config')
-      );
+      files.push(this.createFile('.env.example', envExample, 'config'));
 
       const dockerignore = this.generateDockerignore();
-      files.push(
-        this.createFile('.dockerignore', dockerignore, 'config')
-      );
+      files.push(this.createFile('.dockerignore', dockerignore, 'config'));
 
       const gitignore = this.generateGitignore();
-      files.push(
-        this.createFile('.gitignore', gitignore, 'config')
-      );
+      files.push(this.createFile('.gitignore', gitignore, 'config'));
 
       // 7. Documentation
       const readme = this.generateReadme(manifest, config);
@@ -133,17 +128,34 @@ export class CrewAIAdapter extends BaseAdapter {
       files.push(this.createFile('DEPLOYMENT.md', deployment, 'documentation'));
 
       // Include source OSSA manifest for provenance
-      files.push(this.createFile('agent.ossa.yaml', yaml.stringify(manifest), 'config', 'yaml'));
+      files.push(
+        this.createFile(
+          'agent.ossa.yaml',
+          yaml.stringify(manifest),
+          'config',
+          'yaml'
+        )
+      );
 
       // 8. Examples
       const exampleUsage = this.generateExampleUsage(manifest);
       files.push(
-        this.createFile('examples/basic_usage.py', exampleUsage, 'code', 'python')
+        this.createFile(
+          'examples/basic_usage.py',
+          exampleUsage,
+          'code',
+          'python'
+        )
       );
 
       const exampleAsync = this.generateExampleAsync(manifest);
       files.push(
-        this.createFile('examples/async_usage.py', exampleAsync, 'code', 'python')
+        this.createFile(
+          'examples/async_usage.py',
+          exampleAsync,
+          'code',
+          'python'
+        )
       );
 
       // 9. Tests (if requested)
@@ -155,7 +167,12 @@ export class CrewAIAdapter extends BaseAdapter {
 
         const testToolsCode = this.generateTestToolsCode(manifest);
         files.push(
-          this.createFile('tests/test_tools.py', testToolsCode, 'test', 'python')
+          this.createFile(
+            'tests/test_tools.py',
+            testToolsCode,
+            'test',
+            'python'
+          )
         );
       }
 
@@ -352,7 +369,8 @@ ${docParams}
 `;
     });
 
-    const extraImports = allImports.size > 0 ? '\n' + Array.from(allImports).join('\n') : '';
+    const extraImports =
+      allImports.size > 0 ? '\n' + Array.from(allImports).join('\n') : '';
 
     return `"""
 CrewAI Tool Implementations
@@ -483,7 +501,8 @@ ${docParams}
 `;
     });
 
-    const extraImports = allImports.size > 0 ? '\n' + Array.from(allImports).join('\n') : '';
+    const extraImports =
+      allImports.size > 0 ? '\n' + Array.from(allImports).join('\n') : '';
 
     return `"""
 Custom Tool Implementations
@@ -501,7 +520,9 @@ ${toolDefs.join('\n\n')}
 
 
 # Add more custom tools as needed
-${tools.length === 0 ? `
+${
+  tools.length === 0
+    ? `
 @tool("example_tool")
 def example_tool(query: str) -> str:
     """
@@ -514,7 +535,9 @@ def example_tool(query: str) -> str:
         Tool result
     """
     raise NotImplementedError("Example tool requires implementation")
-` : ''}
+`
+    : ''
+}
 `;
   }
 
@@ -524,7 +547,8 @@ def example_tool(query: str) -> str:
   private generateMainCode(manifest: OssaAgent): string {
     const className = this.toPascalCase(manifest.metadata?.name || 'crew');
     const llmProvider = (manifest.spec?.llm as any)?.provider || 'openai';
-    const primaryApiKey = llmProvider === 'anthropic' ? 'ANTHROPIC_API_KEY' : 'OPENAI_API_KEY';
+    const primaryApiKey =
+      llmProvider === 'anthropic' ? 'ANTHROPIC_API_KEY' : 'OPENAI_API_KEY';
 
     return `#!/usr/bin/env python3
 """
@@ -614,8 +638,14 @@ langchain-community>=0.0.20
   private generateEnvExample(manifest: OssaAgent): string {
     const llmProvider = (manifest.spec?.llm as any)?.provider || 'openai';
 
-    const primaryKey = llmProvider === 'anthropic' ? 'ANTHROPIC_API_KEY=sk-ant-...' : 'OPENAI_API_KEY=sk-...';
-    const secondaryKey = llmProvider === 'anthropic' ? '# OPENAI_API_KEY=sk-...' : '# ANTHROPIC_API_KEY=sk-ant-...';
+    const primaryKey =
+      llmProvider === 'anthropic'
+        ? 'ANTHROPIC_API_KEY=sk-ant-...'
+        : 'OPENAI_API_KEY=sk-...';
+    const secondaryKey =
+      llmProvider === 'anthropic'
+        ? '# OPENAI_API_KEY=sk-...'
+        : '# ANTHROPIC_API_KEY=sk-ant-...';
 
     return `# ${manifest.metadata?.name || 'CrewAI Crew'} Environment Configuration
 
@@ -948,7 +978,9 @@ import pytest
 from tools.custom_tools import *
 
 
-${tools.map((t) => `
+${tools
+  .map(
+    (t) => `
 class Test${this.toPascalCase(t.name || 'Tool')}:
     """Test suite for ${t.name || 'tool'}"""
 
@@ -962,7 +994,9 @@ class Test${this.toPascalCase(t.name || 'Tool')}:
         """Test ${t.name || 'tool'} handles empty input"""
         result = ${t.name || 'tool'}("")
         assert result is not None
-`).join('\n')}
+`
+  )
+  .join('\n')}
 
 
 if __name__ == "__main__":
@@ -984,7 +1018,8 @@ if __name__ == "__main__":
    */
   private generateReadme(manifest: OssaAgent, config: any): string {
     const projectName = manifest.metadata?.name || 'crewai-crew';
-    const description = manifest.metadata?.description || 'CrewAI multi-agent crew';
+    const description =
+      manifest.metadata?.description || 'CrewAI multi-agent crew';
 
     return `# ${projectName}
 
@@ -1178,7 +1213,9 @@ ${projectName}/
 
 This crew consists of ${config.agents.length} specialized agent(s):
 
-${config.agents.map((a: any, i: number) => `
+${config.agents
+  .map(
+    (a: any, i: number) => `
 ### ${i + 1}. ${a.role}
 
 **Goal:** ${a.goal}
@@ -1189,25 +1226,35 @@ ${config.agents.map((a: any, i: number) => `
 - Utilizes custom tools for enhanced functionality
 - Collaborates with other agents in the crew
 - Produces structured outputs for downstream tasks
-`).join('\n')}
+`
+  )
+  .join('\n')}
 
 ## Tasks
 
 The crew executes ${config.tasks.length} task(s) in ${config.process} order:
 
-${config.tasks.map((t: any, i: number) => `
+${config.tasks
+  .map(
+    (t: any, i: number) => `
 ### Task ${i + 1}: ${t.description}
 
 - **Assigned Agent:** ${t.agent}
 - **Expected Output:** ${t.expected_output || 'Completed task result'}
 ${i < config.tasks.length - 1 ? '- **Flows to:** Task ' + (i + 2) : '- **Final Output:** Yes'}
-`).join('\n')}
+`
+  )
+  .join('\n')}
 
 ## Tools
 
 Custom tools are implemented in \`tools/custom_tools.py\`:
 
-${(manifest.spec?.tools || []).length > 0 ? (manifest.spec?.tools as any[]).map((t: any) => `
+${
+  (manifest.spec?.tools || []).length > 0
+    ? (manifest.spec?.tools as any[])
+        .map(
+          (t: any) => `
 ### ${t.name || 'Tool'}
 
 ${t.description || 'Custom tool implementation'}
@@ -1217,9 +1264,13 @@ from tools.custom_tools import ${t.name || 'tool'}
 
 result = ${t.name || 'tool'}("input data")
 \`\`\`
-`).join('\n') : `
+`
+        )
+        .join('\n')
+    : `
 No custom tools defined. Add tools in \`tools/custom_tools.py\`.
-`}
+`
+}
 
 ## Development
 
