@@ -75,7 +75,7 @@ export class AgentAuditService {
       path: scanPath,
       recursive = true,
       validationLevel = 'full',
-      specVersion = '0.3.5',
+      specVersion = '0.4.5',
       includeExamples = false,
     } = options;
 

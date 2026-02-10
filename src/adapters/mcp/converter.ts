@@ -15,9 +15,9 @@ export class MCPAdapter extends BaseAdapter {
   readonly platform = 'mcp';
   readonly displayName = 'MCP Server';
   readonly description = 'Export OSSA agents as Model Context Protocol servers';
-  readonly supportedVersions = ['{{VERSION}}', '0.3.6'];
+  readonly supportedVersions = ['0.3.6', '0.4.x', '0.4.5'];
   readonly version = '1.0.0';
-  readonly supportedOssaVersions = ['{{VERSION}}', '0.3.6'];
+  readonly supportedOssaVersions = ['0.3.6', '0.4.x', '0.4.5'];
   readonly outputFormat = ['typescript'];
 
   async export(

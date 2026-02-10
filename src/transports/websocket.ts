@@ -145,7 +145,7 @@ export class WebSocketTransport extends EventEmitter {
       url: config.url,
       agentId: config.agentId,
       capabilities: config.capabilities,
-      version: config.version || 'ossa/v0.3.0',
+      version: config.version || 'ossa/v0.4.5',
       auth: config.auth || {},
       keepalive: {
         pingInterval: config.keepalive?.pingInterval || 30000,

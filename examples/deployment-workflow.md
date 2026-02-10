@@ -18,7 +18,7 @@ End-to-end example of deploying an OSSA agent from development to production wit
 Create `customer-support-agent.ossa.yaml`:
 
 ```yaml
-apiVersion: ossa/v0.4.1
+apiVersion: ossa/v0.4.5
 kind: Agent
 metadata:
   name: customer-support-agent

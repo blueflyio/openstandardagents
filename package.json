@@ -63,7 +63,25 @@
       "require": "./dist/version-management/index.js"
     }
   },
-  "description": "OSSA - Open Standard for Software Agents. The OpenAPI for agents. A specification standard (not a framework) that defines contracts/metadata for production agent systems.",
+  "description": "OSSA - Open Standard for Software Agents. The OpenAPI for agents. Define once, export to Docker, Kubernetes, LangChain, CrewAI, Claude Skills, and 12+ platforms.",
+  "keywords": [
+    "ossa",
+    "agents",
+    "ai-agents",
+    "openapi",
+    "llm",
+    "specification",
+    "manifest",
+    "claude",
+    "langchain",
+    "crewai",
+    "kubernetes",
+    "mcp",
+    "agent-protocol",
+    "agent-skills"
+  ],
+  "author": "OSSA Contributors",
+  "license": "Apache-2.0",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -196,8 +214,6 @@
     "validation",
     "agent-generation"
   ],
-  "author": "OSSA Standards Team",
-  "license": "Apache-2.0",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.0",
     "@aws-sdk/client-bedrock-runtime": "^3.955.0",

@@ -270,7 +270,7 @@ describe('LangChainExporter', () => {
 
     it.skip('should generate tests when includeTests=true', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.1',
+        apiVersion: 'ossa/v0.4.5',
         kind: 'Agent',
         metadata: {
           name: 'test-gen-agent',

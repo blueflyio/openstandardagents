@@ -10,7 +10,7 @@ import { z } from 'zod';
 import { readFileSync, existsSync } from 'fs';
 import { glob } from 'glob';
 
-const VersionPlaceholderSchema = z.literal('0.3.3');
+const VersionPlaceholderSchema = z.literal('0.4.5');
 
 export class VersionValidator {
   private errors = 0;

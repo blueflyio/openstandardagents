@@ -94,7 +94,7 @@ export class IndexService {
     } catch (err: any) {
       if (err.code === 'ENOENT') {
         return {
-          registry_version: '0.3.5',
+          registry_version: '0.4.5',
           last_updated: new Date().toISOString(),
           agents: [],
         };

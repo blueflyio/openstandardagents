@@ -1,7 +1,7 @@
 /**
- * OSSA Agent CRUD Commands
- * Complete Create, Read, Update, Delete operations for agents
- * Follows DRY, SOLID, Zod, OpenAPI, and CRUD principles
+ * OSSA Agent Commands
+ * Create, List, and Get operations for agents
+ * Follows DRY, SOLID, Zod, OpenAPI principles
  */
 
 import chalk from 'chalk';
@@ -28,24 +28,11 @@ const AgentVersionSchema = z
     /^\d+\.\d+\.\d+(-[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)*)?(\+[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)*)?$/
   );
 const AgentPathSchema = z.string().min(1);
-const AgentUpdateSchema = z
-  .object({
-    description: z.string().optional(),
-    labels: z.record(z.string(), z.string()).optional(),
-    llm: z
-      .object({
-        temperature: z.number().min(0).max(2).optional(),
-        maxTokens: z.number().min(1).max(200000).optional(),
-      })
-      .optional(),
-  })
-  .partial();
-
 /**
- * Agent CRUD Command Group
+ * Agent Command Group
  */
 export const agentsCommandGroup = new Command('agents').description(
-  'Manage OSSA agents (CRUD operations)'
+  'Manage OSSA agents (create, list, get)'
 );
 
 /**
@@ -308,184 +295,6 @@ agentsCommandGroup
       process.exit(1);
     }
   });
-
-/**
- * Update Agent Command
- * PUT /agents/{id}
- */
-agentsCommandGroup
-  .command('update')
-  .alias('edit')
-  .argument('<agent>', 'Agent identifier (name@version)')
-  .option('--description <desc>', 'Update description')
-  .option(
-    '--label <key=value>',
-    'Add or update label (can be used multiple times)',
-    []
-  )
-  .option('--temperature <num>', 'Update LLM temperature', parseFloat)
-  .option('--max-tokens <num>', 'Update LLM max tokens', parseInt)
-  .option('--dry-run', 'Preview changes without updating')
-  .description('Update an existing agent')
-  .action(
-    async (
-      agent: string,
-      options: {
-        description?: string;
-        label?: string[];
-        temperature?: number;
-        maxTokens?: number;
-        dryRun?: boolean;
-      }
-    ) => {
-      try {
-        const parts = agent.split('@');
-        if (parts.length !== 2) {
-          throw new Error('Agent identifier must be in format: name@version');
-        }
-        const agentName = parts[0];
-        const version = parts[1];
-
-        AgentIdSchema.parse(agentName);
-        AgentVersionSchema.parse(version);
-
-        const updatePayload: z.infer<typeof AgentUpdateSchema> = {};
-        if (options.description) {
-          updatePayload.description = options.description;
-        }
-        if (options.label && options.label.length > 0) {
-          updatePayload.labels = {};
-          options.label.forEach((label) => {
-            const [key, value] = label.split('=');
-            if (!key || !value) {
-              throw new Error(`Invalid label format: ${label}. Use key=value`);
-            }
-            updatePayload.labels![key] = value;
-          });
-        }
-        if (
-          options.temperature !== undefined ||
-          options.maxTokens !== undefined
-        ) {
-          updatePayload.llm = {};
-          if (options.temperature !== undefined) {
-            updatePayload.llm.temperature = options.temperature;
-          }
-          if (options.maxTokens !== undefined) {
-            updatePayload.llm.maxTokens = options.maxTokens;
-          }
-        }
-
-        const validated = AgentUpdateSchema.parse(updatePayload);
-
-        if (options.dryRun) {
-          console.log(chalk.yellow('\n[DRY RUN] Would update agent:'));
-          console.log(`  Agent: ${agentName}@${version}`);
-          console.log(`  Changes:`, JSON.stringify(validated, null, 2));
-          return;
-        }
-
-        console.log(chalk.blue(`Updating agent: ${agentName}@${version}`));
-        console.log(
-          chalk.yellow(
-            '[WARN]  Update functionality requires API implementation'
-          )
-        );
-        console.log(
-          chalk.gray('  Validated update payload:'),
-          JSON.stringify(validated, null, 2)
-        );
-
-        console.log(
-          chalk.green(`\n✓ Update validated (API implementation pending)`)
-        );
-      } catch (error) {
-        if (error instanceof z.ZodError) {
-          console.error(chalk.red('✗ Validation error:'));
-          error.issues.forEach((issue) => {
-            console.error(
-              chalk.red(`  - ${issue.path.join('.')}: ${issue.message}`)
-            );
-          });
-        } else {
-          console.error(
-            chalk.red('✗ Failed to update agent:'),
-            error instanceof Error ? error.message : String(error)
-          );
-        }
-        process.exit(1);
-      }
-    }
-  );
-
-/**
- * Delete Agent Command
- * DELETE /agents/{id}
- */
-agentsCommandGroup
-  .command('delete')
-  .alias('remove')
-  .alias('rm')
-  .argument('<agent>', 'Agent identifier (name@version)')
-  .option('--force', 'Force deletion without confirmation')
-  .option('--dry-run', 'Preview deletion without deleting')
-  .description('Delete an agent')
-  .action(
-    async (agent: string, options: { force?: boolean; dryRun?: boolean }) => {
-      try {
-        const parts = agent.split('@');
-        if (parts.length !== 2) {
-          throw new Error('Agent identifier must be in format: name@version');
-        }
-        const agentName = parts[0];
-        const version = parts[1];
-
-        AgentIdSchema.parse(agentName);
-        AgentVersionSchema.parse(version);
-
-        if (options.dryRun) {
-          console.log(chalk.yellow('\n[DRY RUN] Would delete agent:'));
-          console.log(`  Agent: ${agentName}@${version}`);
-          return;
-        }
-
-        if (!options.force) {
-          console.log(
-            chalk.yellow(
-              `[WARN]  This will delete agent: ${agentName}@${version}`
-            )
-          );
-          console.log(chalk.yellow('   Use --force to skip confirmation'));
-        }
-
-        console.log(chalk.blue(`Deleting agent: ${agentName}@${version}`));
-        console.log(
-          chalk.yellow(
-            '[WARN]  Delete functionality requires API implementation'
-          )
-        );
-
-        console.log(
-          chalk.green(`\n✓ Delete validated (API implementation pending)`)
-        );
-      } catch (error) {
-        if (error instanceof z.ZodError) {
-          console.error(chalk.red('✗ Validation error:'));
-          error.issues.forEach((issue) => {
-            console.error(
-              chalk.red(`  - ${issue.path.join('.')}: ${issue.message}`)
-            );
-          });
-        } else {
-          console.error(
-            chalk.red('✗ Failed to delete agent:'),
-            error instanceof Error ? error.message : String(error)
-          );
-        }
-        process.exit(1);
-      }
-    }
-  );
 
 /**
  * Persona Management Command

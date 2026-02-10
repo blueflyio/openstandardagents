@@ -8,6 +8,7 @@
  */
 
 import type { OssaAgent } from '../../../types/index.js';
+import { getApiVersion } from '../../../utils/version.js';
 
 export interface PackageJsonOptions {
   scope?: string;
@@ -107,7 +108,7 @@ export class PackageJsonGenerator {
         access: 'public',
       },
       ossa: {
-        apiVersion: manifest.apiVersion || 'ossa/v0.4.1',
+        apiVersion: manifest.apiVersion || getApiVersion(),
         kind: manifest.kind || 'Agent',
         originalName: metadata.name,
       },

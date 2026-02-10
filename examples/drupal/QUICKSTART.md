@@ -29,7 +29,7 @@ drush ossa:agent:execute module-name "Test input"
 Create `my-agent.ossa.yaml`:
 
 ```yaml
-apiVersion: ossa/v0.4.1
+apiVersion: ossa/v0.4.5
 kind: Agent
 metadata:
   name: my_agent
@@ -174,7 +174,7 @@ drush ossa:agent:execute content-moderator "Check this spam content: BUY NOW!"
 ### 1. Content Moderation
 
 ```yaml
-apiVersion: ossa/v0.4.1
+apiVersion: ossa/v0.4.5
 kind: Agent
 metadata:
   name: content_moderator
@@ -190,7 +190,7 @@ spec:
 ### 2. Content Generation
 
 ```yaml
-apiVersion: ossa/v0.4.1
+apiVersion: ossa/v0.4.5
 kind: Agent
 metadata:
   name: content_generator
@@ -207,7 +207,7 @@ spec:
 ### 3. Customer Support
 
 ```yaml
-apiVersion: ossa/v0.4.1
+apiVersion: ossa/v0.4.5
 kind: Agent
 metadata:
   name: support_bot
@@ -223,7 +223,7 @@ spec:
 ### 4. Data Analysis
 
 ```yaml
-apiVersion: ossa/v0.4.1
+apiVersion: ossa/v0.4.5
 kind: Agent
 metadata:
   name: data_analyst

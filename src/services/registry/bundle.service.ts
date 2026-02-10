@@ -8,6 +8,7 @@ import * as path from 'path';
 import * as crypto from 'crypto';
 import * as tar from 'tar';
 import { injectable } from 'inversify';
+import { getVersion } from '../../utils/version.js';
 import type { OssaAgent } from '../../types/index.js';
 
 export interface BundleInfo {
@@ -81,7 +82,7 @@ export class BundleService {
       version: 1,
       metadata: {
         timestamp: new Date().toISOString(),
-        tools: [{ name: '@bluefly/openstandardagents', version: '0.3.5' }],
+        tools: [{ name: '@bluefly/openstandardagents', version: getVersion() }],
       },
       components,
     };

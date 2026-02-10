@@ -48,7 +48,7 @@ class EnhancedAgentGenerator {
     }
 
     // Fallback default template
-    return `apiVersion: ossa/v0.3.3
+    return `apiVersion: ossa/v0.4.5
 kind: Agent
 metadata:
   name: {{NAME}}

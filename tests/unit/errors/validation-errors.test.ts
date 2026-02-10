@@ -47,7 +47,7 @@ describe('Validation Errors', () => {
 
     it('should include schema validation errors', () => {
       const details = {
-        schema: 'ossa/v0.4.1',
+        schema: 'ossa/v0.4.5',
         errors: [
           { path: 'metadata.name', message: 'Required field' },
           { path: 'spec.role', message: 'Must be string' },
@@ -59,19 +59,19 @@ describe('Validation Errors', () => {
       );
 
       expect(error.details).toEqual(details);
-      expect(error.details?.schema).toBe('ossa/v0.4.1');
+      expect(error.details?.schema).toBe('ossa/v0.4.5');
       expect(Array.isArray(error.details?.errors)).toBe(true);
     });
 
     it('should convert to JSON with error details', () => {
       const error = new SchemaValidationError('Schema validation failed', {
-        schema: 'ossa/v0.4.1',
+        schema: 'ossa/v0.4.5',
         errors: [{ path: 'metadata.name', message: 'Required' }],
       });
 
       const json = error.toJSON();
       expect(json.error.code).toBe('OSSA-VAL-002');
-      expect(json.error.details?.schema).toBe('ossa/v0.4.1');
+      expect(json.error.details?.schema).toBe('ossa/v0.4.5');
     });
   });
 
@@ -120,7 +120,7 @@ describe('Validation Errors', () => {
 
     it('should include version information', () => {
       const details = {
-        expected: 'ossa/v0.4.1',
+        expected: 'ossa/v0.4.5',
         received: 'ossa/v0.3.6',
         field: 'apiVersion',
       };
@@ -180,12 +180,12 @@ describe('Validation Errors', () => {
 
     it('should serialize SchemaValidationError', () => {
       const error = new SchemaValidationError('Test', {
-        schema: 'ossa/v0.4.1',
+        schema: 'ossa/v0.4.5',
       });
       const json = error.toJSON();
 
       expect(json.error.code).toBe('OSSA-VAL-002');
-      expect(json.error.details?.schema).toBe('ossa/v0.4.1');
+      expect(json.error.details?.schema).toBe('ossa/v0.4.5');
     });
 
     it('should serialize ManifestValidationError', () => {

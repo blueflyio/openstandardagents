@@ -38,14 +38,15 @@ import {
 
 export const exportCommand = new Command('export')
   .description('Export OSSA manifest to platform-specific format')
-  .argument('<manifest>', 'Path to OSSA agent manifest')
-  .requiredOption(
+  .argument('[manifest]', 'Path to OSSA agent manifest')
+  .option(
     '-p, --platform <platform>',
     'Target platform (kagent, langchain, crewai, temporal, n8n, gitlab, gitlab-agent, docker, kubernetes, npm, drupal, agent-skills)'
   )
   .option('-o, --output <file>', 'Output file path')
   .option('--format <format>', 'Output format (yaml, json, python)', 'yaml')
-  .option('--skill', 'Include Claude Skill (SKILL.md) - NPM platform only');
+  .option('--skill', 'Include Claude Skill (SKILL.md) - NPM platform only')
+  .option('--list-platforms', 'Show all supported export platforms and their status');
 
 // Add production-grade standard options
 addGlobalOptions(exportCommand);
@@ -53,9 +54,9 @@ addMutationOptions(exportCommand);
 
 exportCommand.action(
   async (
-    manifestPath: string,
+    manifestPath: string | undefined,
     options: {
-      platform: string;
+      platform?: string;
       output?: string;
       format: string;
       skill?: boolean;
@@ -67,9 +68,52 @@ exportCommand.action(
       force?: boolean;
       backup?: boolean;
       backupDir?: string;
+      listPlatforms?: boolean;
     }
   ) => {
     const useColor = shouldUseColor(options);
+
+    // Handle --list-platforms
+    if (options.listPlatforms) {
+      const platforms = [
+        { name: 'kagent',       status: 'production', desc: 'kagent.dev Kubernetes CRD bundle (10+ files)' },
+        { name: 'langchain',    status: 'production', desc: 'LangChain Python + TypeScript agent package' },
+        { name: 'crewai',       status: 'production', desc: 'CrewAI multi-agent Python package' },
+        { name: 'temporal',     status: 'beta',       desc: 'Temporal workflow configuration' },
+        { name: 'n8n',          status: 'beta',       desc: 'n8n workflow JSON export' },
+        { name: 'gitlab',       status: 'production', desc: 'GitLab CI/CD YAML configuration' },
+        { name: 'gitlab-agent', status: 'production', desc: 'GitLab Duo agent package (34 files)' },
+        { name: 'docker',       status: 'production', desc: 'Docker deployment package' },
+        { name: 'kubernetes',   status: 'production', desc: 'Kubernetes Kustomize structure' },
+        { name: 'npm',          status: 'production', desc: 'Installable npm package with optional Claude Skill' },
+        { name: 'drupal',       status: 'production', desc: 'Drupal manifest for ai_agents_ossa module' },
+        { name: 'agent-skills', status: 'production', desc: 'Agent Skills package (SKILL.md format)' },
+      ];
+
+      console.log(useColor ? chalk.bold('\nOSSA Export Platforms\n') : '\nOSSA Export Platforms\n');
+
+      for (const p of platforms) {
+        const statusColor = p.status === 'production' ? chalk.green : p.status === 'beta' ? chalk.yellow : chalk.red;
+        const statusLabel = useColor ? statusColor(`[${p.status}]`) : `[${p.status}]`;
+        const nameLabel = useColor ? chalk.cyan(p.name.padEnd(14)) : p.name.padEnd(14);
+        console.log(`  ${nameLabel} ${statusLabel.padEnd(useColor ? 30 : 14)} ${p.desc}`);
+      }
+
+      console.log('');
+      return;
+    }
+
+    // Validate required args when not listing platforms
+    if (!manifestPath) {
+      console.error(useColor ? chalk.red('Error: manifest path is required') : 'Error: manifest path is required');
+      process.exit(1);
+    }
+
+    if (!options.platform) {
+      console.error(useColor ? chalk.red('Error: --platform is required. Use --list-platforms to see available platforms.') : 'Error: --platform is required');
+      process.exit(1);
+    }
+
     try {
       // Logging helpers
       const log = (msg: string) => {
