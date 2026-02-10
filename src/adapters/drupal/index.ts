@@ -482,4 +482,3 @@ export {
   DrupalManifestExporter,
   type DrupalManifestExportOptions,
 } from './manifest-exporter.js';
-

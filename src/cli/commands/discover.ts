@@ -95,14 +95,11 @@ class AgentProtocolClient {
         headers['Authorization'] = `Bearer ${this.token}`;
       }
 
-      const response = await axios.get(
-        `${this.baseUrl}/api/v1/agents/search`,
-        {
-          params,
-          headers,
-          timeout: 30000,
-        }
-      );
+      const response = await axios.get(`${this.baseUrl}/api/v1/agents/search`, {
+        params,
+        headers,
+        timeout: 30000,
+      });
 
       return response.data.agents || response.data || [];
     } catch (error) {
@@ -182,147 +179,139 @@ export const discoverCommand = new Command('discover')
 addRegistryOptions(discoverCommand);
 
 discoverCommand.action(
-    async (
-      query: string | undefined,
-      options: {
-        capability?: string;
-        org?: string;
-        minTrust?: number;
-        json?: boolean;
-        limit?: string;
-        registry?: string;
-        apiKey?: string;
-      }
-    ) => {
-      const registryUrl = resolveRegistryUrl(options);
-      try {
-        const client = new AgentProtocolClient({
-          baseUrl: registryUrl,
-          apiKey: options.apiKey,
-        });
+  async (
+    query: string | undefined,
+    options: {
+      capability?: string;
+      org?: string;
+      minTrust?: number;
+      json?: boolean;
+      limit?: string;
+      registry?: string;
+      apiKey?: string;
+    }
+  ) => {
+    const registryUrl = resolveRegistryUrl(options);
+    try {
+      const client = new AgentProtocolClient({
+        baseUrl: registryUrl,
+        apiKey: options.apiKey,
+      });
 
-        const limit = options.limit ? parseInt(options.limit, 10) : 10;
+      const limit = options.limit ? parseInt(options.limit, 10) : 10;
 
-        // Validate limit
-        if (isNaN(limit) || limit < 1 || limit > 100) {
-          console.error(
-            chalk.red('✗ Invalid limit. Must be between 1 and 100')
-          );
-          process.exit(1);
-        }
-
-        // Validate min-trust
-        if (
-          options.minTrust !== undefined &&
-          (isNaN(options.minTrust) ||
-            options.minTrust < 0 ||
-            options.minTrust > 1)
-        ) {
-          console.error(
-            chalk.red('✗ Invalid min-trust. Must be between 0.0 and 1.0')
-          );
-          process.exit(1);
-        }
-
-        // Show search parameters
-        if (!options.json) {
-          console.log(chalk.blue(`\nSearching agents on ${registryUrl}...`));
-          if (query) {
-            console.log(chalk.gray(`  Query: ${query}`));
-          }
-          if (options.capability) {
-            console.log(chalk.gray(`  Capability: ${options.capability}`));
-          }
-          if (options.org) {
-            console.log(chalk.gray(`  Organization: ${options.org}`));
-          }
-          if (options.minTrust !== undefined) {
-            console.log(
-              chalk.gray(`  Min Trust: ${(options.minTrust * 100).toFixed(0)}%`)
-            );
-          }
-          console.log(chalk.gray(`  Limit: ${limit}`));
-          console.log('');
-        }
-
-        // Execute search
-        const results = await client.searchAgents(query, {
-          capability: options.capability,
-          org: options.org,
-          minTrust: options.minTrust,
-          limit,
-        });
-
-        // Handle no results
-        if (results.length === 0) {
-          if (options.json) {
-            console.log(JSON.stringify({ agents: [], count: 0 }, null, 2));
-          } else {
-            console.log(chalk.yellow('No agents found'));
-            if (query || options.capability || options.org || options.minTrust) {
-              console.log(chalk.gray('  Try adjusting your search filters'));
-            }
-          }
-          process.exit(0);
-        }
-
-        // Output results
-        if (options.json) {
-          console.log(
-            JSON.stringify({ agents: results, count: results.length }, null, 2)
-          );
-        } else {
-          console.log(
-            chalk.green(`Found ${results.length} agent(s):\n`)
-          );
-          displayTable(results);
-
-          console.log('');
-          console.log(
-            chalk.gray(
-              `Use ${chalk.white('ossa verify <gaid>')} to view agent details`
-            )
-          );
-        }
-
-        process.exit(0);
-      } catch (error) {
-        if (options.json) {
-          console.log(
-            JSON.stringify(
-              {
-                error: error instanceof Error ? error.message : String(error),
-                agents: [],
-                count: 0,
-              },
-              null,
-              2
-            )
-          );
-        } else {
-          console.error(
-            chalk.red(
-              `\n✗ Error: ${error instanceof Error ? error.message : String(error)}`
-            )
-          );
-
-          // Show helpful troubleshooting
-          if (error instanceof Error && error.message.includes('connect')) {
-            console.log(chalk.yellow('\nTroubleshooting:'));
-            console.log(
-              chalk.gray(`  Registry: ${registryUrl}`)
-            );
-            console.log(
-              chalk.gray('  1. Check network connectivity and firewall rules')
-            );
-            console.log(
-              chalk.gray(
-                '  2. Use --registry <url> or set OSSA_REGISTRY_URL'
-              )
-            );
-          }
-        }
+      // Validate limit
+      if (isNaN(limit) || limit < 1 || limit > 100) {
+        console.error(chalk.red('✗ Invalid limit. Must be between 1 and 100'));
         process.exit(1);
       }
+
+      // Validate min-trust
+      if (
+        options.minTrust !== undefined &&
+        (isNaN(options.minTrust) ||
+          options.minTrust < 0 ||
+          options.minTrust > 1)
+      ) {
+        console.error(
+          chalk.red('✗ Invalid min-trust. Must be between 0.0 and 1.0')
+        );
+        process.exit(1);
+      }
+
+      // Show search parameters
+      if (!options.json) {
+        console.log(chalk.blue(`\nSearching agents on ${registryUrl}...`));
+        if (query) {
+          console.log(chalk.gray(`  Query: ${query}`));
+        }
+        if (options.capability) {
+          console.log(chalk.gray(`  Capability: ${options.capability}`));
+        }
+        if (options.org) {
+          console.log(chalk.gray(`  Organization: ${options.org}`));
+        }
+        if (options.minTrust !== undefined) {
+          console.log(
+            chalk.gray(`  Min Trust: ${(options.minTrust * 100).toFixed(0)}%`)
+          );
+        }
+        console.log(chalk.gray(`  Limit: ${limit}`));
+        console.log('');
+      }
+
+      // Execute search
+      const results = await client.searchAgents(query, {
+        capability: options.capability,
+        org: options.org,
+        minTrust: options.minTrust,
+        limit,
+      });
+
+      // Handle no results
+      if (results.length === 0) {
+        if (options.json) {
+          console.log(JSON.stringify({ agents: [], count: 0 }, null, 2));
+        } else {
+          console.log(chalk.yellow('No agents found'));
+          if (query || options.capability || options.org || options.minTrust) {
+            console.log(chalk.gray('  Try adjusting your search filters'));
+          }
+        }
+        process.exit(0);
+      }
+
+      // Output results
+      if (options.json) {
+        console.log(
+          JSON.stringify({ agents: results, count: results.length }, null, 2)
+        );
+      } else {
+        console.log(chalk.green(`Found ${results.length} agent(s):\n`));
+        displayTable(results);
+
+        console.log('');
+        console.log(
+          chalk.gray(
+            `Use ${chalk.white('ossa verify <gaid>')} to view agent details`
+          )
+        );
+      }
+
+      process.exit(0);
+    } catch (error) {
+      if (options.json) {
+        console.log(
+          JSON.stringify(
+            {
+              error: error instanceof Error ? error.message : String(error),
+              agents: [],
+              count: 0,
+            },
+            null,
+            2
+          )
+        );
+      } else {
+        console.error(
+          chalk.red(
+            `\n✗ Error: ${error instanceof Error ? error.message : String(error)}`
+          )
+        );
+
+        // Show helpful troubleshooting
+        if (error instanceof Error && error.message.includes('connect')) {
+          console.log(chalk.yellow('\nTroubleshooting:'));
+          console.log(chalk.gray(`  Registry: ${registryUrl}`));
+          console.log(
+            chalk.gray('  1. Check network connectivity and firewall rules')
+          );
+          console.log(
+            chalk.gray('  2. Use --registry <url> or set OSSA_REGISTRY_URL')
+          );
+        }
+      }
+      process.exit(1);
     }
-  );
+  }
+);

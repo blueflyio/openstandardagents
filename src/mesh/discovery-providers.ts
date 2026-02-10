@@ -120,11 +120,15 @@ export class DNSDiscoveryProvider implements DiscoveryProvider {
   async register(agent: AgentCard): Promise<void> {
     // DNS registration is typically handled by infrastructure (external-dns, etc.)
     // This would integrate with your DNS management system
-    console.log(`DNS registration for ${agent.uri} should be handled by infrastructure`);
+    console.log(
+      `DNS registration for ${agent.uri} should be handled by infrastructure`
+    );
   }
 
   async unregister(agentUri: string): Promise<void> {
-    console.log(`DNS unregistration for ${agentUri} should be handled by infrastructure`);
+    console.log(
+      `DNS unregistration for ${agentUri} should be handled by infrastructure`
+    );
   }
 
   async healthCheck(): Promise<boolean> {
@@ -180,7 +184,10 @@ export class DNSDiscoveryProvider implements DiscoveryProvider {
         },
         transport: ['http'],
         authentication: data.authentication || ['bearer'],
-        encryption: data.encryption || { tlsRequired: true, minTlsVersion: '1.3' as const },
+        encryption: data.encryption || {
+          tlsRequired: true,
+          minTlsVersion: '1.3' as const,
+        },
         status: 'healthy',
         metadata: data.metadata,
       };
@@ -246,7 +253,7 @@ export class ConsulDiscoveryProvider implements DiscoveryProvider {
         throw new Error(`Consul query failed: ${response.statusText}`);
       }
 
-      const services = await response.json() as Record<string, string[]>;
+      const services = (await response.json()) as Record<string, string[]>;
       const agents: AgentCard[] = [];
 
       // Fetch details for each service
@@ -328,7 +335,7 @@ export class ConsulDiscoveryProvider implements DiscoveryProvider {
         return [];
       }
 
-      const instances = await response.json() as Array<{
+      const instances = (await response.json()) as Array<{
         Service: {
           ID: string;
           Service: string;
@@ -340,8 +347,8 @@ export class ConsulDiscoveryProvider implements DiscoveryProvider {
       }>;
 
       return instances
-        .map(instance => this.consulServiceToAgent(instance.Service))
-        .filter(agent => this.matchesQuery(agent, query));
+        .map((instance) => this.consulServiceToAgent(instance.Service))
+        .filter((agent) => this.matchesQuery(agent, query));
     } catch (error) {
       console.warn(`Failed to get details for service ${serviceName}:`, error);
       return [];
@@ -431,11 +438,13 @@ export class KubernetesDiscoveryProvider implements DiscoveryProvider {
   private namespace: string;
   private token?: string;
 
-  constructor(config: {
-    apiServer?: string;
-    namespace?: string;
-    token?: string;
-  } = {}) {
+  constructor(
+    config: {
+      apiServer?: string;
+      namespace?: string;
+      token?: string;
+    } = {}
+  ) {
     this.apiServer = config.apiServer || 'https://kubernetes.default.svc';
     this.namespace = config.namespace || 'default';
     this.token = config.token || process.env.KUBERNETES_SERVICE_TOKEN;
@@ -468,8 +477,8 @@ export class KubernetesDiscoveryProvider implements DiscoveryProvider {
         `${this.apiServer}/api/v1/namespaces/${this.namespace}/services?labelSelector=app.kubernetes.io/component=ossa-agent`,
         {
           headers: {
-            'Authorization': `Bearer ${this.token}`,
-            'Accept': 'application/json',
+            Authorization: `Bearer ${this.token}`,
+            Accept: 'application/json',
           },
         }
       );
@@ -478,16 +487,23 @@ export class KubernetesDiscoveryProvider implements DiscoveryProvider {
         throw new Error(`Kubernetes API error: ${response.statusText}`);
       }
 
-      const data = await response.json() as {
+      const data = (await response.json()) as {
         items: Array<{
-          metadata: { name: string; labels: Record<string, string>; annotations: Record<string, string> };
-          spec: { clusterIP: string; ports: Array<{ port: number; name: string }> };
+          metadata: {
+            name: string;
+            labels: Record<string, string>;
+            annotations: Record<string, string>;
+          };
+          spec: {
+            clusterIP: string;
+            ports: Array<{ port: number; name: string }>;
+          };
         }>;
       };
 
       return data.items
-        .map(svc => this.k8sServiceToAgent(svc))
-        .filter(agent => this.matchesQuery(agent, query));
+        .map((svc) => this.k8sServiceToAgent(svc))
+        .filter((agent) => this.matchesQuery(agent, query));
     } catch (error) {
       console.warn('Kubernetes discovery failed:', error);
       return [];
@@ -495,11 +511,15 @@ export class KubernetesDiscoveryProvider implements DiscoveryProvider {
   }
 
   async register(agent: AgentCard): Promise<void> {
-    console.log('Kubernetes registration is handled by K8s Service/Deployment manifests');
+    console.log(
+      'Kubernetes registration is handled by K8s Service/Deployment manifests'
+    );
   }
 
   async unregister(agentUri: string): Promise<void> {
-    console.log('Kubernetes unregistration is handled by K8s Service/Deployment deletion');
+    console.log(
+      'Kubernetes unregistration is handled by K8s Service/Deployment deletion'
+    );
   }
 
   async healthCheck(): Promise<boolean> {
@@ -507,7 +527,7 @@ export class KubernetesDiscoveryProvider implements DiscoveryProvider {
 
     try {
       const response = await fetch(`${this.apiServer}/healthz`, {
-        headers: { 'Authorization': `Bearer ${this.token}` },
+        headers: { Authorization: `Bearer ${this.token}` },
       });
       return response.ok;
     } catch {
@@ -520,18 +540,26 @@ export class KubernetesDiscoveryProvider implements DiscoveryProvider {
   }
 
   private k8sServiceToAgent(service: {
-    metadata: { name: string; labels: Record<string, string>; annotations: Record<string, string> };
+    metadata: {
+      name: string;
+      labels: Record<string, string>;
+      annotations: Record<string, string>;
+    };
     spec: { clusterIP: string; ports: Array<{ port: number; name: string }> };
   }): AgentCard {
     const annotations = service.metadata.annotations || {};
     const labels = service.metadata.labels || {};
 
     return {
-      uri: annotations['ossa.io/agent-uri'] || `agent://k8s/${service.metadata.name}`,
+      uri:
+        annotations['ossa.io/agent-uri'] ||
+        `agent://k8s/${service.metadata.name}`,
       name: service.metadata.name,
       version: labels['app.kubernetes.io/version'] || '1.0.0',
       ossaVersion: annotations['ossa.io/version'] || getApiVersion(),
-      capabilities: (annotations['ossa.io/capabilities'] || '').split(',').filter(Boolean),
+      capabilities: (annotations['ossa.io/capabilities'] || '')
+        .split(',')
+        .filter(Boolean),
       endpoints: {
         http: `http://${service.spec.clusterIP}:${service.spec.ports[0]?.port || 80}`,
       },
@@ -593,7 +621,7 @@ export class ServiceMeshDiscoveryProvider implements DiscoveryProvider {
     const agents = await this.k8sProvider.discover(query);
 
     // Enhance agents with mesh-specific information
-    return agents.map(agent => ({
+    return agents.map((agent) => ({
       ...agent,
       metadata: {
         ...agent.metadata,
@@ -628,13 +656,16 @@ export class MultiProviderRegistry implements AgentRegistry {
   private providers: DiscoveryProvider[] = [];
   private primaryProvider: DiscoveryProvider;
 
-  constructor(primaryProvider: DiscoveryProvider, additionalProviders: DiscoveryProvider[] = []) {
+  constructor(
+    primaryProvider: DiscoveryProvider,
+    additionalProviders: DiscoveryProvider[] = []
+  ) {
     this.primaryProvider = primaryProvider;
     this.providers = [primaryProvider, ...additionalProviders];
   }
 
   async initialize(): Promise<void> {
-    await Promise.all(this.providers.map(p => p.initialize()));
+    await Promise.all(this.providers.map((p) => p.initialize()));
   }
 
   async register(agentCard: AgentCard, ttl?: number): Promise<void> {
@@ -653,7 +684,7 @@ export class MultiProviderRegistry implements AgentRegistry {
   async findByCapability(capability: string): Promise<AgentCard[]> {
     // Query all providers and merge results
     const results = await Promise.all(
-      this.providers.map(p => p.discover({ capability, healthyOnly: true }))
+      this.providers.map((p) => p.discover({ capability, healthyOnly: true }))
     );
 
     // Deduplicate by URI
@@ -671,16 +702,14 @@ export class MultiProviderRegistry implements AgentRegistry {
     // Try each provider until we find the agent
     for (const provider of this.providers) {
       const agents = await provider.discover();
-      const agent = agents.find(a => a.uri === uri);
+      const agent = agents.find((a) => a.uri === uri);
       if (agent) return agent;
     }
     return null;
   }
 
   async listAll(): Promise<AgentCard[]> {
-    const results = await Promise.all(
-      this.providers.map(p => p.discover())
-    );
+    const results = await Promise.all(this.providers.map((p) => p.discover()));
 
     const agentMap = new Map<string, AgentCard>();
     for (const agents of results) {
@@ -694,7 +723,7 @@ export class MultiProviderRegistry implements AgentRegistry {
 
   async findHealthy(): Promise<AgentCard[]> {
     const results = await Promise.all(
-      this.providers.map(p => p.discover({ healthyOnly: true }))
+      this.providers.map((p) => p.discover({ healthyOnly: true }))
     );
 
     const agentMap = new Map<string, AgentCard>();

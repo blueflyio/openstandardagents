@@ -257,14 +257,34 @@ program.addCommand(contractCommand);
 
 // --- Advanced (hidden from main --help, still fully accessible) ---
 for (const cmd of [
-  quickstartCommand, wizardAPIFirstCommand, scaffoldCommand,
-  examplesCommand, agentWizardCommand, importCommand,
-  enhanceCommand, infoCommand, schemaCommand, registerCommand, discoverCommand,
-  verifyCommand, registryCommand, standardizeCommand, releaseCommand,
-  migrateBatchCommand, migrateLangchainCommand, upgradeCommand, syncCommand,
-  dependenciesCommand, knowledgeCommandGroup, taxonomyCommandGroup,
-  langflowCommand, langchainCommand, frameworkCommand, workspaceCommand,
-  extensionTeamCommand, estimateCommand,
+  quickstartCommand,
+  wizardAPIFirstCommand,
+  scaffoldCommand,
+  examplesCommand,
+  agentWizardCommand,
+  importCommand,
+  enhanceCommand,
+  infoCommand,
+  schemaCommand,
+  registerCommand,
+  discoverCommand,
+  verifyCommand,
+  registryCommand,
+  standardizeCommand,
+  releaseCommand,
+  migrateBatchCommand,
+  migrateLangchainCommand,
+  upgradeCommand,
+  syncCommand,
+  dependenciesCommand,
+  knowledgeCommandGroup,
+  taxonomyCommandGroup,
+  langflowCommand,
+  langchainCommand,
+  frameworkCommand,
+  workspaceCommand,
+  extensionTeamCommand,
+  estimateCommand,
 ]) {
   program.addCommand(cmd, { hidden: true });
 }
@@ -273,7 +293,9 @@ for (const cmd of [
 program.addCommand(createAuditCommand(), { hidden: true });
 
 // Custom help footer showing categories
-program.addHelpText('after', `
+program.addHelpText(
+  'after',
+  `
   Core:       wizard, init, validate, export, lint, diff, build, migrate
   Agents:     agents, agents-local, agent-card, generate-gaid
   Dev:        generate, dev, serve, run, test
@@ -285,7 +307,8 @@ program.addHelpText('after', `
   More:       Use "ossa <command> --help" for any command. 30+ additional
               commands available: quickstart, setup, scaffold, import, enhance,
               registry, migrate-batch, langchain, langflow, and more.
-`);
+`
+);
 
 // ============================================================================
 // Extension Loading
@@ -338,7 +361,8 @@ async function main() {
   const args = process.argv.slice(2);
   const shouldShowLogo =
     args.length === 0 ||
-    (args.length === 1 && (args[0] === '--help' || args[0] === '-h' || args[0] === 'help'));
+    (args.length === 1 &&
+      (args[0] === '--help' || args[0] === '-h' || args[0] === 'help'));
 
   if (shouldShowLogo) {
     displayLogo(getVersion());

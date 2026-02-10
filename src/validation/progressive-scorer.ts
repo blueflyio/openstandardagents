@@ -85,9 +85,7 @@ export class ProgressiveScorer {
 
     // Calculate overall score (weighted average)
     const overall = Object.entries(dimensions).reduce((sum, [key, dim]) => {
-      return (
-        sum + dim.score * this.weights[key as keyof typeof this.weights]
-      );
+      return sum + dim.score * this.weights[key as keyof typeof this.weights];
     }, 0);
 
     const grade = this.calculateGrade(overall);
@@ -138,12 +136,10 @@ export class ProgressiveScorer {
   /**
    * Check platform support
    */
-  private checkPlatformSupport(
-    manifest: OssaAgent,
-    issues: string[]
-  ): number {
+  private checkPlatformSupport(manifest: OssaAgent, issues: string[]): number {
     const agentType = manifest.metadata?.agentType;
-    const capabilities = manifest.metadata?.agentArchitecture?.capabilities || [];
+    const capabilities =
+      manifest.metadata?.agentArchitecture?.capabilities || [];
 
     // KAGENT incompatibilities
     if (agentType === 'kagent') {
@@ -166,7 +162,15 @@ export class ProgressiveScorer {
     // OpenAI partial support
     if (agentType === 'openai') {
       const unsupported = capabilities.filter(
-        (c) => !['handoff', 'streaming', 'context', 'tools', 'vision', 'code'].includes(c)
+        (c) =>
+          ![
+            'handoff',
+            'streaming',
+            'context',
+            'tools',
+            'vision',
+            'code',
+          ].includes(c)
       );
       if (unsupported.length > 0) {
         issues.push(`OpenAI may not support: ${unsupported.join(', ')}`);
@@ -179,7 +183,14 @@ export class ProgressiveScorer {
     if (agentType === 'langchain') {
       const unsupported = capabilities.filter(
         (c) =>
-          !['handoff', 'streaming', 'context', 'tools', 'memory', 'retrieval'].includes(c)
+          ![
+            'handoff',
+            'streaming',
+            'context',
+            'tools',
+            'memory',
+            'retrieval',
+          ].includes(c)
       );
       if (unsupported.length > 0) {
         issues.push(`LangChain may not support: ${unsupported.join(', ')}`);
@@ -205,7 +216,8 @@ export class ProgressiveScorer {
     issues: string[]
   ): number {
     const agentType = manifest.metadata?.agentType;
-    const capabilities = manifest.metadata?.agentArchitecture?.capabilities || [];
+    const capabilities =
+      manifest.metadata?.agentArchitecture?.capabilities || [];
 
     // Swarm requires handoff
     if (agentType === 'swarm' && !capabilities.includes('handoff')) {
@@ -247,7 +259,8 @@ export class ProgressiveScorer {
     const issues: string[] = [];
 
     // Scalability configuration
-    const scalability = manifest.metadata?.agentArchitecture?.runtime?.scalability;
+    const scalability =
+      manifest.metadata?.agentArchitecture?.runtime?.scalability;
     factors.scalability = scalability ? 1.0 : 0.7;
     if (!scalability) {
       issues.push('No scalability configuration');
@@ -384,9 +397,7 @@ export class ProgressiveScorer {
     for (const [dimName, dim] of Object.entries(dimensions)) {
       if (dim.score < 0.9) {
         for (const issue of dim.issues) {
-          improvements.push(
-            this.createImprovement(dimName, issue, dim.score)
-          );
+          improvements.push(this.createImprovement(dimName, issue, dim.score));
         }
       }
     }
@@ -456,8 +467,9 @@ export class ProgressiveScorer {
     dimensions: ValidationScore['dimensions']
   ): string {
     const percentage = Math.round(overall * 100);
-    const weakest = Object.entries(dimensions)
-      .sort((a, b) => a[1].score - b[1].score)[0];
+    const weakest = Object.entries(dimensions).sort(
+      (a, b) => a[1].score - b[1].score
+    )[0];
 
     return `Grade ${grade} (${percentage}%). Weakest: ${weakest[0]} (${Math.round(weakest[1].score * 100)}%)`;
   }

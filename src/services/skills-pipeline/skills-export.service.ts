@@ -223,11 +223,7 @@ export class SkillsExportService {
     const types = this.generateTypes(frontmatter);
     files.push('index.d.ts');
     if (!dryRun) {
-      await fs.writeFile(
-        path.join(outputPath, 'index.d.ts'),
-        types,
-        'utf-8'
-      );
+      await fs.writeFile(path.join(outputPath, 'index.d.ts'), types, 'utf-8');
     }
 
     // Generate install script

@@ -29,10 +29,7 @@ export class OSSAValidator {
     addFormats(this.ajv);
 
     // Load schema
-    const defaultSchemaPath = join(
-      __dirname,
-      '../spec/v0.4/agent.schema.json'
-    );
+    const defaultSchemaPath = join(__dirname, '../spec/v0.4/agent.schema.json');
     const resolvedPath = schemaPath || defaultSchemaPath;
 
     try {

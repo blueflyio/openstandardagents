@@ -32,7 +32,6 @@ import {
   ExitCode,
 } from '../utils/standard-options.js';
 
-
 /**
  * Agent ID Card - Digital identity for registered agents
  */
@@ -143,10 +142,8 @@ registerCommand.action(
       // Extract agent metadata for card
       const agentName = manifest.metadata?.name || 'unknown-agent';
       const agentVersion = manifest.metadata?.version || '0.1.0';
-      const description =
-        manifest.metadata?.description || manifest.spec?.role;
-      const author =
-        manifest.metadata?.annotations?.['ossa.dev/author'];
+      const description = manifest.metadata?.description || manifest.spec?.role;
+      const author = manifest.metadata?.annotations?.['ossa.dev/author'];
       const license = manifest.metadata?.annotations?.['ossa.dev/license'];
       const homepage =
         manifest.metadata?.annotations?.['ossa.dev/homepage'] ||
@@ -235,7 +232,8 @@ registerCommand.action(
           name: agentName,
           version: agentVersion,
           cardPath: path.resolve(outputPath),
-          message: 'Agent ID card generated locally. Use @bluefly/agent-protocol for registry registration.',
+          message:
+            'Agent ID card generated locally. Use @bluefly/agent-protocol for registry registration.',
         });
       } else {
         log('', chalk.green);
@@ -266,7 +264,10 @@ registerCommand.action(
         console.log('');
         log('Next steps:', chalk.cyan);
         log('  1. Share your Agent ID Card with collaborators', chalk.gray);
-        log('  2. Register with a registry: npx @bluefly/agent-protocol register <manifest>', chalk.gray);
+        log(
+          '  2. Register with a registry: npx @bluefly/agent-protocol register <manifest>',
+          chalk.gray
+        );
         log(
           '  3. Use the GAID to reference your agent in workflows',
           chalk.gray

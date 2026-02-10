@@ -39,7 +39,14 @@ export class AnthropicExporter extends BaseAdapter implements PlatformAdapter {
   readonly displayName = 'Anthropic Claude';
   readonly description =
     'Export OSSA agents to Anthropic Python SDK with FastAPI server';
-  readonly supportedVersions = ['0.3.0', '0.3.3', '0.3.4', '0.3.5', '0.3.6', '0.4.x'];
+  readonly supportedVersions = [
+    '0.3.0',
+    '0.3.3',
+    '0.3.4',
+    '0.3.5',
+    '0.3.6',
+    '0.4.x',
+  ];
 
   /**
    * Export OSSA manifest to Anthropic format

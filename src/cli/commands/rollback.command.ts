@@ -48,92 +48,90 @@ export const rollbackCommand = new Command('rollback')
   .option('--no-verify', 'Skip health verification after rollback')
   .option('-f, --force', 'Force rollback without confirmation', false)
   .option('-i, --interactive', 'Interactive mode with prompts', false)
-  .action(
-    async (instanceId: string, options: RollbackCommandOptions) => {
-      const spinner = ora('Preparing rollback...').start();
+  .action(async (instanceId: string, options: RollbackCommandOptions) => {
+    const spinner = ora('Preparing rollback...').start();
 
-      try {
-        // Validate options
-        validateRollbackOptions(options);
+    try {
+      // Validate options
+      validateRollbackOptions(options);
 
-        spinner.succeed('Configuration validated');
+      spinner.succeed('Configuration validated');
 
-        // Get instance info
-        const driver = getDeploymentDriver(options);
-        const instance = await driver.getStatus(instanceId);
+      // Get instance info
+      const driver = getDeploymentDriver(options);
+      const instance = await driver.getStatus(instanceId);
 
-        console.log('\n' + chalk.bold.blue('Rollback Plan:'));
-        console.log('─'.repeat(60));
-        console.log(`  Instance: ${chalk.cyan(instanceId)}`);
-        console.log(`  Agent: ${chalk.cyan(instance.name)}`);
-        console.log(`  Current Version: ${chalk.cyan(instance.version)}`);
-        console.log(`  Platform: ${chalk.cyan(options.platform)}`);
+      console.log('\n' + chalk.bold.blue('Rollback Plan:'));
+      console.log('─'.repeat(60));
+      console.log(`  Instance: ${chalk.cyan(instanceId)}`);
+      console.log(`  Agent: ${chalk.cyan(instance.name)}`);
+      console.log(`  Current Version: ${chalk.cyan(instance.version)}`);
+      console.log(`  Platform: ${chalk.cyan(options.platform)}`);
 
-        if (options.version) {
-          console.log(`  Target Version: ${chalk.cyan(options.version)}`);
-        } else {
-          console.log(`  Rollback Steps: ${chalk.cyan(options.steps)}`);
+      if (options.version) {
+        console.log(`  Target Version: ${chalk.cyan(options.version)}`);
+      } else {
+        console.log(`  Rollback Steps: ${chalk.cyan(options.steps)}`);
+      }
+
+      console.log('─'.repeat(60) + '\n');
+
+      // Confirm rollback
+      if (!options.force && (options.interactive || !options.version)) {
+        const { confirm } = await inquirer.prompt([
+          {
+            type: 'confirm',
+            name: 'confirm',
+            message: chalk.yellow(
+              'Are you sure you want to rollback? This will affect production traffic.'
+            ),
+            default: false,
+          },
+        ]);
+
+        if (!confirm) {
+          console.log(chalk.yellow('Rollback cancelled'));
+          return;
+        }
+      }
+
+      // Execute rollback
+      spinner.start('Rolling back deployment...');
+
+      const rollbackOptions: RollbackOptions = {
+        toVersion: options.version,
+        steps: parseInt(String(options.steps || '1'), 10),
+      };
+
+      const result = await driver.rollback(instanceId, rollbackOptions);
+
+      if (result.success) {
+        spinner.succeed(chalk.green(`✓ ${result.message}`));
+
+        if (result.metadata) {
+          console.log('\n' + chalk.bold('Rollback Details:'));
+          Object.entries(result.metadata).forEach(([key, value]) => {
+            console.log(`  ${key}: ${chalk.cyan(String(value))}`);
+          });
         }
 
-        console.log('─'.repeat(60) + '\n');
-
-        // Confirm rollback
-        if (!options.force && (options.interactive || !options.version)) {
-          const { confirm } = await inquirer.prompt([
-            {
-              type: 'confirm',
-              name: 'confirm',
-              message: chalk.yellow(
-                'Are you sure you want to rollback? This will affect production traffic.'
-              ),
-              default: false,
-            },
-          ]);
-
-          if (!confirm) {
-            console.log(chalk.yellow('Rollback cancelled'));
-            return;
-          }
+        // Verify health after rollback
+        if (options.verify) {
+          await verifyRollbackHealth(driver, instanceId);
         }
-
-        // Execute rollback
-        spinner.start('Rolling back deployment...');
-
-        const rollbackOptions: RollbackOptions = {
-          toVersion: options.version,
-          steps: parseInt(String(options.steps || '1'), 10),
-        };
-
-        const result = await driver.rollback(instanceId, rollbackOptions);
-
-        if (result.success) {
-          spinner.succeed(chalk.green(`✓ ${result.message}`));
-
-          if (result.metadata) {
-            console.log('\n' + chalk.bold('Rollback Details:'));
-            Object.entries(result.metadata).forEach(([key, value]) => {
-              console.log(`  ${key}: ${chalk.cyan(String(value))}`);
-            });
-          }
-
-          // Verify health after rollback
-          if (options.verify) {
-            await verifyRollbackHealth(driver, instanceId);
-          }
-        } else {
-          spinner.fail(chalk.red(`✗ ${result.message}`));
-          process.exit(1);
-        }
-      } catch (error) {
-        spinner.fail(
-          chalk.red(
-            `Rollback failed: ${error instanceof Error ? error.message : String(error)}`
-          )
-        );
+      } else {
+        spinner.fail(chalk.red(`✗ ${result.message}`));
         process.exit(1);
       }
+    } catch (error) {
+      spinner.fail(
+        chalk.red(
+          `Rollback failed: ${error instanceof Error ? error.message : String(error)}`
+        )
+      );
+      process.exit(1);
     }
-  );
+  });
 
 /**
  * Validate rollback options

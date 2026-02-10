@@ -177,7 +177,12 @@ CMD ["npm", "run", "dev"]
   CMD node -e "require('http').get('http://localhost:${config.exposePort || 3000}/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1); });"`;
     }
 
-    const { command, interval = 30, timeout = 10, retries = 3 } = config.healthCheck;
+    const {
+      command,
+      interval = 30,
+      timeout = 10,
+      retries = 3,
+    } = config.healthCheck;
     return `HEALTHCHECK --interval=${interval}s --timeout=${timeout}s --retries=${retries} \\
   CMD ${command}`;
   }
@@ -208,7 +213,10 @@ export class DockerComposeGenerator {
           dockerfile: 'Dockerfile.dev',
           target: 'development',
         },
-        ports: [`${config.exposePort || 3000}:${config.exposePort || 3000}`, '9229:9229'],
+        ports: [
+          `${config.exposePort || 3000}:${config.exposePort || 3000}`,
+          '9229:9229',
+        ],
         volumes: [
           '.:/app',
           '/app/node_modules', // Don't override node_modules
@@ -315,9 +323,12 @@ export class DockerComposeGenerator {
           replicas: 2,
           resources: {
             limits: {
-              cpus: constraints?.resources?.cpu || config.resources?.cpus || '1.0',
+              cpus:
+                constraints?.resources?.cpu || config.resources?.cpus || '1.0',
               memory:
-                constraints?.resources?.memory || config.resources?.memory || '512M',
+                constraints?.resources?.memory ||
+                config.resources?.memory ||
+                '512M',
             },
             reservations: {
               cpus: '0.5',

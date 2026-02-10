@@ -32,9 +32,7 @@ describe('ExternalAgentGenerator', () => {
             port: 9090,
             path: '/webhook/test-agent',
           },
-          tools: [
-            { name: 'search', description: 'Search for information' },
-          ],
+          tools: [{ name: 'search', description: 'Search for information' }],
         },
       };
 
@@ -504,7 +502,9 @@ describe('ExternalAgentGenerator', () => {
       const yaml = result.yaml!;
 
       // Description should be quoted due to special characters
-      expect(yaml).toContain('"Test with: colons and \\"quotes\\" and #comments"');
+      expect(yaml).toContain(
+        '"Test with: colons and \\"quotes\\" and #comments"'
+      );
     });
 
     it('should handle missing LLM configuration', () => {

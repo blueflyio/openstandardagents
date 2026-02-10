@@ -21,10 +21,7 @@ import {
   generatePackageJson,
   generateReadme,
 } from '../base/common-file-generator.js';
-import {
-  validateLLM,
-  validateTools,
-} from '../base/manifest-validator.js';
+import { validateLLM, validateTools } from '../base/manifest-validator.js';
 import { LangChainConverter } from './converter.js';
 import type { LangChainAgentConfig } from './types.js';
 
@@ -99,9 +96,10 @@ export class LangChainAdapter extends BaseAdapter {
 
       // Generate package.json via shared library
       const packageJson = generatePackageJson(manifest, 'langchain', {
-        dependencies: config.llm.provider === 'anthropic'
-          ? { '@langchain/anthropic': '^0.0.1' }
-          : undefined,
+        dependencies:
+          config.llm.provider === 'anthropic'
+            ? { '@langchain/anthropic': '^0.0.1' }
+            : undefined,
       });
       files.push(
         this.createFile('langchain/package.json', packageJson, 'config')
@@ -123,7 +121,14 @@ export class LangChainAdapter extends BaseAdapter {
       );
 
       // Include source OSSA manifest for provenance
-      files.push(this.createFile('langchain/agent.ossa.yaml', yaml.stringify(manifest), 'config', 'yaml'));
+      files.push(
+        this.createFile(
+          'langchain/agent.ossa.yaml',
+          yaml.stringify(manifest),
+          'config',
+          'yaml'
+        )
+      );
 
       return this.createResult(true, files, undefined, {
         duration: Date.now() - startTime,

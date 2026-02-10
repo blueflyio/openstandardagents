@@ -82,11 +82,23 @@ export class GitLabDuoRouterGenerator {
 
       // Conditional routing
       if (step.condition) {
-        routers.push(this.generateConditionalRouter(currentComponent, step.condition, components));
+        routers.push(
+          this.generateConditionalRouter(
+            currentComponent,
+            step.condition,
+            components
+          )
+        );
       }
       // Error handling
       else if (step.onError) {
-        routers.push(this.generateErrorRouter(currentComponent, step.onError, nextComponent));
+        routers.push(
+          this.generateErrorRouter(
+            currentComponent,
+            step.onError,
+            nextComponent
+          )
+        );
       }
       // Simple routing
       else {
@@ -127,11 +139,13 @@ export class GitLabDuoRouterGenerator {
     condition: Record<string, unknown>,
     components: string[]
   ): FlowRouter {
-    const input = condition.input as string || `${from}_output`;
+    const input = (condition.input as string) || `${from}_output`;
     const routes: Record<string, string> = {};
 
     // Parse condition routes
-    const conditionRoutes = condition.routes as Record<string, string> | undefined;
+    const conditionRoutes = condition.routes as
+      | Record<string, string>
+      | undefined;
     if (conditionRoutes) {
       for (const [value, target] of Object.entries(conditionRoutes)) {
         // Find matching component or use as-is
@@ -152,7 +166,11 @@ export class GitLabDuoRouterGenerator {
   /**
    * Generate error handling router
    */
-  private generateErrorRouter(from: string, errorHandler: string, defaultNext: string): FlowRouter {
+  private generateErrorRouter(
+    from: string,
+    errorHandler: string,
+    defaultNext: string
+  ): FlowRouter {
     // For now, fallback to simple routing
     // Full error handling requires extended router types
     return {
@@ -164,7 +182,11 @@ export class GitLabDuoRouterGenerator {
   /**
    * Generate parallel execution router
    */
-  generateParallelRouter(from: string, branches: string[], joinAt: string): ParallelRoute {
+  generateParallelRouter(
+    from: string,
+    branches: string[],
+    joinAt: string
+  ): ParallelRoute {
     return {
       from,
       parallel: branches,
@@ -245,7 +267,10 @@ export class GitLabDuoRouterGenerator {
   /**
    * Generate error handling flow
    */
-  generateErrorHandlingFlow(primaryFlow: string[], errorComponent: string): FlowRouter[] {
+  generateErrorHandlingFlow(
+    primaryFlow: string[],
+    errorComponent: string
+  ): FlowRouter[] {
     const routers: FlowRouter[] = [];
 
     // Add error routes for each component in primary flow
@@ -336,10 +361,13 @@ export class GitLabDuoRouterGenerator {
       from: splitter,
       condition: {
         input: 'work_items',
-        routes: workers.reduce((acc, worker, idx) => {
-          acc[`item_${idx}`] = worker;
-          return acc;
-        }, {} as Record<string, string>),
+        routes: workers.reduce(
+          (acc, worker, idx) => {
+            acc[`item_${idx}`] = worker;
+            return acc;
+          },
+          {} as Record<string, string>
+        ),
       },
     });
 
@@ -446,7 +474,8 @@ export class GitLabDuoRouterGenerator {
         },
         {
           name: 'approval_gate',
-          description: 'Routes based on approval decision for sensitive operations',
+          description:
+            'Routes based on approval decision for sensitive operations',
           from: `${agentName}_approval_checker`,
           condition: {
             input: 'approval_status',
@@ -462,7 +491,11 @@ export class GitLabDuoRouterGenerator {
       ],
       metadata: {
         description: 'Conditional routing configuration for branching logic',
-        patterns: ['output_classification', 'priority_routing', 'approval_gating'],
+        patterns: [
+          'output_classification',
+          'priority_routing',
+          'approval_gating',
+        ],
         created_at: new Date().toISOString(),
       },
     };
@@ -487,7 +520,8 @@ export class GitLabDuoRouterGenerator {
       orchestration: {
         coordinator: {
           name: `${agentName}_coordinator`,
-          description: 'Entry point that analyzes the task and delegates to specialized agents',
+          description:
+            'Entry point that analyzes the task and delegates to specialized agents',
           routes_to: ['parallel_workers', 'sequential_pipeline'],
           decision_input: 'task_complexity',
         },
@@ -499,12 +533,14 @@ export class GitLabDuoRouterGenerator {
           workers: [
             {
               name: `${agentName}_code_analyzer`,
-              description: 'Analyzes code quality, patterns, and potential issues',
+              description:
+                'Analyzes code quality, patterns, and potential issues',
               accepts: 'code_files',
             },
             {
               name: `${agentName}_security_scanner`,
-              description: 'Scans for security vulnerabilities and policy violations',
+              description:
+                'Scans for security vulnerabilities and policy violations',
               accepts: 'code_files',
             },
             {
@@ -529,7 +565,8 @@ export class GitLabDuoRouterGenerator {
           stages: [
             {
               name: `${agentName}_input_validator`,
-              description: 'Validates and normalizes the input before processing',
+              description:
+                'Validates and normalizes the input before processing',
               order: 1,
             },
             {
@@ -540,7 +577,8 @@ export class GitLabDuoRouterGenerator {
             },
             {
               name: `${agentName}_output_formatter`,
-              description: 'Formats the output for the target context (issue comment, MR review, etc.)',
+              description:
+                'Formats the output for the target context (issue comment, MR review, etc.)',
               order: 3,
               depends_on: `${agentName}_processor`,
             },
@@ -554,7 +592,8 @@ export class GitLabDuoRouterGenerator {
         },
         aggregator: {
           name: `${agentName}_result_aggregator`,
-          description: 'Merges results from parallel workers into a single coherent output',
+          description:
+            'Merges results from parallel workers into a single coherent output',
           strategy: 'merge_all',
           conflict_resolution: 'highest_confidence',
           routes_to: 'end',
@@ -568,7 +607,8 @@ export class GitLabDuoRouterGenerator {
         fallback_agent: agentName,
       },
       metadata: {
-        description: 'Multi-agent orchestration for parallel and sequential agent coordination',
+        description:
+          'Multi-agent orchestration for parallel and sequential agent coordination',
         patterns: ['fan_out_fan_in', 'pipeline', 'coordinator_worker'],
         created_at: new Date().toISOString(),
       },

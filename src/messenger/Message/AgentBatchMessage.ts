@@ -75,9 +75,11 @@ export class AgentBatchMessage {
   constructor(
     private readonly agentIds: string[],
     private readonly inputs: Record<string, Record<string, unknown>>,
-    private readonly options: AgentBatchMessageData['options'] = { mode: 'parallel' },
+    private readonly options: AgentBatchMessageData['options'] = {
+      mode: 'parallel',
+    },
     private readonly context: AgentBatchMessageData['context'] = {},
-    private readonly callbackUrl?: string,
+    private readonly callbackUrl?: string
   ) {
     if (agentIds.length === 0) {
       throw new Error('AgentBatchMessage requires at least one agent ID');
@@ -170,7 +172,7 @@ export class AgentBatchMessage {
       data.inputs,
       data.options,
       data.context,
-      data.callbackUrl,
+      data.callbackUrl
     );
   }
 }

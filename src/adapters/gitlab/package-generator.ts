@@ -93,7 +93,10 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
       }
 
       const agentName = this.getAgentName(manifest);
-      const packagePath = path.join(options.outputDir, `${agentName}-gitlab-duo`);
+      const packagePath = path.join(
+        options.outputDir,
+        `${agentName}-gitlab-duo`
+      );
 
       // Check if package already exists
       if (!options.overwrite) {
@@ -101,7 +104,9 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
           await fs.access(packagePath);
           return {
             success: false,
-            errors: [`Package directory already exists: ${packagePath}. Use overwrite option to replace.`],
+            errors: [
+              `Package directory already exists: ${packagePath}. Use overwrite option to replace.`,
+            ],
           };
         } catch {
           // Directory doesn't exist, continue
@@ -131,7 +136,10 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
   /**
    * Validate manifest before generation
    */
-  private validateManifest(manifest: OssaAgent): { valid: boolean; errors: string[] } {
+  private validateManifest(manifest: OssaAgent): {
+    valid: boolean;
+    errors: string[];
+  } {
     const errors: string[] = [];
 
     if (!manifest.metadata?.name) {
@@ -197,7 +205,8 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
     }
 
     // ── Triggers (7 files - all types) ───────────────────────
-    const triggerFiles = this.triggerGenerator.generateAllTriggerFiles(manifest);
+    const triggerFiles =
+      this.triggerGenerator.generateAllTriggerFiles(manifest);
     for (const [fileName, content] of triggerFiles.entries()) {
       files.push({
         path: `.gitlab/duo/triggers/${fileName}`,
@@ -372,8 +381,14 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
       lines.push('This agent has access to the following tools:');
       lines.push('');
       for (const tool of tools) {
-        const toolObj = tool as { name?: string; description?: string; type?: string };
-        lines.push(`- **${toolObj.name || toolObj.type}**: ${toolObj.description || 'No description'}`);
+        const toolObj = tool as {
+          name?: string;
+          description?: string;
+          type?: string;
+        };
+        lines.push(
+          `- **${toolObj.name || toolObj.type}**: ${toolObj.description || 'No description'}`
+        );
       }
       lines.push('');
     }
@@ -427,13 +442,17 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
     // Add deployment section
     lines.push('## Deployment');
     lines.push('');
-    lines.push('See [DEPLOYMENT.md](../../../DEPLOYMENT.md) for detailed deployment instructions.');
+    lines.push(
+      'See [DEPLOYMENT.md](../../../DEPLOYMENT.md) for detailed deployment instructions.'
+    );
     lines.push('');
 
     // Add documentation link
     lines.push('## Documentation');
     lines.push('');
-    lines.push('- [GitLab Duo Documentation](https://docs.gitlab.com/ee/user/gitlab_duo/)');
+    lines.push(
+      '- [GitLab Duo Documentation](https://docs.gitlab.com/ee/user/gitlab_duo/)'
+    );
     lines.push('- [OSSA Specification](https://github.com/bluefly-io/ossa)');
     lines.push('');
 
@@ -466,7 +485,9 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
 
     lines.push('## Overview');
     lines.push('');
-    lines.push('This is a GitLab Duo agent generated from an OSSA manifest. It integrates with GitLab Duo AI Gateway and can be deployed as a Flow or External Agent.');
+    lines.push(
+      'This is a GitLab Duo agent generated from an OSSA manifest. It integrates with GitLab Duo AI Gateway and can be deployed as a Flow or External Agent.'
+    );
     lines.push('');
 
     lines.push('## Quick Start');
@@ -494,7 +515,9 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
 
     lines.push('### Deploy');
     lines.push('');
-    lines.push('See [DEPLOYMENT.md](./DEPLOYMENT.md) for deployment instructions.');
+    lines.push(
+      'See [DEPLOYMENT.md](./DEPLOYMENT.md) for deployment instructions.'
+    );
     lines.push('');
 
     lines.push('## Directory Structure');
@@ -503,23 +526,43 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
     lines.push('.gitlab/duo/');
     lines.push('  flows/');
     lines.push('    main.yaml                   # Primary agent flow');
-    lines.push('    error.yaml                  # Error handling with retry logic');
-    lines.push('    monitor.yaml                # Monitoring and observability');
-    lines.push('    governance.yaml             # Compliance and policy checks');
-    lines.push(`  agents/${this.getAgentName(manifest)}.yaml    # External Agent configuration`);
+    lines.push(
+      '    error.yaml                  # Error handling with retry logic'
+    );
+    lines.push(
+      '    monitor.yaml                # Monitoring and observability'
+    );
+    lines.push(
+      '    governance.yaml             # Compliance and policy checks'
+    );
+    lines.push(
+      `  agents/${this.getAgentName(manifest)}.yaml    # External Agent configuration`
+    );
     lines.push('  triggers/');
     lines.push('    mention.yaml                # @agent mention triggers');
-    lines.push('    assign.yaml                 # Issue/MR assignment triggers');
-    lines.push('    assign_reviewer.yaml        # MR reviewer assignment triggers');
-    lines.push('    schedule.yaml               # Cron-based scheduled triggers');
+    lines.push(
+      '    assign.yaml                 # Issue/MR assignment triggers'
+    );
+    lines.push(
+      '    assign_reviewer.yaml        # MR reviewer assignment triggers'
+    );
+    lines.push(
+      '    schedule.yaml               # Cron-based scheduled triggers'
+    );
     lines.push('    pipeline.yaml               # CI/CD pipeline triggers');
     lines.push('    webhook.yaml                # External webhook triggers');
-    lines.push('    file_pattern.yaml           # File change pattern triggers');
+    lines.push(
+      '    file_pattern.yaml           # File change pattern triggers'
+    );
     lines.push('  routers/');
     lines.push('    conditional.yaml            # Conditional routing logic');
     lines.push('    multi-agent.yaml            # Multi-agent orchestration');
-    lines.push('  mcp-config.yaml               # MCP server configuration (YAML)');
-    lines.push('  mcp-config.json               # MCP server configuration (JSON)');
+    lines.push(
+      '  mcp-config.yaml               # MCP server configuration (YAML)'
+    );
+    lines.push(
+      '  mcp-config.json               # MCP server configuration (JSON)'
+    );
     lines.push('  custom-tools.json             # Custom tool definitions');
     lines.push('  AGENTS.md                     # Agent documentation');
     lines.push('src/                            # Source code');
@@ -531,9 +574,13 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
 
     lines.push('## Documentation');
     lines.push('');
-    lines.push('- [AGENTS.md](./.gitlab/duo/AGENTS.md) - Agent capabilities and usage');
+    lines.push(
+      '- [AGENTS.md](./.gitlab/duo/AGENTS.md) - Agent capabilities and usage'
+    );
     lines.push('- [DEPLOYMENT.md](./DEPLOYMENT.md) - Deployment guide');
-    lines.push('- [GitLab Duo Documentation](https://docs.gitlab.com/ee/user/gitlab_duo/)');
+    lines.push(
+      '- [GitLab Duo Documentation](https://docs.gitlab.com/ee/user/gitlab_duo/)'
+    );
     lines.push('');
 
     lines.push('## License');
@@ -554,14 +601,18 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
 
     lines.push('# Deployment Guide');
     lines.push('');
-    lines.push(`This guide explains how to deploy the **${manifest.metadata?.name || 'Agent'}** to GitLab Duo.`);
+    lines.push(
+      `This guide explains how to deploy the **${manifest.metadata?.name || 'Agent'}** to GitLab Duo.`
+    );
     lines.push('');
 
     lines.push('## Deployment Options');
     lines.push('');
     lines.push('This agent supports two deployment modes:');
     lines.push('');
-    lines.push('1. **Flow Agent** - Runs within GitLab Duo infrastructure (recommended)');
+    lines.push(
+      '1. **Flow Agent** - Runs within GitLab Duo infrastructure (recommended)'
+    );
     lines.push('2. **External Agent** - Runs in your GitLab CI/CD pipeline');
     lines.push('');
 
@@ -593,15 +644,21 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
     lines.push('### Build Container Image');
     lines.push('');
     lines.push('```bash');
-    lines.push('docker build -t registry.gitlab.com/<namespace>/<project>/<agent>:latest .');
-    lines.push('docker push registry.gitlab.com/<namespace>/<project>/<agent>:latest');
+    lines.push(
+      'docker build -t registry.gitlab.com/<namespace>/<project>/<agent>:latest .'
+    );
+    lines.push(
+      'docker push registry.gitlab.com/<namespace>/<project>/<agent>:latest'
+    );
     lines.push('```');
     lines.push('');
 
     lines.push('### Register External Agent');
     lines.push('');
     lines.push('```bash');
-    lines.push(`glab duo agent register external .gitlab/duo/agents/${agentName}.yaml`);
+    lines.push(
+      `glab duo agent register external .gitlab/duo/agents/${agentName}.yaml`
+    );
     lines.push('```');
     lines.push('');
 
@@ -667,9 +724,15 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
 
     lines.push('## Documentation');
     lines.push('');
-    lines.push('- [GitLab Duo Flows](https://docs.gitlab.com/ee/user/gitlab_duo/flows.html)');
-    lines.push('- [GitLab Duo External Agents](https://docs.gitlab.com/ee/user/gitlab_duo/external_agents.html)');
-    lines.push('- [AI Gateway Documentation](https://docs.gitlab.com/ee/architecture/blueprints/ai_gateway/)');
+    lines.push(
+      '- [GitLab Duo Flows](https://docs.gitlab.com/ee/user/gitlab_duo/flows.html)'
+    );
+    lines.push(
+      '- [GitLab Duo External Agents](https://docs.gitlab.com/ee/user/gitlab_duo/external_agents.html)'
+    );
+    lines.push(
+      '- [AI Gateway Documentation](https://docs.gitlab.com/ee/architecture/blueprints/ai_gateway/)'
+    );
     lines.push('');
 
     return lines.join('\n');
@@ -711,11 +774,7 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
       engines: {
         node: '>=22.0.0',
       },
-      keywords: [
-        'gitlab-duo',
-        'ai-agent',
-        'ossa',
-      ],
+      keywords: ['gitlab-duo', 'ai-agent', 'ossa'],
       author: this.getAgentAuthor(manifest),
       license: this.getAgentLicense(manifest),
     });
@@ -957,7 +1016,11 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
             GITLAB_URL: 'https://gitlab.com',
           },
         };
-      } else if (toolName.includes('file') || toolName.includes('read') || toolName.includes('write')) {
+      } else if (
+        toolName.includes('file') ||
+        toolName.includes('read') ||
+        toolName.includes('write')
+      ) {
         mcpServers['filesystem'] = {
           command: 'npx',
           args: ['-y', '@modelcontextprotocol/server-filesystem', '/workspace'],
@@ -992,7 +1055,12 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
    */
   private generateMCPConfigYAML(manifest: OssaAgent): string {
     const spec = manifest.spec as Record<string, unknown>;
-    const tools = (spec.tools as Array<{ name?: string; type?: string; description?: string }>) || [];
+    const tools =
+      (spec.tools as Array<{
+        name?: string;
+        type?: string;
+        description?: string;
+      }>) || [];
     const agentName = manifest.metadata?.name || 'agent';
 
     const mcpServers: Record<string, unknown> = {};
@@ -1003,25 +1071,42 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
 
       if (toolName.includes('gitlab')) {
         mcpServers['gitlab'] = {
-          description: 'GitLab API operations (issues, MRs, comments, repository files)',
+          description:
+            'GitLab API operations (issues, MRs, comments, repository files)',
           command: 'npx',
           args: ['-y', '@modelcontextprotocol/server-gitlab'],
           env: {
             GITLAB_TOKEN: '${GITLAB_TOKEN}',
             GITLAB_URL: '${GITLAB_URL:-https://gitlab.com}',
           },
-          capabilities: ['issues', 'merge_requests', 'comments', 'repository_files', 'pipelines'],
+          capabilities: [
+            'issues',
+            'merge_requests',
+            'comments',
+            'repository_files',
+            'pipelines',
+          ],
         };
-      } else if (toolName.includes('file') || toolName.includes('read') || toolName.includes('write')) {
+      } else if (
+        toolName.includes('file') ||
+        toolName.includes('read') ||
+        toolName.includes('write')
+      ) {
         mcpServers['filesystem'] = {
           description: 'File system operations (read, write, list, search)',
           command: 'npx',
           args: ['-y', '@modelcontextprotocol/server-filesystem', '/workspace'],
-          capabilities: ['read_file', 'create_file_with_contents', 'update_file', 'list_dir'],
+          capabilities: [
+            'read_file',
+            'create_file_with_contents',
+            'update_file',
+            'list_dir',
+          ],
         };
       } else if (toolName.includes('search')) {
         mcpServers['ripgrep'] = {
-          description: 'Code search using ripgrep for fast file content searching',
+          description:
+            'Code search using ripgrep for fast file content searching',
           command: 'npx',
           args: ['-y', '@modelcontextprotocol/server-ripgrep', '/workspace'],
           capabilities: ['search_files', 'regex_search'],
@@ -1031,7 +1116,8 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
 
     // Always include memory server
     mcpServers['memory'] = {
-      description: 'Persistent memory across agent sessions for context retention',
+      description:
+        'Persistent memory across agent sessions for context retention',
       command: 'npx',
       args: ['-y', '@modelcontextprotocol/server-memory'],
       capabilities: ['store', 'retrieve', 'delete', 'list_memories'],
@@ -1039,7 +1125,8 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
 
     // Always include fetch server for external data
     mcpServers['fetch'] = {
-      description: 'HTTP fetch for retrieving external documentation and API data',
+      description:
+        'HTTP fetch for retrieving external documentation and API data',
       command: 'npx',
       args: ['-y', '@modelcontextprotocol/server-fetch'],
       capabilities: ['fetch_url', 'parse_html', 'extract_text'],
@@ -1073,13 +1160,14 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
    */
   private generateCustomTools(manifest: OssaAgent): string {
     const spec = manifest.spec as Record<string, unknown>;
-    const tools = (spec.tools as Array<{
-      name?: string;
-      description?: string;
-      parameters?: Record<string, unknown>;
-    }>) || [];
+    const tools =
+      (spec.tools as Array<{
+        name?: string;
+        description?: string;
+        parameters?: Record<string, unknown>;
+      }>) || [];
 
-    const customTools = tools.map(tool => ({
+    const customTools = tools.map((tool) => ({
       name: tool.name || 'custom_tool',
       description: tool.description || 'Custom tool implementation',
       input_schema: {
@@ -1108,7 +1196,9 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
     lines.push('');
     lines.push('## Overview');
     lines.push('');
-    lines.push('This document outlines security considerations, best practices, and procedures for deploying and operating this GitLab Duo agent.');
+    lines.push(
+      'This document outlines security considerations, best practices, and procedures for deploying and operating this GitLab Duo agent.'
+    );
     lines.push('');
 
     lines.push('## Authentication & Authorization');
@@ -1118,7 +1208,9 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
     lines.push('**Required Scopes:**');
     lines.push('- `api` - Full API access');
     lines.push('- `read_repository` - Read repository data');
-    lines.push('- `write_repository` - Write repository data (if agent modifies files)');
+    lines.push(
+      '- `write_repository` - Write repository data (if agent modifies files)'
+    );
     lines.push('');
     lines.push('**Token Storage:**');
     lines.push('- Store tokens as GitLab CI/CD variables (masked)');
@@ -1154,9 +1246,15 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
     lines.push('');
     lines.push('Restrict tool capabilities based on environment:');
     lines.push('');
-    lines.push('- **Read-only tools**: `read_file`, `list_dir`, `search_files`');
-    lines.push('- **Write tools**: `create_file`, `update_file` (production only)');
-    lines.push('- **Shell execution**: Disabled by default, enable with caution');
+    lines.push(
+      '- **Read-only tools**: `read_file`, `list_dir`, `search_files`'
+    );
+    lines.push(
+      '- **Write tools**: `create_file`, `update_file` (production only)'
+    );
+    lines.push(
+      '- **Shell execution**: Disabled by default, enable with caution'
+    );
     lines.push('');
 
     lines.push('## Data Protection');
@@ -1165,7 +1263,7 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
     lines.push('');
     lines.push('- Never log sensitive data (tokens, passwords, API keys)');
     lines.push('- Redact sensitive patterns in output');
-    lines.push('- Use GitLab\'s built-in secret detection');
+    lines.push("- Use GitLab's built-in secret detection");
     lines.push('');
     lines.push('### Data Retention');
     lines.push('');
@@ -1272,9 +1370,15 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
 
     lines.push('## References');
     lines.push('');
-    lines.push('- [GitLab Security Best Practices](https://docs.gitlab.com/ee/security/)');
-    lines.push('- [GitLab Duo Security](https://docs.gitlab.com/ee/user/gitlab_duo/security.html)');
-    lines.push('- [AI Gateway Security](https://docs.gitlab.com/ee/architecture/blueprints/ai_gateway/security.html)');
+    lines.push(
+      '- [GitLab Security Best Practices](https://docs.gitlab.com/ee/security/)'
+    );
+    lines.push(
+      '- [GitLab Duo Security](https://docs.gitlab.com/ee/user/gitlab_duo/security.html)'
+    );
+    lines.push(
+      '- [AI Gateway Security](https://docs.gitlab.com/ee/architecture/blueprints/ai_gateway/security.html)'
+    );
     lines.push('');
 
     return lines.join('\n');
@@ -1291,7 +1395,9 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
     lines.push('');
     lines.push('## Overview');
     lines.push('');
-    lines.push('This guide covers monitoring, observability, and performance tracking for this GitLab Duo agent.');
+    lines.push(
+      'This guide covers monitoring, observability, and performance tracking for this GitLab Duo agent.'
+    );
     lines.push('');
 
     lines.push('## Metrics');
@@ -1300,8 +1406,12 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
     lines.push('');
     lines.push('| Metric | Description | Target |');
     lines.push('|--------|-------------|--------|');
-    lines.push('| Response Time | Time from trigger to first response | < 5s |');
-    lines.push('| Success Rate | Percentage of successful executions | > 95% |');
+    lines.push(
+      '| Response Time | Time from trigger to first response | < 5s |'
+    );
+    lines.push(
+      '| Success Rate | Percentage of successful executions | > 95% |'
+    );
     lines.push('| Error Rate | Percentage of failed executions | < 5% |');
     lines.push('| Token Usage | Average tokens per execution | Monitor |');
     lines.push('| Tool Calls | Number of tool executions | Monitor |');
@@ -1317,7 +1427,9 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
     lines.push(`glab duo agent metrics ${agentName} --metric response_time`);
     lines.push('');
     lines.push('# Export metrics to JSON');
-    lines.push(`glab duo agent metrics ${agentName} --format json > metrics.json`);
+    lines.push(
+      `glab duo agent metrics ${agentName} --format json > metrics.json`
+    );
     lines.push('```');
     lines.push('');
 
@@ -1362,7 +1474,9 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
     lines.push(`glab duo agent trace <execution-id>`);
     lines.push('');
     lines.push('# Export trace');
-    lines.push(`glab duo agent trace <execution-id> --format json > trace.json`);
+    lines.push(
+      `glab duo agent trace <execution-id> --format json > trace.json`
+    );
     lines.push('```');
     lines.push('');
 
@@ -1398,7 +1512,9 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
     lines.push('');
     lines.push('1. **High Error Rate** - > 10% errors in 5 minutes');
     lines.push('2. **Slow Response** - Average response time > 30s');
-    lines.push('3. **Agent Down** - No executions in 1 hour (for scheduled agents)');
+    lines.push(
+      '3. **Agent Down** - No executions in 1 hour (for scheduled agents)'
+    );
     lines.push('4. **Token Limit** - Token usage > 90% of limit');
     lines.push('');
 
@@ -1496,9 +1612,15 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
 
     lines.push('## References');
     lines.push('');
-    lines.push('- [GitLab Duo Monitoring](https://docs.gitlab.com/ee/user/gitlab_duo/monitoring.html)');
-    lines.push('- [AI Gateway Metrics](https://docs.gitlab.com/ee/architecture/blueprints/ai_gateway/metrics.html)');
-    lines.push('- [Performance Best Practices](https://docs.gitlab.com/ee/user/gitlab_duo/performance.html)');
+    lines.push(
+      '- [GitLab Duo Monitoring](https://docs.gitlab.com/ee/user/gitlab_duo/monitoring.html)'
+    );
+    lines.push(
+      '- [AI Gateway Metrics](https://docs.gitlab.com/ee/architecture/blueprints/ai_gateway/metrics.html)'
+    );
+    lines.push(
+      '- [Performance Best Practices](https://docs.gitlab.com/ee/user/gitlab_duo/performance.html)'
+    );
     lines.push('');
 
     return lines.join('\n');
@@ -1511,7 +1633,9 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
     const agentName = this.getAgentName(manifest);
     const lines: string[] = [];
 
-    lines.push(`# Troubleshooting Guide: ${manifest.metadata?.name || 'Agent'}`);
+    lines.push(
+      `# Troubleshooting Guide: ${manifest.metadata?.name || 'Agent'}`
+    );
     lines.push('');
     lines.push('## Common Issues');
     lines.push('');
@@ -1606,7 +1730,9 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
     lines.push('');
     lines.push('1. **Check AI Gateway latency**');
     lines.push('   ```bash');
-    lines.push(`   glab duo agent metrics ${agentName} --metric gateway_latency`);
+    lines.push(
+      `   glab duo agent metrics ${agentName} --metric gateway_latency`
+    );
     lines.push('   ```');
     lines.push('');
     lines.push('2. **Review token usage**');
@@ -1711,7 +1837,9 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
     lines.push(`glab duo agent test ${agentName} --input "test message"`);
     lines.push('');
     lines.push('# Export debug bundle');
-    lines.push(`glab duo agent debug-export ${agentName} > debug-bundle.tar.gz`);
+    lines.push(
+      `glab duo agent debug-export ${agentName} > debug-bundle.tar.gz`
+    );
     lines.push('```');
     lines.push('');
 
@@ -1720,7 +1848,9 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
     lines.push('If issues persist:');
     lines.push('');
     lines.push('1. **Check GitLab Status** - https://status.gitlab.com');
-    lines.push('2. **Review Documentation** - https://docs.gitlab.com/ee/user/gitlab_duo/');
+    lines.push(
+      '2. **Review Documentation** - https://docs.gitlab.com/ee/user/gitlab_duo/'
+    );
     lines.push('3. **Open Support Ticket** - https://support.gitlab.com');
     lines.push('4. **Community Forum** - https://forum.gitlab.com');
     lines.push('');
@@ -1756,7 +1886,10 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
     lines.push('');
     lines.push('### What is this agent?');
     lines.push('');
-    lines.push(manifest.metadata?.description || 'A GitLab Duo agent for automating tasks.');
+    lines.push(
+      manifest.metadata?.description ||
+        'A GitLab Duo agent for automating tasks.'
+    );
     lines.push('');
 
     lines.push('### How do I trigger this agent?');
@@ -1784,10 +1917,14 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
     lines.push('');
     lines.push('Two deployment options:');
     lines.push('');
-    lines.push('1. **Flow Agent** (Recommended) - Runs in GitLab Duo infrastructure');
+    lines.push(
+      '1. **Flow Agent** (Recommended) - Runs in GitLab Duo infrastructure'
+    );
     lines.push('2. **External Agent** - Runs in your CI/CD pipeline');
     lines.push('');
-    lines.push('See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed instructions.');
+    lines.push(
+      'See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed instructions.'
+    );
     lines.push('');
 
     lines.push('### Can I test locally before deploying?');
@@ -1835,12 +1972,16 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
 
     lines.push('### Can the agent access private repositories?');
     lines.push('');
-    lines.push('Yes, if the GitLab token has appropriate permissions. The agent can access any repository the token owner can access.');
+    lines.push(
+      'Yes, if the GitLab token has appropriate permissions. The agent can access any repository the token owner can access.'
+    );
     lines.push('');
 
     lines.push('### What tools does the agent have access to?');
     lines.push('');
-    lines.push('See `.gitlab/duo/custom-tools.json` for complete list. Common tools:');
+    lines.push(
+      'See `.gitlab/duo/custom-tools.json` for complete list. Common tools:'
+    );
     lines.push('');
     lines.push('- File operations (read, write, search)');
     lines.push('- GitLab operations (issues, MRs, comments)');
@@ -1851,7 +1992,9 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
     lines.push('');
     lines.push('### How do I modify the agent behavior?');
     lines.push('');
-    lines.push('Edit the system prompt in `.gitlab/duo/flows/${agentName}.yaml`:');
+    lines.push(
+      'Edit the system prompt in `.gitlab/duo/flows/${agentName}.yaml`:'
+    );
     lines.push('');
     lines.push('```yaml');
     lines.push('prompts:');
@@ -1899,7 +2042,9 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
     lines.push('');
     lines.push('### Agent not responding?');
     lines.push('');
-    lines.push('See [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) for detailed debugging steps.');
+    lines.push(
+      'See [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) for detailed debugging steps.'
+    );
     lines.push('');
 
     lines.push('### High response time?');
@@ -1926,7 +2071,9 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
     lines.push('');
     lines.push('Depends on deployment mode:');
     lines.push('');
-    lines.push('- **Flow Agent**: Scales automatically (GitLab handles infrastructure)');
+    lines.push(
+      '- **Flow Agent**: Scales automatically (GitLab handles infrastructure)'
+    );
     lines.push('- **External Agent**: Limited by CI/CD runners');
     lines.push('');
 
@@ -1947,7 +2094,9 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
     lines.push('- Token usage per execution');
     lines.push('- Number of executions');
     lines.push('');
-    lines.push('Monitor costs: `glab duo agent metrics ${agentName} --metric token_usage`');
+    lines.push(
+      'Monitor costs: `glab duo agent metrics ${agentName} --metric token_usage`'
+    );
     lines.push('');
 
     lines.push('## Security');
@@ -1979,14 +2128,18 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
     lines.push('### Where do I get help?');
     lines.push('');
     lines.push('1. Check [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)');
-    lines.push('2. Review [GitLab Duo Documentation](https://docs.gitlab.com/ee/user/gitlab_duo/)');
+    lines.push(
+      '2. Review [GitLab Duo Documentation](https://docs.gitlab.com/ee/user/gitlab_duo/)'
+    );
     lines.push('3. Open support ticket: https://support.gitlab.com');
     lines.push('4. Community forum: https://forum.gitlab.com');
     lines.push('');
 
     lines.push('### How do I report a bug?');
     lines.push('');
-    lines.push('1. Generate diagnostic report: `glab duo agent diagnose ${agentName}`');
+    lines.push(
+      '1. Generate diagnostic report: `glab duo agent diagnose ${agentName}`'
+    );
     lines.push('2. Open issue in GitLab project');
     lines.push('3. Include diagnostic report and error logs');
     lines.push('');
@@ -2016,7 +2169,9 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
 
     lines.push('## Overview');
     lines.push('');
-    lines.push('This document describes the architecture of this GitLab Duo agent, including its components, data flow, and integration points.');
+    lines.push(
+      'This document describes the architecture of this GitLab Duo agent, including its components, data flow, and integration points.'
+    );
     lines.push('');
 
     lines.push('## High-Level Architecture');
@@ -2246,7 +2401,9 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
     lines.push('### Authentication Chain');
     lines.push('');
     lines.push('```');
-    lines.push('User → GitLab (OAuth) → Flow Engine (JWT) → AI Gateway (Token) → LLM Provider');
+    lines.push(
+      'User → GitLab (OAuth) → Flow Engine (JWT) → AI Gateway (Token) → LLM Provider'
+    );
     lines.push('```');
     lines.push('');
 
@@ -2354,30 +2511,38 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
 
     lines.push('## Overview');
     lines.push('');
-    lines.push('This document describes the APIs for interacting with this GitLab Duo agent programmatically.');
+    lines.push(
+      'This document describes the APIs for interacting with this GitLab Duo agent programmatically.'
+    );
     lines.push('');
 
     lines.push('## GitLab API Integration');
     lines.push('');
     lines.push('### Trigger Agent via API');
     lines.push('');
-    lines.push('**Endpoint:** `POST /api/v4/projects/:id/duo/agents/:agent_id/trigger`');
+    lines.push(
+      '**Endpoint:** `POST /api/v4/projects/:id/duo/agents/:agent_id/trigger`'
+    );
     lines.push('');
-    lines.push('**Authentication:** GitLab personal access token with `api` scope');
+    lines.push(
+      '**Authentication:** GitLab personal access token with `api` scope'
+    );
     lines.push('');
     lines.push('**Request:**');
     lines.push('```bash');
     lines.push('curl -X POST \\');
-    lines.push('  "https://gitlab.com/api/v4/projects/PROJECT_ID/duo/agents/${agentName}/trigger" \\');
+    lines.push(
+      '  "https://gitlab.com/api/v4/projects/PROJECT_ID/duo/agents/${agentName}/trigger" \\'
+    );
     lines.push('  -H "PRIVATE-TOKEN: YOUR_TOKEN" \\');
     lines.push('  -H "Content-Type: application/json" \\');
-    lines.push('  -d \'{');
+    lines.push("  -d '{");
     lines.push('    "input": "Your task description",');
     lines.push('    "context": {');
     lines.push('      "issue_iid": 123,');
     lines.push('      "merge_request_iid": 456');
     lines.push('    }');
-    lines.push('  }\'');
+    lines.push("  }'");
     lines.push('```');
     lines.push('');
     lines.push('**Response:**');
@@ -2392,11 +2557,15 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
 
     lines.push('### Check Execution Status');
     lines.push('');
-    lines.push('**Endpoint:** `GET /api/v4/projects/:id/duo/agents/:agent_id/executions/:execution_id`');
+    lines.push(
+      '**Endpoint:** `GET /api/v4/projects/:id/duo/agents/:agent_id/executions/:execution_id`'
+    );
     lines.push('');
     lines.push('**Request:**');
     lines.push('```bash');
-    lines.push('curl "https://gitlab.com/api/v4/projects/PROJECT_ID/duo/agents/${agentName}/executions/exec-abc123" \\');
+    lines.push(
+      'curl "https://gitlab.com/api/v4/projects/PROJECT_ID/duo/agents/${agentName}/executions/exec-abc123" \\'
+    );
     lines.push('  -H "PRIVATE-TOKEN: YOUR_TOKEN"');
     lines.push('```');
     lines.push('');
@@ -2418,41 +2587,57 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
 
     lines.push('### List Agent Executions');
     lines.push('');
-    lines.push('**Endpoint:** `GET /api/v4/projects/:id/duo/agents/:agent_id/executions`');
+    lines.push(
+      '**Endpoint:** `GET /api/v4/projects/:id/duo/agents/:agent_id/executions`'
+    );
     lines.push('');
     lines.push('**Query Parameters:**');
     lines.push('- `page` - Page number (default: 1)');
     lines.push('- `per_page` - Items per page (default: 20, max: 100)');
-    lines.push('- `status` - Filter by status (`running`, `completed`, `failed`)');
+    lines.push(
+      '- `status` - Filter by status (`running`, `completed`, `failed`)'
+    );
     lines.push('- `since` - Filter executions after date (ISO 8601)');
     lines.push('');
     lines.push('**Request:**');
     lines.push('```bash');
-    lines.push('curl "https://gitlab.com/api/v4/projects/PROJECT_ID/duo/agents/${agentName}/executions?status=completed&per_page=10" \\');
+    lines.push(
+      'curl "https://gitlab.com/api/v4/projects/PROJECT_ID/duo/agents/${agentName}/executions?status=completed&per_page=10" \\'
+    );
     lines.push('  -H "PRIVATE-TOKEN: YOUR_TOKEN"');
     lines.push('```');
     lines.push('');
 
     lines.push('### Get Agent Logs');
     lines.push('');
-    lines.push('**Endpoint:** `GET /api/v4/projects/:id/duo/agents/:agent_id/logs`');
+    lines.push(
+      '**Endpoint:** `GET /api/v4/projects/:id/duo/agents/:agent_id/logs`'
+    );
     lines.push('');
     lines.push('**Query Parameters:**');
     lines.push('- `execution_id` - Filter by execution');
-    lines.push('- `level` - Filter by log level (`ERROR`, `WARN`, `INFO`, `DEBUG`)');
+    lines.push(
+      '- `level` - Filter by log level (`ERROR`, `WARN`, `INFO`, `DEBUG`)'
+    );
     lines.push('- `since` - Filter logs after timestamp');
-    lines.push('- `limit` - Max number of log entries (default: 100, max: 1000)');
+    lines.push(
+      '- `limit` - Max number of log entries (default: 100, max: 1000)'
+    );
     lines.push('');
     lines.push('**Request:**');
     lines.push('```bash');
-    lines.push('curl "https://gitlab.com/api/v4/projects/PROJECT_ID/duo/agents/${agentName}/logs?level=ERROR&limit=50" \\');
+    lines.push(
+      'curl "https://gitlab.com/api/v4/projects/PROJECT_ID/duo/agents/${agentName}/logs?level=ERROR&limit=50" \\'
+    );
     lines.push('  -H "PRIVATE-TOKEN: YOUR_TOKEN"');
     lines.push('```');
     lines.push('');
 
     lines.push('### Get Agent Metrics');
     lines.push('');
-    lines.push('**Endpoint:** `GET /api/v4/projects/:id/duo/agents/:agent_id/metrics`');
+    lines.push(
+      '**Endpoint:** `GET /api/v4/projects/:id/duo/agents/:agent_id/metrics`'
+    );
     lines.push('');
     lines.push('**Query Parameters:**');
     lines.push('- `metric` - Specific metric name (optional)');
@@ -2461,7 +2646,9 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
     lines.push('');
     lines.push('**Request:**');
     lines.push('```bash');
-    lines.push('curl "https://gitlab.com/api/v4/projects/PROJECT_ID/duo/agents/${agentName}/metrics?period=24h" \\');
+    lines.push(
+      'curl "https://gitlab.com/api/v4/projects/PROJECT_ID/duo/agents/${agentName}/metrics?period=24h" \\'
+    );
     lines.push('  -H "PRIVATE-TOKEN: YOUR_TOKEN"');
     lines.push('```');
     lines.push('');
@@ -2485,7 +2672,9 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
     lines.push('');
     lines.push('### Trigger via Webhook');
     lines.push('');
-    lines.push('If webhook trigger is configured (`.gitlab/duo/triggers/webhook.yaml`):');
+    lines.push(
+      'If webhook trigger is configured (`.gitlab/duo/triggers/webhook.yaml`):'
+    );
     lines.push('');
     lines.push('**Endpoint:** Your configured webhook URL');
     lines.push('');
@@ -2497,12 +2686,12 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
     lines.push('  "https://your-instance.com/webhooks/${agentName}" \\');
     lines.push('  -H "Authorization: Bearer YOUR_WEBHOOK_TOKEN" \\');
     lines.push('  -H "Content-Type: application/json" \\');
-    lines.push('  -d \'{');
+    lines.push("  -d '{");
     lines.push('    "event": "custom_event",');
     lines.push('    "data": {');
     lines.push('      "key": "value"');
     lines.push('    }');
-    lines.push('  }\'');
+    lines.push("  }'");
     lines.push('```');
     lines.push('');
 
@@ -2512,7 +2701,9 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
     lines.push('');
     lines.push('```bash');
     lines.push('# Trigger agent');
-    lines.push(`glab duo agent trigger ${agentName} --input "task description"`);
+    lines.push(
+      `glab duo agent trigger ${agentName} --input "task description"`
+    );
     lines.push('');
     lines.push('# List executions');
     lines.push(`glab duo agent executions ${agentName}`);
@@ -2573,7 +2764,9 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
     lines.push('import gitlab');
     lines.push('import time');
     lines.push('');
-    lines.push('gl = gitlab.Gitlab("https://gitlab.com", private_token="YOUR_TOKEN")');
+    lines.push(
+      'gl = gitlab.Gitlab("https://gitlab.com", private_token="YOUR_TOKEN")'
+    );
     lines.push('project = gl.projects.get("project-id")');
     lines.push('');
     lines.push('# Trigger agent');
@@ -2658,9 +2851,11 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
 
     lines.push('## Best Practices');
     lines.push('');
-    lines.push('1. **Use polling with backoff** - Don\'t spam status checks');
+    lines.push("1. **Use polling with backoff** - Don't spam status checks");
     lines.push('2. **Handle rate limits** - Respect RateLimit headers');
-    lines.push('3. **Include context** - Provide issue/MR context when available');
+    lines.push(
+      '3. **Include context** - Provide issue/MR context when available'
+    );
     lines.push('4. **Validate inputs** - Check input format before triggering');
     lines.push('5. **Log trace IDs** - Include trace_id in error reports');
     lines.push('');
@@ -2671,7 +2866,9 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
     lines.push('');
     lines.push('```bash');
     lines.push('# Download OpenAPI spec');
-    lines.push('curl "https://gitlab.com/api/v4/duo/openapi.yaml" > openapi.yaml');
+    lines.push(
+      'curl "https://gitlab.com/api/v4/duo/openapi.yaml" > openapi.yaml'
+    );
     lines.push('```');
     lines.push('');
 

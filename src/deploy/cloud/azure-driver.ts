@@ -151,7 +151,9 @@ export class AzureDeploymentDriver extends BaseDeploymentDriver {
 
     // Create resource group if it doesn't exist
     try {
-      await execAsync(`az group create --name ${resourceGroup} --location ${location}`);
+      await execAsync(
+        `az group create --name ${resourceGroup} --location ${location}`
+      );
     } catch {
       // Resource group might already exist
     }
@@ -214,7 +216,8 @@ export class AzureDeploymentDriver extends BaseDeploymentDriver {
     const execAsync = promisify(exec);
 
     const cluster = config.aksCluster || 'ossa-cluster';
-    const resourceGroup = config.aksResourceGroup || config.resourceGroup || 'ossa-aks';
+    const resourceGroup =
+      config.aksResourceGroup || config.resourceGroup || 'ossa-aks';
 
     try {
       // Get AKS credentials

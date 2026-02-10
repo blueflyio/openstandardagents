@@ -39,7 +39,10 @@ export interface AgentExecutionHandlerDependencies {
    */
   agentRuntime: {
     loadAgent(agentId: string): Promise<OssaAgent>;
-    executeAgent(agent: OssaAgent, input: Record<string, unknown>): Promise<unknown>;
+    executeAgent(
+      agent: OssaAgent,
+      input: Record<string, unknown>
+    ): Promise<unknown>;
   };
 
   /**
@@ -61,7 +64,11 @@ export interface AgentExecutionHandlerDependencies {
    */
   logger: {
     info(message: string, context?: Record<string, unknown>): void;
-    error(message: string, error?: Error, context?: Record<string, unknown>): void;
+    error(
+      message: string,
+      error?: Error,
+      context?: Record<string, unknown>
+    ): void;
     debug(message: string, context?: Record<string, unknown>): void;
   };
 
@@ -105,7 +112,8 @@ export class AgentExecutionHandler {
       const output = await this.deps.agentRuntime.executeAgent(agent, input);
 
       const endTime = new Date().toISOString();
-      const duration = new Date(endTime).getTime() - new Date(startTime).getTime();
+      const duration =
+        new Date(endTime).getTime() - new Date(startTime).getTime();
 
       // Build success result
       const result: AgentExecutionResult = {
@@ -142,7 +150,8 @@ export class AgentExecutionHandler {
       });
     } catch (error) {
       const endTime = new Date().toISOString();
-      const duration = new Date(endTime).getTime() - new Date(startTime).getTime();
+      const duration =
+        new Date(endTime).getTime() - new Date(startTime).getTime();
 
       const errorResult: AgentExecutionResult = {
         success: false,
@@ -161,11 +170,18 @@ export class AgentExecutionHandler {
 
       // Store error result
       try {
-        await this.deps.resultStorage.store(context.requestId ?? agentId, errorResult);
+        await this.deps.resultStorage.store(
+          context.requestId ?? agentId,
+          errorResult
+        );
       } catch (storageError) {
-        this.deps.logger.error('Failed to store error result', storageError as Error, {
-          agentId,
-        });
+        this.deps.logger.error(
+          'Failed to store error result',
+          storageError as Error,
+          {
+            agentId,
+          }
+        );
       }
 
       // Dispatch failure event
@@ -176,20 +192,31 @@ export class AgentExecutionHandler {
           context,
         });
       } catch (eventError) {
-        this.deps.logger.error('Failed to dispatch failure event', eventError as Error, {
-          agentId,
-        });
+        this.deps.logger.error(
+          'Failed to dispatch failure event',
+          eventError as Error,
+          {
+            agentId,
+          }
+        );
       }
 
       // Send callback with error if specified
       const callbackUrl = message.getCallbackUrl();
       if (callbackUrl && this.deps.callbackHandler) {
         try {
-          await this.deps.callbackHandler.notify(callbackUrl || '', errorResult);
+          await this.deps.callbackHandler.notify(
+            callbackUrl || '',
+            errorResult
+          );
         } catch (callbackError) {
-          this.deps.logger.error('Failed to send error callback', callbackError as Error, {
-            agentId,
-          });
+          this.deps.logger.error(
+            'Failed to send error callback',
+            callbackError as Error,
+            {
+              agentId,
+            }
+          );
         }
       }
 

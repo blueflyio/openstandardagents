@@ -210,7 +210,7 @@ export class MemoryBroker implements MessageBroker {
   async subscribe(
     channel: string,
     handler: MessageHandler,
-    options: SubscriptionOptions = {},
+    options: SubscriptionOptions = {}
   ): Promise<string> {
     if (!this.connected) {
       throw new Error('Broker not connected');
@@ -329,7 +329,7 @@ export class MemoryBroker implements MessageBroker {
     const subscriptions = this.subscriptions.size;
     const pendingMessages = Array.from(this.messageQueues.values()).reduce(
       (sum, queue) => sum + queue.length,
-      0,
+      0
     );
 
     return {
@@ -359,7 +359,7 @@ export class MemoryBroker implements MessageBroker {
    */
   private async handleMessage(
     subscriptionId: string,
-    message: MessageEnvelope,
+    message: MessageEnvelope
   ): Promise<void> {
     const subscription = this.subscriptions.get(subscriptionId);
     if (!subscription || !subscription.active) {
@@ -368,7 +368,8 @@ export class MemoryBroker implements MessageBroker {
 
     // Check concurrency limit
     if (
-      subscription.currentConcurrency >= (subscription.options.maxConcurrency || 10)
+      subscription.currentConcurrency >=
+      (subscription.options.maxConcurrency || 10)
     ) {
       return; // Will be retried later
     }
@@ -416,7 +417,7 @@ export class MemoryBroker implements MessageBroker {
 
       console.error(
         `[MemoryBroker] Error processing message ${message.id}:`,
-        error,
+        error
       );
     } finally {
       subscription.currentConcurrency--;
@@ -503,7 +504,9 @@ export class MemoryBroker implements MessageBroker {
   /**
    * Handle failed message (retry or dead letter)
    */
-  private async handleFailedMessage(queuedMessage: QueuedMessage): Promise<void> {
+  private async handleFailedMessage(
+    queuedMessage: QueuedMessage
+  ): Promise<void> {
     const maxAttempts = this.defaultReliability.retry.maxAttempts;
 
     if (queuedMessage.retryCount < maxAttempts) {

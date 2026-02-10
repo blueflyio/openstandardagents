@@ -49,7 +49,8 @@ export function generateKagentCRD(manifest: OssaAgent): KagentCRD {
   const agentType = manifest.metadata?.agentType || 'kagent';
   const agentKind = manifest.metadata?.agentKind || 'worker';
   const pattern = manifest.metadata?.agentArchitecture?.pattern || 'single';
-  const scalability = manifest.metadata?.agentArchitecture?.runtime?.scalability;
+  const scalability =
+    manifest.metadata?.agentArchitecture?.runtime?.scalability;
   const executionModel =
     manifest.metadata?.agentArchitecture?.runtime?.executionModel;
 
@@ -268,10 +269,7 @@ export function generateKubernetesManifests(manifest: OssaAgent): {
 /**
  * Generate README for Kubernetes deployment
  */
-function generateKubernetesReadme(
-  manifest: OssaAgent,
-  crd: KagentCRD
-): string {
+function generateKubernetesReadme(manifest: OssaAgent, crd: KagentCRD): string {
   const name = manifest.metadata?.name || 'agent';
 
   let readme = `# ${name} - Kubernetes Deployment\n\n`;

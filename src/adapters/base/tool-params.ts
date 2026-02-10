@@ -33,7 +33,9 @@ interface JsonSchemaProperty {
 function jsonTypeToPython(prop: JsonSchemaProperty): string {
   switch (prop.type) {
     case 'string':
-      return prop.enum ? `Literal[${prop.enum.map((e) => `"${e}"`).join(', ')}]` : 'str';
+      return prop.enum
+        ? `Literal[${prop.enum.map((e) => `"${e}"`).join(', ')}]`
+        : 'str';
     case 'integer':
       return 'int';
     case 'number':
@@ -41,7 +43,9 @@ function jsonTypeToPython(prop: JsonSchemaProperty): string {
     case 'boolean':
       return 'bool';
     case 'array':
-      const itemType = prop.items?.type ? jsonTypeToPython({ type: prop.items.type }) : 'Any';
+      const itemType = prop.items?.type
+        ? jsonTypeToPython({ type: prop.items.type })
+        : 'Any';
       return `list[${itemType}]`;
     case 'object':
       return 'dict';
@@ -59,11 +63,16 @@ export function generatePythonToolParams(tool: ToolSchema): {
   imports: Set<string>;
   docParams: string;
 } {
-  const schema = tool.input_schema || tool.inputSchema || tool.schema || tool.parameters;
+  const schema =
+    tool.input_schema || tool.inputSchema || tool.schema || tool.parameters;
   const imports = new Set<string>();
 
   if (!schema?.properties || Object.keys(schema.properties).length === 0) {
-    return { params: 'input_data: str', imports, docParams: '    input_data: Input data for the tool' };
+    return {
+      params: 'input_data: str',
+      imports,
+      docParams: '    input_data: Input data for the tool',
+    };
   }
 
   const required = new Set(schema.required || []);
@@ -88,9 +97,12 @@ export function generatePythonToolParams(tool: ToolSchema): {
     }
 
     const isRequired = required.has(name);
-    const defaultVal = prop.default !== undefined
-      ? ` = ${JSON.stringify(prop.default)}`
-      : isRequired ? '' : ' = None';
+    const defaultVal =
+      prop.default !== undefined
+        ? ` = ${JSON.stringify(prop.default)}`
+        : isRequired
+          ? ''
+          : ' = None';
 
     const optionalType = isRequired ? pyType : `${pyType} | None`;
     params.push(`${name}: ${isRequired ? pyType : optionalType}${defaultVal}`);
@@ -119,7 +131,9 @@ function jsonTypeToTS(prop: JsonSchemaProperty): string {
     case 'boolean':
       return 'boolean';
     case 'array':
-      const itemType = prop.items?.type ? jsonTypeToTS({ type: prop.items.type }) : 'unknown';
+      const itemType = prop.items?.type
+        ? jsonTypeToTS({ type: prop.items.type })
+        : 'unknown';
       return `${itemType}[]`;
     case 'object':
       return 'Record<string, unknown>';
@@ -132,9 +146,11 @@ function jsonTypeToTS(prop: JsonSchemaProperty): string {
  * Generate TypeScript interface from tool schema
  */
 export function generateTSToolInterface(tool: ToolSchema): string {
-  const schema = tool.input_schema || tool.inputSchema || tool.schema || tool.parameters;
+  const schema =
+    tool.input_schema || tool.inputSchema || tool.schema || tool.parameters;
   const toolName = (tool.name || 'unknown').replace(/[^a-zA-Z0-9]/g, '');
-  const interfaceName = toolName.charAt(0).toUpperCase() + toolName.slice(1) + 'Input';
+  const interfaceName =
+    toolName.charAt(0).toUpperCase() + toolName.slice(1) + 'Input';
 
   if (!schema?.properties || Object.keys(schema.properties).length === 0) {
     return `interface ${interfaceName} { input: string; }`;

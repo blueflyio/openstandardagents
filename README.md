@@ -39,6 +39,105 @@ ossa export my-agent.ossa.yaml --platform docker --output ./docker-deploy
 ossa export --list-platforms
 ```
 
+## Usage
+
+### Creating an Agent Manifest
+
+Use the interactive wizard to create a new agent manifest:
+
+```bash
+ossa wizard -o my-agent.ossa.yaml
+```
+
+Or create one manually following the [manifest format](#manifest-format) below.
+
+### Validating Manifests
+
+Validate your manifest against the JSON Schema:
+
+```bash
+ossa validate my-agent.ossa.yaml
+```
+
+For stricter validation with best practices checks:
+
+```bash
+ossa lint my-agent.ossa.yaml
+```
+
+### Exporting to Platforms
+
+Export your agent to a specific platform:
+
+```bash
+# Docker deployment
+ossa export my-agent.ossa.yaml --platform docker --output ./docker-deploy
+
+# Kubernetes with Kustomize
+ossa export my-agent.ossa.yaml --platform kubernetes --output ./k8s-deploy
+
+# LangChain Python agent
+ossa export my-agent.ossa.yaml --platform langchain --output ./langchain-agent
+
+# CrewAI multi-agent system
+ossa export my-agent.ossa.yaml --platform crewai --output ./crewai-crew
+
+# Claude Skills package
+ossa export my-agent.ossa.yaml --platform agent-skills --output ./skills
+
+# List all available platforms
+ossa export --list-platforms
+```
+
+### Advanced Options
+
+```bash
+# Dry run (preview without creating files)
+ossa export my-agent.ossa.yaml --platform docker --dry-run
+
+# Verbose output for debugging
+ossa export my-agent.ossa.yaml --platform kubernetes --verbose
+
+# Skip validation (use with caution)
+ossa export my-agent.ossa.yaml --platform npm --no-validate
+
+# Create backup before overwriting
+ossa export my-agent.ossa.yaml --platform docker --backup
+```
+
+### Migrating Between Versions
+
+Upgrade manifests to the latest spec version:
+
+```bash
+# Migrate from older version to current
+ossa migrate agent.ossa.yaml --to 0.4.5
+
+# List available migration paths
+ossa migrate --list
+```
+
+### TypeScript SDK Usage
+
+Use OSSA programmatically in your TypeScript projects:
+
+```typescript
+import { ValidationService, ManifestRepository } from '@bluefly/openstandardagents';
+
+// Load and validate a manifest
+const manifestRepo = new ManifestRepository();
+const validationService = new ValidationService();
+
+const manifest = await manifestRepo.load('./agent.ossa.yaml');
+const result = await validationService.validate(manifest);
+
+if (result.valid) {
+  console.log('✓ Manifest is valid');
+} else {
+  console.error('Validation errors:', result.errors);
+}
+```
+
 ## Production Status (v0.4.5)
 
 ### ✅ Production-Ready (Tested & Documented)

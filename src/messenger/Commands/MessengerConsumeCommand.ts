@@ -52,7 +52,7 @@ export class MessengerConsumeCommand {
     private readonly logger: {
       info(message: string, context?: Record<string, unknown>): void;
       error(message: string, error?: Error): void;
-    },
+    }
   ) {}
 
   /**

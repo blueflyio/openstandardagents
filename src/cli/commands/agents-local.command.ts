@@ -19,7 +19,9 @@ const REGISTRY_NAME = 'registry.yaml';
  * Initialize .agents/ structure in current project
  */
 const initCommand = new Command('init')
-  .description('Initialize .agents/ and .agents-workspace/ in current directory')
+  .description(
+    'Initialize .agents/ and .agents-workspace/ in current directory'
+  )
   .action(() => {
     const agentsDir = path.resolve(AGENTS_DIR);
     const workspaceDir = path.resolve(WORKSPACE_DIR);
@@ -51,12 +53,17 @@ const initCommand = new Command('init')
     if (fs.existsSync(gitignorePath)) {
       const content = fs.readFileSync(gitignorePath, 'utf-8');
       if (!content.includes('.agents-workspace')) {
-        fs.appendFileSync(gitignorePath, '\n# Agent workspace (ephemeral)\n.agents-workspace/\n!.agents-workspace/.gitkeep\n');
+        fs.appendFileSync(
+          gitignorePath,
+          '\n# Agent workspace (ephemeral)\n.agents-workspace/\n!.agents-workspace/.gitkeep\n'
+        );
         console.log(chalk.green('Added .agents-workspace/ to .gitignore'));
       }
     }
 
-    console.log(chalk.green('\nReady. Add agents with: ossa agents add <name>'));
+    console.log(
+      chalk.green('\nReady. Add agents with: ossa agents add <name>')
+    );
   });
 
 /**
@@ -69,59 +76,79 @@ const addCommand = new Command('add')
   .option('--model <model>', 'LLM model', 'claude-sonnet-4-5-20250929')
   .option('--kind <kind>', 'Agent kind (worker, specialist, orchestrator)')
   .description('Create a new agent in .agents/<name>/')
-  .action((name: string, options: { role?: string; provider?: string; model?: string; kind?: string }) => {
-    const agentsDir = path.resolve(AGENTS_DIR);
-    if (!fs.existsSync(agentsDir)) {
-      console.error(chalk.red('No .agents/ directory. Run: ossa agents init'));
-      process.exit(1);
-    }
+  .action(
+    (
+      name: string,
+      options: {
+        role?: string;
+        provider?: string;
+        model?: string;
+        kind?: string;
+      }
+    ) => {
+      const agentsDir = path.resolve(AGENTS_DIR);
+      if (!fs.existsSync(agentsDir)) {
+        console.error(
+          chalk.red('No .agents/ directory. Run: ossa agents init')
+        );
+        process.exit(1);
+      }
 
-    // Validate name is kebab-case
-    if (!/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/.test(name)) {
-      console.error(chalk.red('Agent name must be kebab-case (e.g., code-reviewer)'));
-      process.exit(1);
-    }
+      // Validate name is kebab-case
+      if (!/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/.test(name)) {
+        console.error(
+          chalk.red('Agent name must be kebab-case (e.g., code-reviewer)')
+        );
+        process.exit(1);
+      }
 
-    const agentDir = path.join(agentsDir, name);
-    if (fs.existsSync(agentDir)) {
-      console.error(chalk.red(`Agent ${name} already exists at ${agentDir}/`));
-      process.exit(1);
-    }
+      const agentDir = path.join(agentsDir, name);
+      if (fs.existsSync(agentDir)) {
+        console.error(
+          chalk.red(`Agent ${name} already exists at ${agentDir}/`)
+        );
+        process.exit(1);
+      }
 
-    fs.mkdirSync(agentDir, { recursive: true });
+      fs.mkdirSync(agentDir, { recursive: true });
 
-    const manifest: OssaAgent = {
-      apiVersion: 'ossa/v0.4.5',
-      kind: 'Agent',
-      metadata: {
-        name,
-        version: '1.0.0',
-        description: `${name} agent`,
-        ...(options.kind ? { agentKind: options.kind as any } : {}),
-        labels: {
-          category: 'general',
+      const manifest: OssaAgent = {
+        apiVersion: 'ossa/v0.4.5',
+        kind: 'Agent',
+        metadata: {
+          name,
+          version: '1.0.0',
+          description: `${name} agent`,
+          ...(options.kind ? { agentKind: options.kind as any } : {}),
+          labels: {
+            category: 'general',
+          },
         },
-      },
-      spec: {
-        role: options.role || `You are the ${name} agent.`,
-        llm: {
-          provider: options.provider || 'anthropic',
-          model: options.model || 'claude-sonnet-4-5-20250929',
-          temperature: 0.7,
-          maxTokens: 4096,
+        spec: {
+          role: options.role || `You are the ${name} agent.`,
+          llm: {
+            provider: options.provider || 'anthropic',
+            model: options.model || 'claude-sonnet-4-5-20250929',
+            temperature: 0.7,
+            maxTokens: 4096,
+          },
+          tools: [],
         },
-        tools: [],
-      },
-    };
+      };
 
-    fs.writeFileSync(
-      path.join(agentDir, MANIFEST_NAME),
-      yaml.stringify(manifest)
-    );
+      fs.writeFileSync(
+        path.join(agentDir, MANIFEST_NAME),
+        yaml.stringify(manifest)
+      );
 
-    console.log(chalk.green(`Created ${AGENTS_DIR}/${name}/${MANIFEST_NAME}`));
-    console.log(chalk.gray(`\nEdit the manifest, then run: ossa agents sync`));
-  });
+      console.log(
+        chalk.green(`Created ${AGENTS_DIR}/${name}/${MANIFEST_NAME}`)
+      );
+      console.log(
+        chalk.gray(`\nEdit the manifest, then run: ossa agents sync`)
+      );
+    }
+  );
 
 /**
  * Rebuild registry.yaml from filesystem
@@ -144,13 +171,19 @@ const syncCommand = new Command('sync')
     }> = [];
 
     for (const entry of entries) {
-      if (!entry.isDirectory() || entry.name.startsWith('.') || entry.name.startsWith('_')) {
+      if (
+        !entry.isDirectory() ||
+        entry.name.startsWith('.') ||
+        entry.name.startsWith('_')
+      ) {
         continue;
       }
 
       const manifestPath = path.join(agentsDir, entry.name, MANIFEST_NAME);
       if (!fs.existsSync(manifestPath)) {
-        console.log(chalk.yellow(`Skipping ${entry.name}/ (no ${MANIFEST_NAME})`));
+        console.log(
+          chalk.yellow(`Skipping ${entry.name}/ (no ${MANIFEST_NAME})`)
+        );
         continue;
       }
 
@@ -179,7 +212,9 @@ const syncCommand = new Command('sync')
         name: a.name,
         manifest: a.manifest,
         ...(a.kind ? { kind: a.kind } : {}),
-        ...(a.labels && Object.keys(a.labels).length > 0 ? { labels: a.labels } : {}),
+        ...(a.labels && Object.keys(a.labels).length > 0
+          ? { labels: a.labels }
+          : {}),
       })),
     };
 
@@ -200,7 +235,11 @@ const syncCommand = new Command('sync')
 
     fs.writeFileSync(path.join(agentsDir, REGISTRY_NAME), yamlContent);
 
-    console.log(chalk.green(`Synced ${agents.length} agent(s) to ${AGENTS_DIR}/${REGISTRY_NAME}`));
+    console.log(
+      chalk.green(
+        `Synced ${agents.length} agent(s) to ${AGENTS_DIR}/${REGISTRY_NAME}`
+      )
+    );
     agents.forEach((a) => {
       console.log(chalk.gray(`  ${a.name}${a.kind ? ` (${a.kind})` : ''}`));
     });
@@ -222,7 +261,12 @@ const localListCommand = new Command('local')
     }
 
     const registryPath = path.join(agentsDir, REGISTRY_NAME);
-    let agents: Array<{ name: string; manifest: string; kind?: string; labels?: Record<string, string> }> = [];
+    let agents: Array<{
+      name: string;
+      manifest: string;
+      kind?: string;
+      labels?: Record<string, string>;
+    }> = [];
 
     if (fs.existsSync(registryPath)) {
       const content = fs.readFileSync(registryPath, 'utf-8');
@@ -232,18 +276,27 @@ const localListCommand = new Command('local')
       // Fallback: scan filesystem
       const entries = fs.readdirSync(agentsDir, { withFileTypes: true });
       for (const entry of entries) {
-        if (!entry.isDirectory() || entry.name.startsWith('.') || entry.name.startsWith('_')) continue;
+        if (
+          !entry.isDirectory() ||
+          entry.name.startsWith('.') ||
+          entry.name.startsWith('_')
+        )
+          continue;
         const manifestPath = path.join(agentsDir, entry.name, MANIFEST_NAME);
         if (fs.existsSync(manifestPath)) {
           try {
-            const manifest = yaml.parse(fs.readFileSync(manifestPath, 'utf-8')) as OssaAgent;
+            const manifest = yaml.parse(
+              fs.readFileSync(manifestPath, 'utf-8')
+            ) as OssaAgent;
             agents.push({
               name: manifest.metadata?.name || entry.name,
               manifest: `${entry.name}/${MANIFEST_NAME}`,
               kind: (manifest.metadata as any)?.agentKind,
               labels: manifest.metadata?.labels as Record<string, string>,
             });
-          } catch { /* skip invalid */ }
+          } catch {
+            /* skip invalid */
+          }
         }
       }
     }
@@ -269,7 +322,9 @@ const localListCommand = new Command('local')
     console.log(chalk.bold(`\n${agents.length} agent(s) in ${AGENTS_DIR}/\n`));
     for (const agent of agents) {
       const kindBadge = agent.kind ? chalk.cyan(` [${agent.kind}]`) : '';
-      const category = agent.labels?.category ? chalk.gray(` (${agent.labels.category})`) : '';
+      const category = agent.labels?.category
+        ? chalk.gray(` (${agent.labels.category})`)
+        : '';
       console.log(`  ${chalk.white(agent.name)}${kindBadge}${category}`);
       console.log(chalk.gray(`    ${agent.manifest}`));
     }
@@ -284,33 +339,40 @@ const exportAgentCommand = new Command('export-agent')
   .requiredOption('-p, --platform <platform>', 'Target platform')
   .option('-o, --output <dir>', 'Output directory')
   .description('Export an agent from .agents/ to a platform')
-  .action(async (name: string, options: { platform: string; output?: string }) => {
-    const manifestPath = path.resolve(AGENTS_DIR, name, MANIFEST_NAME);
-    if (!fs.existsSync(manifestPath)) {
-      console.error(chalk.red(`Agent not found: ${AGENTS_DIR}/${name}/${MANIFEST_NAME}`));
-      process.exit(1);
-    }
+  .action(
+    async (name: string, options: { platform: string; output?: string }) => {
+      const manifestPath = path.resolve(AGENTS_DIR, name, MANIFEST_NAME);
+      if (!fs.existsSync(manifestPath)) {
+        console.error(
+          chalk.red(`Agent not found: ${AGENTS_DIR}/${name}/${MANIFEST_NAME}`)
+        );
+        process.exit(1);
+      }
 
-    const outputDir = options.output || `.agents-workspace/exports/${name}-${options.platform}`;
+      const outputDir =
+        options.output ||
+        `.agents-workspace/exports/${name}-${options.platform}`;
 
-    // Delegate to the existing export command
-    console.log(chalk.blue(`Exporting ${name} to ${options.platform}...`));
-    const { execSync } = await import('child_process');
-    try {
-      execSync(
-        `node ${path.resolve('dist/cli/index.js')} export "${manifestPath}" -p ${options.platform} -o "${outputDir}" --verbose`,
-        { stdio: 'inherit', cwd: process.cwd() }
-      );
-    } catch {
-      process.exit(1);
+      // Delegate to the existing export command
+      console.log(chalk.blue(`Exporting ${name} to ${options.platform}...`));
+      const { execSync } = await import('child_process');
+      try {
+        execSync(
+          `node ${path.resolve('dist/cli/index.js')} export "${manifestPath}" -p ${options.platform} -o "${outputDir}" --verbose`,
+          { stdio: 'inherit', cwd: process.cwd() }
+        );
+      } catch {
+        process.exit(1);
+      }
     }
-  });
+  );
 
 /**
  * Agents local command group
  */
-export const agentsLocalCommandGroup = new Command('agents-local')
-  .description('Manage local .agents/ folder structure');
+export const agentsLocalCommandGroup = new Command('agents-local').description(
+  'Manage local .agents/ folder structure'
+);
 
 agentsLocalCommandGroup.addCommand(initCommand);
 agentsLocalCommandGroup.addCommand(addCommand);

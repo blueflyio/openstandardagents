@@ -66,12 +66,15 @@ export interface LoadBalancerStats {
   successfulRequests: number;
   failedRequests: number;
   avgLatencyMs: number;
-  agentStats: Map<string, {
-    requests: number;
-    successes: number;
-    failures: number;
-    avgLatencyMs: number;
-  }>;
+  agentStats: Map<
+    string,
+    {
+      requests: number;
+      successes: number;
+      failures: number;
+      avgLatencyMs: number;
+    }
+  >;
 }
 
 /**
@@ -118,7 +121,7 @@ export class RoundRobinLoadBalancer implements LoadBalancer {
 
     // Filter excluded agents
     const filtered = context?.excludeAgents
-      ? candidates.filter(a => !context.excludeAgents!.includes(a.uri))
+      ? candidates.filter((a) => !context.excludeAgents!.includes(a.uri))
       : candidates;
 
     if (filtered.length === 0) return null;
@@ -139,7 +142,8 @@ export class RoundRobinLoadBalancer implements LoadBalancer {
     }
 
     if (latencyMs !== undefined) {
-      const totalLatency = this.stats.avgLatencyMs * (this.stats.totalRequests - 1) + latencyMs;
+      const totalLatency =
+        this.stats.avgLatencyMs * (this.stats.totalRequests - 1) + latencyMs;
       this.stats.avgLatencyMs = totalLatency / this.stats.totalRequests;
     }
 
@@ -160,7 +164,8 @@ export class RoundRobinLoadBalancer implements LoadBalancer {
 
     if (latencyMs !== undefined) {
       agentStat.avgLatencyMs =
-        (agentStat.avgLatencyMs * (agentStat.requests - 1) + latencyMs) / agentStat.requests;
+        (agentStat.avgLatencyMs * (agentStat.requests - 1) + latencyMs) /
+        agentStat.requests;
     }
 
     this.stats.agentStats.set(agentUri, agentStat);
@@ -189,7 +194,7 @@ export class LeastConnectionsLoadBalancer implements LoadBalancer {
 
     // Filter excluded agents
     const filtered = context?.excludeAgents
-      ? candidates.filter(a => !context.excludeAgents!.includes(a.uri))
+      ? candidates.filter((a) => !context.excludeAgents!.includes(a.uri))
       : candidates;
 
     if (filtered.length === 0) return null;
@@ -224,7 +229,8 @@ export class LeastConnectionsLoadBalancer implements LoadBalancer {
     }
 
     if (latencyMs !== undefined) {
-      const totalLatency = this.stats.avgLatencyMs * (this.stats.totalRequests - 1) + latencyMs;
+      const totalLatency =
+        this.stats.avgLatencyMs * (this.stats.totalRequests - 1) + latencyMs;
       this.stats.avgLatencyMs = totalLatency / this.stats.totalRequests;
     }
 
@@ -245,7 +251,8 @@ export class LeastConnectionsLoadBalancer implements LoadBalancer {
 
     if (latencyMs !== undefined) {
       agentStat.avgLatencyMs =
-        (agentStat.avgLatencyMs * (agentStat.requests - 1) + latencyMs) / agentStat.requests;
+        (agentStat.avgLatencyMs * (agentStat.requests - 1) + latencyMs) /
+        agentStat.requests;
     }
 
     this.stats.agentStats.set(agentUri, agentStat);
@@ -274,19 +281,19 @@ export class WeightedLoadBalancer implements LoadBalancer {
 
     // Filter excluded agents
     const filtered = context?.excludeAgents
-      ? candidates.filter(a => !context.excludeAgents!.includes(a.uri))
+      ? candidates.filter((a) => !context.excludeAgents!.includes(a.uri))
       : candidates;
 
     if (filtered.length === 0) return null;
 
     // Calculate weights (default weight is 1.0)
-    const weights = filtered.map(agent => {
+    const weights = filtered.map((agent) => {
       const agentStat = this.stats.agentStats.get(agent.uri);
       if (!agentStat) return 1.0;
 
       // Weight based on success rate and latency
       const successRate = agentStat.successes / agentStat.requests;
-      const latencyPenalty = Math.max(0, 1 - (agentStat.avgLatencyMs / 1000));
+      const latencyPenalty = Math.max(0, 1 - agentStat.avgLatencyMs / 1000);
 
       return successRate * latencyPenalty;
     });
@@ -316,7 +323,8 @@ export class WeightedLoadBalancer implements LoadBalancer {
     }
 
     if (latencyMs !== undefined) {
-      const totalLatency = this.stats.avgLatencyMs * (this.stats.totalRequests - 1) + latencyMs;
+      const totalLatency =
+        this.stats.avgLatencyMs * (this.stats.totalRequests - 1) + latencyMs;
       this.stats.avgLatencyMs = totalLatency / this.stats.totalRequests;
     }
 
@@ -337,7 +345,8 @@ export class WeightedLoadBalancer implements LoadBalancer {
 
     if (latencyMs !== undefined) {
       agentStat.avgLatencyMs =
-        (agentStat.avgLatencyMs * (agentStat.requests - 1) + latencyMs) / agentStat.requests;
+        (agentStat.avgLatencyMs * (agentStat.requests - 1) + latencyMs) /
+        agentStat.requests;
     }
 
     this.stats.agentStats.set(agentUri, agentStat);
@@ -474,7 +483,7 @@ export class AdvancedAgentRouter {
     const candidates = await this.discovery.discoverByCapability(capability);
 
     // Filter by health status
-    const healthyCandidates = candidates.filter(agent => {
+    const healthyCandidates = candidates.filter((agent) => {
       // Check circuit breaker
       const breaker = this.getCircuitBreaker(agent.uri);
       if (!breaker.allowRequest()) {
@@ -490,7 +499,7 @@ export class AdvancedAgentRouter {
 
     if (context?.preferredRegion) {
       const regional = healthyCandidates.filter(
-        a => a.metadata?.region === context.preferredRegion
+        (a) => a.metadata?.region === context.preferredRegion
       );
       if (regional.length > 0) {
         filtered = regional;
@@ -499,13 +508,13 @@ export class AdvancedAgentRouter {
 
     if (context?.maxLatencyMs && this.graph) {
       // Filter by latency if we have graph data
-      filtered = filtered.filter(agent => {
+      filtered = filtered.filter((agent) => {
         const node = this.graph!.getNode(agent.uri);
         if (!node) return true;
 
         const avgLatency =
           node.communicationPatterns.reduce((sum, p) => sum + p.latencyMs, 0) /
-          node.communicationPatterns.length || 0;
+            node.communicationPatterns.length || 0;
 
         return avgLatency <= context.maxLatencyMs!;
       });
@@ -526,7 +535,7 @@ export class AdvancedAgentRouter {
     const candidates = await this.discovery.discoverByCapability(capability);
 
     // Filter healthy agents with open circuit breakers
-    const healthyCandidates = candidates.filter(agent => {
+    const healthyCandidates = candidates.filter((agent) => {
       const breaker = this.getCircuitBreaker(agent.uri);
       return breaker.allowRequest() && agent.status === 'healthy';
     });
@@ -535,11 +544,15 @@ export class AdvancedAgentRouter {
     const selected: AgentCard[] = [];
     const exclude: string[] = [...(context?.excludeAgents || [])];
 
-    for (let i = 0; i < count && selected.length < healthyCandidates.length; i++) {
-      const agent = this.loadBalancer.select(
-        healthyCandidates,
-        { ...context, excludeAgents: exclude }
-      );
+    for (
+      let i = 0;
+      i < count && selected.length < healthyCandidates.length;
+      i++
+    ) {
+      const agent = this.loadBalancer.select(healthyCandidates, {
+        ...context,
+        excludeAgents: exclude,
+      });
 
       if (agent) {
         selected.push(agent);
@@ -562,7 +575,7 @@ export class AdvancedAgentRouter {
 
     // Prefer agents in same region
     const regionalAgents = candidates.filter(
-      agent =>
+      (agent) =>
         agent.status === 'healthy' &&
         agent.metadata?.region === region &&
         this.getCircuitBreaker(agent.uri).allowRequest()
@@ -574,7 +587,7 @@ export class AdvancedAgentRouter {
 
     // Fall back to any healthy agent
     const healthyAgents = candidates.filter(
-      agent =>
+      (agent) =>
         agent.status === 'healthy' &&
         this.getCircuitBreaker(agent.uri).allowRequest()
     );
@@ -622,7 +635,9 @@ export class AdvancedAgentRouter {
   getCircuitBreakerStates(): Map<string, CircuitState> {
     const states = new Map<string, CircuitState>();
     const entries: Array<[string, CircuitBreaker]> = [];
-    this.circuitBreakers.forEach((breaker, uri) => entries.push([uri, breaker]));
+    this.circuitBreakers.forEach((breaker, uri) =>
+      entries.push([uri, breaker])
+    );
 
     for (const [uri, breaker] of entries) {
       states.set(uri, breaker.getState());

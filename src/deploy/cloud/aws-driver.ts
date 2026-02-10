@@ -107,7 +107,12 @@ export class AWSDeploymentDriver extends BaseDeploymentDriver {
       let result: DeploymentResult;
 
       if (deploymentType === 'lambda') {
-        result = await this.deployToLambda(manifest, config, instanceId, region);
+        result = await this.deployToLambda(
+          manifest,
+          config,
+          instanceId,
+          region
+        );
       } else {
         result = await this.deployToECS(manifest, config, instanceId, region);
       }
@@ -173,10 +178,7 @@ export class AWSDeploymentDriver extends BaseDeploymentDriver {
 
     try {
       // Check if function exists
-      const functionExists = await this.checkLambdaExists(
-        functionName,
-        region
-      );
+      const functionExists = await this.checkLambdaExists(functionName, region);
 
       if (functionExists) {
         // Update existing function
@@ -246,7 +248,11 @@ export class AWSDeploymentDriver extends BaseDeploymentDriver {
 
     try {
       // Register task definition
-      const taskDef = this.generateECSTaskDefinition(manifest, config, instanceId);
+      const taskDef = this.generateECSTaskDefinition(
+        manifest,
+        config,
+        instanceId
+      );
       const taskDefJson = JSON.stringify(taskDef);
 
       // Write task definition to temp file and register

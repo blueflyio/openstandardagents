@@ -211,17 +211,13 @@ async function promptDeploymentOptions(
         name: 'replicas',
         message: 'Number of replicas:',
         default: parseInt(String(currentOptions.replicas || '1'), 10),
-        validate: (input: number) =>
-          input > 0 || 'Must be greater than 0',
+        validate: (input: number) => input > 0 || 'Must be greater than 0',
       }
     );
   }
 
   // Container registry
-  if (
-    currentOptions.platform !== 'local' &&
-    !currentOptions.registry
-  ) {
+  if (currentOptions.platform !== 'local' && !currentOptions.registry) {
     questions.push({
       type: 'input',
       name: 'registry',
@@ -243,9 +239,7 @@ function validateDeploymentOptions(options: DeployOptions): void {
   }
 
   if (options.cloud && options.platform !== 'cloud') {
-    throw new Error(
-      'Cloud provider can only be used with --platform cloud'
-    );
+    throw new Error('Cloud provider can only be used with --platform cloud');
   }
 
   const replicas = parseInt(String(options.replicas || '1'), 10);
@@ -293,10 +287,7 @@ function displayDeploymentPlan(
 /**
  * Execute deployment
  */
-async function executeDeployment(
-  manifest: OssaAgent,
-  options: DeployOptions
-) {
+async function executeDeployment(manifest: OssaAgent, options: DeployOptions) {
   const config: DeploymentConfig = {
     target: (options.platform === 'cloud'
       ? 'kubernetes'
@@ -341,23 +332,20 @@ async function deployToCloud(
 ) {
   switch (provider) {
     case 'aws':
-      const { AWSDeploymentDriver } = await import(
-        '../../deploy/cloud/aws-driver.js'
-      );
+      const { AWSDeploymentDriver } =
+        await import('../../deploy/cloud/aws-driver.js');
       const awsDriver = new AWSDeploymentDriver();
       return await awsDriver.deploy(manifest, config);
 
     case 'gcp':
-      const { GCPDeploymentDriver } = await import(
-        '../../deploy/cloud/gcp-driver.js'
-      );
+      const { GCPDeploymentDriver } =
+        await import('../../deploy/cloud/gcp-driver.js');
       const gcpDriver = new GCPDeploymentDriver();
       return await gcpDriver.deploy(manifest, config);
 
     case 'azure':
-      const { AzureDeploymentDriver } = await import(
-        '../../deploy/cloud/azure-driver.js'
-      );
+      const { AzureDeploymentDriver } =
+        await import('../../deploy/cloud/azure-driver.js');
       const azureDriver = new AzureDeploymentDriver();
       return await azureDriver.deploy(manifest, config);
 

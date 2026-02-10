@@ -63,7 +63,7 @@ export class MessengerFailedCommand {
       info(message: string, context?: Record<string, unknown>): void;
       error(message: string, error?: Error): void;
       success(message: string): void;
-    },
+    }
   ) {}
 
   /**
@@ -134,7 +134,7 @@ export class MessengerFailedCommand {
 
       console.log('\n=== Failed Messages ===\n');
       console.log(
-        `${'ID'.padEnd(40)} ${'Class'.padEnd(40)} ${'Failed At'.padEnd(25)} ${'Retries'}`,
+        `${'ID'.padEnd(40)} ${'Class'.padEnd(40)} ${'Failed At'.padEnd(25)} ${'Retries'}`
       );
       console.log('-'.repeat(120));
 
@@ -142,7 +142,7 @@ export class MessengerFailedCommand {
         const id = message.id.substring(0, 37) + '...';
         const className = message.messageClass.substring(0, 37) + '...';
         console.log(
-          `${id.padEnd(40)} ${className.padEnd(40)} ${message.failedAt.padEnd(25)} ${message.retryCount}`,
+          `${id.padEnd(40)} ${className.padEnd(40)} ${message.failedAt.padEnd(25)} ${message.retryCount}`
         );
       }
 

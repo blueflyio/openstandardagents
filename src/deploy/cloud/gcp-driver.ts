@@ -85,7 +85,8 @@ export class GCPDeploymentDriver extends BaseDeploymentDriver {
     if (!projectId) {
       return {
         success: false,
-        message: 'GCP project ID must be specified via --project-id or GCP_PROJECT env var',
+        message:
+          'GCP project ID must be specified via --project-id or GCP_PROJECT env var',
       };
     }
 
@@ -109,7 +110,12 @@ export class GCPDeploymentDriver extends BaseDeploymentDriver {
       let result: DeploymentResult;
 
       if (platform === 'gke') {
-        result = await this.deployToGKE(manifest, config, instanceId, projectId);
+        result = await this.deployToGKE(
+          manifest,
+          config,
+          instanceId,
+          projectId
+        );
       } else {
         result = await this.deployToCloudRun(
           manifest,
@@ -172,9 +178,13 @@ export class GCPDeploymentDriver extends BaseDeploymentDriver {
       `--platform managed`,
       `--region ${region}`,
       `--project ${projectId}`,
-      config.allowUnauthenticated ? '--allow-unauthenticated' : '--no-allow-unauthenticated',
+      config.allowUnauthenticated
+        ? '--allow-unauthenticated'
+        : '--no-allow-unauthenticated',
       config.minInstances ? `--min-instances ${config.minInstances}` : '',
-      config.maxInstances ? `--max-instances ${config.maxInstances}` : '--max-instances 10',
+      config.maxInstances
+        ? `--max-instances ${config.maxInstances}`
+        : '--max-instances 10',
       config.concurrency ? `--concurrency ${config.concurrency}` : '',
       config.cpu ? `--cpu ${config.cpu}` : '',
       config.memory ? `--memory ${config.memory}` : '--memory 512Mi',

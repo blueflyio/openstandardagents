@@ -126,17 +126,17 @@ export class AgentGraph {
     // Remove relationships pointing to this agent
     for (const node of this.nodes.values()) {
       node.relationships = node.relationships.filter(
-        rel => rel.to !== agentUri && rel.from !== agentUri
+        (rel) => rel.to !== agentUri && rel.from !== agentUri
       );
       node.communicationPatterns = node.communicationPatterns.filter(
-        pattern => pattern.to !== agentUri && pattern.from !== agentUri
+        (pattern) => pattern.to !== agentUri && pattern.from !== agentUri
       );
     }
 
     // Remove from teams
     for (const team of this.teams.values()) {
-      team.members = team.members.filter(uri => uri !== agentUri);
-      team.specialists = team.specialists.filter(uri => uri !== agentUri);
+      team.members = team.members.filter((uri) => uri !== agentUri);
+      team.specialists = team.specialists.filter((uri) => uri !== agentUri);
       if (team.leader === agentUri) {
         team.leader = undefined;
       }
@@ -154,7 +154,7 @@ export class AgentGraph {
 
     // Check if relationship already exists
     const existing = fromNode.relationships.findIndex(
-      rel => rel.to === relationship.to && rel.type === relationship.type
+      (rel) => rel.to === relationship.to && rel.type === relationship.type
     );
 
     if (existing >= 0) {
@@ -165,7 +165,9 @@ export class AgentGraph {
           ...fromNode.relationships[existing].metadata,
           ...relationship.metadata,
           lastInteraction: new Date(),
-          interactionCount: (fromNode.relationships[existing].metadata?.interactionCount as number || 0) + 1,
+          interactionCount:
+            ((fromNode.relationships[existing].metadata
+              ?.interactionCount as number) || 0) + 1,
         },
       };
     } else {
@@ -186,7 +188,8 @@ export class AgentGraph {
       const toNode = this.nodes.get(relationship.to);
       if (toNode) {
         const reverseExists = toNode.relationships.findIndex(
-          rel => rel.to === relationship.from && rel.type === relationship.type
+          (rel) =>
+            rel.to === relationship.from && rel.type === relationship.type
         );
 
         if (reverseExists < 0) {
@@ -206,7 +209,9 @@ export class AgentGraph {
   /**
    * Record a communication event
    */
-  recordCommunication(pattern: Omit<CommunicationPattern, 'lastCommunication'>): void {
+  recordCommunication(
+    pattern: Omit<CommunicationPattern, 'lastCommunication'>
+  ): void {
     const fullPattern: CommunicationPattern = {
       ...pattern,
       lastCommunication: new Date(),
@@ -224,7 +229,7 @@ export class AgentGraph {
     const fromNode = this.nodes.get(pattern.from);
     if (fromNode) {
       const existing = fromNode.communicationPatterns.findIndex(
-        p => p.to === pattern.to && p.channel === pattern.channel
+        (p) => p.to === pattern.to && p.channel === pattern.channel
       );
 
       if (existing >= 0) {
@@ -232,9 +237,15 @@ export class AgentGraph {
         const alpha = 0.3; // Smoothing factor
         fromNode.communicationPatterns[existing] = {
           ...fullPattern,
-          frequency: alpha * pattern.frequency + (1 - alpha) * fromNode.communicationPatterns[existing].frequency,
-          latencyMs: alpha * pattern.latencyMs + (1 - alpha) * fromNode.communicationPatterns[existing].latencyMs,
-          errorRate: alpha * pattern.errorRate + (1 - alpha) * fromNode.communicationPatterns[existing].errorRate,
+          frequency:
+            alpha * pattern.frequency +
+            (1 - alpha) * fromNode.communicationPatterns[existing].frequency,
+          latencyMs:
+            alpha * pattern.latencyMs +
+            (1 - alpha) * fromNode.communicationPatterns[existing].latencyMs,
+          errorRate:
+            alpha * pattern.errorRate +
+            (1 - alpha) * fromNode.communicationPatterns[existing].errorRate,
         };
       } else {
         fromNode.communicationPatterns.push(fullPattern);
@@ -281,7 +292,7 @@ export class AgentGraph {
 
     const allMembers = [...team.members, ...team.specialists];
     return allMembers
-      .map(uri => this.nodes.get(uri)?.agent)
+      .map((uri) => this.nodes.get(uri)?.agent)
       .filter((agent): agent is AgentCard => agent !== undefined);
   }
 
@@ -306,11 +317,11 @@ export class AgentGraph {
     if (!node) return [];
 
     const relationships = relationType
-      ? node.relationships.filter(rel => rel.type === relationType)
+      ? node.relationships.filter((rel) => rel.type === relationType)
       : node.relationships;
 
     return relationships
-      .map(rel => this.nodes.get(rel.to)?.agent)
+      .map((rel) => this.nodes.get(rel.to)?.agent)
       .filter((agent): agent is AgentCard => agent !== undefined);
   }
 
@@ -322,7 +333,9 @@ export class AgentGraph {
     if (fromUri === toUri) return [fromUri];
 
     const visited = new Set<string>();
-    const queue: { uri: string; path: string[] }[] = [{ uri: fromUri, path: [fromUri] }];
+    const queue: { uri: string; path: string[] }[] = [
+      { uri: fromUri, path: [fromUri] },
+    ];
 
     while (queue.length > 0) {
       const { uri, path } = queue.shift()!;
@@ -379,10 +392,10 @@ export class AgentGraph {
 
       let inDegree = 0;
       const allNodes: AgentNode[] = [];
-      this.nodes.forEach(n => allNodes.push(n));
+      this.nodes.forEach((n) => allNodes.push(n));
 
       for (const otherNode of allNodes) {
-        if (otherNode.relationships.some(rel => rel.to === uri)) {
+        if (otherNode.relationships.some((rel) => rel.to === uri)) {
           inDegree++;
         }
       }
@@ -400,21 +413,20 @@ export class AgentGraph {
     this.calculateCentrality();
 
     const allNodes: AgentNode[] = [];
-    this.nodes.forEach(node => allNodes.push(node));
+    this.nodes.forEach((node) => allNodes.push(node));
 
     for (const node of allNodes) {
       const centrality = node.metadata.centrality || 0;
       const capabilityScore = node.capabilities.size / 10; // Normalize by max expected capabilities
       const communicationScore = Math.min(
-        node.communicationPatterns.reduce((sum, p) => sum + p.frequency, 0) / 100,
+        node.communicationPatterns.reduce((sum, p) => sum + p.frequency, 0) /
+          100,
         1
       );
 
       // Weighted average
       node.metadata.importance =
-        0.4 * centrality +
-        0.3 * capabilityScore +
-        0.3 * communicationScore;
+        0.4 * centrality + 0.3 * capabilityScore + 0.3 * communicationScore;
     }
   }
 
@@ -425,18 +437,23 @@ export class AgentGraph {
     this.calculateImportance();
 
     const allNodes: AgentNode[] = [];
-    this.nodes.forEach(node => allNodes.push(node));
+    this.nodes.forEach((node) => allNodes.push(node));
 
     return allNodes
-      .sort((a, b) => (b.metadata.importance || 0) - (a.metadata.importance || 0))
+      .sort(
+        (a, b) => (b.metadata.importance || 0) - (a.metadata.importance || 0)
+      )
       .slice(0, limit)
-      .map(node => node.agent);
+      .map((node) => node.agent);
   }
 
   /**
    * Get communication statistics
    */
-  getCommunicationStats(fromUri?: string, toUri?: string): {
+  getCommunicationStats(
+    fromUri?: string,
+    toUri?: string
+  ): {
     totalMessages: number;
     avgLatency: number;
     avgErrorRate: number;
@@ -445,21 +462,26 @@ export class AgentGraph {
     let patterns = this.communicationLog;
 
     if (fromUri) {
-      patterns = patterns.filter(p => p.from === fromUri);
+      patterns = patterns.filter((p) => p.from === fromUri);
     }
     if (toUri) {
-      patterns = patterns.filter(p => p.to === toUri);
+      patterns = patterns.filter((p) => p.to === toUri);
     }
 
     const totalMessages = patterns.length;
-    const avgLatency = patterns.reduce((sum, p) => sum + p.latencyMs, 0) / totalMessages || 0;
-    const avgErrorRate = patterns.reduce((sum, p) => sum + p.errorRate, 0) / totalMessages || 0;
+    const avgLatency =
+      patterns.reduce((sum, p) => sum + p.latencyMs, 0) / totalMessages || 0;
+    const avgErrorRate =
+      patterns.reduce((sum, p) => sum + p.errorRate, 0) / totalMessages || 0;
 
     // Count messages by channel
     const channelCounts = new Map<string, number>();
     for (const pattern of patterns) {
       if (pattern.channel) {
-        channelCounts.set(pattern.channel, (channelCounts.get(pattern.channel) || 0) + 1);
+        channelCounts.set(
+          pattern.channel,
+          (channelCounts.get(pattern.channel) || 0) + 1
+        );
       }
     }
 
@@ -490,7 +512,7 @@ export class AgentGraph {
     };
   } {
     const nodes: AgentNode[] = [];
-    this.nodes.forEach(node => nodes.push(node));
+    this.nodes.forEach((node) => nodes.push(node));
 
     const totalRelationships = nodes.reduce(
       (sum, node) => sum + node.relationships.length,
@@ -498,7 +520,7 @@ export class AgentGraph {
     );
 
     const teams: AgentTeam[] = [];
-    this.teams.forEach(team => teams.push(team));
+    this.teams.forEach((team) => teams.push(team));
 
     return {
       nodes,
@@ -524,7 +546,7 @@ export class AgentGraph {
    */
   getAllNodes(): AgentNode[] {
     const nodes: AgentNode[] = [];
-    this.nodes.forEach(node => nodes.push(node));
+    this.nodes.forEach((node) => nodes.push(node));
     return nodes;
   }
 
@@ -533,7 +555,7 @@ export class AgentGraph {
    */
   getAllTeams(): AgentTeam[] {
     const teams: AgentTeam[] = [];
-    this.teams.forEach(team => teams.push(team));
+    this.teams.forEach((team) => teams.push(team));
     return teams;
   }
 
@@ -569,7 +591,8 @@ export class AgentGraph {
       relationships: totalRelationships,
       communications: this.communicationLog.length,
       avgRelationshipsPerAgent: totalRelationships / nodes.length || 0,
-      avgCommunicationsPerAgent: this.communicationLog.length / nodes.length || 0,
+      avgCommunicationsPerAgent:
+        this.communicationLog.length / nodes.length || 0,
     };
   }
 }
@@ -642,7 +665,7 @@ export class AgentGraphBuilder {
       for (const otherNode of nodes) {
         if (otherNode.agent.uri === node.agent.uri) continue;
 
-        const commonCapabilities = Array.from(node.capabilities).filter(cap =>
+        const commonCapabilities = Array.from(node.capabilities).filter((cap) =>
           otherNode.capabilities.has(cap)
         );
 
@@ -651,7 +674,9 @@ export class AgentGraphBuilder {
             from: node.agent.uri,
             to: otherNode.agent.uri,
             type: 'specialist',
-            weight: commonCapabilities.length / Math.max(node.capabilities.size, otherNode.capabilities.size),
+            weight:
+              commonCapabilities.length /
+              Math.max(node.capabilities.size, otherNode.capabilities.size),
             bidirectional: false,
           });
         }

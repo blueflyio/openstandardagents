@@ -193,10 +193,7 @@ export const DEFAULT_REGISTRY_URL = 'https://api.blueflyagents.com';
 
 export function addRegistryOptions(command: Command): Command {
   return command
-    .option(
-      '--registry <url>',
-      'Agent registry URL (env: OSSA_REGISTRY_URL)',
-    )
+    .option('--registry <url>', 'Agent registry URL (env: OSSA_REGISTRY_URL)')
     .option('--api-key <key>', 'API key for registry authentication');
 }
 

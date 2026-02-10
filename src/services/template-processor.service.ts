@@ -23,8 +23,10 @@ interface PackageJson {
 
 @injectable()
 export class TemplateProcessorService {
-  private readonly legacyTemplatePath =
-    path.join(process.cwd(), 'AGENTS.md.template');
+  private readonly legacyTemplatePath = path.join(
+    process.cwd(),
+    'AGENTS.md.template'
+  );
 
   /**
    * Process template with variables

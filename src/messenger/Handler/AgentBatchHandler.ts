@@ -31,7 +31,10 @@ export interface AgentBatchHandlerDependencies {
    */
   agentRuntime: {
     loadAgent(agentId: string): Promise<OssaAgent>;
-    executeAgent(agent: OssaAgent, input: Record<string, unknown>): Promise<unknown>;
+    executeAgent(
+      agent: OssaAgent,
+      input: Record<string, unknown>
+    ): Promise<unknown>;
   };
 
   /**
@@ -53,7 +56,11 @@ export interface AgentBatchHandlerDependencies {
    */
   logger: {
     info(message: string, context?: Record<string, unknown>): void;
-    error(message: string, error?: Error, context?: Record<string, unknown>): void;
+    error(
+      message: string,
+      error?: Error,
+      context?: Record<string, unknown>
+    ): void;
     debug(message: string, context?: Record<string, unknown>): void;
   };
 
@@ -93,10 +100,13 @@ export class AgentBatchHandler {
       }
 
       const endTime = new Date().toISOString();
-      const duration = new Date(endTime).getTime() - new Date(startTime).getTime();
+      const duration =
+        new Date(endTime).getTime() - new Date(startTime).getTime();
 
       // Count successes and failures
-      const successCount = Object.values(results).filter((r) => r.success).length;
+      const successCount = Object.values(results).filter(
+        (r) => r.success
+      ).length;
       const failureCount = agentIds.length - successCount;
 
       const batchResult: BatchExecutionResult = {
@@ -137,7 +147,9 @@ export class AgentBatchHandler {
 
       // Throw if any failures and stopOnError is true
       if (failureCount > 0 && message.shouldStopOnError()) {
-        throw new Error(`Batch execution failed: ${failureCount} agent(s) failed`);
+        throw new Error(
+          `Batch execution failed: ${failureCount} agent(s) failed`
+        );
       }
     } catch (error) {
       this.deps.logger.error('Batch execution failed', error as Error, {
@@ -151,7 +163,7 @@ export class AgentBatchHandler {
    * Execute agents in parallel
    */
   private async executeParallel(
-    message: AgentBatchMessage,
+    message: AgentBatchMessage
   ): Promise<Record<string, AgentExecutionResult>> {
     const agentIds = message.getAgentIds();
     const maxParallel = message.getOptions().maxParallel ?? agentIds.length;
@@ -167,7 +179,7 @@ export class AgentBatchHandler {
     for (let i = 0; i < agentIds.length; i += maxParallel) {
       const chunk = agentIds.slice(i, i + maxParallel);
       const chunkPromises = chunk.map((agentId) =>
-        this.executeSingleAgent(agentId, message.getInputForAgent(agentId)),
+        this.executeSingleAgent(agentId, message.getInputForAgent(agentId))
       );
 
       const chunkResults = await Promise.allSettled(chunkPromises);
@@ -201,7 +213,7 @@ export class AgentBatchHandler {
    * Execute agents sequentially
    */
   private async executeSequential(
-    message: AgentBatchMessage,
+    message: AgentBatchMessage
   ): Promise<Record<string, AgentExecutionResult>> {
     const agentIds = message.getAgentIds();
     const results: Record<string, AgentExecutionResult> = {};
@@ -214,13 +226,15 @@ export class AgentBatchHandler {
       try {
         const result = await this.executeSingleAgent(
           agentId,
-          message.getInputForAgent(agentId),
+          message.getInputForAgent(agentId)
         );
         results[agentId] = result;
 
         // Stop on error if requested
         if (!result.success && message.shouldStopOnError()) {
-          this.deps.logger.info('Stopping batch execution due to error', { agentId });
+          this.deps.logger.info('Stopping batch execution due to error', {
+            agentId,
+          });
           break;
         }
       } catch (error) {
@@ -240,7 +254,9 @@ export class AgentBatchHandler {
 
         // Stop on error if requested
         if (message.shouldStopOnError()) {
-          this.deps.logger.info('Stopping batch execution due to error', { agentId });
+          this.deps.logger.info('Stopping batch execution due to error', {
+            agentId,
+          });
           break;
         }
       }
@@ -254,7 +270,7 @@ export class AgentBatchHandler {
    */
   private async executeSingleAgent(
     agentId: string,
-    input: Record<string, unknown>,
+    input: Record<string, unknown>
   ): Promise<AgentExecutionResult> {
     const startTime = new Date().toISOString();
 
@@ -263,7 +279,8 @@ export class AgentBatchHandler {
       const output = await this.deps.agentRuntime.executeAgent(agent, input);
 
       const endTime = new Date().toISOString();
-      const duration = new Date(endTime).getTime() - new Date(startTime).getTime();
+      const duration =
+        new Date(endTime).getTime() - new Date(startTime).getTime();
 
       return {
         success: true,
@@ -277,7 +294,8 @@ export class AgentBatchHandler {
       };
     } catch (error) {
       const endTime = new Date().toISOString();
-      const duration = new Date(endTime).getTime() - new Date(startTime).getTime();
+      const duration =
+        new Date(endTime).getTime() - new Date(startTime).getTime();
 
       return {
         success: false,

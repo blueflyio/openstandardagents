@@ -21,7 +21,11 @@ export interface WorkerMessageFailedEvent {
 
 export interface FailedMessageSubscriberDependencies {
   logger: {
-    error(message: string, error: Error, context?: Record<string, unknown>): void;
+    error(
+      message: string,
+      error: Error,
+      context?: Record<string, unknown>
+    ): void;
     warning(message: string, context?: Record<string, unknown>): void;
   };
 
@@ -30,12 +34,16 @@ export interface FailedMessageSubscriberDependencies {
       messageId: string,
       message: unknown,
       error: Error,
-      retryCount: number,
+      retryCount: number
     ): Promise<void>;
   };
 
   notifier: {
-    notifyFailure(message: unknown, error: Error, retryCount: number): Promise<void>;
+    notifyFailure(
+      message: unknown,
+      error: Error,
+      retryCount: number
+    ): Promise<void>;
   };
 }
 
@@ -64,11 +72,20 @@ export class FailedMessageSubscriber {
 
     // Store in failed_jobs table (even for retries, for tracking)
     try {
-      await this.deps.failedJobStorage.store(envelope.messageId, message, error, retryCount);
+      await this.deps.failedJobStorage.store(
+        envelope.messageId,
+        message,
+        error,
+        retryCount
+      );
     } catch (storageError) {
-      this.deps.logger.error('Failed to store failed message', storageError as Error, {
-        messageId: envelope.messageId,
-      });
+      this.deps.logger.error(
+        'Failed to store failed message',
+        storageError as Error,
+        {
+          messageId: envelope.messageId,
+        }
+      );
     }
 
     // Send notification only for permanent failures
@@ -76,9 +93,13 @@ export class FailedMessageSubscriber {
       try {
         await this.deps.notifier.notifyFailure(message, error, retryCount);
       } catch (notificationError) {
-        this.deps.logger.error('Failed to send failure notification', notificationError as Error, {
-          messageId: envelope.messageId,
-        });
+        this.deps.logger.error(
+          'Failed to send failure notification',
+          notificationError as Error,
+          {
+            messageId: envelope.messageId,
+          }
+        );
       }
     }
   }

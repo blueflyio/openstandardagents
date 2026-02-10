@@ -803,7 +803,10 @@ All rights reserved.
   /**
    * Generate CONTRIBUTING.md
    */
-  private generateContributing(manifest: OssaAgent, packageName: string): string {
+  private generateContributing(
+    manifest: OssaAgent,
+    packageName: string
+  ): string {
     return `# Contributing to ${manifest.metadata?.name || 'this project'}
 
 Thank you for your interest in contributing! This document provides guidelines for contributing.
@@ -1266,7 +1269,10 @@ ${manifest.metadata?.license || 'MIT'}
   /**
    * Generate examples
    */
-  private generateExamples(manifest: OssaAgent, packageName: string): Record<string, string> {
+  private generateExamples(
+    manifest: OssaAgent,
+    packageName: string
+  ): Record<string, string> {
     return {
       'README.md': `# Examples
 
@@ -1437,7 +1443,9 @@ main().catch(console.error);
   /**
    * Generate complete test suite
    */
-  private generateCompletedTestSuite(manifest: OssaAgent): Record<string, string> {
+  private generateCompletedTestSuite(
+    manifest: OssaAgent
+  ): Record<string, string> {
     const name = manifest.metadata?.name || 'Agent';
 
     return {

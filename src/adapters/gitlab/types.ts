@@ -28,7 +28,10 @@ export interface GitLabPipelineConfig {
 
 export type FlowEnvironment = 'ambient' | 'chat' | 'chat-partial';
 
-export type ComponentType = 'AgentComponent' | 'DeterministicStepComponent' | 'OneOffComponent';
+export type ComponentType =
+  | 'AgentComponent'
+  | 'DeterministicStepComponent'
+  | 'OneOffComponent';
 
 export interface FlowInput {
   from: string;
@@ -68,7 +71,10 @@ export interface OneOffComponent {
   ui_log_events?: string[];
 }
 
-export type FlowComponent = AgentComponent | DeterministicStepComponent | OneOffComponent;
+export type FlowComponent =
+  | AgentComponent
+  | DeterministicStepComponent
+  | OneOffComponent;
 
 export interface RouterCondition {
   input: string;

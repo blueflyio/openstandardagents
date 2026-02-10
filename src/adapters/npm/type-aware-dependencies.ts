@@ -157,7 +157,8 @@ export function generateDependenciesSection(manifest: OssaAgent): string {
     section += '```typescript\n';
     section += "import Anthropic from '@anthropic-ai/sdk';\n";
     section += "import { agent } from './agent';\n\n";
-    section += 'const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });\n';
+    section +=
+      'const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });\n';
     section += '// Use agent with Claude SDK\n';
     section += '```\n\n';
   } else if (agentType === 'openai') {
@@ -165,7 +166,8 @@ export function generateDependenciesSection(manifest: OssaAgent): string {
     section += '```typescript\n';
     section += "import OpenAI from 'openai';\n";
     section += "import { agent } from './agent';\n\n";
-    section += 'const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });\n';
+    section +=
+      'const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });\n';
     section += '// Use agent with OpenAI SDK\n';
     section += '```\n\n';
   } else if (agentType === 'kagent') {

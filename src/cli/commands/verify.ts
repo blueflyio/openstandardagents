@@ -223,9 +223,7 @@ function displayResult(
 
   if (result.trustLevel !== undefined) {
     console.log(
-      chalk.white(
-        `  Trust Level:  ${(result.trustLevel * 100).toFixed(0)}%`
-      )
+      chalk.white(`  Trust Level:  ${(result.trustLevel * 100).toFixed(0)}%`)
     );
   }
 
@@ -265,17 +263,21 @@ function displayResult(
     console.log(chalk.white(`\n  Signature Verification:`));
 
     if (signatureCheck.match) {
-      console.log(
-        chalk.green(`    ✓ ${signatureCheck.message}`)
-      );
+      console.log(chalk.green(`    ✓ ${signatureCheck.message}`));
     } else {
-      console.log(
-        chalk.red(`    ✗ ${signatureCheck.message}`)
-      );
+      console.log(chalk.red(`    ✗ ${signatureCheck.message}`));
 
       if (signatureCheck.cardSignature && signatureCheck.didSignature) {
-        console.log(chalk.gray(`    Card:     ${signatureCheck.cardSignature.slice(0, 16)}...`));
-        console.log(chalk.gray(`    DID:      ${signatureCheck.didSignature.slice(0, 16)}...`));
+        console.log(
+          chalk.gray(
+            `    Card:     ${signatureCheck.cardSignature.slice(0, 16)}...`
+          )
+        );
+        console.log(
+          chalk.gray(
+            `    DID:      ${signatureCheck.didSignature.slice(0, 16)}...`
+          )
+        );
       }
     }
   }
@@ -285,12 +287,16 @@ function displayResult(
     console.log(chalk.white(`\n  Metadata:`));
     if (result.createdAt) {
       console.log(
-        chalk.gray(`    Created:  ${new Date(result.createdAt).toLocaleString()}`)
+        chalk.gray(
+          `    Created:  ${new Date(result.createdAt).toLocaleString()}`
+        )
       );
     }
     if (result.updatedAt) {
       console.log(
-        chalk.gray(`    Updated:  ${new Date(result.updatedAt).toLocaleString()}`)
+        chalk.gray(
+          `    Updated:  ${new Date(result.updatedAt).toLocaleString()}`
+        )
       );
     }
   }
@@ -313,132 +319,124 @@ export const verifyCommand = new Command('verify')
 addRegistryOptions(verifyCommand);
 
 verifyCommand.action(
-    async (
-      gaid: string,
-      options: {
-        card?: string;
-        json?: boolean;
-        registry?: string;
-        apiKey?: string;
-      }
-    ) => {
-      const registryUrl = resolveRegistryUrl(options);
-      try {
-        const client = new AgentProtocolClient({
-          baseUrl: registryUrl,
-          apiKey: options.apiKey,
-        });
-
-        if (!options.json) {
-          console.log(chalk.blue(`\nVerifying agent: ${gaid} on ${registryUrl}...`));
-        }
-
-        // Resolve DID
-        const result = await client.resolveDID(gaid);
-
-        // Load and verify agent card if provided
-        let signatureCheck: ReturnType<typeof verifySignature> | undefined;
-
-        if (options.card) {
-          if (!options.json) {
-            console.log(chalk.gray(`Loading agent card: ${options.card}`));
-          }
-
-          const agentCard = loadAgentCard(options.card);
-          signatureCheck = verifySignature(agentCard, result);
-        }
-
-        // Output results
-        if (options.json) {
-          console.log(
-            JSON.stringify(
-              {
-                ...result,
-                signatureVerification: signatureCheck,
-              },
-              null,
-              2
-            )
-          );
-        } else {
-          displayResult(result, signatureCheck);
-
-          // Summary
-          console.log('');
-          if (result.verified) {
-            console.log(chalk.green('✓ Agent identity verified successfully'));
-          } else {
-            console.log(
-              chalk.yellow(
-                '⚠ Agent identity could not be fully verified'
-              )
-            );
-          }
-
-          if (signatureCheck && !signatureCheck.match) {
-            console.log(
-              chalk.red(
-                '✗ Warning: Signature mismatch detected'
-              )
-            );
-          }
-        }
-
-        // Exit with appropriate code
-        const exitCode =
-          result.verified && (!signatureCheck || signatureCheck.match) ? 0 : 1;
-        process.exit(exitCode);
-      } catch (error) {
-        if (options.json) {
-          console.log(
-            JSON.stringify(
-              {
-                error: error instanceof Error ? error.message : String(error),
-                verified: false,
-              },
-              null,
-              2
-            )
-          );
-        } else {
-          console.error(
-            chalk.red(
-              `\n✗ Error: ${error instanceof Error ? error.message : String(error)}`
-            )
-          );
-
-          // Show helpful troubleshooting
-          if (error instanceof Error && error.message.includes('connect')) {
-            console.log(chalk.yellow('\nTroubleshooting:'));
-            console.log(
-              chalk.gray(`  Registry: ${registryUrl}`)
-            );
-            console.log(
-              chalk.gray('  1. Check network connectivity and firewall rules')
-            );
-            console.log(
-              chalk.gray(
-                '  2. Use --registry <url> or set OSSA_REGISTRY_URL'
-              )
-            );
-          } else if (
-            error instanceof Error &&
-            error.message.includes('not found')
-          ) {
-            console.log(chalk.yellow('\nNote:'));
-            console.log(
-              chalk.gray(
-                '  The GAID may be invalid or the agent may not be registered'
-              )
-            );
-            console.log(
-              chalk.gray(
-                `  Use ${chalk.white('ossa discover')} to search for agents`
-              )
-            );
-          }
-        }
-        process.exit(1);
-      }
+  async (
+    gaid: string,
+    options: {
+      card?: string;
+      json?: boolean;
+      registry?: string;
+      apiKey?: string;
     }
-  );
+  ) => {
+    const registryUrl = resolveRegistryUrl(options);
+    try {
+      const client = new AgentProtocolClient({
+        baseUrl: registryUrl,
+        apiKey: options.apiKey,
+      });
+
+      if (!options.json) {
+        console.log(
+          chalk.blue(`\nVerifying agent: ${gaid} on ${registryUrl}...`)
+        );
+      }
+
+      // Resolve DID
+      const result = await client.resolveDID(gaid);
+
+      // Load and verify agent card if provided
+      let signatureCheck: ReturnType<typeof verifySignature> | undefined;
+
+      if (options.card) {
+        if (!options.json) {
+          console.log(chalk.gray(`Loading agent card: ${options.card}`));
+        }
+
+        const agentCard = loadAgentCard(options.card);
+        signatureCheck = verifySignature(agentCard, result);
+      }
+
+      // Output results
+      if (options.json) {
+        console.log(
+          JSON.stringify(
+            {
+              ...result,
+              signatureVerification: signatureCheck,
+            },
+            null,
+            2
+          )
+        );
+      } else {
+        displayResult(result, signatureCheck);
+
+        // Summary
+        console.log('');
+        if (result.verified) {
+          console.log(chalk.green('✓ Agent identity verified successfully'));
+        } else {
+          console.log(
+            chalk.yellow('⚠ Agent identity could not be fully verified')
+          );
+        }
+
+        if (signatureCheck && !signatureCheck.match) {
+          console.log(chalk.red('✗ Warning: Signature mismatch detected'));
+        }
+      }
+
+      // Exit with appropriate code
+      const exitCode =
+        result.verified && (!signatureCheck || signatureCheck.match) ? 0 : 1;
+      process.exit(exitCode);
+    } catch (error) {
+      if (options.json) {
+        console.log(
+          JSON.stringify(
+            {
+              error: error instanceof Error ? error.message : String(error),
+              verified: false,
+            },
+            null,
+            2
+          )
+        );
+      } else {
+        console.error(
+          chalk.red(
+            `\n✗ Error: ${error instanceof Error ? error.message : String(error)}`
+          )
+        );
+
+        // Show helpful troubleshooting
+        if (error instanceof Error && error.message.includes('connect')) {
+          console.log(chalk.yellow('\nTroubleshooting:'));
+          console.log(chalk.gray(`  Registry: ${registryUrl}`));
+          console.log(
+            chalk.gray('  1. Check network connectivity and firewall rules')
+          );
+          console.log(
+            chalk.gray('  2. Use --registry <url> or set OSSA_REGISTRY_URL')
+          );
+        } else if (
+          error instanceof Error &&
+          error.message.includes('not found')
+        ) {
+          console.log(chalk.yellow('\nNote:'));
+          console.log(
+            chalk.gray(
+              '  The GAID may be invalid or the agent may not be registered'
+            )
+          );
+          console.log(
+            chalk.gray(
+              `  Use ${chalk.white('ossa discover')} to search for agents`
+            )
+          );
+        }
+      }
+      process.exit(1);
+    }
+  }
+);

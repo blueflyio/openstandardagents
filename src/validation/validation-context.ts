@@ -118,8 +118,7 @@ export class ValidationContext {
   private generateFingerprint(manifest: OssaAgent): string {
     const agentType = manifest.metadata?.agentType || 'unknown';
     const agentKind = manifest.metadata?.agentKind || 'unknown';
-    const pattern =
-      manifest.metadata?.agentArchitecture?.pattern || 'unknown';
+    const pattern = manifest.metadata?.agentArchitecture?.pattern || 'unknown';
 
     return `${agentType}:${agentKind}:${pattern}`;
   }

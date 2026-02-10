@@ -64,7 +64,7 @@ export class QueueMonitor {
       error(message: string, context?: Record<string, unknown>): void;
       info(message: string, context?: Record<string, unknown>): void;
     },
-    thresholds?: Partial<QueueThresholds>,
+    thresholds?: Partial<QueueThresholds>
   ) {
     this.thresholds = {
       maxDepth: thresholds?.maxDepth ?? 1000,
@@ -77,7 +77,10 @@ export class QueueMonitor {
   /**
    * Check queue status and health
    */
-  public async checkQueue(transport: string, queueName: string): Promise<QueueStatus> {
+  public async checkQueue(
+    transport: string,
+    queueName: string
+  ): Promise<QueueStatus> {
     const depth = await this.queueStatus.getQueueDepth(transport);
     const processing = await this.queueStatus.getProcessingCount(transport);
     const failed = await this.queueStatus.getFailedCount(transport);
@@ -89,7 +92,9 @@ export class QueueMonitor {
 
     // Check queue depth
     if (depth > this.thresholds.maxDepth) {
-      alerts.push(`Queue depth ${depth} exceeds threshold ${this.thresholds.maxDepth}`);
+      alerts.push(
+        `Queue depth ${depth} exceeds threshold ${this.thresholds.maxDepth}`
+      );
       healthy = false;
       this.logger.warning('Queue depth threshold exceeded', {
         transport,
@@ -101,7 +106,7 @@ export class QueueMonitor {
     // Check dead letter queue
     if (deadLetter > this.thresholds.maxDeadLetter) {
       alerts.push(
-        `Dead letter count ${deadLetter} exceeds threshold ${this.thresholds.maxDeadLetter}`,
+        `Dead letter count ${deadLetter} exceeds threshold ${this.thresholds.maxDeadLetter}`
       );
       healthy = false;
       this.logger.error('Dead letter threshold exceeded', {
@@ -117,7 +122,9 @@ export class QueueMonitor {
       const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
 
       if (lastProcessedDate < fiveMinutesAgo && depth > 0) {
-        alerts.push('No messages processed in last 5 minutes but queue has messages');
+        alerts.push(
+          'No messages processed in last 5 minutes but queue has messages'
+        );
         healthy = false;
         this.logger.warning('Stale queue detected', {
           transport,
@@ -161,12 +168,17 @@ export class QueueMonitor {
   /**
    * Monitor all transports
    */
-  public async monitorAll(transports: Array<{ name: string; queueName: string }>): Promise<QueueStatus[]> {
+  public async monitorAll(
+    transports: Array<{ name: string; queueName: string }>
+  ): Promise<QueueStatus[]> {
     const statuses: QueueStatus[] = [];
 
     for (const transport of transports) {
       try {
-        const status = await this.checkQueue(transport.name, transport.queueName);
+        const status = await this.checkQueue(
+          transport.name,
+          transport.queueName
+        );
         statuses.push(status);
       } catch (error) {
         this.logger.error(`Failed to check queue ${transport.name}`, {
@@ -206,7 +218,8 @@ export class QueueMonitor {
     if (status.depth > this.thresholds.maxDepth) {
       const penalty = Math.min(
         40,
-        ((status.depth - this.thresholds.maxDepth) / this.thresholds.maxDepth) * 40,
+        ((status.depth - this.thresholds.maxDepth) / this.thresholds.maxDepth) *
+          40
       );
       health -= penalty;
     }
@@ -215,7 +228,9 @@ export class QueueMonitor {
     if (status.deadLetter > this.thresholds.maxDeadLetter) {
       const penalty = Math.min(
         30,
-        ((status.deadLetter - this.thresholds.maxDeadLetter) / this.thresholds.maxDeadLetter) * 30,
+        ((status.deadLetter - this.thresholds.maxDeadLetter) /
+          this.thresholds.maxDeadLetter) *
+          30
       );
       health -= penalty;
     }

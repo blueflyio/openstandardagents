@@ -72,7 +72,7 @@ export class AgentExecutionMessage {
     private readonly agentId: string,
     private readonly input: Record<string, unknown>,
     private readonly context: AgentExecutionMessageData['context'] = {},
-    private readonly callbackUrl?: string,
+    private readonly callbackUrl?: string
   ) {}
 
   /**
@@ -133,12 +133,14 @@ export class AgentExecutionMessage {
   /**
    * Deserialize from JSON
    */
-  public static fromJSON(data: AgentExecutionMessageData): AgentExecutionMessage {
+  public static fromJSON(
+    data: AgentExecutionMessageData
+  ): AgentExecutionMessage {
     return new AgentExecutionMessage(
       data.agentId,
       data.input,
       data.context,
-      data.callbackUrl,
+      data.callbackUrl
     );
   }
 }

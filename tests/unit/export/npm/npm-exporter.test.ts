@@ -449,7 +449,9 @@ describe('NPMExporter', () => {
     it('should generate CONTRIBUTING.md', async () => {
       const result = await exporter.export(basicManifest);
 
-      const contributing = result.files.find((f) => f.path === 'CONTRIBUTING.md');
+      const contributing = result.files.find(
+        (f) => f.path === 'CONTRIBUTING.md'
+      );
       expect(contributing).toBeDefined();
       expect(contributing?.type).toBe('documentation');
       expect(contributing?.content).toContain('Contributing to');
@@ -485,7 +487,9 @@ describe('NPMExporter', () => {
     it('should generate examples directory', async () => {
       const result = await exporter.export(basicManifest);
 
-      const exampleFiles = result.files.filter((f) => f.path.startsWith('examples/'));
+      const exampleFiles = result.files.filter((f) =>
+        f.path.startsWith('examples/')
+      );
       expect(exampleFiles.length).toBeGreaterThan(0);
     });
 
@@ -501,7 +505,9 @@ describe('NPMExporter', () => {
     it('should generate basic-usage.ts', async () => {
       const result = await exporter.export(basicManifest);
 
-      const basicUsage = result.files.find((f) => f.path === 'examples/basic-usage.ts');
+      const basicUsage = result.files.find(
+        (f) => f.path === 'examples/basic-usage.ts'
+      );
       expect(basicUsage).toBeDefined();
       expect(basicUsage?.language).toBe('typescript');
       expect(basicUsage?.content).toContain('import { Agent }');
@@ -511,7 +517,9 @@ describe('NPMExporter', () => {
     it('should generate with-tools.ts', async () => {
       const result = await exporter.export(basicManifest);
 
-      const withTools = result.files.find((f) => f.path === 'examples/with-tools.ts');
+      const withTools = result.files.find(
+        (f) => f.path === 'examples/with-tools.ts'
+      );
       expect(withTools).toBeDefined();
       expect(withTools?.content).toContain('getCapabilities');
     });
@@ -519,7 +527,9 @@ describe('NPMExporter', () => {
     it('should generate with-api.ts', async () => {
       const result = await exporter.export(basicManifest);
 
-      const withApi = result.files.find((f) => f.path === 'examples/with-api.ts');
+      const withApi = result.files.find(
+        (f) => f.path === 'examples/with-api.ts'
+      );
       expect(withApi).toBeDefined();
       expect(withApi?.content).toContain('fetch');
       expect(withApi?.content).toContain('/chat');
@@ -528,7 +538,9 @@ describe('NPMExporter', () => {
     it('should generate advanced.ts', async () => {
       const result = await exporter.export(basicManifest);
 
-      const advanced = result.files.find((f) => f.path === 'examples/advanced.ts');
+      const advanced = result.files.find(
+        (f) => f.path === 'examples/advanced.ts'
+      );
       expect(advanced).toBeDefined();
       expect(advanced?.content).toContain('Multi-turn conversation');
     });
@@ -540,7 +552,9 @@ describe('NPMExporter', () => {
         includeTests: true,
       });
 
-      const unitTests = result.files.filter((f) => f.path.startsWith('tests/unit/'));
+      const unitTests = result.files.filter((f) =>
+        f.path.startsWith('tests/unit/')
+      );
       expect(unitTests.length).toBeGreaterThan(0);
     });
 
@@ -549,7 +563,9 @@ describe('NPMExporter', () => {
         includeTests: true,
       });
 
-      const integrationTests = result.files.filter((f) => f.path.startsWith('tests/integration/'));
+      const integrationTests = result.files.filter((f) =>
+        f.path.startsWith('tests/integration/')
+      );
       expect(integrationTests.length).toBeGreaterThan(0);
     });
 
@@ -558,7 +574,9 @@ describe('NPMExporter', () => {
         includeTests: true,
       });
 
-      const e2eTests = result.files.filter((f) => f.path.startsWith('tests/e2e/'));
+      const e2eTests = result.files.filter((f) =>
+        f.path.startsWith('tests/e2e/')
+      );
       expect(e2eTests.length).toBeGreaterThan(0);
     });
 
@@ -567,7 +585,9 @@ describe('NPMExporter', () => {
         includeTests: true,
       });
 
-      const fixtures = result.files.find((f) => f.path === 'tests/fixtures/sample-data.json');
+      const fixtures = result.files.find(
+        (f) => f.path === 'tests/fixtures/sample-data.json'
+      );
       expect(fixtures).toBeDefined();
       expect(fixtures?.language).toBe('json');
     });
@@ -617,7 +637,9 @@ describe('NPMExporter', () => {
     it('should generate validation utilities', async () => {
       const result = await exporter.export(basicManifest);
 
-      const validation = result.files.find((f) => f.path === 'src/utils/validation.ts');
+      const validation = result.files.find(
+        (f) => f.path === 'src/utils/validation.ts'
+      );
       expect(validation).toBeDefined();
       expect(validation?.content).toContain('validateChatRequest');
     });
@@ -625,7 +647,9 @@ describe('NPMExporter', () => {
     it('should generate default configuration', async () => {
       const result = await exporter.export(basicManifest);
 
-      const defaults = result.files.find((f) => f.path === 'src/config/defaults.ts');
+      const defaults = result.files.find(
+        (f) => f.path === 'src/config/defaults.ts'
+      );
       expect(defaults).toBeDefined();
       expect(defaults?.content).toContain('defaultConfig');
     });
@@ -710,7 +734,9 @@ describe('NPMExporter', () => {
       const hasSource = paths.some((p) => p.startsWith('src/'));
       const hasTests = paths.some((p) => p.startsWith('tests/'));
       const hasExamples = paths.some((p) => p.startsWith('examples/'));
-      const hasQA = paths.some((p) => ['.eslintrc.json', '.prettierrc', 'jest.config.js'].includes(p));
+      const hasQA = paths.some((p) =>
+        ['.eslintrc.json', '.prettierrc', 'jest.config.js'].includes(p)
+      );
 
       expect(hasDocumentation).toBe(true);
       expect(hasSource).toBe(true);

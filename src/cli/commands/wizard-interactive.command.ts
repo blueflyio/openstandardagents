@@ -909,7 +909,9 @@ class OSSAWizardV2 {
       'THE MOST IMPORTANT FIELD - Define your agent behavior'
     );
 
-    printInfo('💡 The system prompt defines your agent\'s personality, capabilities, and behavior.');
+    printInfo(
+      "💡 The system prompt defines your agent's personality, capabilities, and behavior."
+    );
     printInfo('   This is required for all exports and agent execution.');
 
     const answers = await inquirer.prompt([
@@ -980,7 +982,9 @@ Guidelines:
       },
     });
 
-    printSuccess('System prompt configured - Your agent now has a personality!');
+    printSuccess(
+      'System prompt configured - Your agent now has a personality!'
+    );
   }
 
   private async configureLLM(): Promise<void> {
@@ -1123,7 +1127,9 @@ Guidelines:
       'Define what your agent can do'
     );
 
-    printInfo('💡 Tools are the actions your agent can perform (API calls, code execution, etc.)');
+    printInfo(
+      '💡 Tools are the actions your agent can perform (API calls, code execution, etc.)'
+    );
 
     const { toolChoice } = await inquirer.prompt([
       {
@@ -1146,7 +1152,8 @@ Guidelines:
           name: 'toolCount',
           message: 'How many tools to add?',
           default: 1,
-          validate: (input: number) => input > 0 && input <= 20 || 'Must be between 1 and 20',
+          validate: (input: number) =>
+            (input > 0 && input <= 20) || 'Must be between 1 and 20',
         },
       ]);
 
@@ -1157,13 +1164,15 @@ Guidelines:
             type: 'input',
             name: 'name',
             message: `Tool ${i + 1} - Name:`,
-            validate: (input: string) => input.length > 0 || 'Tool name required',
+            validate: (input: string) =>
+              input.length > 0 || 'Tool name required',
           },
           {
             type: 'input',
             name: 'description',
             message: `Tool ${i + 1} - Description:`,
-            validate: (input: string) => input.length > 0 || 'Description required',
+            validate: (input: string) =>
+              input.length > 0 || 'Description required',
           },
           {
             type: 'list',
@@ -1195,7 +1204,9 @@ Guidelines:
 
       printSuccess(`${tools.length} tools configured`);
     } else if (toolChoice === 'mcp') {
-      printInfo('📡 MCP servers provide pre-built tools via Model Context Protocol');
+      printInfo(
+        '📡 MCP servers provide pre-built tools via Model Context Protocol'
+      );
       printInfo('   Configure MCP servers in the extensions.mcp section');
       printSuccess('MCP server configuration marked for later setup');
     } else {
@@ -1218,9 +1229,18 @@ Guidelines:
         name: 'level',
         message: 'Autonomy Level:',
         choices: [
-          { name: 'Fully Autonomous - No human approval needed', value: 'full' },
-          { name: 'Semi-Autonomous - Approval for critical actions', value: 'semi' },
-          { name: 'Supervised - All actions require approval', value: 'supervised' },
+          {
+            name: 'Fully Autonomous - No human approval needed',
+            value: 'full',
+          },
+          {
+            name: 'Semi-Autonomous - Approval for critical actions',
+            value: 'semi',
+          },
+          {
+            name: 'Supervised - All actions require approval',
+            value: 'supervised',
+          },
         ],
         default: 'semi',
       },
@@ -1233,9 +1253,11 @@ Guidelines:
       {
         type: 'number',
         name: 'confidenceThreshold',
-        message: 'Minimum confidence threshold for autonomous actions (0.0-1.0):',
+        message:
+          'Minimum confidence threshold for autonomous actions (0.0-1.0):',
         default: 0.7,
-        validate: (input: number) => (input >= 0 && input <= 1) || 'Must be between 0 and 1',
+        validate: (input: number) =>
+          (input >= 0 && input <= 1) || 'Must be between 0 and 1',
       },
     ]);
 
@@ -1299,7 +1321,10 @@ Guidelines:
       spec: {
         constraints: {
           time: {
-            max_execution_time: answers.maxExecutionTime > 0 ? `${answers.maxExecutionTime}s` : undefined,
+            max_execution_time:
+              answers.maxExecutionTime > 0
+                ? `${answers.maxExecutionTime}s`
+                : undefined,
           },
           cost: {
             max_cost_per_execution: answers.maxCostPerExecution,
@@ -1499,10 +1524,19 @@ Guidelines:
         name: 'domain',
         message: 'Primary Domain:',
         choices: [
-          { name: 'DevOps - CI/CD, deployment, infrastructure', value: 'devops' },
-          { name: 'Data Science - ML, analytics, insights', value: 'data-science' },
+          {
+            name: 'DevOps - CI/CD, deployment, infrastructure',
+            value: 'devops',
+          },
+          {
+            name: 'Data Science - ML, analytics, insights',
+            value: 'data-science',
+          },
           { name: 'Customer Support - Help desk, ticketing', value: 'support' },
-          { name: 'Finance - Accounting, billing, invoicing', value: 'finance' },
+          {
+            name: 'Finance - Accounting, billing, invoicing',
+            value: 'finance',
+          },
           { name: 'HR - Recruiting, onboarding, management', value: 'hr' },
           { name: 'Sales & Marketing - CRM, campaigns', value: 'sales' },
           { name: 'Security - Scanning, compliance, audit', value: 'security' },
@@ -1514,8 +1548,14 @@ Guidelines:
         name: 'crossCutting',
         message: 'Cross-cutting Concerns:',
         choices: [
-          { name: 'Observability - Monitoring and logging', value: 'observability' },
-          { name: 'Security - Authentication and authorization', value: 'security' },
+          {
+            name: 'Observability - Monitoring and logging',
+            value: 'observability',
+          },
+          {
+            name: 'Security - Authentication and authorization',
+            value: 'security',
+          },
           { name: 'Compliance - Regulatory requirements', value: 'compliance' },
           { name: 'Cost Management - Budget tracking', value: 'cost' },
         ],
@@ -1620,7 +1660,8 @@ Guidelines:
         name: 'turnTimeout',
         message: 'Timeout per turn (e.g., "300s", "5m"):',
         default: '300s',
-        validate: (input: string) => /^[0-9]+(s|m|h)$/.test(input) || 'Must be format like "300s" or "5m"',
+        validate: (input: string) =>
+          /^[0-9]+(s|m|h)$/.test(input) || 'Must be format like "300s" or "5m"',
       },
       {
         type: 'confirm',
@@ -1692,10 +1733,26 @@ Guidelines:
           name: 'features',
           message: 'Select optimizations to enable:',
           choices: [
-            { name: 'Prompt Caching - Cache repeated prompts (recommended)', value: 'prompt_caching', checked: true },
-            { name: 'Context Pruning - Remove less relevant context', value: 'context_pruning', checked: true },
-            { name: 'Batched Inference - Batch multiple requests', value: 'batched_inference', checked: false },
-            { name: 'Compression - Compress prompts/responses', value: 'compression', checked: false },
+            {
+              name: 'Prompt Caching - Cache repeated prompts (recommended)',
+              value: 'prompt_caching',
+              checked: true,
+            },
+            {
+              name: 'Context Pruning - Remove less relevant context',
+              value: 'context_pruning',
+              checked: true,
+            },
+            {
+              name: 'Batched Inference - Batch multiple requests',
+              value: 'batched_inference',
+              checked: false,
+            },
+            {
+              name: 'Compression - Compress prompts/responses',
+              value: 'compression',
+              checked: false,
+            },
           ],
         },
         {
@@ -1703,7 +1760,8 @@ Guidelines:
           name: 'targetSavings',
           message: 'Target cost savings (0.0-0.95 = 0-95%):',
           default: 0.7,
-          validate: (input: number) => (input >= 0 && input <= 0.95) || 'Must be between 0 and 0.95',
+          validate: (input: number) =>
+            (input >= 0 && input <= 0.95) || 'Must be between 0 and 0.95',
         },
       ]);
 
@@ -1717,7 +1775,9 @@ Guidelines:
         },
       });
 
-      printSuccess(`Token efficiency enabled - targeting ${(options.targetSavings * 100).toFixed(0)}% cost savings!`);
+      printSuccess(
+        `Token efficiency enabled - targeting ${(options.targetSavings * 100).toFixed(0)}% cost savings!`
+      );
     } else {
       printInfo('⏭️  Token efficiency optimizations skipped');
     }
@@ -1732,7 +1792,9 @@ Guidelines:
       'Enable multi-agent collaboration and messaging'
     );
 
-    printInfo('💬 A2A (Agent-to-Agent) is one of the BIGGEST adoption drivers!');
+    printInfo(
+      '💬 A2A (Agent-to-Agent) is one of the BIGGEST adoption drivers!'
+    );
     printInfo('   - Multi-agent collaboration');
     printInfo('   - Event-driven workflows');
     printInfo('   - Distributed agent networks');
@@ -1768,10 +1830,26 @@ Guidelines:
           name: 'capabilities',
           message: 'A2A Capabilities:',
           choices: [
-            { name: 'Request/Response - Synchronous agent calls', value: 'request_response', checked: true },
-            { name: 'Publish/Subscribe - Event broadcasting', value: 'pub_sub', checked: true },
-            { name: 'Task Queue - Distributed work', value: 'task_queue', checked: false },
-            { name: 'Stream Processing - Real-time data', value: 'streaming', checked: false },
+            {
+              name: 'Request/Response - Synchronous agent calls',
+              value: 'request_response',
+              checked: true,
+            },
+            {
+              name: 'Publish/Subscribe - Event broadcasting',
+              value: 'pub_sub',
+              checked: true,
+            },
+            {
+              name: 'Task Queue - Distributed work',
+              value: 'task_queue',
+              checked: false,
+            },
+            {
+              name: 'Stream Processing - Real-time data',
+              value: 'streaming',
+              checked: false,
+            },
           ],
         },
         {
@@ -1861,7 +1939,9 @@ Guidelines:
         },
       });
 
-      printSuccess(`A2A Communication configured with ${a2aConfig.protocol} protocol!`);
+      printSuccess(
+        `A2A Communication configured with ${a2aConfig.protocol} protocol!`
+      );
       if (a2aConfig.enableTeams) {
         printSuccess('✨ Multi-agent teams enabled - ready for collaboration!');
       }
@@ -1910,15 +1990,22 @@ Guidelines:
             type: 'input',
             name: 'description',
             message: 'Function Description:',
-            validate: (input: string) => input.length > 0 || 'Description is required',
+            validate: (input: string) =>
+              input.length > 0 || 'Description is required',
           },
           {
             type: 'list',
             name: 'schemaType',
             message: 'Define JSON Schema:',
             choices: [
-              { name: 'Simple (string, number, boolean parameters)', value: 'simple' },
-              { name: 'Complex (objects, arrays, nested structures)', value: 'complex' },
+              {
+                name: 'Simple (string, number, boolean parameters)',
+                value: 'simple',
+              },
+              {
+                name: 'Complex (objects, arrays, nested structures)',
+                value: 'complex',
+              },
               { name: 'Skip (define schema later)', value: 'skip' },
             ],
             default: 'simple',
@@ -1935,24 +2022,33 @@ Guidelines:
             {
               type: 'input',
               name: 'paramNames',
-              message: 'Parameter names (comma-separated, e.g. location,units,date):',
+              message:
+                'Parameter names (comma-separated, e.g. location,units,date):',
               default: '',
             },
           ]);
 
           if (params.paramNames) {
-            const paramList = params.paramNames.split(',').map((p: string) => p.trim()).filter((p: string) => p);
+            const paramList = params.paramNames
+              .split(',')
+              .map((p: string) => p.trim())
+              .filter((p: string) => p);
             func.parameters = {
               type: 'object',
               properties: paramList.reduce((acc: any, param: string) => {
-                acc[param] = { type: 'string', description: `${param} parameter` };
+                acc[param] = {
+                  type: 'string',
+                  description: `${param} parameter`,
+                };
                 return acc;
               }, {}),
               required: paramList,
             };
           }
         } else if (funcConfig.schemaType === 'complex') {
-          printWarning('⚠️  Complex JSON Schema definition requires manual editing after generation');
+          printWarning(
+            '⚠️  Complex JSON Schema definition requires manual editing after generation'
+          );
           func.parameters = {
             type: 'object',
             properties: {},
@@ -1982,7 +2078,9 @@ Guidelines:
 
       printSuccess(`✅ Added ${functions.length} function definition(s)`);
     } else {
-      printInfo('⏭️  No functions defined (agent will not support function calling)');
+      printInfo(
+        '⏭️  No functions defined (agent will not support function calling)'
+      );
     }
   }
 
@@ -2021,11 +2119,23 @@ Guidelines:
             name: 'category',
             message: 'Adapter Category:',
             choices: [
-              { name: 'SCM - Source Code Management (GitHub, GitLab)', value: 'scm' },
-              { name: 'Runtime - Execution Environment (Kubernetes, Docker)', value: 'runtime' },
-              { name: 'Cloud - Cloud Provider (AWS, GCP, Azure)', value: 'cloud' },
+              {
+                name: 'SCM - Source Code Management (GitHub, GitLab)',
+                value: 'scm',
+              },
+              {
+                name: 'Runtime - Execution Environment (Kubernetes, Docker)',
+                value: 'runtime',
+              },
+              {
+                name: 'Cloud - Cloud Provider (AWS, GCP, Azure)',
+                value: 'cloud',
+              },
               { name: 'Database - Database Connection', value: 'database' },
-              { name: 'Service - External Service Integration', value: 'service' },
+              {
+                name: 'Service - External Service Integration',
+                value: 'service',
+              },
             ],
           },
         ]);
@@ -2041,7 +2151,10 @@ Guidelines:
           typeChoices = [
             { name: 'Kubernetes (kagent)', value: 'runtime.kagent' },
             { name: 'Docker', value: 'runtime.docker' },
-            { name: 'Serverless (Lambda, Cloud Functions)', value: 'runtime.serverless' },
+            {
+              name: 'Serverless (Lambda, Cloud Functions)',
+              value: 'runtime.serverless',
+            },
           ];
         } else if (adapterConfig.category === 'cloud') {
           typeChoices = [
@@ -2056,9 +2169,7 @@ Guidelines:
             { name: 'Redis', value: 'database.redis' },
           ];
         } else {
-          typeChoices = [
-            { name: 'Custom Service', value: 'service.custom' },
-          ];
+          typeChoices = [{ name: 'Custom Service', value: 'service.custom' }];
         }
 
         const typeAnswer = await inquirer.prompt([
@@ -2094,7 +2205,10 @@ Guidelines:
               ref: `secrets://${adapterConfig.category}/token`,
             },
           };
-        } else if (adapterConfig.category === 'runtime' && typeAnswer.type === 'runtime.kagent') {
+        } else if (
+          adapterConfig.category === 'runtime' &&
+          typeAnswer.type === 'runtime.kagent'
+        ) {
           adapter.config = {
             namespace: 'default',
             serviceAccount: 'agent-service-account',
@@ -2145,7 +2259,9 @@ Guidelines:
       });
 
       printSuccess(`✅ Configured ${adapters.length} platform adapter(s)`);
-      printWarning('⚠️  Remember to configure secrets for adapter authentication');
+      printWarning(
+        '⚠️  Remember to configure secrets for adapter authentication'
+      );
     } else {
       printInfo('⏭️  No adapters configured (agent will run standalone)');
     }
@@ -2193,10 +2309,22 @@ Guidelines:
           name: 'mode',
           message: 'Identity Mode:',
           choices: [
-            { name: 'App - Application identity (OAuth app, service principal)', value: 'app' },
-            { name: 'Service Account - Service account with IAM role', value: 'service_account' },
-            { name: 'User - User identity (for testing/development)', value: 'user' },
-            { name: 'Workload Identity - Cloud workload identity federation', value: 'workload_identity' },
+            {
+              name: 'App - Application identity (OAuth app, service principal)',
+              value: 'app',
+            },
+            {
+              name: 'Service Account - Service account with IAM role',
+              value: 'service_account',
+            },
+            {
+              name: 'User - User identity (for testing/development)',
+              value: 'user',
+            },
+            {
+              name: 'Workload Identity - Cloud workload identity federation',
+              value: 'workload_identity',
+            },
           ],
           default: 'service_account',
         },
@@ -2205,10 +2333,22 @@ Guidelines:
           name: 'credentialType',
           message: 'Credential Source Type:',
           choices: [
-            { name: 'Secret Reference - Reference to secrets manager (recommended)', value: 'secretRef' },
-            { name: 'Workload Identity - Cloud-native identity federation', value: 'workloadIdentity' },
-            { name: 'Environment Variable - From env vars (dev only)', value: 'env' },
-            { name: 'External - External credential provider', value: 'external' },
+            {
+              name: 'Secret Reference - Reference to secrets manager (recommended)',
+              value: 'secretRef',
+            },
+            {
+              name: 'Workload Identity - Cloud-native identity federation',
+              value: 'workloadIdentity',
+            },
+            {
+              name: 'Environment Variable - From env vars (dev only)',
+              value: 'env',
+            },
+            {
+              name: 'External - External credential provider',
+              value: 'external',
+            },
           ],
           default: 'secretRef',
         },
@@ -2218,13 +2358,15 @@ Guidelines:
         {
           type: 'input',
           name: 'permissions',
-          message: 'Permissions (comma-separated, e.g. contents.read,issues.write):',
+          message:
+            'Permissions (comma-separated, e.g. contents.read,issues.write):',
           default: 'contents.read',
         },
         {
           type: 'input',
           name: 'resources',
-          message: 'Resource Scope (optional, comma-separated repositories/resources):',
+          message:
+            'Resource Scope (optional, comma-separated repositories/resources):',
           default: '',
         },
       ]);
@@ -2235,7 +2377,10 @@ Guidelines:
           name: 'rotationType',
           message: 'Credential Rotation Policy:',
           choices: [
-            { name: 'Managed - Cloud provider manages rotation', value: 'managed' },
+            {
+              name: 'Managed - Cloud provider manages rotation',
+              value: 'managed',
+            },
             { name: 'Automatic - Rotate on schedule', value: 'automatic' },
             { name: 'Manual - Manual rotation required', value: 'manual' },
           ],
@@ -2250,14 +2395,23 @@ Guidelines:
         },
       ]);
 
-      const credentialRef = principalConfig.credentialType === 'secretRef'
-        ? `secrets://${principalConfig.category}/credentials`
-        : principalConfig.credentialType === 'env'
-        ? `env:${principalConfig.category.toUpperCase()}_CREDENTIALS`
-        : 'workload-identity://default';
+      const credentialRef =
+        principalConfig.credentialType === 'secretRef'
+          ? `secrets://${principalConfig.category}/credentials`
+          : principalConfig.credentialType === 'env'
+            ? `env:${principalConfig.category.toUpperCase()}_CREDENTIALS`
+            : 'workload-identity://default';
 
-      const permissions = policyConfig.permissions.split(',').map((p: string) => p.trim()).filter((p: string) => p);
-      const resources = policyConfig.resources ? policyConfig.resources.split(',').map((r: string) => r.trim()).filter((r: string) => r) : undefined;
+      const permissions = policyConfig.permissions
+        .split(',')
+        .map((p: string) => p.trim())
+        .filter((p: string) => p);
+      const resources = policyConfig.resources
+        ? policyConfig.resources
+            .split(',')
+            .map((r: string) => r.trim())
+            .filter((r: string) => r)
+        : undefined;
 
       const principal: any = {
         category: principalConfig.category,
@@ -2293,9 +2447,13 @@ Guidelines:
       printSuccess('✅ Principal configured');
       printInfo(`   Mode: ${principalConfig.mode}`);
       printInfo(`   Permissions: ${permissions.join(', ')}`);
-      printInfo(`   Rotation: ${securityConfig.rotationType} (${securityConfig.ttlDays} days)`);
+      printInfo(
+        `   Rotation: ${securityConfig.rotationType} (${securityConfig.ttlDays} days)`
+      );
     } else {
-      printInfo('⏭️  No principal configured (agent will use default credentials)');
+      printInfo(
+        '⏭️  No principal configured (agent will use default credentials)'
+      );
     }
   }
 
@@ -3411,7 +3569,8 @@ Guidelines:
       agent.metadata.annotations['ossa.org/gaid'] = gaid;
       agent.metadata.annotations['ossa.org/serial-number'] = serialNumber;
       agent.metadata.annotations['ossa.org/organization'] = org;
-      agent.metadata.annotations['ossa.org/registered-at'] = new Date().toISOString();
+      agent.metadata.annotations['ossa.org/registered-at'] =
+        new Date().toISOString();
 
       // Rewrite manifest with GAID
       const updatedYamlContent = yaml.stringify(agent as OssaAgent, {
@@ -3426,7 +3585,9 @@ Guidelines:
 
       // Registration removed - AgentProtocolClient migrated to @bluefly/agent-protocol
       if (outputAnswers.register_agent) {
-        printWarning('Agent registration requires @bluefly/agent-protocol package (not included in OSSA spec).');
+        printWarning(
+          'Agent registration requires @bluefly/agent-protocol package (not included in OSSA spec).'
+        );
         printInfo('Use: npx @bluefly/agent-protocol register <manifest-file>');
       }
 
@@ -3439,9 +3600,15 @@ Guidelines:
         generatedAt: new Date().toISOString(),
         agentName: agent.metadata?.name,
         agentVersion: agent.metadata?.version,
-        registered: outputAnswers.register_agent && agent.metadata?.annotations?.['ossa.org/registered'] === 'true',
+        registered:
+          outputAnswers.register_agent &&
+          agent.metadata?.annotations?.['ossa.org/registered'] === 'true',
       };
-      fs.writeFileSync(gaidInfoPath, JSON.stringify(gaidInfo, null, 2), 'utf-8');
+      fs.writeFileSync(
+        gaidInfoPath,
+        JSON.stringify(gaidInfo, null, 2),
+        'utf-8'
+      );
       printInfo(`  GAID info saved to: ${gaidInfoPath}`);
     }
 
