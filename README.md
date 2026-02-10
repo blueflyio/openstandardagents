@@ -3,9 +3,16 @@
 > **Development happens on [GitLab](https://gitlab.com/blueflyio/ossa/openstandardagents).** This repo is a read-only mirror.
 > [Source](https://gitlab.com/blueflyio/ossa/openstandardagents) | [Issues](https://gitlab.com/blueflyio/ossa/openstandardagents/-/issues) | [npm](https://www.npmjs.com/package/@bluefly/openstandardagents)
 
-A specification standard for defining, validating, and exporting AI agent manifests to multiple platforms. One YAML manifest, multiple deployment targets.
+**The infrastructure bridge between agent protocols and deployment platforms.**
 
-OSSA is the infrastructure middle layer for agents - not another protocol, not another framework, but the missing bridge for agent packaging and distribution.
+OSSA is not a protocol (like MCP or A2A) and not a framework (like LangChain or CrewAI). It's the missing middle layer that translates agent definitions into platform-specific deployments.
+
+**What OSSA does**: Provides a YAML manifest format (like OpenAPI for REST APIs) and exports it to Docker, Kubernetes, LangChain, CrewAI, Claude Skills, and other platforms. One manifest, multiple deployment targets.
+
+**How OSSA complements existing standards**:
+- **Consumes MCP** - OSSA manifests can reference MCP servers and tools
+- **Builds on A2A** - Supports A2A messaging and agent-to-agent communication
+- **Extends protocols** - Adds deployment and packaging layer on top of communication protocols
 
 [![npm version](https://badge.fury.io/js/%40bluefly%2Fopenstandardagents.svg)](https://www.npmjs.com/package/@bluefly/openstandardagents)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
@@ -32,43 +39,65 @@ ossa export my-agent.ossa.yaml --platform docker --output ./docker-deploy
 ossa export --list-platforms
 ```
 
-## What Works (0.4.5)
+## Production Status (v0.4.5)
 
-These features are tested and production-ready:
+### ✅ Production-Ready (Tested & Documented)
 
-- **Validation** - Validate manifests against JSON Schema (`ossa validate`)
-- **Export** - 9 platform adapters generating complete project scaffolds:
-  - `docker` (14 files), `kubernetes` (~25 files Kustomize), `crewai` (18 files)
-  - `langchain` (6 files), `kagent` (10 files CRD bundle), `gitlab-agent` (30+ files)
-  - `npm` (6 files), `drupal` (3-4 files), `agent-skills` (SKILL.md)
-- **Interactive Wizard** - Guided manifest creation (`ossa wizard`)
-- **Lint** - Best practice checking (`ossa lint`)
-- **Diff** - Compare two manifests (`ossa diff`)
-- **Local Agent Management** - `.agents/` folder management (`ossa agents-local`)
-- **8 Runtime Adapters** - Anthropic, OpenAI, Gemini, Bedrock, Ollama, Mistral, Azure, Claude
-  - Full SDK integration for chat and tool execution
-- **GAID** - Global Agent ID generation (`ossa generate-gaid`)
-- **Schema** - JSON Schema validation for OSSA v0.3/v0.4 manifests
-- **AGENTS.md Generation** - Generate agents.md standard files (`ossa agents-md`)
+**Core CLI Commands**:
+- `ossa validate` - Validate manifests against JSON Schema
+- `ossa wizard` - Interactive manifest creation
+- `ossa lint` - Best practice checking
+- `ossa diff` - Compare two manifests
+- `ossa migrate` - Migrate between spec versions
+- `ossa generate-gaid` - Global Agent ID generation
 
-## In Progress
+**Production Platform Exports** (9 platforms):
+- `docker` (14 files) - Dockerfile, docker-compose, healthchecks
+- `kubernetes` (~25 files) - Kustomize base + overlays (dev/staging/prod)
+- `crewai` (18 files) - Python crew with agents, tasks, tools
+- `langchain` (6 files) - Python + TypeScript agents
+- `kagent` (10 files) - kagent.dev CRD bundle
+- `gitlab-agent` (30+ files) - GitLab Duo flows
+- `npm` (6 files) - TypeScript package
+- `drupal` (3-4 files) - Drupal module integration
+- `agent-skills` (3 files) - SKILL.md for Claude Code
 
-Features that exist but need more work:
+**TypeScript SDK**:
+- Validation service (`@bluefly/openstandardagents/validation`)
+- Type definitions (`@bluefly/openstandardagents/types`)
+- JSON Schema access (`@bluefly/openstandardagents/schema`)
 
-- **OpenTelemetry Metrics** - Agent observability instrumentation (partial)
-- **Analytics** - Agent performance tracking (needs GitLab API integration)
-- **Catalog** - GitLab Catalog integration (convert, list, search, info work; push/pull/sync removed)
-- **Registry** - Agent registry publish/search (basic implementation)
+### 🚧 Beta (Functional but needs testing)
 
-## Planned
+- `ossa agents-local` - Local `.agents/` folder management
+- `ossa agents-md` - Generate agents.md files
+- Runtime adapters (8 providers) - Anthropic, OpenAI, Gemini, Bedrock, Ollama, Mistral, Azure, Claude
+- Export to `temporal` (1 file), `n8n` (1 file), `gitlab` (1 file)
 
-- **Skills Pipeline** - `ossa skills generate/export/research` for Claude Skills
-- **Cross-Format Import** - Import from Oracle Agent Spec, agents.md, A2A Agent Cards
-- **Catalog Sync** - Full GitLab Catalog push/pull with API integration
+### 🧪 Alpha (Experimental)
 
-## What It Does
+- OpenTelemetry metrics integration
+- Agent analytics tracking
+- GitLab Catalog integration (convert/list/search/info)
+- Agent registry (publish/search)
 
-OSSA defines a YAML-based manifest format for AI agents (similar to how OpenAPI defines REST APIs). The CLI validates manifests against a JSON Schema and exports them to platform-specific packages.
+### 📋 Planned
+
+- Skills pipeline (`ossa skills generate/export/research`)
+- Cross-format import (Oracle Agent Spec, agents.md, A2A Agent Cards)
+- Full GitLab Catalog push/pull with API integration
+
+## How It Works
+
+OSSA defines a YAML-based manifest format for AI agents (similar to how OpenAPI defines REST APIs). The CLI validates manifests against a JSON Schema and exports them to platform-specific deployment packages.
+
+**The infrastructure bridge layer**:
+1. **Define once** - Write a single `agent.ossa.yaml` manifest
+2. **Validate** - Check against JSON Schema for correctness
+3. **Export** - Generate platform-specific deployment packages (Docker, K8s, LangChain, etc.)
+4. **Deploy** - Use platform-native tools to deploy (kubectl, docker-compose, pip install, etc.)
+
+OSSA complements MCP and A2A by adding the packaging and deployment layer they don't provide.
 
 ### Manifest Format
 
@@ -179,8 +208,39 @@ The OSSA v0.4 schema supports these optional sections:
 
 All fields are optional. A minimal manifest needs only `apiVersion`, `kind`, `metadata.name`, and `spec.role`.
 
+## How OSSA Complements MCP and A2A
+
+OSSA is designed to work **alongside** existing agent protocols, not replace them:
+
+| Standard | Purpose | OSSA Integration |
+|----------|---------|------------------|
+| **MCP (Model Context Protocol)** | Tool/context communication | OSSA manifests reference MCP servers in `spec.tools` |
+| **A2A (Agent-to-Agent Protocol)** | Inter-agent messaging | OSSA supports A2A config in `spec.a2a` section |
+| **Oracle Agent Spec** | Agent capabilities definition | OSSA can import/export to Oracle format |
+| **OSSA** | Packaging & deployment | Consumes protocols, exports to platforms |
+
+**Example**: An OSSA manifest can declare that an agent uses MCP tools and A2A messaging, then export that configuration to Docker, Kubernetes, or LangChain deployment packages.
+
+```yaml
+apiVersion: ossa/v0.4.5
+kind: Agent
+metadata:
+  name: code-reviewer
+spec:
+  role: "Code review agent"
+  tools:
+    - mcp_server: "filesystem"  # References MCP server
+      tools: ["read_file", "list_directory"]
+  a2a:
+    enabled: true               # Supports A2A messaging
+    protocols: ["handoff", "delegation"]
+```
+
+OSSA doesn't compete with MCP or A2A - it makes them deployable.
+
 ## CLI Commands
 
+**Production Commands** (Tested & Stable):
 ```bash
 ossa wizard                  # Interactive manifest builder
 ossa validate <manifest>     # Validate against schema
@@ -189,12 +249,26 @@ ossa export --list-platforms  # Show all platforms with status
 ossa lint <manifest>         # Lint for best practices
 ossa diff <old> <new>        # Compare two manifests
 ossa migrate <manifest> --to 0.4.5  # Migrate between spec versions
-ossa migrate <manifest> --list      # List available transforms
 ossa generate-gaid <manifest>           # Generate Global Agent ID
+```
+
+**Beta Commands** (Functional but less tested):
+```bash
 ossa agents-local list       # List agents in .agents/ folder
+ossa agents-md generate      # Generate agents.md files
 ```
 
 Use `ossa --help` for the full command list.
+
+## Honest Status Reporting
+
+OSSA follows a strict status reporting policy:
+- **Production** - Tested with >80% coverage, documented, used in production
+- **Beta** - Functional but needs more testing or documentation
+- **Alpha** - Experimental, may change significantly
+- **Planned** - Not yet implemented
+
+All commands and exports report their status via `ossa export --list-platforms` and `ossa --help`. We don't oversell features or claim capabilities we haven't validated.
 
 ## Production Options
 

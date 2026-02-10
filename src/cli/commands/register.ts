@@ -17,25 +17,21 @@ import * as yaml from 'yaml';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { ValidationService } from '../../services/validation.service.js';
-import { AgentProtocolClient } from '../../services/agent-protocol-client.js';
-import type { AgentCard } from '../../services/agent-protocol-client.js';
 import {
   outputJSON,
   handleCommandError,
   printSuccess,
   printError,
-  printWarning,
   printInfo,
 } from '../utils/index.js';
 import type { Capability } from '../../types/index.js';
 import {
   addGlobalOptions,
   addRegistryOptions,
-  resolveRegistryUrl,
   shouldUseColor,
   ExitCode,
 } from '../utils/standard-options.js';
-import type { OssaAgent } from '../../types/index.js';
+
 
 /**
  * Agent ID Card - Digital identity for registered agents
@@ -220,154 +216,64 @@ registerCommand.action(
         timestamp,
       };
 
-      // Create Agent Card for API
-      const apiCard: AgentCard = {
-        gaid,
-        name: agentName,
-        version: agentVersion,
-        description,
-        author,
-        license,
-        tags: tags.length > 0 ? tags : undefined,
-        homepage,
-        repository,
-        capabilities: capabilities.length > 0 ? capabilities : undefined,
-      };
+      // Save Agent ID Card locally (registration API migrated to @bluefly/agent-protocol)
+      const outputPath = options.output || 'agent-card.yaml';
+      const outputDir = path.dirname(outputPath);
 
-      // Register with Agent Protocol API
-      const registryUrl = resolveRegistryUrl(options);
-      log(`Registering agent with registry: ${registryUrl}`, chalk.blue);
-      const client = new AgentProtocolClient({
-        baseURL: registryUrl,
-        apiKey: options.apiKey,
-      });
-
-      try {
-        const registrationResult = await client.registerAgent(
-          manifest,
-          apiCard
-        );
-
-        if (!registrationResult.success) {
-          throw new Error(
-            registrationResult.message || 'Registration failed without error message'
-          );
-        }
-
-        // Save Agent ID Card locally
-        const outputPath = options.output || 'agent-card.yaml';
-        const outputDir = path.dirname(outputPath);
-
-        if (!fs.existsSync(outputDir) && outputDir !== '.') {
-          fs.mkdirSync(outputDir, { recursive: true });
-        }
-
-        const cardContent = yaml.stringify(idCard);
-        fs.writeFileSync(outputPath, cardContent);
-
-        // Output results
-        if (options.json) {
-          outputJSON({
-            success: true,
-            gaid,
-            name: agentName,
-            version: agentVersion,
-            cardPath: path.resolve(outputPath),
-            message: registrationResult.message || 'Agent registered successfully',
-          });
-        } else {
-          log('', chalk.green);
-          printSuccess(`Agent registered successfully: ${gaid}`);
-          console.log('');
-          printInfo(`Agent ID Card saved: ${outputPath}`);
-
-          if (options.verbose) {
-            console.log('');
-            log('Agent Details:', chalk.gray);
-            log(`  Name:         ${agentName}`, chalk.gray);
-            log(`  Version:      ${agentVersion}`, chalk.gray);
-            log(`  GAID:         ${gaid}`, chalk.gray);
-            log(`  Signature:    ${signature.substring(0, 16)}...`, chalk.gray);
-            log(`  Timestamp:    ${timestamp}`, chalk.gray);
-
-            if (capabilities.length > 0) {
-              log(`  Capabilities: ${capabilities.length}`, chalk.gray);
-              capabilities.slice(0, 5).forEach((cap) => {
-                log(`    - ${cap}`, chalk.gray);
-              });
-              if (capabilities.length > 5) {
-                log(`    ... and ${capabilities.length - 5} more`, chalk.gray);
-              }
-            }
-
-            if (registrationResult.message) {
-              console.log('');
-              log(`Server: ${registrationResult.message}`, chalk.blue);
-            }
-          }
-
-          console.log('');
-          log('Next steps:', chalk.cyan);
-          log('  1. Share your Agent ID Card with collaborators', chalk.gray);
-          log('  2. Publish your agent manifest to a registry', chalk.gray);
-          log(
-            '  3. Use the GAID to reference your agent in workflows',
-            chalk.gray
-          );
-        }
-
-        process.exit(ExitCode.SUCCESS);
-      } catch (apiError) {
-        // API registration failed
-        if (!options.quiet) {
-          printError(
-            `Registration failed: ${apiError instanceof Error ? apiError.message : String(apiError)}`
-          );
-
-          if (
-            apiError instanceof Error &&
-            apiError.message.includes('No response from server')
-          ) {
-            console.error('');
-            printWarning('Unable to connect to Agent Protocol API');
-            console.error(
-              useColor
-                ? chalk.gray(`  Registry: ${registryUrl}`)
-                : `  Registry: ${registryUrl}`
-            );
-            console.error('');
-            console.error(
-              useColor
-                ? chalk.gray('Possible solutions:')
-                : 'Possible solutions:'
-            );
-            console.error(
-              useColor
-                ? chalk.gray('  1. Check your network connection')
-                : '  1. Check your network connection'
-            );
-            console.error(
-              useColor
-                ? chalk.gray('  2. Verify the registry URL is correct')
-                : '  2. Verify the registry URL is correct'
-            );
-            console.error(
-              useColor
-                ? chalk.gray('  3. Try again with --registry <url> or set OSSA_REGISTRY_URL')
-                : '  3. Try again with --registry <url> or set OSSA_REGISTRY_URL'
-            );
-          }
-
-          if (options.verbose && apiError instanceof Error) {
-            console.error('');
-            console.error(
-              useColor ? chalk.gray(apiError.stack || '') : apiError.stack || ''
-            );
-          }
-        }
-
-        process.exit(ExitCode.GENERAL_ERROR);
+      if (!fs.existsSync(outputDir) && outputDir !== '.') {
+        fs.mkdirSync(outputDir, { recursive: true });
       }
+
+      const cardContent = yaml.stringify(idCard);
+      fs.writeFileSync(outputPath, cardContent);
+
+      // Output results
+      if (options.json) {
+        outputJSON({
+          success: true,
+          gaid,
+          name: agentName,
+          version: agentVersion,
+          cardPath: path.resolve(outputPath),
+          message: 'Agent ID card generated locally. Use @bluefly/agent-protocol for registry registration.',
+        });
+      } else {
+        log('', chalk.green);
+        printSuccess(`Agent ID card generated: ${gaid}`);
+        console.log('');
+        printInfo(`Agent ID Card saved: ${outputPath}`);
+
+        if (options.verbose) {
+          console.log('');
+          log('Agent Details:', chalk.gray);
+          log(`  Name:         ${agentName}`, chalk.gray);
+          log(`  Version:      ${agentVersion}`, chalk.gray);
+          log(`  GAID:         ${gaid}`, chalk.gray);
+          log(`  Signature:    ${signature.substring(0, 16)}...`, chalk.gray);
+          log(`  Timestamp:    ${timestamp}`, chalk.gray);
+
+          if (capabilities.length > 0) {
+            log(`  Capabilities: ${capabilities.length}`, chalk.gray);
+            capabilities.slice(0, 5).forEach((cap) => {
+              log(`    - ${cap}`, chalk.gray);
+            });
+            if (capabilities.length > 5) {
+              log(`    ... and ${capabilities.length - 5} more`, chalk.gray);
+            }
+          }
+        }
+
+        console.log('');
+        log('Next steps:', chalk.cyan);
+        log('  1. Share your Agent ID Card with collaborators', chalk.gray);
+        log('  2. Register with a registry: npx @bluefly/agent-protocol register <manifest>', chalk.gray);
+        log(
+          '  3. Use the GAID to reference your agent in workflows',
+          chalk.gray
+        );
+      }
+
+      process.exit(ExitCode.SUCCESS);
     } catch (error) {
       handleCommandError(error);
     }
