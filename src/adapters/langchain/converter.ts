@@ -85,8 +85,7 @@ def execute_ossa_tool(tool_name: str, input_data: str) -> str:
     try:
         parsed_input = json.loads(input_data) if isinstance(input_data, str) else input_data
         # Tool execution logic - routes to appropriate handler
-        # This would integrate with OSSA runtime
-        return json.dumps({"result": f"Executed {tool_name} with {parsed_input}"})
+        raise NotImplementedError(f"Tool '{tool_name}' requires implementation")
     except Exception as e:
         return json.dumps({"error": str(e)})
 

@@ -64,7 +64,7 @@ export async function loadGitLabExtension(): Promise<OSSAExtension> {
   return {
     name: 'gitlab',
     description: 'GitLab integration (Agent, Duo Catalog, CI/CD)',
-    version: '0.3.3',
+    version: '0.4.5',
     commands,
   };
 }

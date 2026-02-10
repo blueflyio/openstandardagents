@@ -361,11 +361,8 @@ main().catch((error) => {
       .map((t) => {
         const inputType = `args as { [key: string]: unknown }`;
         return `    case '${t.name}':
-      // Implement ${t.name} logic here
-      return {
-        success: true,
-        result: \`Executed ${t.name} with: \${JSON.stringify(${inputType})}\`,
-      };`;
+      // TODO: Implement ${t.name} logic here
+      throw new Error('Tool ${t.name} requires implementation');`;
       })
       .join('\n\n');
 

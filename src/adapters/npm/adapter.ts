@@ -6,6 +6,7 @@
  * DRY: Uses shared libraries for license, validation, README, package.json
  */
 
+import { getApiVersion } from '../../utils/version.js';
 import { BaseAdapter } from '../base/adapter.interface.js';
 import type {
   OssaAgent,
@@ -34,7 +35,7 @@ export class NPMAdapter extends BaseAdapter {
   readonly platform = 'npm';
   readonly displayName = 'NPM Package';
   readonly description = 'Export agent as installable npm package';
-  readonly supportedVersions = ['v0.3.6', 'v0.4.1'];
+  readonly supportedVersions = ['v0.3.6', 'v0.4.x', 'v0.4.5'];
 
   private converter = new NPMConverter();
   private _skillsService?: ClaudeSkillsService;
@@ -249,7 +250,7 @@ export class NPMAdapter extends BaseAdapter {
    */
   getExample(): OssaAgent {
     return {
-      apiVersion: 'ossa/v0.4.1',
+      apiVersion: getApiVersion(),
       kind: 'Agent',
       metadata: {
         name: 'example-npm-agent',

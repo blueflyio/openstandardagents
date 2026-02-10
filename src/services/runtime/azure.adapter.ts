@@ -403,8 +403,8 @@ export class AzureAdapter {
       }
     }
 
-    // Default: return a placeholder response if no handler registered
-    return `Tool '${name}' executed with args: ${JSON.stringify(args)}`;
+    // No handler registered - fail explicitly
+    throw new Error(`No handler registered for tool: ${name}`);
   }
 
   /**

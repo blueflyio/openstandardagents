@@ -9,6 +9,7 @@
 import { z } from 'zod';
 import { readFileSync, existsSync } from 'fs';
 import type { OssaAgent } from '../../types/index.js';
+import { getApiVersion } from '../../utils/version.js';
 
 const LangChainConfigSchema = z.object({
   agent_type: z.string().optional(),
@@ -148,7 +149,7 @@ export class LangChainImporterService {
       provider = 'google';
 
     return {
-      apiVersion: 'ossa/v0.3.3',
+      apiVersion: getApiVersion(),
       kind: 'Agent',
       metadata: {
         name: 'langchain-agent',

@@ -7,7 +7,7 @@
 # Showcases: Drupal extension, async processing (Messenger), ECA integration
 # ============================================================================
 
-apiVersion: ossa/v0.4.1
+apiVersion: ossa/v0.4.5
 kind: Agent
 metadata:
   name: content-writer

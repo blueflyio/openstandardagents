@@ -263,7 +263,7 @@ components:
       properties:
         repo_path:
           type: string
-          example: /Volumes/AgentPlatform/repos/bare/blueflyio/agent-protocol.git
+          example: /path/to/repos/agent-protocol.git
         branch:
           type: string
           example: main

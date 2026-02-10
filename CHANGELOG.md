@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.5] - 2026-02-08
+
+### Changed
+
+**Honest Cleanup Release**
+
+Every registered command now works. Every version reference is correct. The README tells the truth.
+
+- **Removed 4 stub catalog commands** (push, pull, sync, diff) — returned "not implemented" to users
+- **Removed stub subcommands** from `agents` (update/delete), `migrate` (--from langchain/crewai/autogen), `build` (langchain/crewai/temporal/n8n stubs)
+- **Fixed `ossa migrate`** — now calls MigrationTransformService with `--to <version>` and `--list` flags instead of being a no-op
+- **Fixed version system** — `getApiVersion()` returns `ossa/v0.4.5` from package.json; removed stale `OSSA_SPEC_VERSION = '0.3.6'` constant
+- **Fixed schema path** — resolves to `spec/v0.4/agent.schema.json` (correct) instead of `spec/v0.3/ossa-0.3.6.schema.json`
+- **Fixed 30+ hardcoded version strings** across adapters, services, and SDKs
+- **Fixed 8 runtime adapters** — placeholder "Tool executed" returns replaced with proper errors
+- **Fixed 3 export templates** — fake return values replaced with `NotImplementedError`/`throw`
+- **Removed private infrastructure paths** — no more hardcoded NAS paths, personal directories, or internal emails
+- **Cleaned CI templates** — replaced personal git config with generic CI bot identity
+
+### Added
+
+- **`ossa export --list-platforms`** — shows all 12 export platforms with production/beta status
+- **`ossa migrate --list`** — shows all available migration transforms
+- **`ossa migrate --to <version>`** — target version flag (defaults to current)
+- **Categorized CLI help** — `ossa --help` now shows core commands with categories instead of 55 flat commands
+- **npm keywords** — 14 keywords for npm search discoverability
+
+### Fixed
+
+- `process-doc-templates.ts` — duplicate object keys bug that prevented template replacement
+- `vscode.generator.ts` — version regex only matched v0.2/v0.3, now matches v0.4+
+- `error-formatter.ts` — stale `ossa/v0.3.0` in user-facing error messages
+- `build` defaults now match actual supported platforms (kagent, docker, kubernetes)
+- Python SDK examples updated from v0.3.5 to v0.4.5
+- Go SDK default manifest version updated to v0.4.5
+
 ## [0.4.4] - 2026-02-07
 
 ### Added

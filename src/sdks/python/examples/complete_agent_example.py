@@ -33,7 +33,7 @@ def example_1_basic_agent():
 
     # Create a simple agent manifest
     manifest_yaml = """
-apiVersion: ossa/v0.3.5
+apiVersion: ossa/v0.4.5
 kind: Agent
 metadata:
   name: calculator-agent
@@ -104,7 +104,7 @@ def example_2_conversation_history():
     print("=" * 60)
 
     manifest_yaml = """
-apiVersion: ossa/v0.3.5
+apiVersion: ossa/v0.4.5
 kind: Agent
 metadata:
   name: chat-agent
@@ -162,7 +162,7 @@ async def example_3_async_execution():
     print("=" * 60)
 
     manifest_yaml = """
-apiVersion: ossa/v0.3.5
+apiVersion: ossa/v0.4.5
 kind: Agent
 metadata:
   name: async-agent
@@ -214,7 +214,7 @@ def example_4_error_handling():
     print("=" * 60)
 
     manifest_yaml = """
-apiVersion: ossa/v0.3.5
+apiVersion: ossa/v0.4.5
 kind: Agent
 metadata:
   name: error-agent
@@ -257,7 +257,7 @@ def example_5_openai_provider():
     print("=" * 60)
 
     manifest_yaml = """
-apiVersion: ossa/v0.3.5
+apiVersion: ossa/v0.4.5
 kind: Agent
 metadata:
   name: openai-agent

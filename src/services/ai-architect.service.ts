@@ -30,7 +30,7 @@ import { getVersionInfo } from '../utils/version.js';
 import { AnthropicAdapter, OssaManifest } from './runtime/anthropic.adapter.js';
 
 const ARCHITECT_MANIFEST: OssaManifest = {
-  apiVersion: 'ossa/v0.3',
+  apiVersion: getVersionInfo().apiVersion,
   kind: 'Agent',
   metadata: { name: 'ai-architect' },
   spec: {

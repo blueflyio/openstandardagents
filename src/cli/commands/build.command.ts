@@ -11,16 +11,6 @@ import { stringify as yamlStringify } from 'yaml';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { KAgentCRDGenerator } from '../../sdks/kagent/crd-generator.js';
-import { LangChainConverter } from '../../adapters/langchain/converter.js';
-import { CrewAIConverter } from '../../adapters/crewai/converter.js';
-import { TemporalConverter } from '../../adapters/temporal/converter.js';
-import { N8NConverter } from '../../adapters/n8n/converter.js';
-import { GitLabConverter } from '../../adapters/gitlab/converter.js';
-import {
-  DockerfileGenerator,
-  DockerComposeGenerator,
-} from '../../adapters/docker/generators.js';
-import { KubernetesManifestGenerator } from '../../adapters/kubernetes/generator.js';
 import { getBuildDefaults } from '../../config/defaults.js';
 import type { OssaAgent } from '../../types/index.js';
 
@@ -29,7 +19,7 @@ export const buildCommand = new Command('build')
   .argument('<manifest>', 'Path to OSSA agent manifest')
   .option(
     '-p, --platform <platform>',
-    'Build for specific platform (kagent, langchain, crewai, temporal, docker, kubernetes)',
+    'Build for specific platform (kagent, docker, kubernetes)',
     'all'
   )
   .option(
@@ -70,16 +60,7 @@ export const buildCommand = new Command('build')
 
         const platforms =
           options.platform === 'all'
-            ? [
-                'kagent',
-                'langchain',
-                'crewai',
-                'temporal',
-                'n8n',
-                'gitlab',
-                'docker',
-                'kubernetes',
-              ]
+            ? ['kagent', 'docker', 'kubernetes']
             : [options.platform];
 
         const results: Array<{
@@ -171,24 +152,6 @@ async function buildForPlatform(
       );
       fs.writeFileSync(crdPath, JSON.stringify(crd, null, 2));
       files.push(crdPath);
-      break;
-    }
-
-    case 'langchain': {
-      // TODO: Implement LangChain converter
-      console.log(chalk.yellow('  LangChain converter not yet implemented'));
-      break;
-    }
-
-    case 'crewai': {
-      // TODO: Implement CrewAI converter
-      console.log(chalk.yellow('  CrewAI converter not yet implemented'));
-      break;
-    }
-
-    case 'temporal': {
-      // TODO: Implement Temporal converter
-      console.log(chalk.yellow('  Temporal converter not yet implemented'));
       break;
     }
 

@@ -271,7 +271,7 @@ export function getBuildDefaults() {
   return {
     outputDir: process.env.OSSA_BUILD_OUTPUT_DIR || 'dist/build',
     baseImage: process.env.OSSA_BASE_IMAGE || 'node:20-alpine',
-    platforms: ['npm', 'langchain', 'crewai', 'anthropic', 'drupal', 'kagent'],
+    platforms: ['kagent', 'docker', 'kubernetes'],
   };
 }
 
@@ -338,7 +338,7 @@ export function getAuditDefaults() {
   return {
     scanPath: process.env.OSSA_AUDIT_SCAN_PATH || './packages/@ossa',
     validationLevel: process.env.OSSA_AUDIT_LEVEL || 'full',
-    specVersion: process.env.OSSA_SPEC_VERSION || '0.3.5',
+    specVersion: process.env.OSSA_SPEC_VERSION || '0.4.5',
     outputFormat: process.env.OSSA_AUDIT_FORMAT || 'table',
     recursive: process.env.OSSA_AUDIT_RECURSIVE !== 'false',
     includeExamples: process.env.OSSA_AUDIT_INCLUDE_EXAMPLES !== 'false',

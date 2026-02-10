@@ -29,7 +29,7 @@ describe('VersionDetectionService', () => {
 
       const result = await service.detectVersion(manifest);
 
-      expect(result.version).toBe('0.4.1');
+      expect(result.version).toBe('0.4.5');
       expect(result.confidence).toBe('high');
       expect(result.source).toBe('apiVersion');
       expect(result.warnings).toHaveLength(0);

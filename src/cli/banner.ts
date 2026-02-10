@@ -43,9 +43,9 @@ ${chalk.cyan('└─────────────────────
 
 const _vi = getVersionInfo();
 export const VERSION_INFO = `
-${chalk.gray('Version:')} ${chalk.white(_vi.version)}  ${chalk.gray('│')}  ${chalk.gray('Spec:')} ${chalk.white('v' + _vi.apiVersion)}  ${chalk.gray('│')}  ${chalk.gray('License:')} ${chalk.white('Apache-2.0')}
+${chalk.gray('Version:')} ${chalk.white(_vi.version)}  ${chalk.gray('│')}  ${chalk.gray('Spec:')} ${chalk.white(_vi.apiVersion)}  ${chalk.gray('│')}  ${chalk.gray('License:')} ${chalk.white('Apache-2.0')}
 ${chalk.gray('Docs:')} ${chalk.blue.underline('https://openstandardagents.org')}
-${chalk.gray('GitHub:')} ${chalk.blue.underline('https://github.com/openstandardagents')}
+${chalk.gray('Source:')} ${chalk.blue.underline('https://github.com/openstandardagents')}
 `;
 
 export const COMPLETION_GRAPHIC = `
