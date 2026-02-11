@@ -124,3 +124,8 @@ __DELETE_LATER/
 .DS_Store
 .AppleDouble
 .LSOverride
+
+# Test artifacts
+json
+*.tgz
+tmp-smoke-test/
