@@ -14,6 +14,109 @@ OSSA is not a protocol (like MCP or A2A) and not a framework (like LangChain or 
 - **Builds on A2A** - Supports A2A messaging and agent-to-agent communication
 - **Extends protocols** - Adds deployment and packaging layer on top of communication protocols
 
+## Revolutionary A2A (Agent-to-Agent) Communication
+
+OSSA includes a comprehensive A2A system that extends the [Model Context Protocol (MCP)](https://spec.modelcontextprotocol.io/) with true multi-agent orchestration capabilities:
+
+### Key Features
+
+- **Swarm Intelligence** - Decompose complex tasks across agent pools with intelligent load balancing
+- **Service Mesh** - Circuit breaking, health checking, and distributed tracing for agent reliability
+- **Task Delegation** - SLA negotiation and monitoring between agents
+- **MCP Integration** - Cross-language communication (TypeScript ↔ PHP ↔ Python)
+- **Multiple Patterns** - Request-reply, broadcast, pub-sub, pipeline coordination
+
+### Architectural Inspiration
+
+OSSA's A2A implementation draws inspiration from:
+- **Symfony MCP Bundle** - Enterprise-grade MCP integration patterns
+- **PHP Foundation MCP SDK** - Collaboration between PHP Foundation and Symfony project for robust MCP support
+
+### Example: Swarm Coordination
+
+```typescript
+import { SwarmOrchestrator, AgentMesh, DelegationService } from '@bluefly/openstandardagents/a2a';
+
+// Create swarm orchestrator
+const swarm = new SwarmOrchestrator({
+  maxSize: 100,
+  autoScaling: true,
+  coordinationStrategy: 'hybrid',
+});
+
+// Decompose complex task into agent subtasks
+const complexTask = {
+  name: 'Build Multi-Agent System',
+  requirements: {
+    capabilities: ['code-generation', 'testing', 'documentation'],
+    minAgents: 3,
+  },
+  constraints: {
+    maxExecutionTime: 3600000, // 1 hour
+    requiredSLA: 0.95,
+  },
+};
+
+const subtasks = swarm.decomposeTask(complexTask);
+
+// Balance load across agent pool
+const assignments = swarm.balanceLoad(subtasks, agents);
+
+// Agents coordinate via consensus
+const proposals = [/* agent proposals */];
+const consensus = await swarm.buildConsensus(proposals);
+```
+
+### Example: Agent Mesh
+
+```typescript
+import { AgentMesh } from '@bluefly/openstandardagents/a2a';
+
+// Create service mesh for agents
+const mesh = new AgentMesh(discoveryConfig, loadBalancingConfig, circuitBreakerConfig);
+
+// Register agents
+mesh.registerAgent(agentNode);
+
+// Discover agents by capability
+const codeGenerators = mesh.discoverAgents(['code-generation']);
+
+// Route request with load balancing and circuit breaking
+const targetAgent = mesh.routeRequest(message);
+
+// Trace distributed calls (W3C Trace Context)
+const trace = mesh.traceCall(fromAgent, toAgent, payload);
+mesh.completeTrace(trace.traceId, success);
+```
+
+### Example: Cross-Language Communication
+
+```typescript
+import { MCPIntegrationService } from '@bluefly/openstandardagents/a2a';
+
+const mcpService = new MCPIntegrationService();
+
+// Connect to PHP MCP server (Symfony MCP Bundle)
+const phpConnection = await mcpService.connectMCPServer('stdio://symfony-mcp-bundle');
+
+// Discover PHP server capabilities
+const tools = await mcpService.discoverTools(phpConnection.id);
+
+// Call PHP tool from TypeScript agent
+const result = await mcpService.callTool(phpConnection.id, 'process_data', {
+  data: [1, 2, 3, 4, 5],
+});
+
+// Expose TypeScript agent as MCP server for Python/PHP consumption
+const server = await mcpService.exposeMCPServer(typescriptAgent);
+```
+
+### A2A Documentation
+
+- [MCP Specification](https://spec.modelcontextprotocol.io/) - Official Model Context Protocol
+- [Symfony MCP Bundle](https://github.com/symfony/mcp-bundle) - Enterprise PHP MCP integration
+- [PHP MCP SDK](https://github.com/modelcontextprotocol/php-sdk) - PHP Foundation collaboration
+
 [![npm version](https://badge.fury.io/js/%40bluefly%2Fopenstandardagents.svg)](https://www.npmjs.com/package/@bluefly/openstandardagents)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
