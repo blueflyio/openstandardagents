@@ -2,13 +2,23 @@
  * TypeScript SDK - Manifest Operations
  *
  * Create, read, and validate OSSA manifests.
+ *
+ * SOLID: Single Responsibility - Manifest file operations
+ * DRY: Delegates validation to ValidatorService
  */
 
 import { readFileSync, writeFileSync } from 'fs';
 import { parse, stringify } from 'yaml';
 import type { OSSAManifest } from './types.js';
+import { ValidatorService } from './validator.js';
 
 export class ManifestService {
+  private validator: ValidatorService;
+
+  constructor() {
+    this.validator = new ValidatorService();
+  }
+
   /**
    * Load manifest from file
    * CRUD: Read
@@ -25,39 +35,15 @@ export class ManifestService {
   /**
    * Validate manifest structure
    * CRUD: Read (validation)
+   *
+   * Delegates to ValidatorService for comprehensive validation
    */
   validate(manifest: OSSAManifest): {
     valid: boolean;
     errors: string[];
     warnings: string[];
   } {
-    const errors: string[] = [];
-    const warnings: string[] = [];
-
-    // Required fields
-    if (!manifest.apiVersion) errors.push('Missing apiVersion');
-    if (!manifest.kind) errors.push('Missing kind');
-    if (!manifest.metadata) errors.push('Missing metadata');
-    if (!manifest.spec) errors.push('Missing spec');
-
-    // Kind validation
-    if (
-      manifest.kind &&
-      !['Agent', 'Task', 'Workflow'].includes(manifest.kind)
-    ) {
-      errors.push(`Invalid kind: ${manifest.kind}`);
-    }
-
-    // Metadata validation
-    if (manifest.metadata && !manifest.metadata.name) {
-      errors.push('Missing metadata.name');
-    }
-
-    return {
-      valid: errors.length === 0,
-      errors,
-      warnings,
-    };
+    return this.validator.validate(manifest);
   }
 
   /**

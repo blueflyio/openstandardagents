@@ -2,7 +2,7 @@
  * GitLab Duo External Agent Generator Integration Tests
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from '@jest/globals';
 import { ExternalAgentGenerator } from '../../../src/adapters/gitlab/external-agent-generator.js';
 import type { OssaAgent } from '../../../src/types/index.js';
 
