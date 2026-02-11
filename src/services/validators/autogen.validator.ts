@@ -26,7 +26,7 @@ export class AutoGenValidator {
     // Works in both Jest (source tree) and production (project root with dist/)
     const ag2SchemaPath = join(
       process.cwd(),
-      'spec/v0.3/extensions/ag2/ag2.schema.json'
+      'spec/v0.4/extensions/ag2/ag2.schema.json'
     );
     const ag2Schema = JSON.parse(readFileSync(ag2SchemaPath, 'utf-8'));
     this.validateAG2 = this.ajv.compile(ag2Schema);

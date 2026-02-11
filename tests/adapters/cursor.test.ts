@@ -2,7 +2,7 @@
  * Tests for Cursor Cloud Agent Adapter
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from '@jest/globals';
 import { CursorAdapter } from '../../src/adapters/cursor/adapter.js';
 import type { OssaAgent } from '../../src/types/index.js';
 

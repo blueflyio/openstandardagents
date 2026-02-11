@@ -8,37 +8,21 @@
  */
 
 import { readFileSync, existsSync } from 'fs';
-import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { resolve } from 'path';
 
 // Read version from .version.json (single source of truth)
-// Try multiple fallback locations to support different execution contexts
-function findVersionJson(): string {
-  // Define __dirname for ES modules
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = dirname(__filename);
+// Uses process.cwd() for both tests and production
+// In tests: runs from project root
+// In production (npm pack): .version.json is copied to package root
+const versionJsonPath = resolve(process.cwd(), '.version.json');
 
-  const paths = [
-    // For tests and development (cwd is project root)
-    resolve(process.cwd(), '.version.json'),
-    // For compiled dist (when imported from node_modules): dist/../.version.json
-    resolve(__dirname, '../.version.json'),
-    // For compiled dist with deeper nesting: dist/services/../.version.json
-    resolve(__dirname, '../../.version.json'),
-  ];
-
-  for (const path of paths) {
-    if (existsSync(path)) {
-      return path;
-    }
-  }
-
+if (!existsSync(versionJsonPath)) {
   throw new Error(
-    '.version.json not found. Tried paths: ' + paths.join(', ')
+    `.version.json not found at ${versionJsonPath}. ` +
+      `Ensure the file exists in the project/package root.`
   );
 }
 
-const versionJsonPath = findVersionJson();
 const versionData = JSON.parse(readFileSync(versionJsonPath, 'utf-8'));
 
 /**

@@ -9,7 +9,7 @@
  * @module tests/a2a/mcp-integration.test
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from '@jest/globals';
 import {
   MCPIntegrationService,
   type MCPResource,

@@ -2,7 +2,7 @@
  * Tests for Claude Code Sub-agent Adapter
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from '@jest/globals';
 import { ClaudeCodeAdapter } from '../../src/adapters/claude-code/adapter.js';
 import type { OssaAgent } from '../../src/types/index.js';
 

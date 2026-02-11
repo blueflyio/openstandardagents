@@ -26,7 +26,7 @@ export class CrewAIValidator {
     // Works in both Jest (source tree) and production (project root with dist/)
     const crewaiSchemaPath = join(
       process.cwd(),
-      'spec/v0.3/extensions/crewai/crewai.schema.json'
+      'spec/v0.4/extensions/crewai/crewai.schema.json'
     );
     const crewaiSchema = JSON.parse(readFileSync(crewaiSchemaPath, 'utf-8'));
     this.validateCrewAI = this.ajv.compile(crewaiSchema);

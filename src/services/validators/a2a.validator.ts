@@ -32,7 +32,7 @@ export class A2AValidator {
 
     const schemaPath = path.resolve(
       __dirname,
-      '../../../spec/v0.3/extensions/a2a/a2a.schema.json'
+      '../../../spec/v0.4/extensions/a2a/a2a.schema.json'
     );
     const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf-8'));
     this.validate = this.ajv.compile(schema);
