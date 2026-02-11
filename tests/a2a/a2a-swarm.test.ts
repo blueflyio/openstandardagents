@@ -17,7 +17,7 @@ import {
   type Agent,
   type Proposal,
 } from '../../src/adapters/a2a/swarm-orchestration.js';
-import type { AgentIdentity } from '../../src/adapters/a2a/a2a-protocol.js';
+import { MessagePriority, type AgentIdentity } from '../../src/adapters/a2a/a2a-protocol.js';
 
 describe('A2A Swarm Intelligence', () => {
   let swarm: SwarmOrchestrator;
@@ -60,7 +60,7 @@ describe('A2A Swarm Intelligence', () => {
           maxCost: 100,
           requiredSLA: 0.95,
         },
-        priority: 'high',
+        priority: MessagePriority.HIGH,
       };
 
       const subtasks = swarm.decomposeTask(complexTask);
@@ -88,7 +88,7 @@ describe('A2A Swarm Intelligence', () => {
           minAgents: 3,
         },
         constraints: {},
-        priority: 'normal',
+        priority: MessagePriority.NORMAL,
       };
 
       const subtasks = swarm.decomposeTask(task);
@@ -112,7 +112,7 @@ describe('A2A Swarm Intelligence', () => {
         constraints: {
           maxExecutionTime: 7200000,
         },
-        priority: 'urgent',
+        priority: MessagePriority.URGENT,
       };
 
       const subtasks = swarm.decomposeTask(task);
@@ -425,7 +425,7 @@ function createTask(
   id: string,
   capabilities: string[],
   duration: number,
-  priority: 'low' | 'normal' | 'high' | 'urgent' | 'critical' = 'normal'
+  priority: MessagePriority.LOW | 'normal' | 'high' | 'urgent' | 'critical' = 'normal'
 ) {
   return {
     id,

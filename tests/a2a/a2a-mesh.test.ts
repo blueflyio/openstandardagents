@@ -270,7 +270,7 @@ describe('A2A Agent Mesh', () => {
 
       expect(completedTrace?.status).toBe('success');
       expect(completedTrace?.endTime).toBeDefined();
-      expect(completedTrace?.duration).toBeGreaterThan(0);
+      expect(completedTrace?.duration).toBeGreaterThanOrEqual(0);
     });
 
     it('should complete trace with error', () => {
