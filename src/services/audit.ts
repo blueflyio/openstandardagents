@@ -8,7 +8,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'yaml';
-import Ajv from 'ajv';
+import Ajv, { type ValidateFunction, type ErrorObject } from 'ajv';
 import addFormats from 'ajv-formats';
 import { SCHEMA_PATH, API_VERSION } from '../version.js';
 
@@ -62,7 +62,7 @@ export interface AuditReport {
 export class AgentAuditService {
   private ajv: Ajv;
   private ossaSchema: object;
-  private validate: Ajv['validate'];
+  private validate: ValidateFunction;
 
   constructor() {
     // Initialize Ajv validator with formats support

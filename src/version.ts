@@ -7,12 +7,38 @@
  * This file reads from .version.json at runtime
  */
 
-import { readFileSync } from 'fs';
-import { resolve } from 'path';
+import { readFileSync, existsSync } from 'fs';
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
 // Read version from .version.json (single source of truth)
-// Use process.cwd() which works in both ESM and CommonJS, and in tests
-const versionJsonPath = resolve(process.cwd(), '.version.json');
+// Try multiple fallback locations to support different execution contexts
+function findVersionJson(): string {
+  // Define __dirname for ES modules
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = dirname(__filename);
+
+  const paths = [
+    // For tests and development (cwd is project root)
+    resolve(process.cwd(), '.version.json'),
+    // For compiled dist (when imported from node_modules): dist/../.version.json
+    resolve(__dirname, '../.version.json'),
+    // For compiled dist with deeper nesting: dist/services/../.version.json
+    resolve(__dirname, '../../.version.json'),
+  ];
+
+  for (const path of paths) {
+    if (existsSync(path)) {
+      return path;
+    }
+  }
+
+  throw new Error(
+    '.version.json not found. Tried paths: ' + paths.join(', ')
+  );
+}
+
+const versionJsonPath = findVersionJson();
 const versionData = JSON.parse(readFileSync(versionJsonPath, 'utf-8'));
 
 /**
