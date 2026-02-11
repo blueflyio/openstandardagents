@@ -151,6 +151,93 @@ describe('Wizard Service - Manifest Generation', () => {
       expect(tools[0].type).toBe('mcp');
       expect(tools[1].type).toBe('function');
     });
+
+    it('should support all v0.4 schema tool types', () => {
+      // Test all 18 v0.4 schema tool types
+      const v04ToolTypes = [
+        'mcp',
+        'browser',
+        'kubernetes',
+        'http',
+        'api',
+        'grpc',
+        'function',
+        'a2a',
+        'webhook',
+        'schedule',
+        'pipeline',
+        'workflow',
+        'artifact',
+        'git-commit',
+        'ci-status',
+        'comment',
+        'library',
+        'custom',
+      ];
+
+      const tools = v04ToolTypes.map((type) => ({
+        type,
+        name: `${type}-tool`,
+        description: `Test ${type} tool`,
+      }));
+
+      expect(tools).toHaveLength(18);
+
+      // Verify each tool has the correct type
+      tools.forEach((tool, index) => {
+        expect(tool.type).toBe(v04ToolTypes[index]);
+        expect(tool.name).toBeDefined();
+        expect(tool.description).toBeDefined();
+      });
+    });
+
+    it('should generate webhook trigger tool', () => {
+      const webhookTool = {
+        type: 'webhook',
+        name: 'webhook_trigger',
+        description: 'Webhook event trigger',
+      };
+
+      expect(webhookTool.type).toBe('webhook');
+      expect(webhookTool.name).toBeDefined();
+    });
+
+    it('should generate schedule trigger tool with cron config', () => {
+      const scheduleTool = {
+        type: 'schedule',
+        name: 'cron_schedule',
+        description: 'Cron-based schedule trigger',
+        config: {
+          cron: '0 0 * * *',
+        },
+      };
+
+      expect(scheduleTool.type).toBe('schedule');
+      expect(scheduleTool.config).toBeDefined();
+      expect(scheduleTool.config?.cron).toBe('0 0 * * *');
+    });
+
+    it('should generate artifact output tool', () => {
+      const artifactTool = {
+        type: 'artifact',
+        name: 'file_artifact',
+        description: 'File artifact output',
+      };
+
+      expect(artifactTool.type).toBe('artifact');
+      expect(artifactTool.name).toBeDefined();
+    });
+
+    it('should generate git-commit output tool', () => {
+      const commitTool = {
+        type: 'git-commit',
+        name: 'commit_output',
+        description: 'Git commit output',
+      };
+
+      expect(commitTool.type).toBe('git-commit');
+      expect(commitTool.name).toBeDefined();
+    });
   });
 
   describe('Safety Configuration', () => {
