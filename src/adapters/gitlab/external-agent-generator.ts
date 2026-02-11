@@ -409,8 +409,10 @@ export class ExternalAgentGenerator {
       lines.push('');
     }
 
-    // Runtime configuration
-    const runtime = manifest.metadata?.agentArchitecture?.runtime;
+    // Runtime configuration (check spec.runtime first for v0.4+, then metadata for older versions)
+    const runtime =
+      (manifest.spec as any)?.runtime ||
+      manifest.metadata?.agentArchitecture?.runtime;
     if (runtime && typeof runtime === 'object') {
       const runtimeConfig = runtime as {
         type?: string;
