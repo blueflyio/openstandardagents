@@ -46,7 +46,8 @@ describe('Migration Engine Integration', () => {
 
       const detection = await versionDetector.detectVersion(manifest);
 
-      expect(detection.version).toBe('0.4.1');
+      // Example files use current API_VERSION
+      expect(detection.version).toBe(API_VERSION.replace('ossa/v', ''));
       expect(detection.confidence).toBe('high');
       expect(detection.source).toBe('apiVersion');
     });
@@ -87,15 +88,17 @@ describe('Migration Engine Integration', () => {
         },
       };
 
+      // Migrate to same version (should be no-op)
+      const targetVersion = API_VERSION.replace('ossa/v', '');
       const result = await migrationService.migrateWithDetection(
         manifest,
-        '0.4.1'
+        targetVersion
       );
 
       expect(result.success).toBe(true);
-      expect(result.manifest?.apiVersion).toBe('ossa/v0.4.5');
-      expect(result.sourceVersion).toBe('0.4.1');
-      expect(result.targetVersion).toBe('0.4.1');
+      expect(result.manifest?.apiVersion).toBe(API_VERSION);
+      expect(result.sourceVersion).toBe(targetVersion);
+      expect(result.targetVersion).toBe(targetVersion);
       // No summary when no migration needed (already at target version)
 
       // Verify critical fields preserved

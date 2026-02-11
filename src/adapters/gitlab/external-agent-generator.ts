@@ -59,13 +59,25 @@ export class ExternalAgentGenerator {
    * Select appropriate Docker image based on OSSA runtime
    */
   private selectDockerImage(manifest: OssaAgent): string {
-    const runtime = manifest.metadata?.agentArchitecture?.runtime as
+    // Check spec.runtime first (v0.4+ location), then fall back to metadata.agentArchitecture.runtime
+    const spec = manifest.spec as Record<string, unknown> | undefined;
+    const specRuntime = spec?.runtime as
       | {
           type?: string;
           image?: string;
           [key: string]: unknown;
         }
       | undefined;
+
+    const runtime =
+      specRuntime ||
+      (manifest.metadata?.agentArchitecture?.runtime as
+        | {
+            type?: string;
+            image?: string;
+            [key: string]: unknown;
+          }
+        | undefined);
 
     // Use explicit image if provided
     if (runtime?.image) {
@@ -158,7 +170,9 @@ export class ExternalAgentGenerator {
    * Generate commands to execute agent
    */
   private generateCommands(manifest: OssaAgent): string[] {
-    const runtime = manifest.metadata?.agentArchitecture?.runtime as
+    // Check spec.runtime first (v0.4+ location), then fall back to metadata.agentArchitecture.runtime
+    const spec = manifest.spec as Record<string, unknown> | undefined;
+    const specRuntime = spec?.runtime as
       | {
           type?: string;
           command?: string[];
@@ -166,6 +180,17 @@ export class ExternalAgentGenerator {
           [key: string]: unknown;
         }
       | undefined;
+
+    const runtime =
+      specRuntime ||
+      (manifest.metadata?.agentArchitecture?.runtime as
+        | {
+            type?: string;
+            command?: string[];
+            image?: string;
+            [key: string]: unknown;
+          }
+        | undefined);
 
     // Use explicit commands if provided
     if (runtime?.command && runtime.command.length > 0) {

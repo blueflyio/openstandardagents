@@ -2,7 +2,7 @@
  * GitLab Duo Flow Generator Integration Tests
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from '@jest/globals';
 import { GitLabDuoFlowGenerator } from '../../../src/adapters/gitlab/flow-generator.js';
 import type { OssaAgent } from '../../../src/types/index.js';
 
