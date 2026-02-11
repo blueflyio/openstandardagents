@@ -83,8 +83,8 @@ describe('Registry Errors', () => {
     });
 
     it('should handle simple agent IDs', () => {
-      const error = new AgentNotFoundError('my-agent');
-      expect(error.message).toContain('my-agent');
+      const error = new AgentNotFoundError('theagentformerly-known-asprince');
+      expect(error.message).toContain('theagentformerly-known-asprince');
     });
   });
 

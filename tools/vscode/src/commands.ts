@@ -26,7 +26,7 @@ export class OSSACommandProvider {
   async createNewAgent(): Promise<void> {
     const name = await vscode.window.showInputBox({
       prompt: 'Enter agent name (lowercase, hyphens)',
-      placeHolder: 'my-agent',
+      placeHolder: 'agent-smith',
       validateInput: (value) => {
         if (!value) {return 'Name is required';}
         if (value !== value.toLowerCase()) {return 'Name must be lowercase';}

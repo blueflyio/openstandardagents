@@ -31,7 +31,7 @@ const manifest = {
   apiVersion: 'ossa/v0.3.0',
   kind: 'Agent',
   metadata: {
-    name: 'my-agent',
+    name: 'creative-agent-naming',
     version: '1.0.0',
   },
   spec: {
@@ -74,7 +74,7 @@ const manifest = {
   apiVersion: 'ossa/v0.3.0',
   kind: 'Agent',
   metadata: {
-    name: 'my-agent',
+    name: 'creative-agent-naming',
     version: '1.0.0',
   },
   spec: {
@@ -97,7 +97,7 @@ The `extensions.anthropic` section takes precedence over `spec.llm`:
 const manifest = {
   apiVersion: 'ossa/v0.3.0',
   kind: 'Agent',
-  metadata: { name: 'my-agent', version: '1.0.0' },
+  metadata: { name: 'creative-agent-naming', version: '1.0.0' },
   spec: {
     role: 'Default role',
   },
@@ -284,7 +284,7 @@ try {
 const info = adapter.getAgentInfo();
 console.log(info);
 // {
-//   name: 'my-agent',
+//   name: 'creative-agent-naming',
 //   model: 'claude-3-5-sonnet-20241022',
 //   tools: ['get_weather', 'search'],
 //   provider: 'anthropic'

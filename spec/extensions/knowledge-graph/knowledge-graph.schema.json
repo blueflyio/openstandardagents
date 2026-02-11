@@ -359,7 +359,7 @@
         "vector_db": {
           "type": "qdrant",
           "url": "${QDRANT_URL}",
-          "collection": "my-agent-kg"
+          "collection": "supercali-fragilisticagent-kg"
         },
         "wiki": {
           "type": "markdown",

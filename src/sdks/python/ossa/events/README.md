@@ -33,13 +33,13 @@ pip install ossa-sdk[all]
 from ossa.events import CloudEventsEmitter, OSSA_EVENT_TYPES
 
 # Create emitter (defaults to stdout)
-emitter = CloudEventsEmitter(source="ossa/my-agent")
+emitter = CloudEventsEmitter(source="ossa/creative-agent-naming")
 
 # Emit agent started event
 emitter.emit(
     OSSA_EVENT_TYPES.AGENT_STARTED,
     {"agent_id": "agent-001", "status": "running"},
-    ossaagentid="my-agent"
+    ossaagentid="creative-agent-naming"
 )
 ```
 
@@ -57,7 +57,7 @@ sink = HttpSink(
 
 # Create emitter
 emitter = CloudEventsEmitter(
-    source="ossa/my-agent",
+    source="ossa/creative-agent-naming",
     sink=sink,
 )
 
@@ -77,7 +77,7 @@ sink = KafkaSink(
     key_field="ossaagentid",  # Use agent ID as partition key
 )
 
-emitter = CloudEventsEmitter(source="ossa/my-agent", sink=sink)
+emitter = CloudEventsEmitter(source="ossa/creative-agent-naming", sink=sink)
 emitter.emit("dev.ossa.agent.started", {"agent_id": "123"})
 ```
 
@@ -88,7 +88,7 @@ from ossa.events import CloudEventsEmitter
 
 # Enable batching
 with CloudEventsEmitter(
-    source="ossa/my-agent",
+    source="ossa/creative-agent-naming",
     batch_size=10,
     flush_interval_ms=5000,  # Auto-flush every 5 seconds
 ) as emitter:
@@ -106,7 +106,7 @@ with CloudEventsEmitter(
 {
     "specversion": "1.0",           # CloudEvents version
     "type": "dev.ossa.agent.started",  # Event type
-    "source": "ossa/my-agent",      # Event source
+    "source": "ossa/creative-agent-naming",      # Event source
     "id": "550e8400-...",            # Unique event ID
 }
 ```
@@ -126,7 +126,7 @@ with CloudEventsEmitter(
 
 ```python
 {
-    "ossaagentid": "my-agent",           # Agent identifier
+    "ossaagentid": "creative-agent-naming",           # Agent identifier
     "ossainteractionid": "session-123",  # Conversation ID
     "ossatraceid": "trace-abc",          # Distributed trace ID
     "ossaspanid": "span-001",            # Trace span ID
@@ -323,7 +323,7 @@ with CloudEventsEmitter(
 from ossa.events import CloudEventsEmitter, HttpSink
 
 sink = HttpSink(url="https://events.example.com/webhook")
-emitter = CloudEventsEmitter(source="ossa/my-agent", sink=sink)
+emitter = CloudEventsEmitter(source="ossa/creative-agent-naming", sink=sink)
 
 try:
     emitter.emit("dev.ossa.agent.started", {"agent_id": "123"})

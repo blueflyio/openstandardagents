@@ -590,16 +590,16 @@ process.on('SIGINT', gracefulShutdown);
 # PM2 for Node.js
 npm install -g pm2
 
-pm2 start dist/server.js --name my-agent
+pm2 start dist/server.js --name creative-agent-naming
 pm2 save
 pm2 startup
 
 # Or Docker
 docker run -d \
-  --name my-agent \
+  --name creative-agent-naming \
   --restart unless-stopped \
   -p 3000:3000 \
-  my-agent:latest
+  creative-agent-naming:latest
 ```
 
 ## Performance

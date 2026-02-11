@@ -97,7 +97,7 @@ ossa deploy agent.ossa.yaml \
 ossa deploy agent.ossa.yaml \
   --platform cloud \
   --cloud aws \
-  --function-name my-agent \
+  --function-name creative-agent-naming \
   --timeout 60
 ```
 

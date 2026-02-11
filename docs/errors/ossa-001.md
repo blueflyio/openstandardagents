@@ -60,7 +60,7 @@ If using `metadata.taxonomy`:
 {
   "kind": "Agent",
   "metadata": {
-    "name": "my-agent"
+    "name": "creative-agent-naming"
   }
 }
 ```
@@ -71,7 +71,7 @@ If using `metadata.taxonomy`:
   "apiVersion": "ossa/v0.3.6",
   "kind": "Agent",
   "metadata": {
-    "name": "my-agent"
+    "name": "creative-agent-naming"
   },
   "spec": {
     "type": "worker"
@@ -87,7 +87,7 @@ If using `metadata.taxonomy`:
   "apiVersion": "ossa/v0.3.6",
   "kind": "Agent",
   "metadata": {
-    "name": "my-agent"
+    "name": "creative-agent-naming"
   }
 }
 ```
@@ -98,7 +98,7 @@ If using `metadata.taxonomy`:
   "apiVersion": "ossa/v0.3.6",
   "kind": "Agent",
   "metadata": {
-    "name": "my-agent"
+    "name": "creative-agent-naming"
   },
   "spec": {
     "type": "worker",

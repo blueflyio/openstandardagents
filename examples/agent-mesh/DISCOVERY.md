@@ -115,7 +115,7 @@ const discovery = new DiscoveryService(registry);
 
 // Define your agent
 const myAgent: AgentCard = {
-  uri: 'agent://team/my-agent',
+  uri: 'agent://team/creative-agent-naming',
   name: 'My Agent',
   version: '1.0.0',
   ossaVersion: '0.4.1',
@@ -640,7 +640,7 @@ process.on('SIGTERM', async () => {
 
 ```typescript
 // Check if agent is registered
-const agent = await discovery.discoverByUri('agent://team/my-agent');
+const agent = await discovery.discoverByUri('agent://team/creative-agent-naming');
 if (!agent) {
   console.log('Agent not registered');
 }

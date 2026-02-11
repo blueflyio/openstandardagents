@@ -35,7 +35,7 @@ import { AgentExecutionMessage } from '@bluefly/openstandardagents/messenger';
 
 await messageBus.dispatch(
   new AgentExecutionMessage(
-    'my-agent',
+    'creative-agent-naming',
     { input: 'data' },
     { userId: 'user-123' }
   )

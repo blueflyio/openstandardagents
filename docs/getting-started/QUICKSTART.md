@@ -43,7 +43,7 @@ iwr -useb https://ossa.dev/quickstart.ps1 | iex
 npx @bluefly/ossa-cli quickstart
 
 # With custom options
-npx @bluefly/ossa-cli quickstart --output my-agent.ossa.yaml --provider openai
+npx @bluefly/ossa-cli quickstart --output creative-agent-naming.ossa.yaml --provider openai
 ```
 
 **What the script does:**
@@ -381,7 +381,7 @@ export ANTHROPIC_API_KEY=sk-ant-...
 
 # Or use .env file
 echo "ANTHROPIC_API_KEY=sk-ant-..." > .env
-ossa run my-agent.ossa.yaml --env-file .env
+ossa run creative-agent-naming.ossa.yaml --env-file .env
 ```
 
 ### Validation Failed
@@ -394,7 +394,7 @@ ossa run my-agent.ossa.yaml --env-file .env
 
    ```bash
    # Fix: Validate YAML first
-   yq eval . my-agent.ossa.yaml
+   yq eval . creative-agent-naming.ossa.yaml
    ```
 
 2. **Missing required fields**

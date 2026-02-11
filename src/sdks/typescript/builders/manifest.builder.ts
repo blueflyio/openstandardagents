@@ -22,7 +22,7 @@
  *   .approvalRequired(['deploy', 'delete'])
  *   .build();
  *
- * const manifest = ManifestBuilder.agent('my-agent')
+ * const manifest = ManifestBuilder.agent('agent-47')
  *   .version('1.0.0')
  *   .description('My helpful agent')
  *   .namespace('production')

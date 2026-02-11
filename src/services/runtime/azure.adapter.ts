@@ -12,7 +12,7 @@
  * const manifest: OssaManifest = {
  *   apiVersion: 'v0.3.0',
  *   kind: 'Agent',
- *   metadata: { name: 'my-agent' },
+ *   metadata: { name: 'agent-47' },
  *   spec: { role: 'Assistant' },
  *   extensions: {
  *     azure: {

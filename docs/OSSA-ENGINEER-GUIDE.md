@@ -30,7 +30,7 @@ Format: JSON Schema Draft-07
 apiVersion: ossa/v0.3.4   # REQUIRED. Regex: ^ossa/v(0\.3\.[0-9]+|1)
 kind: Agent               # REQUIRED. Enum: Agent | Task | Workflow
 metadata:                 # REQUIRED
-  name: my-agent          # REQUIRED. DNS-1123 format (lowercase, hyphens ok)
+  name: creative-agent-naming          # REQUIRED. DNS-1123 format (lowercase, hyphens ok)
   version: 1.0.0          # Optional. Semver
   namespace: team-x       # Optional
   description: string     # Optional
@@ -309,7 +309,7 @@ ajv validate \
 apiVersion: ossa/v0.3.4
 kind: Agent
 metadata:
-  name: my-agent
+  name: creative-agent-naming
 spec:
   role: "You are a helpful assistant."
 ```

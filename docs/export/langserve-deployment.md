@@ -289,13 +289,13 @@ console.log(data);
 
 ```bash
 # Build image
-docker build -f Dockerfile.langserve -t my-agent .
+docker build -f Dockerfile.langserve -t creative-agent-naming .
 
 # Run container
 docker run -p 8000:8000 \
   -e OPENAI_API_KEY=your-key \
   -e ANTHROPIC_API_KEY=your-key \
-  my-agent
+  creative-agent-naming
 
 # Or use docker-compose
 docker-compose -f docker-compose.langserve.yaml up
@@ -305,7 +305,7 @@ docker-compose -f docker-compose.langserve.yaml up
 
 ```bash
 # Create secrets
-kubectl create secret generic my-agent-secrets \
+kubectl create secret generic creative-agent-naming-secrets \
   --from-literal=openai-api-key=your-key \
   --from-literal=anthropic-api-key=your-key
 
@@ -313,11 +313,11 @@ kubectl create secret generic my-agent-secrets \
 kubectl apply -f k8s/
 
 # Check status
-kubectl get pods -l app=my-agent-langserve
-kubectl logs -f deployment/my-agent-langserve
+kubectl get pods -l app=creative-agent-naming-langserve
+kubectl logs -f deployment/creative-agent-naming-langserve
 
 # Port forward (for testing)
-kubectl port-forward service/my-agent-langserve 8000:80
+kubectl port-forward service/creative-agent-naming-langserve 8000:80
 ```
 
 ### Railway
@@ -411,7 +411,7 @@ langserve: {
   enablePlayground: true,
 
   // Custom route path (default: /agent)
-  routePath: '/my-agent',
+  routePath: '/creative-agent-naming',
 
   // Server port
   port: 8000,
@@ -447,7 +447,7 @@ curl http://localhost:8000/health
 # Response
 {
   "status": "healthy",
-  "agent": "my-agent",
+  "agent": "creative-agent-naming",
   "version": "1.0.0",
   "langserve_endpoints": {
     "invoke": "/agent/invoke",
@@ -603,10 +603,10 @@ logging.basicConfig(level=logging.DEBUG)
 
 ```bash
 # Docker
-docker logs my-agent
+docker logs creative-agent-naming
 
 # Kubernetes
-kubectl logs -f deployment/my-agent-langserve
+kubectl logs -f deployment/creative-agent-naming-langserve
 
 # Railway
 railway logs

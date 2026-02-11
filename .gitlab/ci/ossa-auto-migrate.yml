@@ -185,7 +185,7 @@ ossa:validate-versions:
 #    - Run "ossa:migrate-batch" job
 #
 # 4. Custom Search Path:
-#    - Set variable: AGENT_DIR=./my-agents
+#    - Set variable: AGENT_DIR=./supercali-fragilisticagents
 #    - Run "ossa:migrate-batch" job
 #
 # =============================================================================
