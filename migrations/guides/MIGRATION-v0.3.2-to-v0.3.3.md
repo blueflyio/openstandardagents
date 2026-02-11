@@ -27,7 +27,7 @@ OSSA v0.3.3 introduces **Skills Compatibility Extension** for interoperability w
 apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
-  name: my-agent
+  name: creative-agent-naming
   version: 1.0.0
 # ... rest of manifest unchanged
 ```

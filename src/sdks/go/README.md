@@ -20,7 +20,7 @@ import (
 
 func main() {
     // Load a manifest
-    manifest, err := ossa.LoadManifest("my-agent.ossa.yaml")
+    manifest, err := ossa.LoadManifest("creative-agent-naming.ossa.yaml")
     if err != nil {
         panic(err)
     }
@@ -49,13 +49,13 @@ func main() {
 go install github.com/blueflyio/ossa-go/cmd/ossa@latest
 
 # Validate a manifest
-ossa validate my-agent.ossa.yaml
+ossa validate creative-agent-naming.ossa.yaml
 
 # Get manifest info
-ossa info my-agent.ossa.yaml
+ossa info creative-agent-naming.ossa.yaml
 
 # JSON output
-ossa validate my-agent.ossa.yaml --json
+ossa validate creative-agent-naming.ossa.yaml --json
 ```
 
 ## API Reference

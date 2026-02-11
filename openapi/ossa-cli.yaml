@@ -68,7 +68,7 @@ components:
           pattern: '^[a-z0-9-]+$'
           minLength: 3
           maxLength: 50
-          example: 'my-agent'
+          example: 'supercali-fragilisticagent'
         version:
           type: string
           pattern: '^\d+\.\d+\.\d+$'

@@ -20,10 +20,10 @@ The GitLab Duo export transforms OSSA agents into production-ready GitLab Duo fl
 
 ```bash
 # Using OSSA CLI
-ossa export my-agent.ossa.yaml --platform gitlab --format flow -o .gitlab/duo/flows/
+ossa export creative-agent-naming.ossa.yaml --platform gitlab --format flow -o .gitlab/duo/flows/
 
 # This generates:
-# .gitlab/duo/flows/my-agent.yaml
+# .gitlab/duo/flows/creative-agent-naming.yaml
 ```
 
 ### OSSA Manifest Example
@@ -172,10 +172,10 @@ llm:
 mkdir -p .gitlab/duo/flows
 
 # Copy generated flow
-cp my-agent-flow.yaml .gitlab/duo/flows/
+cp creative-agent-naming-flow.yaml .gitlab/duo/flows/
 
 # Commit and push
-git add .gitlab/duo/flows/my-agent-flow.yaml
+git add .gitlab/duo/flows/creative-agent-naming-flow.yaml
 git commit -m "feat: add code review agent flow"
 git push
 ```
@@ -192,10 +192,10 @@ git push
 
 ```bash
 # Trigger via comment in MR
-@my-agent-flow review this code
+@creative-agent-naming-flow review this code
 
 # Or use GitLab Duo Chat
-/duo ask my-agent-flow to analyze this merge request
+/duo ask creative-agent-naming-flow to analyze this merge request
 ```
 
 ## Advanced Configuration

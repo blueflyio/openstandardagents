@@ -296,7 +296,7 @@ The generator creates test fixtures automatically:
 ```json
 {
   "agent_metadata": {
-    "name": "my-agent",
+    "name": "creative-agent-naming",
     "version": "1.0.0"
   },
   "sample_prompts": [

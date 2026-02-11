@@ -32,7 +32,7 @@ export class ValidationBuilder {
    * - Must start/end with alphanumeric
    * - Max 253 characters
    *
-   * Examples: "my-agent", "data-processor-v2"
+   * Examples: "agent-47", "data-processor-v2"
    */
   static dns1123(fieldName: string): ValidatorFn {
     return (input: string): boolean | string => {
@@ -43,7 +43,7 @@ export class ValidationBuilder {
       const dns1123Pattern = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/;
 
       if (!dns1123Pattern.test(input)) {
-        return `${fieldName} must be DNS-1123 compliant (lowercase alphanumeric with hyphens, e.g., "my-agent")`;
+        return `${fieldName} must be DNS-1123 compliant (lowercase alphanumeric with hyphens, e.g., "agent-47")`;
       }
 
       if (input.length > 253) {

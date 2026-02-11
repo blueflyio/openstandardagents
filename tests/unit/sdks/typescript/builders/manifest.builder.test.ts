@@ -14,13 +14,13 @@ import {
 describe('ManifestBuilder', () => {
   describe('Agent Manifests', () => {
     it('should build basic agent manifest', () => {
-      const manifest = ManifestBuilder.agent('my-agent')
+      const manifest = ManifestBuilder.agent('theagentformerly-known-asprince')
         .version('1.0.0')
         .description('My helpful agent')
         .build();
 
       expect(manifest.kind).toBe('Agent');
-      expect(manifest.metadata.name).toBe('my-agent');
+      expect(manifest.metadata.name).toBe('theagentformerly-known-asprince');
       expect(manifest.metadata.version).toBe('1.0.0');
       expect(manifest.metadata.description).toBe('My helpful agent');
       expect(manifest.apiVersion).toMatch(/^ossa\/v/);
@@ -40,7 +40,7 @@ describe('ManifestBuilder', () => {
         .maxTokens(4096)
         .build();
 
-      const manifest = ManifestBuilder.agent('my-agent')
+      const manifest = ManifestBuilder.agent('theagentformerly-known-asprince')
         .llm(llmConfig)
         .build();
 
@@ -61,7 +61,7 @@ describe('ManifestBuilder', () => {
         .events(['push'])
         .build();
 
-      const manifest = ManifestBuilder.agent('my-agent')
+      const manifest = ManifestBuilder.agent('theagentformerly-known-asprince')
         .addTool(tool1)
         .addTool(tool2)
         .build();
@@ -77,7 +77,7 @@ describe('ManifestBuilder', () => {
         .costThreshold(100)
         .build();
 
-      const manifest = ManifestBuilder.agent('my-agent')
+      const manifest = ManifestBuilder.agent('theagentformerly-known-asprince')
         .safety(safety)
         .build();
 
@@ -90,7 +90,7 @@ describe('ManifestBuilder', () => {
         .approvalRequired(['deploy', 'delete'])
         .build();
 
-      const manifest = ManifestBuilder.agent('my-agent')
+      const manifest = ManifestBuilder.agent('theagentformerly-known-asprince')
         .autonomy(autonomy)
         .build();
 
@@ -98,7 +98,7 @@ describe('ManifestBuilder', () => {
     });
 
     it('should build agent with capabilities', () => {
-      const manifest = ManifestBuilder.agent('my-agent')
+      const manifest = ManifestBuilder.agent('theagentformerly-known-asprince')
         .addCapability('code-review', 'Review code for issues')
         .addCapability('testing', 'Write unit tests')
         .build();
@@ -111,7 +111,7 @@ describe('ManifestBuilder', () => {
     });
 
     it('should build agent with labels and annotations', () => {
-      const manifest = ManifestBuilder.agent('my-agent')
+      const manifest = ManifestBuilder.agent('theagentformerly-known-asprince')
         .label('team', 'platform')
         .label('env', 'production')
         .annotation('jira-ticket', 'PROJ-123')
@@ -123,7 +123,7 @@ describe('ManifestBuilder', () => {
     });
 
     it('should build agent with namespace', () => {
-      const manifest = ManifestBuilder.agent('my-agent')
+      const manifest = ManifestBuilder.agent('theagentformerly-known-asprince')
         .namespace('production')
         .build();
 
@@ -231,7 +231,7 @@ describe('ManifestBuilder', () => {
         .maxCost(100)
         .build();
 
-      const manifest = ManifestBuilder.agent('my-agent')
+      const manifest = ManifestBuilder.agent('theagentformerly-known-asprince')
         .version('1.0.0')
         .namespace('production')
         .description('My helpful agent')
@@ -246,7 +246,7 @@ describe('ManifestBuilder', () => {
         .build();
 
       expect(manifest.kind).toBe('Agent');
-      expect(manifest.metadata.name).toBe('my-agent');
+      expect(manifest.metadata.name).toBe('theagentformerly-known-asprince');
       expect(manifest.metadata.version).toBe('1.0.0');
       expect(manifest.metadata.namespace).toBe('production');
       expect(manifest.metadata.description).toBe('My helpful agent');
@@ -288,7 +288,7 @@ describe('ManifestBuilder', () => {
 
     it('should throw error when using task methods on agent', () => {
       expect(() => {
-        ManifestBuilder.agent('my-agent')
+        ManifestBuilder.agent('theagentformerly-known-asprince')
           .taskDescription('Task description')
           .build();
       }).toThrow('taskDescription() is only available for Task manifests');
@@ -296,7 +296,7 @@ describe('ManifestBuilder', () => {
 
     it('should throw error when using workflow methods on agent', () => {
       expect(() => {
-        ManifestBuilder.agent('my-agent')
+        ManifestBuilder.agent('theagentformerly-known-asprince')
           .addAgent('agent1')
           .build();
       }).toThrow('addAgent() is only available for Workflow manifests');
@@ -305,7 +305,7 @@ describe('ManifestBuilder', () => {
 
   describe('Fluent API', () => {
     it('should support method chaining', () => {
-      const manifest = ManifestBuilder.agent('my-agent')
+      const manifest = ManifestBuilder.agent('theagentformerly-known-asprince')
         .version('1.0.0')
         .description('My agent')
         .namespace('production')
@@ -315,7 +315,7 @@ describe('ManifestBuilder', () => {
         .addCapability('review')
         .build();
 
-      expect(manifest.metadata.name).toBe('my-agent');
+      expect(manifest.metadata.name).toBe('theagentformerly-known-asprince');
       expect(manifest.metadata.version).toBe('1.0.0');
       expect(manifest.metadata.description).toBe('My agent');
       expect(manifest.metadata.namespace).toBe('production');
@@ -333,7 +333,7 @@ describe('ManifestBuilder', () => {
     });
 
     it('should handle empty arrays for tools and capabilities', () => {
-      const manifest = ManifestBuilder.agent('my-agent')
+      const manifest = ManifestBuilder.agent('theagentformerly-known-asprince')
         .tools([])
         .capabilities([])
         .build();

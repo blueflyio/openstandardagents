@@ -9,7 +9,7 @@ The npm exporter creates a production-ready, publishable npm package:
 ### Package Structure
 
 ```
-my-agent/
+creative-agent-naming/
 ├── package.json          # npm package configuration
 ├── index.js              # JavaScript entry point
 ├── index.d.ts            # TypeScript type definitions
@@ -34,10 +34,10 @@ my-agent/
 
 ```bash
 # Export OSSA manifest as npm package
-ossa export agent.ossa.yaml --platform npm --output ./my-agent-package
+ossa export agent.ossa.yaml --platform npm --output ./creative-agent-naming-package
 
 # Export with Claude Skill
-ossa export agent.ossa.yaml --platform npm --output ./my-agent-package --skill
+ossa export agent.ossa.yaml --platform npm --output ./creative-agent-naming-package --skill
 
 # Preview without writing files
 ossa export agent.ossa.yaml --platform npm --dry-run --verbose
@@ -47,7 +47,7 @@ ossa export agent.ossa.yaml --platform npm --dry-run --verbose
 
 ```bash
 # Navigate to package
-cd my-agent-package
+cd creative-agent-naming-package
 
 # Login to npm (first time only)
 npm login
@@ -63,10 +63,10 @@ npm publish
 
 ```bash
 # Install from npm
-npm install @ossa/my-agent
+npm install @ossa/creative-agent-naming
 
 # Or with specific version
-npm install @ossa/my-agent@1.0.0
+npm install @ossa/creative-agent-naming@1.0.0
 ```
 
 ## Usage Examples
@@ -75,10 +75,10 @@ npm install @ossa/my-agent@1.0.0
 
 ```javascript
 // Import the agent
-import agent from '@ossa/my-agent';
+import agent from '@ossa/creative-agent-naming';
 
 // Access metadata
-console.log(agent.metadata.name);         // "my-agent"
+console.log(agent.metadata.name);         // "creative-agent-naming"
 console.log(agent.metadata.version);      // "1.0.0"
 console.log(agent.metadata.description);  // Agent description
 console.log(agent.metadata.capabilities); // ["code-review", "testing"]
@@ -99,8 +99,8 @@ console.log(agent.runtime);
 ### TypeScript Application
 
 ```typescript
-import agent from '@ossa/my-agent';
-import type { OssaAgent } from '@ossa/my-agent';
+import agent from '@ossa/creative-agent-naming';
+import type { OssaAgent } from '@ossa/creative-agent-naming';
 
 // Fully typed access
 const name: string = agent.metadata.name;
@@ -120,7 +120,7 @@ if (llm) {
 ### Load Into OSSA Runtime
 
 ```javascript
-import agent from '@ossa/my-agent';
+import agent from '@ossa/creative-agent-naming';
 import { AgentRuntime } from '@bluefly/agent-buildkit';
 
 // Get OSSA manifest YAML
@@ -141,7 +141,7 @@ console.log(result);
 ### Use With LangChain
 
 ```javascript
-import agent from '@ossa/my-agent';
+import agent from '@ossa/creative-agent-naming';
 import { LangChainAdapter } from '@bluefly/openstandardagents/adapters/langchain';
 
 // Convert to LangChain
@@ -162,13 +162,13 @@ npm packages can include Express API endpoints for HTTP access:
 
 ```bash
 # Export with API endpoints
-ossa export agent.ossa.yaml --platform npm --with-api --output ./my-agent
+ossa export agent.ossa.yaml --platform npm --with-api --output ./creative-agent-naming
 ```
 
 ### Generated API Structure
 
 ```
-my-agent/
+creative-agent-naming/
 ├── package.json
 ├── index.js
 ├── api/
@@ -181,7 +181,7 @@ my-agent/
 ### Start API Server
 
 ```bash
-cd my-agent
+cd creative-agent-naming
 npm install
 npm start
 ```
@@ -218,7 +218,7 @@ curl -X POST http://localhost:3000/execute \
   "success": true,
   "output": "The capital of France is Paris.",
   "metadata": {
-    "agent": "my-agent",
+    "agent": "creative-agent-naming",
     "version": "1.0.0",
     "executionTime": 1234
   }
@@ -235,7 +235,7 @@ curl http://localhost:3000/metadata
 
 ```json
 {
-  "name": "my-agent",
+  "name": "creative-agent-naming",
   "version": "1.0.0",
   "description": "AI-powered agent",
   "capabilities": ["code-review", "testing"],
@@ -316,14 +316,14 @@ Use npm scopes for organization:
 
 ```bash
 # Export with scope
-ossa export agent.ossa.yaml --platform npm --scope @myorg --output ./my-agent
+ossa export agent.ossa.yaml --platform npm --scope @myorg --output ./creative-agent-naming
 
 # Publish
-cd my-agent
+cd creative-agent-naming
 npm publish --access public
 ```
 
-This creates: `@myorg/my-agent`
+This creates: `@myorg/creative-agent-naming`
 
 ### Private Registry
 
@@ -344,7 +344,7 @@ The exported package uses version from OSSA manifest:
 ```yaml
 # agent.ossa.yaml
 metadata:
-  name: my-agent
+  name: creative-agent-naming
   version: 1.2.3  # Becomes package version
 ```
 
@@ -352,7 +352,7 @@ Generated `package.json`:
 
 ```json
 {
-  "name": "@ossa/my-agent",
+  "name": "@ossa/creative-agent-naming",
   "version": "1.2.3",
   "description": "AI-powered agent"
 }
@@ -371,7 +371,7 @@ ossa export agent.ossa.yaml --platform npm --output ./package
 cd package
 npm link
 cd ../test-project
-npm link @ossa/my-agent
+npm link @ossa/creative-agent-naming
 
 # 4. Run tests
 npm test
@@ -387,7 +387,7 @@ Export includes optional Claude Code skill for instant integration:
 ### Enable Skill Export
 
 ```bash
-ossa export agent.ossa.yaml --platform npm --skill --output ./my-agent
+ossa export agent.ossa.yaml --platform npm --skill --output ./creative-agent-naming
 ```
 
 ### Generated SKILL.md
@@ -403,10 +403,10 @@ Load this skill in Claude Code:
 
 \`\`\`bash
 # Copy to Claude skills directory
-cp SKILL.md ~/.claude/skills/my-agent.md
+cp SKILL.md ~/.claude/skills/creative-agent-naming.md
 
 # Claude Code auto-discovers and loads
-claude --print "use my-agent to analyze code"
+claude --print "use creative-agent-naming to analyze code"
 \`\`\`
 
 ## Capabilities
@@ -417,13 +417,13 @@ claude --print "use my-agent to analyze code"
 
 ## Commands
 
-- `@my-agent analyze [file]` - Analyze code file
-- `@my-agent review [pr]` - Review pull request
+- `@creative-agent-naming analyze [file]` - Analyze code file
+- `@creative-agent-naming review [pr]` - Review pull request
 
 ## Installation
 
 \`\`\`bash
-npm install @ossa/my-agent
+npm install @ossa/creative-agent-naming
 \`\`\`
 ```
 
@@ -431,13 +431,13 @@ npm install @ossa/my-agent
 
 ```bash
 # Install package
-npm install @ossa/my-agent
+npm install @ossa/creative-agent-naming
 
 # Extract skill
-cp node_modules/@ossa/my-agent/SKILL.md ~/.claude/skills/
+cp node_modules/@ossa/creative-agent-naming/SKILL.md ~/.claude/skills/
 
 # Use in Claude Code
-claude --print "use my-agent to review this code"
+claude --print "use creative-agent-naming to review this code"
 ```
 
 ## Examples
@@ -548,7 +548,7 @@ FROM node:18-alpine
 WORKDIR /app
 
 # Install package from npm
-RUN npm install @ossa/my-agent
+RUN npm install @ossa/creative-agent-naming
 
 # Copy server code
 COPY server.js .
@@ -562,7 +562,7 @@ CMD ["node", "server.js"]
 
 ```javascript
 // lambda-handler.js
-import agent from '@ossa/my-agent';
+import agent from '@ossa/creative-agent-naming';
 
 export const handler = async (event) => {
   const manifest = agent.manifest();
@@ -583,32 +583,32 @@ export const handler = async (event) => {
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: my-agent
+  name: creative-agent-naming
 spec:
   replicas: 3
   template:
     spec:
       containers:
       - name: agent
-        image: my-agent-api:latest
+        image: creative-agent-naming-api:latest
         ports:
         - containerPort: 3000
         env:
         - name: NPM_PACKAGE
-          value: "@ossa/my-agent"
+          value: "@ossa/creative-agent-naming"
 ```
 
 ## Troubleshooting
 
 ### Package Not Found
 
-**Problem:** `npm ERR! 404 Not Found - GET https://registry.npmjs.org/@ossa/my-agent`
+**Problem:** `npm ERR! 404 Not Found - GET https://registry.npmjs.org/@ossa/creative-agent-naming`
 
 **Solution:**
 
 ```bash
 # Verify package was published
-npm view @ossa/my-agent
+npm view @ossa/creative-agent-naming
 
 # Check scope access
 npm access ls-packages @ossa
@@ -619,7 +619,7 @@ npm publish --access public
 
 ### Type Definitions Missing
 
-**Problem:** `Cannot find module '@ossa/my-agent' or its corresponding type declarations`
+**Problem:** `Cannot find module '@ossa/creative-agent-naming' or its corresponding type declarations`
 
 **Solution:**
 
@@ -641,13 +641,13 @@ Ensure `index.d.ts` is included:
 
 ```javascript
 // Verify manifest is embedded
-import agent from '@ossa/my-agent';
+import agent from '@ossa/creative-agent-naming';
 console.log(agent.manifest());  // Should return YAML string
 
 // Check package includes agent.ossa.yaml
 import { readFileSync } from 'fs';
 import { join } from 'path';
-const pkg = join(process.cwd(), 'node_modules/@ossa/my-agent');
+const pkg = join(process.cwd(), 'node_modules/@ossa/creative-agent-naming');
 console.log(readFileSync(join(pkg, 'agent.ossa.yaml'), 'utf-8'));
 ```
 
@@ -701,7 +701,7 @@ Include comprehensive README:
 
 ```yaml
 metadata:
-  name: my-agent
+  name: creative-agent-naming
   description: Clear, concise description of what the agent does
   author: Your Name <email@example.com>
   license: MIT
@@ -736,7 +736,7 @@ npm link
 
 # Install in test project
 cd ../test-project
-npm link @ossa/my-agent
+npm link @ossa/creative-agent-naming
 
 # Run tests
 npm test

@@ -67,7 +67,7 @@ const FIELD_DOCS: Record<
     how: 'Use DNS-1123 subdomain format: lowercase alphanumeric with hyphens, max 63 chars',
     where:
       'Used in API endpoints (/agents/{id}), Kubernetes resources, and registry URLs',
-    examples: ['my-agent', 'data-processor-v2', 'compliance-checker-prod'],
+    examples: ['agent-47', 'data-processor-v2', 'compliance-checker-prod'],
     relatedFields: ['agent.name', 'agent.version', 'agent.role'],
     relatedDocs: [
       '../cli-reference/ossa-validate.md',

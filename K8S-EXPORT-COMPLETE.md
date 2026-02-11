@@ -271,7 +271,7 @@ import { KubernetesManifestGenerator } from './adapters/kubernetes/generator.js'
 import { ManifestRepository } from './repositories/manifest.repository.js';
 
 const repo = new ManifestRepository();
-const manifest = await repo.load('./my-agent.ossa.yaml');
+const manifest = await repo.load('./creative-agent-naming.ossa.yaml');
 
 const generator = new KubernetesManifestGenerator();
 const structure = await generator.generateKustomizeStructure(manifest, {
@@ -280,7 +280,7 @@ const structure = await generator.generateKustomizeStructure(manifest, {
   imageRegistry: 'ghcr.io/ossa',
 });
 
-await generator.writeKustomizeStructure(structure, './output/k8s-my-agent');
+await generator.writeKustomizeStructure(structure, './output/k8s-creative-agent-naming');
 ```
 
 ### Using the CLI (When DI fixed)

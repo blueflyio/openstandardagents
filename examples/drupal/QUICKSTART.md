@@ -26,7 +26,7 @@ drush ossa:agent:execute module-name "Test input"
 
 ### 1. Create Your Agent Manifest
 
-Create `my-agent.ossa.yaml`:
+Create `creative-agent-naming.ossa.yaml`:
 
 ```yaml
 apiVersion: ossa/v0.4.5
@@ -58,7 +58,7 @@ spec:
 ### 2. Generate Drupal Module
 
 ```bash
-buildkit export my-agent.ossa.yaml -p drupal
+buildkit export creative-agent-naming.ossa.yaml -p drupal
 ```
 
 This creates a complete Drupal module in `./my_agent/` with:
@@ -119,7 +119,7 @@ Visit: `/admin/config/my_agent`
 
 **Via Drush**:
 ```bash
-drush ossa:agent:execute my-agent "Hello, agent!"
+drush ossa:agent:execute creative-agent-naming "Hello, agent!"
 ```
 
 **Via REST API**:

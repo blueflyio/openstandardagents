@@ -480,7 +480,7 @@ describe('KagentValidator', () => {
               namespace: 'default',
             },
             gitlabIntegration: {
-              agentId: 'my-agent',
+              agentId: 'theagentformerly-known-asprince',
             },
           },
         },
@@ -505,7 +505,7 @@ describe('KagentValidator', () => {
               namespace: 'default',
             },
             gitlabIntegration: {
-              agentId: 'my-agent',
+              agentId: 'theagentformerly-known-asprince',
               projectId: -1,
             },
           },
@@ -533,7 +533,7 @@ describe('KagentValidator', () => {
               namespace: 'default',
             },
             gitlabIntegration: {
-              agentId: 'my-agent',
+              agentId: 'theagentformerly-known-asprince',
               projectId: 123456,
             },
           },

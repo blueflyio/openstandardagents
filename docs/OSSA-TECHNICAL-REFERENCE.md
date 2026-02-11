@@ -56,7 +56,7 @@ For LLM-based reasoning. Uses tokens.
 apiVersion: ossa/v0.3.4
 kind: Agent
 metadata:
-  name: my-agent
+  name: creative-agent-naming
   version: 1.0.0
 spec:
   role: "You are a code review assistant."

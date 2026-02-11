@@ -93,7 +93,7 @@ export const initCommand = new Command('init')
             .map((p) => p.trim())
             .filter(Boolean);
         } else {
-          agentName = agentName || 'my-agent';
+          agentName = agentName || 'agent-smith';
           agentDisplayName = agentName;
           description = initDefaults.defaultDescription;
           role = 'You are a helpful AI agent.';

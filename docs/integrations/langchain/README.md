@@ -31,7 +31,7 @@ python agent.py
 apiVersion: ossa/v0.3.6
 kind: Agent
 metadata:
-  name: my-agent
+  name: creative-agent-naming
 spec:
   role: "You are a helpful assistant"
   llm:

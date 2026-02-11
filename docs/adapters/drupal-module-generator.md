@@ -57,7 +57,7 @@ This generates a complete Drupal module in `./module_name/` directory.
 
 ```bash
 # Specify output directory
-buildkit export agent.ossa.yaml -p drupal -o ./drupal-modules/my-agent
+buildkit export agent.ossa.yaml -p drupal -o ./drupal-modules/creative-agent-naming
 
 # Dry run (preview without creating files)
 buildkit export agent.ossa.yaml -p drupal --dry-run
@@ -536,7 +536,7 @@ drush test-run ContentModeratorTest
 generate-drupal-module:
   stage: build
   script:
-    - buildkit export agent.ossa.yaml -p drupal -o modules/custom/my-agent
+    - buildkit export agent.ossa.yaml -p drupal -o modules/custom/creative-agent-naming
     - cd /path/to/drupal
     - composer require ossa/symfony-bundle
     - drush en my_agent

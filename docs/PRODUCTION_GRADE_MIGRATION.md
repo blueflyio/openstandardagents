@@ -139,7 +139,7 @@ const moduleLogger = createModuleLogger('validation-service');
 
 moduleLogger.info({
   operation: 'validate-manifest',
-  agentId: 'mycompany/my-agent',
+  agentId: 'mycompany/creative-agent-naming',
   version: '1.0.0',
   msg: 'Starting manifest validation',
 });
@@ -180,12 +180,12 @@ logger.info({
 // Output:
 // [14:32:45] INFO (validation-service): Starting manifest validation
 //     operation: "validate-manifest"
-//     agentId: "mycompany/my-agent"
+//     agentId: "mycompany/creative-agent-naming"
 
 // Production: JSON logs for machine parsing
 // NODE_ENV=production npm start
 // Output:
-// {"level":30,"time":1706801565123,"pid":12345,"hostname":"prod-server","name":"ossa","module":"validation-service","operation":"validate-manifest","agentId":"mycompany/my-agent","msg":"Starting manifest validation"}
+// {"level":30,"time":1706801565123,"pid":12345,"hostname":"prod-server","name":"ossa","module":"validation-service","operation":"validate-manifest","agentId":"mycompany/creative-agent-naming","msg":"Starting manifest validation"}
 ```
 
 ---

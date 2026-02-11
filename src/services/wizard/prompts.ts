@@ -49,13 +49,13 @@ export const corePrompts: QuestionCollection = [
     type: 'input',
     name: 'name',
     message: 'Agent ID (DNS-1123 format, lowercase alphanumeric with hyphens):',
-    default: 'my-agent',
+    default: 'agent-47',
     validate: (value: string) => {
       if (!value || value.trim().length === 0) {
         return 'Agent ID is required';
       }
       if (!DNS1123_REGEX.test(value)) {
-        return 'Must be DNS-1123 compliant (e.g., "my-agent", "code-reviewer")';
+        return 'Must be DNS-1123 compliant (e.g., "agent-47", "code-reviewer")';
       }
       if (value.length > 253) {
         return 'Must be 253 characters or less';

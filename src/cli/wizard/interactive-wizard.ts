@@ -162,7 +162,7 @@ export class InteractiveWizard {
   }> {
     if (useDefaults) {
       return {
-        name: 'my-agent',
+        name: 'agent-47',
         displayName: 'My Agent',
         description: 'OSSA-compliant agent',
         version: '1.0.0',
@@ -174,7 +174,7 @@ export class InteractiveWizard {
         type: 'input',
         name: 'name',
         message: 'Agent ID (DNS-1123 format):',
-        default: 'my-agent',
+        default: 'agent-47',
         validate: (input) => {
           if (!/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/.test(input)) {
             return 'Must be lowercase alphanumeric with hyphens (DNS-1123)';

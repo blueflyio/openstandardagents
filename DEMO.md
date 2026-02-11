@@ -29,7 +29,7 @@ ossa import cursor-agent.json --from cursor
 
 ### 3. Export to Production Package (1 command)
 ```bash
-ossa export my-agent.ossa.yaml --platform npm --output ./my-agent-package
+ossa export creative-agent-naming.ossa.yaml --platform npm --output ./creative-agent-naming-package
 ```
 
 **Output**: A production-ready NPM package with:
@@ -42,11 +42,11 @@ ossa export my-agent.ossa.yaml --platform npm --output ./my-agent-package
 
 ### 4. Publish & Use
 ```bash
-cd my-agent-package
+cd creative-agent-naming-package
 npm publish
 
 # Now anyone can install it:
-npm install my-agent
+npm install creative-agent-naming
 ```
 
 ---
@@ -72,7 +72,7 @@ npm install my-agent
 ## Real Example
 
 ```yaml
-# my-agent.ossa.yaml
+# creative-agent-naming.ossa.yaml
 apiVersion: ossa/v0.3.6
 kind: Agent
 metadata:
@@ -93,7 +93,7 @@ spec:
 
 **One command later:**
 ```bash
-ossa export my-agent.ossa.yaml --platform npm
+ossa export creative-agent-naming.ossa.yaml --platform npm
 
 # Outputs:
 # ✓ NPM package exported to: code-reviewer-npm/

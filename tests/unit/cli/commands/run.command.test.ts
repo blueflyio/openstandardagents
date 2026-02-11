@@ -372,7 +372,7 @@ describe('Run Command', () => {
         apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
-          name: 'my-agent',
+          name: 'theagentformerly-known-asprince',
           version: '1.0.0',
         },
         spec: {
@@ -387,7 +387,7 @@ describe('Run Command', () => {
 
       mockLoad.mockResolvedValue(manifest);
       mockGetAgentInfo.mockReturnValue({
-        name: 'my-agent',
+        name: 'theagentformerly-known-asprince',
         model: 'gpt-4-turbo',
         tools: [],
       });

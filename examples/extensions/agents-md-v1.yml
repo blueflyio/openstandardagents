@@ -166,10 +166,10 @@ spec:
   cliCommands:
     - name: "ossa agents-md generate"
       description: "Generate AGENTS.md from manifest"
-      usage: "ossa agents-md generate --manifest .agents/my-agent/manifest.yaml"
+      usage: "ossa agents-md generate --manifest .agents/supercali-fragilisticagent/manifest.yaml"
     - name: "ossa agents-md validate"
       description: "Validate AGENTS.md against manifest"
-      usage: "ossa agents-md validate --agents-md AGENTS.md --manifest .agents/my-agent/manifest.yaml"
+      usage: "ossa agents-md validate --agents-md AGENTS.md --manifest .agents/supercali-fragilisticagent/manifest.yaml"
     - name: "ossa agents-md sync"
       description: "Sync AGENTS.md with manifest changes"
       usage: "ossa agents-md sync --watch"

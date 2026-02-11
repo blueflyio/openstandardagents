@@ -851,7 +851,7 @@ class OSSAWizardV2 {
         type: 'input',
         name: 'name',
         message: 'Agent ID (DNS-1123 format):',
-        default: this.state.getAgent().metadata?.name || 'my-agent',
+        default: this.state.getAgent().metadata?.name || 'agent-smith',
         validate: (input: string) => {
           const valid = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/.test(input);
           return (

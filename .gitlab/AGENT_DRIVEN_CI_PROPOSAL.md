@@ -548,10 +548,10 @@ Each agent includes:
 # Any of the 6 agents
 ossa export agents/gitlab/duo-comment-responder.ossa.yaml \
   --platform gitlab-agent \
-  --output ./my-agent
+  --output ./creative-agent-naming
 
 # Output:
-# my-agent/
+# creative-agent-naming/
 # ├── src/ (TypeScript source)
 # ├── Dockerfile
 # ├── package.json

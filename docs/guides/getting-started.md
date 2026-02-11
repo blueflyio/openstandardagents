@@ -43,7 +43,7 @@ Expected response:
 
 ## Step 3: Create Your First Agent
 
-Create an agent manifest file `my-agent.json`:
+Create an agent manifest file `creative-agent-naming.json`:
 
 ```json
 {
@@ -79,7 +79,7 @@ Validate the manifest:
 curl -X POST https://api.llm.bluefly.io/ossa/v1/specification/validate \
   -H "X-API-Key: $OSSA_API_KEY" \
   -H "Content-Type: application/json" \
-  -d @my-agent.json
+  -d @creative-agent-naming.json
 ```
 
 Register the agent:
@@ -88,7 +88,7 @@ Register the agent:
 curl -X POST https://api.llm.bluefly.io/ossa/v1/agents \
   -H "X-API-Key: $OSSA_API_KEY" \
   -H "Content-Type: application/json" \
-  -d @my-agent.json
+  -d @creative-agent-naming.json
 ```
 
 ## Step 4: Discover Agents

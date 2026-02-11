@@ -85,7 +85,7 @@ ossa deploy agent.ossa.yaml \
   --env production \
   --namespace ossa-agents \
   --replicas 5 \
-  --registry ghcr.io/myorg/my-agent:latest \
+  --registry ghcr.io/myorg/creative-agent-naming:latest \
   --health-check \
   --verify
 ```
@@ -116,7 +116,7 @@ ossa deploy agent.ossa.yaml \
   --platform docker \
   --env production \
   --port 3000 \
-  --registry myorg/my-agent:latest \
+  --registry myorg/creative-agent-naming:latest \
   --network bridge
 ```
 
@@ -149,7 +149,7 @@ ossa deploy agent.ossa.yaml \
   --platform cloud \
   --cloud aws \
   --env production \
-  --function-name my-agent-function \
+  --function-name creative-agent-naming-function \
   --timeout 60 \
   --memory-size 512
 ```
@@ -371,7 +371,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      ossa.io/agent: my-agent
+      ossa.io/agent: creative-agent-naming
   endpoints:
     - port: metrics
       path: /metrics
@@ -492,10 +492,10 @@ spec:
 ossa status <instance-id>
 
 # View logs
-kubectl logs -f deployment/ossa-my-agent
+kubectl logs -f deployment/ossa-creative-agent-naming
 
 # Monitor metrics
-kubectl top pod -l ossa.io/agent=my-agent
+kubectl top pod -l ossa.io/agent=creative-agent-naming
 ```
 
 ### 7. Implement Rollback Strategy
@@ -547,7 +547,7 @@ ossa logs <instance-id>
 ossa validate agent.ossa.yaml
 
 # Check cluster resources
-kubectl describe deployment ossa-my-agent
+kubectl describe deployment ossa-creative-agent-naming
 ```
 
 ### Health Check Fails
@@ -567,13 +567,13 @@ kubectl top pod <pod-name>
 
 ```bash
 # Check rollback history
-kubectl rollout history deployment/ossa-my-agent
+kubectl rollout history deployment/ossa-creative-agent-naming
 
 # Manual rollback
-kubectl rollout undo deployment/ossa-my-agent
+kubectl rollout undo deployment/ossa-creative-agent-naming
 
 # Check pod status
-kubectl get pods -l ossa.io/agent=my-agent
+kubectl get pods -l ossa.io/agent=creative-agent-naming
 ```
 
 ## Support

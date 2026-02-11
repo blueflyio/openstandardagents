@@ -534,16 +534,16 @@ Enhanced `AgentCard` interface from 10 basic fields to **60+ comprehensive field
 **Agent Registration Workflow:**
 ```bash
 # Create agent manifest
-ossa wizard -o my-agent.ossa.yaml
+ossa wizard -o creative-agent-naming.ossa.yaml
 
 # Validate
-ossa validate my-agent.ossa.yaml
+ossa validate creative-agent-naming.ossa.yaml
 
 # Generate GAID (automatic in wizard, or manual)
-ossa generate-gaid my-agent.ossa.yaml --org blueflyio
+ossa generate-gaid creative-agent-naming.ossa.yaml --org blueflyio
 
 # Register to platform
-ossa register my-agent.ossa.yaml --registry https://api.blueflyagents.com
+ossa register creative-agent-naming.ossa.yaml --registry https://api.blueflyagents.com
 
 # Discover agents
 ossa discover --capability compliance-audit
