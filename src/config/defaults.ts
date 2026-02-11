@@ -64,7 +64,7 @@ export function getDefaultAgentNameFallback(): string {
  * Can be overridden via OSSA_DEFAULT_SCAFFOLD_NAME env var
  */
 export function getDefaultScaffoldName(): string {
-  return process.env.OSSA_DEFAULT_SCAFFOLD_NAME || 'my-agent';
+  return process.env.OSSA_DEFAULT_SCAFFOLD_NAME || '1agent-2rule-themall';
 }
 
 /**
