@@ -195,29 +195,18 @@ describe('MCPIntegrationService', () => {
 
   describe('Protocol Conversion', () => {
     it('should convert A2A message to MCP format', () => {
-      const from: AgentIdentity = {
-        uri: 'ossa://sender/agent',
-        name: 'Sender',
-        namespace: 'sender',
-        version: '1.0.0',
-      };
-
-      const to: AgentIdentity = {
-        uri: 'ossa://receiver/agent',
-        name: 'Receiver',
-        namespace: 'receiver',
-        version: '1.0.0',
-      };
+      const from = createTestAgent('Sender', 'sender');
+      const to = createTestAgent('Receiver', 'receiver');
 
       const a2aMessage = {
         id: 'test-123',
         from,
         to,
-        type: 'command' as const,
+        type: A2AMessageType.COMMAND,
         payload: { action: 'test' },
         version: '0.4.5',
         metadata: {
-          priority: 'normal' as const,
+          priority: MessagePriority.NORMAL,
           timeout: 30000,
           retries: 3,
           traceContext: {
@@ -239,19 +228,8 @@ describe('MCPIntegrationService', () => {
     });
 
     it('should convert MCP message to A2A format', () => {
-      const from: AgentIdentity = {
-        uri: 'ossa://sender/agent',
-        name: 'Sender',
-        namespace: 'sender',
-        version: '1.0.0',
-      };
-
-      const to: AgentIdentity = {
-        uri: 'ossa://receiver/agent',
-        name: 'Receiver',
-        namespace: 'receiver',
-        version: '1.0.0',
-      };
+      const from = createTestAgent('Sender', 'sender');
+      const to = createTestAgent('Receiver', 'receiver');
 
       const mcpMessage = {
         jsonrpc: '2.0',
@@ -272,21 +250,16 @@ describe('MCPIntegrationService', () => {
     });
 
     it('should map A2A types to MCP methods correctly', () => {
-      const from: AgentIdentity = {
-        uri: 'ossa://test/agent',
-        name: 'Test',
-        namespace: 'test',
-        version: '1.0.0',
-      };
+      const agent = createTestAgent('Test', 'test');
 
       const baseMessage = {
         id: '1',
-        from,
-        to: from,
+        from: agent,
+        to: agent,
         payload: {},
         version: '0.4.5',
         metadata: {
-          priority: 'normal' as const,
+          priority: MessagePriority.NORMAL,
           timeout: 30000,
           retries: 3,
           traceContext: { traceparent: '00-t-s-01', traceId: 't', spanId: 's' },
@@ -295,17 +268,17 @@ describe('MCPIntegrationService', () => {
       };
 
       // Test request -> tools/call
-      const requestMsg = { ...baseMessage, type: 'request' as const };
+      const requestMsg = { ...baseMessage, type: A2AMessageType.REQUEST };
       const mcpRequest: any = service.a2aToMCP(requestMsg);
       expect(mcpRequest.method).toBe(MCPMessageType.TOOLS_CALL);
 
       // Test command -> tools/call
-      const commandMsg = { ...baseMessage, type: 'command' as const };
+      const commandMsg = { ...baseMessage, type: A2AMessageType.COMMAND };
       const mcpCommand: any = service.a2aToMCP(commandMsg);
       expect(mcpCommand.method).toBe(MCPMessageType.TOOLS_CALL);
 
       // Test event -> notification
-      const eventMsg = { ...baseMessage, type: 'event' as const };
+      const eventMsg = { ...baseMessage, type: A2AMessageType.EVENT };
       const mcpEvent: any = service.a2aToMCP(eventMsg);
       expect(mcpEvent.method).toBe(MCPMessageType.NOTIFICATION);
     });
@@ -318,12 +291,7 @@ describe('MCPIntegrationService', () => {
     });
 
     it('should track exposed servers', async () => {
-      const agent: AgentIdentity = {
-        uri: 'ossa://test/agent',
-        name: 'Test',
-        namespace: 'test',
-        version: '1.0.0',
-      };
+      const agent = createTestAgent('Test', 'test');
 
       await service.exposeMCPServer(agent);
 

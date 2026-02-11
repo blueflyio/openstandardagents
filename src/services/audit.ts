@@ -224,7 +224,7 @@ export class AgentAuditService {
       manifestValid = true;
     }
 
-    // Count capabilities, tools, triggers
+    // Count capabilities, tools, triggers (capabilities are legacy/workflow-specific)
     health.capabilitiesCount =
       manifest.spec?.capabilities?.length || manifest.capabilities?.length || 0;
     health.toolsCount =
@@ -232,21 +232,12 @@ export class AgentAuditService {
     health.triggersCount =
       manifest.spec?.triggers?.length || manifest.triggers?.length || 0;
 
-    // Check for missing sections
-    if (health.capabilitiesCount === 0) {
+    // Check for missing tools (optional warning, not required for v0.4)
+    if (health.toolsCount === 0 && manifest.kind === 'Agent') {
       health.issues.push({
-        severity: 'warning',
-        code: 'NO_CAPABILITIES',
-        message: 'Agent has no capabilities defined',
-        field: 'spec.capabilities',
-      });
-    }
-
-    if (health.toolsCount === 0) {
-      health.issues.push({
-        severity: 'warning',
+        severity: 'info',
         code: 'NO_TOOLS',
-        message: 'Agent has no tools defined',
+        message: 'Agent has no tools defined (optional)',
         field: 'spec.tools',
       });
     }
@@ -348,6 +339,7 @@ export class AgentAuditService {
 
   /**
    * Calculate health score (0-100)
+   * v0.4 schema no longer requires capabilities, so scoring is adjusted
    */
   private calculateHealthScore(health: AgentHealth): number {
     let score = 0;
@@ -355,11 +347,8 @@ export class AgentAuditService {
     // Manifest exists: 30 points
     if (health.manifestExists) score += 30;
 
-    // Manifest valid: 30 points
-    if (health.manifestValid) score += 30;
-
-    // Has capabilities: 20 points
-    if (health.capabilitiesCount > 0) score += 20;
+    // Manifest valid: 50 points (increased importance in v0.4)
+    if (health.manifestValid) score += 50;
 
     // Has tools: 10 points
     if (health.toolsCount > 0) score += 10;

@@ -43,18 +43,9 @@ describe('AgentAuditService', () => {
         },
         spec: {
           role: 'Test agent for validation',
-          llm: {
-            provider: 'openai',
-            model: 'gpt-4',
-          },
-          capabilities: [
-            {
-              name: 'test-capability',
-              description: 'Test capability',
-            },
-          ],
           tools: [
             {
+              type: 'function',
               name: 'test-tool',
               description: 'Test tool',
             },
@@ -216,9 +207,8 @@ describe('AgentAuditService', () => {
         },
         spec: {
           role: 'Complete agent',
-          capabilities: [{ name: 'cap1', description: 'Capability 1' }],
-          tools: [{ name: 'tool1', description: 'Tool 1' }],
-          triggers: [{ type: 'http', endpoint: '/trigger' }],
+          tools: [{ type: 'function', name: 'tool1', description: 'Tool 1' }],
+          triggers: [{ type: 'http', config: { endpoint: '/trigger' } }],
         },
       };
 
@@ -229,44 +219,42 @@ describe('AgentAuditService', () => {
 
       const health = await service.auditAgent(completeAgent, 'full');
 
-      // Should have high health score (manifest exists + valid + has capabilities/tools/triggers)
-      expect(health.healthScore).toBeGreaterThanOrEqual(80);
+      // Should have high health score (30 exists + 50 valid + 10 tools + 10 triggers = 100)
+      expect(health.healthScore).toBe(100);
       expect(health.status).toBe('healthy');
 
       // Cleanup
       fs.rmSync(completeAgent, { recursive: true, force: true });
     });
 
-    it('should warn about missing capabilities', async () => {
-      const noCapAgent = path.join(testDir, 'no-cap-agent');
-      fs.mkdirSync(noCapAgent, { recursive: true });
+    it('should warn about missing tools', async () => {
+      const noToolsAgent = path.join(testDir, 'no-tools-agent');
+      fs.mkdirSync(noToolsAgent, { recursive: true });
 
       const manifest = {
         apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
-          name: 'no-cap-agent',
+          name: 'no-tools-agent',
           version: '1.0.0',
         },
         spec: {
-          role: 'Agent without capabilities',
-          capabilities: [],
+          role: 'Agent without tools',
           tools: [],
         },
       };
 
       fs.writeFileSync(
-        path.join(noCapAgent, 'manifest.ossa.yaml'),
+        path.join(noToolsAgent, 'manifest.ossa.yaml'),
         yaml.stringify(manifest)
       );
 
-      const health = await service.auditAgent(noCapAgent, 'full');
+      const health = await service.auditAgent(noToolsAgent, 'full');
 
-      expect(health.issues.some((i) => i.code === 'NO_CAPABILITIES')).toBe(true);
       expect(health.issues.some((i) => i.code === 'NO_TOOLS')).toBe(true);
 
       // Cleanup
-      fs.rmSync(noCapAgent, { recursive: true, force: true });
+      fs.rmSync(noToolsAgent, { recursive: true, force: true });
     });
   });
 
@@ -289,7 +277,6 @@ describe('AgentAuditService', () => {
           },
           spec: {
             role: `Agent ${i}`,
-            capabilities: [],
           },
         };
 
