@@ -26,7 +26,7 @@ export class LangChainValidator {
     // Works in both Jest (source tree) and production (project root with dist/)
     const langchainSchemaPath = join(
       process.cwd(),
-      'spec/v0.3/extensions/langchain/langchain.schema.json'
+      'spec/v0.4/extensions/langchain/langchain.schema.json'
     );
     const langchainSchema = JSON.parse(
       readFileSync(langchainSchemaPath, 'utf-8')

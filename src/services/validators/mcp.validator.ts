@@ -32,7 +32,7 @@ export class MCPValidator {
 
     const schemaPath = path.resolve(
       __dirname,
-      '../../../spec/v0.3/extensions/mcp/mcp.schema.json'
+      '../../../spec/v0.4/extensions/mcp/mcp.schema.json'
     );
     const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf-8'));
     this.validate = this.ajv.compile(schema);

@@ -2,7 +2,7 @@
  * Tests for Warp Terminal Adapter
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from '@jest/globals';
 import { WarpAdapter } from '../../src/adapters/warp/adapter.js';
 import type { OssaAgent } from '../../src/types/index.js';
 

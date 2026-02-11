@@ -27,7 +27,7 @@ export class KagentValidator {
     // Works in both Jest (source tree) and production (project root with dist/)
     const kagentSchemaPath = join(
       process.cwd(),
-      'spec/v0.3/extensions/kagent/kagent.schema.json'
+      'spec/v0.4/extensions/kagent/kagent.schema.json'
     );
     const kagentSchema = JSON.parse(readFileSync(kagentSchemaPath, 'utf-8'));
     this.validateKagent = this.ajv.compile(kagentSchema);

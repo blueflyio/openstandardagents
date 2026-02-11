@@ -10,7 +10,7 @@
  * @module tests/a2a/a2a-mesh.test
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from '@jest/globals';
 import {
   AgentMesh,
   CircuitBreaker,

@@ -10,7 +10,7 @@
  * @module tests/a2a/a2a-swarm.test
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from '@jest/globals';
 import {
   SwarmOrchestrator,
   type ComplexTask,
