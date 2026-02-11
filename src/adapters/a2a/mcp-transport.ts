@@ -183,12 +183,12 @@ export class MCPTransportManager {
 
     try {
       const response = await this.withTimeout(
-        wrapper.client.request({ method, params }, { timeout }),
+        wrapper.client.request({ method, params }, undefined) as Promise<any>,
         timeout,
         `Request timeout after ${timeout}ms`
       );
 
-      return response;
+      return response as unknown;
     } catch (error) {
       // Handle connection errors - try to reconnect
       if (this.isConnectionError(error)) {
