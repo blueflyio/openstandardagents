@@ -25,7 +25,7 @@ export interface Task {
   /** Task input data */
   input: unknown;
   /** Task constraints */
-  constraints: TaskConstraints;
+  constraints: DelegationTaskConstraints;
   /** Task priority */
   priority: 'low' | 'normal' | 'high' | 'urgent' | 'critical';
   /** Created timestamp */
@@ -35,9 +35,9 @@ export interface Task {
 }
 
 /**
- * Task Constraints
+ * Delegation Task Constraints
  */
-export interface TaskConstraints {
+export interface DelegationTaskConstraints {
   /** Maximum execution time (milliseconds) */
   maxExecutionTime?: number;
   /** Maximum cost (arbitrary units) */

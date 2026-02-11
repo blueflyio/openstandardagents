@@ -435,11 +435,12 @@ export class A2AToolHandler {
 
       return response;
     } catch (error) {
-      this.config.mesh.completeTrace(trace.traceId, false, {
-        type: 'UNKNOWN' as any,
-        message: error instanceof Error ? error.message : 'Unknown error',
-        retryable: true,
-      });
+      const a2aError = new (class extends Error {
+        type: any = 'UNKNOWN';
+        retryable = true;
+      })(error instanceof Error ? error.message : 'Unknown error');
+
+      this.config.mesh.completeTrace(trace.traceId, false, a2aError as any);
       throw error;
     }
   }

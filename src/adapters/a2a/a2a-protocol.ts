@@ -146,7 +146,7 @@ export enum ConsensusAlgorithm {
 /**
  * Coordination Pattern Types
  */
-export enum CoordinationPattern {
+export enum CoordinationPatternType {
   /** One-to-many broadcast */
   BROADCAST = 'broadcast',
   /** Request-reply pattern */
@@ -168,7 +168,7 @@ export enum CoordinationPattern {
  */
 export interface CoordinationPattern {
   /** Pattern type */
-  pattern: CoordinationPattern;
+  pattern: CoordinationPatternType;
   /** Participating agents */
   participants: AgentIdentity[];
   /** Coordinator agent (for hierarchical patterns) */
@@ -346,7 +346,7 @@ export const MessageMetadataSchema = z.object({
   traceContext: TraceContextSchema,
   correlationId: z.string().uuid().optional(),
   contentType: z.string().optional(),
-  headers: z.record(z.string()).optional(),
+  headers: z.record(z.string(), z.string()).optional(),
   retryCount: z.number().min(0).optional(),
   createdAt: z.string().datetime(),
   expiresAt: z.string().datetime().optional(),
