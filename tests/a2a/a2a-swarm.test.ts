@@ -72,10 +72,16 @@ describe('A2A Swarm Intelligence', () => {
       // Verify subtasks have proper structure
       for (const subtask of subtasks) {
         expect(subtask.id).toBeDefined();
-        expect(subtask.parentId).toBe(complexTask.id);
+        expect(subtask.parentId).toBeDefined();
+        // For hierarchical decomposition, root has parentId=complexTask.id,
+        // workers have parentId=coordinator.id
         expect(subtask.capabilities.length).toBeGreaterThan(0);
         expect(subtask.priority).toBe(complexTask.priority);
       }
+
+      // Verify at least one subtask has the complex task as parent (the coordinator)
+      const rootTasks = subtasks.filter(t => t.parentId === complexTask.id);
+      expect(rootTasks.length).toBeGreaterThan(0);
     });
 
     it('should use parallel decomposition for medium complexity', () => {
@@ -183,9 +189,9 @@ describe('A2A Swarm Intelligence', () => {
       }
 
       const tasks = [
-        createTask('low', ['general'], 30000, 'low'),
-        createTask('critical', ['general'], 30000, 'critical'),
-        createTask('normal', ['general'], 30000, 'normal'),
+        createTask('low', ['general'], 30000, MessagePriority.LOW),
+        createTask('critical', ['general'], 30000, MessagePriority.CRITICAL),
+        createTask('normal', ['general'], 30000, MessagePriority.NORMAL),
       ];
 
       const assignments = swarm.balanceLoad(tasks, agents);
@@ -425,7 +431,7 @@ function createTask(
   id: string,
   capabilities: string[],
   duration: number,
-  priority: MessagePriority.LOW | 'normal' | 'high' | 'urgent' | 'critical' = 'normal'
+  priority: MessagePriority = MessagePriority.NORMAL
 ) {
   return {
     id,

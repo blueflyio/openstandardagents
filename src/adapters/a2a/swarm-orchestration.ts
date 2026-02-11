@@ -294,8 +294,8 @@ export class SwarmOrchestrator {
     const assignments: TaskAssignment[] = [];
     const availableAgents = agents.filter((a) => a.status === 'available');
 
-    // Sort tasks by priority and estimated duration
-    const sortedTasks = tasks.sort((a, b) => {
+    // Sort tasks by priority and estimated duration (create copy to avoid mutating input)
+    const sortedTasks = tasks.slice().sort((a, b) => {
       if (a.priority !== b.priority) {
         return this.priorityToNumber(b.priority) - this.priorityToNumber(a.priority);
       }

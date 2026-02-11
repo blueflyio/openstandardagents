@@ -11,9 +11,8 @@ import { readFileSync, existsSync } from 'fs';
 import { resolve } from 'path';
 
 // Read version from .version.json (single source of truth)
-// Uses process.cwd() for both tests and production
-// In tests: runs from project root
-// In production (npm pack): .version.json is copied to package root
+// For tests: uses process.cwd() (project root)
+// For installed package: .version.json is in dist/ (copied during build)
 const versionJsonPath = resolve(process.cwd(), '.version.json');
 
 if (!existsSync(versionJsonPath)) {

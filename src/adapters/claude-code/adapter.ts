@@ -218,8 +218,8 @@ export class ClaudeCodeAdapter extends BaseAdapter {
     // Convert tools
     const tools = this.convertTools(manifest);
 
-    // Determine max turns based on complexity
-    const max_turns = 10; // Default to 10 turns
+    // Determine max turns from manifest or default to 10
+    const max_turns = (manifest.spec as any)?.max_iterations ?? 10;
 
     // Determine model based on spec
     const model = this.determineModel(manifest);

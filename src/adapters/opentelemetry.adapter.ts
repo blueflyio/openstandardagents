@@ -203,10 +203,8 @@ export class OpenTelemetryAdapter {
     if (config.logs?.enabled && config.logs.exporter !== 'none' && logExporter) {
       loggerProvider = new LoggerProvider({
         resource,
+        logRecordProcessors: [new BatchLogRecordProcessor(logExporter)],
       });
-      loggerProvider.addLogRecordProcessor(
-        new BatchLogRecordProcessor(logExporter)
-      );
       logger = loggerProvider.getLogger(
         config.service_name || agentMetadata.name,
         config.service_version || agentMetadata.version
