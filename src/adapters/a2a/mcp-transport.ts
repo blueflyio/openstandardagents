@@ -10,6 +10,7 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
+import { z } from 'zod';
 
 /**
  * MCP Transport Type
@@ -182,13 +183,15 @@ export class MCPTransportManager {
     const timeout = wrapper.config.requestTimeout || this.requestTimeout;
 
     try {
-      const response = await this.withTimeout(
-        wrapper.client.request({ method, params }, undefined) as Promise<any>,
-        timeout,
-        `Request timeout after ${timeout}ms`
-      );
+      // Use zod object passthrough schema for generic responses
+      const genericSchema = z.object({}).passthrough();
 
-      return response as unknown;
+      // @ts-expect-error - MCP SDK typing requires specific schema, but we use generic passthrough
+      const requestPromise = wrapper.client.request({ method, params }, genericSchema);
+
+      const response = await this.withTimeout<unknown>(requestPromise, timeout, `Request timeout after ${timeout}ms`);
+
+      return response;
     } catch (error) {
       // Handle connection errors - try to reconnect
       if (this.isConnectionError(error)) {
