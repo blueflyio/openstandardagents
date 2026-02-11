@@ -126,7 +126,7 @@ export class WizardService {
 
   /**
    * Generate tools from selected tool types
-   * @param toolTypes - Array of tool type selections
+   * @param toolTypes - Array of tool type selections (v0.4 schema types)
    * @returns Array of tool configurations
    */
   private generateTools(toolTypes: string[]): Array<{
@@ -135,6 +135,7 @@ export class WizardService {
     description?: string;
     config?: Record<string, unknown>;
   }> {
+    // Map of schema tool types to default configurations
     const toolMap: Record<
       string,
       {
@@ -144,44 +145,109 @@ export class WizardService {
         config?: Record<string, unknown>;
       }
     > = {
-      search: {
-        type: 'mcp',
-        name: 'search',
-        description: 'Web search capabilities',
-        config: {
-          server: 'npx -y @modelcontextprotocol/server-brave-search',
-        },
-      },
-      file_ops: {
+      // Common Tools
+      mcp: {
         type: 'mcp',
         name: 'filesystem',
-        description: 'File system operations',
+        description: 'Model Context Protocol server for filesystem operations',
         config: {
           server: 'npx -y @modelcontextprotocol/server-filesystem',
+          args: ['./'],
         },
       },
-      web: {
+      function: {
         type: 'function',
+        name: 'example_function',
+        description: 'Example local function call',
+      },
+      http: {
+        type: 'http',
         name: 'http_request',
-        description: 'Make HTTP requests',
-      },
-      calculator: {
-        type: 'function',
-        name: 'calculate',
-        description: 'Perform mathematical calculations',
-      },
-      database: {
-        type: 'mcp',
-        name: 'database',
-        description: 'Database query capabilities',
-        config: {
-          server: 'npx -y @modelcontextprotocol/server-postgres',
-        },
+        description: 'HTTP endpoint integration',
       },
       api: {
-        type: 'function',
-        name: 'api_call',
-        description: 'Call external APIs',
+        type: 'api',
+        name: 'api_integration',
+        description: 'REST API integration',
+      },
+      browser: {
+        type: 'browser',
+        name: 'browser_automation',
+        description: 'Puppeteer/Playwright browser automation',
+      },
+      library: {
+        type: 'library',
+        name: 'reusable_library',
+        description: 'Reusable logic library',
+      },
+
+      // Event-Driven Tools
+      webhook: {
+        type: 'webhook',
+        name: 'webhook_trigger',
+        description: 'Webhook event trigger',
+      },
+      schedule: {
+        type: 'schedule',
+        name: 'cron_schedule',
+        description: 'Cron-based schedule trigger',
+        config: {
+          cron: '0 0 * * *', // Daily at midnight
+        },
+      },
+      pipeline: {
+        type: 'pipeline',
+        name: 'ci_pipeline',
+        description: 'CI/CD pipeline event integration',
+      },
+      workflow: {
+        type: 'workflow',
+        name: 'workflow_status',
+        description: 'Workflow status change trigger',
+      },
+
+      // Output Types
+      artifact: {
+        type: 'artifact',
+        name: 'file_artifact',
+        description: 'File artifact output',
+      },
+      'git-commit': {
+        type: 'git-commit',
+        name: 'commit_output',
+        description: 'Git commit output',
+      },
+      'ci-status': {
+        type: 'ci-status',
+        name: 'pipeline_status',
+        description: 'CI/CD pipeline status',
+      },
+      comment: {
+        type: 'comment',
+        name: 'mr_comment',
+        description: 'Merge request or issue comment',
+      },
+
+      // Advanced Integration
+      grpc: {
+        type: 'grpc',
+        name: 'grpc_service',
+        description: 'gRPC service integration',
+      },
+      a2a: {
+        type: 'a2a',
+        name: 'agent_communication',
+        description: 'Agent-to-agent communication',
+      },
+      kubernetes: {
+        type: 'kubernetes',
+        name: 'k8s_api',
+        description: 'Kubernetes API integration',
+      },
+      custom: {
+        type: 'custom',
+        name: 'custom_integration',
+        description: 'Custom integration',
       },
     };
 

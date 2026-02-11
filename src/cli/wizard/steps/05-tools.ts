@@ -69,9 +69,32 @@ export async function configureToolsStep(
         name: 'toolType',
         message: 'Select tool type:',
         choices: [
-          { name: 'MCP Server', value: 'mcp' },
-          { name: 'Function Tool', value: 'function' },
-          { name: 'API Integration', value: 'api' },
+          // Common Tools
+          { name: 'MCP Server (Model Context Protocol)', value: 'mcp' },
+          { name: 'Function (Local function call)', value: 'function' },
+          { name: 'HTTP (HTTP endpoint)', value: 'http' },
+          { name: 'API (REST API)', value: 'api' },
+          { name: 'Browser (Puppeteer/Playwright)', value: 'browser' },
+          { name: 'Library (Reusable logic)', value: 'library' },
+
+          // Event-Driven
+          { name: 'Webhook (Event trigger)', value: 'webhook' },
+          { name: 'Schedule (Cron trigger)', value: 'schedule' },
+          { name: 'Pipeline (CI/CD event)', value: 'pipeline' },
+          { name: 'Workflow (Status change)', value: 'workflow' },
+
+          // Output Types
+          { name: 'Artifact (File output)', value: 'artifact' },
+          { name: 'Git Commit (Commit output)', value: 'git-commit' },
+          { name: 'CI Status (Pipeline status)', value: 'ci-status' },
+          { name: 'Comment (MR/issue comment)', value: 'comment' },
+
+          // Advanced
+          { name: 'gRPC (gRPC service)', value: 'grpc' },
+          { name: 'Agent-to-Agent (A2A)', value: 'a2a' },
+          { name: 'Kubernetes (K8s API)', value: 'kubernetes' },
+          { name: 'Custom (Custom integration)', value: 'custom' },
+
           { name: 'Done adding tools', value: 'done' },
         ],
       },

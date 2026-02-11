@@ -192,14 +192,33 @@ export const toolsPrompts: QuestionCollection = [
     name: 'tools',
     message: 'Select tools (space to select, enter to continue):',
     choices: [
-      { name: 'Search (web search capabilities)', value: 'search' },
-      { name: 'File Operations (read/write files)', value: 'file_ops' },
-      { name: 'Web (HTTP requests)', value: 'web' },
-      { name: 'Calculator (math operations)', value: 'calculator' },
-      { name: 'Database (query databases)', value: 'database' },
-      { name: 'API Calls (external APIs)', value: 'api' },
+      // Common Tools
+      { name: 'MCP (Model Context Protocol servers)', value: 'mcp' },
+      { name: 'Function (Local function calls)', value: 'function' },
+      { name: 'HTTP (HTTP endpoints)', value: 'http' },
+      { name: 'API (REST APIs)', value: 'api' },
+      { name: 'Browser (Puppeteer/Playwright automation)', value: 'browser' },
+      { name: 'Library (Reusable logic)', value: 'library' },
+
+      // Event-Driven Tools
+      { name: 'Webhook (Event triggers)', value: 'webhook' },
+      { name: 'Schedule (Cron triggers)', value: 'schedule' },
+      { name: 'Pipeline (CI/CD events)', value: 'pipeline' },
+      { name: 'Workflow (Status changes)', value: 'workflow' },
+
+      // Output Types
+      { name: 'Artifact (File outputs)', value: 'artifact' },
+      { name: 'Git Commit (Commit outputs)', value: 'git-commit' },
+      { name: 'CI Status (Pipeline status)', value: 'ci-status' },
+      { name: 'Comment (MR/issue comments)', value: 'comment' },
+
+      // Advanced Integration
+      { name: 'gRPC (gRPC services)', value: 'grpc' },
+      { name: 'Agent-to-Agent (A2A communication)', value: 'a2a' },
+      { name: 'Kubernetes (K8s API)', value: 'kubernetes' },
+      { name: 'Custom (Custom integration)', value: 'custom' },
     ],
-    default: ['search', 'file_ops'],
+    default: ['mcp', 'function'],
   },
   {
     type: 'list',

@@ -5,6 +5,11 @@
 
 import { ErrorObject } from 'ajv';
 
+// Export Tool types
+export * from './tool.js';
+export type { Tool, ToolType, ToolAuth } from './tool.js';
+export { isTool, createTool, validateToolConfig } from './tool.js';
+
 // Export Task types (v0.3.0)
 export * from './task.js';
 export type { OssaTask, TaskSpec, RuntimeBinding } from './task.js';

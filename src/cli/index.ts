@@ -70,6 +70,9 @@ import { workspaceCommand } from './commands/workspace.command.js';
 import { taxonomyCommandGroup } from './commands/taxonomy.command.js';
 import { skillsCommandGroup } from './commands/skills.command.js';
 import { templateCommandGroup } from './commands/template.command.js';
+import { toolCommandGroup } from './commands/tool/index.js';
+import { capabilityCommandGroup } from './commands/capability/index.js';
+import { manifestCommandGroup } from './commands/manifest/index.js';
 
 // Framework integration commands
 import { langflowCommand } from './commands/langflow.command.js';
@@ -248,6 +251,11 @@ program.addCommand(docsCommand);
 // --- Skills & Templates ---
 program.addCommand(skillsCommandGroup);
 program.addCommand(templateCommandGroup);
+
+// --- Tool & Capability Management ---
+program.addCommand(toolCommandGroup);
+program.addCommand(capabilityCommandGroup);
+program.addCommand(manifestCommandGroup);
 
 // --- Compliance & Governance ---
 program.addCommand(conformanceCommand);
