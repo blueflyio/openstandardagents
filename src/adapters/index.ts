@@ -12,6 +12,9 @@ import { CrewAIAdapter } from './crewai/adapter.js';
 import { GitLabDuoAdapter } from './gitlab-duo/adapter.js';
 import { DrupalAdapter } from './drupal/adapter.js';
 import { NPMAdapter } from './npm/adapter.js';
+import { WarpAdapter } from './warp/adapter.js';
+import { CursorAdapter } from './cursor/adapter.js';
+import { ClaudeCodeAdapter } from './claude-code/adapter.js';
 
 /**
  * Initialize and register all export adapters
@@ -34,6 +37,15 @@ export function initializeAdapters(): void {
 
   // Register NPM adapter
   registry.register(new NPMAdapter());
+
+  // Register Warp adapter
+  registry.register(new WarpAdapter());
+
+  // Register Cursor adapter
+  registry.register(new CursorAdapter());
+
+  // Register Claude Code adapter
+  registry.register(new ClaudeCodeAdapter());
 
   // console.log(`Registered ${registry.size} export adapters`);
 }

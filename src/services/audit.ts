@@ -9,6 +9,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'yaml';
 import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
+import { SCHEMA_PATH, API_VERSION } from '../version.js';
 
 export interface AuditOptions {
   path: string;
@@ -59,12 +61,30 @@ export interface AuditReport {
 
 export class AgentAuditService {
   private ajv: Ajv;
-  private ossaSchema: any;
+  private ossaSchema: object;
+  private validate: Ajv['validate'];
 
   constructor() {
-    this.ajv = new Ajv({ allErrors: true, strict: false });
-    // Load OSSA schema (would load from schema directory)
-    this.ossaSchema = null; // TODO: Load actual schema
+    // Initialize Ajv validator with formats support
+    this.ajv = new Ajv({
+      allErrors: true,
+      strict: false,
+      validateFormats: true,
+    });
+    addFormats(this.ajv);
+
+    // Load OSSA v0.4 schema
+    const schemaPath = path.resolve(process.cwd(), SCHEMA_PATH);
+
+    if (!fs.existsSync(schemaPath)) {
+      throw new Error(`OSSA schema not found at ${schemaPath}`);
+    }
+
+    const schemaContent = fs.readFileSync(schemaPath, 'utf-8');
+    this.ossaSchema = JSON.parse(schemaContent);
+
+    // Compile schema and store validator
+    this.validate = this.ajv.compile(this.ossaSchema);
   }
 
   /**
@@ -177,8 +197,10 @@ export class AgentAuditService {
     health.name = manifest.metadata?.name || manifest.name;
 
     // Validate against OSSA schema
+    let manifestValid = false;
     if (validationLevel === 'full' || validationLevel === 'strict') {
       const validationResult = this.validateManifest(manifest);
+      manifestValid = validationResult.valid;
       health.manifestValid = validationResult.valid;
       health.validationErrors = validationResult.errors;
 
@@ -189,8 +211,17 @@ export class AgentAuditService {
           message: `Manifest does not conform to OSSA spec: ${validationResult.errors.length} errors`,
         });
       }
+
+      // Check schema version if valid
+      if (manifestValid) {
+        const versionIssue = this.checkSchemaVersion(manifest);
+        if (versionIssue) {
+          health.issues.push(versionIssue);
+        }
+      }
     } else {
       health.manifestValid = true; // Skip validation in basic mode
+      manifestValid = true;
     }
 
     // Count capabilities, tools, triggers
@@ -269,31 +300,50 @@ export class AgentAuditService {
   }
 
   /**
-   * Validate manifest against OSSA schema
+   * Validate manifest against OSSA schema using Ajv
    */
   private validateManifest(manifest: any): { valid: boolean; errors: any[] } {
-    // TODO: Implement actual schema validation using ajv
-    // For now, do basic checks
-    const errors: any[] = [];
+    const valid = this.validate(manifest);
 
-    if (!manifest.metadata && !manifest.name) {
-      errors.push({
-        path: '/metadata/name',
-        message: 'Agent name is required',
-      });
+    if (!valid && this.validate.errors) {
+      const errors = this.validate.errors.map((err) => ({
+        path: err.instancePath || '/',
+        message: err.message || 'Validation error',
+      }));
+      return { valid: false, errors };
     }
 
-    if (!manifest.spec && !manifest.capabilities) {
-      errors.push({
-        path: '/spec',
-        message: 'Agent spec is required',
-      });
+    return { valid: true, errors: [] };
+  }
+
+  /**
+   * Check schema version and warn if outdated
+   */
+  private checkSchemaVersion(
+    manifest: any
+  ): AgentHealth['issues'][0] | null {
+    const apiVersion = manifest.apiVersion;
+
+    if (!apiVersion) {
+      return {
+        severity: 'error',
+        code: 'MISSING_API_VERSION',
+        message: 'Manifest missing apiVersion field',
+        field: 'apiVersion',
+      };
     }
 
-    return {
-      valid: errors.length === 0,
-      errors,
-    };
+    // Compare with current API version
+    if (apiVersion !== API_VERSION) {
+      return {
+        severity: 'warning',
+        code: 'VERSION_MISMATCH',
+        message: `Manifest uses ${apiVersion}, current is ${API_VERSION}`,
+        field: 'apiVersion',
+      };
+    }
+
+    return null;
   }
 
   /**

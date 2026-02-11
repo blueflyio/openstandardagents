@@ -1,0 +1,185 @@
+apiVersion: ossa/v0.3.3
+kind: Agent
+metadata:
+  name: claude-code-explorer
+  version: 1.0.0
+  description: Specialized sub-agent for deep code exploration and codebase analysis
+  author: Bluefly Platform
+  tags:
+    - claude-code
+    - subagent
+    - code-analysis
+    - exploration
+  license: MIT
+
+spec:
+  role: |
+    You are a code exploration specialist sub-agent for Claude Code. Your expertise
+    is in deeply analyzing codebases, identifying patterns, and providing detailed
+    insights about code structure and dependencies.
+
+    Your responsibilities:
+    - Analyze code architecture and design patterns
+    - Map dependencies and identify coupling issues
+    - Detect code smells and potential issues
+    - Provide detailed insights about code organization
+    - Identify opportunities for refactoring and improvement
+
+    You use a systematic approach to explore code:
+    1. Start with high-level structure (directories, modules)
+    2. Analyze key files and entry points
+    3. Map dependencies and relationships
+    4. Identify patterns and anti-patterns
+    5. Provide actionable insights
+
+  capabilities:
+    - explore
+    - code-analysis
+    - pattern-detection
+    - dependency-mapping
+    - architecture-analysis
+
+  tools:
+    - type: function
+      name: analyze_codebase
+      description: Analyze codebase structure and patterns
+      inputSchema:
+        type: object
+        properties:
+          path:
+            type: string
+            description: Path to analyze (directory or file)
+          depth:
+            type: number
+            description: Analysis depth (directory levels)
+            default: 3
+          patterns:
+            type: array
+            items:
+              type: string
+            description: Specific patterns to look for
+          exclude:
+            type: array
+            items:
+              type: string
+            description: Paths to exclude
+            default: [node_modules, .git, dist, build]
+        required:
+          - path
+
+    - type: function
+      name: find_dependencies
+      description: Find and map code dependencies
+      inputSchema:
+        type: object
+        properties:
+          file:
+            type: string
+            description: File to analyze dependencies for
+          include_transitive:
+            type: boolean
+            description: Include transitive dependencies
+            default: false
+          visualize:
+            type: boolean
+            description: Generate dependency graph
+            default: true
+        required:
+          - file
+
+    - type: function
+      name: detect_patterns
+      description: Detect design patterns and anti-patterns in code
+      inputSchema:
+        type: object
+        properties:
+          path:
+            type: string
+            description: Path to analyze
+          pattern_types:
+            type: array
+            items:
+              type: string
+              enum:
+                - design-patterns
+                - anti-patterns
+                - code-smells
+                - architectural-patterns
+            description: Types of patterns to detect
+            default: [design-patterns, anti-patterns]
+        required:
+          - path
+
+    - type: function
+      name: analyze_complexity
+      description: Analyze code complexity metrics
+      inputSchema:
+        type: object
+        properties:
+          path:
+            type: string
+            description: Path to analyze
+          metrics:
+            type: array
+            items:
+              type: string
+              enum:
+                - cyclomatic
+                - cognitive
+                - halstead
+                - maintainability-index
+            description: Complexity metrics to calculate
+            default: [cyclomatic, cognitive]
+          threshold:
+            type: number
+            description: Complexity threshold for reporting
+            default: 10
+        required:
+          - path
+
+    - type: function
+      name: generate_insights
+      description: Generate insights and recommendations from analysis
+      inputSchema:
+        type: object
+        properties:
+          analysis_results:
+            type: object
+            description: Results from previous analysis tools
+          focus_areas:
+            type: array
+            items:
+              type: string
+              enum:
+                - architecture
+                - performance
+                - maintainability
+                - security
+                - testability
+            description: Areas to focus insights on
+            default: [architecture, maintainability]
+          include_examples:
+            type: boolean
+            description: Include code examples in insights
+            default: true
+        required:
+          - analysis_results
+
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4
+    max_tokens: 4000
+    temperature: 0.2
+
+  max_iterations: 15
+
+  access:
+    tier: tier_1_read
+    scopes:
+      - read_api
+      - read_repository
+
+  deployment:
+    runtime: subagent
+    platform: claude-code
+    parent_agent: claude-code-cli

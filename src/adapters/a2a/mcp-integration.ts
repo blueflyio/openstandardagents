@@ -14,6 +14,7 @@
 
 import { z } from 'zod';
 import type { AgentIdentity, A2AMessage } from './a2a-protocol.js';
+import { MCPTransportManager } from './mcp-transport.js';
 
 /**
  * MCP Protocol Version
@@ -180,6 +181,7 @@ export interface MCPServer {
 export class MCPIntegrationService {
   private connections: Map<string, MCPConnection> = new Map();
   private servers: Map<string, MCPServer> = new Map();
+  private transportManager: MCPTransportManager = new MCPTransportManager();
 
   /**
    * Connect to an MCP server
@@ -411,13 +413,48 @@ export class MCPIntegrationService {
   }
 
   /**
-   * Send MCP message (implementation depends on transport)
+   * Send MCP message using real transport
    */
-  private async sendMCPMessage(uri: string, message: unknown): Promise<any> {
-    // TODO: Implement actual MCP transport (stdio, HTTP, WebSocket)
-    // This is a placeholder - actual implementation would use MCP client library
-    console.log(`Sending MCP message to ${uri}:`, message);
-    return { result: 'success' };
+  private async sendMCPMessage(uri: string, message: any): Promise<any> {
+    try {
+      // Extract method and params from message
+      const method = message.method || 'unknown';
+      const params = message.params || {};
+
+      // Send request via transport manager
+      const response = await this.transportManager.sendRequest(
+        uri,
+        method,
+        params
+      );
+
+      // Return response in expected format
+      return response;
+    } catch (error) {
+      console.error(
+        `Error sending MCP message to ${uri}:`,
+        error instanceof Error ? error.message : String(error)
+      );
+
+      // Re-throw with context
+      throw new Error(
+        `MCP request failed: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
+  }
+
+  /**
+   * Cleanup - disconnect all MCP connections
+   */
+  async cleanup(): Promise<void> {
+    await this.transportManager.disconnectAll();
+  }
+
+  /**
+   * Get transport statistics
+   */
+  getTransportStats() {
+    return this.transportManager.getStats();
   }
 
   /**

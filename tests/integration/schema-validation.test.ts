@@ -13,7 +13,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { API_VERSION } from '../../../src/version.js';
 
-describe.skip('Schema Validation Integration', () => {
+describe('Schema Validation Integration', () => {
   const validationService = container.get(ValidationService);
   const manifestRepo = container.get(ManifestRepository);
   const schemaRepo = container.get(SchemaRepository);
