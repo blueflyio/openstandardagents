@@ -19,8 +19,7 @@ import { ValidationService } from './services/validation.service.js';
 import { ValidationZodService } from './services/validation-zod.service.js';
 import { VersionDetectionService } from './services/version-detection.service.js';
 import { RepoAgentsMdService } from './services/agents-md/repo-agents-md.service.js';
-// FIXME: AgentsMdService was deleted, using RepoAgentsMdService as alias for now
-const AgentsMdService = RepoAgentsMdService;
+import { AgentsMdService } from './services/agents-md/agents-md.service.js';
 import { TemplateProcessorService } from './services/template-processor.service.js';
 import { LlmsTxtService } from './services/llms-txt/llms-txt.service.js';
 import { TestRunnerService } from './services/test-runner/test-runner.service.js';
