@@ -87,43 +87,43 @@ exportCommand.action(
       const platforms = [
         {
           name: 'kagent',
-          status: 'production',
+          status: 'alpha',
           desc: 'kagent.dev Kubernetes CRD bundle (10+ files)',
         },
         {
           name: 'langchain',
           status: 'production',
-          desc: 'LangChain Python + TypeScript agent package',
+          desc: 'LangChain Python + TypeScript agent package (uses @langchain/* SDK)',
         },
         {
           name: 'crewai',
-          status: 'production',
-          desc: 'CrewAI multi-agent Python package',
+          status: 'beta',
+          desc: 'CrewAI multi-agent Python package (uses CrewAI SDK)',
         },
         {
           name: 'temporal',
-          status: 'beta',
+          status: 'alpha',
           desc: 'Temporal workflow configuration',
         },
-        { name: 'n8n', status: 'beta', desc: 'n8n workflow JSON export' },
+        { name: 'n8n', status: 'alpha', desc: 'n8n workflow JSON export' },
         {
           name: 'gitlab',
-          status: 'production',
+          status: 'alpha',
           desc: 'GitLab CI/CD YAML configuration',
         },
         {
-          name: 'gitlab-agent',
-          status: 'production',
-          desc: 'GitLab Duo agent package (34 files)',
+          name: 'gitlab-duo',
+          status: 'alpha',
+          desc: 'GitLab Duo Custom Agent with MCP integration',
         },
         {
           name: 'docker',
-          status: 'production',
+          status: 'alpha',
           desc: 'Docker deployment package',
         },
         {
           name: 'kubernetes',
-          status: 'production',
+          status: 'alpha',
           desc: 'Kubernetes Kustomize structure',
         },
         {
@@ -132,9 +132,34 @@ exportCommand.action(
           desc: 'Installable npm package with optional Claude Skill',
         },
         {
-          name: 'drupal',
+          name: 'mcp',
           status: 'production',
+          desc: 'MCP server for Claude Code (uses @modelcontextprotocol/sdk)',
+        },
+        {
+          name: 'drupal',
+          status: 'beta',
           desc: 'Drupal manifest for ai_agents_ossa module',
+        },
+        {
+          name: 'claude-code',
+          status: 'beta',
+          desc: 'Claude Code sub-agent for task execution',
+        },
+        {
+          name: 'cursor',
+          status: 'beta',
+          desc: 'Cursor Cloud Agent for IDE assistance',
+        },
+        {
+          name: 'warp',
+          status: 'beta',
+          desc: 'Warp terminal agent with CLI triggers',
+        },
+        {
+          name: 'anthropic',
+          status: 'beta',
+          desc: 'Anthropic Python SDK with FastAPI server',
         },
         {
           name: 'agent-skills',
@@ -155,7 +180,9 @@ exportCommand.action(
             ? chalk.green
             : p.status === 'beta'
               ? chalk.yellow
-              : chalk.red;
+              : p.status === 'alpha'
+                ? chalk.magenta
+                : chalk.red;
         const statusLabel = useColor
           ? statusColor(`[${p.status}]`)
           : `[${p.status}]`;

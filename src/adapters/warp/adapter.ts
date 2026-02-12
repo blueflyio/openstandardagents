@@ -30,6 +30,7 @@ export class WarpAdapter extends BaseAdapter {
   readonly displayName = 'Warp Terminal';
   readonly description =
     'Warp terminal agent with command-line interface and triggers';
+  readonly status = 'beta' as const;
   readonly supportedVersions = ['v{{VERSION}}'];
 
   /**

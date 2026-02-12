@@ -1,12 +1,14 @@
 /**
  * Skills Research Service
- * Research and index skills from various sources (awesome-claude-code, claude-code-showcase, etc.)
+ * Research and index skills from various sources (awesome-claude-code, claude-code-showcase, npm registry)
  */
 
 import { injectable } from 'inversify';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { z } from 'zod';
+import { Octokit } from '@octokit/rest';
+import axios from 'axios';
 
 /**
  * Skill Research Result Schema
@@ -63,21 +65,39 @@ const DEFAULT_SOURCES: ResearchSource[] = [
     enabled: true,
   },
   {
-    name: 'skills-library',
+    name: 'npm-registry',
     type: 'registry',
-    url: 'https://claude-skills.dev',
-    enabled: false, // Mock for now
+    url: 'https://registry.npmjs.org',
+    enabled: true,
   },
 ];
+
+/**
+ * Common English stop words to exclude from trigger extraction
+ */
+const STOP_WORDS = new Set([
+  'the', 'and', 'for', 'are', 'but', 'not', 'you', 'all',
+  'can', 'her', 'was', 'one', 'our', 'out', 'has', 'have',
+  'with', 'this', 'that', 'from', 'they', 'been', 'said',
+  'each', 'which', 'their', 'will', 'other', 'about', 'many',
+  'then', 'them', 'these', 'some', 'would', 'make', 'like',
+  'into', 'could', 'time', 'very', 'when', 'come', 'made',
+  'use', 'using', 'used',
+]);
 
 @injectable()
 export class SkillsResearchService {
   private readonly indexPath: string;
   private sources: ResearchSource[] = DEFAULT_SOURCES;
+  private octokit: Octokit;
 
   constructor() {
     const homeDir = process.env.HOME || process.env.USERPROFILE || '~';
     this.indexPath = path.join(homeDir, '.ossa', 'skills-index.json');
+
+    // Use GITHUB_TOKEN if available (higher rate limits), otherwise unauthenticated
+    const token = process.env.GITHUB_TOKEN;
+    this.octokit = new Octokit(token ? { auth: token } : {});
   }
 
   /**
@@ -118,7 +138,7 @@ export class SkillsResearchService {
       const data = await fs.readFile(this.indexPath, 'utf-8');
       const parsed = JSON.parse(data);
       return z.array(SkillResearchResultSchema).parse(parsed.skills || []);
-    } catch (error) {
+    } catch {
       // Return empty array if file doesn't exist or is invalid
       return [];
     }
@@ -159,28 +179,36 @@ export class SkillsResearchService {
       }
     }
 
-    // Save updated index
-    await this.saveIndex(allSkills);
+    // Deduplicate by name
+    const seen = new Set<string>();
+    const deduped = allSkills.filter((skill) => {
+      if (seen.has(skill.name)) return false;
+      seen.add(skill.name);
+      return true;
+    });
 
-    return allSkills;
+    // Save updated index
+    await this.saveIndex(deduped);
+
+    return deduped;
   }
 
   /**
-   * Fetch skills from a research source
-   *
-   * For GitHub-based sources, fetches the repository README and parses skill entries.
-   * For registry sources, calls the registry API.
+   * Fetch skills from a research source — dispatches by source type.
+   * Uses @octokit/rest SDK for GitHub and axios for npm registry.
    */
   private async fetchFromSource(
     source: ResearchSource
   ): Promise<SkillResearchResult[]> {
     switch (source.type) {
-      case 'github':
       case 'awesome-list':
+        return this.fetchFromAwesomeList(source);
       case 'showcase':
-        return this.fetchFromGitHub(source);
+        return this.fetchFromShowcase(source);
       case 'registry':
-        return this.fetchFromRegistry(source);
+        return this.fetchFromNpmRegistry(source);
+      case 'github':
+        return this.fetchFromGitHubRepo(source);
       default:
         console.warn(`Unknown source type: ${source.type}`);
         return [];
@@ -188,143 +216,259 @@ export class SkillsResearchService {
   }
 
   /**
-   * Fetch skills from a GitHub repository (awesome-list or showcase format)
+   * Fetch skills from an awesome-list repo (e.g., awesome-claude-code)
+   * Uses Octokit SDK to fetch README.md and parses markdown links
    */
-  private async fetchFromGitHub(
+  private async fetchFromAwesomeList(
     source: ResearchSource
   ): Promise<SkillResearchResult[]> {
+    const { owner, repo } = this.parseGitHubUrl(source.url);
     const skills: SkillResearchResult[] = [];
 
-    try {
-      // Convert GitHub URL to raw README URL
-      const urlParts = source.url.replace('https://github.com/', '').split('/');
-      if (urlParts.length < 2) return skills;
+    const response = await this.octokit.rest.repos.getContent({
+      owner,
+      repo,
+      path: 'README.md',
+    });
 
-      const [owner, repo] = urlParts;
-      const apiUrl = `https://api.github.com/repos/${owner}/${repo}/readme`;
+    if (!('content' in response.data)) return skills;
 
-      const headers: Record<string, string> = {
-        Accept: 'application/vnd.github.v3+json',
-        'User-Agent': 'ossa-skills-research',
-      };
+    const content = Buffer.from(response.data.content, 'base64').toString(
+      'utf-8'
+    );
 
-      // Use GITHUB_TOKEN if available to avoid rate limits
-      const githubToken = process.env.GITHUB_TOKEN;
-      if (githubToken) {
-        headers['Authorization'] = `token ${githubToken}`;
-      }
+    // Parse markdown links: - [Name](url) - Description
+    const linkPattern =
+      /^[-*]\s+\[([^\]]+)\]\(([^)]+)\)\s*[-–—:]*\s*(.*?)$/gm;
+    let match: RegExpExecArray | null;
 
-      const response = await fetch(apiUrl, {
-        headers,
-        signal: AbortSignal.timeout(10000),
+    while ((match = linkPattern.exec(content)) !== null) {
+      const [, name, url, description] = match;
+      if (!name || !url) continue;
+
+      // Skip non-project links (anchors, images, badges)
+      if (url.startsWith('#') || url.endsWith('.png') || url.endsWith('.svg'))
+        continue;
+
+      const cleanName = name
+        .toLowerCase()
+        .replace(/[^a-z0-9-]/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
+
+      skills.push({
+        name: cleanName || name,
+        description: description?.trim() || name,
+        triggers: this.extractTriggersFromText(`${name} ${description}`),
+        sourceUrl: url.startsWith('http')
+          ? url
+          : `https://github.com/${url.replace(/^\//, '')}`,
+        author: owner,
+        tags: ['awesome-list', 'claude-code'],
+        lastUpdated: new Date().toISOString().split('T')[0],
       });
-
-      if (!response.ok) {
-        console.warn(
-          `GitHub API returned ${response.status} for ${source.name}`
-        );
-        return skills;
-      }
-
-      const data = (await response.json()) as { content?: string };
-      if (!data.content) return skills;
-
-      const readme = Buffer.from(data.content, 'base64').toString('utf-8');
-
-      // Parse markdown list items that look like skill/tool entries
-      // Pattern: - [Name](url) - Description
-      const linkPattern =
-        /^[-*]\s+\[([^\]]+)\]\(([^)]+)\)\s*[-:]?\s*(.+)$/gm;
-      let match;
-
-      while ((match = linkPattern.exec(readme)) !== null) {
-        const [, name, url, description] = match;
-        const skillName = name
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, '-')
-          .replace(/^-|-$/g, '');
-
-        // Extract tags from description keywords
-        const descLower = description.toLowerCase();
-        const tags: string[] = [];
-        const tagKeywords = [
-          'typescript',
-          'python',
-          'rust',
-          'go',
-          'api',
-          'cli',
-          'web',
-          'agent',
-          'mcp',
-          'llm',
-          'ai',
-          'drupal',
-          'react',
-        ];
-        for (const keyword of tagKeywords) {
-          if (descLower.includes(keyword)) tags.push(keyword);
-        }
-
-        skills.push({
-          name: skillName,
-          description: description.trim(),
-          triggers: [skillName, ...tags],
-          sourceUrl: url.startsWith('http') ? url : `${source.url}/${url}`,
-          author: `${owner}/${repo}`,
-          tags,
-          lastUpdated: new Date().toISOString().split('T')[0],
-        });
-      }
-    } catch (error) {
-      console.warn(
-        `Failed to fetch from GitHub source ${source.name}: ${error instanceof Error ? error.message : String(error)}`
-      );
     }
 
     return skills;
   }
 
   /**
-   * Fetch skills from a registry API endpoint
+   * Fetch skills from a showcase repo (e.g., claude-code-showcase)
+   * Uses Octokit SDK to list directories and read their READMEs
    */
-  private async fetchFromRegistry(
+  private async fetchFromShowcase(
     source: ResearchSource
   ): Promise<SkillResearchResult[]> {
-    try {
-      const response = await fetch(`${source.url}/api/skills`, {
-        headers: {
-          Accept: 'application/json',
-          'User-Agent': 'ossa-skills-research',
-        },
-        signal: AbortSignal.timeout(10000),
-      });
+    const { owner, repo } = this.parseGitHubUrl(source.url);
+    const skills: SkillResearchResult[] = [];
 
-      if (!response.ok) {
-        console.warn(
-          `Registry API returned ${response.status} for ${source.name}`
-        );
-        return [];
+    // Get the repo tree to find directories
+    const treeResponse = await this.octokit.rest.git.getTree({
+      owner,
+      repo,
+      tree_sha: 'HEAD',
+    });
+
+    const dirs = treeResponse.data.tree.filter(
+      (entry) =>
+        entry.type === 'tree' &&
+        entry.path &&
+        !entry.path.startsWith('.') &&
+        !['node_modules', 'dist', '__pycache__'].includes(entry.path)
+    );
+
+    // Read README from each directory (up to 30 to respect rate limits)
+    for (const dir of dirs.slice(0, 30)) {
+      if (!dir.path) continue;
+
+      try {
+        const readmeResponse = await this.octokit.rest.repos.getContent({
+          owner,
+          repo,
+          path: `${dir.path}/README.md`,
+        });
+
+        let description = dir.path;
+        if ('content' in readmeResponse.data) {
+          const readmeContent = Buffer.from(
+            readmeResponse.data.content,
+            'base64'
+          ).toString('utf-8');
+          // Extract first non-heading, non-empty line as description
+          const lines = readmeContent.split('\n');
+          const descLine = lines.find(
+            (l) => l.trim() && !l.startsWith('#') && !l.startsWith('!')
+          );
+          if (descLine) description = descLine.trim();
+        }
+
+        skills.push({
+          name: dir.path,
+          description,
+          triggers: this.extractTriggersFromText(
+            `${dir.path} ${description}`
+          ),
+          sourceUrl: `https://github.com/${owner}/${repo}/tree/main/${dir.path}`,
+          author: owner,
+          tags: ['showcase', 'claude-code'],
+          lastUpdated: new Date().toISOString().split('T')[0],
+        });
+      } catch {
+        // No README — still list the directory
+        skills.push({
+          name: dir.path,
+          description: `Claude Code showcase: ${dir.path}`,
+          triggers: this.extractTriggersFromText(dir.path),
+          sourceUrl: `https://github.com/${owner}/${repo}/tree/main/${dir.path}`,
+          author: owner,
+          tags: ['showcase', 'claude-code'],
+          lastUpdated: new Date().toISOString().split('T')[0],
+        });
       }
-
-      const data = (await response.json()) as { skills?: unknown[] };
-      const rawSkills = data.skills || data;
-
-      if (!Array.isArray(rawSkills)) return [];
-
-      // Validate each skill against the schema
-      return rawSkills
-        .map((skill: unknown) => {
-          const result = SkillResearchResultSchema.safeParse(skill);
-          return result.success ? result.data : null;
-        })
-        .filter((s): s is SkillResearchResult => s !== null);
-    } catch (error) {
-      console.warn(
-        `Failed to fetch from registry ${source.name}: ${error instanceof Error ? error.message : String(error)}`
-      );
-      return [];
     }
+
+    return skills;
+  }
+
+  /**
+   * Fetch skills from npm registry search
+   * Uses axios to search for packages with keyword "claude-skill" or "ossa-agent"
+   */
+  private async fetchFromNpmRegistry(
+    source: ResearchSource
+  ): Promise<SkillResearchResult[]> {
+    const skills: SkillResearchResult[] = [];
+
+    const searchTerms = [
+      'keywords:claude-skill',
+      'keywords:ossa-agent',
+      'keywords:claude-code-skill',
+    ];
+
+    for (const term of searchTerms) {
+      try {
+        const response = await axios.get(
+          `${source.url}/-/v1/search`,
+          {
+            params: { text: term, size: 50 },
+            timeout: 10000,
+          }
+        );
+
+        const packages = response.data?.objects || [];
+
+        for (const pkg of packages) {
+          const p = pkg.package;
+          if (!p?.name) continue;
+
+          skills.push({
+            name: p.name,
+            description: p.description || p.name,
+            triggers: p.keywords || [],
+            sourceUrl: p.links?.npm || `https://www.npmjs.com/package/${p.name}`,
+            installCommand: `npm install ${p.name}`,
+            author: p.author?.name || p.publisher?.username,
+            tags: p.keywords || [],
+            rating: pkg.score?.final
+              ? Math.round(pkg.score.final * 5 * 10) / 10
+              : undefined,
+            lastUpdated: p.date?.split('T')[0],
+          });
+        }
+      } catch {
+        // Individual search term failure is non-fatal
+      }
+    }
+
+    return skills;
+  }
+
+  /**
+   * Fetch skills from a generic GitHub repo
+   * Uses Octokit SDK to list YAML/MD files that look like agent definitions
+   */
+  private async fetchFromGitHubRepo(
+    source: ResearchSource
+  ): Promise<SkillResearchResult[]> {
+    const { owner, repo } = this.parseGitHubUrl(source.url);
+    const skills: SkillResearchResult[] = [];
+
+    const treeResponse = await this.octokit.rest.git.getTree({
+      owner,
+      repo,
+      tree_sha: 'HEAD',
+      recursive: 'true',
+    });
+
+    const agentFiles = treeResponse.data.tree.filter(
+      (entry) =>
+        entry.type === 'blob' &&
+        entry.path &&
+        (entry.path.endsWith('.ossa.yaml') ||
+          entry.path.endsWith('.ossa.yml') ||
+          entry.path === 'SKILL.md' ||
+          entry.path.endsWith('/SKILL.md'))
+    );
+
+    for (const file of agentFiles.slice(0, 30)) {
+      if (!file.path) continue;
+
+      skills.push({
+        name: path.basename(file.path, path.extname(file.path)),
+        description: `Agent definition from ${owner}/${repo}`,
+        triggers: this.extractTriggersFromText(file.path),
+        sourceUrl: `https://github.com/${owner}/${repo}/blob/main/${file.path}`,
+        author: owner,
+        tags: ['github', 'ossa'],
+        lastUpdated: new Date().toISOString().split('T')[0],
+      });
+    }
+
+    return skills;
+  }
+
+  /**
+   * Extract trigger keywords from text
+   */
+  private extractTriggersFromText(text: string): string[] {
+    const words = text
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, ' ')
+      .split(/\s+/)
+      .filter((w) => w.length > 2 && !STOP_WORDS.has(w));
+
+    return [...new Set(words)].slice(0, 10);
+  }
+
+  /**
+   * Parse GitHub URL into owner/repo
+   */
+  private parseGitHubUrl(url: string): { owner: string; repo: string } {
+    const match = url.match(
+      /github\.com\/([^/]+)\/([^/]+)/
+    );
+    if (!match) throw new Error(`Invalid GitHub URL: ${url}`);
+    return { owner: match[1], repo: match[2].replace(/\.git$/, '') };
   }
 
   /**

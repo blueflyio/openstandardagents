@@ -30,6 +30,7 @@ export interface GenerationOptions {
   output?: string; // Output directory
   outputFormat?: OutputFormat;
   dryRun?: boolean;
+  validate?: boolean; // Validate output SKILL.md before writing
 }
 
 /**
@@ -58,15 +59,59 @@ const SkillFrontmatterSchema = z.object({
 type SkillFrontmatter = z.infer<typeof SkillFrontmatterSchema>;
 
 /**
- * Oracle Agent Spec Schema (simplified)
+ * Oracle Agent Spec Schema (expanded to match oracle/agent-spec)
  */
+const OracleToolParameterSchema = z.object({
+  name: z.string(),
+  type: z.string().optional(),
+  description: z.string().optional(),
+  required: z.boolean().optional(),
+});
+
+const OracleToolSchema = z.object({
+  name: z.string(),
+  description: z.string().optional(),
+  type: z.string().optional(),
+  parameters: z.array(OracleToolParameterSchema).optional(),
+});
+
+const OracleGuardrailSchema = z.object({
+  type: z.string(),
+  description: z.string().optional(),
+  rules: z.array(z.string()).optional(),
+});
+
+const OracleSubAgentSchema = z.object({
+  name: z.string(),
+  description: z.string().optional(),
+  role: z.string().optional(),
+});
+
 const OracleAgentSpecSchema = z.object({
   name: z.string(),
   description: z.string(),
   instructions: z.string(),
   capabilities: z.array(z.string()).optional(),
-  tools: z.array(z.any()).optional(),
+  tools: z.array(z.union([z.string(), OracleToolSchema])).optional(),
+  knowledge: z.array(z.string()).optional(),
+  guardrails: z.array(z.union([z.string(), OracleGuardrailSchema])).optional(),
+  sub_agents: z.array(z.union([z.string(), OracleSubAgentSchema])).optional(),
+  model: z.string().optional(),
+  temperature: z.number().optional(),
+  max_tokens: z.number().optional(),
 });
+
+/**
+ * Parsed AGENTS.md agent
+ */
+interface ParsedAgent {
+  name: string;
+  description: string;
+  capabilities: string[];
+  tools: Array<{ name: string; description?: string }>;
+  instructions: string;
+  knowledge: string[];
+}
 
 @injectable()
 export class SkillsGeneratorService {
@@ -85,6 +130,7 @@ export class SkillsGeneratorService {
       output,
       outputFormat = 'claude-skill',
       dryRun,
+      validate: shouldValidate,
     } = options;
 
     try {
@@ -96,6 +142,18 @@ export class SkillsGeneratorService {
 
       // Generate skill structure
       const skillData = await this.generateSkillData(parsed, detectedFormat);
+
+      // Validate output if requested
+      if (shouldValidate) {
+        const validationErrors = this.validateSkillData(skillData);
+        if (validationErrors.length > 0) {
+          return {
+            success: false,
+            message: 'Skill validation failed',
+            errors: validationErrors,
+          };
+        }
+      }
 
       // Create output directory structure
       const outputPath = output || path.join(process.cwd(), 'generated-skill');
@@ -163,7 +221,16 @@ export class SkillsGeneratorService {
         const parsed = filePath.endsWith('.json')
           ? JSON.parse(content)
           : yaml.parse(content);
-        return OracleAgentSpecSchema.parse(parsed);
+        const result = OracleAgentSpecSchema.safeParse(parsed);
+        if (!result.success) {
+          const issues = result.error.issues
+            .map((i) => `  Line ~${i.path.join('.')}: ${i.message}`)
+            .join('\n');
+          throw new Error(
+            `Oracle Agent Spec validation failed:\n${issues}`
+          );
+        }
+        return result.data;
       }
 
       case 'agents-md':
@@ -175,11 +242,11 @@ export class SkillsGeneratorService {
   }
 
   /**
-   * Parse AGENTS.md format
+   * Parse AGENTS.md format — handles multiple agent sections with structured fields
    */
-  private parseAgentsMd(content: string): any {
-    // Extract agent metadata from AGENTS.md
-    const agents = [];
+  private parseAgentsMd(content: string): { agents: ParsedAgent[] } {
+    const agents: ParsedAgent[] = [];
+    // Split on ## headers (level 2) — these are agent sections
     const agentSections = content.split(/^## /m).filter((s) => s.trim());
 
     for (const section of agentSections) {
@@ -187,17 +254,28 @@ export class SkillsGeneratorService {
       const name = lines[0]?.trim();
       if (!name) continue;
 
+      // Extract description: first non-empty, non-heading, non-list line
       const description =
         lines
           .slice(1)
-          .find((l) => l.trim() && !l.startsWith('-') && !l.startsWith('**'))
+          .find(
+            (l) =>
+              l.trim() &&
+              !l.startsWith('#') &&
+              !l.startsWith('-') &&
+              !l.startsWith('*') &&
+              !l.startsWith('**') &&
+              !l.startsWith('```')
+          )
           ?.trim() || '';
 
       agents.push({
         name,
         description,
         capabilities: this.extractCapabilities(section),
+        tools: this.extractTools(section),
         instructions: this.extractInstructions(section),
+        knowledge: this.extractKnowledge(section),
       });
     }
 
@@ -206,34 +284,176 @@ export class SkillsGeneratorService {
 
   /**
    * Extract capabilities from AGENTS.md section
+   * Handles: **Capabilities:** inline, ### Capabilities subsection, bullet lists
    */
   private extractCapabilities(section: string): string[] {
     const capabilities: string[] = [];
-    const lines = section.split('\n');
 
-    for (const line of lines) {
-      if (line.includes('**Capabilities:**') || line.includes('**Skills:**')) {
-        const match = line.match(/\*\*(.*?)\*\*/g);
-        if (match) {
-          capabilities.push(
-            ...match.map((m) => m.replace(/\*\*/g, '').toLowerCase())
+    // Pattern 1: **Capabilities:** inline or **Skills:** inline
+    const inlineMatch = section.match(
+      /\*\*(?:Capabilities|Skills)\s*:\*\*\s*(.*)/i
+    );
+    if (inlineMatch) {
+      capabilities.push(
+        ...inlineMatch[1]
+          .split(/[,;]/)
+          .map((s) => s.trim())
+          .filter(Boolean)
+      );
+    }
+
+    // Pattern 2: ### Capabilities subsection with bullet list
+    const subsectionMatch = section.match(
+      /###\s*Capabilities\s*\n([\s\S]*?)(?=\n###|\n## |$)/i
+    );
+    if (subsectionMatch) {
+      const bulletItems = subsectionMatch[1].match(/^[-*]\s+(.+)$/gm);
+      if (bulletItems) {
+        capabilities.push(
+          ...bulletItems.map((item) =>
+            item
+              .replace(/^[-*]\s+/, '')
+              .replace(/\*\*/g, '')
+              .trim()
+          )
+        );
+      }
+    }
+
+    // Pattern 3: Bullet list immediately after **Capabilities:**
+    const bulletAfterInline = section.match(
+      /\*\*(?:Capabilities|Skills)\s*:\*\*\s*\n((?:\s*[-*]\s+.+\n?)+)/i
+    );
+    if (bulletAfterInline) {
+      const bulletItems = bulletAfterInline[1].match(/[-*]\s+(.+)/g);
+      if (bulletItems) {
+        capabilities.push(
+          ...bulletItems.map((item) =>
+            item
+              .replace(/^[-*]\s+/, '')
+              .replace(/\*\*/g, '')
+              .trim()
+          )
+        );
+      }
+    }
+
+    return [...new Set(capabilities)];
+  }
+
+  /**
+   * Extract tools from AGENTS.md section
+   * Handles: ### Tools subsection, **Tools:** inline, bullet lists with descriptions
+   */
+  private extractTools(
+    section: string
+  ): Array<{ name: string; description?: string }> {
+    const tools: Array<{ name: string; description?: string }> = [];
+
+    // Pattern 1: ### Tools subsection with bullet list
+    const subsectionMatch = section.match(
+      /###\s*Tools\s*\n([\s\S]*?)(?=\n###|\n## |$)/i
+    );
+    if (subsectionMatch) {
+      const bulletItems = subsectionMatch[1].match(/^[-*]\s+(.+)$/gm);
+      if (bulletItems) {
+        for (const item of bulletItems) {
+          const cleaned = item.replace(/^[-*]\s+/, '').trim();
+          // Handle "**toolname** - description" or "toolname: description"
+          const descMatch = cleaned.match(
+            /^\*\*([^*]+)\*\*\s*[-–—:]\s*(.+)$/
           );
+          if (descMatch) {
+            tools.push({
+              name: descMatch[1].trim(),
+              description: descMatch[2].trim(),
+            });
+          } else {
+            const colonMatch = cleaned.match(/^([^:]+):\s*(.+)$/);
+            if (colonMatch) {
+              tools.push({
+                name: colonMatch[1].trim(),
+                description: colonMatch[2].trim(),
+              });
+            } else {
+              tools.push({ name: cleaned });
+            }
+          }
         }
       }
     }
 
-    return capabilities;
+    // Pattern 2: **Tools:** inline
+    const inlineMatch = section.match(/\*\*Tools\s*:\*\*\s*(.*)/i);
+    if (inlineMatch && tools.length === 0) {
+      const toolNames = inlineMatch[1]
+        .split(/[,;]/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+      tools.push(...toolNames.map((name) => ({ name })));
+    }
+
+    return tools;
   }
 
   /**
    * Extract instructions from AGENTS.md section
+   * Collects all non-structured text as instructions
    */
   private extractInstructions(section: string): string {
     const lines = section.split('\n');
-    const instructionLines = lines.filter(
-      (l) => l.trim() && !l.startsWith('#') && !l.startsWith('**')
-    );
+    const instructionLines: string[] = [];
+    let inCodeBlock = false;
+
+    for (const line of lines.slice(1)) {
+      // Skip subsection headers
+      if (line.match(/^###\s/)) continue;
+      // Track code blocks
+      if (line.startsWith('```')) {
+        inCodeBlock = !inCodeBlock;
+        instructionLines.push(line);
+        continue;
+      }
+      if (inCodeBlock) {
+        instructionLines.push(line);
+        continue;
+      }
+      // Skip structured fields
+      if (
+        line.match(
+          /^\*\*(?:Capabilities|Skills|Tools|Knowledge|References)\s*:\*\*/i
+        )
+      )
+        continue;
+
+      if (line.trim()) {
+        instructionLines.push(line);
+      }
+    }
+
     return instructionLines.join('\n').trim();
+  }
+
+  /**
+   * Extract knowledge references from AGENTS.md section
+   */
+  private extractKnowledge(section: string): string[] {
+    const knowledge: string[] = [];
+
+    // Pattern: ### Knowledge subsection or **Knowledge:**
+    const subsectionMatch = section.match(
+      /###\s*(?:Knowledge|References)\s*\n([\s\S]*?)(?=\n###|\n## |$)/i
+    );
+    if (subsectionMatch) {
+      const bulletItems = subsectionMatch[1].match(/^[-*]\s+(.+)$/gm);
+      if (bulletItems) {
+        knowledge.push(
+          ...bulletItems.map((item) => item.replace(/^[-*]\s+/, '').trim())
+        );
+      }
+    }
+
+    return knowledge;
   }
 
   /**
@@ -275,13 +495,16 @@ export class SkillsGeneratorService {
       frontmatter,
       spec.role || '',
       spec.tools || [],
-      spec.capabilities || []
+      spec.capabilities || [],
+      []
     );
 
     return {
       frontmatter,
       content,
       name: frontmatter.name,
+      tools: spec.tools || [],
+      capabilities: spec.capabilities || [],
     };
   }
 
@@ -292,20 +515,29 @@ export class SkillsGeneratorService {
     const frontmatter: SkillFrontmatter = {
       name: spec.name,
       description: spec.description,
-      trigger_keywords: spec.capabilities || [],
+      trigger_keywords: [
+        ...(spec.capabilities || []),
+        ...this.extractTriggersFromTools(spec.tools || []),
+      ],
     };
 
     const content = this.buildSkillContent(
       frontmatter,
       spec.instructions,
       spec.tools || [],
-      spec.capabilities || []
+      spec.capabilities || [],
+      spec.knowledge || []
     );
 
     return {
       frontmatter,
       content,
       name: frontmatter.name,
+      tools: spec.tools || [],
+      capabilities: spec.capabilities || [],
+      knowledge: spec.knowledge || [],
+      guardrails: spec.guardrails || [],
+      subAgents: spec.sub_agents || [],
     };
   }
 
@@ -314,29 +546,49 @@ export class SkillsGeneratorService {
    */
   private generateFromAgentsMd(parsed: any): any {
     // For AGENTS.md with multiple agents, generate the first one
-    const agent = parsed.agents?.[0];
+    const agent: ParsedAgent | undefined = parsed.agents?.[0];
     if (!agent) {
       throw new Error('No agents found in AGENTS.md');
     }
 
     const frontmatter: SkillFrontmatter = {
-      name: agent.name,
+      name: agent.name
+        .toLowerCase()
+        .replace(/[^a-z0-9-]/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, ''),
       description: agent.description,
-      trigger_keywords: agent.capabilities || [],
+      trigger_keywords: [
+        ...agent.capabilities,
+        ...agent.tools.map((t) => t.name),
+      ],
     };
 
     const content = this.buildSkillContent(
       frontmatter,
       agent.instructions,
-      [],
-      agent.capabilities || []
+      agent.tools,
+      agent.capabilities,
+      agent.knowledge
     );
 
     return {
       frontmatter,
       content,
       name: frontmatter.name,
+      tools: agent.tools,
+      capabilities: agent.capabilities,
+      knowledge: agent.knowledge,
     };
+  }
+
+  /**
+   * Extract trigger keywords from tools list
+   */
+  private extractTriggersFromTools(tools: any[]): string[] {
+    return tools
+      .map((t) => (typeof t === 'string' ? t : t.name))
+      .filter(Boolean);
   }
 
   /**
@@ -392,7 +644,8 @@ export class SkillsGeneratorService {
     frontmatter: SkillFrontmatter,
     instructions: string,
     tools: any[],
-    capabilities: any[]
+    capabilities: any[],
+    knowledge: string[]
   ): string {
     let content = '---\n';
     content += yaml.stringify(frontmatter);
@@ -408,7 +661,11 @@ export class SkillsGeneratorService {
       content += `## Capabilities\n\n`;
       for (const cap of capabilities) {
         const capName = typeof cap === 'string' ? cap : cap.name || 'unknown';
-        content += `- ${capName}\n`;
+        const capDesc =
+          typeof cap === 'object' && cap.description
+            ? `: ${cap.description}`
+            : '';
+        content += `- ${capName}${capDesc}\n`;
       }
       content += `\n`;
     }
@@ -423,6 +680,26 @@ export class SkillsGeneratorService {
             ? `: ${tool.description}`
             : '';
         content += `- **${toolName}**${toolDesc}\n`;
+
+        // Include parameters if present (Oracle spec)
+        if (typeof tool === 'object' && tool.parameters) {
+          for (const param of tool.parameters) {
+            const paramType = param.type ? ` (${param.type})` : '';
+            const paramReq = param.required ? ' *required*' : '';
+            const paramDesc = param.description
+              ? ` — ${param.description}`
+              : '';
+            content += `  - \`${param.name}\`${paramType}${paramReq}${paramDesc}\n`;
+          }
+        }
+      }
+      content += `\n`;
+    }
+
+    if (knowledge.length > 0) {
+      content += `## Knowledge Base\n\n`;
+      for (const item of knowledge) {
+        content += `- ${item}\n`;
       }
       content += `\n`;
     }
@@ -434,6 +711,43 @@ export class SkillsGeneratorService {
     }
 
     return content;
+  }
+
+  /**
+   * Validate generated skill data before writing
+   */
+  private validateSkillData(skillData: any): string[] {
+    const errors: string[] = [];
+
+    if (!skillData.frontmatter?.name) {
+      errors.push('Missing required field: name');
+    }
+    if (!skillData.frontmatter?.description) {
+      errors.push('Missing required field: description');
+    }
+    if (
+      !skillData.frontmatter?.trigger_keywords ||
+      skillData.frontmatter.trigger_keywords.length === 0
+    ) {
+      errors.push(
+        'Missing required field: trigger_keywords (at least one keyword required)'
+      );
+    }
+    if (!skillData.content || skillData.content.length < 50) {
+      errors.push('Generated SKILL.md content is too short (< 50 chars)');
+    }
+
+    // Validate frontmatter against schema
+    const parseResult = SkillFrontmatterSchema.safeParse(
+      skillData.frontmatter
+    );
+    if (!parseResult.success) {
+      for (const issue of parseResult.error.issues) {
+        errors.push(`Frontmatter: ${issue.path.join('.')} — ${issue.message}`);
+      }
+    }
+
+    return errors;
   }
 
   /**
@@ -460,20 +774,51 @@ export class SkillsGeneratorService {
     const readme = this.generateReadme(skillData.frontmatter);
     await fs.writeFile(path.join(outputPath, 'README.md'), readme, 'utf-8');
 
-    // Create placeholder files
-    await fs.writeFile(
-      path.join(outputPath, 'templates', '.gitkeep'),
-      '',
-      'utf-8'
-    );
-    await fs.writeFile(
-      path.join(outputPath, 'knowledge', '.gitkeep'),
-      '',
-      'utf-8'
-    );
+    // Write knowledge files if present
+    if (skillData.knowledge && skillData.knowledge.length > 0) {
+      const knowledgeContent = skillData.knowledge
+        .map((k: string) => `- ${k}`)
+        .join('\n');
+      await fs.writeFile(
+        path.join(outputPath, 'knowledge', 'references.md'),
+        `# Knowledge References\n\n${knowledgeContent}\n`,
+        'utf-8'
+      );
+    } else {
+      await fs.writeFile(
+        path.join(outputPath, 'knowledge', '.gitkeep'),
+        '',
+        'utf-8'
+      );
+    }
+
+    // Write tool templates if tools present
+    if (skillData.tools && skillData.tools.length > 0) {
+      const toolsContent = skillData.tools
+        .map((t: any) => {
+          const name = typeof t === 'string' ? t : t.name;
+          const desc =
+            typeof t === 'object' && t.description ? t.description : '';
+          return `### ${name}\n\n${desc}\n`;
+        })
+        .join('\n');
+      await fs.writeFile(
+        path.join(outputPath, 'templates', 'tools.md'),
+        `# Tool Templates\n\n${toolsContent}`,
+        'utf-8'
+      );
+    } else {
+      await fs.writeFile(
+        path.join(outputPath, 'templates', '.gitkeep'),
+        '',
+        'utf-8'
+      );
+    }
+
+    // Write example usage
     await fs.writeFile(
       path.join(outputPath, 'examples', 'example.md'),
-      `# Example Usage\n\nTODO: Add usage examples for ${skillData.name}\n`,
+      `# Example Usage\n\nUse this skill by mentioning any of these keywords: ${skillData.frontmatter.trigger_keywords.slice(0, 5).join(', ')}\n`,
       'utf-8'
     );
   }
