@@ -70,8 +70,7 @@ export class GitLabClient {
   /**
    * Post comment explaining the fix
    */
-  async postComment(projectId: any, mrIid: any, body: any) {
-    // TODO: Implement postComment
-    throw new Error('Not implemented: postComment');
+  async postComment(projectId: string, mrIid: number, body: string) {
+    return await this.gitlab.MergeRequestNotes.create(projectId, mrIid, body);
   }
 }
