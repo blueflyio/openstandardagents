@@ -167,70 +167,164 @@ export class SkillsResearchService {
 
   /**
    * Fetch skills from a research source
-   * TODO: Implement actual API calls to GitHub, registries, etc.
+   *
+   * For GitHub-based sources, fetches the repository README and parses skill entries.
+   * For registry sources, calls the registry API.
    */
   private async fetchFromSource(
     source: ResearchSource
   ): Promise<SkillResearchResult[]> {
-    // Mock implementation - returns sample data
-    // In production, this would make API calls to GitHub, fetch README files, etc.
+    switch (source.type) {
+      case 'github':
+      case 'awesome-list':
+      case 'showcase':
+        return this.fetchFromGitHub(source);
+      case 'registry':
+        return this.fetchFromRegistry(source);
+      default:
+        console.warn(`Unknown source type: ${source.type}`);
+        return [];
+    }
+  }
 
-    const mockSkills: SkillResearchResult[] = [
-      {
-        name: 'drupal-development',
-        description:
-          'Expert Drupal module development with best practices and PHPCS compliance',
-        triggers: [
-          'drupal',
-          'module',
-          'php',
-          'cms',
-          'content management',
-          'drupal development',
-        ],
-        sourceUrl: `${source.url}/skills/drupal-development`,
-        installCommand:
-          'ossa skills export @claude-skills/drupal-development --install',
-        author: 'Anthropic Community',
-        tags: ['drupal', 'php', 'web', 'cms'],
-        rating: 4.5,
-        lastUpdated: '2026-02-01',
-      },
-      {
-        name: 'typescript-refactoring',
-        description:
-          'Refactor TypeScript code with type safety and best practices',
-        triggers: [
+  /**
+   * Fetch skills from a GitHub repository (awesome-list or showcase format)
+   */
+  private async fetchFromGitHub(
+    source: ResearchSource
+  ): Promise<SkillResearchResult[]> {
+    const skills: SkillResearchResult[] = [];
+
+    try {
+      // Convert GitHub URL to raw README URL
+      const urlParts = source.url.replace('https://github.com/', '').split('/');
+      if (urlParts.length < 2) return skills;
+
+      const [owner, repo] = urlParts;
+      const apiUrl = `https://api.github.com/repos/${owner}/${repo}/readme`;
+
+      const headers: Record<string, string> = {
+        Accept: 'application/vnd.github.v3+json',
+        'User-Agent': 'ossa-skills-research',
+      };
+
+      // Use GITHUB_TOKEN if available to avoid rate limits
+      const githubToken = process.env.GITHUB_TOKEN;
+      if (githubToken) {
+        headers['Authorization'] = `token ${githubToken}`;
+      }
+
+      const response = await fetch(apiUrl, {
+        headers,
+        signal: AbortSignal.timeout(10000),
+      });
+
+      if (!response.ok) {
+        console.warn(
+          `GitHub API returned ${response.status} for ${source.name}`
+        );
+        return skills;
+      }
+
+      const data = (await response.json()) as { content?: string };
+      if (!data.content) return skills;
+
+      const readme = Buffer.from(data.content, 'base64').toString('utf-8');
+
+      // Parse markdown list items that look like skill/tool entries
+      // Pattern: - [Name](url) - Description
+      const linkPattern =
+        /^[-*]\s+\[([^\]]+)\]\(([^)]+)\)\s*[-:]?\s*(.+)$/gm;
+      let match;
+
+      while ((match = linkPattern.exec(readme)) !== null) {
+        const [, name, url, description] = match;
+        const skillName = name
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-|-$/g, '');
+
+        // Extract tags from description keywords
+        const descLower = description.toLowerCase();
+        const tags: string[] = [];
+        const tagKeywords = [
           'typescript',
-          'refactor',
-          'types',
-          'javascript',
-          'code quality',
-        ],
-        sourceUrl: `${source.url}/skills/typescript-refactoring`,
-        installCommand:
-          'ossa skills export @claude-skills/typescript-refactoring --install',
-        author: 'Anthropic Community',
-        tags: ['typescript', 'refactoring', 'code-quality'],
-        rating: 4.8,
-        lastUpdated: '2026-01-28',
-      },
-      {
-        name: 'api-design',
-        description: 'Design RESTful APIs with OpenAPI 3.1 specifications',
-        triggers: ['api', 'openapi', 'rest', 'swagger', 'api design'],
-        sourceUrl: `${source.url}/skills/api-design`,
-        installCommand:
-          'ossa skills export @claude-skills/api-design --install',
-        author: 'Anthropic Community',
-        tags: ['api', 'openapi', 'design'],
-        rating: 4.6,
-        lastUpdated: '2026-02-05',
-      },
-    ];
+          'python',
+          'rust',
+          'go',
+          'api',
+          'cli',
+          'web',
+          'agent',
+          'mcp',
+          'llm',
+          'ai',
+          'drupal',
+          'react',
+        ];
+        for (const keyword of tagKeywords) {
+          if (descLower.includes(keyword)) tags.push(keyword);
+        }
 
-    // Filter by source type
-    return mockSkills;
+        skills.push({
+          name: skillName,
+          description: description.trim(),
+          triggers: [skillName, ...tags],
+          sourceUrl: url.startsWith('http') ? url : `${source.url}/${url}`,
+          author: `${owner}/${repo}`,
+          tags,
+          lastUpdated: new Date().toISOString().split('T')[0],
+        });
+      }
+    } catch (error) {
+      console.warn(
+        `Failed to fetch from GitHub source ${source.name}: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
+
+    return skills;
+  }
+
+  /**
+   * Fetch skills from a registry API endpoint
+   */
+  private async fetchFromRegistry(
+    source: ResearchSource
+  ): Promise<SkillResearchResult[]> {
+    try {
+      const response = await fetch(`${source.url}/api/skills`, {
+        headers: {
+          Accept: 'application/json',
+          'User-Agent': 'ossa-skills-research',
+        },
+        signal: AbortSignal.timeout(10000),
+      });
+
+      if (!response.ok) {
+        console.warn(
+          `Registry API returned ${response.status} for ${source.name}`
+        );
+        return [];
+      }
+
+      const data = (await response.json()) as { skills?: unknown[] };
+      const rawSkills = data.skills || data;
+
+      if (!Array.isArray(rawSkills)) return [];
+
+      // Validate each skill against the schema
+      return rawSkills
+        .map((skill: unknown) => {
+          const result = SkillResearchResultSchema.safeParse(skill);
+          return result.success ? result.data : null;
+        })
+        .filter((s): s is SkillResearchResult => s !== null);
+    } catch (error) {
+      console.warn(
+        `Failed to fetch from registry ${source.name}: ${error instanceof Error ? error.message : String(error)}`
+      );
+      return [];
+    }
   }
 
   /**
