@@ -27,6 +27,7 @@ export class CrewAIAdapter extends BaseAdapter {
   readonly platform = 'crewai';
   readonly displayName = 'CrewAI';
   readonly description = 'CrewAI multi-agent framework (Python)';
+  readonly status = 'beta' as const;
   readonly supportedVersions = ['v0.3.6', 'v{{VERSION}}'];
 
   private converter = new CrewAIConverter();

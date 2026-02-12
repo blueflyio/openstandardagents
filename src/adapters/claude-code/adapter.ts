@@ -31,6 +31,7 @@ export class ClaudeCodeAdapter extends BaseAdapter {
   readonly displayName = 'Claude Code Sub-agent';
   readonly description =
     'Claude Code sub-agent for specialized task execution in Claude Code CLI';
+  readonly status = 'beta' as const;
   readonly supportedVersions = ['v{{VERSION}}'];
 
   /**

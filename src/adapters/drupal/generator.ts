@@ -57,6 +57,7 @@ export class DrupalModuleGenerator extends BaseAdapter {
   readonly displayName = 'Drupal Module (Full)';
   readonly description =
     'Production-ready Drupal module with OSSA/Symfony integration';
+  readonly status = 'beta' as const;
   readonly supportedVersions = ['v{{VERSION}}'];
 
   /**

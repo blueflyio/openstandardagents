@@ -253,16 +253,19 @@ if (result.valid) {
 - `ossa migrate` - Migrate between spec versions
 - `ossa generate-gaid` - Global Agent ID generation
 
-**Production Platform Exports** (9 platforms):
-- `docker` (14 files) - Dockerfile, docker-compose, healthchecks
-- `kubernetes` (~25 files) - Kustomize base + overlays (dev/staging/prod)
-- `crewai` (18 files) - Python crew with agents, tasks, tools
-- `langchain` (6 files) - Python + TypeScript agents
-- `kagent` (10 files) - kagent.dev CRD bundle
-- `gitlab-agent` (30+ files) - GitLab Duo flows
-- `npm` (6 files) - TypeScript package
-- `drupal` (3-4 files) - Drupal module integration
-- `agent-skills` (3 files) - SKILL.md for Claude Code
+**Production Platform Exports** (4 production, 6 beta, 7 alpha — 17 total):
+- `langchain` (production) - Python + TypeScript agents (uses @langchain/* SDK)
+- `mcp` (production) - MCP server for Claude Code (uses @modelcontextprotocol/sdk)
+- `npm` (production) - TypeScript package with manifest
+- `agent-skills` (production) - SKILL.md for Claude Code
+
+**Skills Pipeline** (new in v0.4.5):
+- `ossa skills research` - Search GitHub, npm, awesome-lists via real APIs (Octokit SDK + axios)
+- `ossa skills generate` - Generate from OSSA, Oracle Agent Spec, or AGENTS.md
+- `ossa skills export` - Package as npm with install script, publish to registry
+- `ossa skills list` - Discover installed Claude Skills
+- `ossa skills validate` - Validate SKILL.md structure
+- `ossa skills sync` - Bidirectional sync between skill and manifest
 
 **TypeScript SDK**:
 - Validation service (`@bluefly/openstandardagents/validation`)
@@ -274,7 +277,7 @@ if (result.valid) {
 - `ossa agents-local` - Local `.agents/` folder management
 - `ossa agents-md` - Generate agents.md files
 - Runtime adapters (8 providers) - Anthropic, OpenAI, Gemini, Bedrock, Ollama, Mistral, Azure, Claude
-- Export to `temporal` (1 file), `n8n` (1 file), `gitlab` (1 file)
+- Export to: `crewai`, `drupal`, `claude-code`, `cursor`, `warp`, `anthropic`
 
 ### GitLab Agent Examples (Fully Implemented)
 
@@ -283,11 +286,6 @@ Deployed agent manifests in `agents/gitlab/`:
 - `pipeline-auto-fix.ossa.yaml` - CI pipeline failure auto-remediation agent
 - `daily-code-scan.ossa.yaml` - Scheduled codebase security and quality scanning agent
 
-### Skills Research
-
-- `ossa skills research` - Queries GitHub API and registry APIs for skill discovery across sources (awesome-lists, showcases, registries)
-- Indexed results with name, description, triggers, source URL, tags, and ratings
-
 ### Spec Generation & Enhanced Validation
 
 - `ossa-dev spec generate` - Generates consolidated OSSA spec from source schema files with version metadata
@@ -295,6 +293,7 @@ Deployed agent manifests in `agents/gitlab/`:
 
 ### Alpha (Experimental)
 
+- Export to: `kagent`, `gitlab-duo`, `docker`, `kubernetes`, `temporal`, `n8n`, `gitlab`
 - OpenTelemetry metrics integration
 - Agent analytics tracking
 - GitLab Catalog integration (convert/list/search/info)
@@ -302,7 +301,9 @@ Deployed agent manifests in `agents/gitlab/`:
 
 ### Planned
 
-- Cross-format import (Oracle Agent Spec, agents.md, A2A Agent Cards)
+- A2A Agent Card import (P1-1)
+- Batch skill generation (P1-2)
+- Skill quality scoring (P1-3)
 - Full GitLab Catalog push/pull with API integration
 
 ## How It Works
@@ -355,20 +356,25 @@ ossa export agent.ossa.yaml --platform <platform> --output ./output
 ossa export --list-platforms
 ```
 
-| Platform | Status | Output | Description |
-|----------|--------|--------|-------------|
-| `docker` | production | 14 files | Dockerfile, docker-compose, scripts, healthchecks, docs |
-| `kubernetes` | production | ~25 files | Kustomize base + overlays (dev/staging/prod), RBAC, monitoring |
-| `crewai` | production | 18 files | Python crew with agents, tasks, tools, tests, examples |
-| `langchain` | production | 6 files | Python + TypeScript agents, requirements, package.json |
-| `kagent` | production | 10 files | kagent.dev CRD bundle with RBAC, NetworkPolicy |
-| `gitlab-agent` | production | 30+ files | GitLab Duo flows, external agent, CI/CD, Docker |
-| `npm` | production | 6 files | TypeScript package with manifest, README, types |
-| `drupal` | production | 3-4 files | Manifest package for `ai_agents_ossa` module |
-| `agent-skills` | production | 3 files | SKILL.md format for Claude Code and other AI tools |
-| `temporal` | beta | 1 file | Temporal workflow configuration |
-| `n8n` | beta | 1 file | n8n workflow JSON export |
-| `gitlab` | production | 1 file | GitLab CI/CD YAML configuration |
+| Platform | Status | Output | SDK Used | Description |
+|----------|--------|--------|----------|-------------|
+| `langchain` | production | 6 files | @langchain/* | Python + TypeScript agents, requirements, package.json |
+| `mcp` | production | 4 files | @modelcontextprotocol/sdk | MCP server for Claude Code and other clients |
+| `npm` | production | 6 files | - | TypeScript package with manifest, README, types |
+| `agent-skills` | production | 3 files | - | SKILL.md format for Claude Code and other AI tools |
+| `crewai` | beta | 18 files | CrewAI SDK | Python crew with agents, tasks, tools, tests, examples |
+| `drupal` | beta | 3-4 files | - | Manifest package for `ai_agents_ossa` module |
+| `claude-code` | beta | 4 files | - | Claude Code sub-agent for task execution |
+| `cursor` | beta | 4 files | - | Cursor Cloud Agent for IDE assistance |
+| `warp` | beta | 4 files | - | Warp terminal agent with CLI triggers |
+| `anthropic` | beta | 8 files | @anthropic-ai/sdk | Anthropic Python SDK with FastAPI server |
+| `kagent` | alpha | 10 files | - | kagent.dev CRD bundle with RBAC, NetworkPolicy |
+| `gitlab-duo` | alpha | 30+ files | - | GitLab Duo Custom Agent with MCP integration |
+| `docker` | alpha | 14 files | - | Dockerfile, docker-compose, scripts, healthchecks |
+| `kubernetes` | alpha | ~25 files | - | Kustomize base + overlays (dev/staging/prod) |
+| `temporal` | alpha | 1 file | - | Temporal workflow configuration |
+| `n8n` | alpha | 1 file | - | n8n workflow JSON export |
+| `gitlab` | alpha | 1 file | - | GitLab CI/CD YAML configuration |
 
 Every export includes `agent.ossa.yaml` (the source manifest) for provenance.
 
@@ -470,13 +476,27 @@ ossa migrate <manifest> --to 0.4.5  # Migrate between spec versions
 ossa generate-gaid <manifest>           # Generate Global Agent ID
 ```
 
+**Skills Pipeline** (New in v0.4.5):
+```bash
+ossa skills research "drupal" --json           # Search GitHub/npm for skills
+ossa skills generate agent.ossa.yaml           # Generate SKILL.md from OSSA manifest
+ossa skills generate spec.yaml --format oracle # Generate from Oracle Agent Spec
+ossa skills generate AGENTS.md --format agents-md  # Generate from AGENTS.md
+ossa skills export ./skill-dir                 # Package as npm
+ossa skills export ./skill-dir --install       # Install to ~/.claude/skills/
+ossa skills export ./skill-dir --publish       # Publish to npm registry
+ossa skills list                               # Discover installed skills
+ossa skills validate ./SKILL.md                # Validate skill structure
+ossa skills sync                               # Bidirectional skill/manifest sync
+```
+
 **Beta Commands** (Functional but less tested):
 ```bash
 ossa agents-local list       # List agents in .agents/ folder
 ossa agents-md generate      # Generate agents.md files
 ```
 
-Use `ossa --help` for the full command list.
+Use `ossa --help` for the full command list (102+ commands).
 
 ## Honest Status Reporting
 

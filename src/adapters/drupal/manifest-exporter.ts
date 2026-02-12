@@ -53,6 +53,7 @@ export class DrupalManifestExporter extends BaseAdapter {
   readonly displayName = 'Drupal Manifest Package';
   readonly description =
     'Minimal OSSA manifest package for Drupal (import via ai_agents_ossa)';
+  readonly status = 'beta' as const;
   readonly supportedVersions = ['v0.4.x'];
 
   /**

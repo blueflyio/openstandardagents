@@ -26,6 +26,7 @@ export class DrupalAdapter extends BaseAdapter {
   readonly platform = 'drupal';
   readonly displayName = 'Drupal Module';
   readonly description = 'Drupal module with OSSA agent integration';
+  readonly status = 'beta' as const;
   readonly supportedVersions = ['v{{VERSION}}'];
 
   /**

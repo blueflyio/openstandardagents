@@ -32,6 +32,7 @@ export class CursorAdapter extends BaseAdapter {
   readonly displayName = 'Cursor Cloud Agent';
   readonly description =
     'Cursor Cloud Agent for AI-powered coding assistance in Cursor IDE';
+  readonly status = 'beta' as const;
   readonly supportedVersions = ['v{{VERSION}}'];
 
   /**
