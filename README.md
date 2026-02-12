@@ -276,16 +276,32 @@ if (result.valid) {
 - Runtime adapters (8 providers) - Anthropic, OpenAI, Gemini, Bedrock, Ollama, Mistral, Azure, Claude
 - Export to `temporal` (1 file), `n8n` (1 file), `gitlab` (1 file)
 
-### 🧪 Alpha (Experimental)
+### GitLab Agent Examples (Fully Implemented)
+
+Deployed agent manifests in `agents/gitlab/`:
+- `mr-reviewer.ossa.yaml` - Merge request code review agent
+- `pipeline-auto-fix.ossa.yaml` - CI pipeline failure auto-remediation agent
+- `daily-code-scan.ossa.yaml` - Scheduled codebase security and quality scanning agent
+
+### Skills Research
+
+- `ossa skills research` - Queries GitHub API and registry APIs for skill discovery across sources (awesome-lists, showcases, registries)
+- Indexed results with name, description, triggers, source URL, tags, and ratings
+
+### Spec Generation & Enhanced Validation
+
+- `ossa-dev spec generate` - Generates consolidated OSSA spec from source schema files with version metadata
+- Enhanced validation includes OpenAPI extension checks, JSON Schema validation, and `$ref` integrity verification across spec files
+
+### Alpha (Experimental)
 
 - OpenTelemetry metrics integration
 - Agent analytics tracking
 - GitLab Catalog integration (convert/list/search/info)
 - Agent registry (publish/search)
 
-### 📋 Planned
+### Planned
 
-- Skills pipeline (`ossa skills generate/export/research`)
 - Cross-format import (Oracle Agent Spec, agents.md, A2A Agent Cards)
 - Full GitLab Catalog push/pull with API integration
 
@@ -468,7 +484,7 @@ OSSA follows a strict status reporting policy:
 - **Production** - Tested with >80% coverage, documented, used in production
 - **Beta** - Functional but needs more testing or documentation
 - **Alpha** - Experimental, may change significantly
-- **Planned** - Not yet implemented
+- **Planned** - Designed but not yet implemented
 
 All commands and exports report their status via `ossa export --list-platforms` and `ossa --help`. We don't oversell features or claim capabilities we haven't validated.
 
