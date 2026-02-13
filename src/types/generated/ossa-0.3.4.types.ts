@@ -64,6 +64,75 @@ export interface Metadata {
   annotations?: {
     [k: string]: string;
   };
+  /**
+   * Agent ID Card with nickname, provenance, and immutable audit trail (v0.4.5+)
+   */
+  idCard?: AgentIdCard;
+}
+
+/**
+ * Agent ID Card - human-friendly identity with immutable provenance tracking (v0.4.5+)
+ */
+export interface AgentIdCard {
+  /** Short callsign for the agent (e.g., 'Scout', 'Drupa') */
+  nickname?: string;
+  /** Full human-readable name */
+  displayName?: string;
+  /** URL to agent avatar/icon image */
+  avatar?: string;
+  /** OSSA registry URI (e.g., 'ossa://blueflyio/drupal-reviewer@0.4.5') */
+  registryId?: string;
+  /** SHA-256 content hash of the current manifest (recomputed on every change) */
+  fingerprint?: string;
+  /** SHA-256 hash of the initial manifest at creation time (immutable) */
+  birthHash?: string;
+  /** Immutable creation and lineage tracking */
+  provenance?: AgentProvenance;
+  /** Append-only Merkle-chained mutation log */
+  auditTrail?: AgentAuditTrail;
+}
+
+export interface AgentProvenance {
+  /** DID or identifier of the creator */
+  createdBy?: string;
+  /** ISO-8601 timestamp of agent creation (immutable) */
+  createdAt?: string;
+  /** Tool/CLI version used to create the agent */
+  createdWith?: string;
+  /** Fork/clone ancestry chain (append-only) */
+  lineage?: Array<{
+    ancestor: string;
+    relationship: 'forked-from' | 'cloned-from' | 'derived-from' | 'inspired-by' | 'upgraded-from';
+    timestamp: string;
+    commitHash?: string;
+  }>;
+}
+
+export interface AgentAuditTrail {
+  hashAlgorithm?: 'sha256' | 'sha384' | 'sha512';
+  chainType?: 'merkle' | 'linear' | 'signed';
+  genesisHash?: string;
+  entries?: AuditTrailEntry[];
+}
+
+export interface AuditTrailEntry {
+  seq: number;
+  action: 'created' | 'capability-added' | 'capability-removed' | 'tool-added' | 'tool-removed' |
+    'version-bumped' | 'config-changed' | 'ownership-transferred' | 'access-tier-changed' |
+    'forked' | 'retired' | 'reactivated' | 'nickname-changed' | 'custom';
+  timestamp: string;
+  actor: string;
+  hash: string;
+  prevHash?: string | null;
+  details?: {
+    field?: string;
+    oldValue?: unknown;
+    newValue?: unknown;
+    reason?: string;
+    commitHash?: string;
+    [k: string]: unknown;
+  };
+  signature?: string;
 }
 /**
  * Model Context Protocol (MCP) extension for agents - supports tools, resources, and prompts
