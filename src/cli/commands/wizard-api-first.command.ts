@@ -19,8 +19,8 @@ import chalk from 'chalk';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'yaml';
-import * as crypto from 'crypto';
 import type { OssaAgent } from '../../types/index';
+import { IdCardService } from '../../services/id-card.service.js';
 import {
   initializeAPIsFirst,
   SchemaLoader,
@@ -213,8 +213,6 @@ class APIFirstWizard {
       'Human-friendly identity with immutable provenance (v0.4.5+)'
     );
 
-    const now = new Date().toISOString();
-
     const answers = await inquirer.prompt([
       {
         type: 'input',
@@ -250,58 +248,27 @@ class APIFirstWizard {
       },
     ]);
 
-    // Build ID card
+    // Build ID card via IdCardService (DRY — single source of truth)
     const registryId = this.agent.metadata?.name
-      ? `ossa://blueflyio/${this.agent.metadata.name}@0.4.5`
+      ? IdCardService.buildRegistryId('blueflyio', this.agent.metadata.name, '0.4.5')
       : undefined;
 
-    const genesisContent = JSON.stringify({
-      seq: 0, action: 'created', timestamp: now,
-      actor: answers.createdBy, nickname: answers.nickname,
-    });
-    const genesisHash = `sha256:${crypto.createHash('sha256').update(genesisContent, 'utf-8').digest('hex')}`;
-
-    const idCard: any = {
+    const idCard = IdCardService.createIdCard({
       nickname: answers.nickname,
       displayName: answers.displayName,
-      provenance: {
-        createdBy: answers.createdBy,
-        createdAt: now,
-        createdWith: 'ossa-wizard-api-first/0.4.5',
-      },
-      auditTrail: {
-        hashAlgorithm: 'sha256',
-        chainType: 'merkle',
-        genesisHash,
-        entries: [{
-          seq: 0,
-          action: 'created',
-          timestamp: now,
-          actor: answers.createdBy,
-          hash: genesisHash,
-          prevHash: null,
-          details: {
-            field: 'idCard',
-            newValue: answers.nickname,
-            reason: 'Agent ID Card created via API-First wizard',
-          },
-        }],
-      },
-    };
-
-    if (answers.avatar) idCard.avatar = answers.avatar;
-    if (registryId) idCard.registryId = registryId;
-
-    // Compute fingerprint after building the card
-    const manifestForHash = { ...this.agent, metadata: { ...this.agent.metadata, idCard } };
-    const fingerprint = `sha256:${crypto.createHash('sha256').update(JSON.stringify(manifestForHash), 'utf-8').digest('hex')}`;
-    idCard.fingerprint = fingerprint;
-    idCard.birthHash = fingerprint;
+      avatar: answers.avatar || undefined,
+      registryId,
+      createdBy: answers.createdBy,
+      createdWith: 'ossa-wizard-api-first/0.4.5',
+    });
 
     this.agent.metadata = {
       ...this.agent.metadata,
       idCard,
     };
+
+    // Compute fingerprint + birthHash
+    const fingerprint = IdCardService.recomputeFingerprint(this.agent);
 
     printSuccess(`ID Card: ${answers.nickname} (${answers.displayName})`);
     printSuccess(`Fingerprint: ${fingerprint.substring(0, 24)}...`);

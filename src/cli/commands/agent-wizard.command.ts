@@ -23,11 +23,11 @@ import ora from 'ora';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'yaml';
-import * as crypto from 'crypto';
 import chalk from 'chalk';
 
 import type { OssaAgent } from '../../types/index.js';
 import type { WizardState, WizardOptions, AgentType } from '../wizard/types.js';
+import { IdCardService } from '../../services/id-card.service.js';
 import {
   console_ui,
   formatAgentType,
@@ -1320,14 +1320,6 @@ async function validateAgentManifest(
 // ============================================================================
 
 /**
- * Compute SHA-256 hash of content, prefixed with 'sha256:'
- */
-function computeHash(content: string): string {
-  const hash = crypto.createHash('sha256').update(content, 'utf-8').digest('hex');
-  return `sha256:${hash}`;
-}
-
-/**
  * Interactive wizard to create or update an Agent ID Card
  */
 async function idCardWizard(options: {
@@ -1568,7 +1560,7 @@ async function idCardWizard(options: {
   // Compute fingerprint (hash of current manifest)
   const manifestForHash = { ...agent, metadata: { ...agent.metadata, idCard } };
   const manifestContent = JSON.stringify(manifestForHash, null, 2);
-  const fingerprint = computeHash(manifestContent);
+  const fingerprint = IdCardService.computeHash(manifestContent);
   idCard.fingerprint = fingerprint;
 
   // Birth hash: only set on initial creation (immutable)
@@ -1586,7 +1578,7 @@ async function idCardWizard(options: {
     actor: createdBy,
     nickname,
   });
-  const genesisHash = computeHash(genesisContent);
+  const genesisHash = IdCardService.computeHash(genesisContent);
 
   idCard.auditTrail!.genesisHash = genesisHash;
 
@@ -1617,7 +1609,7 @@ async function idCardWizard(options: {
         actor: createdBy,
         prevHash: lastEntry.hash,
       });
-      const newHash = computeHash(newEntryContent);
+      const newHash = IdCardService.computeHash(newEntryContent);
 
       idCard.auditTrail!.entries = [
         ...existingEntries,

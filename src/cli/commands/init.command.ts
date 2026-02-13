@@ -10,6 +10,7 @@ import readline from 'readline';
 import { getInitDefaults } from '../../config/defaults.js';
 import type { OssaAgent } from '../../types/index.js';
 import { getApiVersion } from '../../utils/version.js';
+import { IdCardService } from '../../services/id-card.service.js';
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -161,6 +162,17 @@ export const initCommand = new Command('init')
             };
           }
         }
+
+        // Auto-append audit entry if manifest has an ID Card
+        IdCardService.applyMutation(manifest, {
+          action: 'created',
+          actor: process.env.USER || 'ossa-cli',
+          details: {
+            field: 'manifest',
+            newValue: agentName,
+            reason: 'Agent manifest created via ossa init',
+          },
+        });
 
         fs.writeFileSync(outputPath, JSON.stringify(manifest, null, 2));
         console.log(

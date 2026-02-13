@@ -19,6 +19,7 @@ import {
   shouldUseColor,
   ExitCode,
 } from '../utils/standard-options.js';
+import { IdCardService } from '../../services/id-card.service.js';
 
 export const upgradeCommand = new Command('upgrade')
   .argument('<path>', 'Path to OSSA manifest or directory')
@@ -158,6 +159,18 @@ upgradeCommand.action(
               chalk.gray(`   📦 Backup created: ${path.basename(backupPath)}`)
             );
           }
+
+          // Auto-append audit entry if manifest has an ID Card
+          IdCardService.applyMutation(migrated, {
+            action: 'version-bumped',
+            actor: process.env.USER || 'ossa-cli',
+            details: {
+              field: 'apiVersion',
+              oldValue: manifest.apiVersion,
+              newValue: migrated.apiVersion,
+              reason: `Upgraded via ossa upgrade to ${targetVersion}`,
+            },
+          });
 
           // Write upgraded manifest
           const content = JSON.stringify(migrated, null, 2);
