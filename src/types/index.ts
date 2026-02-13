@@ -254,6 +254,41 @@ export interface OssaAgent {
     agentType?: AgentType;
     agentKind?: AgentKind;
     agentArchitecture?: AgentArchitecture;
+    // Agent ID Card (v0.4.5+)
+    idCard?: {
+      nickname?: string;
+      displayName?: string;
+      avatar?: string;
+      registryId?: string;
+      fingerprint?: string;
+      birthHash?: string;
+      provenance?: {
+        createdBy?: string;
+        createdAt?: string;
+        createdWith?: string;
+        lineage?: Array<{
+          ancestor: string;
+          relationship: 'forked-from' | 'cloned-from' | 'derived-from' | 'inspired-by' | 'upgraded-from';
+          timestamp: string;
+          commitHash?: string;
+        }>;
+      };
+      auditTrail?: {
+        hashAlgorithm?: 'sha256' | 'sha384' | 'sha512';
+        chainType?: 'merkle' | 'linear' | 'signed';
+        genesisHash?: string;
+        entries?: Array<{
+          seq: number;
+          action: string;
+          timestamp: string;
+          actor: string;
+          hash: string;
+          prevHash?: string | null;
+          details?: Record<string, unknown>;
+          signature?: string;
+        }>;
+      };
+    };
   };
 
   /**
