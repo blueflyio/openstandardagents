@@ -15,6 +15,7 @@ import { NPMAdapter } from './npm/adapter.js';
 import { WarpAdapter } from './warp/adapter.js';
 import { CursorAdapter } from './cursor/adapter.js';
 import { ClaudeCodeAdapter } from './claude-code/adapter.js';
+import { MobileAgentAdapter } from './mobile-agent/adapter.js';
 
 /**
  * Initialize and register all export adapters
@@ -46,6 +47,9 @@ export function initializeAdapters(): void {
 
   // Register Claude Code adapter
   registry.register(new ClaudeCodeAdapter());
+
+  // Register MobileAgent adapter
+  registry.register(new MobileAgentAdapter());
 
   // console.log(`Registered ${registry.size} export adapters`);
 }
