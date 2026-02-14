@@ -6,19 +6,14 @@
  * Drupal's ai_agents_ossa contrib module imports and activates.
  *
  * Generated files:
- * 1. agent.ossa.yaml     - The OSSA manifest itself
- * 2. README.md           - Installation instructions
- * 3. INSTALL.txt         - Quick start for Drupal.org
- * 4. composer.json        - Dependencies: drupal/ai_agents, drupal/ai_agents_ossa,
- *                          drupal/eca, drupal/charts
+ * 1. agent.ossa.yaml                                    - The OSSA manifest itself
+ * 2. config/install/ai_agents_ossa.agent.{name}.yml     - Drupal config entity YAML (drush config:import ready)
+ * 3. composer.json                                       - Dependencies
+ * 4. README.md                                           - Installation instructions
+ * 5. INSTALL.txt                                         - Quick start for Drupal.org
  *
- * What this does NOT generate (handled by contrib modules):
- * - EventSubscriber classes (drupal/eca handles event-driven actions)
- * - Custom entities (drupal/ai_agents provides agent entity types)
- * - Controllers or services (drupal/ai_agents_ossa provides runtime)
- * - Admin UI or forms (drupal/ai_agents provides admin interface)
- * - Queue workers (drupal/ai_agents handles async execution)
- * - Config schemas (drupal/ai_agents_ossa reads OSSA manifests directly)
+ * The config entity YAML (#2) is the key deliverable. It maps the OSSA manifest
+ * into Drupal's config system so `drush config:import` Just Works.
  *
  * @see https://www.drupal.org/project/ai_agents
  * @see https://www.drupal.org/project/eca
@@ -53,7 +48,7 @@ export class DrupalManifestExporter extends BaseAdapter {
   readonly displayName = 'Drupal Manifest Package';
   readonly description =
     'Minimal OSSA manifest package for Drupal (import via ai_agents_ossa)';
-  readonly status = 'beta' as const;
+  readonly status = 'production' as const;
   readonly supportedVersions = ['v0.4.x'];
 
   /**
@@ -105,7 +100,25 @@ export class DrupalManifestExporter extends BaseAdapter {
         )
       );
 
-      // 2. README.md - Installation instructions
+      // 2. Drupal config entity YAML - ready for drush config:import
+      files.push(
+        this.createFile(
+          `${agentName}/config/install/ai_agents_ossa.agent.${agentName}.yml`,
+          this.generateConfigEntityYaml(manifest, agentName),
+          'config'
+        )
+      );
+
+      // 3. composer.json - Dependencies only
+      files.push(
+        this.createFile(
+          `${agentName}/composer.json`,
+          this.generateComposerJson(manifest, agentName, opts),
+          'config'
+        )
+      );
+
+      // 4. README.md - Installation instructions
       files.push(
         this.createFile(
           `${agentName}/README.md`,
@@ -114,21 +127,12 @@ export class DrupalManifestExporter extends BaseAdapter {
         )
       );
 
-      // 3. INSTALL.txt - Quick start for Drupal.org
+      // 5. INSTALL.txt - Quick start for Drupal.org
       files.push(
         this.createFile(
           `${agentName}/INSTALL.txt`,
           this.generateInstallTxt(manifest, agentName, opts),
           'documentation'
-        )
-      );
-
-      // 4. composer.json - Dependencies only
-      files.push(
-        this.createFile(
-          `${agentName}/composer.json`,
-          this.generateComposerJson(manifest, agentName, opts),
-          'config'
         )
       );
 
@@ -220,12 +224,71 @@ export class DrupalManifestExporter extends BaseAdapter {
           },
         ],
       },
-    };
+      extensions: {
+        drupal: {
+          ai_agent_plugin: 'ossa_agent',
+          tools: ['tool:read:content_load', 'tool:explain:code_review'],
+          eca_events: ['entity:node:presave'],
+          permissions: ['access content'],
+          content_types: ['article', 'page'],
+        },
+      },
+    } as any;
   }
 
   // ===================================================================
   // File Generation Methods
   // ===================================================================
+
+  /**
+   * Generate Drupal config entity YAML for drush config:import.
+   *
+   * Maps OSSA manifest to ai_agents_ossa config entity format:
+   * - id: metadata.name (kebab→snake_case)
+   * - label: metadata.name (Title Case)
+   * - api_version: apiVersion
+   * - manifest: full manifest data (minus apiVersion/kind, stored as nested YAML)
+   */
+  private generateConfigEntityYaml(
+    manifest: OssaAgent,
+    agentName: string
+  ): string {
+    // Build the manifest storage object (everything except apiVersion/kind)
+    const manifestData: Record<string, unknown> = {};
+
+    if (manifest.metadata) {
+      manifestData.metadata = manifest.metadata;
+    }
+    if (manifest.spec) {
+      manifestData.spec = manifest.spec;
+    }
+    if ((manifest as any).extensions) {
+      manifestData.extensions = (manifest as any).extensions;
+    }
+
+    // Build the config entity
+    const configEntity: Record<string, unknown> = {
+      id: agentName,
+      label: this.toLabel(manifest.metadata?.name || agentName),
+      api_version: manifest.apiVersion || 'ossa/v0.4.5',
+      status: true,
+      manifest: manifestData,
+    };
+
+    return yaml.stringify(configEntity, {
+      indent: 2,
+      lineWidth: 120,
+    });
+  }
+
+  /**
+   * Convert kebab-case or snake_case name to Title Case label.
+   */
+  private toLabel(name: string): string {
+    return name
+      .replace(/[-_]/g, ' ')
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+  }
 
   /**
    * Generate agent.ossa.yaml - the OSSA manifest in YAML format

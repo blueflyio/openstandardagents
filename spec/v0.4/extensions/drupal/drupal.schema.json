@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openstandardagents.org/schemas/v0.4/extensions/drupal/drupal.json",
+  "title": "Drupal Extension Schema",
+  "description": "Drupal CMS integration extension for OSSA agents. Maps OSSA manifests to Drupal's ai_agents module, Tool API, and ECA event system.",
+  "type": "object",
+  "properties": {
+    "ai_agent_plugin": {
+      "type": "string",
+      "description": "Plugin ID for the Drupal ai_agents module (e.g. 'ossa_agent')",
+      "default": "ossa_agent"
+    },
+    "tools": {
+      "type": "array",
+      "description": "Drupal Tool API plugin IDs to grant this agent (e.g. 'tool:read:content_load')",
+      "items": {
+        "type": "string",
+        "pattern": "^tool:[a-z_]+:[a-z_]+$"
+      },
+      "uniqueItems": true,
+      "examples": [
+        "tool:read:content_load",
+        "tool:explain:code_review",
+        "tool:create:content_create"
+      ]
+    },
+    "eca_events": {
+      "type": "array",
+      "description": "ECA (Event-Condition-Action) events this agent reacts to",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true,
+      "examples": [
+        "entity:node:presave",
+        "entity:node:insert",
+        "cron"
+      ]
+    },
+    "permissions": {
+      "type": "array",
+      "description": "Drupal permissions required for this agent to operate",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true,
+      "examples": [
+        "access content",
+        "edit any article content",
+        "administer nodes"
+      ]
+    },
+    "content_types": {
+      "type": "array",
+      "description": "Drupal content types this agent operates on",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_]*$"
+      },
+      "uniqueItems": true,
+      "examples": [
+        "article",
+        "page",
+        "blog_post"
+      ]
+    },
+    "views_displays": {
+      "type": "array",
+      "description": "Views displays to expose agent data",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    }
+  },
+  "additionalProperties": false
+}
