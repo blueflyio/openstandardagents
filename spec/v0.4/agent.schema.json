@@ -118,6 +118,9 @@
         },
         "kagent": {
           "$ref": "#/definitions/KagentExtension"
+        },
+        "drupal": {
+          "$ref": "#/definitions/DrupalExtension"
         }
       },
       "additionalProperties": true
@@ -16488,6 +16491,59 @@
         "signature": {
           "type": "string",
           "description": "Ed25519 signature of the hash (required when chainType is 'signed')"
+        }
+      },
+      "additionalProperties": false
+    },
+    "DrupalExtension": {
+      "type": "object",
+      "description": "Drupal CMS integration extension - maps OSSA agents to Drupal ai_agents module, Tool API, and ECA events",
+      "properties": {
+        "ai_agent_plugin": {
+          "type": "string",
+          "description": "Plugin ID for the Drupal ai_agents module",
+          "default": "ossa_agent"
+        },
+        "tools": {
+          "type": "array",
+          "description": "Drupal Tool API plugin IDs to grant this agent",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "eca_events": {
+          "type": "array",
+          "description": "ECA events this agent reacts to",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "permissions": {
+          "type": "array",
+          "description": "Drupal permissions required for this agent",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "content_types": {
+          "type": "array",
+          "description": "Drupal content types this agent operates on",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "uniqueItems": true
+        },
+        "views_displays": {
+          "type": "array",
+          "description": "Views displays to expose agent data",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
         }
       },
       "additionalProperties": false
