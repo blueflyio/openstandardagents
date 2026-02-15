@@ -33,7 +33,7 @@ include:
 .base-runner:
   image: node:${NODE_VERSION}
   tags:
-    - docker
+    - saas-linux-small-amd64
   cache:
     key: ${CI_COMMIT_REF_SLUG}
     paths:
