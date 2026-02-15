@@ -129,4 +129,11 @@ __DELETE_LATER/
 json
 *.tgz
 tmp-smoke-test/
+tmp/
 json
+
+# SBOM (generated in CI)
+sbom.json
+sbom-*.json
+*-sbom.json
+gl-sbom-*.cdx.json
