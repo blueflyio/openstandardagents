@@ -497,10 +497,15 @@ export class SkillsResearchService {
 
   /**
    * Parse GitHub URL into owner/repo
+   * Logs parsing errors instead of silently swallowing them in catch blocks
    */
   private parseGitHubUrl(url: string): { owner: string; repo: string } {
     const match = url.match(/github\.com\/([^/]+)\/([^/]+)/);
-    if (!match) throw new Error(`Invalid GitHub URL: ${url}`);
+    if (!match) {
+      // Log the specific parsing error before throwing
+      console.warn(`Failed to parse GitHub URL: ${url}`);
+      throw new Error(`Invalid GitHub URL: ${url}`);
+    }
     return { owner: match[1], repo: match[2].replace(/\.git$/, '') };
   }
 
