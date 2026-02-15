@@ -1,7 +1,7 @@
 # OSSA Testing Strategy
 ## Comprehensive Testing for All Functions and Advanced Features
 
-**Version**: 0.4.4
+**Version**: 0.4.5
 **Last Updated**: 2026-02-06
 **Status**: Active
 
@@ -196,7 +196,7 @@ describe('ValidationService', () => {
   describe('validate()', () => {
     it('should validate valid OSSA v0.4.4 manifest', async () => {
       const manifest = {
-        apiVersion: 'ossa/v0.4.4',
+        apiVersion: 'ossa/v0.4.5',
         kind: 'Agent',
         metadata: { name: 'test', version: '1.0.0' },
         spec: { role: 'test' },
@@ -212,7 +212,7 @@ describe('ValidationService', () => {
 
     it('should reject manifest with invalid name', async () => {
       const manifest = {
-        apiVersion: 'ossa/v0.4.4',
+        apiVersion: 'ossa/v0.4.5',
         kind: 'Agent',
         metadata: { name: 'INVALID_NAME', version: '1.0.0' },
         spec: { role: 'test' },
@@ -244,7 +244,7 @@ describe('PackageJsonGenerator', () => {
 
   it('should generate valid package.json from manifest', () => {
     const manifest: OssaManifest = {
-      apiVersion: 'ossa/v0.4.4',
+      apiVersion: 'ossa/v0.4.5',
       kind: 'Agent',
       metadata: {
         name: 'test-agent',
@@ -338,7 +338,7 @@ describe('ossa wizard command', () => {
       expect(fs.existsSync(outputPath)).toBe(true);
 
       const manifest = YAML.parse(fs.readFileSync(outputPath, 'utf-8'));
-      expect(manifest.apiVersion).toBe('ossa/v0.4.4');
+      expect(manifest.apiVersion).toBe('ossa/v0.4.5');
       expect(manifest.metadata.name).toBe('test-agent');
       expect(manifest.spec.role).toBe('You are a test assistant');
     });
@@ -618,7 +618,7 @@ describe('Token Efficiency', () => {
 describe('Progressive Validation', () => {
   it('should collect multiple errors before failing', () => {
     const invalidManifest = {
-      apiVersion: 'ossa/v0.4.4',
+      apiVersion: 'ossa/v0.4.5',
       kind: 'Agent',
       metadata: { name: 'INVALID_NAME', version: 'bad-version' },
       spec: { role: '', llm: { provider: 'invalid' } },
@@ -812,7 +812,7 @@ Create reusable test manifests for different scenarios:
 
 ```yaml
 # tests/fixtures/manifests/complete.ossa.yaml
-apiVersion: ossa/v0.4.4
+apiVersion: ossa/v0.4.5
 kind: Agent
 metadata:
   name: test-complete-agent
@@ -870,7 +870,7 @@ spec:
 export class ManifestFactory {
   static minimal(): OssaManifest {
     return {
-      apiVersion: 'ossa/v0.4.4',
+      apiVersion: 'ossa/v0.4.5',
       kind: 'Agent',
       metadata: {
         name: 'test-agent',

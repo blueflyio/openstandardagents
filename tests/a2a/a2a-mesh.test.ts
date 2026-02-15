@@ -422,7 +422,7 @@ function createMessage(to: AgentIdentity): A2AMessage {
     to,
     type: 'request' as any,
     payload: {},
-    version: '0.4.4',
+    version: '0.4.5',
     metadata: {
       priority: 'normal' as any,
       timeout: 30000,
