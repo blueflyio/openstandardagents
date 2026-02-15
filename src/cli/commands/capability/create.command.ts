@@ -21,10 +21,7 @@ interface CreateCapabilityOptions {
 
 export const capabilityCreateCommand = new Command('create')
   .description('Create OSSA capability definition')
-  .option(
-    '--from-openapi <url>',
-    'Generate capabilities from OpenAPI spec URL'
-  )
+  .option('--from-openapi <url>', 'Generate capabilities from OpenAPI spec URL')
   .option('-n, --name <name>', 'Capability name')
   .option(
     '--input-schema <path>',
@@ -56,7 +53,9 @@ export const capabilityCreateCommand = new Command('create')
 
       if (Array.isArray(capability)) {
         console.log(
-          chalk.gray(`  Generated ${capability.length} capabilities from OpenAPI`)
+          chalk.gray(
+            `  Generated ${capability.length} capabilities from OpenAPI`
+          )
         );
       } else {
         console.log(chalk.gray(`  Type: ${capability.type || 'custom'}`));
@@ -64,7 +63,9 @@ export const capabilityCreateCommand = new Command('create')
 
       console.log(chalk.blue('\nUsage:'));
       console.log(
-        chalk.gray(`  Add this capability to your agent manifest in spec.capabilities`)
+        chalk.gray(
+          `  Add this capability to your agent manifest in spec.capabilities`
+        )
       );
     } catch (error) {
       console.error(
@@ -109,7 +110,10 @@ async function createFromOpenAPI(url: string): Promise<any[]> {
 
         const capability = {
           name: capabilityName,
-          description: op.summary || op.description || `${method.toUpperCase()} ${pathName}`,
+          description:
+            op.summary ||
+            op.description ||
+            `${method.toUpperCase()} ${pathName}`,
           type: 'api',
           endpoint: pathName,
           method: method.toUpperCase(),

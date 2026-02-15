@@ -97,7 +97,9 @@ describe('AgentAuditService', () => {
       expect(health.manifestExists).toBe(true);
       expect(health.manifestValid).toBe(false);
       expect(health.validationErrors.length).toBeGreaterThan(0);
-      expect(health.issues.some((i) => i.code === 'SCHEMA_VALIDATION_FAILED')).toBe(true);
+      expect(
+        health.issues.some((i) => i.code === 'SCHEMA_VALIDATION_FAILED')
+      ).toBe(true);
 
       // Cleanup
       fs.rmSync(invalidAgent, { recursive: true, force: true });
@@ -127,7 +129,9 @@ describe('AgentAuditService', () => {
       expect(health.validationErrors.length).toBeGreaterThan(0);
 
       // Should have errors for missing fields
-      const errorMessages = health.validationErrors.map((e) => e.message).join(' ');
+      const errorMessages = health.validationErrors
+        .map((e) => e.message)
+        .join(' ');
       expect(errorMessages).toContain('required');
 
       // Cleanup
@@ -161,7 +165,9 @@ describe('AgentAuditService', () => {
       // Schema validation might fail for old versions
       if (health.manifestValid) {
         // Should have version mismatch warning
-        expect(health.issues.some((i) => i.code === 'VERSION_MISMATCH')).toBe(true);
+        expect(health.issues.some((i) => i.code === 'VERSION_MISMATCH')).toBe(
+          true
+        );
       }
 
       // Cleanup

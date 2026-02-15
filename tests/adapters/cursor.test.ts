@@ -197,11 +197,11 @@ describe('CursorAdapter', () => {
 
       expect(example.spec?.capabilities).toBeDefined();
       expect(Array.isArray(example.spec?.capabilities)).toBe(true);
-      expect(example.spec?.capabilities?.some((c: any) =>
-        typeof c === 'string'
-          ? c.includes('code')
-          : c.name?.includes('code')
-      )).toBe(true);
+      expect(
+        example.spec?.capabilities?.some((c: any) =>
+          typeof c === 'string' ? c.includes('code') : c.name?.includes('code')
+        )
+      ).toBe(true);
     });
   });
 });

@@ -6,7 +6,11 @@
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { createTool, validateToolConfig, type Tool } from '../../../src/types/tool.js';
+import {
+  createTool,
+  validateToolConfig,
+  type Tool,
+} from '../../../src/types/tool.js';
 
 describe('Tool Type System', () => {
   describe('createTool', () => {
@@ -143,7 +147,9 @@ describe('Tool Type System', () => {
       };
 
       const errors = validateToolConfig(tool);
-      expect(errors).toContain('Schedule tools require a cron expression in config.schedule');
+      expect(errors).toContain(
+        'Schedule tools require a cron expression in config.schedule'
+      );
     });
 
     it('should require namespace and resource for kubernetes tools', () => {
@@ -154,7 +160,9 @@ describe('Tool Type System', () => {
       };
 
       const errors = validateToolConfig(tool);
-      expect(errors).toContain('Kubernetes tools require namespace and resource in config');
+      expect(errors).toContain(
+        'Kubernetes tools require namespace and resource in config'
+      );
     });
 
     it('should validate tool with no type-specific requirements', () => {

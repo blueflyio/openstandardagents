@@ -26,6 +26,7 @@ export class MCPAdapter extends BaseAdapter {
   readonly platform = 'mcp';
   readonly displayName = 'Model Context Protocol';
   readonly description = 'MCP server for Claude Code and other MCP clients';
+  readonly status = 'production' as const;
   readonly supportedVersions = ['v{{VERSION}}'];
 
   /**

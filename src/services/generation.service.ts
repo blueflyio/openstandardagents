@@ -6,6 +6,7 @@
  */
 
 import { injectable } from 'inversify';
+import { z } from 'zod';
 import type { AgentTemplate, OssaAgent } from '../types/index.js';
 import { getApiVersion } from '../utils/version.js';
 import { LangChainAdapter } from '../adapters/langchain-adapter.js';
@@ -431,17 +432,45 @@ export class GenerationService {
     return baseManifest;
   }
 
+  /**
+   * Tool schema for validation
+   */
+  private readonly ToolSchema = z.object({
+    name: z.string(),
+    description: z.string().optional(),
+    input_schema: z.record(z.string(), z.unknown()).optional(),
+    parameters: z.record(z.string(), z.unknown()).optional(),
+  });
+
+  /**
+   * Extract tools with type validation to prevent accessing undefined properties
+   */
   private extractTools(
     tools: Array<Record<string, unknown>>
   ): Array<Record<string, unknown>> {
-    return tools.map((tool) => ({
-      type: 'function',
-      function: {
-        name: tool.name,
-        description: tool.description || '',
-        parameters: tool.input_schema || tool.parameters || {},
-      },
-    }));
+    const validated: Array<Record<string, unknown>> = [];
+
+    for (const tool of tools) {
+      // Validate tool structure before accessing properties
+      const parsed = this.ToolSchema.safeParse(tool);
+      if (!parsed.success) {
+        console.warn(
+          `Invalid tool structure, skipping: ${JSON.stringify(tool).slice(0, 100)}`
+        );
+        continue;
+      }
+
+      validated.push({
+        type: 'function',
+        function: {
+          name: parsed.data.name,
+          description: parsed.data.description || '',
+          parameters: parsed.data.input_schema || parsed.data.parameters || {},
+        },
+      });
+    }
+
+    return validated;
   }
 
   private convertToolsToOSSA(tools: Array<Record<string, unknown>>): Array<{

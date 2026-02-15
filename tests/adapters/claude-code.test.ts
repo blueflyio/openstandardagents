@@ -200,11 +200,13 @@ describe('ClaudeCodeAdapter', () => {
 
       expect(example.spec?.capabilities).toBeDefined();
       expect(Array.isArray(example.spec?.capabilities)).toBe(true);
-      expect(example.spec?.capabilities?.some((c: any) =>
-        typeof c === 'string'
-          ? c.includes('explore') || c.includes('analysis')
-          : c.name?.includes('explore') || c.name?.includes('analysis')
-      )).toBe(true);
+      expect(
+        example.spec?.capabilities?.some((c: any) =>
+          typeof c === 'string'
+            ? c.includes('explore') || c.includes('analysis')
+            : c.name?.includes('explore') || c.name?.includes('analysis')
+        )
+      ).toBe(true);
     });
   });
 

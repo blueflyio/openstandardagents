@@ -7,7 +7,11 @@
  */
 
 import type { Tool } from '../../types/tool.js';
-import type { A2AMessage, AgentIdentity, CoordinationPattern } from './a2a-protocol.js';
+import type {
+  A2AMessage,
+  AgentIdentity,
+  CoordinationPattern,
+} from './a2a-protocol.js';
 import { AgentMesh } from './agent-mesh.js';
 import { MCPIntegrationService } from './mcp-integration.js';
 import { SwarmOrchestrator } from './swarm-orchestration.js';
@@ -83,7 +87,8 @@ export const A2A_TOOL: Tool = {
     properties: {
       targetAgent: {
         type: 'string',
-        description: 'Agent ID or URI to communicate with (format: agent://namespace/name or UUID)',
+        description:
+          'Agent ID or URI to communicate with (format: agent://namespace/name or UUID)',
       },
       message: {
         type: 'object',
@@ -203,14 +208,19 @@ export class A2AToolHandler {
       };
 
       // Execute based on pattern
-      const response = await this.executePattern(message, params.pattern || 'request-reply');
+      const response = await this.executePattern(
+        message,
+        params.pattern || 'request-reply'
+      );
 
       const duration = Date.now() - startTime;
 
       return {
         success: true,
         response,
-        traceId: params.trace ? message.metadata.traceContext.traceId : undefined,
+        traceId: params.trace
+          ? message.metadata.traceContext.traceId
+          : undefined,
         metadata: {
           duration,
           targetAgent,
@@ -288,7 +298,10 @@ export class A2AToolHandler {
   /**
    * Pipeline pattern (sequential execution)
    */
-  async pipeline(agents: string[], initialMessage: unknown): Promise<A2AToolResult> {
+  async pipeline(
+    agents: string[],
+    initialMessage: unknown
+  ): Promise<A2AToolResult> {
     let currentMessage = initialMessage;
 
     for (const agentId of agents) {
@@ -371,9 +384,9 @@ export class A2AToolHandler {
   private mapPatternToMessageType(pattern: string): any {
     const mapping: Record<string, string> = {
       'request-reply': 'request',
-      'broadcast': 'broadcast',
+      broadcast: 'broadcast',
       'pub-sub': 'event',
-      'pipeline': 'command',
+      pipeline: 'command',
     };
     return mapping[pattern] || 'request';
   }
@@ -394,7 +407,10 @@ export class A2AToolHandler {
     ).join('');
   }
 
-  private async executePattern(message: A2AMessage, pattern: string): Promise<unknown> {
+  private async executePattern(
+    message: A2AMessage,
+    pattern: string
+  ): Promise<unknown> {
     switch (pattern) {
       case 'request-reply':
         return this.executeRequestReply(message);

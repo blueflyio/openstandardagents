@@ -105,9 +105,7 @@ export const manifestExplainCommand = new Command('explain')
       // Tools
       if (manifest.spec?.tools && manifest.spec.tools.length > 0) {
         log(
-          chalk.bold(
-            `\n🔧 Tools (${manifest.spec.tools.length} configured):`
-          )
+          chalk.bold(`\n🔧 Tools (${manifest.spec.tools.length} configured):`)
         );
         manifest.spec.tools.forEach((tool: any, index: number) => {
           log(
@@ -210,10 +208,14 @@ function generateSummary(manifest: OssaAgent): string {
   if (manifest.spec?.messaging) {
     const msgParts = [];
     if (manifest.spec.messaging.publishes) {
-      msgParts.push(`publishes to ${manifest.spec.messaging.publishes.length} channel(s)`);
+      msgParts.push(
+        `publishes to ${manifest.spec.messaging.publishes.length} channel(s)`
+      );
     }
     if (manifest.spec.messaging.subscribes) {
-      msgParts.push(`subscribes to ${manifest.spec.messaging.subscribes.length} channel(s)`);
+      msgParts.push(
+        `subscribes to ${manifest.spec.messaging.subscribes.length} channel(s)`
+      );
     }
     if (msgParts.length > 0) {
       parts.push(msgParts.join(' and '));

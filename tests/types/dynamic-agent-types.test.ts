@@ -352,10 +352,7 @@ describe('Dynamic Agent Types', () => {
         spec: {
           role: 'Multi-capability agent',
           llm: { provider: 'anthropic', model: 'claude-3-5-sonnet' },
-          tools: [
-            { type: 'http' },
-            { type: 'database' },
-          ],
+          tools: [{ type: 'http' }, { type: 'database' }],
           capabilities: ['analytics', 'reporting'],
         },
       };

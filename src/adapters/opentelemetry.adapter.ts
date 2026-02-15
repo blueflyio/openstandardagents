@@ -200,7 +200,11 @@ export class OpenTelemetryAdapter {
     let loggerProvider: any = null;
     let logger: OpenTelemetryLogger | null = null;
 
-    if (config.logs?.enabled && config.logs.exporter !== 'none' && logExporter) {
+    if (
+      config.logs?.enabled &&
+      config.logs.exporter !== 'none' &&
+      logExporter
+    ) {
       loggerProvider = new LoggerProvider({
         resource,
         logRecordProcessors: [new BatchLogRecordProcessor(logExporter)],

@@ -121,7 +121,13 @@ export interface DelegationResult {
   /** Estimated completion time */
   estimatedCompletion: string;
   /** Delegation status */
-  status: 'pending' | 'accepted' | 'rejected' | 'executing' | 'completed' | 'failed';
+  status:
+    | 'pending'
+    | 'accepted'
+    | 'rejected'
+    | 'executing'
+    | 'completed'
+    | 'failed';
   /** Created timestamp */
   createdAt: string;
   /** Updated timestamp */
@@ -208,7 +214,11 @@ export class DelegationService {
   /**
    * Delegate task to most capable agent
    */
-  async delegate(task: Task, constraints: Constraints, agents: Agent[]): Promise<DelegationResult> {
+  async delegate(
+    task: Task,
+    constraints: Constraints,
+    agents: Agent[]
+  ): Promise<DelegationResult> {
     // Find suitable agents
     const suitableAgents = this.findSuitableAgents(task, constraints, agents);
 
@@ -277,7 +287,14 @@ export class DelegationService {
       id: slaId,
       taskId: task.id,
       provider: agent.identity,
-      consumer: { id: 'consumer', namespace: 'default', name: 'consumer', uri: 'agent://default/consumer', capabilities: [], version: '1.0.0' },
+      consumer: {
+        id: 'consumer',
+        namespace: 'default',
+        name: 'consumer',
+        uri: 'agent://default/consumer',
+        capabilities: [],
+        version: '1.0.0',
+      },
       availability,
       responseTime,
       throughput,
@@ -315,7 +332,10 @@ export class DelegationService {
   /**
    * Update execution status
    */
-  updateExecution(delegationId: string, updates: Partial<ExecutionStatus>): void {
+  updateExecution(
+    delegationId: string,
+    updates: Partial<ExecutionStatus>
+  ): void {
     const execution = this.executions.get(delegationId);
 
     if (!execution) {
@@ -364,7 +384,11 @@ export class DelegationService {
 
   // Private helper methods
 
-  private findSuitableAgents(task: Task, constraints: Constraints, agents: Agent[]): Agent[] {
+  private findSuitableAgents(
+    task: Task,
+    constraints: Constraints,
+    agents: Agent[]
+  ): Agent[] {
     return agents.filter((agent) => {
       // Check capabilities
       const hasCapabilities = task.capabilities.every((cap) =>
@@ -375,7 +399,8 @@ export class DelegationService {
       const isAvailable = agent.status === 'available';
 
       // Check SLA requirement
-      const meetsSLA = !constraints.minSLA || agent.metrics.successRate >= constraints.minSLA;
+      const meetsSLA =
+        !constraints.minSLA || agent.metrics.successRate >= constraints.minSLA;
 
       // Check capacity
       const hasCapacity = agent.capacity > 0.1;
@@ -384,7 +409,11 @@ export class DelegationService {
     });
   }
 
-  private scoreAgent(agent: Agent, task: Task, constraints: Constraints): number {
+  private scoreAgent(
+    agent: Agent,
+    task: Task,
+    constraints: Constraints
+  ): number {
     let score = 0;
 
     // Success rate (0-0.4)
@@ -394,7 +423,8 @@ export class DelegationService {
     score += agent.capacity * 0.3;
 
     // Performance (0-0.2)
-    const performanceScore = 1 - Math.min(agent.metrics.avgCompletionTime / 300000, 1); // Normalize to 5 min
+    const performanceScore =
+      1 - Math.min(agent.metrics.avgCompletionTime / 300000, 1); // Normalize to 5 min
     score += performanceScore * 0.2;
 
     // Load (0-0.1) - prefer less loaded

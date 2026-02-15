@@ -135,6 +135,11 @@ export interface ExportOptions {
 }
 
 /**
+ * Adapter maturity status
+ */
+export type AdapterStatus = 'production' | 'beta' | 'alpha' | 'planned';
+
+/**
  * Platform Adapter Interface
  *
  * All export adapters must implement this interface
@@ -154,6 +159,11 @@ export interface PlatformAdapter {
    * Platform description
    */
   readonly description: string;
+
+  /**
+   * Adapter maturity status — honest reporting of readiness
+   */
+  readonly status: AdapterStatus;
 
   /**
    * Supported OSSA versions
@@ -252,6 +262,7 @@ export abstract class BaseAdapter implements PlatformAdapter {
   abstract readonly platform: string;
   abstract readonly displayName: string;
   abstract readonly description: string;
+  abstract readonly status: AdapterStatus;
   abstract readonly supportedVersions: string[];
 
   abstract export(

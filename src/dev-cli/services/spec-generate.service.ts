@@ -67,10 +67,7 @@ export class SpecGenerateService {
     };
 
     const outputPath = join(outputDir, 'generated-spec.json');
-    writeFileSync(
-      outputPath,
-      JSON.stringify(consolidatedSpec, null, 2)
-    );
+    writeFileSync(outputPath, JSON.stringify(consolidatedSpec, null, 2));
     filesGenerated.push(outputPath);
 
     // Generate a schema index file listing all discovered schemas
