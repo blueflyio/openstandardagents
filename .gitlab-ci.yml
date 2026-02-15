@@ -100,6 +100,25 @@ build:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/
 
+sbom:generate:
+  extends: .base-runner
+  stage: build
+  needs:
+    - job: build
+      artifacts: true
+  script:
+    - npx @cyclonedx/cyclonedx-npm --output-file gl-sbom-npm.cdx.json
+  artifacts:
+    reports:
+      cyclonedx: gl-sbom-*.cdx.json
+    paths:
+      - gl-sbom-*.cdx.json
+    expire_in: 30 days
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  allow_failure: true
+
 # =============================================================================
 # SMOKE STAGE
 # =============================================================================
