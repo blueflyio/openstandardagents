@@ -312,7 +312,11 @@ export class ManifestBuilder<
   /**
    * Add a task step
    */
-  addStep(name: string, action?: string, parameters?: Record<string, unknown>): this {
+  addStep(
+    name: string,
+    action?: string,
+    parameters?: Record<string, unknown>
+  ): this {
     if (this.kind !== 'Task') {
       throw new Error('addStep() is only available for Task manifests');
     }
@@ -366,7 +370,9 @@ export class ManifestBuilder<
     }
   ): this {
     if (this.kind !== 'Workflow') {
-      throw new Error('addWorkflowStep() is only available for Workflow manifests');
+      throw new Error(
+        'addWorkflowStep() is only available for Workflow manifests'
+      );
     }
     const workflowSpec = this.spec as WorkflowSpec;
     if (!workflowSpec.steps) {

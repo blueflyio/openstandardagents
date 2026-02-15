@@ -73,9 +73,10 @@ describe('SafetyBuilder', () => {
         .contentFiltering(['hate_speech', 'violence'])
         .build();
 
-      expect(
-        (safety.guardrails as any)?.content_filtering
-      ).toEqual(['hate_speech', 'violence']);
+      expect((safety.guardrails as any)?.content_filtering).toEqual([
+        'hate_speech',
+        'violence',
+      ]);
     });
 
     it('should support custom content filtering types', () => {
@@ -83,9 +84,10 @@ describe('SafetyBuilder', () => {
         .contentFiltering(['custom_type_1', 'custom_type_2'])
         .build();
 
-      expect(
-        (safety.guardrails as any)?.content_filtering
-      ).toEqual(['custom_type_1', 'custom_type_2']);
+      expect((safety.guardrails as any)?.content_filtering).toEqual([
+        'custom_type_1',
+        'custom_type_2',
+      ]);
     });
   });
 
@@ -114,9 +116,7 @@ describe('SafetyBuilder', () => {
     });
 
     it('should set PII handling policy', () => {
-      const safety = SafetyBuilder.create()
-        .piiHandling('redact')
-        .build();
+      const safety = SafetyBuilder.create().piiHandling('redact').build();
 
       expect(safety.pii_handling).toBe('redact');
     });
@@ -163,9 +163,7 @@ describe('SafetyBuilder', () => {
     });
 
     it('should not include guardrails if none are set', () => {
-      const safety = SafetyBuilder.create()
-        .piiHandling('redact')
-        .build();
+      const safety = SafetyBuilder.create().piiHandling('redact').build();
 
       expect(safety.guardrails).toBeUndefined();
       expect(safety.pii_handling).toBe('redact');

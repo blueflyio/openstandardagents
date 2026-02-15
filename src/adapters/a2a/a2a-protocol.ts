@@ -436,7 +436,10 @@ export function isMessageExpired(message: A2AMessage): boolean {
 /**
  * Check if message should be retried
  */
-export function shouldRetryMessage(message: A2AMessage, error: A2AError): boolean {
+export function shouldRetryMessage(
+  message: A2AMessage,
+  error: A2AError
+): boolean {
   const retryCount = message.metadata.retryCount || 0;
   return error.retryable && retryCount < message.metadata.retries;
 }

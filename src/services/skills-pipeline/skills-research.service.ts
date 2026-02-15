@@ -76,13 +76,53 @@ const DEFAULT_SOURCES: ResearchSource[] = [
  * Common English stop words to exclude from trigger extraction
  */
 const STOP_WORDS = new Set([
-  'the', 'and', 'for', 'are', 'but', 'not', 'you', 'all',
-  'can', 'her', 'was', 'one', 'our', 'out', 'has', 'have',
-  'with', 'this', 'that', 'from', 'they', 'been', 'said',
-  'each', 'which', 'their', 'will', 'other', 'about', 'many',
-  'then', 'them', 'these', 'some', 'would', 'make', 'like',
-  'into', 'could', 'time', 'very', 'when', 'come', 'made',
-  'use', 'using', 'used',
+  'the',
+  'and',
+  'for',
+  'are',
+  'but',
+  'not',
+  'you',
+  'all',
+  'can',
+  'her',
+  'was',
+  'one',
+  'our',
+  'out',
+  'has',
+  'have',
+  'with',
+  'this',
+  'that',
+  'from',
+  'they',
+  'been',
+  'said',
+  'each',
+  'which',
+  'their',
+  'will',
+  'other',
+  'about',
+  'many',
+  'then',
+  'them',
+  'these',
+  'some',
+  'would',
+  'make',
+  'like',
+  'into',
+  'could',
+  'time',
+  'very',
+  'when',
+  'come',
+  'made',
+  'use',
+  'using',
+  'used',
 ]);
 
 @injectable()
@@ -238,8 +278,7 @@ export class SkillsResearchService {
     );
 
     // Parse markdown links: - [Name](url) - Description
-    const linkPattern =
-      /^[-*]\s+\[([^\]]+)\]\(([^)]+)\)\s*[-–—:]*\s*(.*?)$/gm;
+    const linkPattern = /^[-*]\s+\[([^\]]+)\]\(([^)]+)\)\s*[-–—:]*\s*(.*?)$/gm;
     let match: RegExpExecArray | null;
 
     while ((match = linkPattern.exec(content)) !== null) {
@@ -325,9 +364,7 @@ export class SkillsResearchService {
         skills.push({
           name: dir.path,
           description,
-          triggers: this.extractTriggersFromText(
-            `${dir.path} ${description}`
-          ),
+          triggers: this.extractTriggersFromText(`${dir.path} ${description}`),
           sourceUrl: `https://github.com/${owner}/${repo}/tree/main/${dir.path}`,
           author: owner,
           tags: ['showcase', 'claude-code'],
@@ -367,13 +404,10 @@ export class SkillsResearchService {
 
     for (const term of searchTerms) {
       try {
-        const response = await axios.get(
-          `${source.url}/-/v1/search`,
-          {
-            params: { text: term, size: 50 },
-            timeout: 10000,
-          }
-        );
+        const response = await axios.get(`${source.url}/-/v1/search`, {
+          params: { text: term, size: 50 },
+          timeout: 10000,
+        });
 
         const packages = response.data?.objects || [];
 
@@ -385,7 +419,8 @@ export class SkillsResearchService {
             name: p.name,
             description: p.description || p.name,
             triggers: p.keywords || [],
-            sourceUrl: p.links?.npm || `https://www.npmjs.com/package/${p.name}`,
+            sourceUrl:
+              p.links?.npm || `https://www.npmjs.com/package/${p.name}`,
             installCommand: `npm install ${p.name}`,
             author: p.author?.name || p.publisher?.username,
             tags: p.keywords || [],
@@ -464,9 +499,7 @@ export class SkillsResearchService {
    * Parse GitHub URL into owner/repo
    */
   private parseGitHubUrl(url: string): { owner: string; repo: string } {
-    const match = url.match(
-      /github\.com\/([^/]+)\/([^/]+)/
-    );
+    const match = url.match(/github\.com\/([^/]+)\/([^/]+)/);
     if (!match) throw new Error(`Invalid GitHub URL: ${url}`);
     return { owner: match[1], repo: match[2].replace(/\.git$/, '') };
   }

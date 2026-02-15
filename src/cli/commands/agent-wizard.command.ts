@@ -1327,7 +1327,10 @@ async function idCardWizard(options: {
   output?: string;
   dryRun?: boolean;
 }): Promise<void> {
-  console_ui.header('Agent ID Card Wizard', 'Create a human-friendly identity for your agent (v0.4.5+)');
+  console_ui.header(
+    'Agent ID Card Wizard',
+    'Create a human-friendly identity for your agent (v0.4.5+)'
+  );
 
   // Load existing manifest if provided
   let agent: Partial<OssaAgent> | null = null;
@@ -1335,15 +1338,24 @@ async function idCardWizard(options: {
 
   if (manifestPath && fs.existsSync(manifestPath)) {
     const content = fs.readFileSync(manifestPath, 'utf-8');
-    agent = manifestPath.endsWith('.json') ? JSON.parse(content) : yaml.parse(content);
+    agent = manifestPath.endsWith('.json')
+      ? JSON.parse(content)
+      : yaml.parse(content);
     console_ui.success(`Loaded manifest: ${manifestPath}`);
   } else if (!manifestPath) {
     // Try to auto-detect manifest in current directory
-    const candidates = ['agent.ossa.yaml', 'agent.ossa.yml', 'agent.ossa.json', 'manifest.ossa.yaml'];
+    const candidates = [
+      'agent.ossa.yaml',
+      'agent.ossa.yml',
+      'agent.ossa.json',
+      'manifest.ossa.yaml',
+    ];
     for (const candidate of candidates) {
       if (fs.existsSync(candidate)) {
         const content = fs.readFileSync(candidate, 'utf-8');
-        agent = candidate.endsWith('.json') ? JSON.parse(content) : yaml.parse(content);
+        agent = candidate.endsWith('.json')
+          ? JSON.parse(content)
+          : yaml.parse(content);
         manifestPath = candidate;
         console_ui.success(`Auto-detected manifest: ${candidate}`);
         break;
@@ -1370,94 +1382,125 @@ async function idCardWizard(options: {
 
   // Step 1: Nickname
   console_ui.step(1, 5, 'Nickname & Display Name');
-  console_ui.info('Give your agent a short callsign (1-32 chars, alphanumeric).');
+  console_ui.info(
+    'Give your agent a short callsign (1-32 chars, alphanumeric).'
+  );
   console_ui.info('This is how other agents and humans will refer to it.\n');
 
-  const { nickname } = await inquirer.prompt([{
-    type: 'input',
-    name: 'nickname',
-    message: 'Nickname (callsign):',
-    default: existingCard?.nickname || agent.metadata.name?.split('-').map(
-      (w: string) => w.charAt(0).toUpperCase() + w.slice(1)
-    ).join('') || 'Scout',
-    validate: (input: string) => {
-      if (!input) return 'Nickname is required';
-      if (input.length > 32) return 'Max 32 characters';
-      if (!/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(input)) {
-        return 'Must start with letter, only alphanumeric, hyphens, underscores';
-      }
-      return true;
+  const { nickname } = await inquirer.prompt([
+    {
+      type: 'input',
+      name: 'nickname',
+      message: 'Nickname (callsign):',
+      default:
+        existingCard?.nickname ||
+        agent.metadata.name
+          ?.split('-')
+          .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+          .join('') ||
+        'Scout',
+      validate: (input: string) => {
+        if (!input) return 'Nickname is required';
+        if (input.length > 32) return 'Max 32 characters';
+        if (!/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(input)) {
+          return 'Must start with letter, only alphanumeric, hyphens, underscores';
+        }
+        return true;
+      },
     },
-  }]);
+  ]);
 
-  const { displayName } = await inquirer.prompt([{
-    type: 'input',
-    name: 'displayName',
-    message: 'Display name (full human-readable name):',
-    default: existingCard?.displayName || nickname,
-    validate: (input: string) => input.length <= 128 || 'Max 128 characters',
-  }]);
+  const { displayName } = await inquirer.prompt([
+    {
+      type: 'input',
+      name: 'displayName',
+      message: 'Display name (full human-readable name):',
+      default: existingCard?.displayName || nickname,
+      validate: (input: string) => input.length <= 128 || 'Max 128 characters',
+    },
+  ]);
 
   // Step 2: Avatar & Registry
   console_ui.step(2, 5, 'Avatar & Registry');
 
-  const { avatar } = await inquirer.prompt([{
-    type: 'input',
-    name: 'avatar',
-    message: 'Avatar URL (image URL, or press Enter to skip):',
-    default: existingCard?.avatar || '',
-    validate: (input: string) => {
-      if (!input) return true; // optional
-      try { new URL(input); return true; } catch { return 'Must be a valid URL'; }
+  const { avatar } = await inquirer.prompt([
+    {
+      type: 'input',
+      name: 'avatar',
+      message: 'Avatar URL (image URL, or press Enter to skip):',
+      default: existingCard?.avatar || '',
+      validate: (input: string) => {
+        if (!input) return true; // optional
+        try {
+          new URL(input);
+          return true;
+        } catch {
+          return 'Must be a valid URL';
+        }
+      },
     },
-  }]);
+  ]);
 
   const defaultRegistryId = agent.metadata.name
     ? `ossa://blueflyio/${agent.metadata.name}@${agent.metadata.version || '0.4.5'}`
     : '';
 
-  const { registryId } = await inquirer.prompt([{
-    type: 'input',
-    name: 'registryId',
-    message: 'Registry ID (ossa://org/agent@version):',
-    default: existingCard?.registryId || defaultRegistryId,
-    validate: (input: string) => {
-      if (!input) return true; // optional
-      if (!/^ossa:\/\/[a-z0-9-]+\/[a-z0-9-]+(@[0-9]+\.[0-9]+\.[0-9]+)?$/.test(input)) {
-        return 'Format: ossa://org/agent-name or ossa://org/agent-name@1.0.0';
-      }
-      return true;
+  const { registryId } = await inquirer.prompt([
+    {
+      type: 'input',
+      name: 'registryId',
+      message: 'Registry ID (ossa://org/agent@version):',
+      default: existingCard?.registryId || defaultRegistryId,
+      validate: (input: string) => {
+        if (!input) return true; // optional
+        if (
+          !/^ossa:\/\/[a-z0-9-]+\/[a-z0-9-]+(@[0-9]+\.[0-9]+\.[0-9]+)?$/.test(
+            input
+          )
+        ) {
+          return 'Format: ossa://org/agent-name or ossa://org/agent-name@1.0.0';
+        }
+        return true;
+      },
     },
-  }]);
+  ]);
 
   // Step 3: Provenance
   console_ui.step(3, 5, 'Provenance (Creation Metadata)');
-  console_ui.info('Provenance is immutable — once set, it cannot be changed.\n');
+  console_ui.info(
+    'Provenance is immutable — once set, it cannot be changed.\n'
+  );
 
   const now = new Date().toISOString();
   const existingProvenance = existingCard?.provenance;
 
-  const { createdBy } = await inquirer.prompt([{
-    type: 'input',
-    name: 'createdBy',
-    message: 'Created by (DID or identifier):',
-    default: existingProvenance?.createdBy || process.env.USER || 'unknown',
-  }]);
+  const { createdBy } = await inquirer.prompt([
+    {
+      type: 'input',
+      name: 'createdBy',
+      message: 'Created by (DID or identifier):',
+      default: existingProvenance?.createdBy || process.env.USER || 'unknown',
+    },
+  ]);
 
-  const { createdWith } = await inquirer.prompt([{
-    type: 'input',
-    name: 'createdWith',
-    message: 'Created with (tool/CLI version):',
-    default: existingProvenance?.createdWith || 'ossa-cli/0.4.5',
-  }]);
+  const { createdWith } = await inquirer.prompt([
+    {
+      type: 'input',
+      name: 'createdWith',
+      message: 'Created with (tool/CLI version):',
+      default: existingProvenance?.createdWith || 'ossa-cli/0.4.5',
+    },
+  ]);
 
   // Lineage (if forked/derived)
-  const { hasLineage } = await inquirer.prompt([{
-    type: 'confirm',
-    name: 'hasLineage',
-    message: 'Is this agent forked/derived from another agent?',
-    default: false,
-  }]);
+  const { hasLineage } = await inquirer.prompt([
+    {
+      type: 'confirm',
+      name: 'hasLineage',
+      message: 'Is this agent forked/derived from another agent?',
+      default: false,
+    },
+  ]);
 
   const lineage: Array<{
     ancestor: string;
@@ -1493,7 +1536,12 @@ async function idCardWizard(options: {
       },
     ]);
 
-    const entry: { ancestor: string; relationship: string; timestamp: string; commitHash?: string } = {
+    const entry: {
+      ancestor: string;
+      relationship: string;
+      timestamp: string;
+      commitHash?: string;
+    } = {
       ancestor: lineageEntry.ancestor,
       relationship: lineageEntry.relationship,
       timestamp: now,
@@ -1507,31 +1555,37 @@ async function idCardWizard(options: {
   // Step 4: Audit Trail Configuration
   console_ui.step(4, 5, 'Audit Trail Configuration');
   console_ui.info('The audit trail is an append-only Merkle-chained log.');
-  console_ui.info('Each entry links to the previous via hash, creating tamper evidence.\n');
+  console_ui.info(
+    'Each entry links to the previous via hash, creating tamper evidence.\n'
+  );
 
-  const { chainType } = await inquirer.prompt([{
-    type: 'list',
-    name: 'chainType',
-    message: 'Chain type:',
-    choices: [
-      { name: 'Merkle (hash-chained, recommended)', value: 'merkle' },
-      { name: 'Linear (sequential, simpler)', value: 'linear' },
-      { name: 'Signed (cryptographic signatures)', value: 'signed' },
-    ],
-    default: 'merkle',
-  }]);
+  const { chainType } = await inquirer.prompt([
+    {
+      type: 'list',
+      name: 'chainType',
+      message: 'Chain type:',
+      choices: [
+        { name: 'Merkle (hash-chained, recommended)', value: 'merkle' },
+        { name: 'Linear (sequential, simpler)', value: 'linear' },
+        { name: 'Signed (cryptographic signatures)', value: 'signed' },
+      ],
+      default: 'merkle',
+    },
+  ]);
 
-  const { hashAlgorithm } = await inquirer.prompt([{
-    type: 'list',
-    name: 'hashAlgorithm',
-    message: 'Hash algorithm:',
-    choices: [
-      { name: 'SHA-256 (recommended)', value: 'sha256' },
-      { name: 'SHA-384', value: 'sha384' },
-      { name: 'SHA-512', value: 'sha512' },
-    ],
-    default: 'sha256',
-  }]);
+  const { hashAlgorithm } = await inquirer.prompt([
+    {
+      type: 'list',
+      name: 'hashAlgorithm',
+      message: 'Hash algorithm:',
+      choices: [
+        { name: 'SHA-256 (recommended)', value: 'sha256' },
+        { name: 'SHA-384', value: 'sha384' },
+        { name: 'SHA-512', value: 'sha512' },
+      ],
+      default: 'sha256',
+    },
+  ]);
 
   // Step 5: Build & Save
   console_ui.step(5, 5, 'Build ID Card');
@@ -1585,19 +1639,21 @@ async function idCardWizard(options: {
   // Create the first audit trail entry if no existing entries
   const existingEntries = existingCard?.auditTrail?.entries || [];
   if (existingEntries.length === 0) {
-    idCard.auditTrail!.entries = [{
-      seq: 0,
-      action: 'created',
-      timestamp: idCard.provenance!.createdAt!,
-      actor: createdBy,
-      hash: genesisHash,
-      prevHash: null,
-      details: {
-        field: 'idCard',
-        newValue: nickname,
-        reason: 'Agent ID Card created via wizard',
+    idCard.auditTrail!.entries = [
+      {
+        seq: 0,
+        action: 'created',
+        timestamp: idCard.provenance!.createdAt!,
+        actor: createdBy,
+        hash: genesisHash,
+        prevHash: null,
+        details: {
+          field: 'idCard',
+          newValue: nickname,
+          reason: 'Agent ID Card created via wizard',
+        },
       },
-    }];
+    ];
   } else {
     // Append a nickname-changed entry if nickname changed
     const lastEntry = existingEntries[existingEntries.length - 1];
@@ -1657,13 +1713,17 @@ async function idCardWizard(options: {
   console_ui.table(['Field', 'Value'], summaryData);
 
   if (lineage.length > 0) {
-    console_ui.info(`Lineage: ${lineage.map(l => `${l.relationship} ${l.ancestor}`).join(' -> ')}`);
+    console_ui.info(
+      `Lineage: ${lineage.map((l) => `${l.relationship} ${l.ancestor}`).join(' -> ')}`
+    );
   }
 
   // Save
   if (options.dryRun) {
     console_ui.info('Dry run — showing YAML output:');
-    console.log('\n' + chalk.gray(yaml.stringify({ idCard }, { indent: 2, lineWidth: 0 })));
+    console.log(
+      '\n' + chalk.gray(yaml.stringify({ idCard }, { indent: 2, lineWidth: 0 }))
+    );
     return;
   }
 
@@ -1672,12 +1732,17 @@ async function idCardWizard(options: {
     // No manifest, output standalone ID card YAML
     const idCardYaml = yaml.stringify({ idCard }, { indent: 2, lineWidth: 0 });
     console.log('\n' + idCardYaml);
-    console_ui.info('No output path specified. Copy the YAML above into your manifest under metadata.idCard');
+    console_ui.info(
+      'No output path specified. Copy the YAML above into your manifest under metadata.idCard'
+    );
     return;
   }
 
   // Save full manifest
-  const yamlContent = yaml.stringify(agent as OssaAgent, { indent: 2, lineWidth: 0 });
+  const yamlContent = yaml.stringify(agent as OssaAgent, {
+    indent: 2,
+    lineWidth: 0,
+  });
   fs.writeFileSync(outputPath, yamlContent, 'utf-8');
   console_ui.success(`Saved to: ${outputPath}`);
 
@@ -1686,7 +1751,9 @@ async function idCardWizard(options: {
   console_ui.info(`1. Review: ${outputPath}`);
   console_ui.info(`2. Validate: ossa validate ${outputPath}`);
   console_ui.info(`3. The audit trail auto-appends on every future mutation`);
-  console_ui.info(`4. Verify integrity: ossa verify ${registryId || agent.metadata!.name}`);
+  console_ui.info(
+    `4. Verify integrity: ossa verify ${registryId || agent.metadata!.name}`
+  );
 }
 
 // ============================================================================
@@ -1762,7 +1829,9 @@ agentWizardCommand
 agentWizardCommand
   .command('id-card')
   .alias('idcard')
-  .description('Create or update an Agent ID Card (nickname, provenance, audit trail)')
+  .description(
+    'Create or update an Agent ID Card (nickname, provenance, audit trail)'
+  )
   .option('-m, --manifest <path>', 'Path to existing agent manifest')
   .option('-o, --output <path>', 'Output file path')
   .option('--dry-run', 'Preview without saving', false)

@@ -102,7 +102,12 @@ export interface AgentProvenance {
   /** Fork/clone ancestry chain (append-only) */
   lineage?: Array<{
     ancestor: string;
-    relationship: 'forked-from' | 'cloned-from' | 'derived-from' | 'inspired-by' | 'upgraded-from';
+    relationship:
+      | 'forked-from'
+      | 'cloned-from'
+      | 'derived-from'
+      | 'inspired-by'
+      | 'upgraded-from';
     timestamp: string;
     commitHash?: string;
   }>;
@@ -117,9 +122,21 @@ export interface AgentAuditTrail {
 
 export interface AuditTrailEntry {
   seq: number;
-  action: 'created' | 'capability-added' | 'capability-removed' | 'tool-added' | 'tool-removed' |
-    'version-bumped' | 'config-changed' | 'ownership-transferred' | 'access-tier-changed' |
-    'forked' | 'retired' | 'reactivated' | 'nickname-changed' | 'custom';
+  action:
+    | 'created'
+    | 'capability-added'
+    | 'capability-removed'
+    | 'tool-added'
+    | 'tool-removed'
+    | 'version-bumped'
+    | 'config-changed'
+    | 'ownership-transferred'
+    | 'access-tier-changed'
+    | 'forked'
+    | 'retired'
+    | 'reactivated'
+    | 'nickname-changed'
+    | 'custom';
   timestamp: string;
   actor: string;
   hash: string;

@@ -50,12 +50,28 @@ describe('A2A Task Delegation', () => {
       };
 
       const agents: Agent[] = [
-        createAgent('security-expert', ['code-review', 'security-analysis'], 0.2, 0.8, 0.98),
+        createAgent(
+          'security-expert',
+          ['code-review', 'security-analysis'],
+          0.2,
+          0.8,
+          0.98
+        ),
         createAgent('junior-reviewer', ['code-review'], 0.5, 0.5, 0.85),
-        createAgent('general-agent', ['code-review', 'security-analysis'], 0.7, 0.3, 0.90),
+        createAgent(
+          'general-agent',
+          ['code-review', 'security-analysis'],
+          0.7,
+          0.3,
+          0.9
+        ),
       ];
 
-      const delegation = await delegationService.delegate(task, constraints, agents);
+      const delegation = await delegationService.delegate(
+        task,
+        constraints,
+        agents
+      );
 
       expect(delegation).toBeDefined();
       expect(delegation.taskId).toBe(task.id);
@@ -87,11 +103,27 @@ describe('A2A Task Delegation', () => {
       };
 
       const agents: Agent[] = [
-        createAgent('reliable-agent', ['debugging', 'deployment'], 0.3, 0.7, 0.99),
-        createAgent('unreliable-agent', ['debugging', 'deployment'], 0.1, 0.9, 0.80),
+        createAgent(
+          'reliable-agent',
+          ['debugging', 'deployment'],
+          0.3,
+          0.7,
+          0.99
+        ),
+        createAgent(
+          'unreliable-agent',
+          ['debugging', 'deployment'],
+          0.1,
+          0.9,
+          0.8
+        ),
       ];
 
-      const delegation = await delegationService.delegate(task, constraints, agents);
+      const delegation = await delegationService.delegate(
+        task,
+        constraints,
+        agents
+      );
 
       // Should only select agent meeting SLA requirement
       expect(delegation.agent.identity.name).toBe('reliable-agent');
@@ -135,7 +167,13 @@ describe('A2A Task Delegation', () => {
         createdAt: new Date().toISOString(),
       };
 
-      const agent = createAgent('data-processor', ['data-processing'], 0.4, 0.6, 0.96);
+      const agent = createAgent(
+        'data-processor',
+        ['data-processing'],
+        0.4,
+        0.6,
+        0.96
+      );
 
       const sla = await delegationService.negotiateSLA(task, agent);
 
@@ -167,11 +205,29 @@ describe('A2A Task Delegation', () => {
         createdAt: new Date().toISOString(),
       };
 
-      const highPerformanceAgent = createAgent('fast-agent', ['test'], 0.2, 0.8, 0.99);
-      const lowPerformanceAgent = createAgent('slow-agent', ['test'], 0.7, 0.3, 0.85);
+      const highPerformanceAgent = createAgent(
+        'fast-agent',
+        ['test'],
+        0.2,
+        0.8,
+        0.99
+      );
+      const lowPerformanceAgent = createAgent(
+        'slow-agent',
+        ['test'],
+        0.7,
+        0.3,
+        0.85
+      );
 
-      const slaFast = await delegationService.negotiateSLA(task, highPerformanceAgent);
-      const slaSlow = await delegationService.negotiateSLA(task, lowPerformanceAgent);
+      const slaFast = await delegationService.negotiateSLA(
+        task,
+        highPerformanceAgent
+      );
+      const slaSlow = await delegationService.negotiateSLA(
+        task,
+        lowPerformanceAgent
+      );
 
       // Fast agent should have better or equal SLA terms
       expect(slaFast.availability).toBeGreaterThanOrEqual(slaSlow.availability);
@@ -266,7 +322,7 @@ describe('A2A Task Delegation', () => {
         createdAt: new Date().toISOString(),
       };
 
-      const agent = createAgent('slow-worker', ['work'], 0.6, 0.4, 0.90);
+      const agent = createAgent('slow-worker', ['work'], 0.6, 0.4, 0.9);
 
       const delegation = await delegationService.delegate(task, {}, [agent]);
 

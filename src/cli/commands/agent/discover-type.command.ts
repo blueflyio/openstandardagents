@@ -61,9 +61,13 @@ export class DiscoverTypeCommand {
       } else if (options.interactive) {
         await this.discoverInteractive(options);
       } else {
-        console.log(chalk.yellow('Please specify --from <manifest> or --interactive'));
+        console.log(
+          chalk.yellow('Please specify --from <manifest> or --interactive')
+        );
         console.log(chalk.gray('\nExamples:'));
-        console.log(chalk.gray('  ossa agent discover-type --from manifest.yaml'));
+        console.log(
+          chalk.gray('  ossa agent discover-type --from manifest.yaml')
+        );
         console.log(chalk.gray('  ossa agent discover-type --interactive'));
       }
     } catch (error) {
@@ -75,7 +79,9 @@ export class DiscoverTypeCommand {
   /**
    * Discover type from existing manifest
    */
-  private async discoverFromManifest(options: DiscoverTypeOptions): Promise<void> {
+  private async discoverFromManifest(
+    options: DiscoverTypeOptions
+  ): Promise<void> {
     if (!options.from) {
       throw new Error('Manifest path required');
     }
@@ -97,7 +103,10 @@ export class DiscoverTypeCommand {
     if (analysis.shouldChange) {
       console.log(chalk.yellow('\n⚠️  Type Change Recommended:'));
       console.log(chalk.gray('  Current:  '), chalk.cyan(analysis.currentType));
-      console.log(chalk.gray('  Suggested:'), chalk.green(analysis.suggestedType));
+      console.log(
+        chalk.gray('  Suggested:'),
+        chalk.green(analysis.suggestedType)
+      );
       console.log();
 
       for (const reason of analysis.reasons) {
@@ -116,8 +125,14 @@ export class DiscoverTypeCommand {
   /**
    * Interactive type discovery
    */
-  private async discoverInteractive(options: DiscoverTypeOptions): Promise<void> {
-    console.log(chalk.gray('Answer the following questions to discover optimal agent type:\n'));
+  private async discoverInteractive(
+    options: DiscoverTypeOptions
+  ): Promise<void> {
+    console.log(
+      chalk.gray(
+        'Answer the following questions to discover optimal agent type:\n'
+      )
+    );
 
     // Build context interactively
     const context = await this.buildContextInteractively();
@@ -130,11 +145,23 @@ export class DiscoverTypeCommand {
 
     // Display characteristics
     console.log(chalk.cyan('Characteristics:'));
-    console.log(chalk.gray('  Execution Time:    '), characteristics.executionTime);
+    console.log(
+      chalk.gray('  Execution Time:    '),
+      characteristics.executionTime
+    );
     console.log(chalk.gray('  Scaling:           '), characteristics.scaling);
-    console.log(chalk.gray('  State Persistence: '), characteristics.statePersistence ? 'Yes' : 'No');
-    console.log(chalk.gray('  Requires Human:    '), characteristics.requiresHuman ? 'Yes' : 'No');
-    console.log(chalk.gray('  Cost Profile:      '), characteristics.costProfile);
+    console.log(
+      chalk.gray('  State Persistence: '),
+      characteristics.statePersistence ? 'Yes' : 'No'
+    );
+    console.log(
+      chalk.gray('  Requires Human:    '),
+      characteristics.requiresHuman ? 'Yes' : 'No'
+    );
+    console.log(
+      chalk.gray('  Cost Profile:      '),
+      characteristics.costProfile
+    );
 
     // Show recommended capabilities
     const recommended = this.typeDetector.suggestCapabilitiesForType(type);
@@ -144,7 +171,9 @@ export class DiscoverTypeCommand {
     }
 
     // Ask if user wants to create manifest
-    const { createManifest } = await inquirer.prompt<{ createManifest: boolean }>([
+    const { createManifest } = await inquirer.prompt<{
+      createManifest: boolean;
+    }>([
       {
         type: 'confirm',
         name: 'createManifest',
@@ -239,7 +268,10 @@ export class DiscoverTypeCommand {
           { name: 'Supervised (requires approval)', value: 'supervised' },
           { name: 'Semi-autonomous (some approval)', value: 'semi-autonomous' },
           { name: 'Autonomous (fully independent)', value: 'autonomous' },
-          { name: 'Policy-driven (governed by policies)', value: 'policy-driven' },
+          {
+            name: 'Policy-driven (governed by policies)',
+            value: 'policy-driven',
+          },
         ],
       },
       {
@@ -293,31 +325,55 @@ export class DiscoverTypeCommand {
       type: DynamicAgentType;
       confidence: number;
       context: AgentTypeContext;
-      alternatives: Array<{ type: DynamicAgentType; confidence: number; reason: string }>;
+      alternatives: Array<{
+        type: DynamicAgentType;
+        confidence: number;
+        reason: string;
+      }>;
       recommendations: string[];
     },
     verbose = false
   ): void {
     console.log(chalk.green.bold(`Detected Type: ${result.type}`));
-    console.log(chalk.gray(`Confidence: ${(result.confidence * 100).toFixed(1)}%\n`));
+    console.log(
+      chalk.gray(`Confidence: ${(result.confidence * 100).toFixed(1)}%\n`)
+    );
 
     const characteristics = TYPE_CHARACTERISTICS[result.type];
 
     console.log(chalk.cyan('Characteristics:'));
-    console.log(chalk.gray('  Execution Time:    '), characteristics.executionTime);
+    console.log(
+      chalk.gray('  Execution Time:    '),
+      characteristics.executionTime
+    );
     console.log(chalk.gray('  Scaling:           '), characteristics.scaling);
-    console.log(chalk.gray('  State Persistence: '), characteristics.statePersistence ? 'Yes' : 'No');
-    console.log(chalk.gray('  Requires Human:    '), characteristics.requiresHuman ? 'Yes' : 'No');
-    console.log(chalk.gray('  Cost Profile:      '), characteristics.costProfile);
+    console.log(
+      chalk.gray('  State Persistence: '),
+      characteristics.statePersistence ? 'Yes' : 'No'
+    );
+    console.log(
+      chalk.gray('  Requires Human:    '),
+      characteristics.requiresHuman ? 'Yes' : 'No'
+    );
+    console.log(
+      chalk.gray('  Cost Profile:      '),
+      characteristics.costProfile
+    );
 
     if (verbose) {
       console.log(chalk.cyan('\nContext:'));
       console.log(chalk.gray('  Environment:   '), result.context.environment);
       console.log(chalk.gray('  Trigger:       '), result.context.trigger);
       console.log(chalk.gray('  Data Flow:     '), result.context.dataFlow);
-      console.log(chalk.gray('  Collaboration: '), result.context.collaboration);
+      console.log(
+        chalk.gray('  Collaboration: '),
+        result.context.collaboration
+      );
       console.log(chalk.gray('  Autonomy:      '), result.context.autonomy);
-      console.log(chalk.gray('  Capabilities:  '), result.context.capabilities.join(', ') || 'none');
+      console.log(
+        chalk.gray('  Capabilities:  '),
+        result.context.capabilities.join(', ') || 'none'
+      );
     }
 
     if (result.alternatives.length > 0) {
@@ -366,7 +422,7 @@ export class DiscoverTypeCommand {
           provider: 'anthropic',
           model: 'claude-3-5-sonnet-20241022',
         },
-        capabilities: capabilities.map(id => ({ id })),
+        capabilities: capabilities.map((id) => ({ id })),
         autonomy: {
           level: context.autonomy === 'autonomous' ? 'full' : 'partial',
           approval_required: context.autonomy === 'supervised',

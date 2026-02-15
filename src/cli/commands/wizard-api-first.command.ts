@@ -196,12 +196,14 @@ class APIFirstWizard {
   }
 
   private async configureIdCard(): Promise<void> {
-    const { addIdCard } = await inquirer.prompt([{
-      type: 'confirm',
-      name: 'addIdCard',
-      message: 'Add an Agent ID Card (nickname, provenance, audit trail)?',
-      default: true,
-    }]);
+    const { addIdCard } = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'addIdCard',
+        message: 'Add an Agent ID Card (nickname, provenance, audit trail)?',
+        default: true,
+      },
+    ]);
 
     if (!addIdCard) return;
 
@@ -218,13 +220,16 @@ class APIFirstWizard {
         type: 'input',
         name: 'nickname',
         message: 'Nickname (short callsign, e.g., Scout, Drupa):',
-        default: this.agent.metadata?.name?.split('-').map(
-          (w: string) => w.charAt(0).toUpperCase() + w.slice(1)
-        ).join('') || 'Agent',
+        default:
+          this.agent.metadata?.name
+            ?.split('-')
+            .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+            .join('') || 'Agent',
         validate: (input: string) => {
           if (!input) return 'Required';
           if (input.length > 32) return 'Max 32 chars';
-          if (!/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(input)) return 'Alphanumeric, start with letter';
+          if (!/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(input))
+            return 'Alphanumeric, start with letter';
           return true;
         },
       },
@@ -250,7 +255,11 @@ class APIFirstWizard {
 
     // Build ID card via IdCardService (DRY — single source of truth)
     const registryId = this.agent.metadata?.name
-      ? IdCardService.buildRegistryId('blueflyio', this.agent.metadata.name, '0.4.5')
+      ? IdCardService.buildRegistryId(
+          'blueflyio',
+          this.agent.metadata.name,
+          '0.4.5'
+        )
       : undefined;
 
     const idCard = IdCardService.createIdCard({

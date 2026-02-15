@@ -46,7 +46,7 @@ describe.skip('MCP Integration', () => {
       await mcpService.disconnectMCPServer(connection.id);
 
       const connections = mcpService.getConnections();
-      const disconnected = connections.find(c => c.id === connection.id);
+      const disconnected = connections.find((c) => c.id === connection.id);
 
       expect(disconnected).toBeUndefined();
     });
@@ -65,7 +65,7 @@ describe.skip('MCP Integration', () => {
       const connections = mcpService.getConnections();
 
       expect(connections.length).toBe(3);
-      expect(connections.every(c => c.status === 'connected')).toBe(true);
+      expect(connections.every((c) => c.status === 'connected')).toBe(true);
     });
   });
 
@@ -163,7 +163,11 @@ describe.skip('MCP Integration', () => {
         language: 'javascript',
       };
 
-      const result = await mcpService.callTool(connection.id, toolName, arguments_);
+      const result = await mcpService.callTool(
+        connection.id,
+        toolName,
+        arguments_
+      );
 
       expect(result).toBeDefined();
     });
@@ -234,7 +238,9 @@ describe.skip('MCP Integration', () => {
       const phpConnection = await mcpService.connectMCPServer(phpServerUri);
 
       // TypeScript agent
-      const tsAgent: AgentIdentity = createAgentIdentity('ts-agent', ['typescript']);
+      const tsAgent: AgentIdentity = createAgentIdentity('ts-agent', [
+        'typescript',
+      ]);
 
       // Discover PHP server capabilities
       const phpTools = await mcpService.discoverTools(phpConnection.id);
@@ -243,9 +249,13 @@ describe.skip('MCP Integration', () => {
       expect(Array.isArray(phpTools)).toBe(true);
 
       // Call PHP tool from TypeScript
-      const result = await mcpService.callTool(phpConnection.id, 'process_data', {
-        data: [1, 2, 3, 4, 5],
-      });
+      const result = await mcpService.callTool(
+        phpConnection.id,
+        'process_data',
+        {
+          data: [1, 2, 3, 4, 5],
+        }
+      );
 
       expect(result).toBeDefined();
     });
@@ -253,7 +263,8 @@ describe.skip('MCP Integration', () => {
     it('should enable TypeScript ↔ Python communication', async () => {
       // Simulate Python MCP server
       const pythonServerUri = 'stdio://python-mcp-server';
-      const pythonConnection = await mcpService.connectMCPServer(pythonServerUri);
+      const pythonConnection =
+        await mcpService.connectMCPServer(pythonServerUri);
 
       // Discover Python server resources
       const resources = await mcpService.discoverResources(pythonConnection.id);
@@ -304,16 +315,19 @@ describe.skip('MCP Integration', () => {
     it('should handle missing connection', async () => {
       const nonExistentId = crypto.randomUUID();
 
-      await expect(
-        mcpService.discoverResources(nonExistentId)
-      ).rejects.toThrow('MCP connection not found');
+      await expect(mcpService.discoverResources(nonExistentId)).rejects.toThrow(
+        'MCP connection not found'
+      );
     });
   });
 });
 
 // Helper functions
 
-function createAgentIdentity(name: string, capabilities: string[]): AgentIdentity {
+function createAgentIdentity(
+  name: string,
+  capabilities: string[]
+): AgentIdentity {
   return {
     id: crypto.randomUUID(),
     namespace: 'test',
