@@ -1,4 +1,0 @@
-enabled: true
-async_execution: true
-timeout: 300
-retry_attempts: 3

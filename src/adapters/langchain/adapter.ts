@@ -32,6 +32,7 @@ export class LangChainAdapter extends BaseAdapter {
   readonly platform = 'langchain';
   readonly displayName = 'LangChain';
   readonly description = 'LangChain agent framework (Python/TypeScript)';
+  readonly status = 'production' as const;
   readonly supportedVersions = ['v0.3.6', 'v{{VERSION}}'];
 
   private converter = new LangChainConverter();

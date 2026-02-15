@@ -39,6 +39,7 @@ export class AnthropicExporter extends BaseAdapter implements PlatformAdapter {
   readonly displayName = 'Anthropic Claude';
   readonly description =
     'Export OSSA agents to Anthropic Python SDK with FastAPI server';
+  readonly status = 'beta' as const;
   readonly supportedVersions = [
     '0.3.0',
     '0.3.3',

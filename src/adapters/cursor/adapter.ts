@@ -32,6 +32,7 @@ export class CursorAdapter extends BaseAdapter {
   readonly displayName = 'Cursor Cloud Agent';
   readonly description =
     'Cursor Cloud Agent for AI-powered coding assistance in Cursor IDE';
+  readonly status = 'beta' as const;
   readonly supportedVersions = ['v{{VERSION}}'];
 
   /**
@@ -230,8 +231,7 @@ export class CursorAdapter extends BaseAdapter {
    */
   private convertToCursorAgent(manifest: OssaAgent): CursorCloudAgent {
     const name = manifest.metadata?.name || 'cursor-agent';
-    const description =
-      manifest.metadata?.description || 'Cursor Cloud Agent';
+    const description = manifest.metadata?.description || 'Cursor Cloud Agent';
     const prompt = manifest.spec?.role || 'AI coding assistant';
 
     // Convert capabilities
@@ -428,7 +428,8 @@ ${props}
 
     const toolRegistry = agent.tools
       .map(
-        (t) => `  '${t.name}': ${t.implementationType === 'code' ? t.name : `async () => { throw new Error('Not implemented'); }`},`
+        (t) =>
+          `  '${t.name}': ${t.implementationType === 'code' ? t.name : `async () => { throw new Error('Not implemented'); }`},`
       )
       .join('\n');
 
@@ -536,10 +537,7 @@ export async function initialize(): Promise<void> {
   /**
    * Generate README.md
    */
-  private generateReadme(
-    manifest: OssaAgent,
-    agent: CursorCloudAgent
-  ): string {
+  private generateReadme(manifest: OssaAgent, agent: CursorCloudAgent): string {
     const agentName = manifest.metadata?.name || 'cursor-agent';
 
     return `# ${agentName}

@@ -20,6 +20,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'yaml';
 import type { OssaAgent } from '../../types/index';
+import { IdCardService } from '../../services/id-card.service.js';
 import {
   initializeAPIsFirst,
   SchemaLoader,
@@ -90,6 +91,9 @@ class APIFirstWizard {
 
       // Step 2: Basic Metadata (validated against schema)
       await this.configureMetadata();
+
+      // Step 2b: Agent ID Card (v0.4.5+)
+      await this.configureIdCard();
 
       // Step 3: LLM Configuration (schema-driven)
       await this.configureLLM();
@@ -189,6 +193,95 @@ class APIFirstWizard {
     };
 
     printSuccess('Metadata configured and validated against schema');
+  }
+
+  private async configureIdCard(): Promise<void> {
+    const { addIdCard } = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'addIdCard',
+        message: 'Add an Agent ID Card (nickname, provenance, audit trail)?',
+        default: true,
+      },
+    ]);
+
+    if (!addIdCard) return;
+
+    this.nextStep('Agent ID Card');
+    printStep(
+      this.currentStep,
+      this.totalSteps,
+      'Agent ID Card',
+      'Human-friendly identity with immutable provenance (v0.4.5+)'
+    );
+
+    const answers = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'nickname',
+        message: 'Nickname (short callsign, e.g., Scout, Drupa):',
+        default:
+          this.agent.metadata?.name
+            ?.split('-')
+            .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+            .join('') || 'Agent',
+        validate: (input: string) => {
+          if (!input) return 'Required';
+          if (input.length > 32) return 'Max 32 chars';
+          if (!/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(input))
+            return 'Alphanumeric, start with letter';
+          return true;
+        },
+      },
+      {
+        type: 'input',
+        name: 'displayName',
+        message: 'Display name (full name):',
+        default: (answers: any) => answers.nickname,
+      },
+      {
+        type: 'input',
+        name: 'avatar',
+        message: 'Avatar URL (optional):',
+        default: '',
+      },
+      {
+        type: 'input',
+        name: 'createdBy',
+        message: 'Created by:',
+        default: process.env.USER || 'unknown',
+      },
+    ]);
+
+    // Build ID card via IdCardService (DRY — single source of truth)
+    const registryId = this.agent.metadata?.name
+      ? IdCardService.buildRegistryId(
+          'blueflyio',
+          this.agent.metadata.name,
+          '0.4.5'
+        )
+      : undefined;
+
+    const idCard = IdCardService.createIdCard({
+      nickname: answers.nickname,
+      displayName: answers.displayName,
+      avatar: answers.avatar || undefined,
+      registryId,
+      createdBy: answers.createdBy,
+      createdWith: 'ossa-wizard-api-first/0.4.5',
+    });
+
+    this.agent.metadata = {
+      ...this.agent.metadata,
+      idCard,
+    };
+
+    // Compute fingerprint + birthHash
+    const fingerprint = IdCardService.recomputeFingerprint(this.agent);
+
+    printSuccess(`ID Card: ${answers.nickname} (${answers.displayName})`);
+    printSuccess(`Fingerprint: ${fingerprint.substring(0, 24)}...`);
+    printSuccess('Audit trail initialized with genesis entry');
   }
 
   private async configureLLM(): Promise<void> {

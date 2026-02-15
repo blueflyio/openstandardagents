@@ -19,7 +19,11 @@ import {
   type LoadBalancingConfig,
   type CircuitBreakerConfig,
 } from '../../src/adapters/a2a/agent-mesh.js';
-import type { AgentNode, AgentIdentity, A2AMessage } from '../../src/adapters/a2a/a2a-protocol.js';
+import type {
+  AgentNode,
+  AgentIdentity,
+  A2AMessage,
+} from '../../src/adapters/a2a/a2a-protocol.js';
 
 describe('A2A Agent Mesh', () => {
   let mesh: AgentMesh;
@@ -64,7 +68,11 @@ describe('A2A Agent Mesh', () => {
       const agents: AgentNode[] = [
         createAgentNode('code-gen', ['code-generation', 'typescript']),
         createAgentNode('tester', ['testing', 'integration-testing']),
-        createAgentNode('full-stack', ['code-generation', 'testing', 'deployment']),
+        createAgentNode('full-stack', [
+          'code-generation',
+          'testing',
+          'deployment',
+        ]),
       ];
 
       for (const agent of agents) {
@@ -75,10 +83,17 @@ describe('A2A Agent Mesh', () => {
       const codeGenAgents = mesh.discoverAgents(['code-generation']);
 
       expect(codeGenAgents.length).toBe(2);
-      expect(codeGenAgents.every(a => a.identity.capabilities.includes('code-generation'))).toBe(true);
+      expect(
+        codeGenAgents.every((a) =>
+          a.identity.capabilities.includes('code-generation')
+        )
+      ).toBe(true);
 
       // Discover agents with multiple capabilities
-      const multiCapAgents = mesh.discoverAgents(['code-generation', 'testing']);
+      const multiCapAgents = mesh.discoverAgents([
+        'code-generation',
+        'testing',
+      ]);
 
       expect(multiCapAgents.length).toBe(1);
       expect(multiCapAgents[0].identity.name).toBe('full-stack');
@@ -266,7 +281,7 @@ describe('A2A Agent Mesh', () => {
       mesh.completeTrace(trace.traceId, true);
 
       const allTraces = mesh.getAllTraces();
-      const completedTrace = allTraces.find(t => t.traceId === trace.traceId);
+      const completedTrace = allTraces.find((t) => t.traceId === trace.traceId);
 
       expect(completedTrace?.status).toBe('success');
       expect(completedTrace?.endTime).toBeDefined();
@@ -292,7 +307,7 @@ describe('A2A Agent Mesh', () => {
       mesh.completeTrace(trace.traceId, false, error);
 
       const allTraces = mesh.getAllTraces();
-      const failedTrace = allTraces.find(t => t.traceId === trace.traceId);
+      const failedTrace = allTraces.find((t) => t.traceId === trace.traceId);
 
       expect(failedTrace?.status).toBe('error');
       expect(failedTrace?.error).toBeDefined();
@@ -351,9 +366,10 @@ describe('A2A Agent Mesh', () => {
       }
 
       // Mock fetch for health check
-      global.fetch = async () => ({
-        ok: true,
-      } as Response);
+      global.fetch = async () =>
+        ({
+          ok: true,
+        }) as Response;
 
       await mesh.healthCheckAll();
 
@@ -368,7 +384,10 @@ describe('A2A Agent Mesh', () => {
 
 // Helper functions
 
-function createAgentIdentity(name: string, capabilities: string[]): AgentIdentity {
+function createAgentIdentity(
+  name: string,
+  capabilities: string[]
+): AgentIdentity {
   return {
     id: crypto.randomUUID(),
     namespace: 'test',
@@ -403,7 +422,7 @@ function createMessage(to: AgentIdentity): A2AMessage {
     to,
     type: 'request' as any,
     payload: {},
-    version: '0.4.4',
+    version: '0.4.5',
     metadata: {
       priority: 'normal' as any,
       timeout: 30000,

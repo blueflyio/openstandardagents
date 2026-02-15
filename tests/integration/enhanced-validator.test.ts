@@ -153,9 +153,9 @@ describe('Enhanced Validator Integration', () => {
       expect(
         result.errors.some((e) => e.includes('Invalid LLM provider'))
       ).toBe(true);
-      expect(
-        result.errors.some((e) => e.includes('Invalid access tier'))
-      ).toBe(true);
+      expect(result.errors.some((e) => e.includes('Invalid access tier'))).toBe(
+        true
+      );
       expect(result.errors.some((e) => e.includes('not a valid URL'))).toBe(
         true
       );
@@ -242,7 +242,10 @@ describe('Enhanced Validator Integration', () => {
                 type: 'object',
                 properties: {
                   endpoint: { type: 'string' },
-                  method: { type: 'string', enum: ['GET', 'POST', 'PUT', 'DELETE'] },
+                  method: {
+                    type: 'string',
+                    enum: ['GET', 'POST', 'PUT', 'DELETE'],
+                  },
                   data: { type: 'object' },
                 },
                 required: ['endpoint', 'method'],
@@ -313,9 +316,9 @@ describe('Enhanced Validator Integration', () => {
       expect(
         result.errors.some((e) => e.includes('Invalid LLM provider'))
       ).toBe(true);
-      expect(
-        result.errors.some((e) => e.includes('Invalid access tier'))
-      ).toBe(true);
+      expect(result.errors.some((e) => e.includes('Invalid access tier'))).toBe(
+        true
+      );
     });
   });
 

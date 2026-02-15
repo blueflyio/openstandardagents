@@ -317,7 +317,10 @@ export class ValidatorService {
     }
 
     // Validate nested schemas
-    if ('properties' in parameters && typeof parameters.properties === 'object') {
+    if (
+      'properties' in parameters &&
+      typeof parameters.properties === 'object'
+    ) {
       for (const [propName, propSchema] of Object.entries(
         parameters.properties as Record<string, unknown>
       )) {
@@ -326,7 +329,9 @@ export class ValidatorService {
         );
         if (!nestedResult.valid) {
           errors.push(
-            ...nestedResult.errors.map((err) => `properties.${propName}: ${err}`)
+            ...nestedResult.errors.map(
+              (err) => `properties.${propName}: ${err}`
+            )
           );
         }
       }
