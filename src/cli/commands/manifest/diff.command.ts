@@ -24,7 +24,10 @@ interface DiffOptions {
 }
 
 export const manifestDiffCommand = new Command('diff')
-  .argument('<path1>', 'Path to first OSSA manifest (or only manifest if --schema)')
+  .argument(
+    '<path1>',
+    'Path to first OSSA manifest (or only manifest if --schema)'
+  )
   .argument('[path2]', 'Path to second OSSA manifest (optional with --schema)')
   .option('--schema', 'Compare against schema defaults', false)
   .description('Show differences between manifests or against schema defaults')
@@ -84,16 +87,17 @@ export const manifestDiffCommand = new Command('diff')
         );
 
         if (differences.length === 0) {
-          log(chalk.green('\n✓ No differences found - manifests are identical'));
+          log(
+            chalk.green('\n✓ No differences found - manifests are identical')
+          );
           process.exit(ExitCode.SUCCESS);
         }
 
-        log(
-          chalk.bold(`\n🔍 Found ${differences.length} difference(s):\n`)
-        );
+        log(chalk.bold(`\n🔍 Found ${differences.length} difference(s):\n`));
 
         differences.forEach((diff, index) => {
-          const symbol = diff.type === 'added' ? '+' : diff.type === 'removed' ? '-' : '~';
+          const symbol =
+            diff.type === 'added' ? '+' : diff.type === 'removed' ? '-' : '~';
           const color =
             diff.type === 'added'
               ? chalk.green

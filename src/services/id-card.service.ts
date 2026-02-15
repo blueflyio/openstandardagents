@@ -21,14 +21,28 @@ export type ChainType = 'merkle' | 'linear' | 'signed';
 
 /** Audit trail action types */
 export type AuditAction =
-  | 'created' | 'capability-added' | 'capability-removed'
-  | 'tool-added' | 'tool-removed' | 'version-bumped' | 'config-changed'
-  | 'ownership-transferred' | 'access-tier-changed' | 'forked'
-  | 'retired' | 'reactivated' | 'nickname-changed' | 'custom';
+  | 'created'
+  | 'capability-added'
+  | 'capability-removed'
+  | 'tool-added'
+  | 'tool-removed'
+  | 'version-bumped'
+  | 'config-changed'
+  | 'ownership-transferred'
+  | 'access-tier-changed'
+  | 'forked'
+  | 'retired'
+  | 'reactivated'
+  | 'nickname-changed'
+  | 'custom';
 
 /** Lineage relationship types */
 export type LineageRelationship =
-  | 'forked-from' | 'cloned-from' | 'derived-from' | 'inspired-by' | 'upgraded-from';
+  | 'forked-from'
+  | 'cloned-from'
+  | 'derived-from'
+  | 'inspired-by'
+  | 'upgraded-from';
 
 /** Options for creating a new ID Card */
 export interface CreateIdCardOptions {
@@ -72,15 +86,23 @@ export interface ChainVerificationResult {
 export type IdCard = NonNullable<NonNullable<OssaAgent['metadata']>['idCard']>;
 
 /** Audit trail entry type */
-export type AuditTrailEntry = NonNullable<NonNullable<IdCard['auditTrail']>['entries']>[number];
+export type AuditTrailEntry = NonNullable<
+  NonNullable<IdCard['auditTrail']>['entries']
+>[number];
 
 export class IdCardService {
   /**
    * Compute a hash of content with the given algorithm, prefixed with algorithm name.
    * Example: "sha256:a1b2c3..."
    */
-  static computeHash(content: string, algorithm: HashAlgorithm = 'sha256'): string {
-    const hash = crypto.createHash(algorithm).update(content, 'utf-8').digest('hex');
+  static computeHash(
+    content: string,
+    algorithm: HashAlgorithm = 'sha256'
+  ): string {
+    const hash = crypto
+      .createHash(algorithm)
+      .update(content, 'utf-8')
+      .digest('hex');
     return `${algorithm}:${hash}`;
   }
 
@@ -110,7 +132,7 @@ export class IdCardService {
     };
 
     if (options.lineage && options.lineage.length > 0) {
-      provenance!.lineage = options.lineage.map(l => ({
+      provenance!.lineage = options.lineage.map((l) => ({
         ancestor: l.ancestor,
         relationship: l.relationship,
         timestamp: now,
@@ -136,19 +158,21 @@ export class IdCardService {
         hashAlgorithm: algorithm,
         chainType,
         genesisHash,
-        entries: [{
-          seq: 0,
-          action: 'created',
-          timestamp: now,
-          actor: options.createdBy,
-          hash: genesisHash,
-          prevHash: null,
-          details: {
-            field: 'idCard',
-            newValue: options.nickname,
-            reason: 'Agent ID Card created',
+        entries: [
+          {
+            seq: 0,
+            action: 'created',
+            timestamp: now,
+            actor: options.createdBy,
+            hash: genesisHash,
+            prevHash: null,
+            details: {
+              field: 'idCard',
+              newValue: options.nickname,
+              reason: 'Agent ID Card created',
+            },
           },
-        }],
+        ],
       },
     };
 
@@ -164,7 +188,10 @@ export class IdCardService {
    * The entry is hash-chained to the previous entry.
    * Returns the mutated ID Card (same reference).
    */
-  static appendAuditEntry(idCard: IdCard, options: AppendAuditEntryOptions): IdCard {
+  static appendAuditEntry(
+    idCard: IdCard,
+    options: AppendAuditEntryOptions
+  ): IdCard {
     if (!idCard.auditTrail) {
       idCard.auditTrail = {
         hashAlgorithm: 'sha256',
@@ -178,7 +205,8 @@ export class IdCardService {
     }
 
     const entries = idCard.auditTrail.entries;
-    const algorithm = (idCard.auditTrail.hashAlgorithm || 'sha256') as HashAlgorithm;
+    const algorithm = (idCard.auditTrail.hashAlgorithm ||
+      'sha256') as HashAlgorithm;
     const lastEntry = entries.length > 0 ? entries[entries.length - 1] : null;
     const seq = lastEntry ? lastEntry.seq + 1 : 0;
     const prevHash = lastEntry ? lastEntry.hash : null;
@@ -261,12 +289,17 @@ export class IdCardService {
     }
 
     if (first.prevHash !== null && first.prevHash !== undefined) {
-      result.errors.push(`First entry prevHash should be null, got "${first.prevHash}"`);
+      result.errors.push(
+        `First entry prevHash should be null, got "${first.prevHash}"`
+      );
       result.valid = false;
     }
 
     // Check genesis hash matches first entry
-    if (idCard.auditTrail?.genesisHash && first.hash !== idCard.auditTrail.genesisHash) {
+    if (
+      idCard.auditTrail?.genesisHash &&
+      first.hash !== idCard.auditTrail.genesisHash
+    ) {
       result.errors.push(
         `Genesis hash mismatch: trail says "${idCard.auditTrail.genesisHash}" but first entry hash is "${first.hash}"`
       );
@@ -310,7 +343,7 @@ export class IdCardService {
    */
   static applyMutation(
     agent: Partial<OssaAgent>,
-    options: AppendAuditEntryOptions,
+    options: AppendAuditEntryOptions
   ): Partial<OssaAgent> {
     const idCard = agent.metadata?.idCard;
     if (!idCard) {
@@ -327,11 +360,7 @@ export class IdCardService {
    * Build a registry ID from agent metadata.
    * Format: ossa://org/agent-name@version
    */
-  static buildRegistryId(
-    org: string,
-    name: string,
-    version?: string,
-  ): string {
+  static buildRegistryId(org: string, name: string, version?: string): string {
     const base = `ossa://${org}/${name}`;
     return version ? `${base}@${version}` : base;
   }

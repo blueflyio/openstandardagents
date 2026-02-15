@@ -19,22 +19,39 @@ export const OssaApiVersionSchema = z
 export const AuditTrailEntrySchema = z.object({
   seq: z.number().int().min(0),
   action: z.enum([
-    'created', 'capability-added', 'capability-removed',
-    'tool-added', 'tool-removed', 'version-bumped', 'config-changed',
-    'ownership-transferred', 'access-tier-changed', 'forked',
-    'retired', 'reactivated', 'nickname-changed', 'custom',
+    'created',
+    'capability-added',
+    'capability-removed',
+    'tool-added',
+    'tool-removed',
+    'version-bumped',
+    'config-changed',
+    'ownership-transferred',
+    'access-tier-changed',
+    'forked',
+    'retired',
+    'reactivated',
+    'nickname-changed',
+    'custom',
   ]),
   timestamp: z.string(),
   actor: z.string(),
   hash: z.string().regex(/^sha(256|384|512):[a-f0-9]+$/),
-  prevHash: z.string().regex(/^sha(256|384|512):[a-f0-9]+$/).nullable().optional(),
-  details: z.object({
-    field: z.string().optional(),
-    oldValue: z.unknown().optional(),
-    newValue: z.unknown().optional(),
-    reason: z.string().optional(),
-    commitHash: z.string().optional(),
-  }).passthrough().optional(),
+  prevHash: z
+    .string()
+    .regex(/^sha(256|384|512):[a-f0-9]+$/)
+    .nullable()
+    .optional(),
+  details: z
+    .object({
+      field: z.string().optional(),
+      oldValue: z.unknown().optional(),
+      newValue: z.unknown().optional(),
+      reason: z.string().optional(),
+      commitHash: z.string().optional(),
+    })
+    .passthrough()
+    .optional(),
   signature: z.string().optional(),
 });
 
@@ -51,22 +68,46 @@ export const AgentProvenanceSchema = z.object({
   createdBy: z.string().optional(),
   createdAt: z.string().optional(),
   createdWith: z.string().optional(),
-  lineage: z.array(z.object({
-    ancestor: z.string(),
-    relationship: z.enum(['forked-from', 'cloned-from', 'derived-from', 'inspired-by', 'upgraded-from']),
-    timestamp: z.string(),
-    commitHash: z.string().optional(),
-  })).optional(),
+  lineage: z
+    .array(
+      z.object({
+        ancestor: z.string(),
+        relationship: z.enum([
+          'forked-from',
+          'cloned-from',
+          'derived-from',
+          'inspired-by',
+          'upgraded-from',
+        ]),
+        timestamp: z.string(),
+        commitHash: z.string().optional(),
+      })
+    )
+    .optional(),
 });
 
 // Agent ID Card (v0.4.5+)
 export const AgentIdCardSchema = z.object({
-  nickname: z.string().min(1).max(32).regex(/^[a-zA-Z][a-zA-Z0-9_-]*$/).optional(),
+  nickname: z
+    .string()
+    .min(1)
+    .max(32)
+    .regex(/^[a-zA-Z][a-zA-Z0-9_-]*$/)
+    .optional(),
   displayName: z.string().max(128).optional(),
   avatar: z.string().url().optional(),
-  registryId: z.string().regex(/^ossa:\/\/[a-z0-9-]+\/[a-z0-9-]+(@[0-9]+\.[0-9]+\.[0-9]+)?$/).optional(),
-  fingerprint: z.string().regex(/^sha256:[a-f0-9]{64}$/).optional(),
-  birthHash: z.string().regex(/^sha256:[a-f0-9]{64}$/).optional(),
+  registryId: z
+    .string()
+    .regex(/^ossa:\/\/[a-z0-9-]+\/[a-z0-9-]+(@[0-9]+\.[0-9]+\.[0-9]+)?$/)
+    .optional(),
+  fingerprint: z
+    .string()
+    .regex(/^sha256:[a-f0-9]{64}$/)
+    .optional(),
+  birthHash: z
+    .string()
+    .regex(/^sha256:[a-f0-9]{64}$/)
+    .optional(),
   provenance: AgentProvenanceSchema.optional(),
   auditTrail: AgentAuditTrailSchema.optional(),
 });

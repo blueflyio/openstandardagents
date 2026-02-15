@@ -96,15 +96,19 @@ describe('IdCardService', () => {
       const card = IdCardService.createIdCard({
         nickname: 'ForkedBot',
         createdBy: 'dev',
-        lineage: [{
-          ancestor: 'ossa://blueflyio/original-bot@0.4.0',
-          relationship: 'forked-from',
-          commitHash: 'abc123',
-        }],
+        lineage: [
+          {
+            ancestor: 'ossa://blueflyio/original-bot@0.4.0',
+            relationship: 'forked-from',
+            commitHash: 'abc123',
+          },
+        ],
       });
 
       expect(card.provenance?.lineage).toHaveLength(1);
-      expect(card.provenance!.lineage![0].ancestor).toBe('ossa://blueflyio/original-bot@0.4.0');
+      expect(card.provenance!.lineage![0].ancestor).toBe(
+        'ossa://blueflyio/original-bot@0.4.0'
+      );
       expect(card.provenance!.lineage![0].relationship).toBe('forked-from');
       expect(card.provenance!.lineage![0].commitHash).toBe('abc123');
       expect(card.provenance!.lineage![0].timestamp).toBeDefined();
@@ -239,20 +243,24 @@ describe('IdCardService', () => {
       const card: any = {
         nickname: 'Bad',
         auditTrail: {
-          entries: [{
-            seq: 1,
-            action: 'created',
-            timestamp: new Date().toISOString(),
-            actor: 'dev',
-            hash: 'sha256:abc',
-            prevHash: null,
-          }],
+          entries: [
+            {
+              seq: 1,
+              action: 'created',
+              timestamp: new Date().toISOString(),
+              actor: 'dev',
+              hash: 'sha256:abc',
+              prevHash: null,
+            },
+          ],
         },
       };
 
       const result = IdCardService.verifyChainIntegrity(card);
       expect(result.valid).toBe(false);
-      expect(result.errors).toContainEqual(expect.stringContaining('First entry seq should be 0'));
+      expect(result.errors).toContainEqual(
+        expect.stringContaining('First entry seq should be 0')
+      );
     });
 
     it('should fail if chain linkage is broken', () => {
@@ -271,7 +279,9 @@ describe('IdCardService', () => {
 
       const result = IdCardService.verifyChainIntegrity(card);
       expect(result.valid).toBe(false);
-      expect(result.errors).toContainEqual(expect.stringContaining('does not match previous entry hash'));
+      expect(result.errors).toContainEqual(
+        expect.stringContaining('does not match previous entry hash')
+      );
     });
 
     it('should fail if genesis hash does not match first entry', () => {
@@ -284,7 +294,9 @@ describe('IdCardService', () => {
 
       const result = IdCardService.verifyChainIntegrity(card);
       expect(result.valid).toBe(false);
-      expect(result.errors).toContainEqual(expect.stringContaining('Genesis hash mismatch'));
+      expect(result.errors).toContainEqual(
+        expect.stringContaining('Genesis hash mismatch')
+      );
     });
 
     it('should fail if sequence numbers are not monotonic', () => {
@@ -306,7 +318,9 @@ describe('IdCardService', () => {
 
       const result = IdCardService.verifyChainIntegrity(card);
       expect(result.valid).toBe(false);
-      expect(result.errors).toContainEqual(expect.stringContaining('seq should be 1, got 5'));
+      expect(result.errors).toContainEqual(
+        expect.stringContaining('seq should be 1, got 5')
+      );
     });
   });
 
@@ -375,7 +389,9 @@ describe('IdCardService', () => {
         metadata: { name: 'no-card' },
       };
 
-      expect(() => IdCardService.recomputeFingerprint(agent)).toThrow('Agent has no ID Card');
+      expect(() => IdCardService.recomputeFingerprint(agent)).toThrow(
+        'Agent has no ID Card'
+      );
     });
   });
 
@@ -432,7 +448,11 @@ describe('IdCardService', () => {
 
   describe('buildRegistryId', () => {
     it('should build registry ID with version', () => {
-      const id = IdCardService.buildRegistryId('blueflyio', 'drupal-reviewer', '0.4.5');
+      const id = IdCardService.buildRegistryId(
+        'blueflyio',
+        'drupal-reviewer',
+        '0.4.5'
+      );
       expect(id).toBe('ossa://blueflyio/drupal-reviewer@0.4.5');
     });
 

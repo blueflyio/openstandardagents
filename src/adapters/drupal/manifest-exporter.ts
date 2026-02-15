@@ -285,9 +285,7 @@ export class DrupalManifestExporter extends BaseAdapter {
    * Convert kebab-case or snake_case name to Title Case label.
    */
   private toLabel(name: string): string {
-    return name
-      .replace(/[-_]/g, ' ')
-      .replace(/\b\w/g, (c) => c.toUpperCase());
+    return name.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
   }
 
   /**

@@ -268,7 +268,12 @@ export interface OssaAgent {
         createdWith?: string;
         lineage?: Array<{
           ancestor: string;
-          relationship: 'forked-from' | 'cloned-from' | 'derived-from' | 'inspired-by' | 'upgraded-from';
+          relationship:
+            | 'forked-from'
+            | 'cloned-from'
+            | 'derived-from'
+            | 'inspired-by'
+            | 'upgraded-from';
           timestamp: string;
           commitHash?: string;
         }>;

@@ -137,7 +137,8 @@ export class WarpAdapter extends BaseAdapter {
       (!spec?.tools || !Array.isArray(spec.tools))
     ) {
       warnings.push({
-        message: 'No capabilities or tools defined, agent will have no commands',
+        message:
+          'No capabilities or tools defined, agent will have no commands',
         path: 'spec.capabilities',
         suggestion: 'Add spec.capabilities or spec.tools array',
       });
@@ -204,8 +205,7 @@ export class WarpAdapter extends BaseAdapter {
 
     // Convert tools to commands
     tools.forEach((tool) => {
-      const cmdName =
-        tool.name?.replace(/_/g, '-') || 'unknown';
+      const cmdName = tool.name?.replace(/_/g, '-') || 'unknown';
       const cmd: WarpCommand = {
         name: cmdName,
         description: tool.description || `Execute ${cmdName}`,
@@ -456,7 +456,13 @@ ${Object.entries(cmd.parameters)
 **Usage:**
 
 \`\`\`bash
-/${cmd.name}${cmd.parameters ? ` ${Object.keys(cmd.parameters).map((p) => `--${p} <value>`).join(' ')}` : ''}
+/${cmd.name}${
+      cmd.parameters
+        ? ` ${Object.keys(cmd.parameters)
+            .map((p) => `--${p} <value>`)
+            .join(' ')}`
+        : ''
+    }
 \`\`\`
 `
   )

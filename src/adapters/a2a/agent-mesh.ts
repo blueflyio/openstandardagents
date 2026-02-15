@@ -442,7 +442,7 @@ export class AgentMesh {
 
   private roundRobin(agents: AgentNode[]): AgentNode {
     const key = 'global';
-    let index = this.loadBalancerIndex.get(key) || 0;
+    const index = this.loadBalancerIndex.get(key) || 0;
     const agent = agents[index % agents.length];
     this.loadBalancerIndex.set(key, index + 1);
     return agent;
@@ -478,7 +478,9 @@ export class AgentMesh {
     try {
       // Simulate health check (in real implementation, would call agent.healthCheck endpoint)
       const response = await fetch(agent.healthCheck, {
-        signal: AbortSignal.timeout(this.loadBalancingConfig.healthCheckTimeout),
+        signal: AbortSignal.timeout(
+          this.loadBalancingConfig.healthCheckTimeout
+        ),
       });
       return response.ok;
     } catch {

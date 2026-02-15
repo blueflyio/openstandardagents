@@ -187,7 +187,11 @@ export class ClaudeCodeAdapter extends BaseAdapter {
       },
       spec: {
         role: 'You are a code exploration specialist. Your job is to deeply analyze codebases, identify patterns, and provide detailed insights about code structure and dependencies.',
-        capabilities: ['code-analysis', 'pattern-detection', 'dependency-mapping'] as any,
+        capabilities: [
+          'code-analysis',
+          'pattern-detection',
+          'dependency-mapping',
+        ] as any,
         tools: [
           {
             type: 'function',
@@ -252,7 +256,10 @@ export class ClaudeCodeAdapter extends BaseAdapter {
     ).map((c: any) => (typeof c === 'string' ? c : c.name || ''));
 
     // Map capabilities to sub-agent types
-    if (capabilities.includes('explore') || capabilities.includes('code-analysis')) {
+    if (
+      capabilities.includes('explore') ||
+      capabilities.includes('code-analysis')
+    ) {
       return 'Explore';
     }
     if (capabilities.includes('plan') || capabilities.includes('planning')) {
@@ -295,10 +302,11 @@ export class ClaudeCodeAdapter extends BaseAdapter {
     ossaTools.forEach((tool) => {
       const name = tool.name || 'unknown';
       const description = tool.description || `Tool: ${name}`;
-      const schema = tool.inputSchema || tool.schema || {
-        type: 'object',
-        properties: {},
-      };
+      const schema = tool.inputSchema ||
+        tool.schema || {
+          type: 'object',
+          properties: {},
+        };
 
       tools.push({
         name,

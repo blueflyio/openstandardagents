@@ -84,9 +84,7 @@ describe('AutonomyBuilder', () => {
 
   describe('Cost Threshold', () => {
     it('should set max cost', () => {
-      const config = AutonomyBuilder.supervised()
-        .maxCost(100)
-        .build();
+      const config = AutonomyBuilder.supervised().maxCost(100).build();
 
       expect(config.maxCost).toBe(100);
     });
@@ -132,25 +130,19 @@ describe('AutonomyBuilder', () => {
 
   describe('Isolation Level', () => {
     it('should set no isolation', () => {
-      const config = AutonomyBuilder.autonomous()
-        .isolation('none')
-        .build();
+      const config = AutonomyBuilder.autonomous().isolation('none').build();
 
       expect(config.isolation).toBe('none');
     });
 
     it('should set standard isolation', () => {
-      const config = AutonomyBuilder.autonomous()
-        .isolation('standard')
-        .build();
+      const config = AutonomyBuilder.autonomous().isolation('standard').build();
 
       expect(config.isolation).toBe('standard');
     });
 
     it('should set strict isolation', () => {
-      const config = AutonomyBuilder.policy()
-        .isolation('strict')
-        .build();
+      const config = AutonomyBuilder.policy().isolation('strict').build();
 
       expect(config.isolation).toBe('strict');
     });

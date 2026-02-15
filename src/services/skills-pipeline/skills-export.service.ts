@@ -570,8 +570,7 @@ try {
     } catch {
       return {
         success: false,
-        error:
-          'Not authenticated with npm. Run `npm login` first.',
+        error: 'Not authenticated with npm. Run `npm login` first.',
       };
     }
 
@@ -589,8 +588,7 @@ try {
       });
       return { success: true };
     } catch (error) {
-      const msg =
-        error instanceof Error ? error.message : String(error);
+      const msg = error instanceof Error ? error.message : String(error);
       return {
         success: false,
         error: `npm publish failed: ${msg}`,

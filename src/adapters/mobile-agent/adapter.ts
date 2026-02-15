@@ -81,18 +81,12 @@ export class MobileAgentAdapter extends BaseAdapter {
 
       // 3. Agent roles module
       const roles = this.generateRolesModule(manifest);
-      files.push(
-        this.createFile('agents/__init__.py', '', 'code', 'python')
-      );
-      files.push(
-        this.createFile('agents/roles.py', roles, 'code', 'python')
-      );
+      files.push(this.createFile('agents/__init__.py', '', 'code', 'python'));
+      files.push(this.createFile('agents/roles.py', roles, 'code', 'python'));
 
       // 4. Custom actions module
       const actions = this.generateActionsModule(manifest);
-      files.push(
-        this.createFile('actions/__init__.py', '', 'code', 'python')
-      );
+      files.push(this.createFile('actions/__init__.py', '', 'code', 'python'));
       files.push(
         this.createFile('actions/custom_actions.py', actions, 'code', 'python')
       );
@@ -119,12 +113,7 @@ export class MobileAgentAdapter extends BaseAdapter {
       if (options?.includeTests) {
         const tests = this.generateTests(manifest);
         files.push(
-          this.createFile(
-            'tests/test_agent.py',
-            tests,
-            'test',
-            'python'
-          )
+          this.createFile('tests/test_agent.py', tests, 'test', 'python')
         );
       }
 
@@ -157,7 +146,8 @@ export class MobileAgentAdapter extends BaseAdapter {
     // MobileAgent requires a role for agent behavior
     if (!manifest.spec?.role) {
       errors.push({
-        message: 'spec.role is required for MobileAgent (defines manager instruction)',
+        message:
+          'spec.role is required for MobileAgent (defines manager instruction)',
         path: 'spec.role',
         code: 'MISSING_REQUIRED_FIELD',
       });
@@ -165,11 +155,16 @@ export class MobileAgentAdapter extends BaseAdapter {
 
     // Check LLM — MobileAgent needs multimodal capabilities
     const llm = manifest.spec?.llm as any;
-    if (llm?.provider && llm.provider !== 'openai' && llm.provider !== 'anthropic') {
+    if (
+      llm?.provider &&
+      llm.provider !== 'openai' &&
+      llm.provider !== 'anthropic'
+    ) {
       warnings.push({
         message: `MobileAgent works best with multimodal LLMs (openai/anthropic). Provider '${llm.provider}' may not support screenshot analysis.`,
         path: 'spec.llm.provider',
-        suggestion: 'Use openai with gpt-4o or anthropic with claude-3.5-sonnet for GUI automation',
+        suggestion:
+          'Use openai with gpt-4o or anthropic with claude-3.5-sonnet for GUI automation',
       });
     }
 
@@ -177,7 +172,8 @@ export class MobileAgentAdapter extends BaseAdapter {
     const tools = manifest.spec?.tools as any[];
     if (!tools || tools.length === 0) {
       warnings.push({
-        message: 'No tools defined. MobileAgent will use default GUI actions (tap, swipe, type, etc.)',
+        message:
+          'No tools defined. MobileAgent will use default GUI actions (tap, swipe, type, etc.)',
         path: 'spec.tools',
         suggestion: 'Add app-specific tools for richer automation',
       });
@@ -295,20 +291,37 @@ export class MobileAgentAdapter extends BaseAdapter {
       },
       roles: {
         manager: {
-          instruction: manifest.spec?.role || 'Plan and coordinate mobile GUI automation tasks.',
-          capabilities: ['task_decomposition', 'action_planning', 'progress_tracking'],
+          instruction:
+            manifest.spec?.role ||
+            'Plan and coordinate mobile GUI automation tasks.',
+          capabilities: [
+            'task_decomposition',
+            'action_planning',
+            'progress_tracking',
+          ],
         },
         executor: {
-          instruction: 'Execute GUI actions on the mobile device via ADB commands.',
+          instruction:
+            'Execute GUI actions on the mobile device via ADB commands.',
           capabilities: GUI_ACTIONS.slice(),
         },
         reflector: {
-          instruction: 'Analyze screenshots to verify action outcomes and detect errors.',
-          capabilities: ['screenshot_analysis', 'error_detection', 'state_verification'],
+          instruction:
+            'Analyze screenshots to verify action outcomes and detect errors.',
+          capabilities: [
+            'screenshot_analysis',
+            'error_detection',
+            'state_verification',
+          ],
         },
         notetaker: {
-          instruction: 'Record observations, action history, and task progress in InfoPool.',
-          capabilities: ['note_taking', 'history_tracking', 'context_summarization'],
+          instruction:
+            'Record observations, action history, and task progress in InfoPool.',
+          capabilities: [
+            'note_taking',
+            'history_tracking',
+            'context_summarization',
+          ],
         },
       },
       gui_actions: GUI_ACTIONS.slice(),
@@ -557,7 +570,10 @@ from typing import Any
 # Built-in GUI actions (provided by MobileAgent)
 BUILTIN_ACTIONS = ["tap", "swipe", "type", "long_press", "back", "home", "stop"]
 
-${toolDefs.length > 0 ? toolDefs.join('\n') : `
+${
+  toolDefs.length > 0
+    ? toolDefs.join('\n')
+    : `
 def example_action(device, **kwargs) -> dict[str, Any]:
     """
     Example custom action.
@@ -570,14 +586,20 @@ def example_action(device, **kwargs) -> dict[str, Any]:
         Action result
     """
     raise NotImplementedError("Replace with your app-specific action")
-`}
+`
+}
 
 def get_custom_actions() -> dict[str, callable]:
     """Return all custom actions as a name -> function mapping."""
     actions = {}
 ${
   tools.length > 0
-    ? tools.map((t) => `    actions["${t.name || 'action'}"] = ${t.name || 'custom_action'}`).join('\n')
+    ? tools
+        .map(
+          (t) =>
+            `    actions["${t.name || 'action'}"] = ${t.name || 'custom_action'}`
+        )
+        .join('\n')
     : '    # Add custom actions here\n    # actions["my_action"] = my_action_function'
 }
     return actions

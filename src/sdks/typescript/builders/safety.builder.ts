@@ -15,10 +15,7 @@
  */
 
 import type { Safety, Guardrails } from '../types.js';
-import type {
-  ContentFilteringType,
-  PIIDetectionType,
-} from '../constants.js';
+import type { ContentFilteringType, PIIDetectionType } from '../constants.js';
 
 export class SafetyBuilder {
   private safety: Safety;
@@ -123,8 +120,7 @@ export class SafetyBuilder {
    */
   contentFiltering(types: ContentFilteringType[] | string[]): this {
     // We'll extend guardrails to support this
-    (this.guardrails as Record<string, unknown>)['content_filtering'] =
-      types;
+    (this.guardrails as Record<string, unknown>)['content_filtering'] = types;
     return this;
   }
 
@@ -135,8 +131,7 @@ export class SafetyBuilder {
    */
   piiDetection(types: PIIDetectionType[] | string[]): this {
     // We'll extend guardrails to support this
-    (this.guardrails as Record<string, unknown>)['pii_detection'] =
-      types;
+    (this.guardrails as Record<string, unknown>)['pii_detection'] = types;
     return this;
   }
 
