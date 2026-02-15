@@ -4,7 +4,7 @@
  */
 
 import { injectable } from 'inversify';
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 import * as fs from 'fs/promises';
 import * as fsSync from 'fs';
 import * as path from 'path';
@@ -552,17 +552,25 @@ try {
 
   /**
    * Publish exported skill package to npm registry.
-   * Uses execSync matching existing NpmService patterns in dev-cli/services/npm.service.ts.
-   * No user input is interpolated into these commands — only hardcoded flags.
+   * Uses execFileSync with array arguments to prevent command injection.
+   * Registry URL is validated before use.
    */
   private publishToNpm(
     packagePath: string,
     registry?: string,
     access: 'public' | 'restricted' = 'public'
   ): { success: boolean; error?: string } {
+    // Validate registry URL if provided (prevent command injection)
+    if (registry && !/^https?:\/\/[\w.-]+(:\d+)?\/?/.test(registry)) {
+      return {
+        success: false,
+        error: `Invalid registry URL: ${registry}`,
+      };
+    }
+
     // Verify npm auth first
     try {
-      execSync('npm whoami', {
+      execFileSync('npm', ['whoami'], {
         cwd: packagePath,
         encoding: 'utf-8',
         stdio: ['ignore', 'pipe', 'pipe'],
@@ -574,14 +582,15 @@ try {
       };
     }
 
-    // Build publish command with safe, non-interpolated arguments
-    const args = ['npm', 'publish', `--access=${access}`];
+    // Build publish command with safe array arguments (no shell injection)
+    const args = ['publish', `--access=${access}`];
     if (registry) {
       args.push(`--registry=${registry}`);
     }
 
     try {
-      execSync(args.join(' '), {
+      // Use execFileSync with array args (safe from command injection)
+      execFileSync('npm', args, {
         cwd: packagePath,
         encoding: 'utf-8',
         stdio: ['ignore', 'pipe', 'pipe'],
@@ -599,6 +608,7 @@ try {
   /**
    * Validate that a skill was installed correctly to ~/.claude/skills/
    * Checks that the SKILL.md file exists and has valid frontmatter.
+   * Uses try-catch instead of existsSync to avoid race conditions.
    */
   private validateInstallation(skillName: string): boolean {
     const homeDir = process.env.HOME || process.env.USERPROFILE || '~';
@@ -610,11 +620,8 @@ try {
       'SKILL.md'
     );
 
-    if (!fsSync.existsSync(skillFile)) {
-      return false;
-    }
-
-    // Verify the file has valid frontmatter
+    // Use try-catch instead of existsSync check to prevent race conditions
+    // (file could be deleted between existsSync and readFileSync)
     try {
       const content = fsSync.readFileSync(skillFile, 'utf-8');
       const match = content.match(/^---\n([\s\S]*?)\n---/);
@@ -622,7 +629,11 @@ try {
 
       const frontmatter = yaml.parse(match[1]);
       return !!(frontmatter?.name && frontmatter?.trigger_keywords);
-    } catch {
+    } catch (error) {
+      // File doesn't exist or is unreadable
+      if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
+        console.warn(`Skill file not found: ${skillFile}`);
+      }
       return false;
     }
   }
