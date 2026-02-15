@@ -32,6 +32,8 @@ include:
 # =============================================================================
 .base-runner:
   image: node:${NODE_VERSION}
+  tags:
+    - docker
   cache:
     key: ${CI_COMMIT_REF_SLUG}
     paths:
