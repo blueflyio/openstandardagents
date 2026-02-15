@@ -9,46 +9,50 @@
 /**
  * Environment where the agent runs
  */
-export type AgentEnvironment = 'production' | 'staging' | 'development' | 'local';
+export type AgentEnvironment =
+  | 'production'
+  | 'staging'
+  | 'development'
+  | 'local';
 
 /**
  * What triggered the agent execution
  */
 export type AgentTrigger =
-  | 'webhook'      // HTTP webhook event
-  | 'schedule'     // Cron/scheduled task
-  | 'manual'       // User-initiated
-  | 'pipeline'     // CI/CD pipeline stage
-  | 'a2a'          // Agent-to-agent communication
-  | 'event'        // Event-driven (pub/sub)
-  | 'stream';      // Real-time stream processing
+  | 'webhook' // HTTP webhook event
+  | 'schedule' // Cron/scheduled task
+  | 'manual' // User-initiated
+  | 'pipeline' // CI/CD pipeline stage
+  | 'a2a' // Agent-to-agent communication
+  | 'event' // Event-driven (pub/sub)
+  | 'stream'; // Real-time stream processing
 
 /**
  * Data flow pattern the agent uses
  */
 export type AgentDataFlow =
-  | 'stateless'    // No state between invocations
-  | 'stateful'     // Maintains state across invocations
-  | 'streaming'    // Processes data streams
-  | 'batch';       // Batch processing
+  | 'stateless' // No state between invocations
+  | 'stateful' // Maintains state across invocations
+  | 'streaming' // Processes data streams
+  | 'batch'; // Batch processing
 
 /**
  * Collaboration model with other agents
  */
 export type AgentCollaboration =
-  | 'solo'         // Works independently
-  | 'swarm'        // Peer-to-peer collaboration
+  | 'solo' // Works independently
+  | 'swarm' // Peer-to-peer collaboration
   | 'hierarchical' // Manager/worker structure
-  | 'mesh';        // Decentralized mesh network
+  | 'mesh'; // Decentralized mesh network
 
 /**
  * Level of autonomy
  */
 export type AgentAutonomy =
-  | 'supervised'        // Requires human approval
-  | 'semi-autonomous'   // Some actions require approval
-  | 'autonomous'        // Fully autonomous
-  | 'policy-driven';    // Governed by policies
+  | 'supervised' // Requires human approval
+  | 'semi-autonomous' // Some actions require approval
+  | 'autonomous' // Fully autonomous
+  | 'policy-driven'; // Governed by policies
 
 /**
  * Resource requirements for agent execution
@@ -103,17 +107,17 @@ export interface AgentTypeContext {
  * Type is not predefined but determined by runtime context
  */
 export type DynamicAgentType =
-  | 'api-orchestrator'      // trigger=webhook, stateless, solo
-  | 'scheduled-analyst'     // trigger=schedule, batch, solo
-  | 'swarm-coordinator'     // collaboration=swarm, autonomous
-  | 'pipeline-worker'       // trigger=pipeline, stateful
-  | 'mesh-node'            // collaboration=mesh, a2a
-  | 'policy-enforcer'      // autonomy=policy-driven
-  | 'stream-processor'     // dataFlow=streaming
-  | 'event-handler'        // trigger=event, stateless
-  | 'batch-processor'      // dataFlow=batch, scheduled
-  | 'supervisor'           // autonomy=supervised, hierarchical
-  | 'adaptive-hybrid';     // Adapts type based on runtime context
+  | 'api-orchestrator' // trigger=webhook, stateless, solo
+  | 'scheduled-analyst' // trigger=schedule, batch, solo
+  | 'swarm-coordinator' // collaboration=swarm, autonomous
+  | 'pipeline-worker' // trigger=pipeline, stateful
+  | 'mesh-node' // collaboration=mesh, a2a
+  | 'policy-enforcer' // autonomy=policy-driven
+  | 'stream-processor' // dataFlow=streaming
+  | 'event-handler' // trigger=event, stateless
+  | 'batch-processor' // dataFlow=batch, scheduled
+  | 'supervisor' // autonomy=supervised, hierarchical
+  | 'adaptive-hybrid'; // Adapts type based on runtime context
 
 /**
  * Type detection rules for determining agent type from context
@@ -256,11 +260,23 @@ export const TYPE_CAPABILITIES: Record<DynamicAgentType, string[]> = {
   'swarm-coordinator': ['a2a', 'mesh', 'coordination', 'handoff', 'routing'],
   'pipeline-worker': ['pipeline', 'ci', 'cd', 'build', 'deploy', 'test'],
   'mesh-node': ['mesh', 'p2p', 'discovery', 'routing', 'resilience'],
-  'policy-enforcer': ['policy', 'governance', 'compliance', 'audit', 'validation'],
+  'policy-enforcer': [
+    'policy',
+    'governance',
+    'compliance',
+    'audit',
+    'validation',
+  ],
   'stream-processor': ['stream', 'realtime', 'kafka', 'kinesis', 'pubsub'],
   'event-handler': ['event', 'pubsub', 'queue', 'async', 'webhook'],
   'batch-processor': ['batch', 'etl', 'transform', 'aggregate', 'schedule'],
-  'supervisor': ['supervision', 'approval', 'review', 'escalation', 'human-in-loop'],
+  supervisor: [
+    'supervision',
+    'approval',
+    'review',
+    'escalation',
+    'human-in-loop',
+  ],
   'adaptive-hybrid': ['*'], // Can adapt to any capability
 };
 
@@ -287,7 +303,10 @@ export interface AgentTypeCharacteristics {
 /**
  * Characteristics for each dynamic agent type
  */
-export const TYPE_CHARACTERISTICS: Record<DynamicAgentType, AgentTypeCharacteristics> = {
+export const TYPE_CHARACTERISTICS: Record<
+  DynamicAgentType,
+  AgentTypeCharacteristics
+> = {
   'api-orchestrator': {
     executionTime: 'short',
     scaling: 'horizontal',
@@ -351,7 +370,7 @@ export const TYPE_CHARACTERISTICS: Record<DynamicAgentType, AgentTypeCharacteris
     requiresHuman: false,
     costProfile: 'high',
   },
-  'supervisor': {
+  supervisor: {
     executionTime: 'short',
     scaling: 'none',
     statePersistence: true,
@@ -371,7 +390,9 @@ export const TYPE_CHARACTERISTICS: Record<DynamicAgentType, AgentTypeCharacteris
  * Determine agent type from context
  * Algorithm matches context against detection rules and returns best match
  */
-export function determineAgentType(context: AgentTypeContext): DynamicAgentType {
+export function determineAgentType(
+  context: AgentTypeContext
+): DynamicAgentType {
   const matches: Array<{ type: DynamicAgentType; priority: number }> = [];
 
   for (const rule of TYPE_DETECTION_RULES) {
@@ -390,7 +411,10 @@ export function determineAgentType(context: AgentTypeContext): DynamicAgentType 
 /**
  * Check if context matches a detection rule
  */
-function matchesRule(context: AgentTypeContext, rule: TypeDetectionRule): boolean {
+function matchesRule(
+  context: AgentTypeContext,
+  rule: TypeDetectionRule
+): boolean {
   const { conditions } = rule;
 
   // Check environment
@@ -432,11 +456,11 @@ function matchesRule(context: AgentTypeContext, rule: TypeDetectionRule): boolea
   if (conditions.capabilities) {
     const { has, notHas } = conditions.capabilities;
 
-    if (has && !has.some(cap => context.capabilities.includes(cap))) {
+    if (has && !has.some((cap) => context.capabilities.includes(cap))) {
       return false;
     }
 
-    if (notHas && notHas.some(cap => context.capabilities.includes(cap))) {
+    if (notHas && notHas.some((cap) => context.capabilities.includes(cap))) {
       return false;
     }
   }
@@ -477,7 +501,9 @@ export function suggestCapabilities(type: DynamicAgentType): string[] {
 /**
  * Get characteristics for an agent type
  */
-export function getTypeCharacteristics(type: DynamicAgentType): AgentTypeCharacteristics {
+export function getTypeCharacteristics(
+  type: DynamicAgentType
+): AgentTypeCharacteristics {
   return TYPE_CHARACTERISTICS[type];
 }
 
@@ -486,8 +512,8 @@ export function getTypeCharacteristics(type: DynamicAgentType): AgentTypeCharact
  */
 export interface CapabilityValidationResult {
   valid: boolean;
-  missing: string[];  // Recommended capabilities that are missing
-  extra: string[];    // Capabilities that don't match this type
+  missing: string[]; // Recommended capabilities that are missing
+  extra: string[]; // Capabilities that don't match this type
   warnings: string[]; // Other validation warnings
 }
 
@@ -521,11 +547,15 @@ export function validateTypeCapabilities(
 
   // Generate warnings
   if (missing.length > 0) {
-    warnings.push(`Missing recommended capabilities for ${type}: ${missing.join(', ')}`);
+    warnings.push(
+      `Missing recommended capabilities for ${type}: ${missing.join(', ')}`
+    );
   }
 
   if (extra.length > 3) {
-    warnings.push(`Many extra capabilities detected. Consider 'adaptive-hybrid' type.`);
+    warnings.push(
+      `Many extra capabilities detected. Consider 'adaptive-hybrid' type.`
+    );
   }
 
   // Valid if no critical missing capabilities
@@ -538,7 +568,9 @@ export function validateTypeCapabilities(
  * Extract context from OSSA manifest
  * Analyzes manifest to build context for type detection
  */
-export function extractContextFromManifest(manifest: Record<string, unknown>): AgentTypeContext | null {
+export function extractContextFromManifest(
+  manifest: Record<string, unknown>
+): AgentTypeContext | null {
   try {
     // Extract metadata
     const metadata = (manifest.metadata || {}) as Record<string, unknown>;
@@ -552,7 +584,10 @@ export function extractContextFromManifest(manifest: Record<string, unknown>): A
     const trigger = inferTrigger(tools, spec);
 
     // Determine data flow from architecture
-    const architecture = (metadata.agentArchitecture || {}) as Record<string, unknown>;
+    const architecture = (metadata.agentArchitecture || {}) as Record<
+      string,
+      unknown
+    >;
     const dataFlow = inferDataFlow(architecture, spec);
 
     // Determine collaboration
@@ -583,9 +618,12 @@ export function extractContextFromManifest(manifest: Record<string, unknown>): A
   }
 }
 
-function inferTrigger(tools: Array<Record<string, unknown>>, spec: Record<string, unknown>): AgentTrigger {
+function inferTrigger(
+  tools: Array<Record<string, unknown>>,
+  spec: Record<string, unknown>
+): AgentTrigger {
   // Check for webhook tools
-  if (tools.some(t => t.type === 'http' || t.type === 'webhook')) {
+  if (tools.some((t) => t.type === 'http' || t.type === 'webhook')) {
     return 'webhook';
   }
 
@@ -593,7 +631,7 @@ function inferTrigger(tools: Array<Record<string, unknown>>, spec: Record<string
   const messaging = (spec.messaging || {}) as Record<string, unknown>;
   if (messaging.subscribes) {
     const subscribes = messaging.subscribes as Array<Record<string, unknown>>;
-    if (subscribes.some(s => s.channel?.toString().includes('schedule'))) {
+    if (subscribes.some((s) => s.channel?.toString().includes('schedule'))) {
       return 'schedule';
     }
   }
@@ -602,7 +640,10 @@ function inferTrigger(tools: Array<Record<string, unknown>>, spec: Record<string
   return 'manual';
 }
 
-function inferDataFlow(architecture: Record<string, unknown>, spec: Record<string, unknown>): AgentDataFlow {
+function inferDataFlow(
+  architecture: Record<string, unknown>,
+  spec: Record<string, unknown>
+): AgentDataFlow {
   // Check for streaming capability
   const capabilities = architecture.capabilities as string[] | undefined;
   if (capabilities?.includes('streaming')) {
@@ -611,7 +652,11 @@ function inferDataFlow(architecture: Record<string, unknown>, spec: Record<strin
 
   // Check for workflow (suggests stateful)
   const workflow = spec.workflow as Record<string, unknown> | undefined;
-  if (workflow?.steps && Array.isArray(workflow.steps) && workflow.steps.length > 1) {
+  if (
+    workflow?.steps &&
+    Array.isArray(workflow.steps) &&
+    workflow.steps.length > 1
+  ) {
     return 'stateful';
   }
 
@@ -619,7 +664,10 @@ function inferDataFlow(architecture: Record<string, unknown>, spec: Record<strin
   return 'stateless';
 }
 
-function inferCollaboration(architecture: Record<string, unknown>, spec: Record<string, unknown>): AgentCollaboration {
+function inferCollaboration(
+  architecture: Record<string, unknown>,
+  spec: Record<string, unknown>
+): AgentCollaboration {
   const pattern = architecture.pattern as string | undefined;
 
   if (pattern === 'swarm') return 'swarm';
@@ -627,7 +675,9 @@ function inferCollaboration(architecture: Record<string, unknown>, spec: Record<
 
   // Check for dependencies
   const dependencies = (spec.dependencies || {}) as Record<string, unknown>;
-  const agents = dependencies.agents as Array<Record<string, unknown>> | undefined;
+  const agents = dependencies.agents as
+    | Array<Record<string, unknown>>
+    | undefined;
   if (agents && agents.length > 0) {
     return 'mesh';
   }
@@ -654,7 +704,10 @@ function inferAutonomy(spec: Record<string, unknown>): AgentAutonomy {
   return 'semi-autonomous';
 }
 
-function extractCapabilities(tools: Array<Record<string, unknown>>, spec: Record<string, unknown>): string[] {
+function extractCapabilities(
+  tools: Array<Record<string, unknown>>,
+  spec: Record<string, unknown>
+): string[] {
   const caps = new Set<string>();
 
   // Add tool types
@@ -665,7 +718,9 @@ function extractCapabilities(tools: Array<Record<string, unknown>>, spec: Record
   }
 
   // Add architecture capabilities
-  const specCaps = (spec.capabilities || []) as Array<string | Record<string, unknown>>;
+  const specCaps = (spec.capabilities || []) as Array<
+    string | Record<string, unknown>
+  >;
   for (const cap of specCaps) {
     if (typeof cap === 'string') {
       caps.add(cap);
@@ -679,7 +734,10 @@ function extractCapabilities(tools: Array<Record<string, unknown>>, spec: Record
 
 function extractResources(spec: Record<string, unknown>): ResourceRequirements {
   const constraints = (spec.constraints || {}) as Record<string, unknown>;
-  const resourcesSpec = (constraints.resources || {}) as Record<string, unknown>;
+  const resourcesSpec = (constraints.resources || {}) as Record<
+    string,
+    unknown
+  >;
 
   return {
     cpu: parseFloat(resourcesSpec.cpu?.toString() || '0') || undefined,

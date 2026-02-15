@@ -3,10 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
-import {
-  MCPIntegrationService,
-  MCPMessageType,
-} from '../mcp-integration.js';
+import { MCPIntegrationService, MCPMessageType } from '../mcp-integration.js';
 import type { AgentIdentity } from '../a2a-protocol.js';
 import { A2AMessageType, MessagePriority } from '../a2a-protocol.js';
 
@@ -132,9 +129,9 @@ describe('MCPIntegrationService', () => {
     });
 
     it('should handle discovery with invalid connection ID', async () => {
-      await expect(
-        service.discoverResources('invalid-id')
-      ).rejects.toThrow('MCP connection not found');
+      await expect(service.discoverResources('invalid-id')).rejects.toThrow(
+        'MCP connection not found'
+      );
 
       await expect(service.discoverPrompts('invalid-id')).rejects.toThrow(
         'MCP connection not found'

@@ -295,7 +295,9 @@ describe('ValidatorService', () => {
       const result = validator.validate(manifest);
       expect(result.valid).toBe(false);
       expect(result.errors.length).toBeGreaterThan(0);
-      expect(result.errors[0]).toContain('Tool is missing required field: name');
+      expect(result.errors[0]).toContain(
+        'Tool is missing required field: name'
+      );
     });
 
     it('should accept valid tool with endpoint handler', () => {
@@ -640,13 +642,15 @@ describe('ValidatorService', () => {
       const result = validator.validate(manifest);
       expect(result.valid).toBe(false);
       expect(result.errors.length).toBeGreaterThanOrEqual(3);
-      expect(result.errors.some((e) => e.includes('Invalid LLM provider'))).toBe(
-        true
-      );
+      expect(
+        result.errors.some((e) => e.includes('Invalid LLM provider'))
+      ).toBe(true);
       expect(result.errors.some((e) => e.includes('Invalid access tier'))).toBe(
         true
       );
-      expect(result.errors.some((e) => e.includes('not a valid URL'))).toBe(true);
+      expect(result.errors.some((e) => e.includes('not a valid URL'))).toBe(
+        true
+      );
     });
 
     it('should handle validation with both errors and warnings', () => {

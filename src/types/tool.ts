@@ -153,7 +153,9 @@ export function validateToolConfig(tool: Tool): string[] {
 
     case 'schedule':
       if (!tool.config?.schedule) {
-        errors.push('Schedule tools require a cron expression in config.schedule');
+        errors.push(
+          'Schedule tools require a cron expression in config.schedule'
+        );
       }
       break;
 

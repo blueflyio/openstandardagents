@@ -17,7 +17,10 @@ import {
   type Agent,
   type Proposal,
 } from '../../src/adapters/a2a/swarm-orchestration.js';
-import { MessagePriority, type AgentIdentity } from '../../src/adapters/a2a/a2a-protocol.js';
+import {
+  MessagePriority,
+  type AgentIdentity,
+} from '../../src/adapters/a2a/a2a-protocol.js';
 
 describe('A2A Swarm Intelligence', () => {
   let swarm: SwarmOrchestrator;
@@ -67,7 +70,9 @@ describe('A2A Swarm Intelligence', () => {
 
       expect(subtasks).toBeDefined();
       expect(subtasks.length).toBeGreaterThan(0);
-      expect(subtasks.length).toBeLessThanOrEqual(complexTask.requirements.capabilities.length + 1);
+      expect(subtasks.length).toBeLessThanOrEqual(
+        complexTask.requirements.capabilities.length + 1
+      );
 
       // Verify subtasks have proper structure
       for (const subtask of subtasks) {
@@ -80,7 +85,7 @@ describe('A2A Swarm Intelligence', () => {
       }
 
       // Verify at least one subtask has the complex task as parent (the coordinator)
-      const rootTasks = subtasks.filter(t => t.parentId === complexTask.id);
+      const rootTasks = subtasks.filter((t) => t.parentId === complexTask.id);
       expect(rootTasks.length).toBeGreaterThan(0);
     });
 
@@ -180,9 +185,7 @@ describe('A2A Swarm Intelligence', () => {
     });
 
     it('should prioritize high-priority tasks', () => {
-      const agents: Agent[] = [
-        createAgent('agent-1', ['general'], 0.5, 0.5),
-      ];
+      const agents: Agent[] = [createAgent('agent-1', ['general'], 0.5, 0.5)];
 
       for (const agent of agents) {
         swarm.registerAgent(agent);

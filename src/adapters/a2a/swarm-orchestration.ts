@@ -7,7 +7,11 @@
  * @module adapters/a2a/swarm-orchestration
  */
 
-import type { AgentIdentity, A2AMessage, MessagePriority } from './a2a-protocol.js';
+import type {
+  AgentIdentity,
+  A2AMessage,
+  MessagePriority,
+} from './a2a-protocol.js';
 
 /**
  * Complex Task Definition
@@ -297,7 +301,9 @@ export class SwarmOrchestrator {
     // Sort tasks by priority and estimated duration (create copy to avoid mutating input)
     const sortedTasks = tasks.slice().sort((a, b) => {
       if (a.priority !== b.priority) {
-        return this.priorityToNumber(b.priority) - this.priorityToNumber(a.priority);
+        return (
+          this.priorityToNumber(b.priority) - this.priorityToNumber(a.priority)
+        );
       }
       return a.estimatedDuration - b.estimatedDuration;
     });
@@ -318,10 +324,7 @@ export class SwarmOrchestrator {
         taskId: task.id,
         agent: bestAgent,
         assignedAt: new Date().toISOString(),
-        expectedCompletion: this.calculateExpectedCompletion(
-          task,
-          bestAgent
-        ),
+        expectedCompletion: this.calculateExpectedCompletion(task, bestAgent),
         score: this.calculateAssignmentScore(task, bestAgent),
       };
 
@@ -596,7 +599,7 @@ export class SwarmOrchestrator {
 
     // Determine consensus (simple majority)
     const totalVotes = votes.approve + votes.reject + votes.abstain;
-    const reached = totalVotes >= (this.agents.size * 0.5);
+    const reached = totalVotes >= this.agents.size * 0.5;
     const decision = votes.approve > votes.reject ? 'accepted' : 'rejected';
 
     return {

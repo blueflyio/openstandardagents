@@ -183,13 +183,14 @@ export class MCPTransportManager {
     const timeout = wrapper.config.requestTimeout || this.requestTimeout;
 
     try {
-      // Use zod object passthrough schema for generic responses
-      const genericSchema = z.object({}).passthrough();
-
-      // @ts-expect-error - MCP SDK typing requires specific schema, but we use generic passthrough
-      const requestPromise = wrapper.client.request({ method, params }, genericSchema);
-
-      const response = await this.withTimeout<unknown>(requestPromise, timeout, `Request timeout after ${timeout}ms`);
+      // Type assertion for generic MCP SDK requests - runtime behavior is correct
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const requestPromise = wrapper.client.request as any;
+      const response = await this.withTimeout<unknown>(
+        requestPromise.call(wrapper.client, { method, params }, z.unknown()),
+        timeout,
+        `Request timeout after ${timeout}ms`
+      );
 
       return response;
     } catch (error) {

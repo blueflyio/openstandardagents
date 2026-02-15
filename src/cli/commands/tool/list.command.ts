@@ -151,7 +151,9 @@ export const toolListCommand = new Command('list')
 function showAvailableTypes(): void {
   console.log(chalk.bold.blue('\nOSSA Tool Types (v0.4.4)\n'));
   console.log(
-    chalk.gray(`${TOOL_TYPES.length} tool types available across 7 categories\n`)
+    chalk.gray(
+      `${TOOL_TYPES.length} tool types available across 7 categories\n`
+    )
   );
 
   // Group by category
@@ -178,7 +180,9 @@ function showAvailableTypes(): void {
   });
 
   console.log(chalk.gray('Use --examples to see configuration examples'));
-  console.log(chalk.gray('Use --type <type> to see details for a specific type'));
+  console.log(
+    chalk.gray('Use --type <type> to see details for a specific type')
+  );
 }
 
 function showExamples(): void {

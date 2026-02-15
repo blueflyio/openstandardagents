@@ -2,7 +2,14 @@
  * MCP Transport Manager Tests
  */
 
-import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  jest,
+} from '@jest/globals';
 import { MCPTransportManager, MCPTransportType } from '../mcp-transport.js';
 
 describe('MCPTransportManager', () => {

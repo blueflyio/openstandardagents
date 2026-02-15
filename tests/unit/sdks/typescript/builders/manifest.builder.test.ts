@@ -270,18 +270,14 @@ describe('ManifestBuilder', () => {
 
     it('should throw error when using agent methods on task', () => {
       expect(() => {
-        ManifestBuilder.task('my-task')
-          .role('You are a task')
-          .build();
+        ManifestBuilder.task('my-task').role('You are a task').build();
       }).toThrow('role() is only available for Agent manifests');
     });
 
     it('should throw error when using agent methods on workflow', () => {
       expect(() => {
         ManifestBuilder.workflow('my-workflow')
-          .llm(
-            LLMConfigBuilder.anthropic('claude-sonnet-4').build()
-          )
+          .llm(LLMConfigBuilder.anthropic('claude-sonnet-4').build())
           .build();
       }).toThrow('llm() is only available for Agent manifests');
     });

@@ -123,29 +123,21 @@ describe('LLMConfigBuilder', () => {
   describe('Validation', () => {
     it('should validate temperature range', () => {
       expect(() => {
-        LLMConfigBuilder.anthropic('claude-sonnet-4')
-          .temperature(-0.1)
-          .build();
+        LLMConfigBuilder.anthropic('claude-sonnet-4').temperature(-0.1).build();
       }).toThrow('Temperature must be between 0.0 and 1.0');
 
       expect(() => {
-        LLMConfigBuilder.anthropic('claude-sonnet-4')
-          .temperature(1.1)
-          .build();
+        LLMConfigBuilder.anthropic('claude-sonnet-4').temperature(1.1).build();
       }).toThrow('Temperature must be between 0.0 and 1.0');
     });
 
     it('should validate maxTokens is positive', () => {
       expect(() => {
-        LLMConfigBuilder.anthropic('claude-sonnet-4')
-          .maxTokens(0)
-          .build();
+        LLMConfigBuilder.anthropic('claude-sonnet-4').maxTokens(0).build();
       }).toThrow('maxTokens must be positive');
 
       expect(() => {
-        LLMConfigBuilder.anthropic('claude-sonnet-4')
-          .maxTokens(-1)
-          .build();
+        LLMConfigBuilder.anthropic('claude-sonnet-4').maxTokens(-1).build();
       }).toThrow('maxTokens must be positive');
     });
 
