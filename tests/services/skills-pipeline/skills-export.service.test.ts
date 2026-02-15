@@ -15,7 +15,9 @@ jest.mock('child_process', () => ({
   execFileSync: jest.fn(),
 }));
 
-const mockedExecFileSync = execFileSync as jest.MockedFunction<typeof execFileSync>;
+const mockedExecFileSync = execFileSync as jest.MockedFunction<
+  typeof execFileSync
+>;
 
 describe('SkillsExportService', () => {
   let service: SkillsExportService;

@@ -77,7 +77,7 @@ const config: Config = {
   extensionsToTreatAsEsm: ['.ts'],
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
   transformIgnorePatterns: [
-    'node_modules/(?!(inquirer|@inquirer|chalk|ansi-styles|strip-ansi|ansi-regex|wrap-ansi|string-width|emoji-regex|is-fullwidth-code-point)/)',
+    'node_modules/(?!(inquirer|@inquirer|chalk|ansi-styles|strip-ansi|ansi-regex|wrap-ansi|string-width|emoji-regex|is-fullwidth-code-point|@octokit)/)',
   ],
   verbose: true,
   testTimeout: 10000,

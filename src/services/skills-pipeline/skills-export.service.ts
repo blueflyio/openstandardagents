@@ -631,7 +631,11 @@ try {
       return !!(frontmatter?.name && frontmatter?.trigger_keywords);
     } catch (error) {
       // File doesn't exist or is unreadable
-      if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
+      if (
+        error instanceof Error &&
+        'code' in error &&
+        error.code === 'ENOENT'
+      ) {
         console.warn(`Skill file not found: ${skillFile}`);
       }
       return false;
