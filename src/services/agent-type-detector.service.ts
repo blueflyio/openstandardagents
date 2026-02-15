@@ -46,7 +46,9 @@ export class AgentTypeDetectorService {
    */
   detectType(manifest: OssaAgent): TypeDetectionResult {
     // Extract context from manifest
-    const context = extractContextFromManifest(manifest as unknown as Record<string, unknown>);
+    const context = extractContextFromManifest(
+      manifest as unknown as Record<string, unknown>
+    );
 
     if (!context) {
       // Fallback if context extraction fails
@@ -55,7 +57,9 @@ export class AgentTypeDetectorService {
         confidence: 0.5,
         context: this.getDefaultContext(),
         alternatives: [],
-        recommendations: ['Unable to extract context from manifest. Using adaptive-hybrid type.'],
+        recommendations: [
+          'Unable to extract context from manifest. Using adaptive-hybrid type.',
+        ],
       };
     }
 
@@ -70,7 +74,11 @@ export class AgentTypeDetectorService {
     const alternatives = this.findAlternatives(context, type);
 
     // Generate recommendations
-    const recommendations = this.generateRecommendations(type, validation, context);
+    const recommendations = this.generateRecommendations(
+      type,
+      validation,
+      context
+    );
 
     return {
       type,
@@ -91,9 +99,12 @@ export class AgentTypeDetectorService {
   /**
    * Validate if tools are compatible with detected type
    */
-  validateToolCompatibility(type: DynamicAgentType, tools: Tool[]): CapabilityValidationResult {
+  validateToolCompatibility(
+    type: DynamicAgentType,
+    tools: Tool[]
+  ): CapabilityValidationResult {
     // Extract capability names from tools
-    const capabilities = tools.map(t => t.type || 'unknown');
+    const capabilities = tools.map((t) => t.type || 'unknown');
 
     return validateTypeCapabilities(type, capabilities);
   }
@@ -106,7 +117,7 @@ export class AgentTypeDetectorService {
       type,
       characteristics: TYPE_CHARACTERISTICS[type],
       recommendedCapabilities: suggestCapabilities(type),
-      detectionRules: TYPE_DETECTION_RULES.filter(r => r.type === type),
+      detectionRules: TYPE_DETECTION_RULES.filter((r) => r.type === type),
     };
   }
 
@@ -122,11 +133,14 @@ export class AgentTypeDetectorService {
     const detection = this.detectType(manifest);
 
     // Get current type from metadata (if set)
-    const currentTypeAnnotation = manifest.metadata?.annotations?.['ossa.io/agent-type'];
-    const currentType = (currentTypeAnnotation as DynamicAgentType) || 'adaptive-hybrid';
+    const currentTypeAnnotation =
+      manifest.metadata?.annotations?.['ossa.io/agent-type'];
+    const currentType =
+      (currentTypeAnnotation as DynamicAgentType) || 'adaptive-hybrid';
 
     const suggestedType = detection.type;
-    const shouldChange = currentType !== suggestedType && detection.confidence > 0.7;
+    const shouldChange =
+      currentType !== suggestedType && detection.confidence > 0.7;
 
     const reasons: string[] = [];
 
@@ -193,7 +207,11 @@ export class AgentTypeDetectorService {
     context: AgentTypeContext,
     primaryType: DynamicAgentType
   ): Array<{ type: DynamicAgentType; confidence: number; reason: string }> {
-    const alternatives: Array<{ type: DynamicAgentType; confidence: number; reason: string }> = [];
+    const alternatives: Array<{
+      type: DynamicAgentType;
+      confidence: number;
+      reason: string;
+    }> = [];
 
     // Test each detection rule
     for (const rule of TYPE_DETECTION_RULES) {
@@ -206,7 +224,10 @@ export class AgentTypeDetectorService {
       const tempType = determineAgentType(testContext);
 
       if (tempType !== primaryType) {
-        const validation = validateTypeCapabilities(tempType, context.capabilities);
+        const validation = validateTypeCapabilities(
+          tempType,
+          context.capabilities
+        );
         const confidence = this.calculateConfidence(validation, context);
 
         if (confidence > 0.5) {

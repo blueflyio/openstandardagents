@@ -87,9 +87,7 @@ export const toolCreateCommand = new Command('create')
       // Show usage example
       console.log(chalk.blue('\nUsage:'));
       console.log(
-        chalk.gray(
-          `  Add this tool to your agent manifest in spec.tools array`
-        )
+        chalk.gray(`  Add this tool to your agent manifest in spec.tools array`)
       );
       console.log(
         chalk.gray(`  or validate with: ossa tool validate ${outputPath}`)
@@ -221,7 +219,8 @@ async function getTypeSpecificConfig(type: ToolType): Promise<any> {
         {
           type: 'input',
           name: 'server',
-          message: 'MCP server command (e.g., npx @modelcontextprotocol/server-filesystem):',
+          message:
+            'MCP server command (e.g., npx @modelcontextprotocol/server-filesystem):',
           validate: (input) => (input ? true : 'Server command is required'),
         },
       ]);

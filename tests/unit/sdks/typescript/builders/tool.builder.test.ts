@@ -85,7 +85,10 @@ describe('ToolBuilder', () => {
         'Content-Type': 'application/json',
       });
       expect(tool.parameters?.body).toEqual({ key: 'value' });
-      expect(tool.parameters?.auth).toEqual({ type: 'bearer', token: 'secret' });
+      expect(tool.parameters?.auth).toEqual({
+        type: 'bearer',
+        token: 'secret',
+      });
     });
   });
 

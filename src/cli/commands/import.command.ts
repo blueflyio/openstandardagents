@@ -16,6 +16,7 @@ import {
   shouldUseColor,
   ExitCode,
 } from '../utils/standard-options.js';
+import { IdCardService } from '../../services/id-card.service.js';
 
 export const importCommand = new Command('import')
   .argument('<path>', 'Path to platform-specific agent file')
@@ -79,6 +80,17 @@ importCommand.action(
       );
 
       const outputPath = options?.output || 'agent.ossa.json';
+
+      // Auto-append audit entry if manifest has an ID Card
+      IdCardService.applyMutation(ossaManifest, {
+        action: 'created',
+        actor: process.env.USER || 'ossa-cli',
+        details: {
+          field: 'import',
+          newValue: options?.from || 'cursor',
+          reason: `Imported from ${options?.from || 'cursor'} format`,
+        },
+      });
 
       if (!options?.dryRun) {
         fs.writeFileSync(outputPath, JSON.stringify(ossaManifest, null, 2));

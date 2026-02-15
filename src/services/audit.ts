@@ -310,9 +310,7 @@ export class AgentAuditService {
   /**
    * Check schema version and warn if outdated
    */
-  private checkSchemaVersion(
-    manifest: any
-  ): AgentHealth['issues'][0] | null {
+  private checkSchemaVersion(manifest: any): AgentHealth['issues'][0] | null {
     const apiVersion = manifest.apiVersion;
 
     if (!apiVersion) {
