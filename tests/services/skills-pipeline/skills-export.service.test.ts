@@ -7,15 +7,15 @@ import { SkillsExportService } from '../../../src/services/skills-pipeline/skill
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { tmpdir } from 'os';
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 
-// Mock execSync for publish tests — prevents real npm calls
+// Mock execFileSync for publish tests — prevents real npm calls
 jest.mock('child_process', () => ({
   ...jest.requireActual('child_process'),
-  execSync: jest.fn(),
+  execFileSync: jest.fn(),
 }));
 
-const mockedExecSync = execSync as jest.MockedFunction<typeof execSync>;
+const mockedExecFileSync = execFileSync as jest.MockedFunction<typeof execFileSync>;
 
 describe('SkillsExportService', () => {
   let service: SkillsExportService;
@@ -171,7 +171,7 @@ This skill activates when:
   describe('publish', () => {
     it('should fail publish when not authenticated with npm', async () => {
       // Mock npm whoami to fail (not authenticated)
-      mockedExecSync.mockImplementation(() => {
+      mockedExecFileSync.mockImplementation(() => {
         throw new Error('ENEEDAUTH');
       });
 
@@ -190,7 +190,7 @@ This skill activates when:
 
     it('should publish when authenticated', async () => {
       // Mock npm whoami success, then npm publish success
-      mockedExecSync.mockReturnValue(Buffer.from('test-user\n'));
+      mockedExecFileSync.mockReturnValue(Buffer.from('test-user\n'));
 
       const result = await service.export({
         skillPath,
@@ -213,7 +213,7 @@ This skill activates when:
       expect(result.success).toBe(true);
       expect(result.published).toBeUndefined();
       // execSync should not have been called for publish
-      expect(mockedExecSync).not.toHaveBeenCalled();
+      expect(mockedExecFileSync).not.toHaveBeenCalled();
     });
   });
 
