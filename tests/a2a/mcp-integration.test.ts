@@ -184,7 +184,7 @@ describe.skip('MCP Integration', () => {
         to,
         type: 'request' as any,
         payload: { action: 'process', data: { value: 42 } },
-        version: '0.4.4',
+        version: '0.4.5',
         metadata: {
           priority: 'normal' as any,
           timeout: 30000,
@@ -227,7 +227,7 @@ describe.skip('MCP Integration', () => {
       expect(a2aMessage.from).toBe(from);
       expect(a2aMessage.to).toBe(to);
       expect(a2aMessage.payload).toBe(mcpMessage.params);
-      expect(a2aMessage.version).toBe('0.4.4');
+      expect(a2aMessage.version).toBe('0.4.5');
     });
   });
 
