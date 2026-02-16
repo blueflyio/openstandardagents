@@ -18,7 +18,7 @@ pip install ossa-sdk[events]  # Includes HTTP/Kafka support
 from ossa.events import CloudEventsEmitter, OSSA_EVENT_TYPES
 
 # Create emitter
-emitter = CloudEventsEmitter(source="ossa/my-agent")
+emitter = CloudEventsEmitter(source="ossa/creative-agent-naming")
 
 # Emit event
 emitter.emit(
@@ -37,7 +37,7 @@ emitter.emit(
 from ossa.events import StdoutSink
 
 sink = StdoutSink(pretty=True)
-emitter = CloudEventsEmitter(source="ossa/my-agent", sink=sink)
+emitter = CloudEventsEmitter(source="ossa/creative-agent-naming", sink=sink)
 ```
 
 ### HTTP
@@ -50,7 +50,7 @@ sink = HttpSink(
     headers={"Authorization": "Bearer token"},
     mode="structured"  # or "binary"
 )
-emitter = CloudEventsEmitter(source="ossa/my-agent", sink=sink)
+emitter = CloudEventsEmitter(source="ossa/creative-agent-naming", sink=sink)
 ```
 
 ### Kafka
@@ -63,7 +63,7 @@ sink = KafkaSink(
     topic="ossa-events",
     key_field="ossaagentid"
 )
-emitter = CloudEventsEmitter(source="ossa/my-agent", sink=sink)
+emitter = CloudEventsEmitter(source="ossa/creative-agent-naming", sink=sink)
 ```
 
 ---
@@ -110,7 +110,7 @@ event = emitter.emit(
 emitter.emit(
     "dev.ossa.agent.started",
     {"agent_id": "123"},
-    ossaagentid="my-agent",            # Agent ID
+    ossaagentid="creative-agent-naming",            # Agent ID
     ossainteractionid="session-456",   # Conversation ID
     ossatraceid="trace-abc",           # Distributed trace ID
     ossaspanid="span-001",             # Trace span ID
@@ -124,13 +124,13 @@ emitter.emit(
 ```python
 # Batch by size
 emitter = CloudEventsEmitter(
-    source="ossa/my-agent",
+    source="ossa/creative-agent-naming",
     batch_size=10  # Flush after 10 events
 )
 
 # Batch by time
 emitter = CloudEventsEmitter(
-    source="ossa/my-agent",
+    source="ossa/creative-agent-naming",
     batch_size=100,
     flush_interval_ms=5000  # Flush every 5 seconds
 )
@@ -145,7 +145,7 @@ emitter.flush()
 
 ```python
 with CloudEventsEmitter(
-    source="ossa/my-agent",
+    source="ossa/creative-agent-naming",
     batch_size=10
 ) as emitter:
     emitter.emit("dev.ossa.agent.started", {"agent_id": "123"})
@@ -162,12 +162,12 @@ from ossa.events import CloudEventsEmitter, HttpSink, OSSA_EVENT_TYPES
 # Setup
 sink = HttpSink(url="https://events.example.com/webhook")
 
-with CloudEventsEmitter(source="ossa/my-agent", sink=sink) as emitter:
+with CloudEventsEmitter(source="ossa/creative-agent-naming", sink=sink) as emitter:
     # Agent started
     emitter.emit(
         OSSA_EVENT_TYPES.AGENT_STARTED,
         {"agent_id": "001"},
-        ossaagentid="my-agent",
+        ossaagentid="creative-agent-naming",
         ossatraceid="trace-123"
     )
 
@@ -175,7 +175,7 @@ with CloudEventsEmitter(source="ossa/my-agent", sink=sink) as emitter:
     emitter.emit(
         OSSA_EVENT_TYPES.TOOL_CALLED,
         {"tool": "search"},
-        ossaagentid="my-agent",
+        ossaagentid="creative-agent-naming",
         ossatraceid="trace-123",
         ossaspanid="span-001"
     )
@@ -184,7 +184,7 @@ with CloudEventsEmitter(source="ossa/my-agent", sink=sink) as emitter:
     emitter.emit(
         OSSA_EVENT_TYPES.AGENT_COMPLETED,
         {"agent_id": "001", "status": "success"},
-        ossaagentid="my-agent",
+        ossaagentid="creative-agent-naming",
         ossatraceid="trace-123"
     )
 ```
@@ -217,15 +217,15 @@ assert "dev.ossa.test" in output.read()
 {
   "specversion": "1.0",
   "type": "dev.ossa.agent.started",
-  "source": "ossa/my-agent",
+  "source": "ossa/creative-agent-naming",
   "id": "550e8400-e29b-41d4-a716-446655440000",
   "time": "2024-01-27T12:00:00Z",
   "datacontenttype": "application/json",
   "data": {
-    "agent_id": "my-agent",
+    "agent_id": "creative-agent-naming",
     "status": "started"
   },
-  "ossaagentid": "my-agent",
+  "ossaagentid": "creative-agent-naming",
   "ossainteractionid": "session-123",
   "ossatraceid": "trace-abc",
   "ossaspanid": "span-001"

@@ -7,6 +7,7 @@ import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
+import { API_VERSION } from '../../../src/version.js';
 
 describe('ossa validate command', () => {
   let tempDir: string;

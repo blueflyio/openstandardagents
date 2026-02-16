@@ -52,11 +52,7 @@ export function addMutationOptions(command: Command): Command {
  */
 export function addQueryOptions(command: Command): Command {
   return command
-    .option(
-      '--format <type>',
-      'Output format (json, yaml, table)',
-      'table'
-    )
+    .option('--format <type>', 'Output format (json, yaml, table)', 'table')
     .option('-l, --limit <n>', 'Limit number of results', parseInt)
     .option('-f, --filter <expr>', 'Filter expression');
 }
@@ -145,12 +141,7 @@ export function addInteractiveOption(command: Command): Command {
 export function addBatchOptions(command: Command): Command {
   return command
     .option('--batch', 'Enable batch processing mode', false)
-    .option(
-      '--parallel <n>',
-      'Number of parallel operations',
-      parseInt,
-      1
-    );
+    .option('--parallel <n>', 'Number of parallel operations', parseInt, 1);
 }
 
 /**
@@ -186,6 +177,40 @@ export function addStandardValidationOptions(command: Command): Command {
   addFileInputOptions(command);
   addReportOptions(command);
   return command;
+}
+
+/**
+ * Registry connection options for commands that interact with the agent registry
+ * - registry: Base URL for the agent registry API
+ * - api-key: API key for authentication
+ *
+ * Resolution order:
+ * 1. --registry flag (highest priority)
+ * 2. OSSA_REGISTRY_URL environment variable
+ * 3. Default: https://api.blueflyagents.com
+ */
+export const DEFAULT_REGISTRY_URL = 'https://api.blueflyagents.com';
+
+export function addRegistryOptions(command: Command): Command {
+  return command
+    .option('--registry <url>', 'Agent registry URL (env: OSSA_REGISTRY_URL)')
+    .option('--api-key <key>', 'API key for registry authentication');
+}
+
+/**
+ * Resolve registry URL from flag, environment variable, or default.
+ *
+ * @param options - Command options (may contain registry flag)
+ * @returns Resolved registry base URL
+ */
+export function resolveRegistryUrl(options: { registry?: string }): string {
+  if (options.registry) {
+    return options.registry;
+  }
+  if (process.env.OSSA_REGISTRY_URL) {
+    return process.env.OSSA_REGISTRY_URL;
+  }
+  return DEFAULT_REGISTRY_URL;
 }
 
 /**

@@ -1,0 +1,340 @@
+version: '3.9'
+
+# ============================================================================
+# {{projectName}} - Docker Compose Configuration
+# Local Development Environment
+# ============================================================================
+
+services:
+  # ==========================================================================
+  # Main Application Service
+  # ==========================================================================
+  {{serviceName}}:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+      args:
+        NODE_ENV: development
+      cache_from:
+        - {{dockerRegistry}}/{{imageName}}:latest
+    image: {{imageName}}:dev
+    container_name: {{containerName}}
+    restart: unless-stopped
+
+    # Port mappings
+    ports:
+      - "{{hostPort}}:{{containerPort}}"
+      {{#if debugPort}}
+      - "{{debugPort}}:9229"  # Node.js debug port
+      {{/if}}
+
+    # Environment variables
+    environment:
+      NODE_ENV: development
+      PORT: {{containerPort}}
+      LOG_LEVEL: {{logLevel}}
+      {{#if database}}
+      DATABASE_URL: postgresql://{{dbUser}}:{{dbPassword}}@postgres:5432/{{dbName}}
+      {{/if}}
+      {{#if redis}}
+      REDIS_URL: redis://redis:6379
+      {{/if}}
+      {{#each envVars}}
+      {{@key}}: {{this}}
+      {{/each}}
+
+    # Environment file
+    env_file:
+      - .env.development
+
+    # Volume mounts for hot reload
+    volumes:
+      - ./src:/app/src:delegated
+      - ./package*.json:/app/package.json:delegated
+      {{#if tsconfig}}
+      - ./tsconfig.json:/app/tsconfig.json:delegated
+      {{/if}}
+      - /app/node_modules
+      - logs:/app/logs
+
+    # Networking
+    networks:
+      - {{networkName}}
+
+    # Dependencies
+    depends_on:
+      {{#if database}}
+      postgres:
+        condition: service_healthy
+      {{/if}}
+      {{#if redis}}
+      redis:
+        condition: service_healthy
+      {{/if}}
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:{{containerPort}}/{{healthEndpoint}}', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '{{cpuLimit}}'
+          memory: {{memoryLimit}}
+        reservations:
+          cpus: '{{cpuReservation}}'
+          memory: {{memoryReservation}}
+
+  {{#if database}}
+  # ==========================================================================
+  # PostgreSQL Database Service
+  # ==========================================================================
+  postgres:
+    image: postgres:{{postgresVersion}}-alpine
+    container_name: {{containerName}}-postgres
+    restart: unless-stopped
+
+    # Port mappings
+    ports:
+      - "{{dbHostPort}}:5432"
+
+    # Environment variables
+    environment:
+      POSTGRES_DB: {{dbName}}
+      POSTGRES_USER: {{dbUser}}
+      POSTGRES_PASSWORD: {{dbPassword}}
+      PGDATA: /var/lib/postgresql/data/pgdata
+
+    # Volume mounts
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      {{#if dbInitScripts}}
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+      {{/if}}
+
+    # Networking
+    networks:
+      - {{networkName}}
+
+    # Health check
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U {{dbUser}} -d {{dbName}}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+  {{/if}}
+
+  {{#if redis}}
+  # ==========================================================================
+  # Redis Cache Service
+  # ==========================================================================
+  redis:
+    image: redis:{{redisVersion}}-alpine
+    container_name: {{containerName}}-redis
+    restart: unless-stopped
+
+    # Port mappings
+    ports:
+      - "{{redisHostPort}}:6379"
+
+    # Command with configuration
+    command: redis-server --appendonly yes --requirepass {{redisPassword}}
+
+    # Volume mounts
+    volumes:
+      - redis-data:/data
+
+    # Networking
+    networks:
+      - {{networkName}}
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+  {{/if}}
+
+  {{#if nginx}}
+  # ==========================================================================
+  # Nginx Reverse Proxy Service
+  # ==========================================================================
+  nginx:
+    image: nginx:{{nginxVersion}}-alpine
+    container_name: {{containerName}}-nginx
+    restart: unless-stopped
+
+    # Port mappings
+    ports:
+      - "{{nginxHostPort}}:80"
+      {{#if ssl}}
+      - "{{nginxSslHostPort}}:443"
+      {{/if}}
+
+    # Volume mounts
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+      {{#if ssl}}
+      - ./docker/nginx/ssl:/etc/nginx/ssl:ro
+      {{/if}}
+
+    # Networking
+    networks:
+      - {{networkName}}
+
+    # Dependencies
+    depends_on:
+      - {{serviceName}}
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+  {{/if}}
+
+  {{#if monitoring}}
+  # ==========================================================================
+  # Prometheus Monitoring Service
+  # ==========================================================================
+  prometheus:
+    image: prom/prometheus:{{prometheusVersion}}
+    container_name: {{containerName}}-prometheus
+    restart: unless-stopped
+
+    # Port mappings
+    ports:
+      - "{{prometheusPort}}:9090"
+
+    # Volume mounts
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+
+    # Command
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+
+    # Networking
+    networks:
+      - {{networkName}}
+
+    # Dependencies
+    depends_on:
+      - {{serviceName}}
+
+  # ==========================================================================
+  # Grafana Visualization Service
+  # ==========================================================================
+  grafana:
+    image: grafana/grafana:{{grafanaVersion}}
+    container_name: {{containerName}}-grafana
+    restart: unless-stopped
+
+    # Port mappings
+    ports:
+      - "{{grafanaPort}}:3000"
+
+    # Environment variables
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: {{grafanaPassword}}
+      GF_INSTALL_PLUGINS: {{grafanaPlugins}}
+
+    # Volume mounts
+    volumes:
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana-data:/var/lib/grafana
+
+    # Networking
+    networks:
+      - {{networkName}}
+
+    # Dependencies
+    depends_on:
+      - prometheus
+  {{/if}}
+
+# ============================================================================
+# Networks Configuration
+# ============================================================================
+networks:
+  {{networkName}}:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: {{networkSubnet}}
+
+# ============================================================================
+# Volumes Configuration
+# ============================================================================
+volumes:
+  logs:
+    driver: local
+  {{#if database}}
+  postgres-data:
+    driver: local
+  {{/if}}
+  {{#if redis}}
+  redis-data:
+    driver: local
+  {{/if}}
+  {{#if monitoring}}
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+  {{/if}}
+
+# ============================================================================
+# Extension Fields (Reusable Configuration)
+# ============================================================================
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "3"
+    tag: "{{.Name}}"
+
+x-deploy-resources: &default-resources
+  resources:
+    limits:
+      cpus: '0.5'
+      memory: 512M
+    reservations:
+      cpus: '0.25'
+      memory: 256M

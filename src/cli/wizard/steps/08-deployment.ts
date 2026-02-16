@@ -10,7 +10,7 @@ import { console_ui } from '../ui/console.js';
 export async function configureDeploymentStep(
   state: WizardState
 ): Promise<WizardState> {
-  console_ui.step(8, state.totalSteps, 'Deployment Configuration');
+  console_ui.step(9, state.totalSteps, 'Deployment Configuration');
 
   const { configureDeployment } = await inquirer.prompt([
     {

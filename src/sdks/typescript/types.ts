@@ -2,11 +2,15 @@
  * OSSA TypeScript SDK Types
  *
  * Core type definitions for OSSA manifests.
- * These types match the OSSA v0.3.3 JSON Schema specification.
+ * These types match the current OSSA JSON Schema specification.
+ *
+ * Version is derived dynamically from package.json via utils/version.ts
  */
 
-export const VERSION = '0.3.3';
-export const OSSA_VERSION = 'v0.3.3';
+import { getVersion, getApiVersion } from '../../utils/version.js';
+
+export const VERSION = getVersion();
+export const OSSA_VERSION = getApiVersion();
 
 // ============================================================================
 // Core Enums

@@ -61,7 +61,7 @@ Migration state is tracked in `.migration-state.json`:
     {
       "version": "0.3.3",
       "date": "2025-12-31T00:00:00.000Z",
-      "files": ["examples/agents/my-agent.ossa.yaml"]
+      "files": ["examples/agents/creative-agent-naming.ossa.yaml"]
     }
   ]
 }

@@ -21,7 +21,7 @@
 
 import chalk from 'chalk';
 import { Command } from 'commander';
-import * as yaml from 'js-yaml';
+import { stringify as yamlStringify } from 'yaml';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { LangChainMigrationService } from '../../services/migration/langchain-migration.service.js';
@@ -161,7 +161,7 @@ export const migrateLangchainCommand = new Command('langchain')
         console.log(chalk.yellow('\n[DRY RUN] No files written'));
         console.log(chalk.gray('\nGenerated Manifest Preview:'));
         console.log(
-          chalk.white(yaml.dump(manifest, { indent: 2, lineWidth: 120 }))
+          chalk.white(yamlStringify(manifest, { indent: 2, lineWidth: 120 }))
         );
       } else {
         // Save manifest
@@ -172,7 +172,7 @@ export const migrateLangchainCommand = new Command('langchain')
         if (options.report) {
           const reportContent =
             options.format === 'yaml'
-              ? yaml.dump(report, { indent: 2, lineWidth: 120 })
+              ? yamlStringify(report, { indent: 2, lineWidth: 120 })
               : JSON.stringify(report, null, 2);
 
           await fs.writeFile(options.report, reportContent, 'utf-8');

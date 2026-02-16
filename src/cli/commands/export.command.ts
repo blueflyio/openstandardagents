@@ -15,45 +15,56 @@ import chalk from 'chalk';
 import { Command } from 'commander';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as yaml from 'yaml';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
-import { LangChainConverter } from '../../adapters/langchain/converter.js';
-import { CrewAIConverter } from '../../adapters/crewai/converter.js';
+import { LangChainAdapter } from '../../adapters/langchain/adapter.js';
+import { CrewAIAdapter } from '../../adapters/crewai/adapter.js';
 import { TemporalConverter } from '../../adapters/temporal/converter.js';
 import { N8NConverter } from '../../adapters/n8n/converter.js';
 import { GitLabConverter } from '../../adapters/gitlab/converter.js';
-import { DockerfileGenerator } from '../../adapters/docker/generators.js';
+import { GitLabDuoPackageGenerator } from '../../adapters/gitlab/package-generator.js';
+import { DockerExporter } from '../../adapters/docker/docker-exporter.js';
 import { KubernetesManifestGenerator } from '../../adapters/kubernetes/generator.js';
 import { KAgentCRDGenerator } from '../../sdks/kagent/crd-generator.js';
 import { registry } from '../../adapters/registry/platform-registry.js';
+import { DrupalManifestExporter } from '../../adapters/drupal/manifest-exporter.js';
 import type { OssaAgent } from '../../types/index.js';
 import {
   addGlobalOptions,
   addMutationOptions,
-  addPlatformOptions,
+  addBackupOptions,
   shouldUseColor,
 } from '../utils/standard-options.js';
 
 export const exportCommand = new Command('export')
   .description('Export OSSA manifest to platform-specific format')
-  .argument('<manifest>', 'Path to OSSA agent manifest')
-  .requiredOption(
+  .argument('[manifest]', 'Path to OSSA agent manifest')
+  .option(
     '-p, --platform <platform>',
-    'Target platform (kagent, langchain, crewai, temporal, n8n, gitlab, docker, kubernetes, npm)'
+    'Target platform (kagent, langchain, crewai, temporal, n8n, gitlab, gitlab-agent, docker, kubernetes, npm, drupal, agent-skills)'
   )
   .option('-o, --output <file>', 'Output file path')
   .option('--format <format>', 'Output format (yaml, json, python)', 'yaml')
-  .option('--skill', 'Include Claude Skill (SKILL.md) - NPM platform only');
+  .option('--skill', 'Include Claude Skill (SKILL.md) - NPM platform only')
+  .option(
+    '--list-platforms',
+    'Show all supported export platforms and their status'
+  );
 
 // Add production-grade standard options
 addGlobalOptions(exportCommand);
 addMutationOptions(exportCommand);
+addBackupOptions(exportCommand);
+
+// Add validation skip option
+exportCommand.option('--no-validate', 'Skip manifest validation before export');
 
 exportCommand.action(
   async (
-    manifestPath: string,
+    manifestPath: string | undefined,
     options: {
-      platform: string;
+      platform?: string;
       output?: string;
       format: string;
       skill?: boolean;
@@ -65,146 +76,607 @@ exportCommand.action(
       force?: boolean;
       backup?: boolean;
       backupDir?: string;
+      validate?: boolean;
+      listPlatforms?: boolean;
     }
   ) => {
     const useColor = shouldUseColor(options);
-      try {
-        // Logging helpers
-        const log = (msg: string) => {
-          if (options.quiet) return;
-          console.log(useColor ? chalk.blue(msg) : msg);
-        };
 
-        const logVerbose = (msg: string) => {
-          if (!options.verbose || options.quiet) return;
-          console.log(useColor ? chalk.gray(msg) : msg);
-        };
+    // Handle --list-platforms
+    if (options.listPlatforms) {
+      const platforms = [
+        {
+          name: 'kagent',
+          status: 'alpha',
+          desc: 'kagent.dev Kubernetes CRD bundle (10+ files)',
+        },
+        {
+          name: 'langchain',
+          status: 'production',
+          desc: 'LangChain Python + TypeScript agent package (uses @langchain/* SDK)',
+        },
+        {
+          name: 'crewai',
+          status: 'beta',
+          desc: 'CrewAI multi-agent Python package (uses CrewAI SDK)',
+        },
+        {
+          name: 'temporal',
+          status: 'alpha',
+          desc: 'Temporal workflow configuration',
+        },
+        { name: 'n8n', status: 'alpha', desc: 'n8n workflow JSON export' },
+        {
+          name: 'gitlab',
+          status: 'alpha',
+          desc: 'GitLab CI/CD YAML configuration',
+        },
+        {
+          name: 'gitlab-duo',
+          status: 'alpha',
+          desc: 'GitLab Duo Custom Agent with MCP integration',
+        },
+        {
+          name: 'docker',
+          status: 'alpha',
+          desc: 'Docker deployment package',
+        },
+        {
+          name: 'kubernetes',
+          status: 'alpha',
+          desc: 'Kubernetes Kustomize structure',
+        },
+        {
+          name: 'npm',
+          status: 'production',
+          desc: 'Installable npm package with optional Claude Skill',
+        },
+        {
+          name: 'mcp',
+          status: 'production',
+          desc: 'MCP server for Claude Code (uses @modelcontextprotocol/sdk)',
+        },
+        {
+          name: 'drupal',
+          status: 'beta',
+          desc: 'Drupal manifest for ai_agents_ossa module',
+        },
+        {
+          name: 'claude-code',
+          status: 'beta',
+          desc: 'Claude Code sub-agent for task execution',
+        },
+        {
+          name: 'cursor',
+          status: 'beta',
+          desc: 'Cursor Cloud Agent for IDE assistance',
+        },
+        {
+          name: 'warp',
+          status: 'beta',
+          desc: 'Warp terminal agent with CLI triggers',
+        },
+        {
+          name: 'anthropic',
+          status: 'beta',
+          desc: 'Anthropic Python SDK with FastAPI server',
+        },
+        {
+          name: 'agent-skills',
+          status: 'production',
+          desc: 'Agent Skills package (SKILL.md format)',
+        },
+      ];
 
-        const logSuccess = (msg: string) => {
-          if (options.quiet) return;
-          console.log(useColor ? chalk.green(msg) : msg);
-        };
+      console.log(
+        useColor
+          ? chalk.bold('\nOSSA Export Platforms\n')
+          : '\nOSSA Export Platforms\n'
+      );
 
-        // Dry-run mode
-        if (options.dryRun) {
-          log('🔍 DRY RUN MODE - No files will be written');
+      for (const p of platforms) {
+        const statusColor =
+          p.status === 'production'
+            ? chalk.green
+            : p.status === 'beta'
+              ? chalk.yellow
+              : p.status === 'alpha'
+                ? chalk.magenta
+                : chalk.red;
+        const statusLabel = useColor
+          ? statusColor(`[${p.status}]`)
+          : `[${p.status}]`;
+        const nameLabel = useColor
+          ? chalk.cyan(p.name.padEnd(14))
+          : p.name.padEnd(14);
+        console.log(
+          `  ${nameLabel} ${statusLabel.padEnd(useColor ? 30 : 14)} ${p.desc}`
+        );
+      }
+
+      console.log('');
+      return;
+    }
+
+    // Validate required args when not listing platforms
+    if (!manifestPath) {
+      console.error(
+        useColor
+          ? chalk.red('Error: manifest path is required')
+          : 'Error: manifest path is required'
+      );
+      process.exit(1);
+    }
+
+    if (!options.platform) {
+      console.error(
+        useColor
+          ? chalk.red(
+              'Error: --platform is required. Use --list-platforms to see available platforms.'
+            )
+          : 'Error: --platform is required'
+      );
+      process.exit(1);
+    }
+
+    try {
+      // Logging helpers
+      const log = (msg: string) => {
+        if (options.quiet) return;
+        console.log(useColor ? chalk.blue(msg) : msg);
+      };
+
+      const logVerbose = (msg: string) => {
+        if (!options.verbose || options.quiet) return;
+        console.log(useColor ? chalk.gray(msg) : msg);
+      };
+
+      const logSuccess = (msg: string) => {
+        if (options.quiet) return;
+        console.log(useColor ? chalk.green(msg) : msg);
+      };
+
+      // Dry-run mode
+      if (options.dryRun) {
+        log('🔍 DRY RUN MODE - No files will be written');
+      }
+
+      log(`Exporting agent: ${manifestPath}`);
+      log(`Platform: ${options.platform}`);
+      log(`Format: ${options.format}\n`);
+
+      logVerbose(`Verbose mode enabled`);
+      logVerbose(`Color: ${useColor ? 'enabled' : 'disabled'}`);
+
+      // Load manifest
+      const manifestRepo = container.get(ManifestRepository);
+      const manifest = await manifestRepo.load(manifestPath);
+
+      let output: string;
+      let defaultExtension: string;
+
+      switch (options.platform) {
+        case 'kagent': {
+          log('Generating kagent.dev Kubernetes manifest bundle...');
+
+          const kagentGenerator = new KAgentCRDGenerator();
+          const bundle = kagentGenerator.generateBundle(manifest);
+
+          const agentName = manifest.metadata?.name || 'agent';
+          const outputDir = options.output || `./${agentName}-kagent`;
+
+          if (!options.dryRun) {
+            fs.mkdirSync(outputDir, { recursive: true });
+
+            // Write CRD
+            fs.writeFileSync(
+              path.join(outputDir, 'agent-crd.yaml'),
+              yaml.stringify(bundle.crd)
+            );
+
+            // Write Deployment
+            fs.writeFileSync(
+              path.join(outputDir, 'deployment.yaml'),
+              yaml.stringify(bundle.deployment)
+            );
+
+            // Write Service
+            fs.writeFileSync(
+              path.join(outputDir, 'service.yaml'),
+              yaml.stringify(bundle.service)
+            );
+
+            // Write ConfigMap
+            fs.writeFileSync(
+              path.join(outputDir, 'configmap.yaml'),
+              yaml.stringify(bundle.configMap)
+            );
+
+            // Write Secret
+            fs.writeFileSync(
+              path.join(outputDir, 'secret.yaml'),
+              yaml.stringify(bundle.secret)
+            );
+
+            // Write RBAC
+            fs.mkdirSync(path.join(outputDir, 'rbac'), { recursive: true });
+            fs.writeFileSync(
+              path.join(outputDir, 'rbac/serviceaccount.yaml'),
+              yaml.stringify(bundle.serviceAccount)
+            );
+            fs.writeFileSync(
+              path.join(outputDir, 'rbac/role.yaml'),
+              yaml.stringify(bundle.role)
+            );
+            fs.writeFileSync(
+              path.join(outputDir, 'rbac/rolebinding.yaml'),
+              yaml.stringify(bundle.roleBinding)
+            );
+
+            // Write HPA (if present)
+            if (bundle.horizontalPodAutoscaler) {
+              fs.writeFileSync(
+                path.join(outputDir, 'hpa.yaml'),
+                yaml.stringify(bundle.horizontalPodAutoscaler)
+              );
+            }
+
+            // Write NetworkPolicy
+            fs.writeFileSync(
+              path.join(outputDir, 'networkpolicy.yaml'),
+              yaml.stringify(bundle.networkPolicy)
+            );
+
+            // Write README
+            fs.writeFileSync(path.join(outputDir, 'README.md'), bundle.readme);
+
+            // Write source OSSA manifest for provenance
+            fs.writeFileSync(
+              path.join(outputDir, 'agent.ossa.yaml'),
+              yaml.stringify(manifest)
+            );
+
+            logSuccess(
+              `\nkagent.dev manifest bundle exported to: ${outputDir}`
+            );
+            const fileCount = 10 + (bundle.horizontalPodAutoscaler ? 1 : 0);
+            log(`  ${fileCount} files generated`);
+          } else {
+            log(`\nDRY RUN: Would generate kagent bundle in: ${outputDir}`);
+          }
+
+          return;
         }
 
-        log(`Exporting agent: ${manifestPath}`);
-        log(`Platform: ${options.platform}`);
-        log(`Format: ${options.format}\n`);
+        case 'langchain': {
+          log('Generating LangChain agent package (Python + TypeScript)...');
 
-        logVerbose(`Verbose mode enabled`);
-        logVerbose(`Color: ${useColor ? 'enabled' : 'disabled'}`);
+          const langchainAdapter = new LangChainAdapter();
+          const langchainResult = await langchainAdapter.export(manifest, {
+            validate: true,
+          });
 
-        // Load manifest
-        const manifestRepo = container.get(ManifestRepository);
-        const manifest = await manifestRepo.load(manifestPath);
-
-        let output: string;
-        let defaultExtension: string;
-
-        switch (options.platform) {
-          case 'kagent': {
-            const generator = new KAgentCRDGenerator();
-            const crd = generator.generate(manifest);
-            output =
-              options.format === 'json'
-                ? JSON.stringify(crd, null, 2)
-                : JSON.stringify(crd, null, 2);
-            defaultExtension = 'yaml';
-            break;
+          if (!langchainResult.success) {
+            throw new Error(langchainResult.error || 'LangChain export failed');
           }
 
-          case 'langchain': {
-            const converter = new LangChainConverter();
-            if (options.format === 'python') {
-              output = converter.generatePythonCode(manifest);
-              defaultExtension = 'py';
-            } else {
-              const config = converter.convert(manifest);
-              output = JSON.stringify(config, null, 2);
-              defaultExtension = 'json';
+          const langchainOutputDir =
+            options.output ||
+            `./langchain-${manifest.metadata?.name || 'agent'}`;
+
+          if (!options.dryRun) {
+            fs.mkdirSync(langchainOutputDir, { recursive: true });
+
+            for (const file of langchainResult.files) {
+              const filePath = path.join(langchainOutputDir, file.path);
+              const fileDir = path.dirname(filePath);
+              fs.mkdirSync(fileDir, { recursive: true });
+              fs.writeFileSync(filePath, file.content);
+              logVerbose(`  Created: ${file.path}`);
             }
-            break;
-          }
 
-          case 'crewai': {
-            const converter = new CrewAIConverter();
-            if (options.format === 'python') {
-              output = converter.generatePythonCode(manifest);
-              defaultExtension = 'py';
-            } else {
-              const config = converter.convert(manifest);
-              output = JSON.stringify(config, null, 2);
-              defaultExtension = 'json';
+            logSuccess(
+              `\nLangChain package exported to: ${langchainOutputDir}`
+            );
+            log(`  ${langchainResult.files.length} files generated`);
+          } else {
+            log(
+              `\nDRY RUN: Would generate ${langchainResult.files.length} files in: ${langchainOutputDir}`
+            );
+            logVerbose('Files to be created:');
+            for (const file of langchainResult.files) {
+              logVerbose(`  - ${file.path} (${file.content.length} bytes)`);
             }
-            break;
           }
 
-          case 'temporal': {
-            const converter = new TemporalConverter();
-            const workflow = { ...manifest } as any;
-            if (options.format === 'typescript') {
-              output = converter.generateTypeScriptCode(workflow);
-              defaultExtension = 'ts';
-            } else {
-              const config = converter.convert(workflow);
-              output = JSON.stringify(config, null, 2);
-              defaultExtension = 'json';
+          return;
+        }
+
+        case 'crewai': {
+          log('Generating CrewAI multi-agent package...');
+
+          const crewaiAdapter = new CrewAIAdapter();
+          const crewaiResult = await crewaiAdapter.export(manifest, {
+            validate: true,
+            includeTests: true,
+          });
+
+          if (!crewaiResult.success) {
+            throw new Error(crewaiResult.error || 'CrewAI export failed');
+          }
+
+          const crewaiOutputDir =
+            options.output || `./crewai-${manifest.metadata?.name || 'agent'}`;
+
+          if (!options.dryRun) {
+            fs.mkdirSync(crewaiOutputDir, { recursive: true });
+
+            for (const file of crewaiResult.files) {
+              const filePath = path.join(crewaiOutputDir, file.path);
+              const fileDir = path.dirname(filePath);
+              fs.mkdirSync(fileDir, { recursive: true });
+              fs.writeFileSync(filePath, file.content);
+              logVerbose(`  Created: ${file.path}`);
             }
-            break;
+
+            logSuccess(`\nCrewAI package exported to: ${crewaiOutputDir}`);
+            log(`  ${crewaiResult.files.length} files generated`);
+            log('\n  Package includes:');
+            log('  - agents/ (agent definitions)');
+            log('  - tasks/ (task definitions)');
+            log('  - tools/ (custom tools)');
+            log('  - crew/ (orchestration)');
+            log('  - examples/ (usage examples)');
+            log('  - tests/ (test suite)');
+            log('  - README.md, DEPLOYMENT.md');
+          } else {
+            log(
+              `\nDRY RUN: Would generate ${crewaiResult.files.length} files in: ${crewaiOutputDir}`
+            );
+            logVerbose('Files to be created:');
+            for (const file of crewaiResult.files) {
+              logVerbose(`  - ${file.path} (${file.content.length} bytes)`);
+            }
           }
 
-          case 'n8n': {
-            const converter = new N8NConverter();
-            const workflow = { ...manifest } as any;
-            output = converter.generateJSON(workflow);
+          return;
+        }
+
+        case 'temporal': {
+          const converter = new TemporalConverter();
+          const workflow = { ...manifest } as any;
+          if (options.format === 'typescript') {
+            output = converter.generateTypeScriptCode(workflow);
+            defaultExtension = 'ts';
+          } else {
+            const config = converter.convert(workflow);
+            output = JSON.stringify(config, null, 2);
             defaultExtension = 'json';
-            break;
+          }
+          break;
+        }
+
+        case 'n8n': {
+          const converter = new N8NConverter();
+          const workflow = { ...manifest } as any;
+          output = converter.generateJSON(workflow);
+          defaultExtension = 'json';
+          break;
+        }
+
+        case 'gitlab': {
+          const converter = new GitLabConverter();
+          output = converter.generateYAML(manifest);
+          defaultExtension = 'yml';
+          break;
+        }
+
+        case 'gitlab-agent': {
+          log(
+            'Generating GitLab Duo agent package (triggers, flows, routers, MCP)...'
+          );
+
+          // Use GitLabDuoPackageGenerator for complete 34-file package
+          const agentName = manifest.metadata?.name || 'agent';
+          const outputDir = options.output || `./${agentName}`;
+          const duoGenerator = new GitLabDuoPackageGenerator();
+          const result = await duoGenerator.generate(manifest, {
+            outputDir: path.dirname(outputDir),
+            overwrite: true,
+          });
+
+          if (!result.success) {
+            throw new Error(
+              result.errors?.join(', ') ||
+                'GitLab Duo package generation failed'
+            );
           }
 
-          case 'gitlab': {
-            const converter = new GitLabConverter();
-            output = converter.generateYAML(manifest);
-            defaultExtension = 'yml';
-            break;
+          if (!options.dryRun) {
+            logSuccess(
+              `✓ GitLab Duo package exported to: ${result.packagePath}`
+            );
+            log(`  ${result.generatedFiles?.length || 0} files generated`);
+
+            log('\n📦 Package includes:');
+            log(
+              '  - 7 triggers (mention, assign, reviewer, schedule, pipeline, webhook, file_pattern)'
+            );
+            log('  - 4 flows (main, error, monitor, governance)');
+            log('  - 2 routers (conditional, multi-agent orchestration)');
+            log('  - MCP server configuration');
+            log('  - 8 documentation files');
+            log('  - CI/CD, Docker, source templates');
+
+            log(`\n📚 Documentation: ${result.packagePath}/README.md`);
+          } else {
+            log(
+              `\n🔍 DRY RUN: Would generate ${result.generatedFiles?.length || 0} files in: ${outputDir}`
+            );
+            logVerbose('Files to be created:');
+            for (const file of result.generatedFiles || []) {
+              logVerbose(`  - ${file}`);
+            }
           }
 
-          case 'docker': {
-            const generator = new DockerfileGenerator();
-            output = generator.generate(manifest);
-            defaultExtension = 'Dockerfile';
-            break;
+          return; // Early return to skip single-file write
+        }
+
+        case 'docker': {
+          log('Generating Docker deployment package...');
+
+          const dockerExporter = new DockerExporter();
+          const dockerResult = await dockerExporter.export(manifest);
+
+          if (!dockerResult.success) {
+            throw new Error(dockerResult.error || 'Docker export failed');
           }
 
-          case 'kubernetes': {
-            const generator = new KubernetesManifestGenerator();
-            const manifests = generator.generateAll(manifest);
-            output = JSON.stringify(manifests, null, 2);
-            defaultExtension = 'json';
-            break;
-          }
+          const agentName = manifest.metadata?.name || 'agent';
+          const dockerOutputDir = options.output || `./${agentName}-docker`;
 
-          case 'npm': {
-            // Use registry adapter for npm export
-            const adapter = registry.getAdapter('npm');
-            if (!adapter) {
-              throw new Error('NPM adapter not registered');
+          if (!options.dryRun) {
+            fs.mkdirSync(dockerOutputDir, { recursive: true });
+
+            for (const file of dockerResult.files) {
+              const filePath = path.join(dockerOutputDir, file.path);
+              const fileDir = path.dirname(filePath);
+              fs.mkdirSync(fileDir, { recursive: true });
+              fs.writeFileSync(filePath, file.content);
+              logVerbose(`  Created: ${file.path}`);
             }
 
-            const result = await adapter.export(manifest, {
-              validate: true,
-              outputDir: path.dirname(options.output || './npm-package'),
-              includeSkill: options.skill || false,
-            });
-
-            if (!result.success) {
-              throw new Error(result.error || 'NPM export failed');
+            logSuccess(`\nDocker package exported to: ${dockerOutputDir}`);
+            log(`  ${dockerResult.files.length} files generated`);
+          } else {
+            log(
+              `\nDRY RUN: Would generate ${dockerResult.files.length} files in: ${dockerOutputDir}`
+            );
+            logVerbose('Files to be created:');
+            for (const file of dockerResult.files) {
+              logVerbose(`  - ${file.path} (${file.content.length} bytes)`);
             }
+          }
 
-            // Create output directory
-            const outputDir = options.output || `./npm-${manifest.metadata?.name || 'agent'}`;
+          return;
+        }
+
+        case 'kubernetes': {
+          log('Generating Kubernetes Kustomize deployment structure...');
+
+          const k8sGenerator = new KubernetesManifestGenerator();
+          const kustomizeStructure =
+            await k8sGenerator.generateKustomizeStructure(manifest);
+
+          const agentName = manifest.metadata?.name || 'agent';
+          const k8sOutputDir = options.output || `./${agentName}-kubernetes`;
+
+          if (!options.dryRun) {
+            // Use the generator's built-in write method for proper Kustomize structure
+            await k8sGenerator.writeKustomizeStructure(
+              kustomizeStructure,
+              k8sOutputDir
+            );
+
+            // Write source OSSA manifest for provenance
+            fs.writeFileSync(
+              path.join(k8sOutputDir, 'agent.ossa.yaml'),
+              yaml.stringify(manifest)
+            );
+
+            logSuccess(
+              `\nKubernetes Kustomize package exported to: ${k8sOutputDir}`
+            );
+            log('  Package includes:');
+            log(
+              '  - base/ (deployment, service, configmap, secret, kustomization)'
+            );
+            log('  - rbac/ (serviceaccount, role, rolebinding)');
+            log('  - overlays/dev/ (development patches)');
+            log('  - overlays/staging/ (staging patches)');
+            log(
+              '  - overlays/production/ (production patches, HPA, NetworkPolicy)'
+            );
+            log('  - monitoring/ (ServiceMonitor, Grafana dashboard)');
+            log('  - examples/ (deployment, customization)');
+            log('  - docs/ (README, DEPLOYMENT)');
+          } else {
+            log(
+              `\nDRY RUN: Would generate Kustomize structure in: ${k8sOutputDir}`
+            );
+            log(
+              '  Directories: base/, rbac/, overlays/{dev,staging,production}/, monitoring/, examples/, docs/'
+            );
+          }
+
+          return;
+        }
+
+        case 'npm': {
+          // Use registry adapter for npm export
+          const adapter = registry.getAdapter('npm');
+          if (!adapter) {
+            throw new Error('NPM adapter not registered');
+          }
+
+          const result = await adapter.export(manifest, {
+            validate: true,
+            outputDir: path.dirname(options.output || './npm-package'),
+            includeSkill: options.skill || false,
+          });
+
+          if (!result.success) {
+            throw new Error(result.error || 'NPM export failed');
+          }
+
+          // Create output directory
+          const outputDir =
+            options.output || `./npm-${manifest.metadata?.name || 'agent'}`;
+          fs.mkdirSync(outputDir, { recursive: true });
+
+          // Write all generated files
+          for (const file of result.files) {
+            const filePath = path.join(outputDir, file.path);
+            const fileDir = path.dirname(filePath);
+            fs.mkdirSync(fileDir, { recursive: true });
+            fs.writeFileSync(filePath, file.content);
+          }
+
+          console.log(chalk.green(`✓ NPM package exported to: ${outputDir}`));
+          console.log(
+            chalk.gray(`  Files: ${result.files.map((f) => f.path).join(', ')}`)
+          );
+          if (options.skill) {
+            console.log(chalk.green(`✓ Claude Skill included: SKILL.md`));
+          }
+          return; // Early return to skip single-file write
+        }
+
+        case 'drupal': {
+          log(
+            'Generating OSSA manifest package for Drupal (import via ai_agents_ossa)...'
+          );
+
+          // Use DrupalManifestExporter for minimal manifest package
+          // Drupal integration is handled by contrib modules:
+          //   drupal/ai_agents, drupal/ai_agents_ossa, drupal/eca, drupal/charts
+          const exporter = new DrupalManifestExporter();
+          const result = await exporter.export(manifest, {
+            validate: true,
+          });
+
+          if (!result.success) {
+            throw new Error(result.error || 'Drupal manifest export failed');
+          }
+
+          // Create output directory
+          const agentName =
+            manifest.metadata?.name
+              ?.toLowerCase()
+              .replace(/[^a-z0-9_]/g, '_') || 'ossa_agent';
+          const outputDir = options.output || `./${agentName}`;
+
+          if (!options.dryRun) {
             fs.mkdirSync(outputDir, { recursive: true });
 
             // Write all generated files
@@ -213,76 +685,155 @@ exportCommand.action(
               const fileDir = path.dirname(filePath);
               fs.mkdirSync(fileDir, { recursive: true });
               fs.writeFileSync(filePath, file.content);
+              logVerbose(`  Created: ${file.path}`);
             }
 
-            console.log(chalk.green(`✓ NPM package exported to: ${outputDir}`));
-            console.log(chalk.gray(`  Files: ${result.files.map(f => f.path).join(', ')}`));
-            if (options.skill) {
-              console.log(chalk.green(`✓ Claude Skill included: SKILL.md`));
+            logSuccess(`\nDrupal manifest package exported to: ${outputDir}`);
+            logVerbose(`  Files: ${result.files.length} files generated`);
+            logVerbose(`  Agent name: ${agentName}`);
+            log('\nInstallation instructions:');
+            log(
+              `  1. Install contrib: composer require drupal/ai_agents drupal/ai_agents_ossa drupal/eca drupal/charts`
+            );
+            log(
+              `  2. Enable modules: drush en ai_agents ai_agents_ossa eca charts`
+            );
+            log(
+              `  3. Import manifest: drush ai-agents:import ${agentName}/agent.ossa.yaml`
+            );
+            log(`  4. Configure at: /admin/config/ai/agents\n`);
+            log('Documentation:');
+            log(`  README: ${agentName}/README.md`);
+            log(`  Quick start: ${agentName}/INSTALL.txt`);
+          } else {
+            log(
+              `\nDRY RUN: Would generate ${result.files.length} files in: ${outputDir}`
+            );
+            logVerbose('Files to be created:');
+            for (const file of result.files) {
+              logVerbose(`  - ${file.path} (${file.content.length} bytes)`);
             }
-            return; // Early return to skip single-file write
           }
 
-          default:
-            throw new Error(`Unsupported platform: ${options.platform}`);
+          return; // Early return to skip single-file write
         }
 
-        // Determine output file
-        const outputFile =
-          options.output ||
-          `${manifest.metadata?.name || 'agent'}.${defaultExtension}`;
-        const outputPath = path.resolve(outputFile);
+        case 'agent-skills': {
+          log('Generating Agent Skills package (SKILL.md format)...');
 
-        // Backup existing file if requested
-        if (!options.dryRun && options.backup && fs.existsSync(outputPath)) {
-          const backupDir = options.backupDir || './backups';
-          fs.mkdirSync(backupDir, { recursive: true });
-          const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-          const backupPath = path.join(
-            backupDir,
-            `${path.basename(outputFile)}.${timestamp}.bak`
-          );
-          fs.copyFileSync(outputPath, backupPath);
-          logVerbose(`Backup created: ${backupPath}`);
-        }
+          // Use AgentSkillsExporter for complete skills package
+          const { AgentSkillsExporter } =
+            await import('../../adapters/agent-skills/exporter.js');
+          const exporter = new AgentSkillsExporter();
+          const result = await exporter.export(manifest, {
+            includeScripts: true,
+            includeReferences: true,
+            includeAssets: false,
+          });
 
-        // Write output (or simulate if dry-run)
-        if (options.dryRun) {
-          log(`\n📄 Would write to: ${outputPath}`);
-          logVerbose(`Output size: ${output.length} bytes`);
-          if (options.verbose) {
-            log('\n--- Preview (first 500 chars) ---');
-            console.log(output.substring(0, 500));
-            if (output.length > 500) {
-              console.log('...');
-            }
-            log('--- End Preview ---\n');
+          if (!result.success) {
+            throw new Error(result.error || 'Agent Skills export failed');
           }
-        } else {
-          fs.writeFileSync(outputPath, output);
-          logSuccess(`✓ Exported to: ${outputPath}`);
-          logVerbose(`Output size: ${output.length} bytes`);
+
+          // Create output directory
+          const skillName = manifest.metadata?.name || 'agent-skill';
+          const outputDir = options.output || `./${skillName}`;
+
+          if (!options.dryRun) {
+            fs.mkdirSync(outputDir, { recursive: true });
+
+            // Write all generated files
+            for (const file of result.files) {
+              const filePath = path.join(outputDir, file.path);
+              const fileDir = path.dirname(filePath);
+              fs.mkdirSync(fileDir, { recursive: true });
+              fs.writeFileSync(filePath, file.content);
+              logVerbose(`  Created: ${file.path}`);
+            }
+
+            logSuccess(`✓ Agent Skills package exported to: ${outputDir}`);
+            logVerbose(`  Files: ${result.files.length} files generated`);
+            logVerbose(`  Skill name: ${skillName}`);
+            logVerbose(`  Version: ${result.metadata?.version}`);
+            logVerbose(`  Tools: ${result.metadata?.toolsCount || 0}`);
+
+            log('\n📦 Usage instructions:');
+            log(`  1. Review SKILL.md in ${outputDir}/`);
+            log(`  2. Use with Claude Code: claude --skill ${skillName}`);
+            log(
+              `  3. Share on GitHub: https://github.com/anthropics/awesome-agent-skills`
+            );
+            log(
+              `  4. Compatible with 25+ AI tools (OpenAI Codex, Cursor, etc.)`
+            );
+          } else {
+            log('DRY RUN: Would generate:');
+            result.files.forEach((file) => log(`  - ${file.path}`));
+          }
+
+          return; // Early return to skip single-file write
         }
 
-        // JSON output for automation
-        if (options.json) {
-          const result = {
-            success: true,
-            manifest: manifestPath,
-            platform: options.platform,
-            output: outputPath,
-            dryRun: options.dryRun || false,
-            size: output.length,
-          };
-          console.log(JSON.stringify(result, null, 2));
-        }
-      } catch (error) {
-        console.error(
-          chalk.red(
-            `Export failed: ${error instanceof Error ? error.message : String(error)}`
-          )
-        );
-        process.exit(1);
+        default:
+          throw new Error(`Unsupported platform: ${options.platform}`);
       }
+
+      // Determine output file
+      const outputFile =
+        options.output ||
+        `${manifest.metadata?.name || 'agent'}.${defaultExtension}`;
+      const outputPath = path.resolve(outputFile);
+
+      // Backup existing file if requested
+      if (!options.dryRun && options.backup && fs.existsSync(outputPath)) {
+        const backupDir = options.backupDir || './backups';
+        fs.mkdirSync(backupDir, { recursive: true });
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const backupPath = path.join(
+          backupDir,
+          `${path.basename(outputFile)}.${timestamp}.bak`
+        );
+        fs.copyFileSync(outputPath, backupPath);
+        logVerbose(`Backup created: ${backupPath}`);
+      }
+
+      // Write output (or simulate if dry-run)
+      if (options.dryRun) {
+        log(`\n📄 Would write to: ${outputPath}`);
+        logVerbose(`Output size: ${output.length} bytes`);
+        if (options.verbose) {
+          log('\n--- Preview (first 500 chars) ---');
+          console.log(output.substring(0, 500));
+          if (output.length > 500) {
+            console.log('...');
+          }
+          log('--- End Preview ---\n');
+        }
+      } else {
+        fs.writeFileSync(outputPath, output);
+        logSuccess(`✓ Exported to: ${outputPath}`);
+        logVerbose(`Output size: ${output.length} bytes`);
+      }
+
+      // JSON output for automation
+      if (options.json) {
+        const result = {
+          success: true,
+          manifest: manifestPath,
+          platform: options.platform,
+          output: outputPath,
+          dryRun: options.dryRun || false,
+          size: output.length,
+        };
+        console.log(JSON.stringify(result, null, 2));
+      }
+    } catch (error) {
+      console.error(
+        chalk.red(
+          `Export failed: ${error instanceof Error ? error.message : String(error)}`
+        )
+      );
+      process.exit(1);
     }
-  );
+  }
+);

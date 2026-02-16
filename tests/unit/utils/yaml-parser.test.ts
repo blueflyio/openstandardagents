@@ -3,6 +3,7 @@
  */
 
 import { describe, it, expect } from '@jest/globals';
+import { API_VERSION } from '../../../src/version.js';
 import {
   safeParseYAML,
   safeStringifyYAML,
@@ -11,14 +12,14 @@ import {
 describe('safeParseYAML', () => {
   it('should parse valid YAML', () => {
     const yaml = `
-apiVersion: ossa/v0.3.3
+apiVersion: ossa/v0.4.5
 kind: Agent
 metadata:
   name: test-agent
     `;
     const result = safeParseYAML(yaml);
     expect(result).toEqual({
-      apiVersion: 'ossa/v0.3.3',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'test-agent',
@@ -198,7 +199,7 @@ describe('safeStringifyYAML', () => {
 
   it('should stringify complex OSSA manifest', () => {
     const manifest = {
-      apiVersion: 'ossa/v0.3.3',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'test-agent',
@@ -213,7 +214,7 @@ describe('safeStringifyYAML', () => {
       },
     };
     const result = safeStringifyYAML(manifest);
-    expect(result).toContain('apiVersion: ossa/v0.3.3');
+    expect(result).toContain('apiVersion: ossa/v0.4.5');
     expect(result).toContain('kind: Agent');
     expect(result).toContain('name: test-agent');
     expect(result).toContain('provider: openai');
@@ -236,7 +237,7 @@ describe('safeStringifyYAML', () => {
 
   it('should round-trip parse and stringify', () => {
     const original = {
-      apiVersion: 'ossa/v0.3.3',
+      apiVersion: API_VERSION,
       metadata: {
         name: 'test',
         labels: {

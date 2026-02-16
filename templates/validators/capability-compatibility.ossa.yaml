@@ -1,0 +1,174 @@
+apiVersion: ossa/v0.4.4
+kind: Validator
+metadata:
+  name: capability-compatibility-validator
+  version: 1.0.0
+  description: Validates that agentType supports declared capabilities
+  agentType: validator
+  agentKind: semantic
+  tags:
+    - compatibility
+    - capabilities
+    - agent-types
+
+spec:
+  validates:
+    targetTypes:
+      - claude
+      - kagent
+      - openai
+      - langchain
+      - swarm
+      - all
+    phases:
+      - semantic
+
+  rules:
+    # KAGENT does not support vision capability
+    - id: kagent-no-vision
+      when:
+        path: metadata.agentType
+        equals: kagent
+      and:
+        path: metadata.agentArchitecture.capabilities
+        contains: vision
+      then:
+        enforcement: error
+        message: "KAGENT cannot process vision inputs"
+        rationale: "Kubernetes operators lack image processing capabilities. KAGENT agents run in containers without GPU access for vision models."
+        fixes:
+          - action: change
+            path: metadata.agentType
+            value: claude
+            impact: "+0.20 compatibility"
+            effort: low
+          - action: remove
+            path: metadata.agentArchitecture.capabilities
+            value: vision
+            impact: "+0.15 compatibility"
+            effort: low
+        documentation: "https://openstandardagents.org/docs/agent-types/kagent"
+
+    # KAGENT does not support audio capability
+    - id: kagent-no-audio
+      when:
+        path: metadata.agentType
+        equals: kagent
+      and:
+        path: metadata.agentArchitecture.capabilities
+        contains: audio
+      then:
+        enforcement: error
+        message: "KAGENT cannot process audio inputs"
+        rationale: "Kubernetes operators lack audio processing capabilities"
+        fixes:
+          - action: change
+            path: metadata.agentType
+            value: claude
+            impact: "+0.20 compatibility"
+            effort: low
+          - action: remove
+            path: metadata.agentArchitecture.capabilities
+            value: audio
+            impact: "+0.15 compatibility"
+            effort: low
+
+    # Claude supports all capabilities
+    - id: claude-supports-all
+      when:
+        path: metadata.agentType
+        equals: claude
+      then:
+        enforcement: info
+        message: "Claude supports all declared capabilities"
+        rationale: "Anthropic Claude models support vision, tools, streaming, code execution, and all other capabilities"
+
+    # Swarm requires handoff capability
+    - id: swarm-requires-handoff
+      when:
+        path: metadata.agentType
+        equals: swarm
+      and:
+        path: metadata.agentArchitecture.capabilities
+        contains: handoff
+        exists: false
+      then:
+        enforcement: error
+        message: "Swarm agents require handoff capability for agent-to-agent coordination"
+        rationale: "OpenAI Swarm pattern is built on handoff functions. Without handoff, agents cannot transfer control."
+        fixes:
+          - action: add
+            path: metadata.agentArchitecture.capabilities
+            value: handoff
+            impact: "+0.25 compatibility"
+            effort: low
+        documentation: "https://openstandardagents.org/docs/agent-types/swarm"
+
+    # Pattern: swarm requires multiple agents
+    - id: swarm-pattern-requires-agents-array
+      when:
+        path: metadata.agentArchitecture.pattern
+        equals: swarm
+      and:
+        path: spec.agents
+        exists: false
+      then:
+        enforcement: error
+        message: "Swarm pattern requires spec.agents array with multiple agent definitions"
+        rationale: "Swarm coordination requires at least 2 agents. Single agents should use pattern: single"
+        fixes:
+          - action: add
+            path: spec.agents
+            value: []
+            impact: "+0.30 compatibility"
+            effort: medium
+
+    # OpenAI requires tools capability for function calling
+    - id: openai-function-calling-requires-tools
+      when:
+        path: metadata.agentType
+        equals: openai
+      and:
+        path: spec.tools
+        exists: true
+      and:
+        path: metadata.agentArchitecture.capabilities
+        contains: tools
+        exists: false
+      then:
+        enforcement: warning
+        message: "OpenAI agents with spec.tools should declare 'tools' capability"
+        fixes:
+          - action: add
+            path: metadata.agentArchitecture.capabilities
+            value: tools
+            impact: "+0.10 observability"
+            effort: low
+
+    # LangChain with retrieval should declare retrieval capability
+    - id: langchain-retrieval-capability
+      when:
+        path: metadata.agentType
+        equals: langchain
+      and:
+        path: spec.retrieval
+        exists: true
+      and:
+        path: metadata.agentArchitecture.capabilities
+        contains: retrieval
+        exists: false
+      then:
+        enforcement: warning
+        message: "LangChain agents with spec.retrieval should declare 'retrieval' capability"
+        fixes:
+          - action: add
+            path: metadata.agentArchitecture.capabilities
+            value: retrieval
+            impact: "+0.10 observability"
+            effort: low
+
+  coordination:
+    composable: true
+    operators:
+      - ">>"  # Can run after other validators
+      - "<||>"  # Can run in parallel with other validators

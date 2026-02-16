@@ -513,7 +513,7 @@ components:
         gitlab_package:
           type: string
           description: GitLab package to use (if available)
-          example: "@llm/my-agent@1.0.0"
+          example: "@llm/supercali-fragilisticagent@1.0.0"
 
     AgentResponse:
       type: object

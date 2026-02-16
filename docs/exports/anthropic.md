@@ -56,7 +56,7 @@ import type { OssaAgent } from '@bluefly/openstandardagents/types';
 
 // Load OSSA manifest
 const manifest: OssaAgent = {
-  apiVersion: "ossa/v0.4.0",
+  apiVersion: "ossa/v0.4.1",
   kind: "Agent",
   metadata: {
     name: "code-reviewer"
@@ -437,7 +437,7 @@ eventSource.onmessage = (event) => {
 ### Define Tools in OSSA
 
 ```yaml
-apiVersion: ossa/v0.4.0
+apiVersion: ossa/v0.4.1
 kind: Agent
 metadata:
   name: developer-assistant
@@ -514,7 +514,7 @@ console.log("Tools called:", response.toolCalls);
 **OSSA Manifest:**
 
 ```yaml
-apiVersion: ossa/v0.4.0
+apiVersion: ossa/v0.4.1
 kind: Agent
 metadata:
   name: code-reviewer
@@ -588,7 +588,7 @@ console.log(response.text);
 **OSSA Manifest:**
 
 ```yaml
-apiVersion: ossa/v0.4.0
+apiVersion: ossa/v0.4.1
 kind: Agent
 metadata:
   name: support-bot

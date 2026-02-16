@@ -117,6 +117,41 @@ export {
   type AgentMeshClientConfig,
 } from './client.js';
 
+// Discovery Providers
+export {
+  DiscoveryProvider,
+  DiscoveryQuery,
+  DNSDiscoveryProvider,
+  ConsulDiscoveryProvider,
+  KubernetesDiscoveryProvider,
+  ServiceMeshDiscoveryProvider,
+  MultiProviderRegistry,
+} from './discovery-providers.js';
+
+// Agent Graph
+export {
+  AgentGraph,
+  AgentGraphBuilder,
+  AgentNode,
+  AgentTeam,
+  AgentRelationship,
+  AgentRelationType,
+  CommunicationPattern,
+} from './agent-graph.js';
+
+// Advanced Routing
+export {
+  AdvancedAgentRouter,
+  LoadBalancer,
+  RoundRobinLoadBalancer,
+  LeastConnectionsLoadBalancer,
+  WeightedLoadBalancer,
+  CircuitBreaker,
+  RoutingStrategy,
+  RoutingContext,
+  LoadBalancerStats,
+} from './advanced-routing.js';
+
 // Re-export commonly used types for convenience
 export type {
   MessageEnvelope,

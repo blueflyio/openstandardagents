@@ -62,7 +62,7 @@ const did = generateOSSADID();
 **Manual generation** (SHA-256 hash):
 ```bash
 # Generate from agent name + timestamp
-echo "my-agent-$(date +%s)" | sha256sum | cut -c1-48
+echo "creative-agent-naming-$(date +%s)" | sha256sum | cut -c1-48
 # Use output: did:ossa:<hash>
 ```
 
@@ -147,7 +147,7 @@ echo "my-agent-$(date +%s)" | sha256sum | cut -c1-48
 {
   "metadata": {
     "decentralized_identity": {
-      "did": "did:ossa:my-agent-2024-01-27-abc123"
+      "did": "did:ossa:creative-agent-naming-2024-01-27-abc123"
     }
   }
 }

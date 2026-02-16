@@ -1,0 +1,106 @@
+apiVersion: ossa/v0.4.4
+kind: Agent
+metadata:
+  name: langchain-research-agent
+  version: 1.0.0
+  description: LangChain agent for research and analysis tasks with retrieval
+
+  # Agent Taxonomy
+  agentType: langchain                 # LangChain framework
+  agentKind: researcher                # Research and analysis agent
+
+  agentArchitecture:
+    pattern: single                    # Single agentic loop
+    capabilities:
+      - tools                          # Can use tools
+      - retrieval                      # Can retrieve from vector DB
+      - web-search                     # Can search web
+      - memory                         # Has persistent memory
+
+    runtime:
+      scalability: single-instance     # Single instance (stateful)
+      executionModel: synchronous      # Synchronous execution
+
+  labels:
+    domain: research
+    team: data-science
+    framework: langchain
+
+spec:
+  # LangChain-specific configuration
+  langchain:
+    agent_type: openai-functions       # OpenAI function calling agent
+    verbose: true
+    max_iterations: 15
+    early_stopping_method: generate    # Generate final answer on timeout
+
+  # LLM configuration
+  model:
+    provider: openai
+    name: gpt-4-turbo
+    temperature: 0.3                   # Lower temp for accuracy
+    max_tokens: 2048
+
+  # Agent role
+  role: Research Assistant
+  instructions: |
+    You are a research assistant that helps users find and analyze information.
+    You have access to:
+    - Web search for finding recent information
+    - Document retrieval from knowledge base
+    - Python execution for data analysis
+    - Wikipedia for factual information
+
+    Always cite your sources and provide accurate information.
+
+  # LangChain tools
+  tools:
+    - type: langchain
+      name: serpapi
+      description: Search the web using SerpAPI
+      config:
+        api_key_env: SERPAPI_API_KEY
+
+    - type: langchain
+      name: wikipedia
+      description: Search Wikipedia for information
+      config:
+        top_k: 3
+
+    - type: retriever
+      name: knowledge_base
+      description: Search internal knowledge base
+      config:
+        vector_store: qdrant
+        embedding_model: text-embedding-3-small
+        collection: research_docs
+        top_k: 5
+
+    - type: langchain
+      name: python_repl
+      description: Execute Python code for analysis
+      config:
+        sandbox: true
+        timeout: 30s
+
+  # Memory configuration
+  memory:
+    type: conversation_buffer_window
+    k: 10                              # Remember last 10 exchanges
+
+  # Retrieval configuration
+  retrieval:
+    vector_store:
+      type: qdrant
+      url: http://qdrant:6333
+      collection: research_docs
+      embedding:
+        model: text-embedding-3-small
+        provider: openai
+
+  # Callbacks for observability
+  callbacks:
+    - type: langchain_tracer
+      project: research-agents
+    - type: prometheus_callback
+      metrics_port: 9090

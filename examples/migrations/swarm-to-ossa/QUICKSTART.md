@@ -213,7 +213,7 @@ spec:
 apiVersion: ossa/v0.3.6
 kind: AgentTest
 metadata:
-  name: test-my-agent
+  name: test-creative-agent-naming
 spec:
   agent: customer-service-agent
   test_cases:
@@ -230,7 +230,7 @@ spec:
 ossa test customer-service-agent.ossa.yaml
 
 # Output:
-# ✓ test-my-agent: Greet user (120ms)
+# ✓ test-creative-agent-naming: Greet user (120ms)
 #
 # Tests: 1 passed, 1 total
 # Time: 0.5s
@@ -357,7 +357,7 @@ Migrate one agent at a time. Don't try to migrate everything at once.
 
 ```bash
 # Generate agent template
-ossa init agent my-agent --from-swarm swarm_agent.py
+ossa init agent creative-agent-naming --from-swarm swarm_agent.py
 ```
 
 ### Tip 3: Validate Early

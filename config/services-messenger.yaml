@@ -1,0 +1,129 @@
+# Symfony Messenger Services Configuration
+#
+# This file defines services for Symfony Messenger integration
+# including handlers, middleware, and support services.
+#
+# @package @bluefly/openstandardagents
+# @since 0.5.0
+
+services:
+  # Default configuration for services
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  #
+  # Message Handlers
+  #
+
+  Drupal\ai_agent_ossa\MessageHandler\AgentExecutionHandler:
+    tags:
+      - { name: 'messenger.message_handler' }
+    arguments:
+      $agentRuntime: '@Drupal\ai_agent_ossa\Service\AgentRuntime'
+      $resultStorage: '@Drupal\ai_agent_ossa\Service\ResultStorage'
+      $eventDispatcher: '@event_dispatcher'
+      $logger: '@logger.channel.ai_agent_ossa'
+      $callbackHandler: '@Drupal\ai_agent_ossa\Service\CallbackHandler'
+
+  Drupal\ai_agent_ossa\MessageHandler\AgentBatchHandler:
+    tags:
+      - { name: 'messenger.message_handler' }
+    arguments:
+      $agentRuntime: '@Drupal\ai_agent_ossa\Service\AgentRuntime'
+      $resultStorage: '@Drupal\ai_agent_ossa\Service\ResultStorage'
+      $eventDispatcher: '@event_dispatcher'
+      $logger: '@logger.channel.ai_agent_ossa'
+      $callbackHandler: '@Drupal\ai_agent_ossa\Service\CallbackHandler'
+
+  #
+  # Middleware
+  #
+
+  app.messenger.validation_middleware:
+    class: Drupal\ai_agent_ossa\Messenger\Middleware\ValidationMiddleware
+    tags:
+      - { name: 'messenger.middleware' }
+
+  app.messenger.logging_middleware:
+    class: Drupal\ai_agent_ossa\Messenger\Middleware\LoggingMiddleware
+    arguments:
+      $logger: '@logger.channel.ai_agent_ossa'
+    tags:
+      - { name: 'messenger.middleware' }
+
+  app.messenger.authentication_middleware:
+    class: Drupal\ai_agent_ossa\Messenger\Middleware\AuthenticationMiddleware
+    arguments:
+      $currentUser: '@current_user'
+    tags:
+      - { name: 'messenger.middleware' }
+
+  app.messenger.rate_limit_middleware:
+    class: Drupal\ai_agent_ossa\Messenger\Middleware\RateLimitMiddleware
+    arguments:
+      $rateLimiter: '@Drupal\ai_agent_ossa\Service\RateLimiter'
+    tags:
+      - { name: 'messenger.middleware' }
+
+  #
+  # Event Subscribers
+  #
+
+  Drupal\ai_agent_ossa\EventSubscriber\FailedMessageSubscriber:
+    tags:
+      - { name: 'kernel.event_subscriber' }
+    arguments:
+      $logger: '@logger.channel.ai_agent_ossa'
+      $failedJobStorage: '@Drupal\ai_agent_ossa\Service\FailedJobStorage'
+      $notifier: '@Drupal\ai_agent_ossa\Service\FailureNotifier'
+
+  #
+  # Support Services
+  #
+
+  Drupal\ai_agent_ossa\Service\AgentRuntime:
+    arguments:
+      $validator: '@Drupal\ai_agent_ossa\Service\AgentValidator'
+      $manifestLoader: '@Drupal\ai_agent_ossa\Service\ManifestLoader'
+
+  Drupal\ai_agent_ossa\Service\ResultStorage:
+    arguments:
+      $database: '@database'
+      $serializer: '@serialization.json'
+
+  Drupal\ai_agent_ossa\Service\CallbackHandler:
+    arguments:
+      $httpClient: '@http_client'
+      $logger: '@logger.channel.ai_agent_ossa'
+
+  Drupal\ai_agent_ossa\Service\FailedJobStorage:
+    arguments:
+      $database: '@database'
+
+  Drupal\ai_agent_ossa\Service\FailureNotifier:
+    arguments:
+      $mailManager: '@plugin.manager.mail'
+      $configFactory: '@config.factory'
+
+  Drupal\ai_agent_ossa\Service\RateLimiter:
+    arguments:
+      $cache: '@cache.default'
+      $configFactory: '@config.factory'
+
+  Drupal\ai_agent_ossa\Service\AgentValidator:
+    arguments:
+      $validator: '@validator'
+
+  Drupal\ai_agent_ossa\Service\ManifestLoader:
+    arguments:
+      $fileSystem: '@file_system'
+
+  #
+  # Logging Channel
+  #
+
+  logger.channel.ai_agent_ossa:
+    parent: logger.channel_base
+    arguments: ['ai_agent_ossa']

@@ -18,7 +18,7 @@ export class CrewAIValidator {
   private validateCrewAI: ReturnType<Ajv['compile']>;
 
   constructor() {
-// @ts-expect-error - Ajv v8 API compatibility
+    // @ts-expect-error - Ajv v8 API compatibility
     this.ajv = new Ajv({ allErrors: true, strict: false });
     addFormats(this.ajv);
 
@@ -26,7 +26,7 @@ export class CrewAIValidator {
     // Works in both Jest (source tree) and production (project root with dist/)
     const crewaiSchemaPath = join(
       process.cwd(),
-      'spec/v0.3/extensions/crewai/crewai.schema.json'
+      'spec/v0.4/extensions/crewai/crewai.schema.json'
     );
     const crewaiSchema = JSON.parse(readFileSync(crewaiSchemaPath, 'utf-8'));
     this.validateCrewAI = this.ajv.compile(crewaiSchema);

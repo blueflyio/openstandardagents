@@ -3,6 +3,13 @@
  * Configure global test environment
  */
 
+// Prevent pino-pretty worker thread from keeping the process alive.
+// In test environments NODE_ENV is 'test', which the logger treats as
+// non-production and enables the pino-pretty transport (a worker thread).
+// Setting NODE_ENV to 'production' disables pretty-printing and avoids
+// the open handle that would require --forceExit.
+process.env.NODE_ENV = 'production';
+
 // Set test timeout
 jest.setTimeout(10000);
 

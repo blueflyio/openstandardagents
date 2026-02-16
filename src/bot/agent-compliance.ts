@@ -202,7 +202,7 @@ export class OSSAComplianceBot {
       const match = manifest.apiVersion.match(/^ossa\/v(.+)$/);
       if (match) return match[1];
     }
-    return '0.3.0';
+    return '0.4.0';
   }
 
   private isFixable(error: { message?: string }): boolean {

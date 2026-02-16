@@ -244,16 +244,16 @@ print(result)
 
 ```bash
 # 1. Define agent in OSSA
-vim my-agent.ossa.yaml
+vim creative-agent-naming.ossa.yaml
 
 # 2. Validate compatibility with target framework
-ossa framework validate my-agent.ossa.yaml --framework langchain
+ossa framework validate creative-agent-naming.ossa.yaml --framework langchain
 
 # 3a. Use adapter in code (TypeScript)
 import { LangChainAdapter } from '@ossa/sdk/adapters/langchain';
 
 # 3b. OR export to framework-specific code
-ossa export my-agent.ossa.yaml --platform langchain -o agent.py
+ossa export creative-agent-naming.ossa.yaml --platform langchain -o agent.py
 
 # 4. Run with your framework of choice
 python agent.py
@@ -522,12 +522,12 @@ npm run generate:go-sdk       # Go
 
 **Step 1: Validate Compatibility**
 ```bash
-ossa framework validate my-agent.ossa.yaml --framework langchain
+ossa framework validate creative-agent-naming.ossa.yaml --framework langchain
 ```
 
 **Step 2: Export to Framework**
 ```bash
-ossa export my-agent.ossa.yaml --platform langchain -o agent.py
+ossa export creative-agent-naming.ossa.yaml --platform langchain -o agent.py
 ```
 
 **Step 3: Run with Framework**

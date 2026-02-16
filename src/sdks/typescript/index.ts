@@ -74,3 +74,38 @@ export * from './events/index.js';
 
 // W3C Baggage Tracing
 export * from './tracing/index.js';
+
+// Constants
+export {
+  TOOL_TYPES,
+  LLM_PROVIDERS,
+  ACCESS_TIERS,
+  AUTONOMY_LEVELS,
+  CONTENT_FILTERING_TYPES,
+  PII_DETECTION_TYPES,
+  IDENTITY_PROVIDERS,
+  WORKFLOW_STEP_KINDS,
+  MANIFEST_KINDS,
+} from './constants.js';
+
+export type {
+  ToolType,
+  LLMProviderType,
+  AccessTierType,
+  ContentFilteringType,
+  PIIDetectionType,
+  IdentityProviderType,
+  WorkflowStepKind,
+  ManifestKind,
+} from './constants.js';
+
+// Fluent Builders
+export {
+  ToolBuilder,
+  LLMConfigBuilder,
+  SafetyBuilder,
+  AutonomyBuilder,
+  ManifestBuilder,
+} from './builders/index.js';
+
+export type { AutonomyConfig } from './builders/index.js';

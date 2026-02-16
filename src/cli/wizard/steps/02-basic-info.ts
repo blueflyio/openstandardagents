@@ -21,7 +21,7 @@ export async function configureBasicInfoStep(
       validate: (input: string) => {
         if (!input) return 'Name is required';
         if (!validateDNS1123(input)) {
-          return 'Must be DNS-1123 compliant (lowercase alphanumeric with hyphens, e.g., "my-agent")';
+          return 'Must be DNS-1123 compliant (lowercase alphanumeric with hyphens, e.g., "agent-47")';
         }
         return true;
       },

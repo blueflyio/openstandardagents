@@ -80,7 +80,7 @@ pip install -e ".[dev]"
 ```python
 from ossa import load_manifest, validate_manifest
 
-manifest = load_manifest("my-agent.ossa.yaml")
+manifest = load_manifest("creative-agent-naming.ossa.yaml")
 result = validate_manifest(manifest)
 
 if result.valid:
@@ -94,7 +94,7 @@ from ossa import OSSAManifest, Metadata, AgentSpec, LLMConfig
 manifest = OSSAManifest(
     apiVersion="ossa/v0.3.0",
     kind="Agent",
-    metadata=Metadata(name="my-agent", version="1.0.0"),
+    metadata=Metadata(name="creative-agent-naming", version="1.0.0"),
     spec=AgentSpec(
         role="You are a helpful assistant",
         llm=LLMConfig(
@@ -108,13 +108,13 @@ manifest = OSSAManifest(
 ### 3. Use the CLI
 ```bash
 # Validate
-ossa validate my-agent.ossa.yaml
+ossa validate creative-agent-naming.ossa.yaml
 
 # Inspect
-ossa inspect my-agent.ossa.yaml --format table
+ossa inspect creative-agent-naming.ossa.yaml --format table
 
 # Export
-ossa export my-agent.ossa.yaml --format json -o output.json
+ossa export creative-agent-naming.ossa.yaml --format json -o output.json
 ```
 
 ---

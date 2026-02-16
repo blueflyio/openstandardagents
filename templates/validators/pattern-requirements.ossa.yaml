@@ -1,0 +1,182 @@
+apiVersion: ossa/v0.4.4
+kind: Validator
+metadata:
+  name: pattern-requirements-validator
+  version: 1.0.0
+  description: Validates architecture patterns meet required constraints
+  agentType: validator
+  agentKind: semantic
+  tags:
+    - patterns
+    - architecture
+    - requirements
+
+spec:
+  validates:
+    targetTypes:
+      - all
+    phases:
+      - semantic
+
+  rules:
+    # Graph pattern requires workflow definition
+    - id: graph-requires-workflow
+      when:
+        path: metadata.agentArchitecture.pattern
+        equals: graph
+      and:
+        path: spec.workflow
+        exists: false
+      then:
+        enforcement: error
+        message: "Graph pattern requires spec.workflow with nodes and edges"
+        rationale: "Graph patterns represent DAG workflows and need explicit node/edge definitions"
+        fixes:
+          - action: add
+            path: spec.workflow
+            value:
+              nodes: []
+              edges: []
+            impact: "+0.30 compatibility"
+            effort: high
+        documentation: "https://openstandardagents.org/docs/patterns/graph"
+
+    # Pipeline pattern should have stages
+    - id: pipeline-should-have-stages
+      when:
+        path: metadata.agentArchitecture.pattern
+        equals: pipeline
+      and:
+        path: spec.stages
+        exists: false
+      then:
+        enforcement: warning
+        message: "Pipeline pattern should define spec.stages array"
+        rationale: "Pipelines consist of sequential stages (A → B → C)"
+        fixes:
+          - action: add
+            path: spec.stages
+            value: []
+            impact: "+0.20 clarity"
+            effort: medium
+
+    # Swarm pattern requires at least 2 agents
+    - id: swarm-minimum-agents
+      when:
+        path: metadata.agentArchitecture.pattern
+        equals: swarm
+      and:
+        path: spec.agents
+        exists: true
+      # Note: Can't check array length in JSON Schema validation
+      # This rule documents the requirement for runtime validation
+      then:
+        enforcement: info
+        message: "Swarm pattern requires at least 2 agents in spec.agents array"
+        rationale: "Single agent should use pattern: 'single', not swarm"
+        documentation: "https://openstandardagents.org/docs/patterns/swarm"
+
+    # Hierarchical pattern requires manager/worker structure
+    - id: hierarchical-requires-structure
+      when:
+        path: metadata.agentArchitecture.pattern
+        equals: hierarchical
+      and:
+        path: spec.hierarchy
+        exists: false
+      then:
+        enforcement: warning
+        message: "Hierarchical pattern should define spec.hierarchy structure"
+        rationale: "Hierarchical patterns organize agents in manager/worker layers"
+        fixes:
+          - action: add
+            path: spec.hierarchy
+            value:
+              levels: 2
+              manager: null
+              workers: []
+            impact: "+0.20 clarity"
+            effort: medium
+
+    # Single pattern with streaming should declare capability
+    - id: single-streaming-capability
+      when:
+        path: metadata.agentArchitecture.pattern
+        equals: single
+      and:
+        path: metadata.agentArchitecture.runtime.executionModel
+        equals: streaming
+      and:
+        path: metadata.agentArchitecture.capabilities
+        contains: streaming
+        exists: false
+      then:
+        enforcement: warning
+        message: "Streaming executionModel should include 'streaming' in capabilities"
+        fixes:
+          - action: add
+            path: metadata.agentArchitecture.capabilities
+            value: streaming
+            impact: "+0.10 consistency"
+            effort: low
+
+    # Event-driven execution requires event handlers
+    - id: event-driven-requires-handlers
+      when:
+        path: metadata.agentArchitecture.runtime.executionModel
+        equals: event-driven
+      and:
+        path: spec.eventHandlers
+        exists: false
+      then:
+        enforcement: warning
+        message: "Event-driven executionModel should define spec.eventHandlers"
+        rationale: "Event-driven agents respond to events and need handler definitions"
+        fixes:
+          - action: add
+            path: spec.eventHandlers
+            value: []
+            impact: "+0.15 completeness"
+            effort: medium
+
+    # Batch execution should have batch config
+    - id: batch-requires-config
+      when:
+        path: metadata.agentArchitecture.runtime.executionModel
+        equals: batch
+      and:
+        path: spec.batch
+        exists: false
+      then:
+        enforcement: info
+        message: "Batch executionModel could specify spec.batch configuration (size, interval, etc.)"
+        rationale: "Batch processing often needs size limits and scheduling parameters"
+
+    # Real-time execution with single-instance scalability
+    - id: realtime-scalability-warning
+      when:
+        path: metadata.agentArchitecture.runtime.executionModel
+        equals: realtime
+      and:
+        path: metadata.agentArchitecture.runtime.scalability
+        equals: single-instance
+      then:
+        enforcement: warning
+        message: "Real-time executionModel with single-instance scalability may bottleneck. Consider horizontal scaling."
+        rationale: "Real-time workloads often need horizontal scaling for high availability"
+        fixes:
+          - action: change
+            path: metadata.agentArchitecture.runtime.scalability
+            value: horizontal
+            impact: "+0.15 performance"
+            effort: medium
+
+  coordination:
+    composable: true
+    operators:
+      - ">>"
+      - "<||>"
+
+  dependencies:
+    - capability-compatibility-validator
+    - coordination-consistency-validator

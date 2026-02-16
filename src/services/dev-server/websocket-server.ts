@@ -13,6 +13,7 @@
  */
 
 import { WebSocketServer, WebSocket } from 'ws';
+import { getVersion } from '../../utils/version.js';
 import type { Server } from 'http';
 import type { FileChangeEvent } from './file-watcher.js';
 import type { ValidationResult } from './live-validator.js';
@@ -241,7 +242,7 @@ export class DevWebSocketServer {
       type: 'connected',
       timestamp: new Date(),
       data: {
-        serverVersion: process.env.npm_package_version || '0.4.1',
+        serverVersion: process.env.npm_package_version || getVersion(),
         watchedFiles: [],
       },
     };

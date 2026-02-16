@@ -5,6 +5,7 @@
 
 import type { OssaAgent } from '../../types/index.js';
 import type { KAgentCRD } from './types.js';
+import { getApiVersion } from '../../utils/version.js';
 
 export class KAgentCRDParser {
   /**
@@ -12,7 +13,7 @@ export class KAgentCRDParser {
    */
   parse(crd: KAgentCRD): OssaAgent {
     const manifest: OssaAgent = {
-      apiVersion: 'ossa/v0.3.6',
+      apiVersion: getApiVersion(),
       kind: 'Agent',
       metadata: {
         name: crd.metadata.name,

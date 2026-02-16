@@ -20,11 +20,12 @@ import 'reflect-metadata';
 import { initializeAdapters } from '../adapters/index.js';
 
 // Core OSSA commands (platform-agnostic)
-import { agentCardCommand } from './commands/agent-card.command.js';
 import { agentsMdCommand } from './commands/agents-md.command.js';
 import { agentsCommandGroup } from './commands/agents.command.js';
+import { agentsLocalCommandGroup } from './commands/agents-local.command.js';
 import { complianceCommand } from './commands/compliance.command.js';
 import { conformanceCommand } from './commands/conformance.command.js';
+import { governanceCommand } from './commands/governance.command.js';
 import { contractCommand } from './commands/contract.command.js';
 import { dependenciesCommand } from './commands/dependencies.command.js';
 import {
@@ -42,6 +43,7 @@ import { infoCommand } from './commands/info.command.js';
 import { initCommand } from './commands/init.command.js';
 import { scaffoldCommand } from './commands/scaffold.command.js';
 import { wizardCommand } from './commands/wizard.command.js';
+import { wizardAPIFirstCommand } from './commands/wizard-api-first.command.js';
 import { installCommand } from './commands/install.command.js';
 import { lintCommand } from './commands/lint.command.js';
 import { standardizeCommand } from './commands/standardize.command.js';
@@ -56,13 +58,21 @@ import { runCommand } from './commands/run.command.js';
 import { schemaCommand } from './commands/schema.command.js';
 import { searchCommand } from './commands/search.command.js';
 import { updateCommand } from './commands/update.command.js';
-import { setupCommand } from './commands/setup.command.js';
 import { testCommand } from './commands/test.command.js';
 import { validateCommand } from './commands/validate.command.js';
+
+// Registry commands (GAID/DID)
+import { generateGaidCommand } from './commands/generate-gaid.command.js';
+import { registerCommand } from './commands/register.js';
+import { discoverCommand } from './commands/discover.js';
+import { verifyCommand } from './commands/verify.js';
 import { workspaceCommand } from './commands/workspace.command.js';
 import { taxonomyCommandGroup } from './commands/taxonomy.command.js';
 import { skillsCommandGroup } from './commands/skills.command.js';
 import { templateCommandGroup } from './commands/template.command.js';
+import { toolCommandGroup } from './commands/tool/index.js';
+import { capabilityCommandGroup } from './commands/capability/index.js';
+import { manifestCommandGroup } from './commands/manifest/index.js';
 
 // Framework integration commands
 import { langflowCommand } from './commands/langflow.command.js';
@@ -70,7 +80,6 @@ import { langchainCommand } from './commands/langchain.command.js';
 import { frameworkCommand } from './commands/framework.command.js';
 
 // Additional commands (previously unregistered)
-import { agentCreateCommand } from './commands/agent-create.command.js';
 import { agentWizardCommand } from './commands/agent-wizard.command.js';
 import { docsCommand } from './commands/docs.command.js';
 import { enhanceCommand } from './commands/enhance.command.js';
@@ -100,6 +109,9 @@ import {
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
+
+// Import logo display utility
+import { displayLogo } from './utils/logo.js';
 
 /**
  * Get version dynamically from package.json
@@ -194,90 +206,117 @@ program
 initializeAdapters();
 
 // ============================================================================
-// Register Core OSSA Commands (Platform-Agnostic)
+// Register Core OSSA Commands
 // ============================================================================
 
-program.addCommand(quickstartCommand); // First for discoverability
-program.addCommand(validateCommand);
-program.addCommand(conformanceCommand);
-program.addCommand(complianceCommand);
-program.addCommand(dependenciesCommand);
-program.addCommand(contractCommand);
-program.addCommand(generateCommand);
-program.addCommand(migrateCommand);
-program.addCommand(migrateBatchCommand);
-program.addCommand(upgradeCommand);
-program.addCommand(initCommand);
-program.addCommand(scaffoldCommand);
+// --- Core workflow (shown prominently in help) ---
 program.addCommand(wizardCommand);
+program.addCommand(initCommand);
+program.addCommand(validateCommand);
 program.addCommand(exportCommand);
-program.addCommand(importCommand);
-program.addCommand(schemaCommand);
-program.addCommand(runCommand);
-program.addCommand(setupCommand);
-program.addCommand(agentsMdCommand);
-program.addCommand(llmsTxtCommand);
+program.addCommand(lintCommand);
+program.addCommand(diffCommand);
+program.addCommand(buildCommand);
+program.addCommand(migrateCommand);
 
-// Registry commands
+// --- Agent management ---
+program.addCommand(agentsCommandGroup);
+program.addCommand(agentsLocalCommandGroup);
+program.addCommand(generateGaidCommand);
+
+// --- Development ---
+program.addCommand(generateCommand);
+program.addCommand(devCommand);
+program.addCommand(serveCommand);
+program.addCommand(runCommand);
+program.addCommand(testCommand);
+
+// --- Distribution ---
 program.addCommand(publishCommand);
-program.addCommand(searchCommand);
 program.addCommand(installCommand);
 program.addCommand(updateCommand);
-program.addCommand(infoCommand);
+program.addCommand(searchCommand);
 
-// Deploy commands
+// --- Deployment ---
 program.addCommand(deployCommand);
 program.addCommand(statusCommand);
 program.addCommand(rollbackCommand);
 program.addCommand(stopCommand);
-// deployGroup removed - using deployCommand from deploy.js instead
 
-// Quality commands
-program.addCommand(testCommand);
-program.addCommand(lintCommand);
-program.addCommand(standardizeCommand);
-program.addCommand(diffCommand);
+// --- Documentation ---
+program.addCommand(agentsMdCommand);
+program.addCommand(llmsTxtCommand);
+program.addCommand(docsCommand);
 
-// Cost estimation
-program.addCommand(estimateCommand);
-
-// Agent management
-program.addCommand(agentsCommandGroup);
-
-// Taxonomy commands
-program.addCommand(taxonomyCommandGroup);
-
-// Claude Skills commands
+// --- Skills & Templates ---
 program.addCommand(skillsCommandGroup);
 program.addCommand(templateCommandGroup);
 
-// Two-tier architecture commands
-program.addCommand(workspaceCommand);
-program.addCommand(registryCommand);
-program.addCommand(agentCardCommand);
+// --- Tool & Capability Management ---
+program.addCommand(toolCommandGroup);
+program.addCommand(capabilityCommandGroup);
+program.addCommand(manifestCommandGroup);
 
-// Extension development commands
-program.addCommand(extensionTeamCommand);
+// --- Compliance & Governance ---
+program.addCommand(conformanceCommand);
+program.addCommand(complianceCommand);
+program.addCommand(governanceCommand);
+program.addCommand(contractCommand);
 
-// Framework integration commands
-program.addCommand(langflowCommand);
-program.addCommand(langchainCommand);
-program.addCommand(frameworkCommand);
+// --- Advanced (hidden from main --help, still fully accessible) ---
+for (const cmd of [
+  quickstartCommand,
+  wizardAPIFirstCommand,
+  scaffoldCommand,
+  examplesCommand,
+  agentWizardCommand,
+  importCommand,
+  enhanceCommand,
+  infoCommand,
+  schemaCommand,
+  registerCommand,
+  discoverCommand,
+  verifyCommand,
+  registryCommand,
+  standardizeCommand,
+  releaseCommand,
+  migrateBatchCommand,
+  migrateLangchainCommand,
+  upgradeCommand,
+  syncCommand,
+  dependenciesCommand,
+  knowledgeCommandGroup,
+  taxonomyCommandGroup,
+  langflowCommand,
+  langchainCommand,
+  frameworkCommand,
+  workspaceCommand,
+  extensionTeamCommand,
+  estimateCommand,
+]) {
+  program.addCommand(cmd, { hidden: true });
+}
 
-// Previously unregistered commands - now registered
-program.addCommand(buildCommand); // Was imported but never registered!
-program.addCommand(agentCreateCommand);
-program.addCommand(agentWizardCommand);
-program.addCommand(docsCommand);
-program.addCommand(enhanceCommand);
-program.addCommand(examplesCommand);
-program.addCommand(knowledgeCommandGroup); // Includes index and query subcommands
-program.addCommand(migrateLangchainCommand);
-program.addCommand(releaseCommand);
-program.addCommand(serveCommand);
-program.addCommand(devCommand); // Development server with hot reload
-program.addCommand(syncCommand);
-program.addCommand(createAuditCommand());
+// Audit command (factory function)
+program.addCommand(createAuditCommand(), { hidden: true });
+
+// Custom help footer showing categories
+program.addHelpText(
+  'after',
+  `
+  Core:       wizard, init, validate, export, lint, diff, build, migrate
+  Agents:     agents, agents-local, agent-card, generate-gaid
+  Dev:        generate, dev, serve, run, test
+  Distribute: publish, install, update, search
+  Deploy:     deploy, status, rollback, stop
+  Docs:       agents-md, llms-txt, docs
+  Skills:     skills, template
+  Compliance: conformance, compliance, governance, contract
+  More:       Use "ossa <command> --help" for any command. 30+ additional
+              commands available: quickstart, setup, scaffold, import, enhance,
+              registry, migrate-batch, langchain, langflow, and more.
+`
+);
 
 // ============================================================================
 // Extension Loading
@@ -325,6 +364,18 @@ async function loadExtensions(): Promise<OSSAExtension[]> {
 // ============================================================================
 
 async function main() {
+  // Display logo only when running without arguments or main help
+  // Don't show for command-specific help (e.g., "ossa validate --help")
+  const args = process.argv.slice(2);
+  const shouldShowLogo =
+    args.length === 0 ||
+    (args.length === 1 &&
+      (args[0] === '--help' || args[0] === '-h' || args[0] === 'help'));
+
+  if (shouldShowLogo) {
+    displayLogo(getVersion());
+  }
+
   // Load extensions if enabled
   const extensions = await loadExtensions();
 

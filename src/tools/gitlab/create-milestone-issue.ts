@@ -8,9 +8,11 @@
 import { readFileSync } from 'fs';
 
 const GITLAB_API_URL = process.env.CI_API_V4_URL || 'https://gitlab.com/api/v4';
-const GITLAB_TOKEN = process.env.SERVICE_ACCOUNT_OSSA_TOKEN || 
-                      process.env.GITLAB_TOKEN || 
-                      process.env.GITLAB_PUSH_TOKEN || '';
+const GITLAB_TOKEN =
+  process.env.SERVICE_ACCOUNT_OSSA_TOKEN ||
+  process.env.GITLAB_TOKEN ||
+  process.env.GITLAB_PUSH_TOKEN ||
+  '';
 const PROJECT_ID = process.env.CI_PROJECT_ID || 'blueflyio/openstandardagents';
 
 async function createIssue(
@@ -60,14 +62,17 @@ async function createIssue(
 // Main
 const args = process.argv.slice(2);
 if (args.length < 3) {
-  console.log('Usage: tsx src/tools/gitlab/create-milestone-issue.ts <title> <milestone-id> <labels> [description-file]');
-  console.log('Example: tsx src/tools/gitlab/create-milestone-issue.ts "Enhance bin" 3 "enhancement,cli"');
+  console.log(
+    'Usage: tsx src/tools/gitlab/create-milestone-issue.ts <title> <milestone-id> <labels> [description-file]'
+  );
+  console.log(
+    'Example: tsx src/tools/gitlab/create-milestone-issue.ts "Enhance bin" 3 "enhancement,cli"'
+  );
   process.exit(1);
 }
 
 const [title, milestoneId, labelsStr, descFile] = args;
-const labels = labelsStr.split(',').map(l => l.trim());
-const description = descFile && readFileSync(descFile, 'utf-8') || '';
+const labels = labelsStr.split(',').map((l) => l.trim());
+const description = (descFile && readFileSync(descFile, 'utf-8')) || '';
 
 createIssue(title, description, parseInt(milestoneId), labels);
-

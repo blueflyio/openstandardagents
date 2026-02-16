@@ -1,0 +1,93 @@
+---
+# ============================================================================
+# Kubernetes Service for {{projectName}}
+# Exposes the application within the cluster
+# ============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{serviceName}}
+  namespace: {{namespace}}
+  labels:
+    app: {{appName}}
+    component: {{component}}
+    managed-by: kubernetes
+    part-of: {{projectName}}
+  annotations:
+    description: "Service for {{projectDescription}}"
+    {{#if prometheusEnabled}}
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "{{metricsPort}}"
+    prometheus.io/path: "/metrics"
+    {{/if}}
+spec:
+  # ==========================================================================
+  # Service Type
+  # ==========================================================================
+  type: {{serviceType}}
+
+  # ==========================================================================
+  # Selector
+  # ==========================================================================
+  selector:
+    app: {{appName}}
+    component: {{component}}
+
+  # ==========================================================================
+  # Ports
+  # ==========================================================================
+  ports:
+    - name: http
+      port: {{servicePort}}
+      targetPort: http
+      protocol: TCP
+      {{#if nodePort}}
+      nodePort: {{nodePort}}
+      {{/if}}
+    {{#if metricsPort}}
+    - name: metrics
+      port: {{metricsPort}}
+      targetPort: metrics
+      protocol: TCP
+    {{/if}}
+
+  # ==========================================================================
+  # Session Affinity (Optional)
+  # ==========================================================================
+  {{#if sessionAffinity}}
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: {{sessionAffinityTimeout}}
+  {{/if}}
+
+---
+# ============================================================================
+# Headless Service (Optional - for StatefulSet)
+# Used for direct pod-to-pod communication
+# ============================================================================
+{{#if enableHeadlessService}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{serviceName}}-headless
+  namespace: {{namespace}}
+  labels:
+    app: {{appName}}
+    component: {{component}}
+    managed-by: kubernetes
+    part-of: {{projectName}}
+  annotations:
+    description: "Headless service for {{projectDescription}}"
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: {{appName}}
+    component: {{component}}
+  ports:
+    - name: http
+      port: {{servicePort}}
+      targetPort: http
+      protocol: TCP
+{{/if}}

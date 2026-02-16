@@ -106,12 +106,8 @@ export class ClaudeAdapter {
       }
     }
 
-    // Default: return placeholder response
-    return JSON.stringify({
-      message: `Tool '${name}' executed`,
-      input,
-      note: 'No handler registered for this tool',
-    });
+    // No handler registered - fail explicitly
+    throw new Error(`No handler registered for tool: ${name}`);
   }
 
   /**

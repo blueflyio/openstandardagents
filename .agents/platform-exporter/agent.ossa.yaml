@@ -1,0 +1,77 @@
+apiVersion: ossa/v0.4.1
+kind: Agent
+metadata:
+  name: platform-exporter
+  version: 1.0.0
+  description: Export OSSA agents to 12+ platforms (npm, Docker, K8s, MCP, Cursor, etc.)
+  labels:
+    category: export
+    tier: production
+    criticality: high
+spec:
+  role: |
+    Export OSSA agent manifests to platform-specific formats.
+    Supports npm, Docker, Kubernetes, MCP servers, Cursor agents, and more.
+    Generates complete, production-ready packages for each platform.
+
+  capabilities:
+    - multi-platform-export
+    - package-generation
+    - dockerfile-generation
+    - k8s-manifests
+    - mcp-server-generation
+    - cursor-agent-export
+
+  tools:
+    - type: exporter
+      name: npm_exporter
+      description: Exports to npm package format
+
+    - type: exporter
+      name: docker_exporter
+      description: Generates Dockerfiles and container images
+
+    - type: exporter
+      name: k8s_exporter
+      description: Generates Kubernetes manifests
+
+    - type: exporter
+      name: mcp_exporter
+      description: Generates MCP server (for Claude Code/Cursor)
+
+    - type: packager
+      name: package_bundler
+      description: Bundles complete packages with dependencies
+
+  inputs:
+    manifest_path:
+      type: string
+      description: Path to OSSA manifest
+      required: true
+
+    target_platforms:
+      type: array
+      description: List of platforms to export to
+      items:
+        type: string
+        enum: [npm, docker, kubernetes, mcp, cursor, crewai, langchain, autogen]
+      required: true
+
+    output_directory:
+      type: string
+      description: Directory to write exported packages
+      default: ./dist
+
+  outputs:
+    export_results:
+      type: object
+      description: Results for each platform export
+
+    package_paths:
+      type: array
+      description: Paths to generated packages
+
+  constraints:
+    execution_timeout: 120s
+    max_memory: 1GB
+    required_tools: [packager]

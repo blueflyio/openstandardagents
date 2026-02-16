@@ -1,9 +1,9 @@
 #!/usr/bin/env tsx
 /**
  * Check Existing CI/CD Variables
- * 
+ *
  * Checks both group-level and project-level CI/CD variables in GitLab.
- * 
+ *
  * Usage:
  *   GITLAB_TOKEN=<your-token> tsx src/tools/check-ci-variables.ts
  */
@@ -38,7 +38,9 @@ async function fetchGroupVariables(token: string): Promise<GitLabVariable[]> {
         return [];
       }
       const error = await response.text();
-      throw new Error(`Failed to fetch group variables: ${response.status} - ${error}`);
+      throw new Error(
+        `Failed to fetch group variables: ${response.status} - ${error}`
+      );
     }
 
     return await response.json();
@@ -64,7 +66,9 @@ async function fetchProjectVariables(token: string): Promise<GitLabVariable[]> {
         return [];
       }
       const error = await response.text();
-      throw new Error(`Failed to fetch project variables: ${response.status} - ${error}`);
+      throw new Error(
+        `Failed to fetch project variables: ${response.status} - ${error}`
+      );
     }
 
     return await response.json();
@@ -74,10 +78,11 @@ async function fetchProjectVariables(token: string): Promise<GitLabVariable[]> {
 }
 
 function formatVariable(variable: GitLabVariable): string {
-  const value = variable.masked ? '***MASKED***' : (variable.value || '(empty)');
-  const scope = variable.environment_scope && variable.environment_scope !== '*' 
-    ? ` [${variable.environment_scope}]` 
-    : '';
+  const value = variable.masked ? '***MASKED***' : variable.value || '(empty)';
+  const scope =
+    variable.environment_scope && variable.environment_scope !== '*'
+      ? ` [${variable.environment_scope}]`
+      : '';
   const isProtected = variable.protected ? ' 🔒' : '';
   return `  ${variable.key}${scope}${isProtected}: ${value}`;
 }
@@ -86,9 +91,13 @@ async function main() {
   const token = process.env.GITLAB_TOKEN || process.env.GITLAB_PUSH_TOKEN;
 
   if (!token) {
-    console.error('❌ GITLAB_TOKEN or GITLAB_PUSH_TOKEN environment variable is required');
+    console.error(
+      '❌ GITLAB_TOKEN or GITLAB_PUSH_TOKEN environment variable is required'
+    );
     console.error('\nUsage:');
-    console.error('  GITLAB_TOKEN=<your-token> tsx src/tools/check-ci-variables.ts');
+    console.error(
+      '  GITLAB_TOKEN=<your-token> tsx src/tools/check-ci-variables.ts'
+    );
     process.exit(1);
   }
 
@@ -104,7 +113,7 @@ async function main() {
     console.log('📦 Group-Level Variables:');
     console.log('─'.repeat(60));
     const groupVars = await fetchGroupVariables(token);
-    
+
     if (groupVars.length === 0) {
       console.log('  (none found)');
     } else {
@@ -119,7 +128,7 @@ async function main() {
     console.log('\n📁 Project-Level Variables:');
     console.log('─'.repeat(60));
     const projectVars = await fetchProjectVariables(token);
-    
+
     if (projectVars.length === 0) {
       console.log('  (none found)');
     } else {
@@ -136,12 +145,14 @@ async function main() {
     console.log('─'.repeat(60));
     for (const varName of requiredVars) {
       const icon = foundVars.has(varName) ? '✅' : '❌';
-      const location = groupVars.find(v => v.key === varName) 
-        ? 'group' 
-        : projectVars.find(v => v.key === varName)
+      const location = groupVars.find((v) => v.key === varName)
+        ? 'group'
+        : projectVars.find((v) => v.key === varName)
           ? 'project'
           : 'missing';
-      console.log(`${icon} ${varName}: ${location === 'missing' ? 'NOT FOUND' : `found in ${location}`}`);
+      console.log(
+        `${icon} ${varName}: ${location === 'missing' ? 'NOT FOUND' : `found in ${location}`}`
+      );
     }
 
     const missingCount = requiredVars.length - foundVars.size;
@@ -152,9 +163,11 @@ async function main() {
     } else {
       console.log('\n✅ All required variables are configured!');
     }
-
   } catch (error) {
-    console.error('\n❌ Error:', error instanceof Error ? error.message : String(error));
+    console.error(
+      '\n❌ Error:',
+      error instanceof Error ? error.message : String(error)
+    );
     process.exit(1);
   }
 }

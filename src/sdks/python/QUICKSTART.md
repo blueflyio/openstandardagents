@@ -18,7 +18,7 @@ pip install -e .
 
 ## Your First OSSA Manifest
 
-Create a file called `my-agent.ossa.yaml`:
+Create a file called `creative-agent-naming.ossa.yaml`:
 
 ```yaml
 apiVersion: ossa/v0.3.0
@@ -41,10 +41,10 @@ spec:
 
 ```bash
 # Using CLI
-ossa validate my-agent.ossa.yaml
+ossa validate creative-agent-naming.ossa.yaml
 
 # Using Python
-python -c "from ossa import validate_manifest; print(validate_manifest('my-agent.ossa.yaml'))"
+python -c "from ossa import validate_manifest; print(validate_manifest('creative-agent-naming.ossa.yaml'))"
 ```
 
 ## Load and Inspect in Python
@@ -53,7 +53,7 @@ python -c "from ossa import validate_manifest; print(validate_manifest('my-agent
 from ossa import load_manifest
 
 # Load the manifest
-manifest = load_manifest("my-agent.ossa.yaml")
+manifest = load_manifest("creative-agent-naming.ossa.yaml")
 
 # Access properties
 print(f"Agent: {manifest.metadata.name}")
@@ -92,17 +92,17 @@ print(yaml_output)
 
 ```bash
 # Validate
-ossa validate my-agent.ossa.yaml --strict
+ossa validate creative-agent-naming.ossa.yaml --strict
 
 # Inspect (pretty display)
-ossa inspect my-agent.ossa.yaml
+ossa inspect creative-agent-naming.ossa.yaml
 
 # Quick info
-ossa info my-agent.ossa.yaml
+ossa info creative-agent-naming.ossa.yaml
 
 # Export to different format
-ossa export my-agent.ossa.yaml --format json -o my-agent.json
-ossa export my-agent.ossa.yaml --format python -o my-agent.py
+ossa export creative-agent-naming.ossa.yaml --format json -o creative-agent-naming.json
+ossa export creative-agent-naming.ossa.yaml --format python -o creative-agent-naming.py
 ```
 
 ## Environment Variables
@@ -216,7 +216,7 @@ ossa export agent.yaml --format json -o agent.json
 ```python
 from ossa import load_manifest, validate_manifest
 
-manifest_path = "my-agent.ossa.yaml"
+manifest_path = "creative-agent-naming.ossa.yaml"
 result = validate_manifest(manifest_path)
 
 if result.valid:
@@ -242,7 +242,7 @@ pip install ossa-sdk
 
 ```python
 # Get detailed validation information
-result = validate_manifest("my-agent.ossa.yaml", strict=True)
+result = validate_manifest("creative-agent-naming.ossa.yaml", strict=True)
 
 if not result.valid:
     print("Errors:")
@@ -265,7 +265,7 @@ os.environ["LLM_MODEL"] = "gpt-4o"
 
 # Then load the manifest
 from ossa import load_manifest
-manifest = load_manifest("my-agent.ossa.yaml")
+manifest = load_manifest("creative-agent-naming.ossa.yaml")
 ```
 
 ## Support

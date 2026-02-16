@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from '@jest/globals';
 import { MigrationService } from '../../../src/services/migration.service.js';
 import { getApiVersion, clearVersionCache } from '../../../src/utils/version';
+import { API_VERSION } from '../../../src/version.js';
 
 describe('MigrationService', () => {
   let service: MigrationService;
@@ -13,7 +14,7 @@ describe('MigrationService', () => {
   describe('migrate', () => {
     it('should handle k8s-style format', async () => {
       const input = {
-        apiVersion: 'ossa/v0.3.3',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: { name: 'test', version: '1.0.0' },
         spec: { role: 'test' },
@@ -132,6 +133,7 @@ describe('MigrationService', () => {
     });
 
     it('should handle existing v0.2.2 format with all fields', async () => {
+      // Test with older version to trigger actual migration
       const input = {
         apiVersion: 'ossa/v0.2.2',
         kind: 'Agent',
@@ -143,9 +145,11 @@ describe('MigrationService', () => {
         },
       };
       const result = await service.migrate(input);
-      // Migration now converts to runtime-configurable LLM with env var defaults
+      // Migration converts to runtime-configurable LLM with env var defaults
       // The original provider becomes the default in the env var template
       expect(result.spec.llm?.provider).toBe('${LLM_PROVIDER:-openai}');
+      // Should also update apiVersion to current
+      expect(result.apiVersion).toBe(API_VERSION);
     });
 
     it('should throw for unsupported format', async () => {

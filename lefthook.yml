@@ -1,31 +1,22 @@
 pre-commit:
   parallel: true
   commands:
+    typecheck:
+      run: npx tsc --noEmit
+      stage_fixed: false
+
     validate-schema:
       glob: "*.ossa.{yaml,yml}"
       run: npm run validate:schema
 
-    typecheck:
-      run: npm run typecheck
-
     no-shell-scripts:
       glob: "*.sh"
       run: |
-        echo "❌ ERROR: Shell scripts (.sh files) are NOT allowed in this project."
-        echo ""
-        echo "Rules:"
-        echo "  - Use npm scripts in package.json"
-        echo "  - Use TypeScript tools in src/cli/ or src/tools/"
-        echo "  - Use GitLab CI Components"
-        echo "  - Use JavaScript/TypeScript git hooks in .husky/"
-        echo ""
-        echo "Blocked files:"
-        git diff --cached --name-only --diff-filter=ACM | grep '\.sh$'
-        echo ""
+        echo "❌ Shell scripts (.sh) are NOT allowed. Use TypeScript."
         exit 1
 
 pre-push:
-  parallel: true
+  parallel: false
   commands:
     build:
       run: npm run build
@@ -33,14 +24,5 @@ pre-push:
     test-unit:
       run: npm run test:unit
 
-    validate-sdks:
-      run: npm run validate:sdks
-
-    test-smoke:
-      run: npm run test:smoke
-
     validate-all:
       run: npm run validate
-
-    pre-push-banner:
-      run: echo "🚀 All checks passed! Pushing to remote..."

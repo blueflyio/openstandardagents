@@ -30,7 +30,7 @@ extensions:
     kubernetes:
       namespace: production
       labels:
-        app: my-agent
+        app: creative-agent-naming
         team: platform
       resourceLimits:
         cpu: 1000m

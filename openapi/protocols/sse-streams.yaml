@@ -401,7 +401,7 @@ components:
           type: string
           format: uri
           description: Agent URI of sender
-          example: agent://example.com/my-agent
+          example: agent://example.com/supercali-fragilisticagent
         streamId:
           type: string
           format: uuid

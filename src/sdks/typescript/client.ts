@@ -1,9 +1,7 @@
 /**
  * TypeScript SDK Client
  *
- * SOLID: Single Responsibility - SDK client interface
- * OpenAPI: Client generated from OpenAPI spec
- * CRUD: Full CRUD operations
+ * SDK client interface for manifest operations.
  */
 
 import { ManifestService } from './manifest.js';

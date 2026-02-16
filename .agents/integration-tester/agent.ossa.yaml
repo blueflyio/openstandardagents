@@ -1,0 +1,76 @@
+apiVersion: ossa/v0.4.1
+kind: Agent
+metadata:
+  name: integration-tester
+  version: 1.0.0
+  description: Test OSSA agent integrations across all platforms
+  labels:
+    category: testing
+    tier: production
+    criticality: high
+spec:
+  role: |
+    Test OSSA agent integrations across platforms:
+    - npm package installation and execution
+    - Docker container startup and API response
+    - Kubernetes deployment and scaling
+    - MCP server connection and tool calls
+    - Cursor agent activation and usage
+
+  capabilities:
+    - platform-testing
+    - api-testing
+    - deployment-testing
+    - integration-validation
+    - compatibility-testing
+
+  tools:
+    - type: tester
+      name: npm_tester
+      description: Tests npm package integration
+
+    - type: tester
+      name: docker_tester
+      description: Tests Docker container integration
+
+    - type: tester
+      name: k8s_tester
+      description: Tests Kubernetes deployment
+
+    - type: tester
+      name: mcp_tester
+      description: Tests MCP server integration
+
+  inputs:
+    manifest_path:
+      type: string
+      required: true
+
+    target_platforms:
+      type: array
+      items:
+        type: string
+        enum: [npm, docker, kubernetes, mcp, cursor, all]
+      default: [all]
+
+    test_environment:
+      type: string
+      enum: [local, staging, production]
+      default: local
+
+  outputs:
+    test_results:
+      type: object
+      description: Integration test results by platform
+
+    failures:
+      type: array
+      description: Failed integration tests
+
+    performance_metrics:
+      type: object
+      description: Performance metrics for each platform
+
+  constraints:
+    execution_timeout: 600s
+    max_memory: 2GB

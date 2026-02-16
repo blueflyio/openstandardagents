@@ -40,7 +40,7 @@ agent = client.agents.get('blueflyio', 'security-scanner')
 
 # Send A2A message
 client.messaging.send_message({
-    'from': {'publisher': 'myorg', 'name': 'my-agent'},
+    'from': {'publisher': 'myorg', 'name': 'creative-agent-naming'},
     'to': {'publisher': 'blueflyio', 'name': 'security-scanner'},
     'type': 'request',
     'capability': 'vulnerability-scan',
@@ -173,7 +173,7 @@ results = client.discovery.discover({
 ```python
 # Send A2A message
 result = client.messaging.send_message({
-    'from': {'publisher': 'myorg', 'name': 'my-agent'},
+    'from': {'publisher': 'myorg', 'name': 'creative-agent-naming'},
     'to': {'publisher': 'blueflyio', 'name': 'security-scanner'},
     'type': 'request',
     'capability': 'vulnerability-scan',

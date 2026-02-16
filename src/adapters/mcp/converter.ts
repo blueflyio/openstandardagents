@@ -15,9 +15,10 @@ export class MCPAdapter extends BaseAdapter {
   readonly platform = 'mcp';
   readonly displayName = 'MCP Server';
   readonly description = 'Export OSSA agents as Model Context Protocol servers';
-  readonly supportedVersions = ['{{VERSION}}', '0.3.6'];
+  readonly status = 'production' as const;
+  readonly supportedVersions = ['0.3.6', '0.4.x', '0.4.5'];
   readonly version = '1.0.0';
-  readonly supportedOssaVersions = ['{{VERSION}}', '0.3.6'];
+  readonly supportedOssaVersions = ['0.3.6', '0.4.x', '0.4.5'];
   readonly outputFormat = ['typescript'];
 
   async export(
@@ -63,7 +64,8 @@ export class MCPAdapter extends BaseAdapter {
 
       return this.createResult(true, files, undefined, metadata);
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       return this.createResult(false, [], `MCP export failed: ${errorMessage}`);
     }
   }
@@ -176,26 +178,22 @@ main().catch((error) => {
       .join(',\n  ');
 
     const toolImplementations = tools
-      .map(
-        (tool) => {
-          const toolName = tool.name || 'unnamed_tool';
-          return `
+      .map((tool) => {
+        const toolName = tool.name || 'unnamed_tool';
+        return `
 async function ${this.toCamelCase(toolName)}(args: any): Promise<any> {
   // TODO: Implement ${toolName}
   console.log('Executing ${toolName} with args:', args);
   return { result: 'Success', tool: '${toolName}', input: args.input };
 }`;
-        }
-      )
+      })
       .join('\n');
 
     const toolMap = tools
-      .map(
-        (tool) => {
-          const toolName = tool.name || 'unnamed_tool';
-          return `    case '${toolName}': return ${this.toCamelCase(toolName)}(args);`;
-        }
-      )
+      .map((tool) => {
+        const toolName = tool.name || 'unnamed_tool';
+        return `    case '${toolName}': return ${this.toCamelCase(toolName)}(args);`;
+      })
       .join('\n');
 
     const content = `/**
@@ -253,7 +251,8 @@ export interface MCPResponse {
       {
         name: manifest.metadata?.name || 'unnamed-agent',
         version: manifest.metadata?.version || '1.0.0',
-        description: manifest.metadata?.description || 'OSSA-generated MCP server',
+        description:
+          manifest.metadata?.description || 'OSSA-generated MCP server',
         type: 'module',
         bin: {
           [manifest.metadata?.name || 'unnamed-agent']: './dist/server.js',
@@ -339,7 +338,9 @@ npm start
 ## Available Tools
 
 ${(manifest.spec?.tools || [])
-  .map((tool: any) => `- **${tool.name}**: ${tool.description || 'No description'}`)
+  .map(
+    (tool: any) => `- **${tool.name}**: ${tool.description || 'No description'}`
+  )
   .join('\n')}
 
 ## Generated from OSSA

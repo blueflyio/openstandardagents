@@ -79,7 +79,7 @@ export class ContractValidator {
   private ajv: Ajv;
 
   constructor() {
-// @ts-expect-error - Ajv v8 API compatibility
+    // @ts-expect-error - Ajv v8 API compatibility
     this.ajv = new Ajv({
       allErrors: true,
       strict: false,

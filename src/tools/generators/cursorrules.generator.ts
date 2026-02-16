@@ -36,7 +36,7 @@ export class CursorrulesGenerator {
     // Custom rules
     if (rules.length > 0) {
       content += `## Custom Project Rules\n\n`;
-      rules.forEach(rule => {
+      rules.forEach((rule) => {
         content += `- ${rule}\n`;
       });
       content += `\n`;
@@ -85,8 +85,13 @@ export class CursorrulesGenerator {
 
     if (fs.existsSync(packageJsonPath)) {
       try {
-        const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
-        const deps = { ...packageJson.dependencies, ...packageJson.devDependencies };
+        const packageJson = JSON.parse(
+          fs.readFileSync(packageJsonPath, 'utf-8')
+        );
+        const deps = {
+          ...packageJson.dependencies,
+          ...packageJson.devDependencies,
+        };
         hasJest = !!deps.jest;
       } catch {
         // Skip
@@ -143,7 +148,10 @@ export class CursorrulesGenerator {
 
     // Check for ESLint
     const eslintPath = path.join(projectPath, '.eslintrc.js');
-    if (fs.existsSync(eslintPath) || fs.existsSync(path.join(projectPath, '.eslintrc.json'))) {
+    if (
+      fs.existsSync(eslintPath) ||
+      fs.existsSync(path.join(projectPath, '.eslintrc.json'))
+    ) {
       section += `**Note:** This project uses ESLint. Run \`npm run lint\` to check for issues.\n\n`;
     }
 

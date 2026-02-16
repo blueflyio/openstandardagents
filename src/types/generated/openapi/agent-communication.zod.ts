@@ -26,29 +26,45 @@ import * as CommonSchemas from './common-schemas.zod';
  * - AgentStopped: Agent lifecycle event (stopped)
  * - AgentError: Agent error notification
  * - Custom: Custom application-specific message type
- * 
+ *
  */
-export const messageTypeSchema = z.enum(["TaskAssigned", "TaskCompleted", "TaskFailed", "QueryRequest", "QueryResponse", "AgentStarted", "AgentStopped", "AgentError", "Custom"]);
+export const messageTypeSchema = z.enum([
+  'TaskAssigned',
+  'TaskCompleted',
+  'TaskFailed',
+  'QueryRequest',
+  'QueryResponse',
+  'AgentStarted',
+  'AgentStopped',
+  'AgentError',
+  'Custom',
+]);
 
 export type MessageType = z.infer<typeof messageTypeSchema>;
 
 /**
  * Message payload structure varies by message type. See schemas for each type.
- * 
+ *
  */
 export const messagePayloadSchema = z.record(z.string(), z.unknown());
 
 export type MessagePayload = z.infer<typeof messagePayloadSchema>;
 
 export const sendMessageRequestSchema = z.object({
-  to: z.string().url().regex(/^agent:\/\/[a-z0-9]([-a-z0-9]*[a-z0-9])?$/),
-  from: z.string().url().regex(/^agent:\/\/[a-z0-9]([-a-z0-9]*[a-z0-9])?$/),
+  to: z
+    .string()
+    .url()
+    .regex(/^agent:\/\/[a-z0-9]([-a-z0-9]*[a-z0-9])?$/),
+  from: z
+    .string()
+    .url()
+    .regex(/^agent:\/\/[a-z0-9]([-a-z0-9]*[a-z0-9])?$/),
   type: messageTypeSchema,
   payload: messagePayloadSchema,
   correlationId: z.string().optional(),
   timeout: z.number().int().min(1000).max(300000).optional(),
-  priority: z.enum(["low", "normal", "high", "critical"]).optional(),
-  webhookUrl: z.string().url().optional()
+  priority: z.enum(['low', 'normal', 'high', 'critical']).optional(),
+  webhookUrl: z.string().url().optional(),
 });
 
 export type SendMessageRequest = z.infer<typeof sendMessageRequestSchema>;
@@ -60,34 +76,34 @@ export const messageSchema = z.object({
   type: messageTypeSchema,
   payload: messagePayloadSchema,
   correlationId: z.string().optional(),
-  status: z.enum(["pending", "delivered", "acknowledged", "failed"]),
-  priority: z.enum(["low", "normal", "high", "critical"]).optional(),
+  status: z.enum(['pending', 'delivered', 'acknowledged', 'failed']),
+  priority: z.enum(['low', 'normal', 'high', 'critical']).optional(),
   createdAt: z.string().datetime(),
   deliveredAt: z.string().datetime().optional(),
   acknowledgedAt: z.string().datetime().optional(),
-  error: z.string().optional()
+  error: z.string().optional(),
 });
 
 export type Message = z.infer<typeof messageSchema>;
 
 export const messageResponseSchema = z.object({
   messageId: z.string().uuid(),
-  status: z.enum(["accepted", "queued"]),
-  estimatedDelivery: z.string().datetime().optional()
+  status: z.enum(['accepted', 'queued']),
+  estimatedDelivery: z.string().datetime().optional(),
 });
 
 export type MessageResponse = z.infer<typeof messageResponseSchema>;
 
 export const retentionPolicySchema = z.object({
   retentionDays: z.number().int().min(1).max(365).optional(),
-  maxMessages: z.number().int().min(100).optional()
+  maxMessages: z.number().int().min(100).optional(),
 });
 
 export type RetentionPolicy = z.infer<typeof retentionPolicySchema>;
 
 export const accessControlSchema = z.object({
   public: z.boolean().optional(),
-  allowedAgents: z.array(z.string()).optional()
+  allowedAgents: z.array(z.string()).optional(),
 });
 
 export type AccessControl = z.infer<typeof accessControlSchema>;
@@ -97,7 +113,7 @@ export const createChannelRequestSchema = z.object({
   topic: z.string(),
   description: z.string().optional(),
   retentionPolicy: retentionPolicySchema.optional(),
-  accessControl: accessControlSchema.optional()
+  accessControl: accessControlSchema.optional(),
 });
 
 export type CreateChannelRequest = z.infer<typeof createChannelRequestSchema>;
@@ -112,7 +128,7 @@ export const channelSchema = z.object({
   retentionPolicy: retentionPolicySchema.optional(),
   accessControl: accessControlSchema.optional(),
   createdAt: z.string().datetime(),
-  updatedAt: z.string().datetime().optional()
+  updatedAt: z.string().datetime().optional(),
 });
 
 export type Channel = z.infer<typeof channelSchema>;
@@ -121,23 +137,26 @@ export const channelsListSchema = z.object({
   channels: z.array(channelSchema).optional(),
   total: z.number().int().optional(),
   limit: z.number().int().optional(),
-  offset: z.number().int().optional()
+  offset: z.number().int().optional(),
 });
 
 export type ChannelsList = z.infer<typeof channelsListSchema>;
 
 export const subscriptionFilterSchema = z.object({
   messageTypes: z.array(messageTypeSchema).optional(),
-  agentFilter: z.string().optional()
+  agentFilter: z.string().optional(),
 });
 
 export type SubscriptionFilter = z.infer<typeof subscriptionFilterSchema>;
 
 export const subscribeRequestSchema = z.object({
-  agentId: z.string().url().regex(/^agent:\/\/[a-z0-9]([-a-z0-9]*[a-z0-9])?$/),
-  deliveryMode: z.enum(["push", "pull"]),
+  agentId: z
+    .string()
+    .url()
+    .regex(/^agent:\/\/[a-z0-9]([-a-z0-9]*[a-z0-9])?$/),
+  deliveryMode: z.enum(['push', 'pull']),
   webhookUrl: z.string().url().optional(),
-  filter: subscriptionFilterSchema.optional()
+  filter: subscriptionFilterSchema.optional(),
 });
 
 export type SubscribeRequest = z.infer<typeof subscribeRequestSchema>;
@@ -146,12 +165,12 @@ export const subscriptionSchema = z.object({
   id: z.string().uuid(),
   channelId: z.string().uuid(),
   agentId: z.string().url(),
-  deliveryMode: z.enum(["push", "pull"]),
+  deliveryMode: z.enum(['push', 'pull']),
   webhookUrl: z.string().url().optional(),
   filter: subscriptionFilterSchema.optional(),
-  status: z.enum(["active", "paused", "failed"]).optional(),
+  status: z.enum(['active', 'paused', 'failed']).optional(),
   createdAt: z.string().datetime(),
-  lastDeliveryAt: z.string().datetime().optional()
+  lastDeliveryAt: z.string().datetime().optional(),
 });
 
 export type Subscription = z.infer<typeof subscriptionSchema>;
@@ -159,7 +178,7 @@ export type Subscription = z.infer<typeof subscriptionSchema>;
 export const publishMessageRequestSchema = z.object({
   type: messageTypeSchema,
   payload: messagePayloadSchema,
-  attributes: z.record(z.string(), z.unknown()).optional()
+  attributes: z.record(z.string(), z.unknown()).optional(),
 });
 
 export type PublishMessageRequest = z.infer<typeof publishMessageRequestSchema>;
@@ -167,26 +186,29 @@ export type PublishMessageRequest = z.infer<typeof publishMessageRequestSchema>;
 export const publishResponseSchema = z.object({
   messageId: z.string().uuid().optional(),
   publishedAt: z.string().datetime().optional(),
-  subscriberCount: z.number().int().optional()
+  subscriberCount: z.number().int().optional(),
 });
 
 export type PublishResponse = z.infer<typeof publishResponseSchema>;
 
 export const webhookRegistrationSchema = z.object({
   url: z.string().url(),
-  agentId: z.string().url().regex(/^agent:\/\/[a-z0-9]([-a-z0-9]*[a-z0-9])?$/),
+  agentId: z
+    .string()
+    .url()
+    .regex(/^agent:\/\/[a-z0-9]([-a-z0-9]*[a-z0-9])?$/),
   description: z.string().optional(),
-  events: z.array(messageTypeSchema).optional()
+  events: z.array(messageTypeSchema).optional(),
 });
 
 export type WebhookRegistration = z.infer<typeof webhookRegistrationSchema>;
 
 export const healthStatusSchema = z.object({
-  status: z.enum(["healthy", "degraded", "unhealthy"]).optional(),
+  status: z.enum(['healthy', 'degraded', 'unhealthy']).optional(),
   version: z.string().optional(),
   uptime: z.number().int().optional(),
   timestamp: z.string().datetime().optional(),
-  checks: z.record(z.string(), z.unknown()).optional()
+  checks: z.record(z.string(), z.unknown()).optional(),
 });
 
 export type HealthStatus = z.infer<typeof healthStatusSchema>;

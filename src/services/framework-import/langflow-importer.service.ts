@@ -10,6 +10,7 @@
 import { z } from 'zod';
 import { readFileSync } from 'fs';
 import type { OssaAgent, OssaWorkflow } from '../../types/index.js';
+import { getApiVersion } from '../../utils/version.js';
 
 const LangflowFlowSchema = z.object({
   name: z.string(),
@@ -120,7 +121,7 @@ export class LangflowImporterService {
     const tools = toolNodes.map((node) => this.extractTool(node));
 
     return {
-      apiVersion: 'ossa/v0.3.3',
+      apiVersion: getApiVersion(),
       kind: 'Agent',
       metadata: {
         name: flow.name.toLowerCase().replace(/\s+/g, '-'),
@@ -176,7 +177,7 @@ export class LangflowImporterService {
       }));
 
     return {
-      apiVersion: 'ossa/v0.3.3',
+      apiVersion: getApiVersion(),
       kind: 'Workflow',
       metadata: {
         name: flow.name.toLowerCase().replace(/\s+/g, '-'),

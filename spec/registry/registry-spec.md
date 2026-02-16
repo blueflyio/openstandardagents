@@ -2122,14 +2122,14 @@ err = client.Publish(ctx, &registry.PublishRequest{
 
 ```bash
 # 1. Create agent directory
-mkdir my-agent && cd my-agent
+mkdir creative-agent-naming && cd creative-agent-naming
 
 # 2. Create manifest
 cat > agent.ossa.yaml <<EOF
 apiVersion: ossa/v0.3.0
 kind: Agent
 metadata:
-  name: my-agent
+  name: creative-agent-naming
   version: 1.0.0
   description: My first OSSA agent
 spec:
@@ -2142,7 +2142,7 @@ EOF
 # 3. Create package metadata
 cat > ossa.json <<EOF
 {
-  "name": "my-agent",
+  "name": "creative-agent-naming",
   "version": "1.0.0",
   "description": "My first OSSA agent",
   "license": "MIT",
@@ -2215,7 +2215,7 @@ ossa login --registry https://registry.internal.example.com
 ossa publish --registry https://registry.internal.example.com
 
 # Install from private registry
-ossa install my-agent --registry https://registry.internal.example.com
+ossa install creative-agent-naming --registry https://registry.internal.example.com
 ```
 
 ---

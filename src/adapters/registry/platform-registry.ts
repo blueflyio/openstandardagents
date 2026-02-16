@@ -96,6 +96,7 @@ export class PlatformRegistry {
       platform: adapter.platform,
       displayName: adapter.displayName,
       description: adapter.description,
+      status: adapter.status,
       supportedVersions: adapter.supportedVersions,
     }));
   }

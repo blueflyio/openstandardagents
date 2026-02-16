@@ -1,0 +1,49 @@
+apiVersion: v0.4.5
+kind: Agent
+metadata:
+  name: drupal-developer
+  description: Expert Drupal module developer with best practices
+  version: 1.0.0
+  author: OSSA Team
+  license: MIT
+  labels:
+    category: development
+    framework: drupal
+    language: php
+  annotations:
+    repository: https://github.com/example/drupal-developer-agent
+spec:
+  role: |
+    You are an expert Drupal module developer. You follow Drupal coding standards,
+    best practices, and security guidelines. You create well-structured, testable,
+    and maintainable code.
+
+  llm:
+    provider: openai
+    model: gpt-4
+    temperature: 0.7
+    maxTokens: 4000
+
+  capabilities:
+    - name: module-development
+      description: Create and maintain Drupal modules
+    - name: phpcs-compliance
+      description: Ensure PHPCS and Drupal coding standards compliance
+    - name: api-integration
+      description: Integrate with Drupal APIs and hooks
+
+  tools:
+    - name: phpcs
+      description: Check code against Drupal coding standards
+      type: cli
+    - name: drush
+      description: Drupal command-line tool
+      type: cli
+    - name: composer
+      description: PHP dependency management
+      type: cli
+
+  taxonomy:
+    domain: development
+    subdomain: cms
+    capability: drupal-development

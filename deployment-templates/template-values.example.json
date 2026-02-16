@@ -1,0 +1,726 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "OSSA Buildkit Deployment Template Values",
+  "description": "Configuration values for Railway, Render, and Fly.io deployment templates",
+  "type": "object",
+  "properties": {
+    "serviceName": {
+      "type": "string",
+      "description": "Service or app name (lowercase, hyphens only)",
+      "pattern": "^[a-z0-9-]+$",
+      "default": "ossa-buildkit",
+      "examples": ["ossa-buildkit", "ossa-prod", "ossa-staging"]
+    },
+    "appName": {
+      "type": "string",
+      "description": "App name for Fly.io (lowercase, hyphens only)",
+      "pattern": "^[a-z0-9-]+$",
+      "default": "ossa-buildkit",
+      "examples": ["ossa-buildkit"]
+    },
+    "githubRepo": {
+      "type": "string",
+      "description": "GitHub repository (org/repo format)",
+      "pattern": "^[a-zA-Z0-9-]+/[a-zA-Z0-9-]+$",
+      "examples": ["your-org/ossa-buildkit", "blueflyio/openstandardagents"]
+    },
+    "branch": {
+      "type": "string",
+      "description": "Git branch to deploy",
+      "default": "main",
+      "examples": ["main", "develop", "release-v0.4.x"]
+    },
+    "nodeEnv": {
+      "type": "string",
+      "description": "Node environment",
+      "enum": ["production", "staging", "development", "test"],
+      "default": "production"
+    },
+    "nodeVersion": {
+      "type": "string",
+      "description": "Node.js version",
+      "default": "20",
+      "examples": ["18", "20", "20.11.0"]
+    },
+    "npmVersion": {
+      "type": "string",
+      "description": "npm version",
+      "default": "10",
+      "examples": ["9", "10"]
+    },
+    "buildCommand": {
+      "type": "string",
+      "description": "Build command",
+      "default": "npm ci && npm run build",
+      "examples": [
+        "npm ci && npm run build",
+        "yarn install --frozen-lockfile && yarn build",
+        "pnpm install && pnpm build"
+      ]
+    },
+    "startCommand": {
+      "type": "string",
+      "description": "Start command",
+      "default": "npm start",
+      "examples": ["npm start", "node dist/index.js", "yarn start"]
+    },
+    "preDeployCommand": {
+      "type": "string",
+      "description": "Command to run before deployment",
+      "default": "npm run migrate",
+      "examples": ["npm run migrate", "npm run db:migrate", ""]
+    },
+    "releaseCommand": {
+      "type": "string",
+      "description": "Release command for Fly.io",
+      "default": "npm run migrate",
+      "examples": ["npm run migrate"]
+    },
+    "port": {
+      "type": "integer",
+      "description": "Main service port",
+      "minimum": 1024,
+      "maximum": 65535,
+      "default": 8080,
+      "examples": [8080, 3000, 8000]
+    },
+    "bridgePort": {
+      "type": "integer",
+      "description": "Bridge server port",
+      "minimum": 1024,
+      "maximum": 65535,
+      "default": 8081,
+      "examples": [8081, 3001]
+    },
+    "metricsPort": {
+      "type": "integer",
+      "description": "Prometheus metrics port",
+      "minimum": 1024,
+      "maximum": 65535,
+      "default": 9090,
+      "examples": [9090, 9091]
+    },
+    "region": {
+      "type": "string",
+      "description": "Deployment region",
+      "examples": ["oregon", "us-west1", "sea", "lhr"]
+    },
+    "primaryRegion": {
+      "type": "string",
+      "description": "Primary region for Fly.io",
+      "default": "sea",
+      "examples": ["sea", "lhr", "fra", "nrt", "syd"]
+    },
+    "regions": {
+      "type": "array",
+      "description": "Additional regions for multi-region deployment",
+      "items": {
+        "type": "string"
+      },
+      "examples": [["sea", "lhr", "nrt"]]
+    },
+    "logLevel": {
+      "type": "string",
+      "description": "Logging level",
+      "enum": ["error", "warn", "info", "debug", "trace"],
+      "default": "info"
+    },
+    "plan": {
+      "type": "string",
+      "description": "Render service plan",
+      "enum": ["starter", "standard", "pro"],
+      "default": "standard"
+    },
+    "postgresPlan": {
+      "type": "string",
+      "description": "Render PostgreSQL plan",
+      "enum": ["starter", "standard", "pro"],
+      "default": "standard"
+    },
+    "redisPlan": {
+      "type": "string",
+      "description": "Render Redis plan",
+      "enum": ["free", "standard", "pro"],
+      "default": "standard"
+    },
+    "workerPlan": {
+      "type": "string",
+      "description": "Worker service plan",
+      "enum": ["starter", "standard", "pro"],
+      "default": "starter"
+    },
+    "replicas": {
+      "type": "integer",
+      "description": "Initial number of replicas",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 1
+    },
+    "minReplicas": {
+      "type": "integer",
+      "description": "Minimum number of replicas",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 1
+    },
+    "maxReplicas": {
+      "type": "integer",
+      "description": "Maximum number of replicas",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 5
+    },
+    "autoscalingEnabled": {
+      "type": "boolean",
+      "description": "Enable autoscaling",
+      "default": true
+    },
+    "targetCpu": {
+      "type": "integer",
+      "description": "Target CPU percentage for autoscaling",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 70
+    },
+    "targetMemory": {
+      "type": "integer",
+      "description": "Target memory percentage for autoscaling",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 80
+    },
+    "targetRequests": {
+      "type": "integer",
+      "description": "Target requests per instance",
+      "minimum": 1,
+      "default": 1000
+    },
+    "memory": {
+      "type": "string",
+      "description": "Memory allocation (Railway: e.g. '2Gi', Render: automatic)",
+      "default": "2Gi",
+      "examples": ["512Mi", "1Gi", "2Gi", "4Gi"]
+    },
+    "memoryMb": {
+      "type": "integer",
+      "description": "Memory in MB (Fly.io)",
+      "minimum": 256,
+      "default": 1024,
+      "examples": [512, 1024, 2048, 4096]
+    },
+    "cpu": {
+      "type": "string",
+      "description": "CPU allocation",
+      "default": "1",
+      "examples": ["0.5", "1", "2", "4"]
+    },
+    "cpus": {
+      "type": "integer",
+      "description": "Number of CPUs (Fly.io)",
+      "minimum": 1,
+      "maximum": 16,
+      "default": 1
+    },
+    "cpuKind": {
+      "type": "string",
+      "description": "CPU type for Fly.io",
+      "enum": ["shared", "performance"],
+      "default": "shared"
+    },
+    "customDomain": {
+      "type": "string",
+      "description": "Custom domain for main service",
+      "examples": ["api.example.com", "ossa.yourdomain.com"]
+    },
+    "bridgeCustomDomain": {
+      "type": "string",
+      "description": "Custom domain for bridge server",
+      "examples": ["bridge.example.com"]
+    },
+    "customDomains": {
+      "type": "array",
+      "description": "List of custom domains (Fly.io)",
+      "items": {
+        "type": "string"
+      },
+      "examples": [["api.example.com", "www.api.example.com"]]
+    },
+    "autoDeploy": {
+      "type": "boolean",
+      "description": "Enable automatic deployment on push",
+      "default": true
+    },
+    "rateLimitWindow": {
+      "type": "integer",
+      "description": "Rate limit window in milliseconds",
+      "default": 60000,
+      "examples": [60000, 300000, 3600000]
+    },
+    "rateLimitMax": {
+      "type": "integer",
+      "description": "Maximum requests per rate limit window",
+      "minimum": 1,
+      "default": 100,
+      "examples": [10, 100, 1000]
+    },
+    "allowedOrigins": {
+      "type": "string",
+      "description": "CORS allowed origins (comma-separated)",
+      "default": "*",
+      "examples": [
+        "https://example.com",
+        "https://app.example.com,https://admin.example.com"
+      ]
+    },
+    "corsOrigins": {
+      "type": "string",
+      "description": "CORS origins for bridge server",
+      "examples": ["https://drupal.example.com"]
+    },
+    "vectorDbCollection": {
+      "type": "string",
+      "description": "Qdrant collection name",
+      "default": "ossa_agents",
+      "examples": ["ossa_agents", "ossa_agents_prod"]
+    },
+    "maxConcurrentAgents": {
+      "type": "integer",
+      "description": "Maximum concurrent agent executions",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 10
+    },
+    "agentTimeoutMs": {
+      "type": "integer",
+      "description": "Agent execution timeout in milliseconds",
+      "minimum": 1000,
+      "maximum": 3600000,
+      "default": 300000
+    },
+    "cacheTtlSeconds": {
+      "type": "integer",
+      "description": "Cache TTL in seconds",
+      "minimum": 0,
+      "maximum": 86400,
+      "default": 300
+    },
+    "enableMetrics": {
+      "type": "boolean",
+      "description": "Enable Prometheus metrics",
+      "default": true
+    },
+    "metricsEnabled": {
+      "type": "boolean",
+      "description": "Enable metrics (Fly.io)",
+      "default": true
+    },
+    "tracesEnabled": {
+      "type": "boolean",
+      "description": "Enable distributed tracing",
+      "default": false
+    },
+    "logsEnabled": {
+      "type": "boolean",
+      "description": "Enable structured logging",
+      "default": true
+    },
+    "sentryEnvironment": {
+      "type": "string",
+      "description": "Sentry environment name",
+      "default": "production",
+      "examples": ["production", "staging", "development"]
+    },
+    "enableDebug": {
+      "type": "boolean",
+      "description": "Enable debug mode",
+      "default": false
+    },
+    "postgresDb": {
+      "type": "string",
+      "description": "PostgreSQL database name",
+      "default": "ossa",
+      "examples": ["ossa", "ossa_prod"]
+    },
+    "postgresUser": {
+      "type": "string",
+      "description": "PostgreSQL user",
+      "default": "postgres",
+      "examples": ["postgres", "ossa_user"]
+    },
+    "postgresMaxConnections": {
+      "type": "integer",
+      "description": "Maximum PostgreSQL connections",
+      "minimum": 10,
+      "maximum": 500,
+      "default": 100
+    },
+    "postgresSharedBuffers": {
+      "type": "string",
+      "description": "PostgreSQL shared buffers",
+      "default": "256MB",
+      "examples": ["128MB", "256MB", "512MB", "1GB"]
+    },
+    "redisMaxMemory": {
+      "type": "string",
+      "description": "Redis max memory",
+      "default": "512mb",
+      "examples": ["256mb", "512mb", "1gb"]
+    },
+    "redisMaxMemoryPolicy": {
+      "type": "string",
+      "description": "Redis eviction policy",
+      "enum": ["allkeys-lru", "volatile-lru", "allkeys-random", "volatile-random", "volatile-ttl", "noeviction"],
+      "default": "allkeys-lru"
+    },
+    "qdrantCollectionSize": {
+      "type": "integer",
+      "description": "Qdrant collection size",
+      "default": 1000000
+    },
+    "maxPayloadSize": {
+      "type": "string",
+      "description": "Maximum request payload size",
+      "default": "10mb",
+      "examples": ["1mb", "10mb", "50mb"]
+    },
+    "requestTimeoutMs": {
+      "type": "integer",
+      "description": "Request timeout in milliseconds",
+      "minimum": 1000,
+      "maximum": 300000,
+      "default": 30000
+    },
+    "enableCors": {
+      "type": "boolean",
+      "description": "Enable CORS on bridge server",
+      "default": true
+    },
+    "bridgeMinReplicas": {
+      "type": "integer",
+      "description": "Minimum bridge server replicas",
+      "default": 1
+    },
+    "bridgeMaxReplicas": {
+      "type": "integer",
+      "description": "Maximum bridge server replicas",
+      "default": 3
+    },
+    "bridgeAutoscalingEnabled": {
+      "type": "boolean",
+      "description": "Enable bridge server autoscaling",
+      "default": true
+    },
+    "bridgeTargetCpu": {
+      "type": "integer",
+      "description": "Bridge server target CPU %",
+      "default": 70
+    },
+    "bridgeTargetMemory": {
+      "type": "integer",
+      "description": "Bridge server target memory %",
+      "default": 80
+    },
+    "bridgeMemory": {
+      "type": "string",
+      "description": "Bridge server memory allocation",
+      "default": "1Gi"
+    },
+    "bridgeCpu": {
+      "type": "string",
+      "description": "Bridge server CPU allocation",
+      "default": "0.5"
+    },
+    "bridgePlan": {
+      "type": "string",
+      "description": "Bridge server plan (Render)",
+      "default": "starter"
+    },
+    "bridgeBuildCommand": {
+      "type": "string",
+      "description": "Bridge server build command",
+      "default": "npm ci && npm run build:bridge"
+    },
+    "bridgeStartCommand": {
+      "type": "string",
+      "description": "Bridge server start command",
+      "default": "npm run start:bridge"
+    },
+    "workerReplicas": {
+      "type": "integer",
+      "description": "Number of worker replicas",
+      "default": 1
+    },
+    "workerMinReplicas": {
+      "type": "integer",
+      "description": "Minimum worker replicas",
+      "default": 1
+    },
+    "workerMaxReplicas": {
+      "type": "integer",
+      "description": "Maximum worker replicas",
+      "default": 5
+    },
+    "workerTargetMemory": {
+      "type": "integer",
+      "description": "Worker target memory %",
+      "default": 80
+    },
+    "workerTargetCpu": {
+      "type": "integer",
+      "description": "Worker target CPU %",
+      "default": 70
+    },
+    "workerStartCommand": {
+      "type": "string",
+      "description": "Worker start command",
+      "default": "npm run worker",
+      "examples": ["npm run worker", "node dist/worker.js"]
+    },
+    "workerConcurrency": {
+      "type": "integer",
+      "description": "Worker concurrency level",
+      "minimum": 1,
+      "maximum": 50,
+      "default": 5
+    },
+    "workerPollInterval": {
+      "type": "integer",
+      "description": "Worker poll interval in milliseconds",
+      "default": 1000
+    },
+    "cleanupCronSchedule": {
+      "type": "string",
+      "description": "Cleanup cron schedule (cron format)",
+      "default": "0 2 * * *",
+      "examples": ["0 2 * * *", "0 */6 * * *"]
+    },
+    "cleanupCronCommand": {
+      "type": "string",
+      "description": "Cleanup cron command",
+      "default": "npm run cleanup"
+    },
+    "cleanupRetentionDays": {
+      "type": "integer",
+      "description": "Cleanup retention period in days",
+      "default": 30
+    },
+    "syncCronSchedule": {
+      "type": "string",
+      "description": "Sync cron schedule",
+      "default": "0 * * * *",
+      "examples": ["0 * * * *", "*/15 * * * *"]
+    },
+    "syncCronCommand": {
+      "type": "string",
+      "description": "Sync cron command",
+      "default": "npm run sync"
+    },
+    "syncBatchSize": {
+      "type": "integer",
+      "description": "Sync batch size",
+      "default": 100
+    },
+    "diskSizeGb": {
+      "type": "integer",
+      "description": "Disk size in GB (Render)",
+      "minimum": 1,
+      "default": 10
+    },
+    "dataMountSizeGb": {
+      "type": "integer",
+      "description": "Data volume size in GB (Fly.io)",
+      "minimum": 1,
+      "default": 10
+    },
+    "logsMountSizeGb": {
+      "type": "integer",
+      "description": "Logs volume size in GB (Fly.io)",
+      "minimum": 1,
+      "default": 5
+    },
+    "killTimeout": {
+      "type": "string",
+      "description": "Grace period before force kill (Fly.io)",
+      "default": "30s",
+      "examples": ["10s", "30s", "60s"]
+    },
+    "autoStopMachines": {
+      "type": "boolean",
+      "description": "Auto-stop idle machines (Fly.io)",
+      "default": false
+    },
+    "autoStartMachines": {
+      "type": "boolean",
+      "description": "Auto-start stopped machines (Fly.io)",
+      "default": true
+    },
+    "minMachinesRunning": {
+      "type": "integer",
+      "description": "Minimum running machines (Fly.io)",
+      "minimum": 0,
+      "default": 1
+    },
+    "concurrencyType": {
+      "type": "string",
+      "description": "Concurrency type (Fly.io)",
+      "enum": ["connections", "requests"],
+      "default": "requests"
+    },
+    "concurrencyHardLimit": {
+      "type": "integer",
+      "description": "Hard concurrency limit (Fly.io)",
+      "default": 250
+    },
+    "concurrencySoftLimit": {
+      "type": "integer",
+      "description": "Soft concurrency limit (Fly.io)",
+      "default": 200
+    },
+    "healthCheckInterval": {
+      "type": "string",
+      "description": "Health check interval",
+      "default": "30s",
+      "examples": ["10s", "30s", "60s"]
+    },
+    "healthCheckTimeout": {
+      "type": "string",
+      "description": "Health check timeout",
+      "default": "10s"
+    },
+    "healthCheckGracePeriod": {
+      "type": "string",
+      "description": "Health check grace period",
+      "default": "30s"
+    },
+    "deployStrategy": {
+      "type": "string",
+      "description": "Deployment strategy (Fly.io)",
+      "enum": ["rolling", "bluegreen", "canary"],
+      "default": "rolling"
+    },
+    "maxUnavailable": {
+      "type": "integer",
+      "description": "Max unavailable instances during deploy",
+      "default": 1
+    },
+    "autoRollback": {
+      "type": "boolean",
+      "description": "Enable automatic rollback on failure",
+      "default": true
+    },
+    "enableConsul": {
+      "type": "boolean",
+      "description": "Enable Consul integration (Fly.io)",
+      "default": false
+    },
+    "enableEtcd": {
+      "type": "boolean",
+      "description": "Enable etcd integration (Fly.io)",
+      "default": false
+    },
+    "logFormat": {
+      "type": "string",
+      "description": "Log format",
+      "enum": ["json", "text"],
+      "default": "json"
+    },
+    "tracesEndpoint": {
+      "type": "string",
+      "description": "OpenTelemetry traces endpoint",
+      "examples": ["https://api.honeycomb.io:443"]
+    },
+    "ipv4": {
+      "type": "string",
+      "description": "Allocate IPv4 address (Fly.io)",
+      "default": "true"
+    },
+    "ipv6": {
+      "type": "string",
+      "description": "Allocate IPv6 address (Fly.io)",
+      "default": "true"
+    },
+    "sslMinVersion": {
+      "type": "string",
+      "description": "Minimum SSL/TLS version",
+      "enum": ["1.0", "1.1", "1.2", "1.3"],
+      "default": "1.2"
+    },
+    "sslPreferServerCiphers": {
+      "type": "boolean",
+      "description": "Prefer server cipher suites",
+      "default": true
+    },
+    "isProduction": {
+      "type": "boolean",
+      "description": "Is production environment",
+      "default": false
+    },
+    "isStaging": {
+      "type": "boolean",
+      "description": "Is staging environment",
+      "default": false
+    },
+    "isDevelopment": {
+      "type": "boolean",
+      "description": "Is development environment",
+      "default": false
+    },
+    "productionCpus": {
+      "type": "integer",
+      "description": "Production CPU count",
+      "default": 2
+    },
+    "productionMemoryMb": {
+      "type": "integer",
+      "description": "Production memory in MB",
+      "default": 2048
+    },
+    "productionMinReplicas": {
+      "type": "integer",
+      "description": "Production minimum replicas",
+      "default": 2
+    },
+    "productionMaxReplicas": {
+      "type": "integer",
+      "description": "Production maximum replicas",
+      "default": 10
+    },
+    "stagingCpus": {
+      "type": "integer",
+      "description": "Staging CPU count",
+      "default": 1
+    },
+    "stagingMemoryMb": {
+      "type": "integer",
+      "description": "Staging memory in MB",
+      "default": 1024
+    },
+    "stagingMinReplicas": {
+      "type": "integer",
+      "description": "Staging minimum replicas",
+      "default": 1
+    },
+    "stagingMaxReplicas": {
+      "type": "integer",
+      "description": "Staging maximum replicas",
+      "default": 3
+    },
+    "developmentCpus": {
+      "type": "integer",
+      "description": "Development CPU count",
+      "default": 1
+    },
+    "developmentMemoryMb": {
+      "type": "integer",
+      "description": "Development memory in MB",
+      "default": 512
+    }
+  },
+  "required": [
+    "serviceName",
+    "githubRepo",
+    "branch",
+    "buildCommand",
+    "startCommand"
+  ]
+}

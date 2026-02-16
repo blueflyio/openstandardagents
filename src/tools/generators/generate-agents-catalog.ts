@@ -1,10 +1,19 @@
 #!/usr/bin/env tsx
-import { readdirSync, readFileSync, writeFileSync, statSync, mkdirSync } from 'fs';
+import {
+  readdirSync,
+  readFileSync,
+  writeFileSync,
+  statSync,
+  mkdirSync,
+} from 'fs';
 import { join, relative } from 'path';
 import yaml from 'js-yaml';
 
 const AGENTS_DIR = join(process.cwd(), '.gitlab/agents');
-const OUTPUT_FILE = join(process.cwd(), 'website/content/docs/agents/catalog.md');
+const OUTPUT_FILE = join(
+  process.cwd(),
+  'website/content/docs/agents/catalog.md'
+);
 
 interface Agent {
   id: string;
@@ -18,14 +27,17 @@ interface Agent {
 function findAgents(): Agent[] {
   const agents: Agent[] = [];
   const entries = readdirSync(AGENTS_DIR);
-  
+
   for (const entry of entries) {
     const manifestPath = join(AGENTS_DIR, entry, 'manifest.ossa.yaml');
     try {
       const content = readFileSync(manifestPath, 'utf-8');
       // Use safeLoad to prevent arbitrary code execution (CWE-502)
-      const data = yaml.load(content, { schema: yaml.JSON_SCHEMA }) as Record<string, unknown>;
-      
+      const data = yaml.load(content, { schema: yaml.JSON_SCHEMA }) as Record<
+        string,
+        unknown
+      >;
+
       if (data?.agent) {
         agents.push({
           id: data.agent.id,
@@ -33,14 +45,14 @@ function findAgents(): Agent[] {
           role: data.agent.role,
           description: data.agent.description,
           capabilities: data.agent.capabilities || [],
-          path: relative(process.cwd(), manifestPath)
+          path: relative(process.cwd(), manifestPath),
         });
       }
     } catch (error) {
       // Skip if no manifest
     }
   }
-  
+
   return agents;
 }
 
@@ -59,7 +71,7 @@ for (const agent of agents.sort((a, b) => a.name.localeCompare(b.name))) {
   doc += `**ID**: \`${agent.id}\`  \n`;
   doc += `**Role**: \`${agent.role}\`\n\n`;
   if (agent.description) doc += `${agent.description}\n\n`;
-  
+
   if (agent.capabilities.length > 0) {
     doc += `### Capabilities\n\n`;
     for (const cap of agent.capabilities) {
@@ -67,12 +79,14 @@ for (const agent of agents.sort((a, b) => a.name.localeCompare(b.name))) {
     }
     doc += '\n';
   }
-  
+
   doc += `**Manifest**: [\`${agent.path}\`](https://github.com/blueflyio/openstandardagents/blob/main/${agent.path})\n\n`;
   doc += `\`\`\`bash\n# Deploy agent\nkubectl apply -f ${agent.path}\n\`\`\`\n\n`;
 }
 
-mkdirSync(join(process.cwd(), 'website/content/docs/agents'), { recursive: true });
+mkdirSync(join(process.cwd(), 'website/content/docs/agents'), {
+  recursive: true,
+});
 writeFileSync(OUTPUT_FILE, doc);
 
 console.log(`✅ Generated agents catalog: ${agents.length} agents`);
