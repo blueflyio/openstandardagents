@@ -343,6 +343,29 @@ export interface OssaAgent {
     adapters?: Adapter[];
     // Principal: Abstract identity definition (v0.3.6)
     principal?: Principal;
+    // Personality configuration
+    personality?: {
+      system_prompt?: string;
+      tone?: string;
+      expertise?: string[];
+    };
+    // MCP server configuration
+    mcp?: {
+      servers?: Array<{
+        label: string;
+        url: string;
+        transport?: string;
+      }>;
+    };
+    // Safety and guardrails configuration
+    safety?: {
+      guardrails?: Array<{
+        name: string;
+        type: 'input' | 'output';
+        blocked_patterns?: string[];
+        maxLength?: number;
+      }>;
+    };
     tools?: Array<{
       type: string;
       name?: string;
@@ -492,6 +515,14 @@ export interface OssaAgent {
     agents_md?: AgentsMdExtension;
     llms_txt?: LlmsTxtExtension;
     cursor?: CursorExtension;
+    openai_agents_sdk?: {
+      model_override?: string;
+      handoff_targets?: string[];
+      mcp_servers?: Array<{
+        label: string;
+        url: string;
+      }>;
+    };
     [key: string]: unknown;
   };
 }

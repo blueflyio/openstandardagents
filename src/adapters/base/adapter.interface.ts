@@ -253,6 +253,11 @@ export interface ValidationWarning {
    * Suggestion for fixing warning
    */
   suggestion?: string;
+
+  /**
+   * Warning code
+   */
+  code?: string;
 }
 
 /**
