@@ -1,4 +1,0 @@
-seo-automation:
-  stage: sync
-  script:
-    - echo "SEO automation placeholder"
