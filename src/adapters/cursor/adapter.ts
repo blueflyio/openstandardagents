@@ -6,15 +6,14 @@
  * https://cursor.com/docs/cloud-agent
  *
  * SOLID: Single Responsibility - Cursor agent generation only
- * DRY: Reuses BaseAdapter validation and helpers
+ * DRY: Extends BaseExporter for orchestration, validation, and common files
  */
 
-import { BaseAdapter } from '../base/adapter.interface.js';
+import { BaseExporter } from '../base/base-exporter.js';
 import type {
   OssaAgent,
   ExportOptions,
-  ExportResult,
-  ValidationResult,
+  ExportFile,
   ValidationError,
   ValidationWarning,
 } from '../base/adapter.interface.js';
@@ -27,7 +26,7 @@ import type {
   JSONSchema,
 } from './types.js';
 
-export class CursorAdapter extends BaseAdapter {
+export class CursorAdapter extends BaseExporter {
   readonly platform = 'cursor';
   readonly displayName = 'Cursor Cloud Agent';
   readonly description =
@@ -36,133 +35,15 @@ export class CursorAdapter extends BaseAdapter {
   readonly supportedVersions = ['v{{VERSION}}'];
 
   /**
-   * Export OSSA manifest to Cursor Cloud Agent format
+   * Platform-specific validation for Cursor compatibility
    */
-  async export(
-    manifest: OssaAgent,
-    options?: ExportOptions
-  ): Promise<ExportResult> {
-    const startTime = Date.now();
-
-    try {
-      // Validate manifest
-      if (options?.validate !== false) {
-        const validation = await this.validate(manifest);
-        if (!validation.valid) {
-          return this.createResult(
-            false,
-            [],
-            `Validation failed: ${validation.errors?.map((e) => e.message).join(', ')}`,
-            {
-              duration: Date.now() - startTime,
-              warnings: validation.warnings?.map((w) => w.message),
-            }
-          );
-        }
-      }
-
-      const agentName = manifest.metadata?.name || 'cursor-agent';
-      const files = [];
-
-      // Generate cursor-agent.json - Cursor agent configuration
-      const cursorAgent = this.convertToCursorAgent(manifest);
-      const config: CursorAgentConfig = {
-        version: '1.0',
-        agent: cursorAgent,
-      };
-
-      files.push(
-        this.createFile(
-          `cursor/${agentName}/cursor-agent.json`,
-          JSON.stringify(config, null, 2),
-          'config',
-          'json'
-        )
-      );
-
-      // Generate tool implementations
-      cursorAgent.tools.forEach((tool) => {
-        if (tool.implementationType === 'code') {
-          files.push(
-            this.createFile(
-              `cursor/${agentName}/tools/${tool.name}.ts`,
-              this.generateToolImplementation(tool, manifest),
-              'code',
-              'typescript'
-            )
-          );
-        }
-      });
-
-      // Generate agent.ts - Main agent entry point
-      files.push(
-        this.createFile(
-          `cursor/${agentName}/agent.ts`,
-          this.generateAgentCode(manifest, cursorAgent),
-          'code',
-          'typescript'
-        )
-      );
-
-      // Generate package.json
-      files.push(
-        this.createFile(
-          `cursor/${agentName}/package.json`,
-          this.generatePackageJson(manifest),
-          'config',
-          'json'
-        )
-      );
-
-      // Generate tsconfig.json
-      files.push(
-        this.createFile(
-          `cursor/${agentName}/tsconfig.json`,
-          this.generateTsConfig(),
-          'config',
-          'json'
-        )
-      );
-
-      // Generate README.md
-      files.push(
-        this.createFile(
-          `cursor/${agentName}/README.md`,
-          this.generateReadme(manifest, cursorAgent),
-          'documentation'
-        )
-      );
-
-      // Include source OSSA manifest for provenance
-      files.push(this.createManifestFile(manifest));
-
-      return this.createResult(true, files, undefined, {
-        duration: Date.now() - startTime,
-        version: '1.0.0',
-      });
-    } catch (error) {
-      return this.createResult(
-        false,
-        [],
-        error instanceof Error ? error.message : String(error),
-        { duration: Date.now() - startTime }
-      );
-    }
-  }
-
-  /**
-   * Validate manifest for Cursor compatibility
-   */
-  async validate(manifest: OssaAgent): Promise<ValidationResult> {
+  protected platformValidate(manifest: OssaAgent): {
+    errors: ValidationError[];
+    warnings: ValidationWarning[];
+  } {
     const errors: ValidationError[] = [];
     const warnings: ValidationWarning[] = [];
 
-    // Base validation
-    const baseValidation = await super.validate(manifest);
-    if (baseValidation.errors) errors.push(...baseValidation.errors);
-    if (baseValidation.warnings) warnings.push(...baseValidation.warnings);
-
-    // Cursor-specific validation
     const spec = manifest.spec;
 
     // Check for role/system prompt
@@ -183,11 +64,98 @@ export class CursorAdapter extends BaseAdapter {
       });
     }
 
-    return {
-      valid: errors.length === 0,
-      errors: errors.length > 0 ? errors : undefined,
-      warnings: warnings.length > 0 ? warnings : undefined,
+    return { errors, warnings };
+  }
+
+  /**
+   * Generate Cursor-specific files
+   */
+  protected async generateFiles(
+    manifest: OssaAgent,
+    options?: ExportOptions
+  ): Promise<ExportFile[]> {
+    const agentName = this.getAgentName(manifest, 'cursor-agent');
+    const prefix = `cursor/${agentName}`;
+    const files: ExportFile[] = [];
+
+    // Generate cursor-agent.json - Cursor agent configuration
+    const cursorAgent = this.convertToCursorAgent(manifest);
+    const config: CursorAgentConfig = {
+      version: '1.0',
+      agent: cursorAgent,
     };
+
+    files.push(
+      this.createFile(
+        `${prefix}/cursor-agent.json`,
+        JSON.stringify(config, null, 2),
+        'config',
+        'json'
+      )
+    );
+
+    // Generate tool implementations
+    cursorAgent.tools.forEach((tool) => {
+      if (tool.implementationType === 'code') {
+        files.push(
+          this.createFile(
+            `${prefix}/tools/${tool.name}.ts`,
+            this.generateToolImplementation(tool, manifest),
+            'code',
+            'typescript'
+          )
+        );
+      }
+    });
+
+    // Generate agent.ts - Main agent entry point
+    files.push(
+      this.createFile(
+        `${prefix}/agent.ts`,
+        this.generateAgentCode(manifest, cursorAgent),
+        'code',
+        'typescript'
+      )
+    );
+
+    // Use shared generators for common files
+    files.push(
+      this.generatePackageJsonFile(manifest, prefix, {
+        main: 'agent.js',
+        scripts: {
+          build: 'tsc',
+          dev: 'tsx agent.ts',
+          watch: 'tsx watch agent.ts',
+        },
+        devDependencies: {
+          '@types/node': '^20.0.0',
+          typescript: '^5.0.0',
+          tsx: '^4.0.0',
+        },
+        extraKeywords: ['cursor', 'cloud-agent', 'coding-assistant'],
+      })
+    );
+
+    files.push(this.generateTsConfigFile(prefix, { include: ['**/*.ts'] }));
+
+    const toolsDesc = cursorAgent.tools
+      .map((t) => `- **${t.name}**: ${t.description}`)
+      .join('\n');
+
+    files.push(
+      this.generateReadmeFile(manifest, prefix, {
+        installation: 'npm install\nnpm run build',
+        usage: `Configure in Cursor Settings > Cloud Agents:\n\n\`\`\`json\n{\n  "cloudAgents": [\n    {\n      "name": "${agentName}",\n      "path": "./cursor/${agentName}/agent.js"\n    }\n  ]\n}\`\`\``,
+        additional: toolsDesc
+          ? [
+              { title: 'Capabilities', content: cursorAgent.capabilities.map((c) => `- ${c.type}`).join('\n') },
+              { title: 'Available Tools', content: toolsDesc },
+            ]
+          : undefined,
+      })
+    );
+
+    return files;
   }
 
   /**
@@ -230,37 +198,23 @@ export class CursorAdapter extends BaseAdapter {
    * Convert OSSA manifest to Cursor Cloud Agent
    */
   private convertToCursorAgent(manifest: OssaAgent): CursorCloudAgent {
-    const name = manifest.metadata?.name || 'cursor-agent';
+    const name = this.getAgentName(manifest, 'cursor-agent');
     const description = manifest.metadata?.description || 'Cursor Cloud Agent';
     const prompt = manifest.spec?.role || 'AI coding assistant';
 
-    // Convert capabilities
     const capabilities = this.extractCapabilities(manifest);
-
-    // Convert tools
     const tools = this.convertTools(manifest);
 
-    // Create context configuration
     const context: CursorContext = {
       workspace: {
         includeFiles: true,
         includePatterns: ['**/*.ts', '**/*.js', '**/*.tsx', '**/*.jsx'],
         excludePatterns: ['**/node_modules/**', '**/dist/**', '**/build/**'],
-        maxFileSize: 1024 * 1024, // 1MB
+        maxFileSize: 1024 * 1024,
       },
-      indexing: {
-        enabled: true,
-        depth: 3,
-      },
-      memory: {
-        enabled: true,
-        maxEntries: 100,
-      },
-      integrations: {
-        git: true,
-        lsp: true,
-        terminal: true,
-      },
+      indexing: { enabled: true, depth: 3 },
+      memory: { enabled: true, maxEntries: 100 },
+      integrations: { git: true, lsp: true, terminal: true },
     };
 
     return {
@@ -284,7 +238,6 @@ export class CursorAdapter extends BaseAdapter {
   private extractCapabilities(manifest: OssaAgent): CursorCapability[] {
     const capabilities: CursorCapability[] = [];
 
-    // Map OSSA capabilities to Cursor capability types
     const capabilityMap: Record<string, CursorCapability['type']> = {
       'code-generation': 'code-generation',
       'code-review': 'code-review',
@@ -295,16 +248,13 @@ export class CursorAdapter extends BaseAdapter {
       terminal: 'terminal',
     };
 
-    const ossaCaps = (
-      (manifest.spec?.capabilities || []) as Array<string | any>
-    ).map((c: any) => (typeof c === 'string' ? c : c.name || ''));
+    const ossaCaps = this.getCapabilities(manifest);
 
     ossaCaps.forEach((cap: string) => {
       const type = capabilityMap[cap] || 'custom';
       capabilities.push({ type });
     });
 
-    // Default to code-generation if no capabilities
     if (capabilities.length === 0) {
       capabilities.push({ type: 'code-generation' });
     }
@@ -317,17 +267,17 @@ export class CursorAdapter extends BaseAdapter {
    */
   private convertTools(manifest: OssaAgent): CursorTool[] {
     const tools: CursorTool[] = [];
-    const ossaTools = (manifest.spec?.tools || []) as any[];
+    const ossaTools = this.getTools(manifest);
 
     ossaTools.forEach((tool) => {
-      const name = tool.name || 'unknown';
-      const description = tool.description || `Tool: ${name}`;
-      const schema = tool.inputSchema || tool.schema || { type: 'object' };
+      const name = (tool.name as string) || 'unknown';
+      const description = (tool.description as string) || `Tool: ${name}`;
+      const schema = (tool.inputSchema || tool.schema || { type: 'object' }) as JSONSchema;
 
       tools.push({
         name,
         description,
-        parameters: schema as JSONSchema,
+        parameters: schema,
         implementation: `// TODO: Implement ${name}\nexport async function ${name}(params: any) {\n  throw new Error('Not implemented');\n}`,
         implementationType: 'code',
       });
@@ -410,7 +360,6 @@ ${props}
       array: 'unknown[]',
       object: 'Record<string, unknown>',
     };
-
     return typeMap[type] || 'unknown';
   }
 
@@ -476,155 +425,6 @@ export async function executeTool(name: string, params: any): Promise<any> {
 export async function initialize(): Promise<void> {
   console.log('Cursor agent initialized:', agentConfig.name);
 }
-`;
-  }
-
-  /**
-   * Generate package.json
-   */
-  private generatePackageJson(manifest: OssaAgent): string {
-    const pkg = {
-      name: manifest.metadata?.name || 'cursor-agent',
-      version: manifest.metadata?.version || '1.0.0',
-      description:
-        manifest.metadata?.description ||
-        'Cursor Cloud Agent generated from OSSA',
-      type: 'module',
-      main: 'agent.js',
-      scripts: {
-        build: 'tsc',
-        dev: 'tsx agent.ts',
-        watch: 'tsx watch agent.ts',
-      },
-      dependencies: {},
-      devDependencies: {
-        '@types/node': '^20.0.0',
-        typescript: '^5.0.0',
-        tsx: '^4.0.0',
-      },
-      keywords: ['cursor', 'cloud-agent', 'ai', 'ossa', 'coding-assistant'],
-      license: manifest.metadata?.license || 'MIT',
-    };
-
-    return JSON.stringify(pkg, null, 2);
-  }
-
-  /**
-   * Generate tsconfig.json
-   */
-  private generateTsConfig(): string {
-    const config = {
-      compilerOptions: {
-        target: 'ES2022',
-        module: 'Node16',
-        moduleResolution: 'Node16',
-        outDir: '.',
-        rootDir: '.',
-        strict: true,
-        esModuleInterop: true,
-        skipLibCheck: true,
-        forceConsistentCasingInFileNames: true,
-        resolveJsonModule: true,
-        declaration: true,
-      },
-      include: ['**/*.ts'],
-      exclude: ['node_modules', '**/*.js'],
-    };
-
-    return JSON.stringify(config, null, 2);
-  }
-
-  /**
-   * Generate README.md
-   */
-  private generateReadme(manifest: OssaAgent, agent: CursorCloudAgent): string {
-    const agentName = manifest.metadata?.name || 'cursor-agent';
-
-    return `# ${agentName}
-
-${agent.description}
-
-## Cursor Cloud Agent
-
-This agent is designed for use with [Cursor IDE](https://cursor.com/), providing AI-powered coding assistance.
-
-## Installation
-
-1. **Install dependencies:**
-
-\`\`\`bash
-npm install
-\`\`\`
-
-2. **Build the agent:**
-
-\`\`\`bash
-npm run build
-\`\`\`
-
-3. **Configure in Cursor:**
-
-Add to your Cursor settings (\`Settings > Cloud Agents\`):
-
-\`\`\`json
-{
-  "cloudAgents": [
-    {
-      "name": "${agentName}",
-      "path": "${process.cwd()}/cursor/${agentName}/agent.js"
-    }
-  ]
-}
-\`\`\`
-
-## Agent Configuration
-
-**System Prompt:**
-
-\`\`\`
-${agent.prompt}
-\`\`\`
-
-**Capabilities:**
-
-${agent.capabilities.map((c) => `- ${c.type}`).join('\n')}
-
-## Available Tools
-
-${agent.tools
-  .map(
-    (t) => `### ${t.name}
-
-${t.description}
-
-**Parameters:**
-
-\`\`\`typescript
-${this.generateParamType(t.parameters)}
-\`\`\`
-`
-  )
-  .join('\n')}
-
-## Development
-
-\`\`\`bash
-# Watch mode
-npm run dev
-
-# Build
-npm run build
-\`\`\`
-
-## Generated from OSSA
-
-This agent was generated from an OSSA v${manifest.apiVersion?.split('/')[1] || '{{VERSION}}'} manifest.
-
-Original manifest: \`agent.ossa.yaml\`
-
-## License
-
-${manifest.metadata?.license || 'MIT'}
 `;
   }
 }

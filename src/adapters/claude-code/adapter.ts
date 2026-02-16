@@ -7,15 +7,14 @@
  * https://code.claude.com/docs/en/sub-agents
  *
  * SOLID: Single Responsibility - Claude Code sub-agent generation only
- * DRY: Reuses BaseAdapter validation and helpers
+ * DRY: Extends BaseExporter for orchestration, validation, and common files
  */
 
-import { BaseAdapter } from '../base/adapter.interface.js';
+import { BaseExporter } from '../base/base-exporter.js';
 import type {
   OssaAgent,
   ExportOptions,
-  ExportResult,
-  ValidationResult,
+  ExportFile,
   ValidationError,
   ValidationWarning,
 } from '../base/adapter.interface.js';
@@ -26,7 +25,7 @@ import type {
   ClaudeCodeSubAgentConfig,
 } from './types.js';
 
-export class ClaudeCodeAdapter extends BaseAdapter {
+export class ClaudeCodeAdapter extends BaseExporter {
   readonly platform = 'claude-code';
   readonly displayName = 'Claude Code Sub-agent';
   readonly description =
@@ -35,112 +34,15 @@ export class ClaudeCodeAdapter extends BaseAdapter {
   readonly supportedVersions = ['v{{VERSION}}'];
 
   /**
-   * Export OSSA manifest to Claude Code sub-agent format
+   * Platform-specific validation for Claude Code compatibility
    */
-  async export(
-    manifest: OssaAgent,
-    options?: ExportOptions
-  ): Promise<ExportResult> {
-    const startTime = Date.now();
-
-    try {
-      // Validate manifest
-      if (options?.validate !== false) {
-        const validation = await this.validate(manifest);
-        if (!validation.valid) {
-          return this.createResult(
-            false,
-            [],
-            `Validation failed: ${validation.errors?.map((e) => e.message).join(', ')}`,
-            {
-              duration: Date.now() - startTime,
-              warnings: validation.warnings?.map((w) => w.message),
-            }
-          );
-        }
-      }
-
-      const agentName = manifest.metadata?.name || 'claude-code-subagent';
-      const files = [];
-
-      // Generate subagent.json - Claude Code sub-agent configuration
-      const subagent = this.convertToClaudeCodeSubAgent(manifest);
-      const config: ClaudeCodeSubAgentConfig = {
-        version: '1.0',
-        subagent,
-      };
-
-      files.push(
-        this.createFile(
-          `claude-code/${agentName}/subagent.json`,
-          JSON.stringify(config, null, 2),
-          'config',
-          'json'
-        )
-      );
-
-      // Generate SKILL.md for Claude Code skills system
-      files.push(
-        this.createFile(
-          `claude-code/${agentName}/SKILL.md`,
-          this.generateSkillMd(manifest, subagent),
-          'documentation'
-        )
-      );
-
-      // Generate tool implementations
-      subagent.tools.forEach((tool) => {
-        if (tool.implementation?.type === 'bash') {
-          files.push(
-            this.createFile(
-              `claude-code/${agentName}/tools/${tool.name}.sh`,
-              this.generateBashTool(tool),
-              'code',
-              'bash'
-            )
-          );
-        }
-      });
-
-      // Generate README.md
-      files.push(
-        this.createFile(
-          `claude-code/${agentName}/README.md`,
-          this.generateReadme(manifest, subagent),
-          'documentation'
-        )
-      );
-
-      // Include source OSSA manifest for provenance
-      files.push(this.createManifestFile(manifest));
-
-      return this.createResult(true, files, undefined, {
-        duration: Date.now() - startTime,
-        version: '1.0.0',
-      });
-    } catch (error) {
-      return this.createResult(
-        false,
-        [],
-        error instanceof Error ? error.message : String(error),
-        { duration: Date.now() - startTime }
-      );
-    }
-  }
-
-  /**
-   * Validate manifest for Claude Code compatibility
-   */
-  async validate(manifest: OssaAgent): Promise<ValidationResult> {
+  protected platformValidate(manifest: OssaAgent): {
+    errors: ValidationError[];
+    warnings: ValidationWarning[];
+  } {
     const errors: ValidationError[] = [];
     const warnings: ValidationWarning[] = [];
 
-    // Base validation
-    const baseValidation = await super.validate(manifest);
-    if (baseValidation.errors) errors.push(...baseValidation.errors);
-    if (baseValidation.warnings) warnings.push(...baseValidation.warnings);
-
-    // Claude Code-specific validation
     const spec = manifest.spec;
 
     // Check for role/system prompt
@@ -166,11 +68,79 @@ export class ClaudeCodeAdapter extends BaseAdapter {
       });
     }
 
-    return {
-      valid: errors.length === 0,
-      errors: errors.length > 0 ? errors : undefined,
-      warnings: warnings.length > 0 ? warnings : undefined,
+    return { errors, warnings };
+  }
+
+  /**
+   * Generate Claude Code-specific files
+   */
+  protected async generateFiles(
+    manifest: OssaAgent,
+    options?: ExportOptions
+  ): Promise<ExportFile[]> {
+    const agentName = this.getAgentName(manifest, 'claude-code-subagent');
+    const prefix = `claude-code/${agentName}`;
+    const files: ExportFile[] = [];
+
+    // Generate subagent.json - Claude Code sub-agent configuration
+    const subagent = this.convertToClaudeCodeSubAgent(manifest);
+    const config: ClaudeCodeSubAgentConfig = {
+      version: '1.0',
+      subagent,
     };
+
+    files.push(
+      this.createFile(
+        `${prefix}/subagent.json`,
+        JSON.stringify(config, null, 2),
+        'config',
+        'json'
+      )
+    );
+
+    // Generate SKILL.md for Claude Code skills system
+    files.push(
+      this.createFile(
+        `${prefix}/SKILL.md`,
+        this.generateSkillMd(manifest, subagent),
+        'documentation'
+      )
+    );
+
+    // Generate tool implementations
+    subagent.tools.forEach((tool) => {
+      if (tool.implementation?.type === 'bash') {
+        files.push(
+          this.createFile(
+            `${prefix}/tools/${tool.name}.sh`,
+            this.generateBashTool(tool),
+            'code',
+            'bash'
+          )
+        );
+      }
+    });
+
+    // Use shared generator for README
+    const toolsDesc = subagent.tools
+      .map((t) => `- **${t.name}**: ${t.description}`)
+      .join('\n');
+
+    files.push(
+      this.generateReadmeFile(manifest, prefix, {
+        installation: `mkdir -p ~/.claude/subagents\ncp -r ${prefix} ~/.claude/subagents/\nchmod +x ~/.claude/subagents/${agentName}/tools/*.sh`,
+        usage: `### From Claude Code CLI\n\n\`\`\`bash\n/${agentName.replace(/-/g, '')}\n\`\`\`\n\n### Configuration\n\nAdd to \`~/.claude/config.json\`:\n\n\`\`\`json\n{\n  "subagents": [\n    {\n      "name": "${agentName}",\n      "config": "~/.claude/subagents/${agentName}/subagent.json"\n    }\n  ]\n}\`\`\``,
+        additional: [
+          {
+            title: 'Sub-agent Configuration',
+            content: `- **Type:** ${subagent.subagent_type}\n- **Model:** ${subagent.model || 'Inherits from parent agent'}\n- **Max Turns:** ${subagent.max_turns}`,
+          },
+          ...(toolsDesc ? [{ title: 'Available Tools', content: toolsDesc }] : []),
+        ],
+      })
+    );
+
+    return files;
   }
 
   /**
@@ -212,21 +182,13 @@ export class ClaudeCodeAdapter extends BaseAdapter {
    * Convert OSSA manifest to Claude Code sub-agent
    */
   private convertToClaudeCodeSubAgent(manifest: OssaAgent): ClaudeCodeSubAgent {
-    const name = manifest.metadata?.name || 'claude-code-subagent';
-    const description =
-      manifest.metadata?.description || 'Claude Code sub-agent';
+    const name = this.getAgentName(manifest, 'claude-code-subagent');
+    const description = manifest.metadata?.description || 'Claude Code sub-agent';
     const system_prompt = manifest.spec?.role || 'Specialized sub-agent';
 
-    // Determine subagent type based on capabilities
     const subagent_type = this.determineSubagentType(manifest);
-
-    // Convert tools
     const tools = this.convertTools(manifest);
-
-    // Determine max turns from manifest or default to 10
     const max_turns = (manifest.spec as any)?.max_iterations ?? 10;
-
-    // Determine model based on spec
     const model = this.determineModel(manifest);
 
     return {
@@ -251,11 +213,8 @@ export class ClaudeCodeAdapter extends BaseAdapter {
   private determineSubagentType(
     manifest: OssaAgent
   ): ClaudeCodeSubAgent['subagent_type'] {
-    const capabilities = (
-      (manifest.spec?.capabilities || []) as Array<string | any>
-    ).map((c: any) => (typeof c === 'string' ? c : c.name || ''));
+    const capabilities = this.getCapabilities(manifest);
 
-    // Map capabilities to sub-agent types
     if (
       capabilities.includes('explore') ||
       capabilities.includes('code-analysis')
@@ -269,7 +228,6 @@ export class ClaudeCodeAdapter extends BaseAdapter {
       return 'Bash';
     }
 
-    // Default to general-purpose
     return 'general-purpose';
   }
 
@@ -284,12 +242,11 @@ export class ClaudeCodeAdapter extends BaseAdapter {
 
     const model = typeof llmConfig === 'string' ? llmConfig : llmConfig.model;
 
-    // Map to Claude Code model names
     if (model?.includes('opus')) return 'opus';
     if (model?.includes('sonnet')) return 'sonnet';
     if (model?.includes('haiku')) return 'haiku';
 
-    return undefined; // Use parent agent's model
+    return undefined;
   }
 
   /**
@@ -297,16 +254,16 @@ export class ClaudeCodeAdapter extends BaseAdapter {
    */
   private convertTools(manifest: OssaAgent): ClaudeCodeTool[] {
     const tools: ClaudeCodeTool[] = [];
-    const ossaTools = (manifest.spec?.tools || []) as any[];
+    const ossaTools = this.getTools(manifest);
 
     ossaTools.forEach((tool) => {
-      const name = tool.name || 'unknown';
-      const description = tool.description || `Tool: ${name}`;
-      const schema = tool.inputSchema ||
+      const name = (tool.name as string) || 'unknown';
+      const description = (tool.description as string) || `Tool: ${name}`;
+      const schema = (tool.inputSchema ||
         tool.schema || {
           type: 'object',
           properties: {},
-        };
+        }) as Record<string, unknown>;
 
       tools.push({
         name,
@@ -437,7 +394,7 @@ ${
     ? `# Parameters:\n${Object.entries(params)
         .map(
           ([name, param]) =>
-            `# - ${name}: ${param.description}${required.includes(name) ? ' (required)' : ''}`
+            `# - ${name}: ${(param as any).description}${required.includes(name) ? ' (required)' : ''}`
         )
         .join('\n')}`
     : '# No parameters'
@@ -473,154 +430,5 @@ echo '{
   "data": {}
 }'
 `;
-  }
-
-  /**
-   * Generate README.md
-   */
-  private generateReadme(
-    manifest: OssaAgent,
-    subagent: ClaudeCodeSubAgent
-  ): string {
-    const agentName = manifest.metadata?.name || 'claude-code-subagent';
-
-    return `# ${agentName}
-
-${subagent.description}
-
-## Claude Code Sub-agent
-
-This is a specialized sub-agent for [Claude Code CLI](https://code.claude.com/). It can be spawned by the main Claude Code agent to handle specific tasks.
-
-## Sub-agent Type
-
-**${subagent.subagent_type}** - ${this.getSubagentTypeDescription(subagent.subagent_type)}
-
-## Installation
-
-1. **Copy to Claude Code directory:**
-
-\`\`\`bash
-mkdir -p ~/.claude/subagents
-cp -r claude-code/${agentName} ~/.claude/subagents/
-\`\`\`
-
-2. **Make tool scripts executable:**
-
-\`\`\`bash
-chmod +x ~/.claude/subagents/${agentName}/tools/*.sh
-\`\`\`
-
-3. **Configure in Claude Code:**
-
-Add to your \`~/.claude/config.json\`:
-
-\`\`\`json
-{
-  "subagents": [
-    {
-      "name": "${agentName}",
-      "config": "~/.claude/subagents/${agentName}/subagent.json"
-    }
-  ]
-}
-\`\`\`
-
-## System Prompt
-
-\`\`\`
-${subagent.system_prompt}
-\`\`\`
-
-## Configuration
-
-- **Model:** ${subagent.model || 'Inherits from parent agent'}
-- **Max Turns:** ${subagent.max_turns}
-- **Tools:** ${subagent.tools.length}
-
-## Available Tools
-
-${subagent.tools
-  .map(
-    (t) => `### ${t.name}
-
-${t.description}
-
-**Parameters:**
-
-\`\`\`json
-${JSON.stringify(t.input_schema, null, 2)}
-\`\`\`
-
-**Implementation:** ${t.implementation?.type || 'Not specified'}
-`
-  )
-  .join('\n')}
-
-## Usage
-
-### From Claude Code CLI
-
-\`\`\`bash
-# Claude Code will automatically spawn this sub-agent when appropriate
-# You can also explicitly spawn it using the skill command
-/${agentName.replace(/-/g, '')}
-\`\`\`
-
-### Programmatic Usage
-
-\`\`\`typescript
-import { spawnSubAgent } from '@anthropic-ai/claude-code';
-
-const subagent = await spawnSubAgent('${agentName}', {
-  prompt: 'Your task description here',
-});
-
-const result = await subagent.execute();
-console.log(result);
-\`\`\`
-
-## Development
-
-Tool implementations are in the \`tools/\` directory. Each tool is a bash script that:
-
-1. Reads JSON input from stdin
-2. Parses parameters using \`jq\`
-3. Executes the tool logic
-4. Outputs JSON result to stdout
-
-To add or modify tools:
-
-1. Edit \`subagent.json\` to add/update tool definitions
-2. Create/modify the corresponding tool script in \`tools/\`
-3. Make the script executable: \`chmod +x tools/<tool>.sh\`
-
-## Generated from OSSA
-
-This sub-agent was generated from an OSSA v${manifest.apiVersion?.split('/')[1] || '{{VERSION}}'} manifest.
-
-Original manifest: \`agent.ossa.yaml\`
-
-## License
-
-${manifest.metadata?.license || 'MIT'}
-`;
-  }
-
-  /**
-   * Get sub-agent type description
-   */
-  private getSubagentTypeDescription(
-    type: ClaudeCodeSubAgent['subagent_type']
-  ): string {
-    const descriptions = {
-      'general-purpose': 'Handles a variety of tasks with general capabilities',
-      Explore:
-        'Specialized in code exploration, analysis, and understanding codebases',
-      Plan: 'Focuses on planning, breaking down tasks, and creating execution strategies',
-      Bash: 'Executes shell commands and terminal operations',
-    };
-
-    return descriptions[type] || 'Custom sub-agent type';
   }
 }
