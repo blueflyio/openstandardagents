@@ -207,41 +207,31 @@ class PackageValidator {
 
   /**
    * Test CLI commands work
+   *
+   * Uses `node bin/ossa` directly instead of relying on PATH resolution.
+   * This avoids issues with stale global installs shadowing the local binary.
    */
   private async validateCLICommands(): Promise<void> {
     console.log('🧪 Testing CLI commands...');
 
     const commands = [
-      { cmd: 'ossa --version', desc: 'Version command' },
-      { cmd: 'ossa --help', desc: 'Help command' },
-      { cmd: 'ossa validate --help', desc: 'Validate command help' },
+      { cmd: 'node bin/ossa --version', desc: 'Version command' },
+      { cmd: 'node bin/ossa --help', desc: 'Help command' },
+      { cmd: 'node bin/ossa validate --help', desc: 'Validate command help' },
     ];
 
-    try {
-      // Install locally first
-      execSync('npm link', { stdio: 'pipe' });
-
-      for (const { cmd, desc } of commands) {
-        try {
-          execSync(cmd, { stdio: 'pipe' });
-          console.log(`   ✅ ${desc}: OK`);
-        } catch (error: any) {
-          const output = error.stdout?.toString() || error.stderr?.toString() || '';
-          this.errors.push(`❌ ${desc} failed:\n   Command: ${cmd}\n   Output: ${output}`);
-        }
-      }
-
-      console.log('✅ All CLI commands work\n');
-
-      // Cleanup (ignore errors - package may not be linked)
+    for (const { cmd, desc } of commands) {
       try {
-        execSync('npm unlink', { stdio: 'pipe' });
-      } catch {
-        // Ignore cleanup errors
+        execSync(cmd, { stdio: 'pipe' });
+        console.log(`   ✅ ${desc}: OK`);
+      } catch (error: any) {
+        const output = error.stdout?.toString() || error.stderr?.toString() || '';
+        this.errors.push(`❌ ${desc} failed:\n   Command: ${cmd}\n   Output: ${output}`);
       }
-    } catch (error: any) {
-      const output = error.stdout?.toString() || error.stderr?.toString() || '';
-      this.errors.push(`❌ CLI validation setup failed:\n${output}`);
+    }
+
+    if (this.errors.length === 0) {
+      console.log('✅ All CLI commands work\n');
     }
   }
 }
