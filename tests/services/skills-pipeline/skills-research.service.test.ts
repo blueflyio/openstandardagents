@@ -10,30 +10,26 @@ jest.mock('@octokit/rest', () => ({
   Octokit: jest.fn().mockImplementation(() => ({
     rest: {
       repos: {
-        getContent: jest
-          .fn()
-          .mockImplementation(({ path: filePath }: { path: string }) => {
-            if (filePath === 'README.md') {
-              const content = Buffer.from(
-                [
-                  '# Awesome Claude Code',
-                  '',
-                  '## Skills',
-                  '',
-                  '- [Drupal Dev](https://github.com/example/drupal-dev) - Expert Drupal module development',
-                  '- [TypeScript Tools](https://github.com/example/ts-tools) - TypeScript refactoring utilities',
-                  '- [API Designer](https://github.com/example/api-design) - RESTful API design helper',
-                  '',
-                ].join('\n')
-              ).toString('base64');
-              return Promise.resolve({ data: { content } });
-            }
-            // Showcase README responses
-            const readmeContent = Buffer.from(
-              '# Showcase Project\n\nA sample showcase entry for testing.\n'
-            ).toString('base64');
-            return Promise.resolve({ data: { content: readmeContent } });
-          }),
+        getContent: jest.fn().mockImplementation(({ path: filePath }: { path: string }) => {
+          if (filePath === 'README.md') {
+            const content = Buffer.from([
+              '# Awesome Claude Code',
+              '',
+              '## Skills',
+              '',
+              '- [Drupal Dev](https://github.com/example/drupal-dev) - Expert Drupal module development',
+              '- [TypeScript Tools](https://github.com/example/ts-tools) - TypeScript refactoring utilities',
+              '- [API Designer](https://github.com/example/api-design) - RESTful API design helper',
+              '',
+            ].join('\n')).toString('base64');
+            return Promise.resolve({ data: { content } });
+          }
+          // Showcase README responses
+          const readmeContent = Buffer.from(
+            '# Showcase Project\n\nA sample showcase entry for testing.\n'
+          ).toString('base64');
+          return Promise.resolve({ data: { content: readmeContent } });
+        }),
       },
       git: {
         getTree: jest.fn().mockResolvedValue({
@@ -62,9 +58,7 @@ jest.mock('axios', () => ({
               name: '@claude-skills/test-skill',
               description: 'A test skill for Claude',
               keywords: ['claude-skill', 'testing'],
-              links: {
-                npm: 'https://www.npmjs.com/package/@claude-skills/test-skill',
-              },
+              links: { npm: 'https://www.npmjs.com/package/@claude-skills/test-skill' },
               author: { name: 'Test Author' },
               date: '2026-02-01T00:00:00.000Z',
             },

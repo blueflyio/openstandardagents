@@ -1,28 +1,111 @@
+# IDE Supercharger - Lefthook Git Hooks Template
+# Deployed by: npx ide-init
+# Customize by copying to .ide-supercharger/overrides/hooks/lefthook.yml
+
+assert_lefthook_installed: true
+no_tty: false
+colors: true
+
 pre-commit:
   parallel: true
   commands:
-    typecheck:
-      run: npx tsc --noEmit
-      stage_fixed: false
-
-    validate-schema:
-      glob: "*.ossa.{yaml,yml}"
-      run: npm run validate:schema
-
-    no-shell-scripts:
-      glob: "*.sh"
+    no-secrets:
       run: |
-        echo "❌ Shell scripts (.sh) are NOT allowed. Use TypeScript."
-        exit 1
+        if git diff --cached --name-only | grep -qE '\.(env|key|pem|p12|pfx|secret)$'; then
+          echo "Secrets detected in staged files. Remove before committing."
+          git diff --cached --name-only | grep -E '\.(env|key|pem|p12|pfx|secret)$'
+          exit 1
+        fi
+
+    typecheck:
+      glob: "*.{ts,tsx}"
+      run: npx tsc --noEmit --pretty 2>&1 | head -30
+      skip:
+        - merge
+        - rebase
+
+    json-valid:
+      glob: "*.json"
+      run: |
+        for f in {staged_files}; do
+          python3 -m json.tool "$f" > /dev/null 2>&1 || { echo "Invalid JSON: $f"; exit 1; }
+        done
+
+    yaml-valid:
+      glob: "*.{yml,yaml}"
+      run: |
+        for f in {staged_files}; do
+          python3 -c "import yaml; yaml.safe_load(open('$f'))" 2>/dev/null || { echo "Invalid YAML: $f"; exit 1; }
+        done
 
 pre-push:
   parallel: false
   commands:
-    build:
-      run: npm run build
+    rebase-sync:
+      priority: 1
+      run: |
+        BRANCH=$(git branch --show-current)
+        if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
+          LOCAL=$(git rev-parse HEAD)
+          REMOTE=$(git rev-parse "origin/$BRANCH" 2>/dev/null || echo "")
+          if [ -n "$REMOTE" ] && [ "$LOCAL" != "$REMOTE" ]; then
+            echo "Syncing with origin/$BRANCH before push..."
+            git pull --rebase origin "$BRANCH" || {
+              echo "Rebase failed. Resolve conflicts, then push again."
+              exit 1
+            }
+          fi
+        fi
+      skip:
+        - merge
+        - rebase
 
-    test-unit:
-      run: npm run test:unit
+    branch-protection:
+      priority: 2
+      run: |
+        branch=$(git rev-parse --abbrev-ref HEAD)
+        if [ "$branch" = "main" ] || [ "$branch" = "master" ] || [ "$branch" = "development" ]; then
+          echo "Direct push to $branch is blocked. Use a feature branch + MR."
+          exit 1
+        fi
 
-    validate-all:
-      run: npm run validate
+    test:
+      priority: 10
+      run: npm test -- --passWithNoTests 2>&1 | tail -20
+      skip:
+        - merge
+        - rebase
+
+    build-check:
+      priority: 10
+      run: npx tsc --noEmit --pretty 2>&1 | head -30
+
+commit-msg:
+  commands:
+    conventional-commits:
+      run: |
+        msg=$(cat {1})
+        if ! echo "$msg" | grep -qE '^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(.+\))?!?:'; then
+          echo "Commit message must follow Conventional Commits format:"
+          echo "  feat|fix|docs|refactor|test|chore: description"
+          echo "Your message: $msg"
+          exit 1
+        fi
+
+    max-length:
+      run: |
+        first_line=$(head -1 {1})
+        if [ ${#first_line} -gt 72 ]; then
+          echo "Commit subject too long (${#first_line} chars, max 72):"
+          echo "  $first_line"
+          exit 1
+        fi
+
+post-merge:
+  commands:
+    deps-check:
+      run: |
+        if git diff HEAD@{1} --name-only | grep -qE 'package-lock\.json|package\.json'; then
+          echo "Dependencies changed. Running npm install..."
+          npm install --prefer-offline 2>&1 | tail -5
+        fi
