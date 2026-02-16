@@ -63,14 +63,14 @@ class PackageValidator {
     // 1. Validate critical files are included
     this.validateCriticalFiles();
 
-    // 2. Validate required exports exist
-    this.validateRequiredExports();
-
-    // 3. Validate dependencies
+    // 2. Validate dependencies
     await this.validateDependencies();
 
-    // 4. Build package
+    // 3. Build package (must happen before checking exports)
     await this.buildPackage();
+
+    // 4. Validate required exports exist (after build)
+    this.validateRequiredExports();
 
     // 5. Create and test tarball
     await this.validateTarballInstall();
