@@ -30,6 +30,9 @@ pre-commit:
 pre-push:
   parallel: false
   commands:
+    prepublish-check:
+      run: npm run prepublishOnly
+
     build:
       run: npm run build
 
