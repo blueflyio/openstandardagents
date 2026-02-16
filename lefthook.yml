@@ -26,3 +26,6 @@ pre-push:
 
     validate-all:
       run: npm run validate
+
+    validate-deps:
+      run: npm run validate:deps

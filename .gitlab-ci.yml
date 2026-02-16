@@ -50,6 +50,7 @@ include:
   - template: Code-Quality.gitlab-ci.yml
   # Local configs
   - local: '.gitlab/ci/token-rotation.yml'
+  - local: '.gitlab/ci/mirror-github.yml'
 
 # =============================================================================
 # BASE JOB TEMPLATE
@@ -269,6 +270,7 @@ release:npmjs:
 # =============================================================================
 # DEPLOY STAGE - GitLab Release + Observability
 # =============================================================================
+# GitLab release after npm publish (main branch flow)
 deploy:gitlab-release:
   stage: deploy
   image: registry.gitlab.com/gitlab-org/release-cli:latest
@@ -276,19 +278,11 @@ deploy:gitlab-release:
     - job: release:npmjs
       artifacts: true
   before_script:
-    - apk add --no-cache nodejs npm curl
+    - apk add --no-cache nodejs npm
   script:
     - |
       VERSION=$(node -p "require('./package.json').version")
       echo "📋 Creating GitLab release for v${VERSION}..."
-
-      # Send trace to GitLab Observability
-      if [ -n "$GITLAB_OBSERVABILITY_TOKEN" ]; then
-        curl -X POST "${OTEL_EXPORTER_OTLP_ENDPOINT}/v1/traces" \
-          -H "Authorization: Bearer ${GITLAB_OBSERVABILITY_TOKEN}" \
-          -H "Content-Type: application/json" \
-          -d "{\"resourceSpans\":[{\"resource\":{\"attributes\":[{\"key\":\"service.name\",\"value\":{\"stringValue\":\"${OTEL_SERVICE_NAME}\"}}]},\"scopeSpans\":[{\"scope\":{\"name\":\"gitlab-ci\"},\"spans\":[{\"name\":\"npm-publish-${VERSION}\",\"kind\":1,\"status\":{\"code\":1}}]}]}]}"
-      fi
   release:
     tag_name: "v${VERSION}"
     name: "Release v${VERSION}"
@@ -297,16 +291,9 @@ deploy:gitlab-release:
 
       Released to npmjs.org and GitLab Package Registry.
 
-      ### Installation
-
-      **From npmjs.org:**
+      ### Install
       ```bash
       npm install @bluefly/openstandardagents@${VERSION}
-      ```
-
-      **From GitLab Package Registry:**
-      ```bash
-      npm install @bluefly/openstandardagents@${VERSION} --registry=https://gitlab.com/api/v4/projects/76265294/packages/npm/
       ```
 
       ### Links
@@ -314,11 +301,6 @@ deploy:gitlab-release:
       - [GitLab Package](https://gitlab.com/blueflyio/ossa/openstandardagents/-/packages)
       - [GitHub mirror](https://github.com/blueflyio/openstandardagents)
       - [Changelog](https://gitlab.com/blueflyio/ossa/openstandardagents/-/blob/main/CHANGELOG.md)
-
-      ### Artifacts
-      - SBOM (CycloneDX format)
-      - Security scan results
-      - Code quality reports
     assets:
       links:
         - name: "npm package"
@@ -329,44 +311,41 @@ deploy:gitlab-release:
     - if: $CI_COMMIT_BRANCH == "main"
       when: on_success
 
-# =============================================================================
-# SYNC STAGE - Mirror to GitHub (read-only)
-# =============================================================================
-# Replaces GitLab project mirroring setting.
-# GITHUB_TOKEN must be set in CI/CD variables (fine-grained PAT with Contents write).
-# Syncs main + release branch + tags. Runs after deploy or on schedule.
-# =============================================================================
-sync:github:
-  stage: sync
-  image: alpine/git:latest
-  variables:
-    GIT_STRATEGY: clone
-    GIT_DEPTH: 0
-  before_script:
-    - git config user.name "OSSA Release Bot"
-    - git config user.email "release-bot@openstandardagents.org"
+# GitLab release on tag creation (covers RC and stable tags from any branch)
+deploy:gitlab-release-tag:
+  stage: deploy
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  needs: []
   script:
-    - |
-      if [ -z "$GITHUB_TOKEN" ]; then
-        echo "GITHUB_TOKEN not set - skipping GitHub sync"
-        exit 0
-      fi
+    - echo "Creating GitLab release for tag ${CI_COMMIT_TAG}"
+  release:
+    tag_name: "${CI_COMMIT_TAG}"
+    name: "Release ${CI_COMMIT_TAG}"
+    description: |
+      ## OSSA ${CI_COMMIT_TAG}
 
-      GITHUB_URL="https://x-access-token:${GITHUB_TOKEN}@github.com/blueflyio/openstandardagents.git"
+      ### Install
+      ```bash
+      npm install @bluefly/openstandardagents@${CI_COMMIT_TAG#v}
+      ```
 
-      echo "Syncing main to GitHub..."
-      git push "$GITHUB_URL" origin/main:main --force 2>&1 || echo "WARN: main sync failed (non-fatal)"
-
-      echo "Syncing release/v0.4.x to GitHub..."
-      git push "$GITHUB_URL" origin/release/v0.4.x:release/v0.4.x --force 2>&1 || echo "WARN: release sync failed (non-fatal)"
-
-      echo "Syncing tags to GitHub..."
-      git push "$GITHUB_URL" --tags --force 2>&1 || echo "WARN: tag sync failed (non-fatal)"
-
-      echo "GitHub sync complete"
+      ### Links
+      - [npm](https://www.npmjs.com/package/@bluefly/openstandardagents/v/${CI_COMMIT_TAG#v})
+      - [GitLab Package](https://gitlab.com/blueflyio/ossa/openstandardagents/-/packages)
+      - [GitHub mirror](https://github.com/blueflyio/openstandardagents/releases/tag/${CI_COMMIT_TAG})
+      - [Changelog](https://gitlab.com/blueflyio/ossa/openstandardagents/-/blob/main/CHANGELOG.md)
   rules:
-    - if: $CI_COMMIT_BRANCH == "main"
+    # Stable tags: v1.2.3
+    - if: $CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/
       when: on_success
-    - if: $CI_PIPELINE_SOURCE == "schedule"
-      when: always
-  allow_failure: true
+    # RC tags: v1.2.3-rc.N
+    - if: $CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+$/
+      when: on_success
+
+# =============================================================================
+# SYNC STAGE - Defined in .gitlab/ci/mirror-github.yml (included above)
+# =============================================================================
+# Syncs main + release/* branches + stable/RC tags to GitHub
+# Auto-creates GitHub releases for every tag
+# GITHUB_TOKEN must be set in CI/CD variables
+# =============================================================================
