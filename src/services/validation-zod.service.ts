@@ -306,7 +306,7 @@ export class ValidationZodService implements IValidationService {
       return { valid: true, errors: [], warnings: [] };
     }
 
-    for (const [platform, config] of Object.entries(manifest.extensions)) {
+    for (const [platform] of Object.entries(manifest.extensions)) {
       const validator = this.platformValidators.get(platform);
       if (validator) {
         const result = validator.validate(manifest);

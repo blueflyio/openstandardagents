@@ -31,7 +31,7 @@ ossa deploy agent.ossa.yaml --platform kagent --namespace production
 apiVersion: ossa/v0.3.6
 kind: Agent
 metadata:
-  name: my-agent
+  name: creative-agent-naming
 spec:
   role: "You are a helpful assistant"
   llm:
@@ -44,12 +44,12 @@ Generate CRD:
 ossa export agent.ossa.yaml --platform kagent
 ```
 
-Output (`my-agent-crd.yaml`):
+Output (`creative-agent-naming-crd.yaml`):
 ```yaml
 apiVersion: kagent.dev/v1alpha1
 kind: Agent
 metadata:
-  name: my-agent
+  name: creative-agent-naming
 spec:
   systemMessage: "You are a helpful assistant"
   modelConfig:

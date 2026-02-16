@@ -3,7 +3,7 @@
  * Configure and export the DI container
  */
 
-import { Container } from 'inversify';
+import { Container, type Newable } from 'inversify';
 import 'reflect-metadata';
 
 // Repositories
@@ -18,8 +18,8 @@ import { LangChainMigrationService } from './services/migration/langchain-migrat
 import { ValidationService } from './services/validation.service.js';
 import { ValidationZodService } from './services/validation-zod.service.js';
 import { VersionDetectionService } from './services/version-detection.service.js';
-import { AgentsMdService } from './services/agents-md/agents-md.service.js';
 import { RepoAgentsMdService } from './services/agents-md/repo-agents-md.service.js';
+import { AgentsMdService } from './services/agents-md/agents-md.service.js';
 import { TemplateProcessorService } from './services/template-processor.service.js';
 import { LlmsTxtService } from './services/llms-txt/llms-txt.service.js';
 import { TestRunnerService } from './services/test-runner/test-runner.service.js';
@@ -33,7 +33,7 @@ import { TaxonomyValidatorService } from './services/taxonomy-validator.service.
 import { TemplateService } from './services/template.service.js';
 import { RegistryService } from './services/registry.service.js';
 import { WizardService } from './services/wizard/wizard.service.js';
-
+import { AgentTypeDetectorService } from './services/agent-type-detector.service.js';
 // Codegen Service and Generators
 import { CodegenService } from './services/codegen/codegen.service.js';
 import { ManifestGenerator } from './services/codegen/generators/manifest.generator.js';
@@ -57,16 +57,35 @@ import { ConformanceScoreCalculator } from './services/conformance/score-calcula
 import { BundleService } from './services/registry/bundle.service.js';
 import { IndexService } from './services/registry/index.service.js';
 
+// Skills Pipeline Services
+import {
+  SkillsResearchService,
+  SkillsGeneratorService,
+  SkillsExportService,
+} from './services/skills-pipeline/index.js';
+
+// DI Type Identifiers
+export const TYPES = {
+  ManifestRepository: Symbol.for('ManifestRepository'),
+  SchemaRepository: Symbol.for('SchemaRepository'),
+  AgentTypeDetectorService: Symbol.for('AgentTypeDetectorService'),
+};
+
 // Create container
 export const container = new Container();
 
 // Bind repositories
 container.bind(SchemaRepository).toSelf().inSingletonScope();
 container.bind(ManifestRepository).toSelf().inSingletonScope();
+container.bind(TYPES.ManifestRepository).to(ManifestRepository);
 
-// Bind services - Use Zod-based validation (DRY, SOLID, ZOD, OPENAPI-FIRST)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-container.bind(ValidationService).to(ValidationZodService as any);
+// Bind validation: ValidationZodService is the single validation implementation.
+// Both classes implement IValidationService. The Newable cast is required because
+// Inversify's .to() expects a subclass of the bound type, but ValidationZodService
+// is a sibling implementation, not a subclass.
+container
+  .bind(ValidationService)
+  .to(ValidationZodService as unknown as Newable<ValidationService>);
 container.bind(GenerationService).toSelf();
 container.bind(MigrationService).toSelf();
 container.bind(MigrationTransformService).toSelf();
@@ -87,6 +106,8 @@ container.bind(TaxonomyValidatorService).toSelf().inSingletonScope();
 container.bind(TemplateService).toSelf().inSingletonScope();
 container.bind(RegistryService).toSelf().inSingletonScope();
 container.bind(WizardService).toSelf();
+container.bind(AgentTypeDetectorService).toSelf();
+container.bind(TYPES.AgentTypeDetectorService).to(AgentTypeDetectorService);
 
 // Bind codegen generators (must be bound before CodegenService)
 container.bind(ManifestGenerator).toSelf();
@@ -111,6 +132,11 @@ container.bind(ConformanceService).toSelf();
 container.bind(BundleService).toSelf();
 container.bind(IndexService).toSelf();
 
+// Bind skills pipeline services
+container.bind(SkillsResearchService).toSelf();
+container.bind(SkillsGeneratorService).toSelf();
+container.bind(SkillsExportService).toSelf();
+
 /**
  * Get service from container
  * @param serviceIdentifier - Service class or token
@@ -131,8 +157,9 @@ export function resetContainer(): void {
   // Rebind all services
   container.bind(SchemaRepository).toSelf().inSingletonScope();
   container.bind(ManifestRepository).toSelf().inSingletonScope();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  container.bind(ValidationService).to(ValidationZodService as any);
+  container
+    .bind(ValidationService)
+    .to(ValidationZodService as unknown as Newable<ValidationService>);
   container.bind(GenerationService).toSelf();
   container.bind(MigrationService).toSelf();
   container.bind(MigrationTransformService).toSelf();
@@ -158,4 +185,7 @@ export function resetContainer(): void {
   container.bind(ConformanceService).toSelf();
   container.bind(BundleService).toSelf();
   container.bind(IndexService).toSelf();
+  container.bind(SkillsResearchService).toSelf();
+  container.bind(SkillsGeneratorService).toSelf();
+  container.bind(SkillsExportService).toSelf();
 }

@@ -124,7 +124,9 @@ export class VersionManager {
     // Validate version
     const validation = this.validate(version);
     if (!validation.valid) {
-      throw new Error(`Invalid version format: ${validation.errors?.join(', ')}`);
+      throw new Error(
+        `Invalid version format: ${validation.errors?.join(', ')}`
+      );
     }
 
     // Normalize version (add 'v' prefix if not present and original had it)
@@ -214,7 +216,8 @@ export class VersionManager {
 
       if (restoreAll) {
         // Replace all semver patterns with placeholder
-        const semverRegex = /v?\d+\.\d+\.\d+(-[a-zA-Z0-9.]+)?(\+[a-zA-Z0-9.]+)?/g;
+        const semverRegex =
+          /v?\d+\.\d+\.\d+(-[a-zA-Z0-9.]+)?(\+[a-zA-Z0-9.]+)?/g;
         const matches = content.match(semverRegex);
         replacements = matches ? matches.length : 0;
         newContent = content.replace(semverRegex, placeholder);
@@ -334,7 +337,10 @@ export class VersionManager {
         major: parsed.major,
         minor: parsed.minor,
         patch: parsed.patch,
-        prerelease: parsed.prerelease.length > 0 ? parsed.prerelease.join('.') : undefined,
+        prerelease:
+          parsed.prerelease.length > 0
+            ? parsed.prerelease.join('.')
+            : undefined,
         build: parsed.build.length > 0 ? parsed.build.join('.') : undefined,
       },
     };
@@ -356,7 +362,8 @@ export class VersionManager {
     let newVersion: string;
 
     if (bumpType === 'prerelease' && prereleaseIdentifier) {
-      newVersion = semver.inc(cleaned, 'prerelease', prereleaseIdentifier) || '';
+      newVersion =
+        semver.inc(cleaned, 'prerelease', prereleaseIdentifier) || '';
     } else {
       newVersion = semver.inc(cleaned, bumpType) || '';
     }

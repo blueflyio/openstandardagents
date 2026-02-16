@@ -192,204 +192,206 @@ export const lintCommand = new Command('lint')
 addGlobalOptions(lintCommand);
 addQueryOptions(lintCommand);
 lintCommand.action(
-    async (
-      paths: string[],
-      options: {
-        fix?: boolean;
-        rule?: string;
-        format?: string;
-        output?: string;
-        maxWarnings?: string;
-        verbose?: boolean;
-        quiet?: boolean;
-        json?: boolean;
-        color?: boolean;
+  async (
+    paths: string[],
+    options: {
+      fix?: boolean;
+      rule?: string;
+      format?: string;
+      output?: string;
+      maxWarnings?: string;
+      verbose?: boolean;
+      quiet?: boolean;
+      json?: boolean;
+      color?: boolean;
+    }
+  ) => {
+    try {
+      const useColor = shouldUseColor(options);
+      const log = (msg: string, color?: (s: string) => string) => {
+        if (options.quiet) return;
+        const output = useColor && color ? color(msg) : msg;
+        console.log(output);
+      };
+
+      const manifestRepo = container.get(ManifestRepository);
+      const maxWarnings = parseInt(options.maxWarnings || '0', 10);
+
+      // Determine files to lint (using shared utility)
+      const filesToLint = findManifestFilesFromPaths(paths);
+
+      if (filesToLint.length === 0) {
+        log('No OSSA manifest files found', chalk.yellow);
+        process.exit(ExitCode.SUCCESS);
       }
-    ) => {
-      try {
-        const useColor = shouldUseColor(options);
-        const log = (msg: string, color?: (s: string) => string) => {
-          if (options.quiet) return;
-          const output = useColor && color ? color(msg) : msg;
-          console.log(output);
+
+      // Filter rules if specific rule requested
+      const rulesToRun = options.rule
+        ? lintRules.filter((r) => r.id === options.rule)
+        : lintRules;
+
+      if (rulesToRun.length === 0) {
+        if (!options.quiet) {
+          const err = `Unknown rule: ${options.rule}`;
+          console.error(useColor ? chalk.red(err) : err);
+          log('Available rules:', chalk.blue);
+          lintRules.forEach((r) => {
+            log(`  - ${r.id}: ${r.name}`);
+          });
+        }
+        process.exit(ExitCode.MISUSE);
+      }
+
+      // Lint all files
+      const allIssues: Array<LintIssue & { file: string }> = [];
+      for (const file of filesToLint) {
+        try {
+          const manifest = await manifestRepo.load(file);
+          for (const rule of rulesToRun) {
+            const issues = rule.check(manifest);
+            allIssues.push(
+              ...issues.map((issue) => ({
+                ...issue,
+                file,
+              }))
+            );
+          }
+        } catch (error: any) {
+          allIssues.push({
+            rule: 'parse-error',
+            message: `Failed to parse manifest: ${error.message}`,
+            severity: 'error',
+            file,
+          });
+        }
+      }
+
+      // Count issues by severity
+      const errors = allIssues.filter((i) => i.severity === 'error');
+      const warnings = allIssues.filter((i) => i.severity === 'warning');
+      const infos = allIssues.filter((i) => i.severity === 'info');
+
+      // Output results
+      const isJSON = options.json || options.format === 'json';
+      if (isJSON) {
+        const output = {
+          files: filesToLint.length,
+          issues: allIssues.length,
+          errors: errors.length,
+          warnings: warnings.length,
+          infos: infos.length,
+          results: allIssues,
         };
-
-        const manifestRepo = container.get(ManifestRepository);
-        const maxWarnings = parseInt(options.maxWarnings || '0', 10);
-
-        // Determine files to lint (using shared utility)
-        const filesToLint = findManifestFilesFromPaths(paths);
-
-        if (filesToLint.length === 0) {
-          log('No OSSA manifest files found', chalk.yellow);
-          process.exit(ExitCode.SUCCESS);
+        if (options.output) {
+          fs.writeFileSync(options.output, JSON.stringify(output, null, 2));
+          log(`Results written to ${options.output}`, chalk.green);
+        } else {
+          outputJSON(output);
         }
-
-        // Filter rules if specific rule requested
-        const rulesToRun = options.rule
-          ? lintRules.filter((r) => r.id === options.rule)
-          : lintRules;
-
-        if (rulesToRun.length === 0) {
-          if (!options.quiet) {
-            const err = `Unknown rule: ${options.rule}`;
-            console.error(useColor ? chalk.red(err) : err);
-            log('Available rules:', chalk.blue);
-            lintRules.forEach((r) => {
-              log(`  - ${r.id}: ${r.name}`);
-            });
-          }
-          process.exit(ExitCode.MISUSE);
-        }
-
-        // Lint all files
-        const allIssues: Array<LintIssue & { file: string }> = [];
-        for (const file of filesToLint) {
-          try {
-            const manifest = await manifestRepo.load(file);
-            for (const rule of rulesToRun) {
-              const issues = rule.check(manifest);
-              allIssues.push(
-                ...issues.map((issue) => ({
-                  ...issue,
-                  file,
-                }))
-              );
-            }
-          } catch (error: any) {
-            allIssues.push({
-              rule: 'parse-error',
-              message: `Failed to parse manifest: ${error.message}`,
-              severity: 'error',
-              file,
-            });
-          }
-        }
-
-        // Count issues by severity
-        const errors = allIssues.filter((i) => i.severity === 'error');
-        const warnings = allIssues.filter((i) => i.severity === 'warning');
-        const infos = allIssues.filter((i) => i.severity === 'info');
-
-        // Output results
-        const isJSON = options.json || options.format === 'json';
-        if (isJSON) {
-          const output = {
-            files: filesToLint.length,
-            issues: allIssues.length,
-            errors: errors.length,
-            warnings: warnings.length,
-            infos: infos.length,
-            results: allIssues,
-          };
-          if (options.output) {
-            fs.writeFileSync(options.output, JSON.stringify(output, null, 2));
-            log(`Results written to ${options.output}`, chalk.green);
-          } else {
-            outputJSON(output);
-          }
-        } else if (options.format === 'sarif') {
-          // SARIF format for CI integration
-          const sarif = {
-            version: '2.1.0',
-            $schema:
-              'https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json',
-            runs: [
-              {
-                tool: {
-                  driver: {
-                    name: 'OSSA Lint',
-                    version: '0.3.0',
-                  },
+      } else if (options.format === 'sarif') {
+        // SARIF format for CI integration
+        const sarif = {
+          version: '2.1.0',
+          $schema:
+            'https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json',
+          runs: [
+            {
+              tool: {
+                driver: {
+                  name: 'OSSA Lint',
+                  version: '0.3.0',
                 },
-                results: allIssues.map((issue) => ({
-                  ruleId: issue.rule,
-                  level:
-                    issue.severity === 'error'
-                      ? 'error'
-                      : issue.severity === 'warning'
-                        ? 'warning'
-                        : 'note',
-                  message: {
-                    text: issue.message,
-                  },
-                  locations: [
-                    {
-                      physicalLocation: {
-                        artifactLocation: {
-                          uri: issue.file,
-                        },
+              },
+              results: allIssues.map((issue) => ({
+                ruleId: issue.rule,
+                level:
+                  issue.severity === 'error'
+                    ? 'error'
+                    : issue.severity === 'warning'
+                      ? 'warning'
+                      : 'note',
+                message: {
+                  text: issue.message,
+                },
+                locations: [
+                  {
+                    physicalLocation: {
+                      artifactLocation: {
+                        uri: issue.file,
                       },
                     },
-                  ],
-                })),
-              },
-            ],
-          };
-          if (options.output) {
-            fs.writeFileSync(options.output, JSON.stringify(sarif, null, 2));
-            log(`SARIF results written to ${options.output}`, chalk.green);
-          } else {
-            outputJSON(sarif);
-          }
+                  },
+                ],
+              })),
+            },
+          ],
+        };
+        if (options.output) {
+          fs.writeFileSync(options.output, JSON.stringify(sarif, null, 2));
+          log(`SARIF results written to ${options.output}`, chalk.green);
         } else {
-          // Default format
-          log(`\nLinting ${filesToLint.length} file(s)...\n`, chalk.blue);
+          outputJSON(sarif);
+        }
+      } else {
+        // Default format
+        log(`\nLinting ${filesToLint.length} file(s)...\n`, chalk.blue);
 
-          if (allIssues.length === 0) {
-            log('No linting issues found!', chalk.green);
-          } else {
-            // Group by file
-            const byFile = new Map<string, LintIssue[]>();
-            for (const issue of allIssues) {
-              if (!byFile.has(issue.file)) {
-                byFile.set(issue.file, []);
-              }
-              byFile.get(issue.file)!.push(issue);
+        if (allIssues.length === 0) {
+          log('No linting issues found!', chalk.green);
+        } else {
+          // Group by file
+          const byFile = new Map<string, LintIssue[]>();
+          for (const issue of allIssues) {
+            if (!byFile.has(issue.file)) {
+              byFile.set(issue.file, []);
             }
-
-            for (const [file, issues] of byFile) {
-              log(`\n${file}:`, chalk.cyan);
-              for (const issue of issues) {
-                const color =
-                  issue.severity === 'error'
-                    ? chalk.red
-                    : issue.severity === 'warning'
-                      ? chalk.yellow
-                      : chalk.blue;
-                const icon =
-                  issue.severity === 'error'
-                    ? '✗'
-                    : issue.severity === 'warning'
-                      ? '⚠'
-                      : 'ℹ';
-                const issueMsg = `  ${icon} [${issue.rule}] ${issue.message}`;
-                const path = issue.path ? ` (${issue.path})` : '';
-                const fix = issue.fix ? `\n      Fix: ${issue.fix}` : '';
-                const fullMsg = useColor
-                  ? color(issueMsg) + (issue.path ? chalk.gray(path) : '') + (issue.fix ? chalk.gray(fix) : '')
-                  : issueMsg + path + fix;
-                if (!options.quiet) console.log(fullMsg);
-              }
-            }
-
-            log('\nSummary:', chalk.blue);
-            log(`  Errors: ${errors.length}`);
-            log(`  Warnings: ${warnings.length}`);
-            log(`  Info: ${infos.length}`);
+            byFile.get(issue.file)!.push(issue);
           }
-        }
 
-        // Exit with appropriate code
-        if (errors.length > 0) {
-          process.exit(ExitCode.GENERAL_ERROR);
+          for (const [file, issues] of byFile) {
+            log(`\n${file}:`, chalk.cyan);
+            for (const issue of issues) {
+              const color =
+                issue.severity === 'error'
+                  ? chalk.red
+                  : issue.severity === 'warning'
+                    ? chalk.yellow
+                    : chalk.blue;
+              const icon =
+                issue.severity === 'error'
+                  ? '✗'
+                  : issue.severity === 'warning'
+                    ? '⚠'
+                    : 'ℹ';
+              const issueMsg = `  ${icon} [${issue.rule}] ${issue.message}`;
+              const path = issue.path ? ` (${issue.path})` : '';
+              const fix = issue.fix ? `\n      Fix: ${issue.fix}` : '';
+              const fullMsg = useColor
+                ? color(issueMsg) +
+                  (issue.path ? chalk.gray(path) : '') +
+                  (issue.fix ? chalk.gray(fix) : '')
+                : issueMsg + path + fix;
+              if (!options.quiet) console.log(fullMsg);
+            }
+          }
+
+          log('\nSummary:', chalk.blue);
+          log(`  Errors: ${errors.length}`);
+          log(`  Warnings: ${warnings.length}`);
+          log(`  Info: ${infos.length}`);
         }
-        if (warnings.length > maxWarnings) {
-          process.exit(ExitCode.GENERAL_ERROR);
-        }
-        process.exit(ExitCode.SUCCESS);
-      } catch (error) {
-        handleCommandError(error);
       }
+
+      // Exit with appropriate code
+      if (errors.length > 0) {
+        process.exit(ExitCode.GENERAL_ERROR);
+      }
+      if (warnings.length > maxWarnings) {
+        process.exit(ExitCode.GENERAL_ERROR);
+      }
+      process.exit(ExitCode.SUCCESS);
+    } catch (error) {
+      handleCommandError(error);
     }
-  );
+  }
+);

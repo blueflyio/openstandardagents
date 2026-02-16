@@ -43,6 +43,7 @@ export class GitLabDuoAdapter extends BaseAdapter {
   readonly platform = 'gitlab-duo';
   readonly displayName = 'GitLab Duo';
   readonly description = 'GitLab Duo Custom Agent with MCP integration';
+  readonly status = 'alpha' as const;
   readonly supportedVersions = ['v{{VERSION}}'];
 
   /**

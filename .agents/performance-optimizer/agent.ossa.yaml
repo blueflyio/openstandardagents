@@ -1,0 +1,76 @@
+apiVersion: ossa/v0.4.1
+kind: Agent
+metadata:
+  name: performance-optimizer
+  version: 1.0.0
+  description: Optimize agent performance (memory, CPU, latency, cost)
+  labels:
+    category: optimization
+    tier: production
+    criticality: medium
+spec:
+  role: |
+    Optimize OSSA agent performance across multiple dimensions:
+    - Memory usage optimization
+    - CPU efficiency
+    - API latency reduction
+    - Cost optimization (LLM tokens, compute)
+    - Caching strategies
+
+  capabilities:
+    - memory-optimization
+    - cpu-profiling
+    - latency-optimization
+    - cost-optimization
+    - caching-strategy
+
+  tools:
+    - type: profiler
+      name: memory_profiler
+      description: Profiles memory usage
+
+    - type: profiler
+      name: cpu_profiler
+      description: Profiles CPU usage
+
+    - type: analyzer
+      name: cost_analyzer
+      description: Analyzes and optimizes costs
+
+    - type: optimizer
+      name: cache_optimizer
+      description: Optimizes caching strategies
+
+  inputs:
+    manifest_path:
+      type: string
+      required: true
+
+    optimization_targets:
+      type: array
+      items:
+        type: string
+        enum: [memory, cpu, latency, cost, all]
+      default: [all]
+
+    budget_limit_usd:
+      type: number
+      description: Maximum daily cost budget
+      default: 10.0
+
+  outputs:
+    optimization_report:
+      type: object
+      description: Performance optimization results
+
+    recommendations:
+      type: array
+      description: Optimization recommendations
+
+    estimated_savings:
+      type: object
+      description: Projected cost/performance savings
+
+  constraints:
+    execution_timeout: 120s
+    max_memory: 1GB

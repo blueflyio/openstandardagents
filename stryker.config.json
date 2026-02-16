@@ -1,0 +1,48 @@
+{
+  "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+  "_comment": "Stryker Mutation Testing - Production-Grade Test Quality",
+  "packageManager": "npm",
+  "reporters": ["html", "clear-text", "progress", "dashboard"],
+  "testRunner": "jest",
+  "jest": {
+    "projectType": "custom",
+    "configFile": "jest.config.ts",
+    "enableFindRelatedTests": true
+  },
+  "coverageAnalysis": "perTest",
+  "mutate": [
+    "src/**/*.ts",
+    "!src/**/*.d.ts",
+    "!src/**/index.ts",
+    "!src/types/generated/**",
+    "!src/**/*.test.ts",
+    "!src/**/*.spec.ts"
+  ],
+  "thresholds": {
+    "high": 80,
+    "low": 60,
+    "break": 50
+  },
+  "mutator": {
+    "plugins": ["typescript"],
+    "excludedMutations": []
+  },
+  "timeoutMS": 60000,
+  "timeoutFactor": 2,
+  "maxConcurrentTestRunners": 4,
+  "ignorePatterns": [
+    "node_modules",
+    "dist",
+    "coverage",
+    "test-results",
+    ".stryker-tmp"
+  ],
+  "dashboard": {
+    "project": "gitlab.com/blueflyio/ossa/openstandardagents",
+    "version": "release-v0.4.x",
+    "module": "openstandardagents"
+  },
+  "htmlReporter": {
+    "fileName": "mutation-report.html"
+  }
+}

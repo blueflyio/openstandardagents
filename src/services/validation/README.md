@@ -51,7 +51,7 @@ const manifest = {
   apiVersion: 'ossa/v0.3.6',
   kind: 'Agent',
   metadata: {
-    name: 'my-agent',
+    name: 'creative-agent-naming',
     version: '1.0.0',
     description: 'My AI agent',
   },

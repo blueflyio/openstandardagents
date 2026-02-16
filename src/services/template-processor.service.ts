@@ -23,8 +23,10 @@ interface PackageJson {
 
 @injectable()
 export class TemplateProcessorService {
-  private readonly legacyTemplatePath =
-    '/Users/thomas.scola/Sites/blueflyio/AGENTS.md.template';
+  private readonly legacyTemplatePath = path.join(
+    process.cwd(),
+    'AGENTS.md.template'
+  );
 
   /**
    * Process template with variables
@@ -73,11 +75,12 @@ export class TemplateProcessorService {
     const projectType = this.inferProjectType(repoPath, packageJson);
     const wikiUrl = repoUrl ? `${repoUrl}.wiki` : '';
 
-    // Relative path in bare repos structure (with fallback if not in expected structure)
-    const baseBarePath = '/Volumes/AgentPlatform/repos/bare/blueflyio';
+    // Use relative path from cwd if possible
     let repoPathRel = repoPath;
-    if (repoPath.startsWith(baseBarePath)) {
-      repoPathRel = path.relative(baseBarePath, repoPath);
+    try {
+      repoPathRel = path.relative(process.cwd(), repoPath);
+    } catch {
+      // Keep absolute path as fallback
     }
 
     return {

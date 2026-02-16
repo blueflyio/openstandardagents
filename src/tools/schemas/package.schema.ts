@@ -1,6 +1,6 @@
 /**
  * Shared Zod Schemas for Build Scripts
- * 
+ *
  * Follows OpenAPI-first, DRY, and type-safe principles.
  * Single source of truth for package.json and version validation.
  */
@@ -16,18 +16,20 @@ const SemverPattern = /^\d+\.\d+\.\d+(-[a-zA-Z0-9.]+)?$/;
 /**
  * Package.json schema (partial - only fields we use)
  */
-export const PackageJsonSchema = z.object({
-  name: z.string().min(1),
-  version: z.string().regex(SemverPattern, {
-    message: 'Invalid semver version format. Expected: X.Y.Z or X.Y.Z-SUFFIX',
-  }),
-  exports: z
-    .object({
-      './schema': z.string().optional(),
-    })
-    .passthrough()
-    .optional(),
-}).passthrough();
+export const PackageJsonSchema = z
+  .object({
+    name: z.string().min(1),
+    version: z.string().regex(SemverPattern, {
+      message: 'Invalid semver version format. Expected: X.Y.Z or X.Y.Z-SUFFIX',
+    }),
+    exports: z
+      .object({
+        './schema': z.string().optional(),
+      })
+      .passthrough()
+      .optional(),
+  })
+  .passthrough();
 
 /**
  * Version string schema
@@ -72,4 +74,3 @@ export function parsePackageJson(content: string): PackageJson {
     throw error;
   }
 }
-

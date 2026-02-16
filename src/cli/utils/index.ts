@@ -75,3 +75,6 @@ export {
   encodeProjectPath,
   parseGitLabUrl,
 } from './gitlab-config.js';
+
+// Logo utilities
+export { displayLogo } from './logo.js';

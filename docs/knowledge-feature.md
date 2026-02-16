@@ -30,10 +30,10 @@ ossa knowledge index <path> [options]
 
 ```bash
 # Index agent knowledge directory
-ossa knowledge index .agent/agents/my-agent/knowledge
+ossa knowledge index .agent/agents/creative-agent-naming/knowledge
 
 # Index with custom agent name
-ossa knowledge index ./docs --agent my-agent
+ossa knowledge index ./docs --agent creative-agent-naming
 
 # Incremental update (only changed files)
 ossa knowledge index ./docs --incremental
@@ -85,7 +85,7 @@ The `knowledge.json` file contains:
 ```json
 {
   "version": "1.0.0",
-  "agentName": "my-agent",
+  "agentName": "creative-agent-naming",
   "documents": [
     {
       "id": "abc123",
@@ -161,8 +161,8 @@ const client = new QdrantClient({
 Index agent documentation for quick reference:
 
 ```bash
-ossa knowledge index .agent/agents/my-agent/knowledge --agent my-agent
-ossa knowledge query "How do I use this agent?" --knowledge .agent/agents/my-agent/knowledge
+ossa knowledge index .agent/agents/creative-agent-naming/knowledge --agent creative-agent-naming
+ossa knowledge query "How do I use this agent?" --knowledge .agent/agents/creative-agent-naming/knowledge
 ```
 
 ### 2. Project Knowledge Base

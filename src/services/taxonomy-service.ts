@@ -1,6 +1,6 @@
 /**
  * Agent Taxonomy Service
- * OSSA v0.3.6 - Full CRUD operations for agent classification and taxonomy
+ * Agent classification and taxonomy operations
  */
 
 import { v4 as uuidv4 } from 'uuid';

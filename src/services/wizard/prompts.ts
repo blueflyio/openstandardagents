@@ -49,13 +49,13 @@ export const corePrompts: QuestionCollection = [
     type: 'input',
     name: 'name',
     message: 'Agent ID (DNS-1123 format, lowercase alphanumeric with hyphens):',
-    default: 'my-agent',
+    default: 'agent-47',
     validate: (value: string) => {
       if (!value || value.trim().length === 0) {
         return 'Agent ID is required';
       }
       if (!DNS1123_REGEX.test(value)) {
-        return 'Must be DNS-1123 compliant (e.g., "my-agent", "code-reviewer")';
+        return 'Must be DNS-1123 compliant (e.g., "agent-47", "code-reviewer")';
       }
       if (value.length > 253) {
         return 'Must be 253 characters or less';
@@ -128,38 +128,45 @@ export const llmPrompts: QuestionCollection = [
     name: 'model',
     message: 'Select Model:',
     choices: (answers: Partial<WizardAnswers>) => {
-      const modelChoices: Record<string, Array<{ name: string; value: string }>> =
-        {
-          anthropic: [
-            { name: 'Claude Sonnet 4 (recommended)', value: 'claude-sonnet-4-20250514' },
-            { name: 'Claude Opus 4', value: 'claude-opus-4-20250514' },
-            { name: 'Claude Haiku 4', value: 'claude-haiku-4-20250514' },
-          ],
-          openai: [
-            { name: 'GPT-4o (recommended)', value: 'gpt-4o' },
-            { name: 'GPT-4 Turbo', value: 'gpt-4-turbo' },
-            { name: 'GPT-3.5 Turbo', value: 'gpt-3.5-turbo' },
-          ],
-          google: [
-            {
-              name: 'Gemini 2.0 Flash (recommended)',
-              value: 'gemini-2.0-flash-exp',
-            },
-            { name: 'Gemini 1.5 Pro', value: 'gemini-1.5-pro' },
-            { name: 'Gemini 1.5 Flash', value: 'gemini-1.5-flash' },
-          ],
-          mistral: [
-            { name: 'Mistral Large', value: 'mistral-large-latest' },
-            { name: 'Mixtral 8x7B', value: 'mixtral-8x7b-32768' },
-          ],
-          cohere: [
-            { name: 'Command R+', value: 'command-r-plus' },
-            { name: 'Command R', value: 'command-r' },
-          ],
-        };
-      return modelChoices[answers.llm_provider || 'anthropic'] || [
-        { name: 'Default', value: 'default' },
-      ];
+      const modelChoices: Record<
+        string,
+        Array<{ name: string; value: string }>
+      > = {
+        anthropic: [
+          {
+            name: 'Claude Sonnet 4 (recommended)',
+            value: 'claude-sonnet-4-20250514',
+          },
+          { name: 'Claude Opus 4', value: 'claude-opus-4-20250514' },
+          { name: 'Claude Haiku 4', value: 'claude-haiku-4-20250514' },
+        ],
+        openai: [
+          { name: 'GPT-4o (recommended)', value: 'gpt-4o' },
+          { name: 'GPT-4 Turbo', value: 'gpt-4-turbo' },
+          { name: 'GPT-3.5 Turbo', value: 'gpt-3.5-turbo' },
+        ],
+        google: [
+          {
+            name: 'Gemini 2.0 Flash (recommended)',
+            value: 'gemini-2.0-flash-exp',
+          },
+          { name: 'Gemini 1.5 Pro', value: 'gemini-1.5-pro' },
+          { name: 'Gemini 1.5 Flash', value: 'gemini-1.5-flash' },
+        ],
+        mistral: [
+          { name: 'Mistral Large', value: 'mistral-large-latest' },
+          { name: 'Mixtral 8x7B', value: 'mixtral-8x7b-32768' },
+        ],
+        cohere: [
+          { name: 'Command R+', value: 'command-r-plus' },
+          { name: 'Command R', value: 'command-r' },
+        ],
+      };
+      return (
+        modelChoices[answers.llm_provider || 'anthropic'] || [
+          { name: 'Default', value: 'default' },
+        ]
+      );
     },
   },
   {
@@ -185,14 +192,33 @@ export const toolsPrompts: QuestionCollection = [
     name: 'tools',
     message: 'Select tools (space to select, enter to continue):',
     choices: [
-      { name: 'Search (web search capabilities)', value: 'search' },
-      { name: 'File Operations (read/write files)', value: 'file_ops' },
-      { name: 'Web (HTTP requests)', value: 'web' },
-      { name: 'Calculator (math operations)', value: 'calculator' },
-      { name: 'Database (query databases)', value: 'database' },
-      { name: 'API Calls (external APIs)', value: 'api' },
+      // Common Tools
+      { name: 'MCP (Model Context Protocol servers)', value: 'mcp' },
+      { name: 'Function (Local function calls)', value: 'function' },
+      { name: 'HTTP (HTTP endpoints)', value: 'http' },
+      { name: 'API (REST APIs)', value: 'api' },
+      { name: 'Browser (Puppeteer/Playwright automation)', value: 'browser' },
+      { name: 'Library (Reusable logic)', value: 'library' },
+
+      // Event-Driven Tools
+      { name: 'Webhook (Event triggers)', value: 'webhook' },
+      { name: 'Schedule (Cron triggers)', value: 'schedule' },
+      { name: 'Pipeline (CI/CD events)', value: 'pipeline' },
+      { name: 'Workflow (Status changes)', value: 'workflow' },
+
+      // Output Types
+      { name: 'Artifact (File outputs)', value: 'artifact' },
+      { name: 'Git Commit (Commit outputs)', value: 'git-commit' },
+      { name: 'CI Status (Pipeline status)', value: 'ci-status' },
+      { name: 'Comment (MR/issue comments)', value: 'comment' },
+
+      // Advanced Integration
+      { name: 'gRPC (gRPC services)', value: 'grpc' },
+      { name: 'Agent-to-Agent (A2A communication)', value: 'a2a' },
+      { name: 'Kubernetes (K8s API)', value: 'kubernetes' },
+      { name: 'Custom (Custom integration)', value: 'custom' },
     ],
-    default: ['search', 'file_ops'],
+    default: ['mcp', 'function'],
   },
   {
     type: 'list',
@@ -355,7 +381,11 @@ export const allPrompts: QuestionCollection = [
   ...(Array.isArray(toolsPrompts) ? toolsPrompts : [toolsPrompts]),
   ...(Array.isArray(safetyPrompts) ? safetyPrompts : [safetyPrompts]),
   ...(Array.isArray(autonomyPrompts) ? autonomyPrompts : [autonomyPrompts]),
-  ...(Array.isArray(observabilityPrompts) ? observabilityPrompts : [observabilityPrompts]),
-  ...(Array.isArray(extensionsPrompts) ? extensionsPrompts : [extensionsPrompts]),
+  ...(Array.isArray(observabilityPrompts)
+    ? observabilityPrompts
+    : [observabilityPrompts]),
+  ...(Array.isArray(extensionsPrompts)
+    ? extensionsPrompts
+    : [extensionsPrompts]),
   ...(Array.isArray(exportPrompts) ? exportPrompts : [exportPrompts]),
 ];

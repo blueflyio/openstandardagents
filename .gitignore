@@ -124,3 +124,16 @@ __DELETE_LATER/
 .DS_Store
 .AppleDouble
 .LSOverride
+
+# Test artifacts
+json
+*.tgz
+tmp-smoke-test/
+tmp/
+json
+
+# SBOM (generated in CI)
+sbom.json
+sbom-*.json
+*-sbom.json
+gl-sbom-*.cdx.json

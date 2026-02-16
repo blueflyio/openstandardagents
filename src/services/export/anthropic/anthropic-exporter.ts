@@ -8,6 +8,7 @@
  * DRY: Reuses tools-generator and api-generator modules
  */
 
+import { getApiVersion } from '../../../utils/version.js';
 import type {
   PlatformAdapter,
   ExportResult,
@@ -38,7 +39,15 @@ export class AnthropicExporter extends BaseAdapter implements PlatformAdapter {
   readonly displayName = 'Anthropic Claude';
   readonly description =
     'Export OSSA agents to Anthropic Python SDK with FastAPI server';
-  readonly supportedVersions = ['0.3.0', '0.3.3', '0.3.4', '0.3.5', '0.3.6'];
+  readonly status = 'beta' as const;
+  readonly supportedVersions = [
+    '0.3.0',
+    '0.3.3',
+    '0.3.4',
+    '0.3.5',
+    '0.3.6',
+    '0.4.x',
+  ];
 
   /**
    * Export OSSA manifest to Anthropic format
@@ -225,7 +234,7 @@ export class AnthropicExporter extends BaseAdapter implements PlatformAdapter {
    */
   getExample(): OssaAgent {
     return {
-      apiVersion: 'ossa/v0.3.6',
+      apiVersion: getApiVersion(),
       kind: 'Agent',
       metadata: {
         name: 'claude-assistant',
@@ -269,8 +278,7 @@ export class AnthropicExporter extends BaseAdapter implements PlatformAdapter {
     tools: AnthropicTool[]
   ): string {
     const agentName = manifest.metadata?.name || 'anthropic-agent';
-    const model =
-      manifest.spec?.llm?.model || 'claude-3-5-sonnet-20241022';
+    const model = manifest.spec?.llm?.model || 'claude-3-5-sonnet-20241022';
     const systemPrompt = manifest.spec?.role || 'You are a helpful assistant.';
     const temperature = manifest.spec?.llm?.temperature ?? 1.0;
     const maxTokens = manifest.spec?.llm?.maxTokens || 1024;
@@ -387,7 +395,9 @@ class AnthropicAgent:
             "stop_reason": response.stop_reason
         }
 
-    ${hasTools ? `def _handle_tool_use(self, response, messages: List[Dict[str, Any]]) -> Dict[str, Any]:
+    ${
+      hasTools
+        ? `def _handle_tool_use(self, response, messages: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
         Handle tool use in Claude's response.
 
@@ -446,7 +456,9 @@ class AnthropicAgent:
             },
             "stop_reason": final_response.stop_reason
         }
-` : ''}
+`
+        : ''
+    }
     def reset_history(self):
         """Clear conversation history"""
         self.conversation_history = []
@@ -522,10 +534,7 @@ MAX_TOKENS=${manifest.spec?.llm?.maxTokens || 1024}
   /**
    * Generate README.md
    */
-  private generateReadme(
-    manifest: OssaAgent,
-    tools: AnthropicTool[]
-  ): string {
+  private generateReadme(manifest: OssaAgent, tools: AnthropicTool[]): string {
     const agentName = manifest.metadata?.name || 'Anthropic Agent';
     const description =
       manifest.metadata?.description || 'Claude-powered AI agent';
@@ -644,10 +653,7 @@ This agent was generated from an OSSA manifest using the Anthropic exporter.
   /**
    * Generate test file
    */
-  private generateTests(
-    manifest: OssaAgent,
-    tools: AnthropicTool[]
-  ): string {
+  private generateTests(manifest: OssaAgent, tools: AnthropicTool[]): string {
     return `"""
 Tests for ${manifest.metadata?.name || 'agent'}
 """
@@ -682,7 +688,10 @@ def test_conversation_history():
    * Escape string for Python code generation
    */
   private escapeString(str: string): string {
-    return str.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n');
+    return str
+      .replace(/\\/g, '\\\\')
+      .replace(/"/g, '\\"')
+      .replace(/\n/g, '\\n');
   }
 }
 

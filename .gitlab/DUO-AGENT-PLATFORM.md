@@ -60,7 +60,7 @@ Create a test OSSA manifest:
 
 ```bash
 # Create a sample agent
-cat > my-agent.ossa.yaml <<EOF
+cat > creative-agent-naming.ossa.yaml <<EOF
 apiVersion: ossa/v0.3
 kind: Agent
 metadata:
@@ -75,7 +75,7 @@ spec:
 EOF
 
 # Commit and push
-git add my-agent.ossa.yaml
+git add creative-agent-naming.ossa.yaml
 git commit -m "feat: add test agent"
 git push
 ```
@@ -389,7 +389,7 @@ A: To create a tier_1_read agent, use this template:
 apiVersion: ossa/v0.3
 kind: Agent
 metadata:
-  name: my-agent
+  name: creative-agent-naming
   version: 1.0.0
   description: "Your agent description"
 spec:
@@ -539,7 +539,7 @@ validate:ossa:
 3. Try lowering validation level (strict → normal → permissive)
 4. Validate manually:
    ```bash
-   npx @bluefly/compliance-engine validate-ossa my-agent.ossa.yaml
+   npx @bluefly/compliance-engine validate-ossa creative-agent-naming.ossa.yaml
    ```
 
 ### Too Many False Positives
@@ -608,7 +608,7 @@ include:
 apiVersion: ossa/v0.3.0
 kind: Agent
 metadata:
-  name: my-agent
+  name: creative-agent-naming
 spec:
   permissions:
     - read
@@ -618,7 +618,7 @@ spec:
 apiVersion: ossa/v0.3
 kind: Agent
 metadata:
-  name: my-agent
+  name: creative-agent-naming
   version: 1.0.0  # Required in v0.3.3
   description: "Agent description"  # Required in v0.3.3
 spec:

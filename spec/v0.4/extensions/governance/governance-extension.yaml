@@ -1,0 +1,161 @@
+# OSSA Agent Manifest Schema Extension - Governance
+
+governance:
+  type: object
+  description: |
+    Governance configuration for agent authorization and quality gates.
+
+    Implementation-agnostic: any governance provider (Cedar, OPA, custom)
+    can consume this configuration.
+
+  properties:
+    authorization:
+      type: object
+      description: Authorization requirements for this agent
+      properties:
+        clearance_level:
+          type: integer
+          description: |
+            Required clearance level (0-5)
+
+            Levels:
+            - 0: Public access (read-only)
+            - 1: Junior agent (low-risk tools)
+            - 2: Standard agent (medium-risk tools)
+            - 3: Senior agent (high-risk tools)
+            - 4: Principal agent (critical tools)
+            - 5: System agent (unrestricted)
+          minimum: 0
+          maximum: 5
+          default: 1
+
+        tool_permissions:
+          type: array
+          description: Required tool access permissions
+          items:
+            type: object
+            required: [tool, risk_level]
+            properties:
+              tool:
+                type: string
+                description: Tool identifier (e.g., "gitlab_api", "llm_inference")
+              risk_level:
+                type: string
+                enum: [low, medium, high, critical]
+                description: |
+                  Risk classification:
+                  - low: Read-only, no side effects
+                  - medium: Write operations, reversible
+                  - high: Destructive operations, requires review
+                  - critical: System-level, requires approval
+              requires_approval:
+                type: boolean
+                default: false
+                description: Requires human approval before execution
+
+        policy_references:
+          type: array
+          description: External policy IDs (implementation-specific)
+          items:
+            type: string
+            pattern: '^[a-zA-Z0-9-_]+$'
+          examples:
+            - agent-tool-001
+            - mr-review-policy
+
+    quality_requirements:
+      type: object
+      description: Quality metrics and thresholds for deployment gates
+      properties:
+        confidence_threshold:
+          type: integer
+          minimum: 0
+          maximum: 100
+          default: 70
+          description: |
+            Minimum confidence score required (percentage)
+
+            Recommended thresholds:
+            - Production: 90-95%
+            - Staging: 70-85%
+            - Development: 50-70%
+
+        test_coverage_threshold:
+          type: integer
+          minimum: 0
+          maximum: 100
+          default: 60
+          description: Minimum test coverage percentage
+
+        security_score_threshold:
+          type: integer
+          minimum: 0
+          maximum: 100
+          default: 70
+          description: Minimum security scan score
+
+        max_vulnerability_count:
+          type: integer
+          minimum: 0
+          default: 0
+          description: Maximum allowed vulnerabilities (production should be 0)
+
+    compliance:
+      type: object
+      description: Compliance and regulatory requirements
+      properties:
+        frameworks:
+          type: array
+          description: Required compliance frameworks
+          items:
+            type: string
+            enum: [SOC2, HIPAA, GDPR, PCI-DSS]
+          examples:
+            - SOC2
+            - HIPAA
+
+        data_classification:
+          type: string
+          enum: [public, internal, confidential, restricted]
+          default: internal
+          description: |
+            Data classification level:
+            - public: Publicly available data
+            - internal: Company-internal data
+            - confidential: Sensitive business data
+            - restricted: Highly sensitive (PII, PHI, PCI)
+
+        audit_logging_required:
+          type: boolean
+          default: false
+          description: Requires audit logging for all actions
+
+# Example usage in agent manifest
+example:
+  apiVersion: v0.4.1
+  kind: Agent
+  metadata:
+    name: mr-reviewer
+  spec:
+    governance:
+      authorization:
+        clearance_level: 2
+        tool_permissions:
+          - tool: gitlab_api
+            risk_level: medium
+          - tool: llm_inference
+            risk_level: low
+        policy_references:
+          - agent-tool-001
+          - mr-review-policy
+
+      quality_requirements:
+        confidence_threshold: 85
+        test_coverage_threshold: 80
+        security_score_threshold: 90
+        max_vulnerability_count: 0
+
+      compliance:
+        frameworks: [SOC2]
+        data_classification: internal
+        audit_logging_required: true

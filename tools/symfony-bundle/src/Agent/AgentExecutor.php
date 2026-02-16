@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace Ossa\SymfonyBundle\Agent;
 
+use Ossa\SymfonyBundle\Event\AgentExecutionCompleteEvent;
+use Ossa\SymfonyBundle\Event\AgentExecutionErrorEvent;
+use Ossa\SymfonyBundle\Event\AgentExecutionStartEvent;
 use Ossa\SymfonyBundle\LLM\LLMProviderFactory;
 use Ossa\SymfonyBundle\Model\Agent;
 use Ossa\SymfonyBundle\Model\AgentResponse;
 use Psr\Log\LoggerInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Agent Executor
@@ -19,7 +23,8 @@ class AgentExecutor
     public function __construct(
         private readonly AgentRegistry $registry,
         private readonly LLMProviderFactory $llmFactory,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
+        private readonly EventDispatcherInterface $eventDispatcher
     ) {
     }
 
@@ -29,13 +34,11 @@ class AgentExecutor
     public function execute(string $agentName, string $input, array $context = []): AgentResponse
     {
         $agent = $this->registry->get($agentName);
-
-        $this->logger->info('Executing agent', [
-            'agent' => $agentName,
-            'input_length' => strlen($input),
-        ]);
-
         $startTime = microtime(true);
+
+        // Dispatch start event
+        $startEvent = new AgentExecutionStartEvent($agent, $input, $context, $startTime);
+        $this->eventDispatcher->dispatch($startEvent);
 
         try {
             // Get LLM provider
@@ -53,32 +56,30 @@ class AgentExecutor
                 maxTokens: $llmConfig['max_tokens'] ?? null
             );
 
-            $duration = microtime(true) - $startTime;
+            $endTime = microtime(true);
 
-            $this->logger->info('Agent execution completed', [
-                'agent' => $agentName,
-                'duration_ms' => round($duration * 1000, 2),
-                'tokens' => $response['usage'] ?? null,
-            ]);
-
-            return new AgentResponse(
+            $agentResponse = new AgentResponse(
                 agentName: $agentName,
                 output: $response['content'],
                 metadata: [
-                    'duration_ms' => round($duration * 1000, 2),
+                    'duration_ms' => round(($endTime - $startTime) * 1000, 2),
                     'model' => $llmConfig['model'] ?? null,
                     'provider' => $llmConfig['provider'] ?? null,
                     'usage' => $response['usage'] ?? [],
                 ]
             );
-        } catch (\Exception $e) {
-            $duration = microtime(true) - $startTime;
 
-            $this->logger->error('Agent execution failed', [
-                'agent' => $agentName,
-                'duration_ms' => round($duration * 1000, 2),
-                'error' => $e->getMessage(),
-            ]);
+            // Dispatch complete event
+            $completeEvent = new AgentExecutionCompleteEvent($agent, $agentResponse, $startTime, $endTime);
+            $this->eventDispatcher->dispatch($completeEvent);
+
+            return $agentResponse;
+        } catch (\Throwable $e) {
+            $errorTime = microtime(true);
+
+            // Dispatch error event
+            $errorEvent = new AgentExecutionErrorEvent($agent, $e, $input, $context, $startTime, $errorTime);
+            $this->eventDispatcher->dispatch($errorEvent);
 
             throw $e;
         }

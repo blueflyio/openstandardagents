@@ -2,13 +2,13 @@
 
 /**
  * GitLab Issue Creation Helper (Zod Edition)
- * 
+ *
  * Creates GitLab issues via API with proper validation and error handling.
  * Uses Zod for runtime validation and type safety.
- * 
+ *
  * Usage:
  *   npx tsx src/tools/gitlab/create-issue-helper.ts <title> <milestone-id> <labels> [description-file]
- * 
+ *
  * Example:
  *   npx tsx scripts/create-issue-helper.ts "Enhance bin" 3 "enhancement,cli,bin" .gitlab/ISSUE-BIN-ENHANCEMENT.md
  */
@@ -30,7 +30,10 @@ const ConfigSchema = z.object({
   gitlabToken: z.string().min(1, 'GitLab token is required'),
   projectId: z.string().min(1, 'Project ID is required'),
   title: z.string().min(1, 'Title is required'),
-  milestoneId: z.number().int().positive('Milestone ID must be a positive integer'),
+  milestoneId: z
+    .number()
+    .int()
+    .positive('Milestone ID must be a positive integer'),
   labels: z.array(z.string().min(1)).min(1, 'At least one label is required'),
   description: z.string().optional(),
 });
@@ -57,15 +60,19 @@ type GitLabErrorResponse = z.infer<typeof GitLabErrorResponseSchema>;
 
 function getConfig(): Config {
   const args = process.argv.slice(2);
-  
+
   if (args.length < 3) {
-    console.error('❌ Usage: tsx src/tools/gitlab/create-issue-helper.ts <title> <milestone-id> <labels> [description-file]');
-    console.error('   Example: tsx src/tools/gitlab/create-issue-helper.ts "Enhance bin" 3 "enhancement,cli,bin" .gitlab/ISSUE-BIN-ENHANCEMENT.md');
+    console.error(
+      '❌ Usage: tsx src/tools/gitlab/create-issue-helper.ts <title> <milestone-id> <labels> [description-file]'
+    );
+    console.error(
+      '   Example: tsx src/tools/gitlab/create-issue-helper.ts "Enhance bin" 3 "enhancement,cli,bin" .gitlab/ISSUE-BIN-ENHANCEMENT.md'
+    );
     process.exit(1);
   }
 
   const [title, milestoneIdStr, labelsStr, descFile] = args;
-  
+
   // Parse milestone ID
   const milestoneId = parseInt(milestoneIdStr, 10);
   if (isNaN(milestoneId) || milestoneId <= 0) {
@@ -74,7 +81,10 @@ function getConfig(): Config {
   }
 
   // Parse labels
-  const labels = labelsStr.split(',').map(l => l.trim()).filter(l => l.length > 0);
+  const labels = labelsStr
+    .split(',')
+    .map((l) => l.trim())
+    .filter((l) => l.length > 0);
   if (labels.length === 0) {
     console.error(`❌ No valid labels provided: ${labelsStr}`);
     process.exit(1);
@@ -83,7 +93,9 @@ function getConfig(): Config {
   // Read description file if provided
   let description: string | undefined;
   if (descFile) {
-    const descPath = path.isAbsolute(descFile) ? descFile : path.join(process.cwd(), descFile);
+    const descPath = path.isAbsolute(descFile)
+      ? descFile
+      : path.join(process.cwd(), descFile);
     if (!fs.existsSync(descPath)) {
       console.error(`❌ Description file not found: ${descPath}`);
       process.exit(1);
@@ -92,11 +104,12 @@ function getConfig(): Config {
   }
 
   // Get GitLab token (try multiple sources)
-  const gitlabToken = process.env.SERVICE_ACCOUNT_OSSA_TOKEN ||
-                      process.env.SERVICE_ACCOUNT_VERSION_MANAGER_TOKEN ||
-                      process.env.GITLAB_TOKEN ||
-                      process.env.GITLAB_PUSH_TOKEN ||
-                      '';
+  const gitlabToken =
+    process.env.SERVICE_ACCOUNT_OSSA_TOKEN ||
+    process.env.SERVICE_ACCOUNT_VERSION_MANAGER_TOKEN ||
+    process.env.GITLAB_TOKEN ||
+    process.env.GITLAB_PUSH_TOKEN ||
+    '';
 
   if (!gitlabToken) {
     console.error('❌ No GitLab token found. Please set one of:');
@@ -108,14 +121,16 @@ function getConfig(): Config {
   }
 
   // Get project ID
-  const projectId = process.env.CI_PROJECT_ID || 
-                    process.env.GITLAB_PROJECT_ID ||
-                    'blueflyio/openstandardagents';
+  const projectId =
+    process.env.CI_PROJECT_ID ||
+    process.env.GITLAB_PROJECT_ID ||
+    'blueflyio/openstandardagents';
 
   // Get API URL
-  const gitlabApiUrl = process.env.CI_API_V4_URL ||
-                       process.env.GITLAB_API_URL ||
-                       'https://gitlab.com/api/v4';
+  const gitlabApiUrl =
+    process.env.CI_API_V4_URL ||
+    process.env.GITLAB_API_URL ||
+    'https://gitlab.com/api/v4';
 
   try {
     return ConfigSchema.parse({
@@ -134,7 +149,10 @@ function getConfig(): Config {
         console.error(`   • ${issue.path.join('.')}: ${issue.message}`);
       });
     } else {
-      console.error('❌ Configuration error:', error instanceof Error ? error.message : String(error));
+      console.error(
+        '❌ Configuration error:',
+        error instanceof Error ? error.message : String(error)
+      );
     }
     process.exit(1);
   }
@@ -179,9 +197,13 @@ async function createIssue(config: Config): Promise<GitLabIssueResponse> {
       const errorData = GitLabErrorResponseSchema.safeParse(responseData);
       if (errorData.success) {
         const error = errorData.data;
-        throw new Error(`GitLab API error: ${error.message || error.error || responseText}`);
+        throw new Error(
+          `GitLab API error: ${error.message || error.error || responseText}`
+        );
       }
-      throw new Error(`GitLab API error (HTTP ${response.status}): ${responseText}`);
+      throw new Error(
+        `GitLab API error (HTTP ${response.status}): ${responseText}`
+      );
     }
 
     // Validate response
@@ -208,31 +230,38 @@ async function main(): Promise<void> {
   console.log('==============================================\n');
 
   const config = getConfig();
-  
+
   console.log(`📋 Configuration:`);
   console.log(`   Project: ${config.projectId}`);
   console.log(`   Title: ${config.title}`);
   console.log(`   Milestone: #${config.milestoneId}`);
   console.log(`   Labels: ${config.labels.join(', ')}`);
-  console.log(`   Description: ${config.description ? `${config.description.length} chars` : 'none'}`);
+  console.log(
+    `   Description: ${config.description ? `${config.description.length} chars` : 'none'}`
+  );
   console.log('');
 
   try {
     const issue = await createIssue(config);
-    
+
     console.log('✅ Issue created successfully!');
     console.log(`   Issue: !${issue.iid}`);
     console.log(`   URL: ${issue.web_url}`);
     console.log(`   State: ${issue.state}`);
   } catch (error) {
-    console.error('❌ Failed to create issue:', error instanceof Error ? error.message : String(error));
+    console.error(
+      '❌ Failed to create issue:',
+      error instanceof Error ? error.message : String(error)
+    );
     process.exit(1);
   }
 }
 
 // Run
 main().catch((error) => {
-  console.error('❌ Fatal error:', error instanceof Error ? error.message : String(error));
+  console.error(
+    '❌ Fatal error:',
+    error instanceof Error ? error.message : String(error)
+  );
   process.exit(1);
 });
-

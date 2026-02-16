@@ -1,9 +1,9 @@
 #!/usr/bin/env tsx
 /**
  * Verify npmjs.org Authentication Token
- * 
+ *
  * Tests if NPM_TOKEN is valid and has publish permissions
- * 
+ *
  * Usage:
  *   NPM_TOKEN=<token> tsx src/tools/verify-npm-auth.ts
  *   OR
@@ -31,7 +31,9 @@ if (!token.startsWith('npm_')) {
   console.error('ERROR: Token must start with "npm_"');
   console.error('Current token format:', token.substring(0, 10) + '...');
   console.error('');
-  console.error('Create token at: https://www.npmjs.com/settings/blueflyio/tokens');
+  console.error(
+    'Create token at: https://www.npmjs.com/settings/blueflyio/tokens'
+  );
   process.exit(1);
 }
 
@@ -42,7 +44,7 @@ async function verifyToken() {
   const fs = await import('fs');
   const os = await import('os');
   const path = await import('path');
-  
+
   const npmrcPath = path.join(os.tmpdir(), '.npmrc-verify');
   fs.writeFileSync(npmrcPath, `//registry.npmjs.org/:_authToken=${token}\n`);
 
@@ -50,12 +52,15 @@ async function verifyToken() {
     // Test with npm whoami
     const { execSync } = await import('child_process');
     const npmPath = process.env.npm_execpath || 'npm';
-    
-    const result = execSync(`${npmPath} whoami --registry=https://registry.npmjs.org`, {
-      env: { ...process.env, NPM_CONFIG_USERCONFIG: npmrcPath },
-      encoding: 'utf8',
-      stdio: 'pipe',
-    });
+
+    const result = execSync(
+      `${npmPath} whoami --registry=https://registry.npmjs.org`,
+      {
+        env: { ...process.env, NPM_CONFIG_USERCONFIG: npmrcPath },
+        encoding: 'utf8',
+        stdio: 'pipe',
+      }
+    );
 
     const username = result.trim();
     console.log('✅ Token is valid!');
@@ -78,11 +83,16 @@ async function verifyToken() {
     fs.unlinkSync(npmrcPath);
     process.exit(0);
   } catch (error: unknown) {
-    const err = error as { status?: number; message?: string; stdout?: string; stderr?: string };
-    
+    const err = error as {
+      status?: number;
+      message?: string;
+      stdout?: string;
+      stderr?: string;
+    };
+
     console.error('❌ Token verification failed!');
     console.error('');
-    
+
     if (err.stderr?.includes('401') || err.stderr?.includes('Unauthorized')) {
       console.error('ERROR: Token is invalid or expired');
       console.error('');
@@ -96,13 +106,18 @@ async function verifyToken() {
       console.error('');
       console.error('  3. Copy the new token (starts with npm_)');
       console.error('  4. Update NPM_TOKEN in GitLab CI/CD variables');
-    } else if (err.stderr?.includes('403') || err.stderr?.includes('Forbidden')) {
+    } else if (
+      err.stderr?.includes('403') ||
+      err.stderr?.includes('Forbidden')
+    ) {
       console.error('ERROR: Token lacks publish permissions');
       console.error('');
       console.error('Solution:');
       console.error('  1. Token must have "publish" scope');
       console.error('  2. For Granular tokens: Select "publish" permission');
-      console.error('  3. For Automation tokens: They have full access by default');
+      console.error(
+        '  3. For Automation tokens: They have full access by default'
+      );
       console.error('  4. Create new token with correct permissions');
     } else {
       console.error('Error:', err.message || String(error));
@@ -119,7 +134,7 @@ async function verifyToken() {
     } catch {
       // Ignore cleanup errors
     }
-    
+
     process.exit(1);
   }
 }

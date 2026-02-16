@@ -1,0 +1,295 @@
+ossa: 0.4.1
+metadata:
+  name: mr-reviewer
+  namespace: blueflyio
+  version: 1.0.0
+  description: >
+    Comprehensive MR review agent that analyzes code quality, architecture,
+    security, and performance. Posts detailed review comments and auto-approves
+    if all checks pass.
+  author: BlueFly Platform Team
+  license: MIT
+  tags:
+    - gitlab
+    - mr-review
+    - code-quality
+    - automated-review
+  annotations:
+    gitlab.com/service-account: mr-reviewer
+    gitlab.com/gate-level: "3"
+    gitlab.com/webhook-event: merge_requests_events
+
+spec:
+  type: service-account
+  platform: gitlab
+  runtime:
+    type: webhook
+    port: 9090
+    path: /webhook/mr-reviewer
+
+  triggers:
+    - type: webhook
+      event: merge_requests_events
+      description: Triggered when MR is opened or updated
+      filter:
+        action:
+          - opened
+          - reopened
+          - updated
+      variables:
+        - MR_IID: "${merge_request_iid}"
+        - PROJECT_ID: "${project_id}"
+        - SOURCE_BRANCH: "${source_branch}"
+        - TARGET_BRANCH: "${target_branch}"
+
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-5
+    maxTokens: 16384
+    temperature: 0.2
+    systemPrompt: |
+      You are an expert code reviewer for the OSSA project.
+
+      Review criteria:
+      1. Code Quality
+         - DRY principle violations
+         - SOLID principle adherence
+         - Complexity (cyclomatic, cognitive)
+         - Code smells
+
+      2. Architecture
+         - API-First pattern compliance
+         - Dependency injection usage
+         - Module boundaries
+         - Type safety
+
+      3. Security
+         - Credentials in code
+         - SQL injection risks
+         - XSS vulnerabilities
+         - Dependency vulnerabilities
+
+      4. Performance
+         - N+1 queries
+         - Memory leaks
+         - Inefficient algorithms
+         - Bundle size impact
+
+      5. Production-Grade
+         - Structured logging (Pino)
+         - Error handling (OssaError)
+         - Configuration externalization
+         - Test coverage
+
+      Provide:
+      - Clear, actionable feedback
+      - Code examples for improvements
+      - Severity ratings (critical, high, medium, low)
+      - Blocking vs non-blocking issues
+
+  tools:
+    - name: getMRChanges
+      description: Get all file changes in the MR
+      parameters:
+        projectId: string
+        mrIid: number
+      returns:
+        type: array
+
+    - name: runAudit
+      description: Run production-grade audit on changed files
+      parameters:
+        projectId: string
+        mrIid: number
+      returns:
+        type: object
+        properties:
+          score: number
+          violations: array
+
+    - name: runSecurityScan
+      description: Run security scan on dependencies
+      parameters:
+        projectId: string
+        branch: string
+      returns:
+        type: object
+
+    - name: postMRComment
+      description: Post review comment to MR
+      parameters:
+        projectId: string
+        mrIid: number
+        body: string
+      returns:
+        type: object
+
+    - name: approveMR
+      description: Approve the merge request
+      parameters:
+        projectId: string
+        mrIid: number
+      returns:
+        type: object
+
+    - name: blockMR
+      description: Block MR with required changes
+      parameters:
+        projectId: string
+        mrIid: number
+        reason: string
+      returns:
+        type: object
+
+  workflow:
+    steps:
+      - id: fetch-changes
+        name: Fetch MR Changes
+        action: tool-invoke
+        tool: getMRChanges
+        params:
+          projectId: "${PROJECT_ID}"
+          mrIid: "${MR_IID}"
+        output: changes
+
+      - id: run-audit
+        name: Run Production-Grade Audit
+        action: tool-invoke
+        tool: runAudit
+        params:
+          projectId: "${PROJECT_ID}"
+          mrIid: "${MR_IID}"
+        output: auditResult
+
+      - id: security-scan
+        name: Run Security Scan
+        action: tool-invoke
+        tool: runSecurityScan
+        params:
+          projectId: "${PROJECT_ID}"
+          branch: "${SOURCE_BRANCH}"
+        output: securityResult
+
+      - id: llm-review
+        name: Comprehensive Code Review
+        action: llm-invoke
+        input: |
+          Review this merge request:
+
+          Changes:
+          ${JSON.stringify(changes, null, 2)}
+
+          Audit Results:
+          Score: ${auditResult.score}/100
+          Violations: ${auditResult.violations.length}
+
+          Security Scan:
+          ${JSON.stringify(securityResult, null, 2)}
+
+          Provide comprehensive review in JSON:
+          {
+            "summary": "Brief overview",
+            "score": number (0-100),
+            "blocking_issues": [
+              {
+                "severity": "critical",
+                "category": "security|quality|architecture|performance",
+                "file": "path",
+                "line": number,
+                "issue": "description",
+                "suggestion": "how to fix"
+              }
+            ],
+            "non_blocking_issues": [...],
+            "improvements": [...],
+            "positive_points": [...],
+            "recommendation": "approve|changes_required|hold"
+          }
+        output: review
+
+      - id: post-review
+        name: Post Review Comment
+        action: tool-invoke
+        tool: postMRComment
+        params:
+          projectId: "${PROJECT_ID}"
+          mrIid: "${MR_IID}"
+          body: |
+            ## 🤖 Agent Review Summary
+
+            **Production-Grade Score**: ${auditResult.score}/100
+
+            **Recommendation**: ${review.recommendation === 'approve' ? '✅ Approve' : '⚠️ Changes Required'}
+
+            ### Summary
+            ${review.summary}
+
+            ${review.blocking_issues.length > 0 ? `
+            ### 🚫 Blocking Issues
+            ${review.blocking_issues.map(i => `
+            **${i.severity.toUpperCase()}**: ${i.category}
+            - File: \`${i.file}:${i.line}\`
+            - Issue: ${i.issue}
+            - Fix: ${i.suggestion}
+            `).join('\n')}
+            ` : ''}
+
+            ${review.non_blocking_issues.length > 0 ? `
+            ### ⚠️ Non-Blocking Issues
+            ${review.non_blocking_issues.map(i => `
+            - **${i.category}**: ${i.issue} (\`${i.file}\`)
+            `).join('\n')}
+            ` : ''}
+
+            ${review.improvements.length > 0 ? `
+            ### 💡 Suggested Improvements
+            ${review.improvements.map(i => `- ${i}`).join('\n')}
+            ` : ''}
+
+            ${review.positive_points.length > 0 ? `
+            ### ✅ Positive Points
+            ${review.positive_points.map(p => `- ${p}`).join('\n')}
+            ` : ''}
+
+            ---
+            🔗 [Full Audit Report](${CI_PROJECT_URL}/-/merge_requests/${MR_IID}/pipelines) | 🤖 Reviewed by: mr-reviewer
+        output: commentPosted
+
+      - id: approve-mr
+        name: Approve MR
+        condition: "review.recommendation === 'approve' && review.blocking_issues.length === 0"
+        action: tool-invoke
+        tool: approveMR
+        params:
+          projectId: "${PROJECT_ID}"
+          mrIid: "${MR_IID}"
+        output: approved
+
+      - id: block-mr
+        name: Block MR
+        condition: "review.blocking_issues.length > 0"
+        action: tool-invoke
+        tool: blockMR
+        params:
+          projectId: "${PROJECT_ID}"
+          mrIid: "${MR_IID}"
+          reason: "Blocking issues found - see review comment"
+        output: blocked
+
+  thresholds:
+    autoApprove:
+      minimumScore: 70
+      maxBlockingIssues: 0
+      maxCriticalSecurity: 0
+
+extensions:
+  gitlab:
+    serviceAccount: mr-reviewer
+    permissions:
+      - read_code
+      - write_comments
+      - approve_merge_requests
+    webhook:
+      url: http://api.blueflyagents.com/webhook/mr-reviewer
+      events:
+        - merge_requests_events

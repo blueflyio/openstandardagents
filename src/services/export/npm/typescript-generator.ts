@@ -226,7 +226,9 @@ export interface LLMConfig {
   maxTokens: number;
 }
 
-${this.hasTools(spec) ? `
+${
+  this.hasTools(spec)
+    ? `
 /**
  * Tool metadata
  */
@@ -234,7 +236,9 @@ export interface ToolMetadata {
   name: string;
   description: string;
 }
-` : ''}
+`
+    : ''
+}
 
 /**
  * Error types
@@ -283,9 +287,15 @@ ${toolExports}
     // Generate each tool file
     for (const tool of tools) {
       const toolName = typeof tool === 'string' ? tool : tool.name;
-      const toolDesc = typeof tool === 'object' && tool.description ? tool.description : `${toolName} tool`;
+      const toolDesc =
+        typeof tool === 'object' && tool.description
+          ? tool.description
+          : `${toolName} tool`;
 
-      files[`${toolName}.ts`] = this.generateToolImplementation(toolName, toolDesc);
+      files[`${toolName}.ts`] = this.generateToolImplementation(
+        toolName,
+        toolDesc
+      );
     }
 
     return files;
@@ -294,7 +304,10 @@ ${toolExports}
   /**
    * Generate single tool implementation
    */
-  private generateToolImplementation(name: string, description: string): string {
+  private generateToolImplementation(
+    name: string,
+    description: string
+  ): string {
     const className = this.toCamelCase(name) + 'Tool';
 
     return `/**
@@ -342,8 +355,10 @@ export const ${className} = {
     const imports: Record<string, string> = {
       openai: "import OpenAI from 'openai';",
       anthropic: "import Anthropic from '@anthropic-ai/sdk';",
-      'google-ai': "import { GoogleGenerativeAI } from '@google/generative-ai';",
-      bedrock: "import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';",
+      'google-ai':
+        "import { GoogleGenerativeAI } from '@google/generative-ai';",
+      bedrock:
+        "import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';",
     };
 
     return imports[provider] || imports.openai;

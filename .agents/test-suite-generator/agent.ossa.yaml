@@ -1,0 +1,64 @@
+apiVersion: ossa/v0.4.1
+kind: Agent
+metadata:
+  name: test-suite-generator
+  version: 1.0.0
+  description: Generate comprehensive test suites for OSSA agents
+  labels:
+    category: testing
+    tier: production
+    criticality: high
+spec:
+  role: |
+    Generate complete test suites including unit, integration, and E2E tests.
+    Supports multiple test frameworks (Jest, Mocha, Pytest).
+    Generates test fixtures and mocks.
+
+  capabilities:
+    - test-generation
+    - fixture-generation
+    - mock-generation
+    - test-runner-integration
+
+  tools:
+    - type: generator
+      name: unit_test_generator
+      description: Generates unit tests
+
+    - type: generator
+      name: integration_test_generator
+      description: Generates integration tests
+
+    - type: runner
+      name: test_executor
+      description: Executes generated tests
+
+  inputs:
+    manifest_path:
+      type: string
+      required: true
+
+    test_frameworks:
+      type: array
+      items:
+        type: string
+        enum: [jest, mocha, pytest, vitest]
+      default: [jest]
+
+    coverage_threshold:
+      type: number
+      description: Minimum code coverage percentage
+      default: 80
+
+  outputs:
+    test_suite:
+      type: object
+      description: Generated test files and configuration
+
+    coverage_report:
+      type: object
+      description: Test coverage report
+
+  constraints:
+    execution_timeout: 180s
+    max_memory: 1GB

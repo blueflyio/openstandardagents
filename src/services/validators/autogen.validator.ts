@@ -18,7 +18,7 @@ export class AutoGenValidator {
   private validateAG2: ReturnType<Ajv['compile']>;
 
   constructor() {
-// @ts-expect-error - Ajv v8 API compatibility
+    // @ts-expect-error - Ajv v8 API compatibility
     this.ajv = new Ajv({ allErrors: true, strict: false });
     addFormats(this.ajv);
 
@@ -26,7 +26,7 @@ export class AutoGenValidator {
     // Works in both Jest (source tree) and production (project root with dist/)
     const ag2SchemaPath = join(
       process.cwd(),
-      'spec/v0.3/extensions/ag2/ag2.schema.json'
+      'spec/v0.4/extensions/ag2/ag2.schema.json'
     );
     const ag2Schema = JSON.parse(readFileSync(ag2SchemaPath, 'utf-8'));
     this.validateAG2 = this.ajv.compile(ag2Schema);

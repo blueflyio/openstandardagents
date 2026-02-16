@@ -5,6 +5,7 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { GitRollbackService } from '../../../src/services/git-rollback.service.js';
 import { GitService } from '../../../src/services/git.service.js';
+import { API_VERSION } from '../../../src/version.js';
 
 describe('GitRollbackService', () => {
   let service: GitRollbackService;

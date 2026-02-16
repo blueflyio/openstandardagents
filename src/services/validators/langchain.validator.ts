@@ -18,7 +18,7 @@ export class LangChainValidator {
   private validateLangChain: ReturnType<Ajv['compile']>;
 
   constructor() {
-// @ts-expect-error - Ajv v8 API compatibility
+    // @ts-expect-error - Ajv v8 API compatibility
     this.ajv = new Ajv({ allErrors: true, strict: false });
     addFormats(this.ajv);
 
@@ -26,7 +26,7 @@ export class LangChainValidator {
     // Works in both Jest (source tree) and production (project root with dist/)
     const langchainSchemaPath = join(
       process.cwd(),
-      'spec/v0.3/extensions/langchain/langchain.schema.json'
+      'spec/v0.4/extensions/langchain/langchain.schema.json'
     );
     const langchainSchema = JSON.parse(
       readFileSync(langchainSchemaPath, 'utf-8')

@@ -45,7 +45,7 @@ import { OSSASDKClient } from '@bluefly/ossa-sdk/typescript';
 const client = new OSSASDKClient();
 
 // Load manifest
-const manifest = client.loadManifest('my-agent.ossa.yaml');
+const manifest = client.loadManifest('creative-agent-naming.ossa.yaml');
 
 // Validate
 const result = client.validateManifest(manifest);

@@ -1,0 +1,208 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "NIXPACKS",
+    "buildCommand": "{{buildCommand}}",
+    "watchPatterns": [
+      "src/**",
+      "openapi/**",
+      "package.json",
+      "tsconfig.json"
+    ]
+  },
+  "deploy": {
+    "startCommand": "{{startCommand}}",
+    "healthcheckPath": "/health",
+    "healthcheckTimeout": 300,
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 10,
+    "numReplicas": {{replicas}},
+    "sleepApplication": false
+  },
+  "services": [
+    {
+      "name": "{{serviceName}}",
+      "source": {
+        "type": "github",
+        "repo": "{{githubRepo}}",
+        "branch": "{{branch}}"
+      },
+      "variables": {
+        "NODE_ENV": "{{nodeEnv}}",
+        "PORT": "{{port}}",
+        "LOG_LEVEL": "{{logLevel}}",
+        "API_BASE_URL": "${{API_BASE_URL}}",
+        "DRUPAL_BASE_URL": "${{DRUPAL_BASE_URL}}",
+        "DRUPAL_API_KEY": "${{DRUPAL_API_KEY}}",
+        "DATABASE_URL": "${{DATABASE_URL}}",
+        "REDIS_URL": "${{REDIS_URL}}",
+        "QDRANT_URL": "${{QDRANT_URL}}",
+        "QDRANT_API_KEY": "${{QDRANT_API_KEY}}",
+        "JWT_SECRET": "${{JWT_SECRET}}",
+        "ENCRYPTION_KEY": "${{ENCRYPTION_KEY}}",
+        "ALLOWED_ORIGINS": "${{ALLOWED_ORIGINS}}",
+        "RATE_LIMIT_WINDOW": "{{rateLimitWindow}}",
+        "RATE_LIMIT_MAX": "{{rateLimitMax}}",
+        "AGENT_REGISTRY_URL": "${{AGENT_REGISTRY_URL}}",
+        "VECTOR_DB_COLLECTION": "{{vectorDbCollection}}",
+        "MAX_CONCURRENT_AGENTS": "{{maxConcurrentAgents}}",
+        "AGENT_TIMEOUT_MS": "{{agentTimeoutMs}}",
+        "CACHE_TTL_SECONDS": "{{cacheTtlSeconds}}",
+        "ENABLE_METRICS": "{{enableMetrics}}",
+        "METRICS_PORT": "{{metricsPort}}",
+        "SENTRY_DSN": "${{SENTRY_DSN}}",
+        "SENTRY_ENVIRONMENT": "{{sentryEnvironment}}",
+        "ENABLE_DEBUG": "{{enableDebug}}"
+      },
+      "domains": [
+        {
+          "domain": "{{customDomain}}"
+        }
+      ],
+      "scaling": {
+        "minReplicas": {{minReplicas}},
+        "maxReplicas": {{maxReplicas}},
+        "autoscaling": {
+          "enabled": {{autoscalingEnabled}},
+          "targetCPU": {{targetCpu}},
+          "targetMemory": {{targetMemory}}
+        }
+      },
+      "resources": {
+        "memory": "{{memory}}",
+        "cpu": "{{cpu}}"
+      },
+      "networking": {
+        "servicePort": {{port}},
+        "internalPort": {{port}}
+      }
+    },
+    {
+      "name": "{{serviceName}}-bridge",
+      "source": {
+        "type": "github",
+        "repo": "{{githubRepo}}",
+        "branch": "{{branch}}"
+      },
+      "variables": {
+        "NODE_ENV": "{{nodeEnv}}",
+        "PORT": "{{bridgePort}}",
+        "LOG_LEVEL": "{{logLevel}}",
+        "DRUPAL_BASE_URL": "${{DRUPAL_BASE_URL}}",
+        "DRUPAL_API_KEY": "${{DRUPAL_API_KEY}}",
+        "BRIDGE_API_KEY": "${{BRIDGE_API_KEY}}",
+        "REDIS_URL": "${{REDIS_URL}}",
+        "AGENT_REGISTRY_URL": "${{AGENT_REGISTRY_URL}}",
+        "MAX_PAYLOAD_SIZE": "{{maxPayloadSize}}",
+        "REQUEST_TIMEOUT_MS": "{{requestTimeoutMs}}",
+        "ENABLE_CORS": "{{enableCors}}",
+        "CORS_ORIGINS": "${{CORS_ORIGINS}}"
+      },
+      "domains": [
+        {
+          "domain": "{{bridgeCustomDomain}}"
+        }
+      ],
+      "scaling": {
+        "minReplicas": {{bridgeMinReplicas}},
+        "maxReplicas": {{bridgeMaxReplicas}},
+        "autoscaling": {
+          "enabled": {{bridgeAutoscalingEnabled}},
+          "targetCPU": {{bridgeTargetCpu}},
+          "targetMemory": {{bridgeTargetMemory}}
+        }
+      },
+      "resources": {
+        "memory": "{{bridgeMemory}}",
+        "cpu": "{{bridgeCpu}}"
+      },
+      "networking": {
+        "servicePort": {{bridgePort}},
+        "internalPort": {{bridgePort}}
+      }
+    },
+    {
+      "name": "{{serviceName}}-postgres",
+      "image": "postgres:16-alpine",
+      "variables": {
+        "POSTGRES_DB": "{{postgresDb}}",
+        "POSTGRES_USER": "${{POSTGRES_USER}}",
+        "POSTGRES_PASSWORD": "${{POSTGRES_PASSWORD}}",
+        "POSTGRES_MAX_CONNECTIONS": "{{postgresMaxConnections}}",
+        "POSTGRES_SHARED_BUFFERS": "{{postgresSharedBuffers}}"
+      },
+      "volumes": [
+        {
+          "name": "postgres-data",
+          "mountPath": "/var/lib/postgresql/data"
+        }
+      ],
+      "networking": {
+        "servicePort": 5432,
+        "internalPort": 5432
+      }
+    },
+    {
+      "name": "{{serviceName}}-redis",
+      "image": "redis:7-alpine",
+      "variables": {
+        "REDIS_MAXMEMORY": "{{redisMaxMemory}}",
+        "REDIS_MAXMEMORY_POLICY": "{{redisMaxMemoryPolicy}}"
+      },
+      "volumes": [
+        {
+          "name": "redis-data",
+          "mountPath": "/data"
+        }
+      ],
+      "networking": {
+        "servicePort": 6379,
+        "internalPort": 6379
+      }
+    },
+    {
+      "name": "{{serviceName}}-qdrant",
+      "image": "qdrant/qdrant:latest",
+      "variables": {
+        "QDRANT_API_KEY": "${{QDRANT_API_KEY}}",
+        "QDRANT_COLLECTION_SIZE": "{{qdrantCollectionSize}}"
+      },
+      "volumes": [
+        {
+          "name": "qdrant-storage",
+          "mountPath": "/qdrant/storage"
+        }
+      ],
+      "networking": {
+        "servicePort": 6333,
+        "internalPort": 6333
+      }
+    }
+  ],
+  "environments": {
+    "production": {
+      "variables": {
+        "NODE_ENV": "production",
+        "LOG_LEVEL": "info",
+        "ENABLE_DEBUG": "false",
+        "SENTRY_ENVIRONMENT": "production"
+      }
+    },
+    "staging": {
+      "variables": {
+        "NODE_ENV": "staging",
+        "LOG_LEVEL": "debug",
+        "ENABLE_DEBUG": "true",
+        "SENTRY_ENVIRONMENT": "staging"
+      }
+    },
+    "development": {
+      "variables": {
+        "NODE_ENV": "development",
+        "LOG_LEVEL": "debug",
+        "ENABLE_DEBUG": "true",
+        "SENTRY_ENVIRONMENT": "development"
+      }
+    }
+  }
+}

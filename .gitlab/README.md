@@ -374,7 +374,7 @@ MR automation settings (auto-label, auto-assign, auto-merge).
 
    steps:
      - id: step_one
-       agent: bot-my-agent
+       agent: bot-creative-agent-naming
        with:
          param: "{{ event.data }}"
 
@@ -409,7 +409,7 @@ MR automation settings (auto-label, auto-assign, auto-merge).
    ```yaml
    - name: my-new-trigger
      description: "Description of what this does"
-     service_account: bot-my-agent
+     service_account: bot-creative-agent-naming
      event_types:
        - merge_request_opened
      flow_config:

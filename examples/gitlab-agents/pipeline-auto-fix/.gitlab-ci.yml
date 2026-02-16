@@ -1,0 +1,34 @@
+# GitLab CI/CD for pipeline-auto-fix
+# Auto-generated from OSSA manifest
+
+stages:
+  - build
+  - deploy
+
+build:
+  stage: build
+  image: node:20-alpine
+  script:
+    - npm ci
+    - npm run build
+    - npm test
+  artifacts:
+    paths:
+      - dist/
+      - node_modules/
+    expire_in: 1 hour
+
+deploy:pipeline-auto-fix:
+  stage: deploy
+  image: docker:24
+  services:
+    - docker:24-dind
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - docker build -t registry.gitlab.com/$CI_PROJECT_PATH/pipeline-auto-fix:latest .
+    - docker push registry.gitlab.com/$CI_PROJECT_PATH/pipeline-auto-fix:latest
+    # Deploy to Kubernetes
+    - kubectl set image deployment/pipeline-auto-fix pipeline-auto-fix=registry.gitlab.com/$CI_PROJECT_PATH/pipeline-auto-fix:latest -n agents
+  only:
+    - main

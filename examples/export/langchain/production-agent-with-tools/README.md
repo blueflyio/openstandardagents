@@ -261,7 +261,7 @@ npm test tests/unit/services/export/langchain/tools-generator.test.ts
 
 ## 📊 Version Information
 
-- **OSSA Version**: v0.4.0+
+- **OSSA Version**: v0.4.1+
 - **Release**: v0.4.1 (Feb 14, 2026)
 - **Feature Set**: LangChain Production Quality
 - **Status**: ✅ Complete

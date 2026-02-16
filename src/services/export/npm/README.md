@@ -39,10 +39,10 @@ import { NPMExporter } from '@bluefly/openstandardagents/services/export/npm';
 import type { OssaAgent } from '@bluefly/openstandardagents';
 
 const manifest: OssaAgent = {
-  apiVersion: 'ossa/v0.4.0',
+  apiVersion: 'ossa/v0.4.1',
   kind: 'Agent',
   metadata: {
-    name: 'my-agent',
+    name: 'creative-agent-naming',
     version: '1.0.0',
     description: 'My AI agent',
   },
@@ -93,7 +93,7 @@ const result = await exporter.export(manifest, {
 ## Generated Package Structure
 
 ```
-my-agent/
+creative-agent-naming/
 ├── package.json              # NPM package configuration
 ├── tsconfig.json             # TypeScript configuration
 ├── README.md                 # Package documentation
@@ -142,7 +142,7 @@ The exporter automatically includes the correct SDK dependencies based on `spec.
 ### Install Dependencies
 
 ```bash
-cd my-agent
+cd creative-agent-naming
 npm install
 ```
 

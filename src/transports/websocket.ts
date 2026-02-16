@@ -128,6 +128,7 @@ export class WebSocketTransport extends EventEmitter {
   private keepaliveActive = false;
   private pongTimer?: NodeJS.Timeout;
   private missedPongs = 0;
+  private intentionalDisconnect = false;
   private messageQueue: WebSocketEvent[] = [];
   private pendingAcks = new Map<
     string,
@@ -144,7 +145,7 @@ export class WebSocketTransport extends EventEmitter {
       url: config.url,
       agentId: config.agentId,
       capabilities: config.capabilities,
-      version: config.version || 'ossa/v0.3.0',
+      version: config.version || 'ossa/v0.4.5',
       auth: config.auth || {},
       keepalive: {
         pingInterval: config.keepalive?.pingInterval || 30000,
@@ -166,6 +167,7 @@ export class WebSocketTransport extends EventEmitter {
    * Connect to WebSocket server
    */
   async connect(): Promise<void> {
+    this.intentionalDisconnect = false;
     return new Promise((resolve, reject) => {
       try {
         const url = this.buildConnectionUrl();
@@ -198,6 +200,9 @@ export class WebSocketTransport extends EventEmitter {
    * Disconnect from WebSocket server
    */
   async disconnect(): Promise<void> {
+    // Set flag BEFORE closing to prevent onClose from scheduling reconnect
+    this.intentionalDisconnect = true;
+
     // Stop keepalive first to prevent new timers
     this.stopKeepalive();
     this.stopReconnect();
@@ -206,6 +211,9 @@ export class WebSocketTransport extends EventEmitter {
       this.ws.close();
       this.ws = null;
     }
+
+    // Stop reconnect again in case onClose re-scheduled it
+    this.stopReconnect();
 
     this.messageQueue = [];
     this.pendingAcks.forEach(({ reject, timeout }) => {
@@ -391,7 +399,9 @@ export class WebSocketTransport extends EventEmitter {
     this.stopKeepalive();
     this.emit('disconnected', event);
 
+    // Only attempt reconnection if this was not an intentional disconnect
     if (
+      !this.intentionalDisconnect &&
       this.config.reconnect?.enabled &&
       this.reconnectAttempt < (this.config.reconnect?.maxAttempts || 10)
     ) {

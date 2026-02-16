@@ -9,6 +9,7 @@ import { EnhancedValidator } from '../../../src/services/validation/enhanced-val
 import { ValidationService } from '../../../src/services/validation.service.js';
 import { SchemaRepository } from '../../../src/repositories/schema.repository.js';
 import type { OssaAgent } from '../../../src/types/index.js';
+import { API_VERSION } from '../../../src/version.js';
 
 describe('EnhancedValidator', () => {
   let container: Container;
@@ -25,12 +26,13 @@ describe('EnhancedValidator', () => {
   describe('validate()', () => {
     it('should validate a complete manifest successfully', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.3.6',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
           version: '1.0.0',
-          description: 'A comprehensive test agent with all features configured properly',
+          description:
+            'A comprehensive test agent with all features configured properly',
           author: 'Test Author',
           tags: ['test', 'automation'],
         },
@@ -123,7 +125,7 @@ describe('EnhancedValidator', () => {
 
     it('should detect security vulnerabilities', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.3.6',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'insecure-agent',
@@ -171,7 +173,7 @@ describe('EnhancedValidator', () => {
 
     it('should detect exposed secrets', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.3.6',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'agent-with-secret',
@@ -198,7 +200,8 @@ describe('EnhancedValidator', () => {
       const report = await enhancedValidator.validate(manifest);
 
       const exposedSecret = report.security.vulnerabilities.find(
-        (v) => v.category === 'exposed_secret' || v.category === 'potential_secret'
+        (v) =>
+          v.category === 'exposed_secret' || v.category === 'potential_secret'
       );
       expect(exposedSecret).toBeDefined();
       expect(exposedSecret?.severity).toBe('critical');
@@ -206,7 +209,7 @@ describe('EnhancedValidator', () => {
 
     it('should detect best practices issues', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.3.6',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'minimal-agent',
@@ -242,7 +245,7 @@ describe('EnhancedValidator', () => {
 
     it('should estimate costs correctly', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.3.6',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'cost-test-agent',
@@ -275,7 +278,7 @@ describe('EnhancedValidator', () => {
 
     it('should provide cost recommendations for expensive models', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.3.6',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'expensive-agent',
@@ -306,7 +309,7 @@ describe('EnhancedValidator', () => {
     it('should validate multiple manifests', async () => {
       const manifests: OssaAgent[] = [
         {
-          apiVersion: 'ossa/v0.3.6',
+          apiVersion: API_VERSION,
           kind: 'Agent',
           metadata: { name: 'agent-1' },
           spec: {
@@ -315,7 +318,7 @@ describe('EnhancedValidator', () => {
           },
         },
         {
-          apiVersion: 'ossa/v0.3.6',
+          apiVersion: API_VERSION,
           kind: 'Agent',
           metadata: { name: 'agent-2' },
           spec: {
@@ -336,7 +339,7 @@ describe('EnhancedValidator', () => {
   describe('getSummary()', () => {
     it('should generate validation summary', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.3.6',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'summary-test',
@@ -368,7 +371,7 @@ describe('EnhancedValidator', () => {
   describe('generateTextReport()', () => {
     it('should generate human-readable text report', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.3.6',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'report-test',
@@ -398,7 +401,7 @@ describe('EnhancedValidator', () => {
   describe('generateJsonReport()', () => {
     it('should generate JSON report', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.3.6',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'json-test',
@@ -427,18 +430,20 @@ describe('EnhancedValidator', () => {
   describe('Integration tests', () => {
     it('should handle agent with all features correctly', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.3.6',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'full-featured-agent',
           version: '2.1.0',
-          description: 'Complete agent with all OSSA features for comprehensive testing',
+          description:
+            'Complete agent with all OSSA features for comprehensive testing',
           author: 'Integration Test Suite',
           tags: ['integration', 'test', 'comprehensive'],
         },
         spec: {
           role: 'Multi-purpose Assistant',
-          instructions: 'Comprehensive agent with full observability and security',
+          instructions:
+            'Comprehensive agent with full observability and security',
           llm: {
             provider: 'anthropic',
             model: 'claude-sonnet-4',
@@ -528,7 +533,7 @@ describe('EnhancedValidator', () => {
 
     it('should handle Anthropic Claude Opus with cost warnings', async () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.3.6',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'opus-agent',

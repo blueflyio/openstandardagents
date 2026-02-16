@@ -1,7 +1,7 @@
 /**
  * Kubernetes Adapter
- * Generates Kubernetes manifests from OSSA agents
+ * Generates production-grade Kubernetes manifests with Kustomize support
  */
 
 export { KubernetesManifestGenerator } from './generator.js';
-export type { KubernetesConfig } from './types.js';
+export type { KubernetesConfig, KustomizeStructure } from './types.js';

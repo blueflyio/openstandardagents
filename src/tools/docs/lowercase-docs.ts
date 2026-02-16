@@ -10,15 +10,15 @@ const DOCS_DIR = join(process.cwd(), 'website/content/docs');
 
 function lowercaseFiles(dir: string) {
   const entries = readdirSync(dir);
-  
+
   for (const entry of entries) {
     const fullPath = join(dir, entry);
     const stat = statSync(fullPath);
-    
+
     if (stat.isDirectory()) {
       // Recursively process subdirectories
       lowercaseFiles(fullPath);
-      
+
       // Rename directory if needed
       const lowerEntry = entry.toLowerCase();
       if (entry !== lowerEntry) {

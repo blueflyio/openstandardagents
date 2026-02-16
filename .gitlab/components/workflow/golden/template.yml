@@ -304,8 +304,8 @@ changelog:update:
       # Check for changes
       if ! git diff --quiet CHANGELOG.md; then
         echo "CHANGELOG has new entries"
-        git config user.email 'thomas.scola@bluefly.io'
-        git config user.name 'Bluefly.io Founder & creator of OssA'
+        git config user.email 'ci@openstandardagents.org'
+        git config user.name 'OSSA CI Bot'
         git add CHANGELOG.md
         git commit -m "chore: update CHANGELOG for v${PROJECT_VERSION} [skip ci]"
         git push origin HEAD:$CI_COMMIT_BRANCH || echo "Push failed - manual update needed"
@@ -331,8 +331,8 @@ merge:to-development:
     - |
       if [ "$ENABLE_AUTO_MERGE" = "true" ]; then
         echo "🔄 Auto-merging to development"
-        git config user.email 'thomas.scola@bluefly.io'
-        git config user.name 'Bluefly.io Founder & creator of OssA'
+        git config user.email 'ci@openstandardagents.org'
+        git config user.name 'OSSA CI Bot'
         git fetch origin development
         git checkout development
         git merge --no-ff $CI_COMMIT_SHA -m "Auto-merge: $CI_COMMIT_MESSAGE"
@@ -352,8 +352,8 @@ promote:to-main:
   script:
     - apk add --no-cache git openssh-client openssl
     - echo "🚀 Promoting development to main (version $PROJECT_VERSION)"
-    - git config user.email 'thomas.scola@bluefly.io'
-    - git config user.name 'Bluefly.io Founder & creator of OssA'
+    - git config user.email 'ci@openstandardagents.org'
+    - git config user.name 'OSSA CI Bot'
     # Setup SSH authentication with multiple fallback methods
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
@@ -408,8 +408,8 @@ release:production:
   script:
     - apk add --no-cache git curl jq openssh-client
     - echo '🎉 Creating production release v${PROJECT_VERSION}'
-    - git config user.email 'thomas.scola@bluefly.io'
-    - git config user.name 'Bluefly.io Founder & creator of OssA'
+    - git config user.email 'ci@openstandardagents.org'
+    - git config user.name 'OSSA CI Bot'
     - export RELEASE_TAG='v${PROJECT_VERSION}'
     - git tag -a "$RELEASE_TAG" -m "Release ${RELEASE_TAG}"
     # Setup SSH authentication with multiple fallback methods

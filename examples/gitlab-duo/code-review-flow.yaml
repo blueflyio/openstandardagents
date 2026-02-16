@@ -1,0 +1,62 @@
+# GitLab Duo Flow - Code Review Agent
+# Generated from OSSA manifest using GitLabDuoFlowGenerator
+
+version: v1
+environment: chat
+name: code-review-agent
+description: AI-powered code review assistant for merge requests
+product_group: agent_foundations
+
+components:
+  - name: code_review_agent
+    type: AgentComponent
+    prompt_id: code_review_agent_prompt
+    prompt_version: null
+    inputs:
+      - from: context:goal
+        as: task
+    toolset:
+      - read_file
+      - list_dir
+      - search_files
+      - add_comment
+    ui_log_events:
+      - on_agent_final_answer
+      - on_tool_execution_success
+      - on_tool_execution_failed
+    ui_role_as: agent
+
+routers:
+  - from: code_review_agent
+    to: end
+
+prompts:
+  - prompt_id: code_review_agent_prompt
+    name: Code Review Agent System Prompt
+    model:
+      params:
+        model_class_provider: anthropic
+        model: claude-sonnet-4-20250514
+        max_tokens: 4096
+        temperature: 0.7
+    unit_primitives: []
+    prompt_template:
+      system: >
+        You are an expert code reviewer with deep knowledge of software engineering best practices,
+        security vulnerabilities, and performance optimization. Your role is to:
+
+        1. Review code changes for bugs, security issues, and potential improvements
+        2. Provide constructive, actionable feedback
+        3. Suggest specific code improvements with examples
+        4. Highlight positive aspects of the code
+        5. Check for adherence to coding standards and best practices
+
+        Always be respectful, educational, and focused on helping developers improve their code.
+      user: "{{task}}"
+      placeholder: history
+    params:
+      timeout: 180
+      stop: []
+
+flow:
+  entry_point: code_review_agent

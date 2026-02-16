@@ -38,11 +38,7 @@ export class VersionValidateService {
     const packageFile = join(this.rootDir, 'package.json');
     if (existsSync(packageFile)) {
       const pkg = JSON.parse(readFileSync(packageFile, 'utf-8'));
-      if (
-        pkg.version &&
-        pkg.version !== versionInfo.current &&
-        !pkg.version.includes('0.3.6')
-      ) {
+      if (pkg.version && pkg.version !== versionInfo.current) {
         errors.push(
           `package.json version (${pkg.version}) doesn't match git tags/.version.json (${versionInfo.current})`
         );

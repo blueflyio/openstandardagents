@@ -11,6 +11,7 @@
  * DRY: Reuses BaseAdapter validation and helpers
  */
 
+import * as yaml from 'yaml';
 import { BaseAdapter } from '../base/adapter.interface.js';
 import type {
   OssaAgent,
@@ -25,6 +26,7 @@ export class MCPAdapter extends BaseAdapter {
   readonly platform = 'mcp';
   readonly displayName = 'Model Context Protocol';
   readonly description = 'MCP server for Claude Code and other MCP clients';
+  readonly status = 'production' as const;
   readonly supportedVersions = ['v{{VERSION}}'];
 
   /**
@@ -110,6 +112,16 @@ export class MCPAdapter extends BaseAdapter {
           `mcp/${agentName}/README.md`,
           this.generateReadme(manifest),
           'documentation'
+        )
+      );
+
+      // Include source OSSA manifest for provenance
+      files.push(
+        this.createFile(
+          `mcp/${agentName}/agent.ossa.yaml`,
+          yaml.stringify(manifest),
+          'config',
+          'yaml'
         )
       );
 
@@ -312,7 +324,9 @@ main().catch((error) => {
    * Generate tools.ts - Tool implementations
    */
   private generateToolsCode(manifest: OssaAgent): string {
-    const capabilities = ((manifest.spec?.capabilities || []) as Array<string | any>).map((c: any) => typeof c === 'string' ? c : c.name || '');
+    const capabilities = (
+      (manifest.spec?.capabilities || []) as Array<string | any>
+    ).map((c: any) => (typeof c === 'string' ? c : c.name || ''));
     const tools = (manifest.spec?.tools || []) as any[];
 
     const toolDefinitions = tools.map((tool) => {
@@ -348,11 +362,8 @@ main().catch((error) => {
       .map((t) => {
         const inputType = `args as { [key: string]: unknown }`;
         return `    case '${t.name}':
-      // Implement ${t.name} logic here
-      return {
-        success: true,
-        result: \`Executed ${t.name} with: \${JSON.stringify(${inputType})}\`,
-      };`;
+      // TODO: Implement ${t.name} logic here
+      throw new Error('Tool ${t.name} requires implementation');`;
       })
       .join('\n\n');
 

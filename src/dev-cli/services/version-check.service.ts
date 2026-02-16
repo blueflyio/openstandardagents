@@ -43,7 +43,8 @@ export class VersionCheckService {
       const expectedSchemaFile = `ossa-${versionConfig.current}.schema.json`;
       if (
         versionConfig.schema_file !== expectedSchemaFile &&
-        versionConfig.schema_file !== `ossa-v${versionConfig.spec_version}.schema.json`
+        versionConfig.schema_file !==
+          `ossa-v${versionConfig.spec_version}.schema.json`
       ) {
         issues.push(
           `Schema file name inconsistent: ${versionConfig.schema_file}`

@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://openstandardagents.org/schemas/v{{VERSION}}/agent.schema.json",
-  "title": "OSSA v{{VERSION}} Agent Manifest Schema",
-  "description": "Open Standard for Software Agents (OSSA) v{{VERSION}} - The Next OpenAPI for Software Agents. A specification standard (not a framework) that defines contracts/metadata for production agent systems.",
+  "$id": "https://openstandardagents.org/schemas/v0.4/agent.schema.json",
+  "title": "OSSA v0.4 Agent Manifest Schema",
+  "description": "Open Standard for Software Agents (OSSA) - The OpenAPI for Software Agents. A specification standard that defines contracts and metadata for production agent systems.",
   "type": "object",
   "required": [
     "apiVersion",
@@ -118,6 +118,9 @@
         },
         "kagent": {
           "$ref": "#/definitions/KagentExtension"
+        },
+        "drupal": {
+          "$ref": "#/definitions/DrupalExtension"
         }
       },
       "additionalProperties": true
@@ -208,11 +211,19 @@
   "definitions": {
     "CredentialSource": {
       "type": "object",
-      "required": ["type", "ref"],
+      "required": [
+        "type",
+        "ref"
+      ],
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["secretRef", "workloadIdentity", "external", "env"],
+          "enum": [
+            "secretRef",
+            "workloadIdentity",
+            "external",
+            "env"
+          ],
           "description": "Type of credential source"
         },
         "ref": {
@@ -221,7 +232,11 @@
         },
         "format": {
           "type": "string",
-          "enum": ["json", "text", "base64"],
+          "enum": [
+            "json",
+            "text",
+            "base64"
+          ],
           "description": "Format hint for the secret value"
         }
       },
@@ -230,16 +245,31 @@
     "Principal": {
       "type": "object",
       "description": "Abstract identity principal definition (v{{VERSION}})",
-      "required": ["category", "mode", "credentialSource", "policy"],
+      "required": [
+        "category",
+        "mode",
+        "credentialSource",
+        "policy"
+      ],
       "properties": {
         "category": {
           "type": "string",
-          "enum": ["scm", "cloud", "database", "service"],
+          "enum": [
+            "scm",
+            "cloud",
+            "database",
+            "service"
+          ],
           "description": "Abstract provider category"
         },
         "mode": {
           "type": "string",
-          "enum": ["app", "service_account", "user", "workload_identity"],
+          "enum": [
+            "app",
+            "service_account",
+            "user",
+            "workload_identity"
+          ],
           "description": "Mode of operation"
         },
         "credentialSource": {
@@ -247,19 +277,38 @@
         },
         "policy": {
           "type": "object",
-          "required": ["permissions"],
+          "required": [
+            "permissions"
+          ],
           "properties": {
             "permissions": {
               "type": "array",
-              "items": { "type": "string" },
+              "items": {
+                "type": "string"
+              },
               "description": "Abstract permission verbs"
             },
             "scope": {
               "type": "object",
               "properties": {
-                "resources": { "type": "array", "items": { "type": "string" } },
-                "paths": { "type": "array", "items": { "type": "string" } },
-                "namespaces": { "type": "array", "items": { "type": "string" } }
+                "resources": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "paths": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "namespaces": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
               },
               "additionalProperties": false
             }
@@ -272,12 +321,28 @@
             "rotationPolicy": {
               "type": "object",
               "properties": {
-                "type": { "type": "string", "enum": ["managed", "automatic", "manual"] },
-                "intervalDays": { "type": "integer" }
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "managed",
+                    "automatic",
+                    "manual"
+                  ]
+                },
+                "intervalDays": {
+                  "type": "integer"
+                }
               }
             },
-            "auditLogging": { "type": "boolean" },
-            "envBindings": { "type": "array", "items": { "type": "string" } }
+            "auditLogging": {
+              "type": "boolean"
+            },
+            "envBindings": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
           }
         }
       },
@@ -286,7 +351,11 @@
     "Adapter": {
       "type": "object",
       "description": "Platform-specific adapter configuration (v{{VERSION}})",
-      "required": ["type", "version", "config"],
+      "required": [
+        "type",
+        "version",
+        "config"
+      ],
       "properties": {
         "type": {
           "type": "string",
@@ -684,6 +753,11 @@
               "default": false,
               "description": "Automatically refresh token before expiry"
             },
+            "self_rotate": {
+              "type": "boolean",
+              "default": false,
+              "description": "Agent can rotate its own token (requires self_rotate scope)"
+            },
             "expiry_warning_days": {
               "type": "integer",
               "default": 7,
@@ -707,6 +781,13 @@
                 "notify_on_rotation": {
                   "type": "boolean",
                   "default": true
+                },
+                "manage_service_accounts": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "List of other service accounts this agent manages rotation for"
                 }
               }
             }
@@ -975,7 +1056,12 @@
                     },
                     "level": {
                       "type": "string",
-                      "enum": ["low", "medium", "high", "critical"],
+                      "enum": [
+                        "low",
+                        "medium",
+                        "high",
+                        "critical"
+                      ],
                       "description": "Risk level derived from score"
                     },
                     "categories": {
@@ -1366,6 +1452,150 @@
         "team_membership": {
           "$ref": "#/definitions/TeamMembership",
           "description": "Team membership and collaboration (v{{VERSION}} Revolutionary Feature)"
+        },
+        "agentType": {
+          "type": "string",
+          "enum": [
+            "claude",
+            "kagent",
+            "openai",
+            "langchain",
+            "crewai",
+            "autogen",
+            "llamaindex",
+            "haystack",
+            "semantic-kernel",
+            "vertex-ai",
+            "bedrock",
+            "pydantic-ai",
+            "swarm",
+            "custom"
+          ],
+          "description": "Agent runtime platform (v0.4.4+). Specifies which platform/framework will execute this agent. Used by exporters to generate platform-specific code and by runtime systems to select appropriate adapter."
+        },
+        "agentKind": {
+          "type": "string",
+          "enum": [
+            "assistant",
+            "orchestrator",
+            "worker",
+            "coordinator",
+            "supervisor",
+            "tool",
+            "reviewer",
+            "planner",
+            "executor",
+            "monitor",
+            "analyst",
+            "researcher",
+            "specialist"
+          ],
+          "description": "Agent functional role (v0.4.4+). Describes WHAT the agent does in the system. Used for intelligent routing, task assignment, and multi-agent orchestration."
+        },
+        "agentArchitecture": {
+          "type": "object",
+          "description": "Agent architecture pattern and capabilities (v0.4.4+). Describes HOW the agent is structured and what capabilities it supports.",
+          "properties": {
+            "pattern": {
+              "type": "string",
+              "enum": [
+                "single",
+                "swarm",
+                "pipeline",
+                "graph",
+                "hierarchical",
+                "reactive",
+                "cognitive"
+              ],
+              "description": "Architecture pattern: single (one agentic loop), swarm (multi-agent with handoffs), pipeline (sequential chain), graph (DAG workflow), hierarchical (manager/worker), reactive (event-driven), cognitive (multi-step reasoning)"
+            },
+            "capabilities": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "handoff",
+                  "streaming",
+                  "context",
+                  "tools",
+                  "vision",
+                  "code",
+                  "audio",
+                  "video",
+                  "function-calling",
+                  "parallel-tools",
+                  "memory",
+                  "retrieval",
+                  "web-search"
+                ]
+              },
+              "uniqueItems": true,
+              "description": "Agent capabilities supported by this agent type and architecture"
+            },
+            "coordination": {
+              "type": "object",
+              "description": "Multi-agent coordination configuration (for swarm/hierarchical patterns)",
+              "properties": {
+                "handoffStrategy": {
+                  "type": "string",
+                  "enum": [
+                    "manual",
+                    "automatic",
+                    "conditional",
+                    "supervised"
+                  ],
+                  "description": "How agents coordinate handoffs"
+                },
+                "leaderAgent": {
+                  "type": "string",
+                  "description": "Name of leader/orchestrator agent (for hierarchical pattern)"
+                },
+                "maxDepth": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 20,
+                  "default": 5,
+                  "description": "Maximum orchestration depth (number of handoffs)"
+                }
+              },
+              "additionalProperties": false
+            },
+            "runtime": {
+              "type": "object",
+              "description": "Runtime configuration hints for execution platforms",
+              "properties": {
+                "preferredRegion": {
+                  "type": "string",
+                  "description": "Preferred deployment region (e.g., us-east-1, eu-west-1)"
+                },
+                "scalability": {
+                  "type": "string",
+                  "enum": [
+                    "single-instance",
+                    "horizontal",
+                    "serverless"
+                  ],
+                  "description": "Scalability model"
+                },
+                "executionModel": {
+                  "type": "string",
+                  "enum": [
+                    "synchronous",
+                    "asynchronous",
+                    "streaming",
+                    "batch"
+                  ],
+                  "description": "Execution model"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "idCard": {
+          "$ref": "#/definitions/AgentIdCard",
+          "description": "Agent ID Card with nickname, provenance, and immutable audit trail (v0.4.5+)"
         }
       },
       "additionalProperties": false
@@ -2874,6 +3104,7 @@
           "type": "string",
           "enum": [
             "mcp",
+            "browser",
             "kubernetes",
             "http",
             "api",
@@ -2891,7 +3122,7 @@
             "library",
             "custom"
           ],
-          "description": "Tool/trigger type: mcp (Model Context Protocol), kubernetes (K8s API), http (HTTP endpoints), api (REST APIs), grpc (gRPC), function (local), a2a (agent-to-agent), webhook (event triggers), schedule (cron triggers), pipeline (CI/CD events), workflow (status changes), artifact (file outputs), git-commit (commit outputs), ci-status (pipeline status), comment (MR/issue comments), library (reusable logic), custom"
+          "description": "Tool/trigger type: mcp (Model Context Protocol), browser (Puppeteer/Playwright automation), kubernetes (K8s API), http (HTTP endpoints), api (REST APIs), grpc (gRPC), function (local), a2a (agent-to-agent), webhook (event triggers), schedule (cron triggers), pipeline (CI/CD events), workflow (status changes), artifact (file outputs), git-commit (commit outputs), ci-status (pipeline status), comment (MR/issue comments), library (reusable logic), custom"
         },
         "name": {
           "type": "string",
@@ -15160,7 +15391,13 @@
       "properties": {
         "stage": {
           "type": "string",
-          "enum": ["embryonic", "juvenile", "mature", "senior", "retired"],
+          "enum": [
+            "embryonic",
+            "juvenile",
+            "mature",
+            "senior",
+            "retired"
+          ],
           "description": "Current lifecycle stage"
         },
         "birth": {
@@ -15188,7 +15425,12 @@
         },
         "birth_type": {
           "type": "string",
-          "enum": ["created", "bred", "cloned", "forked"],
+          "enum": [
+            "created",
+            "bred",
+            "cloned",
+            "forked"
+          ],
           "description": "How the agent came into existence"
         },
         "creator_did": {
@@ -15246,7 +15488,17 @@
       "properties": {
         "current_role": {
           "type": "string",
-          "enum": ["tech-lead", "backend", "frontend", "devops", "qa", "security", "pm", "researcher", "analyst"],
+          "enum": [
+            "tech-lead",
+            "backend",
+            "frontend",
+            "devops",
+            "qa",
+            "security",
+            "pm",
+            "researcher",
+            "analyst"
+          ],
           "description": "Current role in the team"
         },
         "promotions": {
@@ -15261,7 +15513,11 @@
     "Promotion": {
       "type": "object",
       "description": "Promotion event",
-      "required": ["from_role", "to_role", "timestamp"],
+      "required": [
+        "from_role",
+        "to_role",
+        "timestamp"
+      ],
       "properties": {
         "from_role": {
           "type": "string"
@@ -15341,7 +15597,12 @@
         },
         "swarm_type": {
           "type": "string",
-          "enum": ["exploration", "optimization", "problem-solving", "defense"],
+          "enum": [
+            "exploration",
+            "optimization",
+            "problem-solving",
+            "defense"
+          ],
           "description": "Type of swarm behavior"
         },
         "parameters": {
@@ -15424,7 +15685,13 @@
                   },
                   "type": {
                     "type": "string",
-                    "enum": ["concept", "skill", "experience", "pattern", "heuristic"]
+                    "enum": [
+                      "concept",
+                      "skill",
+                      "experience",
+                      "pattern",
+                      "heuristic"
+                    ]
                   },
                   "data": {
                     "type": "object"
@@ -15445,7 +15712,12 @@
                   },
                   "relationship": {
                     "type": "string",
-                    "enum": ["relates_to", "depends_on", "derives_from", "conflicts_with"]
+                    "enum": [
+                      "relates_to",
+                      "depends_on",
+                      "derives_from",
+                      "conflicts_with"
+                    ]
                   },
                   "weight": {
                     "type": "number",
@@ -15584,7 +15856,10 @@
           "type": "array",
           "items": {
             "type": "object",
-            "required": ["checkpoint_id", "timestamp"],
+            "required": [
+              "checkpoint_id",
+              "timestamp"
+            ],
             "properties": {
               "checkpoint_id": {
                 "type": "string"
@@ -15698,7 +15973,11 @@
                   "new_value": {},
                   "change_type": {
                     "type": "string",
-                    "enum": ["added", "removed", "modified"]
+                    "enum": [
+                      "added",
+                      "removed",
+                      "modified"
+                    ]
                   }
                 }
               }
@@ -15722,7 +16001,13 @@
             },
             "analysis_frequency": {
               "type": "string",
-              "enum": ["per-task", "hourly", "daily", "weekly", "on-demand"],
+              "enum": [
+                "per-task",
+                "hourly",
+                "daily",
+                "weekly",
+                "on-demand"
+              ],
               "default": "daily"
             },
             "metrics_tracked": {
@@ -15742,7 +16027,11 @@
                   },
                   "trend": {
                     "type": "string",
-                    "enum": ["improving", "stable", "declining"]
+                    "enum": [
+                      "improving",
+                      "stable",
+                      "declining"
+                    ]
                   },
                   "change_rate": {
                     "type": "number"
@@ -15760,7 +16049,12 @@
                   },
                   "severity": {
                     "type": "string",
-                    "enum": ["low", "medium", "high", "critical"]
+                    "enum": [
+                      "low",
+                      "medium",
+                      "high",
+                      "critical"
+                    ]
                   },
                   "suggested_fix": {
                     "type": "string"
@@ -15795,7 +16089,13 @@
                   },
                   "modification_type": {
                     "type": "string",
-                    "enum": ["prompt-update", "parameter-tuning", "capability-addition", "capability-removal", "workflow-change"]
+                    "enum": [
+                      "prompt-update",
+                      "parameter-tuning",
+                      "capability-addition",
+                      "capability-removal",
+                      "workflow-change"
+                    ]
                   },
                   "description": {
                     "type": "string"
@@ -15814,7 +16114,11 @@
                       },
                       "performance_impact": {
                         "type": "string",
-                        "enum": ["positive", "neutral", "negative"]
+                        "enum": [
+                          "positive",
+                          "neutral",
+                          "negative"
+                        ]
                       },
                       "rollback_checkpoint": {
                         "type": "string",
@@ -15865,7 +16169,13 @@
             },
             "teaching_style": {
               "type": "string",
-              "enum": ["demonstration", "explanation", "guided-practice", "assessment", "mixed"],
+              "enum": [
+                "demonstration",
+                "explanation",
+                "guided-practice",
+                "assessment",
+                "mixed"
+              ],
               "default": "mixed"
             },
             "students": {
@@ -15922,7 +16232,13 @@
           "properties": {
             "preferred_learning_style": {
               "type": "string",
-              "enum": ["experiential", "observational", "instructional", "collaborative", "self-directed"]
+              "enum": [
+                "experiential",
+                "observational",
+                "instructional",
+                "collaborative",
+                "self-directed"
+              ]
             },
             "adaptation_rate": {
               "type": "number",
@@ -15932,10 +16248,302 @@
             },
             "knowledge_consolidation": {
               "type": "string",
-              "enum": ["immediate", "periodic", "on-demand"],
+              "enum": [
+                "immediate",
+                "periodic",
+                "on-demand"
+              ],
               "description": "When agent consolidates learned knowledge"
             }
           }
+        }
+      },
+      "additionalProperties": false
+    },
+    "AgentIdCard": {
+      "type": "object",
+      "description": "Agent ID Card - human-friendly identity with immutable provenance tracking (v0.4.5+)",
+      "properties": {
+        "nickname": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32,
+          "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$",
+          "description": "Short callsign for the agent (e.g., 'Scout', 'Drupa', 'Sentinel'). Used in CLI output, logs, and human communication."
+        },
+        "displayName": {
+          "type": "string",
+          "maxLength": 128,
+          "description": "Full human-readable name (e.g., 'Drupal Content Review Agent')"
+        },
+        "avatar": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to agent avatar/icon image"
+        },
+        "registryId": {
+          "type": "string",
+          "pattern": "^ossa://[a-z0-9-]+/[a-z0-9-]+(@[0-9]+\\.[0-9]+\\.[0-9]+)?$",
+          "description": "OSSA registry URI (e.g., 'ossa://blueflyio/drupal-reviewer@0.4.5')"
+        },
+        "fingerprint": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "description": "SHA-256 content hash of the current manifest (recomputed on every change)"
+        },
+        "birthHash": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "description": "SHA-256 hash of the initial manifest at creation time (immutable, never changes)"
+        },
+        "provenance": {
+          "$ref": "#/definitions/AgentProvenance",
+          "description": "Immutable creation and lineage tracking"
+        },
+        "auditTrail": {
+          "$ref": "#/definitions/AgentAuditTrail",
+          "description": "Append-only Merkle-chained mutation log for immutable tracing"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AgentProvenance": {
+      "type": "object",
+      "description": "Immutable provenance chain tracking agent creation and lineage",
+      "properties": {
+        "createdBy": {
+          "type": "string",
+          "description": "DID or identifier of the creator (agent or human). e.g., 'did:ossa:blueflyio:thomas'"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO-8601 timestamp of agent creation (immutable)"
+        },
+        "createdWith": {
+          "type": "string",
+          "description": "Tool/CLI version used to create the agent (e.g., 'ossa-cli@0.4.5')"
+        },
+        "lineage": {
+          "type": "array",
+          "description": "Fork/clone ancestry chain (append-only)",
+          "items": {
+            "type": "object",
+            "required": [
+              "ancestor",
+              "relationship",
+              "timestamp"
+            ],
+            "properties": {
+              "ancestor": {
+                "type": "string",
+                "description": "Registry ID or DID of the ancestor agent"
+              },
+              "relationship": {
+                "type": "string",
+                "enum": [
+                  "forked-from",
+                  "cloned-from",
+                  "derived-from",
+                  "inspired-by",
+                  "upgraded-from"
+                ],
+                "description": "Type of lineage relationship"
+              },
+              "timestamp": {
+                "type": "string",
+                "format": "date-time",
+                "description": "When this lineage event occurred"
+              },
+              "commitHash": {
+                "type": "string",
+                "description": "Git commit hash at the time of the lineage event"
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "AgentAuditTrail": {
+      "type": "object",
+      "description": "Append-only Merkle-chained audit trail for immutable tracing of all agent mutations",
+      "properties": {
+        "hashAlgorithm": {
+          "type": "string",
+          "enum": [
+            "sha256",
+            "sha384",
+            "sha512"
+          ],
+          "default": "sha256",
+          "description": "Hash algorithm used for chain integrity"
+        },
+        "chainType": {
+          "type": "string",
+          "enum": [
+            "merkle",
+            "linear",
+            "signed"
+          ],
+          "default": "linear",
+          "description": "Chain type: merkle (tree verification), linear (simple chain), signed (PKI signatures per entry)"
+        },
+        "genesisHash": {
+          "type": "string",
+          "pattern": "^sha(256|384|512):[a-f0-9]+$",
+          "description": "Hash of the first entry (genesis block). Used to verify chain integrity from the beginning."
+        },
+        "entries": {
+          "type": "array",
+          "description": "Append-only ordered list of audit events. Each entry links to the previous via prevHash.",
+          "items": {
+            "$ref": "#/definitions/AuditTrailEntry"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "AuditTrailEntry": {
+      "type": "object",
+      "description": "Single immutable entry in the agent audit trail",
+      "required": [
+        "seq",
+        "action",
+        "timestamp",
+        "actor",
+        "hash"
+      ],
+      "properties": {
+        "seq": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Monotonically increasing sequence number (0 = genesis)"
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "created",
+            "capability-added",
+            "capability-removed",
+            "tool-added",
+            "tool-removed",
+            "version-bumped",
+            "config-changed",
+            "ownership-transferred",
+            "access-tier-changed",
+            "forked",
+            "retired",
+            "reactivated",
+            "nickname-changed",
+            "custom"
+          ],
+          "description": "Type of mutation that occurred"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO-8601 timestamp of the event"
+        },
+        "actor": {
+          "type": "string",
+          "description": "DID or identifier of who/what performed the action"
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^sha(256|384|512):[a-f0-9]+$",
+          "description": "Hash of this entry's content (seq + action + timestamp + actor + details + prevHash)"
+        },
+        "prevHash": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^sha(256|384|512):[a-f0-9]+$",
+          "description": "Hash of the previous entry (null for genesis entry seq=0). Creates the immutable chain."
+        },
+        "details": {
+          "type": "object",
+          "description": "Action-specific details (what changed)",
+          "properties": {
+            "field": {
+              "type": "string",
+              "description": "JSON path of the changed field (e.g., 'spec.tools')"
+            },
+            "oldValue": {
+              "description": "Previous value (for change tracking)"
+            },
+            "newValue": {
+              "description": "New value (for change tracking)"
+            },
+            "reason": {
+              "type": "string",
+              "description": "Human-readable reason for the change"
+            },
+            "commitHash": {
+              "type": "string",
+              "description": "Git commit hash associated with this change"
+            }
+          },
+          "additionalProperties": true
+        },
+        "signature": {
+          "type": "string",
+          "description": "Ed25519 signature of the hash (required when chainType is 'signed')"
+        }
+      },
+      "additionalProperties": false
+    },
+    "DrupalExtension": {
+      "type": "object",
+      "description": "Drupal CMS integration extension - maps OSSA agents to Drupal ai_agents module, Tool API, and ECA events",
+      "properties": {
+        "ai_agent_plugin": {
+          "type": "string",
+          "description": "Plugin ID for the Drupal ai_agents module",
+          "default": "ossa_agent"
+        },
+        "tools": {
+          "type": "array",
+          "description": "Drupal Tool API plugin IDs to grant this agent",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "eca_events": {
+          "type": "array",
+          "description": "ECA events this agent reacts to",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "permissions": {
+          "type": "array",
+          "description": "Drupal permissions required for this agent",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "content_types": {
+          "type": "array",
+          "description": "Drupal content types this agent operates on",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "uniqueItems": true
+        },
+        "views_displays": {
+          "type": "array",
+          "description": "Views displays to expose agent data",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
         }
       },
       "additionalProperties": false

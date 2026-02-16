@@ -16,7 +16,7 @@ The `messaging` field is added to the `spec` section of Agent manifests:
 apiVersion: ossa/v0.3.3
 kind: Agent
 metadata:
-  name: my-agent
+  name: creative-agent-naming
   version: 1.0.0
 spec:
   messaging:
@@ -33,7 +33,7 @@ spec:
         schema: TaskAssigned
         handler: handleTaskAssigned
         filter:
-          payload.assignedTo: "ossa://agents/my-agent"
+          payload.assignedTo: "ossa://agents/creative-agent-naming"
         priority: high
 
     transport:

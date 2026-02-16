@@ -164,17 +164,24 @@ export class SchemaRepository implements ISchemaRepository {
 
     for (const entry of entries) {
       if (entry.isDirectory() && entry.name.startsWith('v')) {
-        // Extract version from directory name (e.g., "v0.3" -> "0.3")
+        // Extract version from directory name (e.g., "v0.3" -> "0.3", "v0.4" -> "0.4")
         const dirVersion = entry.name.substring(1);
 
-        // For minor version directories (e.g., v0.3), look for any schema files inside
+        // For minor version directories (e.g., v0.3, v0.4), look for any schema files inside
         const versionDir = path.join(specDir, entry.name);
         const schemaFiles = fs
           .readdirSync(versionDir)
-          .filter((f) => f.startsWith('ossa-') && f.endsWith('.schema.json'));
+          .filter((f) => f.endsWith('.schema.json'));
 
         for (const schemaFile of schemaFiles) {
-          // Extract version from schema file name (e.g., "ossa-0.3.5.schema.json" -> "0.3.5")
+          // Check for generic agent.schema.json (v0.4+ pattern)
+          if (schemaFile === 'agent.schema.json') {
+            // Use directory version for generic schema files
+            versions.push(dirVersion);
+            continue;
+          }
+
+          // Extract version from legacy schema file name (e.g., "ossa-0.3.5.schema.json" -> "0.3.5")
           const match = schemaFile.match(
             /ossa-(?:v)?(\d+\.\d+\.\d+)\.schema\.json/
           );

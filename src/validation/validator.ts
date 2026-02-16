@@ -1,8 +1,8 @@
 /**
- * OSSA v0.3.6 Manifest Validator
+ * OSSA Manifest Validator
  *
- * JSON Schema validator for OSSA agent manifests using Ajv
- * Validates revolutionary features: identity, genetics, lifecycle, economics, taxonomy
+ * JSON Schema validator for OSSA agent manifests using Ajv.
+ * Validates identity, lifecycle, economics, and taxonomy fields.
  */
 
 import Ajv from 'ajv';
@@ -29,10 +29,7 @@ export class OSSAValidator {
     addFormats(this.ajv);
 
     // Load schema
-    const defaultSchemaPath = join(
-      __dirname,
-      '../spec/v0.3/ossa-0.3.6.schema.json'
-    );
+    const defaultSchemaPath = join(__dirname, '../spec/v0.4/agent.schema.json');
     const resolvedPath = schemaPath || defaultSchemaPath;
 
     try {

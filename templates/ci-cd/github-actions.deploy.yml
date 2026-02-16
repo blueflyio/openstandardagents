@@ -1,0 +1,272 @@
+# GitHub Actions Workflow for OSSA Agent Deployment
+# Auto-deploy agents on manifest changes with health checks and rollback
+
+name: Deploy OSSA Agent
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'agent.ossa.yaml'
+      - '**/*.ossa.yaml'
+      - '**/*.ossa.yml'
+      - 'src/**'
+      - 'Dockerfile'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+      platform:
+        description: 'Deployment platform'
+        required: true
+        type: choice
+        options:
+          - kubernetes
+          - docker
+          - cloud
+      cloud_provider:
+        description: 'Cloud provider (if platform=cloud)'
+        required: false
+        type: choice
+        options:
+          - aws
+          - gcp
+          - azure
+
+env:
+  OSSA_CLI_VERSION: latest
+  AGENT_MANIFEST: agent.ossa.yaml
+  DEPLOY_PLATFORM: kubernetes
+  KUBERNETES_NAMESPACE: production
+  DOCKER_REGISTRY: ghcr.io/${{ github.repository }}
+  HEALTH_CHECK_TIMEOUT: 120
+
+jobs:
+  validate:
+    name: Validate OSSA Manifest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install OSSA CLI
+        run: npm install -g @bluefly/openstandardagents@${{ env.OSSA_CLI_VERSION }}
+
+      - name: Validate manifest
+        run: ossa validate ${{ env.AGENT_MANIFEST }}
+
+  build:
+    name: Build Container Image
+    runs-on: ubuntu-latest
+    needs: validate
+    if: |
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' &&
+       (github.event.inputs.platform == 'kubernetes' || github.event.inputs.platform == 'docker'))
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DOCKER_REGISTRY }}
+          tags: |
+            type=sha,prefix={{branch}}-
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment:
+      name: staging
+      url: https://staging.example.com
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install OSSA CLI
+        run: npm install -g @bluefly/openstandardagents@${{ env.OSSA_CLI_VERSION }}
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+        if: env.DEPLOY_PLATFORM == 'kubernetes'
+
+      - name: Deploy to staging
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          ossa deploy ${{ env.AGENT_MANIFEST }} \
+            --platform ${{ env.DEPLOY_PLATFORM }} \
+            --env staging \
+            --namespace staging \
+            --replicas 1 \
+            --registry ${{ env.DOCKER_REGISTRY }}:${IMAGE_TAG} \
+            --health-check \
+            --verify
+
+      - name: Save deployment ID
+        run: echo "DEPLOYMENT_ID=$(cat /tmp/ossa-deployment-id)" >> $GITHUB_OUTPUT
+        id: deploy
+
+    outputs:
+      deployment_id: ${{ steps.deploy.outputs.DEPLOYMENT_ID }}
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build, deploy-staging]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: https://production.example.com
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install OSSA CLI
+        run: npm install -g @bluefly/openstandardagents@${{ env.OSSA_CLI_VERSION }}
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+        if: env.DEPLOY_PLATFORM == 'kubernetes'
+
+      - name: Deploy to production
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          ossa deploy ${{ env.AGENT_MANIFEST }} \
+            --platform ${{ env.DEPLOY_PLATFORM }} \
+            --env production \
+            --namespace ${{ env.KUBERNETES_NAMESPACE }} \
+            --replicas 3 \
+            --registry ${{ env.DOCKER_REGISTRY }}:${IMAGE_TAG} \
+            --health-check \
+            --verify
+
+      - name: Save deployment ID
+        run: echo "DEPLOYMENT_ID=$(cat /tmp/ossa-deployment-id)" >> $GITHUB_OUTPUT
+        id: deploy
+
+    outputs:
+      deployment_id: ${{ steps.deploy.outputs.DEPLOYMENT_ID }}
+
+  verify-health:
+    name: Verify Deployment Health
+    runs-on: ubuntu-latest
+    needs: deploy-production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install OSSA CLI
+        run: npm install -g @bluefly/openstandardagents@${{ env.OSSA_CLI_VERSION }}
+
+      - name: Wait and verify health
+        env:
+          DEPLOYMENT_ID: ${{ needs.deploy-production.outputs.deployment_id }}
+        timeout-minutes: 2
+        run: |
+          for i in {1..12}; do
+            if ossa health-check ${DEPLOYMENT_ID}; then
+              echo "✓ Health check passed!"
+              exit 0
+            fi
+            echo "Health check attempt $i failed, retrying..."
+            sleep 10
+          done
+          echo "✗ Health check failed after ${{ env.HEALTH_CHECK_TIMEOUT }} seconds"
+          exit 1
+
+  rollback:
+    name: Rollback on Failure
+    runs-on: ubuntu-latest
+    needs: [deploy-production, verify-health]
+    if: failure() && needs.deploy-production.result == 'success'
+    environment:
+      name: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install OSSA CLI
+        run: npm install -g @bluefly/openstandardagents@${{ env.OSSA_CLI_VERSION }}
+
+      - name: Rollback deployment
+        env:
+          DEPLOYMENT_ID: ${{ needs.deploy-production.outputs.deployment_id }}
+        run: |
+          ossa rollback ${DEPLOYMENT_ID} \
+            --platform ${{ env.DEPLOY_PLATFORM }} \
+            --force \
+            --verify
+
+      - name: Notify failure
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '🔴 Production deployment failed and was rolled back. Please review the logs.'
+            })

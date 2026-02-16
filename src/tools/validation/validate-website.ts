@@ -17,7 +17,11 @@ interface ValidationResult {
 const results: ValidationResult[] = [];
 const websiteRoot = join(process.cwd(), 'website');
 
-function addResult(check: string, status: 'pass' | 'fail' | 'warn', message: string) {
+function addResult(
+  check: string,
+  status: 'pass' | 'fail' | 'warn',
+  message: string
+) {
   results.push({ check, status, message });
   const icon = status === 'pass' ? '✅' : status === 'fail' ? '❌' : '⚠️';
   console.log(`${icon} ${check}: ${message}`);
@@ -29,7 +33,11 @@ function checkBuild() {
   if (existsSync(outDir)) {
     const files = readdirSync(outDir);
     if (files.length > 0) {
-      addResult('Build Output', 'pass', `Site is built with ${files.length} items`);
+      addResult(
+        'Build Output',
+        'pass',
+        `Site is built with ${files.length} items`
+      );
     } else {
       addResult('Build Output', 'fail', 'Build directory is empty');
     }
@@ -43,9 +51,13 @@ function validatePackageJson() {
   try {
     const pkgPath = join(websiteRoot, 'package.json');
     const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
-    
+
     if (pkg.name && pkg.version) {
-      addResult('Package.json', 'pass', `Valid package.json (${pkg.name} v${pkg.version})`);
+      addResult(
+        'Package.json',
+        'pass',
+        `Valid package.json (${pkg.name} v${pkg.version})`
+      );
     } else {
       addResult('Package.json', 'warn', 'Package.json missing name or version');
     }
@@ -78,11 +90,11 @@ function validatePublicJson() {
 
   try {
     const files = readdirSync(publicDir, { recursive: true });
-    const jsonFiles = files.filter(f => f.endsWith('.json'));
-    
+    const jsonFiles = files.filter((f) => f.endsWith('.json'));
+
     let valid = 0;
     let invalid = 0;
-    
+
     for (const file of jsonFiles) {
       try {
         const content = readFileSync(join(publicDir, file), 'utf-8');
@@ -92,14 +104,26 @@ function validatePublicJson() {
         invalid++;
       }
     }
-    
+
     if (invalid === 0) {
-      addResult('Public JSON Files', 'pass', `All ${valid} JSON files are valid`);
+      addResult(
+        'Public JSON Files',
+        'pass',
+        `All ${valid} JSON files are valid`
+      );
     } else {
-      addResult('Public JSON Files', 'fail', `${invalid} of ${jsonFiles.length} JSON files are invalid`);
+      addResult(
+        'Public JSON Files',
+        'fail',
+        `${invalid} of ${jsonFiles.length} JSON files are invalid`
+      );
     }
   } catch (error) {
-    addResult('Public JSON Files', 'warn', `Could not check JSON files: ${error}`);
+    addResult(
+      'Public JSON Files',
+      'warn',
+      `Could not check JSON files: ${error}`
+    );
   }
 }
 
@@ -113,10 +137,20 @@ function checkOpenAPISpecs() {
 
   try {
     const files = readdirSync(openapiDir);
-    const yamlFiles = files.filter(f => f.endsWith('.yaml') || f.endsWith('.yml'));
-    addResult('OpenAPI Specs', 'pass', `Found ${yamlFiles.length} OpenAPI specification files`);
+    const yamlFiles = files.filter(
+      (f) => f.endsWith('.yaml') || f.endsWith('.yml')
+    );
+    addResult(
+      'OpenAPI Specs',
+      'pass',
+      `Found ${yamlFiles.length} OpenAPI specification files`
+    );
   } catch (error) {
-    addResult('OpenAPI Specs', 'warn', `Could not check OpenAPI specs: ${error}`);
+    addResult(
+      'OpenAPI Specs',
+      'warn',
+      `Could not check OpenAPI specs: ${error}`
+    );
   }
 }
 
@@ -130,8 +164,14 @@ function checkOSSASchemas() {
 
   try {
     const files = readdirSync(schemasDir);
-    const schemaFiles = files.filter(f => f.endsWith('.json') && f.includes('ossa'));
-    addResult('OSSA Schemas', 'pass', `Found ${schemaFiles.length} OSSA schema files`);
+    const schemaFiles = files.filter(
+      (f) => f.endsWith('.json') && f.includes('ossa')
+    );
+    addResult(
+      'OSSA Schemas',
+      'pass',
+      `Found ${schemaFiles.length} OSSA schema files`
+    );
   } catch (error) {
     addResult('OSSA Schemas', 'warn', `Could not check schemas: ${error}`);
   }
@@ -144,9 +184,17 @@ function checkNextConfig() {
     try {
       const content = readFileSync(configPath, 'utf-8');
       if (content.includes('output:') && content.includes('export')) {
-        addResult('Next.js Config', 'pass', 'Next.js configured for static export');
+        addResult(
+          'Next.js Config',
+          'pass',
+          'Next.js configured for static export'
+        );
       } else {
-        addResult('Next.js Config', 'warn', 'Next.js config may not be set for static export');
+        addResult(
+          'Next.js Config',
+          'warn',
+          'Next.js config may not be set for static export'
+        );
       }
     } catch (error) {
       addResult('Next.js Config', 'fail', `Error reading config: ${error}`);
@@ -162,17 +210,21 @@ function checkLighthouseConfig() {
   if (existsSync(lhConfig)) {
     addResult('Lighthouse Config', 'pass', 'Lighthouse configuration exists');
   } else {
-    addResult('Lighthouse Config', 'warn', 'Lighthouse configuration not found');
+    addResult(
+      'Lighthouse Config',
+      'warn',
+      'Lighthouse configuration not found'
+    );
   }
 }
 
 // 9. Run ESLint check
 function runLint() {
   try {
-    execSync('npm run lint', { 
-      cwd: websiteRoot, 
+    execSync('npm run lint', {
+      cwd: websiteRoot,
       stdio: 'pipe',
-      timeout: 30000 
+      timeout: 30000,
     });
     addResult('ESLint', 'pass', 'No linting errors');
   } catch (error: any) {
@@ -202,9 +254,9 @@ runLint();
 console.log('\n' + '='.repeat(50));
 console.log('\n📊 Validation Summary:\n');
 
-const passed = results.filter(r => r.status === 'pass').length;
-const failed = results.filter(r => r.status === 'fail').length;
-const warnings = results.filter(r => r.status === 'warn').length;
+const passed = results.filter((r) => r.status === 'pass').length;
+const failed = results.filter((r) => r.status === 'fail').length;
+const warnings = results.filter((r) => r.status === 'warn').length;
 
 console.log(`✅ Passed: ${passed}`);
 console.log(`❌ Failed: ${failed}`);
@@ -221,4 +273,3 @@ if (failed > 0) {
   console.log('\n✅ All validations passed!');
   process.exit(0);
 }
-

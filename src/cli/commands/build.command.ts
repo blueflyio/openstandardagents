@@ -7,20 +7,11 @@ import chalk from 'chalk';
 import { Command } from 'commander';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as yaml from 'js-yaml';
+import { stringify as yamlStringify } from 'yaml';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { KAgentCRDGenerator } from '../../sdks/kagent/crd-generator.js';
-import { LangChainConverter } from '../../adapters/langchain/converter.js';
-import { CrewAIConverter } from '../../adapters/crewai/converter.js';
-import { TemporalConverter } from '../../adapters/temporal/converter.js';
-import { N8NConverter } from '../../adapters/n8n/converter.js';
-import { GitLabConverter } from '../../adapters/gitlab/converter.js';
-import {
-  DockerfileGenerator,
-  DockerComposeGenerator,
-} from '../../adapters/docker/generators.js';
-import { KubernetesManifestGenerator } from '../../adapters/kubernetes/generator.js';
+import { getBuildDefaults } from '../../config/defaults.js';
 import type { OssaAgent } from '../../types/index.js';
 
 export const buildCommand = new Command('build')
@@ -28,13 +19,13 @@ export const buildCommand = new Command('build')
   .argument('<manifest>', 'Path to OSSA agent manifest')
   .option(
     '-p, --platform <platform>',
-    'Build for specific platform (kagent, langchain, crewai, temporal, docker, kubernetes)',
+    'Build for specific platform (kagent, docker, kubernetes)',
     'all'
   )
   .option(
     '-o, --output <dir>',
     'Output directory for build artifacts',
-    'dist/build'
+    getBuildDefaults().outputDir
   )
   .option('--validate', 'Validate manifest before building', true)
   .action(
@@ -69,16 +60,7 @@ export const buildCommand = new Command('build')
 
         const platforms =
           options.platform === 'all'
-            ? [
-                'kagent',
-                'langchain',
-                'crewai',
-                'temporal',
-                'n8n',
-                'gitlab',
-                'docker',
-                'kubernetes',
-              ]
+            ? ['kagent', 'docker', 'kubernetes']
             : [options.platform];
 
         const results: Array<{
@@ -173,24 +155,6 @@ async function buildForPlatform(
       break;
     }
 
-    case 'langchain': {
-      // TODO: Implement LangChain converter
-      console.log(chalk.yellow('  LangChain converter not yet implemented'));
-      break;
-    }
-
-    case 'crewai': {
-      // TODO: Implement CrewAI converter
-      console.log(chalk.yellow('  CrewAI converter not yet implemented'));
-      break;
-    }
-
-    case 'temporal': {
-      // TODO: Implement Temporal converter
-      console.log(chalk.yellow('  Temporal converter not yet implemented'));
-      break;
-    }
-
     case 'docker': {
       try {
         // Use manifest parameter directly (already loaded)
@@ -202,7 +166,8 @@ async function buildForPlatform(
           );
         }
 
-        const baseImage = dockerConfig.baseImage || 'node:20-alpine';
+        const baseImage =
+          dockerConfig.baseImage || getBuildDefaults().baseImage;
         const agentName = manifest.metadata?.name || 'agent';
         const workdir = dockerConfig.workdir || '/app';
 
@@ -378,7 +343,7 @@ coverage
         };
 
         const deploymentPath = path.join(k8sDir, 'deployment.yaml');
-        fs.writeFileSync(deploymentPath, yaml.dump(deployment));
+        fs.writeFileSync(deploymentPath, yamlStringify(deployment));
         console.log(
           chalk.green(`  ✅ Generated deployment: ${deploymentPath}`)
         );
@@ -403,7 +368,7 @@ coverage
           };
 
           const servicePath = path.join(k8sDir, 'service.yaml');
-          fs.writeFileSync(servicePath, yaml.dump(service));
+          fs.writeFileSync(servicePath, yamlStringify(service));
           console.log(chalk.green(`  ✅ Generated service: ${servicePath}`));
           files.push(servicePath);
         }

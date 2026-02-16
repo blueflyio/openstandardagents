@@ -1,10 +1,11 @@
 /**
- * Tests for OSSA v0.3.0 Workflow Schema
+ * Tests for OSSA v0.4.1 Workflow Schema
  */
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import * as fs from 'fs';
 import * as path from 'path';
+import { API_VERSION } from '../../src/version.js';
 import {
   isOssaWorkflow,
   createWorkflowManifest,
@@ -13,28 +14,28 @@ import {
 } from '../../src/types/workflow';
 import { getApiVersion } from '../../src/utils/version.js';
 
-describe('OSSA v0.3.0 Workflow Schema', () => {
+describe('OSSA v0.4.1 Workflow Schema', () => {
   let ajv: Ajv;
   let schema: object;
 
   beforeAll(() => {
-    // Load the v0.3.x schema
+    // Load the v0.4 schema
     const schemaPath = path.join(
       __dirname,
-      '../../spec/v0.3/ossa-0.3.5.schema.json'
+      '../../spec/v0.4/agent.schema.json'
     );
     schema = JSON.parse(fs.readFileSync(schemaPath, 'utf-8'));
 
     // Setup AJV validator
     ajv = new Ajv({ strict: false, allErrors: true });
     addFormats(ajv);
-    ajv.addSchema(schema, 'ossa-0.3.0');
+    ajv.addSchema(schema, 'ossa-0.4');
   });
 
   describe('kind: Workflow validation', () => {
     it('should validate a minimal Workflow manifest', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3.3',
+        apiVersion: API_VERSION,
         kind: 'Workflow',
         metadata: {
           name: 'minimal-workflow',
@@ -48,14 +49,14 @@ describe('OSSA v0.3.0 Workflow Schema', () => {
         },
       };
 
-      const validate = ajv.getSchema('ossa-0.3.0');
+      const validate = ajv.getSchema('ossa-0.4');
       const valid = validate!(manifest);
       expect(valid).toBe(true);
     });
 
     it('should validate a Workflow with triggers', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3.3',
+        apiVersion: API_VERSION,
         kind: 'Workflow',
         metadata: {
           name: 'triggered-workflow',
@@ -87,14 +88,14 @@ describe('OSSA v0.3.0 Workflow Schema', () => {
         },
       };
 
-      const validate = ajv.getSchema('ossa-0.3.0');
+      const validate = ajv.getSchema('ossa-0.4');
       const valid = validate!(manifest);
       expect(valid).toBe(true);
     });
 
     it('should validate a Workflow with mixed Task and Agent steps', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3.3',
+        apiVersion: API_VERSION,
         kind: 'Workflow',
         metadata: {
           name: 'hybrid-workflow',
@@ -124,14 +125,14 @@ describe('OSSA v0.3.0 Workflow Schema', () => {
         },
       };
 
-      const validate = ajv.getSchema('ossa-0.3.0');
+      const validate = ajv.getSchema('ossa-0.4');
       const valid = validate!(manifest);
       expect(valid).toBe(true);
     });
 
     it('should validate a Workflow with parallel steps', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3.3',
+        apiVersion: API_VERSION,
         kind: 'Workflow',
         metadata: {
           name: 'parallel-workflow',
@@ -158,14 +159,14 @@ describe('OSSA v0.3.0 Workflow Schema', () => {
         },
       };
 
-      const validate = ajv.getSchema('ossa-0.3.0');
+      const validate = ajv.getSchema('ossa-0.4');
       const valid = validate!(manifest);
       expect(valid).toBe(true);
     });
 
     it('should validate a Workflow with conditional branches', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3.3',
+        apiVersion: API_VERSION,
         kind: 'Workflow',
         metadata: {
           name: 'conditional-workflow',
@@ -204,14 +205,14 @@ describe('OSSA v0.3.0 Workflow Schema', () => {
         },
       };
 
-      const validate = ajv.getSchema('ossa-0.3.0');
+      const validate = ajv.getSchema('ossa-0.4');
       const valid = validate!(manifest);
       expect(valid).toBe(true);
     });
 
     it('should validate a Workflow with loop', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3.3',
+        apiVersion: API_VERSION,
         kind: 'Workflow',
         metadata: {
           name: 'loop-workflow',
@@ -249,14 +250,14 @@ describe('OSSA v0.3.0 Workflow Schema', () => {
         },
       };
 
-      const validate = ajv.getSchema('ossa-0.3.0');
+      const validate = ajv.getSchema('ossa-0.4');
       const valid = validate!(manifest);
       expect(valid).toBe(true);
     });
 
     it('should validate a Workflow with error handling', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3.3',
+        apiVersion: API_VERSION,
         kind: 'Workflow',
         metadata: {
           name: 'error-handling-workflow',
@@ -287,14 +288,14 @@ describe('OSSA v0.3.0 Workflow Schema', () => {
         },
       };
 
-      const validate = ajv.getSchema('ossa-0.3.0');
+      const validate = ajv.getSchema('ossa-0.4');
       const valid = validate!(manifest);
       expect(valid).toBe(true);
     });
 
     it('should validate a Workflow with concurrency control', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3.3',
+        apiVersion: API_VERSION,
         kind: 'Workflow',
         metadata: {
           name: 'concurrent-workflow',
@@ -314,14 +315,14 @@ describe('OSSA v0.3.0 Workflow Schema', () => {
         },
       };
 
-      const validate = ajv.getSchema('ossa-0.3.0');
+      const validate = ajv.getSchema('ossa-0.4');
       const valid = validate!(manifest);
       expect(valid).toBe(true);
     });
 
     it('should reject Workflow without steps', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3.3',
+        apiVersion: API_VERSION,
         kind: 'Workflow',
         metadata: {
           name: 'invalid-workflow',
@@ -331,14 +332,14 @@ describe('OSSA v0.3.0 Workflow Schema', () => {
         },
       };
 
-      const validate = ajv.getSchema('ossa-0.3.0');
+      const validate = ajv.getSchema('ossa-0.4');
       const valid = validate!(manifest);
       expect(valid).toBe(false);
     });
 
     it('should reject Workflow with empty steps array', () => {
       const manifest = {
-        apiVersion: 'ossa/v0.3.3',
+        apiVersion: API_VERSION,
         kind: 'Workflow',
         metadata: {
           name: 'invalid-workflow',
@@ -348,7 +349,7 @@ describe('OSSA v0.3.0 Workflow Schema', () => {
         },
       };
 
-      const validate = ajv.getSchema('ossa-0.3.0');
+      const validate = ajv.getSchema('ossa-0.4');
       const valid = validate!(manifest);
       expect(valid).toBe(false);
     });
@@ -357,7 +358,7 @@ describe('OSSA v0.3.0 Workflow Schema', () => {
   describe('TypeScript type guards', () => {
     it('isOssaWorkflow should return true for Workflow manifests', () => {
       const workflow = {
-        apiVersion: 'ossa/v0.3.3',
+        apiVersion: API_VERSION,
         kind: 'Workflow',
         metadata: { name: 'test' },
         spec: { steps: [{ id: 'step-1' }] },
@@ -367,7 +368,7 @@ describe('OSSA v0.3.0 Workflow Schema', () => {
 
     it('isOssaWorkflow should return false for Task manifests', () => {
       const task = {
-        apiVersion: 'ossa/v0.3.3',
+        apiVersion: API_VERSION,
         kind: 'Task',
         metadata: { name: 'test' },
         spec: { execution: { type: 'deterministic' } },
@@ -388,7 +389,7 @@ describe('OSSA v0.3.0 Workflow Schema', () => {
       expect(workflow.metadata.name).toBe('my-workflow');
       expect(workflow.spec.steps).toHaveLength(1);
 
-      const validate = ajv.getSchema('ossa-0.3.0');
+      const validate = ajv.getSchema('ossa-0.4');
       const valid = validate!(workflow);
       expect(valid).toBe(true);
     });
