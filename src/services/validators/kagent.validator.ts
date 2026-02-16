@@ -10,8 +10,31 @@ import type { ErrorObject } from 'ajv';
 import type { OssaAgent, ValidationResult } from '../../types/index.js';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
+
+/**
+ * Resolve the package root directory.
+ * Works in both CJS (Jest uses __dirname) and ESM (searches filesystem).
+ */
+function resolvePackageRoot(): string {
+  if (typeof __dirname !== 'undefined') {
+    return join(__dirname, '..', '..', '..');
+  }
+  try {
+    const pkg = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf-8'));
+    if (pkg.name === '@bluefly/openstandardagents') {
+      return process.cwd();
+    }
+  } catch { /* not package root */ }
+  const nmPath = join(process.cwd(), 'node_modules', '@bluefly', 'openstandardagents');
+  if (existsSync(join(nmPath, 'package.json'))) {
+    return nmPath;
+  }
+  return process.cwd();
+}
+
+const PKG_ROOT = resolvePackageRoot();
 
 @injectable()
 export class KagentValidator {
@@ -23,10 +46,8 @@ export class KagentValidator {
     this.ajv = new Ajv({ allErrors: true, strict: false });
     addFormats(this.ajv);
 
-    // Load Kagent schema from spec/ directory (relative to project root)
-    // Works in both Jest (source tree) and production (project root with dist/)
     const kagentSchemaPath = join(
-      process.cwd(),
+      PKG_ROOT,
       'spec/v0.4/extensions/kagent/kagent.schema.json'
     );
     const kagentSchema = JSON.parse(readFileSync(kagentSchemaPath, 'utf-8'));
