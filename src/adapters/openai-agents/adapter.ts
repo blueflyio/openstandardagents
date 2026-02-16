@@ -181,6 +181,7 @@ export class OpenAIAgentsAdapter extends BaseAdapter {
         description: 'BlueFly Platform Assistant with Drupal MCP tools',
       },
       spec: {
+        role: 'assistant',
         personality: {
           system_prompt:
             'You are the BlueFly Platform Assistant. Use MCP tools to manage content and query data on the Drupal agent platform.',
