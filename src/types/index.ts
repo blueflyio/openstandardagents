@@ -55,6 +55,43 @@ export type {
   ArchitectRecommendation,
 } from './architect.js';
 
+// Export Security Posture types (v0.5)
+export * from './security.js';
+export type {
+  SecurityPosture,
+  ThreatModelEntry,
+  ThreatCategory,
+  ThreatSeverity,
+  SecurityCapability,
+  SandboxingConfig,
+  SandboxType,
+  NetworkAccessConfig,
+  NetworkProtocol,
+  EgressPolicy,
+  DataClassification,
+  ResourceLimits,
+  AuditConfig,
+} from './security.js';
+
+// Export Protocol Declaration types (v0.5)
+export * from './protocols.js';
+export type {
+  ProtocolDeclarations,
+  MCPProtocol,
+  MCPServerConfig,
+  MCPTransport,
+  MCPRole,
+  MCPCapabilities,
+  A2AProtocol,
+  A2ASkill,
+  A2AAgentCard,
+  A2ACapabilities,
+  A2AAuthentication,
+  ANPProtocol,
+  ANPDiscovery,
+  VerifiableCredentialRef,
+} from './protocols.js';
+
 /**
  * Agent Taxonomy Types (v0.4.4+)
  * Defines WHO executes, WHAT they do, and HOW they're structured
@@ -222,6 +259,45 @@ export interface Capability {
 }
 
 import { Adapter, Principal } from './identity.js';
+import type { SecurityPosture } from './security.js';
+import type { ProtocolDeclarations } from './protocols.js';
+
+/**
+ * Publisher information for agent attribution and trust (v0.5)
+ */
+export interface Publisher {
+  /** Publisher display name */
+  name: string;
+  /** Publisher contact email */
+  email?: string;
+  /** Publisher website URL */
+  website?: string;
+  /** PGP public key fingerprint or URL */
+  pgp_key?: string;
+  /** URL to the publisher's agent registry */
+  registry_url?: string;
+}
+
+/**
+ * Agent Identity Model (v0.5)
+ * Enables unique identification, versioning, and publisher attribution.
+ */
+export interface AgentIdentity {
+  /** Hierarchical namespace for scoping agent identifiers */
+  namespace?: string;
+  /** Unique agent identifier within the namespace */
+  agent_id: string;
+  /** Agent identity version (semver) */
+  version?: string;
+  /** Publisher information */
+  publisher?: Publisher;
+  /** Content-addressable checksum for integrity verification */
+  checksum?: string;
+  /** ISO 8601 creation timestamp */
+  created_at?: string;
+  /** ISO 8601 last update timestamp */
+  updated_at?: string;
+}
 
 /**
  * OSSA Agent manifest structure (k8s-style format)
@@ -254,6 +330,8 @@ export interface OssaAgent {
     agentType?: AgentType;
     agentKind?: AgentKind;
     agentArchitecture?: AgentArchitecture;
+    // Agent Identity (v0.5)
+    identity?: AgentIdentity;
     // Agent ID Card (v0.4.5+)
     idCard?: {
       nickname?: string;
@@ -488,6 +566,12 @@ export interface OssaAgent {
       }
     >;
   };
+  // v0.5: Security Posture
+  security?: SecurityPosture;
+
+  // v0.5: Protocol Declarations
+  protocols?: ProtocolDeclarations;
+
   extensions?: {
     agents_md?: AgentsMdExtension;
     llms_txt?: LlmsTxtExtension;
