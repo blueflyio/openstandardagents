@@ -18,17 +18,20 @@ pre-commit:
 pre-push:
   parallel: false
   commands:
-    prepublish-check:
-      run: npm run prepublishOnly
-
-    build:
-      run: npm run build
-
     test-unit:
       run: npm run test:unit
+
+    prepublish-check:
+      run: npm run prepublishOnly
 
     validate-all:
       run: npm run validate
 
     validate-deps:
       run: npm run validate:deps
+
+    validate-sdks:
+      run: npm run validate:sdks
+
+    test-smoke:
+      run: npm run test:smoke
