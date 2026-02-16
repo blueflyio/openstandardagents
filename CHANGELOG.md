@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+#### Schema v0.5 - Agent Identity, Security Posture, Protocol Declarations (#408)
+- **Agent Identity Model** (`metadata.identity`): namespace, agent_id, version, publisher
+  (name, email, website, pgp_key, registry_url), checksum, created_at, updated_at
+- **Security Posture** (`security`): threat_model array (OWASP LLM Top 10 categories),
+  capability declarations (required/optional), sandboxing config (container/vm/wasm/process),
+  network_access constraints (allowed_domains, blocked_domains, protocols, egress_policy),
+  data_classification, audit configuration
+- **Protocol Declarations** (`protocols`): MCP (version, role, servers, capabilities),
+  A2A (version, endpoint, agent_card, skills, authentication),
+  ANP (DID, verifiable_credentials, discovery)
+- New TypeScript types: SecurityPosture, ProtocolDeclarations, AgentIdentity, Publisher
+- Two example manifests: full v0.5 showcase and minimal v0.5 usage
+- All v0.5 fields are optional for full backward compatibility with v0.4
+
+### Changed
+
+#### Export System Refactoring (#377)
+- **BaseExporter** abstract class extracts common export orchestration pattern
+  - Template Method pattern: subclasses implement generateFiles() and platformValidate()
+  - Centralizes validation, timing, error handling, and provenance generation
+  - Provides shared helpers: generatePackageJsonFile(), generateTsConfigFile(),
+    generateReadmeFile(), generateGitIgnoreFile(), getAgentName(), getTools(), getCapabilities()
+- **MCP adapter** refactored to extend BaseExporter (removed private generatePackageJson,
+  generateTsConfig, generateReadme methods)
+- **Cursor adapter** refactored to extend BaseExporter (same private method elimination)
+- **Claude Code adapter** refactored to extend BaseExporter (simplified export orchestration)
+- Net reduction of ~306 lines across 3 refactored adapters
+
 ## [0.4.5] - 2026-02-10
 
 ### Summary
