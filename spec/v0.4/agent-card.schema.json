@@ -1,0 +1,133 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openstandardagents.com/schemas/v0.4/agent-card.schema.json",
+  "title": "OSSA Agent Card",
+  "description": "Google A2A-compatible agent card for agent discovery. Generated from OSSA manifests and served at .well-known/agent-card.json.",
+  "type": "object",
+  "required": ["uri", "name", "version", "ossaVersion", "capabilities", "endpoints", "transport", "authentication", "encryption"],
+  "properties": {
+    "uri": {
+      "type": "string",
+      "pattern": "^agent://",
+      "description": "Agent URI in the format agent://{namespace}/{name}"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable agent name"
+    },
+    "version": {
+      "type": "string",
+      "description": "Agent version (semver)"
+    },
+    "ossaVersion": {
+      "type": "string",
+      "description": "OSSA specification version (e.g., ossa/v0.4)"
+    },
+    "capabilities": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "List of agent capabilities"
+    },
+    "tools": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "description", "inputSchema"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Tool name"
+          },
+          "description": {
+            "type": "string",
+            "description": "What the tool does"
+          },
+          "inputSchema": {
+            "type": "object",
+            "description": "JSON Schema for tool input"
+          },
+          "outputSchema": {
+            "type": "object",
+            "description": "JSON Schema for tool output"
+          }
+        }
+      },
+      "description": "Tools the agent can call"
+    },
+    "role": {
+      "type": "string",
+      "description": "Agent's role/system prompt summary"
+    },
+    "endpoints": {
+      "type": "object",
+      "properties": {
+        "http": { "type": "string", "format": "uri" },
+        "grpc": { "type": "string" },
+        "websocket": { "type": "string", "format": "uri" }
+      },
+      "description": "Network endpoints for reaching the agent"
+    },
+    "transport": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["http", "grpc", "websocket", "mqtt"]
+      },
+      "minItems": 1,
+      "description": "Supported transport protocols"
+    },
+    "authentication": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["mtls", "bearer", "oidc", "api_key", "none"]
+      },
+      "minItems": 1,
+      "description": "Supported authentication methods"
+    },
+    "encryption": {
+      "type": "object",
+      "required": ["tlsRequired", "minTlsVersion"],
+      "properties": {
+        "tlsRequired": {
+          "type": "boolean",
+          "description": "Whether TLS is required"
+        },
+        "minTlsVersion": {
+          "type": "string",
+          "enum": ["1.2", "1.3"],
+          "description": "Minimum TLS version"
+        },
+        "cipherSuites": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Allowed cipher suites"
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "team": { "type": "string" },
+        "environment": { "type": "string" },
+        "region": { "type": "string" },
+        "description": { "type": "string" },
+        "author": { "type": "string" }
+      },
+      "additionalProperties": true,
+      "description": "Additional metadata"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["healthy", "degraded", "unavailable"],
+      "description": "Current agent health status"
+    },
+    "lastHeartbeat": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last heartbeat timestamp (ISO 8601)"
+    }
+  },
+  "additionalProperties": false
+}
