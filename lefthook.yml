@@ -35,7 +35,7 @@ pre-commit:
       glob: "*.{yml,yaml}"
       run: |
         for f in {staged_files}; do
-          python3 -c "import yaml; yaml.safe_load(open('$f'))" 2>/dev/null || { echo "Invalid YAML: $f"; exit 1; }
+          python3 -c "import yaml; list(yaml.safe_load_all(open('$f')))" 2>/dev/null || { echo "Invalid YAML: $f"; exit 1; }
         done
 
 pre-push:

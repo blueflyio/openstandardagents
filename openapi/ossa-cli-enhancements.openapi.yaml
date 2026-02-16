@@ -21,7 +21,7 @@ info:
 servers:
   - url: http://localhost:4000/api/v1
     description: Local development server
-  - url: https://api.blueflyagents.com/api/v1
+  - url: https://mesh.blueflyagents.com/api/v1
     description: Production API server
 
 tags:
@@ -514,8 +514,8 @@ components:
                 type: number
               examples:
                 type: array
-                  items:
-                    type: string
+                items:
+                  type: string
 
     ExampleGenerationRequest:
       type: object

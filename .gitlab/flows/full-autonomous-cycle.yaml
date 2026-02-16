@@ -8,7 +8,7 @@ image: node:22-alpine
 injectGatewayToken: true
 
 variables:
-  PLATFORM_AGENTS_API: ${PLATFORM_AGENTS_API_URL:-https://api.blueflyagents.com}
+  PLATFORM_AGENTS_API: ${PLATFORM_AGENTS_API_URL:-https://mesh.blueflyagents.com}
 
 commands:
   - echo "Starting Full Autonomous Cycle"
@@ -20,7 +20,7 @@ steps:
     tool: InvokePlatformAgent
     with:
       agent: issue-lifecycle-manager
-      service_account: @issue-lifecycle-manager
+      service_account: "@issue-lifecycle-manager"
       token: ${SERVICE_ACCOUNT_ISSUE_LIFECYCLE_TOKEN}
       task: triage-all
       inputs:
@@ -34,7 +34,7 @@ steps:
     tool: InvokePlatformAgent
     with:
       agent: code-quality-reviewer
-      service_account: @code-quality-reviewer
+      service_account: "@code-quality-reviewer"
       token: ${SERVICE_ACCOUNT_CODE_QUALITY_TOKEN}
       task: comprehensive-review
       inputs:
@@ -49,7 +49,7 @@ steps:
     tool: InvokePlatformAgent
     with:
       agent: vulnerability-scanner
-      service_account: @vuln-scanner
+      service_account: "@vuln-scanner"
       token: ${SERVICE_ACCOUNT_VULN_SCANNER_TOKEN}
       task: full-scan
       inputs:
@@ -63,7 +63,7 @@ steps:
     tool: InvokePlatformAgent
     with:
       agent: documentation-aggregator
-      service_account: @documentation-aggregator
+      service_account: "@documentation-aggregator"
       token: ${SERVICE_ACCOUNT_DOCUMENTATION_TOKEN}
       task: sync-all-docs
       inputs:
@@ -77,7 +77,7 @@ steps:
     tool: InvokePlatformAgent
     with:
       agent: release-coordinator
-      service_account: @release-coordinator
+      service_account: "@release-coordinator"
       token: ${SERVICE_ACCOUNT_RELEASE_COORDINATOR_TOKEN}
       task: check-and-bump
       inputs:
@@ -91,7 +91,7 @@ steps:
     tool: InvokePlatformAgent
     with:
       agent: mr-reviewer
-      service_account: @mr-reviewer
+      service_account: "@mr-reviewer"
       token: ${SERVICE_ACCOUNT_MR_REVIEWER_TOKEN}
       task: review-all-open
       inputs:
@@ -105,7 +105,7 @@ steps:
     tool: InvokePlatformAgent
     with:
       agent: release-coordinator
-      service_account: @release-coordinator
+      service_account: "@release-coordinator"
       token: ${SERVICE_ACCOUNT_RELEASE_COORDINATOR_TOKEN}
       task: check-milestone-readiness
       inputs:

@@ -3521,7 +3521,7 @@ Guidelines:
         type: 'input',
         name: 'api_url',
         message: '  Registry API URL:',
-        default: 'https://api.blueflyagents.com',
+        default: 'https://mesh.blueflyagents.com',
         when: (answers: any) => answers.register_agent,
       },
     ]);

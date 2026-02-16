@@ -1,5 +1,5 @@
 {
-  "url": "https://api.blueflyagents.com/api/webhooks/gitlab",
+  "url": "https://mesh.blueflyagents.com/api/webhooks/gitlab",
   "token": "${WEBHOOK_SECRET}",
   "enable_ssl_verification": true,
   "push_events": false,

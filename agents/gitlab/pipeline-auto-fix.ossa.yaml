@@ -325,7 +325,7 @@ extensions:
       - create_merge_request
       - write_comments
     webhook:
-      url: http://api.blueflyagents.com/webhook/pipeline-auto-fix
+      url: http://mesh.blueflyagents.com/webhook/pipeline-auto-fix
       events:
         - pipeline_events
     confidenceThresholds:

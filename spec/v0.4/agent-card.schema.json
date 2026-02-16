@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://openstandardagents.com/schemas/v0.4/agent-card.schema.json",
+  "$id": "https://openstandardagents.org/schemas/v0.4/agent-card.schema.json",
   "title": "OSSA Agent Card",
   "description": "Universal agent contract for discovery. Bridges MCP (tools) and A2A (agents). Generated from OSSA manifests and served at .well-known/agent-card.json.",
   "type": "object",

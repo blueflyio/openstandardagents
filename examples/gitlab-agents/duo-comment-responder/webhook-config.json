@@ -1,5 +1,5 @@
 {
-  "url": "http://api.blueflyagents.com/webhook/duo-comment-responder",
+  "url": "http://mesh.blueflyagents.com/webhook/duo-comment-responder",
   "token": "${WEBHOOK_SECRET}",
   "enable_ssl_verification": false,
   "push_events": false,

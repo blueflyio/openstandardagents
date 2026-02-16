@@ -64,16 +64,16 @@ validation:
   # OSSA schema versions to validate against
   schemas:
     - version: "0.3.3"
-      url: "https://openstandardagents.com/schemas/v0.3.3/agent.schema.json"
+      url: "https://openstandardagents.org/schemas/v0.3.3/agent.schema.json"
       strict: true
     - version: "0.3.2"
-      url: "https://openstandardagents.com/schemas/v0.3.2/agent.schema.json"
+      url: "https://openstandardagents.org/schemas/v0.3.2/agent.schema.json"
       strict: true
     - version: "0.3.1"
-      url: "https://openstandardagents.com/schemas/v0.3.1/agent.schema.json"
+      url: "https://openstandardagents.org/schemas/v0.3.1/agent.schema.json"
       strict: false
     - version: "0.3.0"
-      url: "https://openstandardagents.com/schemas/v0.3.0/agent.schema.json"
+      url: "https://openstandardagents.org/schemas/v0.3.0/agent.schema.json"
       strict: false
 
   # File patterns to validate
@@ -159,7 +159,7 @@ tools:
 # Agent environment configuration
 environment:
   # Schema registry URL (can be overridden per project)
-  OSSA_SCHEMA_REGISTRY: "https://openstandardagents.com/schemas"
+  OSSA_SCHEMA_REGISTRY: "https://openstandardagents.org/schemas"
 
   # Validation strictness level (strict, normal, permissive)
   VALIDATION_LEVEL: "strict"
@@ -192,7 +192,7 @@ workflow_integration:
       Your OSSA manifest does not comply with the schema or best practices.
       Please review the validation errors and fix them before merging.
 
-      For help, see: https://openstandardagents.com/docs/validation
+      For help, see: https://openstandardagents.org/docs/validation
 
 # Knowledge Graph integration (GitLab Ultimate)
 knowledge_graph:
@@ -256,7 +256,7 @@ metadata:
   author: "BlueFly Agents Platform"
   license: "MIT"
   repository: "https://gitlab.com/blueflyio/ossa/openstandardagents"
-  documentation: "https://openstandardagents.com/docs/validation"
+  documentation: "https://openstandardagents.org/docs/validation"
   support: "https://gitlab.com/blueflyio/ossa/openstandardagents/-/issues"
 
 # Public agent configuration
