@@ -1,0 +1,350 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# OSSA Showcase: Full-Power Agent Card
+# ─────────────────────────────────────────────────────────────────────────────
+# This manifest demonstrates EVERY feature OSSA supports.
+# Run: ossa agent-card generate examples/showcase/full-power-agent.ossa.yaml --stdout
+#
+# "Every Agent Needs a Contract" — this IS that contract.
+# One manifest. One standard. Every platform.
+# MCP connects tools. A2A connects agents. OSSA defines the contract.
+# ─────────────────────────────────────────────────────────────────────────────
+
+apiVersion: ossa/v0.4.5
+kind: Agent
+metadata:
+  name: enterprise-support-orchestrator
+  version: 2.1.0
+  description: >
+    Enterprise-grade multi-agent orchestrator with full MCP tool integration,
+    A2A agent-to-agent communication, autonomous escalation, cost governance,
+    and production observability. The definitive OSSA showcase.
+
+  # ── Agent Taxonomy ──
+  agentType: claude                       # Runtime: claude, kagent, openai, langchain, crewai
+  agentKind: orchestrator                 # Role: orchestrator, worker, reviewer, analyzer
+
+  agentArchitecture:
+    pattern: swarm                        # Pattern: swarm, pipeline, tree, graph
+    capabilities:
+      - handoff                           # Can transfer to other agents
+      - streaming                         # Supports streaming responses
+      - context                           # Maintains conversation context
+      - tools                             # Can call external tools
+      - vision                            # Can process images/screenshots
+      - code-execution                    # Can execute code safely
+    coordination:
+      handoffStrategy: automatic          # automatic, manual, hybrid
+      maxDepth: 5                         # Max orchestration depth
+    runtime:
+      scalability: horizontal             # horizontal, vertical, none
+      executionModel: streaming           # streaming, batch, request-response
+      preferredRegion: us-east-1
+
+  labels:
+    domain: enterprise-support
+    team: platform-engineering
+    environment: production
+    capability: support,escalation,routing,analysis
+    framework: a2a
+    tier: tier-3
+    compliance: soc2,gdpr
+
+  annotations:
+    documentation: https://docs.example.com/agents/enterprise-support
+    runbook: https://runbooks.example.com/enterprise-support
+    support: platform-eng@example.com
+    sla: "99.9%"
+
+spec:
+  # ── LLM Configuration ──
+  model:
+    provider: anthropic
+    name: claude-sonnet-4-5-20250929
+    temperature: 0.7
+    max_tokens: 8192
+
+  # ── System Prompt ──
+  system: |
+    You are an enterprise support orchestrator managing a team of specialist agents.
+    Route requests to the right specialist, maintain context across handoffs,
+    and ensure every customer interaction meets SLA requirements.
+
+    Specialist Team:
+    - @technical-support: Deep technical troubleshooting
+    - @billing-support: Billing, invoicing, subscription management
+    - @security-ops: Security incidents and access reviews
+    - @product-specialist: Feature requests and product guidance
+
+  # ── Tools ──
+  tools:
+    - name: route_to_specialist
+      description: Route customer request to appropriate specialist agent
+      input_schema:
+        type: object
+        required: [agentId, reason, priority]
+        properties:
+          agentId:
+            type: string
+            description: Target specialist agent ID
+          reason:
+            type: string
+            description: Why this specialist is appropriate
+          priority:
+            type: string
+            enum: [low, medium, high, critical]
+          context:
+            type: object
+            description: Conversation context to pass along
+
+    - name: search_knowledge_base
+      description: Search enterprise knowledge base for relevant articles
+      input_schema:
+        type: object
+        required: [query]
+        properties:
+          query:
+            type: string
+          category:
+            type: string
+            enum: [technical, billing, security, product, general]
+          limit:
+            type: integer
+            default: 5
+
+    - name: create_ticket
+      description: Create a support ticket in the ticketing system
+      input_schema:
+        type: object
+        required: [title, description, priority]
+        properties:
+          title:
+            type: string
+          description:
+            type: string
+          priority:
+            type: string
+            enum: [low, medium, high, critical]
+          assignee:
+            type: string
+
+    - name: check_sla_status
+      description: Check SLA compliance for current interaction
+      input_schema:
+        type: object
+        required: [ticketId]
+        properties:
+          ticketId:
+            type: string
+          includeHistory:
+            type: boolean
+            default: false
+
+  # ── Handoffs ──
+  handoffs:
+    - to: technical-support
+      condition: "user reports bugs, errors, or system issues"
+    - to: billing-support
+      condition: "user has billing, payment, or subscription questions"
+    - to: security-ops
+      condition: "user reports security incidents or needs access reviews"
+    - to: product-specialist
+      condition: "user requests features or needs product guidance"
+
+  # ── Autonomy ──
+  autonomy:
+    level: semi-autonomous
+    approval_required: false
+    allowed_actions:
+      - route_to_specialist
+      - search_knowledge_base
+      - create_ticket
+      - check_sla_status
+    blocked_actions:
+      - delete_account
+      - modify_billing
+      - grant_admin_access
+
+  # ── Constraints ──
+  constraints:
+    cost:
+      maxTokensPerDay: 500000
+      maxTokensPerRequest: 16384
+      maxCostPerDay: 50.00
+      currency: USD
+    performance:
+      maxLatencySeconds: 3.0
+      maxConcurrentRequests: 50
+      timeoutSeconds: 60
+    resources:
+      cpu: 500m
+      memory: 1Gi
+
+  # ── Observability ──
+  observability:
+    tracing:
+      enabled: true
+      exporter: otlp
+      endpoint: https://otel.example.com:4318
+      samplingRate: 1.0
+    metrics:
+      enabled: true
+      exporter: prometheus
+      endpoint: https://metrics.example.com/push
+    logging:
+      level: info
+      format: json
+
+  # ── Extensions ──
+  extensions:
+    # ── MCP Tool Servers ──
+    mcp:
+      servers:
+        - name: knowledge-base
+          description: Enterprise knowledge base search via MCP
+          transport:
+            type: stdio
+            command: npx
+            args: ["-y", "@example/mcp-knowledge-base", "--index", "support"]
+          version: "1.2.0"
+          capabilities:
+            resources:
+              subscribe: true
+              listChanged: true
+            tools:
+              listChanged: true
+            logging:
+              enabled: true
+              level: info
+
+        - name: ticketing-system
+          description: Jira/ServiceNow integration via MCP
+          transport:
+            type: sse
+            url: https://mcp.example.com/ticketing
+          version: "2.0.0"
+          capabilities:
+            tools:
+              listChanged: true
+
+      resources:
+        - uri: "kb://support/faq"
+          name: "Support FAQ"
+          description: "Frequently asked questions for customer support"
+          mimeType: "application/json"
+        - uri: "kb://support/runbooks"
+          name: "Runbooks"
+          description: "Operational runbooks for common issues"
+          mimeType: "text/markdown"
+
+    # ── A2A Agent Protocol ──
+    a2a:
+      enabled: true
+
+      protocol:
+        type: json-rpc
+        version: "2.0"
+        messageFormat: json
+        timeout: 60
+
+      endpoints:
+        - agentId: "@technical-support"
+          url: "https://agents.example.com/technical-support/a2a"
+          capabilities: ["debugging", "troubleshooting", "log-analysis"]
+          priority: 10
+
+        - agentId: "@billing-support"
+          url: "https://agents.example.com/billing-support/a2a"
+          capabilities: ["billing", "payments", "subscriptions"]
+          priority: 8
+
+        - agentId: "@security-ops"
+          url: "https://agents.example.com/security-ops/a2a"
+          capabilities: ["incident-response", "access-review", "threat-analysis"]
+          priority: 15
+
+        - agentId: "@product-specialist"
+          url: "https://agents.example.com/product-specialist/a2a"
+          capabilities: ["features", "roadmap", "product-guidance"]
+          priority: 5
+
+      routing:
+        strategy: priority-based
+        routingRules:
+          - name: "security-critical"
+            condition: "message.category == 'security' || message.priority == 'critical'"
+            target: "@security-ops"
+            priority: 20
+
+          - name: "technical-escalation"
+            condition: "message.category == 'technical' && message.complexity > 3"
+            target: "@technical-support"
+            priority: 10
+
+          - name: "billing-routing"
+            condition: "message.category == 'billing'"
+            target: "@billing-support"
+            priority: 8
+
+      delegation:
+        enabled: true
+        maxDepth: 3
+        timeout: 300
+        handoff:
+          enabled: true
+          preserveContext: true
+          handoffRules:
+            - name: "confidence-handoff"
+              condition: "confidence < 0.4"
+              target: "@technical-support"
+              message: "Low confidence — escalating to specialist"
+
+            - name: "vip-handoff"
+              condition: "customer.tier == 'enterprise'"
+              target: "@product-specialist"
+              message: "Enterprise customer requiring priority handling"
+
+      completionSignals:
+        enabled: true
+        signals: ["continue", "complete", "blocked", "escalate"]
+        handlers:
+          - signal: escalate
+            action: handoff
+            target: "@security-ops"
+          - signal: blocked
+            action: handoff
+            target: "@technical-support"
+          - signal: complete
+            action: notify
+
+      authentication:
+        type: jwt
+        jwt:
+          algorithm: RS256
+          issuer: agents.example.com
+
+      retryPolicy:
+        enabled: true
+        maxRetries: 3
+        backoff: exponential
+        retryableErrors:
+          - "UNAVAILABLE"
+          - "TIMEOUT"
+          - "RATE_LIMITED"
+
+      circuitBreaker:
+        enabled: true
+        failureThreshold: 5
+        successThreshold: 2
+        timeout: 120
+
+      observability:
+        tracing:
+          enabled: true
+          provider: opentelemetry
+          samplingRate: 1.0
+        metrics:
+          enabled: true
+          endpoint: "/metrics"
+        logging:
+          level: info
+          format: json

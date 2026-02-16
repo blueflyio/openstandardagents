@@ -61,6 +61,9 @@ import { updateCommand } from './commands/update.command.js';
 import { testCommand } from './commands/test.command.js';
 import { validateCommand } from './commands/validate.command.js';
 
+// Agent Card (A2A discovery)
+import { agentCardCommand } from './commands/agent-card.command.js';
+
 // Registry commands (GAID/DID)
 import { generateGaidCommand } from './commands/generate-gaid.command.js';
 import { registerCommand } from './commands/register.js';
@@ -222,6 +225,7 @@ program.addCommand(migrateCommand);
 // --- Agent management ---
 program.addCommand(agentsCommandGroup);
 program.addCommand(agentsLocalCommandGroup);
+program.addCommand(agentCardCommand);
 program.addCommand(generateGaidCommand);
 
 // --- Development ---

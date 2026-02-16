@@ -26,6 +26,7 @@ variables:
 
 include:
   - local: '.gitlab/ci/token-rotation.yml'
+  - local: '.gitlab/ci/mirror-github.yml'
 
 # =============================================================================
 # BASE JOB TEMPLATE
@@ -205,6 +206,10 @@ deploy:npm:
   only:
     - main
 
+
+# =============================================================================
+# DEPLOY STAGE - GitLab Release
+# =============================================================================
 deploy:gitlab-release:
   stage: deploy
   image: registry.gitlab.com/gitlab-org/release-cli:latest
@@ -225,12 +230,15 @@ deploy:gitlab-release:
 
       See [CHANGELOG.md](CHANGELOG.md) for release notes.
 
+      ### Install
       ```bash
       npm install @bluefly/openstandardagents@${VERSION}
       ```
 
+      ### Links
       - [npm](https://www.npmjs.com/package/@bluefly/openstandardagents/v/${VERSION})
       - [GitHub mirror](https://github.com/blueflyio/openstandardagents)
+      - [Changelog](https://gitlab.com/blueflyio/ossa/openstandardagents/-/blob/main/CHANGELOG.md)
     assets:
       links:
         - name: "npm package"
@@ -238,44 +246,41 @@ deploy:gitlab-release:
   only:
     - main
 
-# =============================================================================
-# SYNC STAGE - Mirror to GitHub (read-only)
-# =============================================================================
-# Replaces GitLab project mirroring setting.
-# GITHUB_TOKEN must be set in CI/CD variables (fine-grained PAT with Contents write).
-# Syncs main + release branch + tags. Runs after deploy or on schedule.
-# =============================================================================
-sync:github:
-  stage: sync
-  image: alpine/git:latest
-  variables:
-    GIT_STRATEGY: clone
-    GIT_DEPTH: 0
-  before_script:
-    - git config user.name "OSSA Release Bot"
-    - git config user.email "release-bot@openstandardagents.org"
+# GitLab release on tag creation (covers RC and stable tags from any branch)
+deploy:gitlab-release-tag:
+  stage: deploy
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  needs: []
   script:
-    - |
-      if [ -z "$GITHUB_TOKEN" ]; then
-        echo "GITHUB_TOKEN not set - skipping GitHub sync"
-        exit 0
-      fi
+    - echo "Creating GitLab release for tag ${CI_COMMIT_TAG}"
+  release:
+    tag_name: "${CI_COMMIT_TAG}"
+    name: "Release ${CI_COMMIT_TAG}"
+    description: |
+      ## OSSA ${CI_COMMIT_TAG}
 
-      GITHUB_URL="https://x-access-token:${GITHUB_TOKEN}@github.com/blueflyio/openstandardagents.git"
+      ### Install
+      ```bash
+      npm install @bluefly/openstandardagents@${CI_COMMIT_TAG#v}
+      ```
 
-      echo "Syncing main to GitHub..."
-      git push "$GITHUB_URL" origin/main:main --force 2>&1 || echo "WARN: main sync failed (non-fatal)"
-
-      echo "Syncing release/v0.4.x to GitHub..."
-      git push "$GITHUB_URL" origin/release/v0.4.x:release/v0.4.x --force 2>&1 || echo "WARN: release sync failed (non-fatal)"
-
-      echo "Syncing tags to GitHub..."
-      git push "$GITHUB_URL" --tags --force 2>&1 || echo "WARN: tag sync failed (non-fatal)"
-
-      echo "GitHub sync complete"
+      ### Links
+      - [npm](https://www.npmjs.com/package/@bluefly/openstandardagents/v/${CI_COMMIT_TAG#v})
+      - [GitLab Package](https://gitlab.com/blueflyio/ossa/openstandardagents/-/packages)
+      - [GitHub mirror](https://github.com/blueflyio/openstandardagents/releases/tag/${CI_COMMIT_TAG})
+      - [Changelog](https://gitlab.com/blueflyio/ossa/openstandardagents/-/blob/main/CHANGELOG.md)
   rules:
-    - if: $CI_COMMIT_BRANCH == "main"
+    # Stable tags: v1.2.3
+    - if: $CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/
       when: on_success
-    - if: $CI_PIPELINE_SOURCE == "schedule"
-      when: always
-  allow_failure: true
+    # RC tags: v1.2.3-rc.N
+    - if: $CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+$/
+      when: on_success
+
+# =============================================================================
+# SYNC STAGE - Defined in .gitlab/ci/mirror-github.yml (included above)
+# =============================================================================
+# Syncs main + release/* branches + stable/RC tags to GitHub
+# Auto-creates GitHub releases for every tag
+# GITHUB_TOKEN must be set in CI/CD variables
+# =============================================================================
