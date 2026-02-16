@@ -7,6 +7,7 @@ import { BundleService } from '../../../src/services/registry/bundle.service.js'
 import { mkdtemp, rm, writeFile, mkdir } from 'fs/promises';
 import { tmpdir } from 'os';
 import { join } from 'path';
+import { API_VERSION } from '../../../src/version.js';
 
 describe.skip('BundleService', () => {
   let bundleService: BundleService;

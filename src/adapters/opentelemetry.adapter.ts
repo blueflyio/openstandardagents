@@ -103,6 +103,8 @@ export interface TelemetryInstance {
   meter: OpenTelemetryMeter | null;
   logger: OpenTelemetryLogger | null;
   sdk: OpenTelemetrySDK | null;
+  meterProvider?: OpenTelemetryMeter;
+  loggerProvider?: OpenTelemetryLogger;
 }
 
 export class OpenTelemetryAdapter {
@@ -129,9 +131,13 @@ export class OpenTelemetryAdapter {
     }
 
     // Dynamic import OpenTelemetry SDK (optional dependencies)
-// @ts-expect-error - Missing type declarations for @opentelemetry/resources
+    // @ts-expect-error - Missing type declarations for @opentelemetry/resources
     const { NodeSDK } = await import('@opentelemetry/sdk-node');
     const { Resource } = await import('@opentelemetry/resources');
+    const { MeterProvider, PeriodicExportingMetricReader } =
+      await import('@opentelemetry/sdk-metrics');
+    const { LoggerProvider, BatchLogRecordProcessor } =
+      await import('@opentelemetry/sdk-logs');
 
     // Build resource attributes (using standard semantic convention attribute names)
     const resourceAttributes: Record<string, string> = {
@@ -148,36 +154,81 @@ export class OpenTelemetryAdapter {
         ? await this.createTraceExporter(config.traces)
         : undefined;
 
-    // Metric exporter is prepared but not yet used (TODO: implement metricReader)
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const _metricExporter =
+    // Configure metric exporter and reader
+    const metricExporter =
       config.metrics?.enabled && config.metrics.exporter !== 'none'
         ? await this.createMetricExporter(config.metrics)
+        : undefined;
+
+    const metricReader = metricExporter
+      ? new PeriodicExportingMetricReader({
+          exporter: metricExporter,
+          exportIntervalMillis:
+            (config.metrics?.collection_interval_seconds || 60) * 1000,
+        })
+      : undefined;
+
+    // Configure log exporter
+    const logExporter =
+      config.logs?.enabled && config.logs.exporter !== 'none'
+        ? await this.createLogExporter(config.logs)
         : undefined;
 
     // Initialize SDK
     const sdk = new NodeSDK({
       resource,
       traceExporter,
-      // metricReader: metricExporter ? new PeriodicExportingMetricReader({ exporter: metricExporter }) : undefined,
+      // Note: metricReader is handled separately via MeterProvider
     });
 
     sdk.start();
 
-    // Get tracer and meter
+    // Initialize MeterProvider
+    const meterProvider = new MeterProvider({
+      resource,
+      readers: metricReader ? [metricReader] : [],
+    });
+    const meter =
+      config.metrics?.enabled && config.metrics.exporter !== 'none'
+        ? meterProvider.getMeter(
+            config.service_name || agentMetadata.name,
+            config.service_version || agentMetadata.version
+          )
+        : null;
+
+    // Initialize LoggerProvider
+    let loggerProvider: any = null;
+    let logger: OpenTelemetryLogger | null = null;
+
+    if (
+      config.logs?.enabled &&
+      config.logs.exporter !== 'none' &&
+      logExporter
+    ) {
+      loggerProvider = new LoggerProvider({
+        resource,
+        logRecordProcessors: [new BatchLogRecordProcessor(logExporter)],
+      });
+      logger = loggerProvider.getLogger(
+        config.service_name || agentMetadata.name,
+        config.service_version || agentMetadata.version
+      );
+    }
+
+    // Get tracer
     const { trace } = await import('@opentelemetry/api');
     const tracer = trace.getTracer(
       config.service_name || agentMetadata.name,
       config.service_version || agentMetadata.version
     );
 
-    // TODO: Initialize meter and logger
-
     this.instance = {
       tracer,
-      meter: null, // TODO: Initialize meter
-      logger: null, // TODO: Initialize logger
+      meter,
+      logger,
       sdk,
+      meterProvider,
+      loggerProvider,
     };
 
     return this.instance;
@@ -224,7 +275,7 @@ export class OpenTelemetryAdapter {
           throw new Error('@opentelemetry/exporter-zipkin not installed');
         }
       }
-// @ts-expect-error - Missing type declarations for @opentelemetry/sdk-trace-base
+      // @ts-expect-error - Missing type declarations for @opentelemetry/sdk-trace-base
       case 'console': {
         try {
           const ConsoleExporter = await import('@opentelemetry/sdk-trace-base');
@@ -273,6 +324,50 @@ export class OpenTelemetryAdapter {
       case 'console': {
         // Console metric exporter
         return undefined; // TODO: Implement
+      }
+      default:
+        return undefined;
+    }
+  }
+
+  /**
+   * Create log exporter based on config
+   */
+  private async createLogExporter(
+    config: NonNullable<OpenTelemetryExtension['logs']>
+  ) {
+    switch (config.exporter) {
+      case 'otlp': {
+        try {
+          const LogExporter =
+            await import('@opentelemetry/exporter-logs-otlp-http');
+          return new LogExporter.OTLPLogExporter({
+            url: config.endpoint || 'http://localhost:4318/v1/logs',
+          });
+        } catch {
+          throw new Error(
+            '@opentelemetry/exporter-logs-otlp-http not installed'
+          );
+        }
+      }
+      case 'console': {
+        try {
+          const { ConsoleLogRecordExporter } =
+            await import('@opentelemetry/sdk-logs');
+          return new ConsoleLogRecordExporter();
+        } catch {
+          throw new Error('@opentelemetry/sdk-logs not installed');
+        }
+      }
+      case 'json': {
+        // JSON log exporter - similar to console but JSON formatted
+        try {
+          const { ConsoleLogRecordExporter } =
+            await import('@opentelemetry/sdk-logs');
+          return new ConsoleLogRecordExporter();
+        } catch {
+          throw new Error('@opentelemetry/sdk-logs not installed');
+        }
       }
       default:
         return undefined;
@@ -330,11 +425,15 @@ export class OpenTelemetryAdapter {
    * Record metric
    */
   recordMetric(
-    _name: string,
-    _value: number,
-    _attributes?: Record<string, string>
+    name: string,
+    value: number,
+    attributes?: Record<string, string>
   ) {
-    // TODO: Implement metric recording
+    if (!this.instance?.meter) return;
+
+    // Create a counter or histogram based on the metric name
+    const counter = this.instance.meter.createCounter(name);
+    counter.add(value, attributes);
   }
 
   /**
@@ -343,7 +442,13 @@ export class OpenTelemetryAdapter {
   async shutdown(): Promise<void> {
     if (this.instance?.sdk) {
       await this.instance.sdk.shutdown();
-      this.instance = null;
     }
+    if (this.instance?.meterProvider) {
+      await this.instance.meterProvider.shutdown();
+    }
+    if (this.instance?.loggerProvider) {
+      await this.instance.loggerProvider.shutdown();
+    }
+    this.instance = null;
   }
 }

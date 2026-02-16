@@ -125,7 +125,7 @@ export const TEST_SCENARIOS: Record<string, TestScenario> = {
     ],
   },
 
-  'performance': {
+  performance: {
     id: 'performance',
     name: 'Performance',
     description: 'Test agent performance characteristics',
@@ -171,7 +171,7 @@ export const TEST_SCENARIOS: Record<string, TestScenario> = {
     ],
   },
 
-  'comprehensive': {
+  comprehensive: {
     id: 'comprehensive',
     name: 'Comprehensive Test Suite',
     description: 'Full test suite covering all scenarios',
@@ -198,7 +198,11 @@ export function getScenario(id: string): TestScenario | undefined {
 /**
  * List all available scenarios
  */
-export function listScenarios(): Array<{ id: string; name: string; description: string }> {
+export function listScenarios(): Array<{
+  id: string;
+  name: string;
+  description: string;
+}> {
   return Object.values(TEST_SCENARIOS).map((scenario) => ({
     id: scenario.id,
     name: scenario.name,
@@ -209,9 +213,17 @@ export function listScenarios(): Array<{ id: string; name: string; description: 
 /**
  * Get scenario by category
  */
-export function getScenariosByCategory(category: 'basic' | 'advanced' | 'all'): TestScenario[] {
+export function getScenariosByCategory(
+  category: 'basic' | 'advanced' | 'all'
+): TestScenario[] {
   const basic = ['basic-interaction', 'tool-usage'];
-  const advanced = ['error-handling', 'code-generation', 'content-processing', 'performance', 'edge-cases'];
+  const advanced = [
+    'error-handling',
+    'code-generation',
+    'content-processing',
+    'performance',
+    'edge-cases',
+  ];
 
   let scenarioIds: string[];
   if (category === 'basic') {

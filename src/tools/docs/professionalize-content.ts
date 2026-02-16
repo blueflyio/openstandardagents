@@ -2,12 +2,12 @@
 
 /**
  * Professionalize Content - AI-Powered Emoji Removal and Content Rewriting
- * 
+ *
  * This script uses AI to:
  * 1. Detect emojis in commit messages, MR descriptions, issue descriptions
  * 2. Remove emojis and replace with professional language
  * 3. Ensure content maintains professional tone
- * 
+ *
  * Usage:
  *   npm run professionalize-content -- <file> [--dry-run]
  *   CI: Runs automatically on commits/MRs
@@ -26,7 +26,8 @@ interface ProfessionalizeOptions {
   apiKey?: string;
 }
 
-const EMOJI_REGEX = /[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F600}-\u{1F64F}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{1F900}-\u{1F9FF}]|[\u{1FA00}-\u{1FAFF}]/gu;
+const EMOJI_REGEX =
+  /[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F600}-\u{1F64F}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{1F900}-\u{1F9FF}]|[\u{1FA00}-\u{1FAFF}]/gu;
 
 async function professionalizeContent(
   content: string,
@@ -34,16 +35,21 @@ async function professionalizeContent(
 ): Promise<string> {
   // Check if content has emojis
   const hasEmojis = EMOJI_REGEX.test(content);
-  
+
   if (!hasEmojis) {
     console.log(' No emojis detected, content is already professional');
     return content;
   }
 
-  const apiKey = options.apiKey || process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_API_KEY;
-  
+  const apiKey =
+    options.apiKey ||
+    process.env.ANTHROPIC_API_KEY ||
+    process.env.CLAUDE_API_KEY;
+
   if (!apiKey) {
-    throw new Error('ANTHROPIC_API_KEY or CLAUDE_API_KEY environment variable is required');
+    throw new Error(
+      'ANTHROPIC_API_KEY or CLAUDE_API_KEY environment variable is required'
+    );
   }
 
   const anthropic = new Anthropic({ apiKey });
@@ -68,7 +74,10 @@ Return ONLY the professionalized content, no explanations or markdown formatting
 
   try {
     const message = await anthropic.messages.create({
-      model: process.env.CLAUDE_MODEL || process.env.ANTHROPIC_MODEL || 'claude-3-5-sonnet-20241022',
+      model:
+        process.env.CLAUDE_MODEL ||
+        process.env.ANTHROPIC_MODEL ||
+        'claude-3-5-sonnet-20241022',
       max_tokens: 4096,
       temperature: 0.2,
       messages: [
@@ -79,20 +88,28 @@ Return ONLY the professionalized content, no explanations or markdown formatting
       ],
     });
 
-    const professionalized = message.content[0].type === 'text' 
-      ? message.content[0].text.trim()
-      : content;
+    const professionalized =
+      message.content[0].type === 'text'
+        ? message.content[0].text.trim()
+        : content;
 
     // Double-check: ensure no emojis remain with retry limit
     const maxRetries = options.maxRetries || 3;
     const retryCount = (options.retryCount || 0) + 1;
-    
+
     if (EMOJI_REGEX.test(professionalized)) {
       if (retryCount < maxRetries) {
-        console.warn(`Warning: Some emojis may still remain. Running retry ${retryCount}/${maxRetries}...`);
-        return await professionalizeContent(professionalized, { ...options, retryCount });
+        console.warn(
+          `Warning: Some emojis may still remain. Running retry ${retryCount}/${maxRetries}...`
+        );
+        return await professionalizeContent(professionalized, {
+          ...options,
+          retryCount,
+        });
       } else {
-        console.warn('Max retries reached, some emojis may remain. Using fallback removal.');
+        console.warn(
+          'Max retries reached, some emojis may remain. Using fallback removal.'
+        );
         return professionalized.replace(EMOJI_REGEX, '').trim();
       }
     }
@@ -105,7 +122,10 @@ Return ONLY the professionalized content, no explanations or markdown formatting
   }
 }
 
-async function processFile(filePath: string, options: ProfessionalizeOptions): Promise<void> {
+async function processFile(
+  filePath: string,
+  options: ProfessionalizeOptions
+): Promise<void> {
   if (!existsSync(filePath)) {
     console.error(`Error: File not found: ${filePath}`);
     process.exit(1);
@@ -123,7 +143,10 @@ async function processFile(filePath: string, options: ProfessionalizeOptions): P
   const emojiCount = (originalContent.match(EMOJI_REGEX) || []).length;
   console.log(`  Found ${emojiCount} emoji(s)`);
 
-  const professionalized = await professionalizeContent(originalContent, options);
+  const professionalized = await professionalizeContent(
+    originalContent,
+    options
+  );
 
   if (options.dryRun) {
     console.log('\n--- Original ---');
@@ -139,9 +162,10 @@ async function processFile(filePath: string, options: ProfessionalizeOptions): P
 }
 
 async function processCommitMessage(): Promise<void> {
-  const commitMsgFile = process.env.GITLAB_CI_COMMIT_MESSAGE_FILE || 
-                        process.env.GITLAB_COMMIT_MESSAGE_FILE ||
-                        join(process.cwd(), '.git', 'COMMIT_EDITMSG');
+  const commitMsgFile =
+    process.env.GITLAB_CI_COMMIT_MESSAGE_FILE ||
+    process.env.GITLAB_COMMIT_MESSAGE_FILE ||
+    join(process.cwd(), '.git', 'COMMIT_EDITMSG');
 
   if (!existsSync(commitMsgFile)) {
     console.log('No commit message file found, skipping');
@@ -157,7 +181,9 @@ async function processMRDescription(mrIid: string): Promise<void> {
   const apiUrl = process.env.CI_API_V4_URL || 'https://gitlab.com/api/v4';
 
   if (!gitlabToken || !projectId) {
-    console.log('GitLab credentials not available, skipping MR description processing');
+    console.log(
+      'GitLab credentials not available, skipping MR description processing'
+    );
     return;
   }
 
@@ -205,7 +231,9 @@ async function processMRDescription(mrIid: string): Promise<void> {
     );
 
     if (!updateResponse.ok) {
-      console.error(`Failed to update MR description: ${updateResponse.statusText}`);
+      console.error(
+        `Failed to update MR description: ${updateResponse.statusText}`
+      );
       return;
     }
 
@@ -218,7 +246,7 @@ async function processMRDescription(mrIid: string): Promise<void> {
 async function main() {
   const args = process.argv.slice(2);
   const dryRun = args.includes('--dry-run');
-  const inputFileIndex = args.findIndex(arg => !arg.startsWith('--'));
+  const inputFileIndex = args.findIndex((arg) => !arg.startsWith('--'));
   const inputFile = inputFileIndex >= 0 ? args[inputFileIndex] : undefined;
 
   const options: ProfessionalizeOptions = {
@@ -241,13 +269,18 @@ async function main() {
     await processFile(inputFile, options);
   } else {
     console.error('Usage: professionalize-content.ts <file> [--dry-run]');
-    console.error('   or set CI=true to process commit messages/MR descriptions');
+    console.error(
+      '   or set CI=true to process commit messages/MR descriptions'
+    );
     process.exit(1);
   }
 }
 
 // ES module entry point check
-if (import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.includes('professionalize-content.ts')) {
+if (
+  import.meta.url === `file://${process.argv[1]}` ||
+  process.argv[1]?.includes('professionalize-content.ts')
+) {
   main().catch((error) => {
     console.error('Fatal error:', error);
     process.exit(1);

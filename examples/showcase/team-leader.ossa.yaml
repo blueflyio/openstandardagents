@@ -1,0 +1,306 @@
+apiVersion: ossa/v0.4.5
+kind: Agent
+metadata:
+  name: team-leader
+  version: 1.0.0
+  description: Multi-agent team leader with task distribution, coordination, and progress tracking capabilities
+  labels:
+    ossa.dev/category: orchestration
+    ossa.dev/tier: production-example
+    ossa.dev/autonomy: autonomous
+    ossa.dev/domain: coordination
+    ossa.dev/role: leader
+  annotations:
+    ossa.dev/documentation: https://openstandardagents.org/agents/team-leader
+    ossa.dev/a2a-enabled: "true"
+    ossa.dev/team-discovery: "true"
+spec:
+  capabilities:
+  - type: function
+    name: task.distribute
+    description: Distribute tasks to team members based on capabilities
+    parameters:
+      type: object
+      properties:
+        task:
+          type: object
+          properties:
+            id:
+              type: string
+            description:
+              type: string
+            requirements:
+              type: array
+              items:
+                type: string
+            priority:
+              type: string
+              enum: [critical, high, medium, low]
+            deadline:
+              type: string
+              format: date-time
+          required: [id, description, requirements]
+        assignment_strategy:
+          type: string
+          enum: [capability_match, load_balance, round_robin, priority]
+          default: capability_match
+      required: [task]
+  - type: function
+    name: team.coordinate
+    description: Coordinate team member activities and dependencies
+    parameters:
+      type: object
+      properties:
+        coordination_type:
+          type: string
+          enum: [sequential, parallel, conditional, fan_out_fan_in]
+        agents:
+          type: array
+          items:
+            type: object
+            properties:
+              agent_id:
+                type: string
+              role:
+                type: string
+              dependencies:
+                type: array
+                items:
+                  type: string
+        timeout:
+          type: integer
+          description: Coordination timeout in seconds
+          default: 3600
+      required: [coordination_type, agents]
+  - type: function
+    name: progress.track
+    description: Track and report team progress
+    parameters:
+      type: object
+      properties:
+        scope:
+          type: string
+          enum: [agent, task, project, team]
+        metrics:
+          type: array
+          items:
+            type: string
+            enum: [completion_rate, velocity, quality, blockers]
+        report_format:
+          type: string
+          enum: [summary, detailed, dashboard]
+          default: summary
+      required: [scope]
+  - type: query
+    name: team.discover
+    description: Discover available team members and their capabilities
+  role: |
+    You are a team leader agent responsible for orchestrating multi-agent teams,
+    distributing tasks, coordinating activities, and tracking progress.
+
+    Your core responsibilities:
+    1. Task Distribution - Assign tasks to team members based on capabilities
+    2. Team Coordination - Manage dependencies and orchestration patterns
+    3. Progress Tracking - Monitor team progress and identify blockers
+    4. Resource Management - Balance workload across team members
+    5. Communication - Facilitate agent-to-agent communication
+    6. Conflict Resolution - Resolve task conflicts and dependencies
+
+    Orchestration patterns:
+    - Sequential: Execute tasks in order with dependencies
+    - Parallel: Execute independent tasks concurrently
+    - Conditional: Route based on conditions and results
+    - Fan-out/Fan-in: Distribute work and aggregate results
+
+    Team leadership principles:
+    - Capability-based assignment (match tasks to agent strengths)
+    - Load balancing (distribute work evenly)
+    - Proactive monitoring (identify blockers early)
+    - Clear communication (use A2A protocols)
+    - Adaptive coordination (adjust based on team state)
+
+    Always:
+    - Verify agent capabilities before assignment
+    - Monitor task progress and completion
+    - Handle failures gracefully with reassignment
+    - Provide clear status updates
+    - Maintain team state and history
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4
+    temperature: 0.3
+    maxTokens: 16384
+    features:
+      promptCaching: true
+      tokenEfficiency: false
+      batchProcessing: false
+  tools:
+  - type: function
+    name: agent.query
+    description: Query agent capabilities and status
+  - type: function
+    name: task.queue
+    description: Manage task queue and priorities
+  - type: function
+    name: dependency.graph
+    description: Build and analyze task dependency graphs
+  - type: function
+    name: notification.send
+    description: Send notifications to team members
+  autonomy:
+    mode: autonomous
+    humanApproval: false
+    escalation:
+      enabled: true
+      triggers:
+        - team_deadlock
+        - critical_task_failure
+        - resource_exhaustion
+        - prolonged_blocker
+      contacts:
+        - role: team_admin
+          method: slack
+        - role: on_call_engineer
+          method: pagerduty
+  a2a:
+    enabled: true
+    role: leader
+    capabilities:
+      - task-distribution
+      - team-coordination
+      - progress-tracking
+      - agent-discovery
+    protocols:
+      - rest
+      - grpc
+      - websocket
+    discovery:
+      enabled: true
+      broadcast: true
+      interval: 60s
+      endpoints:
+        - url: https://team-leader.company.com/v1
+          protocol: rest
+        - url: wss://team-leader.company.com/ws
+          protocol: websocket
+    communication:
+      patterns:
+        - request-response
+        - publish-subscribe
+        - broadcast
+      messageFormats:
+        - application/json
+      reliability:
+        retries: 3
+        timeout: 30s
+        circuitBreaker:
+          enabled: true
+          threshold: 5
+          resetTimeout: 60s
+  teamDiscovery:
+    enabled: true
+    autoRegister: true
+    heartbeat:
+      interval: 30s
+      timeout: 90s
+    capabilities:
+      query: true
+      filter: true
+      subscribe: true
+  messaging:
+    transport: redis
+    queues:
+      - name: task-assignments
+        description: Task assignment notifications
+        dlq: true
+      - name: status-updates
+        description: Team member status updates
+        dlq: false
+      - name: coordination-events
+        description: Coordination lifecycle events
+        dlq: true
+    events:
+      publish:
+        - task.assigned
+        - task.completed
+        - task.failed
+        - coordination.started
+        - coordination.completed
+        - team.member.discovered
+        - team.member.offline
+      subscribe:
+        - task.status.changed
+        - agent.heartbeat
+        - agent.capability.updated
+  observability:
+    metrics:
+      enabled: true
+      provider: prometheus
+      port: 9092
+      custom:
+        - name: tasks_distributed
+          type: counter
+        - name: team_members_active
+          type: gauge
+        - name: coordination_duration
+          type: histogram
+        - name: task_success_rate
+          type: gauge
+    logging:
+      level: info
+      format: json
+      destination: stdout
+    tracing:
+      enabled: true
+      provider: opentelemetry
+      samplingRate: 0.5
+    dashboards:
+      - type: grafana
+        url: https://grafana.company.com/d/team-leader
+  resources:
+    memory: 2Gi
+    cpu: 2000m
+    storage: 5Gi
+  state:
+    persistence: postgresql
+    ttl: 604800  # 7 days
+    schema:
+      type: object
+      properties:
+        team_members:
+          type: array
+          items:
+            type: object
+            properties:
+              agent_id:
+                type: string
+              capabilities:
+                type: array
+              status:
+                type: string
+              workload:
+                type: integer
+        active_tasks:
+          type: array
+        completed_tasks:
+          type: array
+        task_history:
+          type: array
+        coordination_state:
+          type: object
+  security:
+    authentication:
+      required: true
+      methods:
+        - oauth2
+        - mutual_tls
+    authorization:
+      rbac:
+        enabled: true
+        roles:
+          - team_leader
+          - team_member
+          - team_observer
+    encryption:
+      at_rest: true
+      in_transit: true

@@ -1,16 +1,14 @@
 # =============================================================================
-# OSSA Specification CI/CD Pipeline - Simple & Direct
+# OSSA Specification CI/CD Pipeline
 # =============================================================================
 #
-# Versioning Strategy (HARDENED GITLAB FLOW):
-# - Feature → release/v0.4.x: Auto-creates v0.4.0-dev.N tags (development env)
-# - release/v0.4.x → main: Auto-creates v0.4.0-rc.N tags (staging env)
-# - Manual trigger on main: Creates v0.4.0 production release (production env)
+# Source of truth: GitLab (gitlab.com/blueflyio/ossa/openstandardagents)
+# GitHub mirror: Read-only, synced by CI on release (not project mirroring)
+# npm: Published manually or via CI (requires OTP for 2FA)
 #
-# Publishing Strategy:
-# - GitHub: Only main + release branches, only RC + production tags
-# - npm: Only verified production releases (no RC, no dev)
-# - GitLab Releases: Only production tags
+# Branches:
+#   release/v0.4.x  - Active development
+#   main            - Production releases
 # =============================================================================
 
 stages:
@@ -18,19 +16,24 @@ stages:
   - test
   - build
   - smoke
-  - version
   - release
   - deploy
+  - sync
 
 variables:
   NODE_VERSION: "22.14"
-  GIT_DEPTH: 0  # Full history for versioning
+  GIT_DEPTH: 0
+
+include:
+  - local: '.gitlab/ci/token-rotation.yml'
 
 # =============================================================================
 # BASE JOB TEMPLATE
 # =============================================================================
 .base-runner:
   image: node:${NODE_VERSION}
+  tags:
+    - saas-linux-small-amd64
   cache:
     key: ${CI_COMMIT_REF_SLUG}
     paths:
@@ -81,18 +84,6 @@ test:unit:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/
 
-test:smoke:
-  extends: .base-runner
-  stage: smoke
-  needs:
-    - job: build
-      artifacts: true
-  script:
-    - npm run test:smoke
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/
-
 # =============================================================================
 # BUILD STAGE
 # =============================================================================
@@ -109,110 +100,43 @@ build:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/
 
-# =============================================================================
-# VERSION STAGE - Auto-Versioning with GitLab Environments
-# =============================================================================
-
-# Dev version: Feature merged to release/v0.4.x → v0.4.0-dev.N
-version:dev:
-  stage: version
-  image: node:${NODE_VERSION}
+sbom:generate:
   extends: .base-runner
-  environment:
-    name: development
-    deployment_tier: development
-    action: prepare
-  variables:
-    GIT_AUTHOR_NAME: "OSSA Release Bot"
-    GIT_AUTHOR_EMAIL: "release-bot@openstandardagents.org"
-    GIT_COMMITTER_NAME: "OSSA Release Bot"
-    GIT_COMMITTER_EMAIL: "release-bot@openstandardagents.org"
-  before_script:
-    - npm ci
-    - git config user.name "${GIT_AUTHOR_NAME}"
-    - git config user.email "${GIT_AUTHOR_EMAIL}"
+  stage: build
+  needs:
+    - job: build
+      artifacts: true
   script:
-    - echo "🏷️  Creating dev version tag..."
-    - |
-      # Get latest version from package.json
-      CURRENT_VERSION=$(node -p "require('./package.json').version")
-
-      # Get latest dev tag for this version
-      LATEST_DEV=$(git tag -l "${CURRENT_VERSION}-dev.*" | sort -V | tail -1)
-
-      if [ -z "$LATEST_DEV" ]; then
-        DEV_NUMBER=1
-      else
-        DEV_NUMBER=$(echo $LATEST_DEV | grep -oP '(?<=-dev\.)\d+' || echo "0")
-        DEV_NUMBER=$((DEV_NUMBER + 1))
-      fi
-
-      NEW_TAG="${CURRENT_VERSION}-dev.${DEV_NUMBER}"
-      echo "Creating tag: $NEW_TAG"
-
-      git tag -a "$NEW_TAG" -m "Development version $NEW_TAG"
-      git push https://oauth2:${GITLAB_PUSH_TOKEN}@gitlab.com/blueflyio/ossa/openstandardagents.git "$NEW_TAG"
-
-      echo "✅ Created dev tag: $NEW_TAG"
-      echo "🌍 Environment: development"
+    - npx @cyclonedx/cyclonedx-npm --output-file gl-sbom-npm.cdx.json
+  artifacts:
+    reports:
+      cyclonedx: gl-sbom-*.cdx.json
+    paths:
+      - gl-sbom-*.cdx.json
+    expire_in: 30 days
   rules:
-    - if: $CI_COMMIT_BRANCH =~ /^release/ && $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_MESSAGE !~ /\[skip ci\]/
+    - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  allow_failure: true
 
-# RC version: release/v0.4.x merged to main → v0.4.0-rc.N
-version:rc:
-  stage: version
-  image: node:${NODE_VERSION}
+# =============================================================================
+# SMOKE STAGE
+# =============================================================================
+test:smoke:
   extends: .base-runner
-  environment:
-    name: staging
-    deployment_tier: staging
-    action: prepare
-  variables:
-    GIT_AUTHOR_NAME: "OSSA Release Bot"
-    GIT_AUTHOR_EMAIL: "release-bot@openstandardagents.org"
-    GIT_COMMITTER_NAME: "OSSA Release Bot"
-    GIT_COMMITTER_EMAIL: "release-bot@openstandardagents.org"
-  before_script:
-    - npm ci
-    - git config user.name "${GIT_AUTHOR_NAME}"
-    - git config user.email "${GIT_AUTHOR_EMAIL}"
+  stage: smoke
+  needs:
+    - job: build
+      artifacts: true
   script:
-    - echo "🏷️  Creating RC version tag..."
-    - |
-      # Get latest version from package.json
-      CURRENT_VERSION=$(node -p "require('./package.json').version")
-
-      # Get latest RC tag for this version
-      LATEST_RC=$(git tag -l "${CURRENT_VERSION}-rc.*" | sort -V | tail -1)
-
-      if [ -z "$LATEST_RC" ]; then
-        RC_NUMBER=1
-      else
-        RC_NUMBER=$(echo $LATEST_RC | grep -oP '(?<=-rc\.)\d+' || echo "0")
-        RC_NUMBER=$((RC_NUMBER + 1))
-      fi
-
-      NEW_TAG="${CURRENT_VERSION}-rc.${RC_NUMBER}"
-      echo "Creating RC tag: $NEW_TAG"
-
-      git tag -a "$NEW_TAG" -m "Release candidate $NEW_TAG"
-      git push https://oauth2:${GITLAB_PUSH_TOKEN}@gitlab.com/blueflyio/ossa/openstandardagents.git "$NEW_TAG"
-
-      # Push RC tag to GitHub
-      if [ -n "$GITHUB_TOKEN" ]; then
-        git push https://${GITHUB_TOKEN}@github.com/blueflyio/openstandardagents.git "$NEW_TAG"
-        echo "✅ Pushed RC tag to GitHub"
-      fi
-
-      echo "✅ Created RC tag: $NEW_TAG"
-      echo "🌍 Environment: staging"
+    - npm run test:smoke
   rules:
-    - if: $CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_MESSAGE !~ /\[skip ci\]/
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/
 
 # =============================================================================
-# RELEASE STAGE - Production Release (Manual Trigger with Button)
+# RELEASE STAGE - Production Release (Manual)
 # =============================================================================
-
 release:production:
   stage: release
   image: node:${NODE_VERSION}
@@ -233,38 +157,21 @@ release:production:
     - git config user.name "${GIT_AUTHOR_NAME}"
     - git config user.email "${GIT_AUTHOR_EMAIL}"
     - |
-      # Validate required tokens
       if [ -z "$NPM_TOKEN" ]; then
-        echo "❌ ERROR: NPM_TOKEN not set in CI/CD variables"
+        echo "ERROR: NPM_TOKEN not set in CI/CD variables"
         exit 1
       fi
       if [ -z "$GITLAB_PUSH_TOKEN" ]; then
-        echo "❌ ERROR: GITLAB_PUSH_TOKEN not set"
+        echo "ERROR: GITLAB_PUSH_TOKEN not set"
         exit 1
       fi
-      if [ -z "$GITHUB_TOKEN" ]; then
-        echo "❌ ERROR: GITHUB_TOKEN not set"
-        exit 1
-      fi
-      echo "✅ Required tokens configured"
+      echo "Required tokens configured"
   script:
-    - echo "🚀 Running semantic-release for PRODUCTION..."
+    - echo "Running semantic-release for production..."
     - npx semantic-release
     - |
-      # Get the new version
       NEW_VERSION=$(node -p "require('./package.json').version")
-      echo "✅ Released production version: v${NEW_VERSION}"
-
-      # Sync main and release branches to GitHub
-      echo "📤 Syncing branches to GitHub..."
-      git push https://${GITHUB_TOKEN}@github.com/blueflyio/openstandardagents.git main:main
-      git push https://${GITHUB_TOKEN}@github.com/blueflyio/openstandardagents.git release/v0.4.x:release/v0.4.x
-
-      # Push production tag to GitHub
-      git push https://${GITHUB_TOKEN}@github.com/blueflyio/openstandardagents.git "v${NEW_VERSION}"
-
-      echo "✅ Synced to GitHub: main, release/v0.4.x, v${NEW_VERSION}"
-      echo "🌍 Environment: production"
+      echo "Released production version: v${NEW_VERSION}"
   when: manual
   only:
     - main
@@ -276,7 +183,6 @@ release:production:
 # =============================================================================
 # DEPLOY STAGE - npm Publish + GitLab Release
 # =============================================================================
-
 deploy:npm:
   stage: deploy
   image: node:${NODE_VERSION}
@@ -293,49 +199,83 @@ deploy:npm:
   script:
     - |
       VERSION=$(node -p "require('./package.json').version")
-      echo "📦 Publishing to npm: v${VERSION}"
-
+      echo "Publishing to npm: v${VERSION}"
       npm publish --access public
-
-      echo "✅ Published to npm: @bluefly/openstandardagents@${VERSION}"
-      echo "📍 https://www.npmjs.com/package/@bluefly/openstandardagents/v/${VERSION}"
+      echo "Published: @bluefly/openstandardagents@${VERSION}"
   only:
     - main
 
 deploy:gitlab-release:
   stage: deploy
   image: registry.gitlab.com/gitlab-org/release-cli:latest
-  extends: .base-runner
   needs:
     - job: release:production
       artifacts: true
     - job: deploy:npm
+  before_script:
+    - apk add --no-cache nodejs npm
   script:
-    - |
-      VERSION=$(cat package.json | grep '"version"' | head -1 | awk -F: '{ print $2 }' | sed 's/[",]//g' | tr -d '[[:space:]]')
-      echo "📝 Creating GitLab release for v${VERSION}..."
+    - VERSION=$(node -p "require('./package.json').version")
+    - echo "Creating GitLab release for v${VERSION}..."
   release:
     tag_name: "v${VERSION}"
     name: "Release v${VERSION}"
     description: |
       ## OSSA v${VERSION}
 
-      Open Standard for Software Agents
+      See [CHANGELOG.md](CHANGELOG.md) for release notes.
 
-      See [CHANGELOG.md](https://gitlab.com/blueflyio/ossa/openstandardagents/-/blob/main/CHANGELOG.md) for full release notes.
-
-      **Install:**
       ```bash
       npm install @bluefly/openstandardagents@${VERSION}
       ```
 
-      **Links:**
-      - [npm package](https://www.npmjs.com/package/@bluefly/openstandardagents/v/${VERSION})
+      - [npm](https://www.npmjs.com/package/@bluefly/openstandardagents/v/${VERSION})
       - [GitHub mirror](https://github.com/blueflyio/openstandardagents)
-      - [Documentation](https://openstandardagents.org)
     assets:
       links:
         - name: "npm package"
           url: "https://www.npmjs.com/package/@bluefly/openstandardagents/v/${VERSION}"
   only:
     - main
+
+# =============================================================================
+# SYNC STAGE - Mirror to GitHub (read-only)
+# =============================================================================
+# Replaces GitLab project mirroring setting.
+# GITHUB_TOKEN must be set in CI/CD variables (fine-grained PAT with Contents write).
+# Syncs main + release branch + tags. Runs after deploy or on schedule.
+# =============================================================================
+sync:github:
+  stage: sync
+  image: alpine/git:latest
+  variables:
+    GIT_STRATEGY: clone
+    GIT_DEPTH: 0
+  before_script:
+    - git config user.name "OSSA Release Bot"
+    - git config user.email "release-bot@openstandardagents.org"
+  script:
+    - |
+      if [ -z "$GITHUB_TOKEN" ]; then
+        echo "GITHUB_TOKEN not set - skipping GitHub sync"
+        exit 0
+      fi
+
+      GITHUB_URL="https://x-access-token:${GITHUB_TOKEN}@github.com/blueflyio/openstandardagents.git"
+
+      echo "Syncing main to GitHub..."
+      git push "$GITHUB_URL" origin/main:main --force 2>&1 || echo "WARN: main sync failed (non-fatal)"
+
+      echo "Syncing release/v0.4.x to GitHub..."
+      git push "$GITHUB_URL" origin/release/v0.4.x:release/v0.4.x --force 2>&1 || echo "WARN: release sync failed (non-fatal)"
+
+      echo "Syncing tags to GitHub..."
+      git push "$GITHUB_URL" --tags --force 2>&1 || echo "WARN: tag sync failed (non-fatal)"
+
+      echo "GitHub sync complete"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: on_success
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: always
+  allow_failure: true

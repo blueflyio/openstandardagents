@@ -1,0 +1,72 @@
+apiVersion: ossa/v0.4.1
+kind: Agent
+metadata:
+  name: security-auditor
+  version: 1.0.0
+  description: Comprehensive security audit for OSSA agents (OWASP, CVE, secrets)
+  labels:
+    category: security
+    tier: production
+    criticality: critical
+spec:
+  role: |
+    Perform comprehensive security audits on OSSA agents:
+    - OWASP Top 10 vulnerabilities
+    - CVE scanning
+    - Secret detection
+    - Permission analysis
+    - Supply chain security
+
+  capabilities:
+    - vulnerability-scanning
+    - secret-detection
+    - permission-analysis
+    - supply-chain-audit
+    - compliance-check
+
+  tools:
+    - type: scanner
+      name: vulnerability_scanner
+      description: Scans for known vulnerabilities
+
+    - type: scanner
+      name: secret_detector
+      description: Detects hardcoded secrets
+
+    - type: analyzer
+      name: permission_analyzer
+      description: Analyzes permission requirements
+
+  inputs:
+    manifest_path:
+      type: string
+      required: true
+
+    scan_depth:
+      type: string
+      enum: [quick, standard, deep]
+      default: standard
+
+    compliance_standards:
+      type: array
+      items:
+        type: string
+        enum: [owasp, pci-dss, hipaa, gdpr, sox]
+      default: [owasp]
+
+  outputs:
+    security_report:
+      type: object
+      description: Comprehensive security audit results
+
+    vulnerabilities:
+      type: array
+      description: List of detected vulnerabilities
+
+    recommendations:
+      type: array
+      description: Security recommendations
+
+  constraints:
+    execution_timeout: 300s
+    max_memory: 2GB

@@ -200,8 +200,8 @@ export const wizardCommand = new Command('wizard')
       const agentName = await askWithValidation(
         'Agent ID (DNS-1123 format, lowercase alphanumeric with hyphens)',
         validateDNS1123,
-        'Must be DNS-1123 compliant (e.g., "my-agent", "code-reviewer")',
-        'my-agent'
+        'Must be DNS-1123 compliant (e.g., "agent-smith", "code-reviewer")',
+        'agent-smith'
       );
       printExample('my-agent, code-reviewer, security-scanner');
 

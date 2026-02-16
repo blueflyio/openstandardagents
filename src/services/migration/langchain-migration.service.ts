@@ -16,7 +16,7 @@
  */
 
 import { injectable } from 'inversify';
-import * as yaml from 'js-yaml';
+import { parse as yamlParse } from 'yaml';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import type { OssaAgent } from '../../types/index.js';
@@ -443,7 +443,7 @@ export class LangChainMigrationService {
    * Parse YAML configuration
    */
   private parseYAML(content: string): LangChainComponent[] {
-    const config = yaml.load(content) as Record<string, unknown>;
+    const config = yamlParse(content) as Record<string, unknown>;
     return this.parseConfigObject(config);
   }
 

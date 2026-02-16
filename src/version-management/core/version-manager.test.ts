@@ -2,6 +2,7 @@ import { VersionManager } from './version-manager';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as os from 'os';
+import { API_VERSION } from '../../../src/version.js';
 
 describe('VersionManager', () => {
   let versionManager: VersionManager;
@@ -216,10 +217,7 @@ describe('VersionManager', () => {
 
     it('should restore all versions to placeholder', async () => {
       const testFile = path.join(tempDir, 'test.md');
-      await fs.writeFile(
-        testFile,
-        'v0.4.2, v0.4.1, v1.0.0, and even 2.3.4'
-      );
+      await fs.writeFile(testFile, 'v0.4.2, v0.4.1, v1.0.0, and even 2.3.4');
 
       const result = await versionManager.restore({
         restoreAll: true,
@@ -231,7 +229,9 @@ describe('VersionManager', () => {
       expect(result.replacementsMade).toBe(4);
 
       const content = await fs.readFile(testFile, 'utf-8');
-      expect(content).toBe('{{VERSION}}, {{VERSION}}, {{VERSION}}, and even {{VERSION}}');
+      expect(content).toBe(
+        '{{VERSION}}, {{VERSION}}, {{VERSION}}, and even {{VERSION}}'
+      );
     });
   });
 

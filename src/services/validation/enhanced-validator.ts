@@ -8,7 +8,11 @@
  */
 
 import { inject, injectable } from 'inversify';
-import type { OssaAgent, SchemaVersion, ValidationResult } from '../../types/index.js';
+import type {
+  OssaAgent,
+  SchemaVersion,
+  ValidationResult,
+} from '../../types/index.js';
 import { ValidationService } from '../validation.service.js';
 import { CostEstimator, type CostEstimate } from './cost-estimator.js';
 import {
@@ -69,7 +73,10 @@ export class EnhancedValidator {
     version?: SchemaVersion
   ): Promise<EnhancedValidationReport> {
     // 1. Schema validation (existing service)
-    const schemaResult = await this.validationService.validate(manifest, version);
+    const schemaResult = await this.validationService.validate(
+      manifest,
+      version
+    );
 
     // 2. Even if schema is invalid, try to run other validators on the manifest structure
     //    This allows cost estimation and security checks to work even with schema issues
@@ -83,7 +90,8 @@ export class EnhancedValidator {
     ]);
 
     // 4. Determine overall pass/fail
-    const passed = schemaResult.valid && security.passed && bestPractices.passed;
+    const passed =
+      schemaResult.valid && security.passed && bestPractices.passed;
 
     return {
       schemaValid: schemaResult.valid,
@@ -139,8 +147,9 @@ export class EnhancedValidator {
     ).length;
 
     // Best practices errors
-    count += report.bestPractices.issues.filter((i) => i.severity === 'error')
-      .length;
+    count += report.bestPractices.issues.filter(
+      (i) => i.severity === 'error'
+    ).length;
 
     return count;
   }
@@ -160,8 +169,9 @@ export class EnhancedValidator {
     ).length;
 
     // Best practices warnings
-    count += report.bestPractices.issues.filter((i) => i.severity === 'warning')
-      .length;
+    count += report.bestPractices.issues.filter(
+      (i) => i.severity === 'warning'
+    ).length;
 
     return count;
   }

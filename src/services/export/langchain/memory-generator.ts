@@ -18,7 +18,12 @@
 
 import type { OssaAgent } from '../../../types/index.js';
 
-export type MemoryBackend = 'buffer' | 'summary' | 'entity' | 'redis' | 'postgres';
+export type MemoryBackend =
+  | 'buffer'
+  | 'summary'
+  | 'entity'
+  | 'redis'
+  | 'postgres';
 
 export interface MemoryConfig {
   enabled: boolean;
@@ -77,7 +82,8 @@ export class MemoryGenerator {
       type: memory?.type || 'conversation_buffer',
       windowSize: memory?.window_size || memory?.windowSize || 10,
       maxTokenLimit: memory?.max_token_limit || memory?.maxTokenLimit || 2000,
-      returnMessages: memory?.return_messages !== false && memory?.returnMessages !== false,
+      returnMessages:
+        memory?.return_messages !== false && memory?.returnMessages !== false,
       persistence: memory?.persistence
         ? {
             enabled: memory.persistence.enabled !== false,

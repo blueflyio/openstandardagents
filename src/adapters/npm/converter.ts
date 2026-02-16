@@ -1,17 +1,24 @@
 /**
  * NPM Package Converter
  * Converts OSSA agent manifests to NPM package format
+ *
+ * Extends BasePackageGenerator for shared npm package logic
  */
 
 import type { OssaAgent } from '../base/adapter.interface.js';
 import type { NPMPackageConfig, AgentExportMetadata } from './types.js';
+import { getApiVersion } from '../../utils/version.js';
+import { BasePackageGenerator } from './package-generator.js';
 
-export class NPMConverter {
+export class NPMConverter extends BasePackageGenerator {
   /**
    * Convert OSSA manifest to NPM package config
    */
   convert(manifest: OssaAgent): NPMPackageConfig {
-    const metadata = manifest.metadata || { name: 'unknown-agent', version: '1.0.0' };
+    const metadata = manifest.metadata || {
+      name: 'unknown-agent',
+      version: '1.0.0',
+    };
     const spec = manifest.spec || {};
     const annotations = metadata.annotations || {};
 
@@ -37,9 +44,7 @@ export class NPMConverter {
       repository,
       author: metadata.author as string | undefined,
       homepage: `https://openstandardagents.org/agents/${npmName}`,
-      bugs: repository
-        ? `${repository}/issues`
-        : undefined,
+      bugs: repository ? `${repository}/issues` : undefined,
       files: [
         'index.js',
         'index.d.ts',
@@ -48,11 +53,11 @@ export class NPMConverter {
         'LICENSE',
       ],
       peerDependencies: {
-        '@bluefly/openstandardagents': '^0.4.0',
+        '@bluefly/openstandardagents': '^0.4.1',
       },
       dependencies: {},
       ossaMetadata: {
-        apiVersion: manifest.apiVersion || 'ossa/v0.4.0',
+        apiVersion: manifest.apiVersion || getApiVersion(),
         kind: manifest.kind || 'Agent',
         originalName: metadata.name,
       },
@@ -63,7 +68,10 @@ export class NPMConverter {
    * Extract agent metadata for export
    */
   extractMetadata(manifest: OssaAgent): AgentExportMetadata {
-    const metadata = manifest.metadata || { name: 'unknown-agent', version: '1.0.0' };
+    const metadata = manifest.metadata || {
+      name: 'unknown-agent',
+      version: '1.0.0',
+    };
     const spec = manifest.spec || {};
 
     // Extract capabilities - handle both string array and Capability object array
@@ -86,10 +94,17 @@ export class NPMConverter {
 
   /**
    * Generate package.json content
+   * Uses base class method with NPM-specific configuration
    */
   generatePackageJson(config: NPMPackageConfig): string {
-    const pkg = {
-      name: config.name,
+    // Extract scope from name (e.g., '@ossa/agent-name' -> '@ossa', 'agent-name')
+    const nameMatch = config.name.match(/^(@[^/]+)\/(.+)$/);
+    const scope = nameMatch ? nameMatch[1] : undefined;
+    const name = nameMatch ? nameMatch[2] : config.name;
+
+    return super.generatePackageJson({
+      scope,
+      name,
       version: config.version,
       description: config.description,
       main: config.main,
@@ -97,36 +112,26 @@ export class NPMConverter {
       keywords: config.keywords,
       author: config.author,
       license: config.license,
-      repository: config.repository
-        ? {
-            type: 'git',
-            url: config.repository,
-          }
-        : undefined,
-      bugs: config.bugs
-        ? {
-            url: config.bugs,
-          }
-        : undefined,
+      repository: config.repository,
       homepage: config.homepage,
+      bugs: config.bugs,
       files: config.files,
       peerDependencies: config.peerDependencies,
-      dependencies: Object.keys(config.dependencies || {}).length > 0
-        ? config.dependencies
-        : undefined,
+      dependencies: config.dependencies,
       publishConfig: {
         access: 'public',
       },
       ossa: config.ossaMetadata,
-    };
-
-    return JSON.stringify(pkg, null, 2);
+    });
   }
 
   /**
    * Generate index.js entry point
    */
-  generateEntryPoint(manifest: OssaAgent, metadata: AgentExportMetadata): string {
+  generateEntryPoint(
+    manifest: OssaAgent,
+    metadata: AgentExportMetadata
+  ): string {
     return `/**
  * ${metadata.name} - OSSA Agent Package
  * Version: ${metadata.version}
@@ -199,7 +204,9 @@ export interface AgentMetadata {
   ${metadata.llm ? 'llm: LLMConfig;' : ''}
 }
 
-${metadata.tools ? `
+${
+  metadata.tools
+    ? `
 /**
  * Agent tool definition
  */
@@ -208,9 +215,13 @@ export interface Tool {
   description: string;
   type?: string;
 }
-` : ''}
+`
+    : ''
+}
 
-${metadata.llm ? `
+${
+  metadata.llm
+    ? `
 /**
  * LLM configuration
  */
@@ -220,7 +231,9 @@ export interface LLMConfig {
   temperature?: number;
   maxTokens?: number;
 }
-` : ''}
+`
+    : ''
+}
 
 /**
  * Agent configuration
@@ -310,24 +323,32 @@ Use this specification with any OSSA-compatible runtime or export to other forma
 - **Role**: ${metadata.role}
 ${metadata.capabilities ? `- **Capabilities**: ${metadata.capabilities.join(', ')}` : ''}
 
-${metadata.tools && metadata.tools.length > 0 ? `
+${
+  metadata.tools && metadata.tools.length > 0
+    ? `
 ## Tools
 
-${metadata.tools.map(t => `- **${t.name}**: ${t.description}`).join('\n')}
-` : ''}
+${metadata.tools.map((t) => `- **${t.name}**: ${t.description}`).join('\n')}
+`
+    : ''
+}
 
-${metadata.llm ? `
+${
+  metadata.llm
+    ? `
 ## LLM Configuration
 
 - **Provider**: ${metadata.llm.provider || 'default'}
 - **Model**: ${metadata.llm.model || 'default'}
 - **Temperature**: ${metadata.llm.temperature ?? 'default'}
 - **Max Tokens**: ${metadata.llm.maxTokens ?? 'default'}
-` : ''}
+`
+    : ''
+}
 
 ## Generated from OSSA
 
-This package was generated from an OSSA v${manifest.apiVersion?.split('/')[1] || '0.4.0'} manifest.
+This package was generated from an OSSA v${manifest.apiVersion?.split('/')[1] || getApiVersion()} manifest.
 
 Original manifest: \`agent.ossa.yaml\`
 
@@ -348,62 +369,19 @@ Generated by [@bluefly/openstandardagents](https://www.npmjs.com/package/@bluefl
   }
 
   /**
-   * Generate .npmignore
+   * Generate .npmignore with NPM-specific exclusions
    */
   generateNpmIgnore(): string {
-    return `# Development files
+    const baseIgnore = super.generateNpmignore();
+
+    // Add NPM-specific exclusions
+    return `${baseIgnore}
+# NPM-specific
 *.ts
 !*.d.ts
-tsconfig.json
-.eslintrc.json
-.prettierrc
-
-# Test files
 tests/
 *.test.js
 *.spec.js
-
-# Build artifacts
-dist/
-build/
-coverage/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Git
-.git/
-.gitignore
-.gitattributes
-
-# CI
-.github/
-.gitlab-ci.yml
-
-# Misc
-*.log
-node_modules/
 `;
-  }
-
-  /**
-   * Sanitize package name for npm
-   * - Must be lowercase
-   * - No spaces or special characters
-   * - Use hyphens for separation
-   */
-  private sanitizePackageName(name: string): string {
-    return name
-      .toLowerCase()
-      .replace(/[^a-z0-9-]/g, '-')
-      .replace(/^-+|-+$/g, '')
-      .replace(/-+/g, '-');
   }
 }

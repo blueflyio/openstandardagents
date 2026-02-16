@@ -300,7 +300,7 @@ serverless deploy
 **OSSA Manifest** (`code-reviewer.ossa.yaml`):
 
 ```yaml
-apiVersion: ossa/v0.4.0
+apiVersion: ossa/v0.4.1
 kind: Agent
 metadata:
   name: code-reviewer
@@ -348,7 +348,7 @@ print(result)
 **OSSA Manifest** (`data-analyst.ossa.yaml`):
 
 ```yaml
-apiVersion: ossa/v0.4.0
+apiVersion: ossa/v0.4.1
 kind: Agent
 metadata:
   name: data-analyst

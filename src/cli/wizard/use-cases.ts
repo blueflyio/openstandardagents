@@ -13,7 +13,12 @@ export interface UseCase {
   id: string;
   name: string;
   description: string;
-  category: 'automation' | 'assistant' | 'development' | 'integration' | 'analysis';
+  category:
+    | 'automation'
+    | 'assistant'
+    | 'development'
+    | 'integration'
+    | 'analysis';
   templates: string[]; // Template IDs
   recommendedModel: string;
   recommendedProvider: string;
@@ -123,9 +128,7 @@ export function getUseCase(id: string): UseCase | undefined {
 /**
  * Get templates for a use case
  */
-export function getTemplatesForUseCase(
-  useCaseId: string
-): TemplateMeta[] {
+export function getTemplatesForUseCase(useCaseId: string): TemplateMeta[] {
   const useCase = getUseCase(useCaseId);
   if (!useCase) return [];
 
@@ -170,7 +173,11 @@ export function getRecommendedConfig(useCaseId: string): {
       features.push('conversational', 'memory', 'context-aware');
       break;
     case 'automation':
-      features.push('task-scheduling', 'workflow-orchestration', 'event-driven');
+      features.push(
+        'task-scheduling',
+        'workflow-orchestration',
+        'event-driven'
+      );
       break;
     case 'integration':
       features.push('api-integration', 'webhooks', 'data-sync');

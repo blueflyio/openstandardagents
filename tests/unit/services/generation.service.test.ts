@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from '@jest/globals';
 import { GenerationService } from '../../../src/services/generation.service.js';
+import { API_VERSION } from '../../../src/version.js';
 
 describe('GenerationService', () => {
   let service: GenerationService;

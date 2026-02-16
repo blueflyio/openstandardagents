@@ -1,5 +1,6 @@
 import { injectable, inject, optional } from 'inversify';
 import { OssaAgent } from '../types/index.js';
+import { getApiVersion } from '../utils/version.js';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
@@ -97,7 +98,7 @@ export class RegistryService {
       name: manifest.metadata?.name || agentId,
       version,
       description: manifest.spec?.role || '',
-      schema_version: manifest.apiVersion || 'ossa/v0.3.6',
+      schema_version: manifest.apiVersion || getApiVersion(),
       manifest_url: `agents/${agentId}/${version}/manifest.yaml`,
       bundle_url: `agents/${agentId}/${version}/bundle.tar.gz`,
       published_at: new Date().toISOString(),

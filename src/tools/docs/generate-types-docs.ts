@@ -3,7 +3,10 @@ import { readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 
 const TYPES_FILE = join(process.cwd(), 'src/types/index.ts');
-const OUTPUT_FILE = join(process.cwd(), 'website/content/docs/types-reference/index.md');
+const OUTPUT_FILE = join(
+  process.cwd(),
+  'website/content/docs/types-reference/index.md'
+);
 
 const content = readFileSync(TYPES_FILE, 'utf-8');
 
@@ -42,7 +45,11 @@ import { OSSAManifest, AgentSpec } from '@bluefly/openstandardagents';
 \`\`\`
 `;
 
-mkdirSync(join(process.cwd(), 'website/content/docs/types-reference'), { recursive: true });
+mkdirSync(join(process.cwd(), 'website/content/docs/types-reference'), {
+  recursive: true,
+});
 writeFileSync(OUTPUT_FILE, doc);
 
-console.log(`✅ Generated types reference: ${interfaces.length} interfaces, ${types.length} types`);
+console.log(
+  `✅ Generated types reference: ${interfaces.length} interfaces, ${types.length} types`
+);

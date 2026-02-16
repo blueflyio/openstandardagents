@@ -261,7 +261,7 @@ function formatError(
       if (fieldName === 'apiVersion') {
         lines.push(
           chalk.yellow(
-            `   [TIP] apiVersion should follow format: ${chalk.bold('ossa/v0.3.0')}`
+            `   [TIP] apiVersion should follow format: ${chalk.bold('ossa/v0.4.5')}`
           )
         );
         lines.push(
@@ -343,7 +343,7 @@ export function formatValidationErrors(
   lines.push('');
   lines.push(chalk.cyan('[TIP] Common fixes:'));
   lines.push(chalk.cyan('   • Check spelling of field names (case-sensitive)'));
-  lines.push(chalk.cyan('   • Verify apiVersion format: ossa/v0.3.0'));
+  lines.push(chalk.cyan('   • Verify apiVersion format: ossa/v0.4.5'));
   lines.push(chalk.cyan('   • Use --verbose for detailed error information'));
   lines.push(
     chalk.cyan('   • Check examples/claude-code/ for reference manifests')
@@ -377,7 +377,7 @@ export function suggestFix(
     error.params?.missingProperty === 'apiVersion'
   ) {
     suggestions.push('Add apiVersion field:');
-    suggestions.push('  apiVersion: ossa/v0.3.0');
+    suggestions.push('  apiVersion: ossa/v0.4.5');
   }
 
   if (

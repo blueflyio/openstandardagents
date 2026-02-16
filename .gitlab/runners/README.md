@@ -19,10 +19,10 @@ OSSA runners are GitLab CI/CD jobs that execute OSSA commands and agents. They p
 - **Usage**: Set `AGENT_MANIFEST` variable to path of agent manifest
 - **Example**:
   ```yaml
-  my-agent:
+  creative-agent-naming:
     extends: .ossa-runner
     variables:
-      AGENT_MANIFEST: ".gitlab/agents/my-agent/manifest.ossa.yaml"
+      AGENT_MANIFEST: ".gitlab/agents/creative-agent-naming/manifest.ossa.yaml"
       AGENT_ARGS: "--message 'Run this task'"
   ```
 

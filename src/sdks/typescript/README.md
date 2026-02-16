@@ -19,7 +19,7 @@ import { ManifestService, ValidatorService, isAgent } from '@ossa/sdk';
 
 // Load a manifest
 const service = new ManifestService();
-const manifest = service.load('my-agent.ossa.yaml');
+const manifest = service.load('creative-agent-naming.ossa.yaml');
 
 console.log(`Name: ${manifest.metadata.name}`);
 console.log(`Kind: ${manifest.kind}`);
@@ -132,7 +132,7 @@ import type {
 import { CloudEventsEmitter } from '@ossa/sdk';
 
 const emitter = new CloudEventsEmitter({
-  source: 'my-agent',
+  source: 'creative-agent-naming',
   type: 'ossa.agent.action',
 });
 
@@ -145,11 +145,11 @@ emitter.emit({ action: 'tool_call', tool: 'search' });
 import { W3CBaggage } from '@ossa/sdk';
 
 const baggage = new W3CBaggage();
-baggage.set('agent-id', 'my-agent');
+baggage.set('agent-id', 'creative-agent-naming');
 baggage.set('trace-id', '12345');
 
 const header = baggage.toString();
-// "agent-id=my-agent,trace-id=12345"
+// "agent-id=creative-agent-naming,trace-id=12345"
 ```
 
 ## License

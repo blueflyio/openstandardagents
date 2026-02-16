@@ -5,6 +5,7 @@
 import { describe, it, expect, beforeEach } from '@jest/globals';
 import { AnthropicExporter } from '../../../../src/services/export/anthropic/anthropic-exporter';
 import type { OssaAgent } from '../../../../src/types/index';
+import { API_VERSION } from '../../../../src/version.js';
 
 describe('AnthropicExporter', () => {
   let exporter: AnthropicExporter;
@@ -14,7 +15,7 @@ describe('AnthropicExporter', () => {
     exporter = new AnthropicExporter();
 
     manifest = {
-      apiVersion: 'ossa/v0.3.6',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'test-agent',
@@ -79,9 +80,7 @@ describe('AnthropicExporter', () => {
       const result = await exporter.validate(manifest);
       expect(result.valid).toBe(false);
       expect(result.errors).toBeDefined();
-      expect(result.errors?.some((e) => e.path === 'metadata.name')).toBe(
-        true
-      );
+      expect(result.errors?.some((e) => e.path === 'metadata.name')).toBe(true);
     });
 
     it('should warn for missing LLM config', async () => {
@@ -98,9 +97,9 @@ describe('AnthropicExporter', () => {
       }
       const result = await exporter.validate(manifest);
       expect(result.warnings).toBeDefined();
-      expect(
-        result.warnings?.some((w) => w.path === 'spec.llm.provider')
-      ).toBe(true);
+      expect(result.warnings?.some((w) => w.path === 'spec.llm.provider')).toBe(
+        true
+      );
     });
 
     it('should fail for tools without names', async () => {

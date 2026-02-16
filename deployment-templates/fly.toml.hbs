@@ -1,0 +1,320 @@
+# Fly.io Configuration for OSSA Buildkit
+# Generated from template: fly.toml.hbs
+
+app = "{{appName}}"
+primary_region = "{{primaryRegion}}"
+kill_signal = "SIGINT"
+kill_timeout = "{{killTimeout}}"
+
+[build]
+  builder = "heroku/buildpacks:20"
+  buildpacks = ["heroku/nodejs"]
+
+[build.args]
+  NODE_VERSION = "{{nodeVersion}}"
+  NPM_VERSION = "{{npmVersion}}"
+
+[env]
+  NODE_ENV = "{{nodeEnv}}"
+  PORT = "{{port}}"
+  LOG_LEVEL = "{{logLevel}}"
+  RATE_LIMIT_WINDOW = "{{rateLimitWindow}}"
+  RATE_LIMIT_MAX = "{{rateLimitMax}}"
+  VECTOR_DB_COLLECTION = "{{vectorDbCollection}}"
+  MAX_CONCURRENT_AGENTS = "{{maxConcurrentAgents}}"
+  AGENT_TIMEOUT_MS = "{{agentTimeoutMs}}"
+  CACHE_TTL_SECONDS = "{{cacheTtlSeconds}}"
+  ENABLE_METRICS = "{{enableMetrics}}"
+  METRICS_PORT = "{{metricsPort}}"
+  SENTRY_ENVIRONMENT = "{{sentryEnvironment}}"
+  ENABLE_DEBUG = "{{enableDebug}}"
+
+# HTTP Service Configuration
+[http_service]
+  internal_port = {{port}}
+  force_https = true
+  auto_stop_machines = {{autoStopMachines}}
+  auto_start_machines = {{autoStartMachines}}
+  min_machines_running = {{minMachinesRunning}}
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "{{concurrencyType}}"
+    hard_limit = {{concurrencyHardLimit}}
+    soft_limit = {{concurrencySoftLimit}}
+
+# Health Checks
+[[http_service.checks]]
+  interval = "{{healthCheckInterval}}"
+  timeout = "{{healthCheckTimeout}}"
+  grace_period = "{{healthCheckGracePeriod}}"
+  method = "GET"
+  path = "/health"
+  protocol = "http"
+  tls_skip_verify = false
+
+  [http_service.checks.headers]
+    X-Health-Check = "fly"
+
+[[http_service.checks]]
+  interval = "{{readinessCheckInterval}}"
+  timeout = "{{readinessCheckTimeout}}"
+  grace_period = "{{readinessCheckGracePeriod}}"
+  method = "GET"
+  path = "/ready"
+  protocol = "http"
+  tls_skip_verify = false
+
+# VM Resources
+[[vm]]
+  cpu_kind = "{{cpuKind}}"
+  cpus = {{cpus}}
+  memory_mb = {{memoryMb}}
+  processes = ["app"]
+
+# Scaling Configuration
+[metrics]
+  port = {{metricsPort}}
+  path = "/metrics"
+
+[[services]]
+  protocol = "tcp"
+  internal_port = {{port}}
+  processes = ["app"]
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+    force_https = true
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+  [services.concurrency]
+    type = "{{concurrencyType}}"
+    hard_limit = {{concurrencyHardLimit}}
+    soft_limit = {{concurrencySoftLimit}}
+
+  [[services.tcp_checks]]
+    interval = "{{tcpCheckInterval}}"
+    timeout = "{{tcpCheckTimeout}}"
+    grace_period = "{{tcpCheckGracePeriod}}"
+
+  [[services.http_checks]]
+    interval = "{{httpCheckInterval}}"
+    timeout = "{{httpCheckTimeout}}"
+    grace_period = "{{httpCheckGracePeriod}}"
+    method = "GET"
+    path = "/health"
+    protocol = "http"
+    tls_skip_verify = false
+
+    [services.http_checks.headers]
+      X-Health-Check = "fly"
+
+# Bridge Server Process
+[[services]]
+  protocol = "tcp"
+  internal_port = {{bridgePort}}
+  processes = ["bridge"]
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+    force_https = true
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+  [services.concurrency]
+    type = "{{bridgeConcurrencyType}}"
+    hard_limit = {{bridgeConcurrencyHardLimit}}
+    soft_limit = {{bridgeConcurrencySoftLimit}}
+
+  [[services.tcp_checks]]
+    interval = "{{bridgeTcpCheckInterval}}"
+    timeout = "{{bridgeTcpCheckTimeout}}"
+    grace_period = "{{bridgeTcpCheckGracePeriod}}"
+
+  [[services.http_checks]]
+    interval = "{{bridgeHttpCheckInterval}}"
+    timeout = "{{bridgeHttpCheckTimeout}}"
+    grace_period = "{{bridgeHttpCheckGracePeriod}}"
+    method = "GET"
+    path = "/health"
+    protocol = "http"
+    tls_skip_verify = false
+
+# Postgres Database
+[[postgres]]
+  app = "{{appName}}-postgres"
+  region = "{{primaryRegion}}"
+
+# Redis Cache
+[[redis]]
+  app = "{{appName}}-redis"
+  region = "{{primaryRegion}}"
+
+# Volume Mounts
+[[mounts]]
+  source = "{{appName}}_data"
+  destination = "/app/data"
+  initial_size = "{{dataMountSizeGb}}"
+
+[[mounts]]
+  source = "{{appName}}_logs"
+  destination = "/app/logs"
+  initial_size = "{{logsMountSizeGb}}"
+
+# Deploy Configuration
+[deploy]
+  release_command = "{{releaseCommand}}"
+  strategy = "{{deployStrategy}}"
+
+  [deploy.rolling]
+    max_unavailable = {{maxUnavailable}}
+
+# Experimental Features
+[experimental]
+  auto_rollback = {{autoRollback}}
+  enable_consul = {{enableConsul}}
+  enable_etcd = {{enableEtcd}}
+
+# Processes
+[processes]
+  app = "{{startCommand}}"
+  bridge = "{{bridgeStartCommand}}"
+  worker = "{{workerStartCommand}}"
+
+# Statics (if serving static files)
+[[statics]]
+  guest_path = "/app/public"
+  url_prefix = "/static"
+
+# Secrets (set via `fly secrets set`)
+# Required secrets:
+# - API_BASE_URL
+# - DRUPAL_BASE_URL
+# - DRUPAL_API_KEY
+# - DATABASE_URL
+# - REDIS_URL
+# - QDRANT_URL
+# - QDRANT_API_KEY
+# - JWT_SECRET
+# - ENCRYPTION_KEY
+# - ALLOWED_ORIGINS
+# - AGENT_REGISTRY_URL
+# - SENTRY_DSN
+# - BRIDGE_API_KEY
+# - CORS_ORIGINS
+
+# Multi-region Configuration (Optional)
+{{#each regions}}
+[[services]]
+  protocol = "tcp"
+  internal_port = {{../port}}
+  regions = ["{{this}}"]
+  processes = ["app"]
+{{/each}}
+
+# Autoscaling Configuration
+[autoscaling]
+  enabled = {{autoscalingEnabled}}
+  min_count = {{minReplicas}}
+  max_count = {{maxReplicas}}
+
+  [[autoscaling.metrics]]
+    type = "cpu"
+    target = {{targetCpu}}
+
+  [[autoscaling.metrics]]
+    type = "memory"
+    target = {{targetMemory}}
+
+  [[autoscaling.metrics]]
+    type = "requests"
+    target = {{targetRequests}}
+
+# Network Configuration
+[network]
+  ipv4 = "{{ipv4}}"
+  ipv6 = "{{ipv6}}"
+
+# Custom Domains
+{{#each customDomains}}
+[[custom_domains]]
+  domain = "{{this}}"
+{{/each}}
+
+# SSL/TLS Configuration
+[ssl]
+  min_version = "{{sslMinVersion}}"
+  prefer_server_cipher_suites = {{sslPreferServerCiphers}}
+
+# Logging Configuration
+[logging]
+  level = "{{logLevel}}"
+  format = "{{logFormat}}"
+
+# Metrics and Monitoring
+[observability]
+  [observability.metrics]
+    enabled = {{metricsEnabled}}
+    port = {{metricsPort}}
+    path = "/metrics"
+
+  [observability.traces]
+    enabled = {{tracesEnabled}}
+    endpoint = "{{tracesEndpoint}}"
+
+  [observability.logs]
+    enabled = {{logsEnabled}}
+    format = "{{logFormat}}"
+
+# Environment-specific Overrides
+{{#if isProduction}}
+[env.production]
+  NODE_ENV = "production"
+  LOG_LEVEL = "info"
+  ENABLE_DEBUG = "false"
+
+[vm.production]
+  cpus = {{productionCpus}}
+  memory_mb = {{productionMemoryMb}}
+
+[autoscaling.production]
+  min_count = {{productionMinReplicas}}
+  max_count = {{productionMaxReplicas}}
+{{/if}}
+
+{{#if isStaging}}
+[env.staging]
+  NODE_ENV = "staging"
+  LOG_LEVEL = "debug"
+  ENABLE_DEBUG = "true"
+
+[vm.staging]
+  cpus = {{stagingCpus}}
+  memory_mb = {{stagingMemoryMb}}
+
+[autoscaling.staging]
+  min_count = {{stagingMinReplicas}}
+  max_count = {{stagingMaxReplicas}}
+{{/if}}
+
+{{#if isDevelopment}}
+[env.development]
+  NODE_ENV = "development"
+  LOG_LEVEL = "debug"
+  ENABLE_DEBUG = "true"
+
+[vm.development]
+  cpus = {{developmentCpus}}
+  memory_mb = {{developmentMemoryMb}}
+
+[autoscaling.development]
+  min_count = 1
+  max_count = 2
+{{/if}}

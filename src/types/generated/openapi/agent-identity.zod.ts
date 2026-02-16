@@ -49,19 +49,27 @@ export type SecurityContext = z.infer<typeof securityContextSchema>;
 
 export const tokenRevocationRequestSchema = z.unknown();
 
-export type TokenRevocationRequest = z.infer<typeof tokenRevocationRequestSchema>;
+export type TokenRevocationRequest = z.infer<
+  typeof tokenRevocationRequestSchema
+>;
 
 export const tokenRevocationRequestSchema = z.unknown();
 
-export type TokenRevocationRequest = z.infer<typeof tokenRevocationRequestSchema>;
+export type TokenRevocationRequest = z.infer<
+  typeof tokenRevocationRequestSchema
+>;
 
 export const tokenRevocationResponseSchema = z.unknown();
 
-export type TokenRevocationResponse = z.infer<typeof tokenRevocationResponseSchema>;
+export type TokenRevocationResponse = z.infer<
+  typeof tokenRevocationResponseSchema
+>;
 
 export const tokenRevocationResponseSchema = z.unknown();
 
-export type TokenRevocationResponse = z.infer<typeof tokenRevocationResponseSchema>;
+export type TokenRevocationResponse = z.infer<
+  typeof tokenRevocationResponseSchema
+>;
 
 /**
  * Standard error response
@@ -71,7 +79,7 @@ export const errorSchema = z.object({
   message: z.string(),
   details: z.record(z.string(), z.unknown()).optional(),
   trace_id: z.string().optional(),
-  timestamp: z.string().datetime().optional()
+  timestamp: z.string().datetime().optional(),
 });
 
 export type Error = z.infer<typeof errorSchema>;

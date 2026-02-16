@@ -124,7 +124,7 @@ All errors follow a consistent JSON structure:
 ```json
 {
   "error": "conflict",
-  "message": "Agent with name 'my-agent' and version '1.0.0' already exists"
+  "message": "Agent with name 'creative-agent-naming' and version '1.0.0' already exists"
 }
 ```
 **Cause:** Duplicate agent registration

@@ -40,7 +40,7 @@ export class ReleaseAgentService {
   ): Promise<ReleaseAnalysisResult> {
     return {
       releaseNeeded: false,
-      currentVersion: '0.3.6',
+      currentVersion: '0.4.5',
       commits: [],
     };
   }

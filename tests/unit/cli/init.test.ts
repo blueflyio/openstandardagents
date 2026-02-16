@@ -4,6 +4,7 @@
  */
 
 import { describe, it, expect } from '@jest/globals';
+import { API_VERSION } from '../../../src/version.js';
 
 describe('ossa init', () => {
   it('should create minimal template structure', () => {

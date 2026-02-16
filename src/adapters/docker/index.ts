@@ -1,7 +1,13 @@
 /**
  * Docker Adapter
- * Generates Dockerfiles and docker-compose.yml from OSSA agents
+ * Generates production-grade Docker deployment packages from OSSA agents
  */
 
-export { DockerfileGenerator, DockerComposeGenerator } from './generators.js';
-export type { DockerConfig } from './types.js';
+export {
+  DockerfileGenerator,
+  DockerComposeGenerator,
+  DockerScriptsGenerator,
+  DockerConfigGenerator,
+} from './generators.js';
+export { DockerExporter } from './docker-exporter.js';
+export type { DockerConfig, DockerExportOptions } from './types.js';

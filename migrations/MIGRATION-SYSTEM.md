@@ -143,7 +143,7 @@ const MIGRATIONS: Migration[] = [
 npm run migrate:dry
 
 # Test on sample file
-tsx migrations/scripts/migrate-v0.3.3-to-v0.3.4.ts examples/my-agent.ossa.yaml --dry-run
+tsx migrations/scripts/migrate-v0.3.3-to-v0.3.4.ts examples/creative-agent-naming.ossa.yaml --dry-run
 
 # Full test
 npm run migrate:check
@@ -189,7 +189,7 @@ Migration state is stored in `.migration-state.json`:
       "version": "0.3.3",
       "date": "2025-12-31T00:00:00.000Z",
       "files": [
-        "examples/agents/my-agent.ossa.yaml"
+        "examples/agents/creative-agent-naming.ossa.yaml"
       ]
     }
   ]
