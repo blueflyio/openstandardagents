@@ -1,0 +1,110 @@
+apiVersion: ossa/v0.4.4
+kind: Agent
+metadata:
+  name: kubernetes-operator-agent
+  version: 1.0.0
+  description: Kubernetes-native agent for cluster operations and automation
+
+  # Agent Taxonomy
+  agentType: kagent                    # Kubernetes Agent runtime
+  agentKind: worker                    # Specialized task execution
+
+  agentArchitecture:
+    pattern: single                    # Single agentic loop
+    capabilities:
+      - tools                          # Can call external tools
+      - code                           # Can execute code
+      - handoff                        # Can transfer to other agents
+
+    runtime:
+      scalability: horizontal          # Horizontal scaling via K8s
+      executionModel: asynchronous     # Async execution
+      preferredRegion: us-west-2       # Preferred AWS region
+
+  labels:
+    domain: infrastructure
+    team: platform-engineering
+    environment: production
+    k8s.io/cluster: production-cluster
+
+spec:
+  # Kubernetes-specific configuration
+  runtime:
+    type: kubernetes
+    image: bluefly/kagent-runtime:latest
+    imagePullPolicy: Always
+
+    # Resource requirements
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "1Gi"
+      limits:
+        cpu: "2000m"
+        memory: "4Gi"
+
+    # Kubernetes service account
+    serviceAccount: kagent-operator
+
+    # Security context
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 1000
+      fsGroup: 1000
+
+  # Agent role and instructions
+  role: Kubernetes Operations Agent
+  instructions: |
+    You are a Kubernetes operations agent.
+    You can manage deployments, services, and other K8s resources.
+    Always verify changes before applying them.
+    Use kubectl commands through tools for cluster operations.
+
+  # Kubernetes-specific tools
+  tools:
+    - type: kubernetes
+      name: kubectl_get
+      description: Get Kubernetes resources
+      config:
+        namespace: default
+        timeout: 30s
+
+    - type: kubernetes
+      name: kubectl_apply
+      description: Apply Kubernetes manifests
+      config:
+        validation: strict
+        dry_run: true              # Always dry-run first
+
+    - type: kubernetes
+      name: kubectl_delete
+      description: Delete Kubernetes resources
+      config:
+        grace_period: 30s
+        require_confirmation: true
+
+  # Autonomy constraints
+  autonomy:
+    level: supervised                  # Requires approval
+    approval_required: true
+    allowed_actions:
+      - get
+      - describe
+      - logs
+    blocked_actions:
+      - delete
+      - update
+      - patch
+
+  # Monitoring
+  observability:
+    metrics:
+      enabled: true
+      port: 9090
+      path: /metrics
+    logs:
+      level: info
+      format: json
+    tracing:
+      enabled: true
+      endpoint: http://jaeger:14268/api/traces

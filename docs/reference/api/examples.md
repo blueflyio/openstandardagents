@@ -15,7 +15,7 @@ curl -X POST https://api.llm.bluefly.io/ossa/v1/agents \
     "apiVersion": "ossa/v0.3.0",
     "kind": "Agent",
     "metadata": {
-      "name": "my-agent",
+      "name": "creative-agent-naming",
       "version": "1.0.0"
     },
     "spec": {
@@ -40,7 +40,7 @@ const agent = await client.registerAgent({
   apiVersion: 'ossa/v0.3.0',
   kind: 'Agent',
   metadata: {
-    name: 'my-agent',
+    name: 'creative-agent-naming',
     version: '1.0.0'
   },
   spec: {
@@ -65,7 +65,7 @@ agent = client.register_agent({
     'apiVersion': 'ossa/v0.3.0',
     'kind': 'Agent',
     'metadata': {
-        'name': 'my-agent',
+        'name': 'creative-agent-naming',
         'version': '1.0.0'
     },
     'spec': {

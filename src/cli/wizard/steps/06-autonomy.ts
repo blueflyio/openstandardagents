@@ -10,7 +10,7 @@ import { console_ui } from '../ui/console.js';
 export async function configureAutonomyStep(
   state: WizardState
 ): Promise<WizardState> {
-  console_ui.step(6, state.totalSteps, 'Autonomy & Human-in-the-Loop');
+  console_ui.step(7, state.totalSteps, 'Autonomy & Human-in-the-Loop');
 
   console_ui.info('Configure how autonomous the agent should be.\n');
 

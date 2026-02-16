@@ -19,7 +19,7 @@ export class KagentValidator {
   private validateKagent: ReturnType<Ajv['compile']>;
 
   constructor() {
-// @ts-expect-error - Ajv v8 API compatibility
+    // @ts-expect-error - Ajv v8 API compatibility
     this.ajv = new Ajv({ allErrors: true, strict: false });
     addFormats(this.ajv);
 
@@ -27,7 +27,7 @@ export class KagentValidator {
     // Works in both Jest (source tree) and production (project root with dist/)
     const kagentSchemaPath = join(
       process.cwd(),
-      'spec/v0.3/extensions/kagent/kagent.schema.json'
+      'spec/v0.4/extensions/kagent/kagent.schema.json'
     );
     const kagentSchema = JSON.parse(readFileSync(kagentSchemaPath, 'utf-8'));
     this.validateKagent = this.ajv.compile(kagentSchema);

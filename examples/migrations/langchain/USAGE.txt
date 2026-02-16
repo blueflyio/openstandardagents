@@ -31,7 +31,7 @@ EXAMPLES
    ossa migrate langchain 01-python-react-agent-before.py
 
 2. Migrate with custom output:
-   ossa migrate langchain agent.py -o my-agent.ossa.yaml
+   ossa migrate langchain agent.py -o creative-agent-naming.ossa.yaml
 
 3. Generate migration report:
    ossa migrate langchain agent.ts --report migration-report.json

@@ -12,7 +12,7 @@
  * const manifest: OssaManifest = {
  *   apiVersion: 'v0.3.0',
  *   kind: 'Agent',
- *   metadata: { name: 'my-agent' },
+ *   metadata: { name: 'agent-47' },
  *   spec: { role: 'Assistant' },
  *   extensions: {
  *     azure: {
@@ -403,8 +403,8 @@ export class AzureAdapter {
       }
     }
 
-    // Default: return a placeholder response if no handler registered
-    return `Tool '${name}' executed with args: ${JSON.stringify(args)}`;
+    // No handler registered - fail explicitly
+    throw new Error(`No handler registered for tool: ${name}`);
   }
 
   /**

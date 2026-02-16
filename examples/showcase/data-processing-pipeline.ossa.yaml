@@ -1,0 +1,254 @@
+apiVersion: ossa/v0.4.5
+kind: Agent
+metadata:
+  name: data-processing-pipeline
+  version: 1.0.0
+  description: Data processing pipeline agent with ETL, transformation, and validation capabilities using pandas, dbt, and great_expectations
+  labels:
+    ossa.dev/category: data-processing
+    ossa.dev/tier: production-example
+    ossa.dev/autonomy: supervised
+    ossa.dev/domain: data-engineering
+  annotations:
+    ossa.dev/documentation: https://openstandardagents.org/agents/data-processing-pipeline
+    ossa.dev/tools: pandas,dbt,great_expectations
+    ossa.dev/a2a-enabled: "false"
+spec:
+  capabilities:
+  - type: function
+    name: etl.extract
+    description: Extract data from various sources
+    parameters:
+      type: object
+      properties:
+        source_type:
+          type: string
+          enum: [database, api, file, stream]
+          description: Type of data source
+        source_config:
+          type: object
+          description: Source connection configuration
+          properties:
+            url:
+              type: string
+            credentials:
+              type: object
+            options:
+              type: object
+        query:
+          type: string
+          description: Query or filter criteria
+      required: [source_type, source_config]
+  - type: function
+    name: etl.transform
+    description: Transform data using pandas and dbt
+    parameters:
+      type: object
+      properties:
+        transformation_type:
+          type: string
+          enum: [pandas, dbt, sql, custom]
+        rules:
+          type: array
+          items:
+            type: object
+            properties:
+              operation:
+                type: string
+                enum: [filter, aggregate, join, pivot, normalize]
+              parameters:
+                type: object
+        output_schema:
+          type: object
+          description: Expected output schema
+      required: [transformation_type, rules]
+  - type: function
+    name: etl.load
+    description: Load transformed data to destination
+    parameters:
+      type: object
+      properties:
+        destination_type:
+          type: string
+          enum: [database, data_warehouse, data_lake, file, api]
+        destination_config:
+          type: object
+        load_mode:
+          type: string
+          enum: [append, overwrite, upsert, merge]
+          default: append
+        batch_size:
+          type: integer
+          default: 1000
+      required: [destination_type, destination_config]
+  - type: function
+    name: validation.run
+    description: Validate data quality using great_expectations
+    parameters:
+      type: object
+      properties:
+        expectations:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+              column:
+                type: string
+              parameters:
+                type: object
+        checkpoint:
+          type: string
+          description: Great Expectations checkpoint name
+      required: [expectations]
+  role: |
+    You are a data processing pipeline specialist responsible for ETL operations,
+    data transformations, and data quality validation.
+
+    Your core responsibilities:
+    1. Data Extraction - Pull data from databases, APIs, files, and streams
+    2. Data Transformation - Apply business logic using pandas, dbt, SQL
+    3. Data Loading - Write processed data to destinations
+    4. Data Validation - Ensure data quality using great_expectations
+    5. Pipeline Orchestration - Coordinate multi-step data workflows
+
+    Tools and frameworks:
+    - pandas: In-memory data manipulation and analysis
+    - dbt: SQL-based data transformations and modeling
+    - great_expectations: Data quality validation and profiling
+
+    Always:
+    - Validate input data before processing
+    - Log transformation steps for audit trail
+    - Handle errors gracefully with retry logic
+    - Monitor data quality metrics
+    - Provide detailed processing statistics
+    - Respect memory limits and batch processing
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4
+    temperature: 0.2
+    maxTokens: 16384
+    features:
+      promptCaching: false
+      tokenEfficiency: false
+      batchProcessing: true
+  tools:
+  - type: function
+    name: pandas.transform
+    description: Data manipulation and analysis using pandas
+  - type: function
+    name: dbt.transform
+    description: SQL-based transformation using dbt
+  - type: function
+    name: great_expectations.validate
+    description: Data validation using great_expectations
+  - type: function
+    name: database.connect
+    description: Connect to various databases
+  - type: function
+    name: file.read
+    description: Read files in various formats (CSV, JSON, Parquet, Excel)
+  - type: function
+    name: api.fetch
+    description: Fetch data from REST APIs
+  autonomy:
+    mode: supervised
+    humanApproval: true
+    approvalRequired:
+      - before_load
+      - on_validation_failure
+      - on_schema_change
+    escalation:
+      enabled: true
+      triggers:
+        - data_quality_failure
+        - transformation_error
+        - destination_unavailable
+      contacts:
+        - role: data_engineer
+          method: slack
+        - role: data_ops
+          method: pagerduty
+  observability:
+    metrics:
+      enabled: true
+      provider: prometheus
+      port: 9091
+      custom:
+        - name: records_processed
+          type: counter
+        - name: processing_duration
+          type: histogram
+        - name: validation_failures
+          type: counter
+        - name: data_quality_score
+          type: gauge
+    logging:
+      level: info
+      format: json
+      destination: stdout
+      structured: true
+    tracing:
+      enabled: true
+      provider: opentelemetry
+      samplingRate: 1.0
+  resources:
+    memory: 8Gi
+    cpu: 4000m
+    storage: 100Gi
+    gpu:
+      enabled: false
+    limits:
+      memory: 16Gi
+      cpu: 8000m
+  state:
+    persistence: redis
+    ttl: 86400  # 24 hours
+    schema:
+      type: object
+      properties:
+        pipeline_state:
+          type: string
+          enum: [idle, extracting, transforming, loading, validating, completed, failed]
+        processed_records:
+          type: integer
+        current_batch:
+          type: integer
+        last_checkpoint:
+          type: string
+        statistics:
+          type: object
+  scheduling:
+    enabled: true
+    cron: "0 2 * * *"  # Daily at 2 AM
+    timezone: UTC
+    maxConcurrent: 1
+  retry:
+    enabled: true
+    maxAttempts: 3
+    backoff:
+      type: exponential
+      initialDelay: 5s
+      maxDelay: 300s
+      multiplier: 2
+  security:
+    authentication:
+      required: true
+      methods:
+        - oauth2
+        - service_account
+    authorization:
+      rbac:
+        enabled: true
+        roles:
+          - data_engineer
+          - data_analyst
+          - pipeline_admin
+    dataClassification:
+      - PII
+      - sensitive
+    encryption:
+      at_rest: true
+      in_transit: true

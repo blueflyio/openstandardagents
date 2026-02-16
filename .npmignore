@@ -21,6 +21,12 @@ coverage/
 *.log
 *.tsbuildinfo
 junit.xml
+*.tgz
+test-results/
+test-output*/
+tmp/
+tmp-*/
+.mutation/
 
 # Test files
 tests/
@@ -62,16 +68,42 @@ docs/
 CLEANUP_PLAN.md
 CODE_OF_CONDUCT.md
 CONTRIBUTING.md
+ARCHITECTURE.md
+CREWAI-EXPORT-COMPLETE.md
+DEMO_*.md
+DEPLOYMENT_*.md
+DISCOVERY-SYSTEM-IMPLEMENTATION.md
+DRUPAL-*.md
+EXPORT-INTEGRATION-COMPLETE.md
+K8S-EXPORT-COMPLETE.md
+MARKETPLACE_*.md
+MESSENGER-*.md
+SYMFONY-*.md
+TESTING_STRATEGY.md
+VALIDATION.md
+plan-*.txt
+json
 
 # Tools and scripts (build-time only)
 tools/
 generate-all-services.ts
 pyrightconfig.json
+*.mjs
+test-*.mjs
+demo-*.mjs
+export-*.mjs
 
 # Infrastructure and deployment (not part of package)
 infrastructure/
 deployment/
+deployment-templates/
 hooks/
+migrations/
+docker-compose.yml
+Dockerfile
+Dockerfile.*
+nginx.conf
+devfile.yaml
 
 # Development context files
 llms.txt
@@ -80,6 +112,12 @@ llms-ctx*.txt
 .devfile.yaml
 .gitlab-ci-trigger
 .env.local
+.cursorrules
+CLAUDE.md
+AGENTS.md
+PUBLISHING.md
+.gitlab-ci-multinode.yml
+stryker.config.json
 
 # Duplicate directories
 ossa-standard/

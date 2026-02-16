@@ -15,9 +15,9 @@
       "pattern": "^ossa/v(0\\.3\\.[0-9]+(-[a-zA-Z0-9]+)?|0\\.2\\.[2-9](-dev)?|1)(\\.[0-9]+)?(-[a-zA-Z0-9]+)?$",
       "description": "OSSA API version (v0.3.3+ supports Task and Workflow kinds)",
       "examples": [
-        "ossa/v0.3.3",
+        "ossa/v0.4.1",
         "ossa/v1",
-        "ossa/v0.2.9"
+        "ossa/v0.4.1"
       ]
     },
     "kind": {

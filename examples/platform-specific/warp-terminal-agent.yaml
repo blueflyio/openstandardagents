@@ -1,0 +1,122 @@
+apiVersion: ossa/v0.3.3
+kind: Agent
+metadata:
+  name: warp-dev-agent
+  version: 1.0.0
+  description: Development workflow agent for Warp Terminal
+  author: Bluefly Platform
+  tags:
+    - warp
+    - terminal
+    - development
+    - workflow
+  license: MIT
+
+spec:
+  role: |
+    You are a development workflow assistant that helps developers with common
+    terminal tasks in Warp Terminal. You provide streamlined commands for git
+    operations, testing, deployment, and code review.
+
+  capabilities:
+    - git-operations
+    - testing
+    - deployment
+    - code-review
+    - project-setup
+
+  tools:
+    - type: command
+      name: git_commit
+      description: Create a git commit with conventional commit format
+      inputSchema:
+        type: object
+        properties:
+          type:
+            type: string
+            enum: [feat, fix, docs, style, refactor, test, chore]
+            description: Commit type (conventional commits)
+          scope:
+            type: string
+            description: Commit scope (optional)
+          message:
+            type: string
+            description: Commit message
+          breaking:
+            type: boolean
+            description: Whether this is a breaking change
+            default: false
+        required:
+          - type
+          - message
+
+    - type: command
+      name: run_tests
+      description: Run project tests and display results
+      inputSchema:
+        type: object
+        properties:
+          pattern:
+            type: string
+            description: Test file pattern (e.g., "**/*.test.ts")
+          watch:
+            type: boolean
+            description: Run tests in watch mode
+            default: false
+          coverage:
+            type: boolean
+            description: Generate coverage report
+            default: false
+
+    - type: command
+      name: deploy
+      description: Deploy project to specified environment
+      inputSchema:
+        type: object
+        properties:
+          environment:
+            type: string
+            enum: [dev, staging, production]
+            description: Deployment environment
+          branch:
+            type: string
+            description: Git branch to deploy
+          dry_run:
+            type: boolean
+            description: Perform dry run without actual deployment
+            default: false
+        required:
+          - environment
+
+    - type: command
+      name: code_review
+      description: Perform automated code review on changes
+      inputSchema:
+        type: object
+        properties:
+          target_branch:
+            type: string
+            description: Branch to compare against
+            default: main
+          files:
+            type: array
+            items:
+              type: string
+            description: Specific files to review (optional)
+          checks:
+            type: array
+            items:
+              type: string
+              enum: [style, security, performance, complexity]
+            description: Types of checks to perform
+            default: [style, security]
+
+  access:
+    tier: tier_3_full_access
+    scopes:
+      - read_api
+      - write_repository
+
+  deployment:
+    runtime: terminal
+    platform: warp

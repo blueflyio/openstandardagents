@@ -132,7 +132,7 @@ documentation-agent:
 OSSA agents automatically export traces when the `--trace` flag is used:
 
 ```bash
-ossa run agents/my-agent.yaml --trace
+ossa run agents/creative-agent-naming.yaml --trace
 ```
 
 This creates spans for:

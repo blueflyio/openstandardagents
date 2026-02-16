@@ -1,0 +1,11 @@
+{
+  "url": "http://api.blueflyagents.com/webhook/mr-reviewer",
+  "token": "${WEBHOOK_SECRET}",
+  "enable_ssl_verification": false,
+  "push_events": false,
+  "issues_events": false,
+  "merge_requests_events": true,
+  "note_events": false,
+  "pipeline_events": false,
+  "wiki_page_events": false
+}

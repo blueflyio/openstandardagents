@@ -159,7 +159,7 @@ api/controllers.ts / api/controllers.py
 
 ```bash
 # Create folder structure
-ossa scaffold my-agent --with-structure
+ossa scaffold creative-agent-naming --with-structure
 
 # Or use wizard
 ossa wizard
@@ -179,7 +179,7 @@ ossa generate client openapi.yaml
 
 ```bash
 # Create folder structure
-ossa scaffold my-agent --base-path .agents
+ossa scaffold creative-agent-naming --base-path .agents
 
 # Or use wizard (Phase 4)
 ossa wizard
@@ -198,10 +198,10 @@ ossa generate client openapi.yaml
 
 ```bash
 # Validate folder structure
-ossa validate --structure .agents/my-agent
+ossa validate --structure .agents/creative-agent-naming
 
 # Check for missing files/directories
-ossa structure validate .agents/my-agent
+ossa structure validate .agents/creative-agent-naming
 ```
 
 ## Next Steps

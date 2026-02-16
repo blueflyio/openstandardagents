@@ -707,7 +707,7 @@ export class LlmsTxtService {
   }
 
   /**
-   * Update llms.txt file (CRUD: Update)
+   * Update llms.txt file
    */
   async updateLlmsTxt(manifest: OssaAgent, filePath?: string): Promise<void> {
     const content = await this.generateLlmsTxt(manifest);
@@ -719,7 +719,7 @@ export class LlmsTxtService {
   }
 
   /**
-   * Delete llms.txt file (CRUD: Delete)
+   * Delete llms.txt file
    */
   async deleteLlmsTxt(filePath: string): Promise<void> {
     try {

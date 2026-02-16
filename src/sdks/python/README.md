@@ -39,7 +39,7 @@ pip install -e ".[dev]"
 from ossa import load_manifest, validate_manifest
 
 # Load an OSSA manifest
-manifest = load_manifest("my-agent.ossa.yaml")
+manifest = load_manifest("creative-agent-naming.ossa.yaml")
 
 # Validate it
 result = validate_manifest(manifest, strict=True)
@@ -58,7 +58,7 @@ else:
 ```python
 from ossa import load_manifest
 
-manifest = load_manifest("my-agent.ossa.yaml")
+manifest = load_manifest("creative-agent-naming.ossa.yaml")
 
 # Access metadata
 print(f"Name: {manifest.metadata.name}")
@@ -79,7 +79,7 @@ if manifest.is_agent:
 ```python
 from ossa import load_manifest, export_manifest
 
-manifest = load_manifest("my-agent.ossa.yaml")
+manifest = load_manifest("creative-agent-naming.ossa.yaml")
 
 # Export to JSON
 json_output = export_manifest(manifest, format="json")
@@ -134,53 +134,53 @@ The SDK includes a powerful CLI for working with OSSA manifests:
 
 ```bash
 # Basic validation
-ossa validate my-agent.ossa.yaml
+ossa validate creative-agent-naming.ossa.yaml
 
 # Strict validation (additional checks)
-ossa validate my-agent.ossa.yaml --strict
+ossa validate creative-agent-naming.ossa.yaml --strict
 
 # Output as JSON
-ossa validate my-agent.ossa.yaml --json
+ossa validate creative-agent-naming.ossa.yaml --json
 ```
 
 ### Inspect a Manifest
 
 ```bash
 # Display as formatted table
-ossa inspect my-agent.ossa.yaml
+ossa inspect creative-agent-naming.ossa.yaml
 
 # Output as JSON
-ossa inspect my-agent.ossa.yaml --format json
+ossa inspect creative-agent-naming.ossa.yaml --format json
 
 # Output as YAML with syntax highlighting
-ossa inspect my-agent.ossa.yaml --format yaml
+ossa inspect creative-agent-naming.ossa.yaml --format yaml
 ```
 
 ### Export to Different Formats
 
 ```bash
 # Export to JSON
-ossa export my-agent.ossa.yaml --format json
+ossa export creative-agent-naming.ossa.yaml --format json
 
 # Export to Python code
-ossa export my-agent.ossa.yaml --format python -o agent.py
+ossa export creative-agent-naming.ossa.yaml --format python -o agent.py
 
 # Convert YAML to JSON
-ossa export my-agent.ossa.yaml --format json -o my-agent.json
+ossa export creative-agent-naming.ossa.yaml --format json -o creative-agent-naming.json
 ```
 
 ### Quick Info
 
 ```bash
 # Display quick summary
-ossa info my-agent.ossa.yaml
+ossa info creative-agent-naming.ossa.yaml
 ```
 
 ## Environment Variables
 
 OSSA manifests support environment variable substitution for portability:
 
-**my-agent.ossa.yaml:**
+**creative-agent-naming.ossa.yaml:**
 ```yaml
 apiVersion: ossa/v0.3.0
 kind: Agent

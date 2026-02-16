@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * File operations utilities
- * 
+ *
  * Follows DRY principles for file operations
  */
 

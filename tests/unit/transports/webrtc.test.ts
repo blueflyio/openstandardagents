@@ -7,6 +7,7 @@ import {
   InMemorySignalingServer,
 } from '../../../src/transports/webrtc';
 import { EventEmitter } from 'events';
+import { API_VERSION } from '../../../src/version.js';
 
 // Mock RTCPeerConnection for testing
 class MockRTCPeerConnection {
@@ -18,6 +19,8 @@ class MockRTCPeerConnection {
   private localDescription: RTCSessionDescriptionInit | null = null;
   private remoteDescription: RTCSessionDescriptionInit | null = null;
   private dataChannels: MockRTCDataChannel[] = [];
+  private pendingTimers: (NodeJS.Timeout | ReturnType<typeof setInterval>)[] =
+    [];
 
   constructor(public config: RTCConfiguration) {}
 
@@ -41,7 +44,8 @@ class MockRTCPeerConnection {
     this.localDescription = description;
 
     // Simulate ICE candidate gathering
-    setTimeout(() => {
+    const iceTimer = setTimeout(() => {
+      if (this.connectionState === 'closed') return;
       if (this.onicecandidate) {
         this.onicecandidate({
           candidate: {
@@ -54,7 +58,8 @@ class MockRTCPeerConnection {
       }
 
       // Simulate connection
-      setTimeout(() => {
+      const connTimer = setTimeout(() => {
+        if (this.connectionState === 'closed') return;
         this.connectionState = 'connected';
         if (this.onconnectionstatechange) {
           this.onconnectionstatechange();
@@ -62,11 +67,14 @@ class MockRTCPeerConnection {
         // Open all data channels when connection is established
         this.dataChannels.forEach((ch) => {
           if (ch.readyState === 'connecting') {
-            setTimeout(() => ch.simulateOpen(), 10);
+            const chTimer = setTimeout(() => ch.simulateOpen(), 10);
+            this.pendingTimers.push(chTimer);
           }
         });
       }, 10);
+      this.pendingTimers.push(connTimer);
     }, 10);
+    this.pendingTimers.push(iceTimer);
   }
 
   async setRemoteDescription(
@@ -88,7 +96,8 @@ class MockRTCPeerConnection {
 
     // Simulate channel opening after connection
     if (this.connectionState === 'connected') {
-      setTimeout(() => channel.simulateOpen(), 10);
+      const openTimer = setTimeout(() => channel.simulateOpen(), 10);
+      this.pendingTimers.push(openTimer);
     } else {
       // Store reference to open when connection is established
       const openWhenConnected = () => {
@@ -101,17 +110,30 @@ class MockRTCPeerConnection {
       };
       // Check periodically or when connection state changes
       const checkInterval = setInterval(() => {
-        if (this.connectionState === 'connected') {
-          openWhenConnected();
+        if (
+          this.connectionState === 'connected' ||
+          this.connectionState === 'closed'
+        ) {
+          if (this.connectionState === 'connected') {
+            openWhenConnected();
+          }
           clearInterval(checkInterval);
         }
       }, 5);
+      this.pendingTimers.push(checkInterval);
     }
 
     return channel;
   }
 
   close(): void {
+    // Clear all pending timers first
+    this.pendingTimers.forEach((timer) => {
+      clearTimeout(timer);
+      clearInterval(timer);
+    });
+    this.pendingTimers = [];
+
     this.connectionState = 'closed';
     this.dataChannels.forEach((ch) => ch.close());
     if (this.onconnectionstatechange) {
@@ -129,7 +151,8 @@ class MockRTCPeerConnection {
       } as RTCDataChannelEvent);
     }
 
-    setTimeout(() => channel.simulateOpen(), 10);
+    const openTimer = setTimeout(() => channel.simulateOpen(), 10);
+    this.pendingTimers.push(openTimer);
     return channel;
   }
 }
@@ -211,9 +234,14 @@ describe('WebRTCTransport', () => {
   });
 
   afterEach(async () => {
+    // Remove event listeners to prevent leaks
+    transport1.removeAllListeners();
+    transport2.removeAllListeners();
     await transport1.close();
     await transport2.close();
     signalingServer.clear();
+    // Wait for any pending async operations to complete
+    await new Promise((resolve) => setTimeout(resolve, 30));
   });
 
   describe('Connection Establishment', () => {

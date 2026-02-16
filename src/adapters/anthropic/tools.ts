@@ -76,35 +76,21 @@ export class ToolMapper {
           tool.name &&
           typeof tool.name === 'string'
         ) {
-          const toolName = tool.name;
-          const anthropicTool = this.convertFunctionToTool({
-            ...tool,
-            name: toolName,
-          });
+          const anthropicTool = this.convertFunctionToTool(tool);
           tools.push(anthropicTool);
-
-          this.tools.set(tool.name, {
-            tool: anthropicTool,
-          });
+          this.tools.set(tool.name, { tool: anthropicTool });
         } else if (tool.type === 'mcp' && tool.capabilities) {
           // MCP tools - convert each capability
           for (const capName of tool.capabilities) {
             const capability: OssaCapability = {
               name: capName,
               description: `MCP capability: ${capName}`,
-              input_schema: {
-                type: 'object',
-                properties: {},
-              },
+              input_schema: { type: 'object', properties: {} },
             };
 
             const anthropicTool = this.convertCapabilityToTool(capability);
             tools.push(anthropicTool);
-
-            this.tools.set(capName, {
-              tool: anthropicTool,
-              capability,
-            });
+            this.tools.set(capName, { tool: anthropicTool, capability });
           }
         }
       }
@@ -112,9 +98,7 @@ export class ToolMapper {
 
     // Map from extensions.anthropic.tools
     const anthropicExt = agent.extensions?.anthropic as
-      | {
-          tools?: Tool[];
-        }
+      | { tools?: Tool[] }
       | undefined;
 
     if (anthropicExt?.tools) {
@@ -132,10 +116,7 @@ export class ToolMapper {
    */
   registerToolHandler(name: string, handler: ToolHandler): boolean {
     const toolDef = this.tools.get(name);
-    if (!toolDef) {
-      return false;
-    }
-
+    if (!toolDef) return false;
     toolDef.handler = handler;
     return true;
   }
@@ -164,9 +145,7 @@ export class ToolMapper {
     const toolDef = this.tools.get(name);
 
     if (!toolDef) {
-      return JSON.stringify({
-        error: `Tool '${name}' not found`,
-      });
+      return JSON.stringify({ error: `Tool '${name}' not found` });
     }
 
     if (!toolDef.handler) {
@@ -209,20 +188,19 @@ export class ToolMapper {
    * Convert OSSA function tool to Anthropic tool
    */
   private convertFunctionToTool(tool: {
-    name: string;
+    name?: string;
     config?: Record<string, unknown>;
-    capabilities?: string[];
   }): Tool {
     const config = tool.config || {};
-    const description =
-      (config.description as string) || `Function: ${tool.name}`;
+    const name = tool.name || 'unnamed_tool';
+    const description = (config.description as string) || `Function: ${name}`;
     const inputSchema = (config.input_schema as Record<string, unknown>) || {
       type: 'object',
       properties: {},
     };
 
     return {
-      name: tool.name,
+      name,
       description,
       input_schema: this.normalizeInputSchema(inputSchema),
     };
@@ -236,22 +214,11 @@ export class ToolMapper {
     properties?: Record<string, unknown>;
     required?: string[];
   } {
-    // Ensure schema is object type
-    const normalized: {
-      type: 'object';
-      properties?: Record<string, unknown>;
-      required?: string[];
-    } = {
+    return {
       type: 'object',
       properties: (schema.properties as Record<string, unknown>) || {},
+      ...(Array.isArray(schema.required) && { required: schema.required }),
     };
-
-    // Add required fields if present
-    if (Array.isArray(schema.required)) {
-      normalized.required = schema.required;
-    }
-
-    return normalized;
   }
 }
 
@@ -270,7 +237,6 @@ export function createToolMapper(agent: OssaAgent): ToolMapper {
 export function extractCapabilities(agent: OssaAgent): OssaCapability[] {
   const capabilities: OssaCapability[] = [];
 
-  // From spec.tools
   if (agent.spec?.tools) {
     for (const tool of agent.spec.tools) {
       if (tool.type === 'function' && tool.name && tool.config) {
@@ -373,17 +339,11 @@ export function createTool(
  * Common tool templates
  */
 export const COMMON_TOOLS = {
-  /**
-   * Web search tool
-   */
   webSearch: createTool(
     'web_search',
     'Search the web for information',
     {
-      query: {
-        type: 'string',
-        description: 'The search query',
-      },
+      query: { type: 'string', description: 'The search query' },
       max_results: {
         type: 'number',
         description: 'Maximum number of results to return',
@@ -391,44 +351,21 @@ export const COMMON_TOOLS = {
     },
     ['query']
   ),
-
-  /**
-   * Read file tool
-   */
   readFile: createTool(
     'read_file',
     'Read contents of a file',
-    {
-      path: {
-        type: 'string',
-        description: 'File path to read',
-      },
-    },
+    { path: { type: 'string', description: 'File path to read' } },
     ['path']
   ),
-
-  /**
-   * Write file tool
-   */
   writeFile: createTool(
     'write_file',
     'Write contents to a file',
     {
-      path: {
-        type: 'string',
-        description: 'File path to write',
-      },
-      content: {
-        type: 'string',
-        description: 'Content to write',
-      },
+      path: { type: 'string', description: 'File path to write' },
+      content: { type: 'string', description: 'Content to write' },
     },
     ['path', 'content']
   ),
-
-  /**
-   * Execute code tool
-   */
   executeCode: createTool(
     'execute_code',
     'Execute code in a sandboxed environment',
@@ -437,37 +374,18 @@ export const COMMON_TOOLS = {
         type: 'string',
         description: 'Programming language (python, javascript, etc.)',
       },
-      code: {
-        type: 'string',
-        description: 'Code to execute',
-      },
+      code: { type: 'string', description: 'Code to execute' },
     },
     ['language', 'code']
   ),
-
-  /**
-   * HTTP request tool
-   */
   httpRequest: createTool(
     'http_request',
     'Make an HTTP request',
     {
-      url: {
-        type: 'string',
-        description: 'URL to request',
-      },
-      method: {
-        type: 'string',
-        description: 'HTTP method (GET, POST, etc.)',
-      },
-      headers: {
-        type: 'object',
-        description: 'Request headers',
-      },
-      body: {
-        type: 'string',
-        description: 'Request body',
-      },
+      url: { type: 'string', description: 'URL to request' },
+      method: { type: 'string', description: 'HTTP method (GET, POST, etc.)' },
+      headers: { type: 'object', description: 'Request headers' },
+      body: { type: 'string', description: 'Request body' },
     },
     ['url']
   ),

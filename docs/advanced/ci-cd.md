@@ -90,7 +90,7 @@ To migrate to a specific version:
 To search in specific directories:
 
 1. Click **Run Pipeline**
-2. Add variable: `AGENT_DIR=./my-agents ./custom-path`
+2. Add variable: `AGENT_DIR=./creative-agent-namings ./custom-path`
 3. Run **ossa:migrate-batch** job
 
 ### Multiple Search Paths
@@ -180,7 +180,7 @@ Total Files: 12
 ❌ Failed: 0
 
 Detailed Results:
-  ✅ ./agents/my-agent.ossa.yaml: 0.3.5 → 0.3.5
+  ✅ ./agents/creative-agent-naming.ossa.yaml: 0.3.5 → 0.3.5
   ✅ ./examples/example-1.ossa.yaml: 0.3.2 → 0.3.5
   ✅ ./.ossa/test-agent.ossa.yaml: 0.3.4 → 0.3.5
 
@@ -205,7 +205,7 @@ Total Files: 12
 ❌ Failed: 0
 
 Detailed Results:
-  ✅ ./agents/my-agent.ossa.yaml: 0.3.5 → 0.3.5
+  ✅ ./agents/creative-agent-naming.ossa.yaml: 0.3.5 → 0.3.5
   ✅ ./examples/example-1.ossa.yaml: 0.3.2 → 0.3.5
   ✅ ./.ossa/test-agent.ossa.yaml: 0.3.4 → 0.3.5
 

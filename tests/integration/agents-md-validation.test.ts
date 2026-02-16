@@ -9,6 +9,7 @@ import { ValidationService } from '../../src/services/validation.service.js';
 import { ManifestRepository } from '../../src/repositories/manifest.repository.js';
 import * as path from 'path';
 import * as fs from 'fs';
+import { API_VERSION } from '../../src/version.js';
 
 describe('agents.md Extension Integration', () => {
   const validationService = container.get(ValidationService);
@@ -16,7 +17,7 @@ describe('agents.md Extension Integration', () => {
 
   it('should validate agents_md extension in manifest', async () => {
     const manifest = {
-      apiVersion: 'ossa/v0.3.3',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'test-agent',
@@ -52,7 +53,7 @@ describe('agents.md Extension Integration', () => {
       },
     };
 
-    const result = await validationService.validate(manifest, '0.3.3');
+    const result = await validationService.validate(manifest, '0.4.1');
     if (result.errors.length > 0) {
       console.error(
         'Validation errors:',
@@ -65,7 +66,7 @@ describe('agents.md Extension Integration', () => {
 
   it('should validate agents_md with Cursor extension integration', async () => {
     const manifest = {
-      apiVersion: 'ossa/v0.3.3',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'cursor-agents-md-agent',
@@ -101,7 +102,7 @@ describe('agents.md Extension Integration', () => {
       },
     };
 
-    const result = await validationService.validate(manifest, '0.3.3');
+    const result = await validationService.validate(manifest, '0.4.1');
     if (result.errors.length > 0) {
       console.error(
         'Validation errors:',
@@ -113,7 +114,7 @@ describe('agents.md Extension Integration', () => {
 
   it('should validate agents_md with nested files for monorepo', async () => {
     const manifest = {
-      apiVersion: 'ossa/v0.3.3',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'monorepo-agent',
@@ -152,7 +153,7 @@ describe('agents.md Extension Integration', () => {
       },
     };
 
-    const result = await validationService.validate(manifest, '0.3.3');
+    const result = await validationService.validate(manifest, '0.4.1');
     if (result.errors.length > 0) {
       console.error(
         'Validation errors:',
@@ -164,7 +165,7 @@ describe('agents.md Extension Integration', () => {
 
   it('should validate agents_md with bidirectional mapping', async () => {
     const manifest = {
-      apiVersion: 'ossa/v0.3.3',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'mapping-agent',
@@ -202,7 +203,7 @@ describe('agents.md Extension Integration', () => {
       },
     };
 
-    const result = await validationService.validate(manifest, '0.3.3');
+    const result = await validationService.validate(manifest, '0.4.1');
     if (result.errors.length > 0) {
       console.error(
         'Validation errors:',
@@ -232,7 +233,7 @@ describe('agents.md Extension Integration', () => {
             continue;
           }
 
-          const result = await validationService.validate(manifest, '0.3.3');
+          const result = await validationService.validate(manifest, '0.4.1');
           if (result.errors.length > 0) {
             console.error(
               `Validation errors for ${file}:`,
@@ -250,7 +251,7 @@ describe('agents.md Extension Integration', () => {
 
   it('should validate custom sections array', async () => {
     const manifest = {
-      apiVersion: 'ossa/v0.3.3',
+      apiVersion: API_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'custom-sections-agent',
@@ -279,7 +280,7 @@ describe('agents.md Extension Integration', () => {
       },
     };
 
-    const result = await validationService.validate(manifest, '0.3.3');
+    const result = await validationService.validate(manifest, '0.4.1');
     if (result.errors.length > 0) {
       console.error(
         'Validation errors:',

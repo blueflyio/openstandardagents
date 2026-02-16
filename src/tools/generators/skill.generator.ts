@@ -6,7 +6,7 @@ export class SkillGenerator {
    * Generate SKILL.md from OSSA manifest and skill name
    */
   generate(manifest: OSSAManifest, skillName: string): string {
-    const skill = manifest.skills?.find(s => s.name === skillName);
+    const skill = manifest.skills?.find((s) => s.name === skillName);
 
     if (!skill) {
       throw new Error(`Skill "${skillName}" not found in manifest`);
@@ -25,7 +25,7 @@ export class SkillGenerator {
     };
 
     // Remove undefined values
-    Object.keys(frontmatter).forEach(key => {
+    Object.keys(frontmatter).forEach((key) => {
       if (frontmatter[key as keyof typeof frontmatter] === undefined) {
         delete frontmatter[key as keyof typeof frontmatter];
       }
@@ -50,7 +50,7 @@ export class SkillGenerator {
     // Agent capabilities
     body += `## Agent Capabilities\n\n`;
     body += `This skill is part of a **${manifest.agent.type}** agent with the following capabilities:\n\n`;
-    manifest.agent.capabilities.forEach(cap => {
+    manifest.agent.capabilities.forEach((cap) => {
       body += `- ${cap}\n`;
     });
     body += `\n`;
@@ -70,9 +70,10 @@ export class SkillGenerator {
       body += `## Parameters\n\n`;
       body += `| Name | Type | Required | Description | Default |\n`;
       body += `|------|------|----------|-------------|---------|\n`;
-      skill.parameters.forEach(param => {
+      skill.parameters.forEach((param) => {
         const required = param.required ? 'Yes' : 'No';
-        const defaultVal = param.default !== undefined ? `\`${param.default}\`` : '-';
+        const defaultVal =
+          param.default !== undefined ? `\`${param.default}\`` : '-';
         body += `| ${param.name} | ${param.type} | ${required} | ${param.description} | ${defaultVal} |\n`;
       });
       body += `\n`;
@@ -97,7 +98,7 @@ export class SkillGenerator {
 
       if (manifest.integrations.mcp?.servers) {
         body += `### MCP Servers\n\n`;
-        manifest.integrations.mcp.servers.forEach(server => {
+        manifest.integrations.mcp.servers.forEach((server) => {
           body += `- ${server}\n`;
         });
         body += `\n`;
@@ -105,7 +106,7 @@ export class SkillGenerator {
 
       if (manifest.integrations.apis) {
         body += `### APIs\n\n`;
-        manifest.integrations.apis.forEach(api => {
+        manifest.integrations.apis.forEach((api) => {
           body += `- **${api.name}**: ${api.url}\n`;
         });
         body += `\n`;
@@ -130,7 +131,7 @@ export class SkillGenerator {
       return skills;
     }
 
-    manifest.skills.forEach(skill => {
+    manifest.skills.forEach((skill) => {
       const content = this.generate(manifest, skill.name);
       skills.set(skill.name, content);
     });

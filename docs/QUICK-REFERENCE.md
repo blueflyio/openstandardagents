@@ -126,7 +126,7 @@ export AGENT_PRIORITY=normal
 ./scripts/migrate-to-unified-llm.sh
 
 # Generate new agent
-./scripts/generate-agent.sh my-agent worker
+./scripts/generate-agent.sh creative-agent-naming worker
 
 # Validate
 ossa validate examples/

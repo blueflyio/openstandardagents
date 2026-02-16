@@ -132,7 +132,7 @@ api:
 #
 # To create a new agent from this template:
 #
-#   ossa init my-agent --template minimal
+#   ossa init supercali-fragilisticagent --template minimal
 #   # Then customize agent.yml with your values
 #
 # To run this agent locally:

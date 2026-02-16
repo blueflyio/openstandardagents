@@ -1,12 +1,18 @@
 /**
  * GitLab Converter
- * Converts OSSA agent to GitLab CI job
+ * Converts OSSA agent to GitLab CI job or GitLab Duo Flow
  */
 
 import type { OssaAgent } from '../../types/index.js';
 import type { GitLabJobConfig, GitLabPipelineConfig } from './types.js';
+import { GitLabDuoFlowGenerator } from './flow-generator.js';
 
 export class GitLabConverter {
+  private flowGenerator: GitLabDuoFlowGenerator;
+
+  constructor() {
+    this.flowGenerator = new GitLabDuoFlowGenerator();
+  }
   /**
    * Convert OSSA agent to GitLab CI job
    */
@@ -82,7 +88,7 @@ export class GitLabConverter {
   }
 
   /**
-   * Generate .gitlab-ci.yml content
+   * Generate .gitlab-ci.yml content (legacy CI/CD format)
    */
   generateYAML(manifest: OssaAgent): string {
     const job = this.convertJob(manifest);
@@ -112,5 +118,19 @@ ${(job.artifacts?.paths || []).map((p) => `      - ${p}`).join('\n')}
   rules:
 ${(job.rules || []).map((r) => `    - if: ${r.if || 'true'}\n      when: ${r.when || 'on_success'}`).join('\n')}
 `;
+  }
+
+  /**
+   * Generate GitLab Duo Flow Registry v1 YAML
+   */
+  generateFlowYAML(manifest: OssaAgent): string {
+    return this.flowGenerator.generateYAML(manifest);
+  }
+
+  /**
+   * Generate GitLab Duo Flow configuration object
+   */
+  generateFlow(manifest: OssaAgent) {
+    return this.flowGenerator.generate(manifest);
   }
 }

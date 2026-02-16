@@ -1,6 +1,6 @@
 # BlueFly Agent Platform
 
-> AI agents and autonomous workflow automation platform built on OSSA v0.4.0
+> AI agents and autonomous workflow automation platform built on OSSA v0.4.1
 
 ## Project Overview
 
@@ -26,7 +26,7 @@ See openapi/ for API specifications (single source of truth).
 ## Repository
 
 gitlab.com/blueflyio - 35+ focused projects
-openstandardagents.org - OSSA v0.4.0 specification
+openstandardagents.org - OSSA v0.4.1 specification
 
 ## Status (Feb 2026)
 

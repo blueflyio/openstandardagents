@@ -23,7 +23,7 @@ Add the `agents_md` extension to your OSSA manifest:
 apiVersion: ossa/v0.2.8
 kind: Agent
 metadata:
-  name: my-agent
+  name: creative-agent-naming
 spec:
   role: Development agent for code review
   tools:
@@ -104,7 +104,7 @@ ossa agents-md generate <manifest> [options]
 
 ```bash
 # Generate with default settings
-ossa agents-md generate .agents/my-agent/manifest.yaml
+ossa agents-md generate .agents/creative-agent-naming/manifest.yaml
 
 # Generate to custom path
 ossa agents-md generate manifest.yaml --output .github/AGENTS.md

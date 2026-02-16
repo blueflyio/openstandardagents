@@ -75,7 +75,7 @@ cat > agent.ossa.yaml <<EOF
 apiVersion: ossa/v0.3.0
 kind: Agent
 metadata:
-  name: my-agent
+  name: creative-agent-naming
   version: 1.0.0
 spec:
   role: A helpful assistant

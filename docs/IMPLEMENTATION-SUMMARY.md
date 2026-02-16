@@ -75,7 +75,7 @@ include:
 
 **Usage:**
 ```bash
-./scripts/generate-agent.sh my-agent worker
+./scripts/generate-agent.sh creative-agent-naming worker
 ```
 
 **What it does:**

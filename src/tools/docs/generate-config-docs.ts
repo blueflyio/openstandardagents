@@ -2,7 +2,10 @@
 import { writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 
-const OUTPUT_FILE = join(process.cwd(), 'website/content/docs/configuration/index.md');
+const OUTPUT_FILE = join(
+  process.cwd(),
+  'website/content/docs/configuration/index.md'
+);
 
 const doc = `# Configuration Reference
 
@@ -103,7 +106,9 @@ Override configuration with environment variables:
 - [Environment Setup](../getting-started/installation)
 `;
 
-mkdirSync(join(process.cwd(), 'website/content/docs/configuration'), { recursive: true });
+mkdirSync(join(process.cwd(), 'website/content/docs/configuration'), {
+  recursive: true,
+});
 writeFileSync(OUTPUT_FILE, doc);
 
 console.log(`✅ Generated configuration reference`);

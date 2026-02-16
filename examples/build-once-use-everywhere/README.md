@@ -81,8 +81,8 @@ python crewai_crew.py
 ossa export agent.ossa.yaml --platform docker --output Dockerfile
 
 # Build and run
-docker build -t my-agent .
-docker run my-agent
+docker build -t creative-agent-naming .
+docker run creative-agent-naming
 ```
 
 **Generated Artifacts:**
@@ -123,7 +123,7 @@ git push
 ossa export agent.ossa.yaml --platform temporal --format typescript --output temporal_workflow.ts
 
 # Deploy Temporal workflow
-temporal workflow start --workflow-id my-agent --task-queue agents
+temporal workflow start --workflow-id creative-agent-naming --task-queue agents
 ```
 
 **Generated Artifacts:**

@@ -11,8 +11,12 @@
  * - Health checks
  */
 
-import { MemoryGenerator, type MemoryBackend } from '../../../../../src/services/export/langchain/memory-generator.js';
+import {
+  MemoryGenerator,
+  type MemoryBackend,
+} from '../../../../../src/services/export/langchain/memory-generator.js';
 import type { OssaAgent } from '../../../../../src/types/index.js';
+import { API_VERSION } from '../../../../../src/version.js';
 
 describe('MemoryGenerator - Production Quality (v0.4.1)', () => {
   const generator = new MemoryGenerator();
@@ -20,7 +24,7 @@ describe('MemoryGenerator - Production Quality (v0.4.1)', () => {
   describe('Configuration Parsing', () => {
     it('should parse full OSSA memory configuration', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.0',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -61,7 +65,7 @@ describe('MemoryGenerator - Production Quality (v0.4.1)', () => {
 
     it('should handle disabled memory', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.0',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -87,7 +91,7 @@ describe('MemoryGenerator - Production Quality (v0.4.1)', () => {
 
     it('should parse boolean values correctly', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.0',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -117,7 +121,7 @@ describe('MemoryGenerator - Production Quality (v0.4.1)', () => {
   describe('Buffer Memory', () => {
     it('should generate buffer memory with window management', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.0',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -148,7 +152,7 @@ describe('MemoryGenerator - Production Quality (v0.4.1)', () => {
 
     it('should include memory statistics function', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.0',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -177,7 +181,7 @@ describe('MemoryGenerator - Production Quality (v0.4.1)', () => {
   describe('Summary Memory', () => {
     it('should generate summary memory with token limits', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.0',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -207,7 +211,7 @@ describe('MemoryGenerator - Production Quality (v0.4.1)', () => {
 
     it('should include error handling for missing API key', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.0',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -237,7 +241,7 @@ describe('MemoryGenerator - Production Quality (v0.4.1)', () => {
   describe('Entity Memory', () => {
     it('should generate entity memory with entity tracking', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.0',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -266,7 +270,7 @@ describe('MemoryGenerator - Production Quality (v0.4.1)', () => {
 
     it('should include entity management functions', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.0',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -296,7 +300,7 @@ describe('MemoryGenerator - Production Quality (v0.4.1)', () => {
   describe('Redis Persistence', () => {
     it('should generate Redis memory with connection pooling', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.0',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -330,7 +334,7 @@ describe('MemoryGenerator - Production Quality (v0.4.1)', () => {
 
     it('should include retry logic with exponential backoff', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.0',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -362,7 +366,7 @@ describe('MemoryGenerator - Production Quality (v0.4.1)', () => {
 
     it('should include session management functions', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.0',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -395,7 +399,7 @@ describe('MemoryGenerator - Production Quality (v0.4.1)', () => {
   describe('PostgreSQL Persistence', () => {
     it('should generate PostgreSQL memory with connection pooling', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.0',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -430,7 +434,7 @@ describe('MemoryGenerator - Production Quality (v0.4.1)', () => {
 
     it('should include schema initialization', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.0',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -460,7 +464,7 @@ describe('MemoryGenerator - Production Quality (v0.4.1)', () => {
 
     it('should include export functionality', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.0',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -494,7 +498,7 @@ describe('MemoryGenerator - Production Quality (v0.4.1)', () => {
   describe('Production-Ready Features', () => {
     it('should include comprehensive error handling', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.0',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -522,7 +526,7 @@ describe('MemoryGenerator - Production Quality (v0.4.1)', () => {
 
     it('should include structured logging', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.0',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',
@@ -549,7 +553,7 @@ describe('MemoryGenerator - Production Quality (v0.4.1)', () => {
 
     it('should include health check functions', () => {
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.0',
+        apiVersion: API_VERSION,
         kind: 'Agent',
         metadata: {
           name: 'test-agent',

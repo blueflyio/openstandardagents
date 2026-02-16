@@ -1,0 +1,304 @@
+apiVersion: ossa/v0.4.5
+kind: Agent
+metadata:
+  name: security-scanner-enhanced
+  version: 1.0.0
+  description: Advanced security scanner with vulnerability scanning, penetration testing, and compliance checking using nmap, OWASP ZAP, and custom scanners
+  labels:
+    ossa.dev/category: security
+    ossa.dev/tier: production-example
+    ossa.dev/autonomy: medium
+    ossa.dev/domain: security-operations
+    ossa.dev/execution: event-driven
+  annotations:
+    ossa.dev/documentation: https://openstandardagents.org/agents/security-scanner-enhanced
+    ossa.dev/tools: nmap,owasp-zap,custom-scanners
+    ossa.dev/triggers: khook,webhook,schedule
+spec:
+  capabilities:
+  - type: function
+    name: vulnerability.scan
+    description: Scan systems and applications for vulnerabilities
+    parameters:
+      type: object
+      properties:
+        target:
+          type: string
+          description: Target host, IP range, or application URL
+        scan_type:
+          type: string
+          enum: [network, web_app, container, cloud, api]
+          description: Type of vulnerability scan
+        depth:
+          type: string
+          enum: [quick, standard, deep, comprehensive]
+          default: standard
+        tools:
+          type: array
+          items:
+            type: string
+            enum: [nmap, zap, nikto, sqlmap, custom]
+          default: [nmap, zap]
+      required: [target, scan_type]
+  - type: function
+    name: penetration.test
+    description: Execute penetration testing procedures
+    parameters:
+      type: object
+      properties:
+        target:
+          type: string
+        test_scope:
+          type: array
+          items:
+            type: string
+            enum: [network, web, wireless, social_engineering, physical]
+        methodology:
+          type: string
+          enum: [owasp, ptes, osstmm, nist]
+          default: owasp
+        authorization:
+          type: object
+          properties:
+            authorized_by:
+              type: string
+            scope_document:
+              type: string
+            valid_until:
+              type: string
+              format: date-time
+          required: [authorized_by, valid_until]
+      required: [target, test_scope, authorization]
+  - type: function
+    name: compliance.check
+    description: Verify compliance with security policies and standards
+    parameters:
+      type: object
+      properties:
+        standards:
+          type: array
+          items:
+            type: string
+            enum: [PCI-DSS, ISO27001, NIST, CIS, OWASP-Top10]
+        scope:
+          type: string
+        baseline:
+          type: string
+          description: Baseline configuration for comparison
+      required: [standards, scope]
+  role: |
+    You are an advanced security scanning specialist responsible for identifying
+    vulnerabilities, executing penetration tests, and ensuring security compliance.
+
+    Your core responsibilities:
+    1. Vulnerability Scanning - Identify security weaknesses using multiple tools
+    2. Penetration Testing - Execute authorized security testing
+    3. Compliance Checking - Verify adherence to security standards
+    4. Threat Analysis - Analyze and classify security threats
+    5. Remediation Guidance - Provide actionable security fixes
+
+    Tools and methodologies:
+    - nmap: Network discovery and security scanning
+    - OWASP ZAP: Web application security scanner
+    - Custom scanners: Specialized security tools
+    - OWASP Top 10: Web application security risks
+    - CVE database: Known vulnerability tracking
+
+    Security scanning principles:
+    - Always operate within authorized scope
+    - Minimize impact on production systems
+    - Follow responsible disclosure practices
+    - Document all findings with evidence
+    - Provide risk-based prioritization
+
+    Always provide:
+    - Severity classification (Critical, High, Medium, Low, Info)
+    - CVE/CWE identifiers when applicable
+    - Affected components and versions
+    - Exploit availability and complexity
+    - Detailed remediation steps with references
+    - Evidence (screenshots, logs, payloads)
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4
+    temperature: 0.1
+    maxTokens: 32768
+    features:
+      promptCaching: true
+      tokenEfficiency: false
+      batchProcessing: false
+  tools:
+  - type: function
+    name: nmap.scan
+    description: Network scanning and discovery tool
+  - type: function
+    name: zap.scan
+    description: Web application security scanner
+  - type: function
+    name: cve.lookup
+    description: Query CVE database for vulnerability details
+  - type: function
+    name: exploit.check
+    description: Check exploit availability for vulnerabilities
+  - type: function
+    name: report.generate
+    description: Generate security scan reports
+  autonomy:
+    mode: semi-autonomous
+    humanApproval: true
+    approvalRequired:
+      - before_penetration_test
+      - before_production_scan
+      - on_critical_finding
+    escalation:
+      enabled: true
+      triggers:
+        - critical_vulnerability
+        - active_exploit
+        - compliance_violation
+        - scan_blocked
+      contacts:
+        - role: security_team
+          method: slack
+          priority: high
+        - role: ciso
+          method: email
+          priority: critical
+        - role: soc
+          method: pagerduty
+          priority: critical
+  triggers:
+    khook:
+      enabled: true
+      events:
+        - type: deployment
+          action: trigger_scan
+          filter:
+            environment: [production, staging]
+        - type: code_commit
+          action: trigger_scan
+          filter:
+            branch: [main, master]
+        - type: configuration_change
+          action: trigger_scan
+    webhook:
+      enabled: true
+      endpoints:
+        - path: /scan/trigger
+          method: POST
+          authentication: bearer
+    schedule:
+      enabled: true
+      cron: "0 0 * * 0"  # Weekly on Sunday midnight
+      timezone: UTC
+  observability:
+    metrics:
+      enabled: true
+      provider: prometheus
+      port: 9093
+      custom:
+        - name: vulnerabilities_found
+          type: counter
+          labels: [severity, type]
+        - name: scans_completed
+          type: counter
+          labels: [scan_type, status]
+        - name: scan_duration
+          type: histogram
+          labels: [scan_type]
+        - name: critical_findings
+          type: gauge
+    logging:
+      level: info
+      format: json
+      destination: stdout
+      sensitive_data_filtering: true
+    tracing:
+      enabled: true
+      provider: opentelemetry
+      samplingRate: 1.0
+    alerts:
+      - name: critical_vulnerability_found
+        condition: vulnerabilities_found{severity="critical"} > 0
+        notification: pagerduty
+      - name: scan_failure
+        condition: scans_completed{status="failed"} > 3
+        notification: slack
+  resources:
+    memory: 4Gi
+    cpu: 2000m
+    storage: 20Gi
+    networkPolicy:
+      egress:
+        - to: internet
+          ports: [80, 443, 8080, 8443]
+      ingress:
+        - from: webhook_sources
+          ports: [8080]
+  state:
+    persistence: postgresql
+    ttl: 7776000  # 90 days
+    schema:
+      type: object
+      properties:
+        scan_history:
+          type: array
+        vulnerability_database:
+          type: object
+        baseline_configurations:
+          type: object
+        findings:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              severity:
+                type: string
+              status:
+                type: string
+                enum: [open, in_progress, remediated, false_positive]
+              found_date:
+                type: string
+                format: date-time
+  retry:
+    enabled: true
+    maxAttempts: 2
+    backoff:
+      type: linear
+      initialDelay: 10s
+  security:
+    authentication:
+      required: true
+      methods:
+        - mutual_tls
+        - api_key
+    authorization:
+      rbac:
+        enabled: true
+        roles:
+          - security_admin
+          - security_analyst
+          - penetration_tester
+      policies:
+        - resource: scan
+          action: execute
+          conditions:
+            - authorized_scope
+            - valid_authorization
+    dataClassification:
+      - security_findings
+      - vulnerability_data
+      - confidential
+    encryption:
+      at_rest: true
+      in_transit: true
+    audit:
+      enabled: true
+      events:
+        - scan_initiated
+        - scan_completed
+        - critical_finding
+        - penetration_test_started
+        - compliance_check_failed

@@ -39,7 +39,7 @@ const agent = await client.agents.get('blueflyio', 'security-scanner');
 
 // Send A2A message
 await client.messaging.sendMessage({
-  from: { publisher: 'myorg', name: 'my-agent' },
+  from: { publisher: 'myorg', name: 'creative-agent-naming' },
   to: { publisher: 'blueflyio', name: 'security-scanner' },
   type: 'request',
   capability: 'vulnerability-scan',

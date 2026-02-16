@@ -20,9 +20,9 @@ export const gitHubPRSchema = z.object({
   title: z.string(),
   body: z.string().nullable().optional(),
   author: z.object({
-  login: z.string().optional()
-}),
-  state: z.enum(["open", "closed"])
+    login: z.string().optional(),
+  }),
+  state: z.enum(['open', 'closed']),
 });
 
 export type GitHubPR = z.infer<typeof gitHubPRSchema>;
@@ -33,8 +33,8 @@ export const gitLabMRSchema = z.object({
   description: z.string().nullable().optional(),
   source_branch: z.string(),
   target_branch: z.string(),
-  state: z.enum(["opened", "closed", "merged"]),
-  web_url: z.string().url()
+  state: z.enum(['opened', 'closed', 'merged']),
+  web_url: z.string().url(),
 });
 
 export type GitLabMR = z.infer<typeof gitLabMRSchema>;

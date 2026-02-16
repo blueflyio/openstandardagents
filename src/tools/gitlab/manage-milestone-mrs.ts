@@ -44,8 +44,9 @@ async function listMRsInMilestone(milestone: string) {
 
   for (const mr of mrs) {
     const status = mr.has_conflicts ? '❌ CONFLICTS' : '✅ Clean';
-    const target = mr.target_branch === 'development' ? '✅ dev' : `⚠️  ${mr.target_branch}`;
-    
+    const target =
+      mr.target_branch === 'development' ? '✅ dev' : `⚠️  ${mr.target_branch}`;
+
     console.log(`!${mr.iid}: ${mr.title}`);
     console.log(`   Target: ${target} | Status: ${status}`);
     console.log(`   ${mr.web_url}\n`);
@@ -145,7 +146,9 @@ async function assignMilestone(mrId: number, milestone: string) {
       milestone_id: targetMilestone.id,
     });
 
-    console.log(`✅ Successfully assigned MR !${mrId} to milestone ${milestone}`);
+    console.log(
+      `✅ Successfully assigned MR !${mrId} to milestone ${milestone}`
+    );
   } catch (error: any) {
     console.error(`❌ Failed to assign milestone: ${error.message}`);
     process.exit(1);
@@ -153,7 +156,9 @@ async function assignMilestone(mrId: number, milestone: string) {
 }
 
 async function bulkRetarget(milestone: string, targetBranch: string) {
-  console.log(`\n🎯 Bulk retargeting all MRs in ${milestone} to ${targetBranch}...\n`);
+  console.log(
+    `\n🎯 Bulk retargeting all MRs in ${milestone} to ${targetBranch}...\n`
+  );
 
   const mrs = await gitlab.MergeRequests.all({
     projectId: PROJECT_ID,
@@ -211,7 +216,10 @@ program
 program
   .command('list')
   .description('List all MRs in a milestone')
-  .requiredOption('-m, --milestone <milestone>', 'Milestone name (e.g., v0.2.6)')
+  .requiredOption(
+    '-m, --milestone <milestone>',
+    'Milestone name (e.g., v0.2.6)'
+  )
   .action(async (options) => {
     await listMRsInMilestone(options.milestone);
   });
@@ -219,7 +227,10 @@ program
 program
   .command('list-outside')
   .description('List all MRs NOT in a milestone')
-  .requiredOption('-m, --milestone <milestone>', 'Milestone name (e.g., v0.2.6)')
+  .requiredOption(
+    '-m, --milestone <milestone>',
+    'Milestone name (e.g., v0.2.6)'
+  )
   .action(async (options) => {
     await listMRsNotInMilestone(options.milestone);
   });
@@ -254,7 +265,10 @@ program
   .command('assign')
   .description('Assign an MR to a milestone')
   .requiredOption('-i, --id <id>', 'MR ID (e.g., 123)')
-  .requiredOption('-m, --milestone <milestone>', 'Milestone name (e.g., v0.2.6)')
+  .requiredOption(
+    '-m, --milestone <milestone>',
+    'Milestone name (e.g., v0.2.6)'
+  )
   .action(async (options) => {
     await assignMilestone(parseInt(options.id), options.milestone);
   });
@@ -262,7 +276,10 @@ program
 program
   .command('bulk-retarget')
   .description('Retarget all MRs in a milestone to a branch')
-  .requiredOption('-m, --milestone <milestone>', 'Milestone name (e.g., v0.2.6)')
+  .requiredOption(
+    '-m, --milestone <milestone>',
+    'Milestone name (e.g., v0.2.6)'
+  )
   .requiredOption('-t, --target <branch>', 'Target branch (e.g., development)')
   .action(async (options) => {
     await bulkRetarget(options.milestone, options.target);
@@ -271,7 +288,10 @@ program
 program
   .command('bulk-rebase')
   .description('Rebase all MRs with conflicts in a milestone')
-  .requiredOption('-m, --milestone <milestone>', 'Milestone name (e.g., v0.2.6)')
+  .requiredOption(
+    '-m, --milestone <milestone>',
+    'Milestone name (e.g., v0.2.6)'
+  )
   .action(async (options) => {
     await bulkRebase(options.milestone);
   });

@@ -19,6 +19,7 @@ import {
   shouldUseColor,
   ExitCode,
 } from '../utils/standard-options.js';
+import { IdCardService } from '../../services/id-card.service.js';
 
 export const upgradeCommand = new Command('upgrade')
   .argument('<path>', 'Path to OSSA manifest or directory')
@@ -103,9 +104,7 @@ upgradeCommand.action(
           const manifest = await manifestRepo.load(file);
           const currentVersion = manifest.apiVersion || 'unknown';
 
-          log(
-            chalk.gray(`   Current version: ${currentVersion}`)
-          );
+          log(chalk.gray(`   Current version: ${currentVersion}`));
 
           // Check if upgrade needed
           if (currentVersion === targetVersion) {
@@ -131,9 +130,7 @@ upgradeCommand.action(
           );
 
           if (options.dryRun) {
-            log(
-              chalk.blue(`   → Would upgrade to: ${targetVersion}`)
-            );
+            log(chalk.blue(`   → Would upgrade to: ${targetVersion}`));
             log(chalk.gray('     (dry-run mode, no changes made)'));
             upgraded++;
             continue;
@@ -143,9 +140,7 @@ upgradeCommand.action(
           const migratedValidation = await validationService.validate(migrated);
           if (!migratedValidation.valid) {
             log(
-              chalk.red(
-                '   ✗ Upgraded manifest failed validation - not saving'
-              )
+              chalk.red('   ✗ Upgraded manifest failed validation - not saving')
             );
             if (options.verbose && migratedValidation.errors) {
               migratedValidation.errors.forEach((error) => {
@@ -165,13 +160,23 @@ upgradeCommand.action(
             );
           }
 
+          // Auto-append audit entry if manifest has an ID Card
+          IdCardService.applyMutation(migrated, {
+            action: 'version-bumped',
+            actor: process.env.USER || 'ossa-cli',
+            details: {
+              field: 'apiVersion',
+              oldValue: manifest.apiVersion,
+              newValue: migrated.apiVersion,
+              reason: `Upgraded via ossa upgrade to ${targetVersion}`,
+            },
+          });
+
           // Write upgraded manifest
           const content = JSON.stringify(migrated, null, 2);
           fs.writeFileSync(file, content, 'utf-8');
 
-          log(
-            chalk.green(`   ✓ Upgraded to: ${targetVersion}`)
-          );
+          log(chalk.green(`   ✓ Upgraded to: ${targetVersion}`));
           upgraded++;
         } catch (error) {
           log(

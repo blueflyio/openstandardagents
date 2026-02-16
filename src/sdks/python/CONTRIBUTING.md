@@ -171,9 +171,9 @@ def load_manifest(path: Union[str, Path]) -> OSSAManifest:
         ManifestValidationError: If the manifest is invalid
 
     Example:
-        >>> manifest = load_manifest("my-agent.ossa.yaml")
+        >>> manifest = load_manifest("creative-agent-naming.ossa.yaml")
         >>> print(manifest.metadata.name)
-        'my-agent'
+        'creative-agent-naming'
     """
     # Implementation...
 ```

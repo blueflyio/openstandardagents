@@ -1,10 +1,10 @@
 #!/usr/bin/env tsx
 /**
  * Unified Config Generator
- * 
+ *
  * Generates GitLab agent configs, mesh configs, and infrastructure configs
  * from templates with DRY principles
- * 
+ *
  * Usage: npm run config:generate [--type gitlab-agent|mesh|infrastructure]
  */
 
@@ -80,8 +80,8 @@ observability:
         PROJECT_ID: 'blueflyio/ossa/openstandardagents',
         GROUP_ID: 'blueflyio',
         REMOTE_DEV_ENABLED: 'false',
-        MAX_REMOTE_DEV_PER_USER: '1'
-      }
+        MAX_REMOTE_DEV_PER_USER: '1',
+      },
     });
 
     // Mesh Config Template
@@ -128,8 +128,8 @@ spec:
         AGENT_NAME: 'security-scanner',
         NAMESPACE: 'security-system',
         CAPABILITY_1: 'vulnerability-scanning',
-        TLS_ENABLED: 'true'
-      }
+        TLS_ENABLED: 'true',
+      },
     });
 
     // Infrastructure Config Template
@@ -179,12 +179,15 @@ spec:
         ENVIRONMENT: 'production',
         TEAM: 'platform',
         CLUSTER_NAME: 'ossa-cluster',
-        REGION: 'us-east-1'
-      }
+        REGION: 'us-east-1',
+      },
     });
   }
 
-  private replaceVariables(template: string, variables: Record<string, string>): string {
+  private replaceVariables(
+    template: string,
+    variables: Record<string, string>
+  ): string {
     let result = template;
     for (const [key, value] of Object.entries(variables)) {
       result = result.replace(new RegExp(`{{${key}}}`, 'g'), value);
@@ -192,11 +195,16 @@ spec:
     return result;
   }
 
-  async generate(type: string, options: Record<string, string> = {}): Promise<void> {
+  async generate(
+    type: string,
+    options: Record<string, string> = {}
+  ): Promise<void> {
     const template = this.templates.get(type);
     if (!template) {
       console.error(`❌ Unknown config type: ${type}`);
-      console.log(`Available types: ${Array.from(this.templates.keys()).join(', ')}`);
+      console.log(
+        `Available types: ${Array.from(this.templates.keys()).join(', ')}`
+      );
       process.exit(1);
     }
 
@@ -209,7 +217,10 @@ spec:
     const config = this.replaceVariables(template.template, variables);
 
     // Ensure output directory exists
-    const outputDir = join(process.cwd(), template.outputPath.split('/').slice(0, -1).join('/'));
+    const outputDir = join(
+      process.cwd(),
+      template.outputPath.split('/').slice(0, -1).join('/')
+    );
     mkdirSync(outputDir, { recursive: true });
 
     // Write config file
@@ -225,12 +236,12 @@ spec:
 
   async generateAll(options: Record<string, string> = {}): Promise<void> {
     console.log('🚀 Generating all configs...\n');
-    
+
     for (const [type] of this.templates) {
       await this.generate(type, options);
       console.log('');
     }
-    
+
     console.log('✅ All configs generated!');
   }
 }
@@ -241,7 +252,7 @@ const generator = new UnifiedConfigGenerator();
 
 // Parse additional options
 const options: Record<string, string> = {};
-process.argv.slice(3).forEach(arg => {
+process.argv.slice(3).forEach((arg) => {
   const match = arg.match(/--(\w+)=(.+)/);
   if (match) {
     options[match[1].toUpperCase()] = match[2];
@@ -259,4 +270,3 @@ if (type === 'all') {
     process.exit(1);
   });
 }
-
