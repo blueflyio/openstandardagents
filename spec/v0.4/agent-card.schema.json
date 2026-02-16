@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://openstandardagents.com/schemas/v0.4/agent-card.schema.json",
   "title": "OSSA Agent Card",
-  "description": "Google A2A-compatible agent card for agent discovery. Generated from OSSA manifests and served at .well-known/agent-card.json.",
+  "description": "Universal agent contract for discovery. Bridges MCP (tools) and A2A (agents). Generated from OSSA manifests and served at .well-known/agent-card.json.",
   "type": "object",
   "required": ["uri", "name", "version", "ossaVersion", "capabilities", "endpoints", "transport", "authentication", "encryption"],
   "properties": {
@@ -22,7 +22,50 @@
     },
     "ossaVersion": {
       "type": "string",
-      "description": "OSSA specification version (e.g., ossa/v0.4)"
+      "description": "OSSA specification version (e.g., ossa/v0.4.5)"
+    },
+    "taxonomy": {
+      "type": "object",
+      "description": "Agent classification — runtime platform, functional role, architecture pattern",
+      "properties": {
+        "agentType": {
+          "type": "string",
+          "description": "Runtime platform: claude, kagent, openai, langchain, crewai, etc."
+        },
+        "agentKind": {
+          "type": "string",
+          "description": "Functional role: orchestrator, worker, reviewer, analyzer, etc."
+        },
+        "architecture": {
+          "type": "object",
+          "properties": {
+            "pattern": {
+              "type": "string",
+              "description": "Architecture pattern: swarm, pipeline, tree, graph, etc."
+            },
+            "capabilities": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Architecture capabilities: handoff, streaming, context, tools, vision"
+            },
+            "coordination": {
+              "type": "object",
+              "properties": {
+                "handoffStrategy": { "type": "string" },
+                "maxDepth": { "type": "integer" }
+              }
+            },
+            "runtime": {
+              "type": "object",
+              "properties": {
+                "scalability": { "type": "string" },
+                "executionModel": { "type": "string" },
+                "preferredRegion": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
     },
     "capabilities": {
       "type": "array",
@@ -35,22 +78,10 @@
         "type": "object",
         "required": ["name", "description", "inputSchema"],
         "properties": {
-          "name": {
-            "type": "string",
-            "description": "Tool name"
-          },
-          "description": {
-            "type": "string",
-            "description": "What the tool does"
-          },
-          "inputSchema": {
-            "type": "object",
-            "description": "JSON Schema for tool input"
-          },
-          "outputSchema": {
-            "type": "object",
-            "description": "JSON Schema for tool output"
-          }
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "inputSchema": { "type": "object" },
+          "outputSchema": { "type": "object" }
         }
       },
       "description": "Tools the agent can call"
@@ -58,6 +89,243 @@
     "role": {
       "type": "string",
       "description": "Agent's role/system prompt summary"
+    },
+    "model": {
+      "type": "object",
+      "description": "LLM configuration powering this agent",
+      "properties": {
+        "provider": { "type": "string", "description": "LLM provider: anthropic, openai, google, etc." },
+        "model": { "type": "string", "description": "Model identifier" },
+        "temperature": { "type": "number", "minimum": 0, "maximum": 2 },
+        "maxTokens": { "type": "integer" },
+        "topP": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "mcpServers": {
+      "type": "array",
+      "description": "MCP (Model Context Protocol) servers this agent connects to",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "transport": {
+            "type": "object",
+            "properties": {
+              "type": { "type": "string", "enum": ["stdio", "sse", "streamable-http"] },
+              "command": { "type": "string" },
+              "args": { "type": "array", "items": { "type": "string" } },
+              "url": { "type": "string" }
+            }
+          },
+          "version": { "type": "string" },
+          "capabilities": {
+            "type": "object",
+            "properties": {
+              "resources": { "type": "object" },
+              "tools": { "type": "object" },
+              "logging": { "type": "object" }
+            }
+          },
+          "resources": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["uri", "name"],
+              "properties": {
+                "uri": { "type": "string" },
+                "name": { "type": "string" },
+                "description": { "type": "string" },
+                "mimeType": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "a2aProtocol": {
+      "type": "object",
+      "description": "A2A (Agent-to-Agent) protocol configuration",
+      "properties": {
+        "protocol": {
+          "type": "object",
+          "properties": {
+            "type": { "type": "string" },
+            "version": { "type": "string" },
+            "messageFormat": { "type": "string" }
+          }
+        },
+        "agentEndpoints": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["agentId", "url"],
+            "properties": {
+              "agentId": { "type": "string" },
+              "url": { "type": "string" },
+              "capabilities": { "type": "array", "items": { "type": "string" } },
+              "priority": { "type": "integer" }
+            }
+          }
+        },
+        "routing": {
+          "type": "object",
+          "properties": {
+            "strategy": { "type": "string" },
+            "rules": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["name", "condition", "target"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "condition": { "type": "string" },
+                  "target": { "type": "string" },
+                  "priority": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "delegation": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "maxDepth": { "type": "integer" },
+            "timeout": { "type": "integer" },
+            "handoffRules": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["name", "condition", "target"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "condition": { "type": "string" },
+                  "target": { "type": "string" },
+                  "message": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "completionSignals": {
+          "type": "object",
+          "properties": {
+            "signals": { "type": "array", "items": { "type": "string" } },
+            "handlers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["signal", "action"],
+                "properties": {
+                  "signal": { "type": "string" },
+                  "action": { "type": "string" },
+                  "target": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "retryPolicy": {
+          "type": "object",
+          "properties": {
+            "maxRetries": { "type": "integer" },
+            "backoff": { "type": "string" },
+            "retryableErrors": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "circuitBreaker": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "failureThreshold": { "type": "integer" },
+            "timeout": { "type": "integer" }
+          }
+        }
+      }
+    },
+    "handoffs": {
+      "type": "array",
+      "description": "Direct delegation targets",
+      "items": {
+        "type": "object",
+        "required": ["to"],
+        "properties": {
+          "to": { "type": "string" },
+          "condition": { "type": "string" }
+        }
+      }
+    },
+    "autonomy": {
+      "type": "object",
+      "description": "Agent independence level and operational boundaries",
+      "properties": {
+        "level": { "type": "string", "description": "Autonomy level: supervised, autonomous, semi-autonomous" },
+        "approvalRequired": { "type": "boolean" },
+        "allowedActions": { "type": "array", "items": { "type": "string" } },
+        "blockedActions": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "constraints": {
+      "type": "object",
+      "description": "Operational limits — cost, performance, resources",
+      "properties": {
+        "cost": {
+          "type": "object",
+          "properties": {
+            "maxTokensPerDay": { "type": "integer" },
+            "maxTokensPerRequest": { "type": "integer" },
+            "maxCostPerDay": { "type": "number" },
+            "currency": { "type": "string" }
+          }
+        },
+        "performance": {
+          "type": "object",
+          "properties": {
+            "maxLatencySeconds": { "type": "number" },
+            "maxConcurrentRequests": { "type": "integer" },
+            "timeoutSeconds": { "type": "number" }
+          }
+        },
+        "resources": {
+          "type": "object",
+          "properties": {
+            "cpu": { "type": "string" },
+            "memory": { "type": "string" }
+          }
+        }
+      }
+    },
+    "observability": {
+      "type": "object",
+      "description": "Tracing, metrics, and logging configuration",
+      "properties": {
+        "tracing": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "exporter": { "type": "string" },
+            "endpoint": { "type": "string" },
+            "samplingRate": { "type": "number" }
+          }
+        },
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "exporter": { "type": "string" },
+            "endpoint": { "type": "string" }
+          }
+        },
+        "logging": {
+          "type": "object",
+          "properties": {
+            "level": { "type": "string" },
+            "format": { "type": "string" }
+          }
+        }
+      }
     },
     "endpoints": {
       "type": "object",
@@ -90,20 +358,9 @@
       "type": "object",
       "required": ["tlsRequired", "minTlsVersion"],
       "properties": {
-        "tlsRequired": {
-          "type": "boolean",
-          "description": "Whether TLS is required"
-        },
-        "minTlsVersion": {
-          "type": "string",
-          "enum": ["1.2", "1.3"],
-          "description": "Minimum TLS version"
-        },
-        "cipherSuites": {
-          "type": "array",
-          "items": { "type": "string" },
-          "description": "Allowed cipher suites"
-        }
+        "tlsRequired": { "type": "boolean" },
+        "minTlsVersion": { "type": "string", "enum": ["1.2", "1.3"] },
+        "cipherSuites": { "type": "array", "items": { "type": "string" } }
       }
     },
     "metadata": {
