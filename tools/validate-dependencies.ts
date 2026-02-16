@@ -98,6 +98,11 @@ async function main() {
         continue;
       }
 
+      // Skip packages referenced only in code-generation templates (not real imports)
+      if (packageName === '@anthropic-ai/claude-code') {
+        continue;
+      }
+
       imports.add(packageName);
 
       // Check if package is in dependencies

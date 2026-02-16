@@ -1,153 +1,163 @@
 # =============================================================================
-# SELECTIVE GITHUB MIRRORING
+# GITHUB MIRROR + AUTO-RELEASES
 # =============================================================================
-# Mirrors only main, release/* branches and production/RC tags to GitHub
-# Excludes all feature branches and dev tags
+# One-way mirror: GitLab → GitHub (read-only on GitHub side)
+#
+# Syncs:
+#   Branches: main, release/v*.*.x
+#   Tags:     v1.2.3 (stable) and v1.2.3-rc.N (release candidates)
+#   Releases: Auto-created on GitHub for every synced tag
 #
 # Requirements:
-# - GITHUB_TOKEN CI/CD variable set
-# - GitHub repository exists: https://github.com/blueflyio/openstandardagents
+#   GITHUB_TOKEN - Fine-grained PAT with Contents:write on
+#                  github.com/blueflyio/openstandardagents
 # =============================================================================
 
-mirror:github:
-  stage: .post
-  image: alpine:latest
-  tags:
-    - self-hosted
-    - docker
+sync:github:
+  stage: sync
+  image: alpine/git:latest
+  variables:
+    GIT_STRATEGY: clone
+    GIT_DEPTH: 0
   before_script:
-    - apk add --no-cache git bash
-    - git config --global user.email "ci@bluefly.io"
-    - git config --global user.name "GitLab CI"
-    - git fetch --all --tags --prune || true
-    - |
-      if [ -z "$GITHUB_TOKEN" ]; then
-        echo "WARNING: GITHUB_TOKEN not set - skipping GitHub mirror"
-        echo "Add GITHUB_TOKEN in Settings > CI/CD > Variables"
-        exit 0
-      fi
-      echo "GitHub token configured"
+    - apk add --no-cache bash curl jq
+    - git config user.name "OSSA Release Bot"
+    - git config user.email "release-bot@openstandardagents.org"
   script:
     - |
       #!/bin/bash
-      set -e
+      set -euo pipefail
 
-      echo "SELECTIVE GITHUB MIRROR"
-      echo "======================"
-      echo "Branch: ${CI_COMMIT_BRANCH:-N/A}"
-      echo "Tag: ${CI_COMMIT_TAG:-N/A}"
-      echo "Commit: ${CI_COMMIT_SHA:0:8}"
+      GITHUB_REPO="blueflyio/openstandardagents"
+
+      if [ -z "${GITHUB_TOKEN:-}" ]; then
+        echo "⚠️  GITHUB_TOKEN not set — skipping GitHub sync"
+        echo "   Set it at: Settings > CI/CD > Variables"
+        exit 0
+      fi
+
+      GITHUB_URL="https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPO}.git"
+
+      echo "═══════════════════════════════════════════"
+      echo "  GITHUB MIRROR SYNC"
+      echo "═══════════════════════════════════════════"
+      echo "  Branch: ${CI_COMMIT_BRANCH:-N/A}"
+      echo "  Tag:    ${CI_COMMIT_TAG:-N/A}"
+      echo "  Commit: ${CI_COMMIT_SHA:0:8}"
       echo ""
 
-      # Add/update GitHub remote
-      git remote remove github 2>/dev/null || true
-      git remote add github "https://${GITHUB_TOKEN}@github.com/blueflyio/openstandardagents.git"
+      # ── SYNC BRANCHES ──────────────────────────────────
+      echo "── Branches ──"
+      SYNCED=0 SKIPPED=0
 
-      # Function to check if branch should be synced
-      should_sync_branch() {
-        local branch="$1"
-        # Remove 'origin/' prefix if present
-        branch="${branch#origin/}"
-        
-        # Sync main and release branches only
+      while IFS= read -r ref; do
+        branch="${ref#origin/}"
+
+        # Only sync: main, release/v*.*.x
         if [[ "$branch" == "main" ]] || [[ "$branch" =~ ^release/v[0-9]+\.[0-9]+\.x$ ]]; then
-          return 0
-        fi
-        return 1
-      }
-
-      # Function to check if tag should be synced
-      should_sync_tag() {
-        local tag="$1"
-        
-        # Sync production tags: v0.3.5, v1.0.0, etc.
-        if [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-          return 0
-        fi
-        
-        # Sync RC tags: v0.3.6-rc.1, v1.0.0-rc.2, etc.
-        if [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+$ ]]; then
-          return 0
-        fi
-        
-        # Don't sync dev tags or any other tags
-        return 1
-      }
-
-      # Sync branches
-      echo "Syncing branches..."
-      BRANCHES_TO_SYNC=()
-      BRANCHES_SKIPPED=()
-
-      while IFS= read -r branch; do
-        branch="${branch#origin/}"
-        
-        if should_sync_branch "$branch"; then
-          BRANCHES_TO_SYNC+=("$branch")
+          echo "  ✓ $branch"
+          git push "$GITHUB_URL" "origin/${branch}:refs/heads/${branch}" --force 2>&1 || \
+            echo "  ⚠ Failed: $branch (non-fatal)"
+          ((SYNCED++)) || true
         else
-          BRANCHES_SKIPPED+=("$branch")
+          ((SKIPPED++)) || true
         fi
       done < <(git branch -r | grep -v HEAD | sed 's/^[[:space:]]*//')
 
-      if [ ${#BRANCHES_TO_SYNC[@]} -eq 0 ]; then
-        echo "No branches to sync"
-      else
-        echo "Branches to sync: ${BRANCHES_TO_SYNC[*]}"
-        for branch in "${BRANCHES_TO_SYNC[@]}"; do
-          echo "  Syncing branch: $branch"
-          git push github "origin/$branch:refs/heads/$branch" --force || {
-            echo "WARNING: Failed to sync branch: $branch"
-          }
-        done
-      fi
-
-      if [ ${#BRANCHES_SKIPPED[@]} -gt 0 ]; then
-        echo "Branches skipped (${#BRANCHES_SKIPPED[@]}): ${BRANCHES_SKIPPED[*]:0:5}..."
-      fi
-
-      # Sync tags
+      echo "  Synced: $SYNCED  Skipped: $SKIPPED"
       echo ""
-      echo "Syncing tags..."
-      TAGS_TO_SYNC=()
-      TAGS_SKIPPED=()
+
+      # ── SYNC TAGS ──────────────────────────────────────
+      echo "── Tags ──"
+      SYNCED=0 SKIPPED=0
+      TAGS_PUSHED=()
 
       while IFS= read -r tag; do
-        if should_sync_tag "$tag"; then
-          TAGS_TO_SYNC+=("$tag")
+        [ -z "$tag" ] && continue
+
+        # Stable: v1.2.3
+        # RC:     v1.2.3-rc.N
+        if [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || \
+           [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+$ ]]; then
+          echo "  ✓ $tag"
+          git push "$GITHUB_URL" "refs/tags/${tag}:refs/tags/${tag}" --force 2>&1 || \
+            echo "  ⚠ Failed: $tag (non-fatal)"
+          TAGS_PUSHED+=("$tag")
+          ((SYNCED++)) || true
         else
-          TAGS_SKIPPED+=("$tag")
+          ((SKIPPED++)) || true
         fi
-      done < <(git tag)
+      done < <(git tag 2>/dev/null)
 
-      if [ ${#TAGS_TO_SYNC[@]} -eq 0 ]; then
-        echo "No tags to sync"
-      else
-        echo "Tags to sync (${#TAGS_TO_SYNC[@]}): ${TAGS_TO_SYNC[*]:0:10}..."
-        for tag in "${TAGS_TO_SYNC[@]}"; do
-          echo "  Syncing tag: $tag"
-          git push github "$tag" --force || {
-            echo "WARNING: Failed to sync tag: $tag"
-          }
-        done
-      fi
+      echo "  Synced: $SYNCED  Skipped: $SKIPPED"
+      echo ""
 
-      if [ ${#TAGS_SKIPPED[@]} -gt 0 ]; then
-        echo "Tags skipped (${#TAGS_SKIPPED[@]}): ${TAGS_SKIPPED[*]:0:10}..."
+      # ── AUTO-CREATE GITHUB RELEASES ────────────────────
+      # Only create a release for the tag that triggered this pipeline
+      if [ -n "${CI_COMMIT_TAG:-}" ]; then
+        TAG="${CI_COMMIT_TAG}"
+
+        # Verify it's a tag we care about
+        if [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || \
+           [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+$ ]]; then
+
+          IS_PRERELEASE=false
+          [[ "$TAG" == *"-rc."* ]] && IS_PRERELEASE=true
+
+          echo "── GitHub Release ──"
+          echo "  Tag: $TAG  Prerelease: $IS_PRERELEASE"
+
+          # Check if release already exists
+          EXISTING=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+            "https://api.github.com/repos/${GITHUB_REPO}/releases/tags/${TAG}")
+
+          if [ "$EXISTING" = "200" ]; then
+            echo "  ⏭ Release already exists — skipping"
+          else
+            # Create release
+            RELEASE_BODY="## OSSA ${TAG}\n\nPublished from [GitLab](https://gitlab.com/blueflyio/ossa/openstandardagents/-/releases/${TAG}).\n\n### Install\n\`\`\`bash\nnpm install @bluefly/openstandardagents@${TAG#v}\n\`\`\`\n\n### Links\n- [npm](https://www.npmjs.com/package/@bluefly/openstandardagents/v/${TAG#v})\n- [Changelog](https://gitlab.com/blueflyio/ossa/openstandardagents/-/blob/main/CHANGELOG.md)"
+
+            HTTP_CODE=$(curl -s -o /tmp/gh-release.json -w "%{http_code}" \
+              -X POST \
+              -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${GITHUB_REPO}/releases" \
+              -d "{
+                \"tag_name\": \"${TAG}\",
+                \"name\": \"Release ${TAG}\",
+                \"body\": \"${RELEASE_BODY}\",
+                \"prerelease\": ${IS_PRERELEASE},
+                \"generate_release_notes\": false
+              }")
+
+            if [ "$HTTP_CODE" = "201" ]; then
+              RELEASE_URL=$(jq -r '.html_url' /tmp/gh-release.json)
+              echo "  ✓ Created: $RELEASE_URL"
+            else
+              echo "  ⚠ Failed (HTTP $HTTP_CODE):"
+              jq -r '.message // .errors[0].message // "unknown error"' /tmp/gh-release.json 2>/dev/null || true
+            fi
+          fi
+        fi
       fi
 
       echo ""
-      echo "GitHub mirror sync complete"
+      echo "✅ GitHub sync complete"
   rules:
-    # Run on main branch pushes
-    - if: $CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"
+    # On main branch pushes
+    - if: $CI_COMMIT_BRANCH == "main"
       when: on_success
-    # Run on release branch pushes
-    - if: $CI_COMMIT_BRANCH =~ /^release\/v[0-9]+\.[0-9]+\.x$/ && $CI_PIPELINE_SOURCE == "push"
+    # On release branch pushes
+    - if: $CI_COMMIT_BRANCH =~ /^release\/v[0-9]+\.[0-9]+\.x$/
       when: on_success
-    # Run on production tag creation
-    - if: $CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/ && $CI_COMMIT_TAG !~ /-rc|-dev/
+    # On stable tag creation (v1.2.3)
+    - if: $CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/
       when: on_success
-    # Run on RC tag creation
+    # On RC tag creation (v1.2.3-rc.N)
     - if: $CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+$/
       when: on_success
+    # Scheduled catch-up sync
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: always
   allow_failure: true
