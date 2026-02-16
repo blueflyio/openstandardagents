@@ -11,7 +11,7 @@ image: node:22-alpine
 injectGatewayToken: true
 
 variables:
-  PLATFORM_AGENTS_API: ${PLATFORM_AGENTS_API_URL:-https://api.blueflyagents.com}
+  PLATFORM_AGENTS_API: ${PLATFORM_AGENTS_API_URL:-https://mesh.blueflyagents.com}
   AGENT_MESH_API: ${AGENT_MESH_API_URL:-http://agent-mesh:9090}
   AGENT_ROUTER_API: ${AGENT_ROUTER_API_URL:-http://agent-router:4000}
   AGENT_TRACER_API: ${AGENT_TRACER_API_URL:-http://agent-tracer:4318}

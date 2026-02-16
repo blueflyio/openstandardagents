@@ -130,7 +130,7 @@ The validator agent checks OSSA manifests against schemas and best practices.
 ```yaml
 # Customize validation behavior
 environment:
-  OSSA_SCHEMA_REGISTRY: "https://openstandardagents.com/schemas"
+  OSSA_SCHEMA_REGISTRY: "https://openstandardagents.org/schemas"
   VALIDATION_LEVEL: "strict"  # strict, normal, or permissive
   TAXONOMY_VALIDATION: "true"
   SECURITY_VALIDATION: "true"
@@ -643,7 +643,7 @@ spec:
 
 ### Documentation
 
-- **OSSA Specification**: https://openstandardagents.com
+- **OSSA Specification**: https://openstandardagents.org
 - **GitLab Duo Docs**: https://docs.gitlab.com/ee/user/duo/
 - **Agent Platform**: https://docs.gitlab.com/user/duo_agent_platform/
 - **Value Stream Analytics**: https://docs.gitlab.com/ee/user/group/value_stream_analytics/

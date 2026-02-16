@@ -20,7 +20,7 @@ This directory contains **6 production-ready GitLab agents** generated from OSSA
 - Kubernetes cluster with KAgent CRD installed
 - GitLab API token with `api` scope
 - Anthropic API key
-- Domain pointing to cluster: `api.blueflyagents.com`
+- Domain pointing to cluster: `mesh.blueflyagents.com`
 
 ### 1. Install KAgent CRD
 
@@ -66,19 +66,19 @@ daily-code-scan           1/1     Running   1m
 For each webhook agent, configure in **GitLab Project → Settings → Webhooks**:
 
 #### duo-comment-responder
-- **URL**: `http://api.blueflyagents.com/webhook/duo-comment-responder`
+- **URL**: `http://mesh.blueflyagents.com/webhook/duo-comment-responder`
 - **Secret Token**: (from WEBHOOK_SECRET)
 - **Events**: ☑️ Comments, ☑️ Merge requests
 - **SSL verification**: ☐ Disable (internal network)
 
 #### mr-reviewer
-- **URL**: `http://api.blueflyagents.com/webhook/mr-reviewer`
+- **URL**: `http://mesh.blueflyagents.com/webhook/mr-reviewer`
 - **Secret Token**: (from WEBHOOK_SECRET)
 - **Events**: ☑️ Merge requests
 - **SSL verification**: ☐ Disable
 
 #### pipeline-auto-fix
-- **URL**: `http://api.blueflyagents.com/webhook/pipeline-auto-fix`
+- **URL**: `http://mesh.blueflyagents.com/webhook/pipeline-auto-fix`
 - **Secret Token**: (from WEBHOOK_SECRET)
 - **Events**: ☑️ Pipeline events
 - **SSL verification**: ☐ Disable
@@ -87,7 +87,7 @@ For each webhook agent, configure in **GitLab Project → Settings → Webhooks*
 
 ```bash
 # Test duo-comment-responder
-curl -X POST http://api.blueflyagents.com/webhook/duo-comment-responder \
+curl -X POST http://mesh.blueflyagents.com/webhook/duo-comment-responder \
   -H "Content-Type: application/json" \
   -H "X-Gitlab-Token: your-webhook-secret" \
   -d '{
@@ -212,7 +212,7 @@ Each agent exposes Prometheus metrics on `/metrics`:
 
 ```bash
 # Scrape metrics
-curl http://api.blueflyagents.com/webhook/duo-comment-responder/metrics
+curl http://mesh.blueflyagents.com/webhook/duo-comment-responder/metrics
 ```
 
 ## Troubleshooting
@@ -304,7 +304,7 @@ kubectl delete namespace gitlab-agents
 ```
 GitLab Project
       ↓ (webhook)
-api.blueflyagents.com (Ingress)
+mesh.blueflyagents.com (Ingress)
       ↓
 KAgent Controller
       ↓

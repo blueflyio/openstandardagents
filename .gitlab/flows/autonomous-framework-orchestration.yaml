@@ -9,7 +9,7 @@ image: node:22-alpine
 injectGatewayToken: true
 
 variables:
-  PLATFORM_AGENTS_API: ${PLATFORM_AGENTS_API_URL:-https://api.blueflyagents.com}
+  PLATFORM_AGENTS_API: ${PLATFORM_AGENTS_API_URL:-https://mesh.blueflyagents.com}
   SERVICE_ACCOUNT_RELEASE_COORDINATOR_TOKEN: ${SERVICE_ACCOUNT_RELEASE_COORDINATOR_TOKEN}
   SERVICE_ACCOUNT_MR_REVIEWER_TOKEN: ${SERVICE_ACCOUNT_MR_REVIEWER_TOKEN}
   SERVICE_ACCOUNT_CODE_QUALITY_TOKEN: ${SERVICE_ACCOUNT_CODE_QUALITY_TOKEN}
@@ -29,7 +29,7 @@ steps:
     tool: InvokePlatformAgent
     with:
       agent: issue-lifecycle-manager
-      service_account: @issue-lifecycle-manager
+      service_account: "@issue-lifecycle-manager"
       token: ${SERVICE_ACCOUNT_ISSUE_LIFECYCLE_TOKEN}
       task: scan-and-triage
       inputs:
@@ -45,7 +45,7 @@ steps:
     tool: InvokePlatformAgent
     with:
       agent: issue-lifecycle-manager
-      service_account: @issue-lifecycle-manager
+      service_account: "@issue-lifecycle-manager"
       token: ${SERVICE_ACCOUNT_ISSUE_LIFECYCLE_TOKEN}
       task: prioritize
       inputs:
@@ -65,7 +65,7 @@ steps:
     tool: InvokePlatformAgent
     with:
       agent: code-quality-reviewer
-      service_account: @code-quality-reviewer
+      service_account: "@code-quality-reviewer"
       token: ${SERVICE_ACCOUNT_CODE_QUALITY_TOKEN}
       task: comprehensive-review
       inputs:
@@ -81,7 +81,7 @@ steps:
     tool: InvokePlatformAgent
     with:
       agent: vulnerability-scanner
-      service_account: @vuln-scanner
+      service_account: "@vuln-scanner"
       token: ${SERVICE_ACCOUNT_VULN_SCANNER_TOKEN}
       task: full-scan
       inputs:
@@ -98,7 +98,7 @@ steps:
     tool: InvokePlatformAgent
     with:
       agent: release-coordinator
-      service_account: @release-coordinator
+      service_account: "@release-coordinator"
       token: ${SERVICE_ACCOUNT_RELEASE_COORDINATOR_TOKEN}
       task: detect-version-opportunities
       inputs:
@@ -114,7 +114,7 @@ steps:
     tool: InvokePlatformAgent
     with:
       agent: release-coordinator
-      service_account: @release-coordinator
+      service_account: "@release-coordinator"
       token: ${SERVICE_ACCOUNT_RELEASE_COORDINATOR_TOKEN}
       task: create-version-mr
       inputs:
@@ -132,7 +132,7 @@ steps:
     tool: InvokePlatformAgent
     with:
       agent: documentation-aggregator
-      service_account: @documentation-aggregator
+      service_account: "@documentation-aggregator"
       token: ${SERVICE_ACCOUNT_DOCUMENTATION_TOKEN}
       task: sync-all-docs
       inputs:
@@ -148,7 +148,7 @@ steps:
     tool: InvokePlatformAgent
     with:
       agent: documentation-aggregator
-      service_account: @documentation-aggregator
+      service_account: "@documentation-aggregator"
       token: ${SERVICE_ACCOUNT_DOCUMENTATION_TOKEN}
       task: validate-completeness
       inputs:
@@ -166,7 +166,7 @@ steps:
     tool: InvokePlatformAgent
     with:
       agent: mr-reviewer
-      service_account: @mr-reviewer
+      service_account: "@mr-reviewer"
       token: ${SERVICE_ACCOUNT_MR_REVIEWER_TOKEN}
       task: review-all-open
       inputs:
@@ -182,7 +182,7 @@ steps:
     tool: InvokePlatformAgent
     with:
       agent: mr-reviewer
-      service_account: @mr-reviewer
+      service_account: "@mr-reviewer"
       token: ${SERVICE_ACCOUNT_MR_REVIEWER_TOKEN}
       task: auto-rebase
       inputs:
@@ -199,7 +199,7 @@ steps:
     tool: InvokePlatformAgent
     with:
       agent: pipeline-remediation
-      service_account: @pipeline-remediation
+      service_account: "@pipeline-remediation"
       token: ${SERVICE_ACCOUNT_PIPELINE_REMEDIATION_TOKEN}
       task: monitor-failures
       inputs:
@@ -215,7 +215,7 @@ steps:
     tool: InvokePlatformAgent
     with:
       agent: pipeline-remediation
-      service_account: @pipeline-remediation
+      service_account: "@pipeline-remediation"
       token: ${SERVICE_ACCOUNT_PIPELINE_REMEDIATION_TOKEN}
       task: auto-fix
       inputs:
@@ -232,7 +232,7 @@ steps:
     tool: InvokePlatformAgent
     with:
       agent: release-coordinator
-      service_account: @release-coordinator
+      service_account: "@release-coordinator"
       token: ${SERVICE_ACCOUNT_RELEASE_COORDINATOR_TOKEN}
       task: check-milestone-readiness
       inputs:
@@ -248,7 +248,7 @@ steps:
     tool: InvokePlatformAgent
     with:
       agent: release-coordinator
-      service_account: @release-coordinator
+      service_account: "@release-coordinator"
       token: ${SERVICE_ACCOUNT_RELEASE_COORDINATOR_TOKEN}
       task: create-release
       inputs:
@@ -267,7 +267,7 @@ steps:
     tool: InvokePlatformAgent
     with:
       agent: task-dispatcher
-      service_account: @task-dispatcher
+      service_account: "@task-dispatcher"
       token: ${SERVICE_ACCOUNT_TASK_DISPATCHER_TOKEN}
       task: ecosystem-analysis
       inputs:
@@ -281,7 +281,7 @@ steps:
     tool: InvokePlatformAgent
     with:
       agent: task-dispatcher
-      service_account: @task-dispatcher
+      service_account: "@task-dispatcher"
       token: ${SERVICE_ACCOUNT_TASK_DISPATCHER_TOKEN}
       task: generate-improvement-plan
       inputs:

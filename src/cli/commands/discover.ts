@@ -50,7 +50,7 @@ class AgentProtocolClient {
   private token?: string;
 
   constructor(config?: { baseUrl?: string; apiKey?: string }) {
-    this.baseUrl = config?.baseUrl || 'https://api.blueflyagents.com';
+    this.baseUrl = config?.baseUrl || 'https://mesh.blueflyagents.com';
     this.token =
       config?.apiKey ||
       process.env.AGENT_PROTOCOL_TOKEN ||

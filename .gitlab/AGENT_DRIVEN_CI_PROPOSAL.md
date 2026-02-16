@@ -218,7 +218,7 @@ None - MR can proceed
 
 ```json
 {
-  "url": "https://api.blueflyagents.com/api/webhooks/duo-comment",
+  "url": "https://mesh.blueflyagents.com/api/webhooks/duo-comment",
   "token": "${DUO_WEBHOOK_SECRET}",
   "enable_ssl_verification": true,
   "note_events": true,
@@ -583,7 +583,7 @@ kubectl get pods -n gitlab-agents
 cat examples/gitlab-agents/duo-comment-responder/webhook-config.json
 
 # In GitLab: Settings → Webhooks
-# URL: http://api.blueflyagents.com/webhook/duo-comment-responder
+# URL: http://mesh.blueflyagents.com/webhook/duo-comment-responder
 # Secret: (from WEBHOOK_SECRET)
 # Events: Comments, Merge requests
 ```

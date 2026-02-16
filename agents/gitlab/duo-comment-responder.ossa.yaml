@@ -355,11 +355,11 @@ extensions:
       - write_comments
       - create_commits
     api:
-      baseUrl: http://api.blueflyagents.com
+      baseUrl: http://mesh.blueflyagents.com
       timeout: 30000
       retries: 3
     webhook:
-      url: http://api.blueflyagents.com/webhook/duo-comment-responder
+      url: http://mesh.blueflyagents.com/webhook/duo-comment-responder
       events:
         - note_events
       ssl_verification: false  # Internal network via Tailscale

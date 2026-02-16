@@ -69,7 +69,7 @@ kubectl apply -f k8s/deployment.yaml
 Configure the webhook in your GitLab project:
 
 1. Go to **Settings** → **Webhooks**
-2. Add webhook URL: `http://api.blueflyagents.com/webhook/mr-reviewer`
+2. Add webhook URL: `http://mesh.blueflyagents.com/webhook/mr-reviewer`
 3. Set secret token (from .env WEBHOOK_SECRET)
 4. Select events: Merge requests
 5. Save webhook

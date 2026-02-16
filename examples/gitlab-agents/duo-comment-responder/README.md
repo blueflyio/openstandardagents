@@ -69,7 +69,7 @@ kubectl apply -f k8s/deployment.yaml
 Configure the webhook in your GitLab project:
 
 1. Go to **Settings** → **Webhooks**
-2. Add webhook URL: `http://api.blueflyagents.com/webhook/duo-comment-responder`
+2. Add webhook URL: `http://mesh.blueflyagents.com/webhook/duo-comment-responder`
 3. Set secret token (from .env WEBHOOK_SECRET)
 4. Select events: Comments
 5. Save webhook
