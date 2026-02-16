@@ -14,17 +14,28 @@ OSSA is not a protocol (like MCP or A2A) and not a framework (like LangChain or 
 - **Builds on A2A** - Supports A2A messaging and agent-to-agent communication
 - **Extends protocols** - Adds deployment and packaging layer on top of communication protocols
 
-## What's New in v0.4.5 (2026-02-10)
+## What's New
+
+### OpenAI Agents SDK Export (2026-02-16)
+
+- **New export platform**: `openai-agents-sdk` (22nd platform) — generates runnable `@openai/agents` TypeScript packages from OSSA manifests
+- Maps OSSA `spec.personality` to agent instructions, `spec.llm` to model selection, `spec.tools` to function tools, `spec.mcp` to MCPServerStreamableHttp connections, `spec.safety` to guardrails
+- Generates: `agent.ts`, `mcp-config.ts`, `guardrails.ts`, `run.ts`, `package.json`, `tsconfig.json`
+- Usage: `ossa export --platform openai-agents-sdk agent.ossa.yaml`
+- New OSSA extension blocks planned: `openai_agents_sdk`, `openai_responses_api`, `openai_realtime`, `openai_deep_research`
+- Makes OSSA the industry's first universal agent contract: define once, run on Claude AND OpenAI
+
+### v0.4.5 (2026-02-10)
 
 **Major Cleanup & Foundation Improvements**:
-- 🎯 **16,574 LOC removed** - 47% codebase reduction (35,425 → 18,851 LOC)
-- 🔧 **SDK Migration** - Anthropic adapter now uses official `@anthropic-ai/sdk` (513 LOC removed, 25.8% reduction)
-- ✨ **Complete Skills Pipeline** - Research, generate, export, validate, sync Claude Skills
-- 🏗️ **Zero Build Errors** - Fixed all TypeScript errors, 100% passing tests
-- 📦 **DRY Improvements** - Eliminated 99 LOC duplication via BasePackageGenerator
-- 🧪 **19 New Tests** - Skills pipeline fully tested (100% passing)
+- 16,574 LOC removed - 47% codebase reduction (35,425 to 18,851 LOC)
+- SDK Migration - Anthropic adapter now uses official `@anthropic-ai/sdk` (513 LOC removed, 25.8% reduction)
+- Complete Skills Pipeline - Research, generate, export, validate, sync Claude Skills
+- Zero Build Errors - Fixed all TypeScript errors, 100% passing tests
+- DRY Improvements - Eliminated 99 LOC duplication via BasePackageGenerator
+- 19 New Tests - Skills pipeline fully tested (100% passing)
 
-See [CHANGELOG.md](./CHANGELOG.md) for complete v0.4.5 details.
+See [CHANGELOG.md](./CHANGELOG.md) for complete details.
 
 ## A2A (Agent-to-Agent) Communication
 
