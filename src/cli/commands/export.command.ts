@@ -29,6 +29,7 @@ import { KubernetesManifestGenerator } from '../../adapters/kubernetes/generator
 import { KAgentCRDGenerator } from '../../sdks/kagent/crd-generator.js';
 import { registry } from '../../adapters/registry/platform-registry.js';
 import { DrupalManifestExporter } from '../../adapters/drupal/manifest-exporter.js';
+import { OpenAIAgentsAdapter } from '../../adapters/openai-agents/adapter.js';
 import type { OssaAgent } from '../../types/index.js';
 import {
   addGlobalOptions,
@@ -165,6 +166,11 @@ exportCommand.action(
           name: 'agent-skills',
           status: 'production',
           desc: 'Agent Skills package (SKILL.md format)',
+        },
+        {
+          name: 'openai-agents-sdk',
+          status: 'beta',
+          desc: 'Runnable @openai/agents TypeScript package with MCP, guardrails, handoffs',
         },
       ];
 
@@ -769,6 +775,51 @@ exportCommand.action(
           } else {
             log('DRY RUN: Would generate:');
             result.files.forEach((file) => log(`  - ${file.path}`));
+          }
+
+          return; // Early return to skip single-file write
+        }
+
+        case 'openai-agents-sdk': {
+          log('Generating OpenAI Agents SDK package from OSSA manifest...');
+
+          const openaiAdapter = new OpenAIAgentsAdapter();
+          const openaiResult = await openaiAdapter.export(manifest, {
+            validate: true,
+          });
+
+          if (!openaiResult.success) {
+            throw new Error(
+              openaiResult.error || 'OpenAI Agents SDK export failed'
+            );
+          }
+
+          const openaiAgentName =
+            manifest.metadata?.name
+              ?.toLowerCase()
+              .replace(/[^a-z0-9-]/g, '-') || 'openai-agent';
+          const openaiOutputDir = options.output || openaiAgentName;
+
+          if (!options.dryRun) {
+            const fsSync = await import('fs');
+            for (const file of openaiResult.files) {
+              const filePath = path.join(openaiOutputDir, file.path);
+              const dir = path.dirname(filePath);
+              if (!fsSync.existsSync(dir)) {
+                fsSync.mkdirSync(dir, { recursive: true });
+              }
+              fsSync.writeFileSync(filePath, file.content);
+              log(`  Created: ${filePath}`);
+            }
+            log(
+              `\nOpenAI Agents SDK package generated at: ${openaiOutputDir}/`
+            );
+            log(
+              `Run: cd ${openaiOutputDir} && npm install && npx tsx src/run.ts "Hello"`
+            );
+          } else {
+            log('DRY RUN: Would generate:');
+            openaiResult.files.forEach((file) => log(`  - ${file.path}`));
           }
 
           return; // Early return to skip single-file write
