@@ -15,6 +15,7 @@ metadata:
     team: platform-engineering
     domain: examples
     complexity: minimal
+    capability: greeting,echo,status
   annotations:
     documentation: https://docs.ossa.io/examples/hello-world
     support: support@example.com

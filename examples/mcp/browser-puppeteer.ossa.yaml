@@ -6,9 +6,7 @@ metadata:
   description: "Web scraping and browser automation agent with Puppeteer MCP server"
   labels:
     framework: mcp
-    capability: browser
-    capability: web-scraping
-    capability: automation
+    capability: browser,web-scraping,automation
     environment: production
   annotations:
     ai.bluefly.io/use-case: "Web scraping, testing, screenshots, PDF generation"
