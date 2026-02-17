@@ -1,80 +1,40 @@
-# OSSA v0.4.5 Example: Single Agent — Customer Service Chatbot
-#
-# Demonstrates the simplest agent pattern: a single LLM-based assistant
-# with tools, constraints, and an LLM configuration. No multi-agent
-# coordination — just one agentic loop handling customer queries.
-
-apiVersion: ossa/v0.4.5
+apiVersion: ossa/v0.4
 kind: Agent
 metadata:
-  name: customer-service-chatbot
-  version: "1.0.0"
-  description: >-
-    A single-agent customer service chatbot that answers product questions,
-    checks order status, and initiates returns. Uses tool-calling to interact
-    with backend systems.
-
+  name: code-assistant
+  version: 1.0.0
+  description: A single code assistant agent
+  agentType: claude
   agentKind: assistant
-  agentType: llm
-
   agentArchitecture:
     pattern: single
     capabilities:
       - tools
-      - streaming
+      - code
       - context
-      - function-calling
-
-  labels:
-    domain: customer-service
-    tier: standard
-    environment: production
-
 spec:
-  role: >-
-    You are a friendly and efficient customer service chatbot for Acme Corp.
-    Help customers with product questions, order status lookups, and return
-    initiation. Always be polite, concise, and accurate. If you cannot resolve
-    an issue, inform the customer that a human agent will follow up.
-
+  role: >
+    You are an expert code assistant. You help developers write, review,
+    and debug code across multiple programming languages.
   llm:
     provider: anthropic
-    model: claude-sonnet-4-5-20250929
+    model: claude-sonnet-4-5-20250514
     temperature: 0.3
-    maxTokens: 2048
-    profile: balanced
-
+    maxTokens: 8192
   tools:
-    - type: api
-      name: lookup_order
-      description: >-
-        Look up an order by order ID or customer email. Returns order status,
-        items, shipping info, and estimated delivery date.
-
-    - type: api
-      name: search_products
-      description: >-
-        Search the product catalog by keyword, category, or SKU. Returns
-        matching products with pricing and availability.
-
     - type: function
-      name: initiate_return
-      description: >-
-        Start a return or exchange process. Validates the order is within the
-        return window and generates a return shipping label.
-
+      name: read_file
+      description: Read a file from the filesystem
+    - type: function
+      name: write_file
+      description: Write content to a file
+    - type: function
+      name: run_tests
+      description: Execute test suite
   constraints:
     cost:
-      maxTokensPerRequest: 4096
+      maxTokensPerRequest: 8192
       maxTokensPerDay: 500000
-      maxCostPerDay: 25.00
-      currency: USD
     performance:
-      maxLatencySeconds: 10
-      maxConcurrentRequests: 50
-      timeoutSeconds: 30
-
-  lifecycle:
-    max_turns: 20
-    turn_timeout: 30s
-    idle_timeout: 15m
+      maxLatencySeconds: 30
+      timeoutSeconds: 120

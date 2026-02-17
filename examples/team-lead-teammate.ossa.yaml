@@ -1,0 +1,83 @@
+apiVersion: ossa/v0.4
+kind: Agent
+metadata:
+  name: code-review-team
+  version: 1.0.0
+  description: Claude Code teams pattern - lead delegates to specialized reviewers
+  agentType: claude
+  agentKind: team-lead
+  agentArchitecture:
+    pattern: lead-teammate
+    capabilities:
+      - tools
+      - code
+      - context
+      - handoff
+    coordination:
+      teamModel: lead-teammate
+      communicationPattern: task-list
+      taskCoordination: dependency-wave
+      conflictResolution: leader-decides
+      taskPersistence: file-backed
+      dependencyTracking: true
+spec:
+  role: >
+    You lead a code review team. Analyze pull requests and delegate
+    specific review tasks to specialized teammates.
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-5-20250514
+  team:
+    model: lead-teammate
+    lead: lead-reviewer
+    delegateMode: task-list
+    members:
+      - name: lead-reviewer
+        kind: team-lead
+        role: >
+          Senior code reviewer. Analyze PRs, break down review into tasks,
+          delegate to specialists, and synthesize final review.
+        model: claude-sonnet-4-5-20250514
+        tools:
+          - read-file
+          - grep
+          - git-diff
+      - name: security-reviewer
+        kind: specialist
+        role: >
+          Security vulnerability scanner. Check for OWASP top 10,
+          injection attacks, authentication flaws, and data exposure.
+        tools:
+          - sast-scan
+          - dependency-check
+          - read-file
+        maxTokenBudget: 15000
+      - name: style-checker
+        kind: teammate
+        role: >
+          Code style and formatting reviewer. Verify adherence to
+          project conventions, naming, and documentation standards.
+        tools:
+          - eslint
+          - prettier
+          - read-file
+      - name: test-reviewer
+        kind: teammate
+        role: >
+          Test coverage reviewer. Verify test adequacy, check edge cases,
+          and validate test assertions.
+        tools:
+          - run-tests
+          - coverage-report
+          - read-file
+    taskList:
+      persistence: file-backed
+      format: markdown
+      path: review-tasks.md
+      dependencyTracking: true
+    communication:
+      channel: task-list
+      consensus: leader-decides
+    deployment:
+      backend: in-process
+      maxConcurrency: 4

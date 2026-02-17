@@ -42,6 +42,9 @@ export {
   generateChangelog,
   sanitizePackageName,
   extractMetadata,
+  generateTeamFilesForExport,
+  generateAgentsMdFile,
+  generatePerfectAgentBundle,
   type Platform,
   type PackageJsonOptions,
   type TsConfigOptions,
@@ -59,6 +62,14 @@ export {
   mergeResults,
   type ManifestValidationResult,
 } from './manifest-validator.js';
+
+// Perfect agent utilities
+export {
+  generateSkillContent,
+  generateEvalStubs,
+  generateGovernanceConfig,
+  generateObservabilityConfig,
+} from './perfect-agent-utils.js';
 
 // Template engine
 export {
