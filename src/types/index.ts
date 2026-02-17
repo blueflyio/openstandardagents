@@ -330,8 +330,6 @@ export interface OssaAgent {
     agentType?: AgentType;
     agentKind?: AgentKind;
     agentArchitecture?: AgentArchitecture;
-    // Agent Identity (v0.5)
-    identity?: AgentIdentity;
     // Agent ID Card (v0.4.5+)
     idCard?: {
       nickname?: string;
