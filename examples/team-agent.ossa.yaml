@@ -1,0 +1,159 @@
+# OSSA v0.4.5 Example: Team Agent — Claude Code Lead-Teammate Team
+#
+# Demonstrates the lead-teammate pattern modeled after Claude Code Agent
+# Teams. An Opus lead orchestrates Sonnet workers and a Haiku explorer.
+# The lead operates in delegate mode (never implements directly), while
+# teammates self-claim tasks from a shared, file-backed task list with
+# dependency tracking and wave execution.
+#
+# Key characteristics:
+#   - Lead-teammate model with delegate mode
+#   - Shared task list with self-claim coordination
+#   - File-backed persistence with dependency tracking
+#   - Mailbox communication (async, inbox-based)
+#   - Mixed model tiers (Opus lead, Sonnet workers, Haiku explorer)
+#   - In-process deployment with fixed scaling
+
+apiVersion: ossa/v0.4.5
+kind: Agent
+metadata:
+  name: fullstack-dev-team
+  version: "1.0.0"
+  description: >-
+    A Claude Code-style development team for fullstack feature implementation.
+    An Opus lead decomposes tasks and coordinates three teammates: a backend
+    worker (Sonnet), a frontend worker (Sonnet), and a codebase explorer
+    (Haiku). Teammates self-claim tasks from a shared list, communicate via
+    mailbox, and work in isolated directories.
+
+  agentKind: team-lead
+  agentType: a2a
+
+  agentArchitecture:
+    pattern: lead-teammate
+    capabilities:
+      - tools
+      - code
+      - context
+      - function-calling
+      - memory
+    coordination:
+      handoffStrategy: automatic
+      leaderAgent: lead
+      maxDepth: 2
+      teamModel: lead-teammate
+      communicationPattern: mailbox
+      taskCoordination: self-claim
+      conflictResolution: leader-decides
+      taskPersistence: file-backed
+      dependencyTracking: true
+
+  labels:
+    domain: development
+    pattern: lead-teammate
+    framework: claude-code
+
+spec:
+  role: >-
+    You are the lead of a fullstack development team. Your job is to:
+    1. Analyze the user's feature request and decompose it into tasks.
+    2. Create tasks in the shared task list with clear descriptions and
+       dependency relationships.
+    3. Monitor teammate progress and resolve blockers.
+    4. Synthesize completed work into a final deliverable.
+    You operate in delegate mode — you NEVER write code directly. Instead,
+    you coordinate your teammates who do the implementation work.
+
+  llm:
+    provider: anthropic
+    model: claude-opus-4-20250514
+    temperature: 0.4
+    maxTokens: 8192
+    profile: deep
+
+  team:
+    model: lead-teammate
+    lead: lead
+    delegateMode: true
+
+    members:
+      - name: backend-worker
+        kind: teammate
+        role: >-
+          Implement backend features: API endpoints, database schemas,
+          business logic, and server-side tests. Work in the backend/
+          directory. Claim tasks from the shared list and mark them
+          complete when done.
+        model:
+          provider: anthropic
+          name: claude-sonnet-4-20250514
+        tools:
+          - read_file
+          - write_file
+          - bash
+          - grep
+          - glob
+        contextIsolation: true
+        workingDirectory: /backend
+
+      - name: frontend-worker
+        kind: teammate
+        role: >-
+          Implement frontend features: React components, API integration,
+          styling, and UI tests. Work in the frontend/ directory. Claim
+          tasks from the shared list and mark them complete when done.
+        model:
+          provider: anthropic
+          name: claude-sonnet-4-20250514
+        tools:
+          - read_file
+          - write_file
+          - bash
+          - grep
+          - glob
+        contextIsolation: true
+        workingDirectory: /frontend
+
+      - name: codebase-explorer
+        kind: researcher
+        role: >-
+          Explore the codebase to answer questions from the lead and other
+          teammates. Search for patterns, find dependencies, and analyze
+          architecture. Read-only — never modify files.
+        model:
+          provider: anthropic
+          name: claude-haiku-4-5-20250514
+        tools:
+          - read_file
+          - grep
+          - glob
+        contextIsolation: true
+        workingDirectory: /
+
+    taskList:
+      coordination: self-claim
+      persistence: file-backed
+      stateModel:
+        - pending
+        - in-progress
+        - completed
+        - blocked
+      dependencyTracking: true
+      waveExecution: true
+      lockingStrategy: file-lock
+
+    communication:
+      pattern: mailbox
+      broadcastEnabled: false
+
+    deployment:
+      backend: in-process
+      scaling: fixed
+
+  constraints:
+    cost:
+      maxTokensPerDay: 2000000
+      maxCostPerDay: 100.00
+      currency: USD
+    performance:
+      timeoutSeconds: 300

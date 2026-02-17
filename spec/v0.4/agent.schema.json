@@ -1469,9 +1469,13 @@
             "bedrock",
             "pydantic-ai",
             "swarm",
+            "a2a",
+            "mcp-server",
+            "agent-sdk",
+            "adk",
             "custom"
           ],
-          "description": "Agent runtime platform (v0.4.4+). Specifies which platform/framework will execute this agent. Used by exporters to generate platform-specific code and by runtime systems to select appropriate adapter."
+          "description": "Agent runtime platform (v0.4.4+). Specifies which platform/framework will execute this agent. Includes protocol-based types: a2a (Agent-to-Agent protocol), mcp-server (MCP tool server), agent-sdk (OpenAI/Anthropic Agent SDK), adk (Google Agent Development Kit)."
         },
         "agentKind": {
           "type": "string",
@@ -1488,9 +1492,13 @@
             "monitor",
             "analyst",
             "researcher",
-            "specialist"
+            "specialist",
+            "team-lead",
+            "teammate",
+            "subagent",
+            "debugger"
           ],
-          "description": "Agent functional role (v0.4.4+). Describes WHAT the agent does in the system. Used for intelligent routing, task assignment, and multi-agent orchestration."
+          "description": "Agent functional role (v0.4.4+). Describes WHAT the agent does in the system. Includes multi-agent roles: team-lead (orchestrates team), teammate (independent peer worker), subagent (scoped worker reporting to parent), debugger (hypothesis-testing investigator)."
         },
         "agentArchitecture": {
           "type": "object",
@@ -1505,9 +1513,10 @@
                 "graph",
                 "hierarchical",
                 "reactive",
-                "cognitive"
+                "cognitive",
+                "lead-teammate"
               ],
-              "description": "Architecture pattern: single (one agentic loop), swarm (multi-agent with handoffs), pipeline (sequential chain), graph (DAG workflow), hierarchical (manager/worker), reactive (event-driven), cognitive (multi-step reasoning)"
+              "description": "Architecture pattern: single (one agentic loop), swarm (multi-agent with handoffs), pipeline (sequential chain), graph (DAG workflow), hierarchical (manager/worker), reactive (event-driven), cognitive (multi-step reasoning), lead-teammate (Claude Code teams pattern with shared task list and mailbox)"
             },
             "capabilities": {
               "type": "array",
@@ -1534,7 +1543,7 @@
             },
             "coordination": {
               "type": "object",
-              "description": "Multi-agent coordination configuration (for swarm/hierarchical patterns)",
+              "description": "Multi-agent coordination configuration. Enhanced in v0.4.5 with Claude Code Agent Teams primitives.",
               "properties": {
                 "handoffStrategy": {
                   "type": "string",
@@ -1548,14 +1557,72 @@
                 },
                 "leaderAgent": {
                   "type": "string",
-                  "description": "Name of leader/orchestrator agent (for hierarchical pattern)"
+                  "description": "Name of the entry point / team lead agent"
                 },
                 "maxDepth": {
                   "type": "integer",
                   "minimum": 1,
-                  "maximum": 20,
-                  "default": 5,
-                  "description": "Maximum orchestration depth (number of handoffs)"
+                  "maximum": 10,
+                  "default": 3,
+                  "description": "Maximum delegation depth (lead → teammate → subagent)"
+                },
+                "teamModel": {
+                  "type": "string",
+                  "enum": [
+                    "lead-teammate",
+                    "parent-child",
+                    "peer-to-peer",
+                    "hub-spoke"
+                  ],
+                  "default": "lead-teammate",
+                  "description": "Team coordination model. lead-teammate = Claude Code pattern with shared task list and mailbox."
+                },
+                "communicationPattern": {
+                  "type": "string",
+                  "enum": [
+                    "mailbox",
+                    "broadcast",
+                    "shared-file",
+                    "direct"
+                  ],
+                  "default": "mailbox",
+                  "description": "Primary inter-agent communication mechanism. mailbox = async inbox-based (Claude Code default)."
+                },
+                "taskCoordination": {
+                  "type": "string",
+                  "enum": [
+                    "shared-list",
+                    "assigned",
+                    "self-claim"
+                  ],
+                  "default": "self-claim",
+                  "description": "How tasks are distributed. self-claim = teammates pick from shared list (Claude Code default)."
+                },
+                "conflictResolution": {
+                  "type": "string",
+                  "enum": [
+                    "leader-decides",
+                    "vote",
+                    "round-robin",
+                    "last-writer-wins"
+                  ],
+                  "default": "leader-decides",
+                  "description": "How conflicts between agents are resolved"
+                },
+                "taskPersistence": {
+                  "type": "string",
+                  "enum": [
+                    "file-backed",
+                    "in-memory",
+                    "database"
+                  ],
+                  "default": "file-backed",
+                  "description": "How task state is persisted. file-backed = JSON files on disk (Claude Code pattern)."
+                },
+                "dependencyTracking": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Whether tasks can declare dependencies. Blocked tasks auto-unblock when dependencies complete."
                 }
               },
               "additionalProperties": false
@@ -2191,6 +2258,274 @@
         },
         "checkpointing": {
           "$ref": "#/definitions/CheckpointConfiguration"
+        },
+        "team": {
+          "type": "object",
+          "description": "Multi-agent team definition (v0.4.5+). Modeled after Claude Code Agent Teams: a lead orchestrates teammates who work independently with shared task list and mailbox communication.",
+          "properties": {
+            "model": {
+              "type": "string",
+              "enum": [
+                "lead-teammate",
+                "peer-to-peer",
+                "hub-spoke"
+              ],
+              "default": "lead-teammate",
+              "description": "Team coordination model"
+            },
+            "lead": {
+              "type": "string",
+              "description": "Name of the team lead agent (entry point)"
+            },
+            "delegateMode": {
+              "type": "boolean",
+              "default": false,
+              "description": "When true, lead only coordinates — never implements directly. Maps to Claude Code delegate mode."
+            },
+            "members": {
+              "type": "array",
+              "description": "Team member definitions",
+              "items": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "role"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Unique member identifier"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "teammate",
+                      "subagent",
+                      "researcher",
+                      "debugger"
+                    ],
+                    "default": "teammate"
+                  },
+                  "role": {
+                    "type": "string",
+                    "description": "Human-readable role description"
+                  },
+                  "model": {
+                    "type": "object",
+                    "description": "LLM model for this member",
+                    "properties": {
+                      "provider": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "tools": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Tool names this member can access"
+                  },
+                  "contextIsolation": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Whether this member runs in its own context window"
+                  },
+                  "handoffs": {
+                    "type": "array",
+                    "description": "Conditions under which this member transfers to another",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "to": {
+                          "type": "string",
+                          "description": "Target agent name"
+                        },
+                        "condition": {
+                          "type": "string",
+                          "description": "When to hand off"
+                        }
+                      },
+                      "required": [
+                        "to",
+                        "condition"
+                      ]
+                    }
+                  },
+                  "workingDirectory": {
+                    "type": "string",
+                    "description": "Directory scope for this member (prevents file conflicts)"
+                  }
+                }
+              }
+            },
+            "taskList": {
+              "type": "object",
+              "description": "Shared task list configuration",
+              "properties": {
+                "coordination": {
+                  "type": "string",
+                  "enum": [
+                    "shared-list",
+                    "assigned",
+                    "self-claim"
+                  ],
+                  "default": "self-claim"
+                },
+                "persistence": {
+                  "type": "string",
+                  "enum": [
+                    "file-backed",
+                    "in-memory",
+                    "database"
+                  ],
+                  "default": "file-backed"
+                },
+                "stateModel": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "default": [
+                    "pending",
+                    "in-progress",
+                    "completed"
+                  ],
+                  "description": "Valid task states"
+                },
+                "dependencyTracking": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Tasks can declare dependencies; blocked tasks auto-unblock"
+                },
+                "waveExecution": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Tasks execute in dependency waves"
+                },
+                "lockingStrategy": {
+                  "type": "string",
+                  "enum": [
+                    "file-lock",
+                    "optimistic",
+                    "none"
+                  ],
+                  "default": "file-lock",
+                  "description": "Prevents double-claiming of tasks"
+                }
+              }
+            },
+            "communication": {
+              "type": "object",
+              "description": "Inter-agent communication configuration",
+              "properties": {
+                "pattern": {
+                  "type": "string",
+                  "enum": [
+                    "mailbox",
+                    "shared-file",
+                    "direct"
+                  ],
+                  "default": "mailbox"
+                },
+                "broadcastEnabled": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Allow 1-to-all broadcasting (expensive, sends N messages)"
+                }
+              }
+            },
+            "deployment": {
+              "type": "object",
+              "description": "Team deployment topology",
+              "properties": {
+                "backend": {
+                  "type": "string",
+                  "enum": [
+                    "in-process",
+                    "split-pane",
+                    "distributed",
+                    "kubernetes"
+                  ],
+                  "default": "in-process",
+                  "description": "How teammate instances are spawned"
+                },
+                "scaling": {
+                  "type": "string",
+                  "enum": [
+                    "fixed",
+                    "auto"
+                  ],
+                  "default": "fixed"
+                }
+              }
+            }
+          }
+        },
+        "subagents": {
+          "type": "array",
+          "description": "Subagent definitions for parent-child delegation (v0.4.5+). Unlike team members, subagents report results to parent only — no peer communication.",
+          "items": {
+            "type": "object",
+            "required": [
+              "name",
+              "role"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Unique subagent identifier"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "subagent",
+                  "researcher",
+                  "debugger",
+                  "planner"
+                ],
+                "default": "subagent"
+              },
+              "role": {
+                "type": "string",
+                "description": "What this subagent does"
+              },
+              "model": {
+                "type": "object",
+                "properties": {
+                  "provider": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                }
+              },
+              "tools": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "contextIsolation": {
+                "type": "boolean",
+                "default": true,
+                "description": "Subagents always run in isolated context"
+              },
+              "reportTo": {
+                "type": "string",
+                "default": "parent",
+                "description": "Always 'parent' for subagents"
+              },
+              "maxTokenBudget": {
+                "type": "integer",
+                "description": "Token budget for this subagent's session"
+              }
+            }
+          }
         }
       },
       "additionalProperties": true

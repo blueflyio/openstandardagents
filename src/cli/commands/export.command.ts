@@ -51,7 +51,17 @@ export const exportCommand = new Command('export')
   .option(
     '--list-platforms',
     'Show all supported export platforms and their status'
-  );
+  )
+  .option(
+    '--perfect-agent',
+    'Generate full Perfect Agent structure (enables all --include-* flags)'
+  )
+  .option('--include-agent-card', 'Generate .well-known/agent-card.json')
+  .option('--include-agents-md', 'Generate AGENTS.md')
+  .option('--include-evals', 'Generate evals/ with CLEAR framework config')
+  .option('--include-governance', 'Generate governance/ with compliance and policies')
+  .option('--include-observability', 'Generate observability/ with OTel config')
+  .option('--include-team', 'Generate team/ multi-agent orchestration structure');
 
 // Add production-grade standard options
 addGlobalOptions(exportCommand);
@@ -79,6 +89,13 @@ exportCommand.action(
       backupDir?: string;
       validate?: boolean;
       listPlatforms?: boolean;
+      perfectAgent?: boolean;
+      includeAgentCard?: boolean;
+      includeAgentsMd?: boolean;
+      includeEvals?: boolean;
+      includeGovernance?: boolean;
+      includeObservability?: boolean;
+      includeTeam?: boolean;
     }
   ) => {
     const useColor = shouldUseColor(options);
@@ -214,7 +231,17 @@ exportCommand.action(
       process.exit(1);
     }
 
-    if (!options.platform) {
+    const hasPerfectAgentOnly =
+      !options.platform &&
+      (options.perfectAgent ||
+        options.includeAgentCard ||
+        options.includeAgentsMd ||
+        options.includeEvals ||
+        options.includeGovernance ||
+        options.includeObservability ||
+        options.includeTeam);
+
+    if (!options.platform && !hasPerfectAgentOnly) {
       console.error(
         useColor
           ? chalk.red(
@@ -257,6 +284,68 @@ exportCommand.action(
       // Load manifest
       const manifestRepo = container.get(ManifestRepository);
       const manifest = await manifestRepo.load(manifestPath);
+
+      // Perfect Agent generation (standalone or appended to platform export)
+      const hasPerfectAgentFlags =
+        options.perfectAgent ||
+        options.includeAgentCard ||
+        options.includeAgentsMd ||
+        options.includeEvals ||
+        options.includeGovernance ||
+        options.includeObservability ||
+        options.includeTeam;
+
+      if (hasPerfectAgentFlags) {
+        const { generatePerfectAgentFiles } = await import(
+          '../../adapters/base/common-file-generator.js'
+        );
+
+        const perfectOpts = {
+          includeAgentCard: options.perfectAgent || options.includeAgentCard,
+          includeAgentsMd: options.perfectAgent || options.includeAgentsMd,
+          includeEvals: options.perfectAgent || options.includeEvals,
+          includeGovernance: options.perfectAgent || options.includeGovernance,
+          includeObservability: options.perfectAgent || options.includeObservability,
+          includeSkill: options.perfectAgent || options.skill,
+          includeTeam: options.perfectAgent || options.includeTeam,
+          platform: options.platform,
+        };
+
+        log(
+          options.perfectAgent
+            ? 'Generating Perfect Agent structure...'
+            : 'Generating selected agent artifacts...'
+        );
+
+        const perfectFiles = await generatePerfectAgentFiles(manifest, perfectOpts);
+
+        if (perfectFiles.length > 0) {
+          const agentName = manifest.metadata?.name || 'agent';
+          const outputDir = options.output || `./${agentName}`;
+
+          if (!options.dryRun) {
+            for (const file of perfectFiles) {
+              const filePath = path.join(outputDir, file.path);
+              const fileDir = path.dirname(filePath);
+              fs.mkdirSync(fileDir, { recursive: true });
+              fs.writeFileSync(filePath, file.content);
+              logVerbose(`  Created: ${file.path}`);
+            }
+
+            logSuccess(`\nPerfect Agent artifacts: ${perfectFiles.length} files`);
+          } else {
+            log(`\nDRY RUN: Would generate ${perfectFiles.length} Perfect Agent files:`);
+            for (const file of perfectFiles) {
+              logVerbose(`  - ${file.path} (${file.content.length} bytes)`);
+            }
+          }
+
+          // If no platform specified, we're done
+          if (!options.platform || options.platform === 'perfect-agent') {
+            return;
+          }
+        }
+      }
 
       let output: string;
       let defaultExtension: string;

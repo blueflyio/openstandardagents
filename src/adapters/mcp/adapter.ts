@@ -125,6 +125,9 @@ export class MCPAdapter extends BaseAdapter {
         )
       );
 
+      // Perfect Agent files
+      files.push(...await this.generatePerfectAgentFiles(manifest, options));
+
       return this.createResult(true, files, undefined, {
         duration: Date.now() - startTime,
         version: '1.0.0',

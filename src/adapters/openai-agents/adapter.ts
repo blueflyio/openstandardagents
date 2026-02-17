@@ -135,6 +135,9 @@ export class OpenAIAgentsAdapter extends BaseAdapter {
       // 7. OSSA manifest copy
       files.push(this.createManifestFile(manifest));
 
+      // Perfect Agent files
+      files.push(...await this.generatePerfectAgentFiles(manifest, options));
+
       return this.createResult(true, files, undefined, {
         duration: Date.now() - startTime,
         version: '0.4.6',
