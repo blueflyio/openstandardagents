@@ -9,7 +9,20 @@
  */
 
 import type { OssaAgent } from '../../types/index.js';
+import type { ExportFile, ExportOptions } from './adapter.interface.js';
 import { renderConditional, type TemplateData } from './template-engine.js';
+import {
+  isMultiAgentManifest,
+  generateTeamFiles,
+  generateSubagentFiles,
+  type TeamTargetPlatform,
+} from '../../services/multi-agent/team-generator.service.js';
+import { generateAgentsMd } from '../../services/agents-md/agents-md-generator.service.js';
+import {
+  generateEvalStubs,
+  generateGovernanceConfig,
+  generateObservabilityConfig,
+} from './perfect-agent-utils.js';
 
 // ──────────────────────────────────────────────────────────────────
 // Types
@@ -742,7 +755,7 @@ interface GeneratedFile {
 /**
  * Standalone perfect agent file generator.
  * Use this from CLI or non-adapter contexts.
- * Each service is lazily imported so missing services are silently skipped.
+ * Delegates to generatePerfectAgentBundle for actual file generation.
  *
  * @param manifest - OSSA agent manifest
  * @param options - Which sections to include (all enabled by default)
@@ -752,130 +765,7 @@ export async function generatePerfectAgentFiles(
   manifest: OssaAgent,
   options?: PerfectAgentOptions
 ): Promise<GeneratedFile[]> {
-  const opts: PerfectAgentOptions = {
-    includeAgentCard: true,
-    includeAgentsMd: true,
-    includeEvals: true,
-    includeGovernance: true,
-    includeObservability: true,
-    includeSkill: true,
-    includeTeam: true,
-    platform: 'custom',
-    ...options,
-  };
-
-  const files: GeneratedFile[] = [];
-
-  if (opts.includeAgentCard) {
-    try {
-      const { AgentCardGenerator } = await import(
-        '../../services/agent-card-generator.js'
-      );
-      const generator = new AgentCardGenerator();
-      const result = generator.generate(manifest, { namespace: 'default' });
-      if (result.success && result.json) {
-        files.push({
-          path: '.well-known/agent-card.json',
-          content: result.json,
-          type: 'config',
-          language: 'json',
-        });
-      }
-    } catch {
-      // not available
-    }
-  }
-
-  if (opts.includeAgentsMd) {
-    try {
-      const { AgentsMdGeneratorService } = await import(
-        '../../services/agents-md/agents-md-generator.service.js'
-      );
-      const generator = new AgentsMdGeneratorService();
-      files.push(...generator.generate(manifest));
-    } catch {
-      // not available
-    }
-  }
-
-  if (opts.includeEvals) {
-    try {
-      const { EvalsGeneratorService } = await import(
-        '../../services/evals/evals-generator.service.js'
-      );
-      const generator = new EvalsGeneratorService();
-      files.push(...generator.generate(manifest));
-    } catch {
-      // not available
-    }
-  }
-
-  if (opts.includeGovernance) {
-    try {
-      const { GovernanceGeneratorService } = await import(
-        '../../services/governance/governance-generator.service.js'
-      );
-      const generator = new GovernanceGeneratorService();
-      files.push(...generator.generate(manifest));
-    } catch {
-      // not available
-    }
-  }
-
-  if (opts.includeObservability) {
-    try {
-      const { ObservabilityGeneratorService } = await import(
-        '../../services/observability/observability-generator.service.js'
-      );
-      const generator = new ObservabilityGeneratorService();
-      files.push(...generator.generate(manifest));
-    } catch {
-      // not available
-    }
-  }
-
-  if (opts.includeSkill) {
-    try {
-      const { generateSkillContent } = await import(
-        './perfect-agent-utils.js'
-      );
-      const skillContent = generateSkillContent(manifest);
-      if (skillContent) {
-        files.push({
-          path: 'skills/SKILL.md',
-          content: skillContent,
-          type: 'documentation',
-          language: 'markdown',
-        });
-      }
-    } catch {
-      // not available
-    }
-  }
-
-  if (opts.includeTeam) {
-    const spec = manifest.spec as Record<string, unknown> | undefined;
-    const arch = manifest.metadata?.agentArchitecture as Record<string, unknown> | undefined;
-    const pattern = arch?.pattern as string | undefined;
-    const isMulti = !!(
-      spec?.team || spec?.swarm || spec?.subagents ||
-      (pattern && pattern !== 'single')
-    );
-
-    if (isMulti) {
-      try {
-        const { TeamGeneratorService } = await import(
-          '../../services/multi-agent/team-generator.service.js'
-        );
-        const generator = new TeamGeneratorService();
-        files.push(...generator.generate(manifest, opts.platform || 'custom'));
-      } catch {
-        // not available
-      }
-    }
-  }
-
-  return files;
+  return generatePerfectAgentBundle(manifest, options);
 }
 
 /**
@@ -917,4 +807,106 @@ export function extractMetadata(manifest: OssaAgent): {
     author: manifest.metadata?.author as string | undefined,
     apiVersion: manifest.apiVersion?.split('/')[1] || 'v0.4.1',
   };
+}
+
+// ──────────────────────────────────────────────────────────────────
+// Multi-Agent Team File Generation
+// ──────────────────────────────────────────────────────────────────
+
+/**
+ * Generate team scaffolding files from manifest spec.team.
+ *
+ * @param manifest - OSSA agent manifest with spec.team
+ * @param platform - Target platform for code generation
+ * @returns Array of ExportFile objects
+ */
+export function generateTeamFilesForExport(
+  manifest: OssaAgent,
+  platform: TeamTargetPlatform = 'generic',
+  includeDocumentation = true
+): ExportFile[] {
+  if (!isMultiAgentManifest(manifest)) return [];
+
+  const files: ExportFile[] = [];
+
+  const teamFiles = generateTeamFiles(manifest, {
+    platform,
+    includeDocumentation,
+  });
+  for (const tf of teamFiles) {
+    files.push({
+      path: tf.path,
+      content: tf.content,
+      type: tf.type as ExportFile['type'],
+      language: tf.language,
+    });
+  }
+
+  const subagentFiles = generateSubagentFiles(manifest, { platform });
+  for (const sf of subagentFiles) {
+    files.push({
+      path: sf.path,
+      content: sf.content,
+      type: sf.type as ExportFile['type'],
+      language: sf.language,
+    });
+  }
+
+  return files;
+}
+
+/**
+ * Generate AGENTS.md file from manifest with team topology awareness.
+ *
+ * @param manifest - OSSA agent manifest
+ * @returns ExportFile for AGENTS.md
+ */
+export function generateAgentsMdFile(manifest: OssaAgent): ExportFile {
+  const content = generateAgentsMd(manifest);
+  return {
+    path: 'AGENTS.md',
+    content,
+    type: 'documentation',
+    language: 'markdown',
+  };
+}
+
+/**
+ * Generate the complete "perfect agent" bundle: AGENTS.md + team scaffolding +
+ * evals + governance + observability.
+ *
+ * @param manifest - OSSA agent manifest
+ * @param options - Export options controlling which parts are included
+ * @param platform - Target platform for team code generation
+ * @returns Array of ExportFile objects
+ */
+export function generatePerfectAgentBundle(
+  manifest: OssaAgent,
+  options?: ExportOptions,
+  platform: TeamTargetPlatform = 'generic'
+): ExportFile[] {
+  const files: ExportFile[] = [];
+  const isPerfect = options?.perfectAgent;
+
+  if (isPerfect || options?.includeAgentsMd) {
+    files.push(generateAgentsMdFile(manifest));
+  }
+
+  if (isPerfect || options?.includeTeam) {
+    files.push(...generateTeamFilesForExport(manifest, platform));
+  }
+
+  if (isPerfect || options?.includeEvals) {
+    files.push(generateEvalStubs(manifest));
+  }
+
+  if (isPerfect || options?.includeGovernance) {
+    files.push(generateGovernanceConfig(manifest));
+  }
+
+  if (isPerfect || options?.includeObservability) {
+    files.push(generateObservabilityConfig(manifest));
+  }
+
+  return files;
 }

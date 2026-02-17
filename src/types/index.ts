@@ -115,6 +115,10 @@ export type AgentType =
   | 'bedrock' // AWS Bedrock
   | 'pydantic-ai' // Pydantic AI agents
   | 'swarm' // OpenAI Swarm
+  | 'a2a' // Agent-to-Agent protocol
+  | 'mcp-server' // MCP server
+  | 'agent-sdk' // Claude Agent SDK
+  | 'adk' // Google Agent Development Kit
   | 'custom'; // Custom implementations
 
 /**
@@ -134,7 +138,11 @@ export type AgentKind =
   | 'monitor' // Observes system state
   | 'analyst' // Analyzes data and patterns
   | 'researcher' // Conducts research tasks
-  | 'specialist'; // Domain-specific expert
+  | 'specialist' // Domain-specific expert
+  | 'team-lead' // Leads a team of agents
+  | 'teammate' // Member of an agent team
+  | 'subagent' // Child agent for delegation
+  | 'debugger'; // Debugging specialist
 
 /**
  * Architecture Pattern - How the agent is structured
@@ -146,7 +154,8 @@ export type ArchitecturePattern =
   | 'graph' // DAG-based workflow
   | 'hierarchical' // Manager/worker structure
   | 'reactive' // Event-driven triggers
-  | 'cognitive'; // Multi-step reasoning
+  | 'cognitive' // Multi-step reasoning
+  | 'lead-teammate'; // Lead delegates tasks to teammates
 
 /**
  * Agent Capabilities - What the agent can do
@@ -210,6 +219,18 @@ export interface AgentArchitecture {
     leaderAgent?: string;
     /** Maximum orchestration depth */
     maxDepth?: number;
+    /** Team coordination model */
+    teamModel?: 'lead-teammate' | 'peer-to-peer' | 'hierarchical' | 'swarm';
+    /** Communication pattern between agents */
+    communicationPattern?: 'task-list' | 'mailbox' | 'shared-file' | 'direct-message' | 'broadcast';
+    /** Task coordination strategy */
+    taskCoordination?: 'sequential' | 'parallel' | 'dependency-wave';
+    /** Conflict resolution strategy */
+    conflictResolution?: 'leader-decides' | 'vote' | 'round-robin';
+    /** How task state is persisted */
+    taskPersistence?: 'file-backed' | 'in-memory' | 'database';
+    /** Whether to track task dependencies */
+    dependencyTracking?: boolean;
   };
 
   /** Runtime configuration hints */
@@ -297,6 +318,58 @@ export interface AgentIdentity {
   created_at?: string;
   /** ISO 8601 last update timestamp */
   updated_at?: string;
+}
+
+/**
+ * Team member definition (v0.4.5+)
+ */
+export interface TeamMember {
+  name: string;
+  kind?: 'team-lead' | 'teammate' | 'subagent' | 'reviewer' | 'specialist';
+  role: string;
+  model?: string;
+  tools?: string[];
+  skills?: string[];
+  contextIsolation?: boolean;
+  maxTokenBudget?: number;
+}
+
+/**
+ * Team definition for multi-agent teams (v0.4.5+)
+ */
+export interface TeamDefinition {
+  model: 'lead-teammate' | 'peer-to-peer' | 'hierarchical' | 'swarm';
+  lead?: string;
+  delegateMode?: 'task-list' | 'round-robin' | 'capability-match' | 'load-balance';
+  members: TeamMember[];
+  taskList?: {
+    persistence?: 'file-backed' | 'in-memory' | 'database';
+    format?: 'markdown' | 'json' | 'yaml';
+    path?: string;
+    dependencyTracking?: boolean;
+  };
+  communication?: {
+    channel?: 'task-list' | 'mailbox' | 'shared-file' | 'direct-message' | 'broadcast';
+    consensus?: 'leader-decides' | 'vote' | 'round-robin';
+  };
+  deployment?: {
+    backend?: 'in-process' | 'split-pane' | 'distributed' | 'kubernetes';
+    maxConcurrency?: number;
+  };
+}
+
+/**
+ * Subagent definition for parent-child delegation (v0.4.5+)
+ */
+export interface SubagentDefinition {
+  name: string;
+  kind?: 'subagent' | 'worker' | 'specialist' | 'reviewer' | 'debugger';
+  role: string;
+  model?: string;
+  tools?: string[];
+  contextIsolation?: boolean;
+  reportTo?: string;
+  maxTokenBudget?: number;
 }
 
 /**
@@ -586,6 +659,10 @@ export interface OssaAgent {
         endpoint?: string;
       }
     >;
+    /** Multi-agent team definition (v0.4.5+) */
+    team?: TeamDefinition;
+    /** Child agents for delegation (v0.4.5+) */
+    subagents?: SubagentDefinition[];
   };
   // v0.5: Security Posture
   security?: SecurityPosture;

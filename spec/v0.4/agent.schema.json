@@ -1572,7 +1572,9 @@
                     "lead-teammate",
                     "parent-child",
                     "peer-to-peer",
-                    "hub-spoke"
+                    "hub-spoke",
+                    "hierarchical",
+                    "swarm"
                   ],
                   "default": "lead-teammate",
                   "description": "Team coordination model. lead-teammate = Claude Code pattern with shared task list and mailbox."
@@ -1580,10 +1582,11 @@
                 "communicationPattern": {
                   "type": "string",
                   "enum": [
+                    "task-list",
                     "mailbox",
                     "broadcast",
                     "shared-file",
-                    "direct"
+                    "direct-message"
                   ],
                   "default": "mailbox",
                   "description": "Primary inter-agent communication mechanism. mailbox = async inbox-based (Claude Code default)."
@@ -1593,7 +1596,10 @@
                   "enum": [
                     "shared-list",
                     "assigned",
-                    "self-claim"
+                    "self-claim",
+                    "sequential",
+                    "parallel",
+                    "dependency-wave"
                   ],
                   "default": "self-claim",
                   "description": "How tasks are distributed. self-claim = teammates pick from shared list (Claude Code default)."
@@ -2260,275 +2266,239 @@
           "$ref": "#/definitions/CheckpointConfiguration"
         },
         "team": {
-          "type": "object",
-          "description": "Multi-agent team definition (v0.4.5+). Modeled after Claude Code Agent Teams: a lead orchestrates teammates who work independently with shared task list and mailbox communication.",
-          "properties": {
-            "model": {
-              "type": "string",
-              "enum": [
-                "lead-teammate",
-                "peer-to-peer",
-                "hub-spoke"
-              ],
-              "default": "lead-teammate",
-              "description": "Team coordination model"
-            },
-            "lead": {
-              "type": "string",
-              "description": "Name of the team lead agent (entry point)"
-            },
-            "delegateMode": {
-              "type": "boolean",
-              "default": false,
-              "description": "When true, lead only coordinates — never implements directly. Maps to Claude Code delegate mode."
-            },
-            "members": {
-              "type": "array",
-              "description": "Team member definitions",
-              "items": {
-                "type": "object",
-                "required": [
-                  "name",
-                  "role"
-                ],
-                "properties": {
-                  "name": {
-                    "type": "string",
-                    "description": "Unique member identifier"
-                  },
-                  "kind": {
-                    "type": "string",
-                    "enum": [
-                      "teammate",
-                      "subagent",
-                      "researcher",
-                      "debugger"
-                    ],
-                    "default": "teammate"
-                  },
-                  "role": {
-                    "type": "string",
-                    "description": "Human-readable role description"
-                  },
-                  "model": {
-                    "type": "object",
-                    "description": "LLM model for this member",
-                    "properties": {
-                      "provider": {
-                        "type": "string"
-                      },
-                      "name": {
-                        "type": "string"
-                      }
-                    }
-                  },
-                  "tools": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    },
-                    "description": "Tool names this member can access"
-                  },
-                  "contextIsolation": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Whether this member runs in its own context window"
-                  },
-                  "handoffs": {
-                    "type": "array",
-                    "description": "Conditions under which this member transfers to another",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "to": {
-                          "type": "string",
-                          "description": "Target agent name"
-                        },
-                        "condition": {
-                          "type": "string",
-                          "description": "When to hand off"
-                        }
-                      },
-                      "required": [
-                        "to",
-                        "condition"
-                      ]
-                    }
-                  },
-                  "workingDirectory": {
-                    "type": "string",
-                    "description": "Directory scope for this member (prevents file conflicts)"
-                  }
-                }
-              }
-            },
-            "taskList": {
-              "type": "object",
-              "description": "Shared task list configuration",
-              "properties": {
-                "coordination": {
-                  "type": "string",
-                  "enum": [
-                    "shared-list",
-                    "assigned",
-                    "self-claim"
-                  ],
-                  "default": "self-claim"
-                },
-                "persistence": {
-                  "type": "string",
-                  "enum": [
-                    "file-backed",
-                    "in-memory",
-                    "database"
-                  ],
-                  "default": "file-backed"
-                },
-                "stateModel": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  },
-                  "default": [
-                    "pending",
-                    "in-progress",
-                    "completed"
-                  ],
-                  "description": "Valid task states"
-                },
-                "dependencyTracking": {
-                  "type": "boolean",
-                  "default": true,
-                  "description": "Tasks can declare dependencies; blocked tasks auto-unblock"
-                },
-                "waveExecution": {
-                  "type": "boolean",
-                  "default": true,
-                  "description": "Tasks execute in dependency waves"
-                },
-                "lockingStrategy": {
-                  "type": "string",
-                  "enum": [
-                    "file-lock",
-                    "optimistic",
-                    "none"
-                  ],
-                  "default": "file-lock",
-                  "description": "Prevents double-claiming of tasks"
-                }
-              }
-            },
-            "communication": {
-              "type": "object",
-              "description": "Inter-agent communication configuration",
-              "properties": {
-                "pattern": {
-                  "type": "string",
-                  "enum": [
-                    "mailbox",
-                    "shared-file",
-                    "direct"
-                  ],
-                  "default": "mailbox"
-                },
-                "broadcastEnabled": {
-                  "type": "boolean",
-                  "default": false,
-                  "description": "Allow 1-to-all broadcasting (expensive, sends N messages)"
-                }
-              }
-            },
-            "deployment": {
-              "type": "object",
-              "description": "Team deployment topology",
-              "properties": {
-                "backend": {
-                  "type": "string",
-                  "enum": [
-                    "in-process",
-                    "split-pane",
-                    "distributed",
-                    "kubernetes"
-                  ],
-                  "default": "in-process",
-                  "description": "How teammate instances are spawned"
-                },
-                "scaling": {
-                  "type": "string",
-                  "enum": [
-                    "fixed",
-                    "auto"
-                  ],
-                  "default": "fixed"
-                }
-              }
-            }
-          }
+          "$ref": "#/definitions/TeamDefinition",
+          "description": "Multi-agent team definition (v0.4.5+). Modeled after Claude Code Agent Teams: a lead orchestrates teammates who work independently with shared task list and mailbox communication."
         },
         "subagents": {
           "type": "array",
           "description": "Subagent definitions for parent-child delegation (v0.4.5+). Unlike team members, subagents report results to parent only — no peer communication.",
           "items": {
-            "type": "object",
-            "required": [
-              "name",
-              "role"
-            ],
-            "properties": {
-              "name": {
-                "type": "string",
-                "description": "Unique subagent identifier"
-              },
-              "kind": {
-                "type": "string",
-                "enum": [
-                  "subagent",
-                  "researcher",
-                  "debugger",
-                  "planner"
-                ],
-                "default": "subagent"
-              },
-              "role": {
-                "type": "string",
-                "description": "What this subagent does"
-              },
-              "model": {
-                "type": "object",
-                "properties": {
-                  "provider": {
-                    "type": "string"
-                  },
-                  "name": {
-                    "type": "string"
-                  }
-                }
-              },
-              "tools": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              },
-              "contextIsolation": {
-                "type": "boolean",
-                "default": true,
-                "description": "Subagents always run in isolated context"
-              },
-              "reportTo": {
-                "type": "string",
-                "default": "parent",
-                "description": "Always 'parent' for subagents"
-              },
-              "maxTokenBudget": {
-                "type": "integer",
-                "description": "Token budget for this subagent's session"
-              }
-            }
+            "$ref": "#/definitions/SubagentDefinition"
           }
         }
       },
       "additionalProperties": true
+    },
+    "TeamDefinition": {
+      "type": "object",
+      "description": "Multi-agent team configuration with lead-teammate or peer-to-peer patterns (v0.4.5+)",
+      "required": ["model", "members"],
+      "properties": {
+        "model": {
+          "type": "string",
+          "enum": [
+            "lead-teammate",
+            "peer-to-peer",
+            "hierarchical",
+            "swarm"
+          ],
+          "description": "Team coordination model"
+        },
+        "lead": {
+          "type": "string",
+          "description": "Name of the lead agent (required for lead-teammate model)"
+        },
+        "delegateMode": {
+          "type": "string",
+          "enum": [
+            "task-list",
+            "round-robin",
+            "capability-match",
+            "load-balance"
+          ],
+          "default": "task-list",
+          "description": "How the lead delegates tasks to teammates"
+        },
+        "members": {
+          "type": "array",
+          "description": "Team member definitions",
+          "items": {
+            "type": "object",
+            "required": ["name", "role"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_-]*$",
+                "description": "Member name (kebab-case identifier)"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "team-lead",
+                  "teammate",
+                  "subagent",
+                  "reviewer",
+                  "specialist"
+                ],
+                "description": "Member's role kind in the team"
+              },
+              "role": {
+                "type": "string",
+                "description": "System prompt / role description for this member"
+              },
+              "model": {
+                "type": "string",
+                "description": "LLM model to use for this member (overrides team default)"
+              },
+              "tools": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Tool names this member can access"
+              },
+              "skills": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Skill references this member has"
+              },
+              "contextIsolation": {
+                "type": "boolean",
+                "default": true,
+                "description": "Whether this member runs in an isolated context"
+              },
+              "maxTokenBudget": {
+                "type": "integer",
+                "minimum": 1000,
+                "description": "Maximum token budget for this member per task"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "taskList": {
+          "type": "object",
+          "description": "Task list configuration for the team",
+          "properties": {
+            "persistence": {
+              "type": "string",
+              "enum": ["file-backed", "in-memory", "database"],
+              "default": "file-backed",
+              "description": "How the task list is persisted"
+            },
+            "format": {
+              "type": "string",
+              "enum": ["markdown", "json", "yaml"],
+              "default": "markdown",
+              "description": "Format of the task list file"
+            },
+            "path": {
+              "type": "string",
+              "description": "File path for file-backed persistence"
+            },
+            "dependencyTracking": {
+              "type": "boolean",
+              "default": true,
+              "description": "Track dependencies between tasks for wave execution"
+            }
+          },
+          "additionalProperties": false
+        },
+        "communication": {
+          "type": "object",
+          "description": "How team members communicate",
+          "properties": {
+            "channel": {
+              "type": "string",
+              "enum": [
+                "task-list",
+                "mailbox",
+                "shared-file",
+                "direct-message",
+                "broadcast"
+              ],
+              "default": "task-list",
+              "description": "Primary communication channel"
+            },
+            "consensus": {
+              "type": "string",
+              "enum": [
+                "leader-decides",
+                "vote",
+                "round-robin"
+              ],
+              "default": "leader-decides",
+              "description": "How team decisions are made"
+            }
+          },
+          "additionalProperties": false
+        },
+        "deployment": {
+          "type": "object",
+          "description": "How the team is deployed",
+          "properties": {
+            "backend": {
+              "type": "string",
+              "enum": [
+                "in-process",
+                "split-pane",
+                "distributed",
+                "kubernetes"
+              ],
+              "default": "in-process",
+              "description": "Deployment backend for team execution"
+            },
+            "maxConcurrency": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 5,
+              "description": "Maximum concurrent team members"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "SubagentDefinition": {
+      "type": "object",
+      "description": "Child agent that can be spawned by a parent agent for task delegation (v0.4.5+)",
+      "required": ["name", "role"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "description": "Subagent name (kebab-case identifier)"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "subagent",
+            "worker",
+            "specialist",
+            "reviewer",
+            "debugger"
+          ],
+          "description": "Subagent's functional role"
+        },
+        "role": {
+          "type": "string",
+          "description": "System prompt / role description"
+        },
+        "model": {
+          "type": "string",
+          "description": "LLM model to use (overrides parent default)"
+        },
+        "tools": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Tool names this subagent can access"
+        },
+        "contextIsolation": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether this subagent runs in isolated context"
+        },
+        "reportTo": {
+          "type": "string",
+          "description": "Parent agent name to report results to"
+        },
+        "maxTokenBudget": {
+          "type": "integer",
+          "minimum": 1000,
+          "description": "Maximum token budget for this subagent per invocation"
+        }
+      },
+      "additionalProperties": false
     },
     "WorkflowSpec": {
       "type": "object",
