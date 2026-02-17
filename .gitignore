@@ -132,8 +132,14 @@ tmp-smoke-test/
 tmp/
 json
 
+# TypeScript build cache
+tsconfig.tsbuildinfo
+
+
 # SBOM (generated in CI)
 sbom.json
 sbom-*.json
 *-sbom.json
 gl-sbom-*.cdx.json
+.gitlab/ci/_archived/
+AGENTS.md

@@ -1,21 +1,32 @@
 # =============================================================================
-# OSSA Specification CI/CD Pipeline
+# OSSA Specification CI/CD Pipeline (GitLab Ultimate)
 # =============================================================================
 #
 # Source of truth: GitLab (gitlab.com/blueflyio/ossa/openstandardagents)
 # GitHub mirror: Read-only, synced by CI on release (not project mirroring)
-# npm: Published manually or via CI (requires OTP for 2FA)
+# npm: Auto-package on merge, manual publish with OTP support
 #
 # Branches:
 #   release/v0.4.x  - Active development
 #   main            - Production releases
+#
+# GitLab Ultimate Features:
+#   - Auto DevOps security scanning (SAST, DAST, dependency, container)
+#   - Code Quality analysis
+#   - GitLab Package Registry (auto-publish on merge)
+#   - GitLab Observability (tracing, metrics, logs)
+#   - SBOM generation (CycloneDX)
+#   - Performance testing
 # =============================================================================
 
 stages:
   - validate
   - test
   - build
+  - security
+  - quality
   - smoke
+  - package
   - release
   - deploy
   - sync
@@ -23,8 +34,21 @@ stages:
 variables:
   NODE_VERSION: "22.14"
   GIT_DEPTH: 0
+  # GitLab Observability
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://87749026.otel.gitlab-o11y.com:4318"
+  OTEL_SERVICE_NAME: "ossa-ci-pipeline"
+  OTEL_TRACES_EXPORTER: "otlp"
+  # Security scanning
+  SAST_EXCLUDED_PATHS: "node_modules/,dist/,coverage/"
+  SECURE_LOG_LEVEL: "info"
 
 include:
+  # GitLab Ultimate security templates
+  - template: Security/SAST.gitlab-ci.yml
+  - template: Security/Dependency-Scanning.gitlab-ci.yml
+  - template: Security/Secret-Detection.gitlab-ci.yml
+  - template: Code-Quality.gitlab-ci.yml
+  # Local configs
   - local: '.gitlab/ci/token-rotation.yml'
   - local: '.gitlab/ci/mirror-github.yml'
 
@@ -121,6 +145,16 @@ sbom:generate:
   allow_failure: true
 
 # =============================================================================
+# SECURITY STAGE (GitLab Ultimate)
+# =============================================================================
+# SAST, Dependency Scanning, Secret Detection run automatically via templates
+
+# =============================================================================
+# QUALITY STAGE (GitLab Ultimate)
+# =============================================================================
+# Code Quality runs automatically via template
+
+# =============================================================================
 # SMOKE STAGE
 # =============================================================================
 test:smoke:
@@ -136,99 +170,126 @@ test:smoke:
     - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/
 
 # =============================================================================
-# RELEASE STAGE - Production Release (Manual)
+# PACKAGE STAGE - Auto-publish to GitLab Package Registry
 # =============================================================================
-release:production:
+package:gitlab:
+  extends: .base-runner
+  stage: package
+  needs:
+    - job: build
+      artifacts: true
+    - job: sbom:generate
+      artifacts: true
+  before_script:
+    - |
+      echo "@bluefly:registry=https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/packages/npm/" > .npmrc
+      echo "//gitlab.com/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> .npmrc
+  script:
+    - |
+      VERSION=$(node -p "require('./package.json').version")
+      echo "Publishing v${VERSION} to GitLab Package Registry..."
+
+      # Create tarball
+      npm pack
+
+      # Publish to GitLab Package Registry
+      npm publish --registry=https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/packages/npm/
+
+      echo "Package published to GitLab Package Registry"
+      echo "Install: npm install @bluefly/openstandardagents@${VERSION}"
+  artifacts:
+    paths:
+      - "*.tgz"
+      - gl-sbom-*.cdx.json
+    expire_in: 90 days
+    reports:
+      # GitLab Ultimate: Package metadata
+      cyclonedx: gl-sbom-*.cdx.json
+  rules:
+    # Auto-publish on main or release branches
+    - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/
+      when: on_success
+  environment:
+    name: package-registry
+    url: https://gitlab.com/blueflyio/ossa/openstandardagents/-/packages
+
+# =============================================================================
+# RELEASE STAGE - Manual npm Publish with OTP Support
+# =============================================================================
+release:npmjs:
   stage: release
   image: node:${NODE_VERSION}
   extends: .base-runner
   environment:
-    name: production
-    deployment_tier: production
-    url: https://www.npmjs.com/package/@bluefly/openstandardagents
-    action: start
-  variables:
-    GIT_AUTHOR_NAME: "OSSA Release Bot"
-    GIT_AUTHOR_EMAIL: "release-bot@openstandardagents.org"
-    GIT_COMMITTER_NAME: "OSSA Release Bot"
-    GIT_COMMITTER_EMAIL: "release-bot@openstandardagents.org"
-  before_script:
-    - npm ci
-    - npm run build
-    - git config user.name "${GIT_AUTHOR_NAME}"
-    - git config user.email "${GIT_AUTHOR_EMAIL}"
-    - |
-      if [ -z "$NPM_TOKEN" ]; then
-        echo "ERROR: NPM_TOKEN not set in CI/CD variables"
-        exit 1
-      fi
-      if [ -z "$GITLAB_PUSH_TOKEN" ]; then
-        echo "ERROR: GITLAB_PUSH_TOKEN not set"
-        exit 1
-      fi
-      echo "Required tokens configured"
-  script:
-    - echo "Running semantic-release for production..."
-    - npx semantic-release
-    - |
-      NEW_VERSION=$(node -p "require('./package.json').version")
-      echo "Released production version: v${NEW_VERSION}"
-  when: manual
-  only:
-    - main
-  artifacts:
-    paths:
-      - dist/*.tgz
-    expire_in: 90 days
-
-# =============================================================================
-# DEPLOY STAGE - npm Publish + GitLab Release
-# =============================================================================
-deploy:npm:
-  stage: deploy
-  image: node:${NODE_VERSION}
-  extends: .base-runner
-  environment:
-    name: production
+    name: npmjs-production
     deployment_tier: production
     url: https://www.npmjs.com/package/@bluefly/openstandardagents
     action: start
   needs:
-    - job: release:production
+    - job: package:gitlab
+      artifacts: true
   before_script:
-    - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+    - |
+      # Configure npm registry
+      echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+
+      # Verify tokens
+      if [ -z "$NPM_TOKEN" ]; then
+        echo "ERROR: NPM_TOKEN not set in CI/CD variables"
+        echo "Set it at: Settings > CI/CD > Variables"
+        exit 1
+      fi
+
+      echo "NPM token configured"
   script:
     - |
       VERSION=$(node -p "require('./package.json').version")
-      echo "Publishing to npm: v${VERSION}"
-      npm publish --access public
-      echo "Published: @bluefly/openstandardagents@${VERSION}"
-  only:
-    - main
+      echo "Publishing @bluefly/openstandardagents@${VERSION} to npmjs.org..."
 
+      # Publish with optional OTP
+      if [ -n "$NPM_OTP" ]; then
+        echo "Using OTP code from environment variable"
+        npm publish --access public --otp="${NPM_OTP}"
+      else
+        echo "No OTP provided (set NPM_OTP variable if 2FA is enabled)"
+        npm publish --access public
+      fi
+
+      echo "Published to npmjs.org"
+      echo "https://www.npmjs.com/package/@bluefly/openstandardagents/v/${VERSION}"
+  artifacts:
+    paths:
+      - "*.tgz"
+    expire_in: 90 days
+  rules:
+    # Manual trigger only on main branch
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
+      allow_failure: false
 
 # =============================================================================
-# DEPLOY STAGE - GitLab Release
+# DEPLOY STAGE - GitLab Release + Observability
 # =============================================================================
+# GitLab release after npm publish (main branch flow)
 deploy:gitlab-release:
   stage: deploy
   image: registry.gitlab.com/gitlab-org/release-cli:latest
   needs:
-    - job: release:production
+    - job: release:npmjs
       artifacts: true
-    - job: deploy:npm
   before_script:
     - apk add --no-cache nodejs npm
   script:
-    - VERSION=$(node -p "require('./package.json').version")
-    - echo "Creating GitLab release for v${VERSION}..."
+    - |
+      VERSION=$(node -p "require('./package.json').version")
+      echo "Creating GitLab release for v${VERSION}..."
   release:
     tag_name: "v${VERSION}"
     name: "Release v${VERSION}"
     description: |
       ## OSSA v${VERSION}
 
-      See [CHANGELOG.md](CHANGELOG.md) for release notes.
+      Released to npmjs.org and GitLab Package Registry.
 
       ### Install
       ```bash
@@ -237,14 +298,18 @@ deploy:gitlab-release:
 
       ### Links
       - [npm](https://www.npmjs.com/package/@bluefly/openstandardagents/v/${VERSION})
+      - [GitLab Package](https://gitlab.com/blueflyio/ossa/openstandardagents/-/packages)
       - [GitHub mirror](https://github.com/blueflyio/openstandardagents)
       - [Changelog](https://gitlab.com/blueflyio/ossa/openstandardagents/-/blob/main/CHANGELOG.md)
     assets:
       links:
         - name: "npm package"
           url: "https://www.npmjs.com/package/@bluefly/openstandardagents/v/${VERSION}"
-  only:
-    - main
+        - name: "GitLab Package"
+          url: "https://gitlab.com/blueflyio/ossa/openstandardagents/-/packages"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: on_success
 
 # GitLab release on tag creation (covers RC and stable tags from any branch)
 deploy:gitlab-release-tag:
