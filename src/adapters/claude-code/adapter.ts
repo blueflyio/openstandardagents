@@ -215,6 +215,7 @@ export class ClaudeCodeAdapter extends BaseExporter {
   ): ClaudeCodeSubAgent['subagent_type'] {
     const capabilities = this.getCapabilities(manifest);
 
+    // Map capabilities to sub-agent types
     if (
       capabilities.includes('explore') ||
       capabilities.includes('code-analysis')
@@ -257,13 +258,13 @@ export class ClaudeCodeAdapter extends BaseExporter {
     const ossaTools = this.getTools(manifest);
 
     ossaTools.forEach((tool) => {
-      const name = (tool.name as string) || 'unknown';
-      const description = (tool.description as string) || `Tool: ${name}`;
-      const schema = (tool.inputSchema ||
+      const name = tool.name || 'unknown';
+      const description = tool.description || `Tool: ${name}`;
+      const schema = tool.inputSchema ||
         tool.schema || {
           type: 'object',
           properties: {},
-        }) as Record<string, unknown>;
+        };
 
       tools.push({
         name,

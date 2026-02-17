@@ -198,7 +198,7 @@ export class CursorAdapter extends BaseExporter {
    * Convert OSSA manifest to Cursor Cloud Agent
    */
   private convertToCursorAgent(manifest: OssaAgent): CursorCloudAgent {
-    const name = this.getAgentName(manifest, 'cursor-agent');
+    const name = manifest.metadata?.name || 'cursor-agent';
     const description = manifest.metadata?.description || 'Cursor Cloud Agent';
     const prompt = manifest.spec?.role || 'AI coding assistant';
 
@@ -425,6 +425,155 @@ export async function executeTool(name: string, params: any): Promise<any> {
 export async function initialize(): Promise<void> {
   console.log('Cursor agent initialized:', agentConfig.name);
 }
+`;
+  }
+
+  /**
+   * Generate package.json
+   */
+  private generatePackageJson(manifest: OssaAgent): string {
+    const pkg = {
+      name: manifest.metadata?.name || 'cursor-agent',
+      version: manifest.metadata?.version || '1.0.0',
+      description:
+        manifest.metadata?.description ||
+        'Cursor Cloud Agent generated from OSSA',
+      type: 'module',
+      main: 'agent.js',
+      scripts: {
+        build: 'tsc',
+        dev: 'tsx agent.ts',
+        watch: 'tsx watch agent.ts',
+      },
+      dependencies: {},
+      devDependencies: {
+        '@types/node': '^20.0.0',
+        typescript: '^5.0.0',
+        tsx: '^4.0.0',
+      },
+      keywords: ['cursor', 'cloud-agent', 'ai', 'ossa', 'coding-assistant'],
+      license: manifest.metadata?.license || 'MIT',
+    };
+
+    return JSON.stringify(pkg, null, 2);
+  }
+
+  /**
+   * Generate tsconfig.json
+   */
+  private generateTsConfig(): string {
+    const config = {
+      compilerOptions: {
+        target: 'ES2022',
+        module: 'Node16',
+        moduleResolution: 'Node16',
+        outDir: '.',
+        rootDir: '.',
+        strict: true,
+        esModuleInterop: true,
+        skipLibCheck: true,
+        forceConsistentCasingInFileNames: true,
+        resolveJsonModule: true,
+        declaration: true,
+      },
+      include: ['**/*.ts'],
+      exclude: ['node_modules', '**/*.js'],
+    };
+
+    return JSON.stringify(config, null, 2);
+  }
+
+  /**
+   * Generate README.md
+   */
+  private generateReadme(manifest: OssaAgent, agent: CursorCloudAgent): string {
+    const agentName = manifest.metadata?.name || 'cursor-agent';
+
+    return `# ${agentName}
+
+${agent.description}
+
+## Cursor Cloud Agent
+
+This agent is designed for use with [Cursor IDE](https://cursor.com/), providing AI-powered coding assistance.
+
+## Installation
+
+1. **Install dependencies:**
+
+\`\`\`bash
+npm install
+\`\`\`
+
+2. **Build the agent:**
+
+\`\`\`bash
+npm run build
+\`\`\`
+
+3. **Configure in Cursor:**
+
+Add to your Cursor settings (\`Settings > Cloud Agents\`):
+
+\`\`\`json
+{
+  "cloudAgents": [
+    {
+      "name": "${agentName}",
+      "path": "${process.cwd()}/cursor/${agentName}/agent.js"
+    }
+  ]
+}
+\`\`\`
+
+## Agent Configuration
+
+**System Prompt:**
+
+\`\`\`
+${agent.prompt}
+\`\`\`
+
+**Capabilities:**
+
+${agent.capabilities.map((c) => `- ${c.type}`).join('\n')}
+
+## Available Tools
+
+${agent.tools
+  .map(
+    (t) => `### ${t.name}
+
+${t.description}
+
+**Parameters:**
+
+\`\`\`typescript
+${this.generateParamType(t.parameters)}
+\`\`\`
+`
+  )
+  .join('\n')}
+
+## Development
+
+\`\`\`bash
+# Watch mode
+npm run dev
+
+# Build
+npm run build
+\`\`\`
+
+## Generated from OSSA
+
+This agent was generated from an OSSA v${manifest.apiVersion?.split('/')[1] || '{{VERSION}}'} manifest.
+
+Original manifest: \`agent.ossa.yaml\`
+
+## License
+
+${manifest.metadata?.license || 'MIT'}
 `;
   }
 }
