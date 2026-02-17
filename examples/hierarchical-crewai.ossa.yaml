@@ -1,0 +1,96 @@
+apiVersion: ossa/v0.4
+kind: Agent
+metadata:
+  name: devops-crew
+  version: 1.0.0
+  description: CrewAI manager/worker pattern for DevOps automation
+  agentType: crewai
+  agentKind: orchestrator
+  agentArchitecture:
+    pattern: hierarchical
+    capabilities:
+      - tools
+      - code
+      - context
+      - function-calling
+    coordination:
+      handoffStrategy: supervised
+      leaderAgent: devops-manager
+      teamModel: hierarchical
+      taskCoordination: dependency-wave
+      conflictResolution: leader-decides
+spec:
+  role: >
+    You manage a DevOps automation crew. Coordinate infrastructure,
+    deployment, and monitoring tasks across specialized workers.
+  llm:
+    provider: openai
+    model: gpt-4o
+  team:
+    model: hierarchical
+    lead: devops-manager
+    delegateMode: capability-match
+    members:
+      - name: devops-manager
+        kind: team-lead
+        role: >
+          DevOps team manager. Plan infrastructure changes, coordinate
+          deployments, and ensure system reliability.
+        model: gpt-4o
+        tools:
+          - project-planner
+          - status-dashboard
+      - name: infra-engineer
+        kind: specialist
+        role: >
+          Infrastructure engineer. Manage cloud resources, networking,
+          and compute provisioning using IaC.
+        tools:
+          - terraform-apply
+          - cloud-api
+          - dns-manager
+        maxTokenBudget: 25000
+      - name: deploy-engineer
+        kind: worker
+        role: >
+          Deployment engineer. Handle CI/CD pipelines, container builds,
+          and rollout strategies.
+        tools:
+          - docker-build
+          - kubectl-apply
+          - helm-upgrade
+          - ci-trigger
+      - name: monitor-agent
+        kind: teammate
+        role: >
+          Monitoring specialist. Track system health, alert on anomalies,
+          and provide performance insights.
+        tools:
+          - prometheus-query
+          - grafana-dashboard
+          - alert-manager
+          - log-search
+      - name: security-auditor
+        kind: reviewer
+        role: >
+          Security auditor. Review infrastructure changes for compliance,
+          scan for vulnerabilities, and enforce policies.
+        tools:
+          - vulnerability-scan
+          - compliance-check
+          - secret-scanner
+    taskList:
+      persistence: file-backed
+      format: yaml
+      dependencyTracking: true
+    communication:
+      channel: task-list
+      consensus: leader-decides
+    deployment:
+      backend: distributed
+      maxConcurrency: 5
+  constraints:
+    cost:
+      maxTokensPerDay: 2000000
+    performance:
+      timeoutSeconds: 600

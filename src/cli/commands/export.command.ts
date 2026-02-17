@@ -31,6 +31,7 @@ import { registry } from '../../adapters/registry/platform-registry.js';
 import { DrupalManifestExporter } from '../../adapters/drupal/manifest-exporter.js';
 import { OpenAIAgentsAdapter } from '../../adapters/openai-agents/adapter.js';
 import type { OssaAgent } from '../../types/index.js';
+import { generatePerfectAgentBundle } from '../../adapters/base/common-file-generator.js';
 import {
   addGlobalOptions,
   addMutationOptions,
@@ -49,19 +50,19 @@ export const exportCommand = new Command('export')
   .option('--format <format>', 'Output format (yaml, json, python)', 'yaml')
   .option('--skill', 'Include Claude Skill (SKILL.md) - NPM platform only')
   .option(
-    '--list-platforms',
-    'Show all supported export platforms and their status'
-  )
-  .option(
     '--perfect-agent',
-    'Generate full Perfect Agent structure (enables all --include-* flags)'
+    'Enable full "perfect agent" export (AGENTS.md, team scaffolding, evals, governance, observability)'
   )
   .option('--include-agent-card', 'Generate .well-known/agent-card.json')
-  .option('--include-agents-md', 'Generate AGENTS.md')
-  .option('--include-evals', 'Generate evals/ with CLEAR framework config')
-  .option('--include-governance', 'Generate governance/ with compliance and policies')
-  .option('--include-observability', 'Generate observability/ with OTel config')
-  .option('--include-team', 'Generate team/ multi-agent orchestration structure');
+  .option('--include-agents-md', 'Include AGENTS.md team documentation')
+  .option('--include-team', 'Include multi-agent team scaffolding')
+  .option('--include-evals', 'Include CLEAR framework eval stubs')
+  .option('--include-governance', 'Include compliance/policy config')
+  .option('--include-observability', 'Include OTel observability config')
+  .option(
+    '--list-platforms',
+    'Show all supported export platforms and their status'
+  );
 
 // Add production-grade standard options
 addGlobalOptions(exportCommand);
@@ -79,6 +80,13 @@ exportCommand.action(
       output?: string;
       format: string;
       skill?: boolean;
+      perfectAgent?: boolean;
+      includeTeam?: boolean;
+      includeEvals?: boolean;
+      includeAgentsMd?: boolean;
+      includeAgentCard?: boolean;
+      includeGovernance?: boolean;
+      includeObservability?: boolean;
       verbose?: boolean;
       quiet?: boolean;
       color?: boolean;
@@ -89,13 +97,6 @@ exportCommand.action(
       backupDir?: string;
       validate?: boolean;
       listPlatforms?: boolean;
-      perfectAgent?: boolean;
-      includeAgentCard?: boolean;
-      includeAgentsMd?: boolean;
-      includeEvals?: boolean;
-      includeGovernance?: boolean;
-      includeObservability?: boolean;
-      includeTeam?: boolean;
     }
   ) => {
     const useColor = shouldUseColor(options);
@@ -474,6 +475,28 @@ exportCommand.action(
               `\nLangChain package exported to: ${langchainOutputDir}`
             );
             log(`  ${langchainResult.files.length} files generated`);
+
+            // Perfect agent supplementary files
+            if (options.perfectAgent || options.includeTeam || options.includeAgentsMd || options.includeEvals) {
+              const perfectFiles = generatePerfectAgentBundle(manifest, {
+                perfectAgent: options.perfectAgent,
+                includeTeam: options.includeTeam,
+                includeEvals: options.includeEvals,
+                includeAgentsMd: options.includeAgentsMd,
+                includeGovernance: options.includeGovernance,
+                includeObservability: options.includeObservability,
+              }, 'langchain');
+              for (const file of perfectFiles) {
+                const filePath = path.join(langchainOutputDir, file.path);
+                const fileDir = path.dirname(filePath);
+                fs.mkdirSync(fileDir, { recursive: true });
+                fs.writeFileSync(filePath, file.content);
+                logVerbose(`  Created: ${file.path}`);
+              }
+              if (perfectFiles.length > 0) {
+                logSuccess(`  + ${perfectFiles.length} perfect agent files`);
+              }
+            }
           } else {
             log(
               `\nDRY RUN: Would generate ${langchainResult.files.length} files in: ${langchainOutputDir}`
@@ -524,6 +547,28 @@ exportCommand.action(
             log('  - examples/ (usage examples)');
             log('  - tests/ (test suite)');
             log('  - README.md, DEPLOYMENT.md');
+
+            // Perfect agent supplementary files
+            if (options.perfectAgent || options.includeTeam || options.includeAgentsMd || options.includeEvals) {
+              const perfectFiles = generatePerfectAgentBundle(manifest, {
+                perfectAgent: options.perfectAgent,
+                includeTeam: options.includeTeam,
+                includeEvals: options.includeEvals,
+                includeAgentsMd: options.includeAgentsMd,
+                includeGovernance: options.includeGovernance,
+                includeObservability: options.includeObservability,
+              }, 'crewai');
+              for (const file of perfectFiles) {
+                const filePath = path.join(crewaiOutputDir, file.path);
+                const fileDir = path.dirname(filePath);
+                fs.mkdirSync(fileDir, { recursive: true });
+                fs.writeFileSync(filePath, file.content);
+                logVerbose(`  Created: ${file.path}`);
+              }
+              if (perfectFiles.length > 0) {
+                logSuccess(`  + ${perfectFiles.length} perfect agent files`);
+              }
+            }
           } else {
             log(
               `\nDRY RUN: Would generate ${crewaiResult.files.length} files in: ${crewaiOutputDir}`
@@ -916,6 +961,48 @@ exportCommand.action(
 
         default:
           throw new Error(`Unsupported platform: ${options.platform}`);
+      }
+
+      // Generate perfect agent supplementary files if requested
+      if (
+        options.perfectAgent ||
+        options.includeTeam ||
+        options.includeEvals ||
+        options.includeAgentsMd ||
+        options.includeGovernance ||
+        options.includeObservability
+      ) {
+        const perfectFiles = generatePerfectAgentBundle(manifest, {
+          perfectAgent: options.perfectAgent,
+          includeTeam: options.includeTeam,
+          includeEvals: options.includeEvals,
+          includeAgentsMd: options.includeAgentsMd,
+          includeGovernance: options.includeGovernance,
+          includeObservability: options.includeObservability,
+        });
+
+        if (perfectFiles.length > 0) {
+          const perfectDir =
+            options.output ||
+            `./${manifest.metadata?.name || 'agent'}-perfect`;
+          if (!options.dryRun) {
+            fs.mkdirSync(perfectDir, { recursive: true });
+            for (const file of perfectFiles) {
+              const filePath = path.join(perfectDir, file.path);
+              const fileDir = path.dirname(filePath);
+              fs.mkdirSync(fileDir, { recursive: true });
+              fs.writeFileSync(filePath, file.content);
+              logVerbose(`  Created: ${file.path}`);
+            }
+            logSuccess(
+              `\nPerfect agent files generated: ${perfectFiles.length} files in ${perfectDir}`
+            );
+          } else {
+            log(
+              `\nDRY RUN: Would generate ${perfectFiles.length} perfect agent files`
+            );
+          }
+        }
       }
 
       // Determine output file

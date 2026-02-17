@@ -1,0 +1,76 @@
+apiVersion: ossa/v0.4
+kind: Agent
+metadata:
+  name: content-pipeline
+  version: 1.0.0
+  description: Parent-child delegation pattern with subagents in a pipeline
+  agentType: claude
+  agentKind: orchestrator
+  agentArchitecture:
+    pattern: pipeline
+    capabilities:
+      - tools
+      - code
+      - context
+spec:
+  role: >
+    You orchestrate a content creation pipeline. Delegate research,
+    writing, and editing to specialized subagents in sequence.
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-5-20250514
+  subagents:
+    - name: researcher
+      kind: specialist
+      role: >
+        Research and gather information on the given topic.
+        Return structured notes with sources.
+      model: claude-sonnet-4-5-20250514
+      tools:
+        - web-search
+        - read-file
+        - summarize
+      contextIsolation: true
+      reportTo: content-pipeline
+      maxTokenBudget: 20000
+    - name: writer
+      kind: worker
+      role: >
+        Write content based on research notes. Follow the
+        specified tone, format, and length requirements.
+      model: claude-sonnet-4-5-20250514
+      tools:
+        - write-file
+        - format-markdown
+      contextIsolation: true
+      reportTo: content-pipeline
+      maxTokenBudget: 30000
+    - name: editor
+      kind: reviewer
+      role: >
+        Review and edit written content for clarity, accuracy,
+        grammar, and adherence to style guide.
+      model: claude-sonnet-4-5-20250514
+      tools:
+        - read-file
+        - write-file
+        - grammar-check
+      contextIsolation: true
+      reportTo: content-pipeline
+      maxTokenBudget: 15000
+    - name: fact-checker
+      kind: debugger
+      role: >
+        Verify factual claims in the content against reliable sources.
+        Flag any unverified or incorrect assertions.
+      tools:
+        - web-search
+        - read-file
+      contextIsolation: true
+      reportTo: content-pipeline
+      maxTokenBudget: 10000
+  constraints:
+    cost:
+      maxTokensPerDay: 1000000
+    performance:
+      timeoutSeconds: 300

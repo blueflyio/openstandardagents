@@ -1,126 +1,257 @@
 /**
  * Perfect Agent Utilities
  *
- * Shared helpers for generating Perfect Agent artifacts.
- * Extracted from ClaudeSkillsService and other services
- * to provide a lightweight, synchronous API for BaseAdapter.
+ * Utility functions for generating "perfect agent" export bundles.
+ * Provides skill file generation, eval stubs, governance config, and
+ * observability setup reusable across all platform adapters.
+ *
+ * SOLID: Single Responsibility - Perfect agent utilities only
+ * DRY: Reusable across all adapters
  */
 
-import * as yaml from 'yaml';
 import type { OssaAgent } from '../../types/index.js';
+import type { ExportFile } from './adapter.interface.js';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AnyRecord = Record<string, any>;
+// ──────────────────────────────────────────────────────────────────
+// Skill Content Generation
+// ──────────────────────────────────────────────────────────────────
 
 /**
- * Generate SKILL.md content from an OSSA manifest.
- *
- * This is a standalone version of ClaudeSkillsService.generateSkillContent
- * that returns a string instead of writing to disk, suitable for export files.
+ * Generate SKILL.md content from an OSSA manifest
  */
 export function generateSkillContent(manifest: OssaAgent): string {
   const name = manifest.metadata?.name || 'agent';
-  const description =
-    manifest.metadata?.description || (manifest.spec?.role as string) || 'OSSA agent';
-  const version = manifest.metadata?.version || '0.1.0';
+  const description = manifest.metadata?.description || '';
+  const role = manifest.spec?.role || '';
+  const tools = manifest.spec?.tools || [];
 
-  // Extract trigger keywords from taxonomy, labels, capabilities
-  const keywords = new Set<string>();
-  keywords.add('ossa');
-  keywords.add(name);
+  const sections: string[] = [];
 
-  const metadata = manifest.metadata as AnyRecord | undefined;
-  if (metadata?.agentType) keywords.add(metadata.agentType);
-  if (metadata?.agentKind) keywords.add(metadata.agentKind);
+  sections.push(`---`);
+  sections.push(`name: ${name}`);
+  sections.push(`description: ${description}`);
+  if (manifest.metadata?.version) {
+    sections.push(`version: ${manifest.metadata.version}`);
+  }
+  sections.push(`---\n`);
 
-  const labels = metadata?.labels as AnyRecord | undefined;
-  if (labels?.capability) {
-    String(labels.capability)
-      .split(',')
-      .forEach((c: string) => keywords.add(c.trim()));
+  if (role) {
+    sections.push(`# System Prompt\n\n${role}\n`);
   }
 
-  const tags = metadata?.tags as string[] | undefined;
-  if (Array.isArray(tags)) {
-    tags.forEach((t: string) => keywords.add(t));
+  if (tools.length > 0) {
+    sections.push(`# Tools\n`);
+    for (const tool of tools) {
+      sections.push(`- **${tool.name || tool.type}**: ${tool.description || 'No description'}`);
+    }
+    sections.push('');
   }
 
-  const arch = metadata?.agentArchitecture as AnyRecord | undefined;
-  if (arch?.pattern) keywords.add(arch.pattern);
-  if (Array.isArray(arch?.capabilities)) {
-    (arch.capabilities as string[]).forEach((c: string) => keywords.add(c));
-  }
+  return sections.join('\n');
+}
 
-  // Build frontmatter
-  const frontmatter: AnyRecord = {
-    name,
-    description: description.substring(0, 200),
-    trigger_keywords: [...keywords].filter(Boolean).slice(0, 15),
+// ──────────────────────────────────────────────────────────────────
+// CLEAR Framework Eval Stubs
+// ──────────────────────────────────────────────────────────────────
+
+/**
+ * Generate CLEAR framework evaluation stubs
+ */
+export function generateEvalStubs(manifest: OssaAgent): ExportFile {
+  const name = manifest.metadata?.name || 'agent';
+
+  const content = `/**
+ * ${name} - CLEAR Framework Evaluation Stubs
+ * Generated from OSSA manifest
+ *
+ * CLEAR = Correctness, Latency, Efficiency, Accuracy, Robustness
+ *
+ * Implement these evaluation functions for your agent.
+ */
+
+export interface EvalResult {
+  metric: string;
+  score: number;
+  threshold: number;
+  passed: boolean;
+  details?: string;
+}
+
+export interface EvalSuite {
+  name: string;
+  run(): Promise<EvalResult[]>;
+}
+
+/**
+ * Correctness: Does the agent produce correct outputs?
+ */
+export async function evalCorrectness(): Promise<EvalResult> {
+  // TODO: Implement correctness evaluation
+  return {
+    metric: 'correctness',
+    score: 0,
+    threshold: 0.9,
+    passed: false,
+    details: 'Not implemented - add test cases',
+  };
+}
+
+/**
+ * Latency: Does the agent respond within time constraints?
+ */
+export async function evalLatency(): Promise<EvalResult> {
+  const timeout = ${manifest.spec?.constraints?.performance?.timeoutSeconds || 30};
+  // TODO: Implement latency evaluation
+  return {
+    metric: 'latency',
+    score: 0,
+    threshold: timeout,
+    passed: false,
+    details: \`Target: <\${timeout}s\`,
+  };
+}
+
+/**
+ * Efficiency: Does the agent use resources efficiently?
+ */
+export async function evalEfficiency(): Promise<EvalResult> {
+  const maxTokens = ${manifest.spec?.constraints?.cost?.maxTokensPerRequest || 4096};
+  // TODO: Implement efficiency evaluation
+  return {
+    metric: 'efficiency',
+    score: 0,
+    threshold: maxTokens,
+    passed: false,
+    details: \`Max tokens per request: \${maxTokens}\`,
+  };
+}
+
+/**
+ * Accuracy: Does the agent maintain factual accuracy?
+ */
+export async function evalAccuracy(): Promise<EvalResult> {
+  // TODO: Implement accuracy evaluation
+  return {
+    metric: 'accuracy',
+    score: 0,
+    threshold: 0.95,
+    passed: false,
+    details: 'Not implemented - add golden dataset',
+  };
+}
+
+/**
+ * Robustness: Does the agent handle edge cases?
+ */
+export async function evalRobustness(): Promise<EvalResult> {
+  // TODO: Implement robustness evaluation
+  return {
+    metric: 'robustness',
+    score: 0,
+    threshold: 0.85,
+    passed: false,
+    details: 'Not implemented - add adversarial tests',
+  };
+}
+
+/**
+ * Run full CLEAR evaluation suite
+ */
+export async function runClearEvals(): Promise<EvalResult[]> {
+  return Promise.all([
+    evalCorrectness(),
+    evalLatency(),
+    evalEfficiency(),
+    evalAccuracy(),
+    evalRobustness(),
+  ]);
+}
+`;
+
+  return {
+    path: 'evals/clear-evals.ts',
+    content,
+    type: 'test',
+    language: 'typescript',
+  };
+}
+
+// ──────────────────────────────────────────────────────────────────
+// Governance Configuration
+// ──────────────────────────────────────────────────────────────────
+
+/**
+ * Generate governance/compliance configuration
+ */
+export function generateGovernanceConfig(manifest: OssaAgent): ExportFile {
+  const name = manifest.metadata?.name || 'agent';
+  const autonomy = manifest.spec?.autonomy;
+  const policies = manifest.spec?.policies || [];
+
+  const config = {
+    agent: name,
+    version: manifest.metadata?.version || '1.0.0',
+    autonomy: {
+      level: autonomy?.level || 'supervised',
+      approvalRequired: autonomy?.approval_required ?? true,
+      allowedActions: autonomy?.allowed_actions || [],
+      blockedActions: autonomy?.blocked_actions || [],
+    },
+    policies: policies.map((p) => ({
+      name: p.name,
+      type: p.type,
+      rulesCount: Array.isArray(p.rules) ? p.rules.length : 0,
+    })),
+    compliance: {
+      dataRetention: '30d',
+      auditLog: true,
+      humanInLoop: autonomy?.approval_required ?? true,
+    },
   };
 
-  let content = `---\n${yaml.stringify(frontmatter)}---\n\n`;
-  content += `# ${name}\n\n`;
-  content += `${description}\n\n`;
-  content += `## Manifest\n\n`;
-  content += `- **Version**: ${version}\n`;
-  content += `- **OSSA Spec**: ${manifest.apiVersion || 'ossa/v0.4'}\n`;
+  return {
+    path: 'governance/policy.json',
+    content: JSON.stringify(config, null, 2),
+    type: 'config',
+    language: 'json',
+  };
+}
 
-  if (metadata?.agentType) {
-    content += `- **Runtime**: ${metadata.agentType}\n`;
-  }
-  if (metadata?.agentKind) {
-    content += `- **Role**: ${metadata.agentKind}\n`;
-  }
-  if (arch?.pattern && arch.pattern !== 'single') {
-    content += `- **Architecture**: ${arch.pattern}\n`;
-  }
-  content += `\n`;
+// ──────────────────────────────────────────────────────────────────
+// Observability Setup
+// ──────────────────────────────────────────────────────────────────
 
-  // Tools
-  const tools = (manifest.spec?.tools || []) as AnyRecord[];
-  if (tools.length > 0) {
-    content += `## Tools\n\n`;
-    for (const tool of tools) {
-      content += `- **${tool.name || 'unnamed'}**: ${tool.description || 'No description'}\n`;
-    }
-    content += `\n`;
-  }
+/**
+ * Generate observability configuration (OTel traces/metrics)
+ */
+export function generateObservabilityConfig(
+  manifest: OssaAgent
+): ExportFile {
+  const name = manifest.metadata?.name || 'agent';
+  const obs = manifest.spec?.observability;
 
-  // When to use
-  content += `## When to Use\n\n`;
-  content += `Use this skill when you need to:\n`;
-  if (metadata?.agentKind === 'orchestrator' || metadata?.agentKind === 'coordinator') {
-    content += `- Coordinate multiple agents or complex workflows\n`;
-  }
-  if (metadata?.agentKind === 'reviewer') {
-    content += `- Review and validate code, content, or artifacts\n`;
-  }
-  if (metadata?.agentKind === 'worker') {
-    content += `- Execute specific, focused tasks autonomously\n`;
-  }
-  content += `- Leverage ${name} capabilities for ${description.split('.')[0]}\n`;
-  if (tools.length > 0) {
-    content += `- Use any of the ${tools.length} available tool(s)\n`;
-  }
-  content += `\n`;
+  const config = {
+    serviceName: name,
+    tracing: {
+      enabled: obs?.tracing?.enabled ?? true,
+      exporter: obs?.tracing?.exporter || 'otlp',
+      endpoint: obs?.tracing?.endpoint || 'http://localhost:4318/v1/traces',
+    },
+    metrics: {
+      enabled: obs?.metrics?.enabled ?? true,
+      exporter: obs?.metrics?.exporter || 'otlp',
+      endpoint: obs?.metrics?.endpoint || 'http://localhost:4318/v1/metrics',
+    },
+    logging: {
+      level: obs?.logging?.level || 'info',
+      format: obs?.logging?.format || 'json',
+    },
+  };
 
-  // Autonomy
-  const spec = manifest.spec as AnyRecord | undefined;
-  const autonomy = spec?.autonomy as AnyRecord | undefined;
-  if (autonomy) {
-    content += `## Autonomy\n\n`;
-    content += `- **Level**: ${autonomy.level || 'supervised'}\n`;
-    if (autonomy.approvalRequired) {
-      content += `- **Approval Required**: Yes\n`;
-    }
-    if (Array.isArray(autonomy.allowedActions)) {
-      content += `- **Allowed Actions**: ${(autonomy.allowedActions as string[]).join(', ')}\n`;
-    }
-    if (Array.isArray(autonomy.blockedActions)) {
-      content += `- **Blocked Actions**: ${(autonomy.blockedActions as string[]).join(', ')}\n`;
-    }
-    content += `\n`;
-  }
-
-  return content;
+  return {
+    path: 'observability/otel-config.json',
+    content: JSON.stringify(config, null, 2),
+    type: 'config',
+    language: 'json',
+  };
 }
