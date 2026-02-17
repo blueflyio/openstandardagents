@@ -100,6 +100,9 @@ export class GitLabDuoAdapter extends BaseAdapter {
         this.createFile('gitlab-duo/deploy.sh', deployScript, 'other')
       );
 
+      // Perfect Agent files
+      files.push(...await this.generatePerfectAgentFiles(manifest, options));
+
       return this.createResult(true, files, undefined, {
         duration: Date.now() - startTime,
         version: '1.0.0',

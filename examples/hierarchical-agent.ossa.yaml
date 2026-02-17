@@ -1,0 +1,126 @@
+# OSSA v0.4.5 Example: Hierarchical Agent — Code Review Pipeline with Subagents
+#
+# Demonstrates the parent-child subagent pattern for a code review pipeline.
+# A coordinator agent spawns isolated subagents to perform specific review
+# tasks (exploration, security scanning, test validation). Subagents report
+# results only to the parent — there is no peer communication.
+#
+# Key characteristics:
+#   - Coordinator with subagents (not team members)
+#   - Parent-child delegation, no peer communication
+#   - Each subagent has a token budget to control costs
+#   - Context isolation enforced for all subagents
+#   - Results flow up: subagent -> parent -> user
+
+apiVersion: ossa/v0.4.5
+kind: Agent
+metadata:
+  name: code-review-pipeline
+  version: "1.0.0"
+  description: >-
+    A code review coordinator that spawns specialized subagents to analyze
+    code changes. A researcher explores the codebase for context, a debugger
+    scans for security vulnerabilities, and a generic subagent validates test
+    coverage. The coordinator synthesizes all findings into a review report.
+
+  agentKind: coordinator
+  agentType: a2a
+
+  agentArchitecture:
+    pattern: hierarchical
+    capabilities:
+      - tools
+      - code
+      - context
+      - function-calling
+    coordination:
+      handoffStrategy: automatic
+      maxDepth: 2
+      teamModel: parent-child
+      communicationPattern: direct
+      taskCoordination: assigned
+
+  labels:
+    domain: development
+    subdomain: code-review
+    pattern: hierarchical
+
+spec:
+  role: >-
+    You are a code review coordinator. When given a merge request or set of
+    file changes, you:
+    1. Spawn the code-explorer subagent to gather codebase context.
+    2. Spawn the security-scanner subagent to identify vulnerabilities.
+    3. Spawn the test-validator subagent to check test coverage.
+    4. Collect all subagent reports and synthesize a comprehensive review
+       with actionable feedback, severity ratings, and suggested fixes.
+
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-5-20250929
+    temperature: 0.2
+    maxTokens: 4096
+    profile: deep
+
+  subagents:
+    - name: code-explorer
+      kind: researcher
+      role: >-
+        Fast codebase search and structural analysis. Find relevant files,
+        trace dependencies, identify architecture patterns, and summarize
+        the context around changed files. Read-only — never modify anything.
+      model:
+        provider: anthropic
+        name: claude-haiku-4-5-20250514
+      tools:
+        - glob
+        - grep
+        - read_file
+      contextIsolation: true
+      reportTo: parent
+      maxTokenBudget: 50000
+
+    - name: security-scanner
+      kind: debugger
+      role: >-
+        Identify security vulnerabilities, code smells, and potential attack
+        vectors in the changed files. Check for injection risks, auth bypass,
+        secrets in code, unsafe deserialization, and OWASP Top 10 issues.
+        Generate a severity-rated findings list.
+      model:
+        provider: anthropic
+        name: claude-sonnet-4-5-20250929
+      tools:
+        - read_file
+        - grep
+        - static_analysis
+      contextIsolation: true
+      reportTo: parent
+      maxTokenBudget: 80000
+
+    - name: test-validator
+      kind: subagent
+      role: >-
+        Run the test suite and validate coverage for changed files. Check
+        that new code has corresponding tests, coverage thresholds are met,
+        and no existing tests are broken. Report coverage percentages and
+        any failures.
+      model:
+        provider: anthropic
+        name: claude-sonnet-4-5-20250929
+      tools:
+        - bash
+        - read_file
+        - grep
+      contextIsolation: true
+      reportTo: parent
+      maxTokenBudget: 60000
+
+  constraints:
+    cost:
+      maxTokensPerRequest: 200000
+      maxCostPerDay: 50.00
+      currency: USD
+    performance:
+      timeoutSeconds: 120
+      maxConcurrentRequests: 5

@@ -62,6 +62,9 @@ export class MCPAdapter extends BaseAdapter {
         totalSizeBytes: files.reduce((sum, f) => sum + f.content.length, 0),
       };
 
+      // Perfect Agent files
+      files.push(...await this.generatePerfectAgentFiles(manifest, options));
+
       return this.createResult(true, files, undefined, metadata);
     } catch (error: unknown) {
       const errorMessage =

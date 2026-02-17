@@ -714,6 +714,170 @@ ${manifest.spec?.tools && Array.isArray(manifest.spec.tools) && manifest.spec.to
 // Utility Functions
 // ──────────────────────────────────────────────────────────────────
 
+// ──────────────────────────────────────────────────────────────────
+// Perfect Agent File Generation (standalone orchestrator)
+// ──────────────────────────────────────────────────────────────────
+
+/**
+ * Options for standalone perfect agent file generation.
+ */
+export interface PerfectAgentOptions {
+  includeAgentCard?: boolean;
+  includeAgentsMd?: boolean;
+  includeEvals?: boolean;
+  includeGovernance?: boolean;
+  includeObservability?: boolean;
+  includeSkill?: boolean;
+  includeTeam?: boolean;
+  platform?: string;
+}
+
+interface GeneratedFile {
+  path: string;
+  content: string;
+  type: 'code' | 'config' | 'documentation' | 'test' | 'other';
+  language?: string;
+}
+
+/**
+ * Standalone perfect agent file generator.
+ * Use this from CLI or non-adapter contexts.
+ * Each service is lazily imported so missing services are silently skipped.
+ *
+ * @param manifest - OSSA agent manifest
+ * @param options - Which sections to include (all enabled by default)
+ * @returns Array of generated files
+ */
+export async function generatePerfectAgentFiles(
+  manifest: OssaAgent,
+  options?: PerfectAgentOptions
+): Promise<GeneratedFile[]> {
+  const opts: PerfectAgentOptions = {
+    includeAgentCard: true,
+    includeAgentsMd: true,
+    includeEvals: true,
+    includeGovernance: true,
+    includeObservability: true,
+    includeSkill: true,
+    includeTeam: true,
+    platform: 'custom',
+    ...options,
+  };
+
+  const files: GeneratedFile[] = [];
+
+  if (opts.includeAgentCard) {
+    try {
+      const { AgentCardGenerator } = await import(
+        '../../services/agent-card-generator.js'
+      );
+      const generator = new AgentCardGenerator();
+      const result = generator.generate(manifest, { namespace: 'default' });
+      if (result.success && result.json) {
+        files.push({
+          path: '.well-known/agent-card.json',
+          content: result.json,
+          type: 'config',
+          language: 'json',
+        });
+      }
+    } catch {
+      // not available
+    }
+  }
+
+  if (opts.includeAgentsMd) {
+    try {
+      const { AgentsMdGeneratorService } = await import(
+        '../../services/agents-md/agents-md-generator.service.js'
+      );
+      const generator = new AgentsMdGeneratorService();
+      files.push(...generator.generate(manifest));
+    } catch {
+      // not available
+    }
+  }
+
+  if (opts.includeEvals) {
+    try {
+      const { EvalsGeneratorService } = await import(
+        '../../services/evals/evals-generator.service.js'
+      );
+      const generator = new EvalsGeneratorService();
+      files.push(...generator.generate(manifest));
+    } catch {
+      // not available
+    }
+  }
+
+  if (opts.includeGovernance) {
+    try {
+      const { GovernanceGeneratorService } = await import(
+        '../../services/governance/governance-generator.service.js'
+      );
+      const generator = new GovernanceGeneratorService();
+      files.push(...generator.generate(manifest));
+    } catch {
+      // not available
+    }
+  }
+
+  if (opts.includeObservability) {
+    try {
+      const { ObservabilityGeneratorService } = await import(
+        '../../services/observability/observability-generator.service.js'
+      );
+      const generator = new ObservabilityGeneratorService();
+      files.push(...generator.generate(manifest));
+    } catch {
+      // not available
+    }
+  }
+
+  if (opts.includeSkill) {
+    try {
+      const { generateSkillContent } = await import(
+        './perfect-agent-utils.js'
+      );
+      const skillContent = generateSkillContent(manifest);
+      if (skillContent) {
+        files.push({
+          path: 'skills/SKILL.md',
+          content: skillContent,
+          type: 'documentation',
+          language: 'markdown',
+        });
+      }
+    } catch {
+      // not available
+    }
+  }
+
+  if (opts.includeTeam) {
+    const spec = manifest.spec as Record<string, unknown> | undefined;
+    const arch = manifest.metadata?.agentArchitecture as Record<string, unknown> | undefined;
+    const pattern = arch?.pattern as string | undefined;
+    const isMulti = !!(
+      spec?.team || spec?.swarm || spec?.subagents ||
+      (pattern && pattern !== 'single')
+    );
+
+    if (isMulti) {
+      try {
+        const { TeamGeneratorService } = await import(
+          '../../services/multi-agent/team-generator.service.js'
+        );
+        const generator = new TeamGeneratorService();
+        files.push(...generator.generate(manifest, opts.platform || 'custom'));
+      } catch {
+        // not available
+      }
+    }
+  }
+
+  return files;
+}
+
 /**
  * Sanitize a string for use as an npm package name.
  *

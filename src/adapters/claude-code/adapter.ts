@@ -114,6 +114,9 @@ export class ClaudeCodeAdapter extends BaseAdapter {
       // Include source OSSA manifest for provenance
       files.push(this.createManifestFile(manifest));
 
+      // Perfect Agent files
+      files.push(...await this.generatePerfectAgentFiles(manifest, options));
+
       return this.createResult(true, files, undefined, {
         duration: Date.now() - startTime,
         version: '1.0.0',

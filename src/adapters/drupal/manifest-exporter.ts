@@ -136,6 +136,9 @@ export class DrupalManifestExporter extends BaseAdapter {
         )
       );
 
+      // Perfect Agent files
+      files.push(...await this.generatePerfectAgentFiles(manifest, options));
+
       return this.createResult(true, files, undefined, {
         duration: Date.now() - startTime,
         version: manifest.metadata?.version || '1.0.0',

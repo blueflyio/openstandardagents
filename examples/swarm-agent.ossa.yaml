@@ -1,0 +1,136 @@
+# OSSA v0.4.5 Example: Swarm Agent — OpenAI-Style Support Swarm
+#
+# Demonstrates the swarm pattern with hub-spoke coordination. A triage
+# coordinator routes conversations to specialist agents via automatic
+# handoffs. Each member handles a specific domain and can hand back to
+# triage when the query falls outside its scope.
+#
+# Key characteristics:
+#   - Hub-spoke model: triage agent is the central hub
+#   - Direct communication: agents hand off control directly
+#   - Assigned task coordination: triage decides who handles what
+#   - In-memory persistence: no durable task list needed
+
+apiVersion: ossa/v0.4.5
+kind: Agent
+metadata:
+  name: support-swarm
+  version: "1.0.0"
+  description: >-
+    An OpenAI Swarm-style customer support system. A triage coordinator
+    routes incoming queries to specialist agents (orders, returns, billing)
+    via automatic handoffs. Each specialist can hand back to triage when
+    it encounters an out-of-scope request.
+
+  agentKind: coordinator
+  agentType: a2a
+
+  agentArchitecture:
+    pattern: swarm
+    capabilities:
+      - handoff
+      - streaming
+      - context
+      - tools
+    coordination:
+      handoffStrategy: automatic
+      leaderAgent: triage-agent
+      teamModel: hub-spoke
+      communicationPattern: direct
+      taskCoordination: assigned
+      conflictResolution: leader-decides
+      taskPersistence: in-memory
+
+  labels:
+    domain: customer-support
+    pattern: swarm
+    framework: openai-swarm
+
+spec:
+  role: >-
+    You are the triage coordinator for a customer support swarm. Analyze
+    incoming customer messages and route them to the appropriate specialist
+    agent. If a specialist hands back to you, re-evaluate and route to a
+    different specialist or handle the query directly.
+
+  llm:
+    provider: openai
+    model: gpt-4o
+    temperature: 0.2
+    maxTokens: 1024
+
+  team:
+    model: hub-spoke
+    lead: triage-agent
+    delegateMode: false
+
+    members:
+      - name: order-agent
+        kind: teammate
+        role: >-
+          Handle order-related queries: order status, shipment tracking,
+          order modifications, and cancellations.
+        model:
+          provider: openai
+          name: gpt-4o-mini
+        tools:
+          - lookup_order
+          - track_shipment
+          - cancel_order
+        contextIsolation: true
+        handoffs:
+          - to: triage-agent
+            condition: "Query is not order-related"
+          - to: returns-agent
+            condition: "Customer wants to return an ordered item"
+
+      - name: returns-agent
+        kind: teammate
+        role: >-
+          Process returns and exchanges. Validate return eligibility, generate
+          return labels, and track return shipments.
+        model:
+          provider: openai
+          name: gpt-4o-mini
+        tools:
+          - initiate_return
+          - check_return_status
+          - generate_return_label
+        contextIsolation: true
+        handoffs:
+          - to: triage-agent
+            condition: "Query is not returns-related"
+          - to: billing-agent
+            condition: "Customer asks about refund timing or amount"
+
+      - name: billing-agent
+        kind: teammate
+        role: >-
+          Handle billing and payment queries. Look up invoices, process
+          refunds, and answer payment-related questions.
+        model:
+          provider: openai
+          name: gpt-4o-mini
+        tools:
+          - lookup_invoice
+          - process_refund
+          - check_payment_status
+        contextIsolation: true
+        handoffs:
+          - to: triage-agent
+            condition: "Query is not billing-related"
+
+    taskList:
+      coordination: assigned
+      persistence: in-memory
+      stateModel:
+        - pending
+        - in-progress
+        - completed
+      dependencyTracking: false
+      waveExecution: false
+      lockingStrategy: none
+
+    communication:
+      pattern: direct
+      broadcastEnabled: false

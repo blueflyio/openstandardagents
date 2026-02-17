@@ -1,0 +1,196 @@
+# OSSA v0.4.5 Example: Pipeline Agent — Data Processing Pipeline
+#
+# Demonstrates the pipeline pattern for sequential data processing. A
+# coordinator manages four team members arranged as sequential stages:
+# ingest, transform, validate, and export. Each stage has specific tools
+# for its responsibility and hands off to the next stage upon completion.
+#
+# Key characteristics:
+#   - Pipeline pattern with sequential stages
+#   - Hub-spoke team model (coordinator manages stage transitions)
+#   - Each member represents one pipeline stage
+#   - Stage-specific tool sets
+#   - Assigned task coordination (coordinator assigns stage work)
+#   - Database-backed persistence for auditability
+
+apiVersion: ossa/v0.4.5
+kind: Agent
+metadata:
+  name: data-processing-pipeline
+  version: "1.0.0"
+  description: >-
+    A data processing pipeline with four sequential stages: ingest (fetch and
+    normalize raw data), transform (apply business rules and enrichment),
+    validate (quality checks and schema validation), and export (write to
+    destination systems). Each stage is an independent agent with its own
+    tools and model.
+
+  agentKind: coordinator
+  agentType: workflow
+
+  agentArchitecture:
+    pattern: pipeline
+    capabilities:
+      - tools
+      - function-calling
+      - streaming
+    coordination:
+      handoffStrategy: conditional
+      leaderAgent: pipeline-controller
+      maxDepth: 1
+      teamModel: hub-spoke
+      communicationPattern: shared-file
+      taskCoordination: assigned
+      conflictResolution: leader-decides
+      taskPersistence: database
+      dependencyTracking: true
+
+  labels:
+    domain: data
+    pattern: pipeline
+    environment: production
+
+spec:
+  role: >-
+    You are the pipeline controller for a four-stage data processing workflow.
+    For each data batch:
+    1. Assign the batch to the ingest stage to fetch and normalize raw data.
+    2. Pass the normalized output to the transform stage for enrichment.
+    3. Send transformed data to the validate stage for quality checks.
+    4. Route validated data to the export stage for delivery.
+    Monitor each stage for errors. If a stage fails, log the error and skip
+    to the next batch. Maintain pipeline metrics (throughput, error rate,
+    latency per stage).
+
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-5-20250929
+    temperature: 0.1
+    maxTokens: 2048
+    profile: fast
+
+  team:
+    model: hub-spoke
+    lead: pipeline-controller
+    delegateMode: true
+
+    members:
+      - name: ingest-stage
+        kind: teammate
+        role: >-
+          Stage 1: Data Ingestion. Fetch raw data from configured sources
+          (APIs, S3 buckets, databases). Normalize into a common internal
+          format (JSON Lines). Handle pagination, rate limiting, and partial
+          failures. Output normalized records to the shared staging area.
+        model:
+          provider: anthropic
+          name: claude-haiku-4-5-20250514
+        tools:
+          - fetch_api
+          - read_s3
+          - query_database
+          - write_staging
+        contextIsolation: true
+        workingDirectory: /pipeline/ingest
+        handoffs:
+          - to: pipeline-controller
+            condition: "Ingestion complete or fatal error"
+
+      - name: transform-stage
+        kind: teammate
+        role: >-
+          Stage 2: Data Transformation. Read normalized records from staging.
+          Apply business rules: field mapping, currency conversion, date
+          normalization, and entity enrichment from reference tables. Output
+          enriched records to the transform output area.
+        model:
+          provider: anthropic
+          name: claude-haiku-4-5-20250514
+        tools:
+          - read_staging
+          - apply_mapping
+          - enrich_entity
+          - write_transform_output
+        contextIsolation: true
+        workingDirectory: /pipeline/transform
+        handoffs:
+          - to: pipeline-controller
+            condition: "Transformation complete or fatal error"
+
+      - name: validate-stage
+        kind: teammate
+        role: >-
+          Stage 3: Data Validation. Read transformed records and run quality
+          checks: schema validation, referential integrity, business rule
+          assertions, and anomaly detection. Flag invalid records and produce
+          a validation report. Output clean records to the validated area.
+        model:
+          provider: anthropic
+          name: claude-sonnet-4-5-20250929
+        tools:
+          - read_transform_output
+          - validate_schema
+          - check_integrity
+          - write_validated_output
+        contextIsolation: true
+        workingDirectory: /pipeline/validate
+        handoffs:
+          - to: pipeline-controller
+            condition: "Validation complete or fatal error"
+
+      - name: export-stage
+        kind: teammate
+        role: >-
+          Stage 4: Data Export. Read validated records and write to destination
+          systems: data warehouse, analytics database, or external APIs.
+          Handle batching, idempotency, and delivery confirmation. Produce
+          an export receipt with record counts and delivery timestamps.
+        model:
+          provider: anthropic
+          name: claude-haiku-4-5-20250514
+        tools:
+          - read_validated_output
+          - write_warehouse
+          - call_external_api
+          - write_export_receipt
+        contextIsolation: true
+        workingDirectory: /pipeline/export
+        handoffs:
+          - to: pipeline-controller
+            condition: "Export complete or fatal error"
+
+    taskList:
+      coordination: assigned
+      persistence: database
+      stateModel:
+        - pending
+        - in-progress
+        - completed
+        - failed
+        - skipped
+      dependencyTracking: true
+      waveExecution: false
+      lockingStrategy: optimistic
+
+    communication:
+      pattern: shared-file
+      broadcastEnabled: false
+
+    deployment:
+      backend: distributed
+      scaling: auto
+
+  constraints:
+    cost:
+      maxTokensPerDay: 1000000
+      maxCostPerDay: 40.00
+      currency: USD
+    performance:
+      maxLatencySeconds: 60
+      maxConcurrentRequests: 10
+      timeoutSeconds: 300
+
+  lifecycle:
+    max_turns: 100
+    turn_timeout: 60s
+    checkpoint_interval: 10
