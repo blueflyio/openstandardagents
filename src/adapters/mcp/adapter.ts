@@ -8,21 +8,19 @@
  * - Other MCP-compatible clients
  *
  * SOLID: Single Responsibility - MCP server generation only
- * DRY: Reuses BaseAdapter validation and helpers
+ * DRY: Extends BaseExporter for orchestration, validation, and common files
  */
 
-import * as yaml from 'yaml';
-import { BaseAdapter } from '../base/adapter.interface.js';
+import { BaseExporter } from '../base/base-exporter.js';
 import type {
   OssaAgent,
   ExportOptions,
-  ExportResult,
-  ValidationResult,
+  ExportFile,
   ValidationError,
   ValidationWarning,
 } from '../base/adapter.interface.js';
 
-export class MCPAdapter extends BaseAdapter {
+export class MCPAdapter extends BaseExporter {
   readonly platform = 'mcp';
   readonly displayName = 'Model Context Protocol';
   readonly description = 'MCP server for Claude Code and other MCP clients';
@@ -30,131 +28,15 @@ export class MCPAdapter extends BaseAdapter {
   readonly supportedVersions = ['v{{VERSION}}'];
 
   /**
-   * Export OSSA manifest to MCP server format
+   * Platform-specific validation for MCP compatibility
    */
-  async export(
-    manifest: OssaAgent,
-    options?: ExportOptions
-  ): Promise<ExportResult> {
-    const startTime = Date.now();
-
-    try {
-      // Validate manifest
-      if (options?.validate !== false) {
-        const validation = await this.validate(manifest);
-        if (!validation.valid) {
-          return this.createResult(
-            false,
-            [],
-            `Validation failed: ${validation.errors?.map((e) => e.message).join(', ')}`,
-            {
-              duration: Date.now() - startTime,
-              warnings: validation.warnings?.map((w) => w.message),
-            }
-          );
-        }
-      }
-
-      const agentName = manifest.metadata?.name || 'mcp-server';
-      const files = [];
-
-      // Generate server.ts - Main MCP server entry point
-      files.push(
-        this.createFile(
-          `mcp/${agentName}/server.ts`,
-          this.generateServerCode(manifest),
-          'code',
-          'typescript'
-        )
-      );
-
-      // Generate tools.ts - Tool implementations
-      files.push(
-        this.createFile(
-          `mcp/${agentName}/tools.ts`,
-          this.generateToolsCode(manifest),
-          'code',
-          'typescript'
-        )
-      );
-
-      // Generate types.ts - TypeScript types
-      files.push(
-        this.createFile(
-          `mcp/${agentName}/types.ts`,
-          this.generateTypesCode(manifest),
-          'code',
-          'typescript'
-        )
-      );
-
-      // Generate package.json
-      files.push(
-        this.createFile(
-          `mcp/${agentName}/package.json`,
-          this.generatePackageJson(manifest),
-          'config'
-        )
-      );
-
-      // Generate tsconfig.json
-      files.push(
-        this.createFile(
-          `mcp/${agentName}/tsconfig.json`,
-          this.generateTsConfig(),
-          'config'
-        )
-      );
-
-      // Generate README.md
-      files.push(
-        this.createFile(
-          `mcp/${agentName}/README.md`,
-          this.generateReadme(manifest),
-          'documentation'
-        )
-      );
-
-      // Include source OSSA manifest for provenance
-      files.push(
-        this.createFile(
-          `mcp/${agentName}/agent.ossa.yaml`,
-          yaml.stringify(manifest),
-          'config',
-          'yaml'
-        )
-      );
-
-      // Perfect Agent files
-      files.push(...await this.generatePerfectAgentFiles(manifest, options));
-
-      return this.createResult(true, files, undefined, {
-        duration: Date.now() - startTime,
-        version: '1.0.0',
-      });
-    } catch (error) {
-      return this.createResult(
-        false,
-        [],
-        error instanceof Error ? error.message : String(error),
-        { duration: Date.now() - startTime }
-      );
-    }
-  }
-
-  /**
-   * Validate manifest for MCP compatibility
-   */
-  async validate(manifest: OssaAgent): Promise<ValidationResult> {
+  protected platformValidate(manifest: OssaAgent): {
+    errors: ValidationError[];
+    warnings: ValidationWarning[];
+  } {
     const errors: ValidationError[] = [];
     const warnings: ValidationWarning[] = [];
 
-    // Base validation
-    const baseValidation = await super.validate(manifest);
-    if (baseValidation.errors) errors.push(...baseValidation.errors);
-    if (baseValidation.warnings) warnings.push(...baseValidation.warnings);
-
-    // MCP-specific validation
     const spec = manifest.spec;
 
     // Check capabilities (MCP uses capabilities as tools)
@@ -181,11 +63,96 @@ export class MCPAdapter extends BaseAdapter {
       });
     }
 
-    return {
-      valid: errors.length === 0,
-      errors: errors.length > 0 ? errors : undefined,
-      warnings: warnings.length > 0 ? warnings : undefined,
-    };
+    return { errors, warnings };
+  }
+
+  /**
+   * Generate MCP-specific files
+   */
+  protected async generateFiles(
+    manifest: OssaAgent,
+    options?: ExportOptions
+  ): Promise<ExportFile[]> {
+    const agentName = this.getAgentName(manifest, 'mcp-server');
+    const prefix = `mcp/${agentName}`;
+    const files: ExportFile[] = [];
+
+    // Generate server.ts - Main MCP server entry point
+    files.push(
+      this.createFile(
+        `${prefix}/server.ts`,
+        this.generateServerCode(manifest),
+        'code',
+        'typescript'
+      )
+    );
+
+    // Generate tools.ts - Tool implementations
+    files.push(
+      this.createFile(
+        `${prefix}/tools.ts`,
+        this.generateToolsCode(manifest),
+        'code',
+        'typescript'
+      )
+    );
+
+    // Generate types.ts - TypeScript types
+    files.push(
+      this.createFile(
+        `${prefix}/types.ts`,
+        this.generateTypesCode(manifest),
+        'code',
+        'typescript'
+      )
+    );
+
+    // Use shared generators for common files
+    files.push(
+      this.generatePackageJsonFile(manifest, prefix, {
+        main: 'server.js',
+        bin: { [agentName]: './server.js' },
+        scripts: {
+          build: 'tsc',
+          start: 'node server.js',
+          dev: 'tsx server.ts',
+          watch: 'tsx watch server.ts',
+        },
+        dependencies: {
+          '@modelcontextprotocol/sdk': '^0.5.0',
+        },
+        devDependencies: {
+          '@types/node': '^20.0.0',
+          typescript: '^5.0.0',
+          tsx: '^4.0.0',
+        },
+        extraKeywords: ['mcp', 'model-context-protocol', 'claude'],
+      })
+    );
+
+    files.push(this.generateTsConfigFile(prefix));
+
+    const tools = this.getTools(manifest);
+    const toolsList = tools
+      .map(
+        (t) =>
+          `- **${t.name || 'unknown'}**: ${t.description || 'No description'}`
+      )
+      .join('\n');
+
+    files.push(
+      this.generateReadmeFile(manifest, prefix, {
+        installation:
+          'npm install\nnpm run build',
+        usage:
+          `### With Claude Code\n\nAdd to your \`.mcp.json\`:\n\n\`\`\`json\n{\n  "mcpServers": {\n    "${agentName}": {\n      "command": "node",\n      "args": ["./server.js"]\n    }\n  }\n}\`\`\`\n\n### Standalone\n\n\`\`\`bash\nnpm start\n\`\`\``,
+        additional: toolsList
+          ? [{ title: 'Available Tools', content: toolsList }]
+          : undefined,
+      })
+    );
+
+    return files;
   }
 
   /**
@@ -229,9 +196,8 @@ export class MCPAdapter extends BaseAdapter {
    * Generate server.ts - MCP server entry point
    */
   private generateServerCode(manifest: OssaAgent): string {
-    const agentName = manifest.metadata?.name || 'mcp-server';
-    const description =
-      manifest.spec?.role || manifest.metadata?.description || 'MCP Server';
+    const agentName = this.getAgentName(manifest, 'mcp-server');
+    const description = this.getAgentDescription(manifest);
 
     return `#!/usr/bin/env node
 /**
@@ -327,28 +293,20 @@ main().catch((error) => {
    * Generate tools.ts - Tool implementations
    */
   private generateToolsCode(manifest: OssaAgent): string {
-    const capabilities = (
-      (manifest.spec?.capabilities || []) as Array<string | any>
-    ).map((c: any) => (typeof c === 'string' ? c : c.name || ''));
-    const tools = (manifest.spec?.tools || []) as any[];
+    const tools = this.getTools(manifest);
 
     const toolDefinitions = tools.map((tool) => {
-      const name = tool.name || 'unknown';
-      const description = tool.description || `Tool: ${name}`;
-      const schema = tool.inputSchema ||
-        tool.schema || {
-          type: 'object',
-          properties: {},
-        };
+      const name = (tool.name as string) || 'unknown';
+      const description =
+        (tool.description as string) || `Tool: ${name}`;
+      const schema = (tool.inputSchema || tool.schema || {
+        type: 'object',
+        properties: {},
+      }) as Record<string, unknown>;
 
-      return {
-        name,
-        description,
-        inputSchema: schema,
-      };
+      return { name, description, inputSchema: schema };
     });
 
-    // Generate tool interface
     const toolsList = toolDefinitions
       .map(
         (t) =>
@@ -360,14 +318,13 @@ main().catch((error) => {
       )
       .join(',\n');
 
-    // Generate tool implementation cases
     const toolCases = toolDefinitions
-      .map((t) => {
-        const inputType = `args as { [key: string]: unknown }`;
-        return `    case '${t.name}':
+      .map(
+        (t) =>
+          `    case '${t.name}':
       // TODO: Implement ${t.name} logic here
-      throw new Error('Tool ${t.name} requires implementation');`;
-      })
+      throw new Error('Tool ${t.name} requires implementation');`
+      )
       .join('\n\n');
 
     return `/**
@@ -405,8 +362,10 @@ ${toolCases}
    * Generate types.ts - TypeScript types
    */
   private generateTypesCode(manifest: OssaAgent): string {
-    const tools = (manifest.spec?.tools || []) as any[];
-    const toolNames = tools.map((t) => `'${t.name || 'unknown'}'`).join(' | ');
+    const tools = this.getTools(manifest);
+    const toolNames = tools
+      .map((t) => `'${(t.name as string) || 'unknown'}'`)
+      .join(' | ');
 
     return `/**
  * TypeScript Type Definitions
@@ -440,146 +399,6 @@ export interface ServerConfig {
   version: string;
   description: string;
 }
-`;
-  }
-
-  /**
-   * Generate package.json
-   */
-  private generatePackageJson(manifest: OssaAgent): string {
-    const pkg = {
-      name: manifest.metadata?.name || 'mcp-server',
-      version: manifest.metadata?.version || '1.0.0',
-      description:
-        manifest.metadata?.description || 'MCP Server generated from OSSA',
-      type: 'module',
-      main: 'server.js',
-      bin: {
-        [manifest.metadata?.name || 'mcp-server']: './server.js',
-      },
-      scripts: {
-        build: 'tsc',
-        start: 'node server.js',
-        dev: 'tsx server.ts',
-        watch: 'tsx watch server.ts',
-      },
-      dependencies: {
-        '@modelcontextprotocol/sdk': '^0.5.0',
-      },
-      devDependencies: {
-        '@types/node': '^20.0.0',
-        typescript: '^5.0.0',
-        tsx: '^4.0.0',
-      },
-      keywords: ['mcp', 'model-context-protocol', 'claude', 'ossa', 'ai-agent'],
-      license: manifest.metadata?.license || 'MIT',
-    };
-
-    return JSON.stringify(pkg, null, 2);
-  }
-
-  /**
-   * Generate tsconfig.json
-   */
-  private generateTsConfig(): string {
-    const config = {
-      compilerOptions: {
-        target: 'ES2022',
-        module: 'Node16',
-        moduleResolution: 'Node16',
-        outDir: '.',
-        rootDir: '.',
-        strict: true,
-        esModuleInterop: true,
-        skipLibCheck: true,
-        forceConsistentCasingInFileNames: true,
-        resolveJsonModule: true,
-        declaration: true,
-      },
-      include: ['*.ts'],
-      exclude: ['node_modules', '*.js'],
-    };
-
-    return JSON.stringify(config, null, 2);
-  }
-
-  /**
-   * Generate README.md
-   */
-  private generateReadme(manifest: OssaAgent): string {
-    const agentName = manifest.metadata?.name || 'mcp-server';
-    const description =
-      manifest.spec?.role || manifest.metadata?.description || 'MCP Server';
-    const tools = (manifest.spec?.tools || []) as any[];
-
-    return `# ${agentName}
-
-${description}
-
-## Model Context Protocol (MCP) Server
-
-This server implements the Model Context Protocol, making it compatible with:
-- **Claude Code** CLI
-- **Claude Desktop** app
-- Any MCP-compatible AI client
-
-## Installation
-
-\`\`\`bash
-npm install
-npm run build
-\`\`\`
-
-## Usage
-
-### With Claude Code
-
-Add to your \`.mcp.json\`:
-
-\`\`\`json
-{
-  "mcpServers": {
-    "${agentName}": {
-      "command": "node",
-      "args": ["./server.js"],
-      "cwd": "${process.cwd()}/mcp/${agentName}"
-    }
-  }
-}
-\`\`\`
-
-### Standalone
-
-\`\`\`bash
-npm start
-\`\`\`
-
-## Available Tools
-
-${tools.map((t) => `- **${t.name || 'unknown'}**: ${t.description || 'No description'}`).join('\n')}
-
-## Development
-
-\`\`\`bash
-# Watch mode
-npm run dev
-
-# Build
-npm run build
-
-# Run
-npm start
-\`\`\`
-
-## Generated from OSSA
-
-This server was generated from an OSSA v${manifest.apiVersion?.split('/')[1] || '{{VERSION}}'} manifest.
-
-Original manifest: \`agent.ossa.yaml\`
-
-## License
-
-${manifest.metadata?.license || 'MIT'}
 `;
   }
 }
