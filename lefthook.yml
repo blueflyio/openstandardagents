@@ -1,9 +1,5 @@
-pre-commit:
-  parallel: true
-  commands:
-    typecheck:
-      run: npx tsc --noEmit
-      stage_fixed: false
+# Lefthook Configuration (Single Source of Truth)
+# Uses TypeScript validators instead of shell scripts (SOLID, DRY, Zod)
 
 assert_lefthook_installed: true
 no_tty: false
@@ -12,6 +8,10 @@ colors: true
 pre-commit:
   parallel: true
   commands:
+    typecheck:
+      run: npx tsc --noEmit
+      stage_fixed: false
+
     no-secrets:
       run: |
         if git diff --cached --name-only | grep -qE '\.(env|key|pem|p12|pfx|secret)$'; then
@@ -25,6 +25,15 @@ pre-commit:
       run: |
         echo "❌ Shell scripts (.sh) are NOT allowed. Use TypeScript."
         exit 1
+
+    validate-gitlab-ci:
+      run: tsx src/tools/validation/gitlab-ci-validator.ts .gitlab-ci.yml
+      glob: ".gitlab-ci.yml"
+      stage_fixed: true
+
+    prevent-hardcoded-versions:
+      run: tsx src/tools/validation/version-validator.ts
+      stage_fixed: false
 
 pre-push:
   parallel: false
