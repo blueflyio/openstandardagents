@@ -17,6 +17,15 @@ import type {
   ValidationWarning,
 } from '../base/adapter.interface.js';
 
+// v0.5 fields not yet in OssaAgent type — use these helpers until types updated
+type SpecV5 = OssaAgent['spec'] & {
+  personality?: { system_prompt?: string; tone?: string; expertise?: string[] };
+  mcp?: { servers?: Array<{ label: string; url: string; transport: string }> };
+  safety?: { guardrails?: Array<Record<string, unknown>> };
+};
+type ExtOpenAI = { model_override?: string; mcp_servers?: Array<Record<string, unknown>>; handoff_targets?: string[] };
+const getExt = (m: OssaAgent): ExtOpenAI => ((m.extensions as any)?.openai_agents_sdk || {}) as ExtOpenAI;
+
 export class OpenAIAgentsAdapter extends BaseAdapter {
   readonly platform = 'openai-agents-sdk';
   readonly displayName = 'OpenAI Agents SDK';
@@ -148,11 +157,11 @@ export class OpenAIAgentsAdapter extends BaseAdapter {
     const errors: ValidationError[] = [...(result.errors || [])];
     const warnings: ValidationWarning[] = [...(result.warnings || [])];
 
-    if (!manifest.spec?.personality?.system_prompt && !manifest.spec?.personality) {
+    if (!(manifest.spec as SpecV5)?.personality?.system_prompt && !(manifest.spec as SpecV5)?.personality) {
       warnings.push({
         message: 'No personality/instructions defined — agent will use generic instructions',
         path: 'spec.personality',
-        code: 'MISSING_INSTRUCTIONS',
+        // code: 'MISSING_INSTRUCTIONS',
       });
     }
 
@@ -160,7 +169,7 @@ export class OpenAIAgentsAdapter extends BaseAdapter {
       warnings.push({
         message: 'No model specified — will default to gpt-4o',
         path: 'spec.llm.model',
-        code: 'DEFAULT_MODEL',
+        // code: 'DEFAULT_MODEL',
       });
     }
 
@@ -172,7 +181,8 @@ export class OpenAIAgentsAdapter extends BaseAdapter {
   }
 
   getExample(): OssaAgent {
-    return {
+    // Example uses v0.5 fields (personality, mcp, safety) — cast until types updated
+    return ({
       ossa_version: '0.4.5',
       kind: 'Agent',
       metadata: {
@@ -181,6 +191,7 @@ export class OpenAIAgentsAdapter extends BaseAdapter {
         description: 'BlueFly Platform Assistant with Drupal MCP tools',
       },
       spec: {
+        role: 'Platform Assistant',
         personality: {
           system_prompt:
             'You are the BlueFly Platform Assistant. Use MCP tools to manage content and query data on the Drupal agent platform.',
@@ -223,7 +234,7 @@ export class OpenAIAgentsAdapter extends BaseAdapter {
           ],
         },
       },
-    } as OssaAgent;
+    }) as unknown as OssaAgent;
   }
 
   // ── Code Generators ─────────────────────────────────────────────
@@ -275,8 +286,8 @@ export default agent;
 
   private generateMcpConfig(manifest: OssaAgent): string {
     const servers = [
-      ...(manifest.spec?.mcp?.servers || []),
-      ...(manifest.extensions?.openai_agents_sdk?.mcp_servers || []),
+      ...((manifest.spec as SpecV5)?.mcp?.servers || []),
+      ...(getExt(manifest)?.mcp_servers || []),
     ];
 
     const serverDefs = servers.map(
@@ -303,7 +314,7 @@ ${serverDefs.join(',\n')}
   }
 
   private generateGuardrails(manifest: OssaAgent): string {
-    const guards = manifest.spec?.safety?.guardrails || [];
+    const guards = (manifest.spec as SpecV5)?.safety?.guardrails || [];
 
     const guardDefs = guards.map((g: any) => {
       const patterns = (g.blocked_patterns || [])
@@ -419,7 +430,7 @@ main().catch(console.error);
 
   private resolveModel(manifest: OssaAgent): string {
     return (
-      manifest.extensions?.openai_agents_sdk?.model_override ||
+      getExt(manifest)?.model_override ||
       manifest.spec?.llm?.model ||
       'gpt-4o'
     );
@@ -427,7 +438,7 @@ main().catch(console.error);
 
   private resolveInstructions(manifest: OssaAgent): string {
     const parts: string[] = [];
-    const p = manifest.spec?.personality;
+    const p = (manifest.spec as SpecV5)?.personality;
     if (p?.system_prompt) parts.push(p.system_prompt);
     if (p?.tone) parts.push(`Communication style: ${p.tone}`);
     if (p?.expertise?.length) parts.push(`Expertise: ${p.expertise.join(', ')}`);
@@ -436,13 +447,13 @@ main().catch(console.error);
 
   private hasMcpServers(manifest: OssaAgent): boolean {
     return (
-      (manifest.spec?.mcp?.servers?.length || 0) > 0 ||
-      (manifest.extensions?.openai_agents_sdk?.mcp_servers?.length || 0) > 0
+      ((manifest.spec as SpecV5)?.mcp?.servers?.length || 0) > 0 ||
+      (getExt(manifest)?.mcp_servers?.length || 0) > 0
     );
   }
 
   private hasGuardrails(manifest: OssaAgent): boolean {
-    return (manifest.spec?.safety?.guardrails?.length || 0) > 0;
+    return ((manifest.spec as SpecV5)?.safety?.guardrails?.length || 0) > 0;
   }
 }
 

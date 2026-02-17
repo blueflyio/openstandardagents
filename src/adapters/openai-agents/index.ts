@@ -6,4 +6,5 @@
  */
 
 export { OpenAIAgentsAdapter } from './adapter.js';
+import { OpenAIAgentsAdapter } from './adapter.js';
 export default OpenAIAgentsAdapter;
