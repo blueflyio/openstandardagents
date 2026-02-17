@@ -258,8 +258,8 @@ export class ClaudeCodeAdapter extends BaseExporter {
     const ossaTools = this.getTools(manifest);
 
     ossaTools.forEach((tool) => {
-      const name = tool.name || 'unknown';
-      const description = tool.description || `Tool: ${name}`;
+      const name = String(tool.name || 'unknown');
+      const description = String(tool.description || `Tool: ${name}`);
       const schema = tool.inputSchema ||
         tool.schema || {
           type: 'object',
