@@ -68,6 +68,41 @@ Phase 0 - Foundation fixes + tech debt reduction. Massive codebase cleanup resul
   - Post-install copies to ~/.claude/skills/
   - Ready for npm publication
 
+#### Multi-Agent Team Topology (MR !801)
+- **`spec.team`** - Team definitions with 4 models: lead-teammate, peer-to-peer, hierarchical, swarm
+  - TeamMember interface: name, kind, role, model, tools, skills, contextIsolation, maxTokenBudget
+  - Delegate modes: task-list, round-robin, capability-match, load-balance
+  - Communication channels: task-list, mailbox, shared-file, direct-message, broadcast
+  - Deployment backends: in-process, split-pane, distributed, kubernetes
+- **`spec.subagents`** - Subagent definitions for parent-child delegation hierarchies
+  - SubagentDefinition: name, kind (subagent/worker/specialist/reviewer/debugger), role, model, tools, reportTo, maxTokenBudget
+- **8 architecture patterns**: single, swarm, pipeline, graph, hierarchical, reactive, cognitive, lead-teammate
+- **Team code generation** (team-generator.service.ts) - Platform-specific team scaffolding:
+  - CrewAI: `crew/agents.py`, `crew/tasks.py`, `crew/crew.py`, `crew/subagents.py`
+  - OpenAI Agents SDK: `src/team.ts`, `src/subagents.ts`
+  - Claude Code: `CLAUDE.md`, `tasks.md`, `SUBAGENTS.md`
+  - npm/generic: `src/team-config.ts`, `src/subagent-config.ts`
+- **Team-aware AGENTS.md generator** - Auto-generates documentation with team topology tables, member roles, coordination strategy, and text-based hierarchy diagrams
+- **`--perfect-agent` CLI flag** - Full production bundle export:
+  - AGENTS.md (team documentation), team scaffolding, CLEAR eval stubs, governance config (policy.json), observability config (otel-config.json), agent card (.well-known/agent-card.json)
+  - 7 individual `--include-*` flags: `--include-agents-md`, `--include-team`, `--include-evals`, `--include-governance`, `--include-observability`, `--include-agent-card`, `--skill`
+- **perfect-agent-utils** - Shared utilities for perfect agent file generation across adapters
+- **4 example manifests**: team-agent.ossa.yaml (lead-teammate), swarm-agent.ossa.yaml (hub-spoke), team-lead-teammate.ossa.yaml (code review team), and more
+- **Integration tests** for team generation, AGENTS.md output, and perfect agent export
+
+#### Schema Updates (MR !801)
+- **TeamDefinition** type added to `src/types/index.ts` with full coordination config
+- **SubagentDefinition** type added with delegation hierarchy support
+- **ArchitecturePattern** enum expanded: single, swarm, pipeline, graph, hierarchical, reactive, cognitive, lead-teammate
+- **TeamMember** kind enum: team-lead, teammate, subagent, reviewer, specialist
+
+#### 5 New Export Platforms (MR !801)
+- **openai-agents-sdk** (beta) - Generates runnable @openai/agents TypeScript packages with handoffs, guardrails, and MCP bridge
+- **a2a** (alpha) - Agent-to-agent protocol with mesh orchestration, delegation, and MCP integration (8 files)
+- **claude-skills** (beta) - Claude Skills format with team support
+- **mobile-agent** (alpha) - Mobile LLM platform export
+- **symfony** (alpha) - Symfony bundle generator for PHP-based agents
+
 #### Infrastructure
 - **BasePackageGenerator** - Shared base class for package generation (275 LOC)
   - Methods: generatePackageJson, generateTsConfig, generateGitignore, generateNpmignore, sanitizePackageName

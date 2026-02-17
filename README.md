@@ -23,7 +23,17 @@ OSSA is not a protocol (like MCP or A2A) and not a framework (like LangChain or 
 - Generates: `agent.ts`, `mcp-config.ts`, `guardrails.ts`, `run.ts`, `package.json`, `tsconfig.json`
 - Usage: `ossa export --platform openai-agents-sdk agent.ossa.yaml`
 - New OSSA extension blocks planned: `openai_agents_sdk`, `openai_responses_api`, `openai_realtime`, `openai_deep_research`
-- Makes OSSA the industry's first universal agent contract: define once, run on Claude AND OpenAI
+- Supports defining agents once and exporting to both Claude and OpenAI platforms
+
+### Multi-Agent Team Topology (2026-02-17)
+
+- **Team definitions** (`spec.team`): Define coordinated multi-agent teams with 4 team models — lead-teammate, peer-to-peer, hierarchical, swarm
+- **Subagent definitions** (`spec.subagents`): Parent-child delegation hierarchies with role-based agents (worker, specialist, reviewer, debugger)
+- **8 architecture patterns**: single, swarm, pipeline, graph, hierarchical, reactive, cognitive, lead-teammate
+- **Team code generation**: Export team topology to CrewAI (Python), OpenAI Agents SDK (TypeScript), Claude Code (markdown), and npm (TypeScript)
+- **`--perfect-agent` CLI flag**: Generate a complete production bundle — AGENTS.md, team scaffolding, CLEAR eval stubs, governance config, observability config, and agent card
+- **Team-aware AGENTS.md**: Auto-generated documentation with team topology tables, member roles, coordination strategy, and hierarchy diagrams
+- **5 new export platforms**: `openai-agents-sdk` (beta), `a2a` (alpha), `claude-skills` (beta), `mobile-agent` (alpha), `symfony` (alpha) — bringing total to 22
 
 ### v0.4.5 (2026-02-10)
 
@@ -231,6 +241,12 @@ ossa export creative-agent-naming.ossa.yaml --platform npm --no-validate
 
 # Create backup before overwriting
 ossa export creative-agent-naming.ossa.yaml --platform docker --backup
+
+# Perfect agent bundle (AGENTS.md + team + evals + governance + observability + agent card)
+ossa export agent.ossa.yaml --perfect-agent
+
+# Individual perfect agent components
+ossa export agent.ossa.yaml --platform npm --include-agents-md --include-team --include-evals
 ```
 
 ### Migrating Between Versions
@@ -278,7 +294,7 @@ if (result.valid) {
 - `ossa migrate` - Migrate between spec versions
 - `ossa generate-gaid` - Global Agent ID generation
 
-**Production Platform Exports** (4 production, 6 beta, 7 alpha — 17 total):
+**Production Platform Exports** (4 production, 8 beta, 10 alpha — 22 total):
 - `langchain` (production) - Python + TypeScript agents (uses @langchain/* SDK v0.3+)
 - `mcp` (production) - MCP server for Claude Code (uses @modelcontextprotocol/sdk v1.0+)
 - `npm` (production) - TypeScript package with manifest
@@ -371,6 +387,39 @@ spec:
     level: supervised
 ```
 
+#### Team Manifest Example
+
+```yaml
+apiVersion: ossa/v0.4.5
+kind: Agent
+metadata:
+  name: dev-team
+  version: 1.0.0
+spec:
+  role: Lead a fullstack development team
+  llm:
+    provider: anthropic
+    model: claude-opus-4-20250514
+  team:
+    model: lead-teammate
+    lead: lead
+    delegateMode: task-list
+    members:
+      - name: backend-worker
+        kind: teammate
+        role: Implement backend features
+        model: claude-sonnet-4-5-20250929
+        tools: [read_file, write_file, bash]
+      - name: frontend-worker
+        kind: teammate
+        role: Implement frontend features
+        model: claude-sonnet-4-5-20250929
+        tools: [read_file, write_file, bash]
+    communication:
+      channel: task-list
+      consensus: leader-decides
+```
+
 ### Export Platforms
 
 Export generates complete, runnable project scaffolds:
@@ -401,6 +450,11 @@ ossa export --list-platforms
 | `temporal` | alpha | 1 file | - | Temporal workflow configuration |
 | `n8n` | alpha | 1 file | - | n8n workflow JSON export |
 | `gitlab` | alpha | 1 file | - | GitLab CI/CD YAML configuration |
+| `openai-agents-sdk` | beta | 7 files | @openai/agents | OpenAI Agents SDK TypeScript package |
+| `a2a` | alpha | 8 files | - | Agent-to-agent protocol with mesh and delegation |
+| `claude-skills` | beta | 3 files | - | Claude Skills format with team support |
+| `mobile-agent` | alpha | 1 file | - | Mobile LLM platform export |
+| `symfony` | alpha | 1 file | - | Symfony bundle for PHP-based agents |
 
 Every export includes `agent.ossa.yaml` (the source manifest) for provenance.
 
@@ -455,6 +509,9 @@ The OSSA v0.4 schema supports these optional sections:
 - **Taxonomy** - Domain classification and agent type/kind/architecture
 - **Observability** - Metrics, logging, tracing configuration
 - **Resources** - CPU, memory, storage requirements
+- **Team Definitions** - Multi-agent team topology with 4 models (lead-teammate, peer-to-peer, hierarchical, swarm)
+- **Subagent Definitions** - Parent-child delegation with role-based agents (worker, specialist, reviewer, debugger)
+- **Architecture Patterns** - 8 patterns: single, swarm, pipeline, graph, hierarchical, reactive, cognitive, lead-teammate
 
 All fields are optional. A minimal manifest needs only `apiVersion`, `kind`, `metadata.name`, and `spec.role`.
 
@@ -500,6 +557,8 @@ ossa lint <manifest>         # Lint for best practices
 ossa diff <old> <new>        # Compare two manifests
 ossa migrate <manifest> --to 0.4.5  # Migrate between spec versions
 ossa generate-gaid <manifest>           # Generate Global Agent ID
+ossa export <manifest> --perfect-agent  # Full production bundle (AGENTS.md + evals + governance + observability)
+ossa export <manifest> --include-agents-md --include-team  # Individual components
 ```
 
 **Skills Pipeline** (New in v0.4.5):
