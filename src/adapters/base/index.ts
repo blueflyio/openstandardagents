@@ -28,6 +28,9 @@ export {
   type OssaAgent,
 } from './adapter.interface.js';
 
+// Base exporter with common orchestration (DRY export pattern)
+export { BaseExporter } from './base-exporter.js';
+
 // Common file generators
 export {
   generatePackageJson,
