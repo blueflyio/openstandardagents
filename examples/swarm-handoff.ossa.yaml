@@ -1,0 +1,67 @@
+apiVersion: ossa/v0.4
+kind: Agent
+metadata:
+  name: customer-support-swarm
+  version: 1.0.0
+  description: OpenAI Swarm pattern - triage agent routes to specialists via handoffs
+  agentType: openai
+  agentKind: coordinator
+  agentArchitecture:
+    pattern: swarm
+    capabilities:
+      - handoff
+      - tools
+      - context
+    coordination:
+      handoffStrategy: automatic
+      teamModel: swarm
+spec:
+  role: >
+    You are the triage agent for customer support. Route incoming
+    requests to the appropriate specialist agent.
+  llm:
+    provider: openai
+    model: gpt-4o
+  team:
+    model: swarm
+    lead: triage
+    delegateMode: capability-match
+    members:
+      - name: triage
+        kind: team-lead
+        role: >
+          Route customer requests to the correct specialist.
+          Analyze intent and handoff to sales, support, or billing.
+        tools:
+          - classify-intent
+      - name: sales-agent
+        kind: teammate
+        role: >
+          Handle sales inquiries, product information, pricing,
+          and purchase assistance.
+        tools:
+          - product-catalog
+          - pricing-api
+          - create-quote
+      - name: support-agent
+        kind: teammate
+        role: >
+          Handle technical support, troubleshooting, and bug reports.
+        tools:
+          - knowledge-base
+          - ticket-system
+          - diagnostic-tool
+      - name: billing-agent
+        kind: teammate
+        role: >
+          Handle billing inquiries, invoices, refunds, and payment issues.
+        tools:
+          - billing-api
+          - invoice-lookup
+          - refund-process
+    communication:
+      channel: direct-message
+      consensus: leader-decides
+    deployment:
+      backend: in-process
+      maxConcurrency: 4

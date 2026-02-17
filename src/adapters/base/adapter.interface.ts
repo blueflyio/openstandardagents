@@ -10,6 +10,8 @@
 
 import * as yaml from 'yaml';
 import type { OssaAgent } from '../../types/index.js';
+import { isMultiAgentManifest } from '../../services/multi-agent/team-generator.service.js';
+import { generatePerfectAgentBundle } from './common-file-generator.js';
 
 // Re-export OssaAgent for adapter usage
 export type { OssaAgent };
@@ -60,7 +62,7 @@ export interface ExportResult {
     /**
      * Additional platform-specific metadata
      */
-    [key: string]: any;
+    [key: string]: unknown;
   };
 
   /**
@@ -126,7 +128,7 @@ export interface ExportOptions {
   /**
    * Platform-specific options
    */
-  platformOptions?: Record<string, any>;
+  platformOptions?: Record<string, unknown>;
 
   /**
    * Dry run mode - validate only, don't write files
@@ -152,6 +154,12 @@ export interface ExportOptions {
   includeAgentsMd?: boolean;
 
   /**
+   * Include multi-agent team scaffolding
+   * (auto-detected from spec.team, spec.swarm, or agentArchitecture.pattern)
+   */
+  includeTeam?: boolean;
+
+  /**
    * Generate identity/ with DID document (.well-known/did.json)
    */
   includeDID?: boolean;
@@ -170,12 +178,6 @@ export interface ExportOptions {
    * Generate observability/ with OTel traces, metrics, dashboards
    */
   includeObservability?: boolean;
-
-  /**
-   * Generate team/ structure for multi-agent orchestration
-   * (auto-detected from spec.team, spec.swarm, or agentArchitecture.pattern)
-   */
-  includeTeam?: boolean;
 }
 
 /**
@@ -444,141 +446,21 @@ export abstract class BaseAdapter implements PlatformAdapter {
   }
 
   /**
-   * Detect if manifest defines a multi-agent system.
+   * Detect if manifest defines a multi-agent system
    */
-  protected isMultiAgent(manifest: OssaAgent): boolean {
-    const spec = manifest.spec as Record<string, unknown> | undefined;
-    const arch = manifest.metadata?.agentArchitecture as Record<string, unknown> | undefined;
-    const pattern = arch?.pattern as string | undefined;
-    return !!(
-      spec?.team ||
-      spec?.swarm ||
-      spec?.subagents ||
-      (pattern && pattern !== 'single')
-    );
+  isMultiAgent(manifest: OssaAgent): boolean {
+    return isMultiAgentManifest(manifest);
   }
 
   /**
-   * Generate all Perfect Agent files based on options.
-   * Adapters call this at the end of their export() method.
-   *
-   * Uses lazy imports to avoid circular dependencies and keep
-   * adapters lightweight when Perfect Agent mode is not used.
+   * Generate all "perfect agent" supplementary files.
+   * Called by adapters when ExportOptions.perfectAgent is true.
+   * Delegates to generatePerfectAgentBundle() in common-file-generator.
    */
-  protected async generatePerfectAgentFiles(
+  generatePerfectAgentFiles(
     manifest: OssaAgent,
     options?: ExportOptions
-  ): Promise<ExportFile[]> {
-    const opts = this.resolvePerfectAgentOptions(options);
-    const files: ExportFile[] = [];
-
-    // Agent Card — .well-known/agent-card.json
-    if (opts.includeAgentCard) {
-      try {
-        const { AgentCardGenerator } = await import(
-          '../../services/agent-card-generator.js'
-        );
-        const generator = new AgentCardGenerator();
-        const result = generator.generate(manifest, {
-          namespace: 'default',
-        });
-        if (result.success && result.json) {
-          files.push(
-            this.createFile(
-              '.well-known/agent-card.json',
-              result.json,
-              'config',
-              'json'
-            )
-          );
-        }
-      } catch {
-        // AgentCardGenerator not available — skip silently
-      }
-    }
-
-    // AGENTS.md
-    if (opts.includeAgentsMd) {
-      try {
-        const { AgentsMdGeneratorService } = await import(
-          '../../services/agents-md/agents-md-generator.service.js'
-        );
-        const generator = new AgentsMdGeneratorService();
-        files.push(...generator.generate(manifest));
-      } catch {
-        // Service not available yet — skip
-      }
-    }
-
-    // Evals
-    if (opts.includeEvals) {
-      try {
-        const { EvalsGeneratorService } = await import(
-          '../../services/evals/evals-generator.service.js'
-        );
-        const generator = new EvalsGeneratorService();
-        files.push(...generator.generate(manifest));
-      } catch {
-        // Service not available yet — skip
-      }
-    }
-
-    // Governance
-    if (opts.includeGovernance) {
-      try {
-        const { GovernanceGeneratorService } = await import(
-          '../../services/governance/governance-generator.service.js'
-        );
-        const generator = new GovernanceGeneratorService();
-        files.push(...generator.generate(manifest));
-      } catch {
-        // Service not available yet — skip
-      }
-    }
-
-    // Observability
-    if (opts.includeObservability) {
-      try {
-        const { ObservabilityGeneratorService } = await import(
-          '../../services/observability/observability-generator.service.js'
-        );
-        const generator = new ObservabilityGeneratorService();
-        files.push(...generator.generate(manifest));
-      } catch {
-        // Service not available yet — skip
-      }
-    }
-
-    // Claude Skill (SKILL.md) — for ALL adapters, not just NPM
-    if (opts.includeSkill) {
-      try {
-        const { generateSkillContent } = await import(
-          './perfect-agent-utils.js'
-        );
-        const skillContent = generateSkillContent(manifest);
-        if (skillContent) {
-          files.push(
-            this.createFile('skills/SKILL.md', skillContent, 'documentation', 'markdown')
-          );
-        }
-      } catch {
-        // Skills utils not available — skip
-      }
-    }
-
-    // Team / Multi-agent structure
-    if (opts.includeTeam && this.isMultiAgent(manifest)) {
-      try {
-        const { TeamGeneratorService } = await import(
-          '../../services/multi-agent/team-generator.service.js'
-        );
-        const generator = new TeamGeneratorService();
-        files.push(...generator.generate(manifest, this.platform));
-      } catch {
-        // Team generator not available yet — skip
-      }
-    }
-
-    return files;
+  ): ExportFile[] {
+    return generatePerfectAgentBundle(manifest, options);
   }
 }
