@@ -482,3 +482,22 @@ export {
   DrupalManifestExporter,
   type DrupalManifestExportOptions,
 } from './manifest-exporter.js';
+
+// Export shared Drupal utilities
+export {
+  sanitizeModuleName,
+  toClassName,
+  toLabel,
+  validateDrupalCompatibility,
+  buildValidationResult,
+  buildComposerJson,
+  generateBaseInfoYml,
+  extractCapabilities,
+  extractTools,
+  mapOssaToolToDrupalTool,
+  mapAllOssaToolsToDrupal,
+  type DrupalModuleOptions,
+  type DrupalToolDefinition,
+  type DrupalComposerJson,
+  type OssaToolEntry,
+} from './drupal-utils.js';

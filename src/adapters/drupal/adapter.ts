@@ -21,6 +21,15 @@ import type {
   ValidationError,
   ValidationWarning,
 } from '../base/adapter.interface.js';
+import {
+  sanitizeModuleName,
+  toClassName,
+  validateDrupalCompatibility,
+  buildValidationResult,
+  buildComposerJson,
+  extractCapabilities,
+  extractTools,
+} from './drupal-utils.js';
 
 export class DrupalAdapter extends BaseAdapter {
   readonly platform = 'drupal';
@@ -55,10 +64,10 @@ export class DrupalAdapter extends BaseAdapter {
         }
       }
 
-      const moduleName = this.sanitizeModuleName(
+      const moduleName = sanitizeModuleName(
         manifest.metadata?.name || 'ossa_agent'
       );
-      const className = this.toClassName(moduleName);
+      const className = toClassName(moduleName);
       const files = [];
 
       // Generate .info.yml
@@ -156,21 +165,11 @@ export class DrupalAdapter extends BaseAdapter {
     if (baseValidation.warnings) warnings.push(...baseValidation.warnings);
 
     // Drupal-specific validation
-    const name = manifest.metadata?.name;
-    if (name && !/^[a-z0-9_]+$/.test(name)) {
-      warnings.push({
-        message:
-          'Module name should only contain lowercase letters, numbers, and underscores',
-        path: 'metadata.name',
-        suggestion: `Use: ${this.sanitizeModuleName(name)}`,
-      });
-    }
+    const drupalValidation = validateDrupalCompatibility(manifest);
+    errors.push(...drupalValidation.errors);
+    warnings.push(...drupalValidation.warnings);
 
-    return {
-      valid: errors.length === 0,
-      errors: errors.length > 0 ? errors : undefined,
-      warnings: warnings.length > 0 ? warnings : undefined,
-    };
+    return buildValidationResult(errors, warnings);
   }
 
   /**
@@ -220,8 +219,8 @@ core_version_requirement: ^10 || ^11
 package: 'OSSA Agents'
 
 dependencies:
-  - drupal:typed_data
-  - drupal:key_value
+  - ai:ai
+  - ai:ai_agents
 
 # OSSA metadata
 ossa:
@@ -259,42 +258,42 @@ ossa:
     moduleName: string,
     className: string
   ): string {
-    const capabilities = (
-      (manifest.spec?.capabilities || []) as Array<string | any>
-    ).map((c) => (typeof c === 'string' ? c : c.name || ''));
+    const capabilities = extractCapabilities(manifest);
 
     return `<?php
 
 namespace Drupal\\${moduleName}\\Plugin\\AiAgent;
 
+use Drupal\\Core\\Plugin\\ContainerFactoryPluginInterface;
 use Drupal\\Core\\Plugin\\PluginBase;
+use Drupal\\Core\\StringTranslation\\TranslatableMarkup;
 use Drupal\\${moduleName}\\Service\\${className}Service;
 use Symfony\\Component\\DependencyInjection\\ContainerInterface;
 
 /**
  * ${manifest.metadata?.description || 'OSSA Agent Plugin'}
- *
- * @AiAgent(
- *   id = "${moduleName}",
- *   label = @Translation("${manifest.metadata?.name || moduleName}"),
- *   description = @Translation("${manifest.metadata?.description || ''}"),
- *   ossa_version = "${manifest.metadata?.version || '1.0.0'}",
- *   capabilities = {${capabilities.map((c) => `"${c}"`).join(', ')}}
- * )
  */
-class ${className} extends PluginBase {
+#[AiAgent(
+  id: '${moduleName}',
+  label: new TranslatableMarkup('${manifest.metadata?.name || moduleName}'),
+  description: new TranslatableMarkup('${manifest.metadata?.description || ''}'),
+)]
+class ${className} extends PluginBase implements ContainerFactoryPluginInterface {
 
   /**
    * The agent service.
-   *
-   * @var \\Drupal\\${moduleName}\\Service\\${className}Service
    */
-  protected $agentService;
+  protected ${className}Service $agentService;
 
   /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, ${className}Service $agent_service) {
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    ${className}Service $agent_service,
+  ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->agentService = $agent_service;
   }
@@ -302,12 +301,17 @@ class ${className} extends PluginBase {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(
+    ContainerInterface $container,
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+  ): static {
     return new static(
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('${moduleName}.agent_service')
+      $container->get('${moduleName}.agent_service'),
     );
   }
 
@@ -346,7 +350,7 @@ class ${className} extends PluginBase {
     moduleName: string,
     className: string
   ): string {
-    const tools = (manifest.spec?.tools || []) as any[];
+    const tools = extractTools(manifest);
 
     return `<?php
 
@@ -466,37 +470,15 @@ ${tools.map((tool) => `    // Tool: ${tool.name || 'unknown'} - ${tool.descripti
     manifest: OssaAgent,
     moduleName: string
   ): string {
-    return JSON.stringify(
-      {
-        name: `drupal/${moduleName}`,
-        type: 'drupal-module',
-        description: manifest.metadata?.description || 'OSSA agent module',
-        keywords: ['Drupal', 'OSSA', 'AI', 'Agent'],
-        license: manifest.metadata?.license || 'GPL-2.0-or-later',
-        require: {
-          'drupal/core': '^10 || ^11',
-        },
-        extra: {
-          ossa: {
-            version: manifest.metadata?.version,
-            apiVersion: manifest.apiVersion,
-            kind: manifest.kind,
-          },
-        },
-      },
-      null,
-      2
-    );
+    return JSON.stringify(buildComposerJson(manifest, moduleName), null, 2);
   }
 
   /**
    * Generate README.md
    */
   private generateReadme(manifest: OssaAgent, moduleName: string): string {
-    const capabilities = (
-      (manifest.spec?.capabilities || []) as Array<string | any>
-    ).map((c) => (typeof c === 'string' ? c : c.name || ''));
-    const tools = (manifest.spec?.tools || []) as any[];
+    const capabilities = extractCapabilities(manifest);
+    const tools = extractTools(manifest);
 
     return `# ${manifest.metadata?.name || moduleName}
 
@@ -561,25 +543,4 @@ ${manifest.metadata?.license || 'GPL-2.0-or-later'}
 `;
   }
 
-  /**
-   * Sanitize module name for Drupal
-   */
-  private sanitizeModuleName(name: string): string {
-    return name
-      .toLowerCase()
-      .replace(/[^a-z0-9_]/g, '_')
-      .replace(/^[0-9]+/, '')
-      .replace(/_+/g, '_')
-      .replace(/^_|_$/g, '');
-  }
-
-  /**
-   * Convert module name to class name
-   */
-  private toClassName(moduleName: string): string {
-    return moduleName
-      .split('_')
-      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-      .join('');
-  }
 }
