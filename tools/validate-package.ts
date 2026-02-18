@@ -11,8 +11,8 @@
  * 5. CLI commands execute without errors
  */
 
-import { readFileSync, existsSync } from 'fs';
-import { execSync } from 'child_process';
+import { readFileSync, existsSync, unlinkSync } from 'fs';
+import { execSync, execFileSync } from 'child_process';
 import { join } from 'path';
 
 interface PackageJson {
@@ -178,10 +178,12 @@ class PackageValidator {
   private async validateTarballInstall(): Promise<void> {
     console.log('📦 Testing tarball installation...');
 
+    let tarball: string | undefined;
+
     try {
       // Create tarball
-      const packOutput = execSync('npm pack', { encoding: 'utf-8' });
-      const tarball = packOutput.trim().split('\n').pop()?.trim();
+      const packOutput = execFileSync('npm', ['pack'], { encoding: 'utf-8' });
+      tarball = packOutput.trim().split('\n').pop()?.trim();
 
       if (!tarball) {
         this.errors.push('❌ Failed to create tarball');
@@ -192,16 +194,22 @@ class PackageValidator {
 
       // Test global install from tarball
       console.log('   Installing globally from tarball...');
-      execSync(`npm install -g ${tarball}`, { stdio: 'pipe' });
+      execFileSync('npm', ['install', '-g', tarball], { stdio: 'pipe' });
 
       console.log('✅ Tarball installs globally without errors\n');
-
-      // Cleanup
-      execSync(`npm uninstall -g ${this.pkg.name}`, { stdio: 'pipe' });
-      execSync(`rm ${tarball}`, { stdio: 'pipe' });
     } catch (error: any) {
       const output = error.stdout?.toString() || error.stderr?.toString() || '';
       this.errors.push(`❌ Tarball installation failed:\n${output}`);
+    } finally {
+      // Cleanup: uninstall global package and remove tarball
+      try {
+        execFileSync('npm', ['uninstall', '-g', this.pkg.name], { stdio: 'pipe' });
+      } catch {
+        // Ignore uninstall errors
+      }
+      if (tarball && existsSync(tarball)) {
+        unlinkSync(tarball);
+      }
     }
   }
 
