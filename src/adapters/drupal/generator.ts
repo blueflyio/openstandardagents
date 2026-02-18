@@ -2,38 +2,57 @@
  * Drupal Module Generator for OSSA Agents
  *
  * Generates complete, production-ready Drupal modules from OSSA agent manifests.
+ * Uses modern PHP 8 syntax: attributes instead of annotations, OO hook classes,
+ * constructor property promotion, and Drupal AI module integration.
  *
  * Generated modules include:
  * - MODULE.info.yml (module metadata)
  * - MODULE.services.yml (DI configuration)
- * - src/Service/AgentExecutor (wrapper around ossa/symfony-bundle)
- * - src/Plugin/QueueWorker (async execution support)
- * - src/Controller (admin UI and API endpoints)
- * - src/Entity (agent result storage)
- * - src/Form (configuration forms)
- * - MODULE.module (Drupal hooks: entity_presave, cron, etc.)
+ * - src/Service/AgentExecutorService.php (uses drupal/ai provider system)
+ * - src/Plugin/QueueWorker/ (async execution with #[QueueWorker] attribute)
+ * - src/Plugin/Tool/ (Tool API plugins with #[Tool] attributes)
+ * - src/Plugin/Action/ (Action plugins for CUD tools with #[Action] attributes)
+ * - src/Plugin/Condition/ (Condition plugins from safety guardrails with #[Condition] attributes)
+ * - src/Controller/ (admin UI and API endpoints)
+ * - src/Entity/ (agent result storage with #[ContentEntityType] attribute)
+ * - src/Form/ (configuration forms)
+ * - src/Hook/ (OO hook classes with #[Hook] attributes)
+ * - MODULE.module (minimal procedural hooks)
  * - templates/*.html.twig (Twig templates)
- * - composer.json (with ossa/symfony-bundle dependency)
+ * - composer.json (with drupal/ai, drupal/ai_agents, drupal/tool)
  * - config/schema/MODULE.schema.yml (configuration schema)
  * - config/install/*.yml (default configuration)
+ * - config/install/eca.model.*.yml (ECA event-condition-action models)
  *
  * SOLID Principles:
  * - Single Responsibility: Drupal module generation only
- * - Dependency Inversion: Uses ossa/symfony-bundle for agent execution
+ * - Dependency Inversion: Uses Drupal AI module for LLM provider access
  * - Interface Segregation: Separate interfaces for different module components
  *
- * DRY: Reuses Symfony bundle patterns, no duplication
+ * DRY: Reuses Drupal AI module patterns, no duplication
  */
 
 import { BaseAdapter } from '../base/adapter.interface.js';
 import type {
   OssaAgent,
+  ExportFile,
   ExportOptions,
   ExportResult,
   ValidationResult,
   ValidationError,
   ValidationWarning,
 } from '../base/adapter.interface.js';
+import {
+  sanitizeModuleName,
+  toClassName,
+  toLabel,
+  validateDrupalCompatibility,
+  buildValidationResult,
+  extractCapabilities,
+  extractTools,
+  mapOssaToolToDrupalTool,
+} from './drupal-utils.js';
+import type { OssaToolEntry, DrupalToolDefinition } from './drupal-utils.js';
 
 export interface DrupalModuleGeneratorOptions extends ExportOptions {
   /** Include Queue Worker for async execution */
@@ -48,6 +67,14 @@ export interface DrupalModuleGeneratorOptions extends ExportOptions {
   includeHooks?: boolean;
   /** Include Views integration */
   includeViews?: boolean;
+  /** Include Tool API plugins for each spec.tools[] entry */
+  includeToolPlugins?: boolean;
+  /** Include ECA model YAML for event-driven triggers */
+  includeEcaModels?: boolean;
+  /** Include Action plugins for CUD tools (create/update/delete) */
+  includeActionPlugins?: boolean;
+  /** Include Condition plugins from safety guardrails */
+  includeConditionPlugins?: boolean;
   /** Drupal core version requirement */
   coreVersion?: string;
 }
@@ -56,7 +83,7 @@ export class DrupalModuleGenerator extends BaseAdapter {
   readonly platform = 'drupal';
   readonly displayName = 'Drupal Module (Full)';
   readonly description =
-    'Production-ready Drupal module with OSSA/Symfony integration';
+    'Production-ready Drupal module with OSSA/AI module integration';
   readonly status = 'beta' as const;
   readonly supportedVersions = ['v{{VERSION}}'];
 
@@ -86,10 +113,10 @@ export class DrupalModuleGenerator extends BaseAdapter {
         }
       }
 
-      const moduleName = this.sanitizeModuleName(
+      const moduleName = sanitizeModuleName(
         manifest.metadata?.name || 'ossa_agent'
       );
-      const className = this.toClassName(moduleName);
+      const className = toClassName(moduleName);
 
       // Default options
       const opts = {
@@ -99,12 +126,16 @@ export class DrupalModuleGenerator extends BaseAdapter {
         includeConfigForm: true,
         includeHooks: true,
         includeViews: true,
+        includeToolPlugins: true,
+        includeEcaModels: true,
+        includeActionPlugins: true,
+        includeConditionPlugins: true,
         coreVersion: '^10 || ^11',
         validate: options?.validate ?? true,
         ...options,
       };
 
-      const files = [];
+      const files: ExportFile[] = [];
 
       // ===================================================================
       // Core Module Files
@@ -137,7 +168,7 @@ export class DrupalModuleGenerator extends BaseAdapter {
         )
       );
 
-      // MODULE.module (hooks)
+      // MODULE.module (minimal procedural hooks)
       if (opts.includeHooks) {
         files.push(
           this.createFile(
@@ -147,6 +178,10 @@ export class DrupalModuleGenerator extends BaseAdapter {
             'php'
           )
         );
+
+        // OO Hook classes (PHP 8 attribute-based hooks)
+        const hookFiles = this.generateHookClasses(manifest, moduleName, className);
+        files.push(...hookFiles);
       }
 
       // ===================================================================
@@ -265,6 +300,73 @@ export class DrupalModuleGenerator extends BaseAdapter {
       }
 
       // ===================================================================
+      // Tool API Plugins (drupal/tool integration)
+      // ===================================================================
+
+      const tools = extractTools(manifest);
+      if (opts.includeToolPlugins && tools.length > 0) {
+        for (const tool of tools) {
+          const drupalTool = mapOssaToolToDrupalTool(tool, moduleName);
+          const toolClassName = toClassName(
+            sanitizeModuleName(tool.name || 'unknown_tool')
+          );
+
+          // Tool plugin class
+          files.push(
+            this.createFile(
+              `${moduleName}/src/Plugin/Tool/${toolClassName}Tool.php`,
+              this.generateToolPlugin(
+                manifest,
+                moduleName,
+                className,
+                tool,
+                drupalTool
+              ),
+              'code',
+              'php'
+            )
+          );
+
+          // Tool AI connector config
+          files.push(
+            this.createFile(
+              `${moduleName}/config/install/tool_ai_connector.tool.${drupalTool.id}.yml`,
+              this.generateToolAiConnectorConfig(drupalTool),
+              'config'
+            )
+          );
+        }
+      }
+
+      // ===================================================================
+      // ECA Model YAML (Event-Condition-Action)
+      // ===================================================================
+
+      const ecaEvents = this.extractEcaEvents(manifest);
+      if (opts.includeEcaModels && ecaEvents.length > 0) {
+        const ecaFiles = this.generateEcaModels(manifest, moduleName, ecaEvents);
+        files.push(...ecaFiles);
+      }
+
+      // ===================================================================
+      // Action Plugins (for CUD tools: create/update/delete)
+      // ===================================================================
+
+      if (opts.includeActionPlugins && tools.length > 0) {
+        const actionFiles = this.generateActionPlugins(manifest, moduleName, tools);
+        files.push(...actionFiles);
+      }
+
+      // ===================================================================
+      // Condition Plugins (from safety guardrails)
+      // ===================================================================
+
+      if (opts.includeConditionPlugins) {
+        const conditionFiles = this.generateConditionPlugins(manifest, moduleName);
+        files.push(...conditionFiles);
+      }
+
+      // ===================================================================
       // Configuration Schema
       // ===================================================================
 
@@ -337,6 +439,18 @@ export class DrupalModuleGenerator extends BaseAdapter {
         )
       );
 
+      // ===================================================================
+      // Recipe (Composable Installation)
+      // ===================================================================
+
+      files.push(
+        this.createFile(
+          `${moduleName}/recipes/${moduleName}-agent/recipe.yml`,
+          this.generateRecipe(manifest, moduleName, tools),
+          'config'
+        )
+      );
+
       // Perfect Agent files
       files.push(...await this.generatePerfectAgentFiles(manifest, options));
 
@@ -368,21 +482,11 @@ export class DrupalModuleGenerator extends BaseAdapter {
     if (baseValidation.warnings) warnings.push(...baseValidation.warnings);
 
     // Drupal-specific validation
-    const name = manifest.metadata?.name;
-    if (name && !/^[a-z0-9_]+$/.test(name)) {
-      warnings.push({
-        message:
-          'Module name should only contain lowercase letters, numbers, and underscores',
-        path: 'metadata.name',
-        suggestion: `Use: ${this.sanitizeModuleName(name)}`,
-      });
-    }
+    const drupalValidation = validateDrupalCompatibility(manifest);
+    errors.push(...drupalValidation.errors);
+    warnings.push(...drupalValidation.warnings);
 
-    return {
-      valid: errors.length === 0,
-      errors: errors.length > 0 ? errors : undefined,
-      warnings: warnings.length > 0 ? warnings : undefined,
-    };
+    return buildValidationResult(errors, warnings);
   }
 
   /**
@@ -421,10 +525,36 @@ export class DrupalModuleGenerator extends BaseAdapter {
             type: 'api',
             name: 'moderate_node',
             description: 'Publish, unpublish, or flag a Drupal node',
+            operation: 'update',
+          },
+          {
+            type: 'api',
+            name: 'delete_spam',
+            description: 'Delete confirmed spam content',
+            operation: 'delete',
           },
         ],
+        safety: {
+          guardrails: [
+            {
+              name: 'block_profanity',
+              type: 'input' as const,
+              blocked_patterns: ['badword1', 'badword2'],
+            },
+            {
+              name: 'max_output_length',
+              type: 'output' as const,
+              maxLength: 5000,
+            },
+          ],
+        },
       },
-    };
+      extensions: {
+        drupal: {
+          eca_events: ['entity:node:presave'],
+        },
+      },
+    } as any;
   }
 
   // ===================================================================
@@ -439,10 +569,10 @@ export class DrupalModuleGenerator extends BaseAdapter {
     moduleName: string,
     options: DrupalModuleGeneratorOptions
   ): string {
-    const dependencies = ['key_value', 'typed_data'];
+    const dependencies = ['ai:ai', 'ai:ai_agents'];
 
     if (options.includeEntity) {
-      dependencies.push('views');
+      dependencies.push('drupal:views');
     }
 
     return `name: '${manifest.metadata?.name || moduleName}'
@@ -452,14 +582,13 @@ core_version_requirement: ${options.coreVersion}
 package: 'OSSA Agents'
 
 dependencies:
-${dependencies.map((d) => `  - drupal:${d}`).join('\n')}
+${dependencies.map((d) => `  - ${d}`).join('\n')}
 
 # OSSA metadata
 ossa:
   version: '${manifest.metadata?.version || '1.0.0'}'
   api_version: '${manifest.apiVersion || 'ossa/v{{VERSION}}'}'
   kind: '${manifest.kind || 'Agent'}'
-  symfony_bundle: 'ossa/symfony-bundle'
 `;
   }
 
@@ -474,13 +603,13 @@ ossa:
   ): string {
     let services = `services:
   # ===================================================================
-  # Agent Executor Service (wraps ossa/symfony-bundle)
+  # Agent Executor Service (uses Drupal AI module)
   # ===================================================================
 
   ${moduleName}.agent_executor:
     class: Drupal\\${moduleName}\\Service\\AgentExecutorService
     arguments:
-      - '@Ossa\\SymfonyBundle\\Agent\\AgentExecutor'
+      - '@ai.provider'
       - '@logger.factory'
       - '@config.factory'
       - '@entity_type.manager'
@@ -511,7 +640,7 @@ ossa:
   }
 
   /**
-   * Generate composer.json with ossa/symfony-bundle dependency
+   * Generate composer.json with Drupal AI module dependencies
    */
   private generateComposerJson(
     manifest: OssaAgent,
@@ -522,12 +651,14 @@ ossa:
         name: `drupal/${moduleName}`,
         type: 'drupal-module',
         description: manifest.metadata?.description || 'OSSA agent module',
-        keywords: ['Drupal', 'OSSA', 'AI', 'Agent', 'Symfony'],
+        keywords: ['Drupal', 'OSSA', 'AI', 'Agent'],
         license: manifest.metadata?.license || 'GPL-2.0-or-later',
         require: {
           php: '>=8.2',
           'drupal/core': '^10 || ^11',
-          'ossa/symfony-bundle': '^0.3',
+          'drupal/ai': '^1.0',
+          'drupal/ai_agents': '^1.3',
+          'drupal/tool': '^1.0@alpha',
         },
         autoload: {
           'psr-4': {
@@ -548,7 +679,10 @@ ossa:
   }
 
   /**
-   * Generate MODULE.module with Drupal hooks
+   * Generate MODULE.module with minimal procedural hooks.
+   *
+   * Most hooks are now implemented as OO classes using PHP 8 #[Hook] attributes
+   * in src/Hook/. Only hook_help remains procedural as a legacy convention.
    */
   private generateModuleHooks(
     manifest: OssaAgent,
@@ -559,106 +693,235 @@ ossa:
 
 /**
  * @file
- * ${className} module hooks.
+ * ${className} module hooks (minimal procedural file).
  *
- * Provides integration hooks for OSSA agent execution within Drupal.
+ * Most hooks are implemented as OO classes in src/Hook/ using
+ * PHP 8 #[Hook] attributes. Only legacy procedural hooks remain here.
  */
 
-use Drupal\\Core\\Entity\\EntityInterface;
 use Drupal\\Core\\Routing\\RouteMatchInterface;
 
 /**
  * Implements hook_help().
  */
-function ${moduleName}_help($route_name, RouteMatchInterface $route_match) {
-  switch ($route_name) {
-    case 'help.page.${moduleName}':
-      return '<p>' . t('${manifest.metadata?.description || 'OSSA agent module'}') . '</p>';
+function ${moduleName}_help(string $route_name, RouteMatchInterface $route_match): string|null {
+  if ($route_name === 'help.page.${moduleName}') {
+    return '<p>' . t('${manifest.metadata?.description || 'OSSA agent module'}') . '</p>';
   }
+  return NULL;
 }
+`;
+  }
+
+  /**
+   * Generate OO hook classes using PHP 8 #[Hook] attributes.
+   *
+   * Generates:
+   * - src/Hook/CronHooks.php (hook_cron)
+   * - src/Hook/EntityHooks.php (hook_entity_presave)
+   * - src/Hook/ThemeHooks.php (hook_theme)
+   */
+  private generateHookClasses(
+    manifest: OssaAgent,
+    moduleName: string,
+    className: string
+  ): ExportFile[] {
+    const files = [];
+
+    // src/Hook/CronHooks.php
+    files.push(
+      this.createFile(
+        `${moduleName}/src/Hook/CronHooks.php`,
+        this.generateCronHookClass(manifest, moduleName, className),
+        'code',
+        'php'
+      )
+    );
+
+    // src/Hook/EntityHooks.php
+    files.push(
+      this.createFile(
+        `${moduleName}/src/Hook/EntityHooks.php`,
+        this.generateEntityHookClass(manifest, moduleName, className),
+        'code',
+        'php'
+      )
+    );
+
+    // src/Hook/ThemeHooks.php
+    files.push(
+      this.createFile(
+        `${moduleName}/src/Hook/ThemeHooks.php`,
+        this.generateThemeHookClass(moduleName),
+        'code',
+        'php'
+      )
+    );
+
+    return files;
+  }
+
+  /**
+   * Generate src/Hook/CronHooks.php
+   */
+  private generateCronHookClass(
+    manifest: OssaAgent,
+    moduleName: string,
+    className: string
+  ): string {
+    return `<?php
+
+declare(strict_types=1);
+
+namespace Drupal\\${moduleName}\\Hook;
+
+use Drupal\\Core\\Hook\\Attribute\\Hook;
+use Drupal\\Core\\Queue\\QueueFactory;
+use Drupal\\Core\\Queue\\QueueWorkerManagerInterface;
+use Psr\\Log\\LoggerInterface;
 
 /**
- * Implements hook_cron().
- *
- * Process queued agent tasks.
+ * Cron hook implementations for ${className}.
  */
-function ${moduleName}_cron() {
-  // Process agent queue items
-  $queue = \\Drupal::queue('${moduleName}_agent_queue');
-  $queue_worker = \\Drupal::service('plugin.manager.queue_worker')
-    ->createInstance('${moduleName}_agent_queue');
+class CronHooks {
 
-  $processed = 0;
-  $max_items = 50;
+  public function __construct(
+    protected readonly QueueFactory $queueFactory,
+    protected readonly QueueWorkerManagerInterface $queueWorkerManager,
+    protected readonly LoggerInterface $logger,
+  ) {}
 
-  while ($processed < $max_items && $item = $queue->claimItem()) {
-    try {
-      $queue_worker->processItem($item->data);
-      $queue->deleteItem($item);
-      $processed++;
+  /**
+   * Process queued agent tasks during cron.
+   */
+  #[Hook('cron')]
+  public function processCron(): void {
+    $queue = $this->queueFactory->get('${moduleName}_agent_queue');
+    $queue_worker = $this->queueWorkerManager->createInstance('${moduleName}_agent_queue');
+
+    $processed = 0;
+    $max_items = 50;
+
+    while ($processed < $max_items && $item = $queue->claimItem()) {
+      try {
+        $queue_worker->processItem($item->data);
+        $queue->deleteItem($item);
+        $processed++;
+      }
+      catch (\\Exception $e) {
+        $this->logger->error('Queue processing failed: @message', [
+          '@message' => $e->getMessage(),
+        ]);
+        $queue->releaseItem($item);
+      }
     }
-    catch (\\Exception $e) {
-      \\Drupal::logger('${moduleName}')->error('Queue processing failed: @message', [
-        '@message' => $e->getMessage(),
-      ]);
 
-      // Re-queue with delay
-      $queue->releaseItem($item);
+    if ($processed > 0) {
+      $this->logger->info('Processed @count agent queue items', [
+        '@count' => $processed,
+      ]);
     }
   }
 
-  if ($processed > 0) {
-    \\Drupal::logger('${moduleName}')->info('Processed @count agent queue items', [
-      '@count' => $processed,
+}
+`;
+  }
+
+  /**
+   * Generate src/Hook/EntityHooks.php
+   */
+  private generateEntityHookClass(
+    manifest: OssaAgent,
+    moduleName: string,
+    className: string
+  ): string {
+    return `<?php
+
+declare(strict_types=1);
+
+namespace Drupal\\${moduleName}\\Hook;
+
+use Drupal\\Core\\Config\\ConfigFactoryInterface;
+use Drupal\\Core\\Entity\\EntityInterface;
+use Drupal\\Core\\Hook\\Attribute\\Hook;
+use Drupal\\Core\\Queue\\QueueFactory;
+
+/**
+ * Entity hook implementations for ${className}.
+ */
+class EntityHooks {
+
+  public function __construct(
+    protected readonly ConfigFactoryInterface $configFactory,
+    protected readonly QueueFactory $queueFactory,
+  ) {}
+
+  /**
+   * Queue agent execution on entity save.
+   */
+  #[Hook('entity_presave')]
+  public function entityPresave(EntityInterface $entity): void {
+    $config = $this->configFactory->get('${moduleName}.settings');
+
+    if (!$config->get('auto_execute_on_save')) {
+      return;
+    }
+
+    $enabled_types = $config->get('enabled_entity_types') ?: [];
+    if (!in_array($entity->getEntityTypeId(), $enabled_types)) {
+      return;
+    }
+
+    $queue = $this->queueFactory->get('${moduleName}_agent_queue');
+    $queue->createItem([
+      'entity_type' => $entity->getEntityTypeId(),
+      'entity_id' => $entity->id(),
+      'operation' => 'presave',
+      'timestamp' => time(),
     ]);
   }
+
 }
-
-/**
- * Implements hook_entity_presave().
- *
- * Trigger agent execution on entity save (optional - configure via settings).
- */
-function ${moduleName}_entity_presave(EntityInterface $entity) {
-  $config = \\Drupal::config('${moduleName}.settings');
-
-  if (!$config->get('auto_execute_on_save')) {
-    return;
+`;
   }
 
-  // Only process configured entity types
-  $enabled_types = $config->get('enabled_entity_types') ?: [];
-  if (!in_array($entity->getEntityTypeId(), $enabled_types)) {
-    return;
-  }
+  /**
+   * Generate src/Hook/ThemeHooks.php
+   */
+  private generateThemeHookClass(moduleName: string): string {
+    return `<?php
 
-  // Queue agent execution
-  $queue = \\Drupal::queue('${moduleName}_agent_queue');
-  $queue->createItem([
-    'entity_type' => $entity->getEntityTypeId(),
-    'entity_id' => $entity->id(),
-    'operation' => 'presave',
-    'timestamp' => time(),
-  ]);
-}
+declare(strict_types=1);
+
+namespace Drupal\\${moduleName}\\Hook;
+
+use Drupal\\Core\\Hook\\Attribute\\Hook;
 
 /**
- * Implements hook_theme().
+ * Theme hook implementations.
  */
-function ${moduleName}_theme($existing, $type, $theme, $path) {
-  return [
-    'agent_result' => [
-      'variables' => [
-        'result' => NULL,
-        'metadata' => NULL,
+class ThemeHooks {
+
+  /**
+   * Register theme templates.
+   */
+  #[Hook('theme')]
+  public function theme(): array {
+    return [
+      'agent_result' => [
+        'variables' => [
+          'result' => NULL,
+          'metadata' => NULL,
+        ],
+        'template' => 'agent-result',
       ],
-      'template' => 'agent-result',
-    ],
-    'agent_execute_form' => [
-      'render element' => 'form',
-      'template' => 'agent-execute-form',
-    ],
-  ];
+      'agent_execute_form' => [
+        'render element' => 'form',
+        'template' => 'agent-execute-form',
+      ],
+    ];
+  }
+
 }
 `;
   }
@@ -666,7 +929,7 @@ function ${moduleName}_theme($existing, $type, $theme, $path) {
   /**
    * Generate src/Service/AgentExecutorService.php
    *
-   * Wraps Symfony bundle AgentExecutor with Drupal-specific features
+   * Uses Drupal AI module for LLM provider integration
    */
   private generateAgentExecutorService(
     manifest: OssaAgent,
@@ -675,18 +938,21 @@ function ${moduleName}_theme($existing, $type, $theme, $path) {
   ): string {
     return `<?php
 
+declare(strict_types=1);
+
 namespace Drupal\\${moduleName}\\Service;
 
+use Drupal\\ai\\AiProviderPluginManager;
 use Drupal\\Core\\Config\\ConfigFactoryInterface;
 use Drupal\\Core\\Entity\\EntityTypeManagerInterface;
 use Drupal\\Core\\Logger\\LoggerChannelFactoryInterface;
 use Drupal\\Core\\Queue\\QueueFactory;
-use Ossa\\SymfonyBundle\\Agent\\AgentExecutor;
 
 /**
  * Agent Executor Service.
  *
- * Wraps the OSSA Symfony bundle AgentExecutor with Drupal-specific features:
+ * Uses the Drupal AI module provider system for LLM execution:
+ * - AI provider plugin manager for model access
  * - Entity storage for results
  * - Queue integration for async execution
  * - Drupal configuration integration
@@ -694,57 +960,13 @@ use Ossa\\SymfonyBundle\\Agent\\AgentExecutor;
  */
 class AgentExecutorService {
 
-  /**
-   * The OSSA agent executor (from symfony-bundle).
-   *
-   * @var \\Ossa\\SymfonyBundle\\Agent\\AgentExecutor
-   */
-  protected AgentExecutor $agentExecutor;
-
-  /**
-   * The logger factory.
-   *
-   * @var \\Drupal\\Core\\Logger\\LoggerChannelFactoryInterface
-   */
-  protected LoggerChannelFactoryInterface $loggerFactory;
-
-  /**
-   * The config factory.
-   *
-   * @var \\Drupal\\Core\\Config\\ConfigFactoryInterface
-   */
-  protected ConfigFactoryInterface $configFactory;
-
-  /**
-   * The entity type manager.
-   *
-   * @var \\Drupal\\Core\\Entity\\EntityTypeManagerInterface
-   */
-  protected EntityTypeManagerInterface $entityTypeManager;
-
-  /**
-   * The queue factory.
-   *
-   * @var \\Drupal\\Core\\Queue\\QueueFactory
-   */
-  protected QueueFactory $queueFactory;
-
-  /**
-   * Constructs a new AgentExecutorService.
-   */
   public function __construct(
-    AgentExecutor $agent_executor,
-    LoggerChannelFactoryInterface $logger_factory,
-    ConfigFactoryInterface $config_factory,
-    EntityTypeManagerInterface $entity_type_manager,
-    QueueFactory $queue_factory
-  ) {
-    $this->agentExecutor = $agent_executor;
-    $this->loggerFactory = $logger_factory;
-    $this->configFactory = $config_factory;
-    $this->entityTypeManager = $entity_type_manager;
-    $this->queueFactory = $queue_factory;
-  }
+    protected readonly AiProviderPluginManager $aiProvider,
+    protected readonly LoggerChannelFactoryInterface $loggerFactory,
+    protected readonly ConfigFactoryInterface $configFactory,
+    protected readonly EntityTypeManagerInterface $entityTypeManager,
+    protected readonly QueueFactory $queueFactory,
+  ) {}
 
   /**
    * Execute the agent synchronously.
@@ -765,23 +987,31 @@ class AgentExecutorService {
     try {
       $logger->info('Agent execution started');
 
-      // Add Drupal-specific context
       $context = $this->enrichContext($context);
 
-      // Execute via Symfony bundle
-      $response = $this->agentExecutor->execute(
-        '${manifest.metadata?.name || 'agent'}',
-        $input,
-        $context
-      );
+      $config = $this->configFactory->get('${moduleName}.settings');
+      $provider_id = $config->get('llm_provider') ?? 'anthropic';
+      $model_id = $config->get('llm_model') ?? 'claude-sonnet-4-20250514';
+
+      /** @var \\Drupal\\ai\\OperationType\\Chat\\ChatInterface $provider */
+      $provider = $this->aiProvider->createInstance($provider_id);
+      $provider->setConfiguration(['model_id' => $model_id]);
+
+      $messages = new \\Drupal\\ai\\OperationType\\Chat\\ChatInput([
+        new \\Drupal\\ai\\OperationType\\Chat\\ChatMessage('user', $input),
+      ]);
+
+      $response = $provider->chat($messages, $model_id);
 
       $result = [
         'success' => TRUE,
-        'output' => $response->getOutput(),
-        'metadata' => $response->getMetadata(),
+        'output' => $response->getNormalized()->getText(),
+        'metadata' => [
+          'provider' => $provider_id,
+          'model' => $model_id,
+        ],
       ];
 
-      // Save result to entity
       if ($save_result) {
         $this->saveResult($input, $result);
       }
@@ -824,6 +1054,60 @@ class AgentExecutorService {
   }
 
   /**
+   * Execute a specific tool by name.
+   *
+   * Called by Tool API plugin classes to delegate execution
+   * to the OSSA agent executor.
+   *
+   * @param string $tool_name
+   *   The OSSA tool name.
+   * @param array $input
+   *   Tool input parameters.
+   *
+   * @return array
+   *   Tool execution result.
+   */
+  public function executeTool(string $tool_name, array $input): array {
+    $logger = $this->loggerFactory->get('${moduleName}');
+
+    try {
+      $logger->info('Tool execution started: @tool', ['@tool' => $tool_name]);
+
+      $context = $this->enrichContext([
+        'tool' => $tool_name,
+      ]);
+
+      $response = $this->agentExecutor->executeTool(
+        '${manifest.metadata?.name || 'agent'}',
+        $tool_name,
+        $input,
+        $context
+      );
+
+      $result = [
+        'success' => TRUE,
+        'output' => $response->getOutput(),
+        'metadata' => $response->getMetadata(),
+      ];
+
+      $logger->info('Tool execution completed: @tool', ['@tool' => $tool_name]);
+
+      return $result;
+    }
+    catch (\\Exception $e) {
+      $logger->error('Tool execution failed (@tool): @message', [
+        '@tool' => $tool_name,
+        '@message' => $e->getMessage(),
+      ]);
+
+      return [
+        'success' => FALSE,
+        'error' => $e->getMessage(),
+      ];
+    }
+  }
+
+  /**
    * Enrich context with Drupal-specific data.
    *
    * @param array $context
@@ -833,20 +1117,15 @@ class AgentExecutorService {
    *   Enriched context.
    */
   protected function enrichContext(array $context): array {
-    // Add site name
     $context['site_name'] = $this->configFactory
       ->get('system.site')
       ->get('name');
 
-    // Add current user
     $current_user = \\Drupal::currentUser();
     $context['user_id'] = $current_user->id();
     $context['user_name'] = $current_user->getAccountName();
-
-    // Add Drupal version
     $context['drupal_version'] = \\Drupal::VERSION;
 
-    // Add module configuration
     $module_config = $this->configFactory->get('${moduleName}.settings');
     $context['module_config'] = $module_config->getRawData();
 
@@ -883,6 +1162,7 @@ class AgentExecutorService {
       );
     }
   }
+
 }
 `;
   }
@@ -897,10 +1177,14 @@ class AgentExecutorService {
   ): string {
     return `<?php
 
+declare(strict_types=1);
+
 namespace Drupal\\${moduleName}\\Plugin\\QueueWorker;
 
-use Drupal\\Core\\Queue\\QueueWorkerBase;
 use Drupal\\Core\\Plugin\\ContainerFactoryPluginInterface;
+use Drupal\\Core\\Queue\\Attribute\\QueueWorker;
+use Drupal\\Core\\Queue\\QueueWorkerBase;
+use Drupal\\Core\\StringTranslation\\TranslatableMarkup;
 use Drupal\\${moduleName}\\Service\\AgentExecutorService;
 use Symfony\\Component\\DependencyInjection\\ContainerInterface;
 
@@ -908,33 +1192,21 @@ use Symfony\\Component\\DependencyInjection\\ContainerInterface;
  * Agent Queue Worker.
  *
  * Processes agent execution tasks asynchronously via Drupal's queue system.
- *
- * @QueueWorker(
- *   id = "${moduleName}_agent_queue",
- *   title = @Translation("${className} Agent Queue Worker"),
- *   cron = {"time" = 60}
- * )
  */
+#[QueueWorker(
+  id: '${moduleName}_agent_queue',
+  title: new TranslatableMarkup('${className} Agent Queue Worker'),
+  cron: ['time' => 60],
+)]
 class AgentQueueWorker extends QueueWorkerBase implements ContainerFactoryPluginInterface {
 
-  /**
-   * The agent executor service.
-   *
-   * @var \\Drupal\\${moduleName}\\Service\\AgentExecutorService
-   */
-  protected AgentExecutorService $agentExecutor;
-
-  /**
-   * {@inheritdoc}
-   */
   public function __construct(
     array $configuration,
     $plugin_id,
     $plugin_definition,
-    AgentExecutorService $agent_executor
+    protected readonly AgentExecutorService $agentExecutor,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->agentExecutor = $agent_executor;
   }
 
   /**
@@ -944,20 +1216,20 @@ class AgentQueueWorker extends QueueWorkerBase implements ContainerFactoryPlugin
     ContainerInterface $container,
     array $configuration,
     $plugin_id,
-    $plugin_definition
-  ) {
+    $plugin_definition,
+  ): static {
     return new static(
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('${moduleName}.agent_executor')
+      $container->get('${moduleName}.agent_executor'),
     );
   }
 
   /**
    * {@inheritdoc}
    */
-  public function processItem($data) {
+  public function processItem($data): void {
     $input = $data['input'] ?? '';
     $context = $data['context'] ?? [];
 
@@ -965,15 +1237,13 @@ class AgentQueueWorker extends QueueWorkerBase implements ContainerFactoryPlugin
       throw new \\Exception('Queue item missing required input data');
     }
 
-    // Execute agent
     $result = $this->agentExecutor->execute($input, $context, TRUE);
 
     if (!$result['success']) {
       throw new \\Exception($result['error'] ?? 'Agent execution failed');
     }
-
-    return $result;
   }
+
 }
 `;
   }
@@ -988,38 +1258,45 @@ class AgentQueueWorker extends QueueWorkerBase implements ContainerFactoryPlugin
   ): string {
     return `<?php
 
+declare(strict_types=1);
+
 namespace Drupal\\${moduleName}\\Entity;
 
+use Drupal\\Core\\Entity\\Attribute\\ContentEntityType;
 use Drupal\\Core\\Entity\\ContentEntityBase;
 use Drupal\\Core\\Entity\\EntityTypeInterface;
+use Drupal\\Core\\Entity\\EntityViewBuilder;
+use Drupal\\Core\\Entity\\EntityListBuilder;
+use Drupal\\Core\\Entity\\EntityAccessControlHandler;
 use Drupal\\Core\\Field\\BaseFieldDefinition;
+use Drupal\\Core\\StringTranslation\\TranslatableMarkup;
+use Drupal\\views\\EntityViewsData;
 
 /**
  * Defines the Agent Result entity.
  *
  * Stores agent execution results for auditing and analysis.
- *
- * @ContentEntityType(
- *   id = "${moduleName}_result",
- *   label = @Translation("Agent Result"),
- *   base_table = "${moduleName}_result",
- *   entity_keys = {
- *     "id" = "id",
- *     "label" = "name",
- *     "uuid" = "uuid",
- *   },
- *   handlers = {
- *     "view_builder" = "Drupal\\Core\\Entity\\EntityViewBuilder",
- *     "list_builder" = "Drupal\\Core\\Entity\\EntityListBuilder",
- *     "views_data" = "Drupal\\views\\EntityViewsData",
- *     "access" = "Drupal\\Core\\Entity\\EntityAccessControlHandler",
- *   },
- *   links = {
- *     "canonical" = "/admin/${moduleName}/result/{${moduleName}_result}",
- *     "collection" = "/admin/${moduleName}/results",
- *   },
- * )
  */
+#[ContentEntityType(
+  id: '${moduleName}_result',
+  label: new TranslatableMarkup('Agent Result'),
+  base_table: '${moduleName}_result',
+  entity_keys: [
+    'id' => 'id',
+    'label' => 'name',
+    'uuid' => 'uuid',
+  ],
+  handlers: [
+    'view_builder' => EntityViewBuilder::class,
+    'list_builder' => EntityListBuilder::class,
+    'views_data' => EntityViewsData::class,
+    'access' => EntityAccessControlHandler::class,
+  ],
+  links: [
+    'canonical' => '/admin/${moduleName}/result/{${moduleName}_result}',
+    'collection' => '/admin/${moduleName}/results',
+  ],
+)]
 class AgentResult extends ContentEntityBase implements AgentResultInterface {
 
   /**
@@ -1521,6 +1798,847 @@ ${moduleName}.results:
 `;
   }
 
+  // ===================================================================
+  // Tool API Plugin Generation (Phase 3 - Issue #433)
+  // ===================================================================
+
+  /**
+   * Generate a Drupal Tool API plugin class for a single OSSA tool.
+   *
+   * Uses PHP 8 #[Tool] attributes (not annotations) and implements
+   * ContainerFactoryPluginInterface for proper dependency injection.
+   */
+  private generateToolPlugin(
+    _manifest: OssaAgent,
+    moduleName: string,
+    _className: string,
+    tool: OssaToolEntry,
+    drupalTool: DrupalToolDefinition
+  ): string {
+    const toolClassName = toClassName(sanitizeModuleName(tool.name || 'unknown_tool'));
+    const toolName = tool.name || 'unknown_tool';
+    const inputDef = this.buildSchemaDefinitionArray(tool.inputSchema || (tool as any).input_schema);
+    const outputDef = this.buildSchemaDefinitionArray(tool.outputSchema || (tool as any).output_schema);
+    return `<?php
+
+namespace Drupal\\${moduleName}\\Plugin\\Tool;
+
+use Drupal\\tool\\Attribute\\Tool;
+use Drupal\\tool\\ToolPluginBase;
+use Drupal\\Core\\StringTranslation\\TranslatableMarkup;
+use Drupal\\Core\\Plugin\\ContainerFactoryPluginInterface;
+use Drupal\\${moduleName}\\Service\\AgentExecutorService;
+use Symfony\\Component\\DependencyInjection\\ContainerInterface;
+
+/**
+ * Tool plugin: ${this.escapePhpString(drupalTool.label)}.
+ *
+ * Generated from OSSA manifest tool: ${toolName}
+ * Type: ${drupalTool.type}
+ */
+#[Tool(
+  id: '${drupalTool.id}',
+  label: new TranslatableMarkup('${this.escapePhpString(drupalTool.label)}'),
+  description: new TranslatableMarkup('${this.escapePhpString(drupalTool.description)}'),
+)]
+class ${toolClassName}Tool extends ToolPluginBase implements ContainerFactoryPluginInterface {
+
+  /**
+   * Constructs a new ${toolClassName}Tool.
+   *
+   * @param array \$configuration
+   *   Plugin configuration.
+   * @param string \$plugin_id
+   *   The plugin ID.
+   * @param mixed \$plugin_definition
+   *   The plugin definition.
+   * @param \\Drupal\\${moduleName}\\Service\\AgentExecutorService \$agentService
+   *   The agent executor service.
+   */
+  public function __construct(
+    array \$configuration,
+    string \$plugin_id,
+    mixed \$plugin_definition,
+    private readonly AgentExecutorService \$agentService,
+  ) {
+    parent::__construct(\$configuration, \$plugin_id, \$plugin_definition);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface \$container, array \$configuration, \$plugin_id, \$plugin_definition): static {
+    return new static(
+      \$configuration,
+      \$plugin_id,
+      \$plugin_definition,
+      \$container->get('${moduleName}.agent_executor'),
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getInputDefinition(): array {
+    return ${inputDef};
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getOutputDefinition(): array {
+    return ${outputDef};
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function execute(array \$input): array {
+    return \$this->agentService->executeTool('${this.escapePhpString(toolName)}', \$input);
+  }
+
+}
+`;
+  }
+
+  /**
+   * Generate tool_ai_connector config YAML for a single tool.
+   *
+   * Registers the tool with Drupal's Tool API AI connector system
+   * so it is discoverable by AI-powered modules.
+   */
+  private generateToolAiConnectorConfig(drupalTool: DrupalToolDefinition): string {
+    return `id: '${drupalTool.id}'
+status: true
+ai_callable: true
+`;
+  }
+
+  /**
+   * Build a PHP array literal from a JSON Schema definition.
+   *
+   * Converts OSSA tool input/output schema (JSON Schema) into a PHP array
+   * that Drupal's Tool API can consume for input/output definitions.
+   */
+  private buildSchemaDefinitionArray(schema?: Record<string, unknown>): string {
+    if (!schema || Object.keys(schema).length === 0) {
+      return '[]';
+    }
+    const properties = schema.properties as Record<string, Record<string, unknown>> | undefined;
+    if (!properties || Object.keys(properties).length === 0) {
+      return '[]';
+    }
+    const required = (schema.required as string[]) || [];
+    const entries: string[] = [];
+    for (const [propName, propDef] of Object.entries(properties)) {
+      const phpType = this.jsonSchemaTypeToPHP((propDef.type as string) || 'string');
+      const description = propDef.description
+        ? this.escapePhpString(propDef.description as string)
+        : `The ${propName} parameter`;
+      const isRequired = required.includes(propName) ? 'TRUE' : 'FALSE';
+      entries.push(`      '${propName}' => [
+        'type' => '${phpType}',
+        'label' => '${toLabel(propName)}',
+        'description' => '${this.escapePhpString(description)}',
+        'required' => ${isRequired},
+      ]`);
+    }
+    return `[
+${entries.join(',\n')},
+    ]`;
+  }
+
+  /**
+   * Map a JSON Schema type to a PHP/Drupal typed data type string.
+   */
+  private jsonSchemaTypeToPHP(jsonType: string): string {
+    const typeMap: Record<string, string> = {
+      string: 'string',
+      number: 'float',
+      integer: 'integer',
+      boolean: 'boolean',
+      array: 'list',
+      object: 'map',
+    };
+    return typeMap[jsonType] || 'string';
+  }
+
+  /**
+   * Escape a string for safe inclusion inside PHP single-quoted strings.
+   */
+  private escapePhpString(str: string): string {
+    return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+  }
+
+  // ===================================================================
+  // ECA Model Generation (Phase 4 - Issue #433)
+  // ===================================================================
+
+  /**
+   * Extract ECA event definitions from the manifest.
+   *
+   * Looks for extensions.drupal.eca_events in the manifest. Each entry
+   * is a string like 'entity:node:presave' or 'content_entity:presave'.
+   */
+  private extractEcaEvents(manifest: OssaAgent): string[] {
+    const extensions = (manifest as any).extensions;
+    if (!extensions?.drupal?.eca_events) {
+      return [];
+    }
+    const events = extensions.drupal.eca_events;
+    if (!Array.isArray(events)) {
+      return [];
+    }
+    return events.filter((e: unknown) => typeof e === 'string') as string[];
+  }
+
+  /**
+   * Generate ECA model YAML config files for each event in eca_events.
+   *
+   * Creates config/install/eca.model.MODULE_on_EVENT.yml files that define
+   * the Event-Condition-Action models for Drupal's ECA module. Each model
+   * wires an event trigger to an OSSA agent condition check and tool execution.
+   */
+  private generateEcaModels(
+    manifest: OssaAgent,
+    moduleName: string,
+    ecaEvents: string[]
+  ): ExportFile[] {
+    const files = [];
+    const agentName = manifest.metadata?.name || moduleName;
+    const agentLabel = toLabel(agentName);
+
+    for (const event of ecaEvents) {
+      // Build a slug from the event: 'entity:node:presave' -> 'entity_node_presave'
+      const eventSlug = sanitizeModuleName(event.replace(/:/g, '_'));
+      const modelId = `${moduleName}_on_${eventSlug}`;
+      const modelLabel = `${agentLabel} - On ${toLabel(eventSlug)}`;
+
+      // Determine plugin_id and configuration from event string
+      const eventParts = event.split(':');
+      const pluginId = this.mapEcaEventToPluginId(eventParts);
+      const eventConfig = this.buildEcaEventConfiguration(eventParts);
+
+      // Find tools that should be executed for this event
+      const tools = extractTools(manifest);
+      const toolRef = tools.length > 0
+        ? `${moduleName}.${sanitizeModuleName(tools[0].name || 'unknown_tool')}`
+        : `${moduleName}.default_tool`;
+
+      const yamlContent = `id: '${modelId}'
+label: '${this.escapeYamlString(modelLabel)}'
+modeller: core
+version: '1.0.0'
+events:
+  - plugin_id: '${pluginId}'
+    configuration:
+${this.indentYamlObject(eventConfig, 6)}
+conditions:
+  - plugin_id: 'ossa_agent_enabled'
+    configuration:
+      agent_id: '${agentName}'
+actions:
+  - plugin_id: 'ossa_execute_tool'
+    configuration:
+      tool: '${toolRef}'
+      async: true
+`;
+
+      files.push(
+        this.createFile(
+          `${moduleName}/config/install/eca.model.${modelId}.yml`,
+          yamlContent,
+          'config'
+        )
+      );
+    }
+
+    return files;
+  }
+
+  /**
+   * Map ECA event parts to a Drupal ECA plugin ID.
+   *
+   * Converts OSSA event notation (e.g., ['entity', 'node', 'presave'])
+   * to ECA plugin IDs (e.g., 'content_entity:presave').
+   */
+  private mapEcaEventToPluginId(eventParts: string[]): string {
+    if (eventParts.length >= 3 && eventParts[0] === 'entity') {
+      // 'entity:node:presave' -> 'content_entity:presave'
+      return `content_entity:${eventParts[2]}`;
+    }
+    if (eventParts.length >= 2) {
+      // 'content_entity:presave' -> pass through
+      return eventParts.join(':');
+    }
+    // Fallback: use as-is
+    return eventParts.join(':');
+  }
+
+  /**
+   * Build ECA event configuration from event parts.
+   *
+   * Returns a key-value map that becomes the configuration block
+   * under the event entry in the ECA model YAML.
+   */
+  private buildEcaEventConfiguration(eventParts: string[]): Record<string, string> {
+    const config: Record<string, string> = {};
+
+    if (eventParts.length >= 3 && eventParts[0] === 'entity') {
+      // 'entity:node:presave' -> type: node
+      config.type = eventParts[1];
+    } else if (eventParts.length >= 2 && eventParts[0] === 'content_entity') {
+      // 'content_entity:presave' -> type: node (default)
+      config.type = 'node';
+    }
+
+    return config;
+  }
+
+  /**
+   * Escape a string for safe inclusion in YAML single-quoted values.
+   */
+  private escapeYamlString(str: string): string {
+    return str.replace(/'/g, "''");
+  }
+
+  /**
+   * Indent a key-value object as YAML at a given indentation level.
+   */
+  private indentYamlObject(obj: Record<string, string>, indent: number): string {
+    const pad = ' '.repeat(indent);
+    return Object.entries(obj)
+      .map(([key, value]) => `${pad}${key}: ${value}`)
+      .join('\n');
+  }
+
+  // ===================================================================
+  // Action Plugin Generation (Phase 4 - Issue #433)
+  // ===================================================================
+
+  /**
+   * Generate Action plugin classes for tools with CUD operations.
+   *
+   * Filters tools where the operation field matches create, update, or delete,
+   * and generates a Drupal Action plugin class for each. Tools without an
+   * explicit operation field are skipped.
+   *
+   * Uses PHP 8 #[Action] attributes and implements ContainerFactoryPluginInterface.
+   */
+  private generateActionPlugins(
+    manifest: OssaAgent,
+    moduleName: string,
+    tools: OssaToolEntry[]
+  ): ExportFile[] {
+    const files = [];
+    const cudOperations = ['create', 'update', 'delete'];
+
+    for (const tool of tools) {
+      const operation = (tool as any).operation as string | undefined;
+      if (!operation || !cudOperations.includes(operation.toLowerCase())) {
+        continue;
+      }
+
+      const toolName = tool.name || 'unknown_tool';
+      const actionId = `${moduleName}_${sanitizeModuleName(toolName)}`;
+      const actionClassName = toClassName(sanitizeModuleName(toolName));
+      const actionLabel = toLabel(toolName);
+      const entityType = this.inferEntityType(tool);
+
+      const phpContent = this.generateActionPluginClass(
+        moduleName,
+        actionId,
+        actionClassName,
+        actionLabel,
+        entityType,
+        toolName,
+        operation.toLowerCase()
+      );
+
+      files.push(
+        this.createFile(
+          `${moduleName}/src/Plugin/Action/${actionClassName}Action.php`,
+          phpContent,
+          'code',
+          'php'
+        )
+      );
+    }
+
+    return files;
+  }
+
+  /**
+   * Infer the entity type a tool operates on from its metadata.
+   *
+   * Checks tool.config.entity_type, falls back to 'node'.
+   */
+  private inferEntityType(tool: OssaToolEntry): string {
+    const config = (tool as any).config as Record<string, unknown> | undefined;
+    if (config?.entity_type && typeof config.entity_type === 'string') {
+      return config.entity_type;
+    }
+    return 'node';
+  }
+
+  /**
+   * Generate a single Action plugin PHP class.
+   *
+   * Produces a Drupal Action plugin using PHP 8 #[Action] attribute syntax,
+   * constructor property promotion, and ContainerFactoryPluginInterface.
+   */
+  private generateActionPluginClass(
+    moduleName: string,
+    actionId: string,
+    actionClassName: string,
+    actionLabel: string,
+    entityType: string,
+    toolName: string,
+    operation: string
+  ): string {
+    // Map operation to appropriate access check
+    const accessOp = operation === 'delete' ? 'delete' : 'update';
+
+    return `<?php
+
+declare(strict_types=1);
+
+namespace Drupal\\${moduleName}\\Plugin\\Action;
+
+use Drupal\\Core\\Action\\Attribute\\Action;
+use Drupal\\Core\\Action\\ActionBase;
+use Drupal\\Core\\StringTranslation\\TranslatableMarkup;
+use Drupal\\Core\\Plugin\\ContainerFactoryPluginInterface;
+use Drupal\\Core\\Session\\AccountInterface;
+use Drupal\\${moduleName}\\Service\\AgentExecutorService;
+use Symfony\\Component\\DependencyInjection\\ContainerInterface;
+
+/**
+ * Action plugin: ${this.escapePhpString(actionLabel)}.
+ *
+ * Generated from OSSA manifest tool: ${toolName}
+ * Operation: ${operation}
+ */
+#[Action(
+  id: '${actionId}',
+  label: new TranslatableMarkup('${this.escapePhpString(actionLabel)}'),
+  type: '${entityType}',
+)]
+class ${actionClassName}Action extends ActionBase implements ContainerFactoryPluginInterface {
+
+  /**
+   * Constructs a new ${actionClassName}Action.
+   *
+   * @param array \$configuration
+   *   Plugin configuration.
+   * @param string \$plugin_id
+   *   The plugin ID.
+   * @param mixed \$plugin_definition
+   *   The plugin definition.
+   * @param \\Drupal\\${moduleName}\\Service\\AgentExecutorService \$agentService
+   *   The agent executor service.
+   */
+  public function __construct(
+    array \$configuration,
+    string \$plugin_id,
+    mixed \$plugin_definition,
+    private readonly AgentExecutorService \$agentService,
+  ) {
+    parent::__construct(\$configuration, \$plugin_id, \$plugin_definition);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface \$container, array \$configuration, \$plugin_id, \$plugin_definition): static {
+    return new static(
+      \$configuration,
+      \$plugin_id,
+      \$plugin_definition,
+      \$container->get('${moduleName}.agent_executor'),
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function execute(\$entity = NULL): void {
+    \$this->agentService->executeTool('${this.escapePhpString(toolName)}', [
+      'entity_id' => \$entity?->id(),
+      'entity_type' => \$entity?->getEntityTypeId(),
+      'operation' => '${operation}',
+    ]);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function access(\$object, ?AccountInterface \$account = NULL, \$return_as_object = FALSE) {
+    return \$object->access('${accessOp}', \$account, \$return_as_object);
+  }
+
+}
+`;
+  }
+
+  // ===================================================================
+  // Condition Plugin Generation (Phase 4 - Issue #433)
+  // ===================================================================
+
+  /**
+   * Generate Condition plugin classes from OSSA safety guardrails.
+   *
+   * Maps spec.safety.guardrails[] entries to Drupal Condition plugins.
+   * Also always generates an AgentEnabledCondition that checks whether
+   * the OSSA agent is enabled in module configuration.
+   *
+   * Uses PHP 8 #[Condition] attributes and ConditionPluginBase.
+   */
+  private generateConditionPlugins(
+    manifest: OssaAgent,
+    moduleName: string
+  ): ExportFile[] {
+    const files = [];
+    const agentName = manifest.metadata?.name || moduleName;
+
+    // Always generate the AgentEnabledCondition
+    files.push(
+      this.createFile(
+        `${moduleName}/src/Plugin/Condition/AgentEnabledCondition.php`,
+        this.generateAgentEnabledConditionClass(moduleName, agentName),
+        'code',
+        'php'
+      )
+    );
+
+    // Generate condition plugins for each safety guardrail
+    const guardrails = manifest.spec?.safety?.guardrails || [];
+    for (const guardrail of guardrails) {
+      const guardName = guardrail.name || 'unknown_guard';
+      const conditionId = `${moduleName}_${sanitizeModuleName(guardName)}`;
+      const conditionClassName = toClassName(sanitizeModuleName(guardName));
+      const conditionLabel = toLabel(guardName);
+
+      files.push(
+        this.createFile(
+          `${moduleName}/src/Plugin/Condition/${conditionClassName}Condition.php`,
+          this.generateGuardrailConditionClass(
+            moduleName,
+            conditionId,
+            conditionClassName,
+            conditionLabel,
+            guardrail
+          ),
+          'code',
+          'php'
+        )
+      );
+    }
+
+    return files;
+  }
+
+  /**
+   * Generate the AgentEnabledCondition plugin class.
+   *
+   * This condition checks whether the OSSA agent is enabled in module
+   * configuration. Used by ECA models to gate event-driven execution.
+   */
+  private generateAgentEnabledConditionClass(
+    moduleName: string,
+    agentName: string
+  ): string {
+    return `<?php
+
+declare(strict_types=1);
+
+namespace Drupal\\${moduleName}\\Plugin\\Condition;
+
+use Drupal\\Core\\Condition\\Attribute\\Condition;
+use Drupal\\Core\\Condition\\ConditionPluginBase;
+use Drupal\\Core\\Form\\FormStateInterface;
+use Drupal\\Core\\StringTranslation\\TranslatableMarkup;
+use Drupal\\Core\\Plugin\\ContainerFactoryPluginInterface;
+use Drupal\\Core\\Config\\ConfigFactoryInterface;
+use Symfony\\Component\\DependencyInjection\\ContainerInterface;
+
+/**
+ * Condition plugin: OSSA Agent Enabled.
+ *
+ * Evaluates whether the OSSA agent is enabled in module configuration.
+ * Used by ECA models to gate event-driven agent execution.
+ */
+#[Condition(
+  id: 'ossa_agent_enabled',
+  label: new TranslatableMarkup('OSSA Agent Enabled'),
+)]
+class AgentEnabledCondition extends ConditionPluginBase implements ContainerFactoryPluginInterface {
+
+  /**
+   * Constructs a new AgentEnabledCondition.
+   *
+   * @param array \$configuration
+   *   Plugin configuration.
+   * @param string \$plugin_id
+   *   The plugin ID.
+   * @param mixed \$plugin_definition
+   *   The plugin definition.
+   * @param \\Drupal\\Core\\Config\\ConfigFactoryInterface \$configFactory
+   *   The config factory service.
+   */
+  public function __construct(
+    array \$configuration,
+    string \$plugin_id,
+    mixed \$plugin_definition,
+    private readonly ConfigFactoryInterface \$configFactory,
+  ) {
+    parent::__construct(\$configuration, \$plugin_id, \$plugin_definition);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface \$container, array \$configuration, \$plugin_id, \$plugin_definition): static {
+    return new static(
+      \$configuration,
+      \$plugin_id,
+      \$plugin_definition,
+      \$container->get('config.factory'),
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function defaultConfiguration(): array {
+    return [
+      'agent_id' => '${this.escapePhpString(agentName)}',
+    ] + parent::defaultConfiguration();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildConfigurationForm(array \$form, FormStateInterface \$form_state): array {
+    \$form['agent_id'] = [
+      '#type' => 'textfield',
+      '#title' => \$this->t('Agent ID'),
+      '#default_value' => \$this->configuration['agent_id'],
+      '#description' => \$this->t('The OSSA agent identifier to check.'),
+      '#required' => TRUE,
+    ];
+
+    return parent::buildConfigurationForm(\$form, \$form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function submitConfigurationForm(array &\$form, FormStateInterface \$form_state): void {
+    \$this->configuration['agent_id'] = \$form_state->getValue('agent_id');
+    parent::submitConfigurationForm(\$form, \$form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function evaluate(): bool {
+    \$config = \$this->configFactory->get('${moduleName}.settings');
+
+    // Check if auto-execution is enabled (agent is active)
+    \$enabled = (bool) \$config->get('auto_execute_on_save');
+
+    return \$this->isNegated() ? !\$enabled : \$enabled;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function summary(): TranslatableMarkup {
+    if (\$this->isNegated()) {
+      return new TranslatableMarkup('OSSA agent @agent is disabled', [
+        '@agent' => \$this->configuration['agent_id'],
+      ]);
+    }
+
+    return new TranslatableMarkup('OSSA agent @agent is enabled', [
+      '@agent' => \$this->configuration['agent_id'],
+    ]);
+  }
+
+}
+`;
+  }
+
+  /**
+   * Generate a Condition plugin class for a specific safety guardrail.
+   *
+   * Maps OSSA spec.safety.guardrails[] entries to Drupal Condition plugins.
+   * Supports 'input' guardrails (check blocked patterns) and 'output' guardrails
+   * (check response constraints like maxLength).
+   */
+  private generateGuardrailConditionClass(
+    moduleName: string,
+    conditionId: string,
+    conditionClassName: string,
+    conditionLabel: string,
+    guardrail: {
+      name: string;
+      type: 'input' | 'output';
+      blocked_patterns?: string[];
+      maxLength?: number;
+    }
+  ): string {
+    const guardType = guardrail.type || 'input';
+    const blockedPatterns = guardrail.blocked_patterns || [];
+    const maxLength = guardrail.maxLength;
+
+    // Build the patterns array as a PHP literal
+    const patternsPhp = blockedPatterns.length > 0
+      ? `[${blockedPatterns.map((p) => `'${this.escapePhpString(p)}'`).join(', ')}]`
+      : '[]';
+
+    // Build evaluation logic based on guardrail type
+    let evaluateBody: string;
+    if (guardType === 'input' && blockedPatterns.length > 0) {
+      evaluateBody = `    \$content = \$this->configuration['content'] ?? '';
+    \$blocked_patterns = ${patternsPhp};
+
+    foreach (\$blocked_patterns as \$pattern) {
+      if (str_contains(\$content, \$pattern)) {
+        return \$this->isNegated() ? TRUE : FALSE;
+      }
+    }
+
+    return \$this->isNegated() ? FALSE : TRUE;`;
+    } else if (guardType === 'output' && maxLength) {
+      evaluateBody = `    \$content = \$this->configuration['content'] ?? '';
+    \$max_length = ${maxLength};
+    \$within_limit = mb_strlen(\$content) <= \$max_length;
+
+    return \$this->isNegated() ? !\$within_limit : \$within_limit;`;
+    } else {
+      evaluateBody = `    // Default: condition passes
+    return !\$this->isNegated();`;
+    }
+
+    return `<?php
+
+declare(strict_types=1);
+
+namespace Drupal\\${moduleName}\\Plugin\\Condition;
+
+use Drupal\\Core\\Condition\\Attribute\\Condition;
+use Drupal\\Core\\Condition\\ConditionPluginBase;
+use Drupal\\Core\\StringTranslation\\TranslatableMarkup;
+
+/**
+ * Condition plugin: ${this.escapePhpString(conditionLabel)}.
+ *
+ * Generated from OSSA safety guardrail: ${guardrail.name}
+ * Type: ${guardType}
+ */
+#[Condition(
+  id: '${conditionId}',
+  label: new TranslatableMarkup('${this.escapePhpString(conditionLabel)}'),
+)]
+class ${conditionClassName}Condition extends ConditionPluginBase {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function defaultConfiguration(): array {
+    return [
+      'content' => '',
+    ] + parent::defaultConfiguration();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function evaluate(): bool {
+${evaluateBody}
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function summary(): TranslatableMarkup {
+    return new TranslatableMarkup('${this.escapePhpString(conditionLabel)} guardrail (${guardType})');
+  }
+
+}
+`;
+  }
+
+  // ===================================================================
+  // Recipe Generation (Phase 5 - Issue #433)
+  // ===================================================================
+
+  /**
+   * Generate a Drupal Recipe YAML file for composable installation.
+   *
+   * Recipes are Drupal's modern approach to distributing reusable
+   * configuration sets. This generates a recipe that installs and
+   * configures the OSSA agent module along with its dependencies.
+   */
+  private generateRecipe(
+    manifest: OssaAgent,
+    moduleName: string,
+    tools: OssaToolEntry[]
+  ): string {
+    const displayName = toLabel(manifest.metadata?.name || moduleName);
+    const description = manifest.metadata?.description || `OSSA ${displayName} agent`;
+    const llmConfig = (manifest.spec?.llm as any) || {};
+
+    // Build the install list
+    const installModules = [
+      'ai',
+      'ai_agents',
+      'tool',
+      'eca',
+      moduleName,
+    ];
+
+    // Build config actions for tool_ai_connector entities
+    const toolConfigLines: string[] = [];
+    if (tools.length > 0) {
+      for (const tool of tools) {
+        const drupalTool = mapOssaToolToDrupalTool(tool, moduleName);
+        toolConfigLines.push(
+          `    tool_ai_connector.tool.${drupalTool.id}:`,
+          `      simple_config_update:`,
+          `        status: true`,
+          `        ai_callable: true`
+        );
+      }
+    }
+
+    let recipe = `name: '${displayName}'
+description: 'Install and configure the OSSA ${sanitizeModuleName(manifest.metadata?.name || moduleName)} agent'
+type: 'AI Agent'
+install:
+${installModules.map((m) => `  - ${m}`).join('\n')}
+config:
+  import:
+    ${moduleName}:
+      - ${moduleName}.settings
+  actions:
+    ${moduleName}.settings:
+      simple_config_update:
+        auto_execute_on_save: true
+        llm_provider: ${llmConfig.provider || 'anthropic'}
+        llm_model: ${llmConfig.model || 'claude-sonnet-4-20250514'}
+        temperature: ${llmConfig.temperature || 0.7}
+`;
+
+    if (toolConfigLines.length > 0) {
+      recipe += toolConfigLines.join('\n') + '\n';
+    }
+
+    return recipe;
+  }
+
   /**
    * Generate config/schema/MODULE.schema.yml
    */
@@ -1649,10 +2767,8 @@ temperature: ${llmConfig.temperature || 0.7}
     moduleName: string,
     options: DrupalModuleGeneratorOptions
   ): string {
-    const capabilities = (
-      (manifest.spec?.capabilities || []) as Array<string | any>
-    ).map((c) => (typeof c === 'string' ? c : c.name || ''));
-    const tools = (manifest.spec?.tools || []) as any[];
+    const capabilities = extractCapabilities(manifest);
+    const tools = extractTools(manifest);
 
     return `# ${manifest.metadata?.name || moduleName}
 
@@ -1676,7 +2792,9 @@ ${options.includeViews ? '- ✅ Views integration' : ''}
 - **Drupal**: ${options.coreVersion}
 - **PHP**: >=8.2
 - **Composer packages**:
-  - \`ossa/symfony-bundle\`: ^0.3
+  - \`drupal/ai\`: ^1.0
+  - \`drupal/ai_agents\`: ^1.3
+  - \`drupal/tool\`: ^1.0@alpha
 
 ## Installation
 
@@ -1684,7 +2802,7 @@ ${options.includeViews ? '- ✅ Views integration' : ''}
 
 \`\`\`bash
 cd /path/to/drupal
-composer require ossa/symfony-bundle
+composer require drupal/ai drupal/ai_agents drupal/tool
 \`\`\`
 
 ### 2. Copy module to Drupal
@@ -1837,8 +2955,11 @@ ${
 
 This module follows OSSA (Open Standard Agents) specification and uses:
 
-- **ossa/symfony-bundle**: Core agent execution engine
-- **Dependency Injection**: Full Symfony DI container integration
+- **drupal/ai**: LLM provider abstraction (Anthropic, OpenAI, Google, Azure)
+- **drupal/ai_agents**: AI agent plugin system for Drupal
+- **drupal/tool**: Tool API plugin system
+- **PHP 8 Attributes**: Modern \`#[Hook]\`, \`#[QueueWorker]\`, \`#[ContentEntityType]\`
+- **OO Hook Classes**: All hooks implemented as classes in \`src/Hook/\`
 - **Queue System**: Drupal queue for async execution
 - **Entity API**: Drupal entities for result storage
 - **Configuration API**: Drupal configuration system
@@ -1881,7 +3002,7 @@ ${manifest.metadata?.license || 'GPL-2.0-or-later'}
 
 \`\`\`bash
 cd /path/to/drupal
-composer require ossa/symfony-bundle
+composer require drupal/ai drupal/ai_agents drupal/tool
 \`\`\`
 
 ## Step 2: Install Module
@@ -2036,29 +3157,4 @@ drush queue:run ${moduleName}_agent_queue
 `;
   }
 
-  // ===================================================================
-  // Utility Methods
-  // ===================================================================
-
-  /**
-   * Sanitize module name for Drupal
-   */
-  private sanitizeModuleName(name: string): string {
-    return name
-      .toLowerCase()
-      .replace(/[^a-z0-9_]/g, '_')
-      .replace(/^[0-9]+/, '')
-      .replace(/_+/g, '_')
-      .replace(/^_|_$/g, '');
-  }
-
-  /**
-   * Convert module name to class name (PascalCase)
-   */
-  private toClassName(moduleName: string): string {
-    return moduleName
-      .split('_')
-      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-      .join('');
-  }
 }

@@ -31,6 +31,16 @@ import type {
   ValidationWarning,
 } from '../base/adapter.interface.js';
 import * as yaml from 'yaml';
+import {
+  sanitizeModuleName,
+  toLabel,
+  validateDrupalCompatibility,
+  buildValidationResult,
+  extractCapabilities,
+  extractTools,
+  mapOssaToolToDrupalTool,
+} from './drupal-utils.js';
+import type { OssaToolEntry } from './drupal-utils.js';
 
 export interface DrupalManifestExportOptions extends ExportOptions {
   /** Minimum required version of drupal/ai_agents (default: ^1.3) */
@@ -77,7 +87,7 @@ export class DrupalManifestExporter extends BaseAdapter {
         }
       }
 
-      const agentName = this.sanitizeName(
+      const agentName = sanitizeModuleName(
         manifest.metadata?.name || 'ossa_agent'
       );
 
@@ -136,6 +146,39 @@ export class DrupalManifestExporter extends BaseAdapter {
         )
       );
 
+      // 6. Tool AI connector config entities (config-only, no PHP)
+      const tools = extractTools(manifest);
+      if (tools.length > 0) {
+        for (const tool of tools) {
+          const drupalTool = mapOssaToolToDrupalTool(tool, agentName);
+          files.push(
+            this.createFile(
+              `${agentName}/config/install/tool_ai_connector.tool.${drupalTool.id}.yml`,
+              this.generateToolAiConnectorConfig(drupalTool),
+              'config'
+            )
+          );
+        }
+      }
+
+      // 7. ECA model YAML (event-condition-action, config-only)
+      files.push(
+        this.createFile(
+          `${agentName}/config/install/eca.eca_model.${agentName}_agent.yml`,
+          this.generateEcaModelYaml(manifest, agentName),
+          'config'
+        )
+      );
+
+      // 8. Recipe YAML (composable installation)
+      files.push(
+        this.createFile(
+          `${agentName}/recipes/${agentName}-agent/recipe.yml`,
+          this.generateRecipe(manifest, agentName, tools, opts),
+          'config'
+        )
+      );
+
       return this.createResult(true, files, undefined, {
         duration: Date.now() - startTime,
         version: manifest.metadata?.version || '1.0.0',
@@ -164,17 +207,12 @@ export class DrupalManifestExporter extends BaseAdapter {
     if (baseValidation.errors) errors.push(...baseValidation.errors);
     if (baseValidation.warnings) warnings.push(...baseValidation.warnings);
 
-    // Drupal-specific validation
-    const name = manifest.metadata?.name;
-    if (name && !/^[a-z0-9_]+$/.test(name)) {
-      warnings.push({
-        message:
-          'Agent name should only contain lowercase letters, numbers, and underscores for Drupal compatibility',
-        path: 'metadata.name',
-        suggestion: `Use: ${this.sanitizeName(name)}`,
-      });
-    }
+    // Drupal-specific validation (shared name check)
+    const drupalValidation = validateDrupalCompatibility(manifest);
+    errors.push(...drupalValidation.errors);
+    warnings.push(...drupalValidation.warnings);
 
+    // Manifest-exporter-specific: kind check
     if (!manifest.kind || manifest.kind !== 'Agent') {
       warnings.push({
         message: 'Drupal ai_agents_ossa expects kind: Agent',
@@ -183,11 +221,7 @@ export class DrupalManifestExporter extends BaseAdapter {
       });
     }
 
-    return {
-      valid: errors.length === 0,
-      errors: errors.length > 0 ? errors : undefined,
-      warnings: warnings.length > 0 ? warnings : undefined,
-    };
+    return buildValidationResult(errors, warnings);
   }
 
   /**
@@ -269,7 +303,7 @@ export class DrupalManifestExporter extends BaseAdapter {
     // Build the config entity
     const configEntity: Record<string, unknown> = {
       id: agentName,
-      label: this.toLabel(manifest.metadata?.name || agentName),
+      label: toLabel(manifest.metadata?.name || agentName),
       api_version: manifest.apiVersion || 'ossa/v0.4.5',
       status: true,
       manifest: manifestData,
@@ -279,13 +313,6 @@ export class DrupalManifestExporter extends BaseAdapter {
       indent: 2,
       lineWidth: 120,
     });
-  }
-
-  /**
-   * Convert kebab-case or snake_case name to Title Case label.
-   */
-  private toLabel(name: string): string {
-    return name.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
   }
 
   /**
@@ -316,11 +343,8 @@ ${doc}`;
     agentName: string,
     options: DrupalManifestExportOptions
   ): string {
-    const capabilities = (
-      (manifest.spec?.capabilities || []) as Array<string | any>
-    ).map((c: string | any) => (typeof c === 'string' ? c : c.name || ''));
-
-    const tools = (manifest.spec?.tools || []) as any[];
+    const capabilities = extractCapabilities(manifest);
+    const tools = extractTools(manifest);
 
     return `# ${manifest.metadata?.name || agentName}
 
@@ -508,18 +532,155 @@ SUPPORT
   }
 
   // ===================================================================
-  // Utility Methods
+  // Tool API Config Generation (Phase 5 - Issue #433)
   // ===================================================================
 
   /**
-   * Sanitize agent name for Drupal compatibility
+   * Generate tool_ai_connector config YAML for a single tool.
+   *
+   * Registers the tool with Drupal's Tool API AI connector system
+   * so it is discoverable by AI-powered modules. Config-only, no PHP.
+   *
+   * @param drupalTool - Drupal tool definition from mapOssaToolToDrupalTool
    */
-  private sanitizeName(name: string): string {
-    return name
-      .toLowerCase()
-      .replace(/[^a-z0-9_]/g, '_')
-      .replace(/^[0-9]+/, '')
-      .replace(/_+/g, '_')
-      .replace(/^_|_$/g, '');
+  private generateToolAiConnectorConfig(drupalTool: {
+    id: string;
+    label: string;
+    description: string;
+  }): string {
+    return `id: '${drupalTool.id}'
+label: '${drupalTool.label}'
+description: '${drupalTool.description}'
+status: true
+ai_callable: true
+`;
   }
+
+  // ===================================================================
+  // ECA Model YAML Generation (Phase 5 - Issue #433)
+  // ===================================================================
+
+  /**
+   * Generate ECA (Event-Condition-Action) model YAML.
+   *
+   * Creates an ECA model that triggers the OSSA agent on entity presave
+   * events. This is config-only (no PHP event subscribers needed) because
+   * ECA handles event routing declaratively.
+   *
+   * Philosophy: "OSSA defines WHAT, Drupal executes HOW"
+   */
+  private generateEcaModelYaml(
+    manifest: OssaAgent,
+    agentName: string
+  ): string {
+    const displayName = toLabel(manifest.metadata?.name || agentName);
+
+    // Check for drupal extension hints
+    const extensions = (manifest as any).extensions?.drupal || {};
+    const ecaEvents = extensions.eca_events || ['entity:node:presave'];
+    const contentTypes = extensions.content_types || ['article', 'page'];
+
+    // Build content type condition value
+    const contentTypeCondition = contentTypes.join(', ');
+
+    // Use the first event as the primary trigger
+    const primaryEvent = ecaEvents[0] || 'entity:node:presave';
+
+    return `id: ${agentName}_agent
+label: '${displayName} Agent Trigger'
+status: true
+version: '${manifest.metadata?.version || '1.0.0'}'
+events:
+  ${agentName}_event:
+    plugin_id: '${primaryEvent}'
+    label: '${displayName} trigger event'
+    configuration: {}
+    successors:
+      - ${agentName}_condition
+conditions:
+  ${agentName}_condition:
+    plugin_id: 'eca_entity_type_bundle'
+    label: 'Check content type'
+    configuration:
+      type: 'node'
+      bundles: '${contentTypeCondition}'
+    successors:
+      - ${agentName}_action
+    negate: false
+actions:
+  ${agentName}_action:
+    plugin_id: 'ai_agents_execute'
+    label: 'Execute ${displayName} agent'
+    configuration:
+      agent_id: '${agentName}'
+      async: true
+`;
+  }
+
+  // ===================================================================
+  // Recipe Generation (Phase 5 - Issue #433)
+  // ===================================================================
+
+  /**
+   * Generate a Drupal Recipe YAML for composable installation.
+   *
+   * Recipes are Drupal's modern approach to distributing reusable
+   * configuration sets. For manifest-exporter, this installs the
+   * required contrib modules and imports the agent config entity.
+   * No custom PHP module is installed (manifest-exporter philosophy).
+   */
+  private generateRecipe(
+    manifest: OssaAgent,
+    agentName: string,
+    tools: OssaToolEntry[],
+    options: DrupalManifestExportOptions
+  ): string {
+    const displayName = toLabel(manifest.metadata?.name || agentName);
+    const llmConfig = (manifest.spec?.llm as any) || {};
+
+    // Install list: contrib modules only (no custom module)
+    const installModules = [
+      'ai',
+      'ai_agents',
+      'ai_agents_ossa',
+      'tool',
+      'eca',
+    ];
+
+    // Build config actions for tool_ai_connector entities
+    const toolConfigLines: string[] = [];
+    if (tools.length > 0) {
+      for (const tool of tools) {
+        const drupalTool = mapOssaToolToDrupalTool(tool, agentName);
+        toolConfigLines.push(
+          `    tool_ai_connector.tool.${drupalTool.id}:`,
+          `      simple_config_update:`,
+          `        status: true`,
+          `        ai_callable: true`
+        );
+      }
+    }
+
+    let recipe = `name: '${displayName}'
+description: 'Install and configure the OSSA ${agentName} agent'
+type: 'AI Agent'
+install:
+${installModules.map((m) => `  - ${m}`).join('\n')}
+config:
+  import:
+    ai_agents_ossa:
+      - ai_agents_ossa.agent.${agentName}
+  actions:
+    ai_agents_ossa.agent.${agentName}:
+      simple_config_update:
+        status: true
+`;
+
+    if (toolConfigLines.length > 0) {
+      recipe += toolConfigLines.join('\n') + '\n';
+    }
+
+    return recipe;
+  }
+
 }

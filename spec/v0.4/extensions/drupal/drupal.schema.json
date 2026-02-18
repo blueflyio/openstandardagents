@@ -71,6 +71,247 @@
         "type": "string"
       },
       "uniqueItems": true
+    },
+    "execution_model": {
+      "type": "string",
+      "description": "How the agent is executed within Drupal. 'eca' uses Event-Condition-Action rules, 'ai-agent-runner' uses the ai_agents module runner, 'queue' defers to Drupal's queue system, 'direct' invokes synchronously.",
+      "enum": ["eca", "ai-agent-runner", "queue", "direct"],
+      "default": "ai-agent-runner"
+    },
+    "drupal_version": {
+      "type": "string",
+      "description": "Drupal core version constraint using Composer semver syntax (e.g. '^11' or '^11 || ^12')",
+      "examples": ["^11", "^11 || ^12", "^10 || ^11"]
+    },
+    "php_version": {
+      "type": "string",
+      "description": "Minimum PHP version required by this agent's Drupal integration",
+      "examples": ["8.3", "8.2", "8.4"]
+    },
+    "module_dependencies": {
+      "type": "array",
+      "description": "Drupal contributed or core module machine names required for this agent to function",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_]*$"
+      },
+      "uniqueItems": true,
+      "examples": [
+        ["ai", "ai_agents", "eca", "tool"]
+      ]
+    },
+    "tool_plugins": {
+      "type": "array",
+      "description": "Maps OSSA tool definitions to Drupal Tool API plugins. Each entry defines a Drupal tool plugin that wraps an OSSA tool reference, specifying the CRUD operation, input/output schemas, and whether the tool is callable by AI agents.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Drupal Tool API plugin ID (e.g. 'ossa_content_load')",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "ossa_tool_ref": {
+            "type": "string",
+            "description": "Reference to the OSSA tool definition in the agent manifest (e.g. 'tools/content_load' or a fully-qualified OSSA tool URI)"
+          },
+          "operation": {
+            "type": "string",
+            "description": "The CRUD operation category this tool performs, aligning with Drupal's Tool API operation types",
+            "enum": ["read", "create", "update", "delete", "explain"]
+          },
+          "input_schema": {
+            "type": "object",
+            "description": "JSON Schema defining the input parameters accepted by this tool plugin. Used by the Drupal Tool API for validation and by AI agents for parameter discovery."
+          },
+          "output_schema": {
+            "type": "object",
+            "description": "JSON Schema defining the output structure returned by this tool plugin. Used by the Drupal Tool API for response validation and by AI agents for result parsing."
+          },
+          "ai_callable": {
+            "type": "boolean",
+            "description": "Whether this tool can be invoked directly by AI agents via the Drupal AI module. When false, the tool is only available programmatically.",
+            "default": true
+          }
+        },
+        "required": ["id", "ossa_tool_ref", "operation"],
+        "additionalProperties": false
+      }
+    },
+    "actions": {
+      "type": "array",
+      "description": "Drupal Action plugin IDs provided or consumed by this agent (e.g. ECA actions, core actions)",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true,
+      "examples": [
+        ["ossa_invoke_agent", "node_publish_action", "eca_send_email"]
+      ]
+    },
+    "conditions": {
+      "type": "array",
+      "description": "Drupal Condition plugin IDs evaluated by this agent's ECA rules or access control",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true,
+      "examples": [
+        ["entity_bundle:node", "user_role", "request_path"]
+      ]
+    },
+    "queue_workers": {
+      "type": "array",
+      "description": "Drupal queue worker definitions for deferred or batch agent processing. Each worker processes items from a named queue on cron.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Queue worker plugin ID (e.g. 'ossa_agent_task_queue')",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "title": {
+            "type": "string",
+            "description": "Human-readable title for this queue worker"
+          },
+          "cron_time": {
+            "type": "integer",
+            "description": "Maximum number of seconds this queue worker may run per cron invocation",
+            "minimum": 1,
+            "default": 60
+          }
+        },
+        "required": ["id", "title"],
+        "additionalProperties": false
+      }
+    },
+    "blocks": {
+      "type": "array",
+      "description": "Drupal Block plugin IDs provided by this agent for placement in page layouts and regions",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true,
+      "examples": [
+        ["ossa_agent_status_block", "ossa_agent_chat_block"]
+      ]
+    },
+    "recipes": {
+      "type": "array",
+      "description": "Drupal recipes bundled with this agent. Recipes provide reusable configuration packages that can be applied to install content types, views, permissions, and module configuration in one step.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Machine name of the recipe (e.g. 'ossa_content_moderator_setup')"
+          },
+          "description": {
+            "type": "string",
+            "description": "Human-readable description of what this recipe configures"
+          },
+          "type": {
+            "type": "string",
+            "description": "Recipe type category (e.g. 'content-type', 'site-setup', 'workflow', 'agent-config')"
+          },
+          "install": {
+            "type": "array",
+            "description": "List of module machine names or recipe names to install as part of this recipe",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true
+          }
+        },
+        "required": ["name", "description"],
+        "additionalProperties": false
+      }
+    },
+    "hooks": {
+      "type": "array",
+      "description": "Drupal hook implementations provided by this agent's module. In Drupal 11+, hooks are implemented as class methods using the #[Hook] attribute.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "hook_name": {
+            "type": "string",
+            "description": "The hook name without the 'hook_' prefix (e.g. 'cron', 'entity_presave', 'install')"
+          },
+          "class_name": {
+            "type": "string",
+            "description": "Fully-qualified PHP class name implementing this hook (e.g. 'Drupal\\ossa_agent\\Hook\\EntityHooks')"
+          },
+          "method": {
+            "type": "string",
+            "description": "Method name on the class that implements this hook"
+          }
+        },
+        "required": ["hook_name", "class_name", "method"],
+        "additionalProperties": false
+      }
+    },
+    "event_subscribers": {
+      "type": "array",
+      "description": "Symfony event subscribers registered by this agent's module. Used for reacting to kernel, entity, and custom events in Drupal's event-driven architecture.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "event": {
+            "type": "string",
+            "description": "Fully-qualified event class name or event constant (e.g. 'Drupal\\core\\Entity\\EntityEvents::PRESAVE' or 'kernel.request')"
+          },
+          "method": {
+            "type": "string",
+            "description": "Method name on the subscriber class that handles this event"
+          },
+          "priority": {
+            "type": "integer",
+            "description": "Subscriber priority. Higher values mean earlier execution. Defaults to 0.",
+            "default": 0
+          }
+        },
+        "required": ["event", "method"],
+        "additionalProperties": false
+      }
+    },
+    "config_entities": {
+      "type": "array",
+      "description": "Custom configuration entity types defined by this agent's module. Config entities store structured settings in Drupal's configuration management system.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Config entity type machine name (e.g. 'ossa_agent_config')",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "label": {
+            "type": "string",
+            "description": "Human-readable label for this config entity type"
+          },
+          "properties": {
+            "type": "object",
+            "description": "JSON Schema-style property definitions for this config entity's fields. Keys are property names, values are objects with 'type' and 'description'.",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "description": "Data type of this property (e.g. 'string', 'integer', 'boolean', 'array')"
+                },
+                "description": {
+                  "type": "string",
+                  "description": "Human-readable description of this config property"
+                }
+              },
+              "required": ["type"]
+            }
+          }
+        },
+        "required": ["id", "label"],
+        "additionalProperties": false
+      }
     }
   },
   "additionalProperties": false
