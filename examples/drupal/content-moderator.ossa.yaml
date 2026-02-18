@@ -49,6 +49,7 @@ spec:
     - type: api
       name: analyze_content
       description: Analyze content for spam, toxicity, and policy violations
+      operation: read
       parameters:
         content:
           type: string
@@ -61,6 +62,7 @@ spec:
     - type: api
       name: check_history
       description: Check user's moderation history
+      operation: read
       parameters:
         user_id:
           type: integer
@@ -69,6 +71,7 @@ spec:
     - type: api
       name: moderate_content
       description: Apply moderation action to content
+      operation: update
       parameters:
         entity_id:
           type: integer
@@ -105,3 +108,110 @@ spec:
       export_traces: true
       export_metrics: true
       track_user_satisfaction: true
+
+extensions:
+  drupal:
+    execution_model: ai-agent-runner
+    drupal_version: "^11"
+    php_version: "8.3"
+    module_dependencies:
+      - ai
+      - ai_agents
+      - tool
+      - eca
+
+    ai_agent_plugin: content_moderator
+    content_types:
+      - node
+      - comment
+      - user_profile
+    permissions:
+      - administer content moderation
+      - access content moderation reports
+
+    tool_plugins:
+      - id: content_moderator.analyze_content
+        ossa_tool_ref: analyze_content
+        operation: read
+        ai_callable: true
+        input_schema:
+          type: object
+          properties:
+            content:
+              type: string
+            content_type:
+              type: string
+              enum: [node, comment, user_profile]
+          required: [content]
+        output_schema:
+          type: object
+          properties:
+            score:
+              type: number
+            flags:
+              type: array
+              items:
+                type: string
+            status:
+              type: string
+              enum: [APPROVED, FLAGGED, REJECTED]
+
+      - id: content_moderator.check_history
+        ossa_tool_ref: check_history
+        operation: read
+        ai_callable: true
+        input_schema:
+          type: object
+          properties:
+            user_id:
+              type: integer
+          required: [user_id]
+        output_schema:
+          type: object
+          properties:
+            total_actions:
+              type: integer
+            violations:
+              type: integer
+
+      - id: content_moderator.moderate_content
+        ossa_tool_ref: moderate_content
+        operation: update
+        ai_callable: true
+        input_schema:
+          type: object
+          properties:
+            entity_id:
+              type: integer
+            action:
+              type: string
+              enum: [approve, flag, unpublish, block_user]
+          required: [entity_id, action]
+        output_schema:
+          type: object
+          properties:
+            success:
+              type: boolean
+            message:
+              type: string
+
+    eca_events:
+      - content_entity:presave
+      - content_entity:insert
+
+    actions:
+      - content_moderator_moderate_action
+
+    conditions:
+      - ossa_agent_enabled
+
+    recipes:
+      - name: content-moderator-agent
+        description: Install and configure the OSSA content moderator agent
+        type: AI Agent
+
+    hooks:
+      - name: CronHooks
+        hook: cron
+      - name: EntityHooks
+        hook: entity_presave
