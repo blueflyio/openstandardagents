@@ -1,5 +1,7 @@
 # OSSA Documentation
 
+**Naming convention**: Use kebab-case for directories and file names in `docs/`. Reserve UPPER_SNAKE for ADR/decision docs only.
+
 Open Standard for Software Agents (OSSA) - The OpenAPI for Agents
 
 This documentation provides comprehensive guidance for implementing, deploying, and operating production-ready agent systems using the OSSA specification.

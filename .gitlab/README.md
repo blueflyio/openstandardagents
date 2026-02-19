@@ -1,5 +1,7 @@
 # GitLab Agent Platform Architecture
 
+**Naming convention**: Use kebab-case for directories and most files in `.gitlab/`. Reserve UPPER_SNAKE for ADR/decision docs only (e.g. `ADR-001-*.md`).
+
 This directory contains the complete GitLab Duo Agent Platform configuration for OSSA (Open Standard Agents). All subdirectories work together to provide autonomous agent capabilities for GitLab projects.
 
 ## Architecture Overview
