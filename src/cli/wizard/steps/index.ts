@@ -12,4 +12,6 @@ export { configureAutonomyStep } from './06-autonomy.js';
 export { configureObservabilityStep } from './07-observability.js';
 export { configureDeploymentStep } from './08-deployment.js';
 export { configureAdvancedStep } from './09-advanced.js';
+export { configureTokenEfficiencyStep } from './09a-token-efficiency.js';
+export { configureSeparationOfDutiesStep } from './09b-separation-of-duties.js';
 export { reviewAndSaveStep } from './10-review.js';

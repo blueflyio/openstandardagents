@@ -26,14 +26,23 @@ function resolvePackageRoot(): string {
   // ESM (production build) - __dirname not available
   // Check if process.cwd() IS the package root
   try {
-    const pkg = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf-8'));
+    const pkg = JSON.parse(
+      readFileSync(join(process.cwd(), 'package.json'), 'utf-8')
+    );
     if (pkg.name === '@bluefly/openstandardagents') {
       return process.cwd();
     }
-  } catch { /* not package root */ }
+  } catch {
+    /* not package root */
+  }
 
   // Check node_modules (installed as dependency)
-  const nmPath = join(process.cwd(), 'node_modules', '@bluefly', 'openstandardagents');
+  const nmPath = join(
+    process.cwd(),
+    'node_modules',
+    '@bluefly',
+    'openstandardagents'
+  );
   if (existsSync(join(nmPath, 'package.json'))) {
     return nmPath;
   }

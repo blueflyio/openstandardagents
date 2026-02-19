@@ -138,7 +138,7 @@ describe('AnthropicExporter', () => {
       expect(serverFile).toBeDefined();
       expect(serverFile?.type).toBe('code');
       expect(serverFile?.content).toContain('from fastapi import FastAPI');
-      expect(serverFile?.content).toContain('@app.post(\"/chat\"');
+      expect(serverFile?.content).toContain('@app.post("/chat"');
     });
 
     it('should generate openapi.yaml', async () => {

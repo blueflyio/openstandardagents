@@ -174,9 +174,7 @@ function generateTeamSection(manifest: OssaAgent): string | null {
 
   lines.push(`- **Model**: ${team.model}`);
   if (team.lead) lines.push(`- **Lead**: ${team.lead}`);
-  lines.push(
-    `- **Delegate Mode**: ${team.delegateMode || 'task-list'}`
-  );
+  lines.push(`- **Delegate Mode**: ${team.delegateMode || 'task-list'}`);
   lines.push('');
 
   // Members table
@@ -227,9 +225,7 @@ function generateCoordinationSection(manifest: OssaAgent): string | null {
   const lines: string[] = ['## Coordination\n'];
 
   if (team?.communication) {
-    lines.push(
-      `- **Channel**: ${team.communication.channel || 'task-list'}`
-    );
+    lines.push(`- **Channel**: ${team.communication.channel || 'task-list'}`);
     lines.push(
       `- **Consensus**: ${team.communication.consensus || 'leader-decides'}`
     );
@@ -238,8 +234,7 @@ function generateCoordinationSection(manifest: OssaAgent): string | null {
   if (coord) {
     if (coord.handoffStrategy)
       lines.push(`- **Handoff Strategy**: ${coord.handoffStrategy}`);
-    if (coord.teamModel)
-      lines.push(`- **Team Model**: ${coord.teamModel}`);
+    if (coord.teamModel) lines.push(`- **Team Model**: ${coord.teamModel}`);
     if (coord.taskCoordination)
       lines.push(`- **Task Coordination**: ${coord.taskCoordination}`);
     if (coord.taskPersistence)
@@ -265,12 +260,8 @@ function generateCoordinationSection(manifest: OssaAgent): string | null {
   if (team?.deployment) {
     lines.push('');
     lines.push('### Deployment\n');
-    lines.push(
-      `- **Backend**: ${team.deployment.backend || 'in-process'}`
-    );
-    lines.push(
-      `- **Max Concurrency**: ${team.deployment.maxConcurrency || 5}`
-    );
+    lines.push(`- **Backend**: ${team.deployment.backend || 'in-process'}`);
+    lines.push(`- **Max Concurrency**: ${team.deployment.maxConcurrency || 5}`);
   }
 
   lines.push('');
@@ -318,10 +309,7 @@ function generateConstraintsSection(manifest: OssaAgent): string | null {
   return lines.join('\n');
 }
 
-function generateFooter(
-  manifest: OssaAgent,
-  pattern: string
-): string {
+function generateFooter(manifest: OssaAgent, pattern: string): string {
   const version = manifest.apiVersion || 'ossa/v0.4';
   return `---
 

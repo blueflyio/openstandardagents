@@ -306,6 +306,8 @@ async function createCustomAgent(
   state: WizardState,
   options: WizardOptions
 ): Promise<void> {
+  state.totalSteps = 13;
+
   // Step 1: Agent Type
   await selectAgentType(state);
 
@@ -333,8 +335,24 @@ async function createCustomAgent(
   // Step 9: Extensions
   await configureExtensions(state);
 
-  // Step 10: Save
-  await saveAgent(state, options);
+  // Step 10: Separation of Duties
+  const { configureSeparationOfDutiesStep } =
+    await import('../wizard/steps/09b-separation-of-duties.js');
+  await configureSeparationOfDutiesStep(state);
+
+  // Step 11: Token Efficiency (v0.4)
+  const { configureTokenEfficiencyStep } =
+    await import('../wizard/steps/09a-token-efficiency.js');
+  await configureTokenEfficiencyStep(state);
+
+  // Step 12: Deployment
+  const { configureDeploymentStep } =
+    await import('../wizard/steps/08-deployment.js');
+  await configureDeploymentStep(state);
+
+  // Step 13: Review & Save
+  const { reviewAndSaveStep } = await import('../wizard/steps/10-review.js');
+  await reviewAndSaveStep(state, options);
 }
 
 /**
@@ -1719,7 +1737,8 @@ async function idCardWizard(options: {
   if (options.dryRun) {
     console_ui.info('Dry run — showing YAML output:');
     console.log(
-      '\n' + chalk.gray(safeStringifyYAML({ idCard }, { indent: 2, lineWidth: 0 }))
+      '\n' +
+        chalk.gray(safeStringifyYAML({ idCard }, { indent: 2, lineWidth: 0 }))
     );
     return;
   }
@@ -1727,7 +1746,10 @@ async function idCardWizard(options: {
   const outputPath = options.output || manifestPath;
   if (!outputPath) {
     // No manifest, output standalone ID card YAML
-    const idCardYaml = safeStringifyYAML({ idCard }, { indent: 2, lineWidth: 0 });
+    const idCardYaml = safeStringifyYAML(
+      { idCard },
+      { indent: 2, lineWidth: 0 }
+    );
     console.log('\n' + idCardYaml);
     console_ui.info(
       'No output path specified. Copy the YAML above into your manifest under metadata.idCard'
@@ -1759,6 +1781,10 @@ async function idCardWizard(options: {
 
 export const agentWizardCommand = new Command('agent-wizard')
   .description("Interactive wizard for creating OSSA agents (THE WORLD'S BEST)")
+  .addHelpText(
+    'after',
+    'Token efficiency and deployment: https://openstandardagents.org/docs/token-efficiency-and-deployment-tuning'
+  )
   .option('-o, --output <path>', 'Output file path', 'agent.ossa.yaml')
   .option('-d, --directory <dir>', 'Agent directory', '.agents')
   .option('-t, --template <id>', 'Use a template')

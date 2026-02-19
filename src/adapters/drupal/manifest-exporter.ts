@@ -570,10 +570,7 @@ ai_callable: true
    *
    * Philosophy: "OSSA defines WHAT, Drupal executes HOW"
    */
-  private generateEcaModelYaml(
-    manifest: OssaAgent,
-    agentName: string
-  ): string {
+  private generateEcaModelYaml(manifest: OssaAgent, agentName: string): string {
     const displayName = toLabel(manifest.metadata?.name || agentName);
 
     // Check for drupal extension hints
@@ -640,13 +637,7 @@ actions:
     const llmConfig = (manifest.spec?.llm as any) || {};
 
     // Install list: contrib modules only (no custom module)
-    const installModules = [
-      'ai',
-      'ai_agents',
-      'ai_agents_ossa',
-      'tool',
-      'eca',
-    ];
+    const installModules = ['ai', 'ai_agents', 'ai_agents_ossa', 'tool', 'eca'];
 
     // Build config actions for tool_ai_connector entities
     const toolConfigLines: string[] = [];
@@ -683,5 +674,4 @@ config:
 
     return recipe;
   }
-
 }

@@ -255,7 +255,9 @@ export abstract class BaseExporter extends BaseAdapter {
    */
   protected getCapabilities(manifest: OssaAgent): string[] {
     return (
-      (manifest.spec?.capabilities || []) as Array<string | Record<string, unknown>>
+      (manifest.spec?.capabilities || []) as Array<
+        string | Record<string, unknown>
+      >
     ).map((c) => (typeof c === 'string' ? c : (c as any).name || ''));
   }
 }

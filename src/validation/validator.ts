@@ -54,6 +54,14 @@ export class OSSAValidator {
     const valid = this.ajv.validate(this.schema, manifest);
 
     if (valid) {
+      const sodError = this.validateSeparationOfDuties(manifest);
+      if (sodError) {
+        return {
+          valid: false,
+          errors: [sodError],
+          warnings: this.generateWarnings(manifest),
+        };
+      }
       return { valid: true, warnings: this.generateWarnings(manifest) };
     }
 
@@ -86,6 +94,25 @@ export class OSSAValidator {
         errors: [`Failed to read or parse file: ${error}`],
       };
     }
+  }
+
+  /**
+   * Validate separation of duties: role must not be in conflicts_with
+   */
+  private validateSeparationOfDuties(
+    manifest: Record<string, unknown>
+  ): string | null {
+    const spec = manifest.spec as Record<string, unknown> | undefined;
+    const separation = spec?.separation as
+      | { role?: string; conflicts_with?: string[] }
+      | undefined;
+    if (!separation?.role || !Array.isArray(separation.conflicts_with)) {
+      return null;
+    }
+    if (separation.conflicts_with.includes(separation.role)) {
+      return `spec.separation: role "${separation.role}" cannot be in conflicts_with (separation of duties)`;
+    }
+    return null;
   }
 
   /**

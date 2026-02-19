@@ -126,17 +126,29 @@ const FRAMEWORK_REQUIREMENTS: Record<string, FrameworkRequirement[]> = {
     {
       id: 'SOC2-CC6.1',
       description: 'Logical and physical access controls',
-      controls: ['rbac-enforcement', 'least-privilege-access', 'access-review-quarterly'],
+      controls: [
+        'rbac-enforcement',
+        'least-privilege-access',
+        'access-review-quarterly',
+      ],
     },
     {
       id: 'SOC2-CC6.3',
       description: 'Role-based access with segregation of duties',
-      controls: ['role-separation', 'approval-workflows', 'privilege-escalation-monitoring'],
+      controls: [
+        'role-separation',
+        'approval-workflows',
+        'privilege-escalation-monitoring',
+      ],
     },
     {
       id: 'SOC2-CC7.2',
       description: 'System monitoring and anomaly detection',
-      controls: ['audit-logging', 'anomaly-detection', 'incident-response-plan'],
+      controls: [
+        'audit-logging',
+        'anomaly-detection',
+        'incident-response-plan',
+      ],
     },
     {
       id: 'SOC2-CC8.1',
@@ -148,17 +160,29 @@ const FRAMEWORK_REQUIREMENTS: Record<string, FrameworkRequirement[]> = {
     {
       id: 'HIPAA-164.312(a)',
       description: 'Access control -- unique user identification',
-      controls: ['unique-agent-identity', 'emergency-access-procedure', 'automatic-logoff'],
+      controls: [
+        'unique-agent-identity',
+        'emergency-access-procedure',
+        'automatic-logoff',
+      ],
     },
     {
       id: 'HIPAA-164.312(b)',
       description: 'Audit controls -- hardware/software/procedural',
-      controls: ['audit-trail-immutable', 'audit-retention-6-years', 'audit-review-regular'],
+      controls: [
+        'audit-trail-immutable',
+        'audit-retention-6-years',
+        'audit-review-regular',
+      ],
     },
     {
       id: 'HIPAA-164.312(c)',
       description: 'Integrity controls',
-      controls: ['data-integrity-verification', 'tamper-detection', 'checksums'],
+      controls: [
+        'data-integrity-verification',
+        'tamper-detection',
+        'checksums',
+      ],
     },
     {
       id: 'HIPAA-164.312(e)',
@@ -170,22 +194,38 @@ const FRAMEWORK_REQUIREMENTS: Record<string, FrameworkRequirement[]> = {
     {
       id: 'GDPR-Art5',
       description: 'Principles of data processing',
-      controls: ['purpose-limitation', 'data-minimisation', 'storage-limitation'],
+      controls: [
+        'purpose-limitation',
+        'data-minimisation',
+        'storage-limitation',
+      ],
     },
     {
       id: 'GDPR-Art25',
       description: 'Data protection by design and default',
-      controls: ['privacy-by-design', 'default-privacy-settings', 'dpia-required'],
+      controls: [
+        'privacy-by-design',
+        'default-privacy-settings',
+        'dpia-required',
+      ],
     },
     {
       id: 'GDPR-Art30',
       description: 'Records of processing activities',
-      controls: ['processing-records', 'data-flow-mapping', 'controller-documentation'],
+      controls: [
+        'processing-records',
+        'data-flow-mapping',
+        'controller-documentation',
+      ],
     },
     {
       id: 'GDPR-Art33',
       description: 'Notification of data breach',
-      controls: ['breach-detection-72h', 'breach-notification-procedure', 'breach-documentation'],
+      controls: [
+        'breach-detection-72h',
+        'breach-notification-procedure',
+        'breach-documentation',
+      ],
     },
   ],
   'PCI-DSS': [
@@ -197,24 +237,40 @@ const FRAMEWORK_REQUIREMENTS: Record<string, FrameworkRequirement[]> = {
     {
       id: 'PCI-DSS-Req4',
       description: 'Encrypt cardholder data in transit',
-      controls: ['tls-1.2-minimum', 'certificate-management', 'no-plaintext-transmission'],
+      controls: [
+        'tls-1.2-minimum',
+        'certificate-management',
+        'no-plaintext-transmission',
+      ],
     },
     {
       id: 'PCI-DSS-Req10',
       description: 'Track and monitor access',
-      controls: ['audit-trail-all-access', 'log-retention-1-year', 'daily-log-review'],
+      controls: [
+        'audit-trail-all-access',
+        'log-retention-1-year',
+        'daily-log-review',
+      ],
     },
     {
       id: 'PCI-DSS-Req11',
       description: 'Regular security testing',
-      controls: ['quarterly-vulnerability-scan', 'annual-penetration-test', 'ids-ips'],
+      controls: [
+        'quarterly-vulnerability-scan',
+        'annual-penetration-test',
+        'ids-ips',
+      ],
     },
   ],
   FedRAMP: [
     {
       id: 'FedRAMP-AC',
       description: 'Access control family (NIST 800-53)',
-      controls: ['account-management', 'access-enforcement', 'separation-of-duties'],
+      controls: [
+        'account-management',
+        'access-enforcement',
+        'separation-of-duties',
+      ],
     },
     {
       id: 'FedRAMP-AU',
@@ -224,12 +280,20 @@ const FRAMEWORK_REQUIREMENTS: Record<string, FrameworkRequirement[]> = {
     {
       id: 'FedRAMP-SC',
       description: 'System and communications protection',
-      controls: ['fips-140-2-cryptography', 'boundary-protection', 'cryptographic-key-management'],
+      controls: [
+        'fips-140-2-cryptography',
+        'boundary-protection',
+        'cryptographic-key-management',
+      ],
     },
     {
       id: 'FedRAMP-CM',
       description: 'Configuration management',
-      controls: ['baseline-configuration', 'configuration-change-control', 'least-functionality'],
+      controls: [
+        'baseline-configuration',
+        'configuration-change-control',
+        'least-functionality',
+      ],
     },
   ],
 };
@@ -237,10 +301,14 @@ const FRAMEWORK_REQUIREMENTS: Record<string, FrameworkRequirement[]> = {
 // ── Default autonomy levels ──────────────────────────────────────────────────
 
 const AUTONOMY_LEVEL_DESCRIPTIONS: Record<string, string> = {
-  autonomous: 'Agent operates independently within defined boundaries. No human approval required for standard operations.',
-  'semi-autonomous': 'Agent operates independently for routine tasks but requires human approval for high-risk or irreversible actions.',
-  supervised: 'Agent proposes actions and waits for human review before execution. All outputs are reviewed.',
-  'human-in-the-loop': 'Agent assists humans but never acts independently. Every action requires explicit human confirmation.',
+  autonomous:
+    'Agent operates independently within defined boundaries. No human approval required for standard operations.',
+  'semi-autonomous':
+    'Agent operates independently for routine tasks but requires human approval for high-risk or irreversible actions.',
+  supervised:
+    'Agent proposes actions and waits for human review before execution. All outputs are reviewed.',
+  'human-in-the-loop':
+    'Agent assists humans but never acts independently. Every action requires explicit human confirmation.',
 };
 
 // ── Service implementation ───────────────────────────────────────────────────
@@ -258,13 +326,23 @@ export class GovernanceGeneratorService {
     const agentName = manifest.metadata?.name ?? 'unnamed-agent';
     const agentVersion = manifest.metadata?.version ?? '0.0.0';
     const agentKind = manifest.metadata?.agentKind ?? 'worker';
-    const architecturePattern = manifest.metadata?.agentArchitecture?.pattern ?? 'single';
+    const architecturePattern =
+      manifest.metadata?.agentArchitecture?.pattern ?? 'single';
 
     // 1. compliance.yaml
-    files.push(this.generateComplianceFile(governance, agentName, agentVersion, agentKind));
+    files.push(
+      this.generateComplianceFile(
+        governance,
+        agentName,
+        agentVersion,
+        agentKind
+      )
+    );
 
     // 2. policies/autonomy.yaml
-    files.push(this.generateAutonomyPolicy(autonomy, governance, agentName, agentKind));
+    files.push(
+      this.generateAutonomyPolicy(autonomy, governance, agentName, agentKind)
+    );
 
     // 3. policies/constraints.yaml
     files.push(this.generateConstraintsPolicy(constraints, agentName));
@@ -273,7 +351,13 @@ export class GovernanceGeneratorService {
     const teamMembers = this.resolveTeamMembers(manifest);
     if (teamMembers.length > 0) {
       files.push(
-        this.generateTeamPermissions(teamMembers, autonomy, governance, agentName, architecturePattern)
+        this.generateTeamPermissions(
+          teamMembers,
+          autonomy,
+          governance,
+          agentName,
+          architecturePattern
+        )
       );
     }
 
@@ -291,9 +375,13 @@ export class GovernanceGeneratorService {
    */
   private resolveGovernanceExtension(manifest: OssaAgent): GovernanceExtension {
     const spec = manifest.spec as AnyRecord | undefined;
-    const topLevel = (manifest.extensions as AnyRecord)?.governance as GovernanceExtension | undefined;
+    const topLevel = (manifest.extensions as AnyRecord)?.governance as
+      | GovernanceExtension
+      | undefined;
     const specLevel = spec?.governance as GovernanceExtension | undefined;
-    const extLevel = spec?.extensions?.governance as GovernanceExtension | undefined;
+    const extLevel = spec?.extensions?.governance as
+      | GovernanceExtension
+      | undefined;
 
     // Merge: spec.governance > spec.extensions.governance > extensions.governance
     return {
@@ -335,7 +423,7 @@ export class GovernanceGeneratorService {
     governance: GovernanceExtension,
     agentName: string,
     agentVersion: string,
-    agentKind: string,
+    agentKind: string
   ): ExportFile {
     const compliance = governance.compliance ?? {};
     const quality = governance.quality ?? governance.quality_requirements ?? {};
@@ -354,8 +442,10 @@ export class GovernanceGeneratorService {
 
     // Build framework-specific requirement sections
     const frameworkSections: AnyRecord[] = declaredFrameworks.map((fw) => {
-      const upperFw = fw.toUpperCase() === 'PCI-DSS' ? 'PCI-DSS' : fw.toUpperCase();
-      const requirements = FRAMEWORK_REQUIREMENTS[upperFw] ?? FRAMEWORK_REQUIREMENTS[fw] ?? [];
+      const upperFw =
+        fw.toUpperCase() === 'PCI-DSS' ? 'PCI-DSS' : fw.toUpperCase();
+      const requirements =
+        FRAMEWORK_REQUIREMENTS[upperFw] ?? FRAMEWORK_REQUIREMENTS[fw] ?? [];
       return {
         framework: fw,
         status: 'declared',
@@ -468,11 +558,13 @@ export class GovernanceGeneratorService {
     autonomy: AutonomyBlock,
     governance: GovernanceExtension,
     agentName: string,
-    agentKind: string,
+    agentKind: string
   ): ExportFile {
     const level = autonomy.level ?? this.inferAutonomyLevel(agentKind);
     const approvalRequired =
-      autonomy.approval_required ?? autonomy.approvalRequired ?? level !== 'autonomous';
+      autonomy.approval_required ??
+      autonomy.approvalRequired ??
+      level !== 'autonomous';
     const allowedActions =
       autonomy.allowed_actions ?? autonomy.allowedActions ?? [];
     const blockedActions =
@@ -489,7 +581,10 @@ export class GovernanceGeneratorService {
         : this.defaultBlockedActions(agentKind);
 
     // Derive escalation policy from autonomy level
-    const escalationPolicy = this.buildEscalationPolicy(level, approvalRequired);
+    const escalationPolicy = this.buildEscalationPolicy(
+      level,
+      approvalRequired
+    );
 
     // Authorization-based constraints
     const clearanceLevel =
@@ -502,7 +597,8 @@ export class GovernanceGeneratorService {
       kind: 'AutonomyPolicy',
       metadata: {
         agent: agentName,
-        description: AUTONOMY_LEVEL_DESCRIPTIONS[level] ?? `Autonomy level: ${level}`,
+        description:
+          AUTONOMY_LEVEL_DESCRIPTIONS[level] ?? `Autonomy level: ${level}`,
       },
       spec: {
         level,
@@ -519,7 +615,8 @@ export class GovernanceGeneratorService {
             description: 'Read-only operations, no side effects',
           },
           medium: {
-            requiresApproval: level === 'supervised' || level === 'human-in-the-loop',
+            requiresApproval:
+              level === 'supervised' || level === 'human-in-the-loop',
             description: 'Write operations, reversible changes',
           },
           high: {
@@ -547,7 +644,7 @@ export class GovernanceGeneratorService {
    */
   private generateConstraintsPolicy(
     constraints: ConstraintsBlock,
-    agentName: string,
+    agentName: string
   ): ExportFile {
     const cost = constraints.cost ?? {};
     const performance = constraints.performance ?? {};
@@ -617,19 +714,20 @@ export class GovernanceGeneratorService {
     autonomy: AutonomyBlock,
     governance: GovernanceExtension,
     agentName: string,
-    architecturePattern: string,
+    architecturePattern: string
   ): ExportFile {
-    const teamLevel =
-      autonomy.level ?? 'semi-autonomous';
+    const teamLevel = autonomy.level ?? 'semi-autonomous';
     const baseClearance =
       governance.authorization?.clearanceLevel ??
       governance.authorization?.clearance_level ??
       2;
 
     const memberPermissions = members.map((member) => {
-      const memberName = member.name ?? member.agent_ref ?? member.agentRef ?? 'unnamed';
+      const memberName =
+        member.name ?? member.agent_ref ?? member.agentRef ?? 'unnamed';
       const memberRole = member.role ?? 'worker';
-      const memberKind = member.kind ?? member.agentKind ?? this.inferKindFromRole(memberRole);
+      const memberKind =
+        member.kind ?? member.agentKind ?? this.inferKindFromRole(memberRole);
 
       const tier = this.computeMemberTier(memberKind, baseClearance);
 
@@ -662,12 +760,17 @@ export class GovernanceGeneratorService {
         coordinationModel: this.inferCoordinationModel(architecturePattern),
         members: memberPermissions,
         defaults: {
-          description: 'Default permissions applied to any member not explicitly listed',
+          description:
+            'Default permissions applied to any member not explicitly listed',
           clearanceLevel: Math.max(0, baseClearance - 1),
           accessTier: 'tier_2_write_limited',
           approvalRequired: true,
           allowedOperations: ['read', 'analyze', 'report'],
-          blockedOperations: ['delete', 'deploy-production', 'modify-governance'],
+          blockedOperations: [
+            'delete',
+            'deploy-production',
+            'modify-governance',
+          ],
         },
       },
     };
@@ -686,14 +789,12 @@ export class GovernanceGeneratorService {
   private generateAuditConfig(
     governance: GovernanceExtension,
     agentName: string,
-    agentVersion: string,
+    agentVersion: string
   ): ExportFile {
     const compliance = governance.compliance ?? {};
     const declaredFrameworks = compliance.frameworks ?? [];
     const auditRequired =
-      compliance.auditLogging ??
-      compliance.audit_logging_required ??
-      true; // Default: audit is always enabled
+      compliance.auditLogging ?? compliance.audit_logging_required ?? true; // Default: audit is always enabled
 
     // Retention based on strictest compliance requirement
     const retentionDays = this.computeRetentionDays(declaredFrameworks);
@@ -728,7 +829,8 @@ export class GovernanceGeneratorService {
           approvalDecisions: {
             enabled: true,
             detail: 'full',
-            description: 'Log all approval requests and decisions (approved, denied, timed-out)',
+            description:
+              'Log all approval requests and decisions (approved, denied, timed-out)',
           },
           policyEvaluations: {
             enabled: true,
@@ -748,12 +850,14 @@ export class GovernanceGeneratorService {
           configChanges: {
             enabled: true,
             detail: 'full',
-            description: 'Log changes to agent configuration and governance policies',
+            description:
+              'Log changes to agent configuration and governance policies',
           },
           costTracking: {
             enabled: true,
             detail: 'summary',
-            description: 'Log token usage, cost accrual, and budget threshold events',
+            description:
+              'Log token usage, cost accrual, and budget threshold events',
           },
         },
         integrity: {
@@ -766,9 +870,21 @@ export class GovernanceGeneratorService {
         redaction: {
           enabled: true,
           patterns: [
-            { type: 'pii', action: 'hash', description: 'Hash personally identifiable information' },
-            { type: 'secrets', action: 'redact', description: 'Redact API keys, tokens, and credentials' },
-            { type: 'phi', action: 'hash', description: 'Hash protected health information (HIPAA)' },
+            {
+              type: 'pii',
+              action: 'hash',
+              description: 'Hash personally identifiable information',
+            },
+            {
+              type: 'secrets',
+              action: 'redact',
+              description: 'Redact API keys, tokens, and credentials',
+            },
+            {
+              type: 'phi',
+              action: 'hash',
+              description: 'Hash protected health information (HIPAA)',
+            },
           ],
         },
       },
@@ -790,7 +906,8 @@ export class GovernanceGeneratorService {
    */
   private inferDataClassification(frameworks: string[]): string {
     const upper = frameworks.map((f) => f.toUpperCase());
-    if (upper.includes('HIPAA') || upper.includes('PCI-DSS')) return 'restricted';
+    if (upper.includes('HIPAA') || upper.includes('PCI-DSS'))
+      return 'restricted';
     if (upper.includes('FEDRAMP')) return 'confidential';
     if (upper.includes('SOC2') || upper.includes('GDPR')) return 'internal';
     return 'internal';
@@ -855,7 +972,12 @@ export class GovernanceGeneratorService {
     switch (agentKind) {
       case 'orchestrator':
       case 'coordinator':
-        return [...base, 'delegate-tasks', 'coordinate-agents', 'monitor-progress'];
+        return [
+          ...base,
+          'delegate-tasks',
+          'coordinate-agents',
+          'monitor-progress',
+        ];
       case 'executor':
       case 'worker':
         return [...base, 'execute-tasks', 'write-data', 'call-tools'];
@@ -886,7 +1008,12 @@ export class GovernanceGeneratorService {
       case 'reviewer':
       case 'monitor':
       case 'analyst':
-        return [...universal, 'write-data', 'execute-deployments', 'modify-configurations'];
+        return [
+          ...universal,
+          'write-data',
+          'execute-deployments',
+          'modify-configurations',
+        ];
       case 'assistant':
         return [...universal, 'execute-deployments', 'modify-infrastructure'];
       default:
@@ -899,7 +1026,7 @@ export class GovernanceGeneratorService {
    */
   private buildEscalationPolicy(
     level: string,
-    approvalRequired: boolean,
+    approvalRequired: boolean
   ): AnyRecord {
     const policy: AnyRecord = {
       enabled: level !== 'autonomous' || approvalRequired,
@@ -938,7 +1065,10 @@ export class GovernanceGeneratorService {
         policy.timeoutSeconds = 1800;
         break;
       default:
-        policy.triggerConditions = ['high-risk-action', 'blocked-action-attempted'];
+        policy.triggerConditions = [
+          'high-risk-action',
+          'blocked-action-attempted',
+        ];
         policy.timeoutSeconds = 600;
     }
 
@@ -950,18 +1080,22 @@ export class GovernanceGeneratorService {
    */
   private inferKindFromRole(role: string): string {
     const lower = role.toLowerCase();
-    if (lower.includes('lead') || lower.includes('manager') || lower.includes('orchestrat'))
+    if (
+      lower.includes('lead') ||
+      lower.includes('manager') ||
+      lower.includes('orchestrat')
+    )
       return 'team-lead';
-    if (lower.includes('review') || lower.includes('approv'))
-      return 'reviewer';
-    if (lower.includes('monitor') || lower.includes('watch') || lower.includes('observ'))
+    if (lower.includes('review') || lower.includes('approv')) return 'reviewer';
+    if (
+      lower.includes('monitor') ||
+      lower.includes('watch') ||
+      lower.includes('observ')
+    )
       return 'monitor';
-    if (lower.includes('sub') || lower.includes('helper'))
-      return 'subagent';
-    if (lower.includes('plan'))
-      return 'planner';
-    if (lower.includes('execut'))
-      return 'executor';
+    if (lower.includes('sub') || lower.includes('helper')) return 'subagent';
+    if (lower.includes('plan')) return 'planner';
+    if (lower.includes('execut')) return 'executor';
     return 'teammate';
   }
 
@@ -970,7 +1104,7 @@ export class GovernanceGeneratorService {
    */
   private computeMemberTier(
     memberKind: string,
-    baseClearance: number,
+    baseClearance: number
   ): {
     clearance: number;
     accessTier: string;
@@ -989,11 +1123,18 @@ export class GovernanceGeneratorService {
           accessTier: 'tier_3_full_access',
           approvalRequired: false,
           allowedOperations: [
-            'read', 'write', 'execute', 'delegate', 'coordinate',
-            'approve-member-actions', 'modify-team-config', 'view-audit-logs',
+            'read',
+            'write',
+            'execute',
+            'delegate',
+            'coordinate',
+            'approve-member-actions',
+            'modify-team-config',
+            'view-audit-logs',
           ],
           blockedOperations: [
-            'modify-own-governance', 'disable-audit-logging',
+            'modify-own-governance',
+            'disable-audit-logging',
             'access-other-team-credentials',
           ],
           canEscalate: true,
@@ -1007,12 +1148,19 @@ export class GovernanceGeneratorService {
           accessTier: 'tier_2_write_limited',
           approvalRequired: false,
           allowedOperations: [
-            'read', 'analyze', 'plan', 'coordinate', 'create-issues',
-            'assign-tasks', 'report',
+            'read',
+            'analyze',
+            'plan',
+            'coordinate',
+            'create-issues',
+            'assign-tasks',
+            'report',
           ],
           blockedOperations: [
-            'modify-governance', 'deploy-production',
-            'delete-data', 'modify-infrastructure',
+            'modify-governance',
+            'deploy-production',
+            'delete-data',
+            'modify-infrastructure',
           ],
           canEscalate: true,
           canDelegate: true,
@@ -1026,12 +1174,18 @@ export class GovernanceGeneratorService {
           accessTier: 'tier_2_write_limited',
           approvalRequired: true,
           allowedOperations: [
-            'read', 'write', 'execute-assigned-tasks', 'call-tools',
+            'read',
+            'write',
+            'execute-assigned-tasks',
+            'call-tools',
             'report-progress',
           ],
           blockedOperations: [
-            'modify-governance', 'deploy-production', 'approve-changes',
-            'delete-data', 'modify-team-config',
+            'modify-governance',
+            'deploy-production',
+            'approve-changes',
+            'delete-data',
+            'modify-team-config',
           ],
           canEscalate: true,
           canDelegate: false,
@@ -1043,12 +1197,19 @@ export class GovernanceGeneratorService {
           accessTier: 'tier_1_read',
           approvalRequired: false,
           allowedOperations: [
-            'read', 'analyze', 'review', 'approve-changes', 'add-comments',
+            'read',
+            'analyze',
+            'review',
+            'approve-changes',
+            'add-comments',
             'request-changes',
           ],
           blockedOperations: [
-            'write-code', 'execute-deployments', 'modify-governance',
-            'delete-data', 'modify-infrastructure',
+            'write-code',
+            'execute-deployments',
+            'modify-governance',
+            'delete-data',
+            'modify-infrastructure',
           ],
           canEscalate: true,
           canDelegate: false,
@@ -1060,12 +1221,18 @@ export class GovernanceGeneratorService {
           accessTier: 'tier_1_read',
           approvalRequired: true,
           allowedOperations: [
-            'read-assigned-scope', 'execute-specific-task', 'report-to-parent',
+            'read-assigned-scope',
+            'execute-specific-task',
+            'report-to-parent',
           ],
           blockedOperations: [
-            'write-outside-scope', 'communicate-external',
-            'modify-governance', 'deploy', 'delete-data',
-            'access-other-agent-data', 'modify-team-config',
+            'write-outside-scope',
+            'communicate-external',
+            'modify-governance',
+            'deploy',
+            'delete-data',
+            'access-other-agent-data',
+            'modify-team-config',
           ],
           canEscalate: false,
           canDelegate: false,
@@ -1078,12 +1245,18 @@ export class GovernanceGeneratorService {
           accessTier: 'tier_1_read',
           approvalRequired: false,
           allowedOperations: [
-            'read', 'observe-metrics', 'analyze-data', 'generate-reports',
+            'read',
+            'observe-metrics',
+            'analyze-data',
+            'generate-reports',
             'trigger-alerts',
           ],
           blockedOperations: [
-            'write-data', 'execute-tasks', 'modify-governance',
-            'deploy', 'delete-data',
+            'write-data',
+            'execute-tasks',
+            'modify-governance',
+            'deploy',
+            'delete-data',
           ],
           canEscalate: true,
           canDelegate: false,
@@ -1095,9 +1268,7 @@ export class GovernanceGeneratorService {
           accessTier: 'tier_1_read',
           approvalRequired: true,
           allowedOperations: ['read', 'analyze', 'report'],
-          blockedOperations: [
-            'write', 'delete', 'deploy', 'modify-governance',
-          ],
+          blockedOperations: ['write', 'delete', 'deploy', 'modify-governance'],
           canEscalate: false,
           canDelegate: false,
         };

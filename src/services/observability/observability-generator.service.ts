@@ -102,7 +102,9 @@ export class ObservabilityGeneratorService {
 
   private resolveEndpoints(manifest: OssaAgent): ObservabilityEndpoints {
     const obs = manifest.spec?.observability;
-    const ext = manifest.extensions?.observability as Record<string, unknown> | undefined;
+    const ext = manifest.extensions?.observability as
+      | Record<string, unknown>
+      | undefined;
     const extTraces = ext?.traces as Record<string, unknown> | undefined;
     const extMetrics = ext?.metrics as Record<string, unknown> | undefined;
 
@@ -123,8 +125,7 @@ export class ObservabilityGeneratorService {
     const metricsExporter =
       (obs?.metrics?.exporter as string | undefined) ?? 'otlp';
 
-    const sampleRate =
-      (extTraces?.sample_rate as number | undefined) ?? 1.0;
+    const sampleRate = (extTraces?.sample_rate as number | undefined) ?? 1.0;
 
     const collectionIntervalSeconds =
       (extMetrics?.collection_interval_seconds as number | undefined) ?? 60;
@@ -201,7 +202,7 @@ export class ObservabilityGeneratorService {
     identity: AgentIdentity,
     endpoints: ObservabilityEndpoints,
     tools: string[],
-    team: TeamMember[],
+    team: TeamMember[]
   ): ExportFile {
     const isMultiAgent = team.length > 0;
 
@@ -232,13 +233,41 @@ export class ObservabilityGeneratorService {
         resource: {
           attributes: [
             { key: 'service.name', value: identity.name, action: 'upsert' },
-            { key: 'service.version', value: identity.version, action: 'upsert' },
-            { key: 'gen_ai.agent.name', value: identity.name, action: 'upsert' },
-            { key: 'gen_ai.provider.name', value: identity.provider, action: 'upsert' },
-            { key: 'gen_ai.request.model', value: identity.model, action: 'upsert' },
-            { key: 'ossa.agent.type', value: identity.agentType, action: 'upsert' },
-            { key: 'ossa.agent.kind', value: identity.agentKind, action: 'upsert' },
-            { key: 'ossa.agent.architecture.pattern', value: identity.pattern, action: 'upsert' },
+            {
+              key: 'service.version',
+              value: identity.version,
+              action: 'upsert',
+            },
+            {
+              key: 'gen_ai.agent.name',
+              value: identity.name,
+              action: 'upsert',
+            },
+            {
+              key: 'gen_ai.provider.name',
+              value: identity.provider,
+              action: 'upsert',
+            },
+            {
+              key: 'gen_ai.request.model',
+              value: identity.model,
+              action: 'upsert',
+            },
+            {
+              key: 'ossa.agent.type',
+              value: identity.agentType,
+              action: 'upsert',
+            },
+            {
+              key: 'ossa.agent.kind',
+              value: identity.agentKind,
+              action: 'upsert',
+            },
+            {
+              key: 'ossa.agent.architecture.pattern',
+              value: identity.pattern,
+              action: 'upsert',
+            },
           ],
         },
 
@@ -282,7 +311,12 @@ export class ObservabilityGeneratorService {
     };
 
     // Add span definitions as documentation for instrumentation
-    const spanDefinitions = this.buildSpanDefinitions(identity, tools, team, isMultiAgent);
+    const spanDefinitions = this.buildSpanDefinitions(
+      identity,
+      tools,
+      team,
+      isMultiAgent
+    );
 
     const yamlContent = [
       `# OpenTelemetry Collector configuration for ${identity.name}`,
@@ -305,7 +339,10 @@ export class ObservabilityGeneratorService {
       '',
       '# ── Span Definitions (for instrumentation reference) ──',
       '#',
-      yaml.stringify({ _span_definitions: spanDefinitions }, { lineWidth: 120 }),
+      yaml.stringify(
+        { _span_definitions: spanDefinitions },
+        { lineWidth: 120 }
+      ),
     ].join('\n');
 
     return {
@@ -316,7 +353,9 @@ export class ObservabilityGeneratorService {
     };
   }
 
-  private buildTraceExporters(endpoints: ObservabilityEndpoints): Record<string, unknown> {
+  private buildTraceExporters(
+    endpoints: ObservabilityEndpoints
+  ): Record<string, unknown> {
     const exporters: Record<string, unknown> = {};
 
     switch (endpoints.tracesExporter) {
@@ -370,7 +409,7 @@ export class ObservabilityGeneratorService {
     identity: AgentIdentity,
     tools: string[],
     team: TeamMember[],
-    isMultiAgent: boolean,
+    isMultiAgent: boolean
   ): Record<string, unknown>[] {
     const spans: Record<string, unknown>[] = [
       {
@@ -453,7 +492,7 @@ export class ObservabilityGeneratorService {
             'ossa.coordination.pattern': identity.pattern,
             'ossa.coordination.leader': '${leader_name}',
           },
-        },
+        }
       );
 
       // Per-member invocation spans
@@ -482,7 +521,7 @@ export class ObservabilityGeneratorService {
     endpoints: ObservabilityEndpoints,
     constraints: AgentConstraints,
     tools: string[],
-    team: TeamMember[],
+    team: TeamMember[]
   ): ExportFile {
     const isMultiAgent = team.length > 0;
     const sanitizedName = identity.name.replace(/[^a-zA-Z0-9_]/g, '_');
@@ -493,7 +532,7 @@ export class ObservabilityGeneratorService {
       constraints,
       tools,
       team,
-      isMultiAgent,
+      isMultiAgent
     );
 
     // OTel Collector config fragment for metrics pipeline
@@ -535,7 +574,11 @@ export class ObservabilityGeneratorService {
         resource: {
           attributes: [
             { key: 'service.name', value: identity.name, action: 'upsert' },
-            { key: 'service.version', value: identity.version, action: 'upsert' },
+            {
+              key: 'service.version',
+              value: identity.version,
+              action: 'upsert',
+            },
           ],
         },
       },
@@ -554,10 +597,20 @@ export class ObservabilityGeneratorService {
     };
 
     // Prometheus recording rules for derived metrics
-    const recordingRules = this.buildRecordingRules(sanitizedName, identity, constraints, isMultiAgent);
+    const recordingRules = this.buildRecordingRules(
+      sanitizedName,
+      identity,
+      constraints,
+      isMultiAgent
+    );
 
     // Alert rules based on constraints
-    const alertRules = this.buildAlertRules(sanitizedName, identity, constraints, isMultiAgent);
+    const alertRules = this.buildAlertRules(
+      sanitizedName,
+      identity,
+      constraints,
+      isMultiAgent
+    );
 
     const yamlContent = [
       `# Metrics configuration for ${identity.name}`,
@@ -575,7 +628,10 @@ export class ObservabilityGeneratorService {
       yaml.stringify(collectorConfig, { lineWidth: 120 }),
       '',
       '# ── Metric Definitions ──',
-      yaml.stringify({ metric_definitions: metricDefinitions }, { lineWidth: 120 }),
+      yaml.stringify(
+        { metric_definitions: metricDefinitions },
+        { lineWidth: 120 }
+      ),
       '',
       '# ── Prometheus Recording Rules ──',
       yaml.stringify({ groups: [recordingRules] }, { lineWidth: 120 }),
@@ -592,7 +648,9 @@ export class ObservabilityGeneratorService {
     };
   }
 
-  private buildMetricExporters(endpoints: ObservabilityEndpoints): Record<string, unknown> {
+  private buildMetricExporters(
+    endpoints: ObservabilityEndpoints
+  ): Record<string, unknown> {
     const exporters: Record<string, unknown> = {};
 
     switch (endpoints.metricsExporter) {
@@ -621,7 +679,9 @@ export class ObservabilityGeneratorService {
     return exporters;
   }
 
-  private buildMetricExporterNames(endpoints: ObservabilityEndpoints): string[] {
+  private buildMetricExporterNames(
+    endpoints: ObservabilityEndpoints
+  ): string[] {
     const names: string[] = [];
     switch (endpoints.metricsExporter) {
       case 'prometheus':
@@ -642,7 +702,7 @@ export class ObservabilityGeneratorService {
     constraints: AgentConstraints,
     tools: string[],
     team: TeamMember[],
-    isMultiAgent: boolean,
+    isMultiAgent: boolean
   ): Record<string, unknown>[] {
     const metrics: Record<string, unknown>[] = [
       // ── Token Usage ───────────────────────────────────
@@ -651,7 +711,11 @@ export class ObservabilityGeneratorService {
         type: 'counter',
         unit: 'tokens',
         description: 'Total input tokens consumed by LLM requests',
-        labels: ['gen_ai.provider.name', 'gen_ai.request.model', 'gen_ai.agent.name'],
+        labels: [
+          'gen_ai.provider.name',
+          'gen_ai.request.model',
+          'gen_ai.agent.name',
+        ],
         semantic_convention: 'gen_ai.usage.input_tokens',
       },
       {
@@ -659,7 +723,11 @@ export class ObservabilityGeneratorService {
         type: 'counter',
         unit: 'tokens',
         description: 'Total output tokens generated by LLM responses',
-        labels: ['gen_ai.provider.name', 'gen_ai.request.model', 'gen_ai.agent.name'],
+        labels: [
+          'gen_ai.provider.name',
+          'gen_ai.request.model',
+          'gen_ai.agent.name',
+        ],
         semantic_convention: 'gen_ai.usage.output_tokens',
       },
       {
@@ -676,8 +744,13 @@ export class ObservabilityGeneratorService {
         name: 'gen_ai_client_operation_duration_seconds',
         type: 'histogram',
         unit: 'seconds',
-        description: 'Duration of gen_ai operations (chat, tool_call, invoke_agent)',
-        labels: ['gen_ai.operation.name', 'gen_ai.agent.name', 'gen_ai.request.model'],
+        description:
+          'Duration of gen_ai operations (chat, tool_call, invoke_agent)',
+        labels: [
+          'gen_ai.operation.name',
+          'gen_ai.agent.name',
+          'gen_ai.request.model',
+        ],
         buckets: [0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0, 15.0, 30.0, 60.0, 120.0],
         semantic_convention: 'gen_ai.client.operation.duration',
         slo_threshold: constraints.maxLatencySeconds,
@@ -793,9 +866,10 @@ export class ObservabilityGeneratorService {
         {
           name: `${sanitizedName}_team_member_utilization_ratio`,
           type: 'gauge',
-          description: 'Utilization ratio per team member (active time / total time)',
+          description:
+            'Utilization ratio per team member (active time / total time)',
           labels: ['gen_ai.agent.name', 'role'],
-        },
+        }
       );
 
       // Per-member metrics
@@ -814,7 +888,7 @@ export class ObservabilityGeneratorService {
             type: 'counter',
             description: `Invocations of team member: ${member.name}`,
             labels: ['status'],
-          },
+          }
         );
       }
     }
@@ -826,7 +900,7 @@ export class ObservabilityGeneratorService {
     sanitizedName: string,
     identity: AgentIdentity,
     constraints: AgentConstraints,
-    isMultiAgent: boolean,
+    isMultiAgent: boolean
   ): Record<string, unknown> {
     const rules: Record<string, unknown>[] = [
       // Token usage rate (tokens per minute)
@@ -883,7 +957,7 @@ export class ObservabilityGeneratorService {
         {
           record: `${sanitizedName}:coordination_overhead_ratio`,
           expr: `rate(${sanitizedName}_team_coordination_duration_seconds_sum[5m]) / rate(${sanitizedName}_invocation_duration_seconds_sum[5m])`,
-        },
+        }
       );
     }
 
@@ -898,7 +972,7 @@ export class ObservabilityGeneratorService {
     sanitizedName: string,
     identity: AgentIdentity,
     constraints: AgentConstraints,
-    isMultiAgent: boolean,
+    isMultiAgent: boolean
   ): Record<string, unknown> {
     const rules: Record<string, unknown>[] = [
       // High error rate
@@ -1003,7 +1077,8 @@ export class ObservabilityGeneratorService {
         },
         annotations: {
           summary: `Agent ${identity.name} tool failure rate exceeds 20%`,
-          description: 'Tool success rate is {{ $value | humanizePercentage }}.',
+          description:
+            'Tool success rate is {{ $value | humanizePercentage }}.',
         },
       },
     ];
@@ -1020,7 +1095,8 @@ export class ObservabilityGeneratorService {
           },
           annotations: {
             summary: `Agent ${identity.name} spending >30% of time on coordination`,
-            description: 'Coordination overhead is {{ $value | humanizePercentage }}. Consider simplifying the team structure.',
+            description:
+              'Coordination overhead is {{ $value | humanizePercentage }}. Consider simplifying the team structure.',
           },
         },
         {
@@ -1033,9 +1109,10 @@ export class ObservabilityGeneratorService {
           },
           annotations: {
             summary: `Agent ${identity.name} team handoff rate exceeds 10/5m`,
-            description: 'High handoff rate may indicate unclear task boundaries.',
+            description:
+              'High handoff rate may indicate unclear task boundaries.',
           },
-        },
+        }
       );
     }
 
@@ -1051,9 +1128,14 @@ export class ObservabilityGeneratorService {
     identity: AgentIdentity,
     constraints: AgentConstraints,
     tools: string[],
-    isMultiAgent: boolean,
+    isMultiAgent: boolean
   ): ExportFile {
-    const dashboard = this.buildGrafanaDashboard(identity, constraints, tools, isMultiAgent);
+    const dashboard = this.buildGrafanaDashboard(
+      identity,
+      constraints,
+      tools,
+      isMultiAgent
+    );
 
     return {
       path: 'observability/dashboards/agent-health.json',
@@ -1067,7 +1149,7 @@ export class ObservabilityGeneratorService {
     identity: AgentIdentity,
     constraints: AgentConstraints,
     tools: string[],
-    isMultiAgent: boolean,
+    isMultiAgent: boolean
   ): Record<string, unknown> {
     const sanitizedName = identity.name.replace(/[^a-zA-Z0-9_]/g, '_');
     const panels: Record<string, unknown>[] = [];
@@ -1086,8 +1168,8 @@ export class ObservabilityGeneratorService {
         `sum(increase(${sanitizedName}_invocations_total[24h]))`,
         { x: 0, y: gridY, w: 4, h: 4 },
         'none',
-        'blue',
-      ),
+        'blue'
+      )
     );
     panels.push(
       this.createStatPanel(
@@ -1096,8 +1178,8 @@ export class ObservabilityGeneratorService {
         `sum(${sanitizedName}_active_invocations)`,
         { x: 4, y: gridY, w: 4, h: 4 },
         'none',
-        'green',
-      ),
+        'green'
+      )
     );
     panels.push(
       this.createStatPanel(
@@ -1111,8 +1193,8 @@ export class ObservabilityGeneratorService {
           { color: 'green', value: null },
           { color: 'orange', value: constraints.maxErrorRate * 0.5 },
           { color: 'red', value: constraints.maxErrorRate },
-        ],
-      ),
+        ]
+      )
     );
     panels.push(
       this.createStatPanel(
@@ -1126,8 +1208,8 @@ export class ObservabilityGeneratorService {
           { color: 'green', value: null },
           { color: 'orange', value: constraints.maxLatencySeconds * 0.7 },
           { color: 'red', value: constraints.maxLatencySeconds },
-        ],
-      ),
+        ]
+      )
     );
     panels.push(
       this.createStatPanel(
@@ -1141,8 +1223,8 @@ export class ObservabilityGeneratorService {
           { color: 'green', value: null },
           { color: 'orange', value: constraints.maxCostPerDay * 0.8 },
           { color: 'red', value: constraints.maxCostPerDay },
-        ],
-      ),
+        ]
+      )
     );
     panels.push(
       this.createStatPanel(
@@ -1156,8 +1238,8 @@ export class ObservabilityGeneratorService {
           { color: 'green', value: null },
           { color: 'orange', value: 80 },
           { color: 'red', value: 100 },
-        ],
-      ),
+        ]
+      )
     );
     gridY += 4;
 
@@ -1180,8 +1262,8 @@ export class ObservabilityGeneratorService {
           },
         ],
         { x: 0, y: gridY, w: 12, h: 8 },
-        'tokens/s',
-      ),
+        'tokens/s'
+      )
     );
 
     panels.push(
@@ -1199,8 +1281,8 @@ export class ObservabilityGeneratorService {
           },
         ],
         { x: 12, y: gridY, w: 12, h: 8 },
-        'tokens',
-      ),
+        'tokens'
+      )
     );
     gridY += 8;
 
@@ -1231,8 +1313,8 @@ export class ObservabilityGeneratorService {
           },
         ],
         { x: 0, y: gridY, w: 12, h: 8 },
-        's',
-      ),
+        's'
+      )
     );
 
     panels.push(
@@ -1240,8 +1322,8 @@ export class ObservabilityGeneratorService {
         panelId++,
         'Latency Distribution',
         `sum(rate(gen_ai_client_operation_duration_seconds_bucket{gen_ai_agent_name="${identity.name}"}[5m])) by (le)`,
-        { x: 12, y: gridY, w: 12, h: 8 },
-      ),
+        { x: 12, y: gridY, w: 12, h: 8 }
+      )
     );
     gridY += 8;
 
@@ -1264,8 +1346,8 @@ export class ObservabilityGeneratorService {
           },
         ],
         { x: 0, y: gridY, w: 12, h: 8 },
-        'currencyUSD',
-      ),
+        'currencyUSD'
+      )
     );
 
     panels.push(
@@ -1283,8 +1365,8 @@ export class ObservabilityGeneratorService {
           },
         ],
         { x: 12, y: gridY, w: 12, h: 8 },
-        'currencyUSD',
-      ),
+        'currencyUSD'
+      )
     );
     gridY += 8;
 
@@ -1307,8 +1389,8 @@ export class ObservabilityGeneratorService {
           },
         ],
         { x: 0, y: gridY, w: 12, h: 8 },
-        'percentunit',
-      ),
+        'percentunit'
+      )
     );
 
     panels.push(
@@ -1322,8 +1404,8 @@ export class ObservabilityGeneratorService {
           },
         ],
         { x: 12, y: gridY, w: 12, h: 8 },
-        'ops',
-      ),
+        'ops'
+      )
     );
     gridY += 8;
 
@@ -1342,8 +1424,8 @@ export class ObservabilityGeneratorService {
           },
         ],
         { x: 0, y: gridY, w: 12, h: 8 },
-        'ops',
-      ),
+        'ops'
+      )
     );
 
     panels.push(
@@ -1357,8 +1439,8 @@ export class ObservabilityGeneratorService {
           },
         ],
         { x: 12, y: gridY, w: 12, h: 8 },
-        's',
-      ),
+        's'
+      )
     );
     gridY += 8;
 
@@ -1376,8 +1458,8 @@ export class ObservabilityGeneratorService {
               instant: true,
             },
           ],
-          { x: 0, y: gridY, w: 24, h: 6 },
-        ),
+          { x: 0, y: gridY, w: 24, h: 6 }
+        )
       );
       gridY += 6;
     }
@@ -1398,8 +1480,8 @@ export class ObservabilityGeneratorService {
             },
           ],
           { x: 0, y: gridY, w: 12, h: 8 },
-          'ops',
-        ),
+          'ops'
+        )
       );
 
       panels.push(
@@ -1417,8 +1499,8 @@ export class ObservabilityGeneratorService {
             },
           ],
           { x: 12, y: gridY, w: 12, h: 8 },
-          'percentunit',
-        ),
+          'percentunit'
+        )
       );
       gridY += 8;
 
@@ -1433,8 +1515,8 @@ export class ObservabilityGeneratorService {
             },
           ],
           { x: 0, y: gridY, w: 24, h: 8 },
-          'percentunit',
-        ),
+          'percentunit'
+        )
       );
       gridY += 8;
     }
@@ -1452,7 +1534,12 @@ export class ObservabilityGeneratorService {
       ],
       __requires: [
         { type: 'grafana', id: 'grafana', name: 'Grafana', version: '10.0.0' },
-        { type: 'datasource', id: 'prometheus', name: 'Prometheus', version: '1.0.0' },
+        {
+          type: 'datasource',
+          id: 'prometheus',
+          name: 'Prometheus',
+          version: '1.0.0',
+        },
         { type: 'panel', id: 'timeseries', name: 'Time series', version: '' },
         { type: 'panel', id: 'stat', name: 'Stat', version: '' },
         { type: 'panel', id: 'heatmap', name: 'Heatmap', version: '' },
@@ -1480,11 +1567,21 @@ export class ObservabilityGeneratorService {
       links: [],
       panels,
       schemaVersion: 39,
-      tags: ['ossa', 'agent', identity.name, identity.agentType, identity.pattern],
+      tags: [
+        'ossa',
+        'agent',
+        identity.name,
+        identity.agentType,
+        identity.pattern,
+      ],
       templating: {
         list: [
           {
-            current: { selected: false, text: 'Prometheus', value: 'Prometheus' },
+            current: {
+              selected: false,
+              text: 'Prometheus',
+              value: 'Prometheus',
+            },
             hide: 0,
             includeAll: false,
             label: 'Data Source',
@@ -1499,11 +1596,17 @@ export class ObservabilityGeneratorService {
             type: 'datasource',
           },
           {
-            current: { selected: false, text: identity.name, value: identity.name },
+            current: {
+              selected: false,
+              text: identity.name,
+              value: identity.name,
+            },
             hide: 2,
             label: 'Agent Name',
             name: 'agent_name',
-            options: [{ selected: true, text: identity.name, value: identity.name }],
+            options: [
+              { selected: true, text: identity.name, value: identity.name },
+            ],
             query: identity.name,
             skipUrlSync: false,
             type: 'constant',
@@ -1540,7 +1643,7 @@ export class ObservabilityGeneratorService {
     gridPos: { x: number; y: number; w: number; h: number },
     unit: string,
     color: string,
-    thresholds?: Array<{ color: string; value: number | null }>,
+    thresholds?: Array<{ color: string; value: number | null }>
   ): Record<string, unknown> {
     return {
       id,
@@ -1549,13 +1652,14 @@ export class ObservabilityGeneratorService {
       datasource: { type: 'prometheus', uid: '${datasource}' },
       fieldConfig: {
         defaults: {
-          color: { mode: thresholds ? 'thresholds' : 'fixed', fixedColor: color },
+          color: {
+            mode: thresholds ? 'thresholds' : 'fixed',
+            fixedColor: color,
+          },
           mappings: [],
           thresholds: {
             mode: 'absolute',
-            steps: thresholds ?? [
-              { color: color, value: null },
-            ],
+            steps: thresholds ?? [{ color: color, value: null }],
           },
           unit,
         },
@@ -1592,7 +1696,7 @@ export class ObservabilityGeneratorService {
     title: string,
     queries: Array<{ expr: string; legendFormat: string }>,
     gridPos: { x: number; y: number; w: number; h: number },
-    unit: string,
+    unit: string
   ): Record<string, unknown> {
     return {
       id,
@@ -1655,7 +1759,7 @@ export class ObservabilityGeneratorService {
     id: number,
     title: string,
     expr: string,
-    gridPos: { x: number; y: number; w: number; h: number },
+    gridPos: { x: number; y: number; w: number; h: number }
   ): Record<string, unknown> {
     return {
       id,
@@ -1702,8 +1806,13 @@ export class ObservabilityGeneratorService {
   private createTablePanel(
     id: number,
     title: string,
-    queries: Array<{ expr: string; legendFormat: string; format: string; instant: boolean }>,
-    gridPos: { x: number; y: number; w: number; h: number },
+    queries: Array<{
+      expr: string;
+      legendFormat: string;
+      format: string;
+      instant: boolean;
+    }>,
+    gridPos: { x: number; y: number; w: number; h: number }
   ): Record<string, unknown> {
     return {
       id,

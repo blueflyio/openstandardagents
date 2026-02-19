@@ -223,7 +223,8 @@ export function buildComposerJson(
     type: 'drupal-module',
     description: manifest.metadata?.description || 'OSSA agent module',
     keywords: ['Drupal', 'OSSA', 'AI', 'Agent'],
-    license: manifest.metadata?.license || options?.license || 'GPL-2.0-or-later',
+    license:
+      manifest.metadata?.license || options?.license || 'GPL-2.0-or-later',
     require: {
       'drupal/core': options?.coreVersion || '^10 || ^11',
       'drupal/ai': '^1.0',
@@ -294,9 +295,9 @@ ossa:
  * @returns Array of capability name strings
  */
 export function extractCapabilities(manifest: OssaAgent): string[] {
-  return ((manifest.spec?.capabilities || []) as Array<string | { name?: string }>).map(
-    (c) => (typeof c === 'string' ? c : c.name || '')
-  );
+  return (
+    (manifest.spec?.capabilities || []) as Array<string | { name?: string }>
+  ).map((c) => (typeof c === 'string' ? c : c.name || ''));
 }
 
 /**

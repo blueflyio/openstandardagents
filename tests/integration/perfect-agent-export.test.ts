@@ -24,13 +24,14 @@ import type { OssaAgent } from '../../src/types/index.js';
  * tools, LLM config, and communication/deployment settings.
  */
 // Schema supports team/subagents/a2a/lead-teammate but TS types lag — cast through unknown
-const multiAgentManifest = ({
+const multiAgentManifest = {
   apiVersion: 'ossa/v0.4',
   kind: 'Agent',
   metadata: {
     name: 'code-review-team',
     version: '2.1.0',
-    description: 'An AI team that reviews pull requests and enforces code standards.',
+    description:
+      'An AI team that reviews pull requests and enforces code standards.',
     agentKind: 'orchestrator',
     agentType: 'a2a',
     agentArchitecture: {
@@ -110,7 +111,7 @@ const multiAgentManifest = ({
       },
     },
   },
-}) as unknown as OssaAgent;
+} as unknown as OssaAgent;
 
 /**
  * Minimal single-agent manifest with no team section.
@@ -277,9 +278,7 @@ describe('TeamGeneratorService', () => {
 
   it('generates lead-teammate.yaml for lead-teammate pattern', () => {
     const files = service.generate(multiAgentManifest, 'custom');
-    const patternFile = files.find(
-      (f) => f.path === 'team/lead-teammate.yaml'
-    );
+    const patternFile = files.find((f) => f.path === 'team/lead-teammate.yaml');
     expect(patternFile).toBeDefined();
     expect(patternFile!.type).toBe('config');
 

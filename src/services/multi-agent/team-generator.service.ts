@@ -221,12 +221,18 @@ Pattern: ${pattern} | Model: ${team.model}
 
 from crewai import Crew, Process
 from .agents import ${team.members.map((m) => sanitizePythonName(m.name)).join(', ')}
-from .tasks import ${team.members.filter((m) => m.kind !== 'team-lead').map((m) => sanitizePythonName(m.name) + '_task').join(', ')}
+from .tasks import ${team.members
+      .filter((m) => m.kind !== 'team-lead')
+      .map((m) => sanitizePythonName(m.name) + '_task')
+      .join(', ')}
 
 
 crew = Crew(
     agents=[${team.members.map((m) => sanitizePythonName(m.name)).join(', ')}],
-    tasks=[${team.members.filter((m) => m.kind !== 'team-lead').map((m) => sanitizePythonName(m.name) + '_task').join(', ')}],
+    tasks=[${team.members
+      .filter((m) => m.kind !== 'team-lead')
+      .map((m) => sanitizePythonName(m.name) + '_task')
+      .join(', ')}],
     process=${processType},
     ${managerAgent}
     verbose=True,
@@ -676,14 +682,10 @@ function generateTeamDocs(
     sections.push(
       `- **Consensus**: ${team.communication?.consensus || 'leader-decides'}`
     );
-    sections.push(
-      `- **Delegate Mode**: ${team.delegateMode || 'task-list'}\n`
-    );
+    sections.push(`- **Delegate Mode**: ${team.delegateMode || 'task-list'}\n`);
 
     sections.push('## Deployment\n');
-    sections.push(
-      `- **Backend**: ${team.deployment?.backend || 'in-process'}`
-    );
+    sections.push(`- **Backend**: ${team.deployment?.backend || 'in-process'}`);
     sections.push(
       `- **Max Concurrency**: ${team.deployment?.maxConcurrency || 5}\n`
     );
@@ -696,7 +698,8 @@ function generateTeamDocs(
       '|------|------|------|------------|'
     );
     for (const s of subagents) {
-      const role = s.role.length > 50 ? s.role.substring(0, 47) + '...' : s.role;
+      const role =
+        s.role.length > 50 ? s.role.substring(0, 47) + '...' : s.role;
       sections.push(
         `| ${s.name} | ${s.kind || 'subagent'} | ${role} | ${s.reportTo || '-'} |`
       );

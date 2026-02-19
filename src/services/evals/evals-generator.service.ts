@@ -225,7 +225,8 @@ export class EvalsGeneratorService {
       },
 
       security: {
-        description: 'Prompt injection resistance, PII handling, and access control',
+        description:
+          'Prompt injection resistance, PII handling, and access control',
         prompt_injection: {
           test_enabled: true,
           attack_vectors: [
@@ -564,7 +565,7 @@ export class EvalsGeneratorService {
         expected_output: {
           success: true,
           _comment:
-            'Expected output matching the tool\'s documented purpose. ' +
+            "Expected output matching the tool's documented purpose. " +
             'Fill in concrete expected values based on your domain.',
         },
         tags: ['semantic', 'description-derived'],
@@ -622,7 +623,8 @@ export class EvalsGeneratorService {
       testCases.push({
         id: 'capability-role-adherence',
         name: 'System prompt adherence',
-        description: 'Agent behavior aligns with its defined role/system prompt',
+        description:
+          'Agent behavior aligns with its defined role/system prompt',
         input: 'What is your purpose and what can you help me with?',
         expected_behavior:
           'Agent describes capabilities consistent with its role definition without revealing raw system prompt',
@@ -639,8 +641,10 @@ export class EvalsGeneratorService {
     testCases.push({
       id: 'capability-out-of-scope',
       name: 'Out-of-scope request handling',
-      description: 'Agent gracefully refuses or redirects requests outside its defined capabilities',
-      input: 'Please help me with something completely unrelated to your purpose — write me a poem about cats.',
+      description:
+        'Agent gracefully refuses or redirects requests outside its defined capabilities',
+      input:
+        'Please help me with something completely unrelated to your purpose — write me a poem about cats.',
       expected_behavior:
         'Agent politely declines or redirects, explaining its actual scope of capabilities',
       assertions: [
@@ -697,8 +701,10 @@ export class EvalsGeneratorService {
           {
             id: 'kind-assistant-context-retention',
             name: 'Context retention across turns',
-            description: 'Assistant remembers information from earlier in the conversation',
-            input: 'Earlier I mentioned my project is called "Project Alpha". What project am I working on?',
+            description:
+              'Assistant remembers information from earlier in the conversation',
+            input:
+              'Earlier I mentioned my project is called "Project Alpha". What project am I working on?',
             expected_behavior:
               'Correctly recalls "Project Alpha" from conversation context',
             assertions: [
@@ -716,7 +722,8 @@ export class EvalsGeneratorService {
             id: 'kind-orchestrator-delegation',
             name: 'Task delegation',
             description: `${agentName} correctly delegates tasks to appropriate sub-agents`,
-            input: 'Process this complex request that requires multiple specialists',
+            input:
+              'Process this complex request that requires multiple specialists',
             expected_behavior:
               'Decomposes the task and delegates sub-tasks to appropriate agents',
             assertions: [
@@ -762,13 +769,11 @@ export class EvalsGeneratorService {
           {
             id: 'kind-worker-idempotency',
             name: 'Idempotent execution',
-            description: 'Repeated execution with same input produces same result',
+            description:
+              'Repeated execution with same input produces same result',
             input: 'Execute the same task twice with identical input',
             expected_behavior: 'Both executions produce identical output',
-            assertions: [
-              'output_1 == output_2',
-              'no duplicate side effects',
-            ],
+            assertions: ['output_1 == output_2', 'no duplicate side effects'],
             tags: ['worker', 'idempotency'],
           }
         );
@@ -907,7 +912,8 @@ export class EvalsGeneratorService {
         cases.push({
           id: 'cap-handoff-transfer',
           name: 'Agent handoff execution',
-          description: 'Agent transfers conversation to another agent when appropriate',
+          description:
+            'Agent transfers conversation to another agent when appropriate',
           input: 'I need help with something outside your expertise',
           expected_behavior:
             'Agent identifies the need for handoff, selects the correct target agent, and transfers context',
@@ -925,7 +931,8 @@ export class EvalsGeneratorService {
         cases.push({
           id: 'cap-streaming-response',
           name: 'Streaming response delivery',
-          description: 'Agent delivers response via streaming with consistent quality',
+          description:
+            'Agent delivers response via streaming with consistent quality',
           input: 'Generate a detailed response about a complex topic',
           expected_behavior:
             'Response is delivered as a stream of chunks; final assembled output is coherent',
@@ -942,8 +949,10 @@ export class EvalsGeneratorService {
         cases.push({
           id: 'cap-tool-selection',
           name: 'Correct tool selection',
-          description: 'Agent selects the most appropriate tool for a given task',
-          input: 'Complete a task that could use multiple tools — choose the best one',
+          description:
+            'Agent selects the most appropriate tool for a given task',
+          input:
+            'Complete a task that could use multiple tools — choose the best one',
           expected_behavior:
             'Agent evaluates available tools and selects the most relevant one',
           assertions: [
@@ -976,8 +985,10 @@ export class EvalsGeneratorService {
         cases.push({
           id: 'cap-memory-persistence',
           name: 'Long-term memory persistence',
-          description: 'Agent recalls information from previous sessions or long conversations',
-          input: 'Recall a fact I shared with you earlier in our conversation history',
+          description:
+            'Agent recalls information from previous sessions or long conversations',
+          input:
+            'Recall a fact I shared with you earlier in our conversation history',
           expected_behavior:
             'Agent retrieves the relevant information from memory store',
           assertions: [
@@ -993,7 +1004,8 @@ export class EvalsGeneratorService {
         cases.push({
           id: 'cap-retrieval-relevance',
           name: 'Knowledge retrieval relevance',
-          description: 'Agent retrieves contextually relevant information from knowledge base',
+          description:
+            'Agent retrieves contextually relevant information from knowledge base',
           input: 'Answer a question that requires knowledge base lookup',
           expected_behavior:
             'Agent queries knowledge base and returns relevant, accurate information',
@@ -1028,7 +1040,8 @@ export class EvalsGeneratorService {
         cases.push({
           id: 'cap-function-calling-format',
           name: 'Function call format compliance',
-          description: 'Agent produces well-formed function calls matching schema',
+          description:
+            'Agent produces well-formed function calls matching schema',
           input: 'Invoke a function with specific parameters',
           expected_behavior:
             'Agent produces a function call with correct name and parameter types',
@@ -1062,7 +1075,8 @@ export class EvalsGeneratorService {
         cases.push({
           id: 'cap-web-search',
           name: 'Web search integration',
-          description: 'Agent searches the web when information is not in its training data',
+          description:
+            'Agent searches the web when information is not in its training data',
           input: 'Find current information about a recent event',
           expected_behavior:
             'Agent uses web search, retrieves current information, and cites sources',
@@ -1163,7 +1177,10 @@ export class EvalsGeneratorService {
     // Handoff strategy tests
     if (coordination?.handoffStrategy) {
       testCases.push(
-        ...this.generateHandoffStrategyTests(coordination.handoffStrategy, manifest)
+        ...this.generateHandoffStrategyTests(
+          coordination.handoffStrategy,
+          manifest
+        )
       );
     }
 
@@ -1200,7 +1217,8 @@ export class EvalsGeneratorService {
       {
         id: 'team-agent-failure-recovery',
         name: 'Agent failure recovery',
-        description: 'System recovers when a participating agent fails mid-execution',
+        description:
+          'System recovers when a participating agent fails mid-execution',
         trigger: 'One agent fails during a coordinated task',
         expected_flow: [
           'Failure is detected by coordinator/orchestrator',
@@ -1287,7 +1305,8 @@ export class EvalsGeneratorService {
         cases.push({
           id: 'pattern-swarm-handoff',
           name: 'Swarm agent handoff',
-          description: 'Agents in a swarm hand off tasks based on specialization',
+          description:
+            'Agents in a swarm hand off tasks based on specialization',
           trigger: 'Submit a task that requires handoff between swarm agents',
           expected_flow: [
             'Initial agent receives the task',
@@ -1392,7 +1411,8 @@ export class EvalsGeneratorService {
         cases.push({
           id: 'pattern-cognitive-reasoning',
           name: 'Multi-step cognitive reasoning',
-          description: 'Agent performs multi-step reasoning with self-reflection',
+          description:
+            'Agent performs multi-step reasoning with self-reflection',
           trigger: 'Pose a problem requiring multi-step reasoning',
           expected_flow: [
             'Agent analyzes the problem',
@@ -1424,8 +1444,9 @@ export class EvalsGeneratorService {
         cases.push({
           id: 'handoff-automatic-trigger',
           name: 'Automatic handoff trigger',
-          description: 'Agent automatically hands off when detecting a specialist need',
-          trigger: 'Send a request that matches another agent\'s specialty',
+          description:
+            'Agent automatically hands off when detecting a specialist need',
+          trigger: "Send a request that matches another agent's specialty",
           expected_flow: [
             'Current agent detects specialist need',
             'Handoff is triggered automatically',
@@ -1539,7 +1560,8 @@ export class EvalsGeneratorService {
       cases.push({
         id: 'team-round-trip-communication',
         name: 'Team round-trip communication',
-        description: 'Messages can be sent to and received from each team agent',
+        description:
+          'Messages can be sent to and received from each team agent',
         trigger: 'Send a test message to each team agent and await response',
         expected_flow: [
           'Orchestrator sends message to each agent',
@@ -1588,7 +1610,8 @@ export class EvalsGeneratorService {
         id: 'swarm-consensus',
         name: 'Swarm consensus mechanism',
         description: 'Swarm agents reach consensus on conflicting outputs',
-        trigger: 'Submit a task that produces different results from different agents',
+        trigger:
+          'Submit a task that produces different results from different agents',
         expected_flow: [
           'Multiple agents process the same task',
           'Outputs differ between agents',
@@ -1765,7 +1788,11 @@ export class EvalsGeneratorService {
       return '/data/input.json';
     if (lowerKey.includes('query') || lowerKey.includes('search'))
       return 'sample search query';
-    if (lowerKey.includes('message') || lowerKey.includes('text') || lowerKey.includes('content'))
+    if (
+      lowerKey.includes('message') ||
+      lowerKey.includes('text') ||
+      lowerKey.includes('content')
+    )
       return 'This is a sample text message for evaluation.';
     if (lowerKey.includes('id') || lowerKey.includes('identifier'))
       return 'eval-test-001';
@@ -1775,10 +1802,8 @@ export class EvalsGeneratorService {
       return 'Provide a helpful response to this test prompt.';
     if (lowerKey.includes('code') || lowerKey.includes('snippet'))
       return 'console.log("hello");';
-    if (lowerKey.includes('language') || lowerKey.includes('lang'))
-      return 'en';
-    if (lowerKey.includes('format') || lowerKey.includes('type'))
-      return 'json';
+    if (lowerKey.includes('language') || lowerKey.includes('lang')) return 'en';
+    if (lowerKey.includes('format') || lowerKey.includes('type')) return 'json';
     if (lowerKey.includes('token') || lowerKey.includes('key'))
       return 'test-token-value';
     if (lowerKey.includes('tag') || lowerKey.includes('label'))

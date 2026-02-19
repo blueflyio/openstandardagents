@@ -148,7 +148,12 @@ export class CursorAdapter extends BaseExporter {
         usage: `Configure in Cursor Settings > Cloud Agents:\n\n\`\`\`json\n{\n  "cloudAgents": [\n    {\n      "name": "${agentName}",\n      "path": "./cursor/${agentName}/agent.js"\n    }\n  ]\n}\`\`\``,
         additional: toolsDesc
           ? [
-              { title: 'Capabilities', content: cursorAgent.capabilities.map((c) => `- ${c.type}`).join('\n') },
+              {
+                title: 'Capabilities',
+                content: cursorAgent.capabilities
+                  .map((c) => `- ${c.type}`)
+                  .join('\n'),
+              },
               { title: 'Available Tools', content: toolsDesc },
             ]
           : undefined,
@@ -272,7 +277,8 @@ export class CursorAdapter extends BaseExporter {
     ossaTools.forEach((tool) => {
       const name = (tool.name as string) || 'unknown';
       const description = (tool.description as string) || `Tool: ${name}`;
-      const schema = (tool.inputSchema || tool.schema || { type: 'object' }) as JSONSchema;
+      const schema = (tool.inputSchema ||
+        tool.schema || { type: 'object' }) as JSONSchema;
 
       tools.push({
         name,

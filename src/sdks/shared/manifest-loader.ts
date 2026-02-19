@@ -62,7 +62,8 @@ export class ManifestLoader {
     schema: z.ZodSchema<T>,
     format: 'yaml' | 'json' = 'yaml'
   ): T {
-    const parsed = format === 'yaml' ? safeParseYAML(content) : JSON.parse(content);
+    const parsed =
+      format === 'yaml' ? safeParseYAML(content) : JSON.parse(content);
     return schema.parse(parsed);
   }
 }
