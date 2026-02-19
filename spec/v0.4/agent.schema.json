@@ -767,6 +767,7 @@
             },
             "rotation_policy": {
               "type": "object",
+              "description": "Token rotation policy and optional runtime observability (last_rotated_* set by runtime/tooling after successful rotate)",
               "properties": {
                 "enabled": {
                   "type": "boolean",
@@ -788,6 +789,15 @@
                     "type": "string"
                   },
                   "description": "List of other service accounts this agent manages rotation for"
+                },
+                "last_rotated_at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "Set by runtime or tooling after successful rotation (ISO 8601). Not in manifest; used for audit and expiry warnings."
+                },
+                "last_rotated_by": {
+                  "type": "string",
+                  "description": "Agent id or user id that performed last rotation. Set by runtime/tooling."
                 }
               }
             }
