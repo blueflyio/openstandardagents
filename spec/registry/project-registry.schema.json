@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openstandardagents.org/schemas/registry/project-registry/v1.json",
+  "title": "OSSA Project Registry (agents-workspace)",
+  "description": "JSON Schema for .agents-workspace/registry.yaml - project-level decentralized agent registry index",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["version"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+$",
+      "description": "Format version of the project registry (e.g. 1.0)"
+    },
+    "project": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Project name" },
+        "namespace": { "type": "string", "description": "Project namespace (e.g. team or org)" }
+      }
+    },
+    "local": {
+      "type": "array",
+      "description": "Agents defined in this repo (paths under .agents/)",
+      "items": {
+        "type": "object",
+        "required": ["name", "path"],
+        "properties": {
+          "name": { "type": "string", "description": "Agent name" },
+          "path": { "type": "string", "description": "Path to agent (e.g. .agents/my-agent)" }
+        }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "description": "Remote registries to pull from (MCP endpoint + auth)",
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "endpoint", "scope"],
+        "properties": {
+          "id": { "type": "string", "description": "Source identifier" },
+          "type": { "type": "string", "enum": ["mcp"], "description": "Source type (e.g. mcp)" },
+          "endpoint": { "type": "string", "format": "uri", "description": "Registry MCP endpoint URL" },
+          "auth": { "type": "string", "description": "Auth reference (e.g. ref:company-token)" },
+          "scope": {
+            "type": "string",
+            "enum": ["company", "department", "team", "project"],
+            "description": "Scope of this source"
+          }
+        }
+      }
+    },
+    "resolution_order": {
+      "type": "array",
+      "description": "Order for resolving agent name conflicts (first scope wins)",
+      "items": {
+        "type": "string",
+        "enum": ["project", "team", "department", "company"]
+      }
+    }
+  }
+}

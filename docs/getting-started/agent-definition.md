@@ -23,8 +23,8 @@ A standard OSSA Agent project follows a conventional structure to promote consis
 
 ```
 agent-project/
-├── .agents/              # Local agent runtime data and configuration
-├── .agents-workspace/      # Temporary or shared workspace files
+├── .agents/              # Per-agent runtime state and manifest home (see below)
+├── .agents-workspace/    # Project-level agent registry and optional transient data (see agents-workspace-registry.md)
 ├── .vscode/              # VS Code specific settings (optional)
 ├── docs/                 # Project documentation
 │   ├── agent-definition.md # This document
@@ -57,32 +57,32 @@ agent-project/
 
 ### `.agents/` Directory
 
-The `.agents/` directory is intended for local, agent-specific runtime data that should be managed by the agent itself or its local environment. It is typically *not* version-controlled and may contain:
+The `.agents/` directory is the **per-agent runtime and manifest home**. Each subdirectory `.agents/{agent-name}/` holds one agent's manifest (`manifest.ossa.yaml`), prompts, tools, config, and source tree (see [Agent Folder Structure](../architecture/agent-folder-structure.md)). It also holds runtime-only data that is typically *not* version-controlled:
 
--   **Runtime State**: Data relevant to the agent's current operational state (e.g., cached data, session information, local databases).
--   **Local Configuration**: Agent-specific configuration files that are not sensitive but are specific to the local runtime environment.
--   **Secrets (Encrypted)**: Sensitive information like API keys or credentials, which should be encrypted at rest and managed securely. Avoid storing plaintext secrets here.
--   **Temporary Data**: Data that is periodically cleaned up or recreated.
+-   **Runtime State**: Cached data, session information, local databases.
+-   **Local Configuration**: Agent-specific overrides for the local environment.
+-   **Secrets (Encrypted)**: API keys or credentials; encrypt at rest and avoid plaintext.
+-   **Temporary Data**: Ephemeral files that may be recreated.
 
 **Usage**:
-Agents can read from and write to this directory, but it's crucial to ensure that:
--   This directory is listed in `.gitignore`.
--   Sensitive data is encrypted.
--   Agents do not rely on the persistence of all data within `.agents/` across restarts unless explicitly designed for it.
+-   Manifest and agent code under `.agents/{agent-name}/` may be version-controlled; runtime state and secrets should not be.
+-   List runtime-only paths (e.g. `.agents/*/.state/` or `.agents/*/cache/`) in `.gitignore`.
+-   Agents read and write this directory; do not rely on full persistence across restarts unless designed for it.
 
 ### `.agents-workspace/` Directory
 
-The `.agents-workspace/` directory serves as a temporary or shared workspace for agent-related operations that might involve external tools, build artifacts, or data that is not part of the core agent code but is needed for its operation or development lifecycle. It is also typically *not* version-controlled.
+The `.agents-workspace/` directory serves two roles:
 
-Examples of data that might reside here:
+1.  **Project-level agent registry (primary)**  
+    It is the **decentralized agent registry** for the project: an index of agents defined in this repo (under `.agents/`) and of remote registries (company, department, team) that the project pulls from via MCP and auth. Runtimes discover agents through this registry and communicate with them via A2A. See [Agents Workspace and Registry](agents-workspace-registry.md) for structure (`registry.yaml`, `sources/`, scopes, MCP).
 
--   **Downloaded Models/Assets**: Machine learning models, datasets, or other assets downloaded for agent use.
--   **Build Artifacts**: Intermediate files generated during the agent's build or compilation process (though `dist/` is more common for final build output).
--   **External Tool Mounts**: For containerized agents, this could be a mount point for shared volumes or data accessed by the agent and external processes.
--   **Ephemeral Logs**: Logs that are not critical for long-term storage but useful for immediate debugging during development.
+2.  **Optional transient workspace data**  
+    It may also hold temporary or shared data not part of core code: downloaded models/assets, build artifacts, external tool mounts, ephemeral logs. That data is typically *not* version-controlled.
 
 **Usage**:
-Similar to `.agents/`, this directory should be ignored by Git. It's useful for isolating transient data from the core codebase.
+-   Registry index and source config (`registry.yaml`, `sources/*.yaml`) may be version-controlled.
+-   Cache, tokens, and transient data should be in `.gitignore`.
+-   Discovery uses the registry; agent-to-agent communication uses A2A.
 
 ## API-First and OpenAPI Strict Validation
 
