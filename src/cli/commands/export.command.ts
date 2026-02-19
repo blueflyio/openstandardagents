@@ -297,16 +297,16 @@ exportCommand.action(
         options.includeTeam;
 
       if (hasPerfectAgentFlags) {
-        const { generatePerfectAgentFiles } = await import(
-          '../../adapters/base/common-file-generator.js'
-        );
+        const { generatePerfectAgentFiles } =
+          await import('../../adapters/base/common-file-generator.js');
 
         const perfectOpts = {
           includeAgentCard: options.perfectAgent || options.includeAgentCard,
           includeAgentsMd: options.perfectAgent || options.includeAgentsMd,
           includeEvals: options.perfectAgent || options.includeEvals,
           includeGovernance: options.perfectAgent || options.includeGovernance,
-          includeObservability: options.perfectAgent || options.includeObservability,
+          includeObservability:
+            options.perfectAgent || options.includeObservability,
           includeSkill: options.perfectAgent || options.skill,
           includeTeam: options.perfectAgent || options.includeTeam,
           platform: options.platform,
@@ -318,7 +318,10 @@ exportCommand.action(
             : 'Generating selected agent artifacts...'
         );
 
-        const perfectFiles = await generatePerfectAgentFiles(manifest, perfectOpts);
+        const perfectFiles = await generatePerfectAgentFiles(
+          manifest,
+          perfectOpts
+        );
 
         if (perfectFiles.length > 0) {
           const agentName = manifest.metadata?.name || 'agent';
@@ -333,9 +336,13 @@ exportCommand.action(
               logVerbose(`  Created: ${file.path}`);
             }
 
-            logSuccess(`\nPerfect Agent artifacts: ${perfectFiles.length} files`);
+            logSuccess(
+              `\nPerfect Agent artifacts: ${perfectFiles.length} files`
+            );
           } else {
-            log(`\nDRY RUN: Would generate ${perfectFiles.length} Perfect Agent files:`);
+            log(
+              `\nDRY RUN: Would generate ${perfectFiles.length} Perfect Agent files:`
+            );
             for (const file of perfectFiles) {
               logVerbose(`  - ${file.path} (${file.content.length} bytes)`);
             }
@@ -477,15 +484,24 @@ exportCommand.action(
             log(`  ${langchainResult.files.length} files generated`);
 
             // Perfect agent supplementary files
-            if (options.perfectAgent || options.includeTeam || options.includeAgentsMd || options.includeEvals) {
-              const perfectFiles = generatePerfectAgentBundle(manifest, {
-                perfectAgent: options.perfectAgent,
-                includeTeam: options.includeTeam,
-                includeEvals: options.includeEvals,
-                includeAgentsMd: options.includeAgentsMd,
-                includeGovernance: options.includeGovernance,
-                includeObservability: options.includeObservability,
-              }, 'langchain');
+            if (
+              options.perfectAgent ||
+              options.includeTeam ||
+              options.includeAgentsMd ||
+              options.includeEvals
+            ) {
+              const perfectFiles = generatePerfectAgentBundle(
+                manifest,
+                {
+                  perfectAgent: options.perfectAgent,
+                  includeTeam: options.includeTeam,
+                  includeEvals: options.includeEvals,
+                  includeAgentsMd: options.includeAgentsMd,
+                  includeGovernance: options.includeGovernance,
+                  includeObservability: options.includeObservability,
+                },
+                'langchain'
+              );
               for (const file of perfectFiles) {
                 const filePath = path.join(langchainOutputDir, file.path);
                 const fileDir = path.dirname(filePath);
@@ -549,15 +565,24 @@ exportCommand.action(
             log('  - README.md, DEPLOYMENT.md');
 
             // Perfect agent supplementary files
-            if (options.perfectAgent || options.includeTeam || options.includeAgentsMd || options.includeEvals) {
-              const perfectFiles = generatePerfectAgentBundle(manifest, {
-                perfectAgent: options.perfectAgent,
-                includeTeam: options.includeTeam,
-                includeEvals: options.includeEvals,
-                includeAgentsMd: options.includeAgentsMd,
-                includeGovernance: options.includeGovernance,
-                includeObservability: options.includeObservability,
-              }, 'crewai');
+            if (
+              options.perfectAgent ||
+              options.includeTeam ||
+              options.includeAgentsMd ||
+              options.includeEvals
+            ) {
+              const perfectFiles = generatePerfectAgentBundle(
+                manifest,
+                {
+                  perfectAgent: options.perfectAgent,
+                  includeTeam: options.includeTeam,
+                  includeEvals: options.includeEvals,
+                  includeAgentsMd: options.includeAgentsMd,
+                  includeGovernance: options.includeGovernance,
+                  includeObservability: options.includeObservability,
+                },
+                'crewai'
+              );
               for (const file of perfectFiles) {
                 const filePath = path.join(crewaiOutputDir, file.path);
                 const fileDir = path.dirname(filePath);
@@ -983,8 +1008,7 @@ exportCommand.action(
 
         if (perfectFiles.length > 0) {
           const perfectDir =
-            options.output ||
-            `./${manifest.metadata?.name || 'agent'}-perfect`;
+            options.output || `./${manifest.metadata?.name || 'agent'}-perfect`;
           if (!options.dryRun) {
             fs.mkdirSync(perfectDir, { recursive: true });
             for (const file of perfectFiles) {

@@ -135,7 +135,9 @@ export class ClaudeCodeAdapter extends BaseExporter {
             title: 'Sub-agent Configuration',
             content: `- **Type:** ${subagent.subagent_type}\n- **Model:** ${subagent.model || 'Inherits from parent agent'}\n- **Max Turns:** ${subagent.max_turns}`,
           },
-          ...(toolsDesc ? [{ title: 'Available Tools', content: toolsDesc }] : []),
+          ...(toolsDesc
+            ? [{ title: 'Available Tools', content: toolsDesc }]
+            : []),
         ],
       })
     );
@@ -183,7 +185,8 @@ export class ClaudeCodeAdapter extends BaseExporter {
    */
   private convertToClaudeCodeSubAgent(manifest: OssaAgent): ClaudeCodeSubAgent {
     const name = this.getAgentName(manifest, 'claude-code-subagent');
-    const description = manifest.metadata?.description || 'Claude Code sub-agent';
+    const description =
+      manifest.metadata?.description || 'Claude Code sub-agent';
     const system_prompt = manifest.spec?.role || 'Specialized sub-agent';
 
     const subagent_type = this.determineSubagentType(manifest);

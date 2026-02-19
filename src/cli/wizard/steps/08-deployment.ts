@@ -7,10 +7,14 @@ import inquirer from 'inquirer';
 import { WizardState } from '../types.js';
 import { console_ui } from '../ui/console.js';
 
+const DEPLOYMENT_DOCS_URL =
+  'https://openstandardagents.org/docs/token-efficiency-and-deployment-tuning';
+
 export async function configureDeploymentStep(
   state: WizardState
 ): Promise<WizardState> {
   console_ui.step(9, state.totalSteps, 'Deployment Configuration');
+  console_ui.info(`Learn more: ${DEPLOYMENT_DOCS_URL}`);
 
   const { configureDeployment } = await inquirer.prompt([
     {

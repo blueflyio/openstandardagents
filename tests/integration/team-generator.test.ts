@@ -444,7 +444,9 @@ describe('Perfect Agent Bundle', () => {
     });
     // Should contain team config and documentation
     const teamFile = files.find(
-      (f) => f.path === 'src/team-config.ts' || f.path === 'docs/TEAM-ARCHITECTURE.md'
+      (f) =>
+        f.path === 'src/team-config.ts' ||
+        f.path === 'docs/TEAM-ARCHITECTURE.md'
     );
     expect(teamFile).toBeDefined();
   });

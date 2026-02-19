@@ -180,7 +180,11 @@ export class DrupalModuleGenerator extends BaseAdapter {
         );
 
         // OO Hook classes (PHP 8 attribute-based hooks)
-        const hookFiles = this.generateHookClasses(manifest, moduleName, className);
+        const hookFiles = this.generateHookClasses(
+          manifest,
+          moduleName,
+          className
+        );
         files.push(...hookFiles);
       }
 
@@ -344,7 +348,11 @@ export class DrupalModuleGenerator extends BaseAdapter {
 
       const ecaEvents = this.extractEcaEvents(manifest);
       if (opts.includeEcaModels && ecaEvents.length > 0) {
-        const ecaFiles = this.generateEcaModels(manifest, moduleName, ecaEvents);
+        const ecaFiles = this.generateEcaModels(
+          manifest,
+          moduleName,
+          ecaEvents
+        );
         files.push(...ecaFiles);
       }
 
@@ -353,7 +361,11 @@ export class DrupalModuleGenerator extends BaseAdapter {
       // ===================================================================
 
       if (opts.includeActionPlugins && tools.length > 0) {
-        const actionFiles = this.generateActionPlugins(manifest, moduleName, tools);
+        const actionFiles = this.generateActionPlugins(
+          manifest,
+          moduleName,
+          tools
+        );
         files.push(...actionFiles);
       }
 
@@ -362,7 +374,10 @@ export class DrupalModuleGenerator extends BaseAdapter {
       // ===================================================================
 
       if (opts.includeConditionPlugins) {
-        const conditionFiles = this.generateConditionPlugins(manifest, moduleName);
+        const conditionFiles = this.generateConditionPlugins(
+          manifest,
+          moduleName
+        );
         files.push(...conditionFiles);
       }
 
@@ -452,7 +467,7 @@ export class DrupalModuleGenerator extends BaseAdapter {
       );
 
       // Perfect Agent files
-      files.push(...await this.generatePerfectAgentFiles(manifest, options));
+      files.push(...(await this.generatePerfectAgentFiles(manifest, options)));
 
       return this.createResult(true, files, undefined, {
         duration: Date.now() - startTime,
@@ -1815,10 +1830,16 @@ ${moduleName}.results:
     tool: OssaToolEntry,
     drupalTool: DrupalToolDefinition
   ): string {
-    const toolClassName = toClassName(sanitizeModuleName(tool.name || 'unknown_tool'));
+    const toolClassName = toClassName(
+      sanitizeModuleName(tool.name || 'unknown_tool')
+    );
     const toolName = tool.name || 'unknown_tool';
-    const inputDef = this.buildSchemaDefinitionArray(tool.inputSchema || (tool as any).input_schema);
-    const outputDef = this.buildSchemaDefinitionArray(tool.outputSchema || (tool as any).output_schema);
+    const inputDef = this.buildSchemaDefinitionArray(
+      tool.inputSchema || (tool as any).input_schema
+    );
+    const outputDef = this.buildSchemaDefinitionArray(
+      tool.outputSchema || (tool as any).output_schema
+    );
     return `<?php
 
 namespace Drupal\\${moduleName}\\Plugin\\Tool;
@@ -1907,7 +1928,9 @@ class ${toolClassName}Tool extends ToolPluginBase implements ContainerFactoryPlu
    * Registers the tool with Drupal's Tool API AI connector system
    * so it is discoverable by AI-powered modules.
    */
-  private generateToolAiConnectorConfig(drupalTool: DrupalToolDefinition): string {
+  private generateToolAiConnectorConfig(
+    drupalTool: DrupalToolDefinition
+  ): string {
     return `id: '${drupalTool.id}'
 status: true
 ai_callable: true
@@ -1924,14 +1947,18 @@ ai_callable: true
     if (!schema || Object.keys(schema).length === 0) {
       return '[]';
     }
-    const properties = schema.properties as Record<string, Record<string, unknown>> | undefined;
+    const properties = schema.properties as
+      | Record<string, Record<string, unknown>>
+      | undefined;
     if (!properties || Object.keys(properties).length === 0) {
       return '[]';
     }
     const required = (schema.required as string[]) || [];
     const entries: string[] = [];
     for (const [propName, propDef] of Object.entries(properties)) {
-      const phpType = this.jsonSchemaTypeToPHP((propDef.type as string) || 'string');
+      const phpType = this.jsonSchemaTypeToPHP(
+        (propDef.type as string) || 'string'
+      );
       const description = propDef.description
         ? this.escapePhpString(propDef.description as string)
         : `The ${propName} parameter`;
@@ -2021,9 +2048,10 @@ ${entries.join(',\n')},
 
       // Find tools that should be executed for this event
       const tools = extractTools(manifest);
-      const toolRef = tools.length > 0
-        ? `${moduleName}.${sanitizeModuleName(tools[0].name || 'unknown_tool')}`
-        : `${moduleName}.default_tool`;
+      const toolRef =
+        tools.length > 0
+          ? `${moduleName}.${sanitizeModuleName(tools[0].name || 'unknown_tool')}`
+          : `${moduleName}.default_tool`;
 
       const yamlContent = `id: '${modelId}'
 label: '${this.escapeYamlString(modelLabel)}'
@@ -2081,7 +2109,9 @@ actions:
    * Returns a key-value map that becomes the configuration block
    * under the event entry in the ECA model YAML.
    */
-  private buildEcaEventConfiguration(eventParts: string[]): Record<string, string> {
+  private buildEcaEventConfiguration(
+    eventParts: string[]
+  ): Record<string, string> {
     const config: Record<string, string> = {};
 
     if (eventParts.length >= 3 && eventParts[0] === 'entity') {
@@ -2105,7 +2135,10 @@ actions:
   /**
    * Indent a key-value object as YAML at a given indentation level.
    */
-  private indentYamlObject(obj: Record<string, string>, indent: number): string {
+  private indentYamlObject(
+    obj: Record<string, string>,
+    indent: number
+  ): string {
     const pad = ' '.repeat(indent);
     return Object.entries(obj)
       .map(([key, value]) => `${pad}${key}: ${value}`)
@@ -2494,9 +2527,10 @@ class AgentEnabledCondition extends ConditionPluginBase implements ContainerFact
     const maxLength = guardrail.maxLength;
 
     // Build the patterns array as a PHP literal
-    const patternsPhp = blockedPatterns.length > 0
-      ? `[${blockedPatterns.map((p) => `'${this.escapePhpString(p)}'`).join(', ')}]`
-      : '[]';
+    const patternsPhp =
+      blockedPatterns.length > 0
+        ? `[${blockedPatterns.map((p) => `'${this.escapePhpString(p)}'`).join(', ')}]`
+        : '[]';
 
     // Build evaluation logic based on guardrail type
     let evaluateBody: string;
@@ -2588,17 +2622,12 @@ ${evaluateBody}
     tools: OssaToolEntry[]
   ): string {
     const displayName = toLabel(manifest.metadata?.name || moduleName);
-    const description = manifest.metadata?.description || `OSSA ${displayName} agent`;
+    const description =
+      manifest.metadata?.description || `OSSA ${displayName} agent`;
     const llmConfig = (manifest.spec?.llm as any) || {};
 
     // Build the install list
-    const installModules = [
-      'ai',
-      'ai_agents',
-      'tool',
-      'eca',
-      moduleName,
-    ];
+    const installModules = ['ai', 'ai_agents', 'tool', 'eca', moduleName];
 
     // Build config actions for tool_ai_connector entities
     const toolConfigLines: string[] = [];
@@ -3156,5 +3185,4 @@ drush queue:run ${moduleName}_agent_queue
 - Drupal.org: https://www.drupal.org/project/${moduleName}
 `;
   }
-
 }

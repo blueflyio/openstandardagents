@@ -222,7 +222,12 @@ export interface AgentArchitecture {
     /** Team coordination model */
     teamModel?: 'lead-teammate' | 'peer-to-peer' | 'hierarchical' | 'swarm';
     /** Communication pattern between agents */
-    communicationPattern?: 'task-list' | 'mailbox' | 'shared-file' | 'direct-message' | 'broadcast';
+    communicationPattern?:
+      | 'task-list'
+      | 'mailbox'
+      | 'shared-file'
+      | 'direct-message'
+      | 'broadcast';
     /** Task coordination strategy */
     taskCoordination?: 'sequential' | 'parallel' | 'dependency-wave';
     /** Conflict resolution strategy */
@@ -340,7 +345,11 @@ export interface TeamMember {
 export interface TeamDefinition {
   model: 'lead-teammate' | 'peer-to-peer' | 'hierarchical' | 'swarm';
   lead?: string;
-  delegateMode?: 'task-list' | 'round-robin' | 'capability-match' | 'load-balance';
+  delegateMode?:
+    | 'task-list'
+    | 'round-robin'
+    | 'capability-match'
+    | 'load-balance';
   members: TeamMember[];
   taskList?: {
     persistence?: 'file-backed' | 'in-memory' | 'database';
@@ -349,7 +358,12 @@ export interface TeamDefinition {
     dependencyTracking?: boolean;
   };
   communication?: {
-    channel?: 'task-list' | 'mailbox' | 'shared-file' | 'direct-message' | 'broadcast';
+    channel?:
+      | 'task-list'
+      | 'mailbox'
+      | 'shared-file'
+      | 'direct-message'
+      | 'broadcast';
     consensus?: 'leader-decides' | 'vote' | 'round-robin';
   };
   deployment?: {

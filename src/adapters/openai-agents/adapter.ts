@@ -24,8 +24,13 @@ type SpecV5 = OssaAgent['spec'] & {
   mcp?: { servers?: Array<{ label: string; url: string; transport: string }> };
   safety?: { guardrails?: Array<Record<string, unknown>> };
 };
-type ExtOpenAI = { model_override?: string; mcp_servers?: Array<Record<string, unknown>>; handoff_targets?: string[] };
-const getExt = (m: OssaAgent): ExtOpenAI => ((m.extensions as any)?.openai_agents_sdk || {}) as ExtOpenAI;
+type ExtOpenAI = {
+  model_override?: string;
+  mcp_servers?: Array<Record<string, unknown>>;
+  handoff_targets?: string[];
+};
+const getExt = (m: OssaAgent): ExtOpenAI =>
+  ((m.extensions as any)?.openai_agents_sdk || {}) as ExtOpenAI;
 
 export class OpenAIAgentsAdapter extends BaseAdapter {
   readonly platform = 'openai-agents-sdk';
@@ -49,7 +54,10 @@ export class OpenAIAgentsAdapter extends BaseAdapter {
             false,
             [],
             `Validation failed: ${validation.errors?.map((e) => e.message).join(', ')}`,
-            { duration: Date.now() - startTime, warnings: validation.warnings?.map((w) => w.message) }
+            {
+              duration: Date.now() - startTime,
+              warnings: validation.warnings?.map((w) => w.message),
+            }
           );
         }
       }
@@ -158,9 +166,13 @@ export class OpenAIAgentsAdapter extends BaseAdapter {
     const errors: ValidationError[] = [...(result.errors || [])];
     const warnings: ValidationWarning[] = [...(result.warnings || [])];
 
-    if (!(manifest.spec as SpecV5)?.personality?.system_prompt && !(manifest.spec as SpecV5)?.personality) {
+    if (
+      !(manifest.spec as SpecV5)?.personality?.system_prompt &&
+      !(manifest.spec as SpecV5)?.personality
+    ) {
       warnings.push({
-        message: 'No personality/instructions defined — agent will use generic instructions',
+        message:
+          'No personality/instructions defined — agent will use generic instructions',
         path: 'spec.personality',
         // code: 'MISSING_INSTRUCTIONS',
       });
@@ -183,7 +195,7 @@ export class OpenAIAgentsAdapter extends BaseAdapter {
 
   getExample(): OssaAgent {
     // Example uses v0.5 fields (personality, mcp, safety) — cast until types updated
-    return ({
+    return {
       ossa_version: SPEC_VERSION,
       kind: 'Agent',
       metadata: {
@@ -235,7 +247,7 @@ export class OpenAIAgentsAdapter extends BaseAdapter {
           ],
         },
       },
-    }) as unknown as OssaAgent;
+    } as unknown as OssaAgent;
   }
 
   // ── Code Generators ─────────────────────────────────────────────
@@ -247,11 +259,10 @@ export class OpenAIAgentsAdapter extends BaseAdapter {
     const hasMcp = this.hasMcpServers(manifest);
     const hasGuards = this.hasGuardrails(manifest);
 
-    const imports = [
-      `import { Agent } from '@openai/agents';`,
-    ];
+    const imports = [`import { Agent } from '@openai/agents';`];
     if (hasMcp) imports.push(`import { mcpServers } from './mcp-config.js';`);
-    if (hasGuards) imports.push(`import { guardrails } from './guardrails.js';`);
+    if (hasGuards)
+      imports.push(`import { guardrails } from './guardrails.js';`);
 
     const agentConfig: string[] = [
       `  name: ${JSON.stringify(name)},`,
@@ -404,7 +415,9 @@ main().catch(console.error);
       {
         name: `@ossa/${safeName}`,
         version: manifest.metadata?.version || '1.0.0',
-        description: manifest.metadata?.description || `OSSA agent: ${manifest.metadata?.name}`,
+        description:
+          manifest.metadata?.description ||
+          `OSSA agent: ${manifest.metadata?.name}`,
         type: 'module',
         main: 'dist/agent.js',
         types: 'dist/agent.d.ts',
@@ -431,9 +444,7 @@ main().catch(console.error);
 
   private resolveModel(manifest: OssaAgent): string {
     return (
-      getExt(manifest)?.model_override ||
-      manifest.spec?.llm?.model ||
-      'gpt-4o'
+      getExt(manifest)?.model_override || manifest.spec?.llm?.model || 'gpt-4o'
     );
   }
 
@@ -442,7 +453,8 @@ main().catch(console.error);
     const p = (manifest.spec as SpecV5)?.personality;
     if (p?.system_prompt) parts.push(p.system_prompt);
     if (p?.tone) parts.push(`Communication style: ${p.tone}`);
-    if (p?.expertise?.length) parts.push(`Expertise: ${p.expertise.join(', ')}`);
+    if (p?.expertise?.length)
+      parts.push(`Expertise: ${p.expertise.join(', ')}`);
     return parts.join('\n\n') || 'You are a helpful assistant.';
   }
 

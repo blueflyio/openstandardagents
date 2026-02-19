@@ -25,10 +25,7 @@ const service = new TeamGeneratorService();
  * Uses spec.team for patterns that require it, spec.swarm for swarm,
  * or just agentArchitecture.pattern for pattern-only manifests.
  */
-function makeManifest(
-  pattern: string,
-  overrides?: any
-): OssaAgent {
+function makeManifest(pattern: string, overrides?: any): OssaAgent {
   const base: OssaAgent = {
     apiVersion: 'ossa/v0.4',
     kind: 'Agent',
@@ -642,7 +639,7 @@ describe('Pattern: lead-teammate', () => {
 // ---------------------------------------------------------------------------
 
 describe('Pattern: subagents (parent-child)', () => {
-  const manifest = ({
+  const manifest = {
     apiVersion: 'ossa/v0.4',
     kind: 'Agent',
     metadata: {
@@ -670,7 +667,7 @@ describe('Pattern: subagents (parent-child)', () => {
         },
       ],
     },
-  }) as unknown as OssaAgent;
+  } as unknown as OssaAgent;
 
   it('generates hierarchy.yaml from subagents', () => {
     const files = service.generate(manifest, 'custom');
@@ -739,9 +736,7 @@ describe('Cross-pattern common file structure', () => {
             role: 'test',
             swarm: {
               entryAgent: 'a',
-              agents: [
-                { name: 'a', agentKind: 'specialist', role: 'test' },
-              ],
+              agents: [{ name: 'a', agentKind: 'specialist', role: 'test' }],
             },
           },
         });

@@ -10,7 +10,12 @@ import * as path from 'path';
 import * as yaml from 'yaml';
 import type { OssaAgent } from '../../types/index.js';
 import { getApiVersion } from '../../utils/version.js';
-import { AGENTS_DIR, WORKSPACE_DIR, MANIFEST_NAME, REGISTRY_NAME } from '../../utils/constants.js';
+import {
+  AGENTS_DIR,
+  WORKSPACE_DIR,
+  MANIFEST_NAME,
+  REGISTRY_NAME,
+} from '../../utils/constants.js';
 import { safeParseYAML, safeStringifyYAML } from '../../utils/yaml-parser.js';
 
 /**

@@ -136,7 +136,7 @@ export class DrupalAdapter extends BaseAdapter {
       );
 
       // Perfect Agent files
-      files.push(...await this.generatePerfectAgentFiles(manifest, options));
+      files.push(...(await this.generatePerfectAgentFiles(manifest, options)));
 
       return this.createResult(true, files, undefined, {
         duration: Date.now() - startTime,
@@ -542,5 +542,4 @@ Original manifest: \`config/ossa/agent.yml\`
 ${manifest.metadata?.license || 'GPL-2.0-or-later'}
 `;
   }
-
 }

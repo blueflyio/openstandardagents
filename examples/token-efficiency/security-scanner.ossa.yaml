@@ -1,0 +1,53 @@
+# OSSA v0.4 token_efficiency example
+# Validates against spec/v0.4/agent.schema.json
+apiVersion: ossa/v0.4
+kind: Agent
+metadata:
+  name: security-scanner
+  version: 1.0.0
+  description: Security scanner with token efficiency (cascade, consolidation, compression)
+spec:
+  role: You are a security scanning agent.
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4
+    temperature: 0.1
+token_efficiency:
+  serialization_profile: compact
+  observation_format: projected
+  budget:
+    max_input_tokens: 50000
+    allocation_strategy: adaptive
+    cascade:
+      - model: haiku
+        max_complexity: low
+        budget_share: 0.2
+      - model: sonnet
+        max_complexity: medium
+        budget_share: 0.5
+      - model: opus
+        max_complexity: high
+        budget_share: 0.3
+  routing:
+    cascade:
+      - haiku
+      - sonnet
+      - opus
+    complexity_threshold:
+      - 0.3
+      - 0.7
+  consolidation:
+    strategy: aggressive
+    retain:
+      - final_answer
+    drop:
+      - raw_observations
+  compression:
+    strategy: hybrid
+    compression_ratio: 0.2
+    min_quality: 0.95
+  custom_metrics:
+    - name: tokens_consumed
+      type: counter
+    - name: cost_per_execution
+      type: histogram

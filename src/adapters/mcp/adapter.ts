@@ -142,10 +142,8 @@ export class MCPAdapter extends BaseExporter {
 
     files.push(
       this.generateReadmeFile(manifest, prefix, {
-        installation:
-          'npm install\nnpm run build',
-        usage:
-          `### With Claude Code\n\nAdd to your \`.mcp.json\`:\n\n\`\`\`json\n{\n  "mcpServers": {\n    "${agentName}": {\n      "command": "node",\n      "args": ["./server.js"]\n    }\n  }\n}\`\`\`\n\n### Standalone\n\n\`\`\`bash\nnpm start\n\`\`\``,
+        installation: 'npm install\nnpm run build',
+        usage: `### With Claude Code\n\nAdd to your \`.mcp.json\`:\n\n\`\`\`json\n{\n  "mcpServers": {\n    "${agentName}": {\n      "command": "node",\n      "args": ["./server.js"]\n    }\n  }\n}\`\`\`\n\n### Standalone\n\n\`\`\`bash\nnpm start\n\`\`\``,
         additional: toolsList
           ? [{ title: 'Available Tools', content: toolsList }]
           : undefined,
@@ -297,12 +295,12 @@ main().catch((error) => {
 
     const toolDefinitions = tools.map((tool) => {
       const name = (tool.name as string) || 'unknown';
-      const description =
-        (tool.description as string) || `Tool: ${name}`;
-      const schema = (tool.inputSchema || tool.schema || {
-        type: 'object',
-        properties: {},
-      }) as Record<string, unknown>;
+      const description = (tool.description as string) || `Tool: ${name}`;
+      const schema = (tool.inputSchema ||
+        tool.schema || {
+          type: 'object',
+          properties: {},
+        }) as Record<string, unknown>;
 
       return { name, description, inputSchema: schema };
     });

@@ -2,50 +2,6 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://openstandardagents.org/schemas/v0.4/extensions/token-efficiency.schema.json",
   "title": "OSSA Token Efficiency Extension",
-  "description": "Extension schema for token efficiency, budget management, knowledge graph refs, and model routing",
-  "type": "object",
-  "properties": {
-    "optimization": {
-      "type": "object",
-      "properties": {
-        "enabled": { "type": "boolean", "default": true },
-        "baseline_tokens": { "type": "integer" },
-        "target_tokens": { "type": "integer" },
-        "target_reduction": {
-          "type": "string",
-          "pattern": "^(\\d+(\\.\\d+)?%|\\d+x)$",
-          "description": "Target reduction as percentage (e.g. '50%') or multiplier (e.g. '5x')"
-        },
-        "techniques": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": [
-              "knowledge_graph_refs",
-              "template_compression",
-              "semantic_compression",
-              "dynamic_budgets",
-              "checkpoint_retry",
-              "cascade_composition",
-              "circuit_breaker",
-              "observation_masking",
-              "lazy_loading",
-              "hierarchical_context",
-              "intelligent_routing",
-              "prefiltering",
-              "manifest_fingerprint"
-            ]
-          }
-        },
-        "benchmarks": {
-          "type": "object",
-          "properties": {
-            "baseline": { "type": "object" },
-            "optimized": { "type": "object" },
-            "improvement": { "type": "object" }
-          }
-        }
-      }
-    }
-  }
+  "description": "Extension schema for token efficiency. References the main agent schema definitions for budget, cascade, routing, consolidation, compression, and custom metrics.",
+  "$ref": "../../agent.schema.json#/definitions/TokenEfficiency"
 }

@@ -42,7 +42,9 @@ export function generateSkillContent(manifest: OssaAgent): string {
   if (tools.length > 0) {
     sections.push(`# Tools\n`);
     for (const tool of tools) {
-      sections.push(`- **${tool.name || tool.type}**: ${tool.description || 'No description'}`);
+      sections.push(
+        `- **${tool.name || tool.type}**: ${tool.description || 'No description'}`
+      );
     }
     sections.push('');
   }
@@ -224,9 +226,7 @@ export function generateGovernanceConfig(manifest: OssaAgent): ExportFile {
 /**
  * Generate observability configuration (OTel traces/metrics)
  */
-export function generateObservabilityConfig(
-  manifest: OssaAgent
-): ExportFile {
+export function generateObservabilityConfig(manifest: OssaAgent): ExportFile {
   const name = manifest.metadata?.name || 'agent';
   const obs = manifest.spec?.observability;
 

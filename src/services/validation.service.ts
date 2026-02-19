@@ -139,6 +139,28 @@ export class ValidationService implements IValidationService {
         }
       }
 
+      // 5b. Validate separation of duties (role must not be in conflicts_with)
+      const sodErrors: ErrorObject[] = [];
+      if (manifest && typeof manifest === 'object' && 'spec' in manifest) {
+        const spec = (manifest as { spec?: Record<string, unknown> }).spec as
+          | { separation?: { role?: string; conflicts_with?: string[] } }
+          | undefined;
+        const separation = spec?.separation;
+        if (
+          separation?.role &&
+          Array.isArray(separation.conflicts_with) &&
+          separation.conflicts_with.includes(separation.role)
+        ) {
+          sodErrors.push({
+            instancePath: '/spec/separation',
+            schemaPath: '/spec/separation',
+            keyword: 'separationOfDuties',
+            params: {},
+            message: `role "${separation.role}" cannot be in conflicts_with`,
+          });
+        }
+      }
+
       // 6. Run platform-specific validators
       const platformResults = this.validatePlatformExtensions(
         manifest as OssaAgent
@@ -154,13 +176,18 @@ export class ValidationService implements IValidationService {
               message: err.message || 'Validation error',
             }))),
         ...messagingErrors,
+        ...sodErrors,
         ...platformResults.errors,
       ];
       const allWarnings = [...warnings, ...platformResults.warnings];
 
       // 7. Return structured result
       return {
-        valid: valid && platformResults.valid && messagingErrors.length === 0,
+        valid:
+          valid &&
+          platformResults.valid &&
+          messagingErrors.length === 0 &&
+          sodErrors.length === 0,
         errors: allErrors,
         warnings: allWarnings,
         manifest:
