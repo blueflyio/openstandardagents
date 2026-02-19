@@ -36,7 +36,9 @@ This manifest demonstrates **automated token rotation** using OSSA v0.4.4 featur
 
 ## Configuration
 
-### Rotation Policy
+### Rotation Policy and Observability
+
+OSSA v0.4 `rotation_policy` supports optional runtime observability: `last_rotated_at` (date-time) and `last_rotated_by` (agent/user id). These are set by runtime or tooling (e.g. buildkit `gitlab token self-rotate`) after successful rotation, not in the manifest; used for audit and expiry warnings.
 
 ```yaml
 authentication:
