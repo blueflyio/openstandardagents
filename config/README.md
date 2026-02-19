@@ -22,20 +22,16 @@ config/
 └── devfile.yaml       # GitLab Workspaces devfile
 ```
 
-## Symlinks
+## Tool compatibility (no symlinks)
 
-The following files are symlinked from the project root for tool compatibility:
+Symlinks are not allowed per platform policy. Invoke tools with explicit config paths:
 
-- `.ossa.config.yaml` → `config/ossa/.ossa.config.yaml`
-- `nginx.conf` → `config/nginx/nginx.conf`
-- `devfile.yaml` → `config/devfile.yaml`
-- `.redocly.yaml` → `config/docs/.redocly.yaml`
-- `.spectral.yaml` → `config/linting/.spectral.yaml`
-- `.releaserc.json` → `config/release/.releaserc.json`
-- `.wiki-config.json` → `config/docs/.wiki-config.json`
+- OSSA config: `--config config/ossa/.ossa.config.yaml`
+- Nginx: use `config/nginx/nginx.conf` in Docker/compose or copy into build context
+- Devfile: `config/devfile.yaml`
+- Redocly: `--config config/docs/.redocly.yaml` or equivalent
+- Spectral: `--ruleset config/linting/.spectral.yaml`
+- Release: `config/release/.releaserc.json` (or set in package.json / CI)
+- Wiki: `config/docs/.wiki-config.json`
 
-## Notes
-
-- Tools that expect config files in root will work via symlinks
-- All actual configuration files are stored here for organization
-- Update files in `config/` directory, not the symlinks
+All configuration files live under `config/`; update only the files in this directory.
