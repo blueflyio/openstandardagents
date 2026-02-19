@@ -1,5 +1,21 @@
 # Security Policy
 
+## Security compliance statement (Annex A style)
+
+This project discloses security posture in line with [ECMA-434](https://ecma-international.org/wp-content/uploads/ECMA-434_1st_edition_december_2025.pdf) (Security profiles for Natural Language Interaction Protocol) and NIST-style labelling where applicable.
+
+| Field | Value |
+| ----- | ----- |
+| **Claimant** | OSSA maintainers (Open Standard for Software Agents) |
+| **Label scope** | OSSA specification, schema, CLI, and published adapters/runtimes |
+| **Claim date** | See [CHANGELOG](CHANGELOG.md) and release tags |
+| **Secure development** | Threat modelling, manifest validation (no hardcoded secrets, auth on tools), dependency audits, responsible disclosure (below) |
+| **Contact** | security@openstandardagents.org; see [Reporting a Vulnerability](#reporting-a-vulnerability) |
+
+For NLIP/ECMA-434 alignment details (TLS, auth, observability, prompt-injection), see [docs/security/NLIP-ECMA-434-alignment.md](docs/security/NLIP-ECMA-434-alignment.md).
+
+---
+
 ## Supported Versions
 
 We actively support the following versions of OSSA with security updates:
