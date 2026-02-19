@@ -434,7 +434,7 @@ spec:
 
 - [ ] Finalize MCP tool integration
 - [ ] Implement A2A message broker
-- [ ] Add AGENTS.md parser
+- [x] AGENTS.md: wizard step (9c), API (GET/PUT/DELETE /agents/{name}/agents-md), CLI generate/validate/sync; parseAgentsMd in AgentsMdService
 - [ ] Add SKILL.md parser
 - [ ] Create protocol integration tests
 - [ ] Document protocol usage examples

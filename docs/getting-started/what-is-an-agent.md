@@ -80,6 +80,8 @@ Single source of truth is **manifest.ossa.yaml**. Generated and supporting files
     └── README.md
 ```
 
+AGENTS.md follows the [agents.md](https://agents.md) standard and can be customized via the wizard and `ossa agents-md` commands.
+
 See **Agent Folder Structure Standard** (`docs/architecture/agent-folder-structure.md`) for the full layout and generation pipeline (manifest → openapi → zod/pydantic → clients).
 
 ### 2. Project layout (agent as part of a repo)
@@ -121,6 +123,7 @@ The **agent wizard** (`ossa wizard` or `ossa agent wizard`) is an interactive fl
 | 9 | Advanced options |
 | 9a | Token efficiency (v0.4) |
 | 9b | Separation of duties (v0.4) |
+| 9c | AGENTS.md (agents.md standard) |
 | 10 | Review and save |
 
 The wizard outputs a **manifest.ossa.yaml** (or a path you choose) that conforms to the OSSA v0.4 schema. You can then place that file into the folder structure above (e.g. `.agents/{agent-name}/manifest.ossa.yaml` or `examples/my-agent.ossa.yaml`).
@@ -143,4 +146,4 @@ ossa agent wizard
 | **Folder structure** | Per-agent: `.agents/{name}/` with `manifest.ossa.yaml` as single source of truth; optional prompts/, tools/, config/, api/, src/, tests/, docs/, docker/, k8s/. |
 | **Wizard** | Interactive steps 1–10 (including 9a token efficiency, 9b separation of duties) that produce a valid Agent manifest. |
 
-For full schema details see `spec/v0.4/agent.schema.json` and the **OSSA Technical Reference**. For the complete folder standard and generation pipeline see **Agent Folder Structure Standard** (`docs/architecture/agent-folder-structure.md`).
+For full schema details see `spec/v0.4/agent.schema.json` and the **OSSA Technical Reference**. For the complete folder standard and generation pipeline see **Agent Folder Structure Standard** (`docs/architecture/agent-folder-structure.md`). For AGENTS.md and the agents.md standard see [AGENTS.md and OSSA](agents-md-and-ossa.md).

@@ -1,6 +1,6 @@
 # OSSA agents.md Extension Schema
-# OpenAI agents.md repository-level agent guidance generation
-# See: https://agents.md | https://github.com/openai/agents.md
+# agents.md standard: repository-level agent guidance (AAIF / agents.md)
+# See: https://agents.md | https://github.com/agentsmd/agents.md
 
 apiVersion: ossa/v0.4.6
 kind: ExtensionSchema
@@ -11,11 +11,12 @@ metadata:
 spec:
   compatibleWith:
     - agents.md/v1
-  description: "Extension schema for OpenAI agents.md repository-level agent guidance"
+  description: "Extension schema for agents.md (AAIF) repository-level agent guidance"
 
   references:
     specification: https://agents.md
-    repository: https://github.com/openai/agents.md
+    repository: https://github.com/agentsmd/agents.md
+    stewardship: "Agentic AI Foundation (AAIF) under Linux Foundation"
     adoption: "20,000+ OSS projects"
 
   supportedTools:

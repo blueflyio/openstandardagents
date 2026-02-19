@@ -470,7 +470,7 @@ ossa agents-md sync manifest.yaml --watch
 
 ## Related Resources
 
-- [OpenAI agents.md Repository](https://github.com/openai/agents.md)
+- [agents.md Repository (agentsmd/agents.md)](https://github.com/agentsmd/agents.md)
 - [agents.md Website](https://agents.md)
 - [OSSA Cursor Extension](./cursor.md)
 - [OSSA Schema v0.2.8](https://openstandardagents.org/schemas/v0.2.8/agent.json)
