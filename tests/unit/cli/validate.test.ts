@@ -21,7 +21,7 @@ describe('ossa validate', () => {
       },
     };
 
-    expect(validManifest.apiVersion).toBe('ossa/v0.4.5');
+    expect(validManifest.apiVersion).toBe(API_VERSION);
     expect(validManifest.kind).toBe('Agent');
     expect(validManifest.metadata.name).toBeTruthy();
     expect(validManifest.spec).toBeDefined();
