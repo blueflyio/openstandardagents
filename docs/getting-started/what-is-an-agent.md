@@ -89,7 +89,7 @@ When the agent lives inside a larger project (e.g. OSSA repo itself):
 ```
 agent-project/
 ├── .agents/              # Local agent runtime data (often .gitignored)
-├── .agents-workspace/    # Temporary/shared workspace (often .gitignored)
+├── .agents-workspace/    # Project agent registry + optional transient data (see agents-workspace-registry.md)
 ├── spec/                 # OSSA schemas (e.g. spec/v0.4/)
 ├── examples/             # Example manifests
 ├── src/                  # Source (cli, services, adapters, ...)

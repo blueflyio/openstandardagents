@@ -28,6 +28,12 @@ This is your primary reference for understanding how the OSSA Registry works.
 
 ---
 
+### 📐 [project-registry.schema.json](./project-registry.schema.json)
+**JSON Schema for project-level registry** (`.agents-workspace/registry.yaml`):
+- Local agents list, remote sources (MCP endpoint + auth), scopes, resolution order
+- Use for validating a project's decentralized agent registry index
+- See [Agents Workspace and Registry](../../docs/getting-started/agents-workspace-registry.md)
+
 ### 📐 [registry-api.schema.json](./registry-api.schema.json)
 **JSON Schema definitions** for all API request/response types:
 - `AgentRegistryMetadata`: Core agent metadata
