@@ -11,6 +11,7 @@
  *   AgentCardGenerator,
  *   validateManifest,
  *   loadManifestFromFile,
+ *   loadManifestFromString,
  *   OSSAValidator,
  * } from '@bluefly/openstandardagents/sdk';
  * import type { AgentCard, OssaAgent, ValidationResult } from '@bluefly/openstandardagents/sdk';
@@ -51,6 +52,18 @@ export function loadManifestFromFile(filePath: string): Record<string, unknown> 
   const content = readFileSync(filePath, 'utf-8');
   const isYaml = filePath.endsWith('.yaml') || filePath.endsWith('.yml');
   return (isYaml ? safeParseYAML<Record<string, unknown>>(content) : JSON.parse(content)) as Record<string, unknown>;
+}
+
+/**
+ * Load manifest from string (YAML or JSON). Does not validate; call validateManifest after if needed.
+ */
+export function loadManifestFromString(
+  content: string,
+  format: 'yaml' | 'json' = 'yaml'
+): Record<string, unknown> {
+  return (format === 'yaml'
+    ? safeParseYAML<Record<string, unknown>>(content)
+    : JSON.parse(content)) as Record<string, unknown>;
 }
 
 /**
