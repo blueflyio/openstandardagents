@@ -8,9 +8,10 @@
  * Usage: npm run agent:generate -- --name "My Agent" --type worker
  */
 
-import { readFileSync, writeFileSync, mkdirSync } from 'fs';
-import { join } from 'path';
+import { mkdirSync, readFileSync, writeFileSync } from 'fs';
 import yaml from 'js-yaml';
+import { join } from 'path';
+import { API_VERSION } from '../../version.js';
 
 interface AgentOptions {
   name: string;
@@ -48,7 +49,7 @@ class EnhancedAgentGenerator {
     }
 
     // Fallback default template
-    return `apiVersion: ossa/v0.4.5
+    return `apiVersion: ${API_VERSION}
 kind: Agent
 metadata:
   name: {{NAME}}

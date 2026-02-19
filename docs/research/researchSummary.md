@@ -163,9 +163,9 @@
 
 ## Research Documents
 
-- **[Platform Landscape](./AGENT-PLATFORM-LANDSCAPE.md)** - Comprehensive platform list
-- **[Comparison Matrix](./PLATFORM-COMPARISON-MATRIX.md)** - Feature-by-feature analysis
-- **[This Summary](./RESEARCH-SUMMARY.md)** - Executive overview
+- **[Platform Landscape](./agentPlatformLandscape.md)** - Comprehensive platform list
+- **[Comparison Matrix](./platformComparisonMatrix.md)** - Feature-by-feature analysis
+- **[This Summary](./researchSummary.md)** - Executive overview
 
 ---
 

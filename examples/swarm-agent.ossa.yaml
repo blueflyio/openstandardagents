@@ -11,7 +11,7 @@
 #   - Assigned task coordination: triage decides who handles what
 #   - In-memory persistence: no durable task list needed
 
-apiVersion: ossa/v0.4.5
+apiVersion: ossa/v0.4.6
 kind: Agent
 metadata:
   name: support-swarm

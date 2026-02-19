@@ -11,7 +11,9 @@ import { readFileSync, writeFileSync, readdirSync, statSync } from 'fs';
 import { join } from 'path';
 import * as yaml from 'yaml';
 
-const AGENTS_DIR = '.gitlab/agents';
+import { GITLAB_AGENTS_DIR } from '../../utils/constants.js';
+
+const AGENTS_DIR = GITLAB_AGENTS_DIR;
 const TEMPLATE_PATH = '.gitlab/agents/TEMPLATE-v0.3.0-comprehensive.ossa.yaml';
 
 interface AgentManifest {

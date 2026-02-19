@@ -34,7 +34,7 @@ export class NPMAdapter extends BaseAdapter {
   readonly displayName = 'NPM Package';
   readonly description = 'Export agent as installable npm package';
   readonly status = 'production' as const;
-  readonly supportedVersions = ['v0.3.6', 'v0.4.x', 'v0.4.5'];
+  readonly supportedVersions = ['v0.3.6', 'v0.4.x', 'v0.4.6'];
 
   private converter = new NPMConverter();
   private _skillsService?: ClaudeSkillsService;

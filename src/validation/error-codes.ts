@@ -17,6 +17,8 @@
  * - 900-999: Catalog & publishing errors
  */
 
+import { API_VERSION } from '../version.js';
+
 export enum OSSAErrorCode {
   // Schema Validation (001-099)
   OSSA_001 = 'OSSA-001', // Missing required field
@@ -212,14 +214,13 @@ export const ERROR_CATALOG: Record<OSSAErrorCode, ErrorDetails> = {
     code: OSSAErrorCode.OSSA_003,
     severity: 'error',
     message: 'Invalid apiVersion format',
-    remediation:
-      'Use format "ossa/v0.4" or "ossa/v0.4.5". Must match pattern: ^ossa/v\\d+\\.\\d+(\\.\\d+)?$',
+    remediation: `Use format "ossa/v0.4" or "${API_VERSION}". Must match pattern: ^ossa/v\\d+\\.\\d+(\\.\\d+)?$`,
     docsUrl: 'https://openstandardagents.org/docs/errors/ossa-003',
     examples: [
       {
         title: 'Invalid version format',
         invalid: '{ "apiVersion": "v0.3" }',
-        valid: '{ "apiVersion": "ossa/v0.4.5" }',
+        valid: `{ "apiVersion": "${API_VERSION}" }`,
         explanation: 'apiVersion must start with "ossa/" prefix',
       },
     ],
@@ -253,10 +254,8 @@ export const ERROR_CATALOG: Record<OSSAErrorCode, ErrorDetails> = {
     examples: [
       {
         title: 'Agent without spec',
-        invalid:
-          '{ "apiVersion": "ossa/v0.4.5", "kind": "Agent", "metadata": {} }',
-        valid:
-          '{ "apiVersion": "ossa/v0.4.5", "kind": "Agent", "metadata": {}, "spec": { "type": "worker" } }',
+        invalid: `{ "apiVersion": "${API_VERSION}", "kind": "Agent", "metadata": {} }`,
+        valid: `{ "apiVersion": "${API_VERSION}", "kind": "Agent", "metadata": {}, "spec": { "type": "worker" } }`,
         explanation: 'spec is required for Agent kind',
       },
     ],

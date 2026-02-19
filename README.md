@@ -35,6 +35,12 @@ OSSA is not a protocol (like MCP or A2A) and not a framework (like LangChain or 
 - **Team-aware AGENTS.md**: Auto-generated documentation with team topology tables, member roles, coordination strategy, and hierarchy diagrams
 - **5 new export platforms**: `openai-agents-sdk` (beta), `a2a` (alpha), `claude-skills` (beta), `mobile-agent` (alpha), `symfony` (alpha) — bringing total to 22
 
+### v0.4.6 (2026-02-19)
+
+**Version Update**:
+- Updated all version references from 0.4.5 to 0.4.6
+- Package version bumped to 0.4.6
+
 ### v0.4.5 (2026-02-10)
 
 **Major Cleanup & Foundation Improvements**:
@@ -255,7 +261,7 @@ Upgrade manifests to the latest spec version:
 
 ```bash
 # Migrate from older version to current
-ossa migrate agent.ossa.yaml --to 0.4.5
+ossa migrate agent.ossa.yaml --to 0.4.6
 
 # List available migration paths
 ossa migrate --list
@@ -282,7 +288,7 @@ if (result.valid) {
 }
 ```
 
-## Production Status (v0.4.5)
+## Production Status (v0.4.6)
 
 ### ✅ Production-Ready (Tested & Documented)
 
@@ -300,7 +306,7 @@ if (result.valid) {
 - `npm` (production) - TypeScript package with manifest
 - `agent-skills` (production) - SKILL.md for Claude Code
 
-**Skills Pipeline** (✅ Complete in v0.4.5):
+**Skills Pipeline** (✅ Complete in v0.4.6):
 - `ossa skills research` - Index skills from curated sources (cached locally at ~/.ossa/skills-index.json)
 - `ossa skills generate` - Auto-detects input format (OSSA, Oracle Agent Spec, AGENTS.md)
 - `ossa skills export` - Package as npm, install to ~/.claude/skills/, publish to registry
@@ -319,7 +325,7 @@ if (result.valid) {
 - `ossa agents-local` - Local `.agents/` folder management
 - `ossa agents-md` - Generate agents.md files
 - Export to: `crewai`, `drupal`, `claude-code`, `cursor`, `warp`, `anthropic`
-- Anthropic runtime adapter uses official `@anthropic-ai/sdk` (v0.4.5 improvement: 513 LOC removed)
+- Anthropic runtime adapter uses official `@anthropic-ai/sdk` (v0.4.6 improvement: 513 LOC removed)
 
 ### GitLab Agent Examples (Fully Implemented)
 
@@ -363,7 +369,7 @@ OSSA complements MCP and A2A by adding the packaging and deployment layer they d
 ### Manifest Format
 
 ```yaml
-apiVersion: ossa/v0.4.5
+apiVersion: ossa/v0.4.6
 kind: Agent
 metadata:
   name: code-reviewer
@@ -390,7 +396,7 @@ spec:
 #### Team Manifest Example
 
 ```yaml
-apiVersion: ossa/v0.4.5
+apiVersion: ossa/v0.4.6
 kind: Agent
 metadata:
   name: dev-team
@@ -529,7 +535,7 @@ OSSA is designed to work **alongside** existing agent protocols, not replace the
 **Example**: An OSSA manifest can declare that an agent uses MCP tools and A2A messaging, then export that configuration to Docker, Kubernetes, or LangChain deployment packages.
 
 ```yaml
-apiVersion: ossa/v0.4.5
+apiVersion: ossa/v0.4.6
 kind: Agent
 metadata:
   name: code-reviewer
@@ -555,13 +561,13 @@ ossa export <manifest> -p <platform> -o <dir>   # Export to platform
 ossa export --list-platforms  # Show all platforms with status
 ossa lint <manifest>         # Lint for best practices
 ossa diff <old> <new>        # Compare two manifests
-ossa migrate <manifest> --to 0.4.5  # Migrate between spec versions
+ossa migrate <manifest> --to 0.4.6  # Migrate between spec versions
 ossa generate-gaid <manifest>           # Generate Global Agent ID
 ossa export <manifest> --perfect-agent  # Full production bundle (AGENTS.md + evals + governance + observability)
 ossa export <manifest> --include-agents-md --include-team  # Individual components
 ```
 
-**Skills Pipeline** (New in v0.4.5):
+**Skills Pipeline** (New in v0.4.6):
 ```bash
 ossa skills research "drupal" --json           # Search GitHub/npm for skills
 ossa skills generate agent.ossa.yaml           # Generate SKILL.md from OSSA manifest

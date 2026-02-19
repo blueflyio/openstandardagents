@@ -2,10 +2,11 @@
  * MCP Integration Service Tests
  */
 
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
-import { MCPIntegrationService, MCPMessageType } from '../mcp-integration.js';
+import { afterEach, beforeEach, describe, expect, it } from '@jest/globals';
+import { SPEC_VERSION } from '../../../version.js';
 import type { AgentIdentity } from '../a2a-protocol.js';
 import { A2AMessageType, MessagePriority } from '../a2a-protocol.js';
+import { MCPIntegrationService, MCPMessageType } from '../mcp-integration.js';
 
 // Helper to create test agent identity
 function createTestAgent(name: string, namespace: string): AgentIdentity {
@@ -201,7 +202,7 @@ describe('MCPIntegrationService', () => {
         to,
         type: A2AMessageType.COMMAND,
         payload: { action: 'test' },
-        version: '0.4.5',
+        version: SPEC_VERSION,
         metadata: {
           priority: MessagePriority.NORMAL,
           timeout: 30000,
@@ -254,7 +255,7 @@ describe('MCPIntegrationService', () => {
         from: agent,
         to: agent,
         payload: {},
-        version: '0.4.5',
+        version: SPEC_VERSION,
         metadata: {
           priority: MessagePriority.NORMAL,
           timeout: 30000,

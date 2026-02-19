@@ -13,7 +13,7 @@
 #   - Assigned task coordination (coordinator assigns stage work)
 #   - Database-backed persistence for auditability
 
-apiVersion: ossa/v0.4.5
+apiVersion: ossa/v0.4.6
 kind: Agent
 metadata:
   name: data-processing-pipeline

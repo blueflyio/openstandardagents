@@ -9,7 +9,7 @@
 # MCP connects tools. A2A connects agents. OSSA defines the contract.
 # ─────────────────────────────────────────────────────────────────────────────
 
-apiVersion: ossa/v0.4.5
+apiVersion: ossa/v0.4.6
 kind: Agent
 metadata:
   name: enterprise-support-orchestrator

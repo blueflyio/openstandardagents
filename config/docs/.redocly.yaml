@@ -1,0 +1,9 @@
+extends:
+  - recommended
+
+rules:
+  no-server-example.com: off
+  no-required-schema-properties-undefined: error
+  operation-operationId: error
+  tag-description: warn
+  info-contact: warn

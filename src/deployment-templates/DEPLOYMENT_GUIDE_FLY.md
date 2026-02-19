@@ -79,7 +79,7 @@ Replace the default `fly.toml` with our production template:
 mv fly.toml fly.toml.backup
 
 # Copy production template
-cp deployment-templates/fly.toml.hbs fly.toml
+cp src/deployment-templates/fly.toml.hbs fly.toml
 ```
 
 **Fill in template variables:**
@@ -191,7 +191,7 @@ fly regions set sea  # Seattle (change as needed)
 Create `fly.toml` from template:
 
 ```bash
-cp deployment-templates/fly.toml.hbs fly.toml
+cp src/deployment-templates/fly.toml.hbs fly.toml
 ```
 
 **Key configuration sections:**

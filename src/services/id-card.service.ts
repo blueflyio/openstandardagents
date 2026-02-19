@@ -12,6 +12,7 @@
 
 import * as crypto from 'crypto';
 import type { OssaAgent } from '../types/index.js';
+import { SPEC_VERSION } from '../version.js';
 
 /** Supported hash algorithms for audit trail */
 export type HashAlgorithm = 'sha256' | 'sha384' | 'sha512';
@@ -128,7 +129,7 @@ export class IdCardService {
     const provenance: IdCard['provenance'] = {
       createdBy: options.createdBy,
       createdAt: now,
-      createdWith: options.createdWith || `ossa-cli/0.4.5`,
+      createdWith: options.createdWith || `ossa-cli/${SPEC_VERSION}`,
     };
 
     if (options.lineage && options.lineage.length > 0) {

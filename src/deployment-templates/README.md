@@ -24,7 +24,7 @@ One-click deployment configurations for Railway, Render, and Fly.io platforms.
 
 1. Copy template:
    ```bash
-   cp deployment-templates/railway.json.hbs railway.json
+   cp src/deployment-templates/railway.json.hbs railway.json
    ```
 
 2. Fill in variables (or use template engine)
@@ -42,7 +42,7 @@ One-click deployment configurations for Railway, Render, and Fly.io platforms.
 
 1. Copy template to project root:
    ```bash
-   cp deployment-templates/render.yaml.hbs render.yaml
+   cp src/deployment-templates/render.yaml.hbs render.yaml
    ```
 
 2. Fill in variables
@@ -57,7 +57,7 @@ One-click deployment configurations for Railway, Render, and Fly.io platforms.
 
 1. Copy template:
    ```bash
-   cp deployment-templates/fly.toml.hbs fly.toml
+   cp src/deployment-templates/fly.toml.hbs fly.toml
    ```
 
 2. Fill in variables

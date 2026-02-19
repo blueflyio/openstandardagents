@@ -7,15 +7,16 @@
  * This makes OSSA the universal contract — define once, run on OpenAI.
  */
 
-import { BaseAdapter } from '../base/adapter.interface.js';
+import { SPEC_VERSION } from '../../version.js';
 import type {
-  OssaAgent,
   ExportOptions,
   ExportResult,
-  ValidationResult,
+  OssaAgent,
   ValidationError,
+  ValidationResult,
   ValidationWarning,
 } from '../base/adapter.interface.js';
+import { BaseAdapter } from '../base/adapter.interface.js';
 
 // v0.5 fields not yet in OssaAgent type — use these helpers until types updated
 type SpecV5 = OssaAgent['spec'] & {
@@ -183,7 +184,7 @@ export class OpenAIAgentsAdapter extends BaseAdapter {
   getExample(): OssaAgent {
     // Example uses v0.5 fields (personality, mcp, safety) — cast until types updated
     return ({
-      ossa_version: '0.4.5',
+      ossa_version: SPEC_VERSION,
       kind: 'Agent',
       metadata: {
         name: 'platform-assistant',

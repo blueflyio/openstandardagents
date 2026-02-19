@@ -49,7 +49,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Phase-specific tracking documents (phase-1 through phase-4)
 - Supporting documents (dependency-graph, cross-project-dependencies, success-metrics)
 - Roadmap index (`README.md`)
-- Roadmap changelog (`CHANGELOG.md`)
+- Roadmap changelog (`changelog.md`)
 
 #### Master Roadmap (`v0.3.x-to-v{{VERSION}}.md`)
 - Vision statement: "OSSA v{{VERSION}}: The OpenAPI for AI Agents"

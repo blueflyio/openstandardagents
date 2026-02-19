@@ -7,19 +7,19 @@
  *
  * Usage:
  *   npm run validate:versions
- *   tsx tools/validate-versions.ts
+ *   tsx src/tools/validate-versions.ts
  */
 
 import { readFileSync, readdirSync, statSync } from 'fs';
 import { join, relative } from 'path';
-import { API_VERSION, SPEC_VERSION } from '../src/version.js';
+import { API_VERSION, SPEC_VERSION } from '../version.js';
 
 const ALLOWED_HARDCODED_VERSIONS = [
   '.version.json',           // Source of truth
   'src/version.ts',          // Version constants
   'CHANGELOG.md',            // Historical versions documented
   'package.json',            // NPM version
-  'tools/validate-versions.ts', // This file
+  'src/tools/validate-versions.ts', // This file
 ];
 
 const IGNORE_PATTERNS = [

@@ -192,7 +192,7 @@ export class VSCodeGenerator implements Generator {
     updated = updated.replace(/['"]v\d+\.\d+\.\d+['"]/g, (match) => {
       // Only replace if it looks like an OSSA version
       if (match.includes('v0.')) {
-        // apiVersion is "ossa/v0.4.5", so .replace('ossa/', '') gives "v0.4.5"
+        // apiVersion is "ossa/v0.4.6", so .replace('ossa/', '') gives "v0.4.6"
         return `'${apiVersion.replace('ossa/', '')}'`;
       }
       return match;

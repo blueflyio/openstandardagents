@@ -13,7 +13,7 @@ This directory contains comprehensive Handlebars templates for creating producti
 ## Directory Structure
 
 ```
-deployment-templates/
+src/deployment-templates/
 ├── docker/
 │   ├── Dockerfile.hbs              # Multi-stage production Dockerfile
 │   ├── docker-compose.yml.hbs      # Local development environment
@@ -49,7 +49,7 @@ npm install handlebars js-yaml
 #### Step 1: Create Values File
 
 ```bash
-cp deployment-templates/docker/docker-values.yaml my-app-docker-values.yaml
+cp src/deployment-templates/docker/docker-values.yaml my-app-docker-values.yaml
 ```
 
 Edit with your configuration:
@@ -98,7 +98,7 @@ docker-compose up -d
 #### Step 1: Create Values File
 
 ```bash
-cp deployment-templates/kubernetes/values.yaml.hbs my-app-k8s-values.yaml
+cp src/deployment-templates/kubernetes/values.yaml.hbs my-app-k8s-values.yaml
 ```
 
 Edit with your configuration (see [Template Variables](#template-variables)).

@@ -25,17 +25,17 @@ if (!existsSync(versionJsonPath)) {
 const versionData = JSON.parse(readFileSync(versionJsonPath, 'utf-8'));
 
 /**
- * Current package version (e.g., "0.4.1")
+ * Current package version (e.g., "0.4.6")
  */
 export const VERSION = versionData.current as string;
 
 /**
- * Current spec version (e.g., "0.4.1")
+ * Current spec version (e.g., "0.4.6")
  */
 export const SPEC_VERSION = versionData.spec_version as string;
 
 /**
- * API version string for manifests (e.g., "ossa/v0.4.1")
+ * API version string for manifests (e.g., "ossa/v0.4.6")
  */
 export const API_VERSION = `ossa/v${SPEC_VERSION}`;
 

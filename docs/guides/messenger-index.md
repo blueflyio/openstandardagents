@@ -5,14 +5,14 @@ Complete documentation for OSSA Symfony Messenger integration.
 ## Quick Links
 
 ### Getting Started
-- [Setup Guide](./MESSENGER.md#installation) - Install and configure
-- [Quick Start](./ASYNC-AGENTS.md#basic-workflow) - First async agent
-- [Configuration](./MESSENGER.md#transport-configuration) - Transport setup
+- [Setup Guide](./messenger.md#installation) - Install and configure
+- [Quick Start](./asyncAgents.md#basic-workflow) - First async agent
+- [Configuration](./messenger.md#transport-configuration) - Transport setup
 
 ### Core Documentation
-- [MESSENGER.md](./MESSENGER.md) - Complete configuration guide
-- [ASYNC-AGENTS.md](./ASYNC-AGENTS.md) - Async execution patterns
-- [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) - Problem solving
+- [messenger.md](./messenger.md) - Complete configuration guide
+- [asyncAgents.md](./asyncAgents.md) - Async execution patterns
+- [troubleshooting.md](./troubleshooting.md) - Problem solving
 - [messenger-architecture.md](./messenger-architecture.md) - Architecture diagrams
 
 ### Implementation
@@ -28,7 +28,7 @@ Complete documentation for OSSA Symfony Messenger integration.
 
 ```
 docs/
-├── MESSENGER.md                    (2,700 lines)
+├── messenger.md                    (2,700 lines)
 │   ├── Overview
 │   ├── Installation
 │   ├── Transport Configuration
@@ -39,7 +39,7 @@ docs/
 │   ├── Best Practices
 │   └── Integration Examples
 │
-├── ASYNC-AGENTS.md                 (2,300 lines)
+├── asyncAgents.md                 (2,300 lines)
 │   ├── When to Use Async
 │   ├── Execution Patterns
 │   ├── Batch Execution
@@ -49,7 +49,7 @@ docs/
 │   ├── Monitoring
 │   └── Production Checklist
 │
-├── TROUBLESHOOTING.md              (2,500 lines)
+├── troubleshooting.md              (2,500 lines)
 │   ├── Messages Not Processing
 │   ├── High Queue Depth
 │   ├── Failed Messages
@@ -72,25 +72,25 @@ docs/
 ## By Topic
 
 ### Installation & Setup
-1. [Installation](./MESSENGER.md#installation)
-2. [Configure Transport](./MESSENGER.md#configure-transport)
-3. [Setup Database Tables](./MESSENGER.md#setup-database-tables)
+1. [Installation](./messenger.md#installation)
+2. [Configure Transport](./messenger.md#configure-transport)
+3. [Setup Database Tables](./messenger.md#setup-database-tables)
 
 ### Basic Usage
-1. [Basic Agent Execution](./MESSENGER.md#basic-agent-execution)
-2. [Batch Agent Execution](./MESSENGER.md#batch-agent-execution)
-3. [Consuming Messages](./MESSENGER.md#consuming-messages)
+1. [Basic Agent Execution](./messenger.md#basic-agent-execution)
+2. [Batch Agent Execution](./messenger.md#batch-agent-execution)
+3. [Consuming Messages](./messenger.md#consuming-messages)
 
 ### Advanced Usage
-1. [Execution Patterns](./ASYNC-AGENTS.md#execution-patterns)
-2. [Priority Handling](./ASYNC-AGENTS.md#priority-handling)
-3. [Error Handling](./ASYNC-AGENTS.md#error-handling)
-4. [Performance Optimization](./ASYNC-AGENTS.md#performance-optimization)
+1. [Execution Patterns](./asyncAgents.md#execution-patterns)
+2. [Priority Handling](./asyncAgents.md#priority-handling)
+3. [Error Handling](./asyncAgents.md#error-handling)
+4. [Performance Optimization](./asyncAgents.md#performance-optimization)
 
 ### Operations
-1. [Managing Failed Messages](./MESSENGER.md#managing-failed-messages)
-2. [Monitoring](./MESSENGER.md#monitoring)
-3. [Worker Management](./TROUBLESHOOTING.md#worker-issues)
+1. [Managing Failed Messages](./messenger.md#managing-failed-messages)
+2. [Monitoring](./messenger.md#monitoring)
+3. [Worker Management](./troubleshooting.md#worker-issues)
 
 ### Architecture
 1. [High-Level Architecture](./messenger-architecture.md#high-level-architecture)
@@ -98,10 +98,10 @@ docs/
 3. [Transport Comparison](./messenger-architecture.md#transport-comparison)
 
 ### Troubleshooting
-1. [Messages Not Processing](./TROUBLESHOOTING.md#messages-not-being-processed)
-2. [High Queue Depth](./TROUBLESHOOTING.md#high-queue-depth)
-3. [Failed Messages](./TROUBLESHOOTING.md#failed-message-issues)
-4. [Performance](./TROUBLESHOOTING.md#performance-problems)
+1. [Messages Not Processing](./troubleshooting.md#messages-not-being-processed)
+2. [High Queue Depth](./troubleshooting.md#high-queue-depth)
+3. [Failed Messages](./troubleshooting.md#failed-message-issues)
+4. [Performance](./troubleshooting.md#performance-problems)
 
 ---
 
@@ -110,14 +110,14 @@ docs/
 ### Developers
 
 **Getting Started**:
-1. [Installation Guide](./MESSENGER.md#installation)
-2. [Basic Usage](./MESSENGER.md#usage)
-3. [Usage Examples](./ASYNC-AGENTS.md#execution-patterns)
+1. [Installation Guide](./messenger.md#installation)
+2. [Basic Usage](./messenger.md#usage)
+3. [Usage Examples](./asyncAgents.md#execution-patterns)
 
 **Integration**:
-1. [API Integration](./MESSENGER.md#api-integration)
-2. [Callback Handling](./MESSENGER.md#callback-handling)
-3. [Error Handling](./ASYNC-AGENTS.md#error-handling)
+1. [API Integration](./messenger.md#api-integration)
+2. [Callback Handling](./messenger.md#callback-handling)
+3. [Error Handling](./asyncAgents.md#error-handling)
 
 **Reference**:
 1. [Message Classes](../src/messenger/Message/)
@@ -127,19 +127,19 @@ docs/
 ### DevOps / Operators
 
 **Setup**:
-1. [Transport Configuration](./MESSENGER.md#transport-configuration)
-2. [Retry Strategies](./MESSENGER.md#retry-strategies)
-3. [Production Checklist](./ASYNC-AGENTS.md#production-checklist)
+1. [Transport Configuration](./messenger.md#transport-configuration)
+2. [Retry Strategies](./messenger.md#retry-strategies)
+3. [Production Checklist](./asyncAgents.md#production-checklist)
 
 **Operations**:
-1. [Worker Management](./TROUBLESHOOTING.md#worker-issues)
-2. [Monitoring](./MESSENGER.md#monitoring)
-3. [Failed Message Management](./MESSENGER.md#managing-failed-messages)
+1. [Worker Management](./troubleshooting.md#worker-issues)
+2. [Monitoring](./messenger.md#monitoring)
+3. [Failed Message Management](./messenger.md#managing-failed-messages)
 
 **Troubleshooting**:
-1. [Common Issues](./TROUBLESHOOTING.md)
-2. [Performance](./TROUBLESHOOTING.md#performance-problems)
-3. [Transport Issues](./TROUBLESHOOTING.md#transport-issues)
+1. [Common Issues](./troubleshooting.md)
+2. [Performance](./troubleshooting.md#performance-problems)
+3. [Transport Issues](./troubleshooting.md#transport-issues)
 
 ### Architects
 
@@ -150,37 +150,37 @@ docs/
 
 **Design Decisions**:
 1. [Transport Comparison](./messenger-architecture.md#transport-comparison)
-2. [Scalability](./ASYNC-AGENTS.md#performance-optimization)
-3. [Best Practices](./MESSENGER.md#best-practices)
+2. [Scalability](./asyncAgents.md#performance-optimization)
+3. [Best Practices](./messenger.md#best-practices)
 
 **Integration**:
-1. [Integration Examples](./MESSENGER.md#integration-examples)
-2. [Execution Patterns](./ASYNC-AGENTS.md#execution-patterns)
-3. [Production Readiness](./ASYNC-AGENTS.md#production-checklist)
+1. [Integration Examples](./messenger.md#integration-examples)
+2. [Execution Patterns](./asyncAgents.md#execution-patterns)
+3. [Production Readiness](./asyncAgents.md#production-checklist)
 
 ---
 
 ## By Use Case
 
 ### Single Agent Execution
-1. [Basic Execution](./MESSENGER.md#basic-agent-execution)
-2. [Priority Handling](./ASYNC-AGENTS.md#priority-handling)
-3. [Error Handling](./ASYNC-AGENTS.md#error-handling)
+1. [Basic Execution](./messenger.md#basic-agent-execution)
+2. [Priority Handling](./asyncAgents.md#priority-handling)
+3. [Error Handling](./asyncAgents.md#error-handling)
 
 ### Batch Processing
-1. [Batch Execution](./MESSENGER.md#batch-agent-execution)
-2. [Parallel vs Sequential](./ASYNC-AGENTS.md#batch-execution)
-3. [Performance Tuning](./ASYNC-AGENTS.md#performance-optimization)
+1. [Batch Execution](./messenger.md#batch-agent-execution)
+2. [Parallel vs Sequential](./asyncAgents.md#batch-execution)
+3. [Performance Tuning](./asyncAgents.md#performance-optimization)
 
 ### Production Deployment
-1. [Transport Selection](./MESSENGER.md#transport-configuration)
-2. [Scaling Workers](./ASYNC-AGENTS.md#performance-optimization)
-3. [Monitoring Setup](./MESSENGER.md#monitoring)
+1. [Transport Selection](./messenger.md#transport-configuration)
+2. [Scaling Workers](./asyncAgents.md#performance-optimization)
+3. [Monitoring Setup](./messenger.md#monitoring)
 
 ### Troubleshooting
-1. [Messages Not Processing](./TROUBLESHOOTING.md#messages-not-being-processed)
-2. [Performance Issues](./TROUBLESHOOTING.md#performance-problems)
-3. [Failed Messages](./TROUBLESHOOTING.md#failed-message-issues)
+1. [Messages Not Processing](./troubleshooting.md#messages-not-being-processed)
+2. [Performance Issues](./troubleshooting.md#performance-problems)
+3. [Failed Messages](./troubleshooting.md#failed-message-issues)
 
 ---
 
@@ -190,20 +190,20 @@ docs/
 ```bash
 drush messenger:consume agent_async
 ```
-[Documentation](./MESSENGER.md#consuming-messages)
+[Documentation](./messenger.md#consuming-messages)
 
 ### Manage Failures
 ```bash
 drush messenger:failed:list
 drush messenger:failed:retry <id>
 ```
-[Documentation](./MESSENGER.md#managing-failed-messages)
+[Documentation](./messenger.md#managing-failed-messages)
 
 ### Statistics
 ```bash
 drush messenger:stats
 ```
-[Documentation](./MESSENGER.md#monitoring)
+[Documentation](./messenger.md#monitoring)
 
 ---
 
@@ -221,7 +221,7 @@ await messageBus.dispatch(
   )
 );
 ```
-[Full Example](./ASYNC-AGENTS.md#fire-and-forget)
+[Full Example](./asyncAgents.md#fire-and-forget)
 
 ### Batch Agents
 ```typescript
@@ -235,36 +235,36 @@ await messageBus.dispatch(
   )
 );
 ```
-[Full Example](./ASYNC-AGENTS.md#parallel-batch)
+[Full Example](./asyncAgents.md#parallel-batch)
 
 ### Monitoring
 ```typescript
 const metrics = await metricsCollector.getMetrics('agent_async');
 console.log(`Success rate: ${metrics.successRate * 100}%`);
 ```
-[Full Example](./MESSENGER.md#monitoring)
+[Full Example](./messenger.md#monitoring)
 
 ---
 
 ## Transports
 
 ### Doctrine (Database)
-- [Setup](./MESSENGER.md#doctrine-database)
-- [Troubleshooting](./TROUBLESHOOTING.md#doctrine-transport)
+- [Setup](./messenger.md#doctrine-database)
+- [Troubleshooting](./troubleshooting.md#doctrine-transport)
 - Use Case: Development, simple deployments
 
 ### RabbitMQ
-- [Setup](./MESSENGER.md#rabbitmq)
-- [Troubleshooting](./TROUBLESHOOTING.md#rabbitmq-transport)
+- [Setup](./messenger.md#rabbitmq)
+- [Troubleshooting](./troubleshooting.md#rabbitmq-transport)
 - Use Case: Production, high reliability
 
 ### Redis
-- [Setup](./MESSENGER.md#redis)
-- [Troubleshooting](./TROUBLESHOOTING.md#redis-transport)
+- [Setup](./messenger.md#redis)
+- [Troubleshooting](./troubleshooting.md#redis-transport)
 - Use Case: High performance
 
 ### Amazon SQS
-- [Setup](./MESSENGER.md#amazon-sqs)
+- [Setup](./messenger.md#amazon-sqs)
 - Use Case: AWS deployments
 
 ---
@@ -304,22 +304,22 @@ console.log(`Success rate: ${metrics.successRate * 100}%`);
 
 ## Search by Keyword
 
-- **Installation**: [MESSENGER.md#installation](./MESSENGER.md#installation)
-- **Configuration**: [MESSENGER.md#configuration](./MESSENGER.md#transport-configuration)
-- **Async**: [ASYNC-AGENTS.md](./ASYNC-AGENTS.md)
-- **Batch**: [ASYNC-AGENTS.md#batch-execution](./ASYNC-AGENTS.md#batch-execution)
-- **Priority**: [ASYNC-AGENTS.md#priority-handling](./ASYNC-AGENTS.md#priority-handling)
-- **Retry**: [MESSENGER.md#retry-strategies](./MESSENGER.md#retry-strategies)
-- **Failed**: [MESSENGER.md#managing-failed-messages](./MESSENGER.md#managing-failed-messages)
-- **Monitoring**: [MESSENGER.md#monitoring](./MESSENGER.md#monitoring)
-- **Performance**: [ASYNC-AGENTS.md#performance-optimization](./ASYNC-AGENTS.md#performance-optimization)
-- **Troubleshooting**: [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)
+- **Installation**: [messenger.md#installation](./messenger.md#installation)
+- **Configuration**: [messenger.md#configuration](./messenger.md#transport-configuration)
+- **Async**: [asyncAgents.md](./asyncAgents.md)
+- **Batch**: [asyncAgents.md#batch-execution](./asyncAgents.md#batch-execution)
+- **Priority**: [asyncAgents.md#priority-handling](./asyncAgents.md#priority-handling)
+- **Retry**: [messenger.md#retry-strategies](./messenger.md#retry-strategies)
+- **Failed**: [messenger.md#managing-failed-messages](./messenger.md#managing-failed-messages)
+- **Monitoring**: [messenger.md#monitoring](./messenger.md#monitoring)
+- **Performance**: [asyncAgents.md#performance-optimization](./asyncAgents.md#performance-optimization)
+- **Troubleshooting**: [troubleshooting.md](./troubleshooting.md)
 - **Architecture**: [messenger-architecture.md](./messenger-architecture.md)
-- **Doctrine**: [MESSENGER.md#doctrine-database](./MESSENGER.md#doctrine-database)
-- **RabbitMQ**: [MESSENGER.md#rabbitmq](./MESSENGER.md#rabbitmq)
-- **Redis**: [MESSENGER.md#redis](./MESSENGER.md#redis)
-- **Security**: [MESSENGER.md#security](./MESSENGER.md#security)
-- **Scaling**: [ASYNC-AGENTS.md#performance-optimization](./ASYNC-AGENTS.md#performance-optimization)
+- **Doctrine**: [messenger.md#doctrine-database](./messenger.md#doctrine-database)
+- **RabbitMQ**: [messenger.md#rabbitmq](./messenger.md#rabbitmq)
+- **Redis**: [messenger.md#redis](./messenger.md#redis)
+- **Security**: [messenger.md#security](./messenger.md#security)
+- **Scaling**: [asyncAgents.md#performance-optimization](./asyncAgents.md#performance-optimization)
 
 ---
 

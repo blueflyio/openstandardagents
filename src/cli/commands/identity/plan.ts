@@ -5,30 +5,11 @@ import * as path from 'path';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import { fileURLToPath } from 'url';
+import { loadManifest } from '../utils/manifest-loader.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const PROJECT_ROOT = path.resolve(__dirname, '../../../'); // Path to the project root
-
-// Helper function to load manifest (supports JSON and YAML)
-async function loadManifest(filePath: string): Promise<any> {
-  const fullPath = path.resolve(process.cwd(), filePath);
-  const content = await fs.readFile(fullPath, 'utf-8');
-  if (filePath.endsWith('.yaml') || filePath.endsWith('.yml')) {
-    try {
-      // Use dynamic import for YAML parsing if available, or fallback
-      const YAML = await import('yaml');
-      return YAML.parse(content);
-    } catch (e) {
-      console.error(
-        "YAML parsing library 'yaml' not found. Please install it: npm install yaml"
-      );
-      throw e;
-    }
-  } else {
-    return JSON.parse(content);
-  }
-}
 
 export const planIdentityCommand = new Command('identity')
   .description(

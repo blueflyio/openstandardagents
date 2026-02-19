@@ -14,6 +14,7 @@
  */
 
 import { Command } from 'commander';
+import { SPEC_VERSION } from '../../version.js';
 import type { OSSAExtension } from './index.js';
 
 /**
@@ -64,7 +65,7 @@ export async function loadGitLabExtension(): Promise<OSSAExtension> {
   return {
     name: 'gitlab',
     description: 'GitLab integration (Agent, Duo Catalog, CI/CD)',
-    version: '0.4.5',
+    version: SPEC_VERSION,
     commands,
   };
 }

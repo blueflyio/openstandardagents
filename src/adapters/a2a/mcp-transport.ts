@@ -8,9 +8,10 @@
  */
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { z } from 'zod';
+import { SPEC_VERSION } from '../../version.js';
 
 /**
  * MCP Transport Type
@@ -142,7 +143,7 @@ export class MCPTransportManager {
     const client = new Client(
       {
         name: 'OSSA A2A Client',
-        version: '0.4.5',
+        version: SPEC_VERSION,
       },
       {
         capabilities: {

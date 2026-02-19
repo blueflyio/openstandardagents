@@ -141,7 +141,7 @@ Create `railway.json` in your project root (or use the Handlebars template):
 
 ```bash
 # Copy template
-cp deployment-templates/railway.json.hbs railway.json
+cp src/deployment-templates/railway.json.hbs railway.json
 
 # Fill in variables using your template engine or manually
 ```

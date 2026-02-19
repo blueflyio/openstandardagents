@@ -4,8 +4,9 @@
  * Inspired by professional tools like npm, cargo, rustc
  */
 
-import chalk from 'chalk';
 import type { ErrorObject } from 'ajv';
+import chalk from 'chalk';
+import { API_VERSION } from '../../version.js';
 
 /**
  * Common typos and their corrections
@@ -261,7 +262,7 @@ function formatError(
       if (fieldName === 'apiVersion') {
         lines.push(
           chalk.yellow(
-            `   [TIP] apiVersion should follow format: ${chalk.bold('ossa/v0.4.5')}`
+            `   [TIP] apiVersion should follow format: ${chalk.bold(API_VERSION)}`
           )
         );
         lines.push(
@@ -343,7 +344,7 @@ export function formatValidationErrors(
   lines.push('');
   lines.push(chalk.cyan('[TIP] Common fixes:'));
   lines.push(chalk.cyan('   • Check spelling of field names (case-sensitive)'));
-  lines.push(chalk.cyan('   • Verify apiVersion format: ossa/v0.4.5'));
+  lines.push(chalk.cyan(`   • Verify apiVersion format: ${API_VERSION}`));
   lines.push(chalk.cyan('   • Use --verbose for detailed error information'));
   lines.push(
     chalk.cyan('   • Check examples/claude-code/ for reference manifests')
@@ -377,7 +378,7 @@ export function suggestFix(
     error.params?.missingProperty === 'apiVersion'
   ) {
     suggestions.push('Add apiVersion field:');
-    suggestions.push('  apiVersion: ossa/v0.4.5');
+    suggestions.push(`  apiVersion: ${API_VERSION}`);
   }
 
   if (
