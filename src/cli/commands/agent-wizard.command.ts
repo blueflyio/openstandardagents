@@ -306,7 +306,7 @@ async function createCustomAgent(
   state: WizardState,
   options: WizardOptions
 ): Promise<void> {
-  state.totalSteps = 13;
+  state.totalSteps = 14;
 
   // Step 1: Agent Type
   await selectAgentType(state);
@@ -350,7 +350,12 @@ async function createCustomAgent(
     await import('../wizard/steps/08-deployment.js');
   await configureDeploymentStep(state);
 
-  // Step 13: Review & Save
+  // Step 13: AGENTS.md (agents.md standard)
+  const { configureAgentsMdStep } =
+    await import('../wizard/steps/09c-agents-md.js');
+  await configureAgentsMdStep(state);
+
+  // Step 14: Review & Save
   const { reviewAndSaveStep } = await import('../wizard/steps/10-review.js');
   await reviewAndSaveStep(state, options);
 }

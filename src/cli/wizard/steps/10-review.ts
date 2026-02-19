@@ -12,12 +12,14 @@ import { logger } from '../../../utils/logger.js';
 import { WizardState, WizardOptions } from '../types.js';
 import { console_ui, formatAgentType } from '../ui/console.js';
 import type { OssaAgent } from '../../../types/index.js';
+import { container } from '../../../di-container.js';
+import { AgentsMdService } from '../../../services/agents-md/agents-md.service.js';
 
 export async function reviewAndSaveStep(
   state: WizardState,
   options: WizardOptions
 ): Promise<WizardState> {
-  console_ui.step(11, state.totalSteps, 'Review & Save');
+  console_ui.step(14, state.totalSteps, 'Review & Save');
 
   // Show comprehensive summary
   console_ui.section('Agent Summary');
@@ -105,6 +107,31 @@ export async function reviewAndSaveStep(
 
       fs.writeFileSync(outputPath, yamlContent, 'utf-8');
       spinner.succeed('Agent manifest saved!');
+
+      if (state.agent.extensions?.agents_md?.enabled && !options.dryRun) {
+        try {
+          const agentsMdService = container.get(AgentsMdService);
+          const agentDir = path.dirname(outputPath);
+          const agentsMdRelative =
+            state.agent.extensions.agents_md.output_path || 'AGENTS.md';
+          const agentsMdPath = path.join(agentDir, agentsMdRelative);
+          await agentsMdService.writeAgentsMd(
+            state.agent as OssaAgent,
+            agentsMdPath
+          );
+          console_ui.success(`AGENTS.md written: ${agentsMdPath}`);
+        } catch (err) {
+          logger.warn(
+            { err, action: 'agents-md-write' },
+            'AGENTS.md generation failed (run ossa agents-md generate later)'
+          );
+          console_ui.warning(
+            'AGENTS.md not written. Run: ossa agents-md generate ' +
+              outputPath +
+              ' -o AGENTS.md'
+          );
+        }
+      }
     } catch (error) {
       spinner.fail('Failed to save manifest');
       throw error;
@@ -123,6 +150,11 @@ export async function reviewAndSaveStep(
   if (state.agent.spec?.tools && state.agent.spec.tools.length > 0) {
     console_ui.info(
       `5. Configure tools: Set up required MCP servers and API credentials`
+    );
+  }
+  if (state.agent.extensions?.agents_md?.enabled) {
+    console_ui.info(
+      `6. AGENTS.md: Validate or edit with ossa agents-md validate/generate`
     );
   }
 

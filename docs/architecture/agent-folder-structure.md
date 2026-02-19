@@ -75,7 +75,7 @@ This document defines the complete, standardized folder structure for OSSA agent
     │
     ├── package.json / pyproject.toml  # Dependencies
     ├── tsconfig.json               # TypeScript config (if TypeScript)
-    ├── AGENTS.md                   # AAIF standard (code agent instructions)
+    ├── AGENTS.md                   # agents.md standard (https://agents.md, AAIF)
     └── README.md                   # Human documentation
 ```
 

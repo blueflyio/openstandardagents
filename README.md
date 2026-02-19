@@ -327,7 +327,7 @@ if (result.valid) {
 ### 🚧 Beta (Functional but needs testing)
 
 - `ossa agents-local` - Local `.agents/` folder management
-- `ossa agents-md` - Generate agents.md files
+- `ossa agents-md` - Generate, validate, sync [agents.md](https://agents.md) files (standard: [agentsmd/agents.md](https://github.com/agentsmd/agents.md)); customize via wizard step or `ossa agents-md generate|validate|sync`
 - Export to: `crewai`, `drupal`, `claude-code`, `cursor`, `warp`, `anthropic`
 - Anthropic runtime adapter uses official `@anthropic-ai/sdk` (v0.4.6 improvement: 513 LOC removed)
 

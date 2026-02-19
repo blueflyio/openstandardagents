@@ -24,6 +24,8 @@ servers:
 tags:
   - name: agents
     description: Agent CRUD operations
+  - name: agents-md
+    description: AGENTS.md (agents.md standard) - generate, read, update, delete; BuildKit consumes
   - name: wizard
     description: Interactive agent creation
   - name: export
@@ -453,6 +455,146 @@ components:
           type: string
           example: 'metadata.name'
 
+    # AGENTS.md (agents.md standard) - OSSA owns; BuildKit consumes via this API
+    AgentsMdContent:
+      type: object
+      description: AGENTS.md content or generate options (agents.md standard https://agents.md)
+      properties:
+        content:
+          type: string
+          description: Raw AGENTS.md markdown (when providing custom content)
+        options:
+          $ref: '#/components/schemas/AgentsMdOptions'
+          description: Options when generating from manifest (omit content to generate)
+
+    AgentsMdOptions:
+      type: object
+      description: Options for generating AGENTS.md from OSSA manifest
+      properties:
+        outputPath:
+          type: string
+          default: 'AGENTS.md'
+          description: Output path relative to agent directory
+        sections:
+          type: object
+          description: Section-level enable/disable or custom content
+          properties:
+            dev_environment:
+              type: object
+              properties:
+                enabled:
+                  type: boolean
+                  default: true
+                custom:
+                  type: string
+            testing:
+              type: object
+              properties:
+                enabled:
+                  type: boolean
+                  default: true
+                custom:
+                  type: string
+            pr_instructions:
+              type: object
+              properties:
+                enabled:
+                  type: boolean
+                  default: true
+                custom:
+                  type: string
+            security:
+              type: object
+              properties:
+                enabled:
+                  type: boolean
+                  default: true
+                custom:
+                  type: string
+            code_style:
+              type: object
+              properties:
+                enabled:
+                  type: boolean
+                  default: true
+                custom:
+                  type: string
+
+    AgentsMdResponse:
+      type: object
+      required: [content, path]
+      properties:
+        content:
+          type: string
+          description: AGENTS.md markdown content
+        path:
+          type: string
+          description: Resolved path where file is or would be written
+
+    DiscoveredAgentsMd:
+      type: object
+      description: One discovered AGENTS.md entry (for discovery and maintenance)
+      required: [agentsMdPath, baseDir]
+      properties:
+        agentsMdPath:
+          type: string
+          description: Absolute path to AGENTS.md
+        manifestPath:
+          type: string
+          nullable: true
+          description: Path to OSSA manifest if paired
+        agentName:
+          type: string
+          nullable: true
+          description: Agent name from .agents/{name} or manifest
+        valid:
+          type: boolean
+          nullable: true
+          description: Validation result (null if file missing)
+        warnings:
+          type: array
+          items:
+            type: string
+        baseDir:
+          type: string
+          description: Workspace base directory
+
+    AgentsMdDiscoverResponse:
+      type: object
+      required: [discovered]
+      properties:
+        discovered:
+          type: array
+          items:
+            $ref: '#/components/schemas/DiscoveredAgentsMd'
+
+    AgentsMdMaintainResponse:
+      type: object
+      required: [discovered, updated, skipped, failed]
+      properties:
+        discovered:
+          type: array
+          items:
+            $ref: '#/components/schemas/DiscoveredAgentsMd'
+        updated:
+          type: array
+          items:
+            type: string
+          description: Paths that were updated
+        skipped:
+          type: array
+          items:
+            type: string
+        failed:
+          type: array
+          items:
+            type: object
+            properties:
+              path:
+                type: string
+              error:
+                type: string
+
 paths:
   # Agent CRUD Operations
   /agents:
@@ -581,6 +723,151 @@ paths:
           description: Agent deleted
         '404':
           description: Agent not found
+
+  # AGENTS.md (agents.md) - same logic as ossa agents-md CLI; BuildKit consumes via API
+  /agents/{name}/agents-md:
+    get:
+      operationId: getAgentsMd
+      tags: [agents-md]
+      summary: Get AGENTS.md for an agent
+      description: Return AGENTS.md content (from disk or generate from manifest). Same logic as ossa agents-md generate.
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Agent name
+        - name: generate
+          in: query
+          schema:
+            type: boolean
+            default: false
+          description: If true, generate from manifest when file missing
+      responses:
+        '200':
+          description: AGENTS.md content
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentsMdResponse'
+        '404':
+          description: Agent or AGENTS.md not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      operationId: putAgentsMd
+      tags: [agents-md]
+      summary: Create or update AGENTS.md for an agent
+      description: Write AGENTS.md (raw content or generate from manifest with options). Same logic as ossa agents-md generate.
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentsMdContent'
+      responses:
+        '200':
+          description: AGENTS.md written
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentsMdResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Agent not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      operationId: deleteAgentsMd
+      tags: [agents-md]
+      summary: Remove AGENTS.md for an agent
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: AGENTS.md deleted
+        '404':
+          description: Agent or AGENTS.md not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # AGENTS.md discovery and maintenance (update/maintain after creation)
+  /agents-md/discover:
+    get:
+      operationId: discoverAgentsMd
+      tags: [agents-md]
+      summary: Discover all AGENTS.md in workspace
+      description: Find all AGENTS.md files and their manifests (.agents/*/ and root) for update and maintenance.
+      parameters:
+        - name: dir
+          in: query
+          schema:
+            type: string
+            default: .
+          description: Workspace directory to scan
+      responses:
+        '200':
+          description: List of discovered AGENTS.md entries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentsMdDiscoverResponse'
+
+  /agents-md/maintain:
+    post:
+      operationId: maintainAgentsMd
+      tags: [agents-md]
+      summary: Maintain AGENTS.md files in workspace
+      description: Discover then validate/regenerate to update and maintain AGENTS.md after creation.
+      parameters:
+        - name: dir
+          in: query
+          schema:
+            type: string
+            default: .
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                regenerate:
+                  type: boolean
+                  default: false
+                  description: Regenerate all (not only invalid)
+                dryRun:
+                  type: boolean
+                  default: false
+      responses:
+        '200':
+          description: Maintain result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentsMdMaintainResponse'
 
   # Export Operations
   /export:

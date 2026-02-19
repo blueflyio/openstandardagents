@@ -8,6 +8,7 @@ import chalk from 'chalk';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { AgentsMdService } from '../../services/agents-md/agents-md.service.js';
+import { AgentsMdDiscoveryService } from '../../services/agents-md/agents-md-discovery.service.js';
 import { RepoAgentsMdService } from '../../services/agents-md/repo-agents-md.service.js';
 import type { OssaAgent } from '../../types/index.js';
 import { handleCommandError } from '../utils/index.js';
@@ -207,13 +208,130 @@ extensions:
 
         if (options.watch) {
           console.log(
-            chalk.blue('\n👀 Watching for changes... (Press Ctrl+C to stop)')
+            chalk.blue('\nWatching for changes... (Press Ctrl+C to stop)')
           );
-          // Keep process alive for watching
           await new Promise(() => {});
         } else {
           process.exit(0);
         }
+      } catch (error) {
+        handleCommandError(error);
+      }
+    }
+  );
+
+// Discover subcommand: find all AGENTS.md files and their manifests
+agentsMdCommand
+  .command('discover')
+  .argument('[dir]', 'Workspace directory to scan', process.cwd())
+  .option('-v, --verbose', 'Show validation warnings')
+  .description(
+    'Discover all AGENTS.md files in workspace (.agents/*/ and root) for update and maintenance'
+  )
+  .action(
+    async (dir: string, options: { verbose?: boolean }) => {
+      try {
+        const baseDir = dir || process.cwd();
+        console.log(chalk.blue(`Discovering AGENTS.md in ${baseDir}...`));
+
+        const discovery = container.get(AgentsMdDiscoveryService);
+        const results = await discovery.discover(baseDir);
+
+        if (results.length === 0) {
+          console.log(chalk.yellow('No AGENTS.md files or .agents/ agents found.'));
+          console.log(
+            chalk.gray(
+              'Create agents with the wizard (step 9c) or run ossa agents-md generate <manifest>'
+            )
+          );
+          process.exit(0);
+          return;
+        }
+
+        console.log(chalk.bold(`\nDiscovered ${results.length} AGENTS.md entry(ies):\n`));
+        console.log(
+          'Path'.padEnd(60) +
+            'Agent'.padEnd(24) +
+            'Manifest'.padEnd(12) +
+            'Status'
+        );
+        console.log('─'.repeat(100));
+
+        for (const r of results) {
+          const relPath = r.agentsMdPath.replace(baseDir, '').replace(/^\//, '') || 'AGENTS.md';
+          const agent = (r.agentName ?? '-').padEnd(22);
+          const hasManifest = r.manifestPath ? 'yes' : 'no ';
+          let status: string;
+          if (r.valid === null) status = chalk.yellow('missing');
+          else if (r.valid) status = chalk.green('valid');
+          else status = chalk.red('invalid');
+          console.log(`${relPath.padEnd(60)}${agent}${hasManifest.padEnd(12)}${status}`);
+          if (options.verbose && r.warnings.length > 0) {
+            r.warnings.forEach((w) => console.log(chalk.gray(`  - ${w}`)));
+          }
+        }
+
+        console.log(
+          chalk.gray(
+            '\nRun ossa agents-md maintain [dir] to validate and regenerate outdated AGENTS.md'
+          )
+        );
+        process.exit(0);
+      } catch (error) {
+        handleCommandError(error);
+      }
+    }
+  );
+
+// Maintain subcommand: discover then validate/regenerate to update and maintain
+agentsMdCommand
+  .command('maintain')
+  .argument('[dir]', 'Workspace directory to scan', process.cwd())
+  .option('-r, --regenerate', 'Regenerate all (not only invalid) from manifest')
+  .option('--dry-run', 'Only report what would be updated')
+  .option('-v, --verbose', 'Verbose output')
+  .description(
+    'Discover AGENTS.md files and update/maintain them (validate, regenerate invalid or all)'
+  )
+  .action(
+    async (
+      dir: string,
+      options: { regenerate?: boolean; dryRun?: boolean; verbose?: boolean }
+    ) => {
+      try {
+        const baseDir = dir || process.cwd();
+        console.log(chalk.blue(`Maintaining AGENTS.md in ${baseDir}...`));
+
+        const discovery = container.get(AgentsMdDiscoveryService);
+        const { discovered, updated, skipped, failed } = await discovery.maintain(
+          baseDir,
+          { regenerate: options.regenerate ?? false, dryRun: options.dryRun }
+        );
+
+        if (discovered.length === 0) {
+          console.log(chalk.yellow('Nothing to maintain. Run ossa agents-md discover to list.'));
+          process.exit(0);
+          return;
+        }
+
+        if (options.verbose || updated.length > 0 || failed.length > 0) {
+          console.log(chalk.bold('\nMaintain result:'));
+          console.log(chalk.green(`  Updated: ${updated.length}`));
+          console.log(chalk.gray(`  Skipped (valid/no manifest): ${skipped.length}`));
+          if (failed.length > 0) {
+            console.log(chalk.red(`  Failed: ${failed.length}`));
+            failed.forEach((f) =>
+              console.log(chalk.red(`    ${f.path}: ${f.error}`))
+            );
+          }
+        }
+
+        if (updated.length > 0) {
+          console.log(chalk.green('\nUpdated:'));
+          updated.forEach((p) => console.log(chalk.cyan(`  ${p}`)));
+        }
+        if (failed.length > 0) process.exit(1);
+        process.exit(0);
       } catch (error) {
         handleCommandError(error);
       }
