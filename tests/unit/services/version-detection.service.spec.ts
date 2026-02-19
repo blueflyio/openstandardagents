@@ -6,7 +6,7 @@ import { describe, it, expect, beforeEach } from '@jest/globals';
 import { VersionDetectionService } from '../../../src/services/version-detection.service.js';
 import { ValidationService } from '../../../src/services/validation.service.js';
 import { SchemaRepository } from '../../../src/repositories/schema.repository.js';
-import { API_VERSION } from '../../../src/version.js';
+import { API_VERSION, VERSION } from '../../../src/version.js';
 
 describe('VersionDetectionService', () => {
   let service: VersionDetectionService;
@@ -29,7 +29,7 @@ describe('VersionDetectionService', () => {
 
       const result = await service.detectVersion(manifest);
 
-      expect(result.version).toBe('0.4.5');
+      expect(result.version).toBe(VERSION);
       expect(result.confidence).toBe('high');
       expect(result.source).toBe('apiVersion');
       expect(result.warnings).toHaveLength(0);
