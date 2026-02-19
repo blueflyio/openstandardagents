@@ -191,7 +191,11 @@ Use the interactive wizard to create a new agent manifest:
 
 ```bash
 ossa wizard -o creative-agent-naming.ossa.yaml
+# or without global install:
+npx @bluefly/openstandardagents wizard -o creative-agent-naming.ossa.yaml
 ```
+
+For the full wizard flow (steps 1-10: creation method, basic info, domain, LLM, tools, autonomy, observability, deployment, advanced, token efficiency, separation of duties, review) and the standard folder layout (`.agents/{name}/` with manifest.ossa.yaml), see [What is an Agent](docs/getting-started/what-is-an-agent.md) and [Agent Folder Structure](docs/architecture/agent-folder-structure.md). For a more comprehensive interactive flow, use `ossa agent-wizard`.
 
 Or create one manually following the [manifest format](#manifest-format) below.
 
