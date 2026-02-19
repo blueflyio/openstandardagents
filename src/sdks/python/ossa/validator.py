@@ -28,8 +28,10 @@ class ValidationResult:
 class Validator:
     """OSSA Manifest Validator."""
 
-    VALID_KINDS = {"Agent", "Task", "Workflow"}
-    VALID_API_VERSION_PATTERN = r"^ossa/v\d+\.\d+\.\d+$"
+    VALID_KINDS = {"Agent", "Task", "Workflow", "Flow"}
+    VALID_API_VERSION_PATTERN = re.compile(
+        r"^ossa/v(0\.\d+(\.\d+)?(-[a-zA-Z0-9.]+)?|\d+\.\d+\.\d+)$"
+    )
 
     def __init__(self, schema_path: Optional[Union[str, Path]] = None):
         self._schema: Optional[dict[str, Any]] = None
@@ -61,7 +63,7 @@ class Validator:
         # Required fields
         if not data.get("apiVersion"):
             errors.append("Missing apiVersion")
-        elif not re.match(self.VALID_API_VERSION_PATTERN, data["apiVersion"]):
+        elif not self.VALID_API_VERSION_PATTERN.match(data["apiVersion"]):
             errors.append(f"Invalid apiVersion: {data['apiVersion']}")
 
         if not data.get("kind"):
@@ -87,10 +89,21 @@ class Validator:
             except Exception as e:
                 errors.append(f"Schema validation: {e}")
 
+        # Separation of duties (v0.4): role must not be in conflicts_with
+        spec = data.get("spec") or {}
+        separation = spec.get("separation")
+        if isinstance(separation, dict):
+            role = separation.get("role")
+            conflicts = separation.get("conflicts_with") or separation.get("conflictsWith")
+            if role and isinstance(conflicts, list) and role in conflicts:
+                errors.append(
+                    f"Separation of duties: role '{role}' must not be in conflicts_with"
+                )
+
         # Best practice warnings
         if data.get("spec"):
             spec = data["spec"]
-            if not spec.get("llm"):
+            if not spec.get("llm") and not spec.get("model"):
                 warnings.append("Best practice: Specify LLM configuration")
             if not spec.get("tools"):
                 warnings.append("Best practice: Define tools/capabilities")

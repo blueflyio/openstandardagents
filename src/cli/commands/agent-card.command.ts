@@ -21,7 +21,11 @@ const __dirname = path.dirname(__filename);
 
 export const agentCardCommand = new Command('agent-card')
   .description(
-    'Generate and validate .well-known/agent-card.json from OSSA manifests'
+    'Generate and validate agent cards from OSSA manifests. Serve at .well-known/agent-card.json or .well-known/agent.json (A2A). Card is a projection; manifest is single source of truth.'
+  )
+  .addHelpText(
+    'after',
+    'Well-known: For A2A compatibility serve the same JSON at /.well-known/agent.json. OSSA schema: spec/v0.4/agent-card.schema.json'
   );
 
 // ── ossa agent-card generate ──────────────────────────────────────────
@@ -29,18 +33,30 @@ export const agentCardCommand = new Command('agent-card')
 agentCardCommand
   .command('generate')
   .argument('<manifest>', 'Path to OSSA manifest (.ossa.yaml or .json)')
-  .option(
-    '-o, --output <path>',
-    'Output path',
-    '.well-known/agent-card.json'
-  )
+  .option('-o, --output <path>', 'Output path', '.well-known/agent-card.json')
   .option('--namespace <ns>', 'Agent namespace for URI', 'default')
   .option('--uri <uri>', 'Override agent URI')
   .option('--http <url>', 'HTTP endpoint URL')
   .option('--grpc <url>', 'gRPC endpoint URL')
   .option('--websocket <url>', 'WebSocket endpoint URL')
+  .option(
+    '--manifest-ref <url>',
+    'URL to full OSSA manifest (single source of truth)'
+  )
+  .option(
+    '--manifest-digest <digest>',
+    'Content digest of manifest (e.g. SHA-256)'
+  )
+  .option('--compute-digest', 'Compute SHA-256 digest from manifest content')
+  .option(
+    '--card-profile <profile>',
+    'Card profile: minimal, discovery, or full',
+    'full'
+  )
   .option('--stdout', 'Print to stdout instead of writing file')
-  .description('Generate agent-card.json from an OSSA manifest')
+  .description(
+    'Generate agent-card.json from an OSSA manifest. Serve at .well-known/agent-card.json or .well-known/agent.json (A2A).'
+  )
   .action(
     async (
       manifestPath: string,
@@ -51,6 +67,10 @@ agentCardCommand
         http?: string;
         grpc?: string;
         websocket?: string;
+        manifestRef?: string;
+        manifestDigest?: string;
+        computeDigest?: boolean;
+        cardProfile?: string;
         stdout?: boolean;
       }
     ) => {
@@ -58,19 +78,14 @@ agentCardCommand
         // Read manifest
         const fullPath = path.resolve(manifestPath);
         if (!fs.existsSync(fullPath)) {
-          console.error(
-            chalk.red(`✗ Manifest not found: ${fullPath}`)
-          );
+          console.error(chalk.red(`✗ Manifest not found: ${fullPath}`));
           process.exit(1);
         }
 
         const content = fs.readFileSync(fullPath, 'utf-8');
         let manifest: OssaAgent;
 
-        if (
-          fullPath.endsWith('.yaml') ||
-          fullPath.endsWith('.yml')
-        ) {
+        if (fullPath.endsWith('.yaml') || fullPath.endsWith('.yml')) {
           manifest = yaml.load(content) as OssaAgent;
         } else {
           manifest = JSON.parse(content) as OssaAgent;
@@ -82,14 +97,22 @@ agentCardCommand
         if (opts.grpc) endpoints.grpc = opts.grpc;
         if (opts.websocket) endpoints.websocket = opts.websocket;
 
+        const profile =
+          opts.cardProfile === 'minimal' ||
+          opts.cardProfile === 'discovery' ||
+          opts.cardProfile === 'full'
+            ? opts.cardProfile
+            : undefined;
+
         const generator = new AgentCardGenerator();
         const result = generator.generate(manifest, {
           namespace: opts.namespace,
           uri: opts.uri,
-          endpoints:
-            Object.keys(endpoints).length > 0
-              ? endpoints
-              : undefined,
+          endpoints: Object.keys(endpoints).length > 0 ? endpoints : undefined,
+          manifestRef: opts.manifestRef,
+          manifestDigest: opts.manifestDigest,
+          manifestContent: opts.computeDigest ? content : undefined,
+          cardProfile: profile,
         });
 
         // Show warnings
@@ -123,9 +146,7 @@ agentCardCommand
           )
         );
         console.log(
-          chalk.gray(
-            `  Agent: ${result.card!.name} (${result.card!.uri})`
-          )
+          chalk.gray(`  Agent: ${result.card!.name} (${result.card!.uri})`)
         );
         console.log(
           chalk.gray(
@@ -133,9 +154,7 @@ agentCardCommand
           )
         );
         console.log(
-          chalk.gray(
-            `  Transport: ${result.card!.transport.join(', ')}`
-          )
+          chalk.gray(`  Transport: ${result.card!.transport.join(', ')}`)
         );
       } catch (error: unknown) {
         console.error(
@@ -184,9 +203,7 @@ agentCardCommand
         process.exit(1);
       }
 
-      const schema = JSON.parse(
-        fs.readFileSync(schemaPath, 'utf-8')
-      );
+      const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf-8'));
 
       const ajv = new Ajv({ allErrors: true, verbose: true });
       addFormats(ajv);
@@ -198,16 +215,12 @@ agentCardCommand
         console.log(chalk.gray(`  Name: ${c.name}`));
         console.log(chalk.gray(`  URI: ${c.uri}`));
         console.log(
-          chalk.gray(
-            `  Version: ${c.version} (OSSA ${c.ossaVersion})`
-          )
+          chalk.gray(`  Version: ${c.version} (OSSA ${c.ossaVersion})`)
         );
       } else {
         console.error(chalk.red('✗ Agent card validation failed:'));
         for (const error of validate.errors || []) {
-          console.error(
-            chalk.red(`  ${error.instancePath} ${error.message}`)
-          );
+          console.error(chalk.red(`  ${error.instancePath} ${error.message}`));
         }
         process.exit(1);
       }
