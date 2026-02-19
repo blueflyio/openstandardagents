@@ -2,7 +2,23 @@
 
 **Status:** PRODUCTION-READY | Multi-Language | Framework-Agnostic
 
-##  EXECUTIVE SUMMARY
+## Primary SDK (v0.4) – Use in other projects
+
+The **main package** `@bluefly/openstandardagents` exposes a single SDK entry for programmatic use:
+
+- **Install:** `npm install @bluefly/openstandardagents`
+- **Import:** `@bluefly/openstandardagents/sdk`
+- **API:** `loadManifestFromFile`, `loadManifestFromString`, `validateManifest`, `OSSAValidator`, `AgentCardGenerator`, plus types (`AgentCard`, `OssaAgent`, `ValidationResult`, etc.)
+
+**Docs:**
+
+- Website: https://openstandardagents.org/docs/sdks and https://openstandardagents.org/docs/sdks/typescript-sdk
+- Python: https://openstandardagents.org/docs/sdks/python-sdk
+- Wiki: SDKs-Overview, TypeScript-SDK, Python-SDK (publish from `.gitlab/wiki-drafts/` in openstandardagents.org)
+
+---
+
+## EXECUTIVE SUMMARY
 
 OSSA provides **world-class SDKs** for TypeScript, Python, and Go with **20+ framework integrations**.
 
@@ -18,84 +34,86 @@ OSSA provides **world-class SDKs** for TypeScript, Python, and Go with **20+ fra
 
 ## 📦 LANGUAGE SDKS
 
-### **TypeScript SDK** (`@ossa/sdk`)
+### **TypeScript SDK (primary)** (`@bluefly/openstandardagents/sdk`)
 
-**Status:** ✅ Complete | Publishing: AUTOMATED
-**Location:** `/src/sdks/typescript/`
-**Version:** 0.3.5 (sync'd with spec)
+**Status:** ✅ Complete | Publishing: with main package
+**Location:** main package `src/sdk.ts`, exports `./sdk`
+**Version:** 0.4.x (sync'd with spec)
 
 **Features:**
-- Full TypeScript types for all OSSA manifests
-- Schema validation with Ajv
-- Manifest loading (YAML/JSON)
-- CloudEvents support
-- W3C Baggage tracing
-- CLI tools
+- Load manifests from file or string (YAML/JSON)
+- Sync validation with default v0.4 schema and separation-of-duties
+- Agent card generation (URI, token efficiency, separation)
+- OSSAValidator for custom schema path
+- Full TypeScript types (OssaAgent, AgentCard, ValidationResult, etc.)
 
 **Installation:**
 ```bash
-npm install @ossa/sdk
+npm install @bluefly/openstandardagents
 ```
 
 **Usage:**
 ```typescript
-import { loadManifest, validateManifest, isAgent } from '@ossa/sdk';
+import {
+  loadManifestFromFile,
+  loadManifestFromString,
+  validateManifest,
+  AgentCardGenerator,
+} from '@bluefly/openstandardagents/sdk';
 
-const manifest = loadManifest('agent.ossa.yaml');
-if (isAgent(manifest)) {
-  console.log(`Agent: ${manifest.metadata.name}`);
+const manifest = loadManifestFromFile('agent.ossa.yaml');
+const result = validateManifest(manifest);
+if (result.valid) {
+  const gen = new AgentCardGenerator();
+  const cardResult = gen.generate(manifest, { namespace: 'myteam' });
 }
 ```
 
-**Exports:**
-```typescript
-// Core
-@ossa/sdk
-@ossa/sdk/validator
-@ossa/sdk/client
+**Docs:** https://openstandardagents.org/docs/sdks/typescript-sdk
 
-// Events & Tracing
-@ossa/sdk/events
-@ossa/sdk/tracing
-```
+### **TypeScript SDK (nested)** (`@ossa/sdk`)
+
+**Status:** ✅ Complete | Optional alternate bundle
+**Location:** `/src/sdks/typescript/`
+**Version:** 0.3.x
+
+Standalone package with ManifestService, ValidatorService, events, tracing. For full v0.4 surface use `@bluefly/openstandardagents/sdk` above.
+
+**Exports:** `@ossa/sdk`, `@ossa/sdk/validator`, `@ossa/sdk/client`, `@ossa/sdk/events`, `@ossa/sdk/tracing`
 
 ---
 
-### **Python SDK** (`ossa-sdk`)
+### **Python SDK** (`ossa`)
 
-**Status:** ✅ Complete | Publishing: AUTOMATED
+**Status:** ✅ Complete | Publishing: from repo or Git
 **Location:** `/src/sdks/python/`
-**Version:** 0.3.5
+**Version:** 0.4.0
 
 **Features:**
-- Full Pydantic models
-- Environment variable substitution
-- CLI (`ossa` command)
-- Export to Python/JSON/YAML
-- 20+ LLM provider support
+- Load manifest, validate (v0.4 schema + separation-of-duties)
+- Generate agent card and compute manifest digest
+- Full Pydantic models (AgentSpec, TaskSpec, WorkflowSpec, etc.)
+- Runtime: Agent, Task, Workflow runners
+- CLI (`ossa` command when installed)
 
 **Installation:**
 ```bash
-pip install ossa-sdk
+cd path/to/openstandardagents/src/sdks/python && pip install -e .
+# or: pip install git+https://gitlab.com/blueflyio/ossa/openstandardagents.git@main#subdirectory=src/sdks/python
 ```
 
 **Usage:**
 ```python
-from ossa import load_manifest, validate_manifest
+from ossa import load_manifest, validate_manifest, generate_agent_card
 
 manifest = load_manifest("agent.ossa.yaml")
 result = validate_manifest(manifest)
-
 if result.valid:
-    print(f"✅ {manifest.metadata.name}")
+    card = generate_agent_card(manifest, namespace="default")
+    print(card["uri"])
 ```
 
-**CLI:**
-```bash
-ossa validate agent.ossa.yaml
-ossa inspect agent.ossa.yaml
-ossa export agent.ossa.yaml --format python
-```
+**Docs:** https://openstandardagents.org/docs/sdks/python-sdk
 
 ---
 
@@ -572,13 +590,13 @@ export class YourFrameworkAdapter {
 
 ---
 
-## 📚 RESOURCES
+## RESOURCES
 
 - **Website:** https://openstandardagents.org
-- **Docs:** https://openstandardagents.org/docs/sdks
-- **TypeScript SDK:** https://www.npmjs.com/package/@ossa/sdk
-- **Python SDK:** https://pypi.org/project/ossa-sdk/
-- **Examples:** `/examples/reference-implementations/`
+- **SDK docs:** https://openstandardagents.org/docs/sdks (overview, TypeScript, Python)
+- **Main package (TypeScript):** `@bluefly/openstandardagents` (npm / GitLab registry)
+- **Python SDK:** `src/sdks/python` in this repo; install via `pip install -e .` or Git URL
+- **Examples:** `/examples/`, `/examples/token-efficiency/`
 - **Integrations:** `/docs/integrations/`
 
 ---
