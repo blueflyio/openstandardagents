@@ -20,13 +20,7 @@ The `docker-compose.yml` file defines services for local development:
 
 ### Usage
 
-From project root (symlink available):
-
-```bash
-docker-compose up
-```
-
-Or specify path directly:
+From project root, specify the path (no symlinks per platform policy):
 
 ```bash
 docker-compose -f infra/docker-compose.yml up

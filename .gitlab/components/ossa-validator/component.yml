@@ -126,7 +126,7 @@ ossa:validate:
     - |
       echo "INFO: Running project-wide OSSA validation..."
       ossa validate project . \
-        --config .ossa.config.yaml \
+        --config config/ossa/.ossa.config.yaml \
         $[[ inputs.generate_report == true && '--report reports/ossa-validation/project-compliance.md' || '' ]]
 
     # Generate summary report
