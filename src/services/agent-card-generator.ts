@@ -9,6 +9,7 @@
  * autonomy, constraints, observability, endpoints, auth, and encryption.
  */
 
+import * as crypto from 'crypto';
 import type { OssaAgent } from '../types/index.js';
 import type {
   AgentCard,
@@ -24,6 +25,9 @@ import type {
   Transport,
   AuthMethod,
   EncryptionSpec,
+  AgentCardState,
+  TokenEfficiencySummary,
+  AgentCardSeparation,
 } from '../mesh/types.js';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -34,9 +38,15 @@ type ManifestSection = Record<string, any>;
  * OSSA manifests support extensions at both `spec.extensions` and top-level
  * `manifest.extensions`; the spec-level location takes precedence.
  */
-function resolveExtensionBlock(manifest: OssaAgent, extensionName: string): ManifestSection | undefined {
+function resolveExtensionBlock(
+  manifest: OssaAgent,
+  extensionName: string
+): ManifestSection | undefined {
   const spec = manifest.spec as ManifestSection | undefined;
-  return spec?.extensions?.[extensionName] ?? (manifest.extensions as ManifestSection)?.[extensionName];
+  return (
+    spec?.extensions?.[extensionName] ??
+    (manifest.extensions as ManifestSection)?.[extensionName]
+  );
 }
 
 export interface AgentCardGeneratorOptions {
@@ -48,6 +58,14 @@ export interface AgentCardGeneratorOptions {
   endpoints?: { http?: string; grpc?: string; websocket?: string };
   /** Set agent status */
   status?: 'healthy' | 'degraded' | 'unavailable';
+  /** URL to full OSSA manifest (single source of truth) */
+  manifestRef?: string;
+  /** Content digest of manifest (e.g. SHA-256). If not set and manifestContent is provided, can be computed. */
+  manifestDigest?: string;
+  /** Raw manifest content for computing manifestDigest when manifestDigest not provided */
+  manifestContent?: string;
+  /** Card profile: minimal, discovery, or full */
+  cardProfile?: 'minimal' | 'discovery' | 'full';
 }
 
 export interface AgentCardResult {
@@ -104,6 +122,14 @@ export class AgentCardGenerator {
     const authentication = this.extractAuthentication(manifest);
     const encryption = this.extractEncryption(manifest);
     const metadata = this.extractMetadata(manifest);
+    const state = this.extractState(manifest);
+    const tokenEfficiencySummary = this.extractTokenEfficiencySummary(manifest);
+    const separation = this.extractSeparation(manifest);
+    const manifestDigest =
+      options?.manifestDigest ??
+      (options?.manifestContent
+        ? this.computeManifestDigest(options.manifestContent)
+        : undefined);
 
     // Warn on empty sections
     if (capabilities.length === 0) {
@@ -165,6 +191,18 @@ export class AgentCardGenerator {
 
       // Health
       ...(options?.status ? { status: options.status } : {}),
+
+      // State, token efficiency, separation (SoD: projected from OSSA manifest)
+      ...(state ? { state } : {}),
+      ...(tokenEfficiencySummary ? { tokenEfficiencySummary } : {}),
+      ...(separation ? { separation } : {}),
+
+      // Manifest reference and integrity
+      ...(options?.manifestRef ? { manifestRef: options.manifestRef } : {}),
+      ...(manifestDigest ? { manifestDigest } : {}),
+
+      // Card profile and extensions
+      ...(options?.cardProfile ? { cardProfile: options.cardProfile } : {}),
     };
 
     const json = JSON.stringify(card, null, 2);
@@ -191,10 +229,14 @@ export class AgentCardGenerator {
 
     if (agentArchitecture) {
       taxonomy.architecture = {};
-      if (agentArchitecture.pattern) taxonomy.architecture.pattern = agentArchitecture.pattern;
-      if (agentArchitecture.capabilities) taxonomy.architecture.capabilities = agentArchitecture.capabilities;
-      if (agentArchitecture.coordination) taxonomy.architecture.coordination = agentArchitecture.coordination;
-      if (agentArchitecture.runtime) taxonomy.architecture.runtime = agentArchitecture.runtime;
+      if (agentArchitecture.pattern)
+        taxonomy.architecture.pattern = agentArchitecture.pattern;
+      if (agentArchitecture.capabilities)
+        taxonomy.architecture.capabilities = agentArchitecture.capabilities;
+      if (agentArchitecture.coordination)
+        taxonomy.architecture.coordination = agentArchitecture.coordination;
+      if (agentArchitecture.runtime)
+        taxonomy.architecture.runtime = agentArchitecture.runtime;
     }
 
     return taxonomy;
@@ -211,7 +253,9 @@ export class AgentCardGenerator {
     // From metadata.labels.capability (comma-separated)
     const capabilityLabel = manifest.metadata?.labels?.capability;
     if (capabilityLabel) {
-      capabilities.push(...capabilityLabel.split(',').map((entry) => entry.trim()));
+      capabilities.push(
+        ...capabilityLabel.split(',').map((entry) => entry.trim())
+      );
     }
 
     // From metadata.labels.framework (e.g., 'a2a', 'mcp')
@@ -234,9 +278,10 @@ export class AgentCardGenerator {
     if (specCapabilities) {
       for (const capability of specCapabilities) {
         const capabilityFields = capability as ManifestSection;
-        const capabilityName = typeof capability === 'string'
-          ? capability
-          : (capabilityFields.id || capabilityFields.name);
+        const capabilityName =
+          typeof capability === 'string'
+            ? capability
+            : capabilityFields.id || capabilityFields.name;
         if (capabilityName && !capabilities.includes(capabilityName)) {
           capabilities.push(capabilityName);
         }
@@ -270,17 +315,27 @@ export class AgentCardGenerator {
         const toolFields = toolEntry as ManifestSection;
         // Support both camelCase (inputSchema) and snake_case (input_schema)
         const resolvedInputSchema =
-          toolFields.inputSchema || toolFields.input_schema || toolFields.parameters;
-        const resolvedOutputSchema = toolFields.outputSchema || toolFields.output_schema;
+          toolFields.inputSchema ||
+          toolFields.input_schema ||
+          toolFields.parameters;
+        const resolvedOutputSchema =
+          toolFields.outputSchema || toolFields.output_schema;
 
         return {
           name: toolEntry.name!,
           description: toolEntry.description || toolEntry.name!,
-          inputSchema: (resolvedInputSchema && typeof resolvedInputSchema === 'object'
+          inputSchema: (resolvedInputSchema &&
+          typeof resolvedInputSchema === 'object'
             ? resolvedInputSchema
-            : { type: 'object', properties: {} }) as ToolDescriptor['inputSchema'],
+            : {
+                type: 'object',
+                properties: {},
+              }) as ToolDescriptor['inputSchema'],
           ...(resolvedOutputSchema && typeof resolvedOutputSchema === 'object'
-            ? { outputSchema: resolvedOutputSchema as ToolDescriptor['outputSchema'] }
+            ? {
+                outputSchema:
+                  resolvedOutputSchema as ToolDescriptor['outputSchema'],
+              }
             : {}),
         };
       });
@@ -300,7 +355,8 @@ export class AgentCardGenerator {
     if (modelConfig.provider) modelInfo.provider = modelConfig.provider;
     if (modelConfig.name || modelConfig.model)
       modelInfo.model = modelConfig.name || modelConfig.model;
-    if (modelConfig.temperature != null) modelInfo.temperature = modelConfig.temperature;
+    if (modelConfig.temperature != null)
+      modelInfo.temperature = modelConfig.temperature;
     if (modelConfig.maxTokens != null || modelConfig.max_tokens != null)
       modelInfo.maxTokens = modelConfig.maxTokens ?? modelConfig.max_tokens;
     if (modelConfig.topP != null) modelInfo.topP = modelConfig.topP;
@@ -333,7 +389,9 @@ export class AgentCardGenerator {
       if (server.transport) {
         descriptor.transport = {
           type: server.transport.type || 'stdio',
-          ...(server.transport.command ? { command: server.transport.command } : {}),
+          ...(server.transport.command
+            ? { command: server.transport.command }
+            : {}),
           ...(server.transport.args ? { args: server.transport.args } : {}),
           ...(server.transport.url ? { url: server.transport.url } : {}),
         };
@@ -346,12 +404,16 @@ export class AgentCardGenerator {
       // Attach MCP resources from the server or top-level mcp.resources
       const mcpResources = server.resources || mcp.resources;
       if (mcpResources && Array.isArray(mcpResources)) {
-        descriptor.resources = mcpResources.map((resource: ManifestSection) => ({
-          uri: resource.uri,
-          name: resource.name,
-          ...(resource.description ? { description: resource.description } : {}),
-          ...(resource.mimeType ? { mimeType: resource.mimeType } : {}),
-        }));
+        descriptor.resources = mcpResources.map(
+          (resource: ManifestSection) => ({
+            uri: resource.uri,
+            name: resource.name,
+            ...(resource.description
+              ? { description: resource.description }
+              : {}),
+            ...(resource.mimeType ? { mimeType: resource.mimeType } : {}),
+          })
+        );
       }
 
       return descriptor;
@@ -381,12 +443,16 @@ export class AgentCardGenerator {
 
     // Agent endpoints (array of {agentId, url, capabilities, priority})
     if (a2a.endpoints && Array.isArray(a2a.endpoints)) {
-      descriptor.agentEndpoints = a2a.endpoints.map((endpoint: ManifestSection) => ({
-        agentId: endpoint.agentId || endpoint.id,
-        url: endpoint.url,
-        ...(endpoint.capabilities ? { capabilities: endpoint.capabilities } : {}),
-        ...(endpoint.priority != null ? { priority: endpoint.priority } : {}),
-      }));
+      descriptor.agentEndpoints = a2a.endpoints.map(
+        (endpoint: ManifestSection) => ({
+          agentId: endpoint.agentId || endpoint.id,
+          url: endpoint.url,
+          ...(endpoint.capabilities
+            ? { capabilities: endpoint.capabilities }
+            : {}),
+          ...(endpoint.priority != null ? { priority: endpoint.priority } : {}),
+        })
+      );
     }
 
     // Routing
@@ -395,12 +461,16 @@ export class AgentCardGenerator {
         ...(a2a.routing.strategy ? { strategy: a2a.routing.strategy } : {}),
         ...(a2a.routing.routingRules
           ? {
-              rules: a2a.routing.routingRules.map((routingRule: ManifestSection) => ({
-                name: routingRule.name,
-                condition: routingRule.condition,
-                target: routingRule.target,
-                ...(routingRule.priority != null ? { priority: routingRule.priority } : {}),
-              })),
+              rules: a2a.routing.routingRules.map(
+                (routingRule: ManifestSection) => ({
+                  name: routingRule.name,
+                  condition: routingRule.condition,
+                  target: routingRule.target,
+                  ...(routingRule.priority != null
+                    ? { priority: routingRule.priority }
+                    : {}),
+                })
+              ),
             }
           : {}),
       };
@@ -425,7 +495,9 @@ export class AgentCardGenerator {
                   name: handoffRule.name,
                   condition: handoffRule.condition,
                   target: handoffRule.target,
-                  ...(handoffRule.message ? { message: handoffRule.message } : {}),
+                  ...(handoffRule.message
+                    ? { message: handoffRule.message }
+                    : {}),
                 })
               ),
             }
@@ -441,11 +513,15 @@ export class AgentCardGenerator {
           : {}),
         ...(a2a.completionSignals.handlers
           ? {
-              handlers: a2a.completionSignals.handlers.map((signalHandler: ManifestSection) => ({
-                signal: signalHandler.signal,
-                action: signalHandler.action,
-                ...(signalHandler.target ? { target: signalHandler.target } : {}),
-              })),
+              handlers: a2a.completionSignals.handlers.map(
+                (signalHandler: ManifestSection) => ({
+                  signal: signalHandler.signal,
+                  action: signalHandler.action,
+                  ...(signalHandler.target
+                    ? { target: signalHandler.target }
+                    : {}),
+                })
+              ),
             }
           : {}),
       };
@@ -506,12 +582,18 @@ export class AgentCardGenerator {
     const autonomy: AgentAutonomy = {};
 
     if (autonomyConfig.level) autonomy.level = autonomyConfig.level;
-    if (autonomyConfig.approval_required != null || autonomyConfig.approvalRequired != null)
-      autonomy.approvalRequired = autonomyConfig.approval_required ?? autonomyConfig.approvalRequired;
+    if (
+      autonomyConfig.approval_required != null ||
+      autonomyConfig.approvalRequired != null
+    )
+      autonomy.approvalRequired =
+        autonomyConfig.approval_required ?? autonomyConfig.approvalRequired;
     if (autonomyConfig.allowed_actions || autonomyConfig.allowedActions)
-      autonomy.allowedActions = autonomyConfig.allowed_actions || autonomyConfig.allowedActions;
+      autonomy.allowedActions =
+        autonomyConfig.allowed_actions || autonomyConfig.allowedActions;
     if (autonomyConfig.blocked_actions || autonomyConfig.blockedActions)
-      autonomy.blockedActions = autonomyConfig.blocked_actions || autonomyConfig.blockedActions;
+      autonomy.blockedActions =
+        autonomyConfig.blocked_actions || autonomyConfig.blockedActions;
 
     return Object.keys(autonomy).length > 0 ? autonomy : null;
   }
@@ -528,29 +610,36 @@ export class AgentCardGenerator {
     if (constraintConfig.cost) {
       constraints.cost = {};
       if (constraintConfig.cost.maxTokensPerDay != null)
-        constraints.cost.maxTokensPerDay = constraintConfig.cost.maxTokensPerDay;
+        constraints.cost.maxTokensPerDay =
+          constraintConfig.cost.maxTokensPerDay;
       if (constraintConfig.cost.maxTokensPerRequest != null)
-        constraints.cost.maxTokensPerRequest = constraintConfig.cost.maxTokensPerRequest;
+        constraints.cost.maxTokensPerRequest =
+          constraintConfig.cost.maxTokensPerRequest;
       if (constraintConfig.cost.maxCostPerDay != null)
         constraints.cost.maxCostPerDay = constraintConfig.cost.maxCostPerDay;
-      if (constraintConfig.cost.currency) constraints.cost.currency = constraintConfig.cost.currency;
+      if (constraintConfig.cost.currency)
+        constraints.cost.currency = constraintConfig.cost.currency;
     }
 
     if (constraintConfig.performance) {
       constraints.performance = {};
       if (constraintConfig.performance.maxLatencySeconds != null)
-        constraints.performance.maxLatencySeconds = constraintConfig.performance.maxLatencySeconds;
+        constraints.performance.maxLatencySeconds =
+          constraintConfig.performance.maxLatencySeconds;
       if (constraintConfig.performance.maxConcurrentRequests != null)
         constraints.performance.maxConcurrentRequests =
           constraintConfig.performance.maxConcurrentRequests;
       if (constraintConfig.performance.timeoutSeconds != null)
-        constraints.performance.timeoutSeconds = constraintConfig.performance.timeoutSeconds;
+        constraints.performance.timeoutSeconds =
+          constraintConfig.performance.timeoutSeconds;
     }
 
     if (constraintConfig.resources) {
       constraints.resources = {};
-      if (constraintConfig.resources.cpu) constraints.resources.cpu = constraintConfig.resources.cpu;
-      if (constraintConfig.resources.memory) constraints.resources.memory = constraintConfig.resources.memory;
+      if (constraintConfig.resources.cpu)
+        constraints.resources.cpu = constraintConfig.resources.cpu;
+      if (constraintConfig.resources.memory)
+        constraints.resources.memory = constraintConfig.resources.memory;
     }
 
     return Object.keys(constraints).length > 0 ? constraints : null;
@@ -558,24 +647,32 @@ export class AgentCardGenerator {
 
   // ─── Observability ─────────────────────────────────────────
 
-  private extractObservability(
-    manifest: OssaAgent
-  ): AgentObservability | null {
+  private extractObservability(manifest: OssaAgent): AgentObservability | null {
     // Check spec.observability first, then extensions.a2a.observability
     const spec = manifest.spec as ManifestSection | undefined;
     const a2aExtension = resolveExtensionBlock(manifest, 'a2a');
-    const observabilityConfig = spec?.observability || a2aExtension?.observability;
+    const observabilityConfig =
+      spec?.observability || a2aExtension?.observability;
     if (!observabilityConfig) return null;
 
     const observability: AgentObservability = {};
 
     if (observabilityConfig.tracing) {
       observability.tracing = {
-        ...(observabilityConfig.tracing.enabled != null ? { enabled: observabilityConfig.tracing.enabled } : {}),
-        ...(observabilityConfig.tracing.exporter || observabilityConfig.tracing.provider
-          ? { exporter: observabilityConfig.tracing.exporter || observabilityConfig.tracing.provider }
+        ...(observabilityConfig.tracing.enabled != null
+          ? { enabled: observabilityConfig.tracing.enabled }
           : {}),
-        ...(observabilityConfig.tracing.endpoint ? { endpoint: observabilityConfig.tracing.endpoint } : {}),
+        ...(observabilityConfig.tracing.exporter ||
+        observabilityConfig.tracing.provider
+          ? {
+              exporter:
+                observabilityConfig.tracing.exporter ||
+                observabilityConfig.tracing.provider,
+            }
+          : {}),
+        ...(observabilityConfig.tracing.endpoint
+          ? { endpoint: observabilityConfig.tracing.endpoint }
+          : {}),
         ...(observabilityConfig.tracing.samplingRate != null
           ? { samplingRate: observabilityConfig.tracing.samplingRate }
           : {}),
@@ -584,16 +681,26 @@ export class AgentCardGenerator {
 
     if (observabilityConfig.metrics) {
       observability.metrics = {
-        ...(observabilityConfig.metrics.enabled != null ? { enabled: observabilityConfig.metrics.enabled } : {}),
-        ...(observabilityConfig.metrics.exporter ? { exporter: observabilityConfig.metrics.exporter } : {}),
-        ...(observabilityConfig.metrics.endpoint ? { endpoint: observabilityConfig.metrics.endpoint } : {}),
+        ...(observabilityConfig.metrics.enabled != null
+          ? { enabled: observabilityConfig.metrics.enabled }
+          : {}),
+        ...(observabilityConfig.metrics.exporter
+          ? { exporter: observabilityConfig.metrics.exporter }
+          : {}),
+        ...(observabilityConfig.metrics.endpoint
+          ? { endpoint: observabilityConfig.metrics.endpoint }
+          : {}),
       };
     }
 
     if (observabilityConfig.logging) {
       observability.logging = {
-        ...(observabilityConfig.logging.level ? { level: observabilityConfig.logging.level } : {}),
-        ...(observabilityConfig.logging.format ? { format: observabilityConfig.logging.format } : {}),
+        ...(observabilityConfig.logging.level
+          ? { level: observabilityConfig.logging.level }
+          : {}),
+        ...(observabilityConfig.logging.format
+          ? { format: observabilityConfig.logging.format }
+          : {}),
       };
     }
 
@@ -699,6 +806,85 @@ export class AgentCardGenerator {
     return { tlsRequired: true, minTlsVersion: '1.2' };
   }
 
+  // ─── State (projected from OSSA spec.state) ─────────────────
+
+  private extractState(manifest: OssaAgent): AgentCardState | null {
+    const spec = manifest.spec as ManifestSection | undefined;
+    const stateConfig = spec?.state;
+    if (!stateConfig || typeof stateConfig !== 'object') return null;
+
+    const state: AgentCardState = {};
+    if (stateConfig.mode) state.mode = stateConfig.mode;
+    const storage = stateConfig.storage;
+    if (storage?.type) state.storageHint = storage.type;
+    if (stateConfig.session_endpoint)
+      state.sessionEndpoint = stateConfig.session_endpoint;
+    if (stateConfig.sessionEndpoint)
+      state.sessionEndpoint = stateConfig.sessionEndpoint;
+    const checkpoint = stateConfig.checkpointing;
+    if (checkpoint?.interval_seconds != null)
+      state.checkpointIntervalSeconds = checkpoint.interval_seconds;
+    if (checkpoint?.intervalSeconds != null)
+      state.checkpointIntervalSeconds = checkpoint.intervalSeconds;
+    const ext = (manifest as ManifestSection).extensions;
+    const extCheckpoint = ext?.checkpointing;
+    if (
+      state.checkpointIntervalSeconds == null &&
+      extCheckpoint?.interval_seconds != null
+    )
+      state.checkpointIntervalSeconds = extCheckpoint.interval_seconds;
+    if (storage?.retention) state.retention = storage.retention;
+
+    return Object.keys(state).length > 0 ? state : null;
+  }
+
+  // ─── Token efficiency summary (projected from OSSA token_efficiency) ─────
+
+  private extractTokenEfficiencySummary(
+    manifest: OssaAgent
+  ): TokenEfficiencySummary | null {
+    const te = (manifest as ManifestSection).token_efficiency;
+    if (!te || typeof te !== 'object') return null;
+
+    const summary: TokenEfficiencySummary = {};
+    if (te.serialization_profile)
+      summary.serializationProfile = te.serialization_profile;
+    if (te.observation_format)
+      summary.observationFormat = te.observation_format;
+    const budget = te.budget;
+    if (budget?.max_input_tokens != null)
+      summary.maxInputTokens = budget.max_input_tokens;
+    const routing = te.routing;
+    if (Array.isArray(routing?.cascade)) summary.cascade = routing.cascade;
+    const consolidation = te.consolidation;
+    if (consolidation?.strategy)
+      summary.consolidationStrategy = consolidation.strategy;
+
+    return Object.keys(summary).length > 0 ? summary : null;
+  }
+
+  // ─── Separation of duties (projected from OSSA spec.access and spec.separation) ─────
+
+  private extractSeparation(manifest: OssaAgent): AgentCardSeparation | null {
+    const spec = manifest.spec as ManifestSection | undefined;
+    const access = spec?.access;
+    const separationConfig = spec?.separation;
+    if (!access && !separationConfig) return null;
+
+    const separation: AgentCardSeparation = {};
+    if (access?.tier) separation.accessTier = access.tier;
+    if (separationConfig?.role) separation.role = separationConfig.role;
+    const conflicts =
+      separationConfig?.conflicts_with ?? separationConfig?.conflictsWith;
+    if (Array.isArray(conflicts)) separation.conflictsWith = conflicts;
+
+    return Object.keys(separation).length > 0 ? separation : null;
+  }
+
+  private computeManifestDigest(content: string): string {
+    return crypto.createHash('sha256').update(content, 'utf8').digest('hex');
+  }
+
   // ─── Metadata ──────────────────────────────────────────────
 
   private extractMetadata(
@@ -708,7 +894,9 @@ export class AgentCardGenerator {
 
     // Copy labels (excluding 'capability' and 'framework' already in capabilities[])
     if (manifest.metadata?.labels) {
-      for (const [labelKey, labelValue] of Object.entries(manifest.metadata.labels)) {
+      for (const [labelKey, labelValue] of Object.entries(
+        manifest.metadata.labels
+      )) {
         if (labelKey !== 'capability' && labelKey !== 'framework') {
           cardMetadata[labelKey] = labelValue;
         }
@@ -728,7 +916,8 @@ export class AgentCardGenerator {
     }
 
     // Annotations
-    const manifestAnnotations = (manifest.metadata as ManifestSection)?.annotations;
+    const manifestAnnotations = (manifest.metadata as ManifestSection)
+      ?.annotations;
     if (manifestAnnotations) {
       cardMetadata.annotations = manifestAnnotations;
     }

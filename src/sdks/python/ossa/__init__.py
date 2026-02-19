@@ -20,7 +20,7 @@ Quick Start:
 For more examples, see: https://openstandardagents.org/docs/sdks/python
 """
 
-__version__ = "0.3.5"
+__version__ = "0.4.0"
 __all__ = [
     # Core manifest types
     "Manifest",
@@ -32,6 +32,10 @@ __all__ = [
     "ValidationResult",
     "validate_manifest",
     "validate",  # Alias for validate_manifest
+
+    # Agent card (discovery projection)
+    "generate_agent_card",
+    "compute_manifest_digest",
 
     # Runtime execution
     "Agent",
@@ -54,6 +58,7 @@ __all__ = [
 
 from .manifest import Manifest, load_manifest
 from .validator import Validator, ValidationResult, validate_manifest
+from .agent_card import generate_agent_card, compute_manifest_digest
 from .exceptions import OSSAError, ValidationError, ConfigurationError, ExecutionError
 from .agent import Agent, AgentRunner, AgentResponse
 from .task import Task, TaskRunner

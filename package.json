@@ -57,6 +57,17 @@
       "import": "./dist/mesh/index.js",
       "require": "./dist/mesh/index.js"
     },
+    "./agent-card": {
+      "types": "./dist/services/agent-card-generator.d.ts",
+      "import": "./dist/services/agent-card-generator.js",
+      "require": "./dist/services/agent-card-generator.js"
+    },
+    "./agent-card-schema": "./spec/v0.4/agent-card.schema.json",
+    "./sdk": {
+      "types": "./dist/sdk.d.ts",
+      "import": "./dist/sdk.js",
+      "require": "./dist/sdk.js"
+    },
     "./version-management": {
       "types": "./dist/version-management/index.d.ts",
       "import": "./dist/version-management/index.js",

@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://openstandardagents.org/schemas/v0.4/agent-card.schema.json",
   "title": "OSSA Agent Card",
-  "description": "Universal agent contract for discovery. Bridges MCP (tools) and A2A (agents). Generated from OSSA manifests and served at .well-known/agent-card.json.",
+  "description": "Universal agent contract for discovery. Bridges MCP (tools) and A2A (agents). Generated from OSSA manifests. Serve at .well-known/agent-card.json or .well-known/agent.json (A2A). Single source of truth: OSSA manifest; card is a projection. Optional: state, tokenEfficiencySummary, separation, manifestRef, manifestDigest.",
   "type": "object",
   "required": ["uri", "name", "version", "ossaVersion", "capabilities", "endpoints", "transport", "authentication", "encryption"],
   "properties": {
@@ -384,6 +384,93 @@
       "type": "string",
       "format": "date-time",
       "description": "Last heartbeat timestamp (ISO 8601)"
+    },
+    "state": {
+      "type": "object",
+      "description": "State persistence for discovery and session resume (SoD: defined in OSSA manifest, projected here)",
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["stateless", "session", "long_running"],
+          "description": "State persistence mode"
+        },
+        "storageHint": {
+          "type": "string",
+          "description": "Storage backend: redis, postgres, vector-db, kv, custom"
+        },
+        "sessionEndpoint": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to create or resume session"
+        },
+        "checkpointIntervalSeconds": {
+          "type": "integer",
+          "description": "Checkpoint interval in seconds"
+        },
+        "retention": {
+          "type": "string",
+          "description": "Data retention e.g. 30d, 1h"
+        }
+      }
+    },
+    "tokenEfficiencySummary": {
+      "type": "object",
+      "description": "Token efficiency hints for routing and cost (SoD: defined in OSSA manifest, projected here)",
+      "properties": {
+        "serializationProfile": {
+          "type": "string",
+          "enum": ["compact", "full", "fingerprint"]
+        },
+        "observationFormat": {
+          "type": "string",
+          "enum": ["projected", "summary", "diff", "full"]
+        },
+        "maxInputTokens": { "type": "integer" },
+        "cascade": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Model cascade e.g. haiku, sonnet, opus"
+        },
+        "consolidationStrategy": { "type": "string" }
+      }
+    },
+    "manifestRef": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL to full OSSA manifest (single source of truth)"
+    },
+    "manifestDigest": {
+      "type": "string",
+      "description": "Content digest of manifest (e.g. SHA-256) for integrity and deduplication"
+    },
+    "separation": {
+      "type": "object",
+      "description": "Separation of duties for discovery and policy (SoD: defined in OSSA spec.access and spec.separation)",
+      "properties": {
+        "accessTier": {
+          "type": "string",
+          "enum": ["tier_1_read", "tier_2_write_limited", "tier_3_write_elevated", "tier_4_policy"]
+        },
+        "role": {
+          "type": "string",
+          "description": "Primary role (e.g. reviewer, deployer)"
+        },
+        "conflictsWith": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Roles this agent must not also perform"
+        }
+      }
+    },
+    "cardProfile": {
+      "type": "string",
+      "enum": ["minimal", "discovery", "full"],
+      "description": "Card profile: minimal (uri,name,capabilities), discovery (+ state, tokenEfficiency), full (all)"
+    },
+    "extensions": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Extension data for platform-specific fields"
     }
   },
   "additionalProperties": false

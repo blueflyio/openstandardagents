@@ -206,6 +206,63 @@ export interface AgentCard {
   // Health
   status?: AgentStatus;
   lastHeartbeat?: string;
+
+  // State (projected from OSSA spec.state) — for discovery and session resume
+  state?: AgentCardState;
+
+  // Token efficiency (projected from OSSA token_efficiency) — for routing and cost
+  tokenEfficiencySummary?: TokenEfficiencySummary;
+
+  // Manifest reference — single source of truth
+  manifestRef?: string;
+  manifestDigest?: string;
+
+  // Separation of duties (projected from OSSA spec.access and spec.separation)
+  separation?: AgentCardSeparation;
+
+  // Card profile: minimal | discovery | full
+  cardProfile?: 'minimal' | 'discovery' | 'full';
+
+  // Extensions for platform-specific fields
+  extensions?: Record<string, unknown>;
+}
+
+/**
+ * Agent card state hint — for discovery and session resume.
+ * SoD: defined in OSSA manifest spec.state; projected here.
+ */
+export interface AgentCardState {
+  mode?: 'stateless' | 'session' | 'long_running';
+  storageHint?: string;
+  sessionEndpoint?: string;
+  checkpointIntervalSeconds?: number;
+  retention?: string;
+}
+
+/**
+ * Token efficiency summary — for routing and cost-aware clients.
+ * SoD: defined in OSSA manifest token_efficiency; projected here.
+ */
+export interface TokenEfficiencySummary {
+  serializationProfile?: 'compact' | 'full' | 'fingerprint';
+  observationFormat?: 'projected' | 'summary' | 'diff' | 'full';
+  maxInputTokens?: number;
+  cascade?: string[];
+  consolidationStrategy?: string;
+}
+
+/**
+ * Separation of duties — for discovery and policy.
+ * SoD: defined in OSSA spec.access and spec.separation; projected here.
+ */
+export interface AgentCardSeparation {
+  accessTier?:
+    | 'tier_1_read'
+    | 'tier_2_write_limited'
+    | 'tier_3_write_elevated'
+    | 'tier_4_policy';
+  role?: string;
+  conflictsWith?: string[];
 }
 
 /**
