@@ -9,11 +9,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'yaml';
 import type { OssaAgent } from '../../types/index.js';
-
-const AGENTS_DIR = '.agents';
-const WORKSPACE_DIR = '.agents-workspace';
-const MANIFEST_NAME = 'agent.ossa.yaml';
-const REGISTRY_NAME = 'registry.yaml';
+import { getApiVersion } from '../../utils/version.js';
+import { AGENTS_DIR, WORKSPACE_DIR, MANIFEST_NAME, REGISTRY_NAME } from '../../utils/constants.js';
+import { safeParseYAML, safeStringifyYAML } from '../../utils/yaml-parser.js';
 
 /**
  * Initialize .agents/ structure in current project
@@ -113,7 +111,7 @@ const addCommand = new Command('add')
       fs.mkdirSync(agentDir, { recursive: true });
 
       const manifest: OssaAgent = {
-        apiVersion: 'ossa/v0.4.5',
+        apiVersion: getApiVersion(),
         kind: 'Agent',
         metadata: {
           name,
@@ -138,7 +136,7 @@ const addCommand = new Command('add')
 
       fs.writeFileSync(
         path.join(agentDir, MANIFEST_NAME),
-        yaml.stringify(manifest)
+        safeStringifyYAML(manifest)
       );
 
       console.log(
@@ -189,7 +187,7 @@ const syncCommand = new Command('sync')
 
       try {
         const content = fs.readFileSync(manifestPath, 'utf-8');
-        const manifest = yaml.parse(content) as OssaAgent;
+        const manifest = safeParseYAML<OssaAgent>(content);
 
         agents.push({
           name: manifest.metadata?.name || entry.name,
@@ -270,7 +268,7 @@ const localListCommand = new Command('local')
 
     if (fs.existsSync(registryPath)) {
       const content = fs.readFileSync(registryPath, 'utf-8');
-      const registry = yaml.parse(content);
+      const registry = safeParseYAML<{ agents?: typeof agents }>(content);
       agents = registry?.agents || [];
     } else {
       // Fallback: scan filesystem
@@ -285,9 +283,9 @@ const localListCommand = new Command('local')
         const manifestPath = path.join(agentsDir, entry.name, MANIFEST_NAME);
         if (fs.existsSync(manifestPath)) {
           try {
-            const manifest = yaml.parse(
+            const manifest = safeParseYAML<OssaAgent>(
               fs.readFileSync(manifestPath, 'utf-8')
-            ) as OssaAgent;
+            );
             agents.push({
               name: manifest.metadata?.name || entry.name,
               manifest: `${entry.name}/${MANIFEST_NAME}`,

@@ -1,43 +1,61 @@
 /**
  * Version Validator
  *
- * SOLID: Single Responsibility - Validates version placeholders
- * Zod: Validates version structure
- * DRY: Reusable validation logic
+ * SOLID: Single Responsibility - Validates version consistency
+ * DRY: Expected version read from .version.json (single source of truth)
  */
 
-import { z } from 'zod';
 import { readFileSync, existsSync } from 'fs';
 import { execFileSync } from 'child_process';
 import { glob } from 'glob';
-
-const PLACEHOLDER_VERSION = '0.3.4';
-const VersionPlaceholderSchema = z.literal(PLACEHOLDER_VERSION);
 
 export class VersionValidator {
   private errors = 0;
   private messages: string[] = [];
   private isReleaseBranch = false;
+  private expectedVersion: string | null = null;
 
   /**
-   * Validate version placeholders
-   * CRUD: Read operation (validates files)
+   * Read expected version from .version.json (source of truth). Updates dynamically with releases.
+   */
+  private getExpectedVersion(): string | null {
+    if (this.expectedVersion !== null) return this.expectedVersion;
+    if (existsSync('.version.json')) {
+      try {
+        const v = JSON.parse(readFileSync('.version.json', 'utf-8'));
+        this.expectedVersion =
+          (v.current && String(v.current).match(/^\d+\.\d+\.\d+/) ? v.current : null) ??
+          (v.spec_version && String(v.spec_version).match(/^\d+\.\d+\.\d+/) ? v.spec_version : null) ??
+          null;
+      } catch {
+        this.expectedVersion = null;
+      }
+    }
+    if (this.expectedVersion === null && existsSync('package.json')) {
+      try {
+        const pkg = JSON.parse(readFileSync('package.json', 'utf-8'));
+        if (pkg.version && /^\d+\.\d+\.\d+/.test(String(pkg.version)))
+          this.expectedVersion = pkg.version;
+      } catch {
+        // ignore
+      }
+    }
+    return this.expectedVersion;
+  }
+
+  /**
+   * Validate that package.json and schema paths match .version.json
    */
   async validate(): Promise<{ errors: number; messages: string[] }> {
     this.errors = 0;
     this.messages = [];
     this.isReleaseBranch = this.detectReleaseBranch();
+    this.getExpectedVersion();
 
-    // Check package.json
     if (existsSync('package.json')) {
       this.validatePackageJson();
     }
 
-    // Skip .version.json - it's the SOURCE OF TRUTH for versions
-    // It should contain actual version numbers, not placeholders
-    // The version-sync script reads from .version.json and replaces 0.3.4 in other files
-
-    // Check other files
     await this.validateOtherFiles();
 
     return {
@@ -49,55 +67,53 @@ export class VersionValidator {
   private validatePackageJson(): void {
     const content = readFileSync('package.json', 'utf-8');
     const pkg = JSON.parse(content);
+    const expected = this.getExpectedVersion();
 
-    // Check version field - must use placeholder OR be on a release branch
+    if (!expected) return;
+
     if (
       pkg.version &&
       typeof pkg.version === 'string' &&
-      /^\d+\.\d+\.\d+/.test(pkg.version) &&
-      pkg.version !== PLACEHOLDER_VERSION &&
+      pkg.version !== expected &&
       !this.isReleaseBranch
     ) {
-      this.messages.push('ERROR: Hardcoded version detected in package.json');
+      this.messages.push('ERROR: package.json version does not match .version.json');
       this.messages.push('');
       this.messages.push(
-        `package.json MUST use ${PLACEHOLDER_VERSION} placeholder for dynamic versioning.`
-      );
-      this.messages.push(
-        `The version-sync CI job will replace ${PLACEHOLDER_VERSION} with the actual version.`
+        `package.json "version" MUST match .version.json (current source of truth).`
       );
       this.messages.push('');
-      this.messages.push(`Current version line: "${pkg.version}"`);
+      this.messages.push(`Current package.json: "${pkg.version}"`);
+      this.messages.push(`Expected (from .version.json): "${expected}"`);
       this.messages.push('');
       this.messages.push('Change it to:');
-      this.messages.push(`  "version": "${PLACEHOLDER_VERSION}",`);
+      this.messages.push(`  "version": "${expected}",`);
       this.messages.push('');
       this.errors++;
     }
 
-    // Check schema path
-    if (pkg.exports && pkg.exports['./schema']) {
+    if (pkg.exports && pkg.exports['./schema'] && typeof pkg.exports['./schema'] === 'string') {
       const schemaPath = pkg.exports['./schema'];
+      let expectedPrefix: string | null = null;
+      if (existsSync('.version.json')) {
+        try {
+          const v = JSON.parse(readFileSync('.version.json', 'utf-8'));
+          if (v.spec_path && v.schema_file)
+            expectedPrefix = `./${String(v.spec_path).replace(/^\.?\//, '')}`;
+        } catch {
+          // ignore
+        }
+      }
       if (
-        typeof schemaPath === 'string' &&
-        /\/v\d+\.\d+\.\d+/.test(schemaPath) &&
-        !schemaPath.includes(PLACEHOLDER_VERSION) &&
+        expectedPrefix &&
+        !schemaPath.startsWith(expectedPrefix) &&
         !this.isReleaseBranch
       ) {
-        this.messages.push('ERROR: Hardcoded version in schema path detected');
+        this.messages.push('WARNING: package.json "./schema" path may not match .version.json spec_path');
         this.messages.push('');
-        this.messages.push(
-          `Schema path MUST use ${PLACEHOLDER_VERSION} placeholder.`
-        );
+        this.messages.push(`Current: "${schemaPath}"`);
+        this.messages.push(`Expected prefix (from .version.json spec_path): "${expectedPrefix}"`);
         this.messages.push('');
-        this.messages.push(`Current schema line: "${schemaPath}"`);
-        this.messages.push('');
-        this.messages.push('Change it to:');
-        this.messages.push(
-          `    "./schema": "./spec/v${PLACEHOLDER_VERSION}/ossa-${PLACEHOLDER_VERSION}.schema.json",`
-        );
-        this.messages.push('');
-        this.errors++;
       }
     }
   }
@@ -110,24 +126,6 @@ export class VersionValidator {
       return branch.startsWith('release/');
     } catch {
       return false;
-    }
-  }
-
-  private validateVersionJson(): void {
-    const content = readFileSync('.version.json', 'utf-8');
-    const version = JSON.parse(content);
-
-    if (
-      (version.current && /^\d+\.\d+\.\d+/.test(version.current)) ||
-      (version.spec_version && /^\d+\.\d+\.\d+/.test(version.spec_version))
-    ) {
-      this.messages.push('ERROR: Hardcoded version detected in .version.json');
-      this.messages.push('');
-      this.messages.push(
-        `.version.json MUST use ${PLACEHOLDER_VERSION} placeholder.`
-      );
-      this.messages.push('');
-      this.errors++;
     }
   }
 
@@ -153,8 +151,8 @@ export class VersionValidator {
 
         const content = readFileSync(file, 'utf-8');
 
-        // Skip if file already uses placeholder
-        if (content.includes(PLACEHOLDER_VERSION)) continue;
+        const expected = this.getExpectedVersion();
+        if (expected && content.includes(expected)) continue;
 
         // Skip examples and comments
         if (
@@ -169,9 +167,11 @@ export class VersionValidator {
         // Check for hardcoded version patterns
         if (/\b(version|VERSION)\b.*\d+\.\d+\.\d+/.test(content)) {
           this.messages.push(`WARNING: Possible hardcoded version in ${file}`);
-          this.messages.push(
-            `  Consider using ${PLACEHOLDER_VERSION} placeholder if this is a version reference`
-          );
+          if (expected) {
+            this.messages.push(
+              `  Should match .version.json (${expected}) if this is the project version`
+            );
+          }
           this.messages.push('');
         }
       }
@@ -188,13 +188,10 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 
     if (result.errors > 0) {
       console.log('');
-      console.log(`❌ BLOCKED: ${result.errors} hardcoded version(s) detected`);
+      console.log(`BLOCKED: ${result.errors} version mismatch(es) detected`);
       console.log('');
       console.log(
-        `All versions MUST use ${PLACEHOLDER_VERSION} placeholder for dynamic CI replacement.`
-      );
-      console.log(
-        `The version-sync CI job will replace ${PLACEHOLDER_VERSION} with the actual version during build.`
+        `package.json version MUST match .version.json (source of truth). Update .version.json on release, then keep package.json in sync.`
       );
       process.exit(1);
     }

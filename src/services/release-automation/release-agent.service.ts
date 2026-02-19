@@ -6,10 +6,9 @@
  * FOLLOWS API-FIRST: OpenAPI spec defined FIRST, then implementation.
  */
 
-import { z } from 'zod';
 import { execSync } from 'child_process';
-import * as fs from 'fs/promises';
-import * as path from 'path';
+import { z } from 'zod';
+import { getVersion } from '../../utils/version.js';
 
 const ReleaseAnalysisRequestSchema = z.object({
   branch: z.string().min(1),
@@ -40,7 +39,7 @@ export class ReleaseAgentService {
   ): Promise<ReleaseAnalysisResult> {
     return {
       releaseNeeded: false,
-      currentVersion: '0.4.5',
+      currentVersion: getVersion(),
       commits: [],
     };
   }

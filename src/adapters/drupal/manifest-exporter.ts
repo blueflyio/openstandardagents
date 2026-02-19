@@ -20,27 +20,28 @@
  * @see https://www.drupal.org/project/charts
  */
 
-import { BaseAdapter } from '../base/adapter.interface.js';
+import * as yaml from 'yaml';
+import { API_VERSION } from '../../version.js';
 import type {
-  OssaAgent,
+  ExportFile,
   ExportOptions,
   ExportResult,
-  ExportFile,
-  ValidationResult,
+  OssaAgent,
   ValidationError,
+  ValidationResult,
   ValidationWarning,
 } from '../base/adapter.interface.js';
-import * as yaml from 'yaml';
+import { BaseAdapter } from '../base/adapter.interface.js';
+import type { OssaToolEntry } from './drupal-utils.js';
 import {
-  sanitizeModuleName,
-  toLabel,
-  validateDrupalCompatibility,
   buildValidationResult,
   extractCapabilities,
   extractTools,
   mapOssaToolToDrupalTool,
+  sanitizeModuleName,
+  toLabel,
+  validateDrupalCompatibility,
 } from './drupal-utils.js';
-import type { OssaToolEntry } from './drupal-utils.js';
 
 export interface DrupalManifestExportOptions extends ExportOptions {
   /** Minimum required version of drupal/ai_agents (default: ^1.3) */
@@ -304,7 +305,7 @@ export class DrupalManifestExporter extends BaseAdapter {
     const configEntity: Record<string, unknown> = {
       id: agentName,
       label: toLabel(manifest.metadata?.name || agentName),
-      api_version: manifest.apiVersion || 'ossa/v0.4.5',
+      api_version: manifest.apiVersion || API_VERSION,
       status: true,
       manifest: manifestData,
     };

@@ -14,36 +14,35 @@
  * ✓ Beautiful error messages
  */
 
-import { Command } from 'commander';
 import chalk from 'chalk';
+import { Command } from 'commander';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'yaml';
-import type { OssaAgent } from '../../types/index';
 import { IdCardService } from '../../services/id-card.service.js';
+import type { OssaAgent } from '../../types/index';
+import { getVersion } from '../../utils/version.js';
 import {
-  initializeAPIsFirst,
+  printBanner,
+  printCompletion,
+  printError,
+  printInfo,
+  printProgress,
+  printStep,
+  printSuccess,
+  printWarning,
+  printWizardBanner,
+} from '../banner.js';
+import {
   SchemaLoader,
   UIGenerator,
+  initializeAPIsFirst,
   inquirer,
 } from '../schema-driven/index.js';
 import type {
   ExportConfig,
-  TestingConfig,
   ExportPlatform,
-  CICDPlatform,
 } from './types/wizard-config.types.js';
-import {
-  printBanner,
-  printWizardBanner,
-  printCompletion,
-  printProgress,
-  printStep,
-  printSuccess,
-  printInfo,
-  printWarning,
-  printError,
-} from '../banner.js';
 
 // Initialize API-First infrastructure
 const apiFirst = initializeAPIsFirst();
@@ -92,7 +91,7 @@ class APIFirstWizard {
       // Step 2: Basic Metadata (validated against schema)
       await this.configureMetadata();
 
-      // Step 2b: Agent ID Card (v0.4.5+)
+      // Step 2b: Agent ID Card (v0.4.6+)
       await this.configureIdCard();
 
       // Step 3: LLM Configuration (schema-driven)
@@ -212,7 +211,7 @@ class APIFirstWizard {
       this.currentStep,
       this.totalSteps,
       'Agent ID Card',
-      'Human-friendly identity with immutable provenance (v0.4.5+)'
+      'Human-friendly identity with immutable provenance (v0.4.6+)'
     );
 
     const answers = await inquirer.prompt([
@@ -258,7 +257,7 @@ class APIFirstWizard {
       ? IdCardService.buildRegistryId(
           'blueflyio',
           this.agent.metadata.name,
-          '0.4.5'
+          getVersion()
         )
       : undefined;
 
@@ -268,7 +267,7 @@ class APIFirstWizard {
       avatar: answers.avatar || undefined,
       registryId,
       createdBy: answers.createdBy,
-      createdWith: 'ossa-wizard-api-first/0.4.5',
+      createdWith: `ossa-wizard-api-first/${getVersion()}`,
     });
 
     this.agent.metadata = {

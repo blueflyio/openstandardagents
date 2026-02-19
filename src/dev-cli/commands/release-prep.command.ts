@@ -4,8 +4,9 @@
  * Pre-release validation for GitLab, GitHub, and npmjs readiness.
  */
 
-import { Command } from 'commander';
 import chalk from 'chalk';
+import { Command } from 'commander';
+import { getVersion } from '../../utils/version.js';
 import { ReleasePrepService } from '../services/release-prep.service.js';
 
 export const releasePrepCommand = new Command('prep')
@@ -36,7 +37,7 @@ releasePrepCommand
       const service = new ReleasePrepService();
       try {
         const result = await service.prepare({
-          version: '0.4.5',
+          version: getVersion(),
           dryRun: options.dryRun,
           skipGitHub: options.skipGithub,
           skipNPM: options.skipNpm,

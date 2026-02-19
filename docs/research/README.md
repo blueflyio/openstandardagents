@@ -31,7 +31,7 @@ The AI agent industry is **highly fragmented**:
 
 ## Research Documents
 
-### 📊 [Platform Landscape](./AGENT-PLATFORM-LANDSCAPE.md)
+### 📊 [Platform Landscape](./agentPlatformLandscape.md)
 **Comprehensive mapping of all AI agent platforms**
 
 - **100+ platforms** identified across 7 categories
@@ -49,7 +49,7 @@ The AI agent industry is **highly fragmented**:
 - Enterprise Agent Platforms
 - Specialized Agent Platforms
 
-### 🔍 [Platform Comparison Matrix](./PLATFORM-COMPARISON-MATRIX.md)
+### 🔍 [Platform Comparison Matrix](./platformComparisonMatrix.md)
 **Feature-by-feature analysis for OSSA compatibility**
 
 - 10 comparison dimensions
@@ -69,7 +69,7 @@ The AI agent industry is **highly fragmented**:
 9. Error Handling
 10. Deployment
 
-### 📋 [Research Summary](./RESEARCH-SUMMARY.md)
+### 📋 [Research Summary](./researchSummary.md)
 **Executive summary and key findings**
 
 - Market landscape overview
@@ -78,7 +78,7 @@ The AI agent industry is **highly fragmented**:
 - Implementation priorities
 - Success metrics
 
-### 🗺️ [Extension Roadmap](./EXTENSION-ROADMAP.md)
+### 🗺️ [Extension Roadmap](./extensionRoadmap.md)
 **Implementation plan for platform coverage**
 
 - Q1-Q4 2025 extension schedule

@@ -19,7 +19,7 @@ import { fileURLToPath } from 'url';
 let cachedVersionInfo: VersionInfo | null = null;
 
 export interface VersionInfo {
-  /** Full version string (e.g., "0.4.5") - from package.json */
+  /** Full version string (e.g., "0.4.6") - from package.json */
   version: string;
   /** Major version */
   major: number;
@@ -197,7 +197,7 @@ export function getVersionInfo(forceRefresh = false): VersionInfo {
   const parsed = parseVersion(version);
 
   // Schema dir uses MAJOR.MINOR from the package version
-  // 0.4.5 -> v0.4, schema at spec/v0.4/agent.schema.json
+  // 0.4.6 -> v0.4, schema at spec/v0.4/agent.schema.json
   const schemaDir = `v${parsed.major}.${parsed.minor}`;
   const schemaFile = `agent.schema.json`;
 

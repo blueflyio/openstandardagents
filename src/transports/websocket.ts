@@ -5,6 +5,7 @@
 
 import { randomUUID } from 'crypto';
 import { EventEmitter } from 'events';
+import { API_VERSION } from '../version.js';
 
 /**
  * WebSocket event types
@@ -145,7 +146,7 @@ export class WebSocketTransport extends EventEmitter {
       url: config.url,
       agentId: config.agentId,
       capabilities: config.capabilities,
-      version: config.version || 'ossa/v0.4.5',
+      version: config.version || API_VERSION,
       auth: config.auth || {},
       keepalive: {
         pingInterval: config.keepalive?.pingInterval || 30000,

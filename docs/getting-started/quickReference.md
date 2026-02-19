@@ -168,5 +168,5 @@ See: `examples/unified/security-scanner.ossa.yaml`
 ## Documentation
 
 - Schema: `spec/v0.3.0/UNIFIED-SCHEMA.md`
-- Guide: `docs/UNIFIED-AGENT-PLATFORM.md`
-- Summary: `IMPLEMENTATION-SUMMARY.md`
+- Guide: `docs/unifiedAgentPlatform.md`
+- Summary: `implementationSummary.md`

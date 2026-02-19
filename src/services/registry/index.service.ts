@@ -4,11 +4,12 @@
  * Manages registry index.json for agent discovery
  */
 
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import { injectable } from 'inversify';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
+import * as fs from 'fs/promises';
+import { injectable } from 'inversify';
+import * as path from 'path';
+import { SPEC_VERSION } from '../../version.js';
 
 export interface RegistryIndex {
   registry_version: string;
@@ -94,7 +95,7 @@ export class IndexService {
     } catch (err: any) {
       if (err.code === 'ENOENT') {
         return {
-          registry_version: '0.4.5',
+          registry_version: SPEC_VERSION,
           last_updated: new Date().toISOString(),
           agents: [],
         };

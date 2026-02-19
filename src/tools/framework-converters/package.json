@@ -53,7 +53,7 @@
   "repository": {
     "type": "git",
     "url": "https://gitlab.com/blueflyio/ossa/openstandardagents",
-    "directory": "tools/framework-converters"
+    "directory": "src/tools/framework-converters"
   },
   "homepage": "https://openstandardagents.org/tools/converters",
   "dependencies": {

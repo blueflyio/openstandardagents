@@ -321,7 +321,7 @@ export interface AgentIdentity {
 }
 
 /**
- * Team member definition (v0.4.5+)
+ * Team member definition (v0.4.6+)
  */
 export interface TeamMember {
   name: string;
@@ -335,7 +335,7 @@ export interface TeamMember {
 }
 
 /**
- * Team definition for multi-agent teams (v0.4.5+)
+ * Team definition for multi-agent teams (v0.4.6+)
  */
 export interface TeamDefinition {
   model: 'lead-teammate' | 'peer-to-peer' | 'hierarchical' | 'swarm';
@@ -359,7 +359,7 @@ export interface TeamDefinition {
 }
 
 /**
- * Subagent definition for parent-child delegation (v0.4.5+)
+ * Subagent definition for parent-child delegation (v0.4.6+)
  */
 export interface SubagentDefinition {
   name: string;
@@ -403,7 +403,7 @@ export interface OssaAgent {
     agentType?: AgentType;
     agentKind?: AgentKind;
     agentArchitecture?: AgentArchitecture;
-    // Agent ID Card (v0.4.5+)
+    // Agent ID Card (v0.4.6+)
     idCard?: {
       nickname?: string;
       displayName?: string;
@@ -659,9 +659,9 @@ export interface OssaAgent {
         endpoint?: string;
       }
     >;
-    /** Multi-agent team definition (v0.4.5+) */
+    /** Multi-agent team definition (v0.4.6+) */
     team?: TeamDefinition;
-    /** Child agents for delegation (v0.4.5+) */
+    /** Child agents for delegation (v0.4.6+) */
     subagents?: SubagentDefinition[];
   };
   // v0.5: Security Posture

@@ -220,7 +220,7 @@ Epic #9: Unified Task Schema (⚪ Not Started)
 
 - [OSSA Specification](../../spec/)
 - [Examples](../../examples/)
-- [CHANGELOG](../../CHANGELOG.md)
+- [CHANGELOG](../../changelog.md)
 - [Contributing Guide](../../CONTRIBUTING.md)
 
 ---

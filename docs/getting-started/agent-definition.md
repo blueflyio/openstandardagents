@@ -47,7 +47,7 @@ agent-project/
 ├── .env.example          # Example environment variables
 ├── .gitignore            # Git ignore patterns
 ├── AGENTS.md             # Project-specific agent details (high-level)
-├── CHANGELOG.md          # Project history
+├── changelog.md          # Project history
 ├── LICENSE               # Project license
 ├── Makefile              # Build and task automation (optional)
 ├── package.json          # Project dependencies and scripts

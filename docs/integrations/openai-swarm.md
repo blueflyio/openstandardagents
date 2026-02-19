@@ -887,7 +887,7 @@ spec:
 
 - **Migration Examples**: `examples/migrations/swarm-to-ossa/`
 - **OSSA Specification**: `spec/v0.3.6/`
-- **API Reference**: `docs/OSSA-TECHNICAL-REFERENCE.md`
+- **API Reference**: `docs/ossaTechnicalReference.md`
 - **OpenAI Swarm Repo**: https://github.com/openai/swarm
 
 ## Support

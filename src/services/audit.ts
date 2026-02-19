@@ -5,12 +5,12 @@
  * Implements the OSSA Audit API specification.
  */
 
+import Ajv, { type ValidateFunction } from 'ajv';
+import addFormats from 'ajv-formats';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'yaml';
-import Ajv, { type ValidateFunction, type ErrorObject } from 'ajv';
-import addFormats from 'ajv-formats';
-import { SCHEMA_PATH, API_VERSION } from '../version.js';
+import { API_VERSION, SCHEMA_PATH, SPEC_VERSION } from '../version.js';
 
 export interface AuditOptions {
   path: string;
@@ -95,7 +95,7 @@ export class AgentAuditService {
       path: scanPath,
       recursive = true,
       validationLevel = 'full',
-      specVersion = '0.4.5',
+      specVersion = SPEC_VERSION,
       includeExamples = false,
     } = options;
 

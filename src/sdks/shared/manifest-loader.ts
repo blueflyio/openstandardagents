@@ -7,9 +7,9 @@
  */
 
 import { readFileSync } from 'fs';
-import { parse } from 'yaml';
 import { z } from 'zod';
 import { ApiVersionSchema, MetadataSchema } from './validation.js';
+import { safeParseYAML } from '../../utils/yaml-parser.js';
 
 const ManifestBaseSchema = z.object({
   apiVersion: ApiVersionSchema,
@@ -39,7 +39,7 @@ export class ManifestLoader {
     // Parse YAML/JSON
     const parsed =
       filePath.endsWith('.yaml') || filePath.endsWith('.yml')
-        ? parse(content)
+        ? safeParseYAML(content)
         : JSON.parse(content);
 
     // Validate base structure
@@ -62,7 +62,7 @@ export class ManifestLoader {
     schema: z.ZodSchema<T>,
     format: 'yaml' | 'json' = 'yaml'
   ): T {
-    const parsed = format === 'yaml' ? parse(content) : JSON.parse(content);
+    const parsed = format === 'yaml' ? safeParseYAML(content) : JSON.parse(content);
     return schema.parse(parsed);
   }
 }

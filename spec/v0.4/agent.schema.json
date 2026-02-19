@@ -1561,7 +1561,7 @@
             },
             "coordination": {
               "type": "object",
-              "description": "Multi-agent coordination configuration. Enhanced in v0.4.5 with Claude Code Agent Teams primitives.",
+              "description": "Multi-agent coordination configuration. Enhanced in v0.4.6 with Claude Code Agent Teams primitives.",
               "properties": {
                 "handoffStrategy": {
                   "type": "string",
@@ -1686,7 +1686,7 @@
         },
         "idCard": {
           "$ref": "#/definitions/AgentIdCard",
-          "description": "Agent ID Card with nickname, provenance, and immutable audit trail (v0.4.5+)"
+          "description": "Agent ID Card with nickname, provenance, and immutable audit trail (v0.4.6+)"
         }
       },
       "additionalProperties": false
@@ -2285,11 +2285,11 @@
         },
         "team": {
           "$ref": "#/definitions/TeamDefinition",
-          "description": "Multi-agent team definition (v0.4.5+). Modeled after Claude Code Agent Teams: a lead orchestrates teammates who work independently with shared task list and mailbox communication."
+          "description": "Multi-agent team definition (v0.4.6+). Modeled after Claude Code Agent Teams: a lead orchestrates teammates who work independently with shared task list and mailbox communication."
         },
         "subagents": {
           "type": "array",
-          "description": "Subagent definitions for parent-child delegation (v0.4.5+). Unlike team members, subagents report results to parent only — no peer communication.",
+          "description": "Subagent definitions for parent-child delegation (v0.4.6+). Unlike team members, subagents report results to parent only — no peer communication.",
           "items": {
             "$ref": "#/definitions/SubagentDefinition"
           }
@@ -2299,7 +2299,7 @@
     },
     "TeamDefinition": {
       "type": "object",
-      "description": "Multi-agent team configuration with lead-teammate or peer-to-peer patterns (v0.4.5+)",
+      "description": "Multi-agent team configuration with lead-teammate or peer-to-peer patterns (v0.4.6+)",
       "required": ["model", "members"],
       "properties": {
         "model": {
@@ -2469,7 +2469,7 @@
     },
     "SubagentDefinition": {
       "type": "object",
-      "description": "Child agent that can be spawned by a parent agent for task delegation (v0.4.5+)",
+      "description": "Child agent that can be spawned by a parent agent for task delegation (v0.4.6+)",
       "required": ["name", "role"],
       "properties": {
         "name": {
@@ -16590,7 +16590,7 @@
     },
     "AgentIdCard": {
       "type": "object",
-      "description": "Agent ID Card - human-friendly identity with immutable provenance tracking (v0.4.5+)",
+      "description": "Agent ID Card - human-friendly identity with immutable provenance tracking (v0.4.6+)",
       "properties": {
         "nickname": {
           "type": "string",
@@ -16612,7 +16612,7 @@
         "registryId": {
           "type": "string",
           "pattern": "^ossa://[a-z0-9-]+/[a-z0-9-]+(@[0-9]+\\.[0-9]+\\.[0-9]+)?$",
-          "description": "OSSA registry URI (e.g., 'ossa://blueflyio/drupal-reviewer@0.4.5')"
+          "description": "OSSA registry URI (e.g., 'ossa://blueflyio/drupal-reviewer@0.4.6')"
         },
         "fingerprint": {
           "type": "string",
@@ -16650,7 +16650,7 @@
         },
         "createdWith": {
           "type": "string",
-          "description": "Tool/CLI version used to create the agent (e.g., 'ossa-cli@0.4.5')"
+          "description": "Tool/CLI version used to create the agent (e.g., 'ossa-cli@0.4.6')"
         },
         "lineage": {
           "type": "array",

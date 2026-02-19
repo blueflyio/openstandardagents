@@ -17,22 +17,18 @@
  * DRY: Reuses existing services and utilities
  */
 
+import chalk from 'chalk';
 import { Command } from 'commander';
+import * as fs from 'fs';
 import inquirer from 'inquirer';
 import ora from 'ora';
-import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'yaml';
-import chalk from 'chalk';
 
-import type { OssaAgent } from '../../types/index.js';
-import type { WizardState, WizardOptions, AgentType } from '../wizard/types.js';
 import { IdCardService } from '../../services/id-card.service.js';
-import {
-  console_ui,
-  formatAgentType,
-  createProgressBar,
-} from '../wizard/ui/console.js';
+import type { OssaAgent } from '../../types/index.js';
+import { getApiVersion, getVersion } from '../../utils/version.js';
+import { safeParseYAML, safeStringifyYAML } from '../../utils/yaml-parser.js';
 import { AGENT_TYPES } from '../wizard/data/agent-types.js';
 import {
   LLM_PROVIDERS,
@@ -43,7 +39,8 @@ import {
   getTemplateById,
   getTemplatesByType,
 } from '../wizard/data/templates.js';
-import { getApiVersion } from '../../utils/version.js';
+import type { WizardOptions, WizardState } from '../wizard/types.js';
+import { console_ui, formatAgentType } from '../wizard/ui/console.js';
 
 /**
  * Create a new agent using the interactive wizard
@@ -293,7 +290,7 @@ async function createFromExample(
   if (examplePath.endsWith('.json')) {
     state.agent = JSON.parse(exampleContent);
   } else {
-    state.agent = yaml.parse(exampleContent);
+    state.agent = safeParseYAML(exampleContent);
   }
 
   console_ui.success(`Loaded example: ${path.basename(examplePath)}`);
@@ -877,7 +874,7 @@ async function saveAgent(
     if (format === 'json') {
       content = JSON.stringify(state.agent, null, 2);
     } else {
-      content = yaml.stringify(state.agent as OssaAgent, {
+      content = safeStringifyYAML(state.agent as OssaAgent, {
         indent: 2,
         lineWidth: 0,
       });
@@ -925,7 +922,7 @@ async function listAgents(options: WizardOptions): Promise<void> {
     const content = fs.readFileSync(agentPath, 'utf-8');
     const agent = agentPath.endsWith('.json')
       ? JSON.parse(content)
-      : yaml.parse(content);
+      : safeParseYAML(content);
     return [
       agent.metadata?.name || 'Unknown',
       agent.metadata?.version || 'N/A',
@@ -953,7 +950,7 @@ async function showAgent(name: string, options: WizardOptions): Promise<void> {
   }
 
   const content = fs.readFileSync(agentPath, 'utf-8');
-  const agent = yaml.parse(content);
+  const agent = safeParseYAML<OssaAgent>(content);
 
   console_ui.section('Metadata');
   console_ui.success(`Name: ${agent.metadata?.name}`);
@@ -1110,7 +1107,7 @@ async function updateAgent(
   }
 
   const content = fs.readFileSync(agentPath, 'utf-8');
-  const agent = yaml.parse(content);
+  const agent = safeParseYAML<OssaAgent>(content);
 
   if (options.field) {
     // Update specific field
@@ -1198,7 +1195,7 @@ async function updateAgent(
   }
 
   // Save updated manifest
-  const yamlContent = yaml.stringify(agent, {
+  const yamlContent = safeStringifyYAML(agent, {
     indent: 2,
     lineWidth: 0,
   });
@@ -1225,7 +1222,7 @@ async function validateAgentManifest(
 
   try {
     const content = fs.readFileSync(manifestPath, 'utf-8');
-    const agent = yaml.parse(content);
+    const agent = safeParseYAML<OssaAgent>(content);
 
     const errors: string[] = [];
     const warnings: string[] = [];
@@ -1301,10 +1298,10 @@ async function validateAgentManifest(
 
     if (options.verbose) {
       console_ui.info('\nManifest summary:');
-      console_ui.success(`Name: ${agent.metadata.name}`);
-      console_ui.success(`Version: ${agent.metadata.version}`);
+      console_ui.success(`Name: ${agent.metadata?.name || 'N/A'}`);
+      console_ui.success(`Version: ${agent.metadata?.version || 'N/A'}`);
       console_ui.success(
-        `LLM: ${agent.spec.llm.provider}/${agent.spec.llm.model}`
+        `LLM: ${agent.spec?.llm?.provider || 'N/A'}/${agent.spec?.llm?.model || 'N/A'}`
       );
       console_ui.success(`Tools: ${agent.spec?.tools?.length || 0}`);
     }
@@ -1316,7 +1313,7 @@ async function validateAgentManifest(
 }
 
 // ============================================================================
-// Agent ID Card Wizard (v0.4.5+)
+// Agent ID Card Wizard (v0.4.6+)
 // ============================================================================
 
 /**
@@ -1329,7 +1326,7 @@ async function idCardWizard(options: {
 }): Promise<void> {
   console_ui.header(
     'Agent ID Card Wizard',
-    'Create a human-friendly identity for your agent (v0.4.5+)'
+    'Create a human-friendly identity for your agent (v0.4.6+)'
   );
 
   // Load existing manifest if provided
@@ -1340,7 +1337,7 @@ async function idCardWizard(options: {
     const content = fs.readFileSync(manifestPath, 'utf-8');
     agent = manifestPath.endsWith('.json')
       ? JSON.parse(content)
-      : yaml.parse(content);
+      : safeParseYAML(content);
     console_ui.success(`Loaded manifest: ${manifestPath}`);
   } else if (!manifestPath) {
     // Try to auto-detect manifest in current directory
@@ -1355,7 +1352,7 @@ async function idCardWizard(options: {
         const content = fs.readFileSync(candidate, 'utf-8');
         agent = candidate.endsWith('.json')
           ? JSON.parse(content)
-          : yaml.parse(content);
+          : safeParseYAML(content);
         manifestPath = candidate;
         console_ui.success(`Auto-detected manifest: ${candidate}`);
         break;
@@ -1365,7 +1362,7 @@ async function idCardWizard(options: {
 
   if (!agent) {
     agent = {
-      apiVersion: 'ossa/v0.4.5',
+      apiVersion: getApiVersion(),
       kind: 'Agent',
       metadata: { name: '' },
       spec: { role: '' },
@@ -1442,7 +1439,7 @@ async function idCardWizard(options: {
   ]);
 
   const defaultRegistryId = agent.metadata.name
-    ? `ossa://blueflyio/${agent.metadata.name}@${agent.metadata.version || '0.4.5'}`
+    ? `ossa://blueflyio/${agent.metadata.name}@${agent.metadata.version || getVersion()}`
     : '';
 
   const { registryId } = await inquirer.prompt([
@@ -1488,7 +1485,7 @@ async function idCardWizard(options: {
       type: 'input',
       name: 'createdWith',
       message: 'Created with (tool/CLI version):',
-      default: existingProvenance?.createdWith || 'ossa-cli/0.4.5',
+      default: existingProvenance?.createdWith || `ossa-cli/${getVersion()}`,
     },
   ]);
 
@@ -1722,7 +1719,7 @@ async function idCardWizard(options: {
   if (options.dryRun) {
     console_ui.info('Dry run — showing YAML output:');
     console.log(
-      '\n' + chalk.gray(yaml.stringify({ idCard }, { indent: 2, lineWidth: 0 }))
+      '\n' + chalk.gray(safeStringifyYAML({ idCard }, { indent: 2, lineWidth: 0 }))
     );
     return;
   }
@@ -1730,7 +1727,7 @@ async function idCardWizard(options: {
   const outputPath = options.output || manifestPath;
   if (!outputPath) {
     // No manifest, output standalone ID card YAML
-    const idCardYaml = yaml.stringify({ idCard }, { indent: 2, lineWidth: 0 });
+    const idCardYaml = safeStringifyYAML({ idCard }, { indent: 2, lineWidth: 0 });
     console.log('\n' + idCardYaml);
     console_ui.info(
       'No output path specified. Copy the YAML above into your manifest under metadata.idCard'
@@ -1739,7 +1736,7 @@ async function idCardWizard(options: {
   }
 
   // Save full manifest
-  const yamlContent = yaml.stringify(agent as OssaAgent, {
+  const yamlContent = safeStringifyYAML(agent as OssaAgent, {
     indent: 2,
     lineWidth: 0,
   });

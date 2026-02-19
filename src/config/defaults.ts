@@ -10,6 +10,8 @@
  * @module config/defaults
  */
 
+import { SPEC_VERSION } from '../version.js';
+
 /**
  * Get default agent version
  * Can be overridden via OSSA_DEFAULT_AGENT_VERSION env var
@@ -338,7 +340,7 @@ export function getAuditDefaults() {
   return {
     scanPath: process.env.OSSA_AUDIT_SCAN_PATH || './packages/@ossa',
     validationLevel: process.env.OSSA_AUDIT_LEVEL || 'full',
-    specVersion: process.env.OSSA_SPEC_VERSION || '0.4.5',
+    specVersion: process.env.OSSA_SPEC_VERSION || SPEC_VERSION,
     outputFormat: process.env.OSSA_AUDIT_FORMAT || 'table',
     recursive: process.env.OSSA_AUDIT_RECURSIVE !== 'false',
     includeExamples: process.env.OSSA_AUDIT_INCLUDE_EXAMPLES !== 'false',

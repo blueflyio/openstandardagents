@@ -110,7 +110,7 @@ render login
 Copy the template to your project root:
 
 ```bash
-cp deployment-templates/render.yaml.hbs render.yaml
+cp src/deployment-templates/render.yaml.hbs render.yaml
 ```
 
 **Fill in template variables** (or use template engine):

@@ -109,7 +109,7 @@ include:
    - Environment variables
 
 2. **Implementation Guide**
-   - File: `docs/UNIFIED-AGENT-PLATFORM.md`
+   - File: `docs/unifiedAgentPlatform.md`
    - Complete architecture overview
    - Step-by-step migration
    - Service account updates

@@ -420,10 +420,10 @@ app.post('/webhook', async (req, res) => {
 
 ## Troubleshooting
 
-See [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) for common issues and solutions.
+See [troubleshooting.md](./troubleshooting.md) for common issues and solutions.
 
 ## References
 
 - [Symfony Messenger Documentation](https://symfony.com/doc/current/messenger.html)
 - [OSSA Documentation](https://openstandardagents.org)
-- [Async Agents Guide](./ASYNC-AGENTS.md)
+- [Async Agents Guide](./asyncAgents.md)

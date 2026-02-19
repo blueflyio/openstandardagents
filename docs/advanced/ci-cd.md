@@ -404,7 +404,7 @@ interface AgentUpgradeResult {
 
 ## Related Documentation
 
-- [OSSA Specification](../OSSA-TECHNICAL-REFERENCE.md)
+- [OSSA Specification](../ossaTechnicalReference.md)
 - [Version Management](../operations/version-management.md)
 - [Agent Manifest Guide](../guides/agent-manifests.md)
 - [GitLab CI Overview](../ci/multi-project-release.md)

@@ -40,12 +40,24 @@ export function safeParseYAML<T = unknown>(
 /**
  * Safely stringifies an object to YAML
  * @param obj - Object to stringify
+ * @param options - YAML stringify options (indent, lineWidth, etc.)
  * @returns YAML string
  */
-export function safeStringifyYAML(obj: unknown): string {
+export function safeStringifyYAML(
+  obj: unknown,
+  options?: {
+    indent?: number;
+    lineWidth?: number;
+    minContentWidth?: number;
+    defaultStringType?: 'QUOTE_DOUBLE' | 'PLAIN' | 'QUOTE_SINGLE';
+  }
+): string {
   // Convert undefined to null for consistent output
   const value = obj === undefined ? null : obj;
   return YAML.stringify(value, {
-    // No security restrictions needed for stringify
+    indent: options?.indent ?? 2,
+    lineWidth: options?.lineWidth ?? 0,
+    minContentWidth: options?.minContentWidth ?? 0,
+    defaultStringType: options?.defaultStringType ?? ('QUOTE_DOUBLE' as any),
   });
 }

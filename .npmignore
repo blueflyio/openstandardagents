@@ -84,8 +84,8 @@ VALIDATION.md
 plan-*.txt
 json
 
-# Tools and scripts (build-time only)
-tools/
+# Tools and scripts (build-time only, now in src/tools)
+src/tools/
 generate-all-services.ts
 pyrightconfig.json
 *.mjs
@@ -96,7 +96,7 @@ export-*.mjs
 # Infrastructure and deployment (not part of package)
 infrastructure/
 deployment/
-deployment-templates/
+src/deployment-templates/
 hooks/
 migrations/
 docker-compose.yml

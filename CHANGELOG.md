@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.6] - 2026-02-19
+
+### Changed
+- Updated package version from 0.4.5 to 0.4.6
+- Updated all version references throughout codebase
+- Updated example manifests to use `ossa/v0.4.6`
+- Updated schema descriptions to reference v0.4.6
+
 ### Added
 
 #### Schema v0.5 - Agent Identity, Security Posture, Protocol Declarations (#408)

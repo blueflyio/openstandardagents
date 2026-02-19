@@ -513,6 +513,6 @@ cron.schedule('0 9 * * *', async () => {
 
 ## References
 
-- [Messenger Configuration](./MESSENGER.md)
-- [Troubleshooting Guide](./TROUBLESHOOTING.md)
+- [Messenger Configuration](./messenger.md)
+- [Troubleshooting Guide](./troubleshooting.md)
 - [OSSA Documentation](https://openstandardagents.org)
