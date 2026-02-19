@@ -123,9 +123,18 @@ export class TemplateProcessorService {
    * Load the default template with prioritized lookup
    */
   async loadDefaultTemplate(): Promise<string> {
+    const home = process.env.HOME || require('os').homedir() || '';
+    const platformHome = process.env.AGENT_PLATFORM_HOME
+      ? process.env.AGENT_PLATFORM_HOME
+      : path.join(home, '.agent-platform');
+    // Canonical folder is openstandardagents; ossa supported for backward compatibility
+    const ossaDirCanonical = path.join(platformHome, 'openstandardagents');
+    const ossaDirLegacy = path.join(platformHome, 'ossa');
     const lookupPaths = [
       path.join(process.cwd(), 'AGENTS.md.template'),
-      path.join(process.env.HOME || '', '.ossa', 'AGENTS.md.template'),
+      path.join(ossaDirCanonical, 'AGENTS.md.template'),
+      path.join(ossaDirLegacy, 'AGENTS.md.template'),
+      path.join(home, '.ossa', 'AGENTS.md.template'),
       this.legacyTemplatePath,
     ];
 
