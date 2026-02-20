@@ -58,29 +58,24 @@ spec:
 
   describe('Platform Export Tests', () => {
     describe('KAgent Export (Kubernetes CRD)', () => {
-      it.skip('should export to kagent format', () => {
-        // TODO: Fix test - kagent exports to directory, not single file
-        const outputPath = path.join(tempDir, 'kagent-output.yaml');
+      it('should export to kagent format (directory bundle)', () => {
+        const outputDir = path.join(tempDir, 'kagent-output');
 
-        try {
-          execSync(
-            `node bin/ossa export ${testManifestPath} --platform kagent --output ${outputPath} --no-validate`,
-            { cwd, encoding: 'utf-8', stdio: 'pipe' }
-          );
+        execSync(
+          `node bin/ossa export ${testManifestPath} --platform kagent --output ${outputDir} --no-validate`,
+          { cwd, encoding: 'utf-8', stdio: 'pipe' }
+        );
 
-          expect(fs.existsSync(outputPath)).toBe(true);
-          const content = fs.readFileSync(outputPath, 'utf-8');
-          const parsed = JSON.parse(content);
+        expect(fs.existsSync(outputDir)).toBe(true);
+        const files = fs.readdirSync(outputDir);
+        expect(files.length).toBeGreaterThan(0);
 
-          // Verify KAgent CRD structure
-          expect(parsed.apiVersion).toBe('ossa.bluefly.io/v1');
-          expect(parsed.kind).toBe('Agent');
-          expect(parsed.metadata.name).toBe('test-export-agent');
-          expect(parsed.spec).toBeDefined();
-        } catch (error: any) {
-          console.error('KAgent export error:', error.message);
-          throw error;
-        }
+        const yamlFiles = files.filter((f) => f.endsWith('.yaml') || f.endsWith('.yml'));
+        expect(yamlFiles.length).toBeGreaterThan(0);
+        const firstYaml = path.join(outputDir, yamlFiles[0]);
+        const content = fs.readFileSync(firstYaml, 'utf-8');
+        expect(content).toMatch(/apiVersion|kind|metadata|spec/);
+        expect(content).toContain('test-export-agent');
       });
 
       it('should document kagent output structure', () => {
