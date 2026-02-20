@@ -1,0 +1,10 @@
+version: "1.0"
+project:
+  name: openstandardagents
+  description: OSSA spec, SDK, wizard, validate, export.
+  repo_path: .
+  runtime: ["node"]
+agents:
+  - id: ossa-cli
+    name: OSSA CLI
+    specializes_in: "Agent wizard, validate, export, workspace."
