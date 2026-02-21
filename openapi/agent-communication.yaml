@@ -1006,7 +1006,7 @@ components:
 
     # Error Schema (RFC7807)
     Problem:
-      $ref: '../schemas/common/errors.yaml#/components/schemas/Problem'
+      $ref: './schemas/common/errors.yaml#/components/schemas/Problem'
 
   responses:
     HealthCheck:

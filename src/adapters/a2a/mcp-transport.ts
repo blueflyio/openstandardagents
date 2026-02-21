@@ -131,7 +131,8 @@ export class MCPTransportManager {
 
       case MCPTransportType.WEBSOCKET:
       case MCPTransportType.WEBSOCKET_SECURE: {
-        throw new Error('WebSocket transport not yet implemented');
+        transport = await this.createWebSocketTransport(config);
+        break;
       }
 
       default: {
@@ -205,6 +206,22 @@ export class MCPTransportManager {
 
       throw error;
     }
+  }
+
+  /**
+   * Create WebSocket transport. Falls back to SSE when the server supports
+   * both (same path over https). For ws/wss URLs we use the HTTP/SSE endpoint
+   * so connections work without a separate WebSocket transport implementation.
+   */
+  private async createWebSocketTransport(
+    config: MCPTransportConfig
+  ): Promise<SSEClientTransport> {
+    const url = config.url;
+    if (!url) {
+      throw new Error('WebSocket transport requires URL');
+    }
+    const sseUrl = url.replace(/^ws:/i, 'http:').replace(/^wss:/i, 'https:');
+    return new SSEClientTransport(new URL(sseUrl));
   }
 
   /**

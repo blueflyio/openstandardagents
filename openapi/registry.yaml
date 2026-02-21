@@ -1,0 +1,49 @@
+# OSSA OpenAPI Registry - Single source of truth for all API specs
+# All specs are validated in CI: Spectral (OAS3 structure) + OSSA extensions
+# Usage: npm run validate:openapi
+apiVersion: ossa/v0.4
+kind: OpenAPIRegistry
+metadata:
+  name: ossa-openapi-registry
+  description: Canonical list of OpenAPI specifications for validation and codegen
+specs:
+  - path: openapi/agent-communication.yaml
+  - path: openapi/agent-crud.yaml
+  - path: openapi/agent-discovery.yaml
+  - path: openapi/agent-identity.yaml
+  - path: openapi/agent-taxonomy.yaml
+  - path: openapi/agents-md-service.yaml
+  - path: openapi/cli/openapi.yaml
+  - path: openapi/core/ossa-core-api.openapi.yaml
+  - path: openapi/core/ossa-registry-api.openapi.yaml
+  - path: openapi/core/ossa-registry.openapi.yaml
+  - path: openapi/core/unified-agent-gateway.openapi.yaml
+  - path: openapi/dev-cli/openapi.yaml
+  - path: openapi/github-sync.yaml
+  - path: openapi/ossa-cli-enhancements.openapi.yaml
+  - path: openapi/ossa-cli.yaml
+  - path: openapi/protocols/sse-streams.yaml
+  - path: openapi/protocols/websocket-events.yaml
+  - path: openapi/reference-implementations/aiflow-bridge-api.openapi.yaml
+  - path: openapi/reference-implementations/compliance-agent-api.openapi.yaml
+  - path: openapi/reference-implementations/crewai-agent-api.openapi.yaml
+  - path: openapi/reference-implementations/critic-agent-api.openapi.yaml
+  - path: openapi/reference-implementations/document-analyzer-api.openapi.yaml
+  - path: openapi/reference-implementations/drupal-agent-api.openapi.yaml
+  - path: openapi/reference-implementations/getting-started-hello-world-api.openapi.yaml
+  - path: openapi/reference-implementations/gitlab-ml-recommender-api.openapi.yaml
+  - path: openapi/reference-implementations/governor-agent-api.openapi.yaml
+  - path: openapi/reference-implementations/helm-generator.openapi.yaml
+  - path: openapi/reference-implementations/integrator-agent-api.openapi.yaml
+  - path: openapi/reference-implementations/judge-agent-api.openapi.yaml
+  - path: openapi/reference-implementations/k8s-troubleshooter-api.openapi.yaml
+  - path: openapi/reference-implementations/langchain-agent-api.openapi.yaml
+  - path: openapi/reference-implementations/monitor-agent-api.openapi.yaml
+  - path: openapi/reference-implementations/orchestrator-agent-api.openapi.yaml
+  - path: openapi/reference-implementations/quickstart-support-agent-api.openapi.yaml
+  - path: openapi/reference-implementations/self-evolving-ecosystem.openapi.yaml
+  - path: openapi/reference-implementations/worker-agent-api.openapi.yaml
+  - path: openapi/reference-implementations/workflow-orchestrator-api.openapi.yaml
+  - path: openapi/release-automation.openapi.yaml
+  - path: openapi/schemas/index.yaml
+  - path: openapi/version-management.openapi.yaml

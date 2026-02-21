@@ -22,10 +22,22 @@ ${chalk.cyan('║')}                                                            
 ${chalk.cyan('╚═══════════════════════════════════════════════════════════════════════╝')}
 `;
 
+/** Standalone wizard logo: bold ASCII/ANSI art for agent creation wizard. */
+export const WIZARD_LOGO = `
+${chalk.cyan('  ') + chalk.bold.blue('  ___   ____   ____   ___   ') + chalk.cyan('     ') + chalk.blue('agent://')}
+${chalk.cyan('  ') + chalk.bold.blue(' / _ \\ / __ \\ / ___| / _ \\  ') + chalk.cyan('     ') + chalk.gray('open standard')}
+${chalk.cyan('  ') + chalk.bold.blue('| | | | |  | \\___ \\| | | | ') + chalk.cyan('  ') + chalk.cyan('---') + chalk.blue('---') + chalk.cyan('---') + chalk.blue('---')}
+${chalk.cyan('  ') + chalk.bold.blue('| | | | |  | |___) | |_| | ') + chalk.cyan('  ') + chalk.white('O') + chalk.cyan(' S ') + chalk.white('S') + chalk.cyan(' A')}
+${chalk.cyan('  ') + chalk.bold.blue('| |_| | |__| |____/ \\___/  ')}
+${chalk.cyan('  ') + chalk.bold.blue(' \\___/ \\____/              ')}
+${chalk.cyan('')}
+${chalk.cyan('  ') + chalk.yellow.bold('  Agent Creation Wizard') + chalk.gray('  |  ') + chalk.white('Open Standard for Software Agents')}
+`;
+
 export const WIZARD_BANNER = `
 ${chalk.magenta('╔═══════════════════════════════════════════════════════════════════════╗')}
 ${chalk.magenta('║')}                                                                       ${chalk.magenta('║')}
-${chalk.magenta('║')}          ${chalk.bold.yellow('🧙  OSSA Agent Creation Wizard v2.0')}                        ${chalk.magenta('║')}
+${chalk.magenta('║')}          ${chalk.bold.yellow('OSSA Agent Creation Wizard v2.0')}                             ${chalk.magenta('║')}
 ${chalk.magenta('║')}                                                                       ${chalk.magenta('║')}
 ${chalk.magenta('║')}      ${chalk.gray('Create production-ready agents with AI superpowers')}            ${chalk.magenta('║')}
 ${chalk.magenta('║')}                                                                       ${chalk.magenta('║')}
@@ -78,6 +90,14 @@ ${chalk.blue('╰─────────────────────
 export function printBanner() {
   console.clear();
   console.log(OSSA_BANNER);
+  console.log(VERSION_INFO);
+  console.log('');
+}
+
+/** Show the standalone wizard logo and version at wizard start (branded top). */
+export function printWizardLogo() {
+  console.clear();
+  console.log(WIZARD_LOGO);
   console.log(VERSION_INFO);
   console.log('');
 }

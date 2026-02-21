@@ -101,9 +101,22 @@ resolution_order: [project, team, department, company]
 - **Version-controlled**: `registry.yaml`, `sources/*.yaml`, optional `registry.schema.json`, and MCP server config (e.g. `mcp/servers.yaml`) so the team can share registry shape and source definitions.
 - **Not version-controlled**: `cache/`, `mcp/auth/`, and any transient workspace data (downloaded assets, logs). Add these to `.gitignore`.
 
+## Publishing to a registry API (HTTP)
+
+In addition to MCP-based registry sources, you can **publish** this project's discovery to a shared HTTP registry (e.g. a mesh discovery API). That registry stores and serves the same payload so other clients can list agents without being in the repo.
+
+- **OSSA:** After running `ossa workspace discover`, run `ossa workspace publish --registry-url <base-url>`. This POSTs to `<base-url>/api/v1/discovery` with payload `{ source_id, workspace: { name, scanned_at }, projects }`. Use `--discover` if the local registry file does not exist yet.
+- **Contract:** The registry API is a simple HTTP contract:
+  - **POST** `/api/v1/discovery` – body: `{ source_id, workspace: { name, scanned_at }, projects: [{ name?, path?, project_path?, project_name?, agents }] }`. Stores this source's discovery (e.g. with a TTL).
+  - **GET** `/api/v1/discovery` – returns `{ sources[], projects[], by_source }` (aggregated from all stored sources).
+- **CI:** Pipelines can run discover and pass `--registry-url` (or set `MESH_URL` / `AGENT_REGISTRY_URL`) so every run updates the shared registry. See [Discovery and registry](../wiki/Discovery-and-Registry.md) for CI and ownership.
+
+So: local discovery lives in `.agents-workspace/registry/`; publishing pushes that same shape to a registry API; any service that implements the contract can be the registry.
+
 ## Related
 
 - [Agent Definition](agent-definition.md) – `.agents/` vs `.agents-workspace/` summary.
 - [Agent Folder Structure](../architecture/agent-folder-structure.md) – Per-agent layout under `.agents/{agent-name}/`.
 - [What is an Agent](what-is-an-agent.md) – Manifest and wizard.
+- [Discovery and registry](../wiki/Discovery-and-Registry.md) – Registry API contract, OSSA publish, CI.
 - Research: federated agent registries, MCP/A2A protocols, agent identity (see project whitepapers and Research/agents).

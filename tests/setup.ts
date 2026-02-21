@@ -3,6 +3,13 @@
  * Configure global test environment
  */
 
+import { webcrypto } from 'node:crypto';
+
+// Expose Web Crypto API so source that uses crypto.randomUUID() works in Jest
+if (typeof globalThis.crypto === 'undefined') {
+  (globalThis as unknown as { crypto: Crypto }).crypto = webcrypto as unknown as Crypto;
+}
+
 // Prevent pino-pretty worker thread from keeping the process alive.
 // In test environments NODE_ENV is 'test', which the logger treats as
 // non-production and enables the pino-pretty transport (a worker thread).
@@ -31,6 +38,13 @@ jest.mock('inquirer', () => ({
     prompt: jest.fn().mockResolvedValue({}),
   },
   prompt: jest.fn().mockResolvedValue({}),
+}));
+
+// Mock @octokit/rest (ESM) so tests that load di-container do not fail on import
+jest.mock('@octokit/rest', () => ({
+  Octokit: jest.fn().mockImplementation(() => ({
+    rest: { repos: { get: jest.fn() }, users: { getByUsername: jest.fn() } },
+  })),
 }));
 
 // Needed for TypeScript to recognize this as a module

@@ -5,6 +5,7 @@
  */
 
 import * as fs from 'fs/promises';
+import { watch } from 'fs';
 import { injectable } from 'inversify';
 import type {
   OssaAgent,
@@ -651,7 +652,7 @@ export class LlmsTxtService {
    */
   async syncLlmsTxt(
     manifestPath: string,
-    watch: boolean = false
+    watchMode: boolean = false
   ): Promise<void> {
     const manifestContent = await fs.readFile(manifestPath, 'utf-8');
     const manifest = JSON.parse(manifestContent) as OssaAgent;
@@ -682,9 +683,29 @@ export class LlmsTxtService {
 
     await this.writeLlmsTxt(manifest);
 
-    if (watch) {
+    if (watchMode) {
       console.log(`Watching ${manifestPath} for changes...`);
-      // TODO: Implement file watching
+      let debounce: ReturnType<typeof setTimeout> | null = null;
+      const watcher = watch(
+        manifestPath,
+        { persistent: false },
+        async (eventType: string, filename: string | null) => {
+          if (eventType !== 'change' || !filename) return;
+          if (debounce) clearTimeout(debounce);
+          debounce = setTimeout(async () => {
+            debounce = null;
+            try {
+              const content = await fs.readFile(manifestPath, 'utf-8');
+              const updated = JSON.parse(content) as OssaAgent;
+              await this.writeLlmsTxt(updated);
+              console.log('llms.txt updated from manifest change.');
+            } catch (err: unknown) {
+              console.error('LlmsTxt watch error:', err);
+            }
+          }, 300);
+        }
+      );
+      watcher.on('error', (err: Error) => console.error('LlmsTxt watcher error:', err));
     }
   }
 

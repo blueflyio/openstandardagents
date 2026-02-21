@@ -9,6 +9,8 @@ import type {
   KAgentCRD,
   KAgentDeploymentOptions,
   KubernetesManifestBundle,
+  KAgentV1Alpha2Agent,
+  KAgentV1Alpha2ModelConfig,
 } from './types.js';
 import { getVersion, getApiVersion } from '../../utils/version.js';
 
@@ -913,6 +915,245 @@ export class KAgentCRDGenerator {
     readme += `**Generated at**: ${new Date().toISOString()}\n`;
 
     return readme;
+  }
+
+  /**
+   * Generate kagent.dev v1alpha2 Declarative Agent (and optional ModelConfig) for POC / native kagent installs
+   */
+  generateV1Alpha2(
+    manifest: OssaAgent,
+    options: KAgentDeploymentOptions = {}
+  ): { agent: KAgentV1Alpha2Agent; modelConfig?: KAgentV1Alpha2ModelConfig } {
+    const spec = manifest.spec as Record<string, unknown>;
+    const llmConfig = spec.llm as
+      | {
+          provider?: string;
+          model?: string;
+          temperature?: number;
+          maxTokens?: number;
+          topP?: number;
+        }
+      | undefined;
+    const agentName = manifest.metadata?.name || 'unknown-agent';
+    const namespace = options.namespace || 'kagent';
+    const systemMessage =
+      (spec.role as string) || manifest.metadata?.description || '';
+    const tools = this.extractToolsForV1Alpha2(spec.tools, options);
+    const a2aSkills = this.extractA2ASkills(manifest, options);
+    const modelConfigName =
+      options.modelConfigName || 'default-model-config';
+    const extKagent = (manifest.extensions as Record<string, unknown>)?.kagent as
+      | Record<string, unknown>
+      | undefined;
+    const deployment = (extKagent?.kubernetes as Record<string, unknown>)
+      ?.resourceLimits as { cpu?: string; memory?: string } | undefined;
+
+    const agent: KAgentV1Alpha2Agent = {
+      apiVersion: 'kagent.dev/v1alpha2',
+      kind: 'Agent',
+      metadata: {
+        name: agentName,
+        namespace,
+        labels: {
+          'ossa.ai/version': manifest.metadata?.version || getVersion(),
+          'ossa.ai/domain':
+            ((spec.taxonomy as Record<string, unknown>)?.domain as string) ||
+            'agents',
+          'app.kubernetes.io/name': agentName,
+          'app.kubernetes.io/managed-by': 'kagent',
+          ...manifest.metadata?.labels,
+        },
+        annotations: {
+          'ossa.ai/generated-by': 'kagent-crd-generator',
+          'ossa.ai/generated-at': new Date().toISOString(),
+          ...manifest.metadata?.annotations,
+        },
+      },
+      spec: {
+        type: 'Declarative',
+        description: manifest.metadata?.description,
+        declarative: {
+          modelConfig: modelConfigName,
+          stream: true,
+          systemMessage,
+          ...(tools && tools.length > 0 && { tools }),
+          ...(a2aSkills && a2aSkills.length > 0 && { a2aConfig: { skills: a2aSkills } }),
+        },
+        deployment: {
+          replicas: options.replicas ?? 1,
+          ...(deployment || options.resources
+            ? {
+                resources: {
+                  requests: options.resources?.requests ?? {
+                    cpu: '100m',
+                    memory: '256Mi',
+                  },
+                  limits:
+                    (deployment || options.resources?.limits) ?? {
+                      cpu: '500m',
+                      memory: '512Mi',
+                    },
+                },
+              }
+            : {}),
+        },
+      },
+    };
+
+    let modelConfig: KAgentV1Alpha2ModelConfig | undefined;
+    if (options.modelConfigName === undefined && llmConfig) {
+      modelConfig = this.buildV1Alpha2ModelConfig(manifest, namespace, agentName);
+      agent.spec.declarative.modelConfig = modelConfig.metadata.name;
+    }
+
+    return { agent, modelConfig };
+  }
+
+  /**
+   * Build v1alpha2 ModelConfig from OSSA spec.llm (optional; use when not relying on default-model-config)
+   */
+  private buildV1Alpha2ModelConfig(
+    manifest: OssaAgent,
+    namespace: string,
+    agentName: string
+  ): KAgentV1Alpha2ModelConfig {
+    const spec = manifest.spec as Record<string, unknown>;
+    const llm = spec.llm as Record<string, unknown> | undefined;
+    const name = `ossa-${agentName}-model`;
+    const provider = (llm?.provider as string) || 'openai';
+    const model = (llm?.model as string) || 'gpt-4';
+    const isAnthropic = provider === 'anthropic';
+    return {
+      apiVersion: 'kagent.dev/v1alpha2',
+      kind: 'ModelConfig',
+      metadata: {
+        name,
+        namespace,
+        labels: { 'ossa.ai/agent': agentName },
+      },
+      spec: {
+        model,
+        provider: isAnthropic ? 'Anthropic' : 'OpenAI',
+        apiKeySecret: isAnthropic ? 'anthropic-api-key' : 'openai-api-key',
+        apiKeySecretKey: 'api-key',
+        ...(isAnthropic && {
+          anthropic: {
+            maxTokens: (llm?.maxTokens as number) ?? 4096,
+            temperature: (llm?.temperature as number) ?? 0.3,
+          },
+        }),
+        ...(!isAnthropic && {
+          openAI: {
+            maxTokens: (llm?.maxTokens as number) ?? 4096,
+            temperature: (llm?.temperature as number) ?? 0.3,
+          },
+        }),
+      },
+    };
+  }
+
+  /**
+   * Extract tools in kagent v1alpha2 format (McpServer with toolNames, or Agent ref)
+   */
+  private extractToolsForV1Alpha2(
+    tools: unknown,
+    options: KAgentDeploymentOptions
+  ): KAgentV1Alpha2Agent['spec']['declarative']['tools'] {
+    if (!tools || !Array.isArray(tools)) return undefined;
+    const out: NonNullable<
+      KAgentV1Alpha2Agent['spec']['declarative']['tools']
+    > = [];
+    for (const t of tools) {
+      if (!t || typeof t !== 'object') continue;
+      const obj = t as Record<string, unknown>;
+      if (obj.agent && typeof obj.agent === 'object') {
+        const agentRef = obj.agent as { name: string; namespace?: string };
+        out.push({
+          type: 'Agent',
+          agent: {
+            name: agentRef.name,
+            ...(agentRef.namespace && { namespace: agentRef.namespace }),
+          },
+        });
+        continue;
+      }
+      const server = (obj.server as string) || (obj.name as string);
+      const toolNames = (obj.toolNames as string[]) ?? (obj.capabilities as string[]);
+      if (!server || !toolNames?.length) continue;
+      out.push({
+        type: 'McpServer',
+        mcpServer: {
+          name: server,
+          kind: 'RemoteMCPServer',
+          toolNames,
+          ...(obj.namespace ? { namespace: obj.namespace as string } : {}),
+        },
+      });
+    }
+    return out.length ? out : undefined;
+  }
+
+  /**
+   * Extract A2A skills from OSSA manifest (extensions.kagent.a2aConfig.skills or single skill from description)
+   */
+  private extractA2ASkills(
+    manifest: OssaAgent,
+    _options: KAgentDeploymentOptions
+  ): Array<{
+    id: string;
+    name: string;
+    description: string;
+    inputModes?: string[];
+    outputModes?: string[];
+    tags?: string[];
+    examples?: string[];
+  }> | undefined {
+    const ext = (manifest.extensions as Record<string, unknown>)?.kagent as
+      | Record<string, unknown>
+      | undefined;
+    const a2a = ext?.a2aConfig as Record<string, unknown> | undefined;
+    const skills = a2a?.skills as Array<{
+      id?: string;
+      name?: string;
+      description?: string;
+      inputModes?: string[];
+      outputModes?: string[];
+      tags?: string[];
+      examples?: string[];
+    }> | undefined;
+    if (skills?.length) {
+      return skills.map((s) => ({
+        id: s.id || s.name?.toLowerCase().replace(/\s+/g, '-') || 'skill',
+        name: s.name || 'Skill',
+        description: s.description || '',
+        inputModes: s.inputModes ?? ['text'],
+        outputModes: s.outputModes ?? ['text'],
+        tags: s.tags ?? [],
+        examples: s.examples ?? [],
+      })) as KAgentV1Alpha2Agent['spec']['declarative']['a2aConfig'] extends {
+        skills: infer S;
+      }
+        ? S
+        : never;
+    }
+    if (manifest.metadata?.description) {
+      return [
+        {
+          id: `${(manifest.metadata?.name || 'agent').toLowerCase().replace(/\s+/g, '-')}-skill`,
+          name: manifest.metadata.name || 'Agent',
+          description: manifest.metadata.description,
+          inputModes: ['text'],
+          outputModes: ['text'],
+          tags: ['ossa'],
+          examples: [],
+        },
+      ] as KAgentV1Alpha2Agent['spec']['declarative']['a2aConfig'] extends {
+        skills: infer S;
+      }
+        ? S
+        : never;
+    }
+    return undefined;
   }
 
   /**

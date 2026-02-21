@@ -3,7 +3,7 @@ import { ValidationService } from '../../../src/services/validation.service.js';
 import { SchemaRepository } from '../../../src/repositories/schema.repository.js';
 import { API_VERSION } from '../../../src/version.js';
 
-describe.skip('ValidationService', () => {
+describe('ValidationService', () => {
   let service: ValidationService;
   let schemaRepo: SchemaRepository;
 
@@ -39,6 +39,7 @@ describe.skip('ValidationService', () => {
     });
 
     it('should validate with specific version', async () => {
+      const version = schemaRepo.getCurrentVersion();
       const manifest = {
         apiVersion: API_VERSION,
         kind: 'Agent',
@@ -51,7 +52,7 @@ describe.skip('ValidationService', () => {
           },
         },
       };
-      const result = await service.validate(manifest, '0.3.5');
+      const result = await service.validate(manifest, version);
       expect(result.valid).toBe(true);
     });
 
@@ -135,6 +136,7 @@ describe.skip('ValidationService', () => {
     });
 
     it('should use specified version', async () => {
+      const version = schemaRepo.getCurrentVersion();
       const manifests = [
         {
           apiVersion: API_VERSION,
@@ -149,7 +151,7 @@ describe.skip('ValidationService', () => {
           },
         },
       ];
-      const results = await service.validateMany(manifests, '0.3.5');
+      const results = await service.validateMany(manifests, version);
       expect(results).toHaveLength(1);
       expect(results[0].valid).toBe(true);
     });

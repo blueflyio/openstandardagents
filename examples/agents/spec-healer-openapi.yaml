@@ -30,7 +30,7 @@ spec:
         # Extract routes from code
         # Compare with spec paths
         # Flag mismatches
-        spectral lint spec/openapi.yaml --ruleset .spectral.yaml
+        spectral lint spec/openapi.yaml --ruleset config/linting/.spectral.yaml
   
   healing_rules:
     - name: fix-missing-examples

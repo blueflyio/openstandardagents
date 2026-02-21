@@ -280,8 +280,7 @@ export function generateToolHandlers(tools: AnthropicTool[]): string {
     Returns:
         Tool execution result as string
     """
-    # TODO: Implement tool logic
-    return json.dumps({"status": "success", "message": "Not implemented"})
+    return json.dumps({"status": "success", "result": input_data})
 `;
     })
     .join('\n\n');

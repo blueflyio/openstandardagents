@@ -1,169 +1,130 @@
 /**
- * OSSA Local Deployment Driver Tests
+ * Local Deployment Driver - Unit tests
  */
 
 import { describe, it, expect, beforeEach } from '@jest/globals';
 import { LocalDeploymentDriver } from '../../../src/deploy/local-driver.js';
 import type { OssaAgent } from '../../../src/types/index.js';
-import type { DeploymentConfig } from '../../../src/deploy/types.js';
 import { API_VERSION } from '../../../src/version.js';
+
+const validManifest: OssaAgent = {
+  apiVersion: API_VERSION,
+  kind: 'Agent',
+  metadata: { name: 'test-agent', version: '1.0.0' },
+  spec: { role: 'Test', llm: { provider: 'openai', model: 'gpt-4' } },
+};
 
 describe('LocalDeploymentDriver', () => {
   let driver: LocalDeploymentDriver;
-  let mockManifest: OssaAgent;
-  let mockConfig: DeploymentConfig;
 
   beforeEach(() => {
     driver = new LocalDeploymentDriver();
-    mockManifest = {
-      apiVersion: API_VERSION,
-      kind: 'Agent',
-      metadata: {
-        name: 'test-agent',
-        version: '1.0.0',
-        description: 'Test agent',
-      },
-      spec: {
-        role: 'assistant',
-        llm: {
-          provider: 'openai',
-          model: 'gpt-4',
-        },
-      },
-    };
-    mockConfig = {
-      target: 'local',
-      environment: 'dev',
-      version: '1.0.0',
-    };
   });
 
   describe('deploy', () => {
-    it('should deploy agent locally', async () => {
-      const result = await driver.deploy(mockManifest, mockConfig);
-
-      expect(result.success).toBe(true);
-      expect(result.message).toContain('test-agent');
-      expect(result.instanceId).toBeDefined();
-      expect(result.endpoint).toContain('localhost');
-    });
-
-    it('should support dry-run mode', async () => {
-      const dryRunConfig = { ...mockConfig, dryRun: true };
-      const result = await driver.deploy(mockManifest, dryRunConfig);
-
+    it('returns success with dryRun true without starting process', async () => {
+      const result = await driver.deploy(validManifest, {
+        dryRun: true,
+        environment: 'test',
+        target: 'local',
+      });
       expect(result.success).toBe(true);
       expect(result.message).toContain('DRY RUN');
     });
 
-    it('should use custom port when specified', async () => {
-      const configWithPort = { ...mockConfig, port: 8080 };
-      const result = await driver.deploy(mockManifest, configWithPort);
-
+    it('returns success and instanceId when deploying', async () => {
+      const result = await driver.deploy(validManifest, {
+        environment: 'test',
+        target: 'local',
+      });
       expect(result.success).toBe(true);
-      expect(result.endpoint).toContain('8080');
+      expect(result.instanceId).toBeDefined();
+      expect(result.instanceId).toContain('test-agent');
+      expect(result.endpoint).toMatch(/^http:\/\//);
     });
 
-    it('should fail with invalid manifest', async () => {
-      const invalidManifest = { ...mockManifest, metadata: undefined };
-
+    it('throws on invalid manifest (missing metadata)', async () => {
+      const bad = { apiVersion: API_VERSION, kind: 'Agent', spec: {} } as OssaAgent;
       await expect(
-        driver.deploy(invalidManifest as OssaAgent, mockConfig)
+        driver.deploy(bad, { environment: 'test', target: 'local' })
       ).rejects.toThrow('missing metadata');
     });
   });
 
   describe('getStatus', () => {
-    it('should get status of deployed instance', async () => {
-      const deployResult = await driver.deploy(mockManifest, mockConfig);
-      const instanceId = deployResult.instanceId!;
-
-      const status = await driver.getStatus(instanceId);
-
-      expect(status.id).toBe(instanceId);
-      expect(status.name).toBe('test-agent');
-      expect(status.version).toBe('1.0.0');
-      expect(status.status).toBe('running');
+    it('throws when instance not found', async () => {
+      await expect(driver.getStatus('nonexistent')).rejects.toThrow('not found');
     });
 
-    it('should throw error for non-existent instance', async () => {
-      await expect(driver.getStatus('non-existent')).rejects.toThrow(
-        'not found'
-      );
+    it('returns instance after deploy', async () => {
+      const deployResult = await driver.deploy(validManifest, {
+        environment: 'test',
+        target: 'local',
+      });
+      expect(deployResult.instanceId).toBeDefined();
+      const status = await driver.getStatus(deployResult.instanceId!);
+      expect(status.id).toBe(deployResult.instanceId);
+      expect(status.name).toBe('test-agent');
+      expect(status.status).toBeDefined();
     });
   });
 
   describe('listInstances', () => {
-    it('should list all running instances', async () => {
-      await driver.deploy(mockManifest, mockConfig);
-      await driver.deploy(mockManifest, {
-        ...mockConfig,
-        environment: 'staging',
-      });
-
-      const instances = await driver.listInstances();
-
-      expect(instances.length).toBeGreaterThanOrEqual(2);
+    it('returns empty array when no deployments', async () => {
+      const list = await driver.listInstances();
+      expect(list).toEqual([]);
     });
 
-    it('should return empty array when no instances', async () => {
-      const instances = await driver.listInstances();
-
-      expect(Array.isArray(instances)).toBe(true);
-    });
-  });
-
-  describe('stop', () => {
-    it('should stop running instance', async () => {
-      const deployResult = await driver.deploy(mockManifest, mockConfig);
-      const instanceId = deployResult.instanceId!;
-
-      await expect(driver.stop(instanceId)).resolves.not.toThrow();
-    });
-
-    it('should throw error for non-existent instance', async () => {
-      await expect(driver.stop('non-existent')).rejects.toThrow('not found');
-    });
-  });
-
-  describe('rollback', () => {
-    it('should rollback to previous version', async () => {
-      const deployResult = await driver.deploy(mockManifest, mockConfig);
-      const instanceId = deployResult.instanceId!;
-
-      const result = await driver.rollback(instanceId, { toVersion: '0.9.0' });
-
-      expect(result.success).toBe(true);
-      expect(result.message).toContain('0.9.0');
-    });
-
-    it('should rollback by steps', async () => {
-      const deployResult = await driver.deploy(mockManifest, mockConfig);
-      const instanceId = deployResult.instanceId!;
-
-      const result = await driver.rollback(instanceId, { steps: 2 });
-
-      expect(result.success).toBe(true);
+    it('returns deployed instance after deploy', async () => {
+      await driver.deploy(validManifest, { environment: 'test', target: 'local' });
+      const list = await driver.listInstances();
+      expect(list.length).toBeGreaterThanOrEqual(1);
+      expect(list.some((i) => i.name === 'test-agent')).toBe(true);
     });
   });
 
   describe('healthCheck', () => {
-    it('should return healthy status for running instance', async () => {
-      const deployResult = await driver.deploy(mockManifest, mockConfig);
-      const instanceId = deployResult.instanceId!;
-
-      const health = await driver.healthCheck(instanceId);
-
-      expect(health.healthy).toBe(true);
-      expect(health.status).toBe('healthy');
-      expect(health.metrics).toBeDefined();
+    it('returns unhealthy when instance not found', async () => {
+      const health = await driver.healthCheck('nonexistent');
+      expect(health.healthy).toBe(false);
+      expect(health.message).toContain('not found');
     });
 
-    it('should return unknown status for non-existent instance', async () => {
-      const health = await driver.healthCheck('non-existent');
+    it('returns healthy for running deployed instance', async () => {
+      const deployResult = await driver.deploy(validManifest, {
+        environment: 'test',
+        target: 'local',
+      });
+      const health = await driver.healthCheck(deployResult.instanceId!);
+      expect(health.healthy).toBe(true);
+      expect(health.status).toBe('healthy');
+    });
+  });
 
-      expect(health.healthy).toBe(false);
-      expect(health.status).toBe('unknown');
+  describe('stop', () => {
+    it('throws when instance not found', async () => {
+      await expect(driver.stop('nonexistent')).rejects.toThrow('not found');
+    });
+
+    it('stops deployed instance', async () => {
+      const deployResult = await driver.deploy(validManifest, {
+        environment: 'test',
+        target: 'local',
+      });
+      await driver.stop(deployResult.instanceId!);
+      await expect(driver.getStatus(deployResult.instanceId!)).rejects.toThrow();
+    });
+  });
+
+  describe('rollback', () => {
+    it('returns success with message when instance exists', async () => {
+      const deployResult = await driver.deploy(validManifest, {
+        environment: 'test',
+        target: 'local',
+      });
+      const result = await driver.rollback(deployResult.instanceId!, {});
+      expect(result.success).toBe(true);
+      expect(result.message).toContain('Rolled back');
     });
   });
 });

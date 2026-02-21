@@ -224,25 +224,77 @@ class SmartModelRouter extends Agent {
     return (tokenCount * modelConfig.costPerToken) / 1000; // Convert to cost per 1k tokens
   }
 
-  // Provider-specific implementations will be added in the next step
   private async callOllama(
     model: ModelConfig,
     request: ModelRequest
-  ): Promise<any> {
-    throw new Error('Not implemented');
+  ): Promise<{ content?: string; usage?: { total_tokens: number } }> {
+    const baseUrl = model.baseUrl || 'http://localhost:11434';
+    const { data } = await this.http.post(`${baseUrl}/api/generate`, {
+      model: model.model,
+      prompt: request.prompt,
+      stream: false,
+    });
+    const text = data.response ?? '';
+    return {
+      content: text,
+      usage: { total_tokens: data.eval_count ?? text.split(/\s+/).length },
+    };
   }
 
   private async callOpenAI(
     model: ModelConfig,
     request: ModelRequest
-  ): Promise<any> {
-    throw new Error('Not implemented');
+  ): Promise<{ content?: string; usage?: { total_tokens: number } }> {
+    const key = model.apiKeyEnv ? process.env[model.apiKeyEnv] : null;
+    if (!key) throw new Error(`Missing ${model.apiKeyEnv}`);
+    const { data } = await this.http.post(
+      'https://api.openai.com/v1/chat/completions',
+      {
+        model: model.model,
+        messages: [{ role: 'user', content: request.prompt }],
+        max_tokens: model.maxTokens ?? 2048,
+      },
+      { headers: { Authorization: `Bearer ${key}` } }
+    );
+    const content = data.choices?.[0]?.message?.content ?? '';
+    return {
+      content,
+      usage: {
+        total_tokens:
+          data.usage?.total_tokens ??
+          data.usage?.completion_tokens + data.usage?.prompt_tokens ??
+          0,
+      },
+    };
   }
 
   private async callAnthropic(
     model: ModelConfig,
     request: ModelRequest
-  ): Promise<any> {
-    throw new Error('Not implemented');
+  ): Promise<{ content?: string; usage?: { total_tokens: number } }> {
+    const key = model.apiKeyEnv ? process.env[model.apiKeyEnv] : null;
+    if (!key) throw new Error(`Missing ${model.apiKeyEnv}`);
+    const { data } = await this.http.post(
+      'https://api.anthropic.com/v1/messages',
+      {
+        model: model.model,
+        max_tokens: model.maxTokens ?? 2048,
+        messages: [{ role: 'user', content: request.prompt }],
+      },
+      {
+        headers: {
+          'x-api-key': key,
+          'anthropic-version': '2023-06-01',
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    const content = data.content?.[0]?.text ?? '';
+    const inputTokens = data.usage?.input_tokens ?? 0;
+    const outputTokens = data.usage?.output_tokens ?? 0;
+    return {
+      content,
+      usage: { total_tokens: inputTokens + outputTokens },
+    };
   }
 }

@@ -123,11 +123,93 @@ export interface KubernetesManifestBundle {
 }
 
 /**
+ * kagent.dev v1alpha2 Declarative Agent (native kagent CRD shape)
+ */
+export interface KAgentV1Alpha2Agent {
+  apiVersion: 'kagent.dev/v1alpha2';
+  kind: 'Agent';
+  metadata: {
+    name: string;
+    namespace?: string;
+    labels?: Record<string, string>;
+    annotations?: Record<string, string>;
+  };
+  spec: {
+    type: 'Declarative';
+    description?: string;
+    declarative: {
+      modelConfig: string;
+      stream?: boolean;
+      systemMessage: string;
+      systemMessageFrom?: { type: 'ConfigMap' | 'Secret'; name: string; key: string };
+      tools?: (
+        | {
+            type: 'McpServer';
+            mcpServer: {
+              name: string;
+              namespace?: string;
+              kind: 'RemoteMCPServer';
+              toolNames: string[];
+            };
+            headersFrom?: Array<{
+              name: string;
+              valueFrom: { type: 'Secret' | 'ConfigMap'; name: string; key: string };
+            }>;
+          }
+        | { type: 'Agent'; agent: { name: string; namespace?: string } }
+      )[];
+      a2aConfig?: {
+        skills?: Array<{
+          id: string;
+          name: string;
+          description: string;
+          inputModes?: string[];
+          outputModes?: string[];
+          tags?: string[];
+          examples?: string[];
+        }>;
+      };
+    };
+    deployment?: {
+      replicas?: number;
+      resources?: {
+        requests?: { cpu?: string; memory?: string };
+        limits?: { cpu?: string; memory?: string };
+      };
+    };
+    skills?: {
+      insecureSkipVerify?: boolean;
+      refs?: string[];
+    };
+  };
+}
+
+/**
+ * kagent.dev v1alpha2 ModelConfig
+ */
+export interface KAgentV1Alpha2ModelConfig {
+  apiVersion: 'kagent.dev/v1alpha2';
+  kind: 'ModelConfig';
+  metadata: { name: string; namespace?: string; labels?: Record<string, string> };
+  spec: {
+    model: string;
+    provider: string;
+    apiKeySecret?: string;
+    apiKeySecretKey?: string;
+    openAI?: { maxTokens?: number; temperature?: number };
+    anthropic?: { maxTokens?: number; temperature?: number };
+  };
+}
+
+/**
  * Deployment options for kagent
  */
 export interface KAgentDeploymentOptions {
   namespace?: string;
   replicas?: number;
+  crdVersion?: 'v1alpha1' | 'v1alpha2';
+  /** For v1alpha2: name of ModelConfig to reference (e.g. default-model-config) */
+  modelConfigName?: string;
   resources?: {
     limits?: {
       cpu?: string;

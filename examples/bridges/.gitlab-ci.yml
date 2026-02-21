@@ -30,7 +30,7 @@ validate:openapi:
   stage: validate
   image: stoplight/spectral:latest
   script:
-    - spectral lint aiflow-registration-api.openapi.yml --ruleset .spectral.yaml
+    - spectral lint aiflow-registration-api.openapi.yml --ruleset ../../config/linting/.spectral.yaml
   only:
     - merge_requests
     - main

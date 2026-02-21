@@ -32,13 +32,19 @@ import type {
   ValidationWarning,
 } from '../base/adapter.interface.js';
 import { BaseAdapter } from '../base/adapter.interface.js';
-import type { OssaToolEntry } from './drupal-utils.js';
+import type {
+  DrupalToolDefinition,
+  OssaToolEntry,
+} from './drupal-utils.js';
 import {
+  buildSchemaDefinitionArray,
   buildValidationResult,
+  escapePhpString,
   extractCapabilities,
   extractTools,
   mapOssaToolToDrupalTool,
   sanitizeModuleName,
+  toClassName,
   toLabel,
   validateDrupalCompatibility,
 } from './drupal-utils.js';
@@ -171,7 +177,25 @@ export class DrupalManifestExporter extends BaseAdapter {
         )
       );
 
-      // 8. Recipe YAML (composable installation)
+      // 8. PHP Tool plugin stubs (when extensions.drupal.include_php_tool_stubs)
+      const extensions = (manifest as any).extensions?.drupal;
+      if (extensions?.include_php_tool_stubs && tools.length > 0) {
+        for (const tool of tools) {
+          const drupalTool = mapOssaToolToDrupalTool(tool, agentName);
+          const toolClassName = toClassName(
+            sanitizeModuleName(tool.name || 'unknown_tool')
+          );
+          files.push(
+            this.createFile(
+              `${agentName}/src/Plugin/Tool/${toolClassName}Tool.php`,
+              this.generatePhpToolPluginStub(tool, drupalTool, agentName),
+              'code'
+            )
+          );
+        }
+      }
+
+      // 9. Recipe YAML (composable installation)
       files.push(
         this.createFile(
           `${agentName}/recipes/${agentName}-agent/recipe.yml`,
@@ -612,6 +636,92 @@ actions:
     configuration:
       agent_id: '${agentName}'
       async: true
+`;
+  }
+
+  /**
+   * Generate a PHP Tool plugin stub for a single OSSA tool.
+   *
+   * Produces a Drupal Tool API plugin class that implements getInputDefinition,
+   * getOutputDefinition, and execute(). Execute() returns the input unchanged;
+   * implementers replace this with real logic or delegate to a service.
+   */
+  private generatePhpToolPluginStub(
+    tool: OssaToolEntry,
+    drupalTool: DrupalToolDefinition,
+    agentName: string
+  ): string {
+    const toolClassName = toClassName(
+      sanitizeModuleName(tool.name || 'unknown_tool')
+    );
+    const toolName = tool.name || 'unknown_tool';
+    const inputDef = buildSchemaDefinitionArray(
+      (tool.inputSchema || (tool as any).input_schema) as Record<
+        string,
+        unknown
+      >
+    );
+    const outputDef = buildSchemaDefinitionArray(
+      (tool.outputSchema || (tool as any).output_schema) as Record<
+        string,
+        unknown
+      >
+    );
+    return `<?php
+
+namespace Drupal\\${agentName}\\Plugin\\Tool;
+
+use Drupal\\tool\\Attribute\\Tool;
+use Drupal\\tool\\ToolPluginBase;
+use Drupal\\Core\\StringTranslation\\TranslatableMarkup;
+use Drupal\\Core\\Plugin\\ContainerFactoryPluginInterface;
+use Symfony\\Component\\DependencyInjection\\ContainerInterface;
+
+/**
+ * Tool plugin: ${escapePhpString(drupalTool.label)}.
+ *
+ * Generated from OSSA manifest tool: ${toolName}
+ * Type: ${drupalTool.type}
+ * Customize execute() to call your service or external API.
+ */
+#[Tool(
+  id: '${drupalTool.id}',
+  label: new TranslatableMarkup('${escapePhpString(drupalTool.label)}'),
+  description: new TranslatableMarkup('${escapePhpString(drupalTool.description)}'),
+)]
+class ${toolClassName}Tool extends ToolPluginBase implements ContainerFactoryPluginInterface {
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
+    return new static($configuration, $plugin_id, $plugin_definition);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getInputDefinition(): array {
+    return ${inputDef};
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getOutputDefinition(): array {
+    return ${outputDef};
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * Default: pass input through. Replace with call to your service or API.
+   */
+  public function execute(array $input): array {
+    return $input;
+  }
+
+}
 `;
   }
 

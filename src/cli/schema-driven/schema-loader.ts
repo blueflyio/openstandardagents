@@ -172,9 +172,14 @@ export class SchemaLoader {
    */
   private getEnumDescription(path: string, value: string): string | undefined {
     const definition = this.getDefinition(path);
-    // Try to find description in examples or comments
-    // This is a placeholder - enhance based on actual schema structure
-    return definition?.description;
+    if (definition?.description) return definition.description;
+    const enumVals = definition?.enum;
+    if (Array.isArray(enumVals) && enumVals.includes(value)) {
+      const examples = (definition as any)?.examples;
+      const ex = Array.isArray(examples) ? examples.find((e: any) => e === value || e?.value === value) : undefined;
+      return typeof ex === 'object' && ex?.description ? ex.description : undefined;
+    }
+    return undefined;
   }
 
   /**

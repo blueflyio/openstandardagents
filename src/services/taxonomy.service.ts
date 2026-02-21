@@ -197,6 +197,8 @@ export class TaxonomyService {
     const costProfile = this.inferCostProfile(useCaseLower);
     const performanceTier = this.inferPerformanceTier(useCaseLower);
 
+    const inferredAgentType =
+      agentType || this.inferAgentTypeFromUseCase(useCaseLower, taxonomy);
     const classification: TaxonomyClassification = {
       domain,
       subdomain,
@@ -205,18 +207,34 @@ export class TaxonomyService {
       integrationPattern,
       costProfile,
       performanceTier,
-      agentType:
-        agentType || this.inferAgentTypeFromUseCase(useCaseLower, taxonomy),
+      agentType: inferredAgentType,
     };
+
+    const reasoning: string[] = [
+      `Domain "${domain}" matched from use case keywords`,
+      `Deployment pattern "${deploymentPattern}" inferred from use case`,
+      `Integration pattern "${integrationPattern}" inferred from use case`,
+    ];
+
+    const facetsMatched =
+      (domain !== 'agents' ? 1 : 0) +
+      (subdomain ? 1 : 0) +
+      (concerns.length > 0 ? 1 : 0) +
+      (deploymentPattern ? 1 : 0) +
+      (integrationPattern ? 1 : 0) +
+      (costProfile ? 1 : 0) +
+      (performanceTier ? 1 : 0) +
+      (inferredAgentType !== 'worker' ? 1 : 0);
+    const maxFacets = 8;
+    const confidence = Math.min(
+      1,
+      Math.round((0.4 + (facetsMatched / maxFacets) * 0.6) * 100) / 100
+    );
 
     return {
       classification,
-      confidence: 0.8, // TODO: Calculate actual confidence
-      reasoning: [
-        `Domain "${domain}" matched from use case keywords`,
-        `Deployment pattern "${deploymentPattern}" inferred from use case`,
-        `Integration pattern "${integrationPattern}" inferred from use case`,
-      ],
+      confidence,
+      reasoning,
     };
   }
 

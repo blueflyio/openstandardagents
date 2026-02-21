@@ -313,10 +313,19 @@ async function validateForPlatform(
     case 'langchain':
     case 'crewai':
     case 'docker':
-    case 'kubernetes':
-      // Platform validators not yet implemented
-      console.log(chalk.yellow(`  ${platform} validator not yet implemented`));
+    case 'kubernetes': {
+      const validationService = container.get(ValidationService);
+      const result = await validationService.validate(manifest);
+      if (!result.valid) {
+        throw new Error(result.errors?.join('; ') ?? 'Validation failed');
+      }
+      if (result.warnings?.length) {
+        console.log(chalk.yellow(`  ${platform}: ${result.warnings.length} warning(s)`));
+      } else {
+        console.log(chalk.green(`  ${platform}: manifest valid`));
+      }
       break;
+    }
 
     default:
       throw new Error(`Unknown platform: ${platform}`);

@@ -392,11 +392,9 @@ ${conditionalAgents
     (agent) => `
 def should_route_to_${this.sanitizeFunctionName(agent.id)}(state: AgentState) -> bool:
     """
-    Determine if workflow should route to ${agent.name}
+    Determine if workflow should route to ${agent.name} based on state.
     """
-    # TODO: Implement conditional logic based on state
-    # For now, default to True
-    return True
+    return state.get("next_agent") == "${agent.id}" or state.get("next_agent") is None
 `
   )
   .join('\n')}

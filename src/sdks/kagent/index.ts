@@ -13,4 +13,6 @@ export type {
   KAgentDeploymentResult,
   KAgentValidationResult,
   KubernetesManifestBundle,
+  KAgentV1Alpha2Agent,
+  KAgentV1Alpha2ModelConfig,
 } from './types.js';

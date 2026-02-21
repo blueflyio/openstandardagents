@@ -322,8 +322,24 @@ export class OpenTelemetryAdapter {
         }
       }
       case 'console': {
-        // Console metric exporter
-        return undefined; // TODO: Implement
+        return {
+          export: async (metrics: any) => {
+            if (metrics?.scopeMetrics?.length) {
+              console.log(
+                '[OTel metrics]',
+                JSON.stringify(
+                  metrics.scopeMetrics.map((s: any) => ({
+                    scope: s.scope?.name,
+                    metrics: s.metrics?.length ?? 0,
+                  }))
+                )
+              );
+            }
+            return { code: 0 };
+          },
+          forceFlush: async () => {},
+          shutdown: async () => {},
+        };
       }
       default:
         return undefined;

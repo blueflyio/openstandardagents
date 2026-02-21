@@ -168,9 +168,9 @@ setup:project-detection:
         echo "🐍 Python project detected"
       fi
 
-      if [ -f "Dockerfile" ] || [ -f "docker-compose.yml" ]; then
+      if [ -f "Dockerfile" ] || [ -f "docker-compose.yml" ] || [ -f "infra/docker-compose.yml" ]; then
         PROJECT_TYPES="${PROJECT_TYPES},docker"
-        echo "🐳 Docker project detected"
+        echo "Docker project detected"
       fi
 
       # Detect AI/ML indicators
@@ -1118,8 +1118,12 @@ setup:semantic-release:
           @0.1.16semantic-release/exec \
           conventional-changelog-conventionalcommits
 
-        # Create semantic-release configuration
-        cat > .releaserc.json << 'EOF'
+        # Use canonical config if present (no symlinks); otherwise create default
+        if [ -f "config/release/.releaserc.json" ]; then
+          cp config/release/.releaserc.json .releaserc.json
+          echo "Using config/release/.releaserc.json"
+        else
+          cat > .releaserc.json << 'EOF'
         {
           "branches": [
             "main",
@@ -1178,8 +1182,9 @@ setup:semantic-release:
           ]
         }
         EOF
+        fi
 
-        echo "✅ Semantic-release configuration created"
+        echo "Semantic-release configuration ready"
       else
         echo "⚠️ Non-Node.js project - will use fallback tagging"
       fi

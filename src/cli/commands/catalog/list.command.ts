@@ -64,7 +64,7 @@ export function createListCommand(): Command {
           id: info.id,
           hasOssa,
           hasDuo,
-          syncStatus: hasDuo ? 'synced' : 'unsynced', // Simplified - TODO: check remote
+          syncStatus: hasDuo ? 'synced' : 'unsynced',
           version,
         };
       });

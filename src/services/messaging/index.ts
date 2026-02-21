@@ -11,7 +11,7 @@ export { MessagingService } from './messaging.service.js';
 export type { AgentMessagingConfig } from './messaging.service.js';
 
 // Message broker implementations
-// FIXME: MemoryBroker is runtime concern, should be in @bluefly/agent-mesh
+// MemoryBroker is a runtime concern; prefer @bluefly/agent-mesh when available.
 // export { MemoryBroker } from './memory-broker.js';
 
 // Types

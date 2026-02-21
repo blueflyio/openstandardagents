@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://openstandardagents.org/schemas/v0.4/agent-card.schema.json",
   "title": "OSSA Agent Card",
-  "description": "Universal agent contract for discovery. Bridges MCP (tools) and A2A (agents). Generated from OSSA manifests. Serve at .well-known/agent-card.json or .well-known/agent.json (A2A). Single source of truth: OSSA manifest; card is a projection. Optional: state, tokenEfficiencySummary, separation, manifestRef, manifestDigest.",
+  "description": "Universal agent contract for discovery, Agent Social profile, marketplace, and global/GitLab registry. Every attribute is defined in and projected from the OSSA agent spec (metadata, spec, or extensions). Single source of truth: OSSA manifest. Serve at .well-known/agent-card.json or .well-known/agent.json (A2A).",
   "type": "object",
   "required": ["uri", "name", "version", "ossaVersion", "capabilities", "endpoints", "transport", "authentication", "encryption"],
   "properties": {

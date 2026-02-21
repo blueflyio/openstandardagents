@@ -210,12 +210,10 @@ class AgentRunner:
             except ImportError:
                 raise ConfigurationError("OpenAI SDK not installed. Install with: pip install openai")
 
-        # Add more providers as needed
         else:
             raise ConfigurationError(
-                f"Provider '{provider}' not yet implemented. "
-                f"Supported: anthropic, openai. "
-                f"Coming soon: google, azure, groq, ollama, etc."
+                f"Provider '{provider}' is not supported. "
+                f"Supported: anthropic, openai."
             )
 
     def run(self, input_text: str, **kwargs: Any) -> AgentResponse:
@@ -266,7 +264,7 @@ class AgentRunner:
                     client, input_text, temperature, max_tokens, **kwargs
                 )
             else:
-                raise ConfigurationError(f"Provider '{provider}' execution not implemented")
+                raise ConfigurationError(f"Provider '{provider}' is not supported for execution")
 
             # Add assistant response to history
             self.history.add_message("assistant", response_content)

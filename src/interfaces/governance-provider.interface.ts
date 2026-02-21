@@ -10,11 +10,8 @@
  * These types MUST match the compliance-engine OpenAPI spec:
  * - openapi/cedar-provider.openapi.yaml
  *
- * TODO: Generate these types from compliance-engine's published OpenAPI spec
- * using openapi-typescript once compliance-engine publishes @bluefly/compliance-engine-types
- *
- * For now, these types are manually kept in sync with the OpenAPI spec
- * defined in CEDAR_GOVERNANCE_IMPLEMENTATION_PLAN.md
+ * Types are hand-maintained in sync with compliance-engine OpenAPI spec
+ * until @bluefly/compliance-engine-types is published; then generate via openapi-typescript.
  */
 
 export interface GovernanceProvider {

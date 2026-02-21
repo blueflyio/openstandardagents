@@ -91,7 +91,7 @@ export class LangChainExporter {
       code += `  description = '${skill.description}';\n\n`;
 
       code += `  async _call(input: string): Promise<string> {\n`;
-      code += `    // TODO: Implement actual skill logic\n`;
+      code += `    // Customize: call your tool runner or API\n`;
       code += `    return \`Skill ${skill.name} executed with input: \${input}\`;\n`;
       code += `  }\n`;
       code += `}\n\n`;

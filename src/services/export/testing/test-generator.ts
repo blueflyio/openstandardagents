@@ -1328,7 +1328,7 @@ class TestRateLimiting:
         rate_limited = sum(1 for r in responses if 'rate limit' in str(r).lower())
 
         # If rate limiting is implemented, should see some limits
-        # If not implemented, all should succeed
+        # Default: all steps succeed when no implementation is provided
         assert all(r is not None for r in responses)
 
     def test_large_payload_rejected(self):

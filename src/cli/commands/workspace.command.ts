@@ -8,6 +8,7 @@
  *   ossa workspace policy list   - List allowed/denied tools
  *   ossa workspace discover      - Auto-discover project agents
  *   ossa workspace sync          - Sync registry with discovered agents
+ *   ossa workspace publish       - POST discovery to a registry API (e.g. mesh /api/v1/discovery)
  */
 
 import { Command } from 'commander';
@@ -618,5 +619,174 @@ workspaceCommand
     );
     if (discover) {
       await discover.parseAsync(['discover'], { from: 'user' });
+    }
+  });
+
+// ============================================================================
+// Subcommand: workspace publish (POST to registry/mesh discovery API)
+// ============================================================================
+workspaceCommand
+  .command('publish')
+  .description(
+    'POST workspace discovery to a registry API (e.g. mesh /api/v1/discovery). Run "ossa workspace discover" first.'
+  )
+  .option(
+    '--registry-url <url>',
+    'Registry base URL (e.g. https://mesh.blueflyagents.com). Default: MESH_URL or AGENT_REGISTRY_URL env. POSTs to <url>/api/v1/discovery'
+  )
+  .option('--discover', 'Run workspace discover first if registry is missing')
+  .action(async (options: { registryUrl?: string; discover?: boolean }) => {
+    try {
+      const registryUrl =
+        options.registryUrl ||
+        process.env.MESH_URL ||
+        process.env.AGENT_REGISTRY_URL;
+      if (!registryUrl) {
+        console.error(
+          chalk.red('Missing --registry-url or MESH_URL / AGENT_REGISTRY_URL')
+        );
+        process.exit(1);
+      }
+      const cwd = process.cwd();
+      const registryPath = path.resolve(
+        cwd,
+        getDefaultWorkspaceDir(),
+        getWorkspaceRegistryPath()
+      );
+
+      if (!fs.existsSync(registryPath)) {
+        if (options.discover) {
+          console.log(chalk.blue('No registry found; running discover...'));
+          const discover = workspaceCommand.commands.find(
+            (c) => c.name() === 'discover'
+          );
+          if (discover) {
+            await discover.parseAsync(['discover'], { from: 'user' });
+          }
+          if (!fs.existsSync(registryPath)) {
+            console.log(chalk.red('Discover did not create registry'));
+            process.exit(1);
+          }
+        } else {
+          console.log(chalk.yellow('No workspace registry found'));
+          console.log(
+            chalk.gray(
+              '  Run `ossa workspace discover` first, or use --discover'
+            )
+          );
+          process.exit(1);
+        }
+      }
+
+      const content = fs.readFileSync(registryPath, 'utf-8');
+      const registry = yaml.parse(content);
+      const agents = registry.agents || [];
+      const workspaceName =
+        registry.metadata?.name || 'workspace';
+      const scannedAt = new Date().toISOString();
+
+      const payload = {
+        source_id: workspaceName,
+        workspace: { name: workspaceName, scanned_at: scannedAt },
+        projects: agents.map(
+          (p: { project?: string; path?: string; agents?: unknown[] }) => ({
+            name: p.project ?? p.path,
+            path: p.path ?? `./${p.project ?? ''}`,
+            agents: p.agents ?? [],
+          })
+        ),
+      };
+
+      const base = registryUrl.replace(/\/$/, '');
+      const url = `${base}/api/v1/discovery`;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok || res.status === 202) {
+        console.log(
+          chalk.green('Published to registry: ') +
+            base +
+            ` (${payload.projects.length} projects)`
+        );
+      } else {
+        const text = await res.text();
+        console.error(
+          chalk.red('Publish failed: ') + res.status + ' ' + text
+        );
+        process.exit(1);
+      }
+      process.exit(0);
+    } catch (error) {
+      handleCommandError(error);
+    }
+  });
+
+// ============================================================================
+// Subcommand: workspace list-remote (GET from registry/mesh discovery API)
+// ============================================================================
+workspaceCommand
+  .command('list-remote')
+  .description(
+    'List agents from a registry API (GET /api/v1/discovery). No local workspace required.'
+  )
+  .requiredOption(
+    '--registry-url <url>',
+    'Registry base URL (e.g. https://mesh.blueflyagents.com)'
+  )
+  .option('--json', 'Output raw JSON')
+  .action(async (options: { registryUrl: string; json?: boolean }) => {
+    try {
+      const base = options.registryUrl.replace(/\/$/, '');
+      const res = await fetch(`${base}/api/v1/discovery`);
+      if (!res.ok) {
+        console.error(
+          chalk.red('Registry request failed: ') + res.status + ' ' + (await res.text())
+        );
+        process.exit(1);
+      }
+      const data = (await res.json()) as {
+        sources?: string[];
+        projects?: Array<{
+          name?: string;
+          path?: string;
+          project_name?: string;
+          project_path?: string;
+          agents?: unknown[];
+        }>;
+        by_source?: Record<string, unknown>;
+      };
+      if (options.json) {
+        console.log(JSON.stringify(data, null, 2));
+        process.exit(0);
+      }
+      const projects = data.projects ?? [];
+      const total = projects.reduce((n, p) => n + (p.agents?.length ?? 0), 0);
+      console.log(chalk.blue('Registry: ') + base);
+      console.log(
+        chalk.gray('Sources: ') +
+          (data.sources?.length ?? 0) +
+          '  ' +
+          chalk.gray('Agents: ') +
+          total
+      );
+      for (const p of projects) {
+        const projName =
+          p.project_name ?? p.name ?? p.project_path ?? p.path ?? '?';
+        for (const a of p.agents ?? []) {
+          const label =
+            typeof a === 'string'
+              ? a
+              : (a as { name?: string }).name ??
+                (a as { path?: string }).path ??
+                '?';
+          console.log('  ' + projName + ' / ' + label);
+        }
+      }
+      process.exit(0);
+    } catch (error) {
+      handleCommandError(error);
     }
   });

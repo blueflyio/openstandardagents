@@ -41,6 +41,7 @@ import {
 } from '../wizard/data/templates.js';
 import type { WizardOptions, WizardState } from '../wizard/types.js';
 import { console_ui, formatAgentType } from '../wizard/ui/console.js';
+import { printWizardLogo } from '../banner.js';
 
 /**
  * Create a new agent using the interactive wizard
@@ -66,7 +67,8 @@ async function createAgentWizard(options: WizardOptions): Promise<void> {
     history: [],
   };
 
-  // Show welcome header
+  // Branded logo and welcome
+  printWizardLogo();
   console_ui.header(
     'OSSA Agent Creation Wizard',
     'Create production-ready agents step-by-step'
@@ -306,7 +308,7 @@ async function createCustomAgent(
   state: WizardState,
   options: WizardOptions
 ): Promise<void> {
-  state.totalSteps = 14;
+  state.totalSteps = 15;
 
   // Step 1: Agent Type
   await selectAgentType(state);
@@ -355,7 +357,12 @@ async function createCustomAgent(
     await import('../wizard/steps/09c-agents-md.js');
   await configureAgentsMdStep(state);
 
-  // Step 14: Review & Save
+  // Step 14: Drupal Tools + ECA
+  const { configureDrupalToolsEcaStep } =
+    await import('../wizard/steps/09d-drupal-tools-eca.js');
+  await configureDrupalToolsEcaStep(state);
+
+  // Step 15: Review & Save
   const { reviewAndSaveStep } = await import('../wizard/steps/10-review.js');
   await reviewAndSaveStep(state, options);
 }

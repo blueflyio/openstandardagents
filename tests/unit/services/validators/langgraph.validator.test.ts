@@ -3,7 +3,7 @@ import { LangGraphValidator } from '../../../../src/services/validators/langgrap
 import type { OssaAgent } from '../../../../src/types/index.js';
 import { API_VERSION } from '../../../../src/version.js';
 
-describe.skip('LangGraphValidator', () => {
+describe.skip('LangGraphValidator - schema alignment pending', () => {
   let validator: LangGraphValidator;
   let baseManifest: OssaAgent;
 

@@ -8,6 +8,8 @@ import { Command } from 'commander';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import { KAgentRuntimeAdapter } from '../../sdks/kagent/runtime-adapter.js';
+import { DockerDeploymentDriver } from '../../deploy/docker-driver.js';
+import { KubernetesDeploymentDriver } from '../../deploy/k8s-driver.js';
 import { getDeployDefaults } from '../../config/defaults.js';
 
 export const deployCommand = new Command('deploy')
@@ -96,16 +98,24 @@ async function deployToPlatform(
     }
 
     case 'docker': {
-      console.log(chalk.yellow('  Docker deployment not yet implemented'));
-      console.log(
-        chalk.yellow('  Use: docker build -t agent . && docker run agent')
-      );
+      const dockerDriver = new DockerDeploymentDriver();
+      await dockerDriver.deploy(manifest as any, {
+        target: 'docker',
+        environment: 'default',
+        namespace: options.namespace,
+        replicas: Number(options.replicas) || 1,
+      } as any);
       break;
     }
 
     case 'kubernetes': {
-      console.log(chalk.yellow('  Kubernetes deployment not yet implemented'));
-      console.log(chalk.yellow('  Use: kubectl apply -f k8s/'));
+      const k8sDriver = new KubernetesDeploymentDriver();
+      await k8sDriver.deploy(manifest as any, {
+        target: 'kubernetes',
+        environment: 'default',
+        namespace: options.namespace,
+        replicas: Number(options.replicas) || 1,
+      } as any);
       break;
     }
 

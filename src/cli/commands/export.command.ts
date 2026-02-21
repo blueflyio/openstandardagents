@@ -27,6 +27,7 @@ import { GitLabDuoPackageGenerator } from '../../adapters/gitlab/package-generat
 import { DockerExporter } from '../../adapters/docker/docker-exporter.js';
 import { KubernetesManifestGenerator } from '../../adapters/kubernetes/generator.js';
 import { KAgentCRDGenerator } from '../../sdks/kagent/crd-generator.js';
+import { LangflowAdapter } from '../../adapters/langflow-adapter.js';
 import { registry } from '../../adapters/registry/platform-registry.js';
 import { DrupalManifestExporter } from '../../adapters/drupal/manifest-exporter.js';
 import { OpenAIAgentsAdapter } from '../../adapters/openai-agents/adapter.js';
@@ -44,10 +45,20 @@ export const exportCommand = new Command('export')
   .argument('[manifest]', 'Path to OSSA agent manifest')
   .option(
     '-p, --platform <platform>',
-    'Target platform (kagent, langchain, crewai, temporal, n8n, gitlab, gitlab-agent, docker, kubernetes, npm, drupal, agent-skills)'
+    'Target platform (kagent, langchain, langflow, crewai, temporal, n8n, gitlab, gitlab-agent, docker, kubernetes, npm, drupal, agent-skills)'
   )
   .option('-o, --output <file>', 'Output file path')
   .option('--format <format>', 'Output format (yaml, json, python)', 'yaml')
+  .option(
+    '--crd-version <version>',
+    'Kagent CRD version (v1alpha1 | v1alpha2). v1alpha2 = Declarative Agent for native kagent installs',
+    'v1alpha1'
+  )
+  .option(
+    '--namespace <ns>',
+    'Kubernetes/kagent namespace (kagent platform)',
+    'kagent'
+  )
   .option('--skill', 'Include Claude Skill (SKILL.md) - NPM platform only')
   .option(
     '--perfect-agent',
@@ -79,6 +90,8 @@ exportCommand.action(
       platform?: string;
       output?: string;
       format: string;
+      crdVersion?: string;
+      namespace?: string;
       skill?: boolean;
       perfectAgent?: boolean;
       includeTeam?: boolean;
@@ -113,6 +126,11 @@ exportCommand.action(
           name: 'langchain',
           status: 'production',
           desc: 'LangChain Python + TypeScript agent package (uses @langchain/* SDK)',
+        },
+        {
+          name: 'langflow',
+          status: 'beta',
+          desc: 'Langflow flow JSON (import in Langflow UI or via API at http://localhost:7860)',
         },
         {
           name: 'crewai',
@@ -360,13 +378,51 @@ exportCommand.action(
 
       switch (options.platform) {
         case 'kagent': {
-          log('Generating kagent.dev Kubernetes manifest bundle...');
-
-          const kagentGenerator = new KAgentCRDGenerator();
-          const bundle = kagentGenerator.generateBundle(manifest);
-
           const agentName = manifest.metadata?.name || 'agent';
           const outputDir = options.output || `./${agentName}-kagent`;
+          const useV1Alpha2 =
+            (options.crdVersion ?? 'v1alpha1') === 'v1alpha2';
+          const kagentOpts = {
+            namespace: options.namespace || 'kagent',
+          };
+
+          if (useV1Alpha2) {
+            log('Generating kagent.dev v1alpha2 Declarative Agent...');
+            const kagentGenerator = new KAgentCRDGenerator();
+            const { agent, modelConfig } =
+              kagentGenerator.generateV1Alpha2(manifest, kagentOpts);
+
+            if (!options.dryRun) {
+              fs.mkdirSync(outputDir, { recursive: true });
+              fs.writeFileSync(
+                path.join(outputDir, 'agent.yaml'),
+                yaml.stringify(agent)
+              );
+              if (modelConfig) {
+                fs.writeFileSync(
+                  path.join(outputDir, 'model-config.yaml'),
+                  yaml.stringify(modelConfig)
+                );
+              }
+              fs.writeFileSync(
+                path.join(outputDir, 'agent.ossa.yaml'),
+                yaml.stringify(manifest)
+              );
+              logSuccess(
+                `\nkagent.dev v1alpha2 bundle exported to: ${outputDir}`
+              );
+              log(
+                `  agent.yaml${modelConfig ? ', model-config.yaml' : ''}, agent.ossa.yaml`
+              );
+            } else {
+              log(`\nDRY RUN: Would write agent.yaml (v1alpha2) to ${outputDir}`);
+            }
+            return;
+          }
+
+          log('Generating kagent.dev Kubernetes manifest bundle (v1alpha1)...');
+          const kagentGenerator = new KAgentCRDGenerator();
+          const bundle = kagentGenerator.generateBundle(manifest, kagentOpts);
 
           if (!options.dryRun) {
             fs.mkdirSync(outputDir, { recursive: true });
@@ -526,6 +582,74 @@ exportCommand.action(
           return;
         }
 
+        case 'langflow': {
+          log('Exporting OSSA manifest to Langflow flow JSON...');
+
+          const langflowAdapter = registry.getAdapter('langflow');
+          if (!langflowAdapter) {
+            throw new Error(
+              'LangFlow adapter not registered. Ensure initializeAdapters() was called.'
+            );
+          }
+
+          const langflowResult = await langflowAdapter.export(manifest, {
+            validate: options.validate !== false,
+            dryRun: options.dryRun,
+            outputDir: options.output ? path.dirname(options.output) : '.',
+          });
+
+          if (!langflowResult.success) {
+            throw new Error(
+              langflowResult.error || 'LangFlow export failed'
+            );
+          }
+
+          const outDir = options.output
+            ? path.dirname(options.output)
+            : '.';
+          const outPath =
+            options.output ||
+            path.join(
+              outDir,
+              langflowResult.files[0]?.path ||
+                `${(manifest.metadata?.name || 'agent').replace(/[^a-z0-9-_]/gi, '-')}-langflow.json`
+            );
+
+          if (!options.dryRun && langflowResult.files.length > 0) {
+            const outDirAbs = path.dirname(outPath);
+            if (outDirAbs !== '.') fs.mkdirSync(outDirAbs, { recursive: true });
+            fs.writeFileSync(
+              outPath,
+              langflowResult.files[0].content,
+              'utf-8'
+            );
+            logSuccess(`\nLangflow flow exported to: ${outPath}`);
+            log(
+              useColor
+                ? chalk.gray(
+                    '  Import in Langflow: Projects > Upload a flow, or drag-and-drop the JSON file.'
+                  )
+                : '  Import in Langflow: Projects > Upload a flow, or drag-and-drop the JSON file.'
+            );
+            log(
+              useColor
+                ? chalk.gray(
+                    '  Langflow: https://langflow.blueflyagents.com or http://127.0.0.1:7860'
+                  )
+                : '  Langflow: https://langflow.blueflyagents.com or http://127.0.0.1:7860'
+            );
+          } else if (options.dryRun) {
+            log(`\nDRY RUN: Would write Langflow JSON to: ${outPath}`);
+          }
+
+          if (options.json && langflowResult.files[0]) {
+            console.log(
+              JSON.stringify(JSON.parse(langflowResult.files[0].content))
+            );
+          }
+          return;
+        }
+
         case 'crewai': {
           log('Generating CrewAI multi-agent package...');
 
@@ -648,6 +772,7 @@ exportCommand.action(
           const result = await duoGenerator.generate(manifest, {
             outputDir: path.dirname(outputDir),
             overwrite: true,
+            includeSourceTemplates: true,
           });
 
           if (!result.success) {
@@ -1050,23 +1175,26 @@ exportCommand.action(
 
       // Write output (or simulate if dry-run)
       if (options.dryRun) {
-        log(`\n📄 Would write to: ${outputPath}`);
-        logVerbose(`Output size: ${output.length} bytes`);
-        if (options.verbose) {
-          log('\n--- Preview (first 500 chars) ---');
-          console.log(output.substring(0, 500));
-          if (output.length > 500) {
-            console.log('...');
+        if (!options.json) {
+          log(`\n📄 Would write to: ${outputPath}`);
+          logVerbose(`Output size: ${output.length} bytes`);
+          if (options.verbose) {
+            log('\n--- Preview (first 500 chars) ---');
+            console.log(output.substring(0, 500));
+            if (output.length > 500) {
+              console.log('...');
+            }
+            log('--- End Preview ---\n');
           }
-          log('--- End Preview ---\n');
         }
       } else {
         fs.writeFileSync(outputPath, output);
-        logSuccess(`✓ Exported to: ${outputPath}`);
-        logVerbose(`Output size: ${output.length} bytes`);
+        if (!options.json) {
+          logSuccess(`✓ Exported to: ${outputPath}`);
+          logVerbose(`Output size: ${output.length} bytes`);
+        }
       }
 
-      // JSON output for automation
       if (options.json) {
         const result = {
           success: true,
@@ -1076,7 +1204,7 @@ exportCommand.action(
           dryRun: options.dryRun || false,
           size: output.length,
         };
-        console.log(JSON.stringify(result, null, 2));
+        console.log(JSON.stringify(result, null, options.quiet ? 0 : 2));
       }
     } catch (error) {
       console.error(

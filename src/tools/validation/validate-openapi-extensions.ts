@@ -18,8 +18,8 @@
  * @license Apache-2.0
  */
 
-import { readFileSync, existsSync } from 'fs';
-import { resolve, dirname, extname } from 'path';
+import { readFileSync, existsSync, readdirSync } from 'fs';
+import { resolve, dirname, extname, join } from 'path';
 import { fileURLToPath } from 'url';
 import { parse as parseYaml } from 'yaml';
 import Ajv from 'ajv';
@@ -64,6 +64,8 @@ interface ValidationResult {
     hasAgent: boolean;
     operationExtensions: number;
   };
+  /** True when file is not an OpenAPI document (e.g. registry manifest); skip validation. */
+  skipped?: boolean;
 }
 
 interface ValidationError {
@@ -300,18 +302,12 @@ function validateFile(filePath: string, ajv: Ajv): ValidationResult {
     };
   }
 
-  // Check if it's an OpenAPI document
+  // Skip non-OpenAPI documents (e.g. registry manifests, config YAML)
   if (!doc.openapi) {
     return {
       file: absolutePath,
-      valid: false,
-      errors: [
-        {
-          path: '/openapi',
-          message:
-            'Missing openapi field. This does not appear to be an OpenAPI 3.x document.',
-        },
-      ],
+      valid: true,
+      errors: [],
       warnings: [],
       ossaExtensions: {
         hasMetadata: false,
@@ -319,6 +315,7 @@ function validateFile(filePath: string, ajv: Ajv): ValidationResult {
         hasAgent: false,
         operationExtensions: 0,
       },
+      skipped: true,
     };
   }
 
@@ -383,6 +380,10 @@ function printResult(result: ValidationResult): void {
   console.log(chalk.blue(`\nValidating: ${result.file}`));
   console.log(chalk.gray('-'.repeat(80)));
 
+  if (result.skipped) {
+    console.log(chalk.gray('  Status: SKIPPED (not an OpenAPI document)'));
+    return;
+  }
   if (result.valid) {
     console.log(chalk.green('  Status: VALID'));
   } else {
@@ -430,10 +431,12 @@ function printSummary(results: ValidationResult[]): void {
   console.log(chalk.blue('\nValidation Summary'));
   console.log(chalk.gray('-'.repeat(80)));
 
-  const validCount = results.filter((r) => r.valid).length;
-  const invalidCount = results.length - validCount;
-  const totalWarnings = results.reduce((acc, r) => acc + r.warnings.length, 0);
-  const totalOssaExtensions = results.reduce(
+  const openapiResults = results.filter((r) => !r.skipped);
+  const skippedCount = results.length - openapiResults.length;
+  const validCount = openapiResults.filter((r) => r.valid).length;
+  const invalidCount = openapiResults.length - validCount;
+  const totalWarnings = openapiResults.reduce((acc, r) => acc + r.warnings.length, 0);
+  const totalOssaExtensions = openapiResults.reduce(
     (acc, r) =>
       acc +
       (r.ossaExtensions.hasMetadata ? 1 : 0) +
@@ -443,7 +446,11 @@ function printSummary(results: ValidationResult[]): void {
     0
   );
 
-  console.log(`  Files validated: ${results.length}`);
+  console.log(`  Files checked: ${results.length}`);
+  if (skippedCount > 0) {
+    console.log(chalk.gray(`  Skipped (not OpenAPI): ${skippedCount}`));
+  }
+  console.log(`  OpenAPI specs validated: ${openapiResults.length}`);
   console.log(chalk.green(`  Valid: ${validCount}`));
   if (invalidCount > 0) {
     console.log(chalk.red(`  Invalid: ${invalidCount}`));
@@ -452,27 +459,53 @@ function printSummary(results: ValidationResult[]): void {
   console.log(chalk.cyan(`  Total OSSA extensions: ${totalOssaExtensions}`));
 
   if (invalidCount === 0) {
-    console.log(chalk.green('\n  All files are valid OSSA OpenAPI documents!'));
+    console.log(chalk.green('\n  All OpenAPI specs are valid!'));
   } else {
     console.log(
-      chalk.red('\n  Some files failed validation. See errors above.')
+      chalk.red('\n  Some specs failed validation. See errors above.')
     );
   }
+}
+
+/** Repo root (source: src/tools/validation -> ../../..). */
+const REPO_ROOT = resolve(__dirname, '../../../');
+
+/** Discover all OpenAPI YAML/JSON files under openapi/ for API-first validation. */
+function discoverOpenApiFiles(rootDir: string): string[] {
+  const out: string[] = [];
+  const openapiDir = join(rootDir, 'openapi');
+  if (!existsSync(openapiDir)) return out;
+
+  function walk(dir: string): void {
+    const entries = readdirSync(dir, { withFileTypes: true });
+    for (const e of entries) {
+      const full = join(dir, e.name);
+      if (e.isDirectory()) walk(full);
+      else if (
+        e.isFile() &&
+        (e.name.endsWith('.yaml') || e.name.endsWith('.yml'))
+      ) {
+        out.push(full);
+      }
+    }
+  }
+  walk(openapiDir);
+  return out.sort();
 }
 
 // Main function
 function main(): void {
   const args = process.argv.slice(2);
 
-  // Help message
-  if (args.length === 0 || args.includes('--help') || args.includes('-h')) {
+  // Help message only when explicitly requested
+  if (args.includes('--help') || args.includes('-h')) {
     console.log(chalk.blue('OSSA OpenAPI Extensions Validator\n'));
     console.log('Usage:');
     console.log(
-      '  npx tsx src/tools/validation/validate-openapi-extensions.ts <file1.yaml> [file2.yaml] ...'
+      '  npx tsx src/tools/validation/validate-openapi-extensions.ts [file1.yaml ...]'
     );
     console.log(
-      '  npx tsx src/tools/validation/validate-openapi-extensions.ts openapi/*.yaml\n'
+      '  npm run validate:openapi   # validates all openapi/**/*.{yaml,yml,json}\n'
     );
     console.log('Options:');
     console.log('  --help, -h     Show this help message');
@@ -482,26 +515,26 @@ function main(): void {
     console.log('  0 - All files valid');
     console.log('  1 - Validation errors found');
     console.log('  2 - Runtime error\n');
-    console.log('Examples:');
-    console.log(
-      '  npx tsx src/tools/validation/validate-openapi-extensions.ts openapi/agent-crud.yaml'
-    );
-    console.log(
-      '  find openapi -name "*.yaml" | xargs npx tsx src/tools/validation/validate-openapi-extensions.ts'
-    );
     process.exit(0);
   }
 
   // Parse options
   const quiet = args.includes('--quiet') || args.includes('-q');
   const jsonOutput = args.includes('--json');
-  const files = args.filter(
+  let files = args.filter(
     (arg) => !arg.startsWith('-') && !arg.startsWith('--')
   );
 
+  // API-first: when no files given, validate all OpenAPI specs under openapi/
   if (files.length === 0) {
-    console.error(chalk.red('No files specified'));
-    process.exit(2);
+    files = discoverOpenApiFiles(REPO_ROOT);
+    if (files.length === 0) {
+      console.error(chalk.red('No OpenAPI files found under openapi/'));
+      process.exit(2);
+    }
+    if (!jsonOutput) {
+      console.log(chalk.blue(`Validating ${files.length} OpenAPI spec(s) (openapi/)\n`));
+    }
   }
 
   // Load schema and create validator
@@ -528,8 +561,8 @@ function main(): void {
     printSummary(results);
   }
 
-  // Exit with appropriate code
-  const hasErrors = results.some((r) => !r.valid);
+  // Exit with appropriate code (only fail on OpenAPI docs that are invalid)
+  const hasErrors = results.some((r) => !r.skipped && !r.valid);
   process.exit(hasErrors ? 1 : 0);
 }
 

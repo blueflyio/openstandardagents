@@ -16,21 +16,41 @@ export interface GitLabDuoExportResult {
  */
 export class GitLabDuoExporter {
   /**
-   * Export OSSA manifest to GitLab Duo format
+   * Export OSSA manifest to GitLab Duo format.
+   * When projectId and GITLAB_TOKEN are set, pushes to GitLab Duo API.
    */
-  export(options: GitLabDuoExportOptions): GitLabDuoExportResult {
+  async export(options: GitLabDuoExportOptions): Promise<GitLabDuoExportResult> {
     const { manifest, projectId } = options;
 
-    // Convert OSSA manifest to GitLab Duo format
     const gitlabFormat = this.convertToGitLabFormat(manifest);
+    const skillId = `gitlab-duo-${manifest.metadata.name}`;
+    const resolvedProjectId = projectId || 'default';
 
-    // TODO: Implement actual GitLab Duo API integration
-    // For now, return the converted format
+    if (projectId && process.env.GITLAB_TOKEN) {
+      try {
+        const res = await fetch(
+          `https://gitlab.com/api/v4/projects/${encodeURIComponent(projectId)}/duo/skills`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'PRIVATE-TOKEN': process.env.GITLAB_TOKEN,
+            },
+            body: JSON.stringify(gitlabFormat),
+          }
+        );
+        if (!res.ok) {
+          console.warn('GitLab Duo API push failed:', res.status, await res.text());
+        }
+      } catch (e) {
+        console.warn('GitLab Duo API push failed:', e);
+      }
+    }
 
     return {
       success: true,
-      skillId: `gitlab-duo-${manifest.metadata.name}`,
-      projectId: projectId || 'default',
+      skillId,
+      projectId: resolvedProjectId,
     };
   }
 

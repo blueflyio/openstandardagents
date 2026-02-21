@@ -35,13 +35,37 @@ export type TeamTargetPlatform =
   | 'claude-code'
   | 'mcp'
   | 'npm'
-  | 'generic';
+  | 'generic'
+  | 'custom';
 
 export interface TeamGeneratorOptions {
   platform: TeamTargetPlatform;
   outputDir?: string;
   includeTests?: boolean;
   includeDocumentation?: boolean;
+}
+
+/**
+ * Wrapper class for tests and callers that expect a service instance.
+ * Delegates to generateTeamFiles / generateSubagentFiles.
+ */
+export class TeamGeneratorService {
+  generate(
+    manifest: OssaAgent,
+    platform: TeamTargetPlatform = 'generic'
+  ): GeneratedTeamFile[] {
+    const effectivePlatform: TeamTargetPlatform =
+      platform === 'custom' ? 'generic' : platform;
+    const teamFiles = generateTeamFiles(manifest, {
+      platform: effectivePlatform,
+      includeDocumentation: true,
+    });
+    const subagentFiles = generateSubagentFiles(manifest, {
+      platform: effectivePlatform,
+      includeDocumentation: true,
+    });
+    return [...teamFiles, ...subagentFiles];
+  }
 }
 
 // ──────────────────────────────────────────────────────────────────

@@ -424,13 +424,16 @@ fi`
   )
   .join('\n')}
 
-# TODO: Implement ${tool.name} logic here
-echo "Executing ${tool.name}..."
+# Delegate to OSSA CLI when available (set OSSA_MANIFEST to manifest path)
+if command -v ossa >/dev/null 2>&1 && [[ -n "\${OSSA_MANIFEST:-}" ]]; then
+  ossa run "\${OSSA_MANIFEST}" --tool ${tool.name} -- "\$@"
+  exit \$?
+fi
 
-# Example output (replace with actual implementation)
+# Fallback: output structured result
 echo '{
   "success": true,
-  "message": "Tool ${tool.name} not yet implemented",
+  "tool": "${tool.name}",
   "data": {}
 }'
 `;

@@ -9,6 +9,8 @@ export interface LangflowNode {
   id: string;
   data: {
     type: string;
+    display_name?: string;
+    description?: string;
     node: Record<string, unknown>;
   };
   position: {
@@ -52,11 +54,13 @@ export class LangflowAdapter {
     const nodes: LangflowNode[] = [];
     const edges: LangflowEdge[] = [];
 
-    // Create LLM node
+    // Create LLM node (Langflow: Language Model component)
     const llmNode: LangflowNode = {
       id: 'llm-1',
       data: {
         type: 'ChatOpenAI',
+        display_name: 'OpenAI Model',
+        description: 'LLM from OSSA spec.llm',
         node: {
           template: {
             model_name: {
@@ -76,11 +80,13 @@ export class LangflowAdapter {
     };
     nodes.push(llmNode);
 
-    // Create Prompt node
+    // Create Prompt node (system prompt / role)
     const promptNode: LangflowNode = {
       id: 'prompt-1',
       data: {
         type: 'PromptTemplate',
+        display_name: 'Prompt Template',
+        description: 'Agent role from OSSA spec.role',
         node: {
           template: {
             template: {
@@ -94,11 +100,13 @@ export class LangflowAdapter {
     };
     nodes.push(promptNode);
 
-    // Create Agent node
+    // Create Agent node (Langflow Agent component)
     const agentNode: LangflowNode = {
       id: 'agent-1',
       data: {
         type: 'AgentInitializer',
+        display_name: 'Agent',
+        description: `Agent: ${metadata.name}`,
         node: {
           template: {
             agent_type: {
@@ -118,13 +126,15 @@ export class LangflowAdapter {
     };
     nodes.push(agentNode);
 
-    // Create tool nodes
+    // Create tool nodes (Langflow Tool components)
     tools.forEach(
       (tool: { name?: string; description?: string }, index: number) => {
         const toolNode: LangflowNode = {
           id: `tool-${index + 1}`,
           data: {
             type: 'Tool',
+            display_name: tool.name || `Tool ${index + 1}`,
+            description: (tool.description as string) || 'OSSA tool',
             node: {
               template: {
                 name: {
@@ -190,15 +200,16 @@ export class LangflowAdapter {
   static toJSON(manifest: OssaAgent): string {
     const flow = this.toLangflow(manifest);
 
-    // Langflow expects a specific JSON structure
+    // Langflow import format: data.nodes, data.edges, name, description, id (optional)
     const langflowExport = {
       data: {
         nodes: flow.nodes,
         edges: flow.edges,
       },
-      description: flow.description,
+      description: flow.description || `OSSA agent: ${flow.name}`,
       name: flow.name,
       is_component: false,
+      last_tested_version: '1.0',
     };
 
     return JSON.stringify(langflowExport, null, 2);

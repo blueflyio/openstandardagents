@@ -11,6 +11,7 @@
  */
 
 import { describe, it, expect, beforeEach } from '@jest/globals';
+import { randomUUID } from 'node:crypto';
 import {
   AgentMesh,
   CircuitBreaker,
@@ -389,7 +390,7 @@ function createAgentIdentity(
   capabilities: string[]
 ): AgentIdentity {
   return {
-    id: crypto.randomUUID(),
+    id: randomUUID(),
     namespace: 'test',
     name,
     uri: `agent://test/${name}`,
@@ -417,7 +418,7 @@ function createAgentNode(
 
 function createMessage(to: AgentIdentity): A2AMessage {
   return {
-    id: crypto.randomUUID(),
+    id: randomUUID(),
     from: createAgentIdentity('sender', []),
     to,
     type: 'request' as any,

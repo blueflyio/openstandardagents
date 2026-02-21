@@ -1,0 +1,14 @@
+{
+  "pages": [
+    {
+      "slug": "OSSA-CLI-Reference",
+      "title": "OSSA CLI Reference",
+      "file": "docs/wiki/OSSA-CLI-Reference.md"
+    },
+    {
+      "slug": "Discovery-and-Registry",
+      "title": "Discovery and Registry",
+      "file": "docs/wiki/Discovery-and-Registry.md"
+    }
+  ]
+}

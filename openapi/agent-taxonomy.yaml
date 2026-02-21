@@ -34,6 +34,23 @@ paths:
                       $ref: '#/components/schemas/TaxonomyCategory'
                   total:
                     type: integer
+    post:
+      summary: Create new category
+      operationId: createTaxonomyCategory
+      tags: [Taxonomy]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaxonomyCategoryInput'
+      responses:
+        '201':
+          description: Category created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaxonomyCategory'
 
   /taxonomy/categories/{categoryId}:
     get:
@@ -95,25 +112,6 @@ paths:
           description: Category deleted
         '404':
           description: Category not found
-
-  /taxonomy/categories:
-    post:
-      summary: Create new category
-      operationId: createTaxonomyCategory
-      tags: [Taxonomy]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TaxonomyCategoryInput'
-      responses:
-        '201':
-          description: Category created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TaxonomyCategory'
 
   /taxonomy/classify:
     post:

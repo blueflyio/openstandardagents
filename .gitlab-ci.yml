@@ -26,6 +26,7 @@ stages:
   - security
   - quality
   - smoke
+  - export
   - package
   - release
   - deploy
@@ -50,6 +51,7 @@ include:
   - template: Code-Quality.gitlab-ci.yml
   # Local configs
   - local: '.gitlab/ci/token-rotation.yml'
+  - local: '.gitlab/ci/export-langflow.yml'
   - local: '.gitlab/ci/mirror-github.yml'
 
 # =============================================================================
@@ -84,6 +86,24 @@ validate:examples:
   stage: validate
   script:
     - npm run validate:examples
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/
+
+validate:no-symlinks:
+  extends: .base-runner
+  stage: validate
+  script:
+    - npm run validate:no-symlinks
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/
+
+validate:openapi:
+  extends: .base-runner
+  stage: validate
+  script:
+    - npm run validate:openapi
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/
@@ -343,6 +363,61 @@ deploy:gitlab-release-tag:
     # RC tags: v1.2.3-rc.N
     - if: $CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+$/
       when: on_success
+
+# =============================================================================
+# DISCOVERY PUBLISH - Push workspace discovery to mesh/registry when MESH_URL set
+# =============================================================================
+# Runs on main/release. Discovers .agents/ then POSTs to MESH_URL/api/v1/discovery.
+# Set MESH_URL (or AGENT_REGISTRY_URL) in CI/CD variables to enable publish.
+# =============================================================================
+discovery:publish:
+  extends: .base-runner
+  stage: deploy
+  script:
+    - |
+      if [ ! -f ".agents-workspace/registry/index.yaml" ]; then
+        echo "Initializing workspace for discovery..."
+        npx ossa workspace init --name openstandardagents
+      fi
+    - npx ossa workspace discover
+    - |
+      if [ -n "${MESH_URL}" ] || [ -n "${AGENT_REGISTRY_URL}" ]; then
+        REGISTRY_URL="${MESH_URL:-$AGENT_REGISTRY_URL}"
+        echo "Publishing discovery to registry: $REGISTRY_URL"
+        npx ossa workspace publish --registry-url "$REGISTRY_URL"
+      else
+        echo "MESH_URL/AGENT_REGISTRY_URL not set; skipping publish"
+      fi
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/
+      when: on_success
+
+# =============================================================================
+# WIKI STAGE - Publish docs/wiki/* to GitLab Wiki
+# =============================================================================
+# Runs when docs/wiki/ or .gitlab/wiki-publish-manifest.json change.
+# Requires: GITLAB_TOKEN or GITLAB_PUSH_TOKEN (wiki API), GITLAB_REGISTRY_NPM_TOKEN (to install buildkit).
+# =============================================================================
+wiki:publish:
+  stage: deploy
+  image: node:${NODE_VERSION}
+  tags:
+    - saas-linux-small-amd64
+  before_script:
+    - corepack enable
+    - npm config set @bluefly:registry "https://gitlab.com/api/v4/groups/blueflyio%2Fagent-platform/-/packages/npm/"
+    - |
+      if [ -n "${GITLAB_REGISTRY_NPM_TOKEN}" ]; then
+        npm config set "//gitlab.com/api/v4/groups/blueflyio%2Fagent-platform/-/packages/npm/:_authToken" "${GITLAB_REGISTRY_NPM_TOKEN}"
+      fi
+    - npm install -g @bluefly/agent-buildkit
+  script:
+    - buildkit gitlab wiki publish --project blueflyio/ossa/openstandardagents --manifest .gitlab/wiki-publish-manifest.json
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/
+      changes:
+        - docs/wiki/**/*
+        - .gitlab/wiki-publish-manifest.json
 
 # =============================================================================
 # SYNC STAGE - Defined in .gitlab/ci/mirror-github.yml (included above)

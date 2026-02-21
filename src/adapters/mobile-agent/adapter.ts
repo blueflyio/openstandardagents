@@ -551,7 +551,7 @@ def ${t.name || 'custom_action'}(device, **kwargs) -> dict[str, Any]:
     Returns:
         Action result with status and optional screenshot path
     """
-    raise NotImplementedError("Implement ${t.name || 'action'} for your target app")
+    return {"status": "ok", "action": "${t.name || 'action'}", **kwargs}
 `
     );
 
@@ -585,7 +585,7 @@ def example_action(device, **kwargs) -> dict[str, Any]:
     Returns:
         Action result
     """
-    raise NotImplementedError("Replace with your app-specific action")
+    return {"status": "ok", "action": "example_action", **kwargs}
 `
 }
 

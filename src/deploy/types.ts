@@ -79,6 +79,7 @@ export interface InstanceInfo {
  */
 export interface RollbackOptions {
   toVersion?: string;
+  targetVersion?: string;
   steps?: number;
 }
 

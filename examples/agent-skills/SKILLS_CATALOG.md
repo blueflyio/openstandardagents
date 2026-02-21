@@ -207,6 +207,22 @@ interface SkillMatch {
 - 200-800ms cold start improvement (barrel imports)
 - 30-50% bundle size reduction (dynamic imports)
 
+### 2. OSSA Agent Authoring
+
+**File**: `examples/agent-skills/ossa-agent-authoring/SKILL.md`
+
+**Capabilities**:
+- Validate OSSA manifests (schema and platform-specific)
+- Scaffold new agent directory and manifest
+- Generate agent-card JSON from manifest
+- Publish path to agentregistry/arctl
+
+**MCP Tools** (when OSSA MCP server is attached): `ossa_validate`, `ossa_scaffold`, `ossa_generate`, `ossa_publish`
+
+**Auto-Activation**:
+- Keywords: "OSSA", "manifest", "agent-card", "scaffold", "validate", "agentregistry"
+- Files: `**/*.ossa.yaml`, `**/manifest.ossa.yaml`, `**/.well-known/agent-card.json`
+
 ## Best Practices
 
 ### 1. Skill Naming
@@ -249,6 +265,7 @@ interface SkillMatch {
 ### Phase 1: Core Skills (Current)
 
 - ✅ React Performance Expert
+- ✅ OSSA Agent Authoring (MCP: ossa_validate, ossa_scaffold, ossa_generate, ossa_publish)
 - 🔄 TypeScript Type Safety Expert
 - 🔄 Accessibility Champion
 - 🔄 Security Hardening Agent

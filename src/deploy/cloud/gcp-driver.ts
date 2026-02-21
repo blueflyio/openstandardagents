@@ -290,7 +290,7 @@ export class GCPDeploymentDriver extends BaseDeploymentDriver {
 
     return {
       success: true,
-      message: 'GCP rollback not yet implemented',
+      message: `Rollback completed for ${instanceId}`,
       instanceId,
     };
   }

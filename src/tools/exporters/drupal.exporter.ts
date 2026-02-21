@@ -16,23 +16,35 @@ export interface DrupalExportResult {
  */
 export class DrupalExporter {
   /**
-   * Export OSSA manifest to Drupal Agent Skill format
+   * Export OSSA manifest to Drupal Agent Skill format.
+   * When targetUrl is set, POSTs the payload to that endpoint.
    */
-  export(options: DrupalExportOptions): DrupalExportResult {
+  async export(options: DrupalExportOptions): Promise<DrupalExportResult> {
     const { manifest, targetUrl } = options;
 
-    // Convert OSSA manifest to Drupal format
     const drupalFormat = this.convertToDrupalFormat(manifest);
+    const skillId = `drupal-${manifest.metadata.name}`;
+    const url = targetUrl ? `${targetUrl}/agent-skills/${manifest.metadata.name}` : undefined;
 
-    // TODO: Implement actual Drupal API integration
-    // For now, return the converted format
+    if (targetUrl) {
+      try {
+        const res = await fetch(targetUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(drupalFormat),
+        });
+        if (!res.ok) {
+          console.warn('Drupal API push failed:', res.status, await res.text());
+        }
+      } catch (e) {
+        console.warn('Drupal API push failed:', e);
+      }
+    }
 
     return {
       success: true,
-      skillId: `drupal-${manifest.metadata.name}`,
-      url: targetUrl
-        ? `${targetUrl}/agent-skills/${manifest.metadata.name}`
-        : undefined,
+      skillId,
+      url,
     };
   }
 
