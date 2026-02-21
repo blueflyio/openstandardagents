@@ -85,6 +85,7 @@ import { frameworkCommand } from './commands/framework.command.js';
 // Additional commands (previously unregistered)
 import { agentWizardCommand } from './commands/agent-wizard.command.js';
 import { docsCommand } from './commands/docs.command.js';
+import { platformsCommand } from './commands/platforms.command.js';
 import { enhanceCommand } from './commands/enhance.command.js';
 import { examplesCommand } from './commands/examples.command.js';
 import { knowledgeCommandGroup } from './commands/knowledge.command.js';
@@ -251,6 +252,7 @@ program.addCommand(stopCommand);
 program.addCommand(agentsMdCommand);
 program.addCommand(llmsTxtCommand);
 program.addCommand(docsCommand);
+program.addCommand(platformsCommand);
 
 // --- Skills & Templates ---
 program.addCommand(skillsCommandGroup);
@@ -316,9 +318,8 @@ program.addHelpText(
   Docs:       agents-md, llms-txt, docs
   Skills:     skills, template
   Compliance: conformance, compliance, governance, contract
-  More:       Use "ossa <command> --help" for any command. 30+ additional
-              commands available: quickstart, setup, scaffold, import, enhance,
-              registry, migrate-batch, langchain, langflow, and more.
+  More:       platforms (matrix: GitLab, Drupal, kagent, OpenAI, Claude, etc.),
+              quickstart, import, enhance, registry, migrate-batch, langchain, langflow.
 `
 );
 

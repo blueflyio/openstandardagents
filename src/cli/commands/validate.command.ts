@@ -44,6 +44,10 @@ export const validateCommand = new Command('validate')
     'Platform-specific validation (kagent, langchain, crewai, docker, kubernetes)'
   )
   .option('--all', 'Validate for all platforms', false)
+  .option(
+    '--min-api-version <version>',
+    'Require manifest apiVersion to be in the allowed set for this minimum (e.g. ossa/v0.4). Fails validation if not compliant.'
+  )
   .description(
     'Validate OSSA agent manifest or OpenAPI spec against JSON schema'
   );
@@ -51,6 +55,8 @@ export const validateCommand = new Command('validate')
 // Apply production-grade standard options
 addGlobalOptions(validateCommand);
 addQueryOptions(validateCommand);
+
+import { checkVersionCompliance } from '../../validation/version-compliance.js';
 
 validateCommand.action(
   async (
@@ -66,6 +72,7 @@ validateCommand.action(
       output?: string;
       platform?: string;
       all?: boolean;
+      minApiVersion?: string;
     }
   ) => {
     const useColor = shouldUseColor(options);
@@ -102,16 +109,49 @@ validateCommand.action(
         );
       }
 
+      // Version compliance (--min-api-version): fail if manifest apiVersion not in allowed set
+      const m = result.manifest as OssaAgent;
+      let versionCompliant: boolean | undefined;
+      let requiredVersion: string | undefined;
+      if (
+        options.minApiVersion &&
+        !options.openapi &&
+        result.valid &&
+        m
+      ) {
+        const vc = checkVersionCompliance(
+          typeof m.apiVersion === 'string' ? m.apiVersion : undefined,
+          options.minApiVersion
+        );
+        versionCompliant = vc.compliant;
+        requiredVersion = vc.requiredVersion;
+        if (!vc.compliant) {
+          result = {
+            ...result,
+            valid: false,
+            errors: [
+              ...(result.errors || []),
+              {
+                instancePath: '',
+                message: `apiVersion "${m.apiVersion ?? 'missing'}" is not compliant; required: ${vc.requiredVersion} (use ossa/v0.4 or later)`,
+                keyword: 'versionCompliance',
+              } as any,
+            ],
+          };
+        }
+      }
+
       // Output results
       const isJSON = options.json || options.output === 'json';
       if (isJSON) {
         // JSON output for machine consumption (uses shared utility)
-        const m = result.manifest as OssaAgent;
         outputJSON({
           valid: result.valid,
           path,
           schemaVersion:
             options.schema || m?.apiVersion?.replace('ossa/', '') || 'auto',
+          versionCompliant: versionCompliant,
+          requiredVersion: requiredVersion,
           errors: result.errors.map((e: any) => ({
             path: e.instancePath || e.path || '',
             message: e.message || String(e),

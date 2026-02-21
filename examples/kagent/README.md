@@ -21,7 +21,7 @@ Validate any example:
 ossa validate compliance-validator.ossa.yaml
 ```
 
-Deploy to Kubernetes (requires agent-buildkit):
+Deploy to Kubernetes (e.g. with your platform CLI; optional: agent-buildkit):
 
 ```bash
 buildkit agents deploy compliance-validator.ossa.yaml

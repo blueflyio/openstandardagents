@@ -352,6 +352,11 @@ async function createCustomAgent(
     await import('../wizard/steps/08-deployment.js');
   await configureDeploymentStep(state);
 
+  // Step 12a: Target export platforms (multi-select + matrix summary)
+  const { configureTargetPlatformsStep } =
+    await import('../wizard/steps/08a-target-platforms.js');
+  state = await configureTargetPlatformsStep(state);
+
   // Step 13: AGENTS.md (agents.md standard)
   const { configureAgentsMdStep } =
     await import('../wizard/steps/09c-agents-md.js');

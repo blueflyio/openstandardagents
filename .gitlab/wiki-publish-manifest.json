@@ -9,6 +9,11 @@
       "slug": "Discovery-and-Registry",
       "title": "Discovery and Registry",
       "file": "docs/wiki/Discovery-and-Registry.md"
+    },
+    {
+      "slug": "Platform-Matrix",
+      "title": "Platform Matrix",
+      "file": "docs/wiki/Platform-Matrix.md"
     }
   ]
 }

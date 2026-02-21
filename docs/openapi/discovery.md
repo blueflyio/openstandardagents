@@ -4,7 +4,7 @@ The Discovery API enables intelligent search and filtering of agents based on ca
 
 ## Decentralized registry API (publish and list)
 
-A minimal **registry** contract lets any tool publish or list workspace discovery over HTTP. This is separate from the search/recommend endpoints below; it is used by OSSA, buildkit, and CI to keep a shared index of "which projects/agents exist."
+A minimal **registry** contract lets any tool publish or list workspace discovery over HTTP. This is separate from the search/recommend endpoints below; it is used by OSSA and CI (and optionally other platform CLIs) to keep a shared index of "which projects/agents exist."
 
 | Method | Path | Purpose |
 |--------|------|---------|

@@ -33,6 +33,7 @@ import { DrupalManifestExporter } from '../../adapters/drupal/manifest-exporter.
 import { OpenAIAgentsAdapter } from '../../adapters/openai-agents/adapter.js';
 import type { OssaAgent } from '../../types/index.js';
 import { generatePerfectAgentBundle } from '../../adapters/base/common-file-generator.js';
+import { getPlatformsForExport } from '../../data/platform-matrix.js';
 import {
   addGlobalOptions,
   addMutationOptions,
@@ -114,101 +115,9 @@ exportCommand.action(
   ) => {
     const useColor = shouldUseColor(options);
 
-    // Handle --list-platforms
+    // Handle --list-platforms (single source of truth: platform-matrix)
     if (options.listPlatforms) {
-      const platforms = [
-        {
-          name: 'kagent',
-          status: 'alpha',
-          desc: 'kagent.dev Kubernetes CRD bundle (10+ files)',
-        },
-        {
-          name: 'langchain',
-          status: 'production',
-          desc: 'LangChain Python + TypeScript agent package (uses @langchain/* SDK)',
-        },
-        {
-          name: 'langflow',
-          status: 'beta',
-          desc: 'Langflow flow JSON (import in Langflow UI or via API at http://localhost:7860)',
-        },
-        {
-          name: 'crewai',
-          status: 'beta',
-          desc: 'CrewAI multi-agent Python package (uses CrewAI SDK)',
-        },
-        {
-          name: 'temporal',
-          status: 'alpha',
-          desc: 'Temporal workflow configuration',
-        },
-        { name: 'n8n', status: 'alpha', desc: 'n8n workflow JSON export' },
-        {
-          name: 'gitlab',
-          status: 'alpha',
-          desc: 'GitLab CI/CD YAML configuration',
-        },
-        {
-          name: 'gitlab-duo',
-          status: 'alpha',
-          desc: 'GitLab Duo Custom Agent with MCP integration',
-        },
-        {
-          name: 'docker',
-          status: 'alpha',
-          desc: 'Docker deployment package',
-        },
-        {
-          name: 'kubernetes',
-          status: 'alpha',
-          desc: 'Kubernetes Kustomize structure',
-        },
-        {
-          name: 'npm',
-          status: 'production',
-          desc: 'Installable npm package with optional Claude Skill',
-        },
-        {
-          name: 'mcp',
-          status: 'production',
-          desc: 'MCP server for Claude Code (uses @modelcontextprotocol/sdk)',
-        },
-        {
-          name: 'drupal',
-          status: 'beta',
-          desc: 'Drupal manifest for ai_agents_ossa module',
-        },
-        {
-          name: 'claude-code',
-          status: 'beta',
-          desc: 'Claude Code sub-agent for task execution',
-        },
-        {
-          name: 'cursor',
-          status: 'beta',
-          desc: 'Cursor Cloud Agent for IDE assistance',
-        },
-        {
-          name: 'warp',
-          status: 'beta',
-          desc: 'Warp terminal agent with CLI triggers',
-        },
-        {
-          name: 'anthropic',
-          status: 'beta',
-          desc: 'Anthropic Python SDK with FastAPI server',
-        },
-        {
-          name: 'agent-skills',
-          status: 'production',
-          desc: 'Agent Skills package (SKILL.md format)',
-        },
-        {
-          name: 'openai-agents-sdk',
-          status: 'beta',
-          desc: 'Runnable @openai/agents TypeScript package with MCP, guardrails, handoffs',
-        },
-      ];
+      const platforms = getPlatformsForExport();
 
       console.log(
         useColor
@@ -224,15 +133,15 @@ exportCommand.action(
               ? chalk.yellow
               : p.status === 'alpha'
                 ? chalk.magenta
-                : chalk.red;
+                : chalk.gray;
         const statusLabel = useColor
           ? statusColor(`[${p.status}]`)
           : `[${p.status}]`;
         const nameLabel = useColor
-          ? chalk.cyan(p.name.padEnd(14))
-          : p.name.padEnd(14);
+          ? chalk.cyan(p.id.padEnd(20))
+          : p.id.padEnd(20);
         console.log(
-          `  ${nameLabel} ${statusLabel.padEnd(useColor ? 30 : 14)} ${p.desc}`
+          `  ${nameLabel} ${statusLabel.padEnd(useColor ? 30 : 14)} ${p.description}`
         );
       }
 

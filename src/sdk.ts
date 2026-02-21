@@ -40,6 +40,11 @@ export type {
 
 export { OSSAValidator } from './validation/validator.js';
 export type { ValidationResult } from './validation/validator.js';
+export {
+  checkVersionCompliance,
+  MIN_API_VERSION_ALLOWED,
+} from './validation/version-compliance.js';
+export type { VersionComplianceResult } from './validation/version-compliance.js';
 
 const _distDir = dirname(fileURLToPath(import.meta.url));
 const _defaultSchemaPath = join(_distDir, 'spec', 'v0.4', 'agent.schema.json');

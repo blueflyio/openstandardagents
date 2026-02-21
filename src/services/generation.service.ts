@@ -13,6 +13,10 @@ import { LangChainAdapter } from '../adapters/langchain-adapter.js';
 import { CrewAIAdapter } from '../adapters/crewai-adapter.js';
 import { LangflowAdapter } from '../adapters/langflow-adapter.js';
 import { OpenAPIAdapter } from '../adapters/openapi-adapter.js';
+import {
+  convertFromFramework,
+  isSupportedFrameworkImport,
+} from './import/framework-to-ossa.js';
 
 type Platform =
   | 'cursor'
@@ -318,6 +322,11 @@ export class GenerationService {
     platformData: Record<string, unknown>,
     platform: Platform
   ): Promise<OssaAgent> {
+    if (isSupportedFrameworkImport(platform)) {
+      const { manifest } = convertFromFramework(platform, platformData);
+      return manifest;
+    }
+
     const currentApiVersion = getApiVersion();
     const baseManifest: OssaAgent = {
       apiVersion: currentApiVersion,
@@ -393,22 +402,6 @@ export class GenerationService {
         ) {
           baseManifest.spec.tools = this.convertToolsToOSSA(platformData.tools);
         }
-        break;
-
-      case 'crewai':
-        baseManifest.extensions = {
-          crewai: {
-            enabled: true,
-            agent_type:
-              typeof platformData.agent_type === 'string'
-                ? platformData.agent_type
-                : 'worker',
-            role: platformData.role,
-            goal: platformData.goal,
-            backstory: platformData.backstory,
-            tools: platformData.tools || [],
-          },
-        };
         break;
 
       case 'anthropic':
