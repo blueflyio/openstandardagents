@@ -48,6 +48,8 @@ import { ValidationService } from '../services/validation.service.js';
 import { MigrationTransformService } from '../services/migration-transform.service.js';
 import { VersionDetectionService } from '../services/version-detection.service.js';
 import { AgentCardGenerator } from '../services/agent-card-generator.js';
+import { RegistryService } from '../services/registry.service.js';
+import type { PublishRequest } from '../services/registry.service.js';
 import { getApiVersion, getVersion } from '../utils/version.js';
 import { scanManifests } from '../utils/manifest-scanner.js';
 import {
@@ -57,7 +59,19 @@ import {
   getDefaultDescriptionTemplate,
   getAgentTypeConfigs,
 } from '../config/defaults.js';
-import type { OssaAgent } from '../types/index.js';
+import { initializeAdapters, registry as convertRegistry } from '../adapters/index.js';
+import type { OssaAgent, ValidationResult } from '../types/index.js';
+import { CursorValidator } from '../services/validators/cursor.validator.js';
+import { OpenAIValidator } from '../services/validators/openai.validator.js';
+import { CrewAIValidator } from '../services/validators/crewai.validator.js';
+import { LangChainValidator } from '../services/validators/langchain.validator.js';
+import { AnthropicValidator } from '../services/validators/anthropic.validator.js';
+import { LangflowValidator } from '../services/validators/langflow.validator.js';
+import { AutoGenValidator } from '../services/validators/autogen.validator.js';
+import { VercelAIValidator } from '../services/validators/vercel-ai.validator.js';
+import { LlamaIndexValidator } from '../services/validators/llamaindex.validator.js';
+import { LangGraphValidator } from '../services/validators/langgraph.validator.js';
+import { KagentValidator } from '../services/validators/kagent.validator.js';
 
 // ---------------------------------------------------------------------------
 // Logging — pino (structured JSON to stderr so MCP stdio stays clean)
@@ -158,7 +172,11 @@ const manifestRepo = container.get(ManifestRepository);
 const validationService = container.get(ValidationService);
 const migrationTransformService = container.get(MigrationTransformService);
 const versionDetectionService = container.get(VersionDetectionService);
+const registryService = container.get(RegistryService);
 const agentCardGenerator = new AgentCardGenerator();
+
+// Initialize adapter registry (config-only adapters for MCP convert)
+initializeAdapters();
 
 // ---------------------------------------------------------------------------
 // MCP Server
@@ -779,6 +797,26 @@ async function dispatch(name: string, args: Record<string, unknown>) {
 }
 
 // ---------------------------------------------------------------------------
+// Platform validator registry (maps platform names to validator instances)
+// ---------------------------------------------------------------------------
+const platformValidatorRegistry = new Map<
+  string,
+  { validate: (manifest: OssaAgent) => ValidationResult }
+>([
+  ['cursor', new CursorValidator()],
+  ['openai_agents', new OpenAIValidator()],
+  ['crewai', new CrewAIValidator()],
+  ['langchain', new LangChainValidator()],
+  ['anthropic', new AnthropicValidator()],
+  ['langflow', new LangflowValidator()],
+  ['autogen', new AutoGenValidator()],
+  ['vercel_ai', new VercelAIValidator()],
+  ['llamaindex', new LlamaIndexValidator()],
+  ['langgraph', new LangGraphValidator()],
+  ['kagent', new KagentValidator()],
+]);
+
+// ---------------------------------------------------------------------------
 // ossa_validate
 // ---------------------------------------------------------------------------
 async function handleValidate(args: Record<string, unknown>) {
@@ -786,6 +824,37 @@ async function handleValidate(args: Record<string, unknown>) {
   const manifestPath = resolvePath(input.path);
   const manifest = await manifestRepo.load(manifestPath);
   const result = await validationService.validate(manifest);
+
+  // Platform-specific validation: when platform is specified, run the
+  // targeted validator explicitly and merge results
+  let platformErrors: unknown[] = [];
+  let platformWarnings: string[] = [];
+  if (input.platform) {
+    const validator = platformValidatorRegistry.get(input.platform);
+    if (validator) {
+      const platformResult = validator.validate(manifest);
+      platformErrors = platformResult.errors || [];
+      platformWarnings = platformResult.warnings || [];
+
+      // If no extension exists for this platform, add a warning
+      const extensions = (manifest as Record<string, unknown>).extensions as Record<string, unknown> | undefined;
+      if (!extensions?.[input.platform]) {
+        platformWarnings.push(
+          `Platform '${input.platform}': No extensions.${input.platform} section found in manifest. ` +
+          `Add extensions.${input.platform} to enable platform-specific features.`,
+        );
+      }
+
+      // Merge platform results into base results
+      if (platformErrors.length) {
+        result.errors = [...(result.errors || []), ...platformErrors] as typeof result.errors;
+        result.valid = false;
+      }
+      if (platformWarnings.length) {
+        result.warnings = [...(result.warnings || []), ...platformWarnings];
+      }
+    }
+  }
 
   // Strict mode: promote warnings to errors
   if (input.strict && result.warnings?.length) {
@@ -800,6 +869,11 @@ async function handleValidate(args: Record<string, unknown>) {
     warnings: result.warnings || [],
     manifest_path: manifestPath,
     platform: input.platform || null,
+    platform_validation: input.platform ? {
+      platform: input.platform,
+      errors: platformErrors,
+      warnings: platformWarnings,
+    } : undefined,
   });
 }
 
@@ -897,19 +971,51 @@ async function handlePublish(args: Record<string, unknown>) {
     manifest_path: manifestPath,
   };
 
-  // Dry run
+  // Dry run — show what would happen for both local and remote
   if (input.dry_run) {
+    const registryUrl =
+      input.registry_url || process.env.REGISTRY_URL || process.env.AGENT_REGISTRY_URL;
     return okResponse({
       dry_run: true,
       payload,
-      message: 'Payload that would be sent to registry',
+      local_publish: {
+        registry_path: path.join(process.cwd(), '.ossa-registry'),
+        agent_id: manifest.metadata?.name || 'unknown-agent',
+        version: manifest.metadata?.version || '1.0.0',
+      },
+      remote_publish: registryUrl
+        ? { registry_url: registryUrl, url: registryUrl.replace(/\/?$/, '/api/v1/agents') }
+        : null,
+      message: 'Payload that would be sent to local and/or remote registry',
     });
+  }
+
+  // Always publish locally via RegistryService (DI)
+  let localResult: Record<string, unknown> | null = null;
+  try {
+    const publishRequest: PublishRequest = {
+      manifest,
+      version: manifest.metadata?.version,
+    };
+    const entry = await registryService.publish(publishRequest);
+    localResult = {
+      success: true,
+      agent_id: entry.id,
+      version: entry.version,
+      manifest_url: entry.manifest_url,
+      published_at: entry.published_at,
+    };
+  } catch (err) {
+    localResult = {
+      success: false,
+      error: err instanceof Error ? err.message : String(err),
+    };
   }
 
   const registryUrl =
     input.registry_url || process.env.REGISTRY_URL || process.env.AGENT_REGISTRY_URL;
 
-  // HTTP registry
+  // Remote HTTP registry (if configured)
   if (registryUrl) {
     const url = registryUrl.replace(/\/?$/, '/api/v1/agents');
     const res = await axios.post(url, payload, {
@@ -922,6 +1028,7 @@ async function handlePublish(args: Record<string, unknown>) {
       status: res.status,
       registry_url: registryUrl,
       data: res.data,
+      local_publish: localResult,
     });
   }
 
@@ -935,12 +1042,24 @@ async function handlePublish(args: Record<string, unknown>) {
       success: true,
       method: 'arctl',
       stdout: arctl.stdout?.trim(),
+      local_publish: localResult,
+    });
+  }
+
+  // No remote configured — return local result
+  if (localResult?.success) {
+    return okResponse({
+      success: true,
+      method: 'local',
+      local_publish: localResult,
+      message: 'Published to local registry. Set REGISTRY_URL for remote publish.',
     });
   }
 
   return okResponse({
     published: false,
     message: 'No registry configured. Set REGISTRY_URL or install arctl.',
+    local_publish: localResult,
     next_steps: [
       'Set REGISTRY_URL or AGENT_REGISTRY_URL environment variable',
       'Or install arctl: npm install -g @agentregistry/arctl',
@@ -1069,12 +1188,9 @@ async function handleInspect(args: Record<string, unknown>) {
 // ---------------------------------------------------------------------------
 // ossa_convert — export to target platform format
 //
-// HACK: These inline adapters produce lightweight JSON configs suitable for
-// MCP tool responses. The CLI export adapters (src/adapters/) generate full
-// multi-file project scaffolds (Dockerfile, docker-compose, Python packages,
-// etc.) which are too heavy for MCP responses. This is intentional divergence.
-// TODO(#442): Create a shared "config-only" export mode in the adapter classes
-// so both CLI and MCP can use the same code path.
+// Most targets delegate to the adapter registry's toConfig() method (#442).
+// a2a/agent-card and claude-agent-sdk remain inline due to their complexity
+// (cross-platform card generation and SDK-specific config respectively).
 // ---------------------------------------------------------------------------
 async function handleConvert(args: Record<string, unknown>) {
   const input = ConvertInput.parse(args);
@@ -1085,266 +1201,8 @@ async function handleConvert(args: Record<string, unknown>) {
   let converted: Record<string, unknown>;
   let filename: string;
 
-  switch (input.target) {
-    case 'kagent': {
-      // Generate kagent.dev v1alpha2 format (actual CRD that kagent controller understands)
-      const kagentExtensions = (manifest as Record<string, unknown>).extensions as Record<string, unknown> | undefined;
-      const kagentExt = kagentExtensions?.kagent as Record<string, unknown> | undefined;
-      const kagentNs = (kagentExt?.kubernetes as Record<string, unknown>)?.namespace || 'kagent';
-      const a2aConfig = kagentExt?.a2aConfig as Record<string, unknown> | undefined;
-
-      // Map OSSA tools to kagent McpServer tool format
-      const ossaTools = (manifest.spec?.tools || []) as Array<Record<string, unknown>>;
-      const kagentTools = ossaTools.map((t) => {
-        if (t.type === 'mcp') {
-          return {
-            type: 'McpServer',
-            mcpServer: {
-              name: t.server || t.name || 'tool-server',
-              kind: 'RemoteMCPServer',
-              ...(t.toolNames ? { toolNames: t.toolNames } : {}),
-            },
-          };
-        }
-        return {
-          type: 'McpServer',
-          mcpServer: {
-            name: t.name || 'tool-server',
-            kind: 'RemoteMCPServer',
-          },
-        };
-      });
-
-      // Build the v1alpha2 Agent CRD
-      converted = {
-        apiVersion: 'kagent.dev/v1alpha2',
-        kind: 'Agent',
-        metadata: {
-          name: meta.name,
-          namespace: kagentNs,
-          labels: {
-            'ossa.dev/name': meta.name,
-            'ossa.dev/version': meta.version || '0.0.0',
-            'app.kubernetes.io/managed-by': 'ossa',
-          },
-        },
-        spec: {
-          description: meta.description || '',
-          type: 'Declarative',
-          declarative: {
-            modelConfig: `${meta.name}-model-config`,
-            systemMessage: manifest.spec?.role || '',
-            tools: kagentTools,
-            ...(a2aConfig ? { a2aConfig } : {}),
-          },
-        },
-      };
-
-      // Also generate the ModelConfig companion resource
-      const modelConfig = {
-        apiVersion: 'kagent.dev/v1alpha2',
-        kind: 'ModelConfig',
-        metadata: {
-          name: `${meta.name}-model-config`,
-          namespace: kagentNs,
-        },
-        spec: {
-          provider: manifest.spec?.llm?.provider || 'openai',
-          model: manifest.spec?.llm?.model || 'gpt-4',
-          ...(manifest.spec?.llm?.temperature != null ? { temperature: manifest.spec.llm.temperature } : {}),
-          ...(manifest.spec?.llm?.maxTokens != null ? { maxTokens: manifest.spec.llm.maxTokens } : {}),
-        },
-      };
-
-      // Return both resources in a multi-document YAML
-      converted = {
-        _ossa_multi_resource: true,
-        resources: [converted, modelConfig],
-        agent: converted,
-        modelConfig,
-      };
-      filename = `${meta.name}.kagent.yaml`;
-      break;
-    }
-
-    case 'docker': {
-      converted = {
-        version: '3.8',
-        services: {
-          [meta.name]: {
-            image: `ossa/${meta.name}:${meta.version || 'latest'}`,
-            environment: {
-              AGENT_NAME: meta.name,
-              LLM_PROVIDER: manifest.spec?.llm?.provider || 'openai',
-              LLM_MODEL: manifest.spec?.llm?.model || 'gpt-4',
-            },
-            labels: {
-              'ossa.name': meta.name,
-              'ossa.version': meta.version || '0.0.0',
-              'ossa.kind': manifest.kind || 'Agent',
-            },
-          },
-        },
-      };
-      filename = `docker-compose.${meta.name}.yml`;
-      break;
-    }
-
-    case 'langchain': {
-      converted = {
-        _type: 'agent',
-        name: meta.name,
-        description: meta.description || '',
-        llm: {
-          _type: manifest.spec?.llm?.provider === 'anthropic' ? 'ChatAnthropic' : 'ChatOpenAI',
-          model_name: manifest.spec?.llm?.model || 'gpt-4',
-        },
-        system_message: manifest.spec?.role || '',
-        tools: (manifest.spec?.tools || []).map((t: Record<string, unknown>) => ({
-          name: t.name,
-          type: t.type,
-        })),
-      };
-      filename = `${meta.name}.langchain.json`;
-      break;
-    }
-
-    case 'crewai': {
-      converted = {
-        agents: [
-          {
-            role: meta.name,
-            goal: meta.description || '',
-            backstory: manifest.spec?.role || '',
-            llm: manifest.spec?.llm?.model || 'gpt-4',
-            tools: (manifest.spec?.tools || []).map((t: Record<string, unknown>) => t.name),
-          },
-        ],
-      };
-      filename = `${meta.name}.crewai.yaml`;
-      break;
-    }
-
-    case 'gitlab-duo': {
-      converted = {
-        name: meta.name,
-        description: meta.description || '',
-        system_prompt: manifest.spec?.role || '',
-        model: manifest.spec?.llm?.model || 'claude-sonnet-4-20250514',
-        tools: (manifest.spec?.tools || []).map((t: Record<string, unknown>) => ({
-          name: t.name,
-        })),
-      };
-      filename = `${meta.name}.duo-agent.yaml`;
-      break;
-    }
-
-    case 'anthropic': {
-      converted = {
-        name: meta.name,
-        description: meta.description || '',
-        model: manifest.spec?.llm?.model || 'claude-sonnet-4-20250514',
-        system: manifest.spec?.role || '',
-        tools: (manifest.spec?.tools || []).map((t: Record<string, unknown>) => ({
-          name: t.name,
-          description: '',
-          input_schema: { type: 'object', properties: {} },
-        })),
-        max_tokens: 4096,
-      };
-      filename = `${meta.name}.anthropic.json`;
-      break;
-    }
-
-    case 'openai': {
-      // OpenAI Assistants / function_calling format
-      const oaiTools = (manifest.spec?.tools || []) as Array<Record<string, unknown>>;
-      converted = {
-        model: manifest.spec?.llm?.model || 'gpt-4',
-        name: meta.name,
-        description: meta.description || '',
-        instructions: manifest.spec?.role || '',
-        tools: oaiTools.map((t) => ({
-          type: 'function',
-          function: {
-            name: t.name || 'unnamed',
-            description: (t.description as string) || '',
-            parameters: t.inputSchema || t.input_schema || t.parameters || { type: 'object', properties: {} },
-          },
-        })),
-        metadata: {
-          ossa_version: manifest.apiVersion || 'ossa/v0.4',
-          ossa_name: meta.name,
-        },
-      };
-      filename = `${meta.name}.openai.json`;
-      break;
-    }
-
-    case 'autogen': {
-      // Microsoft AutoGen agent config
-      const autogenTools = (manifest.spec?.tools || []) as Array<Record<string, unknown>>;
-      converted = {
-        name: meta.name,
-        description: meta.description || '',
-        system_message: manifest.spec?.role || '',
-        llm_config: {
-          config_list: [
-            {
-              model: manifest.spec?.llm?.model || 'gpt-4',
-              api_type: manifest.spec?.llm?.provider === 'anthropic' ? 'anthropic' : 'openai',
-            },
-          ],
-          ...(manifest.spec?.llm?.temperature != null ? { temperature: manifest.spec.llm.temperature } : {}),
-          ...(manifest.spec?.llm?.maxTokens != null ? { max_tokens: manifest.spec.llm.maxTokens } : {}),
-        },
-        ...(autogenTools.length > 0
-          ? {
-              tools: autogenTools.map((t) => ({
-                name: t.name || 'unnamed',
-                description: (t.description as string) || '',
-                ...(t.inputSchema || t.input_schema ? { parameters: t.inputSchema || t.input_schema } : {}),
-              })),
-            }
-          : {}),
-        metadata: {
-          ossa_version: manifest.apiVersion || 'ossa/v0.4',
-        },
-      };
-      filename = `${meta.name}.autogen.json`;
-      break;
-    }
-
-    case 'semantic-kernel': {
-      // Microsoft Semantic Kernel agent config
-      const skTools = (manifest.spec?.tools || []) as Array<Record<string, unknown>>;
-      converted = {
-        name: meta.name,
-        description: meta.description || '',
-        instructions: manifest.spec?.role || '',
-        execution_settings: {
-          default: {
-            model_id: manifest.spec?.llm?.model || 'gpt-4',
-            service_id: manifest.spec?.llm?.provider || 'openai',
-            ...(manifest.spec?.llm?.temperature != null ? { temperature: manifest.spec.llm.temperature } : {}),
-            ...(manifest.spec?.llm?.maxTokens != null ? { max_tokens: manifest.spec.llm.maxTokens } : {}),
-          },
-        },
-        plugins: skTools.map((t) => ({
-          name: t.name || 'unnamed',
-          description: (t.description as string) || '',
-          parameters: t.inputSchema || t.input_schema || t.parameters || { type: 'object', properties: {} },
-        })),
-        metadata: {
-          ossa_version: manifest.apiVersion || 'ossa/v0.4',
-        },
-      };
-      filename = `${meta.name}.semantic-kernel.json`;
-      break;
-    }
-
-    case 'a2a':
-    case 'agent-card': {
+  // a2a/agent-card is special: complex cross-platform card stays inline
+  if (input.target === 'a2a' || input.target === 'agent-card') {
       // Build comprehensive cross-platform agent card
       // This is THE universal discovery format: MCP → OSSA → A2A
       let cardResult: { success: boolean; card?: unknown; errors: string[] } = { success: false, errors: [] };
@@ -1660,10 +1518,8 @@ async function handleConvert(args: Record<string, unknown>) {
         } : {}),
       };
       filename = 'agent-card.json';
-      break;
-    }
 
-    case 'claude-agent-sdk': {
+  } else if (input.target === 'claude-agent-sdk') {
       // Generate Claude Agent SDK application config (TypeScript + Python)
       const sdkTools = (manifest.spec?.tools || []) as Array<Record<string, unknown>>;
       const sdkLlm = manifest.spec?.llm as Record<string, unknown> | undefined;
@@ -1785,11 +1641,23 @@ async function handleConvert(args: Record<string, unknown>) {
         },
       };
       filename = `${meta.name}.claude-agent-sdk.json`;
-      break;
-    }
 
-    default:
+  } else {
+    // Delegate to adapter registry (config-only + full adapters with toConfig())
+    initializeAdapters();
+    const adapter = convertRegistry.getAdapter(input.target);
+    if (!adapter) {
       return errResponse(`Unknown target: ${input.target}`);
+    }
+    try {
+      const result = await adapter.toConfig(manifest);
+      converted = result.config;
+      filename = result.filename;
+    } catch (err) {
+      return errResponse(
+        `toConfig() failed for target "${input.target}": ${err instanceof Error ? err.message : String(err)}`
+      );
+    }
   }
 
   // Optionally write to disk

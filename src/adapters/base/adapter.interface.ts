@@ -186,6 +186,23 @@ export interface ExportOptions {
 export type AdapterStatus = 'production' | 'beta' | 'alpha' | 'planned';
 
 /**
+ * Lightweight config-only export result.
+ * Used by MCP tool responses and other contexts where full file scaffolds
+ * are too heavy.
+ */
+export interface ConfigResult {
+  /**
+   * The converted configuration object (platform-specific JSON)
+   */
+  config: Record<string, unknown>;
+
+  /**
+   * Suggested filename for the config (e.g. 'agent.kagent.yaml')
+   */
+  filename: string;
+}
+
+/**
  * Platform Adapter Interface
  *
  * All export adapters must implement this interface
@@ -239,6 +256,16 @@ export interface PlatformAdapter {
    * @returns Example OSSA manifest optimized for this platform
    */
   getExample(): OssaAgent;
+
+  /**
+   * Produce a lightweight JSON config suitable for MCP tool responses.
+   * Unlike export() which generates full multi-file project scaffolds,
+   * toConfig() returns a single JSON object representing the platform config.
+   *
+   * @param manifest - OSSA agent manifest
+   * @returns Lightweight config result with config object and suggested filename
+   */
+  toConfig(manifest: OssaAgent): Promise<ConfigResult>;
 }
 
 /**
@@ -422,6 +449,17 @@ export abstract class BaseAdapter implements PlatformAdapter {
       yaml.stringify(manifest),
       'config',
       'yaml'
+    );
+  }
+
+  /**
+   * Default toConfig() — throws unless overridden by the adapter.
+   * Adapters that support lightweight config-only export should override this.
+   */
+  async toConfig(manifest: OssaAgent): Promise<ConfigResult> {
+    throw new Error(
+      `toConfig() is not implemented for platform "${this.platform}". ` +
+      `Use export() for full file scaffold export.`
     );
   }
 

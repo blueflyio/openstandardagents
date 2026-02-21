@@ -16,6 +16,7 @@ import type {
   ValidationResult,
   ValidationError,
   ValidationWarning,
+  ConfigResult,
 } from '../base/adapter.interface.js';
 import {
   generatePackageJson,
@@ -215,6 +216,31 @@ export class LangChainAdapter extends BaseAdapter {
           'conversational-memory',
         ] as any,
       },
+    };
+  }
+
+  /**
+   * Produce lightweight JSON config for MCP tool responses.
+   */
+  async toConfig(manifest: OssaAgent): Promise<ConfigResult> {
+    const meta = manifest.metadata || { name: 'agent', version: '0.0.0' };
+    const config: Record<string, unknown> = {
+      _type: 'agent',
+      name: meta.name,
+      description: meta.description || '',
+      llm: {
+        _type: manifest.spec?.llm?.provider === 'anthropic' ? 'ChatAnthropic' : 'ChatOpenAI',
+        model_name: manifest.spec?.llm?.model || 'gpt-4',
+      },
+      system_message: manifest.spec?.role || '',
+      tools: ((manifest.spec?.tools || []) as Array<Record<string, unknown>>).map((t) => ({
+        name: t.name,
+        type: t.type,
+      })),
+    };
+    return {
+      config,
+      filename: `${meta.name}.langchain.json`,
     };
   }
 
