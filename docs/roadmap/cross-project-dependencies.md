@@ -11,7 +11,7 @@
 | Project | Repository | Purpose |
 |---------|------------|---------|
 | **openstandardagents** | GitLab: blueflyio/openstandardagents | OSSA specification and schema |
-| **gitlab_components** | GitLab: blueflyio/gitlab_components | GitLab CI/CD components for OSSA |
+| **gitlab_components** | GitLab: blueflyio/agent-platform/tools/gitlab_components | GitLab CI/CD components for OSSA |
 
 ### Implementation Projects
 
