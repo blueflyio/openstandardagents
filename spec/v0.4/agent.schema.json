@@ -3680,6 +3680,10 @@
             }
           }
         },
+        "memory_management": {
+          "$ref": "#/definitions/MemoryManagement",
+          "description": "Agent memory file management (CLAUDE.md hierarchy, rules extraction, conditional loading)"
+        },
         "knowledge_graph": {
           "type": "object",
           "description": "Knowledge graph efficiency (98% token reduction)",
@@ -3748,6 +3752,155 @@
             "optimized_cost": {
               "type": "number",
               "description": "Optimized cost per request (USD)"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "MemoryManagement": {
+      "type": "object",
+      "description": "Agent memory file management for IDE/CLI context optimization (v0.4). Manages CLAUDE.md hierarchy, rules extraction, conditional loading, and auto-memory for tools like Claude Code, Cursor, Windsurf.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable memory management optimizations"
+        },
+        "threshold": {
+          "type": "object",
+          "description": "Memory size thresholds for triggering optimization",
+          "properties": {
+            "max_chars": {
+              "type": "integer",
+              "default": 40000,
+              "description": "Maximum characters before optimization is triggered"
+            },
+            "warn_chars": {
+              "type": "integer",
+              "default": 30000,
+              "description": "Warning threshold in characters"
+            },
+            "max_tokens": {
+              "type": "integer",
+              "description": "Optional token-based threshold (provider-specific)"
+            }
+          }
+        },
+        "hierarchy": {
+          "type": "object",
+          "description": "Memory file hierarchy and loading order",
+          "properties": {
+            "files": {
+              "type": "array",
+              "description": "Ordered list of memory files loaded per session",
+              "items": {
+                "type": "object",
+                "required": ["path", "type"],
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "description": "File path (absolute or relative to project root)"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": ["managed-policy", "project", "rules", "user", "local", "auto-memory", "import"],
+                    "description": "Memory file type in the loading hierarchy"
+                  },
+                  "priority": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100,
+                    "description": "Loading priority (lower = loaded first, higher priority)"
+                  },
+                  "conditional": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Whether this file is conditionally loaded based on path patterns"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "rules": {
+          "type": "object",
+          "description": "Rules extraction configuration for conditional loading",
+          "properties": {
+            "directory": {
+              "type": "string",
+              "default": ".claude/rules",
+              "description": "Directory for extracted rule files"
+            },
+            "path_scoping": {
+              "type": "boolean",
+              "default": true,
+              "description": "Enable path-scoped conditional loading via YAML frontmatter"
+            },
+            "classifications": {
+              "type": "array",
+              "description": "Section classifications for extraction targeting",
+              "items": {
+                "type": "object",
+                "required": ["domain", "paths"],
+                "properties": {
+                  "domain": {
+                    "type": "string",
+                    "description": "Domain name (e.g. drupal, ossa, infrastructure, security)"
+                  },
+                  "paths": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Glob patterns for conditional loading (e.g. ['drupal/**', '*.module'])"
+                  },
+                  "keywords": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Keywords that trigger classification of sections into this domain"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "auto_memory": {
+          "type": "object",
+          "description": "Auto-memory configuration (persistent memory across sessions)",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Enable auto-memory for cross-session persistence"
+            },
+            "max_lines": {
+              "type": "integer",
+              "default": 200,
+              "description": "Maximum lines loaded from auto-memory per session"
+            },
+            "storage_path": {
+              "type": "string",
+              "description": "Storage path for auto-memory files (default: platform-specific)"
+            }
+          }
+        },
+        "optimization": {
+          "type": "object",
+          "description": "Automatic optimization settings",
+          "properties": {
+            "auto_extract": {
+              "type": "boolean",
+              "default": false,
+              "description": "Automatically extract sections to rules when threshold exceeded"
+            },
+            "max_suggestions": {
+              "type": "integer",
+              "default": 10,
+              "description": "Maximum optimization suggestions to generate"
+            },
+            "min_section_chars": {
+              "type": "integer",
+              "default": 500,
+              "description": "Minimum section size to consider for extraction"
             }
           }
         }

@@ -727,6 +727,9 @@ class OSSAWizardV2 {
       // Step 11: Token Efficiency (v0.4 REVOLUTIONARY)
       await this.configureTokenEfficiency();
 
+      // Step 11b: Memory Management (v0.4)
+      await this.configureMemoryManagement();
+
       // Step 12: Agent-to-Agent Communication (A2A) - MAJOR SELLING POINT
       await this.configureMessagingA2A();
 
@@ -1780,6 +1783,80 @@ Guidelines:
       );
     } else {
       printInfo('⏭️  Token efficiency optimizations skipped');
+    }
+  }
+
+  private async configureMemoryManagement(): Promise<void> {
+    this.state.nextStep('Memory Management');
+    printStep(
+      this.state.getState().currentStep,
+      this.state.getState().totalSteps,
+      'Memory Management (v0.4)',
+      'Optimize CLAUDE.md and context files'
+    );
+
+    printInfo('Memory management optimizes context files loaded per session.');
+    printInfo('   - CLAUDE.md hierarchy management');
+    printInfo('   - Rules extraction to .claude/rules/');
+    printInfo('   - Path-scoped conditional loading');
+    printInfo('   - Auto-memory across sessions');
+
+    const answers = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'enable',
+        message: 'Enable memory management?',
+        default: true,
+      },
+    ]);
+
+    if (answers.enable) {
+      const options = await inquirer.prompt([
+        {
+          type: 'number',
+          name: 'maxChars',
+          message: 'Max memory chars before optimization:',
+          default: 40000,
+        },
+        {
+          type: 'confirm',
+          name: 'pathScoping',
+          message: 'Enable path-scoped conditional loading?',
+          default: true,
+        },
+        {
+          type: 'confirm',
+          name: 'autoExtract',
+          message: 'Auto-extract sections when threshold exceeded?',
+          default: false,
+        },
+      ]);
+
+      this.state.updateAgent({
+        token_efficiency: {
+          memory_management: {
+            enabled: true,
+            threshold: {
+              max_chars: options.maxChars,
+              warn_chars: Math.round(options.maxChars * 0.75),
+            },
+            rules: {
+              directory: '.claude/rules',
+              path_scoping: options.pathScoping,
+            },
+            auto_memory: { enabled: true, max_lines: 200 },
+            optimization: {
+              auto_extract: options.autoExtract,
+              max_suggestions: 10,
+              min_section_chars: 500,
+            },
+          },
+        },
+      });
+
+      printSuccess('Memory management configured');
+    } else {
+      printInfo('Memory management skipped');
     }
   }
 

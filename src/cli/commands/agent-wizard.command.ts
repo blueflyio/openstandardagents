@@ -367,7 +367,12 @@ async function createCustomAgent(
     await import('../wizard/steps/09d-drupal-tools-eca.js');
   await configureDrupalToolsEcaStep(state);
 
-  // Step 15: Review & Save
+  // Step 15: Memory Management (v0.4)
+  const { configureMemoryManagementStep } =
+    await import('../wizard/steps/09e-memory-management.js');
+  await configureMemoryManagementStep(state);
+
+  // Step 16: Review & Save
   const { reviewAndSaveStep } = await import('../wizard/steps/10-review.js');
   await reviewAndSaveStep(state, options);
 }

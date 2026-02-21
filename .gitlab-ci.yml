@@ -108,6 +108,52 @@ validate:openapi:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/
 
+# Validate all OSSA manifests in spec/reference and .agents/ using ossa validate
+validate:manifests-ossa:
+  extends: .base-runner
+  stage: validate
+  script:
+    - npx ossa validate spec/reference/reference-agents/*/manifest.ossa.yaml
+    - |
+      for f in $(find .agents -name "*.ossa.yaml" 2>/dev/null); do
+        echo "Validating $f"
+        npx ossa validate "$f"
+      done
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/
+
+# Discover agents and list them (workspace init → discover → list)
+validate:agents-discover:
+  extends: .base-runner
+  stage: validate
+  script:
+    - npx ossa workspace init --name openstandardagents 2>/dev/null || true
+    - npx ossa workspace discover
+    - npx ossa agents list --json
+  artifacts:
+    paths:
+      - .agents-workspace/
+    expire_in: 1 day
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/
+
+# Test MCP server starts and responds to tools/list
+validate:mcp-server:
+  extends: .base-runner
+  stage: validate
+  script:
+    - npm run build
+    - |
+      echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"ci","version":"1.0"}}}' \
+        | node dist/mcp-server/index.js 2>/dev/null \
+        | head -1 \
+        | node -e "const d=JSON.parse(require('fs').readFileSync(0,'utf8'));if(!d.result)process.exit(1);console.log('MCP server OK:',d.result.serverInfo)"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/
+
 # =============================================================================
 # TEST STAGE
 # =============================================================================

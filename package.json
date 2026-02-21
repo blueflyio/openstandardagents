@@ -72,7 +72,8 @@
       "types": "./dist/version-management/index.d.ts",
       "import": "./dist/version-management/index.js",
       "require": "./dist/version-management/index.js"
-    }
+    },
+    "./mcp-server": "./dist/mcp-server/index.js"
   },
   "description": "OSSA - Open Standard for Software Agents. Infrastructure bridge between agent protocols (MCP, A2A) and deployment platforms. Define once in YAML, export to 9+ platforms (Docker, Kubernetes, LangChain, CrewAI, Claude Skills, etc.).",
   "keywords": [
@@ -160,6 +161,8 @@
     "test:mutation:ci": "stryker run --logLevel error",
     "test:watch": "jest --watch",
     "test:ci": "jest --ci --coverage --reporters=default --reporters=jest-junit",
+    "test:mcp": "vitest run src/mcp-server/__tests__/mcp-server.spec.ts",
+    "test:mcp:watch": "vitest watch src/mcp-server/__tests__/mcp-server.spec.ts",
     "ci:validate": "npm run build:clean && npm run quality && npm run test:unit && npm run test:smoke && npm run validate:all",
     "ci:validate:fast": "npm run typecheck && npm run lint && npm run test:unit && npm run validate:schema",
     "// CODE QUALITY": "",
