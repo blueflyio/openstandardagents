@@ -220,7 +220,10 @@ export class VersionDetectionService {
         path.push(targetVersion);
       }
     } else {
-      // Major version migration: not supported yet, go direct
+      // Major version migration: step through minor .0 of each major
+      for (let major = source.major + 1; major < target.major; major++) {
+        path.push(`${major}.0.0`);
+      }
       path.push(targetVersion);
     }
 

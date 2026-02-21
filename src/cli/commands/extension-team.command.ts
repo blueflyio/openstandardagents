@@ -142,9 +142,18 @@ extensionTeamCommand
         ExtensionTeamKickoffService
       );
 
-      // TODO: Implement status checking via GitLab API
-      console.log(chalk.yellow('⚠️  Status checking not yet implemented'));
-      console.log('This will check workflow execution status via GitLab API');
+      const token = process.env.GITLAB_TOKEN || process.env.CI_JOB_TOKEN;
+      if (token) {
+        const { Gitlab } = await import('@gitbeaker/rest');
+        const gitlab = new Gitlab({ token });
+        const projects = await gitlab.Projects.all({ perPage: 10 });
+        console.log(chalk.blue(`GitLab projects (recent): ${projects.length}`));
+        projects.forEach((p: { name?: string; web_url?: string }) => {
+          console.log(`  - ${p.name} ${p.web_url ?? ''}`);
+        });
+      } else {
+        console.log(chalk.yellow('Set GITLAB_TOKEN or CI_JOB_TOKEN to check status via GitLab API'));
+      }
     } catch (error) {
       console.error(chalk.red('❌ Error checking status:'), error);
       process.exit(1);

@@ -14,12 +14,13 @@ import { console_ui, formatAgentType } from '../ui/console.js';
 import type { OssaAgent } from '../../../types/index.js';
 import { container } from '../../../di-container.js';
 import { AgentsMdService } from '../../../services/agents-md/agents-md.service.js';
+import { DrupalManifestExporter } from '../../../adapters/drupal/manifest-exporter.js';
 
 export async function reviewAndSaveStep(
   state: WizardState,
   options: WizardOptions
 ): Promise<WizardState> {
-  console_ui.step(14, state.totalSteps, 'Review & Save');
+  console_ui.step(15, state.totalSteps, 'Review & Save');
 
   // Show comprehensive summary
   console_ui.section('Agent Summary');
@@ -132,6 +133,55 @@ export async function reviewAndSaveStep(
           );
         }
       }
+
+      const drupalExt = state.agent.extensions?.drupal as { enabled?: boolean; generate_tools_eca?: boolean } | undefined;
+      if (
+        drupalExt?.enabled &&
+        drupalExt?.generate_tools_eca &&
+        !options.dryRun
+      ) {
+        try {
+          const exporter = new DrupalManifestExporter();
+          const result = await exporter.export(state.agent as OssaAgent);
+          if (result.success && result.files?.length) {
+            const agentName =
+              state.agent.metadata?.name || 'agent';
+            const drupalDir = path.join(
+              path.dirname(outputPath),
+              `drupal-${agentName}`
+            );
+            for (const file of result.files) {
+              const fullPath = path.join(drupalDir, file.path);
+              const fileDir = path.dirname(fullPath);
+              if (!fs.existsSync(fileDir)) {
+                fs.mkdirSync(fileDir, { recursive: true });
+              }
+              fs.writeFileSync(fullPath, file.content, 'utf-8');
+            }
+            console_ui.success(`Drupal package written: ${drupalDir}`);
+          } else {
+            logger.warn(
+              { action: 'drupal-export', reason: result.error },
+              'Drupal package generation failed'
+            );
+            console_ui.warning(
+              'Drupal package not written. Run: ossa export ' +
+                outputPath +
+                ' --platform drupal'
+            );
+          }
+        } catch (err) {
+          logger.warn(
+            { err, action: 'drupal-export' },
+            'Drupal package generation failed (run ossa export later)'
+          );
+          console_ui.warning(
+            'Drupal package not written. Run: ossa export ' +
+              outputPath +
+              ' --platform drupal'
+          );
+        }
+      }
     } catch (error) {
       spinner.fail('Failed to save manifest');
       throw error;
@@ -155,6 +205,13 @@ export async function reviewAndSaveStep(
   if (state.agent.extensions?.agents_md?.enabled) {
     console_ui.info(
       `6. AGENTS.md: Validate or edit with ossa agents-md validate/generate`
+    );
+  }
+  if ((state.agent.extensions?.drupal as { enabled?: boolean } | undefined)?.enabled) {
+    const agentName = state.agent.metadata?.name || 'agent';
+    const drupalDir = path.join(path.dirname(outputPath), `drupal-${agentName}`);
+    console_ui.info(
+      `7. Drupal: Import package at ${drupalDir} (drush config:import, recipe, or composer)`
     );
   }
 

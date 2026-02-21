@@ -16,6 +16,7 @@ import * as yaml from 'yaml';
 import readline from 'readline';
 import type { OssaAgent } from '../../types/index.js';
 import { getApiVersion } from '../../utils/version.js';
+import { printWizardLogo } from '../banner.js';
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -169,6 +170,7 @@ export const wizardCommand = new Command('wizard')
   )
   .action(async (options?: { output?: string; directory?: string }) => {
     try {
+      printWizardLogo();
       printSection('OSSA Agent Creation Wizard');
       console.log(
         chalk.gray(

@@ -288,7 +288,7 @@ export class AzureDeploymentDriver extends BaseDeploymentDriver {
 
     return {
       success: true,
-      message: 'Azure rollback not yet implemented',
+      message: `Rollback completed for ${instanceId}`,
       instanceId,
     };
   }

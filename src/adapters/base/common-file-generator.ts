@@ -22,6 +22,7 @@ import {
   generateEvalStubs,
   generateGovernanceConfig,
   generateObservabilityConfig,
+  generateSkillContent,
 } from './perfect-agent-utils.js';
 
 // ──────────────────────────────────────────────────────────────────
@@ -886,25 +887,41 @@ export function generatePerfectAgentBundle(
   platform: TeamTargetPlatform = 'generic'
 ): ExportFile[] {
   const files: ExportFile[] = [];
-  const isPerfect = options?.perfectAgent;
+  const isPerfect = options?.perfectAgent ?? (options === undefined);
+  const includeAgentsMd = isPerfect || options?.includeAgentsMd;
+  const includeTeam = isPerfect || options?.includeTeam;
+  const includeSkill = isPerfect || options?.includeSkill;
+  const includeEvals = isPerfect || options?.includeEvals;
+  const includeGovernance = isPerfect || options?.includeGovernance;
+  const includeObservability = isPerfect || options?.includeObservability;
 
-  if (isPerfect || options?.includeAgentsMd) {
+  if (includeAgentsMd) {
     files.push(generateAgentsMdFile(manifest));
   }
 
-  if (isPerfect || options?.includeTeam) {
+  if (includeSkill) {
+    const skillContent = generateSkillContent(manifest);
+    files.push({
+      path: 'skills/SKILL.md',
+      content: skillContent,
+      type: 'documentation',
+      language: 'markdown',
+    });
+  }
+
+  if (includeTeam) {
     files.push(...generateTeamFilesForExport(manifest, platform));
   }
 
-  if (isPerfect || options?.includeEvals) {
+  if (includeEvals) {
     files.push(generateEvalStubs(manifest));
   }
 
-  if (isPerfect || options?.includeGovernance) {
+  if (includeGovernance) {
     files.push(generateGovernanceConfig(manifest));
   }
 
-  if (isPerfect || options?.includeObservability) {
+  if (includeObservability) {
     files.push(generateObservabilityConfig(manifest));
   }
 

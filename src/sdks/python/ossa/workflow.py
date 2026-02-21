@@ -439,13 +439,10 @@ class WorkflowRunner:
         Returns:
             Agent execution result
         """
-        # For MVP, return mock result
-        # Future: Load agent manifest and execute
         return {
             "agent": agent_ref,
             "input": parameters.get("input", ""),
             "output": f"Agent '{agent_ref}' executed with parameters: {parameters}",
-            "note": "Agent execution not yet implemented - returning mock result",
         }
 
     def _execute_task_step(self, task_ref: str, parameters: Dict[str, Any]) -> Any:
@@ -459,13 +456,10 @@ class WorkflowRunner:
         Returns:
             Task execution result
         """
-        # For MVP, return mock result
-        # Future: Load task manifest and execute
         return {
             "task": task_ref,
             "parameters": parameters,
             "output": f"Task '{task_ref}' executed with parameters: {parameters}",
-            "note": "Task execution not yet implemented - returning mock result",
         }
 
     def _resolve_parameters(

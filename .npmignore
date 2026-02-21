@@ -1,6 +1,10 @@
 # OSSA - npm Package Exclusions
 # Only include what's needed for the npm package
 # This file complements package.json "files" array
+#
+# Config lives under config/ and infra/ (canonical paths, no symlinks).
+# Root-level names below are excluded for clarity; real paths: config/ossa/,
+# config/release/, config/linting/, config/docs/, config/nginx/, infra/.
 
 # Development directories
 .agents-workspace/

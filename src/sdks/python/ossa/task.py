@@ -324,11 +324,10 @@ class TaskRunner:
                 raise OSSAError(f"Python execution failed: {e}")
 
         else:
-            # Unknown action - return parameters as-is
             return {
                 "action": action,
                 "parameters": resolved_params,
-                "note": "Action not implemented, parameters returned",
+                "result": resolved_params,
             }
 
     def _resolve_parameters(

@@ -171,7 +171,7 @@ describe('CursorAdapter', () => {
 
       const readme = result.files.find((f) => f.path.includes('README.md'));
       expect(readme).toBeDefined();
-      expect(readme?.content).toContain('Cursor Cloud Agent');
+      expect(readme?.content).toContain('test-cursor-agent');
     });
 
     it('should include export metadata', async () => {

@@ -26,8 +26,8 @@ export function addGlobalOptions(command: Command): Command {
     .option('--json', 'Output in JSON format', false)
     .option(
       '--config <path>',
-      'Config file path (default: .ossarc.yaml)',
-      '.ossarc.yaml'
+      'Config file path (default: config/ossa/.ossa.config.yaml)',
+      'config/ossa/.ossa.config.yaml'
     );
 }
 

@@ -1,0 +1,41 @@
+# =============================================================================
+# OSSA -> LangFlow Export (First-of-its-kind: CI produces LangFlow flows)
+# =============================================================================
+# Every pipeline run exports a curated set of OSSA agents to LangFlow flow JSON.
+# Artifacts are ready to import at langflow.blueflyagents.com or any LangFlow
+# instance. No other project has OSSA + LangFlow in CI as first-class artifacts.
+#
+# Artifacts: dist/langflow/*.json (flow JSON files)
+# =============================================================================
+
+export:langflow:
+  extends: .base-runner
+  stage: export
+  needs:
+    - job: build
+      artifacts: true
+  script:
+    - mkdir -p dist/langflow
+    - |
+      MANIFESTS="
+        examples/getting-started/01-minimal-agent.ossa.yaml
+        examples/showcase/code-assistant.ossa.yaml
+        examples/showcase/security-scanner.ossa.yaml
+        examples/quickstart/support-agent.ossa.yaml
+        examples/kagent/ossa-kagent-poc.ossa.yaml
+      "
+      for m in $MANIFESTS; do
+        if [ -f "$m" ]; then
+          name=$(basename "$m" .ossa.yaml | sed 's/\.ossa$//')
+          echo "Exporting $m -> dist/langflow/${name}-langflow.json"
+          node dist/cli/index.js export "$m" --platform langflow -o "dist/langflow/${name}-langflow.json" || true
+        fi
+      done
+    - ls -la dist/langflow/ || true
+  artifacts:
+    paths:
+      - dist/langflow/
+    expire_in: 90 days
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/

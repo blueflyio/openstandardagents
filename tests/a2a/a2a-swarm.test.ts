@@ -11,6 +11,7 @@
  */
 
 import { describe, it, expect, beforeEach } from '@jest/globals';
+import { randomUUID } from 'node:crypto';
 import {
   SwarmOrchestrator,
   type ComplexTask,
@@ -40,7 +41,7 @@ describe('A2A Swarm Intelligence', () => {
   describe('Task Decomposition', () => {
     it('should decompose complex task into agent subtasks', () => {
       const complexTask: ComplexTask = {
-        id: crypto.randomUUID(),
+        id: randomUUID(),
         name: 'Build Multi-Agent System',
         description: 'Create a comprehensive multi-agent communication system',
         requirements: {
@@ -91,7 +92,7 @@ describe('A2A Swarm Intelligence', () => {
 
     it('should use parallel decomposition for medium complexity', () => {
       const task: ComplexTask = {
-        id: crypto.randomUUID(),
+        id: randomUUID(),
         name: 'Parallel Processing Task',
         description: 'Task with independent subtasks',
         requirements: {
@@ -113,7 +114,7 @@ describe('A2A Swarm Intelligence', () => {
 
     it('should use hierarchical decomposition for high complexity', () => {
       const task: ComplexTask = {
-        id: crypto.randomUUID(),
+        id: randomUUID(),
         name: 'Complex Hierarchical Task',
         description: 'Task requiring coordinator',
         requirements: {
@@ -227,7 +228,7 @@ describe('A2A Swarm Intelligence', () => {
       // Create proposals
       const proposals: Proposal[] = [
         {
-          id: crypto.randomUUID(),
+          id: randomUUID(),
           proposer: createAgentIdentity('proposer-1'),
           type: 'task-assignment',
           data: { taskId: 'task-1', agentId: 'agent-1' },
@@ -267,7 +268,7 @@ describe('A2A Swarm Intelligence', () => {
     it('should reject proposal with majority rejections', async () => {
       const proposals: Proposal[] = [
         {
-          id: crypto.randomUUID(),
+          id: randomUUID(),
           proposer: createAgentIdentity('proposer-1'),
           type: 'resource-allocation',
           data: { resource: 'gpu', amount: 4 },
@@ -401,7 +402,7 @@ describe('A2A Swarm Intelligence', () => {
 
 function createAgentIdentity(name: string): AgentIdentity {
   return {
-    id: crypto.randomUUID(),
+    id: randomUUID(),
     namespace: 'test',
     name,
     uri: `agent://test/${name}`,

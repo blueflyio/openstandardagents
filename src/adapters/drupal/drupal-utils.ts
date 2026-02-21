@@ -364,3 +364,67 @@ export function mapAllOssaToolsToDrupal(
   const tools = extractTools(manifest);
   return tools.map((tool) => mapOssaToolToDrupalTool(tool, moduleName));
 }
+
+// ===================================================================
+// PHP Tool Plugin Stub Generation (shared with manifest-exporter)
+// ===================================================================
+
+/**
+ * Escape a string for safe inclusion inside PHP single-quoted strings.
+ */
+export function escapePhpString(str: string): string {
+  return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
+/**
+ * Map a JSON Schema type to a PHP/Drupal typed data type string.
+ */
+export function jsonSchemaTypeToPHP(jsonType: string): string {
+  const typeMap: Record<string, string> = {
+    string: 'string',
+    number: 'float',
+    integer: 'integer',
+    boolean: 'boolean',
+    array: 'list',
+    object: 'map',
+  };
+  return typeMap[jsonType] || 'string';
+}
+
+/**
+ * Build a PHP array literal from a JSON Schema definition for Drupal Tool API.
+ *
+ * @param schema - JSON Schema object (properties, required)
+ * @returns PHP array literal string
+ */
+export function buildSchemaDefinitionArray(
+  schema?: Record<string, unknown>
+): string {
+  if (!schema || Object.keys(schema).length === 0) {
+    return '[]';
+  }
+  const properties = schema.properties as
+    | Record<string, Record<string, unknown>>
+    | undefined;
+  if (!properties || Object.keys(properties).length === 0) {
+    return '[]';
+  }
+  const required = (schema.required as string[]) || [];
+  const entries: string[] = [];
+  for (const [propName, propDef] of Object.entries(properties)) {
+    const phpType = jsonSchemaTypeToPHP((propDef.type as string) || 'string');
+    const description = propDef.description
+      ? escapePhpString(propDef.description as string)
+      : `The ${propName} parameter`;
+    const isRequired = required.includes(propName) ? 'TRUE' : 'FALSE';
+    entries.push(`      '${propName}' => [
+        'type' => '${phpType}',
+        'label' => '${toLabel(propName)}',
+        'description' => '${escapePhpString(description)}',
+        'required' => ${isRequired},
+      ]`);
+  }
+  return `[
+${entries.join(',\n')},
+    ]`;
+}

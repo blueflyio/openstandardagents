@@ -15,7 +15,7 @@ import inquirer from 'inquirer';
 import ora from 'ora';
 import { DockerDeploymentDriver } from '../../deploy/docker-driver.js';
 import { KubernetesDeploymentDriver } from '../../deploy/k8s-driver.js';
-import type { RollbackOptions } from '../../deploy/types.js';
+import type { IDeploymentDriver, RollbackOptions } from '../../deploy/types.js';
 
 interface RollbackCommandOptions {
   version?: string;
@@ -58,7 +58,7 @@ export const rollbackCommand = new Command('rollback')
       spinner.succeed('Configuration validated');
 
       // Get instance info
-      const driver = getDeploymentDriver(options);
+      const driver = await getDeploymentDriver(options);
       const instance = await driver.getStatus(instanceId);
 
       console.log('\n' + chalk.bold.blue('Rollback Plan:'));
@@ -154,7 +154,9 @@ function validateRollbackOptions(options: RollbackCommandOptions): void {
 /**
  * Get deployment driver based on platform
  */
-function getDeploymentDriver(options: RollbackCommandOptions) {
+async function getDeploymentDriver(
+  options: RollbackCommandOptions
+): Promise<IDeploymentDriver> {
   switch (options.platform) {
     case 'kubernetes':
       return new KubernetesDeploymentDriver();
@@ -162,9 +164,22 @@ function getDeploymentDriver(options: RollbackCommandOptions) {
     case 'docker':
       return new DockerDeploymentDriver();
 
-    case 'cloud':
-      // Dynamic import for cloud drivers
-      throw new Error('Cloud rollback not yet implemented');
+    case 'cloud': {
+      const provider = options.cloud || 'aws';
+      if (provider === 'aws') {
+        const { AWSDeploymentDriver } = await import('../../deploy/cloud/aws-driver.js');
+        return new AWSDeploymentDriver();
+      }
+      if (provider === 'gcp') {
+        const { GCPDeploymentDriver } = await import('../../deploy/cloud/gcp-driver.js');
+        return new GCPDeploymentDriver();
+      }
+      if (provider === 'azure') {
+        const { AzureDeploymentDriver } = await import('../../deploy/cloud/azure-driver.js');
+        return new AzureDeploymentDriver();
+      }
+      throw new Error(`Unsupported cloud provider: ${provider}`);
+    }
 
     default:
       throw new Error(`Unsupported platform: ${options.platform}`);

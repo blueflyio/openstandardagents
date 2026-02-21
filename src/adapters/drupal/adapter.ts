@@ -444,19 +444,18 @@ class ${className}Service {
   /**
    * Process input data.
    *
+   * Delegates to the ai_agents runner so the agent plugin is invoked
+   * with the configured LLM and tools. Requires ai_agents to be configured.
+   *
    * @param array $input
    *   Input data.
    *
-   * @return mixed
-   *   Processed result.
+   * @return array
+   *   Processed result from the agent.
    */
-  protected function processInput(array $input) {
-    // TODO: Implement agent logic here
-    // Role: ${manifest.spec?.role || 'Process input'}
-
-${tools.map((tool) => `    // Tool: ${tool.name || 'unknown'} - ${tool.description || 'No description'}`).join('\n')}
-
-    return $input;
+  protected function processInput(array $input): array {
+    $runner = \\Drupal::service('ai_agents.runner');
+    return $runner->run('${moduleName}', $input);
   }
 
 }

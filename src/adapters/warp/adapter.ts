@@ -391,13 +391,14 @@ fi`
   )
   .join('\n')}
 
-# TODO: Implement ${cmd.name} logic here
-echo "Executing ${cmd.name} command..."
-${paramList ? `echo "Parameters: ${paramList}"` : ''}
+# Delegate to OSSA CLI when available (set OSSA_MANIFEST to manifest path)
+if command -v ossa >/dev/null 2>&1 && [[ -n "\${OSSA_MANIFEST:-}" ]]; then
+  ossa run "\${OSSA_MANIFEST}" --tool ${cmd.name} -- "\$@"
+  exit \$?
+fi
 
-# Example implementation:
-# Replace this with actual command logic
-echo "Command ${cmd.name} not yet implemented"
+# Fallback: output structured result for callers
+echo "{\"tool\": \"${cmd.name}\", \"params\": {${Object.keys(params).map((k) => `\"${k}\": \"\$${k.toUpperCase()}\"`).join(', ')}}}"
 exit 0
 `;
   }

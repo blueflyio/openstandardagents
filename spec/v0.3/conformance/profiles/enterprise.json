@@ -1,0 +1,20 @@
+{
+  "id": "enterprise",
+  "name": "OSSA Enterprise Profile",
+  "version": "0.3.0",
+  "description": "Enterprise-grade conformance with observability and constraints",
+  "extends": "baseline",
+  "required": {
+    "features": ["metadata.name", "spec.role", "spec.llm", "spec.constraints", "spec.observability", "spec.observability.tracing", "spec.constraints.cost"],
+    "weight": 0.6
+  },
+  "optional": {
+    "features": ["spec.tools", "spec.autonomy", "metadata.labels"],
+    "weight": 0.4
+  },
+  "constraints": {},
+  "scoring": {
+    "pass_threshold": 0.7,
+    "warn_threshold": 0.9
+  }
+}

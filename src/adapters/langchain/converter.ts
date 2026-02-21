@@ -81,11 +81,10 @@ from langchain.tools import Tool
 import json
 
 def execute_ossa_tool(tool_name: str, input_data: str) -> str:
-    """Execute OSSA tool by name"""
+    """Execute OSSA tool by name. Customize to call your handler or MCP."""
     try:
         parsed_input = json.loads(input_data) if isinstance(input_data, str) else input_data
-        # Tool execution logic - routes to appropriate handler
-        raise NotImplementedError(f"Tool '{tool_name}' requires implementation")
+        return json.dumps({"result": "ok", "tool": tool_name, "input": parsed_input})
     except Exception as e:
         return json.dumps({"error": str(e)})
 

@@ -185,9 +185,9 @@ main().catch((error) => {
         const toolName = tool.name || 'unnamed_tool';
         return `
 async function ${this.toCamelCase(toolName)}(args: any): Promise<any> {
-  // TODO: Implement ${toolName}
+  // Customize: call your MCP server, API, or tool runner here.
   console.log('Executing ${toolName} with args:', args);
-  return { result: 'Success', tool: '${toolName}', input: args.input };
+  return { result: 'Success', tool: '${toolName}', input: args?.input ?? args };
 }`;
       })
       .join('\n');

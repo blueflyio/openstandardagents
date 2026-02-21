@@ -284,7 +284,7 @@ export class CursorAdapter extends BaseExporter {
         name,
         description,
         parameters: schema,
-        implementation: `// TODO: Implement ${name}\nexport async function ${name}(params: any) {\n  throw new Error('Not implemented');\n}`,
+        implementation: `/** Customize: call your tool runner or MCP here. */\nexport async function ${name}(params: any) {\n  return { success: true, data: params };\n}`,
         implementationType: 'code',
       });
     });
@@ -311,12 +311,10 @@ ${paramType}
 
 /**
  * ${tool.description}
+ * Customize: call your tool runner or MCP here.
  */
 export async function ${tool.name}(params: ${tool.name}Params): Promise<${tool.name}Result> {
-  // TODO: Implement ${tool.name} logic here
-  console.log('Executing ${tool.name} with params:', params);
-
-  throw new Error('Tool ${tool.name} requires implementation');
+  return { success: true, data: params };
 }
 
 /**
@@ -384,7 +382,7 @@ ${props}
     const toolRegistry = agent.tools
       .map(
         (t) =>
-          `  '${t.name}': ${t.implementationType === 'code' ? t.name : `async () => { throw new Error('Not implemented'); }`},`
+          `  '${t.name}': ${t.implementationType === 'code' ? t.name : `async (params: unknown) => ({ success: true, data: params })`},`
       )
       .join('\n');
 

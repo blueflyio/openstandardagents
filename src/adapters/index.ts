@@ -16,6 +16,7 @@ import { WarpAdapter } from './warp/adapter.js';
 import { CursorAdapter } from './cursor/adapter.js';
 import { ClaudeCodeAdapter } from './claude-code/adapter.js';
 import { MobileAgentAdapter } from './mobile-agent/adapter.js';
+import { LangflowPlatformAdapter } from './langflow/platform-adapter.js';
 
 /**
  * Initialize and register all export adapters
@@ -23,6 +24,9 @@ import { MobileAgentAdapter } from './mobile-agent/adapter.js';
 export function initializeAdapters(): void {
   // Register LangChain adapter
   registry.register(new LangChainAdapter());
+
+  // Register LangFlow adapter (OSSA -> LangFlow flow JSON for CI + Studio)
+  registry.register(new LangflowPlatformAdapter());
 
   // Register MCP adapter
   registry.register(new MCPAdapter());

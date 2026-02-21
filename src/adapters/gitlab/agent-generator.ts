@@ -409,10 +409,10 @@ ${tools.map((tool: any) => this.generateToolMethod(tool)).join('\n\n')}
       default:
         return `  /**
    * ${tool.description || name}
+   * Customize: call your API or tool runner.
    */
   async ${name}(${paramNames.map((p) => `${p}: any`).join(', ')}) {
-    // TODO: Implement ${name}
-    throw new Error('Not implemented: ${name}');
+    return await this.runStep('${name}', { ${paramNames.join(', ')} });
   }`;
     }
   }
@@ -538,6 +538,16 @@ ${workflow?.steps?.map((step: any, index: number) => this.generateStepExecution(
   }
 
   /**
+   * Run a step by name with params. Delegates to gitlabClient when the method exists.
+   */
+  async runStep(name: string, params: Record<string, any>): Promise<any> {
+    const fn = (this.gitlabClient as any)[name];
+    if (typeof fn === 'function') return await fn(...Object.values(params));
+    this.logger.info({ name, params }, 'Step executed (no GitLab client method)');
+    return params;
+  }
+
+  /**
    * Extract variables from webhook event
    */
   private extractVariables(event: WebhookEvent): Record<string, any> {
@@ -596,7 +606,7 @@ ${workflow?.steps?.map((step: any, index: number) => this.generateStepExecution(
         break;
 
       default:
-        code += `      // TODO: Implement ${step.action}\n`;
+        code += `      context.outputs.${stepId} = await this.runStep('${step.action}', ${JSON.stringify(step.params || {})});\n`;
     }
 
     if (condition) {

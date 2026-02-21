@@ -557,41 +557,76 @@ OSSA doesn't compete with MCP or A2A - it makes them deployable.
 
 ## CLI Commands
 
-**Production Commands** (Tested & Stable):
+**Core workflow** (shown in `ossa --help`):
+- `ossa wizard` - Interactive manifest creation (full flow)
+- `ossa init [name]` - Create new OSSA manifest (interactive or `-y`)
+- `ossa validate [path]` - Validate against OSSA schema (optional `--platform`)
+- `ossa export [manifest]` - Export to platform (`--platform`, `-o`, `--perfect-agent`, etc.)
+- `ossa lint` - Lint manifests
+- `ossa diff` - Diff manifests
+- `ossa build` - Validate + build for platform
+- `ossa migrate` - Migrate manifest to newer OSSA version
+
+**Agent management:** `ossa agents create|list|get`, `ossa agents-local`, `ossa agent-card generate|validate`, `ossa generate-gaid`
+
+**Development:** `ossa generate` (agent|types|zod|manifests|vscode|openapi|all|list|validate|sync), `ossa dev`, `ossa serve`, `ossa run`, `ossa test`
+
+**Distribution:** `ossa publish`, `ossa install`, `ossa update`, `ossa search`
+
+**Deployment:** `ossa deploy`, `ossa status`, `ossa rollback`, `ossa stop`
+
+**Documentation from manifest:** `ossa agents-md` (generate|validate|sync|discover|maintain), `ossa llms-txt` (generate|validate|sync), `ossa docs`
+
+**Skills and templates:** `ossa skills` (list|generate|sync|validate|research|generate-enhanced|export), `ossa template` (list|show|create|validate)
+
+**Tools and capabilities:** `ossa tool` (create|validate|list), `ossa capability`, `ossa manifest`
+
+**Compliance:** `ossa conformance`, `ossa compliance`, `ossa governance`, `ossa contract`
+
+**Workspace (two-tier / UADP-style):** `ossa workspace init|list|discover`, `ossa workspace policy list|check <project>`, `ossa workspace sync`, `ossa workspace publish --registry-url <url>` (POST discovery to a registry API, e.g. mesh)
+
+**Production commands** (examples):
 ```bash
-ossa wizard                  # Interactive manifest builder
-ossa validate <manifest>     # Validate against schema
-ossa export <manifest> -p <platform> -o <dir>   # Export to platform
-ossa export --list-platforms  # Show all platforms with status
-ossa lint <manifest>         # Lint for best practices
-ossa diff <old> <new>        # Compare two manifests
-ossa migrate <manifest> --to 0.4.6  # Migrate between spec versions
-ossa generate-gaid <manifest>           # Generate Global Agent ID
-ossa export <manifest> --perfect-agent  # Full production bundle (AGENTS.md + evals + governance + observability)
-ossa export <manifest> --include-agents-md --include-team  # Individual components
+ossa wizard -o agent.ossa.yaml
+ossa validate agent.ossa.yaml
+ossa export agent.ossa.yaml --platform docker --output ./docker-deploy
+ossa export --list-platforms
+ossa lint agent.ossa.yaml
+ossa diff old.ossa.yaml new.ossa.yaml
+ossa migrate agent.ossa.yaml --to 0.4.6
+ossa generate-gaid agent.ossa.yaml
+ossa export agent.ossa.yaml --perfect-agent
+ossa export agent.ossa.yaml --include-agents-md --include-team --include-evals
 ```
 
-**Skills Pipeline** (New in v0.4.6):
+**Skills pipeline:**
 ```bash
-ossa skills research "drupal" --json           # Search GitHub/npm for skills
-ossa skills generate agent.ossa.yaml           # Generate SKILL.md from OSSA manifest
-ossa skills generate spec.yaml --format oracle # Generate from Oracle Agent Spec
-ossa skills generate AGENTS.md --format agents-md  # Generate from AGENTS.md
-ossa skills export ./skill-dir                 # Package as npm
-ossa skills export ./skill-dir --install       # Install to ~/.claude/skills/
-ossa skills export ./skill-dir --publish       # Publish to npm registry
-ossa skills list                               # Discover installed skills
-ossa skills validate ./SKILL.md                # Validate skill structure
-ossa skills sync                               # Bidirectional skill/manifest sync
+ossa skills research "drupal" --json
+ossa skills generate agent.ossa.yaml
+ossa skills generate spec.yaml --format oracle
+ossa skills generate AGENTS.md --format agents-md
+ossa skills export ./skill-dir [--install|--publish]
+ossa skills list
+ossa skills validate ./SKILL.md
+ossa skills sync
 ```
 
-**Beta Commands** (Functional but less tested):
-```bash
-ossa agents-local list       # List agents in .agents/ folder
-ossa agents-md generate      # Generate agents.md files
-```
+**OSSA MCP server** (stdio; for Cursor/Claude MCP): Run `ossa-mcp` (when package installed globally) or `node dist/mcp-server/index.js` from package root. Tools: `ossa_validate`, `ossa_scaffold`, `ossa_generate`, `ossa_publish`. Skill: `examples/agent-skills/ossa-agent-authoring/SKILL.md`.
 
-Use `ossa --help` for the full command list (102+ commands).
+**Beta:** `ossa agents-local`, `ossa agents-md`, `ossa llms-txt`
+
+Use `ossa --help` for the full list.
+
+## Discovery and registry
+
+OSSA defines agents; a **registry** is where agents are listed and queried. You can keep discovery local (workspace only) or publish to a shared registry API.
+
+- **Local:** Run `ossa workspace discover` to scan `.agents/` and update `.agents-workspace/registry/index.yaml`. Use `ossa workspace list` to see agents in this repo.
+- **Publish to a registry:** Run `ossa workspace publish --registry-url <base-url>` to POST the same discovery payload to `<base-url>/api/v1/discovery`. Any service that implements that contract (e.g. a mesh discovery API) can store and serve it; others can GET the same URL to list all published agents.
+- **CI:** In GitLab CI, include the agents-ci template and set `MESH_URL` (or `AGENT_REGISTRY_URL`). The discover job will then POST to that URL so each pipeline run updates the registry.
+- **Contract:** The registry API is a simple HTTP contract: **POST** `/api/v1/discovery` with body `{ source_id, workspace: { name, scanned_at }, projects: [{ name, path, agents }] }` to publish; **GET** `/api/v1/discovery` returns aggregated sources and projects. OSSA and other tools (e.g. buildkit) use this same shape.
+
+See [Agents workspace and registry](docs/getting-started/agents-workspace-registry.md) and [Discovery and registry](docs/wiki/Discovery-and-Registry.md) for details. 30+ additional commands (e.g. quickstart, scaffold, import, enhance, registry, migrate-batch, langchain, langflow, workspace, taxonomy, knowledge, audit) are available; run `ossa <command> --help` for any command.
 
 ## Honest Status Reporting
 
@@ -619,11 +654,16 @@ All mutation commands support:
 
 ## Documentation
 
+- [OSSA CLI Reference](./docs/wiki/OSSA-CLI-Reference.md) - Full CLI command and export-platform reference (canonical for wikis)
+- [Discovery and registry](./docs/wiki/Discovery-and-Registry.md) - Workspace discover, publish to registry API, CI, and contract
+- [Agents workspace and registry](./docs/getting-started/agents-workspace-registry.md) - `.agents-workspace/` layout, sources, MCP/A2A
 - [CHANGELOG](./CHANGELOG.md) - Release history
 - [Examples](./examples) - Sample manifests
 - [JSON Schema](./spec/v0.4/agent.schema.json) - Full spec
 - [GitLab](https://gitlab.com/blueflyio/ossa/openstandardagents) - Source
 - [GitHub Mirror](https://github.com/blueflyio/openstandardagents)
+
+**Wiki publishing:** Wiki pages (OSSA-CLI-Reference, Discovery-and-Registry) are published from this repo. Run `npm run wiki:publish` (requires `GITLAB_TOKEN` or `GITLAB_PUSH_TOKEN` and `buildkit` on PATH). Manifest: `.gitlab/wiki-publish-manifest.json`. To add a page, add an entry there and run the same command.
 
 ## License
 

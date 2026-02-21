@@ -62,13 +62,14 @@ export function generateSkillContent(manifest: OssaAgent): string {
 export function generateEvalStubs(manifest: OssaAgent): ExportFile {
   const name = manifest.metadata?.name || 'agent';
 
+  const timeoutMs = (manifest.spec?.constraints?.performance?.timeoutSeconds ?? 30) * 1000;
+  const maxTokens = manifest.spec?.constraints?.cost?.maxTokensPerRequest || 4096;
+
   const content = `/**
- * ${name} - CLEAR Framework Evaluation Stubs
- * Generated from OSSA manifest
+ * ${name} - CLEAR Framework Evaluations
+ * Generated from OSSA manifest. Wire runAgent() to your agent implementation.
  *
  * CLEAR = Correctness, Latency, Efficiency, Accuracy, Robustness
- *
- * Implement these evaluation functions for your agent.
  */
 
 export interface EvalResult {
@@ -79,35 +80,86 @@ export interface EvalResult {
   details?: string;
 }
 
-export interface EvalSuite {
-  name: string;
-  run(): Promise<EvalResult[]>;
+export interface AgentRunResult {
+  text: string;
+  latencyMs?: number;
+  usage?: { inputTokens: number; outputTokens: number };
+}
+
+/** Inject your agent: (input: string) => Promise<AgentRunResult> */
+export let runAgent: (input: string) => Promise<AgentRunResult> = async () => ({
+  text: '',
+  latencyMs: 0,
+  usage: { inputTokens: 0, outputTokens: 0 },
+});
+
+export function setAgentRunner(runner: (input: string) => Promise<AgentRunResult>): void {
+  runAgent = runner;
+}
+
+/** Golden I/O pairs for correctness and accuracy. Add your test cases. */
+export const goldenPairs: Array<{ input: string; expected: string }> = [];
+
+function normalize(s: string): string {
+  return s.toLowerCase().replace(/\\s+/g, ' ').trim();
+}
+
+function similarity(a: string, b: string): number {
+  if (a === b) return 1;
+  const na = normalize(a);
+  const nb = normalize(b);
+  if (na === nb) return 1;
+  const longer = na.length > nb.length ? na : nb;
+  const shorter = na.length > nb.length ? nb : na;
+  if (longer.length === 0) return 1;
+  const editDistance = longer.length - shorter.length;
+  for (let i = 0; i < shorter.length; i++) {
+    if (shorter[i] !== longer[i]) break;
+    if (i === shorter.length - 1) return (shorter.length / longer.length);
+  }
+  return Math.max(0, 1 - editDistance / longer.length);
 }
 
 /**
- * Correctness: Does the agent produce correct outputs?
- * Replace with agent-specific test cases (golden I/O pairs).
+ * Correctness: Compares agent output to golden expected outputs.
+ * Add entries to goldenPairs and wire runAgent for real evaluation.
  */
 export async function evalCorrectness(): Promise<EvalResult> {
   const threshold = 0.9;
+  if (goldenPairs.length === 0) {
+    return {
+      metric: 'correctness',
+      score: threshold,
+      threshold,
+      passed: true,
+      details: 'No golden pairs defined - add to goldenPairs and wire runAgent',
+    };
+  }
+  let totalScore = 0;
+  for (const { input, expected } of goldenPairs) {
+    const result = await runAgent(input);
+    const sim = similarity(result.text, expected);
+    totalScore += sim;
+  }
+  const score = totalScore / goldenPairs.length;
   return {
     metric: 'correctness',
-    score: threshold,
+    score,
     threshold,
-    passed: true,
-    details: 'Skipped - add test cases (golden I/O) to measure correctness',
+    passed: score >= threshold,
+    details: \`\${goldenPairs.length} pairs, score \${(score * 100).toFixed(1)}%\`,
   };
 }
 
 /**
- * Latency: Does the agent respond within time constraints?
- * Measures a no-op round-trip; replace with real agent invocation.
+ * Latency: Measures agent response time against manifest timeout.
+ * Uses runAgent when wired; otherwise measures a no-op.
  */
 export async function evalLatency(): Promise<EvalResult> {
-  const timeoutMs = ${(manifest.spec?.constraints?.performance?.timeoutSeconds ?? 30) * 1000};
+  const timeoutMs = ${timeoutMs};
   const start = Date.now();
-  await Promise.resolve();
-  const elapsed = Date.now() - start;
+  const result = await runAgent('ping');
+  const elapsed = result.latencyMs ?? (Date.now() - start);
   const passed = elapsed < timeoutMs;
   return {
     metric: 'latency',
@@ -119,47 +171,82 @@ export async function evalLatency(): Promise<EvalResult> {
 }
 
 /**
- * Efficiency: Does the agent use resources efficiently?
- * Replace with real token/cost measurement from provider.
+ * Efficiency: Compares token usage to manifest maxTokensPerRequest.
+ * Uses runAgent().usage when wired.
  */
 export async function evalEfficiency(): Promise<EvalResult> {
-  const maxTokens = ${manifest.spec?.constraints?.cost?.maxTokensPerRequest || 4096};
+  const maxTokens = ${maxTokens};
+  const result = await runAgent('efficiency-check');
+  const used = result.usage
+    ? result.usage.inputTokens + result.usage.outputTokens
+    : 0;
+  const passed = used <= maxTokens;
+  const score = used > 0 ? Math.min(1, maxTokens / used) : 1;
   return {
     metric: 'efficiency',
-    score: maxTokens,
+    score: used || maxTokens,
     threshold: maxTokens,
-    passed: true,
-    details: \`Skipped - wire provider usage to compare against max \${maxTokens} tokens/request\`,
+    passed: used === 0 ? true : passed,
+    details: used > 0
+      ? \`\${used} tokens used (max \${maxTokens})\`
+      : \`Wire runAgent().usage to measure token efficiency\`,
   };
 }
 
 /**
- * Accuracy: Does the agent maintain factual accuracy?
- * Replace with golden dataset and comparison.
+ * Accuracy: Factual accuracy via golden pairs (same as correctness with stricter threshold).
  */
 export async function evalAccuracy(): Promise<EvalResult> {
   const threshold = 0.95;
+  if (goldenPairs.length === 0) {
+    return {
+      metric: 'accuracy',
+      score: threshold,
+      threshold,
+      passed: true,
+      details: 'No golden pairs - add to goldenPairs for accuracy evaluation',
+    };
+  }
+  let totalScore = 0;
+  for (const { input, expected } of goldenPairs) {
+    const result = await runAgent(input);
+    totalScore += similarity(result.text, expected);
+  }
+  const score = totalScore / goldenPairs.length;
   return {
     metric: 'accuracy',
-    score: threshold,
+    score,
     threshold,
-    passed: true,
-    details: 'Skipped - add golden dataset to measure factual accuracy',
+    passed: score >= threshold,
+    details: \`\${goldenPairs.length} pairs, score \${(score * 100).toFixed(1)}%\`,
   };
 }
 
+/** Edge-case inputs for robustness. Customize as needed. */
+const robustnessInputs = ['', ' '.repeat(5000), '<<script>>alert(1)</script>', '\\n\\n\\n'];
+
 /**
- * Robustness: Does the agent handle edge cases?
- * Replace with adversarial or edge-case inputs.
+ * Robustness: Ensures agent does not throw on edge inputs and returns non-empty when appropriate.
  */
 export async function evalRobustness(): Promise<EvalResult> {
   const threshold = 0.85;
+  let passed = 0;
+  let errors = 0;
+  for (const input of robustnessInputs) {
+    try {
+      const result = await runAgent(input);
+      if (input.trim() === '' || result.text !== undefined) passed += 1;
+    } catch {
+      errors += 1;
+    }
+  }
+  const score = robustnessInputs.length > 0 ? (passed - errors) / robustnessInputs.length : 1;
   return {
     metric: 'robustness',
-    score: threshold,
+    score,
     threshold,
-    passed: true,
-    details: 'Skipped - add adversarial tests to measure robustness',
+    passed: score >= threshold,
+    details: \`\${passed}/\${robustnessInputs.length} edge cases handled, \${errors} errors\`,
   };
 }
 

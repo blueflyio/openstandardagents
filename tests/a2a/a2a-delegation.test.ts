@@ -10,6 +10,7 @@
  */
 
 import { describe, it, expect, beforeEach } from '@jest/globals';
+import { randomUUID } from 'node:crypto';
 import {
   DelegationService,
   type Task,
@@ -28,7 +29,7 @@ describe('A2A Task Delegation', () => {
   describe('Task Delegation', () => {
     it('should delegate task to most capable agent', async () => {
       const task: Task = {
-        id: crypto.randomUUID(),
+        id: randomUUID(),
         name: 'Code Review Task',
         description: 'Review pull request for security vulnerabilities',
         capabilities: ['code-review', 'security-analysis'],
@@ -86,7 +87,7 @@ describe('A2A Task Delegation', () => {
 
     it('should respect SLA constraints', async () => {
       const task: Task = {
-        id: crypto.randomUUID(),
+        id: randomUUID(),
         name: 'Critical Production Fix',
         description: 'Fix production bug immediately',
         capabilities: ['debugging', 'deployment'],
@@ -132,7 +133,7 @@ describe('A2A Task Delegation', () => {
 
     it('should throw error when no suitable agents found', async () => {
       const task: Task = {
-        id: crypto.randomUUID(),
+        id: randomUUID(),
         name: 'Specialized Task',
         description: 'Task requiring rare capability',
         capabilities: ['quantum-computing'],
@@ -155,7 +156,7 @@ describe('A2A Task Delegation', () => {
   describe('SLA Negotiation', () => {
     it('should negotiate SLA between agents', async () => {
       const task: Task = {
-        id: crypto.randomUUID(),
+        id: randomUUID(),
         name: 'Data Processing',
         description: 'Process large dataset',
         capabilities: ['data-processing'],
@@ -195,7 +196,7 @@ describe('A2A Task Delegation', () => {
 
     it('should calculate SLA terms based on agent performance', async () => {
       const task: Task = {
-        id: crypto.randomUUID(),
+        id: randomUUID(),
         name: 'Test Task',
         description: 'Test',
         capabilities: ['test'],
@@ -238,7 +239,7 @@ describe('A2A Task Delegation', () => {
   describe('Execution Monitoring', () => {
     it('should monitor delegated task execution', async () => {
       const task: Task = {
-        id: crypto.randomUUID(),
+        id: randomUUID(),
         name: 'Monitored Task',
         description: 'Task with monitoring',
         capabilities: ['processing'],
@@ -264,7 +265,7 @@ describe('A2A Task Delegation', () => {
 
     it('should update execution status', async () => {
       const task: Task = {
-        id: crypto.randomUUID(),
+        id: randomUUID(),
         name: 'Updateable Task',
         description: 'Task with status updates',
         capabilities: ['work'],
@@ -310,7 +311,7 @@ describe('A2A Task Delegation', () => {
 
     it('should detect SLA violations', async () => {
       const task: Task = {
-        id: crypto.randomUUID(),
+        id: randomUUID(),
         name: 'SLA Task',
         description: 'Task with SLA',
         capabilities: ['work'],
@@ -350,7 +351,7 @@ describe('A2A Task Delegation', () => {
 
     it('should track failed executions', async () => {
       const task: Task = {
-        id: crypto.randomUUID(),
+        id: randomUUID(),
         name: 'Failing Task',
         description: 'Task that fails',
         capabilities: ['unstable'],
@@ -426,7 +427,7 @@ describe('A2A Task Delegation', () => {
 
 function createAgentIdentity(name: string): AgentIdentity {
   return {
-    id: crypto.randomUUID(),
+    id: randomUUID(),
     namespace: 'test',
     name,
     uri: `agent://test/${name}`,
@@ -458,7 +459,7 @@ function createAgent(
 
 function createTask(id: string, capabilities: string[]): Task {
   return {
-    id: crypto.randomUUID(),
+    id: randomUUID(),
     name: `Task ${id}`,
     description: `Test task ${id}`,
     capabilities,

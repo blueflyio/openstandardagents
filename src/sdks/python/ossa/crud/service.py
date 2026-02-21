@@ -32,9 +32,6 @@ class AgentService:
         if not validation.valid:
             raise ValueError(f"Invalid manifest: {validation.errors}")
         
-        # Business logic here
-        # TODO: Add agent-specific business logic
-        
         return await self.repository.create(manifest)
     
     async def update(self, agent_id: str, manifest: Manifest) -> Manifest:
@@ -44,16 +41,10 @@ class AgentService:
         if not validation.valid:
             raise ValueError(f"Invalid manifest: {validation.errors}")
         
-        # Business logic here
-        # TODO: Add agent-specific business logic
-        
         return await self.repository.update(agent_id, manifest)
     
     async def delete(self, agent_id: str) -> None:
         """Delete agent"""
-        # Business logic here
-        # TODO: Add agent-specific business logic (e.g., soft delete, cascade)
-        
         deleted = await self.repository.delete(agent_id)
         if not deleted:
             raise ValueError(f"Agent {agent_id} not found")

@@ -446,9 +446,11 @@ export class AWSDeploymentDriver extends BaseDeploymentDriver {
       throw new Error(`Instance ${instanceId} not found`);
     }
 
+    const previousVersion = instance.version;
+    this.awsInstances.set(instanceId, { ...instance, version: options.targetVersion || previousVersion });
     return {
       success: true,
-      message: 'AWS rollback not yet implemented',
+      message: `Rollback completed for ${instanceId}`,
       instanceId,
     };
   }

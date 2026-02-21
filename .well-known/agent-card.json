@@ -1,0 +1,27 @@
+{
+  "uri": "agent://default/demo-agent",
+  "name": "demo-agent",
+  "version": "1.0.0",
+  "ossaVersion": "ossa/v0.4.6",
+  "capabilities": [],
+  "role": "You are demo-agent, a helpful AI agent.",
+  "model": {
+    "provider": "openai",
+    "model": "${LLM_MODEL:-gpt-4}"
+  },
+  "endpoints": {},
+  "transport": [
+    "http"
+  ],
+  "authentication": [
+    "bearer"
+  ],
+  "encryption": {
+    "tlsRequired": true,
+    "minTlsVersion": "1.2"
+  },
+  "metadata": {
+    "description": "demo-agent - OSSA-compliant agent"
+  },
+  "cardProfile": "full"
+}

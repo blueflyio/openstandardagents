@@ -183,8 +183,41 @@ Please help spread the word about this release!`;
     labels: 'announcement,release',
   });
 
-  // 2. Send notifications (Slack, email, etc.)
-  // TODO: Implement notification system
+  // 2. Notifications: set SLACK_WEBHOOK_URL or RELEASE_EMAIL to enable
+  const webhook = process.env.SLACK_WEBHOOK_URL;
+  const email = process.env.RELEASE_EMAIL;
+  if (webhook) {
+    try {
+      await fetch(webhook, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: `Release announced: ${issueTitle}`,
+          unfurl_links: false,
+        }),
+      });
+    } catch (e) {
+      console.warn('Slack notification failed:', e);
+    }
+  }
+  if (email) {
+    try {
+      const nodemailer = await import('nodemailer');
+      const opts = process.env.SMTP_URL ?? process.env.MAIL_TRANSPORT ?? { jsonTransport: true };
+      const transport = nodemailer.default.createTransport(
+        opts as import('nodemailer').TransportOptions
+      );
+      await transport.sendMail({
+        from: process.env.RELEASE_MAIL_FROM || 'release@localhost',
+        to: email,
+        subject: `Release announced: ${process.env.npm_package_version || 'release'}`,
+        text: 'Release has been announced. See Slack or logs for details.',
+      });
+      console.log(`Release notification sent to ${email}`);
+    } catch (e) {
+      console.warn('Email send failed (set SMTP_URL or install nodemailer):', e);
+    }
+  }
 
   console.log('✅ Release announced');
 }

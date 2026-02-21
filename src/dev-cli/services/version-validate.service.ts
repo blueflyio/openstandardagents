@@ -46,7 +46,22 @@ export class VersionValidateService {
       details['package.json'] = pkg.version || 'missing';
     }
 
-    // TODO: Add more validation checks (README, CHANGELOG, etc.)
+    const readmeFile = join(this.rootDir, 'README.md');
+    if (existsSync(readmeFile)) {
+      const readme = readFileSync(readmeFile, 'utf-8');
+      details['README.md'] = readme.includes(versionInfo.current) ? 'version mentioned' : 'no version';
+    } else {
+      warnings.push('README.md not found');
+      details['README.md'] = 'missing';
+    }
+    const changelogFile = join(this.rootDir, 'CHANGELOG.md');
+    if (existsSync(changelogFile)) {
+      const changelog = readFileSync(changelogFile, 'utf-8');
+      details['CHANGELOG.md'] = changelog.includes(versionInfo.current) ? 'version mentioned' : 'no version';
+    } else {
+      warnings.push('CHANGELOG.md not found');
+      details['CHANGELOG.md'] = 'missing';
+    }
 
     return {
       valid: errors.length === 0,

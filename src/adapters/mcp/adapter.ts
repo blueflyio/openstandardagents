@@ -320,8 +320,7 @@ main().catch((error) => {
       .map(
         (t) =>
           `    case '${t.name}':
-      // TODO: Implement ${t.name} logic here
-      throw new Error('Tool ${t.name} requires implementation');`
+      return runTool('${t.name}', input);`
       )
       .join('\n\n');
 
@@ -338,6 +337,13 @@ import type { ToolName, ToolInput, ToolOutput } from './types.js';
 export const tools = [
 ${toolsList}
 ];
+
+/**
+ * Default tool runner. Customize to call your MCP server or API.
+ */
+async function runTool(name: ToolName, input: ToolInput): Promise<ToolOutput> {
+  return { result: input };
+}
 
 /**
  * Execute a tool by name

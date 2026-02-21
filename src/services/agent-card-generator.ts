@@ -1,12 +1,20 @@
 /**
  * Agent Card Generator
  *
- * Converts OSSA agent manifests into comprehensive .well-known/agent-card.json
- * files for universal agent discovery. The agent card is the contract that
- * bridges MCP (tools) and A2A (agents) — solving the M×N fragmentation problem.
+ * Converts OSSA agent manifests into .well-known/agent-card.json for discovery,
+ * Agent Social profile, marketplace profile, and global/GitLab registry.
  *
- * Extracts: taxonomy, model, tools, MCP servers, A2A protocol, handoffs,
- * autonomy, constraints, observability, endpoints, auth, and encryption.
+ * Every card attribute MUST come from the OSSA agent spec (metadata, spec, or
+ * extensions). No inferred or synthetic fields. Mapping:
+ * - uri, name, version, ossaVersion: metadata + apiVersion
+ * - taxonomy: metadata.agentType, agentKind, agentArchitecture; spec.taxonomy
+ * - capabilities, tools, role, model: spec + metadata.labels
+ * - mcpServers, a2aProtocol, handoffs: extensions.mcp; extensions.a2a; spec.handoffs
+ * - autonomy, constraints, observability, state, separation: spec.*
+ * - endpoints, transport, authentication, encryption: extensions.a2a
+ * - metadata (team, environment, region, description, author): metadata.*
+ * - manifestRef, manifestDigest: options or metadata.manifest_ref, metadata.manifest_digest
+ * - tokenEfficiencySummary: top-level token_efficiency
  */
 
 import * as crypto from 'crypto';
@@ -125,8 +133,12 @@ export class AgentCardGenerator {
     const state = this.extractState(manifest);
     const tokenEfficiencySummary = this.extractTokenEfficiencySummary(manifest);
     const separation = this.extractSeparation(manifest);
+    const metaManifest = manifest.metadata as ManifestSection | undefined;
+    const manifestRef =
+      options?.manifestRef ?? metaManifest?.manifest_ref;
     const manifestDigest =
       options?.manifestDigest ??
+      metaManifest?.manifest_digest ??
       (options?.manifestContent
         ? this.computeManifestDigest(options.manifestContent)
         : undefined);
@@ -197,8 +209,8 @@ export class AgentCardGenerator {
       ...(tokenEfficiencySummary ? { tokenEfficiencySummary } : {}),
       ...(separation ? { separation } : {}),
 
-      // Manifest reference and integrity
-      ...(options?.manifestRef ? { manifestRef: options.manifestRef } : {}),
+      // Manifest reference and integrity (from spec metadata.manifest_ref, metadata.manifest_digest or options)
+      ...(manifestRef ? { manifestRef } : {}),
       ...(manifestDigest ? { manifestDigest } : {}),
 
       // Card profile and extensions
@@ -910,6 +922,11 @@ export class AgentCardGenerator {
     if (manifest.metadata?.author) {
       cardMetadata.author = manifest.metadata.author;
     }
+
+    const meta = manifest.metadata as ManifestSection | undefined;
+    if (meta?.team) cardMetadata.team = meta.team;
+    if (meta?.environment) cardMetadata.environment = meta.environment;
+    if (meta?.region) cardMetadata.region = meta.region;
 
     if (manifest.metadata?.lifecycle) {
       cardMetadata.lifecycle = manifest.metadata.lifecycle;

@@ -2052,7 +2052,7 @@ Guidelines:
           func.parameters = {
             type: 'object',
             properties: {},
-            description: 'TODO: Define complex schema in manifest YAML',
+            description: 'Define complex schema in manifest YAML',
           };
         }
 
@@ -2196,7 +2196,7 @@ Guidelines:
         // Add basic config hints
         if (adapterConfig.category === 'scm') {
           adapter.config = {
-            repository: 'TODO: repository URL or name',
+            repository: '',
             branch: 'main',
           };
           adapter.secrets = {

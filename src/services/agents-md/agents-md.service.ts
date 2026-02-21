@@ -5,6 +5,7 @@
 
 import { injectable } from 'inversify';
 import * as fs from 'fs/promises';
+import { watch } from 'fs';
 import type { OssaAgent, AgentsMdSection } from '../../types/index.js';
 
 /**
@@ -397,7 +398,7 @@ export class AgentsMdService {
    */
   async syncAgentsMd(
     manifestPath: string,
-    watch: boolean = false
+    watchMode: boolean = false
   ): Promise<void> {
     // Load manifest
     const manifestContent = await fs.readFile(manifestPath, 'utf-8');
@@ -416,10 +417,29 @@ export class AgentsMdService {
     // Generate and write AGENTS.md
     await this.writeAgentsMd(manifest);
 
-    if (watch) {
-      // Watch for changes (simplified - in production would use fs.watch)
+    if (watchMode) {
       console.log(`Watching ${manifestPath} for changes...`);
-      // TODO: Implement file watching with fs.watch
+      let debounce: ReturnType<typeof setTimeout> | null = null;
+      const watcher = watch(
+        manifestPath,
+        { persistent: false },
+        async (eventType: string, filename: string | null) => {
+          if (eventType !== 'change' || !filename) return;
+          if (debounce) clearTimeout(debounce);
+          debounce = setTimeout(async () => {
+            debounce = null;
+            try {
+              const content = await fs.readFile(manifestPath, 'utf-8');
+              const updated = JSON.parse(content) as OssaAgent;
+              await this.writeAgentsMd(updated);
+              console.log('AGENTS.md updated from manifest change.');
+            } catch (err: unknown) {
+              console.error('AgentsMd watch error:', err);
+            }
+          }, 300);
+        }
+      );
+      watcher.on('error', (err: Error) => console.error('AgentsMd watcher error:', err));
     }
   }
 }

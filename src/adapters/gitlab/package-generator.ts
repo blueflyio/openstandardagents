@@ -915,7 +915,6 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
     lines.push('  }');
     lines.push('');
     lines.push('  async process(input: string): Promise<string> {');
-    lines.push('    // TODO: Implement agent logic');
     lines.push('    return `Processed: ${input}`;');
     lines.push('  }');
     lines.push('}');

@@ -317,32 +317,22 @@ ${toolExports}
  */
 
 export interface ${className}Input {
-  // TODO: Define tool input parameters
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface ${className}Output {
-  // TODO: Define tool output structure
-  result: any;
+  result: unknown;
 }
 
 /**
- * ${name} tool implementation
+ * ${name} tool implementation. Customize to call your API or MCP.
  */
 export const ${className} = {
   name: '${name}',
   description: '${description}',
 
-  /**
-   * Execute tool
-   */
   async execute(input: ${className}Input): Promise<${className}Output> {
-    // TODO: Implement tool logic
-    console.log('Executing ${name} with input:', input);
-
-    return {
-      result: 'TODO: Implement ${name} tool',
-    };
+    return { result: input };
   },
 };
 `;

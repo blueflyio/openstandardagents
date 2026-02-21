@@ -160,7 +160,7 @@ describe('Migration Engine Integration', () => {
       // Verify all are migrated to target version
       result.results.forEach((res) => {
         expect(res.success).toBe(true);
-        expect(res.manifest?.apiVersion).toBe('ossa/v0.4.5');
+        expect(res.manifest?.apiVersion).toBe(API_VERSION);
       });
     });
 

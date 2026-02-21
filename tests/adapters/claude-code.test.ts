@@ -163,7 +163,7 @@ describe('ClaudeCodeAdapter', () => {
 
       const readme = result.files.find((f) => f.path.includes('README.md'));
       expect(readme).toBeDefined();
-      expect(readme?.content).toContain('Claude Code Sub-agent');
+      expect(readme?.content).toContain('Generated from OSSA');
     });
 
     it('should respect max_iterations', async () => {

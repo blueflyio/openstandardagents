@@ -2,7 +2,20 @@
 
 The Discovery API enables intelligent search and filtering of agents based on capabilities, taxonomies, metadata, and runtime characteristics.
 
-## Overview
+## Decentralized registry API (publish and list)
+
+A minimal **registry** contract lets any tool publish or list workspace discovery over HTTP. This is separate from the search/recommend endpoints below; it is used by OSSA, buildkit, and CI to keep a shared index of "which projects/agents exist."
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| **POST** | `/api/v1/discovery` | Publish this source's discovery. Body: `{ source_id, workspace: { name, scanned_at }, projects: [{ name?, path?, agents }] }`. Typically returns 202. |
+| **GET** | `/api/v1/discovery` | Return aggregated index: `{ sources[], projects[], by_source }` from all stored sources. |
+
+- **OSSA:** `ossa workspace publish --registry-url <base>` POSTs to `<base>/api/v1/discovery` after `ossa workspace discover`.
+- **CI:** Set `MESH_URL` or `AGENT_REGISTRY_URL`; the agents discover job can POST to that URL so each pipeline run updates the registry.
+- **Listing:** Any client can GET the same URL to list all published projects and agents without being in a repo. See [Discovery and registry](../wiki/Discovery-and-Registry.md) and [Agents workspace and registry](../getting-started/agents-workspace-registry.md).
+
+## Overview (search and recommend)
 
 Discovery goes beyond simple listing by providing:
 

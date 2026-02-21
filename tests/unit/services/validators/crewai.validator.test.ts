@@ -6,7 +6,7 @@ import { describe, it, expect } from '@jest/globals';
 import { CrewAIValidator } from '../../../../src/services/validators/crewai.validator.js';
 import { API_VERSION } from '../../../../src/version.js';
 
-describe.skip('CrewAIValidator', () => {
+describe.skip('CrewAIValidator - schema alignment pending', () => {
   const validator = new CrewAIValidator();
 
   it('should validate valid CrewAI extension with agent config', () => {

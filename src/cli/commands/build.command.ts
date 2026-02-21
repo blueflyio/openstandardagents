@@ -10,6 +10,7 @@ import * as path from 'path';
 import { stringify as yamlStringify } from 'yaml';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
+import { ValidationService } from '../../services/validation.service.js';
 import { KAgentCRDGenerator } from '../../sdks/kagent/crd-generator.js';
 import { getBuildDefaults } from '../../config/defaults.js';
 import type { OssaAgent } from '../../types/index.js';
@@ -48,7 +49,11 @@ export const buildCommand = new Command('build')
 
         if (options.validate) {
           console.log(chalk.yellow('Validating manifest...'));
-          // TODO: Add validation
+          const svc = container.get(ValidationService);
+          const result = await svc.validate(manifest);
+          if (!result.valid) {
+            throw new Error(result.errors?.join('; ') ?? 'Validation failed');
+          }
           console.log(chalk.green('✓ Manifest valid\n'));
         }
 
