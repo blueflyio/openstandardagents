@@ -49,6 +49,7 @@ import { MigrationTransformService } from '../services/migration-transform.servi
 import { VersionDetectionService } from '../services/version-detection.service.js';
 import { AgentCardGenerator } from '../services/agent-card-generator.js';
 import { getApiVersion, getVersion } from '../utils/version.js';
+import { scanManifests } from '../utils/manifest-scanner.js';
 import {
   getDefaultAgentVersion,
   getDefaultAgentKind,
@@ -949,50 +950,40 @@ async function handlePublish(args: Record<string, unknown>) {
 }
 
 // ---------------------------------------------------------------------------
-// ossa_list — workspace discovery via fast-glob
-// HACK: Inline fast-glob scan instead of AgentsMdDiscoveryService.
-// The DI service does heavier work (repo analysis, AGENTS.md generation)
-// that we don't need for a simple MCP list response.
-// TODO(#443): Extract lightweight scan into a shared utility.
+// ossa_list — workspace discovery via shared manifest scanner
+// Uses src/utils/manifest-scanner.ts for consistent glob patterns and parsing.
 // ---------------------------------------------------------------------------
 async function handleList(args: Record<string, unknown>) {
   const input = ListInput.parse(args);
   const baseDir = resolvePath(input.directory);
 
-  const patterns = input.recursive
-    ? ['**/*.ossa.yaml', '**/*.ossa.yml', '**/.agents/*/manifest.ossa.yaml']
-    : ['*.ossa.yaml', '*.ossa.yml', '.agents/*/manifest.ossa.yaml'];
-
-  const files = await fg(patterns, {
-    cwd: baseDir,
+  const results = await scanManifests(baseDir, {
+    recursive: input.recursive,
+    includeAgentsDirs: true,
     absolute: true,
-    ignore: ['**/node_modules/**', '**/dist/**', '**/.git/**'],
   });
 
-  const agents: Array<Record<string, unknown>> = [];
-  for (const file of files) {
-    try {
-      const raw = fs.readFileSync(file, 'utf8');
-      const doc = yaml.load(raw) as Record<string, unknown>;
-      const meta = doc.metadata as Record<string, unknown> | undefined;
-      agents.push({
-        name: meta?.name || path.basename(path.dirname(file)),
-        version: meta?.version || 'unknown',
-        path: file,
-        kind: doc.kind || 'Agent',
-        apiVersion: doc.apiVersion || 'unknown',
-        description: meta?.description || '',
-      });
-    } catch {
-      agents.push({ name: path.basename(file), path: file, error: 'Failed to parse' });
-    }
-  }
+  const agents: Array<Record<string, unknown>> = results.map((r) =>
+    r.error
+      ? { name: r.name, path: r.path, error: r.error }
+      : {
+          name: r.name,
+          version: r.version,
+          path: r.path,
+          kind: r.kind,
+          apiVersion: r.apiVersion,
+          description: r.description,
+        },
+  );
 
   if (input.format === 'json') {
     return okResponse({ count: agents.length, agents });
   }
 
   if (input.format === 'detailed') {
+    const patterns = input.recursive
+      ? ['**/*.ossa.yaml', '**/*.ossa.yml', '**/.agents/*/manifest.ossa.yaml']
+      : ['*.ossa.yaml', '*.ossa.yml', '.agents/*/manifest.ossa.yaml'];
     return okResponse({
       count: agents.length,
       agents,
