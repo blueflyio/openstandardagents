@@ -393,26 +393,18 @@ discovery:publish:
       when: on_success
 
 # =============================================================================
-# WIKI STAGE - Publish docs/wiki/* to GitLab Wiki
+# WIKI STAGE - Publish docs/wiki/* to GitLab Wiki (GitLab API only; no BuildKit)
 # =============================================================================
 # Runs when docs/wiki/ or .gitlab/wiki-publish-manifest.json change.
-# Requires: GITLAB_TOKEN or GITLAB_PUSH_TOKEN (wiki API), GITLAB_REGISTRY_NPM_TOKEN (to install buildkit).
+# Requires: GITLAB_TOKEN or GITLAB_PUSH_TOKEN (wiki API).
 # =============================================================================
 wiki:publish:
   stage: deploy
   image: node:${NODE_VERSION}
   tags:
     - saas-linux-small-amd64
-  before_script:
-    - corepack enable
-    - npm config set @bluefly:registry "https://gitlab.com/api/v4/groups/blueflyio%2Fagent-platform/-/packages/npm/"
-    - |
-      if [ -n "${GITLAB_REGISTRY_NPM_TOKEN}" ]; then
-        npm config set "//gitlab.com/api/v4/groups/blueflyio%2Fagent-platform/-/packages/npm/:_authToken" "${GITLAB_REGISTRY_NPM_TOKEN}"
-      fi
-    - npm install -g @bluefly/agent-buildkit
   script:
-    - buildkit gitlab wiki publish --project blueflyio/ossa/openstandardagents --manifest .gitlab/wiki-publish-manifest.json
+    - node .gitlab/wiki-publish.cjs
   rules:
     - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/
       changes:

@@ -127,7 +127,7 @@ The OSSA CLI is the single tool for creating, validating, and exporting OSSA age
 | `ossa workspace sync` | Sync workspace registry with discovered agents |
 | `ossa workspace publish --registry-url <url>` | POST discovery to registry API (e.g. mesh `/api/v1/discovery`); use `--discover` if registry missing |
 
-See [Discovery and registry](Discovery-and-Registry.md) for the registry API contract and how OSSA, buildkit, and CI connect.
+See [Discovery and registry](Discovery-and-Registry.md) for the registry API contract and how OSSA and CI connect. BuildKit is an optional consumer that may discover and deploy OSSA agents; OSSA does not depend on BuildKit.
 
 ---
 
@@ -186,5 +186,5 @@ ossa workspace publish --registry-url https://mesh.example.com --discover
 
 ## Wiki
 
-Run `npm run wiki:publish` in the openstandardagents repo (requires GITLAB_TOKEN and buildkit on PATH). Manifest: `.gitlab/wiki-publish-manifest.json`.
+Run `npm run wiki:publish` in the openstandardagents repo (requires GITLAB_TOKEN or GITLAB_PUSH_TOKEN). Manifest: `.gitlab/wiki-publish-manifest.json`. No BuildKit required.
 

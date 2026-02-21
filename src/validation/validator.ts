@@ -8,7 +8,11 @@
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import { readFileSync } from 'fs';
-import { join } from 'path';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 export interface ValidationResult {
   valid: boolean;
@@ -338,8 +342,9 @@ export class OSSAValidator {
   }
 }
 
-// CLI usage
-if (require.main === module) {
+// CLI usage (ESM-safe: package is "type": "module")
+const isMain = process.argv[1] && (process.argv[1] === __filename || process.argv[1].endsWith('validator.js'));
+if (isMain) {
   const args = process.argv.slice(2);
   if (args.length === 0) {
     console.log('Usage: ts-node validator.ts <manifest.json> [schema.json]');

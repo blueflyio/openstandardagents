@@ -12,7 +12,7 @@
   "properties": {
     "apiVersion": {
       "type": "string",
-      "pattern": "^ossa/v(0\\.4(\\.[0-9]+(-[a-zA-Z0-9.]+)?)?|0\\.3(\\.[4-9]|\\.[0-9]+(-[a-zA-Z0-9.]+)?)?|0\\.2\\.[2-9](-dev)?|1)(\\.[0-9]+)?(-[a-zA-Z0-9.]+)?$",
+      "pattern": "^(ossa/v(0\\.4(\\.[0-9]+(-[a-zA-Z0-9.]+)?)?|0\\.3(\\.[4-9]|\\.[0-9]+(-[a-zA-Z0-9.]+)?)?|0\\.2\\.[2-9](-dev)?|1)(\\.[0-9]+)?(-[a-zA-Z0-9.]+)?)|([a-zA-Z0-9.-]+/v[a-zA-Z0-9.]+)$",
       "description": "OSSA API version (v0.4+ uses minor version pattern, supports Task and Workflow kinds)",
       "examples": [
         "ossa/v{{VERSION}}",

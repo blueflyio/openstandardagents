@@ -11,6 +11,7 @@ export { configureToolsStep } from './05-tools.js';
 export { configureAutonomyStep } from './06-autonomy.js';
 export { configureObservabilityStep } from './07-observability.js';
 export { configureDeploymentStep } from './08-deployment.js';
+export { configureTargetPlatformsStep } from './08a-target-platforms.js';
 export { configureAdvancedStep } from './09-advanced.js';
 export { configureTokenEfficiencyStep } from './09a-token-efficiency.js';
 export { configureSeparationOfDutiesStep } from './09b-separation-of-duties.js';

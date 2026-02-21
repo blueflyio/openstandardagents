@@ -443,7 +443,9 @@ config:
     client_secret: ${DRUPAL_CLIENT_SECRET}
 ```
 
-### Using with buildkit
+### Optional: Using with BuildKit
+
+OSSA does not depend on BuildKit. For teams that use it:
 
 ```bash
 # Start agent with Drupal MCP

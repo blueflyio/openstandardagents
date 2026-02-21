@@ -22,7 +22,7 @@ export const importCommand = new Command('import')
   .argument('<path>', 'Path to platform-specific agent file')
   .option(
     '-f, --from <platform>',
-    'Source platform (cursor,openai,crewai,langchain,etc)',
+    'Source platform: langflow, langchain, crewai, autogen (framework converters), or cursor, openai, anthropic',
     'cursor'
   )
   .description('Import platform-specific agent format to OSSA manifest');

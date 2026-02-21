@@ -624,7 +624,7 @@ OSSA defines agents; a **registry** is where agents are listed and queried. You 
 - **Local:** Run `ossa workspace discover` to scan `.agents/` and update `.agents-workspace/registry/index.yaml`. Use `ossa workspace list` to see agents in this repo.
 - **Publish to a registry:** Run `ossa workspace publish --registry-url <base-url>` to POST the same discovery payload to `<base-url>/api/v1/discovery`. Any service that implements that contract (e.g. a mesh discovery API) can store and serve it; others can GET the same URL to list all published agents.
 - **CI:** In GitLab CI, include the agents-ci template and set `MESH_URL` (or `AGENT_REGISTRY_URL`). The discover job will then POST to that URL so each pipeline run updates the registry.
-- **Contract:** The registry API is a simple HTTP contract: **POST** `/api/v1/discovery` with body `{ source_id, workspace: { name, scanned_at }, projects: [{ name, path, agents }] }` to publish; **GET** `/api/v1/discovery` returns aggregated sources and projects. OSSA and other tools (e.g. buildkit) use this same shape.
+- **Contract:** The registry API is a simple HTTP contract: **POST** `/api/v1/discovery` with body `{ source_id, workspace: { name, scanned_at }, projects: [{ name, path, agents }] }` to publish; **GET** `/api/v1/discovery` returns aggregated sources and projects. OSSA and other compatible tools use this same shape.
 
 See [Agents workspace and registry](docs/getting-started/agents-workspace-registry.md) and [Discovery and registry](docs/wiki/Discovery-and-Registry.md) for details. 30+ additional commands (e.g. quickstart, scaffold, import, enhance, registry, migrate-batch, langchain, langflow, workspace, taxonomy, knowledge, audit) are available; run `ossa <command> --help` for any command.
 
@@ -663,7 +663,7 @@ All mutation commands support:
 - [GitLab](https://gitlab.com/blueflyio/ossa/openstandardagents) - Source
 - [GitHub Mirror](https://github.com/blueflyio/openstandardagents)
 
-**Wiki publishing:** Wiki pages (OSSA-CLI-Reference, Discovery-and-Registry) are published from this repo. Run `npm run wiki:publish` (requires `GITLAB_TOKEN` or `GITLAB_PUSH_TOKEN` and `buildkit` on PATH). Manifest: `.gitlab/wiki-publish-manifest.json`. To add a page, add an entry there and run the same command.
+**Wiki publishing:** Wiki pages (OSSA-CLI-Reference, Discovery-and-Registry) are published from this repo. Run `npm run wiki:publish` (requires `GITLAB_TOKEN` or `GITLAB_PUSH_TOKEN`). Manifest: `.gitlab/wiki-publish-manifest.json`. To add a page, add an entry there and run the same command. No BuildKit dependency.
 
 ## License
 

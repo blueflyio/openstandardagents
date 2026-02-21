@@ -8,19 +8,22 @@ export * from './types.js';
 export * from './converters/langchain.js';
 export * from './converters/crewai.js';
 export * from './converters/autogen.js';
+export * from './converters/langflow.js';
 
 import { langchainConverter } from './converters/langchain.js';
 import { crewaiConverter } from './converters/crewai.js';
 import { autogenConverter } from './converters/autogen.js';
+import { langflowConverter } from './converters/langflow.js';
 import type { FrameworkConverter } from './types.js';
 
 /**
- * Registry of all available converters
+ * Registry of all available converters (import from platform -> OSSA)
  */
 export const converters: Record<string, FrameworkConverter> = {
   langchain: langchainConverter,
   crewai: crewaiConverter,
   autogen: autogenConverter,
+  langflow: langflowConverter,
 };
 
 /**
