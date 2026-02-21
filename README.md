@@ -611,7 +611,29 @@ ossa skills validate ./SKILL.md
 ossa skills sync
 ```
 
-**OSSA MCP server** (stdio; for Cursor/Claude MCP): Run `ossa-mcp` (when package installed globally) or `node dist/mcp-server/index.js` from package root. Tools: `ossa_validate`, `ossa_scaffold`, `ossa_generate`, `ossa_publish`. Skill: `examples/agent-skills/ossa-agent-authoring/SKILL.md`.
+**OSSA MCP Server** (10 tools, 5 resources, 4 prompts — stdio transport):
+
+Run `npx ossa-mcp` or add to your MCP client config:
+```json
+{
+  "mcpServers": {
+    "ossa": {
+      "command": "npx",
+      "args": ["ossa-mcp"]
+    }
+  }
+}
+```
+
+**Tools:** `ossa_validate`, `ossa_scaffold`, `ossa_generate`, `ossa_publish`, `ossa_list`, `ossa_inspect`, `ossa_convert` (11+ platforms with real SDK refs), `ossa_workspace` (init/discover/status), `ossa_diff` (breaking change detection), `ossa_migrate`.
+
+**Resources:** `ossa://schema/v0.4/agent`, `ossa://template/minimal`, `ossa://template/full`, `ossa://guide/mcp-ossa-a2a`, `ossa://platforms/supported`.
+
+**Prompts:** `create-agent`, `convert-for-platform`, `explain-manifest`, `what-is-ossa`.
+
+**Convert targets:** kagent (v1alpha2), docker, openai, anthropic, langchain, crewai, autogen, semantic-kernel, gitlab-duo, agent-card (universal cross-platform JSON with 12 platform adapters — each with `sdk` npm/pip refs, `config`, and `usage` code snippet).
+
+See [MCP Server Guide](docs/guides/mcp-server.md) for full documentation. Skill: `examples/agent-skills/ossa-agent-authoring/SKILL.md`.
 
 **Beta:** `ossa agents-local`, `ossa agents-md`, `ossa llms-txt`
 

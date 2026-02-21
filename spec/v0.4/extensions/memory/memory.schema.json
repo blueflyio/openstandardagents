@@ -1,0 +1,7 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openstandardagents.org/schemas/v0.4/extensions/memory.schema.json",
+  "title": "OSSA Memory Management Extension",
+  "description": "Extension schema for agent memory file management. Manages CLAUDE.md hierarchy, rules extraction, conditional loading, and auto-memory for IDE/CLI tools (Claude Code, Cursor, Windsurf).",
+  "$ref": "../../agent.schema.json#/definitions/MemoryManagement"
+}

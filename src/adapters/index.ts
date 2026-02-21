@@ -17,6 +17,7 @@ import { CursorAdapter } from './cursor/adapter.js';
 import { ClaudeCodeAdapter } from './claude-code/adapter.js';
 import { MobileAgentAdapter } from './mobile-agent/adapter.js';
 import { LangflowPlatformAdapter } from './langflow/platform-adapter.js';
+import { ClaudeAgentSdkAdapter } from './claude-agent-sdk/adapter.js';
 
 /**
  * Initialize and register all export adapters
@@ -55,7 +56,8 @@ export function initializeAdapters(): void {
   // Register MobileAgent adapter
   registry.register(new MobileAgentAdapter());
 
-  // console.log(`Registered ${registry.size} export adapters`);
+  // Register Claude Agent SDK adapter
+  registry.register(new ClaudeAgentSdkAdapter());
 }
 
 // Export registry for use in commands

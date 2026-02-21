@@ -17,4 +17,5 @@ export { configureTokenEfficiencyStep } from './09a-token-efficiency.js';
 export { configureSeparationOfDutiesStep } from './09b-separation-of-duties.js';
 export { configureAgentsMdStep } from './09c-agents-md.js';
 export { configureDrupalToolsEcaStep } from './09d-drupal-tools-eca.js';
+export { configureMemoryManagementStep } from './09e-memory-management.js';
 export { reviewAndSaveStep } from './10-review.js';
