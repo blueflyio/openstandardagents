@@ -8,7 +8,7 @@
 
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { injectable } from 'inversify';
+import { injectable, inject } from 'inversify';
 import type { OssaAgent } from '../../types/index.js';
 import { AgentsMdService } from './agents-md.service.js';
 import { AgentsMdDiscoveryService } from './agents-md-discovery.service.js';
@@ -41,9 +41,9 @@ const DEFAULT_AGENTS_DIR = '.agents';
 @injectable()
 export class AgentsMdApiService {
   constructor(
-    private readonly manifestRepo: ManifestRepository,
-    private readonly agentsMdService: AgentsMdService,
-    private readonly discoveryService: AgentsMdDiscoveryService
+    @inject(ManifestRepository) private readonly manifestRepo: ManifestRepository,
+    @inject(AgentsMdService) private readonly agentsMdService: AgentsMdService,
+    @inject(AgentsMdDiscoveryService) private readonly discoveryService: AgentsMdDiscoveryService
   ) {}
 
   /**
