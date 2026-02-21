@@ -18,11 +18,24 @@ import { ClaudeCodeAdapter } from './claude-code/adapter.js';
 import { MobileAgentAdapter } from './mobile-agent/adapter.js';
 import { LangflowPlatformAdapter } from './langflow/platform-adapter.js';
 import { ClaudeAgentSdkAdapter } from './claude-agent-sdk/adapter.js';
+// Config-only adapters (lightweight JSON export for MCP tool responses)
+import { KagentConfigAdapter } from './kubernetes/config-adapter.js';
+import { DockerConfigAdapter } from './docker/config-adapter.js';
+import { OpenAIConfigAdapter } from './openai-agents/config-adapter.js';
+import { AnthropicConfigAdapter } from './anthropic/config-adapter.js';
+import { AutogenConfigAdapter } from './autogen/config-adapter.js';
+import { SemanticKernelConfigAdapter } from './semantic-kernel/config-adapter.js';
+
+let _initialized = false;
 
 /**
- * Initialize and register all export adapters
+ * Initialize and register all export adapters.
+ * Safe to call multiple times; subsequent calls are no-ops.
  */
 export function initializeAdapters(): void {
+  if (_initialized) return;
+  _initialized = true;
+
   // Register LangChain adapter
   registry.register(new LangChainAdapter());
 
@@ -58,6 +71,14 @@ export function initializeAdapters(): void {
 
   // Register Claude Agent SDK adapter
   registry.register(new ClaudeAgentSdkAdapter());
+
+  // Config-only adapters (lightweight JSON for MCP convert)
+  registry.register(new KagentConfigAdapter());
+  registry.register(new DockerConfigAdapter());
+  registry.register(new OpenAIConfigAdapter());
+  registry.register(new AnthropicConfigAdapter());
+  registry.register(new AutogenConfigAdapter());
+  registry.register(new SemanticKernelConfigAdapter());
 }
 
 // Export registry for use in commands

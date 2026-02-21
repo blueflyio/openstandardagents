@@ -15,6 +15,7 @@ import type {
   ValidationResult,
   ValidationError,
   ValidationWarning,
+  ConfigResult,
 } from '../base/adapter.interface.js';
 
 export interface GitLabDuoConfig {
@@ -45,6 +46,26 @@ export class GitLabDuoAdapter extends BaseAdapter {
   readonly description = 'GitLab Duo Custom Agent with MCP integration';
   readonly status = 'alpha' as const;
   readonly supportedVersions = ['v{{VERSION}}'];
+
+  /**
+   * Produce lightweight JSON config for MCP tool responses.
+   */
+  async toConfig(manifest: OssaAgent): Promise<ConfigResult> {
+    const meta = manifest.metadata || { name: 'agent', version: '0.0.0' };
+    const config: Record<string, unknown> = {
+      name: meta.name,
+      description: meta.description || '',
+      system_prompt: manifest.spec?.role || '',
+      model: manifest.spec?.llm?.model || 'claude-sonnet-4-20250514',
+      tools: ((manifest.spec?.tools || []) as Array<Record<string, unknown>>).map(
+        (t) => ({ name: t.name })
+      ),
+    };
+    return {
+      config,
+      filename: `${meta.name}.duo-agent.yaml`,
+    };
+  }
 
   /**
    * Export OSSA manifest to GitLab Duo format

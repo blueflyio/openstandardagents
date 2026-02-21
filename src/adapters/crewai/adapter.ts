@@ -19,6 +19,7 @@ import type {
   ValidationResult,
   ValidationError,
   ValidationWarning,
+  ConfigResult,
 } from '../base/adapter.interface.js';
 import { generatePythonToolParams } from '../base/tool-params.js';
 import { CrewAIConverter } from './converter.js';
@@ -193,6 +194,30 @@ export class CrewAIAdapter extends BaseAdapter {
         { duration: Date.now() - startTime }
       );
     }
+  }
+
+  /**
+   * Produce lightweight JSON config for MCP tool responses.
+   */
+  async toConfig(manifest: OssaAgent): Promise<ConfigResult> {
+    const meta = manifest.metadata || { name: 'agent', version: '0.0.0' };
+    const config: Record<string, unknown> = {
+      agents: [
+        {
+          role: meta.name,
+          goal: meta.description || '',
+          backstory: manifest.spec?.role || '',
+          llm: manifest.spec?.llm?.model || 'gpt-4',
+          tools: ((manifest.spec?.tools || []) as Array<Record<string, unknown>>).map(
+            (t) => t.name
+          ),
+        },
+      ],
+    };
+    return {
+      config,
+      filename: `${meta.name}.crewai.yaml`,
+    };
   }
 
   /**
