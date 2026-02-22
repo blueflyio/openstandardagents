@@ -838,12 +838,20 @@ export interface AgentTemplate {
 export type SchemaVersion = string;
 
 /**
+ * Options for validation (platform-specific validation, version override)
+ */
+export interface ValidateOptions {
+  version?: SchemaVersion;
+  platform?: string;
+}
+
+/**
  * Service interfaces
  */
 export interface IValidationService {
   validate(
     manifest: unknown,
-    version: SchemaVersion
+    versionOrOptions?: SchemaVersion | ValidateOptions
   ): Promise<ValidationResult>;
 }
 

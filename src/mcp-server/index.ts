@@ -15,7 +15,7 @@
  *  - pino                       — Structured logging
  *  - fast-glob                  — Workspace agent discovery
  *  - js-yaml                    — YAML parse/serialize
- *  - axios                      — HTTP client (registry publish)
+ *  - RegistryService.publishToRemote — HTTP registry publish
  *  - semver                     — Version parsing and comparison
  */
 
@@ -36,7 +36,6 @@ import { z } from 'zod';
 import pino from 'pino';
 import fg from 'fast-glob';
 import yaml from 'js-yaml';
-import axios from 'axios';
 import semver from 'semver';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
@@ -60,18 +59,7 @@ import {
   getAgentTypeConfigs,
 } from '../config/defaults.js';
 import { initializeAdapters, registry as convertRegistry } from '../adapters/index.js';
-import type { OssaAgent, ValidationResult } from '../types/index.js';
-import { CursorValidator } from '../services/validators/cursor.validator.js';
-import { OpenAIValidator } from '../services/validators/openai.validator.js';
-import { CrewAIValidator } from '../services/validators/crewai.validator.js';
-import { LangChainValidator } from '../services/validators/langchain.validator.js';
-import { AnthropicValidator } from '../services/validators/anthropic.validator.js';
-import { LangflowValidator } from '../services/validators/langflow.validator.js';
-import { AutoGenValidator } from '../services/validators/autogen.validator.js';
-import { VercelAIValidator } from '../services/validators/vercel-ai.validator.js';
-import { LlamaIndexValidator } from '../services/validators/llamaindex.validator.js';
-import { LangGraphValidator } from '../services/validators/langgraph.validator.js';
-import { KagentValidator } from '../services/validators/kagent.validator.js';
+import type { OssaAgent } from '../types/index.js';
 
 // ---------------------------------------------------------------------------
 // Logging — pino (structured JSON to stderr so MCP stdio stays clean)
@@ -797,64 +785,13 @@ async function dispatch(name: string, args: Record<string, unknown>) {
 }
 
 // ---------------------------------------------------------------------------
-// Platform validator registry (maps platform names to validator instances)
-// ---------------------------------------------------------------------------
-const platformValidatorRegistry = new Map<
-  string,
-  { validate: (manifest: OssaAgent) => ValidationResult }
->([
-  ['cursor', new CursorValidator()],
-  ['openai_agents', new OpenAIValidator()],
-  ['crewai', new CrewAIValidator()],
-  ['langchain', new LangChainValidator()],
-  ['anthropic', new AnthropicValidator()],
-  ['langflow', new LangflowValidator()],
-  ['autogen', new AutoGenValidator()],
-  ['vercel_ai', new VercelAIValidator()],
-  ['llamaindex', new LlamaIndexValidator()],
-  ['langgraph', new LangGraphValidator()],
-  ['kagent', new KagentValidator()],
-]);
-
-// ---------------------------------------------------------------------------
 // ossa_validate
 // ---------------------------------------------------------------------------
 async function handleValidate(args: Record<string, unknown>) {
   const input = ValidateInput.parse(args);
   const manifestPath = resolvePath(input.path);
   const manifest = await manifestRepo.load(manifestPath);
-  const result = await validationService.validate(manifest);
-
-  // Platform-specific validation: when platform is specified, run the
-  // targeted validator explicitly and merge results
-  let platformErrors: unknown[] = [];
-  let platformWarnings: string[] = [];
-  if (input.platform) {
-    const validator = platformValidatorRegistry.get(input.platform);
-    if (validator) {
-      const platformResult = validator.validate(manifest);
-      platformErrors = platformResult.errors || [];
-      platformWarnings = platformResult.warnings || [];
-
-      // If no extension exists for this platform, add a warning
-      const extensions = (manifest as Record<string, unknown>).extensions as Record<string, unknown> | undefined;
-      if (!extensions?.[input.platform]) {
-        platformWarnings.push(
-          `Platform '${input.platform}': No extensions.${input.platform} section found in manifest. ` +
-          `Add extensions.${input.platform} to enable platform-specific features.`,
-        );
-      }
-
-      // Merge platform results into base results
-      if (platformErrors.length) {
-        result.errors = [...(result.errors || []), ...platformErrors] as typeof result.errors;
-        result.valid = false;
-      }
-      if (platformWarnings.length) {
-        result.warnings = [...(result.warnings || []), ...platformWarnings];
-      }
-    }
-  }
+  const result = await validationService.validate(manifest, input.platform ? { platform: input.platform } : undefined);
 
   // Strict mode: promote warnings to errors
   if (input.strict && result.warnings?.length) {
@@ -869,11 +806,6 @@ async function handleValidate(args: Record<string, unknown>) {
     warnings: result.warnings || [],
     manifest_path: manifestPath,
     platform: input.platform || null,
-    platform_validation: input.platform ? {
-      platform: input.platform,
-      errors: platformErrors,
-      warnings: platformWarnings,
-    } : undefined,
   });
 }
 
@@ -1015,19 +947,14 @@ async function handlePublish(args: Record<string, unknown>) {
   const registryUrl =
     input.registry_url || process.env.REGISTRY_URL || process.env.AGENT_REGISTRY_URL;
 
-  // Remote HTTP registry (if configured)
+  // Remote HTTP registry via RegistryService (if configured)
   if (registryUrl) {
-    const url = registryUrl.replace(/\/?$/, '/api/v1/agents');
-    const res = await axios.post(url, payload, {
-      headers: { 'Content-Type': 'application/json' },
-      timeout: 15000,
-      validateStatus: () => true,
-    });
+    const remote = await registryService.publishToRemote(registryUrl, payload);
     return okResponse({
-      success: res.status >= 200 && res.status < 300,
-      status: res.status,
+      success: remote.success,
+      status: remote.status,
       registry_url: registryUrl,
-      data: res.data,
+      data: remote.data,
       local_publish: localResult,
     });
   }
