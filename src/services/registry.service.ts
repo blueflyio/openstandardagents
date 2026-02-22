@@ -3,6 +3,7 @@ import { OssaAgent } from '../types/index.js';
 import { getApiVersion } from '../utils/version.js';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import axios from 'axios';
 
 export interface AgentEntry {
   id: string;
@@ -26,6 +27,19 @@ export interface SearchFilters {
 export interface PublishRequest {
   manifest: OssaAgent;
   version?: string;
+}
+
+/** Payload sent to remote registry HTTP API */
+export interface PublishPayload {
+  manifest: OssaAgent;
+  agent_card?: unknown;
+  manifest_path?: string;
+}
+
+export interface PublishToRemoteResult {
+  success: boolean;
+  status: number;
+  data: unknown;
 }
 
 @injectable()
@@ -120,6 +134,27 @@ export class RegistryService {
     await this.updateIndex(entry);
 
     return entry;
+  }
+
+  /**
+   * Publish to a remote registry via HTTP POST.
+   * Caller builds payload (manifest, optional agent_card, manifest_path).
+   */
+  async publishToRemote(
+    registryUrl: string,
+    payload: PublishPayload
+  ): Promise<PublishToRemoteResult> {
+    const url = registryUrl.replace(/\/?$/, '') + '/api/v1/agents';
+    const res = await axios.post(url, payload, {
+      headers: { 'Content-Type': 'application/json' },
+      timeout: 15000,
+      validateStatus: () => true,
+    });
+    return {
+      success: res.status >= 200 && res.status < 300,
+      status: res.status,
+      data: res.data,
+    };
   }
 
   async get(agentId: string, version?: string): Promise<AgentEntry | null> {

@@ -18,6 +18,7 @@ import type {
   IValidationService,
   OssaAgent,
   SchemaVersion,
+  ValidateOptions,
   ValidationResult,
 } from '../types/index.js';
 import type { OpenAPIOperationWithOssaExtensions } from '../types/openapi-extensions.js';
@@ -70,13 +71,18 @@ export class ValidationService implements IValidationService {
   /**
    * Validate OSSA agent manifest
    * @param manifest - Manifest object to validate
-   * @param version - OSSA version (e.g., '0.2.3', '0.2.2', '0.1.9')
+   * @param versionOrOptions - OSSA version or { version?, platform? } (platform applied in ValidationZodService)
    * @returns Validation result with errors and warnings
    */
   async validate(
     manifest: unknown,
-    version?: SchemaVersion
+    versionOrOptions?: SchemaVersion | ValidateOptions
   ): Promise<ValidationResult> {
+    let version: SchemaVersion | undefined =
+      typeof versionOrOptions === 'string'
+        ? versionOrOptions
+        : versionOrOptions?.version;
+
     // Use dynamic version detection if not provided
     if (!version) {
       // Try to extract version from manifest's apiVersion field
