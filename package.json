@@ -331,6 +331,7 @@
     "vitest": "^2.1.8"
   },
   "optionalDependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.1.0",
     "nodemailer": "^6.9.0"
   },
   "engines": {
