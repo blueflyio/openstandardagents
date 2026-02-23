@@ -54,7 +54,13 @@ describe('OSSA MCP server integration', () => {
       expect(names).toContain('ossa_scaffold');
       expect(names).toContain('ossa_generate');
       expect(names).toContain('ossa_publish');
-      expect(names.length).toBe(4);
+      expect(names).toContain('ossa_list');
+      expect(names).toContain('ossa_inspect');
+      expect(names).toContain('ossa_convert');
+      expect(names).toContain('ossa_workspace');
+      expect(names).toContain('ossa_diff');
+      expect(names).toContain('ossa_migrate');
+      expect(names.length).toBe(10);
     } finally {
       proc.kill('SIGTERM');
     }
