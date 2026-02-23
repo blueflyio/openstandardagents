@@ -233,6 +233,7 @@
     "release:prep": "tsx src/dev-cli/src/index.ts release prep v$(node -p \"require('./.version.json').latest_stable\")"
   },
   "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.2.50",
     "@anthropic-ai/sdk": "^0.71.0",
     "@aws-sdk/client-bedrock-runtime": "^3.955.0",
     "@gitbeaker/node": "^35.8.1",
