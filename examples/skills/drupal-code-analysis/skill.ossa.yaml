@@ -1,0 +1,111 @@
+apiVersion: ossa/v1
+kind: Skill
+metadata:
+  name: drupal-code-analysis
+  version: "1.0.0"
+  description: >
+    Analyzes Drupal 7/8/9/10 codebases for migration readiness,
+    deprecated API usage, and module compatibility with Drupal 11.
+  did: "did:ossa:skill:drupal-code-analysis"
+  author:
+    name: Bluefly.io
+    did: "did:ossa:author:bluefly-io"
+    url: https://bluefly.io
+  license: Apache-2.0
+  labels:
+    domain: drupal
+    maturity: stable
+  created: "2026-02-23T00:00:00Z"
+spec:
+  description: >
+    Use when the user mentions Drupal migration, upgrade, code audit,
+    deprecated API usage, or module compatibility checking.
+    Analyzes PHP code for Drupal-specific patterns and generates
+    migration readiness reports.
+  categories:
+    - drupal
+    - migration
+    - code-analysis
+    - php
+  platforms:
+    - claude-code
+    - cursor
+    - codex-cli
+    - goose
+  allowedTools:
+    - bash
+    - file_read
+    - file_write
+    - web_search
+  runtimes:
+    php: ">=8.2"
+    node: ">=18"
+  dependencies:
+    tools:
+      - name: phpstan
+        type: cli
+        required: false
+      - name: phpcs
+        type: cli
+        required: false
+      - name: rector
+        type: cli
+        required: false
+  trust:
+    testsPassed: "47/47"
+    coverage: "94%"
+    lastAudit: "2026-02-15T00:00:00Z"
+  governance:
+    approvalRequired: false
+    maxAutonomy: 3
+    dataAccess:
+      filesystem: read-only
+      network: none
+      secrets: none
+    prohibitedActions:
+      - file_deletion
+      - credential_access
+      - external_network_calls
+  compliance:
+    - NIST-800-53
+  instructions: |
+    # Drupal Code Analysis
+
+    You are an expert Drupal migration analyst. When activated, analyze
+    the codebase for Drupal-specific patterns and provide actionable
+    migration guidance.
+
+    ## Analysis Steps
+
+    1. **Detect Drupal Version**: Check `.info.yml` files, `core/lib/Drupal.php`,
+       or `includes/bootstrap.inc` for version markers.
+
+    2. **Scan for Deprecated APIs**: Look for:
+       - `drupal_set_message()` → `\Drupal::messenger()->addMessage()`
+       - `db_query()` → database service injection
+       - `drupal_render()` → render service
+       - `l()` and `url()` → `Url::fromRoute()`
+       - `entity_load()` → entity type manager
+       - Hook implementations using `function hook_` patterns
+
+    3. **Check Module Compatibility**: For each custom/contrib module:
+       - Verify Drupal 11 compatibility via drupal.org API
+       - Check for removed/deprecated hooks
+       - Identify service container usage vs global functions
+
+    4. **Generate Report**: Produce a structured report with:
+       - Migration readiness score (0-100)
+       - Critical issues (must fix before upgrade)
+       - Warnings (should fix)
+       - Recommendations (nice to have)
+       - Estimated effort per module
+
+    ## Output Format
+
+    Always output a structured migration report with clear sections,
+    severity levels, and specific file:line references for each issue found.
+  tests:
+    - prompt: "Analyze this Drupal 9 module for Drupal 11 compatibility"
+      expectedBehavior: "Should scan PHP files for deprecated API calls and generate a migration readiness report"
+    - prompt: "Check if my custom module uses any deprecated Drupal functions"
+      expectedBehavior: "Should identify deprecated function calls and suggest modern replacements"

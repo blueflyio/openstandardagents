@@ -1,0 +1,86 @@
+apiVersion: ossa/v1
+kind: Skill
+metadata:
+  name: git-commit-review
+  version: "1.0.0"
+  description: >
+    Reviews git commits and staged changes for quality, security issues,
+    and conventional commit compliance before committing.
+  did: "did:ossa:skill:git-commit-review"
+  author:
+    name: OSSA Contributors
+  license: Apache-2.0
+  labels:
+    domain: git
+    maturity: stable
+spec:
+  description: >
+    Use when the user is about to commit, wants a pre-commit review,
+    or asks to check staged changes. Activates on mentions of
+    commit review, pre-commit check, or staged changes review.
+  categories:
+    - git
+    - code-review
+    - security
+  platforms:
+    - claude-code
+    - cursor
+    - codex-cli
+  allowedTools:
+    - bash
+    - file_read
+  governance:
+    approvalRequired: false
+    maxAutonomy: 2
+    dataAccess:
+      filesystem: read-only
+      network: none
+      secrets: none
+    prohibitedActions:
+      - git_push
+      - git_force_push
+      - file_deletion
+  instructions: |
+    # Git Commit Review
+
+    Review staged changes before commit. Check for quality, security,
+    and conventional commit compliance.
+
+    ## Pre-Commit Checklist
+
+    1. **Run `git diff --staged`** to see what will be committed
+
+    2. **Security scan**:
+       - No secrets (API keys, tokens, passwords) in diff
+       - No `.env` files or credentials being committed
+       - No hardcoded IPs or internal URLs
+
+    3. **Code quality**:
+       - No `console.log` / `print` debug statements
+       - No commented-out code blocks
+       - No TODO/FIXME without issue references
+       - No large binary files
+
+    4. **Conventional commit message**:
+       - Format: `type(scope): description`
+       - Types: feat, fix, docs, style, refactor, test, chore, ci
+       - Description in imperative mood ("add" not "added")
+       - Under 72 characters for subject line
+       - Body wraps at 100 characters
+
+    5. **Diff size check**:
+       - Warn if >500 lines changed (should split into smaller commits)
+       - Warn if >10 files changed (may be doing too much)
+
+    ## Output
+
+    Provide a summary:
+    - ✅ Passed checks
+    - ⚠️ Warnings (non-blocking)
+    - ❌ Issues (should fix before committing)
+    - Suggested commit message if not provided
+  tests:
+    - prompt: "Review my staged changes before I commit"
+      expectedBehavior: "Should run git diff --staged and check for secrets, debug statements, and suggest a commit message"
+    - prompt: "Check if my commit message follows conventional commits"
+      expectedBehavior: "Should validate the commit message format against conventional commit standards"

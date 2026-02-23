@@ -1,0 +1,183 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openstandardagents.org/schemas/v1/mcp.schema.json",
+  "title": "OSSA v1 MCP Server Manifest Schema",
+  "description": "Open Standard for Software Agents (OSSA) - MCP Server manifest. Defines governed MCP server packages with identity, trust, and federation metadata.",
+  "type": "object",
+  "required": ["apiVersion", "kind", "metadata", "spec"],
+  "properties": {
+    "apiVersion": {
+      "type": "string",
+      "pattern": "^ossa/v[0-9]+(\\.[0-9]+)*(-[a-zA-Z0-9.]+)?$",
+      "description": "OSSA API version",
+      "examples": ["ossa/v1"]
+    },
+    "kind": {
+      "type": "string",
+      "const": "MCPServer",
+      "description": "Resource type — must be MCPServer"
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "DNS-style server name"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(-[a-zA-Z0-9.]+)?$"
+        },
+        "description": { "type": "string" },
+        "did": {
+          "type": "string",
+          "pattern": "^did:ossa:mcp:[a-z0-9-]+(:[a-z0-9-]+)*$",
+          "description": "Decentralized identifier for this MCP server"
+        },
+        "author": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "did": { "type": "string" },
+            "email": { "type": "string", "format": "email" },
+            "url": { "type": "string", "format": "uri" }
+          }
+        },
+        "license": { "type": "string" },
+        "labels": { "type": "object", "additionalProperties": { "type": "string" } },
+        "created": { "type": "string", "format": "date-time" },
+        "updated": { "type": "string", "format": "date-time" }
+      }
+    },
+    "spec": {
+      "type": "object",
+      "required": ["transport"],
+      "properties": {
+        "description": { "type": "string" },
+        "transport": {
+          "type": "string",
+          "enum": ["stdio", "sse", "streamable-http"],
+          "description": "MCP transport type"
+        },
+        "command": {
+          "type": "string",
+          "description": "Command to start the MCP server (for stdio transport)"
+        },
+        "args": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Command arguments"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Server URL (for SSE/HTTP transport)"
+        },
+        "env": {
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "description": "Environment variables required"
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name"],
+            "properties": {
+              "name": { "type": "string" },
+              "description": { "type": "string" },
+              "inputSchema": { "type": "object" },
+              "outputSchema": { "type": "object" }
+            }
+          },
+          "description": "Declared tools this server provides"
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "uri": { "type": "string" },
+              "name": { "type": "string" },
+              "description": { "type": "string" },
+              "mimeType": { "type": "string" }
+            }
+          },
+          "description": "Resources this server exposes"
+        },
+        "prompts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "description": { "type": "string" },
+              "arguments": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": { "type": "string" },
+                    "description": { "type": "string" },
+                    "required": { "type": "boolean" }
+                  }
+                }
+              }
+            }
+          },
+          "description": "Prompts this server exposes"
+        },
+        "platforms": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Compatible platforms"
+        },
+        "governance": {
+          "type": "object",
+          "properties": {
+            "approvalRequired": { "type": "boolean", "default": false },
+            "dataAccess": {
+              "type": "object",
+              "properties": {
+                "filesystem": { "type": "string", "enum": ["none", "read-only", "read-write", "scoped"] },
+                "network": { "type": "string", "enum": ["none", "allowlist", "full"] }
+              }
+            },
+            "prohibitedActions": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "trust": {
+          "type": "object",
+          "properties": {
+            "attestation": { "type": "string", "format": "uri" },
+            "lastAudit": { "type": "string", "format": "date-time" },
+            "signatures": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "signer": { "type": "string" },
+                  "algorithm": { "type": "string" },
+                  "value": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "compliance": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "extensions": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}
