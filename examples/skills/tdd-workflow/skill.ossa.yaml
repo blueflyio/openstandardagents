@@ -1,0 +1,93 @@
+apiVersion: ossa/v1
+kind: Skill
+metadata:
+  name: tdd-workflow
+  version: "1.0.0"
+  description: >
+    Test-Driven Development workflow skill. Guides agents through
+    red-green-refactor cycles with proper test-first methodology.
+  did: "did:ossa:skill:tdd-workflow"
+  author:
+    name: OSSA Contributors
+  license: Apache-2.0
+  labels:
+    domain: development
+    maturity: stable
+spec:
+  description: >
+    Use when the user asks to implement a feature using TDD, write tests first,
+    or follow test-driven development practices. Activates on mentions of
+    TDD, test-first, red-green-refactor, or test-driven.
+  categories:
+    - testing
+    - tdd
+    - development-workflow
+  platforms:
+    - claude-code
+    - cursor
+    - codex-cli
+    - goose
+    - kiro
+  allowedTools:
+    - bash
+    - file_read
+    - file_write
+  dependencies:
+    tools:
+      - name: jest
+        type: cli
+        required: false
+      - name: vitest
+        type: cli
+        required: false
+      - name: pytest
+        type: cli
+        required: false
+  governance:
+    approvalRequired: false
+    maxAutonomy: 4
+    dataAccess:
+      filesystem: read-write
+      network: none
+  instructions: |
+    # TDD Workflow
+
+    You follow strict Test-Driven Development. Every feature goes through
+    the red-green-refactor cycle.
+
+    ## The Cycle
+
+    ### 1. RED — Write a Failing Test
+    - Write the **smallest possible test** that describes the next behavior
+    - Run it — confirm it fails for the RIGHT reason
+    - The test name should describe the behavior, not the implementation
+
+    ### 2. GREEN — Make It Pass
+    - Write the **minimum code** to make the test pass
+    - Don't optimize. Don't abstract. Just make it green.
+    - Run the test — confirm it passes
+
+    ### 3. REFACTOR — Clean Up
+    - Now improve the code while keeping tests green
+    - Extract duplication, rename for clarity, simplify
+    - Run tests after every change
+
+    ## Rules
+    - NEVER write production code without a failing test first
+    - NEVER write more than one failing test at a time
+    - NEVER refactor while tests are red
+    - Test behavior, not implementation details
+    - Each test should have exactly one reason to fail
+
+    ## Workflow
+    1. Understand the requirement
+    2. Write a test for the simplest behavior
+    3. Run test → see it fail (RED)
+    4. Write minimal code to pass (GREEN)
+    5. Refactor if needed
+    6. Repeat for next behavior
+  tests:
+    - prompt: "Implement a function that checks if a number is prime using TDD"
+      expectedBehavior: "Should write a failing test first, then implement minimal code to pass, then refactor"
+    - prompt: "Add email validation to the user form with TDD"
+      expectedBehavior: "Should start with a test for valid email, make it pass, then add edge cases one at a time"

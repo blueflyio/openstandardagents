@@ -14,6 +14,17 @@ import {
   SkillsGeneratorService,
   SkillsExportService,
 } from '../../services/skills-pipeline/index.js';
+import {
+  importSkillMd,
+  exportSkillMd,
+  readSkillOssa,
+  writeSkillOssa,
+  ossaToSkillMd,
+} from '../../converters/skill-md-converter.js';
+import { createSkillManifest } from '../../types/skill.js';
+import { readFile } from 'fs/promises';
+import { resolve, dirname, join } from 'path';
+import YAML from 'yaml';
 
 const AgentPathSchema = z.string().min(1);
 const SkillPathSchema = z.string().min(1);
@@ -430,6 +441,310 @@ skillsCommandGroup
       } catch (error) {
         console.error(chalk.red('✗ Export failed'));
         console.error(error instanceof Error ? error.message : String(error));
+        process.exit(1);
+      }
+    }
+  );
+
+// ---------------------------------------------------------------------------
+// OSSA Skill Manifest Commands (skill.ossa.yaml ↔ SKILL.md)
+// ---------------------------------------------------------------------------
+
+/**
+ * Import SKILL.md → skill.ossa.yaml
+ */
+skillsCommandGroup
+  .command('import-ossa')
+  .argument('<skill-md-path>', 'Path to SKILL.md file')
+  .option('--output <path>', 'Output path for skill.ossa.yaml')
+  .option('--name <name>', 'Override skill name')
+  .option('--did <did>', 'Set DID (e.g., did:ossa:skill:my-skill)')
+  .option('--version <version>', 'Set version', '1.0.0')
+  .option('--author <name>', 'Author name')
+  .option('--license <license>', 'License identifier')
+  .option('--platforms <platforms...>', 'Target platforms (claude-code, cursor, etc.)')
+  .option('--json', 'Output as JSON instead of YAML')
+  .option('--dry-run', 'Preview without writing files')
+  .description('Import SKILL.md and convert to skill.ossa.yaml (OSSA manifest)')
+  .action(
+    async (
+      skillMdPath: string,
+      options: {
+        output?: string;
+        name?: string;
+        did?: string;
+        version?: string;
+        author?: string;
+        license?: string;
+        platforms?: string[];
+        json?: boolean;
+        dryRun?: boolean;
+      }
+    ) => {
+      try {
+        const resolvedPath = resolve(skillMdPath);
+        console.log(chalk.blue(`Importing SKILL.md: ${resolvedPath}`));
+
+        const skill = await importSkillMd(resolvedPath, {
+          name: options.name,
+          did: options.did,
+          version: options.version,
+          author: options.author ? { name: options.author } : undefined,
+          license: options.license,
+          platforms: options.platforms,
+        });
+
+        if (options.json) {
+          console.log(JSON.stringify(skill, null, 2));
+          return;
+        }
+
+        const yamlContent = YAML.stringify(skill, { lineWidth: 120 });
+
+        if (options.dryRun) {
+          console.log(chalk.gray('\n--- Preview ---'));
+          console.log(yamlContent);
+          console.log(chalk.gray('--- End Preview ---'));
+          return;
+        }
+
+        const outputPath =
+          options.output ||
+          join(dirname(resolvedPath), 'skill.ossa.yaml');
+
+        await writeSkillOssa(skill, outputPath);
+        console.log(chalk.green(`✓ Created: ${outputPath}`));
+        console.log(chalk.gray(`  Name: ${skill.metadata.name}`));
+        console.log(chalk.gray(`  Description: ${skill.spec.description?.substring(0, 80)}...`));
+        if (skill.spec.allowedTools?.length) {
+          console.log(chalk.gray(`  Tools: ${skill.spec.allowedTools.join(', ')}`));
+        }
+      } catch (error) {
+        console.error(chalk.red('✗ Import failed'));
+        console.error(error instanceof Error ? error.message : String(error));
+        process.exit(1);
+      }
+    }
+  );
+
+/**
+ * Export skill.ossa.yaml → SKILL.md
+ */
+skillsCommandGroup
+  .command('export-ossa')
+  .argument('<skill-ossa-path>', 'Path to skill.ossa.yaml file')
+  .option('--output <path>', 'Output path for SKILL.md')
+  .option('--dry-run', 'Preview without writing files')
+  .description('Export skill.ossa.yaml to SKILL.md (Agent Skills format)')
+  .action(
+    async (
+      skillOssaPath: string,
+      options: {
+        output?: string;
+        dryRun?: boolean;
+      }
+    ) => {
+      try {
+        const resolvedPath = resolve(skillOssaPath);
+        console.log(chalk.blue(`Exporting skill.ossa.yaml: ${resolvedPath}`));
+
+        const skill = await readSkillOssa(resolvedPath);
+        const skillMdContent = ossaToSkillMd(skill);
+
+        if (options.dryRun) {
+          console.log(chalk.gray('\n--- Preview ---'));
+          console.log(skillMdContent);
+          console.log(chalk.gray('--- End Preview ---'));
+          return;
+        }
+
+        const outputPath =
+          options.output ||
+          join(dirname(resolvedPath), 'SKILL.md');
+
+        await exportSkillMd(skill, outputPath);
+        console.log(chalk.green(`✓ Exported: ${outputPath}`));
+        console.log(chalk.gray(`  Name: ${skill.metadata.name}`));
+      } catch (error) {
+        console.error(chalk.red('✗ Export failed'));
+        console.error(error instanceof Error ? error.message : String(error));
+        process.exit(1);
+      }
+    }
+  );
+
+/**
+ * Create skill.ossa.yaml interactively or from flags
+ */
+skillsCommandGroup
+  .command('create-ossa')
+  .argument('[name]', 'Skill name (DNS-style slug)')
+  .option('--description <desc>', 'Skill description')
+  .option('--instructions <text>', 'Inline instructions')
+  .option('--instructions-file <path>', 'Load instructions from file')
+  .option('--did <did>', 'Set DID')
+  .option('--version <version>', 'Set version', '1.0.0')
+  .option('--author <name>', 'Author name')
+  .option('--license <license>', 'License', 'Apache-2.0')
+  .option('--platforms <platforms...>', 'Target platforms')
+  .option('--tools <tools...>', 'Allowed tools')
+  .option('--categories <categories...>', 'Skill categories')
+  .option('--output <path>', 'Output path', 'skill.ossa.yaml')
+  .option('--json', 'Output as JSON')
+  .option('--dry-run', 'Preview without writing')
+  .description('Create a new skill.ossa.yaml manifest')
+  .action(
+    async (
+      name: string | undefined,
+      options: {
+        description?: string;
+        instructions?: string;
+        instructionsFile?: string;
+        did?: string;
+        version?: string;
+        author?: string;
+        license?: string;
+        platforms?: string[];
+        tools?: string[];
+        categories?: string[];
+        output?: string;
+        json?: boolean;
+        dryRun?: boolean;
+      }
+    ) => {
+      try {
+        const skillName = name || 'my-skill';
+        const description = options.description || `${skillName} skill`;
+
+        let instructions = options.instructions;
+        if (options.instructionsFile) {
+          instructions = await readFile(resolve(options.instructionsFile), 'utf-8');
+        }
+
+        const skill = createSkillManifest(skillName, description, instructions);
+
+        // Apply optional fields
+        if (options.version) skill.metadata.version = options.version;
+        if (options.did) skill.metadata.did = options.did;
+        if (options.author) skill.metadata.author = { name: options.author };
+        if (options.license) skill.metadata.license = options.license;
+        if (options.platforms) skill.spec.platforms = options.platforms;
+        if (options.tools) skill.spec.allowedTools = options.tools;
+        if (options.categories) skill.spec.categories = options.categories;
+
+        if (options.json) {
+          console.log(JSON.stringify(skill, null, 2));
+          return;
+        }
+
+        const yamlContent = YAML.stringify(skill, { lineWidth: 120 });
+
+        if (options.dryRun) {
+          console.log(chalk.gray('\n--- Preview ---'));
+          console.log(yamlContent);
+          console.log(chalk.gray('--- End Preview ---'));
+          return;
+        }
+
+        const outputPath = resolve(options.output || 'skill.ossa.yaml');
+        await writeSkillOssa(skill, outputPath);
+        console.log(chalk.green(`✓ Created: ${outputPath}`));
+        console.log(chalk.gray(`  Name: ${skill.metadata.name}`));
+        console.log(chalk.gray(`  Version: ${skill.metadata.version}`));
+        if (skill.spec.instructions) {
+          console.log(chalk.gray(`  Instructions: ${skill.spec.instructions.length} chars`));
+        }
+        console.log(chalk.gray('\nNext steps:'));
+        console.log(chalk.gray(`  ossa skills export-ossa ${outputPath}  # Export to SKILL.md`));
+        console.log(chalk.gray(`  ossa validate ${outputPath}            # Validate manifest`));
+      } catch (error) {
+        console.error(chalk.red('✗ Create failed'));
+        console.error(error instanceof Error ? error.message : String(error));
+        process.exit(1);
+      }
+    }
+  );
+
+/**
+ * Validate skill.ossa.yaml against schema
+ */
+skillsCommandGroup
+  .command('validate-ossa')
+  .argument('<skill-ossa-path>', 'Path to skill.ossa.yaml file')
+  .option('--json', 'Output as JSON')
+  .option('--verbose', 'Show detailed validation output')
+  .description('Validate a skill.ossa.yaml manifest')
+  .action(
+    async (
+      skillOssaPath: string,
+      options: { json?: boolean; verbose?: boolean }
+    ) => {
+      try {
+        const resolvedPath = resolve(skillOssaPath);
+        if (!options.json) {
+          console.log(chalk.blue(`Validating: ${resolvedPath}`));
+        }
+
+        const skill = await readSkillOssa(resolvedPath);
+        const errors: string[] = [];
+
+        // Basic structural validation
+        if (!skill.apiVersion) errors.push('Missing apiVersion');
+        if (skill.kind !== 'Skill') errors.push(`kind must be "Skill", got "${skill.kind}"`);
+        if (!skill.metadata?.name) errors.push('Missing metadata.name');
+        if (!skill.spec?.description) errors.push('Missing spec.description');
+
+        // Metadata validation
+        if (skill.metadata.did && !skill.metadata.did.startsWith('did:')) {
+          errors.push(`Invalid DID format: ${skill.metadata.did}`);
+        }
+
+        // Governance validation
+        if (skill.spec.governance?.maxAutonomy !== undefined) {
+          if (skill.spec.governance.maxAutonomy < 0 || skill.spec.governance.maxAutonomy > 10) {
+            errors.push('governance.maxAutonomy must be between 0 and 10');
+          }
+        }
+
+        const result = {
+          valid: errors.length === 0,
+          errors,
+          manifest: options.verbose ? skill : undefined,
+        };
+
+        if (options.json) {
+          console.log(JSON.stringify(result, null, 2));
+          return;
+        }
+
+        if (result.valid) {
+          console.log(chalk.green('✓ Validation passed'));
+          if (options.verbose) {
+            console.log(chalk.gray(`  Name: ${skill.metadata.name}`));
+            console.log(chalk.gray(`  Version: ${skill.metadata.version || 'not set'}`));
+            console.log(chalk.gray(`  Description: ${skill.spec.description?.substring(0, 80)}`));
+            if (skill.spec.platforms?.length) {
+              console.log(chalk.gray(`  Platforms: ${skill.spec.platforms.join(', ')}`));
+            }
+            if (skill.spec.allowedTools?.length) {
+              console.log(chalk.gray(`  Tools: ${skill.spec.allowedTools.join(', ')}`));
+            }
+            if (skill.spec.governance) {
+              console.log(chalk.gray(`  Governance: maxAutonomy=${skill.spec.governance.maxAutonomy}`));
+            }
+          }
+        } else {
+          console.error(chalk.red('✗ Validation failed'));
+          errors.forEach((e) => console.error(chalk.red(`  - ${e}`)));
+          process.exit(1);
+        }
+      } catch (error) {
+        if (options.json) {
+          console.log(JSON.stringify({ valid: false, errors: [String(error)] }, null, 2));
+        } else {
+          console.error(chalk.red('✗ Validation failed'));
+          console.error(error instanceof Error ? error.message : String(error));
+        }
         process.exit(1);
       }
     }
