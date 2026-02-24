@@ -1,0 +1,59 @@
+# OSSA kagent export: Anthropic provider with RemoteMCPServer
+# Run: ossa export examples/kagent/ossa-kagent-anthropic.ossa.yaml --platform kagent -o ./anthropic-out
+# Deploy: kubectl apply -f anthropic-out/
+# Or: ossa export examples/kagent/ossa-kagent-anthropic.ossa.yaml --platform kagent --apply
+apiVersion: ossa/v0.4
+kind: Agent
+metadata:
+  name: ossa-kagent-anthropic
+  version: 1.0.0
+  description: Kagent agent using Anthropic Claude with remote MCP tools
+spec:
+  role: |
+    You are a code review assistant. Analyze code for bugs, security issues, and best practices.
+    Use your MCP tools to access repositories and run analysis.
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    temperature: 0.1
+    maxTokens: 4096
+  tools:
+    - type: mcp
+      server: gitlab-mcp
+      toolNames:
+        - get_merge_request
+        - get_merge_request_diff
+        - create_merge_request_note
+    - type: mcp
+      server: code-analysis
+      toolNames:
+        - analyze_code
+        - check_security
+extensions:
+  kagent:
+    kubernetes:
+      namespace: kagent
+      resourceLimits:
+        cpu: 500m
+        memory: 512Mi
+    mcpServers:
+      gitlab-mcp:
+        url: https://mcp.blueflyagents.com/api/mcp/sse
+        transport: sse
+        headers:
+          - name: Authorization
+            valueFrom:
+              type: Secret
+              name: gitlab-mcp-token
+              key: token
+      code-analysis:
+        url: http://code-analysis.kagent.svc.cluster.local/sse
+        transport: sse
+    a2aConfig:
+      skills:
+        - id: code-review
+          name: Code Review
+          description: Review merge requests for bugs, security issues, and best practices
+          inputModes: [text]
+          outputModes: [text]
+          tags: [code-review, security, gitlab]

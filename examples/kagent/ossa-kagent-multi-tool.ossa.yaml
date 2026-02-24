@@ -1,0 +1,57 @@
+# OSSA kagent export: Multi-tool agent with multiple RemoteMCPServers
+# Run: ossa export examples/kagent/ossa-kagent-multi-tool.ossa.yaml --platform kagent -o ./multi-out
+# Deploy: kubectl apply -f multi-out/ (files are in APPLY_ORDER)
+apiVersion: ossa/v0.4
+kind: Agent
+metadata:
+  name: ossa-kagent-devops
+  version: 1.0.0
+  description: DevOps agent with GitLab, Kubernetes, and monitoring tools
+spec:
+  role: |
+    You are a DevOps assistant. Help with CI/CD, deployments, and monitoring.
+    You have access to GitLab for code, Kubernetes for infrastructure, and Grafana for observability.
+  llm:
+    provider: openai
+    model: gpt-4.1
+    temperature: 0.2
+    maxTokens: 4096
+  tools:
+    - type: mcp
+      server: gitlab-mcp
+      toolNames:
+        - list_pipelines
+        - get_pipeline
+        - retry_pipeline
+        - create_issue
+    - type: mcp
+      server: kagent-tool-server
+      toolNames:
+        - k8s_get_resources
+        - k8s_describe_resource
+        - k8s_get_pod_logs
+    - type: mcp
+      server: grafana-mcp
+      toolNames:
+        - query_prometheus
+        - get_dashboard
+        - create_annotation
+extensions:
+  kagent:
+    kubernetes:
+      namespace: kagent
+    mcpServers:
+      gitlab-mcp:
+        url: https://mcp.blueflyagents.com/api/mcp/sse
+        transport: sse
+      grafana-mcp:
+        url: http://grafana-mcp.kagent.svc.cluster.local/sse
+        transport: sse
+    a2aConfig:
+      skills:
+        - id: devops-automation
+          name: DevOps Automation
+          description: CI/CD management, deployment monitoring, and incident response
+          inputModes: [text]
+          outputModes: [text]
+          tags: [devops, cicd, k8s, monitoring]

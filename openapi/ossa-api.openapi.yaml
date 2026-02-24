@@ -1,0 +1,1056 @@
+openapi: 3.1.0
+info:
+  title: OSSA REST API
+  version: 0.4.0
+  description: |
+    REST API for Open Standard for Software Agents (OSSA).
+    Three consumers, one service layer:
+      CLI (inquirer) → Service Layer ← REST API (Express) ← MCP Server (stdio)
+  contact:
+    name: Bluefly.io
+    url: https://openstandardagents.org
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+
+tags:
+  - name: Health
+    description: Health and readiness checks
+  - name: Manifests
+    description: CRUD operations for OSSA manifests (Agent, Skill, MCPServer)
+  - name: Wizard
+    description: Interactive wizard session management (headless state machine)
+  - name: Export
+    description: Export manifests to platform-specific formats
+  - name: Convert
+    description: Convert manifests between platforms
+  - name: Skills
+    description: Skill manifest CRUD
+  - name: Workspace
+    description: Workspace initialization, discovery, and status
+  - name: Version
+    description: OSSA spec version detection and validation
+
+paths:
+  /health:
+    get:
+      operationId: getHealth
+      summary: Health check
+      tags: [Health]
+      responses:
+        '200':
+          description: Server is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [ok]
+                  timestamp:
+                    type: string
+                    format: date-time
+                required: [status, timestamp]
+
+  /ready:
+    get:
+      operationId: getReady
+      summary: Readiness check
+      tags: [Health]
+      responses:
+        '200':
+          description: Server is ready
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ready:
+                    type: boolean
+                required: [ready]
+
+  /api/v1/manifests:
+    get:
+      operationId: listManifests
+      summary: List manifests in a directory
+      tags: [Manifests]
+      parameters:
+        - name: directory
+          in: query
+          schema:
+            type: string
+            default: '.'
+          description: Directory to scan
+        - name: recursive
+          in: query
+          schema:
+            type: string
+            enum: ['true', 'false']
+            default: 'true'
+          description: Whether to scan recursively
+      responses:
+        '200':
+          description: List of manifests found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManifestListResult'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    post:
+      operationId: createManifest
+      summary: Scaffold a new manifest
+      tags: [Manifests]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateManifestInput'
+      responses:
+        '201':
+          description: Manifest created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateManifestResult'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/v1/manifests/validate:
+    post:
+      operationId: validateManifest
+      summary: Validate an OSSA manifest
+      tags: [Manifests]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                manifest:
+                  type: object
+                  additionalProperties: true
+                  description: Inline manifest to validate
+                path:
+                  type: string
+                  description: Path to manifest file (alternative to inline)
+                platform:
+                  type: string
+                  description: Target platform for platform-specific validation
+                strict:
+                  type: boolean
+                  description: Enable strict validation mode
+      responses:
+        '200':
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResult'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /api/v1/manifests/inspect:
+    post:
+      operationId: inspectManifest
+      summary: Inspect a manifest file
+      tags: [Manifests]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [path]
+              properties:
+                path:
+                  type: string
+                  description: Path to manifest file
+      responses:
+        '200':
+          description: Manifest inspection result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InspectResult'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /api/v1/manifests/diff:
+    post:
+      operationId: diffManifests
+      summary: Diff two manifests
+      tags: [Manifests]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [path_a, path_b]
+              properties:
+                path_a:
+                  type: string
+                  description: Path to first manifest
+                path_b:
+                  type: string
+                  description: Path to second manifest
+      responses:
+        '200':
+          description: Diff result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiffResult'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /api/v1/manifests/migrate:
+    post:
+      operationId: migrateManifest
+      summary: Migrate manifest to a target version
+      tags: [Manifests]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [path]
+              properties:
+                path:
+                  type: string
+                  description: Path to manifest file
+                target_version:
+                  type: string
+                  description: Target OSSA spec version
+                output_dir:
+                  type: string
+                  description: Output directory for migrated manifest
+      responses:
+        '200':
+          description: Migration result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MigrateResult'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /api/v1/wizard/sessions:
+    post:
+      operationId: createWizardSession
+      summary: Create a new wizard session
+      tags: [Wizard]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                kind:
+                  type: string
+                  enum: [Agent, Skill, MCPServer]
+                  default: Agent
+                mode:
+                  type: string
+                  enum: [quick, guided, expert]
+                  default: guided
+                template:
+                  type: string
+                  description: Template ID to pre-populate from
+      responses:
+        '201':
+          description: Session created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WizardSession'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /api/v1/wizard/sessions/{id}:
+    get:
+      operationId: getWizardSession
+      summary: Get wizard session state
+      tags: [Wizard]
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200':
+          description: Session state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WizardSession'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/wizard/sessions/{id}/steps/current:
+    get:
+      operationId: getCurrentWizardStep
+      summary: Get current step definition with fields
+      tags: [Wizard]
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200':
+          description: Current step definition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StepDefinition'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/wizard/sessions/{id}/steps/{stepId}:
+    post:
+      operationId: submitWizardStep
+      summary: Submit data for a wizard step
+      tags: [Wizard]
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+        - name: stepId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Step identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              description: Step field data
+      responses:
+        '200':
+          description: Step submission result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StepResult'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/wizard/sessions/{id}/undo:
+    post:
+      operationId: undoWizardStep
+      summary: Undo the last completed step
+      tags: [Wizard]
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200':
+          description: Undo result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StepResult'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/wizard/sessions/{id}/complete:
+    post:
+      operationId: completeWizardSession
+      summary: Complete wizard and generate manifest
+      tags: [Wizard]
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200':
+          description: Completed manifest
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WizardCompleteResult'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/wizard/templates:
+    get:
+      operationId: listWizardTemplates
+      summary: List available agent templates
+      tags: [Wizard]
+      responses:
+        '200':
+          description: List of templates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AgentTemplate'
+
+  /api/v1/export:
+    post:
+      operationId: exportManifest
+      summary: Export manifest to platform-specific format
+      tags: [Export]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportInput'
+      responses:
+        '200':
+          description: Export result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportResult'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /api/v1/export/platforms:
+    get:
+      operationId: listExportPlatforms
+      summary: List available export platforms
+      tags: [Export]
+      responses:
+        '200':
+          description: Platform list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PlatformInfo'
+
+  /api/v1/convert:
+    post:
+      operationId: convertManifest
+      summary: Convert manifest to platform config
+      tags: [Convert]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConvertInput'
+      responses:
+        '200':
+          description: Conversion result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConvertResult'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /api/v1/convert/targets:
+    get:
+      operationId: listConvertTargets
+      summary: List available conversion targets
+      tags: [Convert]
+      responses:
+        '200':
+          description: Target list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PlatformInfo'
+
+  /api/v1/skills:
+    get:
+      operationId: listSkills
+      summary: List skill manifests in a directory
+      tags: [Skills]
+      parameters:
+        - name: directory
+          in: query
+          schema:
+            type: string
+            default: '.'
+      responses:
+        '200':
+          description: List of skills
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+
+    post:
+      operationId: createSkill
+      summary: Create a new skill manifest
+      tags: [Skills]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSkillInput'
+      responses:
+        '201':
+          description: Skill created
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /api/v1/skills/validate:
+    post:
+      operationId: validateSkill
+      summary: Validate a skill manifest
+      tags: [Skills]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [skill]
+              properties:
+                skill:
+                  type: object
+                  additionalProperties: true
+      responses:
+        '200':
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResult'
+
+  /api/v1/workspace/init:
+    post:
+      operationId: initWorkspace
+      summary: Initialize an OSSA workspace
+      tags: [Workspace]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                directory:
+                  type: string
+                  default: '.'
+                name:
+                  type: string
+      responses:
+        '200':
+          description: Init result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  directory:
+                    type: string
+                  created:
+                    type: array
+                    items:
+                      type: string
+
+  /api/v1/workspace/discover:
+    post:
+      operationId: discoverWorkspace
+      summary: Discover agents in workspace
+      tags: [Workspace]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                directory:
+                  type: string
+                  default: '.'
+      responses:
+        '200':
+          description: Discovery result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscoveryResult'
+
+  /api/v1/workspace/status:
+    get:
+      operationId: getWorkspaceStatus
+      summary: Get workspace status
+      tags: [Workspace]
+      parameters:
+        - name: directory
+          in: query
+          schema:
+            type: string
+            default: '.'
+      responses:
+        '200':
+          description: Workspace status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceStatus'
+
+  /api/v1/version:
+    get:
+      operationId: getVersion
+      summary: Get current OSSA spec version
+      tags: [Version]
+      responses:
+        '200':
+          description: Version info
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  latest:
+                    type: string
+                  supported:
+                    type: array
+                    items:
+                      type: string
+
+  /api/v1/version/detect:
+    post:
+      operationId: detectVersion
+      summary: Detect the OSSA version of a manifest
+      tags: [Version]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [manifest]
+              properties:
+                manifest:
+                  type: object
+                  additionalProperties: true
+      responses:
+        '200':
+          description: Detected version
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  version:
+                    type: string
+                  confidence:
+                    type: number
+
+components:
+  parameters:
+    SessionId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Wizard session ID
+
+  responses:
+    ValidationError:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    path:
+                      type: string
+                    message:
+                      type: string
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              requestId:
+                type: string
+
+  schemas:
+    CreateManifestInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          pattern: '^[a-z0-9]([a-z0-9-]*[a-z0-9])?$'
+        output_dir:
+          type: string
+        description:
+          type: string
+        role:
+          type: string
+        type:
+          type: string
+          enum: [worker, orchestrator, reviewer, analyzer, executor, approver]
+        version:
+          type: string
+
+    CreateManifestResult:
+      type: object
+      properties:
+        path:
+          type: string
+        manifest:
+          type: object
+          additionalProperties: true
+
+    ManifestListResult:
+      type: object
+      properties:
+        manifests:
+          type: array
+          items:
+            type: object
+            properties:
+              path:
+                type: string
+              name:
+                type: string
+              kind:
+                type: string
+              version:
+                type: string
+        total:
+          type: integer
+
+    ValidationResult:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              path:
+                type: string
+              message:
+                type: string
+        warnings:
+          type: array
+          items:
+            type: object
+            properties:
+              path:
+                type: string
+              message:
+                type: string
+
+    InspectResult:
+      type: object
+      properties:
+        path:
+          type: string
+        manifest:
+          type: object
+          additionalProperties: true
+        stats:
+          type: object
+          additionalProperties: true
+
+    DiffResult:
+      type: object
+      properties:
+        changes:
+          type: array
+          items:
+            type: object
+            properties:
+              path:
+                type: string
+              type:
+                type: string
+                enum: [added, removed, changed]
+              oldValue: {}
+              newValue: {}
+        hasBreakingChanges:
+          type: boolean
+
+    MigrateResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+        outputPath:
+          type: string
+        fromVersion:
+          type: string
+        toVersion:
+          type: string
+
+    WizardSession:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        currentStepIndex:
+          type: integer
+        completedSteps:
+          type: array
+          items:
+            type: string
+        data:
+          type: object
+          additionalProperties: true
+        mode:
+          type: string
+          enum: [quick, guided, expert]
+        kind:
+          type: string
+          enum: [Agent, Skill, MCPServer]
+        createdAt:
+          type: string
+          format: date-time
+
+    StepDefinition:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        fields:
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldDefinition'
+
+    FieldDefinition:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum: [text, select, multiselect, number, boolean, textarea]
+        label:
+          type: string
+        default: {}
+        required:
+          type: boolean
+        options:
+          type: array
+          items:
+            type: object
+            properties:
+              label:
+                type: string
+              value:
+                type: string
+              description:
+                type: string
+
+    StepResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+        session:
+          $ref: '#/components/schemas/WizardSession'
+        currentStep:
+          $ref: '#/components/schemas/StepDefinition'
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+
+    WizardCompleteResult:
+      type: object
+      properties:
+        manifest:
+          type: object
+          additionalProperties: true
+        valid:
+          type: boolean
+        errors:
+          type: array
+          items:
+            type: string
+
+    AgentTemplate:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+        category:
+          type: string
+
+    ExportInput:
+      type: object
+      required: [target]
+      properties:
+        manifest:
+          type: object
+          additionalProperties: true
+        path:
+          type: string
+        target:
+          type: string
+          minLength: 1
+        output_dir:
+          type: string
+
+    ExportResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+        platform:
+          type: string
+        outputPath:
+          type: string
+        files:
+          type: array
+          items:
+            type: string
+
+    ConvertInput:
+      type: object
+      required: [target]
+      properties:
+        manifest:
+          type: object
+          additionalProperties: true
+        path:
+          type: string
+        target:
+          type: string
+          minLength: 1
+        output_dir:
+          type: string
+
+    ConvertResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+        target:
+          type: string
+        config:
+          type: object
+          additionalProperties: true
+        outputPath:
+          type: string
+
+    PlatformInfo:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+        supportedVersions:
+          type: array
+          items:
+            type: string
+
+    CreateSkillInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        platforms:
+          type: array
+          items:
+            type: string
+        output_dir:
+          type: string
+
+    DiscoveryResult:
+      type: object
+      properties:
+        agents:
+          type: array
+          items:
+            type: object
+            properties:
+              path:
+                type: string
+              name:
+                type: string
+              kind:
+                type: string
+        total:
+          type: integer
+        directory:
+          type: string
+
+    WorkspaceStatus:
+      type: object
+      properties:
+        initialized:
+          type: boolean
+        directory:
+          type: string
+        agents:
+          type: integer
+        hasRegistry:
+          type: boolean

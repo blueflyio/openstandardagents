@@ -1,0 +1,67 @@
+# OSSA v1alpha2 export example: Agent with RemoteMCPServer tools and Anthropic provider
+# Run: ossa export examples/kagent/ossa-kagent-mcp-tools.ossa.yaml --platform kagent -o ./mcp-tools-out
+# Deploy: ossa export examples/kagent/ossa-kagent-mcp-tools.ossa.yaml --platform kagent --apply
+# Result: ModelConfig + 2x RemoteMCPServer + Agent applied in APPLY_ORDER
+apiVersion: ossa/v0.4
+kind: Agent
+metadata:
+  name: fleet-ops-agent
+  version: 1.0.0
+  description: Fleet operations agent with MCP tools for Kubernetes and GitLab management
+spec:
+  role: |
+    You are a fleet operations assistant. Use your MCP tools to manage Kubernetes clusters
+    and GitLab repositories. Always confirm destructive operations before executing.
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    temperature: 0.1
+    maxTokens: 4096
+  tools:
+    - type: mcp
+      server: kagent-tool-server
+      toolNames:
+        - k8s_get_resources
+        - k8s_get_available_api_resources
+        - k8s_describe_resource
+        - k8s_get_pod_logs
+        - k8s_apply_manifest
+    - type: mcp
+      server: gitlab-mcp-server
+      toolNames:
+        - gitlab_list_issues
+        - gitlab_create_issue
+        - gitlab_list_merge_requests
+        - gitlab_get_pipeline_status
+extensions:
+  kagent:
+    kubernetes:
+      namespace: kagent
+      resourceLimits:
+        cpu: 1000m
+        memory: 1Gi
+    mcpServers:
+      kagent-tool-server:
+        url: http://kagent-tool-server.kagent.svc.cluster.local/sse
+        transport: sse
+      gitlab-mcp-server:
+        url: http://gitlab-mcp-server.kagent.svc.cluster.local/sse
+        transport: sse
+        headers:
+          - name: Authorization
+            valueFrom:
+              type: Secret
+              name: gitlab-token
+              key: token
+    a2aConfig:
+      skills:
+        - id: fleet-management
+          name: Fleet Management
+          description: Manage Kubernetes resources and GitLab repositories across the fleet
+          inputModes: [text]
+          outputModes: [text]
+          tags: [k8s, gitlab, fleet, ossa]
+          examples:
+            - "List all deployments in the kagent namespace"
+            - "Show recent merge requests for agent-buildkit"
+            - "Get logs from the failing pod"

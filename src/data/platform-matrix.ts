@@ -256,6 +256,31 @@ export const PLATFORM_MATRIX: PlatformMatrixEntry[] = [
     ],
   },
   {
+    id: 'symfony',
+    name: 'Symfony AI Agent',
+    description: 'PHP bootstrap for symfony/ai-agent (Platform + Model + Toolbox from OSSA)',
+    status: 'alpha',
+    whatTheyNeed: [
+      'PHP 8.2+',
+      'Composer',
+      'symfony/ai-agent and symfony/ai-platform',
+      'LLM API key (OpenAI, Anthropic, etc.)',
+    ],
+    folderStructure: [
+      '.agents/{name}/manifest.ossa.yaml',
+      '{name}/composer.json',
+      '{name}/agent_bootstrap.php',
+      '{name}/README.md',
+    ],
+    sdkNpm: ['symfony/ai-agent', 'symfony/ai-platform (Composer)'],
+    exportHow: 'ossa export <manifest> --platform symfony -o dist/',
+    importHow: 'no',
+    specUsage: [
+      'spec.role or prompts.system -> system message; spec.llm -> Platform + Model; spec.tools -> Toolbox (stubs or #[AsTool] classes).',
+      'One OSSA manifest -> runnable Symfony Agent in PHP.',
+    ],
+  },
+  {
     id: 'cursor',
     name: 'Cursor Cloud Agent',
     description: 'Cursor Cloud Agent for IDE assistance',

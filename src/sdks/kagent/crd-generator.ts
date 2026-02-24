@@ -11,7 +11,10 @@ import type {
   KubernetesManifestBundle,
   KAgentV1Alpha2Agent,
   KAgentV1Alpha2ModelConfig,
+  KAgentV1Alpha2RemoteMCPServer,
+  KAgentV1Alpha2Bundle,
 } from './types.js';
+import { KAGENT_APPLY_ORDER } from './types.js';
 import { getVersion, getApiVersion } from '../../utils/version.js';
 
 export class KAgentCRDGenerator {
@@ -1007,6 +1010,88 @@ export class KAgentCRDGenerator {
     }
 
     return { agent, modelConfig };
+  }
+
+  /**
+   * Generate complete v1alpha2 bundle in APPLY_ORDER:
+   *   1. ModelConfig (if generated)
+   *   2. RemoteMCPServer(s) (one per MCP tool server referenced)
+   *   3. Agent
+   */
+  generateV1Alpha2Bundle(
+    manifest: OssaAgent,
+    options: KAgentDeploymentOptions = {}
+  ): KAgentV1Alpha2Bundle {
+    const { agent, modelConfig } = this.generateV1Alpha2(manifest, options);
+    const remoteMCPServers = this.generateRemoteMCPServers(manifest, options);
+    return { modelConfig, remoteMCPServers, agent };
+  }
+
+  /**
+   * Generate RemoteMCPServer CRDs for each MCP tool server referenced in the manifest.
+   * These must be applied BEFORE the Agent CRD so the agent can reference them.
+   */
+  generateRemoteMCPServers(
+    manifest: OssaAgent,
+    options: KAgentDeploymentOptions = {}
+  ): KAgentV1Alpha2RemoteMCPServer[] {
+    const spec = manifest.spec as Record<string, unknown>;
+    const tools = spec.tools as Array<Record<string, unknown>> | undefined;
+    if (!tools || !Array.isArray(tools)) return [];
+
+    const namespace = options.namespace || 'kagent';
+    const seen = new Set<string>();
+    const servers: KAgentV1Alpha2RemoteMCPServer[] = [];
+
+    for (const tool of tools) {
+      if (!tool || typeof tool !== 'object') continue;
+      const serverName = (tool.server as string) || (tool.name as string);
+      if (!serverName || seen.has(serverName)) continue;
+      seen.add(serverName);
+
+      // Determine URL from tool spec or extensions.kagent.mcpServers
+      const extKagent = (manifest.extensions as Record<string, unknown>)?.kagent as Record<string, unknown> | undefined;
+      const mcpServers = extKagent?.mcpServers as Record<string, Record<string, unknown>> | undefined;
+      const serverConfig = mcpServers?.[serverName];
+      const url = (serverConfig?.url as string) ||
+        (tool.endpoint as string) ||
+        `http://${serverName}.${namespace}.svc.cluster.local/sse`;
+      const transport = (serverConfig?.transport as 'sse' | 'streamable-http') || 'sse';
+
+      const toolNames = (tool.toolNames as string[]) ?? (tool.capabilities as string[]);
+
+      const server: KAgentV1Alpha2RemoteMCPServer = {
+        apiVersion: 'kagent.dev/v1alpha2',
+        kind: 'RemoteMCPServer',
+        metadata: {
+          name: serverName,
+          namespace,
+          labels: {
+            'ossa.ai/agent': manifest.metadata?.name || 'unknown',
+            'app.kubernetes.io/managed-by': 'kagent',
+          },
+        },
+        spec: {
+          url,
+          transport,
+          ...(toolNames?.length ? { tools: toolNames } : {}),
+        },
+      };
+
+      // Add headers from config if present
+      const headers = serverConfig?.headers as Array<Record<string, unknown>> | undefined;
+      if (headers?.length) {
+        server.spec.headers = headers.map((h) => ({
+          name: h.name as string,
+          ...(h.value ? { value: h.value as string } : {}),
+          ...(h.valueFrom ? { valueFrom: h.valueFrom as { type: 'Secret' | 'ConfigMap'; name: string; key: string } } : {}),
+        }));
+      }
+
+      servers.push(server);
+    }
+
+    return servers;
   }
 
   /**
