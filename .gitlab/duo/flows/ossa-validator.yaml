@@ -1,0 +1,73 @@
+# GitLab Duo External Agent: OSSA Validator
+# https://docs.gitlab.com/user/duo_agent_platform/agents/external/
+#
+# Validates OSSA agent manifests on MR changes.
+# Uses Claude via GitLab-managed credentials (injectGatewayToken).
+#
+# Setup:
+#   1. Settings > GitLab Duo > Enable "OSSA Validator"
+#   2. Add trigger (Mention or Assign) with service account
+#   3. Point trigger to this config path: .gitlab/duo/flows/ossa-validator.yaml
+#
+# Service account naming: ai-ossa-validator-<group>
+
+injectGatewayToken: true
+image: node:22-slim
+
+commands:
+  # Install OSSA CLI
+  - npm install -g @bluefly/openstandardagents
+  # Install glab for GitLab API
+  - apt-get update --quiet && apt-get install --yes curl git && rm -rf /var/lib/apt/lists/*
+  - curl -sL "https://raw.githubusercontent.com/upciti/wakemeops/main/assets/install_repository" | bash
+  - apt-get install -y glab
+  # Configure glab
+  - mkdir -p ~/.config/glab-cli
+  - |
+    cat > ~/.config/glab-cli/config.yml <<EOF
+    hosts:
+      $AI_FLOW_GITLAB_HOSTNAME:
+        token: $AI_FLOW_GITLAB_TOKEN
+        is_oauth2: "true"
+        client_id: "bypass"
+        oauth2_refresh_token: ""
+        oauth2_expiry_date: "01 Jan 50 00:00 UTC"
+        api_host: $AI_FLOW_GITLAB_HOSTNAME
+        user: OSSAValidator
+    check_update: "false"
+    git_protocol: https
+    EOF
+  - chmod 600 ~/.config/glab-cli/config.yml
+  # Configure git
+  - git config --global user.email "ossa-validator@gitlab.com"
+  - git config --global user.name "OSSA Validator"
+  - git remote set-url origin https://gitlab-ci-token:$AI_FLOW_GITLAB_TOKEN@$AI_FLOW_GITLAB_HOSTNAME/$AI_FLOW_PROJECT_PATH.git
+  # Configure Claude via GitLab AI Gateway
+  - export ANTHROPIC_AUTH_TOKEN=$AI_FLOW_AI_GATEWAY_TOKEN
+  - export ANTHROPIC_CUSTOM_HEADERS=$AI_FLOW_AI_GATEWAY_HEADERS
+  - export ANTHROPIC_BASE_URL="https://cloud.gitlab.com/ai/v1/proxy/anthropic"
+  # Run OSSA validation
+  - |
+    # Find all OSSA manifests
+    MANIFESTS=$(find . -name "*.ossa.yaml" -o -name "*.ossa.yml" -o -path "./.agents/*/manifest.yaml" 2>/dev/null)
+    if [ -z "$MANIFESTS" ]; then
+      echo "No OSSA manifests found"
+      exit 0
+    fi
+    echo "Validating OSSA manifests..."
+    ERRORS=0
+    for f in $MANIFESTS; do
+      echo "Validating: $f"
+      if ! npx ossa validate "$f"; then
+        ERRORS=$((ERRORS + 1))
+      fi
+    done
+    if [ "$ERRORS" -gt 0 ]; then
+      echo "❌ $ERRORS manifest(s) failed validation"
+      # Post comment on MR if in MR context
+      if [ -n "$CI_MERGE_REQUEST_IID" ]; then
+        glab mr note "$CI_MERGE_REQUEST_IID" --message "❌ OSSA Validation: $ERRORS manifest(s) failed. Check pipeline for details."
+      fi
+      exit 1
+    fi
+    echo "✅ All OSSA manifests valid"

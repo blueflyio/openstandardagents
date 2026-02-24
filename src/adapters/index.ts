@@ -26,6 +26,7 @@ import { AnthropicConfigAdapter } from './anthropic/config-adapter.js';
 import { AutogenConfigAdapter } from './autogen/config-adapter.js';
 import { SemanticKernelConfigAdapter } from './semantic-kernel/config-adapter.js';
 import { SymfonyAiPlatformAdapter } from './symfony/platform-adapter.js';
+import { FusionInventoryConfigAdapter } from './fusioninventory/config-adapter.js';
 
 let _initialized = false;
 
@@ -83,6 +84,7 @@ export function initializeAdapters(): void {
   registry.register(new AnthropicConfigAdapter());
   registry.register(new AutogenConfigAdapter());
   registry.register(new SemanticKernelConfigAdapter());
+  registry.register(new FusionInventoryConfigAdapter());
 }
 
 // Export registry for use in commands
