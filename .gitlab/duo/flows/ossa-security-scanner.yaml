@@ -1,0 +1,76 @@
+# GitLab Duo External Agent: OSSA Security Scanner
+# https://docs.gitlab.com/user/duo_agent_platform/agents/external/
+#
+# Scans OSSA manifests and code for security issues.
+# Uses Claude via GitLab-managed credentials (injectGatewayToken).
+#
+# Setup:
+#   1. Settings > GitLab Duo > Enable "OSSA Security Scanner"
+#   2. Add trigger: MR opened/updated on spec/** or src/**
+#   3. Config path: .gitlab/duo/flows/ossa-security-scanner.yaml
+#
+# Service account naming: ai-ossa-security-scanner-<group>
+
+injectGatewayToken: true
+image: node:22-slim
+
+commands:
+  - npm install -g @bluefly/openstandardagents
+  - apt-get update --quiet && apt-get install --yes curl git && rm -rf /var/lib/apt/lists/*
+  - curl -sL "https://raw.githubusercontent.com/upciti/wakemeops/main/assets/install_repository" | bash
+  - apt-get install -y glab
+  - mkdir -p ~/.config/glab-cli
+  - |
+    cat > ~/.config/glab-cli/config.yml <<EOF
+    hosts:
+      $AI_FLOW_GITLAB_HOSTNAME:
+        token: $AI_FLOW_GITLAB_TOKEN
+        is_oauth2: "true"
+        client_id: "bypass"
+        oauth2_refresh_token: ""
+        oauth2_expiry_date: "01 Jan 50 00:00 UTC"
+        api_host: $AI_FLOW_GITLAB_HOSTNAME
+        user: OSSASecurityScanner
+    check_update: "false"
+    git_protocol: https
+    EOF
+  - chmod 600 ~/.config/glab-cli/config.yml
+  - git config --global user.email "ossa-security@gitlab.com"
+  - git config --global user.name "OSSA Security Scanner"
+  - git remote set-url origin https://gitlab-ci-token:$AI_FLOW_GITLAB_TOKEN@$AI_FLOW_GITLAB_HOSTNAME/$AI_FLOW_PROJECT_PATH.git
+  - export ANTHROPIC_AUTH_TOKEN=$AI_FLOW_AI_GATEWAY_TOKEN
+  - export ANTHROPIC_CUSTOM_HEADERS=$AI_FLOW_AI_GATEWAY_HEADERS
+  - export ANTHROPIC_BASE_URL="https://cloud.gitlab.com/ai/v1/proxy/anthropic"
+  - |
+    claude --allowedTools="Bash(glab:*),Bash(git:*),Bash(npx:*)" --permission-mode acceptEdits --verbose --output-format stream-json -p "
+    You are the OSSA Security Scanner for openstandardagents.
+
+    Context: $AI_FLOW_CONTEXT
+    Task: $AI_FLOW_INPUT
+    Event: $AI_FLOW_EVENT
+
+    Security scan workflow:
+    1. Scan OSSA manifests for:
+       - Hardcoded secrets or API keys
+       - Overly permissive access tiers (tier_4_policy without justification)
+       - Missing safety guardrails (PII, prompt injection)
+       - Unsafe tool configurations
+       - Missing rate limits or cost constraints
+    2. Scan TypeScript code for:
+       - Command injection in tool execution
+       - Path traversal in file operations
+       - Missing input validation (Zod schemas)
+       - Unsafe deserialization
+       - Dependency vulnerabilities (npm audit)
+    3. Run npm audit and report findings
+    4. Check OSSA spec compliance for security fields
+    5. Post security report as MR comment
+
+    Output severity levels:
+    - 🔴 CRITICAL: Must fix before merge
+    - 🟠 HIGH: Should fix before merge
+    - 🟡 MEDIUM: Fix in next sprint
+    - 🔵 LOW: Informational
+
+    Post findings using glab mr note with structured output.
+    "

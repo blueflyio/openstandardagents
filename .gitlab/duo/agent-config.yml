@@ -1,0 +1,15 @@
+# GitLab Duo Agent Platform - Default Execution Config
+# https://docs.gitlab.com/user/duo_agent_platform/flows/execution/
+#
+# Customizes the execution environment for all Duo agents in this project.
+# Override per-agent in .gitlab/duo/flows/<agent>.yaml
+
+image: node:22-slim
+
+setup_script: |
+  npm install -g @bluefly/openstandardagents
+  apt-get update --quiet && apt-get install --yes curl git && rm -rf /var/lib/apt/lists/*
+
+cache:
+  - node_modules/
+  - .npm/

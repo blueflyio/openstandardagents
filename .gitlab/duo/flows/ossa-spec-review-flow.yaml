@@ -1,0 +1,101 @@
+# GitLab Duo Custom Flow: OSSA Spec Review
+# https://docs.gitlab.com/user/duo_agent_platform/flows/custom/
+# Schema: https://gitlab.com/gitlab-org/modelops/applied-ml/code-suggestions/ai-assist/-/blob/main/docs/flow_registry/v1.md
+#
+# Multi-agent flow: validates spec changes, reviews code, posts summary.
+# Agents work sequentially: validate → review → summarize.
+
+version: "v1"
+name: "OSSA Spec Review"
+description: |
+  Multi-agent flow for reviewing OSSA specification changes.
+  Validates manifests, reviews code quality, and posts a summary.
+product_group: "openstandardagents"
+environment: ambient
+
+prompts:
+  - prompt_id: "ossa_validate_prompt"
+    name: "OSSA Manifest Validator"
+    unit_primitives: []
+    prompt_template:
+      system: |
+        You are an OSSA specification validator. Validate all OSSA manifests
+        found in the repository against the v0.4 schema. Check:
+        - Required fields: apiVersion, kind, metadata.name, spec
+        - Valid apiVersion format: ossa/v0.4
+        - Valid kind: Agent, Skill, MCPServer
+        - LLM config, tools, capabilities
+        - Extension schemas (kagent, mcp, a2a)
+      user: |
+        Validate all OSSA manifests in this project. Use find_files to locate
+        *.ossa.yaml files and read_file to check each one.
+        Report validation results clearly.
+
+  - prompt_id: "ossa_review_prompt"
+    name: "OSSA Code Reviewer"
+    unit_primitives: []
+    prompt_template:
+      system: |
+        You are a TypeScript code reviewer for the openstandardagents project.
+        Focus on: type safety, DI patterns, adapter compliance, test coverage.
+      user: |
+        Review the recent changes. Focus on code quality and OSSA compliance.
+        Previous validation results: {{context:validator.final_answer}}
+
+  - prompt_id: "ossa_summary_prompt"
+    name: "OSSA Review Summarizer"
+    unit_primitives: []
+    prompt_template:
+      system: |
+        Summarize the validation and review results into a concise report.
+      user: |
+        Create a summary of:
+        Validation: {{context:validator.final_answer}}
+        Review: {{context:reviewer.final_answer}}
+        Post as a clear, actionable summary.
+
+components:
+  - name: "validator"
+    type: AgentComponent
+    prompt_id: "ossa_validate_prompt"
+    toolset:
+      - read_file
+      - find_files
+    ui_log_events:
+      - on_agent_final_answer
+
+  - name: "reviewer"
+    type: AgentComponent
+    prompt_id: "ossa_review_prompt"
+    inputs:
+      - from: "context:validator.final_answer"
+        as: "context:validation_results"
+    toolset:
+      - read_file
+      - find_files
+    ui_log_events:
+      - on_agent_final_answer
+
+  - name: "summarizer"
+    type: AgentComponent
+    prompt_id: "ossa_summary_prompt"
+    inputs:
+      - from: "context:validator.final_answer"
+        as: "context:validation_results"
+      - from: "context:reviewer.final_answer"
+        as: "context:review_results"
+    toolset:
+      - create_merge_request_note
+    ui_log_events:
+      - on_agent_final_answer
+
+routers:
+  - from: "validator"
+    to: "reviewer"
+  - from: "reviewer"
+    to: "summarizer"
+  - from: "summarizer"
+    to: "end"
+
+flow:
+  entry_point: "validator"

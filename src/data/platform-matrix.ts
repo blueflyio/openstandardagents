@@ -386,6 +386,28 @@ export const PLATFORM_MATRIX: PlatformMatrixEntry[] = [
     specUsage: ['SKILL.md generated from manifest; OSSA is source of truth for description and tools.'],
   },
   {
+    id: 'fusioninventory',
+    name: 'FusionInventory',
+    description: 'FusionInventory agent.cfg for IT asset inventory and deployment',
+    status: 'alpha',
+    whatTheyNeed: [
+      'FusionInventory agent installed (Perl)',
+      'GLPI or compatible server URL',
+      'agent.cfg configuration file',
+    ],
+    folderStructure: [
+      '.agents/{name}/manifest.ossa.yaml',
+      'fusioninventory/{name}/agent.cfg',
+    ],
+    sdkNpm: ['FusionInventory agent (Perl, no npm SDK)'],
+    exportHow: 'ossa export <manifest> --platform fusioninventory -o dist/',
+    importHow: 'no',
+    specUsage: [
+      'extensions.fusioninventory maps to agent.cfg directives (server, delaytime, tag, httpd, logging).',
+      'spec.tools informs which FusionInventory tasks to enable (inventory, deploy, esx).',
+    ],
+  },
+  {
     id: 'warp',
     name: 'Warp',
     description: 'Warp terminal agent with CLI triggers',

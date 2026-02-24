@@ -1,0 +1,73 @@
+# GitLab Duo External Agent: OSSA Release Manager
+# https://docs.gitlab.com/user/duo_agent_platform/agents/external/
+#
+# Manages OSSA releases: version bump, changelog, npm publish prep.
+# Uses Claude via GitLab-managed credentials (injectGatewayToken).
+#
+# Setup:
+#   1. Settings > GitLab Duo > Enable "OSSA Release Manager"
+#   2. Add trigger: Mention (service account) in issue/MR
+#   3. Config path: .gitlab/duo/flows/ossa-release-manager.yaml
+#
+# Service account naming: ai-ossa-release-manager-<group>
+
+injectGatewayToken: true
+image: node:22-slim
+
+commands:
+  - npm install -g @bluefly/openstandardagents
+  - apt-get update --quiet && apt-get install --yes curl git && rm -rf /var/lib/apt/lists/*
+  - curl -sL "https://raw.githubusercontent.com/upciti/wakemeops/main/assets/install_repository" | bash
+  - apt-get install -y glab
+  - mkdir -p ~/.config/glab-cli
+  - |
+    cat > ~/.config/glab-cli/config.yml <<EOF
+    hosts:
+      $AI_FLOW_GITLAB_HOSTNAME:
+        token: $AI_FLOW_GITLAB_TOKEN
+        is_oauth2: "true"
+        client_id: "bypass"
+        oauth2_refresh_token: ""
+        oauth2_expiry_date: "01 Jan 50 00:00 UTC"
+        api_host: $AI_FLOW_GITLAB_HOSTNAME
+        user: OSSAReleaseManager
+    check_update: "false"
+    git_protocol: https
+    EOF
+  - chmod 600 ~/.config/glab-cli/config.yml
+  - git config --global user.email "ossa-release@gitlab.com"
+  - git config --global user.name "OSSA Release Manager"
+  - git remote set-url origin https://gitlab-ci-token:$AI_FLOW_GITLAB_TOKEN@$AI_FLOW_GITLAB_HOSTNAME/$AI_FLOW_PROJECT_PATH.git
+  - export ANTHROPIC_AUTH_TOKEN=$AI_FLOW_AI_GATEWAY_TOKEN
+  - export ANTHROPIC_CUSTOM_HEADERS=$AI_FLOW_AI_GATEWAY_HEADERS
+  - export ANTHROPIC_BASE_URL="https://cloud.gitlab.com/ai/v1/proxy/anthropic"
+  - |
+    claude --allowedTools="Bash(glab:*),Bash(git:*),Bash(npm:*),Bash(npx:*)" --permission-mode acceptEdits --verbose --output-format stream-json -p "
+    You are the OSSA Release Manager for openstandardagents.
+
+    Context: $AI_FLOW_CONTEXT
+    Task: $AI_FLOW_INPUT
+    Event: $AI_FLOW_EVENT
+
+    Release workflow:
+    1. Check current version in .version.json and package.json
+    2. Analyze commits since last tag using conventional commits
+    3. Determine version bump (patch/minor/major)
+    4. Generate CHANGELOG.md entry
+    5. Update .version.json and package.json
+    6. Create release branch if needed
+    7. Create MR with version bump changes
+    8. Post release notes summary as issue/MR comment
+
+    Rules:
+    - NEVER push directly to main or release/* branches
+    - Create feature branch: release/v{version}
+    - Use conventional commit messages
+    - Include SBOM reference in release notes
+    - Tag format: v{major}.{minor}.{patch}
+
+    $ADDITIONAL_INSTRUCTIONS
+    "
+
+variables:
+  - ADDITIONAL_INSTRUCTIONS
