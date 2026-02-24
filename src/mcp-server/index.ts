@@ -34,32 +34,24 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 import pino from 'pino';
-import fg from 'fast-glob';
 import yaml from 'js-yaml';
-import semver from 'semver';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 import { container } from '../di-container.js';
 import { ManifestRepository } from '../repositories/manifest.repository.js';
-import { ValidationService } from '../services/validation.service.js';
-import { MigrationTransformService } from '../services/migration-transform.service.js';
-import { VersionDetectionService } from '../services/version-detection.service.js';
 import { AgentCardGenerator } from '../services/agent-card-generator.js';
 import { RegistryService } from '../services/registry.service.js';
 import type { PublishRequest } from '../services/registry.service.js';
-import { getApiVersion, getVersion } from '../utils/version.js';
-import { scanManifests } from '../utils/manifest-scanner.js';
-import {
-  getDefaultAgentVersion,
-  getDefaultAgentKind,
-  getDefaultRoleTemplate,
-  getDefaultDescriptionTemplate,
-  getAgentTypeConfigs,
-} from '../config/defaults.js';
+import { getVersion } from '../utils/version.js';
 import { initializeAdapters, registry as convertRegistry } from '../adapters/index.js';
-import type { OssaAgent } from '../types/index.js';
+
+// API-first services (Phase 1 extraction)
+import { ManifestCrudService } from '../services/manifest/manifest-crud.service.js';
+// ConvertService available for future handleConvert refactor
+// import { ConvertService } from '../services/convert/convert.service.js';
+import { WorkspaceService } from '../services/workspace/workspace.service.js';
 
 // ---------------------------------------------------------------------------
 // Logging — pino (structured JSON to stderr so MCP stdio stays clean)
@@ -157,11 +149,13 @@ const MigrateInput = z.object({
 // DI — wire existing services (single source of truth for all logic)
 // ---------------------------------------------------------------------------
 const manifestRepo = container.get(ManifestRepository);
-const validationService = container.get(ValidationService);
-const migrationTransformService = container.get(MigrationTransformService);
-const versionDetectionService = container.get(VersionDetectionService);
 const registryService = container.get(RegistryService);
 const agentCardGenerator = new AgentCardGenerator();
+
+// API-first services (delegates to shared service layer)
+const manifestCrudService = container.get(ManifestCrudService);
+// ConvertService available but handleConvert uses inline logic for a2a/agent-card special cases
+const workspaceService = container.get(WorkspaceService);
 
 // Initialize adapter registry (config-only adapters for MCP convert)
 initializeAdapters();
@@ -791,14 +785,10 @@ async function handleValidate(args: Record<string, unknown>) {
   const input = ValidateInput.parse(args);
   const manifestPath = resolvePath(input.path);
   const manifest = await manifestRepo.load(manifestPath);
-  const result = await validationService.validate(manifest, input.platform ? { platform: input.platform } : undefined);
-
-  // Strict mode: promote warnings to errors
-  if (input.strict && result.warnings?.length) {
-    const promoted = result.warnings.map((w: string) => `[strict] ${w}`);
-    result.errors = [...(result.errors || []), ...promoted] as typeof result.errors;
-    result.valid = !result.errors?.length;
-  }
+  const result = await manifestCrudService.validate(manifest, {
+    platform: input.platform,
+    strict: input.strict,
+  });
 
   return okResponse({
     valid: result.valid,
@@ -814,50 +804,15 @@ async function handleValidate(args: Record<string, unknown>) {
 // ---------------------------------------------------------------------------
 async function handleScaffold(args: Record<string, unknown>) {
   const input = ScaffoldInput.parse(args);
-  const outputDir = resolvePath(input.output_dir);
-  const agentDir = path.join(outputDir, input.name);
-
-  if (fs.existsSync(agentDir)) {
-    return errResponse(`Directory already exists: ${agentDir}`);
-  }
-
-  const typeConfigs = getAgentTypeConfigs();
-  const typeConfig = typeConfigs[input.type] || typeConfigs.worker;
-
-  const manifest: OssaAgent = {
-    apiVersion: getApiVersion(),
-    kind: getDefaultAgentKind(),
-    metadata: {
-      name: input.name,
-      version: input.version || getDefaultAgentVersion(),
-      description: input.description || getDefaultDescriptionTemplate(input.name),
-    },
-    spec: {
-      role: input.role || getDefaultRoleTemplate(input.name),
-      llm: { provider: 'openai', model: '${LLM_MODEL:-gpt-4}' },
-      tools: typeConfig.capabilityName ? [{ type: 'capability', name: typeConfig.capabilityName }] : [],
-    },
-  };
-
-  // Create directory structure
-  fs.mkdirSync(agentDir, { recursive: true });
-  fs.mkdirSync(path.join(agentDir, 'prompts'), { recursive: true });
-  fs.mkdirSync(path.join(agentDir, 'tools'), { recursive: true });
-
-  // Write manifest
-  const manifestPath = path.join(agentDir, 'manifest.ossa.yaml');
-  await manifestRepo.save(manifestPath, manifest);
-
-  // Write AGENTS.md stub
-  const agentsMd = `# ${input.name}\n\n${manifest.metadata?.description || ''}\n\n## Tools\n\nTBD\n\n## Usage\n\n\`\`\`bash\nossa validate .agents/${input.name}/manifest.ossa.yaml\n\`\`\`\n`;
-  fs.writeFileSync(path.join(agentDir, 'AGENTS.md'), agentsMd, 'utf8');
-
-  return okResponse({
-    success: true,
-    manifest_path: manifestPath,
-    agent_dir: agentDir,
-    files_created: ['manifest.ossa.yaml', 'AGENTS.md', 'prompts/', 'tools/'],
+  const result = await manifestCrudService.create({
+    name: input.name,
+    output_dir: resolvePath(input.output_dir),
+    description: input.description,
+    role: input.role,
+    type: input.type as 'worker' | 'orchestrator' | 'reviewer' | 'analyzer' | 'executor' | 'approver',
+    version: input.version,
   });
+  return okResponse(result);
 }
 
 // ---------------------------------------------------------------------------
@@ -1002,47 +957,17 @@ async function handlePublish(args: Record<string, unknown>) {
 async function handleList(args: Record<string, unknown>) {
   const input = ListInput.parse(args);
   const baseDir = resolvePath(input.directory);
+  const result = await manifestCrudService.list(baseDir, { recursive: input.recursive });
 
-  const results = await scanManifests(baseDir, {
-    recursive: input.recursive,
-    includeAgentsDirs: true,
-    absolute: true,
-  });
-
-  const agents: Array<Record<string, unknown>> = results.map((r) =>
-    r.error
-      ? { name: r.name, path: r.path, error: r.error }
-      : {
-          name: r.name,
-          version: r.version,
-          path: r.path,
-          kind: r.kind,
-          apiVersion: r.apiVersion,
-          description: r.description,
-        },
-  );
-
-  if (input.format === 'json') {
-    return okResponse({ count: agents.length, agents });
-  }
-
-  if (input.format === 'detailed') {
-    const patterns = input.recursive
-      ? ['**/*.ossa.yaml', '**/*.ossa.yml', '**/.agents/*/manifest.ossa.yaml']
-      : ['*.ossa.yaml', '*.ossa.yml', '.agents/*/manifest.ossa.yaml'];
-    return okResponse({
-      count: agents.length,
-      agents,
-      scan_directory: baseDir,
-      patterns_used: patterns,
-    });
+  if (input.format === 'json' || input.format === 'detailed') {
+    return okResponse({ count: result.count, agents: result.agents, scan_directory: baseDir });
   }
 
   // summary
-  const summary = agents.map(
-    (a) => `${a.name}@${a.version} [${a.kind}] — ${a.path}`,
+  const summary = result.agents.map(
+    (a: { name?: string; version?: string; kind?: string; path: string }) => `${a.name}@${a.version} [${a.kind}] — ${a.path}`,
   );
-  return okResponse({ count: agents.length, agents: summary });
+  return okResponse({ count: result.count, agents: summary });
 }
 
 // ---------------------------------------------------------------------------
@@ -1051,65 +976,8 @@ async function handleList(args: Record<string, unknown>) {
 async function handleInspect(args: Record<string, unknown>) {
   const input = InspectInput.parse(args);
   const manifestPath = resolvePath(input.path);
-
-  // Single load — no double file read
-  const manifest = await manifestRepo.load(manifestPath);
-  const validation = await validationService.validate(manifest);
-  const fileStat = fs.statSync(manifestPath);
-
-  const meta = manifest.metadata;
-  const spec = manifest.spec as Record<string, unknown> | undefined;
-  const extensions = (manifest as Record<string, unknown>).extensions as Record<string, unknown> | undefined;
-
-  // Version analysis with semver
-  const versionStr = (meta?.version as string) || '0.0.0';
-  const parsed = semver.parse(versionStr);
-
-  // Tool analysis
-  const specTools = (spec?.tools as Array<Record<string, unknown>>) || [];
-  const toolSummary = specTools.map((t) => ({
-    name: t.name || t.type,
-    type: t.type,
-  }));
-
-  // Access tier detection
-  const access = spec?.access as Record<string, unknown> | undefined;
-  const autonomy = spec?.autonomy as Record<string, unknown> | undefined;
-
-  // Deployment target detection
-  const deployTargets: string[] = [];
-  if (extensions) {
-    if (extensions.kagent) deployTargets.push('kagent');
-    if (extensions.docker) deployTargets.push('docker');
-    if (extensions.kubernetes) deployTargets.push('kubernetes');
-  }
-
-  return okResponse({
-    name: meta?.name,
-    version: versionStr,
-    version_analysis: parsed
-      ? { major: parsed.major, minor: parsed.minor, patch: parsed.patch, prerelease: parsed.prerelease }
-      : null,
-    kind: manifest.kind,
-    apiVersion: manifest.apiVersion,
-    description: meta?.description,
-    role: spec?.role ? String(spec.role).substring(0, 200) + (String(spec.role).length > 200 ? '...' : '') : null,
-    llm: spec?.llm || null,
-    tools: toolSummary,
-    tool_count: specTools.length,
-    access_tier: access?.tier || null,
-    autonomy_level: autonomy?.level || autonomy?.humanInLoop || null,
-    deploy_targets: deployTargets,
-    has_extensions: !!extensions,
-    extension_keys: extensions ? Object.keys(extensions) : [],
-    validation: {
-      valid: validation.valid,
-      error_count: validation.errors?.length || 0,
-      warning_count: validation.warnings?.length || 0,
-    },
-    file_size_bytes: fileStat.size,
-    manifest_path: manifestPath,
-  });
+  const result = await manifestCrudService.inspect(manifestPath);
+  return okResponse({ ...result, manifest_path: manifestPath });
 }
 
 // ---------------------------------------------------------------------------
@@ -1622,76 +1490,16 @@ async function handleWorkspace(args: Record<string, unknown>) {
 
   switch (input.action) {
     case 'init': {
-      const wsDir = path.join(dir, '.agents-workspace');
-      const registryDir = path.join(wsDir, 'registry');
-      if (fs.existsSync(wsDir)) {
-        return okResponse({ action: 'init', status: 'already_exists', path: wsDir });
-      }
-      fs.mkdirSync(registryDir, { recursive: true });
-      const wsName = input.name || path.basename(dir);
-      const indexYaml = yaml.dump({
-        workspace: wsName,
-        version: '1.0.0',
-        created: new Date().toISOString(),
-        agents: [],
-      });
-      fs.writeFileSync(path.join(registryDir, 'index.yaml'), indexYaml);
-      fs.writeFileSync(
-        path.join(wsDir, 'README.md'),
-        `# OSSA Workspace: ${wsName}\n\nGenerated by OSSA MCP Server.\n\nRun \`ossa workspace discover\` to scan for agents.\n`,
-      );
-      return okResponse({ action: 'init', status: 'created', path: wsDir, name: wsName });
+      const result = await workspaceService.init(dir, input.name);
+      return okResponse(result);
     }
-
     case 'discover': {
-      // Scan for all *.ossa.yaml manifests
-      const patterns = ['**/*.ossa.yaml', '**/*.ossa.yml', '**/.agents/*/manifest.ossa.yaml'];
-      const ignorePatterns = ['**/node_modules/**', '**/dist/**', '**/.git/**', '**/coverage/**'];
-      const files = await fg(patterns, { cwd: dir, ignore: ignorePatterns, absolute: true });
-
-      const agents: Array<{ name: string; path: string; version: string; kind: string; description: string }> = [];
-      for (const f of files) {
-        try {
-          const raw = fs.readFileSync(f, 'utf8');
-          const m = yaml.load(raw) as Record<string, unknown>;
-          const meta = m?.metadata as Record<string, unknown> | undefined;
-          agents.push({
-            name: (meta?.name as string) || path.basename(path.dirname(f)),
-            path: f,
-            version: (meta?.version as string) || '0.0.0',
-            kind: (m?.kind as string) || 'Agent',
-            description: (meta?.description as string) || '',
-          });
-        } catch {
-          // Skip unparseable files
-        }
-      }
-
-      // Write discovery output if .agents-workspace exists
-      const wsDir = path.join(dir, '.agents-workspace');
-      if (fs.existsSync(wsDir)) {
-        const registryDir = path.join(wsDir, 'registry');
-        fs.mkdirSync(registryDir, { recursive: true });
-        const index = {
-          workspace: path.basename(dir),
-          discovered: new Date().toISOString(),
-          count: agents.length,
-          agents: agents.map((a) => ({ name: a.name, version: a.version, kind: a.kind, path: a.path })),
-        };
-        fs.writeFileSync(path.join(registryDir, 'index.yaml'), yaml.dump(index));
-      }
-
-      return okResponse({ action: 'discover', count: agents.length, agents });
+      const result = await workspaceService.discover(dir);
+      return okResponse({ action: 'discover', count: result.agents.length, agents: result.agents });
     }
-
     case 'status': {
-      const wsDir = path.join(dir, '.agents-workspace');
-      const indexPath = path.join(wsDir, 'registry', 'index.yaml');
-      if (!fs.existsSync(indexPath)) {
-        return okResponse({ action: 'status', initialized: false, message: 'Run ossa_workspace with action: init first' });
-      }
-      const indexContent = yaml.load(fs.readFileSync(indexPath, 'utf8')) as Record<string, unknown>;
-      return okResponse({ action: 'status', initialized: true, workspace: indexContent });
+      const result = await workspaceService.status(dir);
+      return okResponse(result);
     }
   }
 }
@@ -1700,74 +1508,10 @@ async function handleWorkspace(args: Record<string, unknown>) {
 // ossa_diff — compare two manifests (recursive deepDiff, same as CLI)
 // ---------------------------------------------------------------------------
 
-/** Recursive deep diff — same algorithm as diff.command.ts (DRY) */
-function deepDiff(
-  obj1: Record<string, unknown>,
-  obj2: Record<string, unknown>,
-  prefix = '',
-): Array<{ type: 'added' | 'removed' | 'modified'; path: string; oldValue?: unknown; newValue?: unknown }> {
-  const changes: Array<{ type: 'added' | 'removed' | 'modified'; path: string; oldValue?: unknown; newValue?: unknown }> = [];
-  const allKeys = new Set([...Object.keys(obj1 || {}), ...Object.keys(obj2 || {})]);
-
-  for (const key of allKeys) {
-    const fieldPath = prefix ? `${prefix}.${key}` : key;
-    const val1 = obj1?.[key];
-    const val2 = obj2?.[key];
-
-    if (!(key in (obj1 || {}))) {
-      changes.push({ type: 'added', path: fieldPath, newValue: val2 });
-    } else if (!(key in (obj2 || {}))) {
-      changes.push({ type: 'removed', path: fieldPath, oldValue: val1 });
-    } else if (
-      typeof val1 === 'object' && typeof val2 === 'object' &&
-      val1 !== null && val2 !== null &&
-      !Array.isArray(val1) && !Array.isArray(val2)
-    ) {
-      changes.push(...deepDiff(val1 as Record<string, unknown>, val2 as Record<string, unknown>, fieldPath));
-    } else if (JSON.stringify(val1) !== JSON.stringify(val2)) {
-      changes.push({ type: 'modified', path: fieldPath, oldValue: val1, newValue: val2 });
-    }
-  }
-  return changes;
-}
-
-/** Detect breaking changes (same rules as diff.command.ts) */
-function isBreakingChange(change: { type: string; path: string }): boolean {
-  if (change.type === 'removed') return true;
-  if (change.path.includes('metadata.name') || change.path.includes('metadata.version')) return true;
-  if (change.path.includes('spec.role')) return true;
-  if (change.path.includes('apiVersion')) return true;
-  return false;
-}
-
 async function handleDiff(args: Record<string, unknown>) {
   const input = DiffInput.parse(args);
-  const pathA = resolvePath(input.path_a);
-  const pathB = resolvePath(input.path_b);
-
-  if (!fs.existsSync(pathA)) return errResponse(`File not found: ${pathA}`);
-  if (!fs.existsSync(pathB)) return errResponse(`File not found: ${pathB}`);
-
-  const manifestA = await manifestRepo.load(pathA);
-  const manifestB = await manifestRepo.load(pathB);
-
-  // Full recursive diff (catches ALL nested field changes)
-  const allChanges = deepDiff(
-    manifestA as unknown as Record<string, unknown>,
-    manifestB as unknown as Record<string, unknown>,
-  );
-  const breakingChanges = allChanges.filter(isBreakingChange);
-
-  return okResponse({
-    path_a: pathA,
-    path_b: pathB,
-    name_a: manifestA.metadata?.name,
-    name_b: manifestB.metadata?.name,
-    total_changes: allChanges.length,
-    breaking_changes: breakingChanges.map((c) => `${c.path}: ${c.type}`),
-    changes: allChanges,
-    compatible: breakingChanges.length === 0,
-  });
+  const result = await manifestCrudService.diff(resolvePath(input.path_a), resolvePath(input.path_b));
+  return okResponse(result);
 }
 
 // ---------------------------------------------------------------------------
@@ -1775,51 +1519,12 @@ async function handleDiff(args: Record<string, unknown>) {
 // ---------------------------------------------------------------------------
 async function handleMigrate(args: Record<string, unknown>) {
   const input = MigrateInput.parse(args);
-  const manifestPath = resolvePath(input.path);
-  const manifest = await manifestRepo.load(manifestPath);
-  const detectionResult = await versionDetectionService.detectVersion(manifest);
-  const currentVersion = detectionResult.version || (manifest.apiVersion as string) || 'unknown';
-  const targetVersion = input.target_version;
-
-  if (currentVersion === targetVersion || `ossa/${currentVersion}` === targetVersion) {
-    return okResponse({ migrated: false, reason: `Already at ${targetVersion}`, manifest_path: manifestPath });
-  }
-
-  // Strip 'ossa/' prefix for MigrationTransformService (expects '0.3.3', not 'ossa/v0.3.3')
-  const fromVer = currentVersion.replace(/^ossa\/v?/, '');
-  const toVer = targetVersion.replace(/^ossa\/v?/, '');
-
-  // Try registered transform first (handles all version-specific logic)
-  const transform = migrationTransformService.getTransform(fromVer, toVer);
-  let migrated: OssaAgent;
-  const migrations: string[] = [];
-
-  if (transform) {
-    migrated = migrationTransformService.applyTransform(manifest, fromVer, toVer);
-    migrations.push(`${transform.description} (${fromVer} → ${toVer})`);
-    if (transform.breaking) migrations.push('WARNING: This migration contains breaking changes');
-
-    // Validate migration preserved critical fields
-    const warnings = migrationTransformService.validateMigration(manifest, migrated);
-    if (warnings.length) migrations.push(...warnings.map((w) => `WARN: ${w}`));
-  } else {
-    // Fallback: update apiVersion only (no registered transform for this pair)
-    migrated = JSON.parse(JSON.stringify(manifest)) as OssaAgent;
-    migrated.apiVersion = targetVersion;
-    migrations.push(`apiVersion: ${currentVersion} → ${targetVersion} (no registered transform — apiVersion updated only)`);
-  }
-
-  // Write output
-  if (input.output_dir) {
-    const outDir = resolvePath(input.output_dir);
-    fs.mkdirSync(outDir, { recursive: true });
-    const outPath = path.join(outDir, path.basename(manifestPath));
-    const output = yaml.dump(migrated as Record<string, unknown>, { lineWidth: 120, noRefs: true });
-    fs.writeFileSync(outPath, output, 'utf8');
-    return okResponse({ migrated: true, from: currentVersion, to: targetVersion, migrations, written_to: outPath });
-  }
-
-  return okResponse({ migrated: true, from: currentVersion, to: targetVersion, migrations, manifest: migrated });
+  const result = await manifestCrudService.migrate(
+    resolvePath(input.path),
+    input.target_version,
+    input.output_dir ? resolvePath(input.output_dir) : undefined,
+  );
+  return okResponse(result);
 }
 
 // ---------------------------------------------------------------------------

@@ -25,6 +25,7 @@ import { OpenAIConfigAdapter } from './openai-agents/config-adapter.js';
 import { AnthropicConfigAdapter } from './anthropic/config-adapter.js';
 import { AutogenConfigAdapter } from './autogen/config-adapter.js';
 import { SemanticKernelConfigAdapter } from './semantic-kernel/config-adapter.js';
+import { SymfonyAiPlatformAdapter } from './symfony/platform-adapter.js';
 
 let _initialized = false;
 
@@ -53,6 +54,9 @@ export function initializeAdapters(): void {
 
   // Register Drupal adapter
   registry.register(new DrupalAdapter());
+
+  // Register Symfony AI Agent export adapter
+  registry.register(new SymfonyAiPlatformAdapter());
 
   // Register NPM adapter
   registry.register(new NPMAdapter());
