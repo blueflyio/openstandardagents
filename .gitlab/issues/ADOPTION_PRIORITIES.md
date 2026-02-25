@@ -72,76 +72,11 @@ Based on integration research with kagent.dev, AgentQL, AgentK, dagrunner, Symfo
 
 ---
 
-## Symfony AI Agent – deep research and OSSA adoption path
-
-**Source:** [Symfony AI – Agent Component](https://symfony.com/doc/current/ai/components/agent.html), [Platform Component](https://symfony.com/doc/current/ai/components/platform.html). Purpose: align OSSA with Symfony’s PHP agent stack to further openstandardagents adoption in PHP/Drupal ecosystems.
-
-### What Symfony AI provides
-
-- **Platform component** (`symfony/ai-platform`): Abstraction over LLM providers (OpenAI, Anthropic, Google, Ollama, LiteLLM, OpenRouter, Vertex, Bedrock, etc.). Message types (User, System, Assistant), MessageBag, streaming, embeddings, structured output, failover, caching. Model = name + capabilities + options.
-- **Agent component** (`symfony/ai-agent`): Agent = Platform + Model; input/output processors; **Toolbox** with tool calling. Tools are PHP classes with `#[AsTool(name, description)]` (and optional `method`), JSON Schema derived from params and `#[With]` / enums. Third-party tools via `MemoryToolFactory`; **Subagent** = agent-as-tool. Fault tolerance (`FaultTolerantToolbox`), tool filtering per call, tool lifecycle events, RAG via Store + `SimilaritySearch` tool, **memory** (StaticMemoryProvider, EmbeddingProvider) injected into system prompt. Testing: `MockAgent`, `MockResponse`, callable responses.
-- **Store component** (`symfony/ai-store`): Vector stores for RAG (Pinecone, MongoDB, etc.).
-
-### OSSA ↔ Symfony concept mapping
-
-| OSSA | Symfony AI | Notes |
-|------|------------|--------|
-| `metadata.name`, `version`, `description` | Agent identity (no manifest) | OSSA has a single manifest; Symfony agents are code + config. |
-| `spec.role` or `prompts.system.template` | `Message::forSystem(...)` in MessageBag | Direct mapping; OSSA templates → Symfony message templates. |
-| `spec.llm` (provider, model, temperature, maxTokens) | Platform + Model (e.g. `PlatformFactory::create()`, `'gpt-4o-mini'`) | OSSA llm-config → Symfony platform bridge + model name/options. |
-| `spec.tools` (list of tool refs) | Toolbox([$tool1, $tool2]), AgentProcessor | OSSA tool definitions → PHP classes with `#[AsTool]` or MemoryToolFactory. |
-| Tool schema (name, description, parameters) | AsTool attribute + method params + docblock / `#[With]` | OSSA JSON Schema for tools → Symfony’s generated JSON Schema for LLM. |
-| Sub-agents / delegation | Subagent tool (agent as tool in Toolbox) | OSSA multi-agent or tools that are agents → Symfony Subagent. |
-| Memory / context | MemoryInputProcessor + StaticMemoryProvider / EmbeddingProvider | OSSA extensions.memory or context → Symfony memory providers. |
-| Observability / tracing | Not in Symfony doc | OSSA spec.observability → future Symfony listener or bridge. |
-
-### Gaps and opportunities
-
-1. **No manifest format in Symfony:** Agents are built in code (Platform, Model, Toolbox, processors). OSSA can be the **declarative source**: export OSSA → Symfony config or generated PHP (agent factory from manifest).
-2. **Tool schema direction:** Symfony generates JSON Schema from PHP. OSSA has tool schemas in manifest. **Bidirectional:** OSSA → Symfony (generate `#[AsTool]` stubs or register tools from OSSA tools.yaml); Symfony → OSSA (infer tool schema from PHP for `ossa import`).
-3. **Drupal already has ai_agents:** Drupal’s ai_agents + OSSA bridge (ai_agents_ossa) uses config entities. Symfony AI is framework-level (PHP, not Drupal-specific). **Path:** Use OSSA as the contract; Drupal can use either (a) ai_agents + OSSA manifests, or (b) a Symfony AI adapter that instantiates `Agent` from an OSSA manifest (e.g. in a Drupal or Symfony app).
-4. **Platform matrix:** Add **Symfony** as a platform in `ossa platforms`: export = “generate Symfony Agent + Toolbox from OSSA manifest”; import = “infer OSSA manifest from Symfony Agent/Toolbox config or PHP attributes” (best-effort).
-
-### Concrete adoption paths
-
-1. **OSSA → Symfony export (CLI/bridge):**  
-   - Input: `manifest.ossa.yaml` (+ optional prompts/tools).  
-   - Output: PHP bootstrap or config that builds `Agent($platform, $model, inputProcessors: [AgentProcessor($toolbox)], outputProcessors: [...])`, registers tools from `spec.tools` (generated `#[AsTool]` classes or MemoryToolFactory), sets system message from `spec.role` / `prompts.system.template`.  
-   - Enables: one OSSA manifest → runnable Symfony Agent.
-
-2. **Symfony → OSSA import:**  
-   - Input: Symfony app with Agent(s) and Toolbox (or a config file describing them).  
-   - Output: `manifest.ossa.yaml` with `metadata`, `spec.role`, `spec.llm`, `spec.tools` (names + descriptions + schema inferred from PHP).  
-   - Enables: existing Symfony AI apps to become OSSA-described and portable.
-
-3. **Drupal + Symfony AI + OSSA:**  
-   - Keep Drupal extension (`extensions.drupal`) and ai_agents_ossa as the primary Drupal story.  
-   - Optional: a **Symfony AI runtime adapter** for Drupal or standalone Symfony apps that loads an OSSA manifest and runs the agent via `symfony/ai-agent` (e.g. “run this OSSA agent in PHP” without going through ai_agents plugin system).  
-   - ECA / Recipes: Issue #255; Symfony Messenger for async execution can be wired to ECA or OSSA task triggers.
-
-4. **New OSSA extension (optional):** `extensions.symfony` or document Symfony in `extensions.drupal` as “alternative PHP runtime” (Symfony AI Agent vs ai_agents plugin). Prefer one PHP/Drupal story in the platform matrix with two backends: Drupal ai_agents, Symfony Agent.
-
-5. **Docs and platform matrix:**  
-   - Add “Symfony” to `ossa platforms --json` and docs: what they need (composer require symfony/ai-agent, symfony/ai-platform), folder structure (OSSA standard), export/import how (OSSA → Symfony bootstrap; Symfony → OSSA import).  
-   - Publish a short “OSSA + Symfony AI” guide (wiki or docs): one manifest, export to Symfony, run agent in PHP.
-
-### Recommended next steps
-
-| Priority | Action | Owner |
-|----------|--------|--------|
-| 1 | Add **Symfony** to platform matrix (docs + `ossa platforms`): export = OSSA → Symfony Agent bootstrap; import = Symfony → OSSA manifest. | openstandardagents |
-| 2 | Implement **OSSA → Symfony** export: from manifest generate PHP (or config) that builds Agent + Toolbox + system message. | openstandardagents or community |
-| 3 | Implement **Symfony → OSSA** import: from Agent/Toolbox (or config) produce manifest.ossa.yaml. | openstandardagents or community |
-| 4 | Document **Drupal + Symfony AI + OSSA**: when to use ai_agents_ossa vs Symfony Agent with OSSA manifest; ECA/Messenger. | technical-docs / openstandardagents wiki |
-| 5 | Create GitLab issue(s): “Symfony AI Agent adapter (export/import)” and “Platform matrix: Symfony” for tracking. | openstandardagents |
-
----
-
 ## Worktree Execution Plan
 
 ```bash
 # Each issue gets its own worktree
-WORKTREE_BASE="${HOME}/Sites/blueflyio/WORKING_DEMOs/openstandardagents"
+WORKTREE_BASE="${HOME}/.worktrees/openstandardagents"
 
 # Tier 1 - Start immediately
 git worktree add "$WORKTREE_BASE/182-openapi-conversion" -b feature/182-openapi-conversion release/v0.3.x

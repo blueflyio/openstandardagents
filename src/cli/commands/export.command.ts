@@ -46,14 +46,14 @@ export const exportCommand = new Command('export')
   .argument('[manifest]', 'Path to OSSA agent manifest')
   .option(
     '-p, --platform <platform>',
-    'Target platform (kagent, langchain, langflow, crewai, symfony, temporal, n8n, gitlab, gitlab-agent, docker, kubernetes, npm, drupal, agent-skills)'
+    'Target platform (kagent, langchain, langflow, crewai, temporal, n8n, gitlab, gitlab-agent, docker, kubernetes, npm, drupal, agent-skills)'
   )
   .option('-o, --output <file>', 'Output file path')
   .option('--format <format>', 'Output format (yaml, json, python)', 'yaml')
   .option(
     '--crd-version <version>',
     'Kagent CRD version (v1alpha1 | v1alpha2). v1alpha2 = Declarative Agent for native kagent installs',
-    'v1alpha2'
+    'v1alpha1'
   )
   .option(
     '--namespace <ns>',
@@ -65,7 +65,6 @@ export const exportCommand = new Command('export')
     '--perfect-agent',
     'Enable full "perfect agent" export (AGENTS.md, team scaffolding, evals, governance, observability)'
   )
-  .option('--apply', 'Apply exported kagent CRDs to Kubernetes via kubectl (kagent platform only)')
   .option('--include-agent-card', 'Generate .well-known/agent-card.json')
   .option('--include-agents-md', 'Include AGENTS.md team documentation')
   .option('--include-team', 'Include multi-agent team scaffolding')
@@ -94,7 +93,6 @@ exportCommand.action(
       format: string;
       crdVersion?: string;
       namespace?: string;
-      apply?: boolean;
       skill?: boolean;
       perfectAgent?: boolean;
       includeTeam?: boolean;
@@ -300,61 +298,33 @@ exportCommand.action(
           if (useV1Alpha2) {
             log('Generating kagent.dev v1alpha2 Declarative Agent...');
             const kagentGenerator = new KAgentCRDGenerator();
-            const v1a2Bundle = kagentGenerator.generateV1Alpha2Bundle(manifest, kagentOpts);
+            const { agent, modelConfig } =
+              kagentGenerator.generateV1Alpha2(manifest, kagentOpts);
 
             if (!options.dryRun) {
               fs.mkdirSync(outputDir, { recursive: true });
-
-              // Write in APPLY_ORDER: ModelConfig → RemoteMCPServer → Agent
-              const files: string[] = [];
-              if (v1a2Bundle.modelConfig) {
-                fs.writeFileSync(
-                  path.join(outputDir, 'model-config.yaml'),
-                  yaml.stringify(v1a2Bundle.modelConfig)
-                );
-                files.push('model-config.yaml');
-              }
-              for (const server of v1a2Bundle.remoteMCPServers) {
-                const filename = `remote-mcp-server-${server.metadata.name}.yaml`;
-                fs.writeFileSync(
-                  path.join(outputDir, filename),
-                  yaml.stringify(server)
-                );
-                files.push(filename);
-              }
               fs.writeFileSync(
                 path.join(outputDir, 'agent.yaml'),
-                yaml.stringify(v1a2Bundle.agent)
+                yaml.stringify(agent)
               );
-              files.push('agent.yaml');
-
+              if (modelConfig) {
+                fs.writeFileSync(
+                  path.join(outputDir, 'model-config.yaml'),
+                  yaml.stringify(modelConfig)
+                );
+              }
               fs.writeFileSync(
                 path.join(outputDir, 'agent.ossa.yaml'),
                 yaml.stringify(manifest)
               );
-
               logSuccess(
                 `\nkagent.dev v1alpha2 bundle exported to: ${outputDir}`
               );
-              log(`  ${files.join(', ')}, agent.ossa.yaml`);
+              log(
+                `  agent.yaml${modelConfig ? ', model-config.yaml' : ''}, agent.ossa.yaml`
+              );
             } else {
-              log(`\nDRY RUN: Would write v1alpha2 bundle to ${outputDir}`);
-            }
-
-            // Apply to Kubernetes if --apply flag is set
-            if (options.apply) {
-              log('\nApplying CRDs to Kubernetes in APPLY_ORDER...');
-              const { applyV1Alpha2Bundle } = await import('../../sdks/kagent/kubectl-apply.js');
-              const applyResult = await applyV1Alpha2Bundle(v1a2Bundle);
-              if (applyResult.success) {
-                logSuccess(`Applied ${applyResult.applied} CRDs to Kubernetes`);
-                for (const item of applyResult.results) {
-                  log(`  ${item.kind}/${item.name}: ${item.status}`);
-                }
-              } else {
-                console.error(`kubectl apply failed: ${applyResult.error}`);
-                process.exit(1);
-              }
+              log(`\nDRY RUN: Would write agent.yaml (v1alpha2) to ${outputDir}`);
             }
             return;
           }
@@ -945,64 +915,6 @@ exportCommand.action(
           }
 
           return; // Early return to skip single-file write
-        }
-
-        case 'symfony': {
-          log(
-            'Generating Symfony AI Agent package (composer.json + agent_bootstrap.php)...'
-          );
-
-          const symfonyAdapter = registry.getAdapter('symfony');
-          if (!symfonyAdapter) {
-            throw new Error(
-              'Symfony adapter not registered. Ensure initializeAdapters() was called.'
-            );
-          }
-
-          const symfonyResult = await symfonyAdapter.export(manifest, {
-            validate: options.validate !== false,
-          });
-
-          if (!symfonyResult.success) {
-            throw new Error(
-              symfonyResult.error || 'Symfony AI Agent export failed'
-            );
-          }
-
-          const agentName =
-            manifest.metadata?.name
-              ?.toLowerCase()
-              .replace(/[^a-z0-9_]/g, '_') || 'ossa_agent';
-          const outputDir = options.output || `./${agentName}`;
-
-          if (!options.dryRun) {
-            fs.mkdirSync(outputDir, { recursive: true });
-
-            for (const file of symfonyResult.files) {
-              const filePath = path.join(outputDir, file.path);
-              const fileDir = path.dirname(filePath);
-              fs.mkdirSync(fileDir, { recursive: true });
-              fs.writeFileSync(filePath, file.content);
-              logVerbose(`  Created: ${file.path}`);
-            }
-
-            logSuccess(
-              `\nSymfony AI Agent package exported to: ${outputDir}`
-            );
-            log(
-              `  composer.json, agent_bootstrap.php, README.md, agent.ossa.yaml`
-            );
-            log('\nNext: cd ' + agentName + ' && composer install');
-          } else {
-            log(
-              `\nDRY RUN: Would generate ${symfonyResult.files.length} files in: ${outputDir}`
-            );
-            for (const file of symfonyResult.files) {
-              logVerbose(`  - ${file.path}`);
-            }
-          }
-
-          return;
         }
 
         case 'agent-skills': {

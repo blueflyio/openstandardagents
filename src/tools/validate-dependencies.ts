@@ -9,11 +9,8 @@ import { glob } from 'glob';
 import { join } from 'path';
 
 interface PackageJson {
-  name?: string;
   dependencies?: Record<string, string>;
   devDependencies?: Record<string, string>;
-  optionalDependencies?: Record<string, string>;
-  peerDependencies?: Record<string, string>;
 }
 
 const BUILT_IN_MODULES = new Set([
@@ -54,8 +51,6 @@ async function main() {
   const allDeps = {
     ...pkg.dependencies,
     ...pkg.devDependencies,
-    ...pkg.optionalDependencies,
-    ...pkg.peerDependencies,
   };
 
   // Find all TypeScript files (exclude sub-packages with their own package.json)
@@ -138,11 +133,6 @@ async function main() {
 
       // Skip packages referenced only in code-generation templates (not real imports)
       if (packageName === '@anthropic-ai/claude-code') {
-        continue;
-      }
-
-      // Skip non-JS imports (e.g., PHP filenames in code-generation adapters)
-      if (packageName.includes('.') && !packageName.startsWith('@')) {
         continue;
       }
 
