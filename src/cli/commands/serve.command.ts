@@ -1,6 +1,6 @@
 /**
  * OSSA Serve Command
- * Local development server for OSSA agents + REST API server
+ * Local development server for OSSA agents
  */
 
 import chalk from 'chalk';
@@ -10,26 +10,8 @@ import * as path from 'path';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
 import type { OssaAgent } from '../../types/index.js';
-import { startServer } from '../../api/server.js';
 
-// Parent command group
 export const serveCommand = new Command('serve')
-  .description('Start OSSA servers (agent dev server or REST API)');
-
-// ossa serve api — starts the REST API
-const serveApiCommand = new Command('api')
-  .option('-p, --port <port>', 'Port to run API server on', '3000')
-  .option('--cors-origin <origin>', 'CORS origin (default: *)', '*')
-  .description('Start OSSA REST API server')
-  .action((options: { port?: string; corsOrigin?: string }) => {
-    const port = parseInt(options.port || '3000', 10);
-    startServer({ port, corsOrigin: options.corsOrigin });
-  });
-
-serveCommand.addCommand(serveApiCommand);
-
-// ossa serve agent <path> — existing agent dev server
-const serveAgentCommand = new Command('agent')
   .argument('<path>', 'Path to OSSA manifest or directory')
   .option('-p, --port <port>', 'Port to run server on', '3000')
   .option('--mock-llm', 'Use mock LLM provider (no API keys required)')
@@ -328,5 +310,3 @@ const serveAgentCommand = new Command('agent')
       }
     }
   );
-
-serveCommand.addCommand(serveAgentCommand);

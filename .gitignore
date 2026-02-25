@@ -145,3 +145,4 @@ sbom-*.json
 *-sbom.json
 gl-sbom-*.cdx.json
 .gitlab/ci/_archived/
+AGENTS.md

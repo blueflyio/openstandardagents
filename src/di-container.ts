@@ -36,15 +36,6 @@ import { TemplateService } from './services/template.service.js';
 import { RegistryService } from './services/registry.service.js';
 import { WizardService } from './services/wizard/wizard.service.js';
 import { AgentTypeDetectorService } from './services/agent-type-detector.service.js';
-
-// API-first services
-import { WizardStateService } from './services/wizard/wizard-state.service.js';
-import { ManifestCrudService } from './services/manifest/manifest-crud.service.js';
-import { SkillManifestService } from './services/skills/skill-manifest.service.js';
-import { MCPManifestService } from './services/mcp-manifest/mcp-manifest.service.js';
-import { ExportService } from './services/export/export.service.js';
-import { ConvertService } from './services/convert/convert.service.js';
-import { WorkspaceService } from './services/workspace/workspace.service.js';
 // Codegen Service and Generators
 import { CodegenService } from './services/codegen/codegen.service.js';
 import { ManifestGenerator } from './services/codegen/generators/manifest.generator.js';
@@ -150,15 +141,6 @@ container.bind(SkillsResearchService).toSelf();
 container.bind(SkillsGeneratorService).toSelf();
 container.bind(SkillsExportService).toSelf();
 
-// Bind API-first services
-container.bind(ManifestCrudService).toSelf();
-container.bind(WizardStateService).toSelf().inSingletonScope();
-container.bind(SkillManifestService).toSelf();
-container.bind(MCPManifestService).toSelf();
-container.bind(ExportService).toSelf();
-container.bind(ConvertService).toSelf();
-container.bind(WorkspaceService).toSelf();
-
 /**
  * Get service from container
  * @param serviceIdentifier - Service class or token
@@ -212,13 +194,4 @@ export function resetContainer(): void {
   container.bind(SkillsResearchService).toSelf();
   container.bind(SkillsGeneratorService).toSelf();
   container.bind(SkillsExportService).toSelf();
-
-  // API-first services
-  container.bind(ManifestCrudService).toSelf();
-  container.bind(WizardStateService).toSelf().inSingletonScope();
-  container.bind(SkillManifestService).toSelf();
-  container.bind(MCPManifestService).toSelf();
-  container.bind(ExportService).toSelf();
-  container.bind(ConvertService).toSelf();
-  container.bind(WorkspaceService).toSelf();
 }

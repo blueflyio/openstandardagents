@@ -202,44 +202,6 @@ export interface KAgentV1Alpha2ModelConfig {
 }
 
 /**
- * kagent.dev v1alpha2 RemoteMCPServer CRD
- */
-export interface KAgentV1Alpha2RemoteMCPServer {
-  apiVersion: 'kagent.dev/v1alpha2';
-  kind: 'RemoteMCPServer';
-  metadata: { name: string; namespace?: string; labels?: Record<string, string> };
-  spec: {
-    url: string;
-    transport?: 'sse' | 'streamable-http';
-    tools?: string[];
-    headers?: Array<{
-      name: string;
-      value?: string;
-      valueFrom?: { type: 'Secret' | 'ConfigMap'; name: string; key: string };
-    }>;
-  };
-}
-
-/**
- * Ordered apply sequence for kagent CRDs.
- * Dependencies must be applied before dependents.
- */
-export const KAGENT_APPLY_ORDER = [
-  'ModelConfig',
-  'RemoteMCPServer',
-  'Agent',
-] as const;
-
-/**
- * Complete v1alpha2 export bundle with all CRDs
- */
-export interface KAgentV1Alpha2Bundle {
-  modelConfig?: KAgentV1Alpha2ModelConfig;
-  remoteMCPServers: KAgentV1Alpha2RemoteMCPServer[];
-  agent: KAgentV1Alpha2Agent;
-}
-
-/**
  * Deployment options for kagent
  */
 export interface KAgentDeploymentOptions {
