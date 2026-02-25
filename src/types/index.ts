@@ -73,6 +73,14 @@ export type {
   AuditConfig,
 } from './security.js';
 
+// Export Skill types (AgentSkills / OSSA skills)
+export type { OssaSkill } from './skill.js';
+export { isOssaSkill } from './skill.js';
+
+// Export MCP server manifest types
+export type { OssaMCPServer } from './mcp-server-manifest.js';
+export { isOssaMCPServer } from './mcp-server-manifest.js';
+
 // Export Protocol Declaration types (v0.5)
 export * from './protocols.js';
 export type {

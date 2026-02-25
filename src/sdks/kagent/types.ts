@@ -302,3 +302,21 @@ export interface KAgentValidationResult {
   errors: string[];
   warnings: string[];
 }
+
+/**
+ * v1alpha2 bundle: ModelConfig (optional), RemoteMCPServers, Agent.
+ * Apply order: ModelConfig -> RemoteMCPServer(s) -> Agent.
+ */
+export interface KAgentV1Alpha2Bundle {
+  modelConfig?: KAgentV1Alpha2ModelConfig;
+  remoteMCPServers: Array<{
+    apiVersion: string;
+    kind: string;
+    metadata: { name: string; namespace?: string; labels?: Record<string, string> };
+    spec: Record<string, unknown>;
+  }>;
+  agent: KAgentV1Alpha2Agent;
+}
+
+/** Apply order for v1alpha2 bundle (ModelConfig -> RemoteMCPServer -> Agent). */
+export const KAGENT_APPLY_ORDER = ['ModelConfig', 'RemoteMCPServer', 'Agent'] as const;
