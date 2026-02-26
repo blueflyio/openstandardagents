@@ -17,6 +17,7 @@ import { CursorAdapter } from './cursor/adapter.js';
 import { ClaudeCodeAdapter } from './claude-code/adapter.js';
 import { MobileAgentAdapter } from './mobile-agent/adapter.js';
 import { LangflowPlatformAdapter } from './langflow/platform-adapter.js';
+import { SymfonyAiPlatformAdapter } from './symfony/platform-adapter.js';
 import { ClaudeAgentSdkAdapter } from './claude-agent-sdk/adapter.js';
 // Config-only adapters (lightweight JSON export for MCP tool responses)
 import { KagentConfigAdapter } from './kubernetes/config-adapter.js';
@@ -41,6 +42,9 @@ export function initializeAdapters(): void {
 
   // Register LangFlow adapter (OSSA -> LangFlow flow JSON for CI + Studio)
   registry.register(new LangflowPlatformAdapter());
+
+  // Register Symfony AI adapter (OSSA -> PHP bootstrap for symfony/ai-agent)
+  registry.register(new SymfonyAiPlatformAdapter());
 
   // Register MCP adapter
   registry.register(new MCPAdapter());
