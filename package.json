@@ -73,7 +73,12 @@
       "import": "./dist/version-management/index.js",
       "require": "./dist/version-management/index.js"
     },
-    "./mcp-server": "./dist/mcp-server/index.js"
+    "./mcp-server": "./dist/mcp-server/index.js",
+    "./kagent": {
+      "types": "./dist/sdks/kagent/index.d.ts",
+      "import": "./dist/sdks/kagent/index.js",
+      "require": "./dist/sdks/kagent/index.js"
+    }
   },
   "description": "OSSA - Open Standard for Software Agents. Infrastructure bridge between agent protocols (MCP, A2A) and deployment platforms. Define once in YAML, export to 9+ platforms (Docker, Kubernetes, LangChain, CrewAI, Claude Skills, etc.).",
   "keywords": [
@@ -233,6 +238,7 @@
     "release:prep": "tsx src/dev-cli/src/index.ts release prep v$(node -p \"require('./.version.json').latest_stable\")"
   },
   "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.2.50",
     "@anthropic-ai/sdk": "^0.71.0",
     "@aws-sdk/client-bedrock-runtime": "^3.955.0",
     "@gitbeaker/node": "^35.8.1",
@@ -331,7 +337,6 @@
     "vitest": "^2.1.8"
   },
   "optionalDependencies": {
-    "@anthropic-ai/claude-agent-sdk": "^0.1.0",
     "nodemailer": "^6.9.0"
   },
   "engines": {
