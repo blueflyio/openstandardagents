@@ -14,7 +14,6 @@ import type {
   IValidationService,
   OssaAgent,
   SchemaVersion,
-  ValidateOptions,
   ValidationResult,
 } from '../types/index.js';
 import type { ErrorObject } from 'ajv';
@@ -110,22 +109,12 @@ export class ValidationZodService implements IValidationService {
   }
 
   /**
-   * Validate OSSA agent manifest using Zod.
-   * Second arg: optional version string or { version?, platform? } for platform-specific validation.
+   * Validate OSSA agent manifest using Zod
    */
   async validate(
     manifest: unknown,
-    versionOrOptions?: SchemaVersion | ValidateOptions
+    version?: SchemaVersion
   ): Promise<ValidationResult> {
-    let version: SchemaVersion | undefined;
-    let platform: string | undefined;
-    if (typeof versionOrOptions === 'string') {
-      version = versionOrOptions;
-    } else if (versionOrOptions && typeof versionOrOptions === 'object') {
-      version = versionOrOptions.version;
-      platform = versionOrOptions.platform;
-    }
-
     // Use dynamic version detection if not provided
     if (!version) {
       if (
@@ -183,10 +172,9 @@ export class ValidationZodService implements IValidationService {
         }
       }
 
-      // 5. Run platform-specific validators (all extensions, or only requested platform when options.platform is set)
+      // 5. Run platform-specific validators
       const platformResults = this.validatePlatformExtensions(
-        result.success ? (result.data as OssaAgent) : (manifest as OssaAgent),
-        platform
+        result.success ? (result.data as OssaAgent) : (manifest as OssaAgent)
       );
 
       // 6. Combine all errors
@@ -307,45 +295,18 @@ export class ValidationZodService implements IValidationService {
   }
 
   /**
-   * Validate platform-specific extensions.
-   * When platformFilter is set, run only that platform's validator (and warn if extensions lack it).
+   * Validate platform-specific extensions
    */
-  private validatePlatformExtensions(
-    manifest: OssaAgent,
-    platformFilter?: string
-  ): ValidationResult {
+  private validatePlatformExtensions(manifest: OssaAgent): ValidationResult {
     const errors: ErrorObject[] = [];
     const warnings: string[] = [];
     let valid = true;
 
-    const extensions = manifest.extensions as Record<string, unknown> | undefined;
-    if (platformFilter) {
-      const validator = this.platformValidators.get(platformFilter);
-      if (validator) {
-        const result = validator.validate(manifest);
-        if (!result.valid) {
-          valid = false;
-          errors.push(...result.errors);
-        }
-        warnings.push(...result.warnings);
-      } else {
-        warnings.push(
-          `Platform '${platformFilter}' has no validator; skipping platform-specific checks.`
-        );
-      }
-      if (extensions && !(platformFilter in extensions)) {
-        warnings.push(
-          `Platform '${platformFilter}': No extensions.${platformFilter} section in manifest. Add it for platform-specific features.`
-        );
-      }
-      return { valid, errors, warnings };
-    }
-
-    if (!extensions) {
+    if (!manifest.extensions) {
       return { valid: true, errors: [], warnings: [] };
     }
 
-    for (const [platform] of Object.entries(extensions)) {
+    for (const [platform] of Object.entries(manifest.extensions)) {
       const validator = this.platformValidators.get(platform);
       if (validator) {
         const result = validator.validate(manifest);

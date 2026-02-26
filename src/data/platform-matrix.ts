@@ -256,31 +256,6 @@ export const PLATFORM_MATRIX: PlatformMatrixEntry[] = [
     ],
   },
   {
-    id: 'symfony',
-    name: 'Symfony AI Agent',
-    description: 'PHP bootstrap for symfony/ai-agent (Platform + Model + Toolbox from OSSA)',
-    status: 'alpha',
-    whatTheyNeed: [
-      'PHP 8.2+',
-      'Composer',
-      'symfony/ai-agent and symfony/ai-platform',
-      'LLM API key (OpenAI, Anthropic, etc.)',
-    ],
-    folderStructure: [
-      '.agents/{name}/manifest.ossa.yaml',
-      '{name}/composer.json',
-      '{name}/agent_bootstrap.php',
-      '{name}/README.md',
-    ],
-    sdkNpm: ['symfony/ai-agent', 'symfony/ai-platform (Composer)'],
-    exportHow: 'ossa export <manifest> --platform symfony -o dist/',
-    importHow: 'no',
-    specUsage: [
-      'spec.role or prompts.system -> system message; spec.llm -> Platform + Model; spec.tools -> Toolbox (stubs or #[AsTool] classes).',
-      'One OSSA manifest -> runnable Symfony Agent in PHP.',
-    ],
-  },
-  {
     id: 'cursor',
     name: 'Cursor Cloud Agent',
     description: 'Cursor Cloud Agent for IDE assistance',
@@ -384,28 +359,6 @@ export const PLATFORM_MATRIX: PlatformMatrixEntry[] = [
     exportHow: 'ossa export <manifest> --platform agent-skills -o skills/',
     importHow: 'no',
     specUsage: ['SKILL.md generated from manifest; OSSA is source of truth for description and tools.'],
-  },
-  {
-    id: 'fusioninventory',
-    name: 'FusionInventory',
-    description: 'FusionInventory agent.cfg for IT asset inventory and deployment',
-    status: 'alpha',
-    whatTheyNeed: [
-      'FusionInventory agent installed (Perl)',
-      'GLPI or compatible server URL',
-      'agent.cfg configuration file',
-    ],
-    folderStructure: [
-      '.agents/{name}/manifest.ossa.yaml',
-      'fusioninventory/{name}/agent.cfg',
-    ],
-    sdkNpm: ['FusionInventory agent (Perl, no npm SDK)'],
-    exportHow: 'ossa export <manifest> --platform fusioninventory -o dist/',
-    importHow: 'no',
-    specUsage: [
-      'extensions.fusioninventory maps to agent.cfg directives (server, delaytime, tag, httpd, logging).',
-      'spec.tools informs which FusionInventory tasks to enable (inventory, deploy, esx).',
-    ],
   },
   {
     id: 'warp',

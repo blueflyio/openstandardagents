@@ -202,7 +202,7 @@ export class ManifestCrudService {
 
   // ---- Validate ----
   async validate(manifest: unknown, opts?: { platform?: string; strict?: boolean }): Promise<ValidationResult> {
-    const result = await this.validationService.validate(manifest, opts?.platform ? { platform: opts.platform } : undefined);
+    const result = await this.validationService.validate(manifest, opts?.platform);
 
     if (opts?.strict && result.warnings?.length) {
       const promoted = result.warnings.map((w: string) => `[strict] ${w}`);
