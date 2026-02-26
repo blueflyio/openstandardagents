@@ -2,7 +2,8 @@
 
 > **Source**: Based on [Vercel agent-skills](https://agentskills.io/) architecture pattern  
 > **Status**: Active Development  
-> **Version**: 1.0.0
+> **Version**: 1.0.0  
+> **Platform**: Verify Skills API with `buildkit platform doctor`
 
 ## Overview
 
