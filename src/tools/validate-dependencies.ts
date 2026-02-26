@@ -102,6 +102,11 @@ async function main() {
         continue;
       }
 
+      // Skip generated file references in code templates (e.g. agent_bootstrap.php in Symfony adapter)
+      if (importPath.endsWith('.php')) {
+        continue;
+      }
+
       // Extract package name (handle scoped packages and subpaths)
       let packageName = importPath;
       if (importPath.startsWith('@')) {
