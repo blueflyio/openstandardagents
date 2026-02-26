@@ -372,6 +372,30 @@ export const PLATFORM_MATRIX: PlatformMatrixEntry[] = [
     importHow: 'no',
     specUsage: ['Export produces Warp-compatible agent config from manifest.'],
   },
+  {
+    id: 'symfony',
+    name: 'Symfony AI Agent',
+    description: 'PHP bootstrap for symfony/ai-agent (Platform + Model + Toolbox from OSSA)',
+    status: 'alpha',
+    whatTheyNeed: [
+      'PHP 8.2+',
+      'composer require symfony/ai-agent symfony/ai-platform',
+      'OSSA manifest',
+    ],
+    folderStructure: [
+      '.agents/{name}/manifest.ossa.yaml',
+      '{name}/composer.json',
+      '{name}/agent_bootstrap.php',
+      '{name}/README.md',
+    ],
+    sdkNpm: ['symfony/ai-agent', 'symfony/ai-platform', 'ossa/symfony-bundle'],
+    exportHow: 'ossa export <manifest> --platform symfony -o dist/',
+    importHow: 'no',
+    specUsage: [
+      'OSSA spec.role -> system message; spec.llm -> Model config; spec.tools -> Toolbox. Export generates composer.json, agent_bootstrap.php, README.',
+      'See: https://symfony.com/doc/current/ai/components/agent.html',
+    ],
+  },
 ];
 
 /** Platform IDs that support import (ossa import --from <id>) */

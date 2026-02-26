@@ -13,6 +13,7 @@ import {
   SkillsResearchService,
   SkillsGeneratorService,
   SkillsExportService,
+  SkillsInstallService,
 } from '../../services/skills-pipeline/index.js';
 
 const AgentPathSchema = z.string().min(1);
@@ -178,6 +179,104 @@ skillsCommandGroup
       }
     } catch (error) {
       console.error(chalk.red('✗ Validation failed'));
+      console.error(error instanceof Error ? error.message : String(error));
+      process.exit(1);
+    }
+  });
+
+/**
+ * Add Command
+ * Install a skill from a GitHub repo into a target directory (AgentSkills / Claude Skill format).
+ * Example: ossa skills add https://github.com/sparkfabrik/sf-awesome-copilot --skill drupal-cache-maxage --path /Volumes/AgentPlatform/services/marketplace/skills
+ */
+skillsCommandGroup
+  .command('add <repo-url>')
+  .option('--skill <name>', 'Skill name (subdir in repo, e.g. drupal-cache-maxage)', '')
+  .option(
+    '--path <dir>',
+    'Target directory to install into',
+    process.env.SKILLS_PATH ||
+      (process.env.HOME ? `${process.env.HOME}/.claude/skills` : '.claude/skills')
+  )
+  .option('--ref <ref>', 'Git ref (branch/tag/sha)', 'HEAD')
+  .option('--dry-run', 'Show what would be installed without writing', false)
+  .description('Install a Claude Skill from a GitHub repo')
+  .action(
+    async (
+      repoUrl: string,
+      options: { skill?: string; path?: string; ref?: string; dryRun?: boolean }
+    ) => {
+      try {
+        const installService = container.get(SkillsInstallService);
+        const targetPath = options.path!;
+
+        if (!options.skill) {
+          const list = await installService.listInRepo(repoUrl, options.ref);
+          if (list.length === 0) {
+            console.log(chalk.yellow('No skills found in repo. Use --skill <name> to install one.'));
+            console.log(chalk.gray('  Example: ossa skills add <repo-url> --skill <skill-name>'));
+            return;
+          }
+          console.log(chalk.blue(`Skills in ${repoUrl}:`));
+          list.forEach((s) => console.log(chalk.gray(`  - ${s.name} (${s.path})`)));
+          console.log(chalk.gray(`\nInstall with: ossa skills add ${repoUrl} --skill <name> --path ${targetPath}`));
+          return;
+        }
+
+        if (options.dryRun) {
+          console.log(chalk.blue(`Would install skill "${options.skill}" from ${repoUrl} to ${targetPath}`));
+          return;
+        }
+
+        const result = await installService.install({
+          repoUrl,
+          skill: options.skill,
+          path: targetPath,
+          ref: options.ref,
+        });
+
+        if (!result.success) {
+          console.error(chalk.red('✗ ' + result.message));
+          if (result.errors) {
+            result.errors.forEach((e) => console.error(chalk.red(`  - ${e}`)));
+          }
+          process.exit(1);
+        }
+
+        console.log(chalk.green('✓ ' + result.message));
+        if (result.installedPath) {
+          console.log(chalk.gray(`  Path: ${result.installedPath}`));
+          console.log(chalk.gray('  Validate: ossa skills validate ' + result.installedPath + '/SKILL.md'));
+        }
+      } catch (error) {
+        console.error(chalk.red('✗ Add failed'));
+        console.error(error instanceof Error ? error.message : String(error));
+        process.exit(1);
+      }
+    }
+  );
+
+/**
+ * List-remote Command
+ * List skill names available in a GitHub repo.
+ */
+skillsCommandGroup
+  .command('list-remote <repo-url>')
+  .option('--ref <ref>', 'Git ref (branch/tag/sha)', 'HEAD')
+  .description('List skills available in a GitHub repo')
+  .action(async (repoUrl: string, options: { ref?: string }) => {
+    try {
+      const installService = container.get(SkillsInstallService);
+      const list = await installService.listInRepo(repoUrl, options.ref);
+      if (list.length === 0) {
+        console.log(chalk.yellow('No skills (SKILL.md) found in repo.'));
+        return;
+      }
+      console.log(chalk.green(`Skills in ${repoUrl}:\n`));
+      list.forEach((s) => console.log(`  ${chalk.bold(s.name)}  ${chalk.gray(s.path)}`));
+      console.log(chalk.gray(`\nInstall: ossa skills add ${repoUrl} --skill <name> [--path <dir>]`));
+    } catch (error) {
+      console.error(chalk.red('✗ List-remote failed'));
       console.error(error instanceof Error ? error.message : String(error));
       process.exit(1);
     }

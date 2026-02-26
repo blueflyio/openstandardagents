@@ -18,6 +18,7 @@ import type {
   ValidationResult,
   ValidationError,
   ValidationWarning,
+  ConfigResult,
 } from '../base/adapter.interface.js';
 
 function sanitizeName(name: string): string {
@@ -92,6 +93,10 @@ export class SymfonyAiPlatformAdapter extends BaseAdapter {
           'yaml'
         )
       );
+
+      // Generate #[AsTool] stub classes for each tool
+      const toolStubs = this.generateToolStubs(manifest);
+      files.push(...toolStubs);
 
       return this.createResult(true, files, undefined, {
         duration: Date.now() - startTime,
@@ -180,9 +185,13 @@ use Symfony\\Component\\Ai\\Message\\Message;
     $messageBag = new MessageBag();
     $messageBag->add(Message::forSystem($systemMessage));
 
-    $toolbox = new Toolbox([]);
-    // Register tools from spec.tools: ${toolNames.length ? toolNames.join(', ') : '(none)'}
-    // Add your #[AsTool] classes: $toolbox = new Toolbox([new MyTool(), ...]);
+    ${toolNames.length ? `$toolbox = new Toolbox([
+        ${toolNames.map((n) => {
+          const cls = n.split(/[-_ ]+/).map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join('') + 'Tool';
+          return `new \\App\\Agent\\Tool\\${cls}(),`;
+        }).join('\n        ')}
+    ]);` : `$toolbox = new Toolbox([]);
+    // Add your #[AsTool] classes: $toolbox = new Toolbox([new MyTool(), ...]);`}
 
     $agent = new Agent(
         platform: $platform,
@@ -256,11 +265,103 @@ $response = $agent->run('Hello');
       });
     }
 
+    const llm = manifest.spec?.llm as { provider?: string } | undefined;
+    const provider = llm?.provider;
+    const supportedProviders = ['openai', 'anthropic', 'google', 'mistral', 'ollama'];
+    if (provider && !supportedProviders.includes(provider)) {
+      warnings.push({
+        message: `LLM provider "${provider}" may not be supported by Symfony AI`,
+        path: 'spec.llm.provider',
+        suggestion: `Use one of: ${supportedProviders.join(', ')}`,
+        code: 'SYMFONY_UNSUPPORTED_PROVIDER',
+      });
+    }
+
+    const tools = (manifest.spec?.tools as Array<{ name?: string; description?: string }>) || [];
+    for (let i = 0; i < tools.length; i++) {
+      if (!tools[i].description) {
+        warnings.push({
+          message: `Tool "${tools[i].name}" missing description (used for #[AsTool] attribute)`,
+          path: `spec.tools[${i}].description`,
+          suggestion: 'Add a description for better Symfony AI tool documentation',
+          code: 'SYMFONY_TOOL_DESCRIPTION',
+        });
+      }
+    }
+
     return {
       valid: errors.length === 0,
       errors: errors.length > 0 ? errors : undefined,
       warnings: warnings.length > 0 ? warnings : undefined,
     };
+  }
+
+  async toConfig(manifest: OssaAgent): Promise<ConfigResult> {
+    const llm = manifest.spec?.llm as
+      | { provider?: string; model?: string; temperature?: number; maxTokens?: number }
+      | undefined;
+    const tools = (manifest.spec?.tools as Array<{ name?: string; description?: string }>) || [];
+
+    return {
+      config: {
+        platform: llm?.provider || 'openai',
+        model: llm?.model || 'gpt-4o-mini',
+        temperature: llm?.temperature ?? 0.7,
+        max_tokens: llm?.maxTokens ?? 4096,
+        system_message: manifest.spec?.role || '',
+        tools: tools.map((t) => ({ name: t.name, description: t.description })),
+        metadata: {
+          ossa_name: manifest.metadata?.name,
+          ossa_version: manifest.metadata?.version,
+          api_version: manifest.apiVersion,
+        },
+      },
+      filename: `${sanitizeName(manifest.metadata?.name || 'agent')}.symfony.json`,
+    };
+  }
+
+  /**
+   * Generate PHP stub classes for each tool in spec.tools.
+   * Each stub uses the Symfony #[AsTool] attribute.
+   */
+  generateToolStubs(manifest: OssaAgent): ExportFile[] {
+    const tools = (manifest.spec?.tools as Array<{ name?: string; description?: string }>) || [];
+    const name = sanitizeName(manifest.metadata?.name || 'agent');
+
+    return tools
+      .filter((t) => t.name)
+      .map((tool) => {
+        const className = tool.name!
+          .split(/[-_ ]+/)
+          .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+          .join('') + 'Tool';
+
+        const desc = escapePhpString(tool.description || tool.name || '');
+
+        const content = `<?php
+
+declare(strict_types=1);
+
+namespace App\\Agent\\Tool;
+
+use Symfony\\Component\\Ai\\Agent\\Toolbox\\Attribute\\AsTool;
+
+#[AsTool(name: '${escapePhpString(tool.name!)}', description: '${desc}')]
+final class ${className}
+{
+    /**
+     * @param string $input The input for this tool
+     * @return string The tool result
+     */
+    public function __invoke(string $input): string
+    {
+        // TODO: Implement ${tool.name} tool logic
+        return '';
+    }
+}
+`;
+        return this.createFile(`${name}/src/Tool/${className}.php`, content, 'code', 'php');
+      });
   }
 
   getExample(): OssaAgent {
