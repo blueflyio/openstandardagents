@@ -46,7 +46,7 @@ export const exportCommand = new Command('export')
   .argument('[manifest]', 'Path to OSSA agent manifest')
   .option(
     '-p, --platform <platform>',
-    'Target platform (kagent, langchain, langflow, crewai, temporal, n8n, gitlab, gitlab-agent, docker, kubernetes, npm, drupal, agent-skills)'
+    'Target platform (kagent, langchain, langflow, crewai, symfony, temporal, n8n, gitlab, gitlab-agent, docker, kubernetes, npm, drupal, agent-skills)'
   )
   .option('-o, --output <file>', 'Output file path')
   .option('--format <format>', 'Output format (yaml, json, python)', 'yaml')
@@ -971,6 +971,51 @@ exportCommand.action(
           }
 
           return; // Early return to skip single-file write
+        }
+
+        case 'symfony': {
+          log('Exporting OSSA manifest to Symfony AI Agent (PHP bootstrap)...');
+
+          const symfonyAdapter = registry.getAdapter('symfony');
+          if (!symfonyAdapter) {
+            throw new Error(
+              'Symfony adapter not registered. Ensure initializeAdapters() was called.'
+            );
+          }
+
+          const symfonyResult = await symfonyAdapter.export(manifest, {
+            validate: options.validate !== false,
+          });
+
+          if (!symfonyResult.success) {
+            throw new Error(
+              symfonyResult.error || 'Symfony export failed'
+            );
+          }
+
+          const symfonyName =
+            (manifest.metadata?.name || 'agent')
+              .toLowerCase()
+              .replace(/[^a-z0-9_]/g, '_') || 'ossa_agent';
+          const symfonyOutputDir = options.output || `./${symfonyName}`;
+
+          if (!options.dryRun && symfonyResult.files.length > 0) {
+            fs.mkdirSync(symfonyOutputDir, { recursive: true });
+            for (const file of symfonyResult.files) {
+              const filePath = path.join(symfonyOutputDir, file.path);
+              const fileDir = path.dirname(filePath);
+              fs.mkdirSync(fileDir, { recursive: true });
+              fs.writeFileSync(filePath, file.content);
+              logVerbose(`  Created: ${file.path}`);
+            }
+            logSuccess(`\nSymfony AI Agent package exported to: ${symfonyOutputDir}`);
+            log(`  ${symfonyResult.files.length} files generated`);
+            log('  Run: composer require symfony/ai-agent symfony/ai-platform');
+          } else if (options.dryRun) {
+            log(`\nDRY RUN: Would generate ${symfonyResult.files.length} files in: ${symfonyOutputDir}`);
+            symfonyResult.files.forEach((f) => logVerbose(`  - ${f.path}`));
+          }
+          return;
         }
 
         case 'openai-agents-sdk': {

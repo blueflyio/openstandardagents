@@ -48,6 +48,9 @@ import {
   printError,
 } from '../banner.js';
 import { v5 as uuidv5 } from 'uuid';
+import { container } from '../../di-container.js';
+import { SkillsInstallService } from '../../services/skills-pipeline/index.js';
+import { marketplaceSkillsCatalog } from '../../data/marketplace-skills-catalog.js';
 
 // =============================================================================
 // TYPES & INTERFACES
@@ -2622,8 +2625,96 @@ Guidelines:
       return;
     }
 
+    const defaultSkillsPath =
+      process.env.SKILLS_PATH ||
+      process.env.BLUEFLY_SKILLS_PATH ||
+      (process.env.HOME
+        ? `${process.env.HOME}/.claude/skills`
+        : path.join(process.cwd(), '.claude', 'skills'));
+    const marketplacePath =
+      process.platform === 'darwin'
+        ? '/Volumes/AgentPlatform/services/marketplace/skills'
+        : process.env.HOME
+          ? `${process.env.HOME}/.ossa/skills`
+          : path.join(process.cwd(), 'skills');
+
+    const { skillSource } = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'skillSource',
+        message: 'How do you want to add skills?',
+        choices: [
+          { name: 'Install from GitHub (repo URL + skill name)', value: 'url' },
+          { name: 'Install from Bluefly catalog (marketplace-skills-catalog)', value: 'catalog' },
+          { name: 'Manual entry only (define skills in manifest)', value: 'manual' },
+        ],
+        default: 'manual',
+      },
+    ]);
+
+    if (skillSource === 'url') {
+      const { repoUrl, skillName, installPath } = await inquirer.prompt([
+        { type: 'input', name: 'repoUrl', message: 'GitHub repo URL (e.g. https://github.com/sparkfabrik/sf-awesome-copilot):', validate: (s: string) => !!s.trim() || 'URL required' },
+        { type: 'input', name: 'skillName', message: 'Skill name (e.g. drupal-cache-maxage):', validate: (s: string) => !!s.trim() || 'Skill name required' },
+        { type: 'input', name: 'installPath', message: 'Install to directory:', default: marketplacePath },
+      ]);
+      try {
+        const installService = container.get(SkillsInstallService);
+        const result = await installService.install({
+          repoUrl: repoUrl.trim(),
+          skill: skillName.trim(),
+          path: installPath.trim(),
+        });
+        if (result.success) {
+          printSuccess(result.message);
+        } else {
+          printError(result.message);
+          if (result.errors) result.errors.forEach((e) => printError(`  ${e}`));
+        }
+      } catch (err) {
+        printError(err instanceof Error ? err.message : String(err));
+      }
+    } else if (skillSource === 'catalog') {
+      const catalogDefault =
+        process.env.BLUEFLY_SKILLS_CATALOG ||
+        (process.env.HOME ? `${process.env.HOME}/.ossa/marketplace-skills-catalog.json` : '');
+      const { catalogPath, targetPath } = await inquirer.prompt([
+        { type: 'input', name: 'catalogPath', message: 'Path to marketplace-skills-catalog.json:', default: catalogDefault },
+        { type: 'input', name: 'targetPath', message: 'Install skills to directory:', default: marketplacePath },
+      ]);
+      let catalog: { skills?: { repo: string; skill: string }[] };
+      const resolvedCatalog = (catalogPath as string).trim();
+      if (resolvedCatalog && fs.existsSync(resolvedCatalog)) {
+        catalog = JSON.parse(fs.readFileSync(resolvedCatalog, 'utf-8'));
+      } else {
+        printInfo('Using bundled Bluefly marketplace skills catalog.');
+        catalog = { skills: [...marketplaceSkillsCatalog.skills] };
+      }
+      const entries = catalog.skills || [];
+      if (entries.length > 0) {
+        const choices = entries.map((e) => ({ name: `${e.skill} (${e.repo})`, value: e, short: e.skill }));
+        const { selected } = await inquirer.prompt([
+          { type: 'checkbox', name: 'selected', message: 'Select skills to install:', choices },
+        ]);
+        const target = (targetPath as string).trim();
+        const installService = container.get(SkillsInstallService);
+        for (const e of selected as { repo: string; skill: string }[]) {
+          const result = await installService.install({ repoUrl: e.repo, skill: e.skill, path: target });
+          if (result.success) printSuccess(result.message);
+          else printError(result.message);
+        }
+      }
+    }
+
     const skills: any[] = [];
     let addingSkills = true;
+
+    const { doManual } = await inquirer.prompt([
+      { type: 'confirm', name: 'doManual', message: 'Also define skills manually in the manifest (id, name, instructions)?', default: skillSource === 'manual' },
+    ]);
+    if (!doManual) {
+      return;
+    }
 
     while (addingSkills) {
       console.log('');

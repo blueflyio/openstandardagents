@@ -64,6 +64,7 @@ import {
   SkillsResearchService,
   SkillsGeneratorService,
   SkillsExportService,
+  SkillsInstallService,
 } from './services/skills-pipeline/index.js';
 
 // DI Type Identifiers
@@ -140,6 +141,7 @@ container.bind(IndexService).toSelf();
 container.bind(SkillsResearchService).toSelf();
 container.bind(SkillsGeneratorService).toSelf();
 container.bind(SkillsExportService).toSelf();
+container.bind(SkillsInstallService).toSelf();
 
 /**
  * Get service from container
@@ -194,4 +196,5 @@ export function resetContainer(): void {
   container.bind(SkillsResearchService).toSelf();
   container.bind(SkillsGeneratorService).toSelf();
   container.bind(SkillsExportService).toSelf();
+  container.bind(SkillsInstallService).toSelf();
 }

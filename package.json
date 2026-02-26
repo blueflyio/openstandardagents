@@ -74,6 +74,11 @@
       "require": "./dist/version-management/index.js"
     },
     "./mcp-server": "./dist/mcp-server/index.js",
+    "./data/marketplace-skills-catalog": {
+      "types": "./dist/data/marketplace-skills-catalog.d.ts",
+      "import": "./dist/data/marketplace-skills-catalog.js",
+      "require": "./dist/data/marketplace-skills-catalog.js"
+    },
     "./kagent": {
       "types": "./dist/sdks/kagent/index.d.ts",
       "import": "./dist/sdks/kagent/index.js",
@@ -339,6 +344,10 @@
   "optionalDependencies": {
     "nodemailer": "^6.9.0"
   },
+  "bundledDependencies": [
+    "ajv",
+    "ajv-formats"
+  ],
   "engines": {
     "node": ">=16.20.0 || >=18.0.0 || >=20.0.0 || >=22.0.0",
     "npm": ">=8.0.0"
