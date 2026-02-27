@@ -1,0 +1,129 @@
+# OSSA - Open Standard for Software Agents
+
+> The missing layer: MCP defines tools, A2A defines communication, OSSA defines the agent contract.
+
+## What is OSSA
+
+OSSA is a YAML manifest format (like OpenAPI for REST APIs) that defines what an AI agent IS — identity, capabilities, constraints, governance, and deployment. One manifest, every platform.
+
+- **Spec**: https://openstandardagents.org
+- **npm**: https://www.npmjs.com/package/@bluefly/openstandardagents
+- **GitLab**: https://gitlab.com/blueflyio/ossa/openstandardagents
+
+## The Stack
+
+```
+A2A (Communication) - How agents talk to each other
+OSSA (Contract)     - What the agent IS (identity, capabilities, governance)
+MCP (Tools)         - What the agent CAN DO (servers, resources, prompts)
+```
+
+## Install
+
+```bash
+npm install -g @bluefly/openstandardagents
+```
+
+## MCP Server (10 tools, 5 resources, 4 prompts)
+
+```json
+{
+  "mcpServers": {
+    "ossa": {
+      "command": "npx",
+      "args": ["ossa-mcp"]
+    }
+  }
+}
+```
+
+### Tools
+
+- `ossa_validate` — Validate manifest against OSSA v0.4 schema
+- `ossa_scaffold` — Scaffold new agent (manifest + directory structure)
+- `ossa_generate` — Generate agent-card.json for A2A discovery
+- `ossa_publish` — Publish to registry (dry-run or live)
+- `ossa_list` — Discover agents in workspace
+- `ossa_inspect` — Deep-inspect manifest (semver, validation, capabilities)
+- `ossa_convert` — Convert to 11+ platforms (kagent, docker, openai, anthropic, langchain, crewai, autogen, semantic-kernel, gitlab-duo, agent-card)
+- `ossa_workspace` — Manage workspace (init, discover, status)
+- `ossa_diff` — Compare two manifests (detect breaking changes)
+- `ossa_migrate` — Migrate manifest to newer OSSA version
+
+### Convert Targets with SDK References
+
+| Target | npm | pip |
+|--------|-----|-----|
+| kagent | - | - |
+| docker | - | - |
+| openai | `openai` | `openai` |
+| anthropic | `@anthropic-ai/sdk` | `anthropic` |
+| langchain | `langchain` | `langchain` |
+| crewai | - | `crewai` |
+| autogen | - | `autogen-agentchat` |
+| semantic-kernel | `semantic-kernel` | `semantic-kernel` |
+| gitlab-duo | - | - |
+| agent-card | all | all |
+
+### Universal Agent Card (`agent-card` target)
+
+Single JSON with OSSA contract, A2A skills, MCP tools, and 12 platform adapters (OpenAI, Anthropic, Google GenAI, LangChain, LangFlow, CrewAI, AutoGen, Semantic Kernel, LlamaIndex, DSPy, kagent, GitLab Duo). Each adapter includes `sdk` (npm/pip + docs), `config` (ready-to-use), `usage` (code snippet).
+
+### Resources
+
+- `ossa://schema/v0.4/agent` — JSON Schema
+- `ossa://template/minimal` — Minimal manifest template
+- `ossa://template/full` — Full manifest with all sections
+- `ossa://guide/mcp-ossa-a2a` — MCP → OSSA → A2A guide
+- `ossa://platforms/supported` — All platforms with SDK refs
+
+### Prompts
+
+- `create-agent` — Create agent from natural language
+- `convert-for-platform` — Convert to specific platform
+- `explain-manifest` — Explain manifest in plain language
+- `what-is-ossa` — Explain the MCP → OSSA → A2A stack
+
+## CLI Commands
+
+```bash
+ossa wizard -o agent.ossa.yaml        # Interactive manifest creation
+ossa validate agent.ossa.yaml         # Validate against schema
+ossa export agent.ossa.yaml --platform docker  # Export to platform
+ossa export --list-platforms           # List all 22 export platforms
+ossa diff old.yaml new.yaml           # Compare manifests
+ossa migrate agent.yaml --to 0.4.6    # Migrate to newer version
+```
+
+## Minimal Manifest
+
+```yaml
+apiVersion: ossa/v0.4
+kind: Agent
+metadata:
+  name: my-agent
+  version: 1.0.0
+spec:
+  role: You are a helpful assistant.
+```
+
+## Testing
+
+```bash
+npm test              # Full suite (1266 tests)
+npm run test:mcp      # MCP integration tests (40 tests)
+npm run test:unit     # Unit tests
+```
+
+## Technology Stack
+
+- Node.js 20, TypeScript 5 (strict)
+- @modelcontextprotocol/sdk — MCP protocol
+- Zod — Runtime validation
+- Pino — Structured logging
+- Vitest — Testing
+- fast-glob — Workspace discovery
+
+## Status (Feb 2026)
+
+CLI: production | MCP Server: 10 tools, 40 tests | Export: 22 platforms | Spec: v0.4.6
