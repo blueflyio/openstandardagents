@@ -46,7 +46,7 @@ export const exportCommand = new Command('export')
   .argument('[manifest]', 'Path to OSSA agent manifest')
   .option(
     '-p, --platform <platform>',
-    'Target platform (kagent, langchain, langflow, crewai, symfony, temporal, n8n, gitlab, gitlab-agent, docker, kubernetes, npm, drupal, agent-skills)'
+    'Target platform (kagent, langchain, langflow, crewai, symfony, temporal, n8n, gitlab, gitlab-agent, docker, kubernetes, npm, drupal, orchestration, agent-skills)'
   )
   .option('-o, --output <file>', 'Output file path')
   .option('--format <format>', 'Output format (yaml, json, python)', 'yaml')
@@ -915,6 +915,148 @@ exportCommand.action(
           }
 
           return; // Early return to skip single-file write
+        }
+
+        case 'orchestration':
+        case 'drupal-orchestration': {
+          log(
+            'Generating Drupal manifest package + orchestration stub (drupal/orchestration)...'
+          );
+
+          const drupalExporter = new DrupalManifestExporter();
+          const drupalResult = await drupalExporter.export(manifest, {
+            validate: true,
+          });
+
+          if (!drupalResult.success) {
+            throw new Error(
+              drupalResult.error || 'Drupal manifest export failed'
+            );
+          }
+
+          const files = Array.isArray(drupalResult.files) ? drupalResult.files : [];
+          const agentName =
+            manifest.metadata?.name
+              ?.toLowerCase()
+              .replace(/[^a-z0-9_]/g, '_') || 'ossa_agent';
+          const outputDir = options.output || `./${agentName}-orchestration`;
+
+          const orchestrationSchema = {
+            service_id: 'ossa_invoke_agent',
+            provider_id: 'ai_agents_ossa_orchestration',
+            label: 'OSSA: Invoke Agent',
+            description:
+              'Invoke an OSSA agent by ID with a prompt. Requires ai_agents_ossa_orchestration enabled.',
+            config: {
+              agent_id: {
+                key: 'agent_id',
+                label: 'OSSA Agent ID',
+                description: 'The OSSA agent config entity ID (e.g. from GET /orchestration/services)',
+                required: true,
+                type: 'string',
+              },
+              prompt: {
+                key: 'prompt',
+                label: 'Prompt / Input',
+                description: 'The input text or task to send to the agent',
+                required: true,
+                type: 'string',
+              },
+            },
+            execute_url: '/orchestration/service/execute',
+            body_example: {
+              id: 'ai_agents_ossa_orchestration::ossa_invoke_agent',
+              config: { agent_id: agentName, prompt: 'Your task here' },
+            },
+          };
+
+          const orchestrationReadme = `# Drupal orchestration (drupal/orchestration)
+
+This package was exported with \`ossa export --platform orchestration\`.
+It includes the Drupal manifest and an orchestration service descriptor so you can invoke this OSSA agent from Activepieces, n8n, Zapier, or any client of drupal/orchestration.
+
+## Full flow (summary)
+
+1. Export: \`ossa export manifest.ossa.yaml --platform orchestration -o ./out\` (done).
+2. Drupal: enable orchestration + ai_agents_ossa + ai_agents_ossa_flowdrop + ai_agents_ossa_orchestration; import this agent; grant "Use orchestration" to a role.
+3. List services: GET \`{BASE}/orchestration/services\` (with auth).
+4. Execute: POST \`{BASE}/orchestration/service/execute\` with body below.
+5. n8n/Zapier: same HTTP API (GET list, POST execute) with Basic Auth or cookie.
+
+## Requirements
+
+- Drupal 10+ with \`drupal/orchestration\`, \`drupal/ai_agents_ossa\`, \`ai_agents_ossa_flowdrop\`, \`ai_agents_ossa_orchestration\`
+- Enable: \`drush en orchestration ai_agents_ossa ai_agents_ossa_flowdrop ai_agents_ossa_orchestration -y\`
+- Import this agent so it appears in the list: \`drush ai-agents:import\` with the manifest from this package (or use the Drupal UI). The agent ID (e.g. \`${agentName}\`) is the \`agent_id\` you pass in execute.
+
+## Orchestration API
+
+- **List services:** \`GET /orchestration/services\` (permission: use orchestration)
+- **Execute service:** \`POST /orchestration/service/execute\`
+  - Body: \`{"id": "ai_agents_ossa_orchestration::ossa_invoke_agent", "config": {"agent_id": "${agentName}", "prompt": "Your task"}}\`
+
+The \`ossa_invoke_agent\` service is provided by \`ai_agents_ossa_orchestration\` and lists all OSSA agents as choices for \`agent_id\`.
+
+## curl examples (replace BASE and user:password)
+
+  BASE=https://your-drupal-site.ddev.site
+
+  # List services
+  curl -s -u "user:password" "$BASE/orchestration/services" | jq
+
+  # Execute this agent
+  curl -s -X POST -u "user:password" -H "Content-Type: application/json" \\
+    -d '{"id":"ai_agents_ossa_orchestration::ossa_invoke_agent","config":{"agent_id":"${agentName}","prompt":"Summarize in one sentence."}}' \\
+    "$BASE/orchestration/service/execute"
+
+## n8n / Activepieces / Zapier
+
+1. Base URL = your Drupal site. Auth = user with "Use orchestration" (Basic Auth or cookie).
+2. GET \`/orchestration/services\` to discover services; find the one with id containing \`ossa_invoke_agent\`.
+3. POST to \`/orchestration/service/execute\` with \`id\` = \`ai_agents_ossa_orchestration::ossa_invoke_agent\` and \`config\` = \`{ "agent_id": "${agentName}", "prompt": "..." }\`.
+
+See also: https://www.drupal.org/project/orchestration
+`;
+
+          if (!options.dryRun) {
+            fs.mkdirSync(outputDir, { recursive: true });
+
+            for (const file of files) {
+              const filePath = path.join(outputDir, file.path);
+              const fileDir = path.dirname(filePath);
+              fs.mkdirSync(fileDir, { recursive: true });
+              fs.writeFileSync(filePath, file.content);
+              logVerbose(`  Created: ${file.path}`);
+            }
+
+            fs.mkdirSync(path.join(outputDir, 'orchestration'), {
+              recursive: true,
+            });
+            fs.writeFileSync(
+              path.join(outputDir, 'orchestration/ossa_invoke_agent.schema.json'),
+              JSON.stringify(orchestrationSchema, null, 2)
+            );
+            fs.writeFileSync(
+              path.join(outputDir, 'ORCHESTRATION.md'),
+              orchestrationReadme
+            );
+
+            logSuccess(
+              `\nOrchestration package exported to: ${outputDir}`
+            );
+            log(
+              `  Drupal manifest + orchestration/ossa_invoke_agent.schema.json, ORCHESTRATION.md`
+            );
+            log(
+              '  Enable ai_agents_ossa_orchestration and use POST /orchestration/service/execute'
+            );
+          } else {
+            log(
+              `\nDRY RUN: Would generate ${files.length + 2} files in: ${outputDir}`
+            );
+          }
+
+          return;
         }
 
         case 'agent-skills': {

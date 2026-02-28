@@ -256,6 +256,27 @@ export const PLATFORM_MATRIX: PlatformMatrixEntry[] = [
     ],
   },
   {
+    id: 'orchestration',
+    name: 'Drupal orchestration',
+    description: 'Deployable stub for drupal/orchestration: OSSA agents exposed as orchestration services (Activepieces, n8n)',
+    status: 'alpha',
+    whatTheyNeed: [
+      'Drupal 10+ with drupal/orchestration and ai_agents_ossa',
+      'Enable ai_agents_ossa_orchestration to expose "OSSA: Invoke Agent" service',
+    ],
+    folderStructure: [
+      '.agents/{name}/manifest.ossa.yaml',
+      'orchestration/ossa_invoke_agent.schema.json',
+      'ORCHESTRATION.md',
+    ],
+    sdkNpm: ['drupal/orchestration (PHP); OSSA export produces manifest snippet + schema'],
+    exportHow: 'ossa export <manifest> --platform orchestration -o dist/',
+    importHow: 'no',
+    specUsage: [
+      'Export produces Drupal manifest package plus orchestration service descriptor; POST /orchestration/service/execute with id and config (agent_id, prompt) invokes the OSSA agent.',
+    ],
+  },
+  {
     id: 'cursor',
     name: 'Cursor Cloud Agent',
     description: 'Cursor Cloud Agent for IDE assistance',
