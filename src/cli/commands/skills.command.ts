@@ -257,6 +257,90 @@ skillsCommandGroup
   );
 
 /**
+ * Create Command
+ * Create a new skill from scratch (AgentSkills.io-compatible SKILL.md).
+ * Optionally push to agent-protocol Skills API when SKILLS_API_URL is set and --push-api.
+ */
+skillsCommandGroup
+  .command('create <name>')
+  .option('--description <text>', 'Short description for the skill', '')
+  .option('--instructions <text>', 'Instruction body (prompt) for the skill', '')
+  .option('--instructions-file <path>', 'Path to file containing instructions (overrides --instructions)', '')
+  .option(
+    '--path <dir>',
+    'Output directory for the skill folder',
+    process.env.SKILLS_PATH ||
+      (process.env.HOME ? `${process.env.HOME}/.claude/skills` : '.claude/skills')
+  )
+  .option('--push-api', 'POST to Skills API (requires SKILLS_API_URL)', false)
+  .option('--dry-run', 'Print SKILL.md content without writing', false)
+  .description('Create a new AgentSkills.io-compatible skill (SKILL.md)')
+  .action(
+    async (
+      name: string,
+      options: {
+        description?: string;
+        instructions?: string;
+        instructionsFile?: string;
+        path?: string;
+        pushApi?: boolean;
+        dryRun?: boolean;
+      }
+    ) => {
+      try {
+        const fsp = await import('fs/promises');
+        const pathMod = await import('path');
+        const skillName = name.replace(/[^a-z0-9-]/gi, '-').toLowerCase().replace(/^-+|-+$/g, '') || 'skill';
+        const instructions = options.instructionsFile
+          ? await fsp.readFile(pathMod.resolve(options.instructionsFile), 'utf-8')
+          : (options.instructions || `You are a ${skillName} skill. Add instructions here.`);
+        const description = options.description || `Skill: ${skillName}`;
+        const frontmatter = `---
+name: ${skillName}
+description: ${description}
+---
+`;
+        const content = frontmatter + instructions.trim() + '\n';
+        const outDir = pathMod.resolve(options.path!, skillName);
+        const skillMdPath = pathMod.join(outDir, 'SKILL.md');
+
+        if (options.dryRun) {
+          console.log(chalk.blue('SKILL.md content (dry-run):\n'));
+          console.log(content);
+          return;
+        }
+
+        await fsp.mkdir(outDir, { recursive: true });
+        await fsp.writeFile(skillMdPath, content, 'utf-8');
+        console.log(chalk.green(`Skill created: ${skillMdPath}`));
+        console.log(chalk.gray(`  Validate: ossa skills validate ${skillMdPath}`));
+
+        if (options.pushApi && process.env.SKILLS_API_URL) {
+          const base = process.env.SKILLS_API_URL.replace(/\/$/, '');
+          const url = `${base}/`;
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: skillName, content }),
+          });
+          if (!res.ok) {
+            const err = await res.text();
+            console.error(chalk.yellow(`Push to API failed (${res.status}): ${err}`));
+            return;
+          }
+          console.log(chalk.green(`Pushed to ${base}`));
+        } else if (options.pushApi && !process.env.SKILLS_API_URL) {
+          console.log(chalk.yellow('SKILLS_API_URL not set; skip push. Set it to agent-protocol /api/skills base.'));
+        }
+      } catch (error) {
+        console.error(chalk.red('Create failed'));
+        console.error(error instanceof Error ? error.message : String(error));
+        process.exit(1);
+      }
+    }
+  );
+
+/**
  * List-remote Command
  * List skill names available in a GitHub repo.
  */
