@@ -60,7 +60,6 @@ include:
 .base-runner:
   image: node:${NODE_VERSION}
   tags:
-    - saas-linux-small-amd64
   cache:
     key: ${CI_COMMIT_REF_SLUG}
     paths:
@@ -448,7 +447,6 @@ wiki:publish:
   stage: deploy
   image: node:${NODE_VERSION}
   tags:
-    - saas-linux-small-amd64
   script:
     - node .gitlab/wiki-publish.cjs
   rules:
