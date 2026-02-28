@@ -27,7 +27,7 @@ spec:
         - k8s_get_pod_logs
         - k8s_apply_manifest
     - type: mcp
-      server: gitlab-mcp-server
+      server: agent-protocol-gitlab
       toolNames:
         - gitlab_list_issues
         - gitlab_create_issue
@@ -44,8 +44,9 @@ extensions:
       kagent-tool-server:
         url: http://kagent-tool-server.kagent.svc.cluster.local/sse
         transport: sse
-      gitlab-mcp-server:
-        url: http://gitlab-mcp-server.kagent.svc.cluster.local/sse
+      # GitLab tools live in agent-protocol (no separate gitlab-mcp-server)
+      agent-protocol-gitlab:
+        url: http://agent-protocol.agent-platform.svc.cluster.local:4005/api/mcp/sse
         transport: sse
         headers:
           - name: Authorization

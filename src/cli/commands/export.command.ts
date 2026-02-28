@@ -74,6 +74,14 @@ export const exportCommand = new Command('export')
   .option(
     '--list-platforms',
     'Show all supported export platforms and their status'
+  )
+  .option(
+    '--save-to-gitlab',
+    'Trigger openstandard-generated-agents GitLab pipeline to build and persist this agent'
+  )
+  .option(
+    '--gitlab-project <path>',
+    'GitLab project path or ID for generated agents (default: blueflyio/ossa/lab/openstandard-generated-agents)'
   );
 
 // Add production-grade standard options
@@ -111,9 +119,121 @@ exportCommand.action(
       backupDir?: string;
       validate?: boolean;
       listPlatforms?: boolean;
+      saveToGitlab?: boolean;
+      gitlabProject?: string;
     }
   ) => {
     const useColor = shouldUseColor(options);
+
+    // Handle --save-to-gitlab (trigger openstandard-generated-agents pipeline)
+    if (options.saveToGitlab) {
+      if (!manifestPath) {
+        console.error(
+          useColor
+            ? chalk.red('Error: manifest path is required for --save-to-gitlab')
+            : 'Error: manifest path is required for --save-to-gitlab'
+        );
+        process.exit(1);
+      }
+      const token =
+        process.env.EXPORT_TRIGGER_TOKEN ||
+        process.env.GITLAB_TOKEN ||
+        process.env.GITLAB_TOKEN_PAT;
+      const projectParam =
+        options.gitlabProject ||
+        process.env.EXPORT_GITLAB_PROJECT_PATH ||
+        process.env.EXPORT_GITLAB_PROJECT_ID ||
+        'blueflyio%2Fossa%2Flab%2Fopenstandard-generated-agents';
+      const ref = process.env.EXPORT_REF || 'main';
+      const platform = options.platform || 'docker';
+      const platforms = process.env.EXPORT_PLATFORMS;
+
+      if (!token) {
+        console.error(
+          useColor
+            ? chalk.red(
+                'Error: Set EXPORT_TRIGGER_TOKEN or GITLAB_TOKEN for --save-to-gitlab'
+              )
+            : 'Error: Set EXPORT_TRIGGER_TOKEN or GITLAB_TOKEN for --save-to-gitlab'
+        );
+        process.exit(1);
+      }
+
+      try {
+        const raw = fs.readFileSync(
+          path.resolve(process.cwd(), manifestPath),
+          'utf-8'
+        );
+        const base64 = Buffer.from(raw.trim(), 'utf-8').toString('base64');
+        const agentName = (raw.match(/name\s*:\s*["']?([a-zA-Z0-9_-]+)/m) ||
+          [])[1] || 'incoming';
+        const safeName = agentName.replace(/[^a-zA-Z0-9_-]/g, '-').slice(0, 64);
+
+        const form = new URLSearchParams();
+        form.set('token', token);
+        form.set('ref', ref);
+        form.set('variables[EXPORT_MANIFEST_BASE64]', base64);
+        form.set('variables[EXPORT_PLATFORM]', platform);
+        form.set('variables[EXPORT_AGENT_NAME]', safeName);
+        if (platforms && platforms.length > 0) {
+          form.set('variables[EXPORT_PLATFORMS]', platforms);
+        }
+
+        const projectId = /^\d+$/.test(String(projectParam).trim())
+          ? String(projectParam).trim()
+          : projectParam;
+        const res = await fetch(
+          `https://gitlab.com/api/v4/projects/${projectId}/trigger/pipeline`,
+          { method: 'POST', body: form }
+        );
+
+        if (!res.ok) {
+          const text = await res.text();
+          console.error(
+            useColor
+              ? chalk.red(`GitLab trigger failed: ${res.status}`)
+              : `GitLab trigger failed: ${res.status}`,
+            text
+          );
+          process.exit(1);
+        }
+
+        const pipeline = (await res.json()) as { id?: number; web_url?: string };
+        if (!options.quiet) {
+          console.log(
+            useColor
+              ? chalk.green(
+                  `Triggered openstandard-generated-agents pipeline: ${pipeline.web_url ?? pipeline.id ?? 'started'}`
+                )
+              : `Triggered openstandard-generated-agents pipeline: ${pipeline.web_url ?? pipeline.id ?? 'started'}`
+          );
+        }
+        if (options.json) {
+          console.log(
+            JSON.stringify(
+              {
+                success: true,
+                saveToGitlab: true,
+                pipelineId: pipeline.id,
+                webUrl: pipeline.web_url,
+              },
+              null,
+              options.quiet ? 0 : 2
+            )
+          );
+        }
+        if (!options.platform) {
+          return;
+        }
+      } catch (err) {
+        console.error(
+          chalk.red(
+            `Save to GitLab failed: ${err instanceof Error ? err.message : String(err)}`
+          )
+        );
+        process.exit(1);
+      }
+    }
 
     // Handle --list-platforms (single source of truth: platform-matrix)
     if (options.listPlatforms) {
