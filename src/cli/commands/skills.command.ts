@@ -5,6 +5,8 @@
 
 import chalk from 'chalk';
 import { Command } from 'commander';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 import { z } from 'zod';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
@@ -42,19 +44,41 @@ export const skillsCommandGroup = new Command('skills').description(
  */
 skillsCommandGroup
   .command('list')
-  .option('--path <path>', 'Custom skills directory path')
+  .option('--path <path>', 'Custom skills directory path (or set SKILLS_PATH)')
+  .option('--json', 'Output as JSON for API/UI consumption')
   .description('List all discovered Claude Skills')
-  .action(async (options: { path?: string }) => {
+  .action(async (options: { path?: string; json?: boolean }) => {
     try {
       const skillsService = container.get(ClaudeSkillsService);
-      const skills = await skillsService.discoverSkills();
+      const basePath = options.path || process.env.SKILLS_PATH;
+      const skills = await skillsService.discoverSkills(basePath);
 
       if (skills.length === 0) {
+        if (options.json) {
+          console.log(JSON.stringify({ skills: [], count: 0 }));
+          return;
+        }
         console.log(chalk.yellow('No Claude Skills found'));
         console.log(
           chalk.gray(
-            '  Skills are typically located in ~/.claude/skills/ or .claude/skills/'
+            '  Skills are typically located in ~/.claude/skills/ or set SKILLS_PATH'
           )
+        );
+        return;
+      }
+
+      if (options.json) {
+        console.log(
+          JSON.stringify({
+            skills: skills.map((s) => ({
+              name: s.name,
+              description: s.description,
+              path: s.path,
+              skillPath: s.skillPath,
+              triggerKeywords: s.triggerKeywords,
+            })),
+            count: skills.length,
+          })
         );
         return;
       }
@@ -73,7 +97,7 @@ skillsCommandGroup
         console.log('');
       });
     } catch (error) {
-      console.error(chalk.red('✗ Failed to list skills'));
+      console.error(chalk.red('Failed to list skills'));
       console.error(error instanceof Error ? error.message : String(error));
       process.exit(1);
     }
@@ -383,7 +407,144 @@ skillsCommandGroup
       list.forEach((s) => console.log(`  ${chalk.bold(s.name)}  ${chalk.gray(s.path)}`));
       console.log(chalk.gray(`\nInstall: ossa skills add ${repoUrl} --skill <name> [--path <dir>]`));
     } catch (error) {
-      console.error(chalk.red('✗ List-remote failed'));
+      console.error(chalk.red('List-remote failed'));
+      console.error(error instanceof Error ? error.message : String(error));
+      process.exit(1);
+    }
+  });
+
+/**
+ * Catalog Command
+ * List skills from the Bluefly marketplace catalog (marketplace-skills-catalog.json).
+ */
+skillsCommandGroup
+  .command('catalog')
+  .option(
+    '--catalog <path>',
+    'Path to catalog JSON (default: BLUEFLY_SKILLS_CATALOG env)'
+  )
+  .option('--json', 'Output as JSON')
+  .description('List skills from the marketplace catalog')
+  .action(async (options: { catalog?: string; json?: boolean }) => {
+    try {
+      const catalogPath =
+        options.catalog ||
+        process.env.BLUEFLY_SKILLS_CATALOG ||
+        '';
+      if (!catalogPath) {
+        console.log(
+          chalk.yellow(
+            'Set BLUEFLY_SKILLS_CATALOG to path to marketplace-skills-catalog.json, or use --catalog <path>'
+          )
+        );
+        if (options.json) console.log(JSON.stringify({ skills: [], count: 0 }));
+        return;
+      }
+      const resolved = path.resolve(catalogPath);
+      const raw = await fs.readFile(resolved, 'utf-8');
+      const data = JSON.parse(raw) as {
+        skillsPath?: string;
+        skills?: Array<{ repo?: string; url?: string; skill?: string }>;
+      };
+      const entries = data.skills || [];
+      const list = entries.map((e, i) => {
+        const repo = e.repo || (e.url ? parseSkillsShUrl(e.url)?.repoUrl : '') || '';
+        const skill = e.skill || (e.url ? parseSkillsShUrl(e.url)?.skill : '') || '';
+        const addTarget = e.url || repo;
+        const install = skill ? `ossa skills add ${addTarget} --skill ${skill} --path <dir>` : `ossa skills add ${addTarget} --path <dir>`;
+        return { index: i + 1, repo, skill, url: e.url, install };
+      });
+
+      if (options.json) {
+        console.log(JSON.stringify({ skillsPath: data.skillsPath, skills: list, count: list.length }));
+        return;
+      }
+      console.log(chalk.green(`\nCatalog (${list.length} entries):\n`));
+      list.forEach((e) => {
+        console.log(chalk.bold(`${e.index}. ${e.skill || e.repo}`));
+        if (e.repo) console.log(chalk.gray(`   Repo: ${e.repo}`));
+        if (e.url) console.log(chalk.gray(`   URL: ${e.url}`));
+        console.log(chalk.gray(`   Install: ${e.install}\n`));
+      });
+    } catch (error) {
+      console.error(chalk.red('Catalog failed'));
+      console.error(error instanceof Error ? error.message : String(error));
+      process.exit(1);
+    }
+  });
+
+/**
+ * Show Command
+ * Show full SKILL.md content and metadata for a skill by name.
+ */
+skillsCommandGroup
+  .command('show <name>')
+  .option(
+    '--path <dir>',
+    'Skills directory (default: SKILLS_PATH or ~/.claude/skills)'
+  )
+  .option('--json', 'Output metadata as JSON (content in .content)')
+  .description('Show skill details and full content')
+  .action(async (name: string, options: { path?: string; json?: boolean }) => {
+    try {
+      const basePath =
+        options.path ||
+        process.env.SKILLS_PATH ||
+        (process.env.HOME ? path.join(process.env.HOME, '.claude', 'skills') : '.claude/skills');
+      const skillsService = container.get(ClaudeSkillsService);
+      const result = await skillsService.getSkillContentByName(name, basePath);
+
+      if (options.json) {
+        console.log(JSON.stringify({ name: result.name, path: result.path, content: result.content }));
+        return;
+      }
+      console.log(chalk.green(`\nSkill: ${result.name}\n`));
+      console.log(chalk.gray(`Path: ${result.path}\n`));
+      console.log('---');
+      console.log(result.content);
+      console.log('---');
+    } catch (error) {
+      console.error(chalk.red('Show failed'));
+      console.error(error instanceof Error ? error.message : String(error));
+      process.exit(1);
+    }
+  });
+
+/**
+ * Attach Command
+ * Add a skill reference to an OSSA manifest (extensions.skills.skillRefs).
+ */
+skillsCommandGroup
+  .command('attach <skill-name>')
+  .requiredOption('--manifest <path>', 'Path to OSSA manifest file')
+  .description('Add skill to manifest extensions.skills.skillRefs')
+  .action(async (skillName: string, options: { manifest: string }) => {
+    try {
+      const manifestPath = AgentPathSchema.parse(options.manifest);
+      const manifestRepo = container.get(ManifestRepository);
+      const manifest = await manifestRepo.load(manifestPath);
+
+      const ext = (manifest as Record<string, unknown>).extensions as Record<string, unknown> | undefined;
+      const skillsExt = (ext?.skills as Record<string, unknown>) || {};
+      const refs = Array.isArray(skillsExt.skillRefs) ? [...(skillsExt.skillRefs as string[])] : [];
+      if (refs.includes(skillName)) {
+        console.log(chalk.yellow(`Skill "${skillName}" already attached.`));
+        return;
+      }
+      refs.push(skillName);
+      if (!(manifest as Record<string, unknown>).extensions) {
+        (manifest as Record<string, unknown>).extensions = {};
+      }
+      ((manifest as Record<string, unknown>).extensions as Record<string, unknown>).skills = {
+        ...skillsExt,
+        skillRefs: refs,
+      };
+
+      await manifestRepo.save(manifestPath, manifest);
+      console.log(chalk.green(`Attached skill "${skillName}" to ${manifestPath}`));
+      console.log(chalk.gray(`  extensions.skills.skillRefs: [${refs.join(', ')}]`));
+    } catch (error) {
+      console.error(chalk.red('Attach failed'));
       console.error(error instanceof Error ? error.message : String(error));
       process.exit(1);
     }
