@@ -43,6 +43,10 @@ variables:
   SAST_EXCLUDED_PATHS: "node_modules/,dist/,coverage/"
   SECURE_LOG_LEVEL: "info"
 
+default:
+  tags:
+    - oracle
+
 include:
   # GitLab Ultimate security templates
   - template: Security/SAST.gitlab-ci.yml
@@ -60,7 +64,7 @@ include:
 .base-runner:
   image: node:${NODE_VERSION}
   tags:
-    - saas-linux-small-amd64
+    - oracle
   cache:
     key: ${CI_COMMIT_REF_SLUG}
     paths:
@@ -448,7 +452,7 @@ wiki:publish:
   stage: deploy
   image: node:${NODE_VERSION}
   tags:
-    - saas-linux-small-amd64
+    - oracle
   script:
     - node .gitlab/wiki-publish.cjs
   rules:
