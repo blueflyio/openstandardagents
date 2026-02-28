@@ -19,6 +19,17 @@ import {
 const AgentPathSchema = z.string().min(1);
 const SkillPathSchema = z.string().min(1);
 
+/** Parse skills.sh URL into GitHub repo URL + skill name. e.g. https://skills.sh/sparkfabrik/sf-awesome-copilot/drupal-cache-maxage -> { repoUrl, skill } */
+function parseSkillsShUrl(input: string): { repoUrl: string; skill: string } | null {
+  const trimmed = input.trim().replace(/^https:\/\/skills\.sh\/?/i, '').replace(/\/$/, '');
+  if (trimmed === input.trim()) return null;
+  const parts = trimmed.split('/').filter(Boolean);
+  if (parts.length < 2) return null;
+  const repoUrl = `https://github.com/${parts[0]}/${parts[1]}`;
+  const skill = parts.length >= 3 ? parts[2] : parts[1];
+  return { repoUrl, skill };
+}
+
 /**
  * Skills Command Group
  */
@@ -186,12 +197,14 @@ skillsCommandGroup
 
 /**
  * Add Command
- * Install a skill from a GitHub repo into a target directory (AgentSkills / Claude Skill format).
- * Example: ossa skills add https://github.com/sparkfabrik/sf-awesome-copilot --skill drupal-cache-maxage --path /Volumes/AgentPlatform/services/marketplace/skills
+ * Install a skill from a GitHub repo or from skills.sh URL into a target directory (AgentSkills / Claude Skill format).
+ * Examples:
+ *   ossa skills add https://github.com/sparkfabrik/sf-awesome-copilot --skill drupal-cache-maxage --path /Volumes/AgentPlatform/services/marketplace/skills
+ *   ossa skills add https://skills.sh/sparkfabrik/sf-awesome-copilot/drupal-cache-maxage --path /Volumes/AgentPlatform/services/marketplace/skills
  */
 skillsCommandGroup
   .command('add <repo-url>')
-  .option('--skill <name>', 'Skill name (subdir in repo, e.g. drupal-cache-maxage)', '')
+  .option('--skill <name>', 'Skill name (subdir in repo, e.g. drupal-cache-maxage). Not needed when repo-url is a skills.sh URL.', '')
   .option(
     '--path <dir>',
     'Target directory to install into',
@@ -200,7 +213,7 @@ skillsCommandGroup
   )
   .option('--ref <ref>', 'Git ref (branch/tag/sha)', 'HEAD')
   .option('--dry-run', 'Show what would be installed without writing', false)
-  .description('Install a Claude Skill from a GitHub repo')
+  .description('Install a Claude Skill from a GitHub repo or from skills.sh URL')
   .action(
     async (
       repoUrl: string,
@@ -210,27 +223,37 @@ skillsCommandGroup
         const installService = container.get(SkillsInstallService);
         const targetPath = options.path!;
 
-        if (!options.skill) {
-          const list = await installService.listInRepo(repoUrl, options.ref);
+        let resolvedRepoUrl = repoUrl;
+        let resolvedSkill = options.skill ?? '';
+
+        const skillsSh = parseSkillsShUrl(repoUrl);
+        if (skillsSh) {
+          resolvedRepoUrl = skillsSh.repoUrl;
+          resolvedSkill = skillsSh.skill;
+        }
+
+        if (!resolvedSkill) {
+          const list = await installService.listInRepo(resolvedRepoUrl, options.ref);
           if (list.length === 0) {
-            console.log(chalk.yellow('No skills found in repo. Use --skill <name> to install one.'));
+            console.log(chalk.yellow('No skills found in repo. Use --skill <name> or a skills.sh URL.'));
             console.log(chalk.gray('  Example: ossa skills add <repo-url> --skill <skill-name>'));
+            console.log(chalk.gray('  Example: ossa skills add https://skills.sh/owner/repo/skill-name'));
             return;
           }
-          console.log(chalk.blue(`Skills in ${repoUrl}:`));
+          console.log(chalk.blue(`Skills in ${resolvedRepoUrl}:`));
           list.forEach((s) => console.log(chalk.gray(`  - ${s.name} (${s.path})`)));
-          console.log(chalk.gray(`\nInstall with: ossa skills add ${repoUrl} --skill <name> --path ${targetPath}`));
+          console.log(chalk.gray(`\nInstall with: ossa skills add ${resolvedRepoUrl} --skill <name> --path ${targetPath}`));
           return;
         }
 
         if (options.dryRun) {
-          console.log(chalk.blue(`Would install skill "${options.skill}" from ${repoUrl} to ${targetPath}`));
+          console.log(chalk.blue(`Would install skill "${resolvedSkill}" from ${resolvedRepoUrl} to ${targetPath}`));
           return;
         }
 
         const result = await installService.install({
-          repoUrl,
-          skill: options.skill,
+          repoUrl: resolvedRepoUrl,
+          skill: resolvedSkill,
           path: targetPath,
           ref: options.ref,
         });
