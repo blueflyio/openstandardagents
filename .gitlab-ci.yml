@@ -43,6 +43,10 @@ variables:
   SAST_EXCLUDED_PATHS: "node_modules/,dist/,coverage/"
   SECURE_LOG_LEVEL: "info"
 
+default:
+  tags:
+    - oracle
+
 include:
   # GitLab Ultimate security templates
   - template: Security/SAST.gitlab-ci.yml
@@ -448,6 +452,7 @@ wiki:publish:
   stage: deploy
   image: node:${NODE_VERSION}
   tags:
+    - oracle
   script:
     - node .gitlab/wiki-publish.cjs
   rules:
