@@ -60,6 +60,7 @@ include:
 .base-runner:
   image: node:${NODE_VERSION}
   tags:
+    - oracle
   cache:
     key: ${CI_COMMIT_REF_SLUG}
     paths:
