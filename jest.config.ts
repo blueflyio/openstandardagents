@@ -81,6 +81,8 @@ const config: Config = {
   ],
   verbose: true,
   testTimeout: 10000,
+  // Avoid worker open-handle warning (pino transport in logger; single worker exits cleanly)
+  maxWorkers: 1,
 };
 
 export default config;
