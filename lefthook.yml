@@ -38,17 +38,6 @@ pre-commit:
 pre-push:
   parallel: false
   commands:
-    ensure-deps:
-      priority: 0
-      run: |
-        if [ ! -f node_modules/.bin/tsx ]; then
-          echo "Dependencies missing (no node_modules/.bin/tsx). Running npm install..."
-          npm install
-        fi
-      skip:
-        - merge
-        - rebase
-
     rebase-sync:
       priority: 1
       run: |
