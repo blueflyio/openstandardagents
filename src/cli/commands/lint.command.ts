@@ -185,8 +185,8 @@ const lintRules: LintRule[] = [
         if (!meta?.revoked_at) {
           issues.push({
             rule: 'revocation-status',
-            message: 'metadata.revoked_at recommended when status is revoked',
-            severity: 'warning',
+            message: 'metadata.revoked_at required when status is revoked',
+            severity: 'error',
             path: 'metadata.revoked_at',
           });
         }

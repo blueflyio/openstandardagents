@@ -19,6 +19,7 @@ import { skillsRouter } from './routes/skills.router.js';
 import { workspaceRouter } from './routes/workspace.router.js';
 import { versionRouter } from './routes/version.router.js';
 import { validateRouter } from './routes/validate.router.js';
+import { agentsMdRouter } from './routes/agents-md.router.js';
 
 export interface CreateAppOptions {
   corsOrigin?: string;
@@ -44,6 +45,7 @@ export function createApp(opts?: CreateAppOptions): express.Application {
   app.use('/api/v1/workspace', workspaceRouter());
   app.use('/api/v1/version', versionRouter());
   app.use('/api/v1/validate', validateRouter());
+  app.use('/api/v1/agents-md', agentsMdRouter());
 
   // Error handler (must be last)
   app.use(errorHandler());

@@ -1,17 +1,17 @@
-# OSSA v0.5 Example: Agent Identity, Security Posture, and Protocol Declarations
-# This manifest demonstrates the three new v0.5 schema features.
-# All v0.5 fields are optional and backward compatible with v0.4.
-apiVersion: ossa/v0.5
+# OSSA v0.4 Example: Agent Identity, Security Posture, and Protocol Declarations
+# This manifest demonstrates identity, security posture, and protocol declarations.
+# All of these fields are optional and backward compatible with v0.4.
+apiVersion: ossa/v0.4
 kind: Agent
 metadata:
   name: compliance-scanner
   version: 2.0.0
-  description: Production compliance scanning agent with full v0.5 identity, security, and protocol declarations
+  description: Production compliance scanning agent with full v0.4 identity, security, and protocol declarations
   namespace: blueflyio
   labels:
     team: platform-security
     tier: production
-  # v0.5: Agent Identity Model
+  # v0.4: Agent Identity Model
   identity:
     namespace: blueflyio/platform
     agent_id: compliance-scanner
@@ -48,7 +48,7 @@ spec:
       type: function
       description: Check a specific file against a Cedar policy
 
-# v0.5: Security Posture Metadata
+# v0.4: Security Posture Metadata
 security:
   threat_model:
     - category: prompt-injection
@@ -104,7 +104,7 @@ security:
     log_tool_calls: true
     retention_days: 90
 
-# v0.5: Protocol Declarations
+# v0.4: Protocol Declarations
 protocols:
   mcp:
     version: "1.0.0"

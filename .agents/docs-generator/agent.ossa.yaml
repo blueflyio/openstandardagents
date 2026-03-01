@@ -1,8 +1,6 @@
 apiVersion: ossa/v0.4.1
 kind: Agent
 metadata:
-  uuid: 694d3da5-10b2-4a38-9556-707b1abe4b2a
-  machine_name: docs_generator
   name: docs-generator
   version: 1.0.0
   description: Generate comprehensive documentation from OSSA manifests
