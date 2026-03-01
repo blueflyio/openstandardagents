@@ -30,6 +30,21 @@
       "type": "object",
       "additionalProperties": { "type": "string" },
       "description": "Key-value annotations for tooling"
+    },
+    "uuid": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the agent"
+    },
+    "machine_name": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+$",
+      "description": "System-friendly identifier used by Drupal and other CMS"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "published", "deprecated", "revoked"],
+      "description": "Publication lifecycle status of the agent"
     }
   },
   "required": ["name", "version"],
