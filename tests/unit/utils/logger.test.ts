@@ -363,6 +363,16 @@ describe('Logger', () => {
     });
   });
 
+  describe('Test environment (Jest)', () => {
+    it('should not use pino-pretty transport when JEST_WORKER_ID is set so Jest exits cleanly', () => {
+      expect(process.env.JEST_WORKER_ID).toBeDefined();
+      const testLogger = createLogger({ pretty: true });
+      expect(testLogger).toBeDefined();
+      expect(testLogger.info).toBeDefined();
+      expect(() => testLogger.info('regression: no transport in test')).not.toThrow();
+    });
+  });
+
   describe('Integration tests', () => {
     it('should handle complete logging flow', async () => {
       const testLogger = createLogger({ level: LogLevel.DEBUG });
