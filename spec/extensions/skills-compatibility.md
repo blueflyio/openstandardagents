@@ -283,10 +283,49 @@ Add to `ossa-0.3.x.schema.json`:
 }
 ```
 
+## Skills as a service
+
+OSSA exposes skills via **CLI**, **REST API**, and (when deployed) **MCP Skills API** so skills can be created, listed, validated, and consumed as a service.
+
+### CLI (OSSA)
+
+| Command | Purpose |
+|---------|---------|
+| `ossa skills wizard` | Interactive wizard to create a new skill (SKILL.md); aligns with [Claude Code skills](https://code.claude.com/docs/en/skills). |
+| `ossa skills create <name>` | Create a skill from flags (--description, --instructions, --path). |
+| `ossa skills list [--path]` | List discovered skills (SKILLS_PATH or ~/.claude/skills). |
+| `ossa skills validate <path>` | Validate a SKILL.md. |
+| `ossa skills add <repo-url> [--skill <name>] [--path <dir>]` | Install a skill from GitHub or skills.sh URL. |
+| `ossa skills show <name>` | Show full SKILL.md content. |
+| `ossa skills generate <manifest>` | Generate Claude Skill from an OSSA agent manifest. |
+| `ossa skills catalog` | List skills from marketplace catalog (BLUEFLY_SKILLS_CATALOG). |
+
+### REST API (OSSA server)
+
+When the OSSA API server is running, skills endpoints:
+
+- `GET /api/v1/skills?directory=<path>` – list skills in a directory.
+- `POST /api/v1/skills` – create a skill (name, description, instructions, platforms).
+- `POST /api/v1/skills/validate` – validate a skill payload.
+
+Consumers (Drupal, openstandard-ui, agent-protocol) can call these to list/create/validate skills.
+
+### MCP Skills API (agent-protocol)
+
+The Bluefly agent-protocol service exposes a Skills API at `/api/skills` (list, get, get content, create, update, delete). MCP clients and IDEs use this for discovery and installation. Set `SKILLS_API_URL` to the agent-protocol base (e.g. `https://mcp.blueflyagents.com/api/skills`) when pushing from CLI with `ossa skills create --push-api`.
+
+### Wizard output
+
+`ossa skills wizard` produces:
+
+- **SKILL.md** – Agent Skills / Claude Code compatible (frontmatter: name, description, argument-hint, disable-model-invocation, user-invocable, allowed-tools, context, agent; body: instructions).
+- **skill.ossa.yaml** (optional) – OSSA v0.4 Skill manifest for catalog and validation.
+
 ## References
 
 - [Anthropic Skills Repository](https://github.com/anthropics/skills)
 - [Agent Skills Specification](https://agentskills.io/specification)
 - [What Are Skills](https://agentskills.io/what-are-skills)
 - [Integrate Skills](https://agentskills.io/integrate-skills)
+- [Claude Code – Extend Claude with skills](https://code.claude.com/docs/en/skills)
 - [OSSA Manifest Extensions](./manifest-extensions.md)
