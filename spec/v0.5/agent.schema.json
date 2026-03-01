@@ -91,6 +91,42 @@
           "maxLength": 2000,
           "description": "Human-readable description"
         },
+        "uuid": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Optional UUID v4 for stable cross-system reference"
+        },
+        "machine_name": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$",
+          "maxLength": 128,
+          "description": "Drupal-friendly machine name (config/entity identifier)"
+        },
+        "signature": {
+          "type": "string",
+          "description": "Optional manifest signature (e.g. Ed25519) for signing"
+        },
+        "sbom_pointer": {
+          "type": "string",
+          "format": "uri",
+          "description": "Optional URL or path to SBOM document (e.g. CycloneDX JSON)"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "deprecated", "revoked"],
+          "default": "active",
+          "description": "Agent status: active, deprecated, revoked"
+        },
+        "revoked_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 when agent was revoked"
+        },
+        "deprecated_message": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Message when status is deprecated"
+        },
         "labels": {
           "type": "object",
           "additionalProperties": {
