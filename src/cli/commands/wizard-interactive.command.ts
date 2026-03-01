@@ -51,6 +51,7 @@ import { v5 as uuidv5 } from 'uuid';
 import { container } from '../../di-container.js';
 import { SkillsInstallService } from '../../services/skills-pipeline/index.js';
 import { marketplaceSkillsCatalog } from '../../data/marketplace-skills-catalog.js';
+import { getConfigValue, getSkillsPathDefault } from '../../config/cli-config.js';
 
 // =============================================================================
 // TYPES & INTERFACES
@@ -2625,18 +2626,15 @@ Guidelines:
       return;
     }
 
-    const defaultSkillsPath =
-      process.env.SKILLS_PATH ||
-      process.env.BLUEFLY_SKILLS_PATH ||
-      (process.env.HOME
-        ? `${process.env.HOME}/.claude/skills`
-        : path.join(process.cwd(), '.claude', 'skills'));
+    const defaultSkillsPath = getSkillsPathDefault();
     const marketplacePath =
-      process.platform === 'darwin'
+      getConfigValue('SKILLS_PATH') ||
+      getConfigValue('BLUEFLY_SKILLS_PATH') ||
+      (process.platform === 'darwin'
         ? '/Volumes/AgentPlatform/services/marketplace/skills'
         : process.env.HOME
           ? `${process.env.HOME}/.ossa/skills`
-          : path.join(process.cwd(), 'skills');
+          : path.join(process.cwd(), 'skills'));
 
     const { skillSource } = await inquirer.prompt([
       {
@@ -2676,6 +2674,7 @@ Guidelines:
       }
     } else if (skillSource === 'catalog') {
       const catalogDefault =
+        getConfigValue('BLUEFLY_SKILLS_CATALOG') ||
         process.env.BLUEFLY_SKILLS_CATALOG ||
         (process.env.HOME ? `${process.env.HOME}/.ossa/marketplace-skills-catalog.json` : '');
       const { catalogPath, targetPath } = await inquirer.prompt([

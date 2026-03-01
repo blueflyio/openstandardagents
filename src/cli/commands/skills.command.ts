@@ -15,6 +15,7 @@ import {
   SkillsExportService,
   SkillsInstallService,
 } from '../../services/skills-pipeline/index.js';
+import { getSkillsPathDefault } from '../../config/cli-config.js';
 
 const AgentPathSchema = z.string().min(1);
 const SkillPathSchema = z.string().min(1);
@@ -194,9 +195,8 @@ skillsCommandGroup
   .option('--skill <name>', 'Skill name (subdir in repo, e.g. drupal-cache-maxage)', '')
   .option(
     '--path <dir>',
-    'Target directory to install into',
-    process.env.SKILLS_PATH ||
-      (process.env.HOME ? `${process.env.HOME}/.claude/skills` : '.claude/skills')
+    'Target directory to install into (default: config SKILLS_PATH or ~/.claude/skills)',
+    ''
   )
   .option('--ref <ref>', 'Git ref (branch/tag/sha)', 'HEAD')
   .option('--dry-run', 'Show what would be installed without writing', false)
@@ -208,7 +208,7 @@ skillsCommandGroup
     ) => {
       try {
         const installService = container.get(SkillsInstallService);
-        const targetPath = options.path!;
+        const targetPath = options.path || getSkillsPathDefault();
 
         if (!options.skill) {
           const list = await installService.listInRepo(repoUrl, options.ref);
