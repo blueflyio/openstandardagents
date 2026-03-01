@@ -141,6 +141,11 @@ async function main() {
         continue;
       }
 
+      // Skip packages that only appear in documentation template strings
+      if (packageName === '@anthropic-ai/claude-code') {
+        continue;
+      }
+
       imports.add(packageName);
 
       // Check if package is in dependencies
