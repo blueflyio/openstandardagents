@@ -72,6 +72,7 @@ import { verifyCommand } from './commands/verify.js';
 import { workspaceCommand } from './commands/workspace.command.js';
 import { taxonomyCommandGroup } from './commands/taxonomy.command.js';
 import { skillsCommandGroup } from './commands/skills.command.js';
+import { configCommand } from './commands/config.command.js';
 import { templateCommandGroup } from './commands/template.command.js';
 import { toolCommandGroup } from './commands/tool/index.js';
 import { capabilityCommandGroup } from './commands/capability/index.js';
@@ -255,6 +256,7 @@ program.addCommand(docsCommand);
 program.addCommand(platformsCommand);
 
 // --- Skills & Templates ---
+program.addCommand(configCommand);
 program.addCommand(skillsCommandGroup);
 program.addCommand(templateCommandGroup);
 

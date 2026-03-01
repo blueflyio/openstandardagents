@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.4.6] - 2026-02-19
 
+### Added
+- **`ossa config` command** — Get/set CLI config persisted to `~/.ossa/config.json` (overridable with `OSSA_CONFIG_PATH`). Env vars override config when running commands.
+  - `ossa config set <key> <value>` — set a key (e.g. `SKILLS_PATH`, `BLUEFLY_SKILLS_CATALOG`)
+  - `ossa config get [key]` — get value or config file path
+  - `ossa config list` — list all keys in config file
+  - `ossa config unset <key>` — remove key from config file
+- **Config-driven skills path** — `ossa skills add` and both wizards (interactive and API-first) resolve the default skills directory from config file then env (`SKILLS_PATH`, `BLUEFLY_SKILLS_PATH`), then `~/.claude/skills`. Use `ossa config set SKILLS_PATH /path/to/skills` so you no longer need to set env or pass `--path` every time.
+
 ### Changed
 - Updated package version from 0.4.5 to 0.4.6
 - Updated all version references throughout codebase
