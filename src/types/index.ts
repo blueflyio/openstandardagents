@@ -55,7 +55,7 @@ export type {
   ArchitectRecommendation,
 } from './architect.js';
 
-// Export Security Posture types (v0.5)
+// Export Security Posture types (v0.4)
 export * from './security.js';
 export type {
   SecurityPosture,
@@ -81,7 +81,7 @@ export { isOssaSkill } from './skill.js';
 export type { OssaMCPServer } from './mcp-server-manifest.js';
 export { isOssaMCPServer } from './mcp-server-manifest.js';
 
-// Export Protocol Declaration types (v0.5)
+// Export Protocol Declaration types (v0.4)
 export * from './protocols.js';
 export type {
   ProtocolDeclarations,
@@ -297,7 +297,7 @@ import type { SecurityPosture } from './security.js';
 import type { ProtocolDeclarations } from './protocols.js';
 
 /**
- * Publisher information for agent attribution and trust (v0.5)
+ * Publisher information for agent attribution and trust (v0.4)
  */
 export interface Publisher {
   /** Publisher display name */
@@ -313,7 +313,7 @@ export interface Publisher {
 }
 
 /**
- * Agent Identity Model (v0.5)
+ * Agent Identity Model (v0.4)
  * Enables unique identification, versioning, and publisher attribution.
  */
 export interface AgentIdentity {
@@ -686,10 +686,10 @@ export interface OssaAgent {
     /** Child agents for delegation (v0.4.6+) */
     subagents?: SubagentDefinition[];
   };
-  // v0.5: Security Posture
+  // v0.4: Security Posture
   security?: SecurityPosture;
 
-  // v0.5: Protocol Declarations
+  // v0.4: Protocol Declarations
   protocols?: ProtocolDeclarations;
 
   extensions?: {

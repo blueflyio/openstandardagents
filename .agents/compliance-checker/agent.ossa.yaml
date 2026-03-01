@@ -1,8 +1,6 @@
 apiVersion: ossa/v0.4.1
 kind: Agent
 metadata:
-  uuid: 4edac958-6372-41b0-b9b4-940044cf8f42
-  machine_name: compliance_checker
   name: compliance-checker
   version: 1.0.0
   description: Check regulatory compliance (GDPR, HIPAA, SOC2, ISO27001)
