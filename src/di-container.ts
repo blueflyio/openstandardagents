@@ -36,6 +36,7 @@ import { TemplateService } from './services/template.service.js';
 import { RegistryService } from './services/registry.service.js';
 import { WizardService } from './services/wizard/wizard.service.js';
 import { AgentTypeDetectorService } from './services/agent-type-detector.service.js';
+import { ManifestCrudService } from './services/manifest/manifest-crud.service.js';
 // Codegen Service and Generators
 import { CodegenService } from './services/codegen/codegen.service.js';
 import { ManifestGenerator } from './services/codegen/generators/manifest.generator.js';
@@ -113,6 +114,7 @@ container.bind(RegistryService).toSelf().inSingletonScope();
 container.bind(WizardService).toSelf();
 container.bind(AgentTypeDetectorService).toSelf();
 container.bind(TYPES.AgentTypeDetectorService).to(AgentTypeDetectorService);
+container.bind(ManifestCrudService).toSelf();
 
 // Bind codegen generators (must be bound before CodegenService)
 container.bind(ManifestGenerator).toSelf();
@@ -178,6 +180,7 @@ export function resetContainer(): void {
   container.bind(TestRunnerService).toSelf();
   container.bind(GitService).toSelf();
   container.bind(GitRollbackService).toSelf();
+  container.bind(ManifestCrudService).toSelf();
   container.bind(ManifestGenerator).toSelf();
   container.bind(VSCodeGenerator).toSelf();
   container.bind(OpenAPIGenerator).toSelf();
