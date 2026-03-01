@@ -1444,6 +1444,47 @@
           "type": "string",
           "description": "Content digest of the manifest (e.g. SHA-256) for integrity and deduplication"
         },
+        "uuid": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Optional UUID v4 for stable cross-system reference (e.g. Drupal, registries)"
+        },
+        "machine_name": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$",
+          "maxLength": 128,
+          "description": "Drupal-friendly machine name (config/entity identifier)"
+        },
+        "signature": {
+          "type": "string",
+          "description": "Optional manifest signature (e.g. Ed25519 hex/base64) for signing"
+        },
+        "checksum": {
+          "type": "string",
+          "pattern": "^(sha256|sha512):[a-f0-9]+$",
+          "description": "Optional sha256 or sha512 checksum of canonical manifest body"
+        },
+        "sbom_pointer": {
+          "type": "string",
+          "format": "uri",
+          "description": "Optional URL or path to SBOM document (e.g. CycloneDX JSON)"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "deprecated", "revoked"],
+          "default": "active",
+          "description": "Agent status: active (default), deprecated (show warning), revoked (withdrawn)"
+        },
+        "revoked_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp when agent was revoked (if status is revoked)"
+        },
+        "deprecated_message": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Human-readable message when status is deprecated (e.g. migration path)"
+        },
         "efficiency_tier": {
           "type": "string",
           "enum": [
