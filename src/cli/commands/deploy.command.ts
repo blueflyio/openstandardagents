@@ -99,23 +99,29 @@ async function deployToPlatform(
 
     case 'docker': {
       const dockerDriver = new DockerDeploymentDriver();
-      await dockerDriver.deploy(manifest as any, {
-        target: 'docker',
-        environment: 'default',
-        namespace: options.namespace,
-        replicas: Number(options.replicas) || 1,
-      } as any);
+      await dockerDriver.deploy(
+        manifest as any,
+        {
+          target: 'docker',
+          environment: 'default',
+          namespace: options.namespace,
+          replicas: Number(options.replicas) || 1,
+        } as any
+      );
       break;
     }
 
     case 'kubernetes': {
       const k8sDriver = new KubernetesDeploymentDriver();
-      await k8sDriver.deploy(manifest as any, {
-        target: 'kubernetes',
-        environment: 'default',
-        namespace: options.namespace,
-        replicas: Number(options.replicas) || 1,
-      } as any);
+      await k8sDriver.deploy(
+        manifest as any,
+        {
+          target: 'kubernetes',
+          environment: 'default',
+          namespace: options.namespace,
+          replicas: Number(options.replicas) || 1,
+        } as any
+      );
       break;
     }
 

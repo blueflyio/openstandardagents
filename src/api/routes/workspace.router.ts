@@ -15,7 +15,9 @@ export function workspaceRouter(): Router {
       const { directory = '.', name } = req.body;
       const result = await service.init(directory, name);
       res.json(result);
-    } catch (err) { next(err); }
+    } catch (err) {
+      next(err);
+    }
   });
 
   router.post('/discover', async (req, res, next) => {
@@ -23,7 +25,9 @@ export function workspaceRouter(): Router {
       const { directory = '.' } = req.body;
       const result = await service.discover(directory);
       res.json(result);
-    } catch (err) { next(err); }
+    } catch (err) {
+      next(err);
+    }
   });
 
   router.get('/status', async (req, res, next) => {
@@ -31,7 +35,9 @@ export function workspaceRouter(): Router {
       const dir = (req.query.directory as string) || '.';
       const result = await service.status(dir);
       res.json(result);
-    } catch (err) { next(err); }
+    } catch (err) {
+      next(err);
+    }
   });
 
   return router;

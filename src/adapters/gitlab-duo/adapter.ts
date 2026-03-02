@@ -57,9 +57,9 @@ export class GitLabDuoAdapter extends BaseAdapter {
       description: meta.description || '',
       system_prompt: manifest.spec?.role || '',
       model: manifest.spec?.llm?.model || 'claude-sonnet-4-20250514',
-      tools: ((manifest.spec?.tools || []) as Array<Record<string, unknown>>).map(
-        (t) => ({ name: t.name })
-      ),
+      tools: (
+        (manifest.spec?.tools || []) as Array<Record<string, unknown>>
+      ).map((t) => ({ name: t.name })),
     };
     return {
       config,

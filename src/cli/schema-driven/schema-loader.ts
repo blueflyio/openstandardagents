@@ -176,8 +176,12 @@ export class SchemaLoader {
     const enumVals = definition?.enum;
     if (Array.isArray(enumVals) && enumVals.includes(value)) {
       const examples = (definition as any)?.examples;
-      const ex = Array.isArray(examples) ? examples.find((e: any) => e === value || e?.value === value) : undefined;
-      return typeof ex === 'object' && ex?.description ? ex.description : undefined;
+      const ex = Array.isArray(examples)
+        ? examples.find((e: any) => e === value || e?.value === value)
+        : undefined;
+      return typeof ex === 'object' && ex?.description
+        ? ex.description
+        : undefined;
     }
     return undefined;
   }

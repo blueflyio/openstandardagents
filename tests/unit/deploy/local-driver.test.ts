@@ -44,7 +44,11 @@ describe('LocalDeploymentDriver', () => {
     });
 
     it('throws on invalid manifest (missing metadata)', async () => {
-      const bad = { apiVersion: API_VERSION, kind: 'Agent', spec: {} } as OssaAgent;
+      const bad = {
+        apiVersion: API_VERSION,
+        kind: 'Agent',
+        spec: {},
+      } as OssaAgent;
       await expect(
         driver.deploy(bad, { environment: 'test', target: 'local' })
       ).rejects.toThrow('missing metadata');
@@ -53,7 +57,9 @@ describe('LocalDeploymentDriver', () => {
 
   describe('getStatus', () => {
     it('throws when instance not found', async () => {
-      await expect(driver.getStatus('nonexistent')).rejects.toThrow('not found');
+      await expect(driver.getStatus('nonexistent')).rejects.toThrow(
+        'not found'
+      );
     });
 
     it('returns instance after deploy', async () => {
@@ -76,7 +82,10 @@ describe('LocalDeploymentDriver', () => {
     });
 
     it('returns deployed instance after deploy', async () => {
-      await driver.deploy(validManifest, { environment: 'test', target: 'local' });
+      await driver.deploy(validManifest, {
+        environment: 'test',
+        target: 'local',
+      });
       const list = await driver.listInstances();
       expect(list.length).toBeGreaterThanOrEqual(1);
       expect(list.some((i) => i.name === 'test-agent')).toBe(true);
@@ -112,7 +121,9 @@ describe('LocalDeploymentDriver', () => {
         target: 'local',
       });
       await driver.stop(deployResult.instanceId!);
-      await expect(driver.getStatus(deployResult.instanceId!)).rejects.toThrow();
+      await expect(
+        driver.getStatus(deployResult.instanceId!)
+      ).rejects.toThrow();
     });
   });
 

@@ -70,7 +70,9 @@ spec:
         const files = fs.readdirSync(outputDir);
         expect(files.length).toBeGreaterThan(0);
 
-        const yamlFiles = files.filter((f) => f.endsWith('.yaml') || f.endsWith('.yml'));
+        const yamlFiles = files.filter(
+          (f) => f.endsWith('.yaml') || f.endsWith('.yml')
+        );
         expect(yamlFiles.length).toBeGreaterThan(0);
         const firstYaml = path.join(outputDir, yamlFiles[0]);
         const content = fs.readFileSync(firstYaml, 'utf-8');
@@ -310,9 +312,7 @@ spec:
 
         const packageDir = path.join(parentDir, 'test-export-agent-gitlab-duo');
         expect(fs.existsSync(packageDir)).toBe(true);
-        expect(fs.existsSync(path.join(packageDir, 'package.json'))).toBe(
-          true
-        );
+        expect(fs.existsSync(path.join(packageDir, 'package.json'))).toBe(true);
         expect(
           fs.existsSync(path.join(packageDir, 'src')) ||
             fs.existsSync(path.join(packageDir, '.gitlab'))
@@ -483,7 +483,10 @@ spec:
 
     describe('Langflow Export', () => {
       it('should export to langflow flow JSON', () => {
-        const outputPath = path.join(tempDir, 'test-export-agent-langflow.json');
+        const outputPath = path.join(
+          tempDir,
+          'test-export-agent-langflow.json'
+        );
 
         execSync(
           `node bin/ossa export ${testManifestPath} --platform langflow --output ${outputPath} --no-validate`,
@@ -533,9 +536,9 @@ spec:
         expect(fs.existsSync(outputDir)).toBe(true);
         const agentDir = path.join(outputDir, 'test_export_agent');
         expect(fs.existsSync(agentDir)).toBe(true);
-        expect(
-          fs.existsSync(path.join(agentDir, 'agent.ossa.yaml'))
-        ).toBe(true);
+        expect(fs.existsSync(path.join(agentDir, 'agent.ossa.yaml'))).toBe(
+          true
+        );
       });
 
       it('should document drupal output structure', () => {

@@ -459,7 +459,7 @@ export abstract class BaseAdapter implements PlatformAdapter {
   async toConfig(manifest: OssaAgent): Promise<ConfigResult> {
     throw new Error(
       `toConfig() is not implemented for platform "${this.platform}". ` +
-      `Use export() for full file scaffold export.`
+        `Use export() for full file scaffold export.`
     );
   }
 

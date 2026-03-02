@@ -681,8 +681,7 @@ workspaceCommand
       const content = fs.readFileSync(registryPath, 'utf-8');
       const registry = yaml.parse(content);
       const agents = registry.agents || [];
-      const workspaceName =
-        registry.metadata?.name || 'workspace';
+      const workspaceName = registry.metadata?.name || 'workspace';
       const scannedAt = new Date().toISOString();
 
       const payload = {
@@ -713,9 +712,7 @@ workspaceCommand
         );
       } else {
         const text = await res.text();
-        console.error(
-          chalk.red('Publish failed: ') + res.status + ' ' + text
-        );
+        console.error(chalk.red('Publish failed: ') + res.status + ' ' + text);
         process.exit(1);
       }
       process.exit(0);
@@ -743,7 +740,10 @@ workspaceCommand
       const res = await fetch(`${base}/api/v1/discovery`);
       if (!res.ok) {
         console.error(
-          chalk.red('Registry request failed: ') + res.status + ' ' + (await res.text())
+          chalk.red('Registry request failed: ') +
+            res.status +
+            ' ' +
+            (await res.text())
         );
         process.exit(1);
       }
@@ -779,9 +779,9 @@ workspaceCommand
           const label =
             typeof a === 'string'
               ? a
-              : (a as { name?: string }).name ??
+              : ((a as { name?: string }).name ??
                 (a as { path?: string }).path ??
-                '?';
+                '?');
           console.log('  ' + projName + ' / ' + label);
         }
       }

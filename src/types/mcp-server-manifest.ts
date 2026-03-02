@@ -89,5 +89,10 @@ export interface MCPPromptDeclaration {
 export function isOssaMCPServer(obj: unknown): obj is OssaMCPServer {
   if (!obj || typeof obj !== 'object') return false;
   const o = obj as Record<string, unknown>;
-  return o.kind === 'MCPServer' && typeof o.apiVersion === 'string' && o.metadata != null && o.spec != null;
+  return (
+    o.kind === 'MCPServer' &&
+    typeof o.apiVersion === 'string' &&
+    o.metadata != null &&
+    o.spec != null
+  );
 }

@@ -32,10 +32,7 @@ import type {
   ValidationWarning,
 } from '../base/adapter.interface.js';
 import { BaseAdapter } from '../base/adapter.interface.js';
-import type {
-  DrupalToolDefinition,
-  OssaToolEntry,
-} from './drupal-utils.js';
+import type { DrupalToolDefinition, OssaToolEntry } from './drupal-utils.js';
 import {
   buildSchemaDefinitionArray,
   buildValidationResult,

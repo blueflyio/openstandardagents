@@ -67,8 +67,7 @@ export class SemanticKernelConfigAdapter extends BaseAdapter {
       plugins: skTools.map((t) => ({
         name: t.name || 'unnamed',
         description: (t.description as string) || '',
-        parameters:
-          t.inputSchema ||
+        parameters: t.inputSchema ||
           t.input_schema ||
           t.parameters || { type: 'object', properties: {} },
       })),

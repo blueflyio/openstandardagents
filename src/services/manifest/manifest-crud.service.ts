@@ -34,7 +34,13 @@ export interface CreateManifestInput {
   output_dir?: string;
   description?: string;
   role?: string;
-  type?: 'worker' | 'orchestrator' | 'reviewer' | 'analyzer' | 'executor' | 'approver';
+  type?:
+    | 'worker'
+    | 'orchestrator'
+    | 'reviewer'
+    | 'analyzer'
+    | 'executor'
+    | 'approver';
   version?: string;
 }
 
@@ -62,7 +68,12 @@ export interface ManifestListResult {
 export interface InspectResult {
   name: string | undefined;
   version: string;
-  version_analysis: { major: number; minor: number; patch: number; prerelease: readonly (string | number)[] } | null;
+  version_analysis: {
+    major: number;
+    minor: number;
+    patch: number;
+    prerelease: readonly (string | number)[];
+  } | null;
   kind: string | undefined;
   apiVersion: string | undefined;
   description: string | undefined;
@@ -118,8 +129,10 @@ export class ManifestCrudService {
   constructor(
     @inject(ManifestRepository) private manifestRepo: ManifestRepository,
     @inject(ValidationService) private validationService: ValidationService,
-    @inject(MigrationTransformService) private migrationTransformService: MigrationTransformService,
-    @inject(VersionDetectionService) private versionDetectionService: VersionDetectionService
+    @inject(MigrationTransformService)
+    private migrationTransformService: MigrationTransformService,
+    @inject(VersionDetectionService)
+    private versionDetectionService: VersionDetectionService
   ) {}
 
   // ---- Create (scaffold) ----
@@ -132,7 +145,8 @@ export class ManifestCrudService {
     }
 
     const typeConfigs = getAgentTypeConfigs();
-    const typeConfig = typeConfigs[input.type || 'worker'] || typeConfigs.worker;
+    const typeConfig =
+      typeConfigs[input.type || 'worker'] || typeConfigs.worker;
 
     const manifest: OssaAgent = {
       apiVersion: getApiVersion(),
@@ -140,12 +154,15 @@ export class ManifestCrudService {
       metadata: {
         name: input.name,
         version: input.version || getDefaultAgentVersion(),
-        description: input.description || getDefaultDescriptionTemplate(input.name),
+        description:
+          input.description || getDefaultDescriptionTemplate(input.name),
       },
       spec: {
         role: input.role || getDefaultRoleTemplate(input.name),
         llm: { provider: 'openai', model: '${LLM_MODEL:-gpt-4}' },
-        tools: typeConfig.capabilityName ? [{ type: 'capability', name: typeConfig.capabilityName }] : [],
+        tools: typeConfig.capabilityName
+          ? [{ type: 'capability', name: typeConfig.capabilityName }]
+          : [],
       },
     };
 
@@ -174,7 +191,10 @@ export class ManifestCrudService {
   }
 
   // ---- List ----
-  async list(directory: string, opts?: { recursive?: boolean; format?: 'summary' | 'detailed' | 'json' }): Promise<ManifestListResult> {
+  async list(
+    directory: string,
+    opts?: { recursive?: boolean; format?: 'summary' | 'detailed' | 'json' }
+  ): Promise<ManifestListResult> {
     const baseDir = path.resolve(directory);
     const recursive = opts?.recursive ?? true;
 
@@ -201,13 +221,22 @@ export class ManifestCrudService {
   }
 
   // ---- Validate ----
-  async validate(manifest: unknown, opts?: { platform?: string; strict?: boolean }): Promise<ValidationResult> {
-    const result = await this.validationService.validate(manifest, opts?.platform);
+  async validate(
+    manifest: unknown,
+    opts?: { platform?: string; strict?: boolean }
+  ): Promise<ValidationResult> {
+    const result = await this.validationService.validate(
+      manifest,
+      opts?.platform
+    );
 
     if (opts?.strict && result.warnings?.length) {
       const promoted = result.warnings.map((w: string) => `[strict] ${w}`);
-      result.errors = [...(result.errors || []), ...promoted] as typeof result.errors;
-      result.valid = !(result.errors?.length);
+      result.errors = [
+        ...(result.errors || []),
+        ...promoted,
+      ] as typeof result.errors;
+      result.valid = !result.errors?.length;
     }
 
     return result;
@@ -222,7 +251,9 @@ export class ManifestCrudService {
 
     const meta = manifest.metadata;
     const spec = manifest.spec as Record<string, unknown> | undefined;
-    const extensions = (manifest as Record<string, unknown>).extensions as Record<string, unknown> | undefined;
+    const extensions = (manifest as Record<string, unknown>).extensions as
+      | Record<string, unknown>
+      | undefined;
 
     const versionStr = (meta?.version as string) || '0.0.0';
     const parsed = semver.parse(versionStr);
@@ -240,11 +271,21 @@ export class ManifestCrudService {
     return {
       name: meta?.name,
       version: versionStr,
-      version_analysis: parsed ? { major: parsed.major, minor: parsed.minor, patch: parsed.patch, prerelease: parsed.prerelease } : null,
+      version_analysis: parsed
+        ? {
+            major: parsed.major,
+            minor: parsed.minor,
+            patch: parsed.patch,
+            prerelease: parsed.prerelease,
+          }
+        : null,
       kind: manifest.kind,
       apiVersion: manifest.apiVersion,
       description: meta?.description,
-      role: spec?.role ? String(spec.role).substring(0, 200) + (String(spec.role).length > 200 ? '...' : '') : null,
+      role: spec?.role
+        ? String(spec.role).substring(0, 200) +
+          (String(spec.role).length > 200 ? '...' : '')
+        : null,
       llm: spec?.llm || null,
       tools: specTools.map((t) => ({ name: t.name || t.type, type: t.type })),
       tool_count: specTools.length,
@@ -290,47 +331,86 @@ export class ManifestCrudService {
   }
 
   // ---- Migrate ----
-  async migrate(filePath: string, targetVersion?: string, outputDir?: string): Promise<MigrateResult> {
+  async migrate(
+    filePath: string,
+    targetVersion?: string,
+    outputDir?: string
+  ): Promise<MigrateResult> {
     const manifestPath = path.resolve(filePath);
     const manifest = await this.manifestRepo.load(manifestPath);
-    const detectionResult = await this.versionDetectionService.detectVersion(manifest);
-    const currentVersion = detectionResult.version || (manifest.apiVersion as string) || 'unknown';
+    const detectionResult =
+      await this.versionDetectionService.detectVersion(manifest);
+    const currentVersion =
+      detectionResult.version || (manifest.apiVersion as string) || 'unknown';
     const target = targetVersion || 'ossa/v0.4';
 
     if (currentVersion === target || `ossa/${currentVersion}` === target) {
-      return { migrated: false, reason: `Already at ${target}`, manifest_path: manifestPath };
+      return {
+        migrated: false,
+        reason: `Already at ${target}`,
+        manifest_path: manifestPath,
+      };
     }
 
     const fromVer = currentVersion.replace(/^ossa\/v?/, '');
     const toVer = target.replace(/^ossa\/v?/, '');
 
-    const transform = this.migrationTransformService.getTransform(fromVer, toVer);
+    const transform = this.migrationTransformService.getTransform(
+      fromVer,
+      toVer
+    );
     let migrated: OssaAgent;
     const migrations: string[] = [];
 
     if (transform) {
-      migrated = this.migrationTransformService.applyTransform(manifest, fromVer, toVer);
+      migrated = this.migrationTransformService.applyTransform(
+        manifest,
+        fromVer,
+        toVer
+      );
       migrations.push(`${transform.description} (${fromVer} → ${toVer})`);
-      if (transform.breaking) migrations.push('WARNING: This migration contains breaking changes');
+      if (transform.breaking)
+        migrations.push('WARNING: This migration contains breaking changes');
 
-      const warnings = this.migrationTransformService.validateMigration(manifest, migrated);
-      if (warnings.length) migrations.push(...warnings.map((w) => `WARN: ${w}`));
+      const warnings = this.migrationTransformService.validateMigration(
+        manifest,
+        migrated
+      );
+      if (warnings.length)
+        migrations.push(...warnings.map((w) => `WARN: ${w}`));
     } else {
       migrated = JSON.parse(JSON.stringify(manifest)) as OssaAgent;
       migrated.apiVersion = target;
-      migrations.push(`apiVersion: ${currentVersion} → ${target} (no registered transform — apiVersion updated only)`);
+      migrations.push(
+        `apiVersion: ${currentVersion} → ${target} (no registered transform — apiVersion updated only)`
+      );
     }
 
     if (outputDir) {
       const outDir = path.resolve(outputDir);
       fs.mkdirSync(outDir, { recursive: true });
       const outPath = path.join(outDir, path.basename(manifestPath));
-      const output = yaml.dump(migrated as Record<string, unknown>, { lineWidth: 120, noRefs: true });
+      const output = yaml.dump(migrated as Record<string, unknown>, {
+        lineWidth: 120,
+        noRefs: true,
+      });
       fs.writeFileSync(outPath, output, 'utf8');
-      return { migrated: true, from: currentVersion, to: target, migrations, written_to: outPath };
+      return {
+        migrated: true,
+        from: currentVersion,
+        to: target,
+        migrations,
+        written_to: outPath,
+      };
     }
 
-    return { migrated: true, from: currentVersion, to: target, migrations, manifest: migrated };
+    return {
+      migrated: true,
+      from: currentVersion,
+      to: target,
+      migrations,
+      manifest: migrated,
+    };
   }
 
   // ---- Private: deep diff ----
@@ -340,7 +420,10 @@ export class ManifestCrudService {
     prefix = ''
   ): DiffChange[] {
     const changes: DiffChange[] = [];
-    const allKeys = new Set([...Object.keys(obj1 || {}), ...Object.keys(obj2 || {})]);
+    const allKeys = new Set([
+      ...Object.keys(obj1 || {}),
+      ...Object.keys(obj2 || {}),
+    ]);
 
     for (const key of allKeys) {
       const fieldPath = prefix ? `${prefix}.${key}` : key;
@@ -352,13 +435,27 @@ export class ManifestCrudService {
       } else if (!(key in (obj2 || {}))) {
         changes.push({ type: 'removed', path: fieldPath, oldValue: val1 });
       } else if (
-        typeof val1 === 'object' && typeof val2 === 'object' &&
-        val1 !== null && val2 !== null &&
-        !Array.isArray(val1) && !Array.isArray(val2)
+        typeof val1 === 'object' &&
+        typeof val2 === 'object' &&
+        val1 !== null &&
+        val2 !== null &&
+        !Array.isArray(val1) &&
+        !Array.isArray(val2)
       ) {
-        changes.push(...this.deepDiff(val1 as Record<string, unknown>, val2 as Record<string, unknown>, fieldPath));
+        changes.push(
+          ...this.deepDiff(
+            val1 as Record<string, unknown>,
+            val2 as Record<string, unknown>,
+            fieldPath
+          )
+        );
       } else if (JSON.stringify(val1) !== JSON.stringify(val2)) {
-        changes.push({ type: 'modified', path: fieldPath, oldValue: val1, newValue: val2 });
+        changes.push({
+          type: 'modified',
+          path: fieldPath,
+          oldValue: val1,
+          newValue: val2,
+        });
       }
     }
     return changes;
@@ -366,7 +463,11 @@ export class ManifestCrudService {
 
   private isBreakingChange(change: DiffChange): boolean {
     if (change.type === 'removed') return true;
-    if (change.path.includes('metadata.name') || change.path.includes('metadata.version')) return true;
+    if (
+      change.path.includes('metadata.name') ||
+      change.path.includes('metadata.version')
+    )
+      return true;
     if (change.path.includes('spec.role')) return true;
     if (change.path.includes('apiVersion')) return true;
     return false;

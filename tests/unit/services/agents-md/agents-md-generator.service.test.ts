@@ -10,7 +10,11 @@ import { API_VERSION } from '../../../../src/version.js';
 const minimalManifest: OssaAgent = {
   apiVersion: API_VERSION,
   kind: 'Agent',
-  metadata: { name: 'test-agent', version: '1.0.0', description: 'A test agent' },
+  metadata: {
+    name: 'test-agent',
+    version: '1.0.0',
+    description: 'A test agent',
+  },
   spec: {
     role: 'You are a helpful assistant.',
     llm: { provider: 'openai', model: 'gpt-4' },
@@ -95,7 +99,15 @@ describe('generateAgentsMd', () => {
       ...minimalManifest,
       spec: {
         ...minimalManifest.spec!,
-        subagents: [{ name: 'c', kind: 'worker', role: 'R', reportsTo: 'test-agent', tokenBudget: 100 }],
+        subagents: [
+          {
+            name: 'c',
+            kind: 'worker',
+            role: 'R',
+            reportsTo: 'test-agent',
+            tokenBudget: 100,
+          },
+        ],
       },
     };
     const out = generateAgentsMd(manifest, { includeSubagentSection: false });

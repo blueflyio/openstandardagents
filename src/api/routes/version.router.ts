@@ -22,7 +22,9 @@ export function versionRouter(): Router {
     try {
       const result = await versionService.detectVersion(req.body);
       res.json(result);
-    } catch (err) { next(err); }
+    } catch (err) {
+      next(err);
+    }
   });
 
   return router;

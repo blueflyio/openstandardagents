@@ -62,8 +62,10 @@ export function generateSkillContent(manifest: OssaAgent): string {
 export function generateEvalStubs(manifest: OssaAgent): ExportFile {
   const name = manifest.metadata?.name || 'agent';
 
-  const timeoutMs = (manifest.spec?.constraints?.performance?.timeoutSeconds ?? 30) * 1000;
-  const maxTokens = manifest.spec?.constraints?.cost?.maxTokensPerRequest || 4096;
+  const timeoutMs =
+    (manifest.spec?.constraints?.performance?.timeoutSeconds ?? 30) * 1000;
+  const maxTokens =
+    manifest.spec?.constraints?.cost?.maxTokensPerRequest || 4096;
 
   const content = `/**
  * ${name} - CLEAR Framework Evaluations

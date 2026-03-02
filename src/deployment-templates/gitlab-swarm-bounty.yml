@@ -20,10 +20,13 @@ variables:
 .agent_execution_matrix:
   image: python:3.11-slim
   before_script:
-    - pip install -q openai swarm litellm deepeval langfuse ossa-sdk
+    - pip install -q openai swarm litellm deepeval langfuse ossa-sdk opentelemetry-sdk opentelemetry-exporter-otlp
     - export OPENAI_API_BASE=$LITELLM_ENDPOINT
     - export OPENAI_API_KEY=$LITELLM_API_KEY  # Provided by GitLab vault
-
+    # Global Observability via agent-tracer
+    - export OTEL_EXPORTER_OTLP_ENDPOINT="https://tracer.blueflyagents.com"
+    - export OTEL_SERVICE_NAME="agent-swarm-node"
+    - export TRACELOOP_BASE_URL="https://tracer.blueflyagents.com"
 negotiation_phase:
   stage: negotiate
   script:

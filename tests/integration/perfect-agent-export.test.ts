@@ -204,7 +204,14 @@ describe('TeamGeneratorService', () => {
 describe('AgentsMdGeneratorService', () => {
   function generate(manifest: OssaAgent) {
     const content = generateAgentsMd(manifest);
-    return [{ path: 'AGENTS.md', content, type: 'documentation' as const, language: 'markdown' as const }];
+    return [
+      {
+        path: 'AGENTS.md',
+        content,
+        type: 'documentation' as const,
+        language: 'markdown' as const,
+      },
+    ];
   }
 
   it('generates AGENTS.md file', () => {
@@ -329,7 +336,10 @@ describe('generatePerfectAgentFiles', () => {
     expect(paths).toContain('skills/SKILL.md');
 
     const teamOrDocFiles = paths.filter(
-      (p) => p.startsWith('team/') || p.includes('TEAM-ARCHITECTURE') || p === 'CLAUDE.md'
+      (p) =>
+        p.startsWith('team/') ||
+        p.includes('TEAM-ARCHITECTURE') ||
+        p === 'CLAUDE.md'
     );
     expect(teamOrDocFiles.length).toBeGreaterThan(0);
   });

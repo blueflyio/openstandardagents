@@ -35,11 +35,17 @@ export interface SkillWizardState {
 
 const DEFAULT_OUTPUT =
   process.env.SKILLS_PATH ||
-  (process.env.HOME ? path.join(process.env.HOME, '.claude', 'skills') : '.claude/skills');
+  (process.env.HOME
+    ? path.join(process.env.HOME, '.claude', 'skills')
+    : '.claude/skills');
 
 export async function runSkillWizard(): Promise<SkillWizardState> {
   console.log(chalk.blue.bold('\nOSSA Skill Wizard'));
-  console.log(chalk.gray('Create an Agent Skills (SKILL.md) compatible skill. See: https://code.claude.com/docs/en/skills\n'));
+  console.log(
+    chalk.gray(
+      'Create an Agent Skills (SKILL.md) compatible skill. See: https://code.claude.com/docs/en/skills\n'
+    )
+  );
 
   const answers = await inquirer.prompt([
     {
@@ -64,13 +70,15 @@ export async function runSkillWizard(): Promise<SkillWizardState> {
       type: 'input',
       name: 'description',
       message: 'Description (when should Claude use this skill?):',
-      validate: (input: string) => (input?.trim() ? true : 'Description is required'),
+      validate: (input: string) =>
+        input?.trim() ? true : 'Description is required',
     },
     {
       type: 'editor',
       name: 'instructions',
       message: 'Instructions (markdown body for the skill):',
-      default: 'Add step-by-step instructions here. Use $ARGUMENTS for user input.\n',
+      default:
+        'Add step-by-step instructions here. Use $ARGUMENTS for user input.\n',
     },
     {
       type: 'input',
@@ -151,9 +159,14 @@ export async function runSkillWizard(): Promise<SkillWizardState> {
 }
 
 function buildFrontmatter(state: SkillWizardState): string {
-  const lines: string[] = ['---', `name: ${state.name}`, `description: ${state.description}`];
+  const lines: string[] = [
+    '---',
+    `name: ${state.name}`,
+    `description: ${state.description}`,
+  ];
   if (state.argumentHint) lines.push(`argument-hint: ${state.argumentHint}`);
-  if (state.disableModelInvocation) lines.push('disable-model-invocation: true');
+  if (state.disableModelInvocation)
+    lines.push('disable-model-invocation: true');
   if (!state.userInvocable) lines.push('user-invocable: false');
   if (state.allowedTools) lines.push(`allowed-tools: ${state.allowedTools}`);
   if (state.context === 'fork') {
@@ -166,7 +179,10 @@ function buildFrontmatter(state: SkillWizardState): string {
 
 function buildSkillMd(state: SkillWizardState): string {
   const front = buildFrontmatter(state);
-  const body = (state.instructions || `You are the ${state.name} skill. Add instructions here.`).trim();
+  const body = (
+    state.instructions ||
+    `You are the ${state.name} skill. Add instructions here.`
+  ).trim();
   return front + '\n' + body + '\n';
 }
 
@@ -184,13 +200,18 @@ function buildOssaSkillManifest(state: SkillWizardState): object {
       instructions: state.instructions?.trim() || '',
       platforms: state.platforms?.length ? state.platforms : ['claude-code'],
       ...(state.allowedTools && {
-        allowedTools: state.allowedTools.split(',').map((s) => s.trim()).filter(Boolean),
+        allowedTools: state.allowedTools
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean),
       }),
     },
   };
 }
 
-export async function writeSkillArtifacts(state: SkillWizardState): Promise<{ skillMdPath: string; ossaPath?: string }> {
+export async function writeSkillArtifacts(
+  state: SkillWizardState
+): Promise<{ skillMdPath: string; ossaPath?: string }> {
   const outDir = path.resolve(state.outputPath, state.name);
   await fs.mkdir(outDir, { recursive: true });
 

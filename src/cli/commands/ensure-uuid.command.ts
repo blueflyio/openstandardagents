@@ -11,10 +11,19 @@ import * as yaml from 'js-yaml';
 import { v4 as uuidv4 } from 'uuid';
 import type { OssaAgent } from '../../types/index.js';
 
-const MANIFEST_NAMES = ['manifest.ossa.yaml', 'manifest.ossa.yml', 'agent.ossa.yaml', 'agent.ossa.yml'];
+const MANIFEST_NAMES = [
+  'manifest.ossa.yaml',
+  'manifest.ossa.yml',
+  'agent.ossa.yaml',
+  'agent.ossa.yml',
+];
 
 function toMachineName(name: string): string {
-  const s = name.toLowerCase().replace(/[^a-z0-9_]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+  const s = name
+    .toLowerCase()
+    .replace(/[^a-z0-9_]/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_|_$/g, '');
   return s.slice(0, 128) || 'agent';
 }
 
@@ -34,7 +43,12 @@ function collectManifests(inputPath: string): string[] {
       const full = path.join(dir, e.name);
       if (e.isDirectory()) {
         if (e.name !== 'node_modules' && e.name !== '.git') walk(full);
-      } else if (e.isFile() && (MANIFEST_NAMES.includes(e.name) || e.name.endsWith('.ossa.yaml') || e.name.endsWith('.ossa.yml'))) {
+      } else if (
+        e.isFile() &&
+        (MANIFEST_NAMES.includes(e.name) ||
+          e.name.endsWith('.ossa.yaml') ||
+          e.name.endsWith('.ossa.yml'))
+      ) {
         out.push(full);
       }
     }
@@ -66,7 +80,9 @@ export const ensureUuidCommand = new Command('ensure-uuid')
         process.exit(1);
       }
       if (opts.stdout && files.length > 1) {
-        console.error(chalk.red('--stdout is only valid for a single manifest file'));
+        console.error(
+          chalk.red('--stdout is only valid for a single manifest file')
+        );
         process.exit(1);
       }
 
@@ -94,7 +110,11 @@ export const ensureUuidCommand = new Command('ensure-uuid')
 
         const meta = (manifest.metadata ?? {}) as Record<string, unknown>;
         if (!meta.name || typeof meta.name !== 'string') {
-          console.log(chalk.gray(`Skip (no metadata.name): ${path.relative(process.cwd(), filePath)}`));
+          console.log(
+            chalk.gray(
+              `Skip (no metadata.name): ${path.relative(process.cwd(), filePath)}`
+            )
+          );
           continue;
         }
         const name = meta.name;
@@ -110,7 +130,11 @@ export const ensureUuidCommand = new Command('ensure-uuid')
         manifest.metadata = meta as OssaAgent['metadata'];
 
         if (!changed) {
-          console.log(chalk.gray(`Skip (has uuid + machine_name): ${path.relative(process.cwd(), filePath)}`));
+          console.log(
+            chalk.gray(
+              `Skip (has uuid + machine_name): ${path.relative(process.cwd(), filePath)}`
+            )
+          );
           continue;
         }
 
@@ -123,7 +147,11 @@ export const ensureUuidCommand = new Command('ensure-uuid')
         }
 
         if (opts.dryRun) {
-          console.log(chalk.yellow(`Would update: ${path.relative(process.cwd(), filePath)}`));
+          console.log(
+            chalk.yellow(
+              `Would update: ${path.relative(process.cwd(), filePath)}`
+            )
+          );
           console.log(chalk.gray(`  uuid: ${meta.uuid}`));
           console.log(chalk.gray(`  machine_name: ${meta.machine_name}`));
           continue;
@@ -131,9 +159,13 @@ export const ensureUuidCommand = new Command('ensure-uuid')
 
         try {
           fs.writeFileSync(filePath, newYaml, 'utf-8');
-          console.log(chalk.green(`Updated: ${path.relative(process.cwd(), filePath)}`));
+          console.log(
+            chalk.green(`Updated: ${path.relative(process.cwd(), filePath)}`)
+          );
           console.log(chalk.gray(`  uuid: ${String(meta.uuid)}`));
-          console.log(chalk.gray(`  machine_name: ${String(meta.machine_name)}`));
+          console.log(
+            chalk.gray(`  machine_name: ${String(meta.machine_name)}`)
+          );
         } catch (e) {
           console.error(chalk.red(`Write failed: ${filePath}`), e);
           process.exit(1);
@@ -144,12 +176,18 @@ export const ensureUuidCommand = new Command('ensure-uuid')
           const cardPath = path.join(dir, '.well-known', 'agent-card.json');
           try {
             const { execSync } = await import('child_process');
-            execSync(`ossa agent-card generate "${filePath}" -o "${cardPath}"`, {
-              stdio: 'inherit',
-              cwd: path.dirname(filePath),
-            });
+            execSync(
+              `ossa agent-card generate "${filePath}" -o "${cardPath}"`,
+              {
+                stdio: 'inherit',
+                cwd: path.dirname(filePath),
+              }
+            );
           } catch (e) {
-            console.error(chalk.yellow(`Card generate failed for ${filePath}:`), e);
+            console.error(
+              chalk.yellow(`Card generate failed for ${filePath}:`),
+              e
+            );
           }
         }
       }

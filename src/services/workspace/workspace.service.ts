@@ -68,9 +68,22 @@ export class WorkspaceService {
 
   async discover(directory: string): Promise<DiscoveryResult> {
     const dir = path.resolve(directory);
-    const patterns = ['**/*.ossa.yaml', '**/*.ossa.yml', '**/.agents/*/manifest.ossa.yaml'];
-    const ignorePatterns = ['**/node_modules/**', '**/dist/**', '**/.git/**', '**/coverage/**'];
-    const files = await fg(patterns, { cwd: dir, ignore: ignorePatterns, absolute: true });
+    const patterns = [
+      '**/*.ossa.yaml',
+      '**/*.ossa.yml',
+      '**/.agents/*/manifest.ossa.yaml',
+    ];
+    const ignorePatterns = [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/.git/**',
+      '**/coverage/**',
+    ];
+    const files = await fg(patterns, {
+      cwd: dir,
+      ignore: ignorePatterns,
+      absolute: true,
+    });
 
     const agents: DiscoveryAgent[] = [];
     for (const f of files) {
@@ -99,7 +112,12 @@ export class WorkspaceService {
         workspace: path.basename(dir),
         discovered: new Date().toISOString(),
         count: agents.length,
-        agents: agents.map((a) => ({ name: a.name, version: a.version, kind: a.kind, path: a.path })),
+        agents: agents.map((a) => ({
+          name: a.name,
+          version: a.version,
+          kind: a.kind,
+          path: a.path,
+        })),
       };
       fs.writeFileSync(path.join(registryDir, 'index.yaml'), yaml.dump(index));
     }
@@ -113,10 +131,16 @@ export class WorkspaceService {
     const indexPath = path.join(wsDir, 'registry', 'index.yaml');
 
     if (!fs.existsSync(indexPath)) {
-      return { action: 'status', initialized: false, message: 'Run ossa workspace init first' };
+      return {
+        action: 'status',
+        initialized: false,
+        message: 'Run ossa workspace init first',
+      };
     }
 
-    const indexContent = yaml.load(fs.readFileSync(indexPath, 'utf8')) as Record<string, unknown>;
+    const indexContent = yaml.load(
+      fs.readFileSync(indexPath, 'utf8')
+    ) as Record<string, unknown>;
     return { action: 'status', initialized: true, workspace: indexContent };
   }
 }

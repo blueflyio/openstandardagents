@@ -51,7 +51,8 @@ export const PLATFORM_MATRIX: PlatformMatrixEntry[] = [
   {
     id: 'langchain',
     name: 'LangChain',
-    description: 'LangChain Python + TypeScript agent package (uses @langchain/* SDK)',
+    description:
+      'LangChain Python + TypeScript agent package (uses @langchain/* SDK)',
     status: 'production',
     whatTheyNeed: [
       'Python 3.10+ or Node 18+',
@@ -103,7 +104,8 @@ export const PLATFORM_MATRIX: PlatformMatrixEntry[] = [
   {
     id: 'langflow',
     name: 'LangFlow',
-    description: 'LangFlow flow JSON; uses official langflow package and LCAgentComponent (LangChain-based)',
+    description:
+      'LangFlow flow JSON; uses official langflow package and LCAgentComponent (LangChain-based)',
     status: 'beta',
     whatTheyNeed: [
       'Official LangFlow: pip install langflow or Docker (https://github.com/langflow-ai/langflow)',
@@ -128,7 +130,8 @@ export const PLATFORM_MATRIX: PlatformMatrixEntry[] = [
   {
     id: 'openai-agents-sdk',
     name: 'OpenAI Agents / Assistants API',
-    description: 'Runnable @openai/agents TypeScript package with MCP, guardrails, handoffs',
+    description:
+      'Runnable @openai/agents TypeScript package with MCP, guardrails, handoffs',
     status: 'beta',
     whatTheyNeed: [
       'OpenAI API key',
@@ -164,7 +167,8 @@ export const PLATFORM_MATRIX: PlatformMatrixEntry[] = [
       'skills/ for Claude Skills (SKILL.md)',
     ],
     sdkNpm: ['anthropic', '@anthropic-ai/sdk'],
-    exportHow: 'ossa export <manifest> --platform anthropic -o dist/ ; or --platform agent-skills for SKILL.md',
+    exportHow:
+      'ossa export <manifest> --platform anthropic -o dist/ ; or --platform agent-skills for SKILL.md',
     importHow: 'partial',
     specUsage: [
       'spec.role -> system prompt; spec.tools -> tools array or MCP; spec.llm -> model.',
@@ -177,11 +181,16 @@ export const PLATFORM_MATRIX: PlatformMatrixEntry[] = [
     description: 'Claude Code sub-agent for task execution',
     status: 'beta',
     whatTheyNeed: ['Claude Code app', 'SKILL.md or claude_desktop_config'],
-    folderStructure: ['.agents/{name}/manifest.ossa.yaml', '.agents/{name}/skills/*/SKILL.md'],
+    folderStructure: [
+      '.agents/{name}/manifest.ossa.yaml',
+      '.agents/{name}/skills/*/SKILL.md',
+    ],
     sdkNpm: ['@anthropic-ai/sdk (for programmatic)'],
     exportHow: 'ossa export <manifest> --platform agent-skills (SKILL.md)',
     importHow: 'no',
-    specUsage: ['SKILL.md is generated from manifest; OSSA is source of truth for description and tools.'],
+    specUsage: [
+      'SKILL.md is generated from manifest; OSSA is source of truth for description and tools.',
+    ],
   },
   {
     id: 'kagent',
@@ -199,7 +208,8 @@ export const PLATFORM_MATRIX: PlatformMatrixEntry[] = [
       'kustomization.yaml for deploy',
     ],
     sdkNpm: ['@bluefly/openstandardagents (crd-generator)'],
-    exportHow: 'ossa export <manifest> --platform kagent --crd-version v1alpha2 -o k8s/',
+    exportHow:
+      'ossa export <manifest> --platform kagent --crd-version v1alpha2 -o k8s/',
     importHow: 'no',
     specUsage: [
       'OSSA manifest is converted to Agent CRD; spec.llm, spec.tools, spec.observability map to CRD spec.',
@@ -210,29 +220,49 @@ export const PLATFORM_MATRIX: PlatformMatrixEntry[] = [
     name: 'GitLab CI/CD',
     description: 'GitLab CI/CD YAML configuration',
     status: 'alpha',
-    whatTheyNeed: ['GitLab project', '.gitlab-ci.yml', 'Runner with Docker or Node'],
-    folderStructure: ['.gitlab-ci.yml', '.agents/{name}/manifest.ossa.yaml', 'GitLab CI jobs or any runner'],
+    whatTheyNeed: [
+      'GitLab project',
+      '.gitlab-ci.yml',
+      'Runner with Docker or Node',
+    ],
+    folderStructure: [
+      '.gitlab-ci.yml',
+      '.agents/{name}/manifest.ossa.yaml',
+      'GitLab CI jobs or any runner',
+    ],
     sdkNpm: ['GitLab API (REST)'],
     exportHow: 'ossa export <manifest> --platform gitlab -o .gitlab/',
     importHow: 'no',
-    specUsage: ['Export generates CI jobs that validate/build/deploy the agent from manifest.'],
+    specUsage: [
+      'Export generates CI jobs that validate/build/deploy the agent from manifest.',
+    ],
   },
   {
     id: 'gitlab-duo',
     name: 'GitLab Duo Custom Agent',
     description: 'GitLab Duo Custom Agent with MCP integration',
     status: 'alpha',
-    whatTheyNeed: ['GitLab Duo', 'Custom agent config', 'MCP server URL or config'],
-    folderStructure: ['.agents/{name}/manifest.ossa.yaml', 'openapi/ for Duo API'],
+    whatTheyNeed: [
+      'GitLab Duo',
+      'Custom agent config',
+      'MCP server URL or config',
+    ],
+    folderStructure: [
+      '.agents/{name}/manifest.ossa.yaml',
+      'openapi/ for Duo API',
+    ],
     sdkNpm: ['GitLab API (REST)'],
     exportHow: 'ossa export <manifest> --platform gitlab-duo -o dist/',
     importHow: 'no',
-    specUsage: ['Manifest drives Duo agent definition; MCP tools from spec.tools.'],
+    specUsage: [
+      'Manifest drives Duo agent definition; MCP tools from spec.tools.',
+    ],
   },
   {
     id: 'drupal',
     name: 'Drupal (ai_agents)',
-    description: 'Contract layer: OSSA config/plugin between MCP and A2A; integrates with Drupal ai_agents module',
+    description:
+      'Contract layer: OSSA config/plugin between MCP and A2A; integrates with Drupal ai_agents module',
     status: 'beta',
     whatTheyNeed: [
       'Drupal 10+ with ai_agents (https://git.drupalcode.org/project/ai_agents)',
@@ -258,7 +288,8 @@ export const PLATFORM_MATRIX: PlatformMatrixEntry[] = [
   {
     id: 'orchestration',
     name: 'Drupal orchestration',
-    description: 'Deployable stub for drupal/orchestration: OSSA agents exposed as orchestration services (Activepieces, n8n)',
+    description:
+      'Deployable stub for drupal/orchestration: OSSA agents exposed as orchestration services (Activepieces, n8n)',
     status: 'alpha',
     whatTheyNeed: [
       'Drupal 10+ with drupal/orchestration and ai_agents_ossa',
@@ -269,7 +300,9 @@ export const PLATFORM_MATRIX: PlatformMatrixEntry[] = [
       'orchestration/ossa_invoke_agent.schema.json',
       'ORCHESTRATION.md',
     ],
-    sdkNpm: ['drupal/orchestration (PHP); OSSA export produces manifest snippet + schema'],
+    sdkNpm: [
+      'drupal/orchestration (PHP); OSSA export produces manifest snippet + schema',
+    ],
     exportHow: 'ossa export <manifest> --platform orchestration -o dist/',
     importHow: 'no',
     specUsage: [
@@ -286,14 +319,20 @@ export const PLATFORM_MATRIX: PlatformMatrixEntry[] = [
     sdkNpm: ['Cursor config (no public SDK)'],
     exportHow: 'ossa export <manifest> --platform cursor -o dist/',
     importHow: 'yes',
-    specUsage: ['Export produces Cursor-compatible agent config from manifest.'],
+    specUsage: [
+      'Export produces Cursor-compatible agent config from manifest.',
+    ],
   },
   {
     id: 'mcp',
     name: 'MCP (Model Context Protocol)',
     description: 'MCP server for Claude Code, Cursor, and other MCP clients',
     status: 'production',
-    whatTheyNeed: ['@modelcontextprotocol/sdk', 'Node 18+', 'Tools and resources defined in manifest'],
+    whatTheyNeed: [
+      '@modelcontextprotocol/sdk',
+      'Node 18+',
+      'Tools and resources defined in manifest',
+    ],
     folderStructure: [
       '.agents/{name}/manifest.ossa.yaml',
       '.agents/{name}/tools/',
@@ -302,7 +341,9 @@ export const PLATFORM_MATRIX: PlatformMatrixEntry[] = [
     sdkNpm: ['@modelcontextprotocol/sdk'],
     exportHow: 'ossa export <manifest> --platform mcp -o dist/',
     importHow: 'no',
-    specUsage: ['spec.tools and spec.capabilities drive MCP tool/resource registration.'],
+    specUsage: [
+      'spec.tools and spec.capabilities drive MCP tool/resource registration.',
+    ],
   },
   {
     id: 'npm',
@@ -319,7 +360,9 @@ export const PLATFORM_MATRIX: PlatformMatrixEntry[] = [
     sdkNpm: ['@bluefly/openstandardagents (consumer)'],
     exportHow: 'ossa export <manifest> --platform npm --skill -o dist/',
     importHow: 'no',
-    specUsage: ['Package ships manifest and generated client; consumers load via OSSA SDK.'],
+    specUsage: [
+      'Package ships manifest and generated client; consumers load via OSSA SDK.',
+    ],
   },
   {
     id: 'docker',
@@ -327,11 +370,17 @@ export const PLATFORM_MATRIX: PlatformMatrixEntry[] = [
     description: 'Docker deployment package',
     status: 'alpha',
     whatTheyNeed: ['Dockerfile', 'Runtime (Node/Python)'],
-    folderStructure: ['.agents/{name}/manifest.ossa.yaml', 'docker/Dockerfile', 'Dockerfile'],
+    folderStructure: [
+      '.agents/{name}/manifest.ossa.yaml',
+      'docker/Dockerfile',
+      'Dockerfile',
+    ],
     sdkNpm: ['dockerode (optional, for API)'],
     exportHow: 'ossa export <manifest> --platform docker -o docker/',
     importHow: 'no',
-    specUsage: ['Export produces Dockerfile and entrypoint that loads manifest at runtime.'],
+    specUsage: [
+      'Export produces Dockerfile and entrypoint that loads manifest at runtime.',
+    ],
   },
   {
     id: 'kubernetes',
@@ -339,11 +388,17 @@ export const PLATFORM_MATRIX: PlatformMatrixEntry[] = [
     description: 'Kubernetes Kustomize structure',
     status: 'alpha',
     whatTheyNeed: ['kubectl', 'Kustomize', 'Cluster'],
-    folderStructure: ['.agents/{name}/manifest.ossa.yaml', 'k8s/base/', 'k8s/overlays/'],
+    folderStructure: [
+      '.agents/{name}/manifest.ossa.yaml',
+      'k8s/base/',
+      'k8s/overlays/',
+    ],
     sdkNpm: ['@kubernetes/client-node (optional)'],
     exportHow: 'ossa export <manifest> --platform kubernetes -o k8s/',
     importHow: 'no',
-    specUsage: ['Manifest drives Deployment, Service, ConfigMap; OSSA in config for runtime.'],
+    specUsage: [
+      'Manifest drives Deployment, Service, ConfigMap; OSSA in config for runtime.',
+    ],
   },
   {
     id: 'temporal',
@@ -367,19 +422,27 @@ export const PLATFORM_MATRIX: PlatformMatrixEntry[] = [
     sdkNpm: ['n8n (self-hosted or cloud)'],
     exportHow: 'ossa export <manifest> --platform n8n -o dist/',
     importHow: 'no',
-    specUsage: ['Export OSSA to n8n workflow nodes; spec.role and spec.tools map to nodes.'],
+    specUsage: [
+      'Export OSSA to n8n workflow nodes; spec.role and spec.tools map to nodes.',
+    ],
   },
   {
     id: 'agent-skills',
     name: 'Agent Skills',
-    description: 'Agent Skills package (SKILL.md format for Claude Code / Cowork)',
+    description:
+      'Agent Skills package (SKILL.md format for Claude Code / Cowork)',
     status: 'production',
     whatTheyNeed: ['SKILL.md format', 'Claude Code or Cowork'],
-    folderStructure: ['.agents/{name}/manifest.ossa.yaml', '.agents/{name}/skills/*/SKILL.md'],
+    folderStructure: [
+      '.agents/{name}/manifest.ossa.yaml',
+      '.agents/{name}/skills/*/SKILL.md',
+    ],
     sdkNpm: ['Anthropic Skills format (no separate SDK)'],
     exportHow: 'ossa export <manifest> --platform agent-skills -o skills/',
     importHow: 'no',
-    specUsage: ['SKILL.md generated from manifest; OSSA is source of truth for description and tools.'],
+    specUsage: [
+      'SKILL.md generated from manifest; OSSA is source of truth for description and tools.',
+    ],
   },
   {
     id: 'warp',
@@ -396,7 +459,8 @@ export const PLATFORM_MATRIX: PlatformMatrixEntry[] = [
   {
     id: 'symfony',
     name: 'Symfony AI Agent',
-    description: 'PHP bootstrap for symfony/ai-agent (Platform + Model + Toolbox from OSSA)',
+    description:
+      'PHP bootstrap for symfony/ai-agent (Platform + Model + Toolbox from OSSA)',
     status: 'alpha',
     whatTheyNeed: [
       'PHP 8.2+',

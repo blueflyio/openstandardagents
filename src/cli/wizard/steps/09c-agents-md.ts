@@ -69,6 +69,8 @@ export async function configureAgentsMdStep(
     sections,
   };
 
-  console_ui.success('AGENTS.md will be generated on save (agents.md standard)');
+  console_ui.success(
+    'AGENTS.md will be generated on save (agents.md standard)'
+  );
   return state;
 }

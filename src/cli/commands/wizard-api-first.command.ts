@@ -487,8 +487,14 @@ class APIFirstWizard {
         message: 'How do you want to add skills?',
         choices: [
           { name: 'Install from GitHub (repo URL + skill name)', value: 'url' },
-          { name: 'Install from Bluefly catalog (marketplace-skills-catalog)', value: 'catalog' },
-          { name: 'Manual entry only (define skills in manifest)', value: 'manual' },
+          {
+            name: 'Install from Bluefly catalog (marketplace-skills-catalog)',
+            value: 'catalog',
+          },
+          {
+            name: 'Manual entry only (define skills in manifest)',
+            value: 'manual',
+          },
         ],
         default: 'manual',
       },
@@ -496,9 +502,24 @@ class APIFirstWizard {
 
     if (skillSource === 'url') {
       const { repoUrl, skillName, installPath } = await inquirer.prompt([
-        { type: 'input', name: 'repoUrl', message: 'GitHub repo URL:', validate: (s: string) => !!s?.trim() || 'URL required' },
-        { type: 'input', name: 'skillName', message: 'Skill name:', validate: (s: string) => !!s?.trim() || 'Skill name required' },
-        { type: 'input', name: 'installPath', message: 'Install to directory:', default: marketplacePath },
+        {
+          type: 'input',
+          name: 'repoUrl',
+          message: 'GitHub repo URL:',
+          validate: (s: string) => !!s?.trim() || 'URL required',
+        },
+        {
+          type: 'input',
+          name: 'skillName',
+          message: 'Skill name:',
+          validate: (s: string) => !!s?.trim() || 'Skill name required',
+        },
+        {
+          type: 'input',
+          name: 'installPath',
+          message: 'Install to directory:',
+          default: marketplacePath,
+        },
       ]);
       try {
         const installService = container.get(SkillsInstallService);
@@ -508,18 +529,37 @@ class APIFirstWizard {
           path: (installPath as string).trim(),
         });
         if (result.success) printSuccess(result.message);
-        else { printError(result.message); if (result.errors) result.errors.forEach((e) => printError(`  ${e}`)); }
+        else {
+          printError(result.message);
+          if (result.errors) result.errors.forEach((e) => printError(`  ${e}`));
+        }
       } catch (err) {
         printError(err instanceof Error ? err.message : String(err));
       }
     } else if (skillSource === 'catalog') {
-      const catalogDefault = process.env.BLUEFLY_SKILLS_CATALOG || (process.env.HOME ? `${process.env.HOME}/.ossa/marketplace-skills-catalog.json` : '');
+      const catalogDefault =
+        process.env.BLUEFLY_SKILLS_CATALOG ||
+        (process.env.HOME
+          ? `${process.env.HOME}/.ossa/marketplace-skills-catalog.json`
+          : '');
       const { catalogPath, targetPath } = await inquirer.prompt([
-        { type: 'input', name: 'catalogPath', message: 'Path to marketplace-skills-catalog.json:', default: catalogDefault },
-        { type: 'input', name: 'targetPath', message: 'Install skills to directory:', default: marketplacePath },
+        {
+          type: 'input',
+          name: 'catalogPath',
+          message: 'Path to marketplace-skills-catalog.json:',
+          default: catalogDefault,
+        },
+        {
+          type: 'input',
+          name: 'targetPath',
+          message: 'Install skills to directory:',
+          default: marketplacePath,
+        },
       ]);
       const resolvedCatalog = (catalogPath as string).trim();
-      let catalog: { skills?: { repo: string; skill: string }[] } = { skills: [] };
+      let catalog: { skills?: { repo: string; skill: string }[] } = {
+        skills: [],
+      };
       if (resolvedCatalog && fs.existsSync(resolvedCatalog)) {
         catalog = JSON.parse(fs.readFileSync(resolvedCatalog, 'utf-8'));
       } else {
@@ -528,12 +568,27 @@ class APIFirstWizard {
       }
       const entries = catalog.skills || [];
       if (entries.length > 0) {
-        const choices = entries.map((e) => ({ name: `${e.skill} (${e.repo})`, value: e, short: e.skill }));
-        const { selected } = await inquirer.prompt([{ type: 'checkbox', name: 'selected', message: 'Select skills to install:', choices }]);
+        const choices = entries.map((e) => ({
+          name: `${e.skill} (${e.repo})`,
+          value: e,
+          short: e.skill,
+        }));
+        const { selected } = await inquirer.prompt([
+          {
+            type: 'checkbox',
+            name: 'selected',
+            message: 'Select skills to install:',
+            choices,
+          },
+        ]);
         const target = (targetPath as string).trim();
         const installService = container.get(SkillsInstallService);
         for (const e of selected as { repo: string; skill: string }[]) {
-          const result = await installService.install({ repoUrl: e.repo, skill: e.skill, path: target });
+          const result = await installService.install({
+            repoUrl: e.repo,
+            skill: e.skill,
+            path: target,
+          });
           if (result.success) printSuccess(result.message);
           else printError(result.message);
         }
@@ -541,7 +596,12 @@ class APIFirstWizard {
     }
 
     const { doManual } = await inquirer.prompt([
-      { type: 'confirm', name: 'doManual', message: 'Also define skills manually in the manifest?', default: skillSource === 'manual' },
+      {
+        type: 'confirm',
+        name: 'doManual',
+        message: 'Also define skills manually in the manifest?',
+        default: skillSource === 'manual',
+      },
     ]);
     if (!doManual) {
       return;

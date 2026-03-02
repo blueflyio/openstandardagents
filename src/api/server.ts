@@ -6,7 +6,10 @@
 
 import { createApp } from './index.js';
 
-export function startServer(opts?: { port?: number; corsOrigin?: string }): void {
+export function startServer(opts?: {
+  port?: number;
+  corsOrigin?: string;
+}): void {
   const port = opts?.port ?? parseInt(process.env.OSSA_API_PORT || '3000', 10);
   const app = createApp({ corsOrigin: opts?.corsOrigin });
 
@@ -14,10 +17,14 @@ export function startServer(opts?: { port?: number; corsOrigin?: string }): void
     console.log(`OSSA API server listening on http://localhost:${port}`);
     console.log(`  Health:    GET  http://localhost:${port}/health`);
     console.log(`  Manifests: GET  http://localhost:${port}/api/v1/manifests`);
-    console.log(`  Wizard:    POST http://localhost:${port}/api/v1/wizard/sessions`);
+    console.log(
+      `  Wizard:    POST http://localhost:${port}/api/v1/wizard/sessions`
+    );
     console.log(`  Export:    POST http://localhost:${port}/api/v1/export`);
     console.log(`  Convert:   POST http://localhost:${port}/api/v1/convert`);
     console.log(`  Skills:    GET  http://localhost:${port}/api/v1/skills`);
-    console.log(`  Workspace: GET  http://localhost:${port}/api/v1/workspace/status`);
+    console.log(
+      `  Workspace: GET  http://localhost:${port}/api/v1/workspace/status`
+    );
   });
 }

@@ -152,6 +152,8 @@ export function isKnownKagentBuiltinTool(name: string): boolean {
 /**
  * Resolve OSSA capability to kagent tool name if mapped
  */
-export function resolveCapabilityToKagentTool(capability: string): string | undefined {
+export function resolveCapabilityToKagentTool(
+  capability: string
+): string | undefined {
   return OSSA_CAPABILITY_TO_KAGENT_TOOL[capability];
 }

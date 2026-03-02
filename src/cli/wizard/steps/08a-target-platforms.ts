@@ -27,17 +27,23 @@ export async function configureTargetPlatformsStep(
     short: p.id,
   }));
 
-  const { targetPlatforms } = await inquirer.prompt<{ targetPlatforms: string[] }>([
+  const { targetPlatforms } = await inquirer.prompt<{
+    targetPlatforms: string[];
+  }>([
     {
       type: 'checkbox',
       name: 'targetPlatforms',
       message: 'Select target platforms (space to toggle, enter to confirm):',
       choices,
-      default: (state as WizardState & { targetPlatforms?: string[] }).targetPlatforms ?? [],
+      default:
+        (state as WizardState & { targetPlatforms?: string[] })
+          .targetPlatforms ?? [],
     },
   ]);
 
-  const nextState = { ...state } as WizardState & { targetPlatforms?: string[] };
+  const nextState = { ...state } as WizardState & {
+    targetPlatforms?: string[];
+  };
   nextState.targetPlatforms = targetPlatforms ?? [];
 
   if (nextState.targetPlatforms.length > 0) {
@@ -54,7 +60,9 @@ export async function configureTargetPlatformsStep(
       console.log('');
     }
   } else {
-    console_ui.info('No platforms selected. You can export later with: ossa export <manifest> --platform <id>');
+    console_ui.info(
+      'No platforms selected. You can export later with: ossa export <manifest> --platform <id>'
+    );
   }
 
   return nextState;

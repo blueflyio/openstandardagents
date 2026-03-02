@@ -940,11 +940,9 @@ export class KAgentCRDGenerator {
       (spec.role as string) || manifest.metadata?.description || '';
     const tools = this.extractToolsForV1Alpha2(spec.tools, options);
     const a2aSkills = this.extractA2ASkills(manifest, options);
-    const modelConfigName =
-      options.modelConfigName || 'default-model-config';
-    const extKagent = (manifest.extensions as Record<string, unknown>)?.kagent as
-      | Record<string, unknown>
-      | undefined;
+    const modelConfigName = options.modelConfigName || 'default-model-config';
+    const extKagent = (manifest.extensions as Record<string, unknown>)
+      ?.kagent as Record<string, unknown> | undefined;
     const deployment = (extKagent?.kubernetes as Record<string, unknown>)
       ?.resourceLimits as { cpu?: string; memory?: string } | undefined;
 
@@ -977,7 +975,8 @@ export class KAgentCRDGenerator {
           stream: true,
           systemMessage,
           ...(tools && tools.length > 0 && { tools }),
-          ...(a2aSkills && a2aSkills.length > 0 && { a2aConfig: { skills: a2aSkills } }),
+          ...(a2aSkills &&
+            a2aSkills.length > 0 && { a2aConfig: { skills: a2aSkills } }),
         },
         deployment: {
           replicas: options.replicas ?? 1,
@@ -988,11 +987,10 @@ export class KAgentCRDGenerator {
                     cpu: '100m',
                     memory: '256Mi',
                   },
-                  limits:
-                    (deployment || options.resources?.limits) ?? {
-                      cpu: '500m',
-                      memory: '512Mi',
-                    },
+                  limits: (deployment || options.resources?.limits) ?? {
+                    cpu: '500m',
+                    memory: '512Mi',
+                  },
                 },
               }
             : {}),
@@ -1002,7 +1000,11 @@ export class KAgentCRDGenerator {
 
     let modelConfig: KAgentV1Alpha2ModelConfig | undefined;
     if (options.modelConfigName === undefined && llmConfig) {
-      modelConfig = this.buildV1Alpha2ModelConfig(manifest, namespace, agentName);
+      modelConfig = this.buildV1Alpha2ModelConfig(
+        manifest,
+        namespace,
+        agentName
+      );
       agent.spec.declarative.modelConfig = modelConfig.metadata.name;
     }
 
@@ -1078,7 +1080,8 @@ export class KAgentCRDGenerator {
         continue;
       }
       const server = (obj.server as string) || (obj.name as string);
-      const toolNames = (obj.toolNames as string[]) ?? (obj.capabilities as string[]);
+      const toolNames =
+        (obj.toolNames as string[]) ?? (obj.capabilities as string[]);
       if (!server || !toolNames?.length) continue;
       out.push({
         type: 'McpServer',
@@ -1099,28 +1102,32 @@ export class KAgentCRDGenerator {
   private extractA2ASkills(
     manifest: OssaAgent,
     _options: KAgentDeploymentOptions
-  ): Array<{
-    id: string;
-    name: string;
-    description: string;
-    inputModes?: string[];
-    outputModes?: string[];
-    tags?: string[];
-    examples?: string[];
-  }> | undefined {
+  ):
+    | Array<{
+        id: string;
+        name: string;
+        description: string;
+        inputModes?: string[];
+        outputModes?: string[];
+        tags?: string[];
+        examples?: string[];
+      }>
+    | undefined {
     const ext = (manifest.extensions as Record<string, unknown>)?.kagent as
       | Record<string, unknown>
       | undefined;
     const a2a = ext?.a2aConfig as Record<string, unknown> | undefined;
-    const skills = a2a?.skills as Array<{
-      id?: string;
-      name?: string;
-      description?: string;
-      inputModes?: string[];
-      outputModes?: string[];
-      tags?: string[];
-      examples?: string[];
-    }> | undefined;
+    const skills = a2a?.skills as
+      | Array<{
+          id?: string;
+          name?: string;
+          description?: string;
+          inputModes?: string[];
+          outputModes?: string[];
+          tags?: string[];
+          examples?: string[];
+        }>
+      | undefined;
     if (skills?.length) {
       return skills.map((s) => ({
         id: s.id || s.name?.toLowerCase().replace(/\s+/g, '-') || 'skill',

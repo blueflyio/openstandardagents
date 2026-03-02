@@ -8,7 +8,10 @@ import { injectable, inject } from 'inversify';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import yaml from 'js-yaml';
-import { initializeAdapters, registry as adapterRegistry } from '../../adapters/index.js';
+import {
+  initializeAdapters,
+  registry as adapterRegistry,
+} from '../../adapters/index.js';
 import type { OssaAgent } from '../../types/index.js';
 
 export interface ConvertInput {
@@ -58,7 +61,12 @@ export class ConvertService {
       }
 
       fs.writeFileSync(outPath, content, 'utf8');
-      return { target: input.target, filename, content: converted, written_to: outPath };
+      return {
+        target: input.target,
+        filename,
+        content: converted,
+        written_to: outPath,
+      };
     }
 
     return { target: input.target, filename, content: converted };
@@ -66,6 +74,9 @@ export class ConvertService {
 
   listTargets(): Array<{ id: string; name: string }> {
     const adapters = adapterRegistry.getAdapterInfo();
-    return adapters.map((a) => ({ id: a.platform, name: a.displayName || a.platform }));
+    return adapters.map((a) => ({
+      id: a.platform,
+      name: a.displayName || a.platform,
+    }));
   }
 }
