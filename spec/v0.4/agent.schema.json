@@ -45,14 +45,6 @@
       "$ref": "#/definitions/WorkflowComposition",
       "description": "Workflow composition with sequential/parallel projection (when kind is Workflow)"
     },
-    "security": {
-      "$ref": "#/definitions/SecurityPosture",
-      "description": "Security posture: threat model, capabilities, sandboxing, network access, audit (v0.4)"
-    },
-    "protocols": {
-      "$ref": "#/definitions/ProtocolDeclarations",
-      "description": "Protocol declarations: MCP, A2A, ANP (v0.4)"
-    },
     "extensions": {
       "type": "object",
       "description": "Framework-specific extensions",
@@ -1407,10 +1399,6 @@
           "type": "string",
           "maxLength": 2000,
           "description": "Human-readable description"
-        },
-        "identity": {
-          "$ref": "#/definitions/AgentIdentity",
-          "description": "Agent identity: publisher, agent_id, checksum, created_at (v0.4)"
         },
         "labels": {
           "type": "object",
@@ -3810,124 +3798,6 @@
         }
       },
       "additionalProperties": false
-    },
-    "SecurityPosture": {
-      "type": "object",
-      "description": "Security posture metadata: threat model, capabilities, sandboxing, network access, audit (v0.4)",
-      "properties": {
-        "threat_model": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "category": { "type": "string" },
-              "severity": { "type": "string", "enum": ["low", "medium", "high", "critical"] },
-              "mitigations": { "type": "array", "items": { "type": "string" } },
-              "description": { "type": "string" }
-            }
-          }
-        },
-        "capabilities": {
-          "type": "object",
-          "properties": {
-            "required": { "type": "array", "items": { "type": "string" } },
-            "optional": { "type": "array", "items": { "type": "string" } }
-          }
-        },
-        "sandboxing": {
-          "type": "object",
-          "properties": {
-            "required": { "type": "boolean" },
-            "type": { "type": "string" },
-            "resource_limits": {
-              "type": "object",
-              "properties": {
-                "max_memory_mb": { "type": "integer" },
-                "max_cpu_cores": { "type": "number" },
-                "max_execution_seconds": { "type": "integer" },
-                "max_disk_mb": { "type": "integer" }
-              }
-            }
-          }
-        },
-        "network_access": {
-          "type": "object",
-          "properties": {
-            "allowed_domains": { "type": "array", "items": { "type": "string" } },
-            "blocked_domains": { "type": "array", "items": { "type": "string" } },
-            "protocols": { "type": "array", "items": { "type": "string" } },
-            "egress_policy": { "type": "string" }
-          }
-        },
-        "data_classification": { "type": "string" },
-        "audit": {
-          "type": "object",
-          "properties": {
-            "log_inputs": { "type": "boolean" },
-            "log_outputs": { "type": "boolean" },
-            "log_tool_calls": { "type": "boolean" },
-            "retention_days": { "type": "integer" }
-          }
-        }
-      },
-      "additionalProperties": false
-    },
-    "ProtocolDeclarations": {
-      "type": "object",
-      "description": "Protocol declarations: MCP, A2A, ANP (v0.4)",
-      "properties": {
-        "mcp": {
-          "type": "object",
-          "properties": {
-            "version": { "type": "string" },
-            "role": { "type": "string" },
-            "servers": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "name": { "type": "string" },
-                  "transport": { "type": "string" },
-                  "command": { "type": "string" },
-                  "args": { "type": "array", "items": { "type": "string" } },
-                  "tools": { "type": "array", "items": { "type": "string" } }
-                }
-              }
-            },
-            "capabilities": {
-              "type": "object",
-              "properties": {
-                "tools": { "type": "boolean" },
-                "resources": { "type": "boolean" },
-                "prompts": { "type": "boolean" },
-                "sampling": { "type": "boolean" }
-              }
-            }
-          },
-          "additionalProperties": true
-        },
-        "a2a": {
-          "type": "object",
-          "properties": {
-            "version": { "type": "string" },
-            "endpoint": { "type": "string", "format": "uri" },
-            "agent_card": { "type": "object" },
-            "capabilities": { "type": "object" },
-            "authentication": { "type": "object" }
-          },
-          "additionalProperties": true
-        },
-        "anp": {
-          "type": "object",
-          "properties": {
-            "did": { "type": "string" },
-            "verifiable_credentials": { "type": "array" },
-            "discovery": { "type": "object" }
-          },
-          "additionalProperties": true
-        }
-      },
-      "additionalProperties": true
     },
     "MemoryManagement": {
       "type": "object",

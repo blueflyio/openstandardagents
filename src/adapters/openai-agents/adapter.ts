@@ -18,7 +18,7 @@ import type {
 } from '../base/adapter.interface.js';
 import { BaseAdapter } from '../base/adapter.interface.js';
 
-// v0.4 fields not yet in OssaAgent type — use these helpers until types updated
+// v0.5 fields not yet in OssaAgent type — use these helpers until types updated
 type SpecV5 = OssaAgent['spec'] & {
   personality?: { system_prompt?: string; tone?: string; expertise?: string[] };
   mcp?: { servers?: Array<{ label: string; url: string; transport: string }> };
@@ -194,7 +194,7 @@ export class OpenAIAgentsAdapter extends BaseAdapter {
   }
 
   getExample(): OssaAgent {
-    // Example uses v0.4 fields (personality, mcp, safety) — cast until types updated
+    // Example uses v0.5 fields (personality, mcp, safety) — cast until types updated
     return {
       ossa_version: SPEC_VERSION,
       kind: 'Agent',

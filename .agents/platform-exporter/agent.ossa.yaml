@@ -1,6 +1,8 @@
 apiVersion: ossa/v0.4.1
 kind: Agent
 metadata:
+  uuid: 4629ebf3-73a2-4c8d-a103-2c5c824834a5
+  machine_name: platform_exporter
   name: platform-exporter
   version: 1.0.0
   description: Export OSSA agents to 12+ platforms (npm, Docker, K8s, MCP, Cursor, etc.)
