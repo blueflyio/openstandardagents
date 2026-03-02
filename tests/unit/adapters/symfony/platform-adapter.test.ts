@@ -35,23 +35,31 @@ describe('SymfonyAiPlatformAdapter', () => {
       expect(result.files.length).toBe(4);
 
       const baseName = 'test_agent';
-      const composerFile = result.files.find((f) => f.path === `${baseName}/composer.json`);
+      const composerFile = result.files.find(
+        (f) => f.path === `${baseName}/composer.json`
+      );
       expect(composerFile).toBeDefined();
       expect(composerFile?.content).toContain('"symfony/ai-agent"');
       expect(composerFile?.content).toContain('"symfony/ai-platform"');
       expect(composerFile?.content).toContain('"php": ">=8.2"');
 
-      const bootstrapFile = result.files.find((f) => f.path === `${baseName}/agent_bootstrap.php`);
+      const bootstrapFile = result.files.find(
+        (f) => f.path === `${baseName}/agent_bootstrap.php`
+      );
       expect(bootstrapFile).toBeDefined();
       expect(bootstrapFile?.content).toContain('You are a test agent.');
       expect(bootstrapFile?.content).toContain('PlatformFactory::create');
       expect(bootstrapFile?.content).toContain('declare(strict_types=1)');
       expect(bootstrapFile?.language).toBe('php');
 
-      const readmeFile = result.files.find((f) => f.path === `${baseName}/README.md`);
+      const readmeFile = result.files.find(
+        (f) => f.path === `${baseName}/README.md`
+      );
       expect(readmeFile).toBeDefined();
 
-      const ossaFile = result.files.find((f) => f.path === `${baseName}/agent.ossa.yaml`);
+      const ossaFile = result.files.find(
+        (f) => f.path === `${baseName}/agent.ossa.yaml`
+      );
       expect(ossaFile).toBeDefined();
     });
 
@@ -62,8 +70,14 @@ describe('SymfonyAiPlatformAdapter', () => {
         metadata: { name: 'my-agent', version: '1.0.0' },
         spec: {
           role: 'Assistant',
-          llm: { provider: 'anthropic', model: 'claude-3-5-sonnet', temperature: 0.5 },
-          tools: [{ type: 'function', name: 'search', description: 'Search the web' }],
+          llm: {
+            provider: 'anthropic',
+            model: 'claude-3-5-sonnet',
+            temperature: 0.5,
+          },
+          tools: [
+            { type: 'function', name: 'search', description: 'Search the web' },
+          ],
         },
       };
 
@@ -71,7 +85,9 @@ describe('SymfonyAiPlatformAdapter', () => {
 
       expect(result.success).toBe(true);
       const baseName = 'my_agent';
-      const bootstrapFile = result.files.find((f) => f.path === `${baseName}/agent_bootstrap.php`);
+      const bootstrapFile = result.files.find(
+        (f) => f.path === `${baseName}/agent_bootstrap.php`
+      );
       expect(bootstrapFile?.content).toContain("'anthropic'");
       expect(bootstrapFile?.content).toContain("'claude-3-5-sonnet'");
       expect(bootstrapFile?.content).toContain("'temperature' => 0.5");
@@ -100,8 +116,16 @@ describe('SymfonyAiPlatformAdapter', () => {
         spec: {
           role: 'Agent with tools',
           tools: [
-            { type: 'function', name: 'web-search', description: 'Search the web' },
-            { type: 'function', name: 'file_reader', description: 'Read files' },
+            {
+              type: 'function',
+              name: 'web-search',
+              description: 'Search the web',
+            },
+            {
+              type: 'function',
+              name: 'file_reader',
+              description: 'Read files',
+            },
           ],
         },
       };
@@ -112,13 +136,17 @@ describe('SymfonyAiPlatformAdapter', () => {
       // 4 base files + 2 tool stubs
       expect(result.files.length).toBe(6);
 
-      const searchStub = result.files.find((f) => f.path.includes('WebSearchTool.php'));
+      const searchStub = result.files.find((f) =>
+        f.path.includes('WebSearchTool.php')
+      );
       expect(searchStub).toBeDefined();
       expect(searchStub?.content).toContain('#[AsTool(');
       expect(searchStub?.content).toContain("name: 'web-search'");
       expect(searchStub?.content).toContain('class WebSearchTool');
 
-      const readerStub = result.files.find((f) => f.path.includes('FileReaderTool.php'));
+      const readerStub = result.files.find((f) =>
+        f.path.includes('FileReaderTool.php')
+      );
       expect(readerStub).toBeDefined();
       expect(readerStub?.content).toContain('class FileReaderTool');
     });
@@ -135,14 +163,18 @@ describe('SymfonyAiPlatformAdapter', () => {
       };
 
       const result = await adapter.export(manifest);
-      const bootstrap = result.files.find((f) => f.path.includes('agent_bootstrap.php'));
+      const bootstrap = result.files.find((f) =>
+        f.path.includes('agent_bootstrap.php')
+      );
       expect(bootstrap?.content).toContain('SearchTool()');
       expect(bootstrap?.content).toContain('new \\App\\Agent\\Tool\\');
     });
 
     it('uses defaults when llm config is missing', async () => {
       const result = await adapter.export(minimalManifest);
-      const bootstrap = result.files.find((f) => f.path.includes('agent_bootstrap.php'));
+      const bootstrap = result.files.find((f) =>
+        f.path.includes('agent_bootstrap.php')
+      );
       expect(bootstrap?.content).toContain("'openai'");
       expect(bootstrap?.content).toContain("'gpt-4o-mini'");
       expect(bootstrap?.content).toContain("'temperature' => 0.7");
@@ -209,7 +241,9 @@ describe('SymfonyAiPlatformAdapter', () => {
       } as unknown as OssaAgent;
       const result = await adapter.validate(manifest);
       expect(result.valid).toBe(true);
-      expect(result.warnings?.some((w) => w.code === 'SYMFONY_PROMPT_RECOMMENDED')).toBe(true);
+      expect(
+        result.warnings?.some((w) => w.code === 'SYMFONY_PROMPT_RECOMMENDED')
+      ).toBe(true);
     });
 
     it('warns for unsupported LLM provider', async () => {
@@ -224,7 +258,9 @@ describe('SymfonyAiPlatformAdapter', () => {
       };
       const result = await adapter.validate(manifest);
       expect(result.valid).toBe(true);
-      expect(result.warnings?.some((w) => w.code === 'SYMFONY_UNSUPPORTED_PROVIDER')).toBe(true);
+      expect(
+        result.warnings?.some((w) => w.code === 'SYMFONY_UNSUPPORTED_PROVIDER')
+      ).toBe(true);
     });
 
     it('warns when tool is missing description', async () => {
@@ -239,11 +275,19 @@ describe('SymfonyAiPlatformAdapter', () => {
       };
       const result = await adapter.validate(manifest);
       expect(result.valid).toBe(true);
-      expect(result.warnings?.some((w) => w.code === 'SYMFONY_TOOL_DESCRIPTION')).toBe(true);
+      expect(
+        result.warnings?.some((w) => w.code === 'SYMFONY_TOOL_DESCRIPTION')
+      ).toBe(true);
     });
 
     it('accepts supported providers without warning', async () => {
-      for (const provider of ['openai', 'anthropic', 'google', 'mistral', 'ollama']) {
+      for (const provider of [
+        'openai',
+        'anthropic',
+        'google',
+        'mistral',
+        'ollama',
+      ]) {
         const manifest: OssaAgent = {
           apiVersion: API_VERSION,
           kind: 'Agent',
@@ -251,7 +295,11 @@ describe('SymfonyAiPlatformAdapter', () => {
           spec: { role: 'test', llm: { provider, model: 'test-model' } },
         };
         const result = await adapter.validate(manifest);
-        expect(result.warnings?.some((w) => w.code === 'SYMFONY_UNSUPPORTED_PROVIDER')).toBeFalsy();
+        expect(
+          result.warnings?.some(
+            (w) => w.code === 'SYMFONY_UNSUPPORTED_PROVIDER'
+          )
+        ).toBeFalsy();
       }
     });
   });
@@ -278,7 +326,9 @@ describe('SymfonyAiPlatformAdapter', () => {
         },
       };
       const result = await adapter.toConfig(manifest);
-      expect(result.config.tools).toEqual([{ name: 'search', description: 'Search' }]);
+      expect(result.config.tools).toEqual([
+        { name: 'search', description: 'Search' },
+      ]);
     });
 
     it('includes OSSA metadata', async () => {
@@ -296,7 +346,12 @@ describe('SymfonyAiPlatformAdapter', () => {
         metadata: { name: 'test', version: '1.0.0' },
         spec: {
           role: 'Custom',
-          llm: { provider: 'anthropic', model: 'claude-3-5-sonnet', temperature: 0.2, maxTokens: 2048 },
+          llm: {
+            provider: 'anthropic',
+            model: 'claude-3-5-sonnet',
+            temperature: 0.2,
+            maxTokens: 2048,
+          },
         },
       };
       const result = await adapter.toConfig(manifest);
@@ -326,8 +381,16 @@ describe('SymfonyAiPlatformAdapter', () => {
         spec: {
           role: 'test',
           tools: [
-            { type: 'function', name: 'web-search', description: 'Search the web for information' },
-            { type: 'function', name: 'file_reader', description: 'Read file contents' },
+            {
+              type: 'function',
+              name: 'web-search',
+              description: 'Search the web for information',
+            },
+            {
+              type: 'function',
+              name: 'file_reader',
+              description: 'Read file contents',
+            },
           ],
         },
       };
@@ -338,7 +401,9 @@ describe('SymfonyAiPlatformAdapter', () => {
       expect(stubs[0].path).toBe('my_agent/src/Tool/WebSearchTool.php');
       expect(stubs[0].content).toContain('#[AsTool(');
       expect(stubs[0].content).toContain("name: 'web-search'");
-      expect(stubs[0].content).toContain("description: 'Search the web for information'");
+      expect(stubs[0].content).toContain(
+        "description: 'Search the web for information'"
+      );
       expect(stubs[0].content).toContain('final class WebSearchTool');
       expect(stubs[0].content).toContain('namespace App\\Agent\\Tool;');
       expect(stubs[0].language).toBe('php');
@@ -359,7 +424,10 @@ describe('SymfonyAiPlatformAdapter', () => {
         metadata: { name: 'test', version: '1.0.0' },
         spec: {
           role: 'test',
-          tools: [{ type: 'function', name: 'valid' }, { type: 'function', description: 'no name' } as any],
+          tools: [
+            { type: 'function', name: 'valid' },
+            { type: 'function', description: 'no name' } as any,
+          ],
         },
       };
       const stubs = adapter.generateToolStubs(manifest);

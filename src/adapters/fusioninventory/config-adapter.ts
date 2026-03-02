@@ -55,9 +55,21 @@ export class FusionInventoryConfigAdapter extends BaseAdapter {
       spec: {
         role: 'Collect hardware and software inventory from endpoints',
         tools: [
-          { type: 'function', name: 'inventory', description: 'Hardware/software inventory collection' },
-          { type: 'function', name: 'deploy', description: 'Software deployment tasks' },
-          { type: 'function', name: 'esx', description: 'VMware ESX/ESXi inventory' },
+          {
+            type: 'function',
+            name: 'inventory',
+            description: 'Hardware/software inventory collection',
+          },
+          {
+            type: 'function',
+            name: 'deploy',
+            description: 'Software deployment tasks',
+          },
+          {
+            type: 'function',
+            name: 'esx',
+            description: 'VMware ESX/ESXi inventory',
+          },
         ],
       },
       extensions: {
@@ -82,7 +94,10 @@ export class FusionInventoryConfigAdapter extends BaseAdapter {
 
   private buildConfig(manifest: OssaAgent): FusionInventoryAgentConfig {
     const meta = manifest.metadata || { name: 'agent', version: '0.0.0' };
-    const ext = (manifest.extensions?.fusioninventory || {}) as Record<string, unknown>;
+    const ext = (manifest.extensions?.fusioninventory || {}) as Record<
+      string,
+      unknown
+    >;
 
     const cfg: FusionInventoryAgentConfig = {};
 
@@ -96,34 +111,45 @@ export class FusionInventoryConfigAdapter extends BaseAdapter {
     // SSL
     if (ext['ca-cert-dir']) cfg['ca-cert-dir'] = String(ext['ca-cert-dir']);
     if (ext['ca-cert-file']) cfg['ca-cert-file'] = String(ext['ca-cert-file']);
-    if (ext['no-ssl-check'] !== undefined) cfg['no-ssl-check'] = Boolean(ext['no-ssl-check']);
+    if (ext['no-ssl-check'] !== undefined)
+      cfg['no-ssl-check'] = Boolean(ext['no-ssl-check']);
 
     // HTTP daemon
-    if (ext['no-httpd'] !== undefined) cfg['no-httpd'] = Boolean(ext['no-httpd']);
+    if (ext['no-httpd'] !== undefined)
+      cfg['no-httpd'] = Boolean(ext['no-httpd']);
     if (ext['httpd-ip']) cfg['httpd-ip'] = String(ext['httpd-ip']);
-    if (ext['httpd-port'] !== undefined) cfg['httpd-port'] = Number(ext['httpd-port']);
-    if (Array.isArray(ext['httpd-trust'])) cfg['httpd-trust'] = ext['httpd-trust'] as string[];
+    if (ext['httpd-port'] !== undefined)
+      cfg['httpd-port'] = Number(ext['httpd-port']);
+    if (Array.isArray(ext['httpd-trust']))
+      cfg['httpd-trust'] = ext['httpd-trust'] as string[];
 
     // Logging
-    if (ext.logger) cfg.logger = ext.logger as FusionInventoryAgentConfig['logger'];
+    if (ext.logger)
+      cfg.logger = ext.logger as FusionInventoryAgentConfig['logger'];
     if (ext.logfile) cfg.logfile = String(ext.logfile);
-    if (ext['logfile-maxsize'] !== undefined) cfg['logfile-maxsize'] = Number(ext['logfile-maxsize']);
+    if (ext['logfile-maxsize'] !== undefined)
+      cfg['logfile-maxsize'] = Number(ext['logfile-maxsize']);
     if (ext.logfacility) cfg.logfacility = String(ext.logfacility);
     if (ext.color !== undefined) cfg.color = Boolean(ext.color);
     if (ext.debug !== undefined) cfg.debug = Number(ext.debug);
 
     // Tasks — derive disabled tasks from manifest tools (if tools are listed, others are disabled)
-    if (Array.isArray(ext['no-task'])) cfg['no-task'] = ext['no-task'] as string[];
+    if (Array.isArray(ext['no-task']))
+      cfg['no-task'] = ext['no-task'] as string[];
 
     // Inventory-specific
     if (ext.tag) cfg.tag = String(ext.tag);
     else if (meta.name) cfg.tag = meta.name;
 
-    if (Array.isArray(ext['no-category'])) cfg['no-category'] = ext['no-category'] as string[];
-    if (ext['additional-content']) cfg['additional-content'] = String(ext['additional-content']);
-    if (ext['scan-homedirs'] !== undefined) cfg['scan-homedirs'] = Boolean(ext['scan-homedirs']);
+    if (Array.isArray(ext['no-category']))
+      cfg['no-category'] = ext['no-category'] as string[];
+    if (ext['additional-content'])
+      cfg['additional-content'] = String(ext['additional-content']);
+    if (ext['scan-homedirs'] !== undefined)
+      cfg['scan-homedirs'] = Boolean(ext['scan-homedirs']);
     if (ext.force !== undefined) cfg.force = Boolean(ext.force);
-    if (ext['collect-timeout'] !== undefined) cfg['collect-timeout'] = Number(ext['collect-timeout']);
+    if (ext['collect-timeout'] !== undefined)
+      cfg['collect-timeout'] = Number(ext['collect-timeout']);
     if (ext['no-p2p'] !== undefined) cfg['no-p2p'] = Boolean(ext['no-p2p']);
 
     // Auth

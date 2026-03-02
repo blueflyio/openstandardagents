@@ -31,7 +31,9 @@ describe('isMultiAgentManifest', () => {
         ...singleAgent.spec!,
         team: {
           model: 'lead-teammate',
-          members: [{ name: 'lead', kind: 'team-lead', role: 'Lead', model: 'gpt-4' }],
+          members: [
+            { name: 'lead', kind: 'team-lead', role: 'Lead', model: 'gpt-4' },
+          ],
         },
       },
     };
@@ -44,7 +46,13 @@ describe('isMultiAgentManifest', () => {
       spec: {
         ...singleAgent.spec!,
         subagents: [
-          { name: 'c', kind: 'worker', role: 'R', reportsTo: 'solo', tokenBudget: 100 },
+          {
+            name: 'c',
+            kind: 'worker',
+            role: 'R',
+            reportsTo: 'solo',
+            tokenBudget: 100,
+          },
         ],
       },
     };
@@ -96,7 +104,13 @@ describe('resolvePattern', () => {
       spec: {
         ...singleAgent.spec!,
         subagents: [
-          { name: 'c', kind: 'worker', role: 'R', reportsTo: 'solo', tokenBudget: 100 },
+          {
+            name: 'c',
+            kind: 'worker',
+            role: 'R',
+            reportsTo: 'solo',
+            tokenBudget: 100,
+          },
         ],
       },
     };
@@ -145,7 +159,9 @@ describe('generateTeamFiles', () => {
     };
     const files = generateTeamFiles(manifest, { platform: 'crewai' });
     expect(files.length).toBeGreaterThan(0);
-    expect(files.some((f) => f.path.includes('crew') || f.path.includes('.py'))).toBe(true);
+    expect(
+      files.some((f) => f.path.includes('crew') || f.path.includes('.py'))
+    ).toBe(true);
   });
 });
 
@@ -161,7 +177,13 @@ describe('generateSubagentFiles', () => {
       spec: {
         ...singleAgent.spec!,
         subagents: [
-          { name: 'child1', kind: 'worker', role: 'Helper', reportsTo: 'solo', tokenBudget: 500 },
+          {
+            name: 'child1',
+            kind: 'worker',
+            role: 'Helper',
+            reportsTo: 'solo',
+            tokenBudget: 500,
+          },
         ],
       },
     };

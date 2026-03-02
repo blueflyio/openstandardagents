@@ -343,7 +343,9 @@ export class OSSAValidator {
 }
 
 // CLI usage (ESM-safe: package is "type": "module")
-const isMain = process.argv[1] && (process.argv[1] === __filename || process.argv[1].endsWith('validator.js'));
+const isMain =
+  process.argv[1] &&
+  (process.argv[1] === __filename || process.argv[1].endsWith('validator.js'));
 if (isMain) {
   const args = process.argv.slice(2);
   if (args.length === 0) {

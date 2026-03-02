@@ -22,7 +22,9 @@ import type {
 } from '../base/adapter.interface.js';
 
 function sanitizeName(name: string): string {
-  return name.replace(/[^a-z0-9_]/gi, '_').replace(/^_+|_+$/g, '') || 'ossa_agent';
+  return (
+    name.replace(/[^a-z0-9_]/gi, '_').replace(/^_+|_+$/g, '') || 'ossa_agent'
+  );
 }
 
 function escapePhpString(s: string): string {
@@ -117,7 +119,8 @@ export class SymfonyAiPlatformAdapter extends BaseAdapter {
     return JSON.stringify(
       {
         name: `ossa/${name}`,
-        description: manifest.metadata?.description || `OSSA agent ${name} (Symfony AI)`,
+        description:
+          manifest.metadata?.description || `OSSA agent ${name} (Symfony AI)`,
         type: 'project',
         require: {
           php: '>=8.2',
@@ -144,15 +147,26 @@ export class SymfonyAiPlatformAdapter extends BaseAdapter {
     const systemMessage = escapePhpString(role);
 
     const llm = manifest.spec?.llm as
-      | { provider?: string; model?: string; temperature?: number; maxTokens?: number }
+      | {
+          provider?: string;
+          model?: string;
+          temperature?: number;
+          maxTokens?: number;
+        }
       | undefined;
     const provider = llm?.provider || 'openai';
     const model = llm?.model || 'gpt-4o-mini';
     const temperature = llm?.temperature ?? 0.7;
     const maxTokens = llm?.maxTokens ?? 4096;
 
-    const tools = (manifest.spec?.tools as Array<{ name?: string; description?: string }>) || [];
-    const toolNames = tools.map((t) => t.name || 'unknown').filter((n) => n !== 'unknown');
+    const tools =
+      (manifest.spec?.tools as Array<{
+        name?: string;
+        description?: string;
+      }>) || [];
+    const toolNames = tools
+      .map((t) => t.name || 'unknown')
+      .filter((n) => n !== 'unknown');
 
     return `<?php
 
@@ -185,13 +199,26 @@ use Symfony\\Component\\Ai\\Message\\Message;
     $messageBag = new MessageBag();
     $messageBag->add(Message::forSystem($systemMessage));
 
-    ${toolNames.length ? `$toolbox = new Toolbox([
-        ${toolNames.map((n) => {
-          const cls = n.split(/[-_ ]+/).map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join('') + 'Tool';
-          return `new \\App\\Agent\\Tool\\${cls}(),`;
-        }).join('\n        ')}
-    ]);` : `$toolbox = new Toolbox([]);
-    // Add your #[AsTool] classes: $toolbox = new Toolbox([new MyTool(), ...]);`}
+    ${
+      toolNames.length
+        ? `$toolbox = new Toolbox([
+        ${toolNames
+          .map((n) => {
+            const cls =
+              n
+                .split(/[-_ ]+/)
+                .map(
+                  (w: string) =>
+                    w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()
+                )
+                .join('') + 'Tool';
+            return `new \\App\\Agent\\Tool\\${cls}(),`;
+          })
+          .join('\n        ')}
+    ]);`
+        : `$toolbox = new Toolbox([]);
+    // Add your #[AsTool] classes: $toolbox = new Toolbox([new MyTool(), ...]);`
+    }
 
     $agent = new Agent(
         platform: $platform,
@@ -207,7 +234,8 @@ use Symfony\\Component\\Ai\\Message\\Message;
   }
 
   private generateReadme(manifest: OssaAgent, name: string): string {
-    const desc = manifest.metadata?.description || 'OSSA agent exported for Symfony AI';
+    const desc =
+      manifest.metadata?.description || 'OSSA agent exported for Symfony AI';
     return `# ${name}
 
 ${desc}
@@ -256,9 +284,13 @@ $response = $agent->run('Hello');
     const errors: ValidationError[] = [...(base.errors ?? [])];
     const warnings: ValidationWarning[] = [...(base.warnings ?? [])];
 
-    if (!manifest.spec?.role && !(manifest.spec as Record<string, unknown>)?.prompts) {
+    if (
+      !manifest.spec?.role &&
+      !(manifest.spec as Record<string, unknown>)?.prompts
+    ) {
       warnings.push({
-        message: 'spec.role or spec.prompts.system recommended for Symfony system message',
+        message:
+          'spec.role or spec.prompts.system recommended for Symfony system message',
         path: 'spec.role',
         suggestion: 'Add a system prompt',
         code: 'SYMFONY_PROMPT_RECOMMENDED',
@@ -267,7 +299,13 @@ $response = $agent->run('Hello');
 
     const llm = manifest.spec?.llm as { provider?: string } | undefined;
     const provider = llm?.provider;
-    const supportedProviders = ['openai', 'anthropic', 'google', 'mistral', 'ollama'];
+    const supportedProviders = [
+      'openai',
+      'anthropic',
+      'google',
+      'mistral',
+      'ollama',
+    ];
     if (provider && !supportedProviders.includes(provider)) {
       warnings.push({
         message: `LLM provider "${provider}" may not be supported by Symfony AI`,
@@ -277,13 +315,18 @@ $response = $agent->run('Hello');
       });
     }
 
-    const tools = (manifest.spec?.tools as Array<{ name?: string; description?: string }>) || [];
+    const tools =
+      (manifest.spec?.tools as Array<{
+        name?: string;
+        description?: string;
+      }>) || [];
     for (let i = 0; i < tools.length; i++) {
       if (!tools[i].description) {
         warnings.push({
           message: `Tool "${tools[i].name}" missing description (used for #[AsTool] attribute)`,
           path: `spec.tools[${i}].description`,
-          suggestion: 'Add a description for better Symfony AI tool documentation',
+          suggestion:
+            'Add a description for better Symfony AI tool documentation',
           code: 'SYMFONY_TOOL_DESCRIPTION',
         });
       }
@@ -298,9 +341,18 @@ $response = $agent->run('Hello');
 
   async toConfig(manifest: OssaAgent): Promise<ConfigResult> {
     const llm = manifest.spec?.llm as
-      | { provider?: string; model?: string; temperature?: number; maxTokens?: number }
+      | {
+          provider?: string;
+          model?: string;
+          temperature?: number;
+          maxTokens?: number;
+        }
       | undefined;
-    const tools = (manifest.spec?.tools as Array<{ name?: string; description?: string }>) || [];
+    const tools =
+      (manifest.spec?.tools as Array<{
+        name?: string;
+        description?: string;
+      }>) || [];
 
     return {
       config: {
@@ -325,16 +377,21 @@ $response = $agent->run('Hello');
    * Each stub uses the Symfony #[AsTool] attribute.
    */
   generateToolStubs(manifest: OssaAgent): ExportFile[] {
-    const tools = (manifest.spec?.tools as Array<{ name?: string; description?: string }>) || [];
+    const tools =
+      (manifest.spec?.tools as Array<{
+        name?: string;
+        description?: string;
+      }>) || [];
     const name = sanitizeName(manifest.metadata?.name || 'agent');
 
     return tools
       .filter((t) => t.name)
       .map((tool) => {
-        const className = tool.name!
-          .split(/[-_ ]+/)
-          .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-          .join('') + 'Tool';
+        const className =
+          tool
+            .name!.split(/[-_ ]+/)
+            .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+            .join('') + 'Tool';
 
         const desc = escapePhpString(tool.description || tool.name || '');
 
@@ -360,7 +417,12 @@ final class ${className}
     }
 }
 `;
-        return this.createFile(`${name}/src/Tool/${className}.php`, content, 'code', 'php');
+        return this.createFile(
+          `${name}/src/Tool/${className}.php`,
+          content,
+          'code',
+          'php'
+        );
       });
   }
 

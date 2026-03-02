@@ -6,7 +6,10 @@
  */
 
 import { injectable } from 'inversify';
-import { initializeAdapters, registry as adapterRegistry } from '../../adapters/index.js';
+import {
+  initializeAdapters,
+  registry as adapterRegistry,
+} from '../../adapters/index.js';
 import type { OssaAgent } from '../../types/index.js';
 
 export interface ExportInput {

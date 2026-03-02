@@ -303,10 +303,13 @@ export function extractCapabilities(manifest: OssaAgent): string[] {
       typeof c === 'string' ? c : c.name || ''
     );
   }
-  if (typeof raw === 'object' && Array.isArray((raw as { grants?: unknown[] }).grants)) {
-    return ((raw as { grants: Array<{ capability?: string }> }).grants
+  if (
+    typeof raw === 'object' &&
+    Array.isArray((raw as { grants?: unknown[] }).grants)
+  ) {
+    return (raw as { grants: Array<{ capability?: string }> }).grants
       .map((g) => g.capability)
-      .filter((s): s is string => typeof s === 'string'));
+      .filter((s): s is string => typeof s === 'string');
   }
   return [];
 }

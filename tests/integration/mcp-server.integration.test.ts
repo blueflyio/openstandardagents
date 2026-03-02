@@ -10,7 +10,12 @@ import * as fs from 'node:fs';
 
 const SERVER_PATH = path.join(__dirname, '../../dist/mcp-server/index.js');
 
-function sendRpc(proc: ReturnType<typeof spawn>, method: string, params: unknown, id: number): Promise<unknown> {
+function sendRpc(
+  proc: ReturnType<typeof spawn>,
+  method: string,
+  params: unknown,
+  id: number
+): Promise<unknown> {
   return new Promise((resolve, reject) => {
     const msg = JSON.stringify({ jsonrpc: '2.0', id, method, params }) + '\n';
     let buf = '';
@@ -41,14 +46,21 @@ describe('OSSA MCP server integration', () => {
       cwd: path.join(__dirname, '../..'),
     });
     try {
-      const init = await sendRpc(proc, 'initialize', {
-        protocolVersion: '2024-11-05',
-        capabilities: {},
-        clientInfo: { name: 'test', version: '0.1' },
-      }, 1) as { result?: { serverInfo?: { name: string } } };
+      const init = (await sendRpc(
+        proc,
+        'initialize',
+        {
+          protocolVersion: '2024-11-05',
+          capabilities: {},
+          clientInfo: { name: 'test', version: '0.1' },
+        },
+        1
+      )) as { result?: { serverInfo?: { name: string } } };
       expect(init.result?.serverInfo?.name).toBe('ossa-mcp');
 
-      const list = await sendRpc(proc, 'tools/list', {}, 2) as { result?: { tools?: { name: string }[] } };
+      const list = (await sendRpc(proc, 'tools/list', {}, 2)) as {
+        result?: { tools?: { name: string }[] };
+      };
       const names = (list.result?.tools ?? []).map((t) => t.name);
       expect(names).toContain('ossa_validate');
       expect(names).toContain('ossa_scaffold');

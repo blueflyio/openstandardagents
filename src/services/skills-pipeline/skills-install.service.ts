@@ -29,7 +29,9 @@ export interface SkillsInstallResult {
 function parseGitHubUrl(url: string): { owner: string; repo: string } {
   const match = url.match(/github\.com[/:]([^/]+)\/([^/]+?)(?:\.git)?\/?$/);
   if (!match) {
-    throw new Error(`Invalid GitHub URL: ${url}. Use https://github.com/owner/repo`);
+    throw new Error(
+      `Invalid GitHub URL: ${url}. Use https://github.com/owner/repo`
+    );
   }
   return { owner: match[1], repo: match[2] };
 }
@@ -69,11 +71,14 @@ export class SkillsInstallService {
           ref: ref || undefined,
         });
         if (Array.isArray(data)) {
-          const hasSkillMd = data.some((e: { name?: string }) => e.name === 'SKILL.md');
+          const hasSkillMd = data.some(
+            (e: { name?: string }) => e.name === 'SKILL.md'
+          );
           if (hasSkillMd) return candidate;
         } else {
           const type = (data as { type?: string }).type;
-          if (type === 'file' && candidate.endsWith('SKILL.md')) return path.dirname(candidate);
+          if (type === 'file' && candidate.endsWith('SKILL.md'))
+            return path.dirname(candidate);
           if (type === 'dir') return candidate;
         }
       } catch {
@@ -86,12 +91,19 @@ export class SkillsInstallService {
     );
   }
 
-
   /**
    * Get blob content as utf-8 string.
    */
-  private async getBlob(owner: string, repo: string, sha: string): Promise<string> {
-    const { data } = await this.octokit.rest.git.getBlob({ owner, repo, file_sha: sha });
+  private async getBlob(
+    owner: string,
+    repo: string,
+    sha: string
+  ): Promise<string> {
+    const { data } = await this.octokit.rest.git.getBlob({
+      owner,
+      repo,
+      file_sha: sha,
+    });
     const encoding = (data as { encoding?: string }).encoding;
     const content = (data as { content?: string }).content;
     if (!content) return '';
@@ -115,12 +127,18 @@ export class SkillsInstallService {
       if (!options.skill) {
         return {
           success: false,
-          message: 'Missing skill name. Use: ossa skills add <repo-url> --skill <name>',
+          message:
+            'Missing skill name. Use: ossa skills add <repo-url> --skill <name>',
           errors: ['--skill <name> is required'],
         };
       }
 
-      const skillPath = await this.findSkillPath(owner, repo, options.skill, ref);
+      const skillPath = await this.findSkillPath(
+        owner,
+        repo,
+        options.skill,
+        ref
+      );
 
       const commit = await this.octokit.rest.repos.getCommit({
         owner,
@@ -139,7 +157,9 @@ export class SkillsInstallService {
       const prefix = skillPath.endsWith('/') ? skillPath : `${skillPath}/`;
       const blobEntries = (fullTree.data.tree || []).filter(
         (e: { path?: string; type: string }) =>
-          e.type === 'blob' && e.path && (e.path === skillPath || e.path.startsWith(prefix))
+          e.type === 'blob' &&
+          e.path &&
+          (e.path === skillPath || e.path.startsWith(prefix))
       ) as { path: string; sha: string }[];
 
       if (blobEntries.length === 0) {
@@ -149,7 +169,10 @@ export class SkillsInstallService {
           path: skillPath,
           ref: ref || undefined,
         });
-        if (!Array.isArray(singleFile.data) && singleFile.data.type === 'file') {
+        if (
+          !Array.isArray(singleFile.data) &&
+          singleFile.data.type === 'file'
+        ) {
           const content = Buffer.from(
             (singleFile.data as { content?: string }).content || '',
             'base64'
@@ -170,7 +193,10 @@ export class SkillsInstallService {
         };
       }
 
-      const outSkillDir = path.join(targetDir, path.basename(skillPath) || options.skill);
+      const outSkillDir = path.join(
+        targetDir,
+        path.basename(skillPath) || options.skill
+      );
       await fs.mkdir(outSkillDir, { recursive: true });
 
       for (const entry of blobEntries) {
@@ -202,12 +228,19 @@ export class SkillsInstallService {
   /**
    * List available skill names in a repo (dirs that contain SKILL.md).
    */
-  async listInRepo(repoUrl: string, ref?: string): Promise<{ name: string; path: string }[]> {
+  async listInRepo(
+    repoUrl: string,
+    ref?: string
+  ): Promise<{ name: string; path: string }[]> {
     const { owner, repo } = parseGitHubUrl(repoUrl);
     const sha = ref || 'HEAD';
 
     try {
-      const commit = await this.octokit.rest.repos.getCommit({ owner, repo, ref: sha });
+      const commit = await this.octokit.rest.repos.getCommit({
+        owner,
+        repo,
+        ref: sha,
+      });
       const { data: tree } = await this.octokit.rest.git.getTree({
         owner,
         repo,
@@ -216,7 +249,10 @@ export class SkillsInstallService {
       });
 
       const skillMdPaths = (tree.tree || [])
-        .filter((e: { path?: string; type: string }) => e.type === 'blob' && e.path?.endsWith('SKILL.md'))
+        .filter(
+          (e: { path?: string; type: string }) =>
+            e.type === 'blob' && e.path?.endsWith('SKILL.md')
+        )
         .map((e: { path: string }) => e.path);
 
       const dirs = new Map<string, string>();
@@ -225,7 +261,10 @@ export class SkillsInstallService {
         const name = path.basename(dir);
         if (!dirs.has(name)) dirs.set(name, dir);
       }
-      return Array.from(dirs.entries()).map(([name, pathDir]) => ({ name, path: pathDir }));
+      return Array.from(dirs.entries()).map(([name, pathDir]) => ({
+        name,
+        path: pathDir,
+      }));
     } catch {
       return [];
     }

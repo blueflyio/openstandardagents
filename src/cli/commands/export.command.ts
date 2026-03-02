@@ -165,8 +165,9 @@ exportCommand.action(
           'utf-8'
         );
         const base64 = Buffer.from(raw.trim(), 'utf-8').toString('base64');
-        const agentName = (raw.match(/name\s*:\s*["']?([a-zA-Z0-9_-]+)/m) ||
-          [])[1] || 'incoming';
+        const agentName =
+          (raw.match(/name\s*:\s*["']?([a-zA-Z0-9_-]+)/m) || [])[1] ||
+          'incoming';
         const safeName = agentName.replace(/[^a-zA-Z0-9_-]/g, '-').slice(0, 64);
 
         const form = new URLSearchParams();
@@ -198,7 +199,10 @@ exportCommand.action(
           process.exit(1);
         }
 
-        const pipeline = (await res.json()) as { id?: number; web_url?: string };
+        const pipeline = (await res.json()) as {
+          id?: number;
+          web_url?: string;
+        };
         if (!options.quiet) {
           console.log(
             useColor
@@ -409,8 +413,7 @@ exportCommand.action(
         case 'kagent': {
           const agentName = manifest.metadata?.name || 'agent';
           const outputDir = options.output || `./${agentName}-kagent`;
-          const useV1Alpha2 =
-            (options.crdVersion ?? 'v1alpha1') === 'v1alpha2';
+          const useV1Alpha2 = (options.crdVersion ?? 'v1alpha1') === 'v1alpha2';
           const kagentOpts = {
             namespace: options.namespace || 'kagent',
           };
@@ -418,8 +421,10 @@ exportCommand.action(
           if (useV1Alpha2) {
             log('Generating kagent.dev v1alpha2 Declarative Agent...');
             const kagentGenerator = new KAgentCRDGenerator();
-            const { agent, modelConfig } =
-              kagentGenerator.generateV1Alpha2(manifest, kagentOpts);
+            const { agent, modelConfig } = kagentGenerator.generateV1Alpha2(
+              manifest,
+              kagentOpts
+            );
 
             if (!options.dryRun) {
               fs.mkdirSync(outputDir, { recursive: true });
@@ -444,7 +449,9 @@ exportCommand.action(
                 `  agent.yaml${modelConfig ? ', model-config.yaml' : ''}, agent.ossa.yaml`
               );
             } else {
-              log(`\nDRY RUN: Would write agent.yaml (v1alpha2) to ${outputDir}`);
+              log(
+                `\nDRY RUN: Would write agent.yaml (v1alpha2) to ${outputDir}`
+              );
             }
             return;
           }
@@ -628,14 +635,10 @@ exportCommand.action(
           });
 
           if (!langflowResult.success) {
-            throw new Error(
-              langflowResult.error || 'LangFlow export failed'
-            );
+            throw new Error(langflowResult.error || 'LangFlow export failed');
           }
 
-          const outDir = options.output
-            ? path.dirname(options.output)
-            : '.';
+          const outDir = options.output ? path.dirname(options.output) : '.';
           const outPath =
             options.output ||
             path.join(
@@ -647,11 +650,7 @@ exportCommand.action(
           if (!options.dryRun && langflowResult.files.length > 0) {
             const outDirAbs = path.dirname(outPath);
             if (outDirAbs !== '.') fs.mkdirSync(outDirAbs, { recursive: true });
-            fs.writeFileSync(
-              outPath,
-              langflowResult.files[0].content,
-              'utf-8'
-            );
+            fs.writeFileSync(outPath, langflowResult.files[0].content, 'utf-8');
             logSuccess(`\nLangflow flow exported to: ${outPath}`);
             log(
               useColor
@@ -1054,7 +1053,9 @@ exportCommand.action(
             );
           }
 
-          const files = Array.isArray(drupalResult.files) ? drupalResult.files : [];
+          const files = Array.isArray(drupalResult.files)
+            ? drupalResult.files
+            : [];
           const agentName =
             manifest.metadata?.name
               ?.toLowerCase()
@@ -1071,7 +1072,8 @@ exportCommand.action(
               agent_id: {
                 key: 'agent_id',
                 label: 'OSSA Agent ID',
-                description: 'The OSSA agent config entity ID (e.g. from GET /orchestration/services)',
+                description:
+                  'The OSSA agent config entity ID (e.g. from GET /orchestration/services)',
                 required: true,
                 type: 'string',
               },
@@ -1153,7 +1155,10 @@ See also: https://www.drupal.org/project/orchestration
               recursive: true,
             });
             fs.writeFileSync(
-              path.join(outputDir, 'orchestration/ossa_invoke_agent.schema.json'),
+              path.join(
+                outputDir,
+                'orchestration/ossa_invoke_agent.schema.json'
+              ),
               JSON.stringify(orchestrationSchema, null, 2)
             );
             fs.writeFileSync(
@@ -1161,9 +1166,7 @@ See also: https://www.drupal.org/project/orchestration
               orchestrationReadme
             );
 
-            logSuccess(
-              `\nOrchestration package exported to: ${outputDir}`
-            );
+            logSuccess(`\nOrchestration package exported to: ${outputDir}`);
             log(
               `  Drupal manifest + orchestration/ossa_invoke_agent.schema.json, ORCHESTRATION.md`
             );
@@ -1250,9 +1253,7 @@ See also: https://www.drupal.org/project/orchestration
           });
 
           if (!symfonyResult.success) {
-            throw new Error(
-              symfonyResult.error || 'Symfony export failed'
-            );
+            throw new Error(symfonyResult.error || 'Symfony export failed');
           }
 
           const symfonyName =
@@ -1270,11 +1271,15 @@ See also: https://www.drupal.org/project/orchestration
               fs.writeFileSync(filePath, file.content);
               logVerbose(`  Created: ${file.path}`);
             }
-            logSuccess(`\nSymfony AI Agent package exported to: ${symfonyOutputDir}`);
+            logSuccess(
+              `\nSymfony AI Agent package exported to: ${symfonyOutputDir}`
+            );
             log(`  ${symfonyResult.files.length} files generated`);
             log('  Run: composer require symfony/ai-agent symfony/ai-platform');
           } else if (options.dryRun) {
-            log(`\nDRY RUN: Would generate ${symfonyResult.files.length} files in: ${symfonyOutputDir}`);
+            log(
+              `\nDRY RUN: Would generate ${symfonyResult.files.length} files in: ${symfonyOutputDir}`
+            );
             symfonyResult.files.forEach((f) => logVerbose(`  - ${f.path}`));
           }
           return;

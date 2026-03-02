@@ -12,7 +12,10 @@ import { v4 as uuidv4 } from 'uuid';
 import { ValidationService } from '../validation.service.js';
 import { getApiVersion } from '../../utils/version.js';
 import type { OssaAgent } from '../../types/index.js';
-import { AGENT_TEMPLATES, getTemplateById } from '../../cli/wizard/data/templates.js';
+import {
+  AGENT_TEMPLATES,
+  getTemplateById,
+} from '../../cli/wizard/data/templates.js';
 import { LLM_PROVIDERS } from '../../cli/wizard/data/llm-providers.js';
 import type { AgentTemplate } from '../../cli/wizard/types.js';
 
@@ -22,7 +25,13 @@ import type { AgentTemplate } from '../../cli/wizard/types.js';
 
 export type WizardMode = 'quick' | 'guided' | 'expert';
 export type WizardKind = 'Agent' | 'Skill' | 'MCPServer';
-export type FieldType = 'text' | 'select' | 'multiselect' | 'number' | 'boolean' | 'textarea';
+export type FieldType =
+  | 'text'
+  | 'select'
+  | 'multiselect'
+  | 'number'
+  | 'boolean'
+  | 'textarea';
 
 export interface FieldDefinition {
   name: string;
@@ -87,12 +96,37 @@ function buildAgentSteps(): StepDefinition[] {
       title: 'Basic Information',
       description: 'Agent name, version, and description',
       fields: [
-        { name: 'name', type: 'text', label: 'Agent name', description: 'DNS-1123 format (lowercase, hyphens)', required: true, validation: z.string().min(1).regex(/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/) },
-        { name: 'version', type: 'text', label: 'Version', default: '1.0.0', validation: z.string().regex(/^\d+\.\d+\.\d+/) },
-        { name: 'description', type: 'textarea', label: 'Description', description: 'What does this agent do?', required: true },
+        {
+          name: 'name',
+          type: 'text',
+          label: 'Agent name',
+          description: 'DNS-1123 format (lowercase, hyphens)',
+          required: true,
+          validation: z
+            .string()
+            .min(1)
+            .regex(/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/),
+        },
+        {
+          name: 'version',
+          type: 'text',
+          label: 'Version',
+          default: '1.0.0',
+          validation: z.string().regex(/^\d+\.\d+\.\d+/),
+        },
+        {
+          name: 'description',
+          type: 'textarea',
+          label: 'Description',
+          description: 'What does this agent do?',
+          required: true,
+        },
       ],
       validation: z.object({
-        name: z.string().min(1).regex(/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/),
+        name: z
+          .string()
+          .min(1)
+          .regex(/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/),
         version: z.string().optional().default('1.0.0'),
         description: z.string().min(1),
       }),
@@ -102,7 +136,13 @@ function buildAgentSteps(): StepDefinition[] {
       title: 'Agent Role',
       description: 'Define the system prompt / role for the agent',
       fields: [
-        { name: 'role', type: 'textarea', label: 'System prompt', description: 'What role should this agent play?', required: true },
+        {
+          name: 'role',
+          type: 'textarea',
+          label: 'System prompt',
+          description: 'What role should this agent play?',
+          required: true,
+        },
       ],
       validation: z.object({ role: z.string().min(1) }),
     },
@@ -111,9 +151,25 @@ function buildAgentSteps(): StepDefinition[] {
       title: 'LLM Configuration',
       description: 'Choose the LLM provider and model',
       fields: [
-        { name: 'llm_provider', type: 'select', label: 'Provider', options: providerOptions, required: true },
-        { name: 'llm_model', type: 'text', label: 'Model ID', description: 'e.g. claude-sonnet-4-20250514' },
-        { name: 'temperature', type: 'number', label: 'Temperature', default: 0.7 },
+        {
+          name: 'llm_provider',
+          type: 'select',
+          label: 'Provider',
+          options: providerOptions,
+          required: true,
+        },
+        {
+          name: 'llm_model',
+          type: 'text',
+          label: 'Model ID',
+          description: 'e.g. claude-sonnet-4-20250514',
+        },
+        {
+          name: 'temperature',
+          type: 'number',
+          label: 'Temperature',
+          default: 0.7,
+        },
       ],
       validation: z.object({
         llm_provider: z.string().min(1),
@@ -131,23 +187,55 @@ function buildAgentSteps(): StepDefinition[] {
           type: 'multiselect',
           label: 'Tool types',
           options: [
-            { label: 'MCP Server', value: 'mcp', description: 'Model Context Protocol tools' },
-            { label: 'Function call', value: 'function', description: 'Local function calls' },
-            { label: 'HTTP API', value: 'http', description: 'HTTP endpoint integration' },
-            { label: 'Browser', value: 'browser', description: 'Browser automation' },
-            { label: 'A2A', value: 'a2a', description: 'Agent-to-agent communication' },
+            {
+              label: 'MCP Server',
+              value: 'mcp',
+              description: 'Model Context Protocol tools',
+            },
+            {
+              label: 'Function call',
+              value: 'function',
+              description: 'Local function calls',
+            },
+            {
+              label: 'HTTP API',
+              value: 'http',
+              description: 'HTTP endpoint integration',
+            },
+            {
+              label: 'Browser',
+              value: 'browser',
+              description: 'Browser automation',
+            },
+            {
+              label: 'A2A',
+              value: 'a2a',
+              description: 'Agent-to-agent communication',
+            },
           ],
         },
       ],
-      validation: z.object({ tools: z.array(z.string()).optional().default([]) }),
+      validation: z.object({
+        tools: z.array(z.string()).optional().default([]),
+      }),
     },
     {
       id: 'safety',
       title: 'Safety Controls',
       description: 'Configure safety and content filtering',
       fields: [
-        { name: 'content_filtering', type: 'boolean', label: 'Enable content filtering', default: true },
-        { name: 'pii_detection', type: 'boolean', label: 'Enable PII detection', default: false },
+        {
+          name: 'content_filtering',
+          type: 'boolean',
+          label: 'Enable content filtering',
+          default: true,
+        },
+        {
+          name: 'pii_detection',
+          type: 'boolean',
+          label: 'Enable PII detection',
+          default: false,
+        },
       ],
       validation: z.object({
         content_filtering: z.boolean().optional().default(true),
@@ -165,15 +253,30 @@ function buildAgentSteps(): StepDefinition[] {
           type: 'select',
           label: 'Autonomy level',
           options: [
-            { label: 'Full', value: 'full', description: 'Agent acts independently' },
-            { label: 'Assisted', value: 'assisted', description: 'Agent suggests, human approves' },
-            { label: 'Supervised', value: 'supervised', description: 'Human oversees all actions' },
+            {
+              label: 'Full',
+              value: 'full',
+              description: 'Agent acts independently',
+            },
+            {
+              label: 'Assisted',
+              value: 'assisted',
+              description: 'Agent suggests, human approves',
+            },
+            {
+              label: 'Supervised',
+              value: 'supervised',
+              description: 'Human oversees all actions',
+            },
           ],
           default: 'assisted',
         },
       ],
       validation: z.object({
-        autonomy_level: z.enum(['full', 'assisted', 'supervised']).optional().default('assisted'),
+        autonomy_level: z
+          .enum(['full', 'assisted', 'supervised'])
+          .optional()
+          .default('assisted'),
       }),
       condition: (session) => session.mode !== 'quick',
     },
@@ -182,8 +285,18 @@ function buildAgentSteps(): StepDefinition[] {
       title: 'Observability',
       description: 'Tracing, metrics, and logging',
       fields: [
-        { name: 'tracing_enabled', type: 'boolean', label: 'Enable tracing', default: true },
-        { name: 'metrics_enabled', type: 'boolean', label: 'Enable metrics', default: true },
+        {
+          name: 'tracing_enabled',
+          type: 'boolean',
+          label: 'Enable tracing',
+          default: true,
+        },
+        {
+          name: 'metrics_enabled',
+          type: 'boolean',
+          label: 'Enable metrics',
+          default: true,
+        },
       ],
       validation: z.object({
         tracing_enabled: z.boolean().optional().default(true),
@@ -210,7 +323,9 @@ function buildAgentSteps(): StepDefinition[] {
           ],
         },
       ],
-      validation: z.object({ platforms: z.array(z.string()).optional().default([]) }),
+      validation: z.object({
+        platforms: z.array(z.string()).optional().default([]),
+      }),
       condition: (session) => session.mode === 'expert',
     },
     {
@@ -237,7 +352,10 @@ export class WizardStateService {
     @inject(ValidationService) private validationService: ValidationService
   ) {
     // Cleanup expired sessions every 5 minutes
-    this.cleanupInterval = setInterval(() => this.cleanupExpired(), 5 * 60 * 1000);
+    this.cleanupInterval = setInterval(
+      () => this.cleanupExpired(),
+      5 * 60 * 1000
+    );
     // Allow process to exit without waiting for timer
     if (this.cleanupInterval?.unref) this.cleanupInterval.unref();
   }
@@ -246,13 +364,20 @@ export class WizardStateService {
   // Session lifecycle
   // -------------------------------------------------------------------------
 
-  createSession(opts?: { mode?: WizardMode; kind?: WizardKind; template?: string }): WizardSession {
+  createSession(opts?: {
+    mode?: WizardMode;
+    kind?: WizardKind;
+    template?: string;
+  }): WizardSession {
     const mode = opts?.mode ?? 'guided';
     const kind = opts?.kind ?? 'Agent';
     const id = uuidv4();
 
     let initialData: Record<string, unknown> = {};
-    let initialManifest: Partial<OssaAgent> = { apiVersion: getApiVersion(), kind: 'Agent' };
+    let initialManifest: Partial<OssaAgent> = {
+      apiVersion: getApiVersion(),
+      kind: 'Agent',
+    };
 
     if (opts?.template) {
       const tmpl = getTemplateById(opts.template);
@@ -311,7 +436,11 @@ export class WizardStateService {
     return steps[session.currentStepIndex] ?? null;
   }
 
-  submitStep(session: WizardSession, stepId: string, data: Record<string, unknown>): StepResult {
+  submitStep(
+    session: WizardSession,
+    stepId: string,
+    data: Record<string, unknown>
+  ): StepResult {
     const steps = this.getSteps(session);
     const stepIndex = steps.findIndex((s) => s.id === stepId);
     if (stepIndex === -1) {
@@ -323,7 +452,9 @@ export class WizardStateService {
     // Validate data against step schema
     const parseResult = step.validation.safeParse(data);
     if (!parseResult.success) {
-      const errors = parseResult.error.issues.map((e: z.ZodIssue) => `${e.path.join('.')}: ${e.message}`);
+      const errors = parseResult.error.issues.map(
+        (e: z.ZodIssue) => `${e.path.join('.')}: ${e.message}`
+      );
       return { success: false, session, errors };
     }
 
@@ -350,7 +481,9 @@ export class WizardStateService {
     const steps = this.getSteps(session);
     const prevStep = steps[session.currentStepIndex];
     if (prevStep) {
-      session.completedSteps = session.completedSteps.filter((id) => id !== prevStep.id);
+      session.completedSteps = session.completedSteps.filter(
+        (id) => id !== prevStep.id
+      );
     }
     session.updatedAt = Date.now();
     return { success: true, session, nextStep: prevStep ?? null };
@@ -364,7 +497,9 @@ export class WizardStateService {
       manifest,
       valid: result.valid,
       errors: (result.errors ?? []).map((e) =>
-        typeof e === 'string' ? e : (e as { message?: string }).message ?? 'Validation error'
+        typeof e === 'string'
+          ? e
+          : ((e as { message?: string }).message ?? 'Validation error')
       ),
       warnings: result.warnings ?? [],
     };
@@ -426,14 +561,18 @@ export class WizardStateService {
     // Safety
     if (d.content_filtering || d.pii_detection) {
       (manifest.spec as Record<string, unknown>).safety = {
-        ...(d.content_filtering ? { content_filtering: { enabled: true } } : {}),
+        ...(d.content_filtering
+          ? { content_filtering: { enabled: true } }
+          : {}),
         ...(d.pii_detection ? { pii_detection: { enabled: true } } : {}),
       };
     }
 
     // Autonomy
     if (d.autonomy_level && manifest.spec) {
-      manifest.spec.autonomy = { level: d.autonomy_level as 'full' | 'assisted' | 'supervised' };
+      manifest.spec.autonomy = {
+        level: d.autonomy_level as 'full' | 'assisted' | 'supervised',
+      };
     }
 
     // Observability
@@ -459,7 +598,9 @@ export class WizardStateService {
     return manifest;
   }
 
-  private buildTools(toolTypes?: string[]): Array<{ type: string; name?: string }> {
+  private buildTools(
+    toolTypes?: string[]
+  ): Array<{ type: string; name?: string }> {
     if (!toolTypes?.length) return [];
     return toolTypes.map((type) => ({ type, name: `${type}_tool` }));
   }

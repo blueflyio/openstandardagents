@@ -46,7 +46,10 @@ export class ClaudeSkillsService {
 
     for (const skillPath of skillPaths) {
       const resolvedPath = path.resolve(skillPath);
-      if (fs.existsSync(resolvedPath) && fs.statSync(resolvedPath).isDirectory()) {
+      if (
+        fs.existsSync(resolvedPath) &&
+        fs.statSync(resolvedPath).isDirectory()
+      ) {
         const discovered = await this.scanSkillsDirectory(resolvedPath);
         skills.push(...discovered);
       }
@@ -58,7 +61,10 @@ export class ClaudeSkillsService {
   /**
    * Get full SKILL.md content and metadata by skill name from a base path.
    */
-  async getSkillContentByName(name: string, basePath: string): Promise<{ content: string; name: string; path: string }> {
+  async getSkillContentByName(
+    name: string,
+    basePath: string
+  ): Promise<{ content: string; name: string; path: string }> {
     const resolved = path.resolve(basePath);
     const skillDir = path.join(resolved, name);
     const skillFile = path.join(skillDir, 'SKILL.md');

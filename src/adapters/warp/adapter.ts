@@ -398,7 +398,9 @@ if command -v ossa >/dev/null 2>&1 && [[ -n "\${OSSA_MANIFEST:-}" ]]; then
 fi
 
 # Fallback: output structured result for callers
-echo "{\"tool\": \"${cmd.name}\", \"params\": {${Object.keys(params).map((k) => `\"${k}\": \"\$${k.toUpperCase()}\"`).join(', ')}}}"
+echo "{\"tool\": \"${cmd.name}\", \"params\": {${Object.keys(params)
+      .map((k) => `\"${k}\": \"\$${k.toUpperCase()}\"`)
+      .join(', ')}}}"
 exit 0
 `;
   }

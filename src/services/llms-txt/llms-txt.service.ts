@@ -705,7 +705,9 @@ export class LlmsTxtService {
           }, 300);
         }
       );
-      watcher.on('error', (err: Error) => console.error('LlmsTxt watcher error:', err));
+      watcher.on('error', (err: Error) =>
+        console.error('LlmsTxt watcher error:', err)
+      );
     }
   }
 

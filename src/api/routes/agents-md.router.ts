@@ -19,7 +19,8 @@ export function agentsMdRouter(): Router {
   router.get('/discover', async (req, res, next) => {
     try {
       const baseDir = getBaseDir(req.query.dir as string | undefined);
-      const configDir = (req.query.configDir as string) ?? process.env.CONFIG_DIR;
+      const configDir =
+        (req.query.configDir as string) ?? process.env.CONFIG_DIR;
       const wikiRoot = (req.query.wikiRoot as string) ?? process.env.WIKI_ROOT;
       const discovered = await api.discover(baseDir);
       res.json({
@@ -43,7 +44,9 @@ export function agentsMdRouter(): Router {
         configDir?: string;
         wikiRoot?: string;
       };
-      const baseDir = getBaseDir(body.dir ?? (req.query.dir as string | undefined));
+      const baseDir = getBaseDir(
+        body.dir ?? (req.query.dir as string | undefined)
+      );
       const result = await api.maintain(baseDir, {
         regenerate: body.regenerate ?? false,
         dryRun: body.dryRun ?? false,

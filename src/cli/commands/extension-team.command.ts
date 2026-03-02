@@ -152,7 +152,11 @@ extensionTeamCommand
           console.log(`  - ${p.name} ${p.web_url ?? ''}`);
         });
       } else {
-        console.log(chalk.yellow('Set GITLAB_TOKEN or CI_JOB_TOKEN to check status via GitLab API'));
+        console.log(
+          chalk.yellow(
+            'Set GITLAB_TOKEN or CI_JOB_TOKEN to check status via GitLab API'
+          )
+        );
       }
     } catch (error) {
       console.error(chalk.red('❌ Error checking status:'), error);

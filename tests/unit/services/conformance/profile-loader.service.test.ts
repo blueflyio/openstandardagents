@@ -81,7 +81,9 @@ describe('ConformanceProfileLoader', () => {
 
       expect(profile.required.features).toContain('metadata.name');
       if (profile.required.features.includes('spec.observability.tracing')) {
-        expect(profile.required.features).toContain('spec.observability.tracing');
+        expect(profile.required.features).toContain(
+          'spec.observability.tracing'
+        );
       }
       if (profile.required.features.includes('spec.constraints.cost')) {
         expect(profile.required.features).toContain('spec.constraints.cost');

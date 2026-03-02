@@ -5,7 +5,11 @@
 
 /** Allowed apiVersion sets when requiring a minimum (e.g. platform requires ossa/v0.4+). */
 export const MIN_API_VERSION_ALLOWED: Record<string, Set<string>> = {
-  'ossa/v0.4': new Set(['ossa/v0.4', 'ossa/v0.4.1', 'ossa.bluefly.io/v1alpha1']),
+  'ossa/v0.4': new Set([
+    'ossa/v0.4',
+    'ossa/v0.4.1',
+    'ossa.bluefly.io/v1alpha1',
+  ]),
 };
 
 export interface VersionComplianceResult {

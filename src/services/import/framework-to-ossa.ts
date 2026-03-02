@@ -6,14 +6,23 @@
 import type { OssaAgent } from '../../types/index.js';
 import { getApiVersion } from '../../utils/version.js';
 
-export type FrameworkImportPlatform = 'langflow' | 'langchain' | 'crewai' | 'autogen';
+export type FrameworkImportPlatform =
+  | 'langflow'
+  | 'langchain'
+  | 'crewai'
+  | 'autogen';
 
 export interface FrameworkImportResult {
   manifest: OssaAgent;
   warnings: string[];
 }
 
-function baseManifest(name: string, version: string, description: string, role: string): Partial<OssaAgent> {
+function baseManifest(
+  name: string,
+  version: string,
+  description: string,
+  role: string
+): Partial<OssaAgent> {
   return {
     apiVersion: getApiVersion(),
     kind: 'Agent',
@@ -23,11 +32,13 @@ function baseManifest(name: string, version: string, description: string, role: 
 }
 
 function normalizeName(s: string): string {
-  return s
-    .toLowerCase()
-    .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9-]/g, '')
-    .slice(0, 50) || 'imported-agent';
+  return (
+    s
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9-]/g, '')
+      .slice(0, 50) || 'imported-agent'
+  );
 }
 
 /** LangFlow flow JSON (nodes + edges). Official: langflow package, flow export. */
@@ -42,28 +53,44 @@ export function convertLangFlowToOSSA(data: unknown): FrameworkImportResult {
 
   for (const node of nodes) {
     const dataNode = (node.data as Record<string, unknown>) ?? {};
-    const template = (dataNode.template as Record<string, { value?: string }>) ?? {};
-    const nodeType = ((dataNode.type ?? node.type) as string ?? '').toLowerCase();
+    const template =
+      (dataNode.template as Record<string, { value?: string }>) ?? {};
+    const nodeType = (
+      ((dataNode.type ?? node.type) as string) ?? ''
+    ).toLowerCase();
 
     if (nodeType.includes('prompt') || nodeType.includes('message')) {
-      const prompt = template.message?.value ?? template.text?.value ?? template.prompt?.value;
+      const prompt =
+        template.message?.value ??
+        template.text?.value ??
+        template.prompt?.value;
       if (typeof prompt === 'string') roleParts.push(prompt);
     }
-    if (nodeType.includes('openai') || nodeType.includes('chat') || nodeType.includes('llm')) {
+    if (
+      nodeType.includes('openai') ||
+      nodeType.includes('chat') ||
+      nodeType.includes('llm')
+    ) {
       const m = template.model_name?.value ?? template.model?.value;
       if (typeof m === 'string') model = m;
     }
     if (nodeType.includes('tool') || nodeType.includes('function')) {
       const nodeInfo = dataNode.node as Record<string, unknown> | undefined;
       const name = (nodeInfo?.display_name ?? node.id ?? 'tool').toString();
-      tools.push({ name, description: (nodeInfo?.description as string) ?? '' });
+      tools.push({
+        name,
+        description: (nodeInfo?.description as string) ?? '',
+      });
     }
   }
 
-  if (roleParts.length === 0) warnings.push('No prompt node found; role set to placeholder.');
+  if (roleParts.length === 0)
+    warnings.push('No prompt node found; role set to placeholder.');
   if (tools.length === 0) warnings.push('No tool nodes found.');
 
-  const name = normalizeName((flow.name as string) ?? 'langflow-imported-agent');
+  const name = normalizeName(
+    (flow.name as string) ?? 'langflow-imported-agent'
+  );
   const manifest: OssaAgent = {
     ...baseManifest(
       name,
@@ -92,7 +119,9 @@ export function convertLangChainToOSSA(data: unknown): FrameworkImportResult {
   if (modelName.includes('claude')) provider = 'anthropic';
   else if (modelName.includes('gemini')) provider = 'google';
 
-  const rawTools = (agent?.tools ?? config.tools) as Array<Record<string, unknown>> | undefined;
+  const rawTools = (agent?.tools ?? config.tools) as
+    | Array<Record<string, unknown>>
+    | undefined;
   const tools = Array.isArray(rawTools)
     ? rawTools.map((t) => ({
         name: (t.name as string) ?? 'unnamed-tool',
@@ -101,10 +130,16 @@ export function convertLangChainToOSSA(data: unknown): FrameworkImportResult {
     : undefined;
 
   const name = normalizeName(
-    (agent?.agent_type as string)?.replace(/-/g, '_') ?? 'langchain-imported-agent'
+    (agent?.agent_type as string)?.replace(/-/g, '_') ??
+      'langchain-imported-agent'
   );
   const manifest: OssaAgent = {
-    ...baseManifest(name, '1.0.0', 'Converted from LangChain agent configuration', ''),
+    ...baseManifest(
+      name,
+      '1.0.0',
+      'Converted from LangChain agent configuration',
+      ''
+    ),
     spec: {
       role: 'Converted from LangChain; add spec.role in manifest.',
       llm: { provider, model: modelName },
@@ -132,8 +167,12 @@ export function convertCrewAIToOSSA(data: unknown): FrameworkImportResult {
       }))
     : undefined;
 
-  const roleText = [role, goal, backstory].filter(Boolean).join('\n\n') || 'CrewAI agent; add spec.role.';
-  const name = normalizeName((config.name as string) ?? 'crewai-imported-agent');
+  const roleText =
+    [role, goal, backstory].filter(Boolean).join('\n\n') ||
+    'CrewAI agent; add spec.role.';
+  const name = normalizeName(
+    (config.name as string) ?? 'crewai-imported-agent'
+  );
   const manifest: OssaAgent = {
     ...baseManifest(name, '1.0.0', 'Converted from CrewAI', roleText),
     spec: {
@@ -159,11 +198,19 @@ export function convertCrewAIToOSSA(data: unknown): FrameworkImportResult {
 export function convertAutoGenToOSSA(data: unknown): FrameworkImportResult {
   const warnings: string[] = [];
   const config = data as Record<string, unknown>;
-  const name = normalizeName((config.name as string) ?? 'autogen-imported-agent');
+  const name = normalizeName(
+    (config.name as string) ?? 'autogen-imported-agent'
+  );
   const manifest: OssaAgent = {
-    ...baseManifest(name, '1.0.0', 'Converted from AutoGen', (config.system_message as string) ?? ''),
+    ...baseManifest(
+      name,
+      '1.0.0',
+      'Converted from AutoGen',
+      (config.system_message as string) ?? ''
+    ),
     spec: {
-      role: (config.system_message as string) ?? 'AutoGen agent; add spec.role.',
+      role:
+        (config.system_message as string) ?? 'AutoGen agent; add spec.role.',
       llm: { provider: 'openai', model: (config.model as string) ?? 'gpt-4' },
     },
   } as OssaAgent;
@@ -189,6 +236,10 @@ export function convertFromFramework(
   }
 }
 
-export function isSupportedFrameworkImport(platform: string): platform is FrameworkImportPlatform {
-  return ['langflow', 'langchain', 'crewai', 'autogen'].includes(platform.toLowerCase());
+export function isSupportedFrameworkImport(
+  platform: string
+): platform is FrameworkImportPlatform {
+  return ['langflow', 'langchain', 'crewai', 'autogen'].includes(
+    platform.toLowerCase()
+  );
 }

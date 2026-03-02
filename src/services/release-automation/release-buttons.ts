@@ -203,7 +203,8 @@ Please help spread the word about this release!`;
   if (email) {
     try {
       const nodemailer = await import('nodemailer');
-      const opts = process.env.SMTP_URL ?? process.env.MAIL_TRANSPORT ?? { jsonTransport: true };
+      const opts = process.env.SMTP_URL ??
+        process.env.MAIL_TRANSPORT ?? { jsonTransport: true };
       const transport = nodemailer.default.createTransport(
         opts as import('nodemailer').TransportOptions
       );
@@ -215,7 +216,10 @@ Please help spread the word about this release!`;
       });
       console.log(`Release notification sent to ${email}`);
     } catch (e) {
-      console.warn('Email send failed (set SMTP_URL or install nodemailer):', e);
+      console.warn(
+        'Email send failed (set SMTP_URL or install nodemailer):',
+        e
+      );
     }
   }
 

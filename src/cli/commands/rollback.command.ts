@@ -167,15 +167,18 @@ async function getDeploymentDriver(
     case 'cloud': {
       const provider = options.cloud || 'aws';
       if (provider === 'aws') {
-        const { AWSDeploymentDriver } = await import('../../deploy/cloud/aws-driver.js');
+        const { AWSDeploymentDriver } =
+          await import('../../deploy/cloud/aws-driver.js');
         return new AWSDeploymentDriver();
       }
       if (provider === 'gcp') {
-        const { GCPDeploymentDriver } = await import('../../deploy/cloud/gcp-driver.js');
+        const { GCPDeploymentDriver } =
+          await import('../../deploy/cloud/gcp-driver.js');
         return new GCPDeploymentDriver();
       }
       if (provider === 'azure') {
-        const { AzureDeploymentDriver } = await import('../../deploy/cloud/azure-driver.js');
+        const { AzureDeploymentDriver } =
+          await import('../../deploy/cloud/azure-driver.js');
         return new AzureDeploymentDriver();
       }
       throw new Error(`Unsupported cloud provider: ${provider}`);
