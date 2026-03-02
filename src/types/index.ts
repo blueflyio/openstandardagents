@@ -7,63 +7,97 @@ import { ErrorObject } from 'ajv';
 
 // Export Tool types
 export * from './tool.js';
-export { createTool, isTool, validateToolConfig } from './tool.js';
-export type { Tool, ToolAuth, ToolType } from './tool.js';
+export type { Tool, ToolType, ToolAuth } from './tool.js';
+export { isTool, createTool, validateToolConfig } from './tool.js';
 
 // Export Task types (v0.3.0)
 export * from './task.js';
-export { createTaskManifest, isOssaTask } from './task.js';
-export type { OssaTask, RuntimeBinding, TaskSpec } from './task.js';
+export type { OssaTask, TaskSpec, RuntimeBinding } from './task.js';
+export { isOssaTask, createTaskManifest } from './task.js';
 
 // Export Workflow types (v0.3.0)
 export * from './workflow.js';
-export {
-    createStep, createWorkflowManifest, expr, isOssaWorkflow
-} from './workflow.js';
 export type { OssaWorkflow, WorkflowSpec, WorkflowStep } from './workflow.js';
+export {
+  isOssaWorkflow,
+  createWorkflowManifest,
+  createStep,
+  expr,
+} from './workflow.js';
 
 // Export Messaging types (v0.3.0)
 export * from './messaging.js';
 export type {
-    Command, MessageEnvelope, MessagingExtension,
-    PublishedChannel, ReliabilityConfig, RoutingRule, Subscription
+  MessagingExtension,
+  PublishedChannel,
+  Subscription,
+  Command,
+  ReliabilityConfig,
+  MessageEnvelope,
+  RoutingRule,
 } from './messaging.js';
 
 // Export Identity & Adapter types (v0.3.6)
 export * from './identity.js';
 export type {
-    Adapter, CredentialSource, GenerationContext, Principal
+  Principal,
+  CredentialSource,
+  Adapter,
+  GenerationContext,
 } from './identity.js';
 
 // Export Architect types (v0.3.6)
 export * from './architect.js';
 export type {
-    ArchitectRecommendation, ArchitectureConstraint, Blueprint,
-    BlueprintKind
+  Blueprint,
+  BlueprintKind,
+  ArchitectureConstraint,
+  ArchitectRecommendation,
 } from './architect.js';
 
-// Export Security Posture types (v0.4)
+// Export Security Posture types (v0.5)
 export * from './security.js';
 export type {
-    AuditConfig, DataClassification, EgressPolicy, NetworkAccessConfig,
-    NetworkProtocol, ResourceLimits, SandboxingConfig,
-    SandboxType, SecurityCapability, SecurityPosture, ThreatCategory, ThreatModelEntry, ThreatSeverity
+  SecurityPosture,
+  ThreatModelEntry,
+  ThreatCategory,
+  ThreatSeverity,
+  SecurityCapability,
+  SandboxingConfig,
+  SandboxType,
+  NetworkAccessConfig,
+  NetworkProtocol,
+  EgressPolicy,
+  DataClassification,
+  ResourceLimits,
+  AuditConfig,
 } from './security.js';
 
 // Export Skill types (AgentSkills / OSSA skills)
-export { isOssaSkill } from './skill.js';
 export type { OssaSkill } from './skill.js';
+export { isOssaSkill } from './skill.js';
 
 // Export MCP server manifest types
-export { isOssaMCPServer } from './mcp-server-manifest.js';
 export type { OssaMCPServer } from './mcp-server-manifest.js';
+export { isOssaMCPServer } from './mcp-server-manifest.js';
 
-// Export Protocol Declaration types (v0.4)
+// Export Protocol Declaration types (v0.5)
 export * from './protocols.js';
 export type {
-    A2AAgentCard, A2AAuthentication, A2ACapabilities, A2AProtocol,
-    A2ASkill, ANPDiscovery, ANPProtocol, MCPCapabilities, MCPProtocol, MCPRole, MCPServerConfig,
-    MCPTransport, ProtocolDeclarations, VerifiableCredentialRef
+  ProtocolDeclarations,
+  MCPProtocol,
+  MCPServerConfig,
+  MCPTransport,
+  MCPRole,
+  MCPCapabilities,
+  A2AProtocol,
+  A2ASkill,
+  A2AAgentCard,
+  A2ACapabilities,
+  A2AAuthentication,
+  ANPProtocol,
+  ANPDiscovery,
+  VerifiableCredentialRef,
 } from './protocols.js';
 
 /**
@@ -259,11 +293,11 @@ export interface Capability {
 }
 
 import { Adapter, Principal } from './identity.js';
-import type { ProtocolDeclarations } from './protocols.js';
 import type { SecurityPosture } from './security.js';
+import type { ProtocolDeclarations } from './protocols.js';
 
 /**
- * Publisher information for agent attribution and trust (v0.4)
+ * Publisher information for agent attribution and trust (v0.5)
  */
 export interface Publisher {
   /** Publisher display name */
@@ -279,7 +313,7 @@ export interface Publisher {
 }
 
 /**
- * Agent Identity Model (v0.4)
+ * Agent Identity Model (v0.5)
  * Enables unique identification, versioning, and publisher attribution.
  */
 export interface AgentIdentity {
@@ -371,21 +405,16 @@ export interface OssaAgent {
   kind?: string;
   metadata?: {
     name: string;
-    machine_name?: string;
-    uuid?: string;
     version?: string;
     description?: string;
     author?: string;
-    publisher_namespace?: string;
     license?: string;
     labels?: Record<string, string>;
     annotations?: Record<string, string>;
     tags?: string[];
-    checksum?: string;
-    sbom_url?: string;
     lifecycle?: {
-      state?: 'active' | 'deprecated' | 'retired' | 'revoked';
-      maturity?: 'alpha' | 'beta' | 'stable' | 'deprecated' | 'retired' | 'revoked';
+      state?: 'active' | 'deprecated' | 'retired';
+      maturity?: 'alpha' | 'beta' | 'stable' | 'deprecated' | 'retired';
       deprecation?: {
         sunsetDate?: string;
         replacement?: string;
@@ -447,7 +476,6 @@ export interface OssaAgent {
     version: string;
     description?: string;
     role: string;
-    lifecycle?: string;
     llm?: {
       provider: string;
       model: string;
@@ -658,10 +686,10 @@ export interface OssaAgent {
     /** Child agents for delegation (v0.4.6+) */
     subagents?: SubagentDefinition[];
   };
-  // v0.4: Security Posture
+  // v0.5: Security Posture
   security?: SecurityPosture;
 
-  // v0.4: Protocol Declarations
+  // v0.5: Protocol Declarations
   protocols?: ProtocolDeclarations;
 
   extensions?: {

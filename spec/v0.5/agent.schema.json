@@ -1,0 +1,1048 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openstandardagents.org/schemas/v0.5/agent.schema.json",
+  "title": "OSSA v0.5 Agent Manifest Schema",
+  "description": "Open Standard for Software Agents (OSSA) v0.5 - Extends v0.4 with Agent Identity, Security Posture, and Protocol Declarations. Backward compatible with v0.4 manifests.",
+  "type": "object",
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata"
+  ],
+  "properties": {
+    "apiVersion": {
+      "type": "string",
+      "pattern": "^ossa/v(0\\.5(\\.[0-9]+(-[a-zA-Z0-9.]+)?)?|0\\.4(\\.[0-9]+(-[a-zA-Z0-9.]+)?)?|0\\.3(\\.[4-9]|\\.[0-9]+(-[a-zA-Z0-9.]+)?)?|0\\.2\\.[2-9](-dev)?|1)(\\.[0-9]+)?(-[a-zA-Z0-9.]+)?$",
+      "description": "OSSA API version (v0.5 introduces identity, security posture, and protocol declarations)",
+      "examples": [
+        "ossa/v0.5",
+        "ossa/v0.5.0",
+        "ossa/v0.4",
+        "ossa/v1"
+      ]
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "Agent",
+        "Task",
+        "Workflow",
+        "Flow"
+      ],
+      "description": "Resource type: Agent (agentic loops), Task (deterministic steps), Workflow (composition), or Flow (streaming)"
+    },
+    "metadata": {
+      "$ref": "#/definitions/Metadata"
+    },
+    "spec": {
+      "description": "Specification varies based on kind"
+    },
+    "security": {
+      "$ref": "#/definitions/SecurityPosture",
+      "description": "Security posture metadata defining threat model, capability requirements, sandboxing, and network access constraints (v0.5)"
+    },
+    "protocols": {
+      "$ref": "#/definitions/ProtocolDeclarations",
+      "description": "Protocol declarations for MCP, A2A, and ANP interoperability (v0.5)"
+    },
+    "token_efficiency": {
+      "$ref": "#/definitions/TokenEfficiency",
+      "description": "Token efficiency configuration for cost-optimized execution (v0.5)"
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Framework-specific extensions (inherited from v0.4)",
+      "additionalProperties": true
+    },
+    "runtime": {
+      "description": "Runtime-specific capability bindings (for Task and Workflow kinds)"
+    },
+    "composition": {
+      "$ref": "#/definitions/WorkflowComposition",
+      "description": "Workflow composition with sequential/parallel projection (v0.5, when kind is Workflow)"
+    }
+  },
+  "definitions": {
+    "Metadata": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$",
+          "maxLength": 253,
+          "description": "Resource identifier (DNS-1123 subdomain format for Kubernetes compatibility)"
+        },
+        "namespace": {
+          "type": "string",
+          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$",
+          "maxLength": 63,
+          "description": "Logical grouping namespace (like Kubernetes namespace)"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+          "description": "Semantic version (semver 2.0.0)"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 2000,
+          "description": "Human-readable description"
+        },
+        "uuid": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Optional UUID v4 for stable cross-system reference"
+        },
+        "machine_name": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$",
+          "maxLength": 128,
+          "description": "Drupal-friendly machine name (config/entity identifier)"
+        },
+        "signature": {
+          "type": "string",
+          "description": "Optional manifest signature (e.g. Ed25519) for signing"
+        },
+        "sbom_pointer": {
+          "type": "string",
+          "format": "uri",
+          "description": "Optional URL or path to SBOM document (e.g. CycloneDX JSON)"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "deprecated", "revoked"],
+          "default": "active",
+          "description": "Agent status: active, deprecated, revoked"
+        },
+        "revoked_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 when agent was revoked"
+        },
+        "deprecated_message": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Message when status is deprecated"
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "maxLength": 63
+          },
+          "description": "Key-value labels for organization and filtering"
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Arbitrary metadata for tooling"
+        },
+        "identity": {
+          "$ref": "#/definitions/AgentIdentity",
+          "description": "Agent identity model with namespace, versioned identifier, and publisher information (v0.5)"
+        },
+        "catalog": {
+          "type": "object",
+          "description": "Agent catalog metadata for discovery and publication",
+          "properties": {
+            "published": {
+              "type": "boolean",
+              "default": false,
+              "description": "Whether this agent is published to a catalog"
+            },
+            "catalog_id": {
+              "type": "string",
+              "description": "Unique identifier in the catalog"
+            },
+            "visibility": {
+              "type": "string",
+              "enum": ["public", "private", "internal"],
+              "default": "private",
+              "description": "Agent visibility: public (anyone), private (owner only), internal (organization)"
+            },
+            "categories": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Agent categories (e.g., code-quality, security, devops)"
+            },
+            "tags": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Searchable tags"
+            }
+          },
+          "additionalProperties": false
+        },
+        "mesh_bindings": {
+          "$ref": "#/definitions/MeshBindings",
+          "description": "Spatial and execution bindings for the BlueFly Synaptic Mesh (GitLab/Drupal integration)"
+        },
+        "agentType": {
+          "type": "string",
+          "enum": [
+            "claude", "kagent", "openai", "langchain", "crewai",
+            "autogen", "llamaindex", "haystack", "semantic-kernel",
+            "vertex-ai", "bedrock", "pydantic-ai", "swarm", "custom"
+          ],
+          "description": "Agent runtime platform. Specifies which platform/framework will execute this agent."
+        },
+        "agentKind": {
+          "type": "string",
+          "enum": [
+            "assistant", "orchestrator", "worker", "coordinator",
+            "supervisor", "tool", "reviewer", "planner", "executor",
+            "monitor", "analyst", "researcher", "specialist"
+          ],
+          "description": "Agent functional role. Describes WHAT the agent does in the system."
+        }
+      },
+      "additionalProperties": true
+    },
+    "MeshBindings": {
+      "type": "object",
+      "description": "Bindings linking this OSSA agent to its GitLab execution environment and Drupal spatial matrix.",
+      "properties": {
+        "gitlab_project_id": {
+          "type": "string",
+          "description": "The numeric or namespaced GitLab Project ID serving as the execution substrate for this agent."
+        },
+        "drupal_canvas_node_id": {
+          "type": "string",
+          "description": "The Drupal UUID representing this agent in the Experience Builder / Canvas spatial matrix."
+        }
+      },
+      "additionalProperties": false
+    },
+    "AgentIdentity": {
+      "type": "object",
+      "description": "Agent identity model for unique identification, versioning, and publisher attribution (v0.5). Enables trust chains, agent discovery, and provenance tracking across registries.",
+      "required": [
+        "agent_id"
+      ],
+      "properties": {
+        "namespace": {
+          "type": "string",
+          "pattern": "^[a-z0-9]([-a-z0-9./]*[a-z0-9])?$",
+          "maxLength": 253,
+          "description": "Hierarchical namespace for scoping agent identifiers (e.g., 'blueflyio/platform', 'org.example.agents'). Supports DNS-style or path-style naming.",
+          "examples": [
+            "blueflyio/platform",
+            "org.example.agents",
+            "gitlab.com/my-org/agents"
+          ]
+        },
+        "agent_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$",
+          "maxLength": 63,
+          "description": "Unique agent identifier within the namespace. DNS-1123 label format for maximum compatibility.",
+          "examples": [
+            "compliance-scanner",
+            "code-reviewer",
+            "deploy-orchestrator"
+          ]
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+          "description": "Agent identity version (semver 2.0.0). Independent of manifest version, tracks the agent's own release lifecycle.",
+          "examples": [
+            "1.0.0",
+            "2.1.0-beta.1",
+            "0.9.0+build.123"
+          ]
+        },
+        "publisher": {
+          "$ref": "#/definitions/Publisher",
+          "description": "Publisher information for trust and attribution"
+        },
+        "checksum": {
+          "type": "string",
+          "pattern": "^(sha256|sha512):[a-f0-9]+$",
+          "description": "Content-addressable checksum of the agent manifest for integrity verification",
+          "examples": [
+            "sha256:a1b2c3d4e5f6..."
+          ]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of when this agent identity was created"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of the last identity update"
+        }
+      },
+      "additionalProperties": false
+    },
+    "Publisher": {
+      "type": "object",
+      "description": "Publisher information for agent attribution, trust, and contact. Enables trust chains when combined with PGP signatures.",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 200,
+          "description": "Publisher display name (person or organization)",
+          "examples": [
+            "BlueFly.io",
+            "OSSA Contributors",
+            "Jane Smith"
+          ]
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Publisher contact email",
+          "examples": [
+            "agents@bluefly.io"
+          ]
+        },
+        "website": {
+          "type": "string",
+          "format": "uri",
+          "description": "Publisher website URL",
+          "examples": [
+            "https://openstandardagents.org",
+            "https://bluefly.io"
+          ]
+        },
+        "pgp_key": {
+          "type": "string",
+          "description": "PGP public key fingerprint or URL for verifying signed manifests. Enables cryptographic trust chains.",
+          "examples": [
+            "https://keyserver.example.com/pks/lookup?search=agents@bluefly.io",
+            "4AEE18F83AFDEB23"
+          ]
+        },
+        "registry_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the publisher's agent registry",
+          "examples": [
+            "https://registry.openstandardagents.org/blueflyio"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "SecurityPosture": {
+      "type": "object",
+      "description": "Security posture metadata defining the agent's threat model, required capabilities, sandboxing requirements, and network access constraints (v0.5). Enables security-aware orchestration and policy enforcement.",
+      "properties": {
+        "threat_model": {
+          "type": "array",
+          "description": "Threat categories this agent is designed to handle or is exposed to. Used by orchestrators for security-aware task routing.",
+          "items": {
+            "type": "object",
+            "required": ["category"],
+            "properties": {
+              "category": {
+                "type": "string",
+                "enum": [
+                  "prompt-injection",
+                  "data-exfiltration",
+                  "privilege-escalation",
+                  "resource-abuse",
+                  "model-poisoning",
+                  "supply-chain",
+                  "denial-of-service",
+                  "information-disclosure",
+                  "unauthorized-access",
+                  "custom"
+                ],
+                "description": "Threat category from OWASP LLM Top 10 and agent-specific threats"
+              },
+              "severity": {
+                "type": "string",
+                "enum": ["critical", "high", "medium", "low", "informational"],
+                "description": "Assessed severity level for this threat category"
+              },
+              "mitigations": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Mitigation strategies implemented for this threat",
+                "examples": [
+                  ["input-validation", "output-filtering", "rate-limiting"]
+                ]
+              },
+              "description": {
+                "type": "string",
+                "maxLength": 500,
+                "description": "Human-readable description of the threat and its context"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "capabilities": {
+          "type": "object",
+          "description": "Capability requirements declare what permissions and system access the agent needs to function.",
+          "properties": {
+            "required": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "filesystem-read",
+                  "filesystem-write",
+                  "network-outbound",
+                  "network-inbound",
+                  "process-spawn",
+                  "env-read",
+                  "env-write",
+                  "clipboard-read",
+                  "clipboard-write",
+                  "browser",
+                  "database-read",
+                  "database-write",
+                  "secrets-read",
+                  "gpu",
+                  "memory-extended",
+                  "tool-execution",
+                  "agent-spawn",
+                  "human-interaction"
+                ]
+              },
+              "uniqueItems": true,
+              "description": "Capabilities the agent MUST have to function correctly. Orchestrators should reject execution if these are not available."
+            },
+            "optional": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "filesystem-read",
+                  "filesystem-write",
+                  "network-outbound",
+                  "network-inbound",
+                  "process-spawn",
+                  "env-read",
+                  "env-write",
+                  "clipboard-read",
+                  "clipboard-write",
+                  "browser",
+                  "database-read",
+                  "database-write",
+                  "secrets-read",
+                  "gpu",
+                  "memory-extended",
+                  "tool-execution",
+                  "agent-spawn",
+                  "human-interaction"
+                ]
+              },
+              "uniqueItems": true,
+              "description": "Capabilities the agent can use if available but does not require. Enables graceful degradation."
+            }
+          },
+          "additionalProperties": false
+        },
+        "sandboxing": {
+          "type": "object",
+          "description": "Sandboxing requirements for isolating agent execution.",
+          "required": ["required"],
+          "properties": {
+            "required": {
+              "type": "boolean",
+              "description": "Whether sandboxed execution is mandatory for this agent"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "container",
+                "vm",
+                "wasm",
+                "process",
+                "none"
+              ],
+              "description": "Preferred sandboxing technology. 'container' (Docker/OCI), 'vm' (firecracker/gVisor), 'wasm' (WebAssembly), 'process' (OS-level isolation), 'none' (trusted execution)"
+            },
+            "resource_limits": {
+              "type": "object",
+              "description": "Resource constraints for sandboxed execution",
+              "properties": {
+                "max_memory_mb": {
+                  "type": "integer",
+                  "minimum": 64,
+                  "description": "Maximum memory allocation in megabytes"
+                },
+                "max_cpu_cores": {
+                  "type": "number",
+                  "minimum": 0.1,
+                  "description": "Maximum CPU cores (e.g., 0.5, 1, 2)"
+                },
+                "max_execution_seconds": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "description": "Maximum execution time in seconds before forced termination"
+                },
+                "max_disk_mb": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "description": "Maximum disk usage in megabytes"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "network_access": {
+          "type": "object",
+          "description": "Network access constraints for controlling agent communication boundaries.",
+          "properties": {
+            "allowed_domains": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^(\\*\\.)?[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*$"
+              },
+              "description": "Allowlist of domains the agent may connect to. Supports wildcard subdomains (e.g., '*.example.com'). Empty array means no network access.",
+              "examples": [
+                ["api.openai.com", "*.anthropic.com", "registry.npmjs.org"]
+              ]
+            },
+            "blocked_domains": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Denylist of domains the agent must never connect to. Takes precedence over allowed_domains."
+            },
+            "protocols": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["https", "http", "wss", "ws", "grpc", "ssh", "stdio"]
+              },
+              "uniqueItems": true,
+              "description": "Allowed network protocols. Restrict to 'https' for maximum security.",
+              "default": ["https"]
+            },
+            "egress_policy": {
+              "type": "string",
+              "enum": ["allow-all", "allow-list", "deny-all"],
+              "default": "allow-list",
+              "description": "Default egress policy. 'allow-list' requires explicit allowed_domains, 'deny-all' blocks all outbound, 'allow-all' permits any outbound."
+            }
+          },
+          "additionalProperties": false
+        },
+        "data_classification": {
+          "type": "string",
+          "enum": ["public", "internal", "confidential", "restricted"],
+          "default": "internal",
+          "description": "Data classification level this agent is authorized to handle. Enforced by orchestrators for data-aware routing."
+        },
+        "audit": {
+          "type": "object",
+          "description": "Audit and compliance requirements",
+          "properties": {
+            "log_inputs": {
+              "type": "boolean",
+              "default": false,
+              "description": "Whether to log all inputs to the agent"
+            },
+            "log_outputs": {
+              "type": "boolean",
+              "default": false,
+              "description": "Whether to log all outputs from the agent"
+            },
+            "log_tool_calls": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether to log all tool invocations"
+            },
+            "retention_days": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Number of days to retain audit logs"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "ProtocolDeclarations": {
+      "type": "object",
+      "description": "Protocol declarations for agent interoperability (v0.5). Declares which agent communication protocols this agent supports, enabling automatic discovery and routing by orchestrators.",
+      "properties": {
+        "mcp": {
+          "$ref": "#/definitions/MCPProtocol",
+          "description": "Model Context Protocol (MCP) configuration for tool serving and consumption"
+        },
+        "a2a": {
+          "$ref": "#/definitions/A2AProtocol",
+          "description": "Agent-to-Agent (A2A) protocol configuration for Google's agent interoperability standard"
+        },
+        "anp": {
+          "$ref": "#/definitions/ANPProtocol",
+          "description": "Agent Network Protocol (ANP) configuration for decentralized agent networking"
+        }
+      },
+      "additionalProperties": true
+    },
+    "MCPProtocol": {
+      "type": "object",
+      "description": "Model Context Protocol (MCP) declaration. Specifies MCP server/client capabilities for tool-based interoperability with Claude, Cursor, and other MCP-compatible clients.",
+      "required": ["version"],
+      "properties": {
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "description": "MCP protocol version (e.g., '1.0.0', '2025-03-26')",
+          "examples": ["1.0.0", "0.6.0"]
+        },
+        "role": {
+          "type": "string",
+          "enum": ["server", "client", "both"],
+          "default": "server",
+          "description": "MCP role: 'server' (exposes tools), 'client' (consumes tools), 'both' (bidirectional)"
+        },
+        "servers": {
+          "type": "array",
+          "description": "MCP server configurations this agent exposes or connects to",
+          "items": {
+            "type": "object",
+            "required": ["name", "transport"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Server identifier"
+              },
+              "transport": {
+                "type": "string",
+                "enum": ["stdio", "http", "sse", "streamable-http"],
+                "description": "MCP transport mechanism"
+              },
+              "url": {
+                "type": "string",
+                "format": "uri",
+                "description": "Server URL (for http/sse transports)"
+              },
+              "command": {
+                "type": "string",
+                "description": "Command to launch server (for stdio transport)"
+              },
+              "args": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Command arguments (for stdio transport)"
+              },
+              "tools": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "List of tool names exposed by this server"
+              },
+              "resources": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "List of resource URIs exposed by this server"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "capabilities": {
+          "type": "object",
+          "description": "MCP capability flags",
+          "properties": {
+            "tools": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether agent supports MCP tools"
+            },
+            "resources": {
+              "type": "boolean",
+              "default": false,
+              "description": "Whether agent supports MCP resources"
+            },
+            "prompts": {
+              "type": "boolean",
+              "default": false,
+              "description": "Whether agent supports MCP prompts"
+            },
+            "sampling": {
+              "type": "boolean",
+              "default": false,
+              "description": "Whether agent supports MCP sampling"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "A2AProtocol": {
+      "type": "object",
+      "description": "Agent-to-Agent (A2A) protocol declaration. Google's standard for agent interoperability, enabling task delegation, status updates, and artifact exchange between agents.",
+      "required": ["version"],
+      "properties": {
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "description": "A2A protocol version",
+          "examples": ["0.2.0", "1.0.0"]
+        },
+        "endpoint": {
+          "type": "string",
+          "format": "uri",
+          "description": "A2A endpoint URL where this agent can be reached",
+          "examples": [
+            "https://agents.example.com/.well-known/agent.json"
+          ]
+        },
+        "agent_card": {
+          "type": "object",
+          "description": "A2A Agent Card fields for discovery",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Agent display name in A2A network"
+            },
+            "description": {
+              "type": "string",
+              "description": "Agent description for A2A discovery"
+            },
+            "skills": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string" },
+                  "name": { "type": "string" },
+                  "description": { "type": "string" }
+                },
+                "required": ["id", "name"]
+              },
+              "description": "Skills advertised via A2A"
+            }
+          },
+          "additionalProperties": true
+        },
+        "capabilities": {
+          "type": "object",
+          "description": "A2A capability flags",
+          "properties": {
+            "streaming": {
+              "type": "boolean",
+              "default": false,
+              "description": "Whether agent supports streaming responses"
+            },
+            "pushNotifications": {
+              "type": "boolean",
+              "default": false,
+              "description": "Whether agent supports push notifications"
+            },
+            "stateTransitionHistory": {
+              "type": "boolean",
+              "default": false,
+              "description": "Whether agent maintains task state history"
+            }
+          },
+          "additionalProperties": false
+        },
+        "authentication": {
+          "type": "object",
+          "description": "A2A authentication configuration",
+          "properties": {
+            "schemes": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["bearer", "oauth2", "apiKey", "none"]
+              },
+              "description": "Supported authentication schemes"
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "ANPProtocol": {
+      "type": "object",
+      "description": "Agent Network Protocol (ANP) declaration for decentralized agent networking. Enables DID-based identity, verifiable credentials, and peer-to-peer agent communication.",
+      "properties": {
+        "did": {
+          "type": "string",
+          "pattern": "^did:[a-z0-9]+:.+$",
+          "description": "Decentralized Identifier (DID) for this agent. Enables decentralized identity verification and trust without a central authority.",
+          "examples": [
+            "did:web:agents.bluefly.io:compliance-scanner",
+            "did:key:z6Mkf5rGMoatrSj1f4CyvuHBeXJELe9RPdzo2PKGNCKVtZxP"
+          ]
+        },
+        "verifiable_credentials": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "description": "Credential type (e.g., 'AgentCapabilityCredential', 'SecurityAuditCredential')"
+              },
+              "issuer": {
+                "type": "string",
+                "description": "DID of the credential issuer"
+              },
+              "credential_url": {
+                "type": "string",
+                "format": "uri",
+                "description": "URL to the verifiable credential document"
+              }
+            },
+            "required": ["type", "issuer"]
+          },
+          "description": "Verifiable credentials issued to this agent for trust establishment"
+        },
+        "discovery": {
+          "type": "object",
+          "description": "ANP discovery configuration",
+          "properties": {
+            "registry_url": {
+              "type": "string",
+              "format": "uri",
+              "description": "URL of the ANP agent registry"
+            },
+            "advertise": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether to advertise this agent in the network"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "TokenEfficiency": {
+      "type": "object",
+      "description": "Token efficiency configuration for cost-optimized agent execution",
+      "properties": {
+        "serialization_profile": {
+          "type": "string",
+          "enum": ["full", "compact", "fingerprint"],
+          "default": "compact",
+          "description": "Manifest serialization profile. full=200-400 tokens (discovery), compact=60-120 tokens (runtime), fingerprint=15-30 tokens (routing)"
+        },
+        "observation_format": {
+          "type": "string",
+          "enum": ["full", "diff", "projected", "summary"],
+          "default": "projected",
+          "description": "How tool observations are formatted. diff=returns diff not full file. projected=only matched fields. summary=compressed summary."
+        },
+        "budget": { "$ref": "#/definitions/TokenBudget" },
+        "routing": { "$ref": "#/definitions/ModelRouting" },
+        "consolidation": { "$ref": "#/definitions/ConsolidationStrategy" },
+        "compression": { "$ref": "#/definitions/CompressionConfig" },
+        "custom_metrics": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/CustomMetric" },
+          "description": "Agent-specific token efficiency metrics"
+        }
+      },
+      "additionalProperties": false
+    },
+    "TokenBudget": {
+      "type": "object",
+      "description": "Token budget allocation and enforcement",
+      "properties": {
+        "max_input_tokens": { "type": "integer", "description": "Maximum input tokens per request" },
+        "max_output_tokens": { "type": "integer", "description": "Maximum output tokens per request" },
+        "allocation_strategy": {
+          "type": "string",
+          "enum": ["equal", "proportional", "adaptive"],
+          "default": "adaptive",
+          "description": "How budget is divided across pipeline stages"
+        },
+        "cascade": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/CascadeStage" },
+          "description": "Model cascade for cost-optimized routing"
+        }
+      }
+    },
+    "CascadeStage": {
+      "type": "object",
+      "description": "A stage in a model cascade pipeline",
+      "required": ["model", "max_complexity"],
+      "properties": {
+        "model": { "type": "string", "description": "Model identifier" },
+        "max_complexity": {
+          "type": "string",
+          "enum": ["low", "medium", "high"],
+          "description": "Maximum complexity this model handles"
+        },
+        "budget_share": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Fraction of total budget allocated to this stage"
+        },
+        "budget_tokens": { "type": "integer", "description": "Absolute token budget for this stage" },
+        "condition": { "type": "string", "description": "Condition expression for when to use this stage" }
+      }
+    },
+    "ModelRouting": {
+      "type": "object",
+      "description": "Intelligent model routing configuration",
+      "properties": {
+        "cascade": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Model tiers in order of cost (e.g., [haiku, sonnet, opus])"
+        },
+        "complexity_threshold": {
+          "type": "array",
+          "items": { "type": "number" },
+          "description": "Complexity score thresholds between tiers (e.g., [0.3, 0.7])"
+        },
+        "strategy": {
+          "type": "string",
+          "enum": ["cost_optimized", "quality_optimized", "balanced"],
+          "default": "cost_optimized"
+        }
+      }
+    },
+    "ConsolidationStrategy": {
+      "type": "object",
+      "description": "Trajectory consolidation strategy for multi-turn interactions",
+      "properties": {
+        "strategy": {
+          "type": "string",
+          "enum": ["aggressive", "moderate", "minimal", "none"],
+          "default": "moderate",
+          "description": "How aggressively to consolidate trajectory history"
+        },
+        "retain": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Fields to always retain (e.g., final_answer, confidence)"
+        },
+        "summarize": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Fields to summarize instead of keeping verbatim"
+        },
+        "drop": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Fields to drop entirely (e.g., raw_observations, intermediate_diffs)"
+        },
+        "accumulate": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Fields to accumulate with a token cap"
+        },
+        "max_accumulated_tokens": {
+          "type": "integer",
+          "default": 5000,
+          "description": "Maximum tokens for accumulated fields"
+        }
+      }
+    },
+    "CompressionConfig": {
+      "type": "object",
+      "description": "Prompt and context compression configuration",
+      "properties": {
+        "enabled": { "type": "boolean", "default": true },
+        "strategy": {
+          "type": "string",
+          "enum": ["template", "semantic", "hybrid", "none"],
+          "description": "Compression approach: template=pattern replacement, semantic=LLMLingua-style, hybrid=both"
+        },
+        "compression_ratio": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Target compression ratio (0.2 = 5x compression)"
+        },
+        "min_quality": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.95,
+          "description": "Minimum quality threshold - do not compress if quality drops below this"
+        },
+        "templates": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/CompressionTemplate" }
+        }
+      }
+    },
+    "CompressionTemplate": {
+      "type": "object",
+      "required": ["name", "pattern"],
+      "properties": {
+        "name": { "type": "string" },
+        "pattern": { "type": "string", "description": "Compact pattern (e.g., scan_ctx[{{lang}}|{{framework}}|{{file_count}}])" },
+        "expands_to": { "type": "string", "description": "Full expansion template" },
+        "savings": { "type": "integer", "description": "Estimated tokens saved per use" }
+      }
+    },
+    "CustomMetric": {
+      "type": "object",
+      "required": ["name", "type"],
+      "properties": {
+        "name": { "type": "string" },
+        "type": { "type": "string", "enum": ["counter", "gauge", "histogram"] },
+        "description": { "type": "string" },
+        "labels": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "Capability": {
+      "type": "object",
+      "description": "Capability declaration with optional fingerprint for routing without loading full descriptions",
+      "properties": {
+        "fingerprint": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "description": "Deterministic hash of capability type signature for routing without loading full descriptions"
+        }
+      }
+    },
+    "WorkflowComposition": {
+      "type": "object",
+      "description": "Workflow composition with output projection for sequential and parallel agent execution",
+      "properties": {
+        "sequential": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "agent": { "type": "string" },
+              "project": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Output field projection - only these fields pass to the next agent"
+              }
+            }
+          }
+        },
+        "parallel": {
+          "type": "object",
+          "properties": {
+            "shared_context": {
+              "type": "boolean",
+              "default": true,
+              "description": "Deduplicate input context across parallel branches"
+            },
+            "agents": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      }
+    }
+  }
+}

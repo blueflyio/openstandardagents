@@ -187,7 +187,10 @@ spec:
       description: Execute @bluefly/openstandardagents CLI validation
       command: npx
       args:
-        - "@bluefly/openstandardagents"
+        - @bluefly/openstandardagents
+        - validate
+      args:
+        - @bluefly/openstandardagents
         - validate
         - /path/to/manifest.ossa.yaml
       outputSchema:

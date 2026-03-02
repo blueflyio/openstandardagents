@@ -2,11 +2,7 @@
 
 <!-- To update, modify the OSSA manifest and regenerate -->
 
-# For AI assistants
 
-- **Project deep dive and health:** GitLab Wiki page [Project-Deep-Dive](https://gitlab.com/blueflyio/ossa/openstandardagents/-/wikis/Project-Deep-Dive). Covers strengths, gaps (README vs code, DI resetContainer, skill wizard untested), and recommended next steps. Publish wiki from repo: `npm run wiki:publish` (needs GITLAB_TOKEN or GITLAB_PUSH_TOKEN).
-- **Structure and patterns:** See `src/AGENTS.md` (adapters, DI, thin CLI, Zod). New services go in `src/di-container.ts`; if you add tests that call `resetContainer()`, either rebind all services there or document that reset is partial.
-- **Skills:** `ossa skills wizard` creates SKILL.md (+ optional skill.ossa.yaml). `ossa skills list|validate|add|generate|export|...` use ClaudeSkillsService and skills-pipeline services from DI. Document `ossa skills wizard` in README Skills section.
 
 # Dev environment tips
 

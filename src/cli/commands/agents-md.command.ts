@@ -20,63 +20,26 @@ export const agentsMdCommand = new Command('agents-md').description(
 // Generate subcommand
 agentsMdCommand
   .command('generate')
-  .argument('[manifest]', 'Path to OSSA manifest file (optional when --pointer-only)')
+  .argument('<manifest>', 'Path to OSSA manifest file')
   .option('-o, --output <path>', 'Output path for AGENTS.md', 'AGENTS.md')
-  .option('--pointer-only', 'Write only config/wiki pointer lines (no manifest content)')
-  .option('--config-dir <path>', 'Config root (default: CONFIG_DIR env)')
-  .option('--wiki-root <path>', 'Wikis root (default: WIKI_ROOT env)')
-  .option('--project-wiki <name>', 'Project wiki folder name (e.g. agent-buildkit.wiki)')
   .option('-v, --verbose', 'Verbose output')
-  .description('Generate AGENTS.md from OSSA manifest or pointer-only template')
+  .description('Generate AGENTS.md from OSSA manifest')
   .action(
     async (
-      manifestPath: string | undefined,
-      options: {
-        output: string;
-        pointerOnly?: boolean;
-        configDir?: string;
-        wikiRoot?: string;
-        projectWiki?: string;
-        verbose?: boolean;
-      }
+      manifestPath: string,
+      options: { output: string; verbose?: boolean }
     ) => {
       try {
-        const agentsMdService = container.get(AgentsMdService);
-
-        if (options.pointerOnly) {
-          console.log(chalk.blue('Generating pointer-only AGENTS.md...'));
-          await agentsMdService.writePointerOnly(options.output, {
-            configDir: options.configDir,
-            wikiRoot: options.wikiRoot,
-            projectWiki: options.projectWiki,
-          });
-          console.log(chalk.green('✓ Pointer-only AGENTS.md generated'));
-          console.log(chalk.gray(`\nOutput: ${chalk.cyan(options.output)}`));
-          if (options.verbose) {
-            const content = agentsMdService.generatePointerOnly({
-              configDir: options.configDir,
-              wikiRoot: options.wikiRoot,
-              projectWiki: options.projectWiki,
-            });
-            console.log(chalk.gray('\nContent:'));
-            console.log(chalk.gray('─'.repeat(50)));
-            console.log(content);
-            console.log(chalk.gray('─'.repeat(50)));
-          }
-          process.exit(0);
-          return;
-        }
-
-        if (!manifestPath) {
-          console.error(chalk.red('Error: manifest path required (or use --pointer-only)'));
-          process.exit(1);
-        }
-
         console.log(chalk.blue(`Generating AGENTS.md from ${manifestPath}...`));
 
+        // Get services
         const manifestRepo = container.get(ManifestRepository);
+        const agentsMdService = container.get(AgentsMdService);
+
+        // Load manifest
         const manifest = await manifestRepo.load(manifestPath);
 
+        // Check if agents_md extension is enabled
         if (!manifest.extensions?.agents_md?.enabled) {
           console.error(
             chalk.red('Error: agents_md extension is not enabled in manifest')
@@ -104,9 +67,10 @@ extensions:
           process.exit(1);
         }
 
+        // Generate AGENTS.md
         await agentsMdService.writeAgentsMd(manifest, options.output);
 
-        console.log(chalk.green('✓ AGENTS.md generated successfully'));
+        console.log(chalk.green(`✓ AGENTS.md generated successfully`));
         console.log(chalk.gray(`\nOutput: ${chalk.cyan(options.output)}`));
 
         if (options.verbose) {
@@ -260,26 +224,18 @@ extensions:
 agentsMdCommand
   .command('discover')
   .argument('[dir]', 'Workspace directory to scan', process.cwd())
-  .option('--config-dir <path>', 'Config root (default: CONFIG_DIR env)')
-  .option('--wiki-root <path>', 'Wikis root (default: WIKI_ROOT env)')
   .option('-v, --verbose', 'Show validation warnings')
   .description(
     'Discover all AGENTS.md files in workspace (.agents/*/ and root) for update and maintenance'
   )
   .action(
-    async (
-      dir: string,
-      options: { configDir?: string; wikiRoot?: string; verbose?: boolean }
-    ) => {
+    async (dir: string, options: { verbose?: boolean }) => {
       try {
         const baseDir = dir || process.cwd();
         console.log(chalk.blue(`Discovering AGENTS.md in ${baseDir}...`));
 
         const discovery = container.get(AgentsMdDiscoveryService);
-        const results = await discovery.discover(baseDir, {
-          configDir: options.configDir,
-          wikiRoot: options.wikiRoot,
-        });
+        const results = await discovery.discover(baseDir);
 
         if (results.length === 0) {
           console.log(chalk.yellow('No AGENTS.md files or .agents/ agents found.'));
@@ -331,8 +287,6 @@ agentsMdCommand
 agentsMdCommand
   .command('maintain')
   .argument('[dir]', 'Workspace directory to scan', process.cwd())
-  .option('--config-dir <path>', 'Config root (default: CONFIG_DIR env)')
-  .option('--wiki-root <path>', 'Wikis root (default: WIKI_ROOT env)')
   .option('-r, --regenerate', 'Regenerate all (not only invalid) from manifest')
   .option('--dry-run', 'Only report what would be updated')
   .option('-v, --verbose', 'Verbose output')
@@ -342,13 +296,7 @@ agentsMdCommand
   .action(
     async (
       dir: string,
-      options: {
-        configDir?: string;
-        wikiRoot?: string;
-        regenerate?: boolean;
-        dryRun?: boolean;
-        verbose?: boolean;
-      }
+      options: { regenerate?: boolean; dryRun?: boolean; verbose?: boolean }
     ) => {
       try {
         const baseDir = dir || process.cwd();
@@ -357,12 +305,7 @@ agentsMdCommand
         const discovery = container.get(AgentsMdDiscoveryService);
         const { discovered, updated, skipped, failed } = await discovery.maintain(
           baseDir,
-          {
-            regenerate: options.regenerate ?? false,
-            dryRun: options.dryRun,
-            configDir: options.configDir,
-            wikiRoot: options.wikiRoot,
-          }
+          { regenerate: options.regenerate ?? false, dryRun: options.dryRun }
         );
 
         if (discovered.length === 0) {
