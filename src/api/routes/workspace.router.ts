@@ -20,6 +20,16 @@ export function workspaceRouter(): Router {
     }
   });
 
+  router.post('/scaffold', async (req, res, next) => {
+    try {
+      const { directory = '.' } = req.body;
+      const result = await service.scaffold(directory);
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  });
+
   router.post('/discover', async (req, res, next) => {
     try {
       const { directory = '.' } = req.body;
