@@ -23,6 +23,7 @@ export interface WorkspaceScaffoldResult {
   workspacePath: string;
   projectsScaffolded: number;
   codeWorkspacePath: string;
+  externalWorktreesBound: number;
 }
 
 export interface DiscoveryAgent {
@@ -74,80 +75,107 @@ export class WorkspaceService {
     return { action: 'init', status: 'created', path: wsDir, name: wsName };
   }
 
-  async scaffold(baseDirectory: string): Promise<WorkspaceScaffoldResult> {
+  async scaffold(
+    baseDirectory: string,
+    initProjects: string[] = [],
+    externalWorktrees: string[] = []
+  ): Promise<WorkspaceScaffoldResult> {
     const dir = path.resolve(baseDirectory);
     const wsDir = path.join(dir, '.agents-workspace');
-    
+
     // 1. Ensure the agents-workspace orchestrator root exists
     if (!fs.existsSync(wsDir)) {
-      // Defer to init method logic
       await this.init(dir);
     }
 
-    // 2. Scan properties sequentially (one level deep typically, or via glob)
-    // Here we'll do a one level deep scan for project directories to inject .agents/ folders
+    // 2. Deliberate provisioning: Only inject .agents/ folders into explicitly specified projects
     const projectsScaffolded: string[] = [];
-    try {
-      const entries = fs.readdirSync(dir, { withFileTypes: true });
-      for (const entry of entries) {
-        if (entry.isDirectory() && !entry.name.startsWith('.')) {
-          const projectDir = path.join(dir, entry.name);
-          const agentsDir = path.join(projectDir, '.agents');
-          
-          // Scaffold .agents if it didn't exist, we assume they might want one
-          // We won't blindly create .agents in *every* folder unless asked, 
-          // but for the sake of the command "makes the .agents and .agents-workspace folders" 
-          // we'll provision a basic empty structure so they are recognized by the registry later.
-          if (!fs.existsSync(agentsDir)) {
-            fs.mkdirSync(agentsDir, { recursive: true });
-            
-            // Add a basic OSS manifest stub
-            const stubYaml = yaml.dump({
-              apiVersion: 'agents.bluefly.io/v1alpha1',
-              kind: 'Agent',
-              metadata: { name: entry.name, version: '0.1.0' },
-              spec: { capabilities: [] }
-            });
-            fs.writeFileSync(path.join(agentsDir, 'manifest.ossa.yaml'), stubYaml);
-            projectsScaffolded.push(entry.name);
-          }
+    for (const projectPath of initProjects) {
+      const pDir = path.resolve(dir, projectPath);
+      if (fs.existsSync(pDir)) {
+        const agentsDir = path.join(pDir, '.agents');
+        if (!fs.existsSync(agentsDir)) {
+          fs.mkdirSync(agentsDir, { recursive: true });
+          const stubYaml = yaml.dump({
+            apiVersion: 'agents.bluefly.io/v1alpha1',
+            kind: 'Agent',
+            metadata: { name: path.basename(pDir), version: '0.1.0' },
+            spec: { capabilities: [] },
+          });
+          fs.writeFileSync(
+            path.join(agentsDir, 'manifest.ossa.yaml'),
+            stubYaml
+          );
+          projectsScaffolded.push(path.basename(pDir));
         }
       }
-    } catch {
-      // ignore read errors for permission denied
     }
 
-    // 3. Generate the IDE multi-root workspace file
-    const codeWorkspacePath = path.join(dir, 'agents-playground.code-workspace');
-    
-    // Find all valid .agents projects now
+    // 3. Generate the IDE multi-root workspace file dynamically using discover()
+    const codeWorkspacePath = path.join(
+      dir,
+      'agents-playground.code-workspace'
+    );
     const folders: Array<{ name: string; path: string }> = [
-      { name: '⚙️ Agents Workspace Root', path: wsDir }
+      { name: '⚙️ Agents Workspace Root', path: wsDir },
     ];
-    
-    const entries = fs.readdirSync(dir, { withFileTypes: true });
-    for (const entry of entries) {
-      if (entry.isDirectory() && !entry.name.startsWith('.')) {
-        const pDir = path.join(dir, entry.name);
-        if (fs.existsSync(path.join(pDir, '.agents'))) {
-          folders.push({ name: `🤖 ${entry.name}`, path: pDir });
+
+    // Scan base directory for agent projects using the advanced globber in discover()
+    const baseDiscovery = await this.discover(dir);
+    const discoveredDirs = new Set<string>();
+    for (const agent of baseDiscovery.agents) {
+      // agent.path is inside .agents/, we want the project root
+      const pRoot = path.dirname(path.dirname(agent.path));
+      if (!discoveredDirs.has(pRoot) && pRoot !== dir && pRoot !== wsDir) {
+        discoveredDirs.add(pRoot);
+        folders.push({ name: `🤖 ${path.basename(pRoot)}`, path: pRoot });
+      }
+    }
+
+    // Bind requested external git worktrees or arbitrary paths to the IDE
+    const worktreesBound: string[] = [];
+    for (const wtPath of externalWorktrees) {
+      const wDir = path.resolve(wtPath);
+      if (fs.existsSync(wDir)) {
+        folders.push({
+          name: `🌳 ${path.basename(wDir)} (Worktree)`,
+          path: wDir,
+        });
+        worktreesBound.push(wDir);
+
+        // Also run a discovery in the worktree to add it to the central workspace registry
+        const wtDiscovery = await this.discover(wDir);
+        for (const agent of wtDiscovery.agents) {
+          const pRoot = path.dirname(path.dirname(agent.path));
+          if (!discoveredDirs.has(pRoot)) {
+            discoveredDirs.add(pRoot);
+            folders.push({ name: `🤖 ${path.basename(pRoot)}`, path: pRoot });
+          }
         }
       }
     }
 
     const vscodeSettings = {
-      'files.exclude': { '**/node_modules': true, '**/.git': true, '**/dist': true },
-      'kiroAgent.configureMCP': 'Enabled'
+      'files.exclude': {
+        '**/node_modules': true,
+        '**/.git': true,
+        '**/dist': true,
+      },
+      'kiroAgent.configureMCP': 'Enabled',
     };
 
-    fs.writeFileSync(codeWorkspacePath, JSON.stringify({ folders, settings: vscodeSettings }, null, 2));
+    fs.writeFileSync(
+      codeWorkspacePath,
+      JSON.stringify({ folders, settings: vscodeSettings }, null, 2)
+    );
 
     return {
       action: 'scaffold',
       status: 'completed',
       workspacePath: wsDir,
       projectsScaffolded: projectsScaffolded.length,
-      codeWorkspacePath
+      codeWorkspacePath,
+      externalWorktreesBound: worktreesBound.length,
     };
   }
 

@@ -22,8 +22,16 @@ export function workspaceRouter(): Router {
 
   router.post('/scaffold', async (req, res, next) => {
     try {
-      const { directory = '.' } = req.body;
-      const result = await service.scaffold(directory);
+      const {
+        directory = '.',
+        initProjects = [],
+        externalWorktrees = [],
+      } = req.body;
+      const result = await service.scaffold(
+        directory,
+        initProjects,
+        externalWorktrees
+      );
       res.json(result);
     } catch (err) {
       next(err);
