@@ -1,5 +1,5 @@
 /**
- * OSSA v0.5 Security Posture Types
+ * OSSA v0.4 Security Posture Types
  *
  * Type definitions for agent security posture metadata,
  * including threat models, capability requirements, sandboxing,
@@ -168,7 +168,7 @@ export interface AuditConfig {
 }
 
 /**
- * Security Posture (v0.5)
+ * Security Posture (v0.4)
  * Defines the agent's security requirements, threat model,
  * and operational constraints.
  */

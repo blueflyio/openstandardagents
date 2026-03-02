@@ -1,8 +1,6 @@
 apiVersion: ossa/v0.4.1
 kind: Agent
 metadata:
-  uuid: 2ab57c08-c81e-4b6d-99db-6fc765963f4c
-  machine_name: performance_optimizer
   name: performance-optimizer
   version: 1.0.0
   description: Optimize agent performance (memory, CPU, latency, cost)

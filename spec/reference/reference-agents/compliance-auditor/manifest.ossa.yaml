@@ -19,38 +19,39 @@ metadata:
     support: ops@openstandardagents.org
     runbook: https://openstandardagents.org/docs/runbooks/compliance-auditor
     certifications: SOC 2 Type II, HIPAA, PCI-DSS Level 1
+  uuid: c756a4cf-3d56-4220-95b7-5de50d92951d
+  machine_name: compliance_auditor
 spec:
   lifecycle:
     phases:
       - name: message_normalization
-        description: "Normalize incoming messages to canonical format"
+        description: Normalize incoming messages to canonical format
         timeout: 5s
         retry: 2
       - name: tool_resolution
-        description: "Resolve available tools and capabilities"
+        description: Resolve available tools and capabilities
         timeout: 10s
         retry: 1
       - name: llm_inference
-        description: "Execute LLM reasoning with context"
+        description: Execute LLM reasoning with context
         timeout: 60s
         retry: 3
       - name: tool_execution
-        description: "Execute resolved tools and actions"
+        description: Execute resolved tools and actions
         timeout: 120s
         retry: 2
       - name: response_assembly
-        description: "Assemble final response"
+        description: Assemble final response
         timeout: 5s
         retry: 1
       - name: state_persistence
-        description: "Persist state and memory updates"
+        description: Persist state and memory updates
         timeout: 10s
         retry: 3
       - name: observability_emission
-        description: "Emit telemetry, traces, and metrics"
+        description: Emit telemetry, traces, and metrics
         timeout: 5s
         retry: 1
-
   taxonomy:
     domain: governance-risk-compliance
     subdomain: regulatory-compliance
@@ -122,49 +123,75 @@ spec:
         project: ossa-agents
         team: compliance
         service: compliance-auditor
-
   capabilities:
     policy: deny_by_default
     grants:
       - capability: file_read
-        scope: ["**/*.yaml", "**/*.yml", "**/*.json", "/var/log/kubernetes/audit/**", "/var/log/audit/**"]
-        rationale: "Read configuration files and audit logs for compliance validation"
+        scope:
+          - '**/*.yaml'
+          - '**/*.yml'
+          - '**/*.json'
+          - /var/log/kubernetes/audit/**
+          - /var/log/audit/**
+        rationale: Read configuration files and audit logs for compliance validation
       - capability: api_call
-        scope: ["vault:8200/v1/sys/audit*", "vault:8200/v1/sys/health*"]
-        rate_limit: "30/minute"
-        rationale: "HashiCorp Vault API access for secrets encryption audit"
+        scope:
+          - vault:8200/v1/sys/audit*
+          - vault:8200/v1/sys/health*
+        rate_limit: 30/minute
+        rationale: HashiCorp Vault API access for secrets encryption audit
       - capability: api_call
-        scope: ["falco:2801/api/v1/alerts*"]
-        rate_limit: "60/minute"
-        rationale: "Falco API access for runtime security violations"
+        scope:
+          - falco:2801/api/v1/alerts*
+        rate_limit: 60/minute
+        rationale: Falco API access for runtime security violations
       - capability: api_call
-        scope: ["splunk:8089/services/search/*"]
-        rate_limit: "20/minute"
-        rationale: "Splunk SIEM API for security event queries"
+        scope:
+          - splunk:8089/services/search/*
+        rate_limit: 20/minute
+        rationale: Splunk SIEM API for security event queries
       - capability: api_call
-        scope: ["jira.bluefly.io/rest/api/2/issue*"]
-        rate_limit: "30/minute"
-        rationale: "Jira API access for compliance violation ticket creation"
+        scope:
+          - jira.bluefly.io/rest/api/2/issue*
+        rate_limit: 30/minute
+        rationale: Jira API access for compliance violation ticket creation
       - capability: database_read
-        scope: ["postgres:audit_db/audit_trail/*", "postgres:audit_db/pgaudit/*"]
-        rationale: "PostgreSQL audit database read access for compliance queries"
+        scope:
+          - postgres:audit_db/audit_trail/*
+          - postgres:audit_db/pgaudit/*
+        rationale: PostgreSQL audit database read access for compliance queries
       - capability: kubernetes_read
-        scope: ["pods", "deployments", "configmaps", "secrets/metadata", "networkpolicies", "rbac/*"]
-        rationale: "Kubernetes API read access for configuration compliance checks"
+        scope:
+          - pods
+          - deployments
+          - configmaps
+          - secrets/metadata
+          - networkpolicies
+          - rbac/*
+        rationale: Kubernetes API read access for configuration compliance checks
       - capability: report_write
-        scope: ["reports/compliance/**", "reports/audit/**"]
-        rationale: "Write compliance and audit reports"
+        scope:
+          - reports/compliance/**
+          - reports/audit/**
+        rationale: Write compliance and audit reports
       - capability: llm_inference
-        providers: ["anthropic", "openai"]
-        models: ["claude-sonnet", "gpt-4o", "claude-haiku"]
-        rationale: "AI reasoning for compliance analysis and report generation"
+        providers:
+          - anthropic
+          - openai
+        models:
+          - claude-sonnet
+          - gpt-4o
+          - claude-haiku
+        rationale: AI reasoning for compliance analysis and report generation
       - capability: agent_communication
-        scope: ["security-scanner", "config-validator"]
-        rationale: "Coordinate with security and configuration validation agents"
+        scope:
+          - security-scanner
+          - config-validator
+        rationale: Coordinate with security and configuration validation agents
       - capability: ticket_create
-        scope: ["jira:compliance-violations/*"]
-        rationale: "Create compliance violation tickets in Jira"
-
+        scope:
+          - jira:compliance-violations/*
+        rationale: Create compliance violation tickets in Jira
   tools:
     - type: mcp
       name: kubernetes-audit
@@ -265,18 +292,31 @@ spec:
     telemetry:
       enabled: true
       exporter: otlp
-      endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT}"
-      service_name: "${AGENT_NAME}"
-      service_version: "${AGENT_VERSION}"
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT}
+      service_name: ${AGENT_NAME}
+      service_version: ${AGENT_VERSION}
     tracing:
       enabled: true
       sampler: parentbased_traceidratio
       sample_rate: 0.1
-      propagation: ["tracecontext", "baggage"]
+      propagation:
+        - tracecontext
+        - baggage
     metrics:
       enabled: true
       interval: 30s
-      histogram_buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]
+      histogram_buckets:
+        - 0.005
+        - 0.01
+        - 0.025
+        - 0.05
+        - 0.1
+        - 0.25
+        - 0.5
+        - 1
+        - 2.5
+        - 5
+        - 10
       labels:
         - agent_name
         - agent_version
@@ -338,7 +378,7 @@ spec:
     encryption:
       in_transit:
         enabled: true
-        tls_version: "1.3"
+        tls_version: '1.3'
       at_rest:
         enabled: true
         algorithm: aes-256-gcm
@@ -384,21 +424,28 @@ spec:
       pii_detection:
         enabled: true
         action: redact
-        categories: ["email", "phone", "ssn", "credit_card"]
+        categories:
+          - email
+          - phone
+          - ssn
+          - credit_card
       secrets_detection:
         enabled: true
         action: block
         patterns:
-          - "glpat-*"
-          - "ghp_*"
-          - "sk-*"
-          - "bearer *"
-          - "password=*"
-          - "api_key=*"
+          - glpat-*
+          - ghp_*
+          - sk-*
+          - bearer *
+          - password=*
+          - api_key=*
       prompt_injection:
         enabled: true
         action: warn
-        detection: ["ignore previous", "system prompt", "jailbreak"]
+        detection:
+          - ignore previous
+          - system prompt
+          - jailbreak
       content_policy:
         enabled: true
         categories:
@@ -409,7 +456,7 @@ spec:
     kill_switch:
       enabled: true
       trigger: manual
-      webhook: "${KILL_SWITCH_WEBHOOK}"
+      webhook: ${KILL_SWITCH_WEBHOOK}
       grace_period: 30s
     compliance:
       profiles:
@@ -501,7 +548,7 @@ extensions:
         app.kubernetes.io/part-of: ossa-showcase
         openstandardagents.org/version: v0.3.0
       resourceLimits:
-        cpu: "1"
+        cpu: '1'
         memory: 2Gi
     deployment:
       replicas:

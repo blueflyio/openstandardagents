@@ -11,25 +11,24 @@ import chalk from 'chalk';
 import { Command } from 'commander';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
-import { ValidationService } from '../../services/validation.service.js';
 import { KAgentValidator } from '../../sdks/kagent/validator.js';
+import { ValidationService } from '../../services/validation.service.js';
+import type {
+    OssaAgent,
+    SchemaVersion,
+    ValidationResult,
+} from '../../types/index.js';
 import {
-  formatValidationErrors,
-  formatErrorCompact,
-  isJSONOutput,
-  outputJSON,
+    formatErrorCompact,
+    formatValidationErrors,
+    outputJSON
 } from '../utils/index.js';
 import {
-  addGlobalOptions,
-  addQueryOptions,
-  shouldUseColor,
-  ExitCode,
+    addGlobalOptions,
+    addQueryOptions,
+    ExitCode,
+    shouldUseColor,
 } from '../utils/standard-options.js';
-import type {
-  OssaAgent,
-  SchemaVersion,
-  ValidationResult,
-} from '../../types/index.js';
 
 export const validateCommand = new Command('validate')
   .argument('<path>', 'Path to OSSA manifest or OpenAPI spec (YAML or JSON)')
@@ -139,6 +138,23 @@ validateCommand.action(
             ],
           };
         }
+      }
+
+      // Enforce Lifecycle Revocation Restrictions
+      const lifecycle = m?.metadata?.lifecycle || m?.agent?.lifecycle;
+      if (lifecycle === 'revoked') {
+         result = {
+            ...result,
+            valid: false,
+            errors: [
+               ...(result.errors || []),
+               {
+                  instancePath: '/metadata/lifecycle',
+                  message: `Agent execution blocked: Manifest is marked as 'revoked'. It is unsafe to execute or deploy this agent.`,
+                  keyword: 'lifecycleRevoked',
+               } as any,
+            ],
+         };
       }
 
       // Output results
