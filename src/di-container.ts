@@ -60,8 +60,6 @@ import { ConformanceScoreCalculator } from './services/conformance/score-calcula
 import { BundleService } from './services/registry/bundle.service.js';
 import { IndexService } from './services/registry/index.service.js';
 
-// Skills Services
-import { ClaudeSkillsService } from './services/skills/claude-skills.service.js';
 // Skills Pipeline Services
 import {
   SkillsResearchService,
@@ -141,8 +139,6 @@ container.bind(ConformanceService).toSelf();
 container.bind(BundleService).toSelf();
 container.bind(IndexService).toSelf();
 
-// Bind skills services
-container.bind(ClaudeSkillsService).toSelf();
 // Bind skills pipeline services
 container.bind(SkillsResearchService).toSelf();
 container.bind(SkillsGeneratorService).toSelf();
@@ -200,7 +196,6 @@ export function resetContainer(): void {
   container.bind(ConformanceService).toSelf();
   container.bind(BundleService).toSelf();
   container.bind(IndexService).toSelf();
-  container.bind(ClaudeSkillsService).toSelf();
   container.bind(SkillsResearchService).toSelf();
   container.bind(SkillsGeneratorService).toSelf();
   container.bind(SkillsExportService).toSelf();

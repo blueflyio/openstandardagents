@@ -1,7 +1,5 @@
 # src/ — TypeScript source code
 
-**Project deep dive (health, gaps, recommendations):** GitLab Wiki [Project-Deep-Dive](https://gitlab.com/blueflyio/ossa/openstandardagents/-/wikis/Project-Deep-Dive). Publish from repo: `npm run wiki:publish`.
-
 ## Structure
 
 - `adapters/` — 20+ platform export adapters (BaseAdapter pattern)

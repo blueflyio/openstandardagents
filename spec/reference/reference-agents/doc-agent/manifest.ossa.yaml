@@ -17,42 +17,41 @@ metadata:
   annotations:
     openstandardagents.org/stability: stable
     blueflyio.gitlab.com/lifecycle: ready-for-dev
-    blueflyio.gitlab.com/codeowner: '@platform-team'
+    blueflyio.gitlab.com/codeowner: "@platform-team"
     blueflyio.gitlab.com/commit-type: docs
     blueflyio.gitlab.com/priority: high
-  uuid: a6537049-e6d8-464b-8e4d-ade7b626d25d
-  machine_name: doc_agent
 spec:
   lifecycle:
     phases:
       - name: message_normalization
-        description: Normalize incoming messages to canonical format
+        description: "Normalize incoming messages to canonical format"
         timeout: 5s
         retry: 2
       - name: tool_resolution
-        description: Resolve available tools and capabilities
+        description: "Resolve available tools and capabilities"
         timeout: 10s
         retry: 1
       - name: llm_inference
-        description: Execute LLM reasoning with context
+        description: "Execute LLM reasoning with context"
         timeout: 60s
         retry: 3
       - name: tool_execution
-        description: Execute resolved tools and actions
+        description: "Execute resolved tools and actions"
         timeout: 120s
         retry: 2
       - name: response_assembly
-        description: Assemble final response
+        description: "Assemble final response"
         timeout: 5s
         retry: 1
       - name: state_persistence
-        description: Persist state and memory updates
+        description: "Persist state and memory updates"
         timeout: 10s
         retry: 3
       - name: observability_emission
-        description: Emit telemetry, traces, and metrics
+        description: "Emit telemetry, traces, and metrics"
         timeout: 5s
         retry: 1
+
   taxonomy:
     domain: documentation
     subdomain: automation
@@ -146,7 +145,7 @@ spec:
         streaming: none
       capabilities:
         - name: read_file
-          version: '1.0'
+          version: "1.0"
           description: Read file contents
           scopes:
             - read:files
@@ -158,7 +157,7 @@ spec:
             required:
               - path
         - name: write_file
-          version: '1.0'
+          version: "1.0"
           description: Write documentation files
           scopes:
             - write:files
@@ -173,7 +172,7 @@ spec:
               - path
               - content
         - name: list_directory
-          version: '1.0'
+          version: "1.0"
           description: List directory contents
           scopes:
             - read:files
@@ -210,7 +209,7 @@ spec:
         timeout_seconds: 60
       capabilities:
         - name: get_wiki_page
-          version: '1.0'
+          version: "1.0"
           description: Get wiki page content
           scopes:
             - read:wiki
@@ -228,7 +227,7 @@ spec:
               - project_id
               - slug
         - name: create_wiki_page
-          version: '1.0'
+          version: "1.0"
           description: Create new wiki page
           scopes:
             - write:wiki
@@ -256,7 +255,7 @@ spec:
               - title
               - content
         - name: update_wiki_page
-          version: '1.0'
+          version: "1.0"
           description: Update existing wiki page
           scopes:
             - write:wiki
@@ -279,7 +278,7 @@ spec:
               - slug
               - content
         - name: list_wiki_pages
-          version: '1.0'
+          version: "1.0"
           description: List all wiki pages
           scopes:
             - read:wiki
@@ -312,62 +311,37 @@ spec:
     policy: deny_by_default
     grants:
       - capability: file_read
-        scope:
-          - '**/*.yaml'
-          - '**/*.yml'
-          - '**/*.json'
-          - '**/*.md'
-          - '**/*.ts'
-          - '**/*.js'
-          - openapi/**/*
-          - src/cli/**/*
-        rationale: Read source files, OpenAPI specs, CLI commands, and schemas for documentation generation
+        scope: ["**/*.yaml", "**/*.yml", "**/*.json", "**/*.md", "**/*.ts", "**/*.js", "openapi/**/*", "src/cli/**/*"]
+        rationale: "Read source files, OpenAPI specs, CLI commands, and schemas for documentation generation"
       - capability: file_write
-        scope:
-          - website/content/docs/**/*.md
-          - docs/**/*.md
-          - wiki/**/*.md
-        rationale: Write generated documentation files
+        scope: ["website/content/docs/**/*.md", "docs/**/*.md", "wiki/**/*.md"]
+        rationale: "Write generated documentation files"
       - capability: api_call
-        scope:
-          - gitlab.com/api/v4/projects/*/wikis*
-        rate_limit: 60/minute
-        rationale: GitLab Wiki API access for reading and writing wiki pages
+        scope: ["gitlab.com/api/v4/projects/*/wikis*"]
+        rate_limit: "60/minute"
+        rationale: "GitLab Wiki API access for reading and writing wiki pages"
       - capability: api_call
-        scope:
-          - gitlab.com/api/v4/projects/*/repository/*
-        rate_limit: 30/minute
-        rationale: GitLab Repository API for file content retrieval
+        scope: ["gitlab.com/api/v4/projects/*/repository/*"]
+        rate_limit: "30/minute"
+        rationale: "GitLab Repository API for file content retrieval"
       - capability: llm_inference
-        providers:
-          - anthropic
-          - openai
-        models:
-          - claude-sonnet
-          - gpt-4o
-          - claude-haiku
-        rationale: AI reasoning for documentation generation and content improvement
+        providers: ["anthropic", "openai"]
+        models: ["claude-sonnet", "gpt-4o", "claude-haiku"]
+        rationale: "AI reasoning for documentation generation and content improvement"
       - capability: link_validation
-        scope:
-          - http://*
-          - https://*
-        rate_limit: 100/minute
-        rationale: Validate external links in documentation
+        scope: ["http://*", "https://*"]
+        rate_limit: "100/minute"
+        rationale: "Validate external links in documentation"
       - capability: openapi_parse
-        scope:
-          - openapi/**/*.yaml
-          - openapi/**/*.json
-        rationale: Parse OpenAPI/Swagger specifications for API docs generation
+        scope: ["openapi/**/*.yaml", "openapi/**/*.json"]
+        rationale: "Parse OpenAPI/Swagger specifications for API docs generation"
       - capability: schema_parse
-        scope:
-          - '**/*.schema.json'
-          - schemas/**/*.json
-        rationale: Parse JSON Schema for schema documentation generation
+        scope: ["**/*.schema.json", "schemas/**/*.json"]
+        rationale: "Parse JSON Schema for schema documentation generation"
       - capability: markdown_generate
-        scope:
-          - website/content/docs/**
-          - docs/**
-        rationale: Generate formatted markdown documentation
+        scope: ["website/content/docs/**", "docs/**"]
+        rationale: "Generate formatted markdown documentation"
+
     actions:
       - name: generate_api_docs
         description: Generate API documentation from OpenAPI specifications
@@ -546,31 +520,18 @@ spec:
     telemetry:
       enabled: true
       exporter: otlp
-      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT}
-      service_name: ${AGENT_NAME}
-      service_version: ${AGENT_VERSION}
+      endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT}"
+      service_name: "${AGENT_NAME}"
+      service_version: "${AGENT_VERSION}"
     tracing:
       enabled: true
       sampler: parentbased_traceidratio
       sample_rate: 0.1
-      propagation:
-        - tracecontext
-        - baggage
+      propagation: ["tracecontext", "baggage"]
     metrics:
       enabled: true
       interval: 30s
-      histogram_buckets:
-        - 0.005
-        - 0.01
-        - 0.025
-        - 0.05
-        - 0.1
-        - 0.25
-        - 0.5
-        - 1
-        - 2.5
-        - 5
-        - 10
+      histogram_buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]
       labels:
         - agent_name
         - agent_version
@@ -638,28 +599,21 @@ spec:
       pii_detection:
         enabled: true
         action: redact
-        categories:
-          - email
-          - phone
-          - ssn
-          - credit_card
+        categories: ["email", "phone", "ssn", "credit_card"]
       secrets_detection:
         enabled: true
         action: block
         patterns:
-          - glpat-*
-          - ghp_*
-          - sk-*
-          - bearer *
-          - password=*
-          - api_key=*
+          - "glpat-*"
+          - "ghp_*"
+          - "sk-*"
+          - "bearer *"
+          - "password=*"
+          - "api_key=*"
       prompt_injection:
         enabled: true
         action: warn
-        detection:
-          - ignore previous
-          - system prompt
-          - jailbreak
+        detection: ["ignore previous", "system prompt", "jailbreak"]
       content_policy:
         enabled: true
         categories:
@@ -670,7 +624,7 @@ spec:
     kill_switch:
       enabled: true
       trigger: manual
-      webhook: ${KILL_SWITCH_WEBHOOK}
+      webhook: "${KILL_SWITCH_WEBHOOK}"
       grace_period: 30s
     compliance:
       profiles:
@@ -800,7 +754,7 @@ extensions:
         app.kubernetes.io/part-of: ossa-showcase
         openstandardagents.org/version: v0.3.0
       resourceLimits:
-        cpu: '1'
+        cpu: "1"
         memory: 2Gi
     deployment:
       replicas:
