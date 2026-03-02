@@ -1,8 +1,6 @@
 apiVersion: ossa/v0.4.1
 kind: Agent
 metadata:
-  uuid: 056eb381-904d-41f9-b667-4afb7c9504b5
-  machine_name: release_manager
   name: release-manager
   version: 1.0.0
   description: Manage complete release lifecycle (version, changelog, publish, deploy)

@@ -340,8 +340,9 @@ export class ClaudeSkillsService {
         errors.push('Skill description must be at least 10 characters');
       }
 
-      if (skill.triggerKeywords.length === 0) {
-        errors.push('At least one trigger keyword is required');
+      // Agent Skills / Claude Code use description for when to load; trigger_keywords are optional
+      if (skill.triggerKeywords.length === 0 && (!skill.description || skill.description.length < 20)) {
+        errors.push('Add trigger_keywords in frontmatter or a longer description so Claude knows when to use this skill');
       }
     } catch (error) {
       errors.push(

@@ -66,6 +66,14 @@ export class OSSAValidator {
           warnings: this.generateWarnings(manifest),
         };
       }
+      const revokeError = this.validateRevocation(manifest);
+      if (revokeError) {
+        return {
+          valid: false,
+          errors: [revokeError],
+          warnings: this.generateWarnings(manifest),
+        };
+      }
       return { valid: true, warnings: this.generateWarnings(manifest) };
     }
 
@@ -98,6 +106,20 @@ export class OSSAValidator {
         errors: [`Failed to read or parse file: ${error}`],
       };
     }
+  }
+
+  /**
+   * Validate revocation: when status is revoked, revoked_at is required
+   */
+  private validateRevocation(
+    manifest: Record<string, unknown>
+  ): string | null {
+    const metadata = (manifest.metadata as Record<string, unknown>) || {};
+    const status = metadata.status as string | undefined;
+    if (status === 'revoked' && !metadata.revoked_at) {
+      return 'metadata.revoked_at is required when metadata.status is revoked';
+    }
+    return null;
   }
 
   /**
@@ -226,6 +248,16 @@ export class OSSAValidator {
       warnings.push(
         'team_membership defined but lifecycle_stages missing - consider tracking agent growth'
       );
+    }
+
+    // Warn if checksum format is invalid (sha256:hex or sha512:hex)
+    if (metadata.checksum && typeof metadata.checksum === 'string') {
+      const cs = metadata.checksum as string;
+      if (!/^(sha256|sha512):[a-f0-9]+$/.test(cs)) {
+        warnings.push(
+          'metadata.checksum should match pattern sha256:<hex> or sha512:<hex> (e.g. sha256:64 hex chars)'
+        );
+      }
     }
 
     // Warn if taxonomy domain doesn't match typical agent type

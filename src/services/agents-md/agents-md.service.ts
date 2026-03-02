@@ -246,6 +246,38 @@ export class AgentsMdService {
   }
 
   /**
+   * Generate pointer-only AGENTS.md content (config + wiki refs, no long-form).
+   * Uses CONFIG_DIR and WIKI_ROOT from options or env; no hardcoded paths.
+   */
+  generatePointerOnly(options?: {
+    configDir?: string;
+    wikiRoot?: string;
+    projectWiki?: string;
+  }): string {
+    const configRef = options?.configDir ?? process.env.CONFIG_DIR ?? '$CONFIG_DIR';
+    const wikiRef = options?.wikiRoot ?? process.env.WIKI_ROOT ?? '$WIKI_ROOT';
+    const projectWiki = options?.projectWiki ?? '<project>.wiki';
+    const lines = [
+      '# Agent / project guidelines',
+      `- Config: ${configRef} (see config/AGENTS.md). Tokens: config/tokens; env: .env.local.`,
+      `- Wiki: ${wikiRef}/${projectWiki}. Long-form docs and runbooks live here.`,
+      '- This file is a pointer only. Do not add long runbooks or how-to content; update config or Wiki.',
+    ];
+    return lines.join('\n');
+  }
+
+  /**
+   * Write pointer-only AGENTS.md to disk (no manifest required).
+   */
+  async writePointerOnly(
+    outputPath: string,
+    options?: { configDir?: string; wikiRoot?: string; projectWiki?: string }
+  ): Promise<void> {
+    const content = this.generatePointerOnly(options);
+    await fs.writeFile(outputPath, content, 'utf-8');
+  }
+
+  /**
    * Write AGENTS.md file to disk
    * @param manifest - OSSA agent manifest
    * @param outputPath - Optional output path (defaults to extension config)

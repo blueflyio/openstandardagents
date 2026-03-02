@@ -1,8 +1,6 @@
 apiVersion: ossa/v0.4.1
 kind: Agent
 metadata:
-  uuid: 0a5d86c7-5b0b-4d50-8a51-8e5f6b513408
-  machine_name: security_auditor
   name: security-auditor
   version: 1.0.0
   description: Comprehensive security audit for OSSA agents (OWASP, CVE, secrets)

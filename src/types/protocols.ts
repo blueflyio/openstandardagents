@@ -1,5 +1,5 @@
 /**
- * OSSA v0.5 Protocol Declaration Types
+ * OSSA v0.4 Protocol Declaration Types
  *
  * Type definitions for agent protocol interoperability,
  * including MCP, A2A, and ANP protocol declarations.
@@ -59,7 +59,7 @@ export interface MCPCapabilities {
 }
 
 /**
- * MCP Protocol declaration (v0.5)
+ * MCP Protocol declaration (v0.4)
  */
 export interface MCPProtocol {
   /** MCP protocol version */
@@ -126,7 +126,7 @@ export interface A2AAuthentication {
 }
 
 /**
- * A2A Protocol declaration (v0.5)
+ * A2A Protocol declaration (v0.4)
  */
 export interface A2AProtocol {
   /** A2A protocol version */
@@ -171,7 +171,7 @@ export interface ANPDiscovery {
 }
 
 /**
- * ANP Protocol declaration (v0.5)
+ * ANP Protocol declaration (v0.4)
  */
 export interface ANPProtocol {
   /** Decentralized Identifier (DID) */
@@ -185,7 +185,7 @@ export interface ANPProtocol {
 }
 
 /**
- * Protocol Declarations (v0.5)
+ * Protocol Declarations (v0.4)
  * Declares which agent communication protocols this agent supports.
  */
 export interface ProtocolDeclarations {
