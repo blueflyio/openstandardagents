@@ -100,11 +100,14 @@ validateCommand.action(
 
       // Hard-fail on revoked lifecycle/status (governance; schema supports metadata.status)
       if (!options.openapi) {
-        const meta = (manifest as Record<string, unknown>)?.metadata as Record<string, unknown> | undefined;
+        const meta = (manifest as Record<string, unknown>)?.metadata as
+          | Record<string, unknown>
+          | undefined;
         if (meta?.status === 'revoked' || meta?.lifecycle === 'revoked') {
           const err = {
             instancePath: '',
-            message: 'Manifest is revoked (metadata.status or metadata.lifecycle). Revoked agents must not pass validation.',
+            message:
+              'Manifest is revoked (metadata.status or metadata.lifecycle). Revoked agents must not pass validation.',
             keyword: 'revocationStatus',
           } as const;
           if (options.json || options.output === 'json') {
@@ -117,8 +120,14 @@ validateCommand.action(
             process.exit(ExitCode.GENERAL_ERROR);
           }
           if (!options.quiet) {
-            console.error(useColor ? chalk.red.bold('\nValidation Failed') : '\nValidation Failed');
-            console.error(useColor ? chalk.red(`  ${err.message}`) : `  ${err.message}`);
+            console.error(
+              useColor
+                ? chalk.red.bold('\nValidation Failed')
+                : '\nValidation Failed'
+            );
+            console.error(
+              useColor ? chalk.red(`  ${err.message}`) : `  ${err.message}`
+            );
           }
           process.exit(ExitCode.GENERAL_ERROR);
         }

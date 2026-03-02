@@ -18,17 +18,17 @@ import { glob } from 'glob';
 import * as path from 'path';
 import * as yaml from 'yaml';
 import {
-    getDefaultAgentVersion,
-    getDefaultDiscoveryPatterns,
-    getDefaultDiscoveryRefresh,
-    getDefaultDiscoveryStrategy,
-    getDefaultOSSAAPIVersion,
-    getDefaultPolicyKind,
-    getDefaultRegistryKind,
-    getDefaultWorkspaceDir,
-    getRequiredWorkspaceDirs,
-    getWorkspacePolicyPath,
-    getWorkspaceRegistryPath,
+  getDefaultAgentVersion,
+  getDefaultDiscoveryPatterns,
+  getDefaultDiscoveryRefresh,
+  getDefaultDiscoveryStrategy,
+  getDefaultOSSAAPIVersion,
+  getDefaultPolicyKind,
+  getDefaultRegistryKind,
+  getDefaultWorkspaceDir,
+  getRequiredWorkspaceDirs,
+  getWorkspacePolicyPath,
+  getWorkspaceRegistryPath,
 } from '../../config/defaults.js';
 import { getVersion } from '../../utils/version.js';
 import { handleCommandError, outputJSON } from '../utils/index.js';
@@ -203,24 +203,55 @@ workspaceCommand
   .command('scaffold')
   .description('Scaffold the IDE workspace mapping via OSSA standards')
   .option('--dir <directory>', 'Base directory to scaffold', '.')
+  .option(
+    '--init-projects <projects>',
+    'Comma separated list of project paths to generate .agents/ stubs into'
+  )
+  .option(
+    '--worktree <worktrees>',
+    'Comma separated list of external worktree paths to bind into the IDE workspace'
+  )
   .action(async (options) => {
     try {
       const { container } = await import('../../di-container.js');
-      const { WorkspaceService } = await import(
-        '../../services/workspace/workspace.service.js'
-      );
+      const { WorkspaceService } =
+        await import('../../services/workspace/workspace.service.js');
       const service = container.get(WorkspaceService);
 
+      const initProjects = options.initProjects
+        ? options.initProjects.split(',').map((s: string) => s.trim())
+        : [];
+      const externalWorktrees = options.worktree
+        ? options.worktree.split(',').map((s: string) => s.trim())
+        : [];
+
       console.log(chalk.blue(`Scaffolding workspace from ${options.dir}...`));
-      
-      const result = await service.scaffold(options.dir);
+
+      const result = await service.scaffold(
+        options.dir,
+        initProjects,
+        externalWorktrees
+      );
 
       console.log(chalk.green('\n✓ Workspace scaffold completed'));
       console.log(chalk.gray(`  Central Workspace: ${result.workspacePath}`));
       if (result.projectsScaffolded > 0) {
-        console.log(chalk.gray(`  Projects Provisioned: ${result.projectsScaffolded} .agents/ folders created`));
+        console.log(
+          chalk.gray(
+            `  Projects Provisioned: ${result.projectsScaffolded} .agents/ folders newly created`
+          )
+        );
       }
-      console.log(chalk.gray(`  IDE Setup Bound: ${result.codeWorkspacePath}\n`));
+      if (result.externalWorktreesBound > 0) {
+        console.log(
+          chalk.cyan(
+            `  Worktrees Bound: ${result.externalWorktreesBound} external git paths integrated`
+          )
+        );
+      }
+      console.log(
+        chalk.gray(`  IDE Setup Bound: ${result.codeWorkspacePath}\n`)
+      );
       process.exit(0);
     } catch (error) {
       handleCommandError(error);
