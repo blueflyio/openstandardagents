@@ -43,8 +43,13 @@ export class AgentsMdDiscoveryService {
    * - Scans .agents/{name}/ for manifest + AGENTS.md pairs.
    * - Scans repo root for AGENTS.md (optional manifest at root).
    * - Optionally scans nested dirs for AGENTS.md and infers manifest.
+   * @param baseDir - Workspace directory to scan
+   * @param opts - Optional configDir/wikiRoot for pointer validation (reserved for future use)
    */
-  async discover(baseDir: string): Promise<DiscoveredAgentsMd[]> {
+  async discover(
+    baseDir: string,
+    _opts?: { configDir?: string; wikiRoot?: string }
+  ): Promise<DiscoveredAgentsMd[]> {
     const resolvedBase = path.resolve(baseDir);
     const results: DiscoveredAgentsMd[] = [];
 
@@ -158,17 +163,27 @@ export class AgentsMdDiscoveryService {
 
   /**
    * Maintain: validate and optionally regenerate each discovered AGENTS.md that has a manifest.
+   * @param options.configDir - Optional config root (reserved for pointer validation)
+   * @param options.wikiRoot - Optional wikis root (reserved for pointer validation)
    */
   async maintain(
     baseDir: string,
-    options: { regenerate: boolean; dryRun?: boolean }
+    options: {
+      regenerate: boolean;
+      dryRun?: boolean;
+      configDir?: string;
+      wikiRoot?: string;
+    }
   ): Promise<{
     discovered: DiscoveredAgentsMd[];
     updated: string[];
     skipped: string[];
     failed: Array<{ path: string; error: string }>;
   }> {
-    const discovered = await this.discover(baseDir);
+    const discovered = await this.discover(baseDir, {
+      configDir: options.configDir,
+      wikiRoot: options.wikiRoot,
+    });
     const updated: string[] = [];
     const skipped: string[] = [];
     const failed: Array<{ path: string; error: string }> = [];
