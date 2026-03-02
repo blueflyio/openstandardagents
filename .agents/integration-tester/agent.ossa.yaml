@@ -1,6 +1,8 @@
 apiVersion: ossa/v0.4.1
 kind: Agent
 metadata:
+  uuid: 3a41431d-768e-4ec0-b536-017fcfe71782
+  machine_name: integration_tester
   name: integration-tester
   version: 1.0.0
   description: Test OSSA agent integrations across all platforms

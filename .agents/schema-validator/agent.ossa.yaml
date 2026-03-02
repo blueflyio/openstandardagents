@@ -1,6 +1,8 @@
 apiVersion: ossa/v0.4.1
 kind: Agent
 metadata:
+  uuid: 2626d6f3-7ac8-41a7-9a5e-b58e66ab68a8
+  machine_name: schema_validator
   name: schema-validator
   version: 1.0.0
   description: Production-grade OSSA manifest validator with comprehensive error reporting

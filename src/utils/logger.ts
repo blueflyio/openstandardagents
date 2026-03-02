@@ -40,7 +40,6 @@ export interface LoggerConfig {
  */
 function createLoggerConfig(config: LoggerConfig = {}): pino.LoggerOptions {
   const isDevelopment = process.env.NODE_ENV !== 'production';
-  const isTest = typeof process.env.JEST_WORKER_ID !== 'undefined';
   const level =
     config.level || process.env.LOG_LEVEL || (isDevelopment ? 'debug' : 'info');
 
@@ -71,8 +70,8 @@ function createLoggerConfig(config: LoggerConfig = {}): pino.LoggerOptions {
     },
     // Timestamp format
     timestamp: pino.stdTimeFunctions.isoTime,
-    // Pretty print in development only; never in test (avoids pino-pretty worker that keeps Jest alive)
-    ...(!isTest && (config.pretty || isDevelopment)
+    // Pretty print in development
+    ...(config.pretty || isDevelopment
       ? {
           transport: {
             target: 'pino-pretty',

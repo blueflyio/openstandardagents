@@ -1,12 +1,12 @@
-# OSSA v0.4 Minimal Example (identity, security, protocols)
+# OSSA v0.5 Minimal Example
 # Shows backward compatibility: only new fields you actually need.
-# All identity/security/protocol additions are optional.
-apiVersion: ossa/v0.4
+# All v0.5 additions are optional.
+apiVersion: ossa/v0.5
 kind: Agent
 metadata:
   name: simple-helper
   version: 1.0.0
-  description: Minimal agent using v0.4 identity
+  description: Minimal agent using v0.5 identity
   identity:
     agent_id: simple-helper
     publisher:

@@ -17,7 +17,6 @@ import {
   SkillsExportService,
   SkillsInstallService,
 } from '../../services/skills-pipeline/index.js';
-import { runSkillWizard, writeSkillArtifacts } from '../skills-wizard/skill-wizard.js';
 
 const AgentPathSchema = z.string().min(1);
 const SkillPathSchema = z.string().min(1);
@@ -303,35 +302,6 @@ skillsCommandGroup
       }
     }
   );
-
-/**
- * Wizard Command
- * Interactive wizard to create an Agent Skills (SKILL.md) skill. Aligns with Claude Code skills.
- * See https://code.claude.com/docs/en/skills
- */
-skillsCommandGroup
-  .command('wizard')
-  .option(
-    '--path <dir>',
-    'Output directory for the skill folder',
-    process.env.SKILLS_PATH ||
-      (process.env.HOME ? `${process.env.HOME}/.claude/skills` : '.claude/skills')
-  )
-  .description('Interactive wizard to create a new skill (SKILL.md)')
-  .action(async (options: { path?: string }) => {
-    try {
-      const state = await runSkillWizard();
-      if (options.path) state.outputPath = options.path;
-      const { skillMdPath, ossaPath } = await writeSkillArtifacts(state);
-      console.log(chalk.green('Skill created: ' + skillMdPath));
-      if (ossaPath) console.log(chalk.gray('OSSA manifest: ' + ossaPath));
-      console.log(chalk.gray('Validate: ossa skills validate ' + skillMdPath));
-    } catch (error) {
-      console.error(chalk.red('Wizard failed'));
-      console.error(error instanceof Error ? error.message : String(error));
-      process.exit(1);
-    }
-  });
 
 /**
  * Create Command

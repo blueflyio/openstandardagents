@@ -173,8 +173,7 @@ const lintRules: LintRule[] = [
     severity: 'warning',
     check: (manifest: OssaAgent) => {
       const issues: LintIssue[] = [];
-      const meta = manifest.metadata as any;
-      const status = meta?.status;
+      const status = (manifest.metadata as any)?.status;
       if (status === 'revoked') {
         issues.push({
           rule: 'revocation-status',
@@ -182,17 +181,9 @@ const lintRules: LintRule[] = [
           severity: 'error',
           path: 'metadata.status',
         });
-        if (!meta?.revoked_at) {
-          issues.push({
-            rule: 'revocation-status',
-            message: 'metadata.revoked_at required when status is revoked',
-            severity: 'error',
-            path: 'metadata.revoked_at',
-          });
-        }
       }
       if (status === 'deprecated') {
-        const msg = meta?.deprecated_message;
+        const msg = (manifest.metadata as any)?.deprecated_message;
         issues.push({
           rule: 'revocation-status',
           message: msg
@@ -220,29 +211,6 @@ const lintRules: LintRule[] = [
           rule: 'signed-artifact',
           message:
             'Consider adding metadata.signature or metadata.checksum for integrity and trust (see Agent Registry Governance)',
-          severity: 'info',
-          path: 'metadata',
-        });
-      }
-      return issues;
-    },
-  },
-  {
-    id: 'drupal-identifiers',
-    name: 'Drupal-friendly identifiers for registry',
-    severity: 'info',
-    check: (manifest: OssaAgent) => {
-      const issues: LintIssue[] = [];
-      const meta = manifest.metadata as any;
-      const hasUuid = meta?.uuid;
-      const hasMachineName = meta?.machine_name;
-      if (!hasUuid || !hasMachineName) {
-        const missing: string[] = [];
-        if (!hasUuid) missing.push('metadata.uuid');
-        if (!hasMachineName) missing.push('metadata.machine_name');
-        issues.push({
-          rule: 'drupal-identifiers',
-          message: `For Drupal/registry integration add: ${missing.join(', ')} (optional)`,
           severity: 'info',
           path: 'metadata',
         });
