@@ -20,93 +20,94 @@ import 'reflect-metadata';
 import { initializeAdapters } from '../adapters/index.js';
 
 // Core OSSA commands (platform-agnostic)
+import { agentsLocalCommandGroup } from './commands/agents-local.command.js';
 import { agentsMdCommand } from './commands/agents-md.command.js';
 import { agentsCommandGroup } from './commands/agents.command.js';
-import { agentsLocalCommandGroup } from './commands/agents-local.command.js';
+import { buildCommand } from './commands/build.command.js';
 import { complianceCommand } from './commands/compliance.command.js';
 import { conformanceCommand } from './commands/conformance.command.js';
-import { governanceCommand } from './commands/governance.command.js';
 import { contractCommand } from './commands/contract.command.js';
 import { dependenciesCommand } from './commands/dependencies.command.js';
 import {
-  deployCommand,
-  rollbackCommand,
-  statusCommand,
-  stopCommand,
+    deployCommand,
+    rollbackCommand,
+    statusCommand,
+    stopCommand,
 } from './commands/deploy.js';
 import { diffCommand } from './commands/diff.command.js';
 import { exportCommand } from './commands/export.command.js';
 import { extensionTeamCommand } from './commands/extension-team.command.js';
 import { generateCommand } from './commands/generate.command.js';
+import { governanceCommand } from './commands/governance.command.js';
 import { importCommand } from './commands/import.command.js';
 import { infoCommand } from './commands/info.command.js';
 import { initCommand } from './commands/init.command.js';
-import { scaffoldCommand } from './commands/scaffold.command.js';
-import { wizardCommand } from './commands/wizard.command.js';
-import { wizardAPIFirstCommand } from './commands/wizard-api-first.command.js';
 import { installCommand } from './commands/install.command.js';
 import { lintCommand } from './commands/lint.command.js';
-import { standardizeCommand } from './commands/standardize.command.js';
 import { llmsTxtCommand } from './commands/llms-txt.command.js';
-import { migrateCommand } from './commands/migrate.command.js';
-import { buildCommand } from './commands/build.command.js';
 import { migrateBatchCommand } from './commands/migrate-batch.command.js';
+import { migrateCommand } from './commands/migrate.command.js';
 import { publishCommand } from './commands/publish.command.js';
 import { quickstartCommand } from './commands/quickstart.command.js';
 import { registryCommand } from './commands/registry.command.js';
 import { runCommand } from './commands/run.command.js';
+import { scaffoldCommand } from './commands/scaffold.command.js';
 import { schemaCommand } from './commands/schema.command.js';
 import { searchCommand } from './commands/search.command.js';
-import { updateCommand } from './commands/update.command.js';
+import { standardizeCommand } from './commands/standardize.command.js';
 import { testCommand } from './commands/test.command.js';
+import { updateCommand } from './commands/update.command.js';
 import { validateCommand } from './commands/validate.command.js';
+import { wizardAPIFirstCommand } from './commands/wizard-api-first.command.js';
+import { wizardCommand } from './commands/wizard.command.js';
 
 // Agent Card (A2A discovery)
 import { agentCardCommand } from './commands/agent-card.command.js';
 
 // Registry commands (GAID/DID)
-import { generateGaidCommand } from './commands/generate-gaid.command.js';
-import { registerCommand } from './commands/register.js';
+import { capabilityCommandGroup } from './commands/capability/index.js';
 import { discoverCommand } from './commands/discover.js';
-import { verifyCommand } from './commands/verify.js';
-import { workspaceCommand } from './commands/workspace.command.js';
-import { taxonomyCommandGroup } from './commands/taxonomy.command.js';
+import { generateGaidCommand } from './commands/generate-gaid.command.js';
+import { manifestCommandGroup } from './commands/manifest/index.js';
+import { mcpCommand } from './commands/mcp.command.js';
+import { registerCommand } from './commands/register.js';
 import { skillsCommandGroup } from './commands/skills.command.js';
+import { taxonomyCommandGroup } from './commands/taxonomy.command.js';
 import { templateCommandGroup } from './commands/template.command.js';
 import { toolCommandGroup } from './commands/tool/index.js';
-import { capabilityCommandGroup } from './commands/capability/index.js';
-import { manifestCommandGroup } from './commands/manifest/index.js';
+import { verifyCommand } from './commands/verify.js';
+import { workspaceCommand } from './commands/workspace.command.js';
 
 // Framework integration commands
-import { langflowCommand } from './commands/langflow.command.js';
-import { langchainCommand } from './commands/langchain.command.js';
 import { frameworkCommand } from './commands/framework.command.js';
+import { langchainCommand } from './commands/langchain.command.js';
+import { langflowCommand } from './commands/langflow.command.js';
 
 // Additional commands (previously unregistered)
 import { agentWizardCommand } from './commands/agent-wizard.command.js';
 import { docsCommand } from './commands/docs.command.js';
-import { platformsCommand } from './commands/platforms.command.js';
 import { enhanceCommand } from './commands/enhance.command.js';
 import { examplesCommand } from './commands/examples.command.js';
 import { knowledgeCommandGroup } from './commands/knowledge.command.js';
+import { platformsCommand } from './commands/platforms.command.js';
 // Note: knowledge-index and knowledge-query are subcommands within knowledgeCommandGroup
+import { createAuditCommand } from './commands/audit.js';
+import { devCommand } from './commands/dev.command.js';
+import { estimateCommand } from './commands/estimate.command.js';
 import { migrateLangchainCommand } from './commands/migrate-langchain.command.js';
 import { releaseCommand } from './commands/release.command.js';
 import { serveCommand } from './commands/serve.command.js';
-import { devCommand } from './commands/dev.command.js';
 import { syncCommand } from './commands/sync.command.js';
-import { createAuditCommand } from './commands/audit.js';
-import { estimateCommand } from './commands/estimate.command.js';
 import { upgradeCommand } from './commands/upgrade.command.js';
 
 // Extension system (SOLID: Open/Closed via registry pattern)
 import {
-  shouldLoadExtensions,
-  getEnabledExtensions,
-  createExtensionsCommand,
-  loadExtension,
-  getRegisteredExtensions,
-  type OSSAExtension,
+    createExtensionsCommand,
+    getEnabledExtensions,
+    getRegisteredExtensions,
+    loadExtension,
+    shouldLoadExtensions,
+    type OSSAExtension,
 } from './extensions/index.js';
 
 // Load package.json for version (lazy to avoid Jest module resolution issues)
@@ -297,6 +298,7 @@ for (const cmd of [
   langchainCommand,
   frameworkCommand,
   workspaceCommand,
+  mcpCommand,
   extensionTeamCommand,
   estimateCommand,
 ]) {
