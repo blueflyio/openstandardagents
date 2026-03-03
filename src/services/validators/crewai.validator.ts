@@ -9,48 +9,12 @@ import type { ErrorObject } from 'ajv';
 import type { OssaAgent, ValidationResult } from '../../types/index.js';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
-import { readFileSync, existsSync } from 'fs';
-import { join } from 'path';
+import { readFileSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
-/**
- * Resolve the package root directory.
- * Works in both CJS (Jest uses __dirname) and ESM (searches filesystem).
- */
-function resolvePackageRoot(): string {
-  // CJS (Jest) - __dirname is natively available
-  if (typeof __dirname !== 'undefined') {
-    // validators/ -> services/ -> src/ (or dist/) -> package root
-    return join(__dirname, '..', '..', '..');
-  }
-
-  // ESM (production build) - __dirname not available
-  // Check if process.cwd() IS the package root
-  try {
-    const pkg = JSON.parse(
-      readFileSync(join(process.cwd(), 'package.json'), 'utf-8')
-    );
-    if (pkg.name === '@bluefly/openstandardagents') {
-      return process.cwd();
-    }
-  } catch {
-    /* not package root */
-  }
-
-  // Check node_modules (installed as dependency)
-  const nmPath = join(
-    process.cwd(),
-    'node_modules',
-    '@bluefly',
-    'openstandardagents'
-  );
-  if (existsSync(join(nmPath, 'package.json'))) {
-    return nmPath;
-  }
-
-  return process.cwd();
-}
-
-const PKG_ROOT = resolvePackageRoot();
+const VALIDATOR_DIR = dirname(fileURLToPath(import.meta.url));
+const PKG_ROOT = join(VALIDATOR_DIR, '..', '..', '..');
 
 @injectable()
 export class CrewAIValidator {
