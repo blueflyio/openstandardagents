@@ -15,10 +15,10 @@ import { join, relative } from 'path';
 import { API_VERSION, SPEC_VERSION } from '../version.js';
 
 const ALLOWED_HARDCODED_VERSIONS = [
-  '.version.json',           // Source of truth
-  'src/version.ts',          // Version constants
-  'CHANGELOG.md',            // Historical versions documented
-  'package.json',            // NPM version
+  '.version.json', // Source of truth
+  'src/version.ts', // Version constants
+  'CHANGELOG.md', // Historical versions documented
+  'package.json', // NPM version
   'src/tools/validate-versions.ts', // This file
 ];
 
@@ -43,8 +43,10 @@ interface Violation {
 const violations: Violation[] = [];
 
 function shouldIgnore(filepath: string): boolean {
-  return IGNORE_PATTERNS.some(pattern => pattern.test(filepath)) ||
-         ALLOWED_HARDCODED_VERSIONS.some(allowed => filepath.includes(allowed));
+  return (
+    IGNORE_PATTERNS.some((pattern) => pattern.test(filepath)) ||
+    ALLOWED_HARDCODED_VERSIONS.some((allowed) => filepath.includes(allowed))
+  );
 }
 
 function scanFile(filepath: string) {
@@ -56,7 +58,9 @@ function scanFile(filepath: string) {
 
     lines.forEach((line, index) => {
       // Check for hardcoded ossa/vX.X.X patterns
-      const ossaVersionMatch = line.match(/['"]ossa\/v(\d+\.\d+(?:\.\d+)?)['"]/);//Check for other version patterns (but not current version)
+      const ossaVersionMatch = line.match(
+        /['"]ossa\/v(\d+\.\d+(?:\.\d+)?)['"]/
+      ); //Check for other version patterns (but not current version)
       if (ossaVersionMatch) {
         const foundVersion = `ossa/v${ossaVersionMatch[1]}`;
         if (foundVersion !== API_VERSION) {
@@ -84,13 +88,14 @@ function scanDirectory(dir: string) {
 
       if (stat.isDirectory()) {
         scanDirectory(fullPath);
-      } else if (stat.isFile() && (
-        fullPath.endsWith('.ts') ||
-        fullPath.endsWith('.js') ||
-        fullPath.endsWith('.json') ||
-        fullPath.endsWith('.yaml') ||
-        fullPath.endsWith('.yml')
-      )) {
+      } else if (
+        stat.isFile() &&
+        (fullPath.endsWith('.ts') ||
+          fullPath.endsWith('.js') ||
+          fullPath.endsWith('.json') ||
+          fullPath.endsWith('.yaml') ||
+          fullPath.endsWith('.yml'))
+      ) {
         scanFile(fullPath);
       }
     }
@@ -114,15 +119,18 @@ if (violations.length === 0) {
   console.error(`❌ Found ${violations.length} version violations:\n`);
 
   // Group by version
-  const byVersion = violations.reduce((acc, v) => {
-    if (!acc[v.version]) acc[v.version] = [];
-    acc[v.version].push(v);
-    return acc;
-  }, {} as Record<string, Violation[]>);
+  const byVersion = violations.reduce(
+    (acc, v) => {
+      if (!acc[v.version]) acc[v.version] = [];
+      acc[v.version].push(v);
+      return acc;
+    },
+    {} as Record<string, Violation[]>
+  );
 
   Object.entries(byVersion).forEach(([version, viols]) => {
     console.error(`\n${version} (${viols.length} occurrences):`);
-    viols.forEach(v => {
+    viols.forEach((v) => {
       const relPath = relative(rootDir, v.file);
       console.error(`  ${relPath}:${v.line}`);
       console.error(`    ${v.content}`);

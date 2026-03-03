@@ -66,13 +66,13 @@ export class DrupalMCPServer {
 
     // Combine all tool definitions (20+ tools)
     this.toolDefinitions = [
-      ...contentToolDefinitions,      // 5 tools
-      ...entityToolDefinitions,       // 4 tools
-      ...viewsToolDefinitions,        // 2 tools
-      ...userToolDefinitions,         // 3 tools
-      ...configToolDefinitions,       // 2 tools
-      ...moduleToolDefinitions,       // 3 tools
-      ...cacheToolDefinitions,        // 2 tools
+      ...contentToolDefinitions, // 5 tools
+      ...entityToolDefinitions, // 4 tools
+      ...viewsToolDefinitions, // 2 tools
+      ...userToolDefinitions, // 3 tools
+      ...configToolDefinitions, // 2 tools
+      ...moduleToolDefinitions, // 3 tools
+      ...cacheToolDefinitions, // 2 tools
     ];
 
     this.setupHandlers();
@@ -152,9 +152,7 @@ export class DrupalMCPServer {
           result = await this.cacheTools.clearCache(args as any);
         } else if (name === 'drupal_rebuild_cache') {
           result = await this.cacheTools.rebuildCache(args as any);
-        }
-
-        else {
+        } else {
           throw new Error(`Unknown tool: ${name}`);
         }
 

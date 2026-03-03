@@ -109,7 +109,8 @@ export class CrewAIConverter implements FrameworkConverter {
       metadata: {
         name: this.sanitizeName(config.role || 'crewai_agent'),
         version: '1.0.0',
-        description: config.goal || config.backstory || 'Converted from CrewAI agent',
+        description:
+          config.goal || config.backstory || 'Converted from CrewAI agent',
         labels: {
           'ossa.io/source-framework': 'crewai',
           'ossa.io/converted': 'true',
@@ -152,15 +153,18 @@ export class CrewAIConverter implements FrameworkConverter {
           typeof task.agent === 'string'
             ? task.agent
             : task.agent && 'role' in task.agent
-            ? this.sanitizeName(task.agent.role || `agent_${idx}`)
-            : `agent_${idx}`;
+              ? this.sanitizeName(task.agent.role || `agent_${idx}`)
+              : `agent_${idx}`;
 
         return {
           id: `task_${idx}`,
           name: task.description?.substring(0, 50) || `Task ${idx + 1}`,
           kind: 'Task' as const,
           ref: agentName,
-          depends_on: idx > 0 && config.process === 'sequential' ? [`task_${idx - 1}`] : undefined,
+          depends_on:
+            idx > 0 && config.process === 'sequential'
+              ? [`task_${idx - 1}`]
+              : undefined,
         };
       }),
     };

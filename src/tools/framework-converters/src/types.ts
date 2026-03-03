@@ -92,6 +92,9 @@ export interface ConverterOptions {
 export interface FrameworkConverter {
   name: string;
   version: string;
-  convert(input: unknown, options?: ConverterOptions): Promise<ConversionResult>;
+  convert(
+    input: unknown,
+    options?: ConverterOptions
+  ): Promise<ConversionResult>;
   validate(input: unknown): Promise<boolean>;
 }

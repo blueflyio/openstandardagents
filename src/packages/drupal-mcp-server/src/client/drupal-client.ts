@@ -21,7 +21,7 @@ export class DrupalClient {
       baseURL: this.baseUrl,
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
+        Accept: 'application/json',
       },
       timeout: 30000,
     });
@@ -89,7 +89,11 @@ export class DrupalClient {
   }
 
   // JSON:API specific methods
-  async jsonApiGet<T = any>(resourceType: string, id?: string, params?: Record<string, any>): Promise<DrupalResponse<T>> {
+  async jsonApiGet<T = any>(
+    resourceType: string,
+    id?: string,
+    params?: Record<string, any>
+  ): Promise<DrupalResponse<T>> {
     const path = id ? `/jsonapi/${resourceType}/${id}` : `/jsonapi/${resourceType}`;
     return this.get<DrupalResponse<T>>(path, { params });
   }
@@ -103,7 +107,11 @@ export class DrupalClient {
     });
   }
 
-  async jsonApiPatch<T = any>(resourceType: string, id: string, data: any): Promise<DrupalResponse<T>> {
+  async jsonApiPatch<T = any>(
+    resourceType: string,
+    id: string,
+    data: any
+  ): Promise<DrupalResponse<T>> {
     return this.patch<DrupalResponse<T>>(`/jsonapi/${resourceType}/${id}`, {
       data: {
         type: resourceType,

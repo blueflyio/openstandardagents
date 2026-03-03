@@ -28,56 +28,72 @@ export class OSSACommandProvider {
       prompt: 'Enter agent name (lowercase, hyphens)',
       placeHolder: 'agent-smith',
       validateInput: (value) => {
-        if (!value) {return 'Name is required';}
-        if (value !== value.toLowerCase()) {return 'Name must be lowercase';}
-        if (!/^[a-z0-9-]+$/.test(value)) {return 'Name must be lowercase alphanumeric with hyphens';}
+        if (!value) {
+          return 'Name is required';
+        }
+        if (value !== value.toLowerCase()) {
+          return 'Name must be lowercase';
+        }
+        if (!/^[a-z0-9-]+$/.test(value)) {
+          return 'Name must be lowercase alphanumeric with hyphens';
+        }
         return null;
-      }
+      },
     });
 
-    if (!name) {return;}
+    if (!name) {
+      return;
+    }
 
     const version = await vscode.window.showInputBox({
       prompt: 'Enter version',
       placeHolder: '1.0.0',
       value: '1.0.0',
       validateInput: (value) => {
-        if (!/^\d+\.\d+\.\d+/.test(value)) {return 'Version must be semantic (e.g., 1.0.0)';}
+        if (!/^\d+\.\d+\.\d+/.test(value)) {
+          return 'Version must be semantic (e.g., 1.0.0)';
+        }
         return null;
-      }
+      },
     });
 
-    if (!version) {return;}
+    if (!version) {
+      return;
+    }
 
     const provider = await vscode.window.showQuickPick(
       ['anthropic', 'openai', 'google', 'azure', 'groq', 'ollama'],
       { placeHolder: 'Select LLM provider' }
     );
 
-    if (!provider) {return;}
+    if (!provider) {
+      return;
+    }
 
     const modelDefaults: Record<string, string> = {
-      'anthropic': 'claude-sonnet-4-20250514',
-      'openai': 'gpt-4o',
-      'google': 'gemini-2.0-flash',
-      'azure': 'gpt-4',
-      'groq': 'llama-3.1-70b-versatile',
-      'ollama': 'llama3.1'
+      anthropic: 'claude-sonnet-4-20250514',
+      openai: 'gpt-4o',
+      google: 'gemini-2.0-flash',
+      azure: 'gpt-4',
+      groq: 'llama-3.1-70b-versatile',
+      ollama: 'llama3.1',
     };
 
     const model = await vscode.window.showInputBox({
       prompt: 'Enter model name',
       placeHolder: modelDefaults[provider],
-      value: modelDefaults[provider]
+      value: modelDefaults[provider],
     });
 
-    if (!model) {return;}
+    if (!model) {
+      return;
+    }
 
     const content = this.generateAgentManifest(name, version, provider, model);
 
     const document = await vscode.workspace.openTextDocument({
       content,
-      language: 'yaml'
+      language: 'yaml',
     });
 
     await vscode.window.showTextDocument(document);
@@ -98,28 +114,38 @@ export class OSSACommandProvider {
       prompt: 'Enter task name (lowercase, hyphens)',
       placeHolder: 'my-task',
       validateInput: (value) => {
-        if (!value) {return 'Name is required';}
-        if (value !== value.toLowerCase()) {return 'Name must be lowercase';}
-        if (!/^[a-z0-9-]+$/.test(value)) {return 'Name must be lowercase alphanumeric with hyphens';}
+        if (!value) {
+          return 'Name is required';
+        }
+        if (value !== value.toLowerCase()) {
+          return 'Name must be lowercase';
+        }
+        if (!/^[a-z0-9-]+$/.test(value)) {
+          return 'Name must be lowercase alphanumeric with hyphens';
+        }
         return null;
-      }
+      },
     });
 
-    if (!name) {return;}
+    if (!name) {
+      return;
+    }
 
     const version = await vscode.window.showInputBox({
       prompt: 'Enter version',
       placeHolder: '1.0.0',
-      value: '1.0.0'
+      value: '1.0.0',
     });
 
-    if (!version) {return;}
+    if (!version) {
+      return;
+    }
 
     const content = this.generateTaskManifest(name, version);
 
     const document = await vscode.workspace.openTextDocument({
       content,
-      language: 'yaml'
+      language: 'yaml',
     });
 
     await vscode.window.showTextDocument(document);
@@ -140,28 +166,38 @@ export class OSSACommandProvider {
       prompt: 'Enter workflow name (lowercase, hyphens)',
       placeHolder: 'my-workflow',
       validateInput: (value) => {
-        if (!value) {return 'Name is required';}
-        if (value !== value.toLowerCase()) {return 'Name must be lowercase';}
-        if (!/^[a-z0-9-]+$/.test(value)) {return 'Name must be lowercase alphanumeric with hyphens';}
+        if (!value) {
+          return 'Name is required';
+        }
+        if (value !== value.toLowerCase()) {
+          return 'Name must be lowercase';
+        }
+        if (!/^[a-z0-9-]+$/.test(value)) {
+          return 'Name must be lowercase alphanumeric with hyphens';
+        }
         return null;
-      }
+      },
     });
 
-    if (!name) {return;}
+    if (!name) {
+      return;
+    }
 
     const version = await vscode.window.showInputBox({
       prompt: 'Enter version',
       placeHolder: '1.0.0',
-      value: '1.0.0'
+      value: '1.0.0',
     });
 
-    if (!version) {return;}
+    if (!version) {
+      return;
+    }
 
     const content = this.generateWorkflowManifest(name, version);
 
     const document = await vscode.workspace.openTextDocument({
       content,
-      language: 'yaml'
+      language: 'yaml',
     });
 
     await vscode.window.showTextDocument(document);
@@ -183,7 +219,12 @@ export class OSSACommandProvider {
    * @param model - Model identifier
    * @returns YAML manifest string
    */
-  private generateAgentManifest(name: string, version: string, provider: string, model: string): string {
+  private generateAgentManifest(
+    name: string,
+    version: string,
+    provider: string,
+    model: string
+  ): string {
     return `apiVersion: ossa/v0.3.3
 kind: Agent
 

@@ -128,12 +128,9 @@ export function activate(context: vscode.ExtensionContext) {
     }
   );
 
-  const newTaskCommand = vscode.commands.registerCommand(
-    'ossa.newTask',
-    () => {
-      commandProvider.createNewTask();
-    }
-  );
+  const newTaskCommand = vscode.commands.registerCommand('ossa.newTask', () => {
+    commandProvider.createNewTask();
+  });
 
   const newWorkflowCommand = vscode.commands.registerCommand(
     'ossa.newWorkflow',
