@@ -102,7 +102,14 @@
           "properties": {
             "type": {
               "type": "string",
-              "enum": ["Ed25519", "RSA-PSS", "ECDSA", "jwt", "vc", "did"],
+              "enum": [
+                "Ed25519",
+                "RSA-PSS",
+                "ECDSA",
+                "jwt",
+                "vc",
+                "did"
+              ],
               "description": "Signature scheme or protocol used"
             },
             "value": {
@@ -123,7 +130,11 @@
               "description": "ISO 8601 timestamp of when the signature was generated"
             }
           },
-          "required": ["type", "value", "publicKey"]
+          "required": [
+            "type",
+            "value",
+            "publicKey"
+          ]
         },
         "machine_name": {
           "type": "string",
@@ -142,7 +153,11 @@
         },
         "status": {
           "type": "string",
-          "enum": ["active", "deprecated", "revoked"],
+          "enum": [
+            "active",
+            "deprecated",
+            "revoked"
+          ],
           "default": "active",
           "description": "Agent status: active, deprecated, revoked"
         },
@@ -190,18 +205,26 @@
             },
             "visibility": {
               "type": "string",
-              "enum": ["public", "private", "internal"],
+              "enum": [
+                "public",
+                "private",
+                "internal"
+              ],
               "default": "private",
               "description": "Agent visibility: public (anyone), private (owner only), internal (organization)"
             },
             "categories": {
               "type": "array",
-              "items": { "type": "string" },
+              "items": {
+                "type": "string"
+              },
               "description": "Agent categories (e.g., code-quality, security, devops)"
             },
             "tags": {
               "type": "array",
-              "items": { "type": "string" },
+              "items": {
+                "type": "string"
+              },
               "description": "Searchable tags"
             }
           },
@@ -209,23 +232,44 @@
         },
         "mesh_bindings": {
           "$ref": "#/definitions/MeshBindings",
-          "description": "Spatial and execution bindings for the BlueFly Synaptic Mesh (GitLab/Drupal integration)"
+          "description": "Spatial and execution bindings for mesh orchestration (e.g., GitLab/Drupal environments)"
         },
         "agentType": {
           "type": "string",
           "enum": [
-            "claude", "kagent", "openai", "langchain", "crewai",
-            "autogen", "llamaindex", "haystack", "semantic-kernel",
-            "vertex-ai", "bedrock", "pydantic-ai", "swarm", "custom"
+            "claude",
+            "kagent",
+            "openai",
+            "langchain",
+            "crewai",
+            "autogen",
+            "llamaindex",
+            "haystack",
+            "semantic-kernel",
+            "vertex-ai",
+            "bedrock",
+            "pydantic-ai",
+            "swarm",
+            "custom"
           ],
           "description": "Agent runtime platform. Specifies which platform/framework will execute this agent."
         },
         "agentKind": {
           "type": "string",
           "enum": [
-            "assistant", "orchestrator", "worker", "coordinator",
-            "supervisor", "tool", "reviewer", "planner", "executor",
-            "monitor", "analyst", "researcher", "specialist"
+            "assistant",
+            "orchestrator",
+            "worker",
+            "coordinator",
+            "supervisor",
+            "tool",
+            "reviewer",
+            "planner",
+            "executor",
+            "monitor",
+            "analyst",
+            "researcher",
+            "specialist"
           ],
           "description": "Agent functional role. Describes WHAT the agent does in the system."
         }
@@ -373,7 +417,9 @@
           "description": "Threat categories this agent is designed to handle or is exposed to. Used by orchestrators for security-aware task routing.",
           "items": {
             "type": "object",
-            "required": ["category"],
+            "required": [
+              "category"
+            ],
             "properties": {
               "category": {
                 "type": "string",
@@ -393,15 +439,27 @@
               },
               "severity": {
                 "type": "string",
-                "enum": ["critical", "high", "medium", "low", "informational"],
+                "enum": [
+                  "critical",
+                  "high",
+                  "medium",
+                  "low",
+                  "informational"
+                ],
                 "description": "Assessed severity level for this threat category"
               },
               "mitigations": {
                 "type": "array",
-                "items": { "type": "string" },
+                "items": {
+                  "type": "string"
+                },
                 "description": "Mitigation strategies implemented for this threat",
                 "examples": [
-                  ["input-validation", "output-filtering", "rate-limiting"]
+                  [
+                    "input-validation",
+                    "output-filtering",
+                    "rate-limiting"
+                  ]
                 ]
               },
               "description": {
@@ -479,7 +537,9 @@
         "sandboxing": {
           "type": "object",
           "description": "Sandboxing requirements for isolating agent execution.",
-          "required": ["required"],
+          "required": [
+            "required"
+          ],
           "properties": {
             "required": {
               "type": "boolean",
@@ -538,7 +598,11 @@
               },
               "description": "Allowlist of domains the agent may connect to. Supports wildcard subdomains (e.g., '*.example.com'). Empty array means no network access.",
               "examples": [
-                ["api.openai.com", "*.anthropic.com", "registry.npmjs.org"]
+                [
+                  "api.openai.com",
+                  "*.anthropic.com",
+                  "registry.npmjs.org"
+                ]
               ]
             },
             "blocked_domains": {
@@ -552,15 +616,29 @@
               "type": "array",
               "items": {
                 "type": "string",
-                "enum": ["https", "http", "wss", "ws", "grpc", "ssh", "stdio"]
+                "enum": [
+                  "https",
+                  "http",
+                  "wss",
+                  "ws",
+                  "grpc",
+                  "ssh",
+                  "stdio"
+                ]
               },
               "uniqueItems": true,
               "description": "Allowed network protocols. Restrict to 'https' for maximum security.",
-              "default": ["https"]
+              "default": [
+                "https"
+              ]
             },
             "egress_policy": {
               "type": "string",
-              "enum": ["allow-all", "allow-list", "deny-all"],
+              "enum": [
+                "allow-all",
+                "allow-list",
+                "deny-all"
+              ],
               "default": "allow-list",
               "description": "Default egress policy. 'allow-list' requires explicit allowed_domains, 'deny-all' blocks all outbound, 'allow-all' permits any outbound."
             }
@@ -569,7 +647,12 @@
         },
         "data_classification": {
           "type": "string",
-          "enum": ["public", "internal", "confidential", "restricted"],
+          "enum": [
+            "public",
+            "internal",
+            "confidential",
+            "restricted"
+          ],
           "default": "internal",
           "description": "Data classification level this agent is authorized to handle. Enforced by orchestrators for data-aware routing."
         },
@@ -625,17 +708,26 @@
     "MCPProtocol": {
       "type": "object",
       "description": "Model Context Protocol (MCP) declaration. Specifies MCP server/client capabilities for tool-based interoperability with Claude, Cursor, and other MCP-compatible clients.",
-      "required": ["version"],
+      "required": [
+        "version"
+      ],
       "properties": {
         "version": {
           "type": "string",
           "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
           "description": "MCP protocol version (e.g., '1.0.0', '2025-03-26')",
-          "examples": ["1.0.0", "0.6.0"]
+          "examples": [
+            "1.0.0",
+            "0.6.0"
+          ]
         },
         "role": {
           "type": "string",
-          "enum": ["server", "client", "both"],
+          "enum": [
+            "server",
+            "client",
+            "both"
+          ],
           "default": "server",
           "description": "MCP role: 'server' (exposes tools), 'client' (consumes tools), 'both' (bidirectional)"
         },
@@ -644,7 +736,10 @@
           "description": "MCP server configurations this agent exposes or connects to",
           "items": {
             "type": "object",
-            "required": ["name", "transport"],
+            "required": [
+              "name",
+              "transport"
+            ],
             "properties": {
               "name": {
                 "type": "string",
@@ -652,7 +747,12 @@
               },
               "transport": {
                 "type": "string",
-                "enum": ["stdio", "http", "sse", "streamable-http"],
+                "enum": [
+                  "stdio",
+                  "http",
+                  "sse",
+                  "streamable-http"
+                ],
                 "description": "MCP transport mechanism"
               },
               "url": {
@@ -666,17 +766,23 @@
               },
               "args": {
                 "type": "array",
-                "items": { "type": "string" },
+                "items": {
+                  "type": "string"
+                },
                 "description": "Command arguments (for stdio transport)"
               },
               "tools": {
                 "type": "array",
-                "items": { "type": "string" },
+                "items": {
+                  "type": "string"
+                },
                 "description": "List of tool names exposed by this server"
               },
               "resources": {
                 "type": "array",
-                "items": { "type": "string" },
+                "items": {
+                  "type": "string"
+                },
                 "description": "List of resource URIs exposed by this server"
               }
             },
@@ -716,13 +822,18 @@
     "A2AProtocol": {
       "type": "object",
       "description": "Agent-to-Agent (A2A) protocol declaration. Google's standard for agent interoperability, enabling task delegation, status updates, and artifact exchange between agents.",
-      "required": ["version"],
+      "required": [
+        "version"
+      ],
       "properties": {
         "version": {
           "type": "string",
           "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
           "description": "A2A protocol version",
-          "examples": ["0.2.0", "1.0.0"]
+          "examples": [
+            "0.2.0",
+            "1.0.0"
+          ]
         },
         "endpoint": {
           "type": "string",
@@ -749,11 +860,20 @@
               "items": {
                 "type": "object",
                 "properties": {
-                  "id": { "type": "string" },
-                  "name": { "type": "string" },
-                  "description": { "type": "string" }
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  }
                 },
-                "required": ["id", "name"]
+                "required": [
+                  "id",
+                  "name"
+                ]
               },
               "description": "Skills advertised via A2A"
             }
@@ -790,7 +910,12 @@
               "type": "array",
               "items": {
                 "type": "string",
-                "enum": ["bearer", "oauth2", "apiKey", "none"]
+                "enum": [
+                  "bearer",
+                  "oauth2",
+                  "apiKey",
+                  "none"
+                ]
               },
               "description": "Supported authentication schemes"
             }
@@ -832,7 +957,10 @@
                 "description": "URL to the verifiable credential document"
               }
             },
-            "required": ["type", "issuer"]
+            "required": [
+              "type",
+              "issuer"
+            ]
           },
           "description": "Verifiable credentials issued to this agent for trust establishment"
         },
@@ -862,23 +990,42 @@
       "properties": {
         "serialization_profile": {
           "type": "string",
-          "enum": ["full", "compact", "fingerprint"],
+          "enum": [
+            "full",
+            "compact",
+            "fingerprint"
+          ],
           "default": "compact",
           "description": "Manifest serialization profile. full=200-400 tokens (discovery), compact=60-120 tokens (runtime), fingerprint=15-30 tokens (routing)"
         },
         "observation_format": {
           "type": "string",
-          "enum": ["full", "diff", "projected", "summary"],
+          "enum": [
+            "full",
+            "diff",
+            "projected",
+            "summary"
+          ],
           "default": "projected",
           "description": "How tool observations are formatted. diff=returns diff not full file. projected=only matched fields. summary=compressed summary."
         },
-        "budget": { "$ref": "#/definitions/TokenBudget" },
-        "routing": { "$ref": "#/definitions/ModelRouting" },
-        "consolidation": { "$ref": "#/definitions/ConsolidationStrategy" },
-        "compression": { "$ref": "#/definitions/CompressionConfig" },
+        "budget": {
+          "$ref": "#/definitions/TokenBudget"
+        },
+        "routing": {
+          "$ref": "#/definitions/ModelRouting"
+        },
+        "consolidation": {
+          "$ref": "#/definitions/ConsolidationStrategy"
+        },
+        "compression": {
+          "$ref": "#/definitions/CompressionConfig"
+        },
         "custom_metrics": {
           "type": "array",
-          "items": { "$ref": "#/definitions/CustomMetric" },
+          "items": {
+            "$ref": "#/definitions/CustomMetric"
+          },
           "description": "Agent-specific token efficiency metrics"
         }
       },
@@ -888,17 +1035,29 @@
       "type": "object",
       "description": "Token budget allocation and enforcement",
       "properties": {
-        "max_input_tokens": { "type": "integer", "description": "Maximum input tokens per request" },
-        "max_output_tokens": { "type": "integer", "description": "Maximum output tokens per request" },
+        "max_input_tokens": {
+          "type": "integer",
+          "description": "Maximum input tokens per request"
+        },
+        "max_output_tokens": {
+          "type": "integer",
+          "description": "Maximum output tokens per request"
+        },
         "allocation_strategy": {
           "type": "string",
-          "enum": ["equal", "proportional", "adaptive"],
+          "enum": [
+            "equal",
+            "proportional",
+            "adaptive"
+          ],
           "default": "adaptive",
           "description": "How budget is divided across pipeline stages"
         },
         "cascade": {
           "type": "array",
-          "items": { "$ref": "#/definitions/CascadeStage" },
+          "items": {
+            "$ref": "#/definitions/CascadeStage"
+          },
           "description": "Model cascade for cost-optimized routing"
         }
       }
@@ -906,12 +1065,22 @@
     "CascadeStage": {
       "type": "object",
       "description": "A stage in a model cascade pipeline",
-      "required": ["model", "max_complexity"],
+      "required": [
+        "model",
+        "max_complexity"
+      ],
       "properties": {
-        "model": { "type": "string", "description": "Model identifier" },
+        "model": {
+          "type": "string",
+          "description": "Model identifier"
+        },
         "max_complexity": {
           "type": "string",
-          "enum": ["low", "medium", "high"],
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ],
           "description": "Maximum complexity this model handles"
         },
         "budget_share": {
@@ -920,8 +1089,14 @@
           "maximum": 1,
           "description": "Fraction of total budget allocated to this stage"
         },
-        "budget_tokens": { "type": "integer", "description": "Absolute token budget for this stage" },
-        "condition": { "type": "string", "description": "Condition expression for when to use this stage" }
+        "budget_tokens": {
+          "type": "integer",
+          "description": "Absolute token budget for this stage"
+        },
+        "condition": {
+          "type": "string",
+          "description": "Condition expression for when to use this stage"
+        }
       }
     },
     "ModelRouting": {
@@ -930,17 +1105,25 @@
       "properties": {
         "cascade": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "description": "Model tiers in order of cost (e.g., [haiku, sonnet, opus])"
         },
         "complexity_threshold": {
           "type": "array",
-          "items": { "type": "number" },
+          "items": {
+            "type": "number"
+          },
           "description": "Complexity score thresholds between tiers (e.g., [0.3, 0.7])"
         },
         "strategy": {
           "type": "string",
-          "enum": ["cost_optimized", "quality_optimized", "balanced"],
+          "enum": [
+            "cost_optimized",
+            "quality_optimized",
+            "balanced"
+          ],
           "default": "cost_optimized"
         }
       }
@@ -951,28 +1134,41 @@
       "properties": {
         "strategy": {
           "type": "string",
-          "enum": ["aggressive", "moderate", "minimal", "none"],
+          "enum": [
+            "aggressive",
+            "moderate",
+            "minimal",
+            "none"
+          ],
           "default": "moderate",
           "description": "How aggressively to consolidate trajectory history"
         },
         "retain": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "description": "Fields to always retain (e.g., final_answer, confidence)"
         },
         "summarize": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "description": "Fields to summarize instead of keeping verbatim"
         },
         "drop": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "description": "Fields to drop entirely (e.g., raw_observations, intermediate_diffs)"
         },
         "accumulate": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "description": "Fields to accumulate with a token cap"
         },
         "max_accumulated_tokens": {
@@ -986,10 +1182,18 @@
       "type": "object",
       "description": "Prompt and context compression configuration",
       "properties": {
-        "enabled": { "type": "boolean", "default": true },
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
         "strategy": {
           "type": "string",
-          "enum": ["template", "semantic", "hybrid", "none"],
+          "enum": [
+            "template",
+            "semantic",
+            "hybrid",
+            "none"
+          ],
           "description": "Compression approach: template=pattern replacement, semantic=LLMLingua-style, hybrid=both"
         },
         "compression_ratio": {
@@ -1007,28 +1211,63 @@
         },
         "templates": {
           "type": "array",
-          "items": { "$ref": "#/definitions/CompressionTemplate" }
+          "items": {
+            "$ref": "#/definitions/CompressionTemplate"
+          }
         }
       }
     },
     "CompressionTemplate": {
       "type": "object",
-      "required": ["name", "pattern"],
+      "required": [
+        "name",
+        "pattern"
+      ],
       "properties": {
-        "name": { "type": "string" },
-        "pattern": { "type": "string", "description": "Compact pattern (e.g., scan_ctx[{{lang}}|{{framework}}|{{file_count}}])" },
-        "expands_to": { "type": "string", "description": "Full expansion template" },
-        "savings": { "type": "integer", "description": "Estimated tokens saved per use" }
+        "name": {
+          "type": "string"
+        },
+        "pattern": {
+          "type": "string",
+          "description": "Compact pattern (e.g., scan_ctx[{{lang}}|{{framework}}|{{file_count}}])"
+        },
+        "expands_to": {
+          "type": "string",
+          "description": "Full expansion template"
+        },
+        "savings": {
+          "type": "integer",
+          "description": "Estimated tokens saved per use"
+        }
       }
     },
     "CustomMetric": {
       "type": "object",
-      "required": ["name", "type"],
+      "required": [
+        "name",
+        "type"
+      ],
       "properties": {
-        "name": { "type": "string" },
-        "type": { "type": "string", "enum": ["counter", "gauge", "histogram"] },
-        "description": { "type": "string" },
-        "labels": { "type": "array", "items": { "type": "string" } }
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "counter",
+            "gauge",
+            "histogram"
+          ]
+        },
+        "description": {
+          "type": "string"
+        },
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
       }
     },
     "Capability": {
@@ -1051,10 +1290,14 @@
           "items": {
             "type": "object",
             "properties": {
-              "agent": { "type": "string" },
+              "agent": {
+                "type": "string"
+              },
               "project": {
                 "type": "array",
-                "items": { "type": "string" },
+                "items": {
+                  "type": "string"
+                },
                 "description": "Output field projection - only these fields pass to the next agent"
               }
             }
@@ -1068,7 +1311,12 @@
               "default": true,
               "description": "Deduplicate input context across parallel branches"
             },
-            "agents": { "type": "array", "items": { "type": "string" } }
+            "agents": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
           }
         }
       }
