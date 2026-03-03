@@ -1,28 +1,31 @@
 /**
  * McpBridgeService — OSSA MCP Bridge (NIST Pillar 2: Interoperability)
  *
- * Brokers external MCP server configurations into the central OSSA registry,
- * and provides policy-aware tool execution interception.
+ * Uses @modelcontextprotocol/sdk Client to connect to and introspect
+ * external MCP servers, then registers them in the OSSA workspace registry.
  *
- * SOD: This service owns MCP config discovery/merge/validation logic only.
+ * SOD: This service owns MCP connectivity and registry logic only.
  * HTTP routing lives in mcp.router.ts. CLI presentation in mcp.command.ts.
  */
 
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { injectable } from 'inversify';
 import yaml from 'js-yaml';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
+import { getApiVersion } from '../../utils/version.js';
 
-/** Represents a single MCP server config entry as OSSA understands it */
 export interface OssaMcpServerEntry {
   name: string;
   command?: string;
   args?: string[];
   url?: string;
   transport: 'stdio' | 'sse' | 'streamable-http';
-  source: string; // e.g. 'claude-desktop', 'cursor', 'manual'
+  source: string;
   importedAt: string;
+  tools?: string[];  // Tool names discovered via SDK listTools()
 }
 
 export interface McpBridgeSyncResult {
@@ -40,7 +43,7 @@ export interface McpBridgeListResult {
   servers: OssaMcpServerEntry[];
 }
 
-/** Known locations for external MCP configs by app name */
+/** Known config file locations per app — no hardcoding of values, only path resolution */
 const KNOWN_CONFIG_PATHS: Record<string, string[]> = {
   'claude-desktop': [
     path.join(os.homedir(), 'Library', 'Application Support', 'Claude', 'claude_desktop_config.json'),
@@ -76,134 +79,122 @@ export class McpBridgeService {
     if (!fs.existsSync(registryDir)) {
       fs.mkdirSync(registryDir, { recursive: true });
     }
-    const content = yaml.dump(
-      {
-        generatedBy: 'ossa-mcp-bridge',
-        updatedAt: new Date().toISOString(),
-        servers,
-      },
-      { lineWidth: 120 }
+    fs.writeFileSync(
+      registryPath,
+      yaml.dump({ generatedBy: 'ossa-mcp-bridge', apiVersion: getApiVersion(), updatedAt: new Date().toISOString(), servers }, { lineWidth: 120 }),
+      'utf8'
     );
-    fs.writeFileSync(registryPath, content, 'utf8');
     return registryPath;
   }
 
   /**
-   * Parses a Claude Desktop or Cursor config file and normalizes it into OSSA entries.
+   * Use @modelcontextprotocol/sdk Client to connect to a stdio server and list its tools.
+   * Returns an empty array if connection fails (non-fatal — import still proceeds).
    */
-  private parseExternalConfig(
-    configPath: string,
-    source: string
-  ): OssaMcpServerEntry[] {
-    const raw = fs.readFileSync(configPath, 'utf8');
-    const parsed = JSON.parse(raw) as {
-      mcpServers?: Record<
-        string,
-        {
-          command?: string;
-          args?: string[];
-          url?: string;
-          transport?: string;
-        }
-      >;
+  private async discoverToolsViaSDK(command: string, args: string[]): Promise<string[]> {
+    let client: Client | undefined;
+    try {
+      const transport = new StdioClientTransport({ command, args, env: process.env as Record<string, string> });
+      client = new Client({ name: 'ossa-mcp-bridge', version: '1.0.0' }, { capabilities: {} });
+      await client.connect(transport);
+      const { tools } = await client.listTools();
+      return tools.map((t) => t.name);
+    } catch {
+      // Many MCP servers require API keys or context — graceful fallback
+      return [];
+    } finally {
+      if (client) {
+        try { await client.close(); } catch { /* swallow */ }
+      }
+    }
+  }
+
+  /**
+   * Parse an external app's MCP config JSON into normalized OSSA entries.
+   * Uses the standard `mcpServers` shape from Claude Desktop / Cursor.
+   */
+  private parseExternalConfig(configPath: string, source: string): Array<{
+    name: string;
+    command?: string;
+    args?: string[];
+    url?: string;
+    transport: OssaMcpServerEntry['transport'];
+  }> {
+    const raw = JSON.parse(fs.readFileSync(configPath, 'utf8')) as {
+      mcpServers?: Record<string, { command?: string; args?: string[]; url?: string; transport?: string }>;
     };
-
-    const mcpServers = parsed?.mcpServers ?? {};
-    const now = new Date().toISOString();
-
-    return Object.entries(mcpServers).map(([name, cfg]) => ({
+    return Object.entries(raw?.mcpServers ?? {}).map(([name, cfg]) => ({
       name,
       command: cfg.command,
       args: cfg.args,
       url: cfg.url,
       transport: (cfg.transport as OssaMcpServerEntry['transport']) ?? (cfg.command ? 'stdio' : 'sse'),
-      source,
-      importedAt: now,
     }));
   }
 
   /**
-   * Sync external MCP configs from a known source (e.g. 'cursor', 'claude-desktop')
-   * into the OSSA workspace registry.
+   * Sync an external MCP source into the OSSA workspace registry.
+   * Uses SDK Client to introspect available tools where possible.
    */
   async sync(source: string, workspaceDir: string): Promise<McpBridgeSyncResult> {
     const dir = path.resolve(workspaceDir);
     const knownPaths = KNOWN_CONFIG_PATHS[source];
-
     if (!knownPaths) {
-      throw new Error(
-        `Unknown MCP source: "${source}". Supported: ${Object.keys(KNOWN_CONFIG_PATHS).join(', ')}`
-      );
+      throw new Error(`Unknown MCP source: "${source}". Supported: ${Object.keys(KNOWN_CONFIG_PATHS).join(', ')}`);
     }
 
-    // Find the first resolvable path
     const configPath = knownPaths.find((p) => fs.existsSync(p));
     if (!configPath) {
-      throw new Error(
-        `No config found for "${source}". Looked in:\n${knownPaths.join('\n')}`
-      );
+      throw new Error(`No config found for "${source}". Looked in:\n${knownPaths.join('\n')}`);
     }
 
-    const incoming = this.parseExternalConfig(configPath, source);
-
-    // Merge with existing registry — deduplicate by name+source
+    const parsed = this.parseExternalConfig(configPath, source);
     const existing = this.loadRegistry(dir);
     const existingKeys = new Set(existing.map((s) => `${s.source}::${s.name}`));
-    const newEntries = incoming.filter(
-      (s) => !existingKeys.has(`${s.source}::${s.name}`)
-    );
-    const merged = [...existing, ...newEntries];
+    const now = new Date().toISOString();
 
+    const newEntries: OssaMcpServerEntry[] = [];
+    for (const cfg of parsed) {
+      if (existingKeys.has(`${source}::${cfg.name}`)) continue;
+
+      // Use SDK to discover actual tool names from stdio servers
+      const tools = cfg.command
+        ? await this.discoverToolsViaSDK(cfg.command, cfg.args ?? [])
+        : [];
+
+      newEntries.push({ ...cfg, source, importedAt: now, tools });
+    }
+
+    const merged = [...existing, ...newEntries];
     const registryPath = this.saveRegistry(dir, merged);
 
-    return {
-      action: 'sync',
-      source,
-      serversFound: incoming.length,
-      serversImported: newEntries.length,
-      registryPath,
-      servers: newEntries,
-    };
+    return { action: 'sync', source, serversFound: parsed.length, serversImported: newEntries.length, registryPath, servers: newEntries };
   }
 
-  /**
-   * List all MCP servers currently registered in the OSSA bridge registry.
-   */
   async list(workspaceDir: string): Promise<McpBridgeListResult> {
     const dir = path.resolve(workspaceDir);
     const servers = this.loadRegistry(dir);
-    return {
-      action: 'list',
-      registryPath: this.getRegistryPath(dir),
-      servers,
-    };
+    return { action: 'list', registryPath: this.getRegistryPath(dir), servers };
   }
 
   /**
-   * Policy-enforced tool execution stub.
-   * Validates agent identity and tool allowlist before forwarding.
-   * (Full proxy daemon is out-of-scope for Phase 1 — see mcp_bridge_plan.md)
+   * Policy-gate check: validates that a tool server is registered in the OSSA bridge.
+   * Future: enforce per-agent allowlist from .agents-workspace/policy/tool-allowlist.yaml
    */
-  async executeTool(
-    agentId: string,
-    toolName: string,
-    workspaceDir: string
-  ): Promise<{ allowed: boolean; reason: string }> {
+  async executeTool(agentId: string, toolName: string, workspaceDir: string): Promise<{ allowed: boolean; reason: string }> {
     const servers = this.loadRegistry(path.resolve(workspaceDir));
     const [serverName, method] = toolName.split('/');
     const server = servers.find((s) => s.name === serverName);
 
     if (!server) {
-      return {
-        allowed: false,
-        reason: `Tool server "${serverName}" is not registered in the OSSA MCP Bridge registry. Run: ossa mcp bridge sync <source>`,
-      };
+      return { allowed: false, reason: `"${serverName}" not in OSSA bridge registry. Run: ossa mcp bridge sync <source>` };
     }
 
-    // Future: check policy allowlist for agentId + toolName
-    return {
-      allowed: true,
-      reason: `Agent "${agentId}" is authorized to call "${serverName}/${method}" via OSSA bridge.`,
-    };
+    // Verify the specific tool name if we have a tool list from SDK discovery
+    if (server.tools && server.tools.length > 0 && method && !server.tools.includes(method)) {
+      return { allowed: false, reason: `Tool "${method}" not found on server "${serverName}". Known tools: ${server.tools.join(', ')}` };
+    }
+
+    return { allowed: true, reason: `Agent "${agentId}" is authorized to call "${toolName}" via OSSA bridge.` };
   }
 }
