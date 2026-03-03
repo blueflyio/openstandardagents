@@ -321,6 +321,7 @@
     "@typescript-eslint/parser": "^8.48.0",
     "ajv-cli": "^5.0.0",
     "conventional-changelog-conventionalcommits": "^9.2.0",
+    "depcheck": "^1.4.7",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",

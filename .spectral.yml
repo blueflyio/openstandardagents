@@ -1,0 +1,6 @@
+extends: ["spectral:oas"]
+rules:
+  # Relax info-contact to warning for now
+  info-contact: warn
+  # Relax operation-tag-defined to warning
+  operation-tag-defined: warn
