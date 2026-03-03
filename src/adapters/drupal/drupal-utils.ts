@@ -289,25 +289,40 @@ ossa:
 /**
  * Extract capabilities as string array from an OSSA manifest.
  *
- * Handles both string capabilities and object capabilities with a name field.
+ * Handles: (1) array of strings or { name } objects, (2) object with grants[]
+ * (e.g. { policy, grants: [{ capability: '...' }] }), (3) missing -> [].
  *
  * @param manifest - OSSA agent manifest
  * @returns Array of capability name strings
  */
 export function extractCapabilities(manifest: OssaAgent): string[] {
-  return (
-    (manifest.spec?.capabilities || []) as Array<string | { name?: string }>
-  ).map((c) => (typeof c === 'string' ? c : c.name || ''));
+  const raw = manifest.spec?.capabilities;
+  if (raw == null) return [];
+  if (Array.isArray(raw)) {
+    return (raw as Array<string | { name?: string }>).map((c) =>
+      typeof c === 'string' ? c : c.name || ''
+    );
+  }
+  if (
+    typeof raw === 'object' &&
+    Array.isArray((raw as { grants?: unknown[] }).grants)
+  ) {
+    return (raw as { grants: Array<{ capability?: string }> }).grants
+      .map((g) => g.capability)
+      .filter((s): s is string => typeof s === 'string');
+  }
+  return [];
 }
 
 /**
  * Extract tools as typed array from an OSSA manifest.
  *
  * @param manifest - OSSA agent manifest
- * @returns Array of tool entries
+ * @returns Array of tool entries (empty if spec.tools is missing or not an array)
  */
 export function extractTools(manifest: OssaAgent): OssaToolEntry[] {
-  return (manifest.spec?.tools || []) as OssaToolEntry[];
+  const raw = manifest.spec?.tools;
+  return Array.isArray(raw) ? (raw as OssaToolEntry[]) : [];
 }
 
 /**

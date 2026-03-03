@@ -6,7 +6,12 @@ import type { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
 
 export function errorHandler() {
-  return (err: Error, _req: Request, res: Response, _next: NextFunction): void => {
+  return (
+    err: Error,
+    _req: Request,
+    res: Response,
+    _next: NextFunction
+  ): void => {
     if (err instanceof ZodError) {
       res.status(400).json({
         error: 'Validation error',
@@ -19,7 +24,10 @@ export function errorHandler() {
     }
 
     // Known OSSA errors
-    if (err.message?.includes('not found') || err.message?.includes('No such file')) {
+    if (
+      err.message?.includes('not found') ||
+      err.message?.includes('No such file')
+    ) {
       res.status(404).json({ error: err.message });
       return;
     }

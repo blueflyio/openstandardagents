@@ -11,48 +11,50 @@ import { ManifestRepository } from './repositories/manifest.repository.js';
 import { SchemaRepository } from './repositories/schema.repository.js';
 
 // Services
-import { GenerationService } from './services/generation.service.js';
-import { MigrationService } from './services/migration.service.js';
-import { MigrationTransformService } from './services/migration-transform.service.js';
-import { LangChainMigrationService } from './services/migration/langchain-migration.service.js';
-import { ValidationService } from './services/validation.service.js';
-import { ValidationZodService } from './services/validation-zod.service.js';
-import { VersionDetectionService } from './services/version-detection.service.js';
-import { RepoAgentsMdService } from './services/agents-md/repo-agents-md.service.js';
-import { AgentsMdService } from './services/agents-md/agents-md.service.js';
+import { AgentTypeDetectorService } from './services/agent-type-detector.service.js';
 import { AgentsMdApiService } from './services/agents-md/agents-md-api.service.js';
 import { AgentsMdDiscoveryService } from './services/agents-md/agents-md-discovery.service.js';
-import { TemplateProcessorService } from './services/template-processor.service.js';
-import { LlmsTxtService } from './services/llms-txt/llms-txt.service.js';
-import { TestRunnerService } from './services/test-runner/test-runner.service.js';
-import { GitService } from './services/git.service.js';
-import { GitRollbackService } from './services/git-rollback.service.js';
-import { ExtensionTeamKickoffService } from './services/extension-team/extension-team-kickoff.service.js';
+import { AgentsMdService } from './services/agents-md/agents-md.service.js';
+import { RepoAgentsMdService } from './services/agents-md/repo-agents-md.service.js';
 import { AIArchitectService } from './services/ai-architect.service.js';
-import { TaxonomyService } from './services/taxonomy.service.js';
+import { ExtensionTeamKickoffService } from './services/extension-team/extension-team-kickoff.service.js';
+import { GenerationService } from './services/generation.service.js';
+import { GitRollbackService } from './services/git-rollback.service.js';
+import { GitService } from './services/git.service.js';
 import { KnowledgeService } from './services/knowledge.service.js';
-import { TaxonomyValidatorService } from './services/taxonomy-validator.service.js';
-import { TemplateService } from './services/template.service.js';
+import { LlmsTxtService } from './services/llms-txt/llms-txt.service.js';
+import { ManifestCrudService } from './services/manifest/manifest-crud.service.js';
+import { MigrationTransformService } from './services/migration-transform.service.js';
+import { MigrationService } from './services/migration.service.js';
+import { LangChainMigrationService } from './services/migration/langchain-migration.service.js';
 import { RegistryService } from './services/registry.service.js';
+import { TaxonomyValidatorService } from './services/taxonomy-validator.service.js';
+import { TaxonomyService } from './services/taxonomy.service.js';
+import { TemplateProcessorService } from './services/template-processor.service.js';
+import { TemplateService } from './services/template.service.js';
+import { TestRunnerService } from './services/test-runner/test-runner.service.js';
+import { ValidationZodService } from './services/validation-zod.service.js';
+import { ValidationService } from './services/validation.service.js';
+import { VersionDetectionService } from './services/version-detection.service.js';
 import { WizardService } from './services/wizard/wizard.service.js';
-import { AgentTypeDetectorService } from './services/agent-type-detector.service.js';
+import { WorkspaceService } from './services/workspace/workspace.service.js';
 // Codegen Service and Generators
 import { CodegenService } from './services/codegen/codegen.service.js';
 import { ManifestGenerator } from './services/codegen/generators/manifest.generator.js';
-import { VSCodeGenerator } from './services/codegen/generators/vscode.generator.js';
+import { OpenAPIZodGenerator } from './services/codegen/generators/openapi-zod.generator.js';
 import { OpenAPIGenerator } from './services/codegen/generators/openapi.generator.js';
 import { TypesGenerator } from './services/codegen/generators/types.generator.js';
+import { VSCodeGenerator } from './services/codegen/generators/vscode.generator.js';
 import { ZodGenerator } from './services/codegen/generators/zod.generator.js';
-import { OpenAPIZodGenerator } from './services/codegen/generators/openapi-zod.generator.js';
 
 // Validators
-import { DependenciesValidator } from './services/validators/dependencies.validator.js';
 import { ContractValidator } from './services/validators/contract.validator.js';
+import { DependenciesValidator } from './services/validators/dependencies.validator.js';
 
 // Conformance Services
 import { ConformanceService } from './services/conformance/conformance.service.js';
-import { ConformanceProfileLoader } from './services/conformance/profile-loader.service.js';
 import { FeatureDetector } from './services/conformance/feature-detector.service.js';
+import { ConformanceProfileLoader } from './services/conformance/profile-loader.service.js';
 import { ConformanceScoreCalculator } from './services/conformance/score-calculator.service.js';
 
 // Registry Services
@@ -61,10 +63,10 @@ import { IndexService } from './services/registry/index.service.js';
 
 // Skills Pipeline Services
 import {
-  SkillsResearchService,
-  SkillsGeneratorService,
-  SkillsExportService,
-  SkillsInstallService,
+    SkillsExportService,
+    SkillsGeneratorService,
+    SkillsInstallService,
+    SkillsResearchService,
 } from './services/skills-pipeline/index.js';
 
 // DI Type Identifiers
@@ -113,6 +115,8 @@ container.bind(RegistryService).toSelf().inSingletonScope();
 container.bind(WizardService).toSelf();
 container.bind(AgentTypeDetectorService).toSelf();
 container.bind(TYPES.AgentTypeDetectorService).to(AgentTypeDetectorService);
+container.bind(ManifestCrudService).toSelf();
+container.bind(WorkspaceService).toSelf();
 
 // Bind codegen generators (must be bound before CodegenService)
 container.bind(ManifestGenerator).toSelf();
@@ -178,6 +182,8 @@ export function resetContainer(): void {
   container.bind(TestRunnerService).toSelf();
   container.bind(GitService).toSelf();
   container.bind(GitRollbackService).toSelf();
+  container.bind(ManifestCrudService).toSelf();
+  container.bind(WorkspaceService).toSelf();
   container.bind(ManifestGenerator).toSelf();
   container.bind(VSCodeGenerator).toSelf();
   container.bind(OpenAPIGenerator).toSelf();

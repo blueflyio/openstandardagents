@@ -34,7 +34,9 @@ export function exportRouter(): Router {
         output_dir: req.body.output_dir,
       });
       res.json(result);
-    } catch (err) { next(err); }
+    } catch (err) {
+      next(err);
+    }
   });
 
   // List platforms

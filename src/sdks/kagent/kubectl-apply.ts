@@ -64,7 +64,9 @@ async function kubectlApplyManifest(
 /**
  * Parse kubectl apply output to determine status.
  */
-function parseApplyOutput(stdout: string): 'created' | 'configured' | 'unchanged' {
+function parseApplyOutput(
+  stdout: string
+): 'created' | 'configured' | 'unchanged' {
   if (stdout.includes('created')) return 'created';
   if (stdout.includes('configured')) return 'configured';
   return 'unchanged';
@@ -135,7 +137,11 @@ export async function applyV1Alpha2Bundle(
 export function flattenBundle(
   bundle: KAgentV1Alpha2Bundle
 ): Array<{ kind: string; name: string; manifest: Record<string, unknown> }> {
-  const ordered: Array<{ kind: string; name: string; manifest: Record<string, unknown> }> = [];
+  const ordered: Array<{
+    kind: string;
+    name: string;
+    manifest: Record<string, unknown>;
+  }> = [];
 
   if (bundle.modelConfig) {
     ordered.push({

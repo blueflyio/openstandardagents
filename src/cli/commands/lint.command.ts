@@ -167,6 +167,57 @@ const lintRules: LintRule[] = [
       return issues;
     },
   },
+  {
+    id: 'revocation-status',
+    name: 'Revocation and deprecation status',
+    severity: 'warning',
+    check: (manifest: OssaAgent) => {
+      const issues: LintIssue[] = [];
+      const status = (manifest.metadata as any)?.status;
+      if (status === 'revoked') {
+        issues.push({
+          rule: 'revocation-status',
+          message: 'Agent is revoked and should not be used',
+          severity: 'error',
+          path: 'metadata.status',
+        });
+      }
+      if (status === 'deprecated') {
+        const msg = (manifest.metadata as any)?.deprecated_message;
+        issues.push({
+          rule: 'revocation-status',
+          message: msg
+            ? `Agent is deprecated: ${msg}`
+            : 'Agent is deprecated; set metadata.deprecated_message for migration path',
+          severity: 'warning',
+          path: 'metadata.status',
+        });
+      }
+      return issues;
+    },
+  },
+  {
+    id: 'signed-artifact',
+    name: 'Signed or checksummed manifest for trust',
+    severity: 'info',
+    check: (manifest: OssaAgent) => {
+      const issues: LintIssue[] = [];
+      const meta = manifest.metadata as any;
+      const hasSignature = meta?.signature;
+      const hasChecksum =
+        meta?.checksum || meta?.identity?.checksum || meta?.manifest_digest;
+      if (!hasSignature && !hasChecksum) {
+        issues.push({
+          rule: 'signed-artifact',
+          message:
+            'Consider adding metadata.signature or metadata.checksum for integrity and trust (see Agent Registry Governance)',
+          severity: 'info',
+          path: 'metadata',
+        });
+      }
+      return issues;
+    },
+  },
 ];
 
 export const lintCommand = new Command('lint')

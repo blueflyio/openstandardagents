@@ -22,7 +22,10 @@ export const platformsCommand = new Command('platforms')
     '-p, --platform <id>',
     'Show single platform by id (e.g. langchain, drupal, kagent)'
   )
-  .option('--questions', 'List questions we might be missing when onboarding agents')
+  .option(
+    '--questions',
+    'List questions we might be missing when onboarding agents'
+  )
   .option('--folder-structure', 'Show default OSSA folder structure');
 
 platformsCommand.action(
@@ -36,9 +39,15 @@ platformsCommand.action(
 
     if (options?.questions) {
       if (options.json) {
-        console.log(JSON.stringify({ questions: QUESTIONS_WE_MIGHT_BE_MISSING }, null, 2));
+        console.log(
+          JSON.stringify({ questions: QUESTIONS_WE_MIGHT_BE_MISSING }, null, 2)
+        );
       } else {
-        console.log(useColor ? chalk.cyan('\nQuestions we might be missing\n') : '\nQuestions we might be missing\n');
+        console.log(
+          useColor
+            ? chalk.cyan('\nQuestions we might be missing\n')
+            : '\nQuestions we might be missing\n'
+        );
         QUESTIONS_WE_MIGHT_BE_MISSING.forEach((q, i) => {
           console.log(`  ${i + 1}. ${q}`);
         });
@@ -49,10 +58,18 @@ platformsCommand.action(
 
     if (options?.folderStructure) {
       if (options.json) {
-        console.log(JSON.stringify({ defaultFolderStructure: DEFAULT_FOLDER_STRUCTURE }, null, 2));
+        console.log(
+          JSON.stringify(
+            { defaultFolderStructure: DEFAULT_FOLDER_STRUCTURE },
+            null,
+            2
+          )
+        );
       } else {
         console.log(
-          useColor ? chalk.cyan('\nDefault OSSA folder structure\n') : '\nDefault OSSA folder structure\n'
+          useColor
+            ? chalk.cyan('\nDefault OSSA folder structure\n')
+            : '\nDefault OSSA folder structure\n'
         );
         DEFAULT_FOLDER_STRUCTURE.forEach((line) => console.log(`  ${line}`));
         console.log('');
@@ -61,17 +78,29 @@ platformsCommand.action(
     }
 
     const platformId = options?.platform;
-    const list = platformId ? [getPlatformById(platformId)].filter(Boolean) : PLATFORM_MATRIX;
+    const list = platformId
+      ? [getPlatformById(platformId)].filter(Boolean)
+      : PLATFORM_MATRIX;
 
     if (list.length === 0) {
-      console.error(useColor ? chalk.red(`Platform not found: ${platformId}`) : `Platform not found: ${platformId}`);
+      console.error(
+        useColor
+          ? chalk.red(`Platform not found: ${platformId}`)
+          : `Platform not found: ${platformId}`
+      );
       process.exit(1);
     }
 
     if (options?.json) {
       console.log(
         JSON.stringify(
-          platformId ? list[0] : { platforms: list, defaultFolderStructure: DEFAULT_FOLDER_STRUCTURE, questions: QUESTIONS_WE_MIGHT_BE_MISSING },
+          platformId
+            ? list[0]
+            : {
+                platforms: list,
+                defaultFolderStructure: DEFAULT_FOLDER_STRUCTURE,
+                questions: QUESTIONS_WE_MIGHT_BE_MISSING,
+              },
           null,
           2
         )
@@ -82,12 +111,24 @@ platformsCommand.action(
     for (const p of list) {
       const entry = p!;
       console.log('');
-      console.log(useColor ? chalk.bold.blue(`${entry.name} (${entry.id})`) : `${entry.name} (${entry.id})`);
+      console.log(
+        useColor
+          ? chalk.bold.blue(`${entry.name} (${entry.id})`)
+          : `${entry.name} (${entry.id})`
+      );
       console.log(useColor ? chalk.gray(entry.description) : entry.description);
-      console.log(useColor ? chalk.gray(`  Status: ${entry.status}`) : `  Status: ${entry.status}`);
-      console.log(useColor ? chalk.cyan('  What they need:') : '  What they need:');
+      console.log(
+        useColor
+          ? chalk.gray(`  Status: ${entry.status}`)
+          : `  Status: ${entry.status}`
+      );
+      console.log(
+        useColor ? chalk.cyan('  What they need:') : '  What they need:'
+      );
       entry.whatTheyNeed.forEach((n) => console.log(`    - ${n}`));
-      console.log(useColor ? chalk.cyan('  Folder structure:') : '  Folder structure:');
+      console.log(
+        useColor ? chalk.cyan('  Folder structure:') : '  Folder structure:'
+      );
       entry.folderStructure.forEach((f) => console.log(`    ${f}`));
       console.log(useColor ? chalk.cyan('  SDK / npm:') : '  SDK / npm:');
       entry.sdkNpm.forEach((s) => console.log(`    - ${s}`));
@@ -95,7 +136,9 @@ platformsCommand.action(
       console.log(`    ${entry.exportHow}`);
       console.log(useColor ? chalk.cyan('  Import:') : '  Import:');
       console.log(`    ${entry.importHow}`);
-      console.log(useColor ? chalk.cyan('  Use OSSA spec:') : '  Use OSSA spec:');
+      console.log(
+        useColor ? chalk.cyan('  Use OSSA spec:') : '  Use OSSA spec:'
+      );
       entry.specUsage.forEach((u) => console.log(`    - ${u}`));
     }
     console.log('');

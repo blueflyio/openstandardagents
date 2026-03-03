@@ -41,9 +41,8 @@ export class KagentConfigAdapter extends BaseAdapter {
 
   async toConfig(manifest: OssaAgent): Promise<ConfigResult> {
     const meta = manifest.metadata || { name: 'agent', version: '0.0.0' };
-    const kagentExtensions = (manifest as Record<string, unknown>).extensions as
-      | Record<string, unknown>
-      | undefined;
+    const kagentExtensions = (manifest as Record<string, unknown>)
+      .extensions as Record<string, unknown> | undefined;
     const kagentExt = kagentExtensions?.kagent as
       | Record<string, unknown>
       | undefined;

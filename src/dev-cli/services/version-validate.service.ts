@@ -49,7 +49,9 @@ export class VersionValidateService {
     const readmeFile = join(this.rootDir, 'README.md');
     if (existsSync(readmeFile)) {
       const readme = readFileSync(readmeFile, 'utf-8');
-      details['README.md'] = readme.includes(versionInfo.current) ? 'version mentioned' : 'no version';
+      details['README.md'] = readme.includes(versionInfo.current)
+        ? 'version mentioned'
+        : 'no version';
     } else {
       warnings.push('README.md not found');
       details['README.md'] = 'missing';
@@ -57,7 +59,9 @@ export class VersionValidateService {
     const changelogFile = join(this.rootDir, 'CHANGELOG.md');
     if (existsSync(changelogFile)) {
       const changelog = readFileSync(changelogFile, 'utf-8');
-      details['CHANGELOG.md'] = changelog.includes(versionInfo.current) ? 'version mentioned' : 'no version';
+      details['CHANGELOG.md'] = changelog.includes(versionInfo.current)
+        ? 'version mentioned'
+        : 'no version';
     } else {
       warnings.push('CHANGELOG.md not found');
       details['CHANGELOG.md'] = 'missing';

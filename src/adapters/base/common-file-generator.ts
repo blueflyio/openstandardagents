@@ -887,7 +887,7 @@ export function generatePerfectAgentBundle(
   platform: TeamTargetPlatform = 'generic'
 ): ExportFile[] {
   const files: ExportFile[] = [];
-  const isPerfect = options?.perfectAgent ?? (options === undefined);
+  const isPerfect = options?.perfectAgent ?? options === undefined;
   const includeAgentsMd = isPerfect || options?.includeAgentsMd;
   const includeTeam = isPerfect || options?.includeTeam;
   const includeSkill = isPerfect || options?.includeSkill;

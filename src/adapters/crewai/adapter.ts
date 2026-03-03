@@ -208,9 +208,9 @@ export class CrewAIAdapter extends BaseAdapter {
           goal: meta.description || '',
           backstory: manifest.spec?.role || '',
           llm: manifest.spec?.llm?.model || 'gpt-4',
-          tools: ((manifest.spec?.tools || []) as Array<Record<string, unknown>>).map(
-            (t) => t.name
-          ),
+          tools: (
+            (manifest.spec?.tools || []) as Array<Record<string, unknown>>
+          ).map((t) => t.name),
         },
       ],
     };

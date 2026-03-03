@@ -7,7 +7,8 @@ import { webcrypto } from 'node:crypto';
 
 // Expose Web Crypto API so source that uses crypto.randomUUID() works in Jest
 if (typeof globalThis.crypto === 'undefined') {
-  (globalThis as unknown as { crypto: Crypto }).crypto = webcrypto as unknown as Crypto;
+  (globalThis as unknown as { crypto: Crypto }).crypto =
+    webcrypto as unknown as Crypto;
 }
 
 // Prevent pino-pretty worker thread from keeping the process alive.

@@ -122,7 +122,12 @@ export interface SkillTest {
 export function isOssaSkill(obj: unknown): obj is OssaSkill {
   if (!obj || typeof obj !== 'object') return false;
   const o = obj as Record<string, unknown>;
-  return o.kind === 'Skill' && typeof o.apiVersion === 'string' && o.metadata != null && o.spec != null;
+  return (
+    o.kind === 'Skill' &&
+    typeof o.apiVersion === 'string' &&
+    o.metadata != null &&
+    o.spec != null
+  );
 }
 
 /**
@@ -131,7 +136,7 @@ export function isOssaSkill(obj: unknown): obj is OssaSkill {
 export function createSkillManifest(
   name: string,
   description: string,
-  instructions?: string,
+  instructions?: string
 ): OssaSkill {
   return {
     apiVersion: 'ossa/v1',

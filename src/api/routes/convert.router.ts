@@ -33,7 +33,9 @@ export function convertRouter(): Router {
         output_dir: req.body.output_dir,
       });
       res.json(result);
-    } catch (err) { next(err); }
+    } catch (err) {
+      next(err);
+    }
   });
 
   router.get('/targets', (_req, res) => {

@@ -1,0 +1,37 @@
+# OSSA v0.4 Minimal Example (identity, security, protocols)
+# Shows backward compatibility: only new fields you actually need.
+# All identity/security/protocol additions are optional.
+apiVersion: ossa/v0.4
+kind: Agent
+metadata:
+  name: simple-helper
+  version: 1.0.0
+  description: Minimal agent using v0.4 identity
+  identity:
+    agent_id: simple-helper
+    publisher:
+      name: My Organization
+
+spec:
+  role: You are a helpful assistant.
+
+# Minimal security posture (just declare what you need)
+security:
+  capabilities:
+    required:
+      - network-outbound
+      - tool-execution
+  sandboxing:
+    required: false
+
+# Minimal protocol declaration (just MCP)
+protocols:
+  mcp:
+    version: "1.0.0"
+    role: server
+    servers:
+      - name: helper-tools
+        transport: stdio
+        command: node
+        args:
+          - ./server.js

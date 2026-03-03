@@ -229,11 +229,16 @@ export class LangChainAdapter extends BaseAdapter {
       name: meta.name,
       description: meta.description || '',
       llm: {
-        _type: manifest.spec?.llm?.provider === 'anthropic' ? 'ChatAnthropic' : 'ChatOpenAI',
+        _type:
+          manifest.spec?.llm?.provider === 'anthropic'
+            ? 'ChatAnthropic'
+            : 'ChatOpenAI',
         model_name: manifest.spec?.llm?.model || 'gpt-4',
       },
       system_message: manifest.spec?.role || '',
-      tools: ((manifest.spec?.tools || []) as Array<Record<string, unknown>>).map((t) => ({
+      tools: (
+        (manifest.spec?.tools || []) as Array<Record<string, unknown>>
+      ).map((t) => ({
         name: t.name,
         type: t.type,
       })),

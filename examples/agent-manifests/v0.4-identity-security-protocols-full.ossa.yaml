@@ -1,0 +1,159 @@
+# OSSA v0.4 Example: Agent Identity, Security Posture, and Protocol Declarations
+# This manifest demonstrates identity, security posture, and protocol declarations.
+# All of these fields are optional and backward compatible with v0.4.
+apiVersion: ossa/v0.4
+kind: Agent
+metadata:
+  name: compliance-scanner
+  version: 2.0.0
+  description: Production compliance scanning agent with full v0.4 identity, security, and protocol declarations
+  namespace: blueflyio
+  labels:
+    team: platform-security
+    tier: production
+  # v0.4: Agent Identity Model
+  identity:
+    namespace: blueflyio/platform
+    agent_id: compliance-scanner
+    version: 2.0.0
+    publisher:
+      name: BlueFly.io
+      email: agents@bluefly.io
+      website: https://openstandardagents.org
+      pgp_key: 4AEE18F83AFDEB23
+      registry_url: https://registry.openstandardagents.org/blueflyio
+    checksum: "sha256:a1b2c3d4e5f67890abcdef1234567890abcdef1234567890abcdef1234567890"
+    created_at: "2026-01-15T00:00:00Z"
+    updated_at: "2026-02-16T00:00:00Z"
+  agentType: claude
+  agentKind: analyst
+
+spec:
+  role: >
+    You are a compliance scanning agent. You audit codebases against
+    security policies, generate compliance reports, and flag violations.
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    temperature: 0.1
+    maxTokens: 8000
+  tools:
+    - name: scan_repository
+      type: function
+      description: Scan a repository for compliance violations
+    - name: generate_report
+      type: function
+      description: Generate a compliance audit report
+    - name: check_policy
+      type: function
+      description: Check a specific file against a Cedar policy
+
+# v0.4: Security Posture Metadata
+security:
+  threat_model:
+    - category: prompt-injection
+      severity: high
+      mitigations:
+        - input-validation
+        - output-filtering
+        - system-prompt-anchoring
+      description: Agent processes user-supplied code that could contain prompt injection attempts
+    - category: data-exfiltration
+      severity: medium
+      mitigations:
+        - network-allowlist
+        - output-size-limits
+      description: Agent has read access to source code which could be exfiltrated
+    - category: privilege-escalation
+      severity: low
+      mitigations:
+        - least-privilege
+        - sandboxing
+      description: Agent operates with read-only filesystem access
+  capabilities:
+    required:
+      - filesystem-read
+      - network-outbound
+      - tool-execution
+    optional:
+      - database-read
+      - secrets-read
+      - memory-extended
+  sandboxing:
+    required: true
+    type: container
+    resource_limits:
+      max_memory_mb: 2048
+      max_cpu_cores: 2
+      max_execution_seconds: 300
+      max_disk_mb: 512
+  network_access:
+    allowed_domains:
+      - api.anthropic.com
+      - "*.gitlab.com"
+      - registry.npmjs.org
+    blocked_domains:
+      - "*.malware.example.com"
+    protocols:
+      - https
+    egress_policy: allow-list
+  data_classification: confidential
+  audit:
+    log_inputs: false
+    log_outputs: true
+    log_tool_calls: true
+    retention_days: 90
+
+# v0.4: Protocol Declarations
+protocols:
+  mcp:
+    version: "1.0.0"
+    role: server
+    servers:
+      - name: compliance-tools
+        transport: stdio
+        command: node
+        args:
+          - ./dist/mcp/server.js
+        tools:
+          - scan_repository
+          - generate_report
+          - check_policy
+    capabilities:
+      tools: true
+      resources: true
+      prompts: false
+      sampling: false
+  a2a:
+    version: "0.2.0"
+    endpoint: https://agents.bluefly.io/.well-known/agent.json
+    agent_card:
+      name: Compliance Scanner
+      description: Automated compliance scanning and policy enforcement agent
+      skills:
+        - id: compliance-scan
+          name: Compliance Scan
+          description: Full compliance audit of a code repository
+        - id: policy-check
+          name: Policy Check
+          description: Check specific files against Cedar policies
+    capabilities:
+      streaming: true
+      pushNotifications: false
+      stateTransitionHistory: true
+    authentication:
+      schemes:
+        - bearer
+        - oauth2
+  anp:
+    did: "did:web:agents.bluefly.io:compliance-scanner"
+    verifiable_credentials:
+      - type: AgentCapabilityCredential
+        issuer: "did:web:registry.openstandardagents.org"
+        credential_url: https://registry.openstandardagents.org/credentials/compliance-scanner
+      - type: SecurityAuditCredential
+        issuer: "did:web:auditors.example.com"
+        credential_url: https://auditors.example.com/credentials/bluefly-compliance-2026
+    discovery:
+      registry_url: https://registry.openstandardagents.org
+      advertise: true

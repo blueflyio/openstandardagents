@@ -40,8 +40,10 @@ export async function validateManifest(
     return { valid: false, errors };
   }
   const m = manifest as Record<string, unknown>;
-  if (!m.metadata || typeof m.metadata !== 'object') errors.push('metadata is required');
-  if ((m.metadata as Record<string, unknown>)?.name == null) errors.push('metadata.name is required');
+  if (!m.metadata || typeof m.metadata !== 'object')
+    errors.push('metadata is required');
+  if ((m.metadata as Record<string, unknown>)?.name == null)
+    errors.push('metadata.name is required');
   if (!m.apiVersion) errors.push('apiVersion is required');
   return { valid: errors.length === 0, errors };
 }

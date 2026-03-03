@@ -11,27 +11,27 @@
  *   ossa workspace publish       - POST discovery to a registry API (e.g. mesh /api/v1/discovery)
  */
 
-import { Command } from 'commander';
 import chalk from 'chalk';
+import { Command } from 'commander';
 import * as fs from 'fs';
+import { glob } from 'glob';
 import * as path from 'path';
 import * as yaml from 'yaml';
-import { glob } from 'glob';
-import { getVersion } from '../../utils/version.js';
-import { outputJSON, handleCommandError } from '../utils/index.js';
 import {
-  getDefaultWorkspaceDir,
-  getRequiredWorkspaceDirs,
-  getWorkspaceRegistryPath,
-  getWorkspacePolicyPath,
-  getDefaultOSSAAPIVersion,
-  getDefaultRegistryKind,
-  getDefaultPolicyKind,
-  getDefaultAgentVersion,
-  getDefaultDiscoveryStrategy,
-  getDefaultDiscoveryRefresh,
-  getDefaultDiscoveryPatterns,
+    getDefaultAgentVersion,
+    getDefaultDiscoveryPatterns,
+    getDefaultDiscoveryRefresh,
+    getDefaultDiscoveryStrategy,
+    getDefaultOSSAAPIVersion,
+    getDefaultPolicyKind,
+    getDefaultRegistryKind,
+    getDefaultWorkspaceDir,
+    getRequiredWorkspaceDirs,
+    getWorkspacePolicyPath,
+    getWorkspaceRegistryPath,
 } from '../../config/defaults.js';
+import { getVersion } from '../../utils/version.js';
+import { handleCommandError, outputJSON } from '../utils/index.js';
 
 export const workspaceCommand = new Command('workspace').description(
   'Manage .agents-workspace/ (two-tier architecture governance)'
@@ -190,6 +190,37 @@ Global conventions and standards that apply to all agents in this workspace.
         )
       );
 
+      process.exit(0);
+    } catch (error) {
+      handleCommandError(error);
+    }
+  });
+
+// ============================================================================
+// Subcommand: workspace scaffold
+// ============================================================================
+workspaceCommand
+  .command('scaffold')
+  .description('Scaffold the IDE workspace mapping via OSSA standards')
+  .option('--dir <directory>', 'Base directory to scaffold', '.')
+  .action(async (options) => {
+    try {
+      const { container } = await import('../../di-container.js');
+      const { WorkspaceService } = await import(
+        '../../services/workspace/workspace.service.js'
+      );
+      const service = container.get(WorkspaceService);
+
+      console.log(chalk.blue(`Scaffolding workspace from ${options.dir}...`));
+      
+      const result = await service.scaffold(options.dir);
+
+      console.log(chalk.green('\n✓ Workspace scaffold completed'));
+      console.log(chalk.gray(`  Central Workspace: ${result.workspacePath}`));
+      if (result.projectsScaffolded > 0) {
+        console.log(chalk.gray(`  Projects Provisioned: ${result.projectsScaffolded} .agents/ folders created`));
+      }
+      console.log(chalk.gray(`  IDE Setup Bound: ${result.codeWorkspacePath}\n`));
       process.exit(0);
     } catch (error) {
       handleCommandError(error);
@@ -681,8 +712,7 @@ workspaceCommand
       const content = fs.readFileSync(registryPath, 'utf-8');
       const registry = yaml.parse(content);
       const agents = registry.agents || [];
-      const workspaceName =
-        registry.metadata?.name || 'workspace';
+      const workspaceName = registry.metadata?.name || 'workspace';
       const scannedAt = new Date().toISOString();
 
       const payload = {
@@ -713,9 +743,7 @@ workspaceCommand
         );
       } else {
         const text = await res.text();
-        console.error(
-          chalk.red('Publish failed: ') + res.status + ' ' + text
-        );
+        console.error(chalk.red('Publish failed: ') + res.status + ' ' + text);
         process.exit(1);
       }
       process.exit(0);
@@ -743,7 +771,10 @@ workspaceCommand
       const res = await fetch(`${base}/api/v1/discovery`);
       if (!res.ok) {
         console.error(
-          chalk.red('Registry request failed: ') + res.status + ' ' + (await res.text())
+          chalk.red('Registry request failed: ') +
+            res.status +
+            ' ' +
+            (await res.text())
         );
         process.exit(1);
       }
@@ -779,9 +810,9 @@ workspaceCommand
           const label =
             typeof a === 'string'
               ? a
-              : (a as { name?: string }).name ??
+              : ((a as { name?: string }).name ??
                 (a as { path?: string }).path ??
-                '?';
+                '?');
           console.log('  ' + projName + ' / ' + label);
         }
       }
