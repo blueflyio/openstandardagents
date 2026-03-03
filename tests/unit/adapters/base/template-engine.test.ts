@@ -3,7 +3,10 @@
  */
 
 import { describe, it, expect } from '@jest/globals';
-import { render, renderConditional } from '../../../../src/adapters/base/template-engine.js';
+import {
+  render,
+  renderConditional,
+} from '../../../../src/adapters/base/template-engine.js';
 
 describe('render', () => {
   it('replaces {{key}} with value', () => {
@@ -70,11 +73,9 @@ describe('renderConditional', () => {
   });
 
   it('omits {{#each}} when not array or empty', () => {
-    expect(
-      renderConditional('{{#each items}}x{{/each}}', { items: [] })
-    ).toBe('');
-    expect(
-      renderConditional('{{#each items}}x{{/each}}', {})
-    ).toBe('');
+    expect(renderConditional('{{#each items}}x{{/each}}', { items: [] })).toBe(
+      ''
+    );
+    expect(renderConditional('{{#each items}}x{{/each}}', {})).toBe('');
   });
 });

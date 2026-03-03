@@ -4,17 +4,25 @@
  * Extracts handleWorkspace logic from MCP server. No TUI/HTTP deps.
  */
 
+import fg from 'fast-glob';
 import { injectable } from 'inversify';
+import yaml from 'js-yaml';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import yaml from 'js-yaml';
-import fg from 'fast-glob';
 
 export interface WorkspaceInitResult {
   action: 'init';
   status: 'created' | 'already_exists';
   path: string;
   name?: string;
+}
+
+export interface WorkspaceScaffoldResult {
+  action: 'scaffold';
+  status: 'completed';
+  workspacePath: string;
+  projectsScaffolded: number;
+  codeWorkspacePath: string;
 }
 
 export interface DiscoveryAgent {
@@ -66,11 +74,101 @@ export class WorkspaceService {
     return { action: 'init', status: 'created', path: wsDir, name: wsName };
   }
 
+  async scaffold(baseDirectory: string): Promise<WorkspaceScaffoldResult> {
+    const dir = path.resolve(baseDirectory);
+    const wsDir = path.join(dir, '.agents-workspace');
+    
+    // 1. Ensure the agents-workspace orchestrator root exists
+    if (!fs.existsSync(wsDir)) {
+      // Defer to init method logic
+      await this.init(dir);
+    }
+
+    // 2. Scan properties sequentially (one level deep typically, or via glob)
+    // Here we'll do a one level deep scan for project directories to inject .agents/ folders
+    const projectsScaffolded: string[] = [];
+    try {
+      const entries = fs.readdirSync(dir, { withFileTypes: true });
+      for (const entry of entries) {
+        if (entry.isDirectory() && !entry.name.startsWith('.')) {
+          const projectDir = path.join(dir, entry.name);
+          const agentsDir = path.join(projectDir, '.agents');
+          
+          // Scaffold .agents if it didn't exist, we assume they might want one
+          // We won't blindly create .agents in *every* folder unless asked, 
+          // but for the sake of the command "makes the .agents and .agents-workspace folders" 
+          // we'll provision a basic empty structure so they are recognized by the registry later.
+          if (!fs.existsSync(agentsDir)) {
+            fs.mkdirSync(agentsDir, { recursive: true });
+            
+            // Add a basic OSS manifest stub
+            const stubYaml = yaml.dump({
+              apiVersion: 'agents.bluefly.io/v1alpha1',
+              kind: 'Agent',
+              metadata: { name: entry.name, version: '0.1.0' },
+              spec: { capabilities: [] }
+            });
+            fs.writeFileSync(path.join(agentsDir, 'manifest.ossa.yaml'), stubYaml);
+            projectsScaffolded.push(entry.name);
+          }
+        }
+      }
+    } catch {
+      // ignore read errors for permission denied
+    }
+
+    // 3. Generate the IDE multi-root workspace file
+    const codeWorkspacePath = path.join(dir, 'agents-playground.code-workspace');
+    
+    // Find all valid .agents projects now
+    const folders: Array<{ name: string; path: string }> = [
+      { name: '⚙️ Agents Workspace Root', path: wsDir }
+    ];
+    
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    for (const entry of entries) {
+      if (entry.isDirectory() && !entry.name.startsWith('.')) {
+        const pDir = path.join(dir, entry.name);
+        if (fs.existsSync(path.join(pDir, '.agents'))) {
+          folders.push({ name: `🤖 ${entry.name}`, path: pDir });
+        }
+      }
+    }
+
+    const vscodeSettings = {
+      'files.exclude': { '**/node_modules': true, '**/.git': true, '**/dist': true },
+      'kiroAgent.configureMCP': 'Enabled'
+    };
+
+    fs.writeFileSync(codeWorkspacePath, JSON.stringify({ folders, settings: vscodeSettings }, null, 2));
+
+    return {
+      action: 'scaffold',
+      status: 'completed',
+      workspacePath: wsDir,
+      projectsScaffolded: projectsScaffolded.length,
+      codeWorkspacePath
+    };
+  }
+
   async discover(directory: string): Promise<DiscoveryResult> {
     const dir = path.resolve(directory);
-    const patterns = ['**/*.ossa.yaml', '**/*.ossa.yml', '**/.agents/*/manifest.ossa.yaml'];
-    const ignorePatterns = ['**/node_modules/**', '**/dist/**', '**/.git/**', '**/coverage/**'];
-    const files = await fg(patterns, { cwd: dir, ignore: ignorePatterns, absolute: true });
+    const patterns = [
+      '**/*.ossa.yaml',
+      '**/*.ossa.yml',
+      '**/.agents/*/manifest.ossa.yaml',
+    ];
+    const ignorePatterns = [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/.git/**',
+      '**/coverage/**',
+    ];
+    const files = await fg(patterns, {
+      cwd: dir,
+      ignore: ignorePatterns,
+      absolute: true,
+    });
 
     const agents: DiscoveryAgent[] = [];
     for (const f of files) {
@@ -99,7 +197,12 @@ export class WorkspaceService {
         workspace: path.basename(dir),
         discovered: new Date().toISOString(),
         count: agents.length,
-        agents: agents.map((a) => ({ name: a.name, version: a.version, kind: a.kind, path: a.path })),
+        agents: agents.map((a) => ({
+          name: a.name,
+          version: a.version,
+          kind: a.kind,
+          path: a.path,
+        })),
       };
       fs.writeFileSync(path.join(registryDir, 'index.yaml'), yaml.dump(index));
     }
@@ -113,10 +216,16 @@ export class WorkspaceService {
     const indexPath = path.join(wsDir, 'registry', 'index.yaml');
 
     if (!fs.existsSync(indexPath)) {
-      return { action: 'status', initialized: false, message: 'Run ossa workspace init first' };
+      return {
+        action: 'status',
+        initialized: false,
+        message: 'Run ossa workspace init first',
+      };
     }
 
-    const indexContent = yaml.load(fs.readFileSync(indexPath, 'utf8')) as Record<string, unknown>;
+    const indexContent = yaml.load(
+      fs.readFileSync(indexPath, 'utf8')
+    ) as Record<string, unknown>;
     return { action: 'status', initialized: true, workspace: indexContent };
   }
 }

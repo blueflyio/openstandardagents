@@ -141,7 +141,11 @@ export interface KAgentV1Alpha2Agent {
       modelConfig: string;
       stream?: boolean;
       systemMessage: string;
-      systemMessageFrom?: { type: 'ConfigMap' | 'Secret'; name: string; key: string };
+      systemMessageFrom?: {
+        type: 'ConfigMap' | 'Secret';
+        name: string;
+        key: string;
+      };
       tools?: (
         | {
             type: 'McpServer';
@@ -153,7 +157,11 @@ export interface KAgentV1Alpha2Agent {
             };
             headersFrom?: Array<{
               name: string;
-              valueFrom: { type: 'Secret' | 'ConfigMap'; name: string; key: string };
+              valueFrom: {
+                type: 'Secret' | 'ConfigMap';
+                name: string;
+                key: string;
+              };
             }>;
           }
         | { type: 'Agent'; agent: { name: string; namespace?: string } }
@@ -190,7 +198,11 @@ export interface KAgentV1Alpha2Agent {
 export interface KAgentV1Alpha2ModelConfig {
   apiVersion: 'kagent.dev/v1alpha2';
   kind: 'ModelConfig';
-  metadata: { name: string; namespace?: string; labels?: Record<string, string> };
+  metadata: {
+    name: string;
+    namespace?: string;
+    labels?: Record<string, string>;
+  };
   spec: {
     model: string;
     provider: string;
@@ -312,11 +324,19 @@ export interface KAgentV1Alpha2Bundle {
   remoteMCPServers: Array<{
     apiVersion: string;
     kind: string;
-    metadata: { name: string; namespace?: string; labels?: Record<string, string> };
+    metadata: {
+      name: string;
+      namespace?: string;
+      labels?: Record<string, string>;
+    };
     spec: Record<string, unknown>;
   }>;
   agent: KAgentV1Alpha2Agent;
 }
 
 /** Apply order for v1alpha2 bundle (ModelConfig -> RemoteMCPServer -> Agent). */
-export const KAGENT_APPLY_ORDER = ['ModelConfig', 'RemoteMCPServer', 'Agent'] as const;
+export const KAGENT_APPLY_ORDER = [
+  'ModelConfig',
+  'RemoteMCPServer',
+  'Agent',
+] as const;

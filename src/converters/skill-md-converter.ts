@@ -98,12 +98,16 @@ export interface ImportOptions {
 /**
  * Convert SKILL.md content to an OssaSkill manifest
  */
-export function skillMdToOssa(content: string, options?: ImportOptions): OssaSkill {
+export function skillMdToOssa(
+  content: string,
+  options?: ImportOptions
+): OssaSkill {
   const parsed = parseSkillMd(content);
   const fm = parsed.frontmatter;
 
   const name = options?.name || toSlug(fm.name);
-  const description = fm.description || extractFirstParagraph(parsed.body) || fm.name;
+  const description =
+    fm.description || extractFirstParagraph(parsed.body) || fm.name;
 
   const metadata: SkillMetadata = {
     name,
@@ -132,7 +136,10 @@ export function skillMdToOssa(content: string, options?: ImportOptions): OssaSki
 /**
  * Read a SKILL.md file and convert to OssaSkill
  */
-export async function importSkillMd(filePath: string, options?: ImportOptions): Promise<OssaSkill> {
+export async function importSkillMd(
+  filePath: string,
+  options?: ImportOptions
+): Promise<OssaSkill> {
   const content = await readFile(filePath, 'utf-8');
   return skillMdToOssa(content, options);
 }
@@ -166,7 +173,10 @@ export function ossaToSkillMd(skill: OssaSkill): string {
 /**
  * Export an OssaSkill manifest to a SKILL.md file
  */
-export async function exportSkillMd(skill: OssaSkill, outputPath: string): Promise<void> {
+export async function exportSkillMd(
+  skill: OssaSkill,
+  outputPath: string
+): Promise<void> {
   const content = ossaToSkillMd(skill);
   await writeFile(outputPath, content, 'utf-8');
 }
@@ -182,7 +192,9 @@ export async function readSkillOssa(filePath: string): Promise<OssaSkill> {
   const content = await readFile(filePath, 'utf-8');
   const parsed = YAML.parse(content) as OssaSkill;
   if (!parsed || parsed.kind !== 'Skill') {
-    throw new Error(`Not a valid skill.ossa.yaml: kind must be "Skill", got "${parsed?.kind}"`);
+    throw new Error(
+      `Not a valid skill.ossa.yaml: kind must be "Skill", got "${parsed?.kind}"`
+    );
   }
   return parsed;
 }
@@ -190,7 +202,10 @@ export async function readSkillOssa(filePath: string): Promise<OssaSkill> {
 /**
  * Write an OssaSkill manifest to a YAML file
  */
-export async function writeSkillOssa(skill: OssaSkill, outputPath: string): Promise<void> {
+export async function writeSkillOssa(
+  skill: OssaSkill,
+  outputPath: string
+): Promise<void> {
   const content = YAML.stringify(skill, { lineWidth: 120 });
   await writeFile(outputPath, content, 'utf-8');
 }

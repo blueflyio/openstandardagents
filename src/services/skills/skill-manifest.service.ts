@@ -55,7 +55,11 @@ export class SkillManifestService {
 
   async list(directory: string): Promise<OssaSkill[]> {
     const dir = path.resolve(directory);
-    const patterns = ['**/*.skill.ossa.yaml', '**/*.skill.ossa.yml', '**/skill.ossa.yaml'];
+    const patterns = [
+      '**/*.skill.ossa.yaml',
+      '**/*.skill.ossa.yml',
+      '**/skill.ossa.yaml',
+    ];
     const files = await fg(patterns, {
       cwd: dir,
       ignore: ['**/node_modules/**', '**/dist/**'],

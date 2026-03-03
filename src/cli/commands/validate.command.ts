@@ -113,12 +113,7 @@ validateCommand.action(
       const m = result.manifest as OssaAgent;
       let versionCompliant: boolean | undefined;
       let requiredVersion: string | undefined;
-      if (
-        options.minApiVersion &&
-        !options.openapi &&
-        result.valid &&
-        m
-      ) {
+      if (options.minApiVersion && !options.openapi && result.valid && m) {
         const vc = checkVersionCompliance(
           typeof m.apiVersion === 'string' ? m.apiVersion : undefined,
           options.minApiVersion
@@ -360,7 +355,9 @@ async function validateForPlatform(
         throw new Error(result.errors?.join('; ') ?? 'Validation failed');
       }
       if (result.warnings?.length) {
-        console.log(chalk.yellow(`  ${platform}: ${result.warnings.length} warning(s)`));
+        console.log(
+          chalk.yellow(`  ${platform}: ${result.warnings.length} warning(s)`)
+        );
       } else {
         console.log(chalk.green(`  ${platform}: manifest valid`));
       }

@@ -48,14 +48,14 @@ export async function configureMemoryManagementStep(
       name: 'max_chars',
       message: 'Maximum memory chars before optimization (threshold):',
       default: 40000,
-      validate: (v: number) => (v >= 1000) || 'Must be at least 1000',
+      validate: (v: number) => v >= 1000 || 'Must be at least 1000',
     },
     {
       type: 'number',
       name: 'warn_chars',
       message: 'Warning threshold (chars):',
       default: 30000,
-      validate: (v: number) => (v >= 1000) || 'Must be at least 1000',
+      validate: (v: number) => v >= 1000 || 'Must be at least 1000',
     },
     {
       type: 'input',
@@ -66,7 +66,8 @@ export async function configureMemoryManagementStep(
     {
       type: 'confirm',
       name: 'path_scoping',
-      message: 'Enable path-scoped conditional loading (YAML frontmatter with paths)?',
+      message:
+        'Enable path-scoped conditional loading (YAML frontmatter with paths)?',
       default: true,
     },
     {
@@ -74,11 +75,31 @@ export async function configureMemoryManagementStep(
       name: 'domains',
       message: 'Select domain classifications for rule extraction:',
       choices: [
-        { name: 'Drupal (*.module, *.theme, drupal/**)', value: 'drupal', checked: false },
-        { name: 'OSSA (.agents/**, *.ossa.yaml)', value: 'ossa', checked: false },
-        { name: 'Infrastructure (k8s/**, docker/**, deployments/**)', value: 'infrastructure', checked: false },
-        { name: 'Security (cedar/**, policies/**)', value: 'security', checked: false },
-        { name: 'GitLab (.gitlab/**, .gitlab-ci.yml)', value: 'gitlab', checked: false },
+        {
+          name: 'Drupal (*.module, *.theme, drupal/**)',
+          value: 'drupal',
+          checked: false,
+        },
+        {
+          name: 'OSSA (.agents/**, *.ossa.yaml)',
+          value: 'ossa',
+          checked: false,
+        },
+        {
+          name: 'Infrastructure (k8s/**, docker/**, deployments/**)',
+          value: 'infrastructure',
+          checked: false,
+        },
+        {
+          name: 'Security (cedar/**, policies/**)',
+          value: 'security',
+          checked: false,
+        },
+        {
+          name: 'GitLab (.gitlab/**, .gitlab-ci.yml)',
+          value: 'gitlab',
+          checked: false,
+        },
         { name: 'MCP (mcp/**, *.mcp.json)', value: 'mcp', checked: false },
       ],
     },
@@ -120,9 +141,10 @@ export async function configureMemoryManagementStep(
     },
     auto_memory: {
       enabled: answers.auto_memory,
-      ...(answers.auto_memory && answers.auto_memory_max_lines && {
-        max_lines: answers.auto_memory_max_lines,
-      }),
+      ...(answers.auto_memory &&
+        answers.auto_memory_max_lines && {
+          max_lines: answers.auto_memory_max_lines,
+        }),
     },
     optimization: {
       auto_extract: answers.auto_extract,
@@ -153,7 +175,13 @@ function buildDomainClassifications(domains: string[]): DomainClassification[] {
   const domainMap: Record<string, DomainClassification> = {
     drupal: {
       domain: 'drupal',
-      paths: ['drupal/**', '*.module', '*.theme', '*.install', 'web/modules/**'],
+      paths: [
+        'drupal/**',
+        '*.module',
+        '*.theme',
+        '*.install',
+        'web/modules/**',
+      ],
       keywords: ['drupal', 'phpcs', 'drush', 'recipe', 'twig'],
     },
     ossa: {
@@ -163,7 +191,13 @@ function buildDomainClassifications(domains: string[]): DomainClassification[] {
     },
     infrastructure: {
       domain: 'infrastructure',
-      paths: ['k8s/**', 'docker/**', 'deployments/**', 'helm/**', 'terraform/**'],
+      paths: [
+        'k8s/**',
+        'docker/**',
+        'deployments/**',
+        'helm/**',
+        'terraform/**',
+      ],
       keywords: ['kubernetes', 'docker', 'helm', 'terraform', 'oracle', 'nas'],
     },
     security: {
@@ -183,7 +217,5 @@ function buildDomainClassifications(domains: string[]): DomainClassification[] {
     },
   };
 
-  return domains
-    .filter((d) => domainMap[d])
-    .map((d) => domainMap[d]);
+  return domains.filter((d) => domainMap[d]).map((d) => domainMap[d]);
 }

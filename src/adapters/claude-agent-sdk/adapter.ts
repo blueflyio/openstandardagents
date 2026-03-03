@@ -85,14 +85,20 @@ export class ClaudeAgentSdkAdapter extends BaseExporter {
     const files: ExportFile[] = [];
     const config = this.buildConfig(manifest);
 
-    const sdkOpts = (options?.platformOptions || {}) as ClaudeAgentSdkExportOptions;
-    const languages: SdkLanguage[] = sdkOpts.languages || ['typescript', 'python'];
+    const sdkOpts = (options?.platformOptions ||
+      {}) as ClaudeAgentSdkExportOptions;
+    const languages: SdkLanguage[] = sdkOpts.languages || [
+      'typescript',
+      'python',
+    ];
 
     // Generate for each target language
     for (const lang of languages) {
       switch (lang) {
         case 'typescript':
-          files.push(...this.generateTypeScriptProject(config, prefix, sdkOpts));
+          files.push(
+            ...this.generateTypeScriptProject(config, prefix, sdkOpts)
+          );
           break;
         case 'python':
           files.push(...this.generatePythonProject(config, prefix, sdkOpts));
@@ -159,8 +165,16 @@ export class ClaudeAgentSdkAdapter extends BaseExporter {
           model: 'claude-sonnet-4-20250514',
         } as any,
         tools: [
-          { type: 'function', name: 'web_search', description: 'Search the web for information' },
-          { type: 'function', name: 'read_file', description: 'Read a file from disk' },
+          {
+            type: 'function',
+            name: 'web_search',
+            description: 'Search the web for information',
+          },
+          {
+            type: 'function',
+            name: 'read_file',
+            description: 'Read a file from disk',
+          },
         ],
         capabilities: ['web-search', 'file-access', 'code-execution'] as any,
       },
@@ -176,7 +190,8 @@ export class ClaudeAgentSdkAdapter extends BaseExporter {
 
     return {
       name: meta.name || 'claude-agent',
-      description: meta.description || 'OSSA agent exported to Claude Agent SDK',
+      description:
+        meta.description || 'OSSA agent exported to Claude Agent SDK',
       systemPrompt: (spec.role as string) || 'You are a helpful AI assistant.',
       model: this.mapModel(llm),
       permissionMode: this.mapPermissionMode(manifest),
@@ -207,7 +222,9 @@ export class ClaudeAgentSdkAdapter extends BaseExporter {
   }
 
   private mapPermissionMode(manifest: OssaAgent): PermissionMode {
-    const autonomy = manifest.spec?.autonomy as Record<string, unknown> | undefined;
+    const autonomy = manifest.spec?.autonomy as
+      | Record<string, unknown>
+      | undefined;
     if (!autonomy) return 'default';
 
     const level = (autonomy.level as string) || '';
@@ -228,10 +245,10 @@ export class ClaudeAgentSdkAdapter extends BaseExporter {
       'file-read': ['Read', 'Glob', 'Grep'],
       'file-write': ['Read', 'Write', 'Edit'],
       'code-execution': ['Bash'],
-      'shell': ['Bash'],
-      'bash': ['Bash'],
+      shell: ['Bash'],
+      bash: ['Bash'],
       'code-analysis': ['Read', 'Glob', 'Grep'],
-      'explore': ['Read', 'Glob', 'Grep'],
+      explore: ['Read', 'Glob', 'Grep'],
     };
 
     for (const cap of capabilities) {
@@ -246,7 +263,9 @@ export class ClaudeAgentSdkAdapter extends BaseExporter {
     return tools;
   }
 
-  private mapMcpServers(manifest: OssaAgent): Record<string, SdkMcpServerConfig> {
+  private mapMcpServers(
+    manifest: OssaAgent
+  ): Record<string, SdkMcpServerConfig> {
     const servers: Record<string, SdkMcpServerConfig> = {};
     const ossaTools = this.getTools(manifest);
 
@@ -266,10 +285,14 @@ export class ClaudeAgentSdkAdapter extends BaseExporter {
     }
 
     // Also check extensions.mcp
-    const extensions = (manifest as Record<string, unknown>).extensions as Record<string, unknown> | undefined;
+    const extensions = (manifest as Record<string, unknown>).extensions as
+      | Record<string, unknown>
+      | undefined;
     const mcpExt = extensions?.mcp as Record<string, unknown> | undefined;
     if (mcpExt?.servers && typeof mcpExt.servers === 'object') {
-      for (const [name, config] of Object.entries(mcpExt.servers as Record<string, unknown>)) {
+      for (const [name, config] of Object.entries(
+        mcpExt.servers as Record<string, unknown>
+      )) {
         if (!servers[name] && config && typeof config === 'object') {
           const cfg = config as Record<string, unknown>;
           servers[name] = {
@@ -296,7 +319,9 @@ export class ClaudeAgentSdkAdapter extends BaseExporter {
         const name = String(member.name || member.role || 'agent');
         agents[name] = {
           name,
-          description: String(member.description || member.goal || `Sub-agent: ${name}`),
+          description: String(
+            member.description || member.goal || `Sub-agent: ${name}`
+          ),
           systemPrompt: String(member.role || member.backstory || ''),
           tools: member.tools ? (member.tools as string[]) : undefined,
         };
@@ -318,10 +343,12 @@ export class ClaudeAgentSdkAdapter extends BaseExporter {
       tools.push({
         name,
         description: String(tool.description || `Tool: ${name}`),
-        inputSchema: (tool.inputSchema || tool.input_schema || tool.parameters || {
-          type: 'object',
-          properties: {},
-        }) as Record<string, unknown>,
+        inputSchema: (tool.inputSchema ||
+          tool.input_schema ||
+          tool.parameters || {
+            type: 'object',
+            properties: {},
+          }) as Record<string, unknown>,
       });
     }
 
@@ -436,7 +463,8 @@ export class ClaudeAgentSdkAdapter extends BaseExporter {
     config: ClaudeAgentSdkConfig,
     opts: ClaudeAgentSdkExportOptions
   ): string {
-    const hasTools = config.customTools.length > 0 && opts.includeCustomTools !== false;
+    const hasTools =
+      config.customTools.length > 0 && opts.includeCustomTools !== false;
 
     let imports = `import { query } from '@anthropic-ai/claude-agent-sdk';
 import { agentOptions } from './config.js';`;
@@ -546,9 +574,10 @@ export const agentOptions: Options = {
         const params = Object.keys(
           (tool.inputSchema as Record<string, unknown>).properties || {}
         );
-        const paramStr = params.length > 0
-          ? `{ ${params.join(', ')} }: { ${params.map((p) => `${p}: unknown`).join('; ')} }`
-          : '';
+        const paramStr =
+          params.length > 0
+            ? `{ ${params.join(', ')} }: { ${params.map((p) => `${p}: unknown`).join('; ')} }`
+            : '';
         return `
 server.tool(
   '${tool.name}',
@@ -633,7 +662,8 @@ export { server as mcpServer };
     config: ClaudeAgentSdkConfig,
     opts: ClaudeAgentSdkExportOptions
   ): string {
-    const hasTools = config.customTools.length > 0 && opts.includeCustomTools !== false;
+    const hasTools =
+      config.customTools.length > 0 && opts.includeCustomTools !== false;
 
     const lines = [
       '"""',
@@ -660,7 +690,7 @@ export { server as mcpServer };
       '    prompt = " ".join(sys.argv[1:]) or "Hello! What can you help me with?"',
       '    print(f"\\n> {prompt}\\n")',
       '',
-      '    options = agent_options',
+      '    options = agent_options'
     );
 
     if (hasTools) {
@@ -670,7 +700,7 @@ export { server as mcpServer };
         '    options.mcp_servers = {',
         '        **(options.mcp_servers or {}),',
         '        "custom-tools": mcp_server,',
-        '    }',
+        '    }'
       );
     }
 
@@ -689,7 +719,7 @@ export { server as mcpServer };
       '',
       'if __name__ == "__main__":',
       '    asyncio.run(main())',
-      '',
+      ''
     );
 
     return lines.join('\n');
@@ -742,7 +772,8 @@ agent_options = ClaudeAgentOptions(
         const params = Object.keys(
           (tool.inputSchema as Record<string, unknown>).properties || {}
         );
-        const paramStr = params.length > 0 ? params.map((p) => `${p}: str`).join(', ') : '';
+        const paramStr =
+          params.length > 0 ? params.map((p) => `${p}: str`).join(', ') : '';
         return `
 @tool(
     name="${tool.name}",

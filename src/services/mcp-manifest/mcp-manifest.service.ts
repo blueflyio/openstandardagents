@@ -33,7 +33,10 @@ export class MCPManifestService {
         description: input.description || `MCP Server: ${input.name}`,
       },
       spec: {
-        transport: (input.transport || 'stdio') as 'stdio' | 'sse' | 'streamable-http',
+        transport: (input.transport || 'stdio') as
+          | 'stdio'
+          | 'sse'
+          | 'streamable-http',
         tools: [] as Array<Record<string, unknown>>,
         resources: [] as Array<Record<string, unknown>>,
       },
@@ -53,7 +56,11 @@ export class MCPManifestService {
 
   async list(directory: string): Promise<OssaMCPServer[]> {
     const dir = path.resolve(directory);
-    const patterns = ['**/*.mcp.ossa.yaml', '**/*.mcp.ossa.yml', '**/mcp.ossa.yaml'];
+    const patterns = [
+      '**/*.mcp.ossa.yaml',
+      '**/*.mcp.ossa.yml',
+      '**/mcp.ossa.yaml',
+    ];
     const files = await fg(patterns, {
       cwd: dir,
       ignore: ['**/node_modules/**', '**/dist/**'],

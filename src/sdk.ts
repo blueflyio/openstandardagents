@@ -53,10 +53,16 @@ let _validator: ValidatorClass | null = null;
 /**
  * Load manifest from file path (YAML or JSON). Does not validate; call validateManifest after if needed.
  */
-export function loadManifestFromFile(filePath: string): Record<string, unknown> {
+export function loadManifestFromFile(
+  filePath: string
+): Record<string, unknown> {
   const content = readFileSync(filePath, 'utf-8');
   const isYaml = filePath.endsWith('.yaml') || filePath.endsWith('.yml');
-  return (isYaml ? safeParseYAML<Record<string, unknown>>(content) : JSON.parse(content)) as Record<string, unknown>;
+  return (
+    isYaml
+      ? safeParseYAML<Record<string, unknown>>(content)
+      : JSON.parse(content)
+  ) as Record<string, unknown>;
 }
 
 /**
@@ -66,16 +72,20 @@ export function loadManifestFromString(
   content: string,
   format: 'yaml' | 'json' = 'yaml'
 ): Record<string, unknown> {
-  return (format === 'yaml'
-    ? safeParseYAML<Record<string, unknown>>(content)
-    : JSON.parse(content)) as Record<string, unknown>;
+  return (
+    format === 'yaml'
+      ? safeParseYAML<Record<string, unknown>>(content)
+      : JSON.parse(content)
+  ) as Record<string, unknown>;
 }
 
 /**
  * Validate an OSSA manifest (sync, schema + separation-of-duties).
  * Uses default v0.4 schema from package dist. For custom schema use OSSAValidator directly.
  */
-export function validateManifest(manifest: Record<string, unknown>): import('./validation/validator.js').ValidationResult {
+export function validateManifest(
+  manifest: Record<string, unknown>
+): import('./validation/validator.js').ValidationResult {
   if (!_validator) _validator = new ValidatorClass(_defaultSchemaPath);
   return _validator.validate(manifest);
 }

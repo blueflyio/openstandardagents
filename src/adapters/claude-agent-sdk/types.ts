@@ -19,7 +19,11 @@ export type SdkLanguage = 'typescript' | 'python' | 'go' | 'rust';
 /**
  * Claude Agent SDK permission mode
  */
-export type PermissionMode = 'default' | 'acceptEdits' | 'bypassPermissions' | 'planMode';
+export type PermissionMode =
+  | 'default'
+  | 'acceptEdits'
+  | 'bypassPermissions'
+  | 'planMode';
 
 /**
  * Claude Agent SDK model identifiers

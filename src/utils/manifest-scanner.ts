@@ -56,11 +56,7 @@ const AGENTS_DIR_RECURSIVE = '**/.agents/*/manifest.ossa.yaml';
 const AGENTS_DIR_NON_RECURSIVE = '.agents/*/manifest.ossa.yaml';
 
 /** Directories to ignore during scanning */
-const DEFAULT_IGNORE = [
-  '**/node_modules/**',
-  '**/dist/**',
-  '**/.git/**',
-];
+const DEFAULT_IGNORE = ['**/node_modules/**', '**/dist/**', '**/.git/**'];
 
 // ============================================================================
 // Main Scan Function
@@ -74,7 +70,7 @@ const DEFAULT_IGNORE = [
  */
 export async function scanManifests(
   directory: string,
-  options?: ManifestScanOptions,
+  options?: ManifestScanOptions
 ): Promise<ManifestScanResult[]> {
   const {
     recursive = true,

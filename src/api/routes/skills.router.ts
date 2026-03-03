@@ -25,14 +25,18 @@ export function skillsRouter(): Router {
       const dir = (req.query.directory as string) || '.';
       const skills = await service.list(dir);
       res.json({ count: skills.length, skills });
-    } catch (err) { next(err); }
+    } catch (err) {
+      next(err);
+    }
   });
 
   router.post('/', validateBody(CreateSkillSchema), async (req, res, next) => {
     try {
       const skill = await service.create(req.body);
       res.status(201).json(skill);
-    } catch (err) { next(err); }
+    } catch (err) {
+      next(err);
+    }
   });
 
   router.post('/validate', async (req, res, next) => {
@@ -43,7 +47,9 @@ export function skillsRouter(): Router {
         errors: result.errors || [],
         warnings: result.warnings || [],
       });
-    } catch (err) { next(err); }
+    } catch (err) {
+      next(err);
+    }
   });
 
   return router;

@@ -447,7 +447,10 @@ export class AWSDeploymentDriver extends BaseDeploymentDriver {
     }
 
     const previousVersion = instance.version;
-    this.awsInstances.set(instanceId, { ...instance, version: options.targetVersion || previousVersion });
+    this.awsInstances.set(instanceId, {
+      ...instance,
+      version: options.targetVersion || previousVersion,
+    });
     return {
       success: true,
       message: `Rollback completed for ${instanceId}`,

@@ -5,20 +5,38 @@
 
 import chalk from 'chalk';
 import { Command } from 'commander';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 import { z } from 'zod';
+import { getSkillsPathDefault } from '../../config/cli-config.js';
 import { container } from '../../di-container.js';
 import { ManifestRepository } from '../../repositories/manifest.repository.js';
-import { ClaudeSkillsService } from '../../services/skills/claude-skills.service.js';
 import {
-  SkillsResearchService,
-  SkillsGeneratorService,
-  SkillsExportService,
-  SkillsInstallService,
+    SkillsExportService,
+    SkillsGeneratorService,
+    SkillsInstallService,
+    SkillsResearchService,
 } from '../../services/skills-pipeline/index.js';
-import { getSkillsPathDefault } from '../../config/cli-config.js';
+import { ClaudeSkillsService } from '../../services/skills/claude-skills.service.js';
 
 const AgentPathSchema = z.string().min(1);
 const SkillPathSchema = z.string().min(1);
+
+/** Parse skills.sh URL into GitHub repo URL + skill name. e.g. https://skills.sh/sparkfabrik/sf-awesome-copilot/drupal-cache-maxage -> { repoUrl, skill } */
+function parseSkillsShUrl(
+  input: string
+): { repoUrl: string; skill: string } | null {
+  const trimmed = input
+    .trim()
+    .replace(/^https:\/\/skills\.sh\/?/i, '')
+    .replace(/\/$/, '');
+  if (trimmed === input.trim()) return null;
+  const parts = trimmed.split('/').filter(Boolean);
+  if (parts.length < 2) return null;
+  const repoUrl = `https://github.com/${parts[0]}/${parts[1]}`;
+  const skill = parts.length >= 3 ? parts[2] : parts[1];
+  return { repoUrl, skill };
+}
 
 /**
  * Skills Command Group
@@ -32,19 +50,41 @@ export const skillsCommandGroup = new Command('skills').description(
  */
 skillsCommandGroup
   .command('list')
-  .option('--path <path>', 'Custom skills directory path')
+  .option('--path <path>', 'Custom skills directory path (or set SKILLS_PATH)')
+  .option('--json', 'Output as JSON for API/UI consumption')
   .description('List all discovered Claude Skills')
-  .action(async (options: { path?: string }) => {
+  .action(async (options: { path?: string; json?: boolean }) => {
     try {
       const skillsService = container.get(ClaudeSkillsService);
-      const skills = await skillsService.discoverSkills();
+      const basePath = options.path || process.env.SKILLS_PATH;
+      const skills = await skillsService.discoverSkills(basePath);
 
       if (skills.length === 0) {
+        if (options.json) {
+          console.log(JSON.stringify({ skills: [], count: 0 }));
+          return;
+        }
         console.log(chalk.yellow('No Claude Skills found'));
         console.log(
           chalk.gray(
-            '  Skills are typically located in ~/.claude/skills/ or .claude/skills/'
+            '  Skills are typically located in ~/.claude/skills/ or set SKILLS_PATH'
           )
+        );
+        return;
+      }
+
+      if (options.json) {
+        console.log(
+          JSON.stringify({
+            skills: skills.map((s) => ({
+              name: s.name,
+              description: s.description,
+              path: s.path,
+              skillPath: s.skillPath,
+              triggerKeywords: s.triggerKeywords,
+            })),
+            count: skills.length,
+          })
         );
         return;
       }
@@ -63,7 +103,7 @@ skillsCommandGroup
         console.log('');
       });
     } catch (error) {
-      console.error(chalk.red('✗ Failed to list skills'));
+      console.error(chalk.red('Failed to list skills'));
       console.error(error instanceof Error ? error.message : String(error));
       process.exit(1);
     }
@@ -187,12 +227,18 @@ skillsCommandGroup
 
 /**
  * Add Command
- * Install a skill from a GitHub repo into a target directory (AgentSkills / Claude Skill format).
- * Example: ossa skills add https://github.com/sparkfabrik/sf-awesome-copilot --skill drupal-cache-maxage --path /Volumes/AgentPlatform/services/marketplace/skills
+ * Install a skill from a GitHub repo or from skills.sh URL into a target directory (AgentSkills / Claude Skill format).
+ * Examples:
+ *   ossa skills add https://github.com/sparkfabrik/sf-awesome-copilot --skill drupal-cache-maxage --path /Volumes/AgentPlatform/services/marketplace/skills
+ *   ossa skills add https://skills.sh/sparkfabrik/sf-awesome-copilot/drupal-cache-maxage --path /Volumes/AgentPlatform/services/marketplace/skills
  */
 skillsCommandGroup
   .command('add <repo-url>')
-  .option('--skill <name>', 'Skill name (subdir in repo, e.g. drupal-cache-maxage)', '')
+  .option(
+    '--skill <name>',
+    'Skill name (subdir in repo, e.g. drupal-cache-maxage). Not needed when repo-url is a skills.sh URL.',
+    ''
+  )
   .option(
     '--path <dir>',
     'Target directory to install into (default: config SKILLS_PATH or ~/.claude/skills)',
@@ -200,7 +246,9 @@ skillsCommandGroup
   )
   .option('--ref <ref>', 'Git ref (branch/tag/sha)', 'HEAD')
   .option('--dry-run', 'Show what would be installed without writing', false)
-  .description('Install a Claude Skill from a GitHub repo')
+  .description(
+    'Install a Claude Skill from a GitHub repo or from skills.sh URL'
+  )
   .action(
     async (
       repoUrl: string,
@@ -210,27 +258,62 @@ skillsCommandGroup
         const installService = container.get(SkillsInstallService);
         const targetPath = options.path || getSkillsPathDefault();
 
-        if (!options.skill) {
-          const list = await installService.listInRepo(repoUrl, options.ref);
+        let resolvedRepoUrl = repoUrl;
+        let resolvedSkill = options.skill ?? '';
+
+        const skillsSh = parseSkillsShUrl(repoUrl);
+        if (skillsSh) {
+          resolvedRepoUrl = skillsSh.repoUrl;
+          resolvedSkill = skillsSh.skill;
+        }
+
+        if (!resolvedSkill) {
+          const list = await installService.listInRepo(
+            resolvedRepoUrl,
+            options.ref
+          );
           if (list.length === 0) {
-            console.log(chalk.yellow('No skills found in repo. Use --skill <name> to install one.'));
-            console.log(chalk.gray('  Example: ossa skills add <repo-url> --skill <skill-name>'));
+            console.log(
+              chalk.yellow(
+                'No skills found in repo. Use --skill <name> or a skills.sh URL.'
+              )
+            );
+            console.log(
+              chalk.gray(
+                '  Example: ossa skills add <repo-url> --skill <skill-name>'
+              )
+            );
+            console.log(
+              chalk.gray(
+                '  Example: ossa skills add https://skills.sh/owner/repo/skill-name'
+              )
+            );
             return;
           }
-          console.log(chalk.blue(`Skills in ${repoUrl}:`));
-          list.forEach((s) => console.log(chalk.gray(`  - ${s.name} (${s.path})`)));
-          console.log(chalk.gray(`\nInstall with: ossa skills add ${repoUrl} --skill <name> --path ${targetPath}`));
+          console.log(chalk.blue(`Skills in ${resolvedRepoUrl}:`));
+          list.forEach((s) =>
+            console.log(chalk.gray(`  - ${s.name} (${s.path})`))
+          );
+          console.log(
+            chalk.gray(
+              `\nInstall with: ossa skills add ${resolvedRepoUrl} --skill <name> --path ${targetPath}`
+            )
+          );
           return;
         }
 
         if (options.dryRun) {
-          console.log(chalk.blue(`Would install skill "${options.skill}" from ${repoUrl} to ${targetPath}`));
+          console.log(
+            chalk.blue(
+              `Would install skill "${resolvedSkill}" from ${resolvedRepoUrl} to ${targetPath}`
+            )
+          );
           return;
         }
 
         const result = await installService.install({
-          repoUrl,
-          skill: options.skill,
+          repoUrl: resolvedRepoUrl,
+          skill: resolvedSkill,
           path: targetPath,
           ref: options.ref,
         });
@@ -246,10 +329,126 @@ skillsCommandGroup
         console.log(chalk.green('✓ ' + result.message));
         if (result.installedPath) {
           console.log(chalk.gray(`  Path: ${result.installedPath}`));
-          console.log(chalk.gray('  Validate: ossa skills validate ' + result.installedPath + '/SKILL.md'));
+          console.log(
+            chalk.gray(
+              '  Validate: ossa skills validate ' +
+                result.installedPath +
+                '/SKILL.md'
+            )
+          );
         }
       } catch (error) {
         console.error(chalk.red('✗ Add failed'));
+        console.error(error instanceof Error ? error.message : String(error));
+        process.exit(1);
+      }
+    }
+  );
+
+/**
+ * Create Command
+ * Create a new skill from scratch (AgentSkills.io-compatible SKILL.md).
+ * Optionally push to agent-protocol Skills API when SKILLS_API_URL is set and --push-api.
+ */
+skillsCommandGroup
+  .command('create <name>')
+  .option('--description <text>', 'Short description for the skill', '')
+  .option(
+    '--instructions <text>',
+    'Instruction body (prompt) for the skill',
+    ''
+  )
+  .option(
+    '--instructions-file <path>',
+    'Path to file containing instructions (overrides --instructions)',
+    ''
+  )
+  .option(
+    '--path <dir>',
+    'Output directory for the skill folder',
+    process.env.SKILLS_PATH ||
+      (process.env.HOME
+        ? `${process.env.HOME}/.claude/skills`
+        : '.claude/skills')
+  )
+  .option('--push-api', 'POST to Skills API (requires SKILLS_API_URL)', false)
+  .option('--dry-run', 'Print SKILL.md content without writing', false)
+  .description('Create a new AgentSkills.io-compatible skill (SKILL.md)')
+  .action(
+    async (
+      name: string,
+      options: {
+        description?: string;
+        instructions?: string;
+        instructionsFile?: string;
+        path?: string;
+        pushApi?: boolean;
+        dryRun?: boolean;
+      }
+    ) => {
+      try {
+        const fsp = await import('fs/promises');
+        const pathMod = await import('path');
+        const skillName =
+          name
+            .replace(/[^a-z0-9-]/gi, '-')
+            .toLowerCase()
+            .replace(/^-+|-+$/g, '') || 'skill';
+        const instructions = options.instructionsFile
+          ? await fsp.readFile(
+              pathMod.resolve(options.instructionsFile),
+              'utf-8'
+            )
+          : options.instructions ||
+            `You are a ${skillName} skill. Add instructions here.`;
+        const description = options.description || `Skill: ${skillName}`;
+        const frontmatter = `---
+name: ${skillName}
+description: ${description}
+---
+`;
+        const content = frontmatter + instructions.trim() + '\n';
+        const outDir = pathMod.resolve(options.path!, skillName);
+        const skillMdPath = pathMod.join(outDir, 'SKILL.md');
+
+        if (options.dryRun) {
+          console.log(chalk.blue('SKILL.md content (dry-run):\n'));
+          console.log(content);
+          return;
+        }
+
+        await fsp.mkdir(outDir, { recursive: true });
+        await fsp.writeFile(skillMdPath, content, 'utf-8');
+        console.log(chalk.green(`Skill created: ${skillMdPath}`));
+        console.log(
+          chalk.gray(`  Validate: ossa skills validate ${skillMdPath}`)
+        );
+
+        if (options.pushApi && process.env.SKILLS_API_URL) {
+          const base = process.env.SKILLS_API_URL.replace(/\/$/, '');
+          const url = `${base}/`;
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: skillName, content }),
+          });
+          if (!res.ok) {
+            const err = await res.text();
+            console.error(
+              chalk.yellow(`Push to API failed (${res.status}): ${err}`)
+            );
+            return;
+          }
+          console.log(chalk.green(`Pushed to ${base}`));
+        } else if (options.pushApi && !process.env.SKILLS_API_URL) {
+          console.log(
+            chalk.yellow(
+              'SKILLS_API_URL not set; skip push. Set it to agent-protocol /api/skills base.'
+            )
+          );
+        }
+      } catch (error) {
+        console.error(chalk.red('Create failed'));
         console.error(error instanceof Error ? error.message : String(error));
         process.exit(1);
       }
@@ -273,10 +472,182 @@ skillsCommandGroup
         return;
       }
       console.log(chalk.green(`Skills in ${repoUrl}:\n`));
-      list.forEach((s) => console.log(`  ${chalk.bold(s.name)}  ${chalk.gray(s.path)}`));
-      console.log(chalk.gray(`\nInstall: ossa skills add ${repoUrl} --skill <name> [--path <dir>]`));
+      list.forEach((s) =>
+        console.log(`  ${chalk.bold(s.name)}  ${chalk.gray(s.path)}`)
+      );
+      console.log(
+        chalk.gray(
+          `\nInstall: ossa skills add ${repoUrl} --skill <name> [--path <dir>]`
+        )
+      );
     } catch (error) {
-      console.error(chalk.red('✗ List-remote failed'));
+      console.error(chalk.red('List-remote failed'));
+      console.error(error instanceof Error ? error.message : String(error));
+      process.exit(1);
+    }
+  });
+
+/**
+ * Catalog Command
+ * List skills from the Bluefly marketplace catalog (marketplace-skills-catalog.json).
+ */
+skillsCommandGroup
+  .command('catalog')
+  .option(
+    '--catalog <path>',
+    'Path to catalog JSON (default: BLUEFLY_SKILLS_CATALOG env)'
+  )
+  .option('--json', 'Output as JSON')
+  .description('List skills from the marketplace catalog')
+  .action(async (options: { catalog?: string; json?: boolean }) => {
+    try {
+      const catalogPath =
+        options.catalog || process.env.BLUEFLY_SKILLS_CATALOG || '';
+      if (!catalogPath) {
+        console.log(
+          chalk.yellow(
+            'Set BLUEFLY_SKILLS_CATALOG to path to marketplace-skills-catalog.json, or use --catalog <path>'
+          )
+        );
+        if (options.json) console.log(JSON.stringify({ skills: [], count: 0 }));
+        return;
+      }
+      const resolved = path.resolve(catalogPath);
+      const raw = await fs.readFile(resolved, 'utf-8');
+      const data = JSON.parse(raw) as {
+        skillsPath?: string;
+        skills?: Array<{ repo?: string; url?: string; skill?: string }>;
+      };
+      const entries = data.skills || [];
+      const list = entries.map((e, i) => {
+        const repo =
+          e.repo || (e.url ? parseSkillsShUrl(e.url)?.repoUrl : '') || '';
+        const skill =
+          e.skill || (e.url ? parseSkillsShUrl(e.url)?.skill : '') || '';
+        const addTarget = e.url || repo;
+        const install = skill
+          ? `ossa skills add ${addTarget} --skill ${skill} --path <dir>`
+          : `ossa skills add ${addTarget} --path <dir>`;
+        return { index: i + 1, repo, skill, url: e.url, install };
+      });
+
+      if (options.json) {
+        console.log(
+          JSON.stringify({
+            skillsPath: data.skillsPath,
+            skills: list,
+            count: list.length,
+          })
+        );
+        return;
+      }
+      console.log(chalk.green(`\nCatalog (${list.length} entries):\n`));
+      list.forEach((e) => {
+        console.log(chalk.bold(`${e.index}. ${e.skill || e.repo}`));
+        if (e.repo) console.log(chalk.gray(`   Repo: ${e.repo}`));
+        if (e.url) console.log(chalk.gray(`   URL: ${e.url}`));
+        console.log(chalk.gray(`   Install: ${e.install}\n`));
+      });
+    } catch (error) {
+      console.error(chalk.red('Catalog failed'));
+      console.error(error instanceof Error ? error.message : String(error));
+      process.exit(1);
+    }
+  });
+
+/**
+ * Show Command
+ * Show full SKILL.md content and metadata for a skill by name.
+ */
+skillsCommandGroup
+  .command('show <name>')
+  .option(
+    '--path <dir>',
+    'Skills directory (default: SKILLS_PATH or ~/.claude/skills)'
+  )
+  .option('--json', 'Output metadata as JSON (content in .content)')
+  .description('Show skill details and full content')
+  .action(async (name: string, options: { path?: string; json?: boolean }) => {
+    try {
+      const basePath =
+        options.path ||
+        process.env.SKILLS_PATH ||
+        (process.env.HOME
+          ? path.join(process.env.HOME, '.claude', 'skills')
+          : '.claude/skills');
+      const skillsService = container.get(ClaudeSkillsService);
+      const result = await skillsService.getSkillContentByName(name, basePath);
+
+      if (options.json) {
+        console.log(
+          JSON.stringify({
+            name: result.name,
+            path: result.path,
+            content: result.content,
+          })
+        );
+        return;
+      }
+      console.log(chalk.green(`\nSkill: ${result.name}\n`));
+      console.log(chalk.gray(`Path: ${result.path}\n`));
+      console.log('---');
+      console.log(result.content);
+      console.log('---');
+    } catch (error) {
+      console.error(chalk.red('Show failed'));
+      console.error(error instanceof Error ? error.message : String(error));
+      process.exit(1);
+    }
+  });
+
+/**
+ * Attach Command
+ * Add a skill reference to an OSSA manifest (extensions.skills.skillRefs).
+ */
+skillsCommandGroup
+  .command('attach <skill-name>')
+  .requiredOption('--manifest <path>', 'Path to OSSA manifest file')
+  .description('Add skill to manifest extensions.skills.skillRefs')
+  .action(async (skillName: string, options: { manifest: string }) => {
+    try {
+      const manifestPath = AgentPathSchema.parse(options.manifest);
+      const manifestRepo = container.get(ManifestRepository);
+      const manifest = await manifestRepo.load(manifestPath);
+
+      const ext = (manifest as Record<string, unknown>).extensions as
+        | Record<string, unknown>
+        | undefined;
+      const skillsExt = (ext?.skills as Record<string, unknown>) || {};
+      const refs = Array.isArray(skillsExt.skillRefs)
+        ? [...(skillsExt.skillRefs as string[])]
+        : [];
+      if (refs.includes(skillName)) {
+        console.log(chalk.yellow(`Skill "${skillName}" already attached.`));
+        return;
+      }
+      refs.push(skillName);
+      if (!(manifest as Record<string, unknown>).extensions) {
+        (manifest as Record<string, unknown>).extensions = {};
+      }
+      (
+        (manifest as Record<string, unknown>).extensions as Record<
+          string,
+          unknown
+        >
+      ).skills = {
+        ...skillsExt,
+        skillRefs: refs,
+      };
+
+      await manifestRepo.save(manifestPath, manifest);
+      console.log(
+        chalk.green(`Attached skill "${skillName}" to ${manifestPath}`)
+      );
+      console.log(
+        chalk.gray(`  extensions.skills.skillRefs: [${refs.join(', ')}]`)
+      );
+    } catch (error) {
+      console.error(chalk.red('Attach failed'));
       console.error(error instanceof Error ? error.message : String(error));
       process.exit(1);
     }

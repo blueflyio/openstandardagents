@@ -90,10 +90,13 @@ export class LangflowPlatformAdapter extends BaseAdapter {
     const specAny = manifest.spec as Record<string, unknown> | undefined;
     const hasPrompt =
       manifest.spec?.role ||
-      (specAny?.prompts && typeof specAny.prompts === 'object' && (specAny.prompts as Record<string, unknown>)?.system);
+      (specAny?.prompts &&
+        typeof specAny.prompts === 'object' &&
+        (specAny.prompts as Record<string, unknown>)?.system);
     if (!hasPrompt) {
       warnings.push({
-        message: 'spec.role or spec.prompts.system.template recommended for LangFlow prompt node',
+        message:
+          'spec.role or spec.prompts.system.template recommended for LangFlow prompt node',
         path: 'spec.role',
         suggestion: 'Add a system prompt for the agent',
         code: 'LANGFLOW_PROMPT_RECOMMENDED',

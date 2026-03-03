@@ -43,7 +43,8 @@ export async function configureDrupalToolsEcaStep(
     {
       type: 'input',
       name: 'ecaEvents',
-      message: 'ECA trigger events (comma-separated, default: entity:node:presave):',
+      message:
+        'ECA trigger events (comma-separated, default: entity:node:presave):',
       default: 'entity:node:presave',
     },
   ]);

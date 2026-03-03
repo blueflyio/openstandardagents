@@ -439,7 +439,9 @@ export class AgentsMdService {
           }, 300);
         }
       );
-      watcher.on('error', (err: Error) => console.error('AgentsMd watcher error:', err));
+      watcher.on('error', (err: Error) =>
+        console.error('AgentsMd watcher error:', err)
+      );
     }
   }
 }

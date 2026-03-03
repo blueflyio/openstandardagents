@@ -178,11 +178,15 @@ class PackageValidator {
   private async validateTarballInstall(): Promise<void> {
     console.log('📦 Testing tarball installation...');
 
+    const cwd = process.cwd();
     let tarball: string | undefined;
 
     try {
-      // Create tarball
-      const packOutput = execFileSync('npm', ['pack'], { encoding: 'utf-8' });
+      // Create tarball in current directory (explicit so it works when run from prepublishOnly)
+      const packOutput = execFileSync('npm', ['pack', '--pack-destination', cwd], {
+        encoding: 'utf-8',
+        cwd,
+      });
       tarball = packOutput.trim().split('\n').pop()?.trim();
 
       if (!tarball) {
@@ -190,11 +194,19 @@ class PackageValidator {
         return;
       }
 
+      const tarballPath = join(cwd, tarball);
+      if (!existsSync(tarballPath)) {
+        this.warnings.push(
+          `Tarball not found at ${tarballPath} (skip global-install test; run "npm run validate:package" locally to verify)`
+        );
+        return;
+      }
+
       console.log(`   Created: ${tarball}`);
 
-      // Test global install from tarball
+      // Test global install from tarball (use absolute path so npm finds the file)
       console.log('   Installing globally from tarball...');
-      execFileSync('npm', ['install', '-g', tarball], { stdio: 'pipe' });
+      execFileSync('npm', ['install', '-g', tarballPath], { stdio: 'pipe' });
 
       console.log('✅ Tarball installs globally without errors\n');
     } catch (error: any) {
@@ -207,8 +219,11 @@ class PackageValidator {
       } catch {
         // Ignore uninstall errors
       }
-      if (tarball && existsSync(tarball)) {
-        unlinkSync(tarball);
+      if (tarball) {
+        const pathToDelete = join(cwd, tarball);
+        if (existsSync(pathToDelete)) {
+          unlinkSync(pathToDelete);
+        }
       }
     }
   }

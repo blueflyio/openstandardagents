@@ -1,6 +1,8 @@
 apiVersion: ossa/v0.4.1
 kind: Agent
 metadata:
+  uuid: d1db376d-0307-4674-99ad-c524bdcccb79
+  machine_name: test_suite_generator
   name: test-suite-generator
   version: 1.0.0
   description: Generate comprehensive test suites for OSSA agents

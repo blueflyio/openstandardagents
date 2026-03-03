@@ -46,7 +46,7 @@ export const exportCommand = new Command('export')
   .argument('[manifest]', 'Path to OSSA agent manifest')
   .option(
     '-p, --platform <platform>',
-    'Target platform (kagent, langchain, langflow, crewai, symfony, temporal, n8n, gitlab, gitlab-agent, docker, kubernetes, npm, drupal, agent-skills)'
+    'Target platform (kagent, langchain, langflow, crewai, symfony, temporal, n8n, gitlab, gitlab-agent, docker, kubernetes, npm, drupal, orchestration, agent-skills)'
   )
   .option('-o, --output <file>', 'Output file path')
   .option('--format <format>', 'Output format (yaml, json, python)', 'yaml')
@@ -74,6 +74,14 @@ export const exportCommand = new Command('export')
   .option(
     '--list-platforms',
     'Show all supported export platforms and their status'
+  )
+  .option(
+    '--save-to-gitlab',
+    'Trigger openstandard-generated-agents GitLab pipeline to build and persist this agent'
+  )
+  .option(
+    '--gitlab-project <path>',
+    'GitLab project path or ID for generated agents (default: blueflyio/ossa/lab/openstandard-generated-agents)'
   );
 
 // Add production-grade standard options
@@ -111,9 +119,125 @@ exportCommand.action(
       backupDir?: string;
       validate?: boolean;
       listPlatforms?: boolean;
+      saveToGitlab?: boolean;
+      gitlabProject?: string;
     }
   ) => {
     const useColor = shouldUseColor(options);
+
+    // Handle --save-to-gitlab (trigger openstandard-generated-agents pipeline)
+    if (options.saveToGitlab) {
+      if (!manifestPath) {
+        console.error(
+          useColor
+            ? chalk.red('Error: manifest path is required for --save-to-gitlab')
+            : 'Error: manifest path is required for --save-to-gitlab'
+        );
+        process.exit(1);
+      }
+      const token =
+        process.env.EXPORT_TRIGGER_TOKEN ||
+        process.env.GITLAB_TOKEN ||
+        process.env.GITLAB_TOKEN_PAT;
+      const projectParam =
+        options.gitlabProject ||
+        process.env.EXPORT_GITLAB_PROJECT_PATH ||
+        process.env.EXPORT_GITLAB_PROJECT_ID ||
+        'blueflyio%2Fossa%2Flab%2Fopenstandard-generated-agents';
+      const ref = process.env.EXPORT_REF || 'main';
+      const platform = options.platform || 'docker';
+      const platforms = process.env.EXPORT_PLATFORMS;
+
+      if (!token) {
+        console.error(
+          useColor
+            ? chalk.red(
+                'Error: Set EXPORT_TRIGGER_TOKEN or GITLAB_TOKEN for --save-to-gitlab'
+              )
+            : 'Error: Set EXPORT_TRIGGER_TOKEN or GITLAB_TOKEN for --save-to-gitlab'
+        );
+        process.exit(1);
+      }
+
+      try {
+        const raw = fs.readFileSync(
+          path.resolve(process.cwd(), manifestPath),
+          'utf-8'
+        );
+        const base64 = Buffer.from(raw.trim(), 'utf-8').toString('base64');
+        const agentName =
+          (raw.match(/name\s*:\s*["']?([a-zA-Z0-9_-]+)/m) || [])[1] ||
+          'incoming';
+        const safeName = agentName.replace(/[^a-zA-Z0-9_-]/g, '-').slice(0, 64);
+
+        const form = new URLSearchParams();
+        form.set('token', token);
+        form.set('ref', ref);
+        form.set('variables[EXPORT_MANIFEST_BASE64]', base64);
+        form.set('variables[EXPORT_PLATFORM]', platform);
+        form.set('variables[EXPORT_AGENT_NAME]', safeName);
+        if (platforms && platforms.length > 0) {
+          form.set('variables[EXPORT_PLATFORMS]', platforms);
+        }
+
+        const projectId = /^\d+$/.test(String(projectParam).trim())
+          ? String(projectParam).trim()
+          : projectParam;
+        const res = await fetch(
+          `https://gitlab.com/api/v4/projects/${projectId}/trigger/pipeline`,
+          { method: 'POST', body: form }
+        );
+
+        if (!res.ok) {
+          const text = await res.text();
+          console.error(
+            useColor
+              ? chalk.red(`GitLab trigger failed: ${res.status}`)
+              : `GitLab trigger failed: ${res.status}`,
+            text
+          );
+          process.exit(1);
+        }
+
+        const pipeline = (await res.json()) as {
+          id?: number;
+          web_url?: string;
+        };
+        if (!options.quiet) {
+          console.log(
+            useColor
+              ? chalk.green(
+                  `Triggered openstandard-generated-agents pipeline: ${pipeline.web_url ?? pipeline.id ?? 'started'}`
+                )
+              : `Triggered openstandard-generated-agents pipeline: ${pipeline.web_url ?? pipeline.id ?? 'started'}`
+          );
+        }
+        if (options.json) {
+          console.log(
+            JSON.stringify(
+              {
+                success: true,
+                saveToGitlab: true,
+                pipelineId: pipeline.id,
+                webUrl: pipeline.web_url,
+              },
+              null,
+              options.quiet ? 0 : 2
+            )
+          );
+        }
+        if (!options.platform) {
+          return;
+        }
+      } catch (err) {
+        console.error(
+          chalk.red(
+            `Save to GitLab failed: ${err instanceof Error ? err.message : String(err)}`
+          )
+        );
+        process.exit(1);
+      }
+    }
 
     // Handle --list-platforms (single source of truth: platform-matrix)
     if (options.listPlatforms) {
@@ -289,8 +413,7 @@ exportCommand.action(
         case 'kagent': {
           const agentName = manifest.metadata?.name || 'agent';
           const outputDir = options.output || `./${agentName}-kagent`;
-          const useV1Alpha2 =
-            (options.crdVersion ?? 'v1alpha1') === 'v1alpha2';
+          const useV1Alpha2 = (options.crdVersion ?? 'v1alpha1') === 'v1alpha2';
           const kagentOpts = {
             namespace: options.namespace || 'kagent',
           };
@@ -298,8 +421,10 @@ exportCommand.action(
           if (useV1Alpha2) {
             log('Generating kagent.dev v1alpha2 Declarative Agent...');
             const kagentGenerator = new KAgentCRDGenerator();
-            const { agent, modelConfig } =
-              kagentGenerator.generateV1Alpha2(manifest, kagentOpts);
+            const { agent, modelConfig } = kagentGenerator.generateV1Alpha2(
+              manifest,
+              kagentOpts
+            );
 
             if (!options.dryRun) {
               fs.mkdirSync(outputDir, { recursive: true });
@@ -324,7 +449,9 @@ exportCommand.action(
                 `  agent.yaml${modelConfig ? ', model-config.yaml' : ''}, agent.ossa.yaml`
               );
             } else {
-              log(`\nDRY RUN: Would write agent.yaml (v1alpha2) to ${outputDir}`);
+              log(
+                `\nDRY RUN: Would write agent.yaml (v1alpha2) to ${outputDir}`
+              );
             }
             return;
           }
@@ -508,14 +635,10 @@ exportCommand.action(
           });
 
           if (!langflowResult.success) {
-            throw new Error(
-              langflowResult.error || 'LangFlow export failed'
-            );
+            throw new Error(langflowResult.error || 'LangFlow export failed');
           }
 
-          const outDir = options.output
-            ? path.dirname(options.output)
-            : '.';
+          const outDir = options.output ? path.dirname(options.output) : '.';
           const outPath =
             options.output ||
             path.join(
@@ -527,11 +650,7 @@ exportCommand.action(
           if (!options.dryRun && langflowResult.files.length > 0) {
             const outDirAbs = path.dirname(outPath);
             if (outDirAbs !== '.') fs.mkdirSync(outDirAbs, { recursive: true });
-            fs.writeFileSync(
-              outPath,
-              langflowResult.files[0].content,
-              'utf-8'
-            );
+            fs.writeFileSync(outPath, langflowResult.files[0].content, 'utf-8');
             logSuccess(`\nLangflow flow exported to: ${outPath}`);
             log(
               useColor
@@ -917,6 +1036,152 @@ exportCommand.action(
           return; // Early return to skip single-file write
         }
 
+        case 'orchestration':
+        case 'drupal-orchestration': {
+          log(
+            'Generating Drupal manifest package + orchestration stub (drupal/orchestration)...'
+          );
+
+          const drupalExporter = new DrupalManifestExporter();
+          const drupalResult = await drupalExporter.export(manifest, {
+            validate: true,
+          });
+
+          if (!drupalResult.success) {
+            throw new Error(
+              drupalResult.error || 'Drupal manifest export failed'
+            );
+          }
+
+          const files = Array.isArray(drupalResult.files)
+            ? drupalResult.files
+            : [];
+          const agentName =
+            manifest.metadata?.name
+              ?.toLowerCase()
+              .replace(/[^a-z0-9_]/g, '_') || 'ossa_agent';
+          const outputDir = options.output || `./${agentName}-orchestration`;
+
+          const orchestrationSchema = {
+            service_id: 'ossa_invoke_agent',
+            provider_id: 'ai_agents_ossa_orchestration',
+            label: 'OSSA: Invoke Agent',
+            description:
+              'Invoke an OSSA agent by ID with a prompt. Requires ai_agents_ossa_orchestration enabled.',
+            config: {
+              agent_id: {
+                key: 'agent_id',
+                label: 'OSSA Agent ID',
+                description:
+                  'The OSSA agent config entity ID (e.g. from GET /orchestration/services)',
+                required: true,
+                type: 'string',
+              },
+              prompt: {
+                key: 'prompt',
+                label: 'Prompt / Input',
+                description: 'The input text or task to send to the agent',
+                required: true,
+                type: 'string',
+              },
+            },
+            execute_url: '/orchestration/service/execute',
+            body_example: {
+              id: 'ai_agents_ossa_orchestration::ossa_invoke_agent',
+              config: { agent_id: agentName, prompt: 'Your task here' },
+            },
+          };
+
+          const orchestrationReadme = `# Drupal orchestration (drupal/orchestration)
+
+This package was exported with \`ossa export --platform orchestration\`.
+It includes the Drupal manifest and an orchestration service descriptor so you can invoke this OSSA agent from Activepieces, n8n, Zapier, or any client of drupal/orchestration.
+
+## Full flow (summary)
+
+1. Export: \`ossa export manifest.ossa.yaml --platform orchestration -o ./out\` (done).
+2. Drupal: enable orchestration + ai_agents_ossa + ai_agents_ossa_flowdrop + ai_agents_ossa_orchestration; import this agent; grant "Use orchestration" to a role.
+3. List services: GET \`{BASE}/orchestration/services\` (with auth).
+4. Execute: POST \`{BASE}/orchestration/service/execute\` with body below.
+5. n8n/Zapier: same HTTP API (GET list, POST execute) with Basic Auth or cookie.
+
+## Requirements
+
+- Drupal 10+ with \`drupal/orchestration\`, \`drupal/ai_agents_ossa\`, \`ai_agents_ossa_flowdrop\`, \`ai_agents_ossa_orchestration\`
+- Enable: \`drush en orchestration ai_agents_ossa ai_agents_ossa_flowdrop ai_agents_ossa_orchestration -y\`
+- Import this agent so it appears in the list: \`drush ai-agents:import\` with the manifest from this package (or use the Drupal UI). The agent ID (e.g. \`${agentName}\`) is the \`agent_id\` you pass in execute.
+
+## Orchestration API
+
+- **List services:** \`GET /orchestration/services\` (permission: use orchestration)
+- **Execute service:** \`POST /orchestration/service/execute\`
+  - Body: \`{"id": "ai_agents_ossa_orchestration::ossa_invoke_agent", "config": {"agent_id": "${agentName}", "prompt": "Your task"}}\`
+
+The \`ossa_invoke_agent\` service is provided by \`ai_agents_ossa_orchestration\` and lists all OSSA agents as choices for \`agent_id\`.
+
+## curl examples (replace BASE and user:password)
+
+  BASE=https://your-drupal-site.ddev.site
+
+  # List services
+  curl -s -u "user:password" "$BASE/orchestration/services" | jq
+
+  # Execute this agent
+  curl -s -X POST -u "user:password" -H "Content-Type: application/json" \\
+    -d '{"id":"ai_agents_ossa_orchestration::ossa_invoke_agent","config":{"agent_id":"${agentName}","prompt":"Summarize in one sentence."}}' \\
+    "$BASE/orchestration/service/execute"
+
+## n8n / Activepieces / Zapier
+
+1. Base URL = your Drupal site. Auth = user with "Use orchestration" (Basic Auth or cookie).
+2. GET \`/orchestration/services\` to discover services; find the one with id containing \`ossa_invoke_agent\`.
+3. POST to \`/orchestration/service/execute\` with \`id\` = \`ai_agents_ossa_orchestration::ossa_invoke_agent\` and \`config\` = \`{ "agent_id": "${agentName}", "prompt": "..." }\`.
+
+See also: https://www.drupal.org/project/orchestration
+`;
+
+          if (!options.dryRun) {
+            fs.mkdirSync(outputDir, { recursive: true });
+
+            for (const file of files) {
+              const filePath = path.join(outputDir, file.path);
+              const fileDir = path.dirname(filePath);
+              fs.mkdirSync(fileDir, { recursive: true });
+              fs.writeFileSync(filePath, file.content);
+              logVerbose(`  Created: ${file.path}`);
+            }
+
+            fs.mkdirSync(path.join(outputDir, 'orchestration'), {
+              recursive: true,
+            });
+            fs.writeFileSync(
+              path.join(
+                outputDir,
+                'orchestration/ossa_invoke_agent.schema.json'
+              ),
+              JSON.stringify(orchestrationSchema, null, 2)
+            );
+            fs.writeFileSync(
+              path.join(outputDir, 'ORCHESTRATION.md'),
+              orchestrationReadme
+            );
+
+            logSuccess(`\nOrchestration package exported to: ${outputDir}`);
+            log(
+              `  Drupal manifest + orchestration/ossa_invoke_agent.schema.json, ORCHESTRATION.md`
+            );
+            log(
+              '  Enable ai_agents_ossa_orchestration and use POST /orchestration/service/execute'
+            );
+          } else {
+            log(
+              `\nDRY RUN: Would generate ${files.length + 2} files in: ${outputDir}`
+            );
+          }
+
+          return;
+        }
+
         case 'agent-skills': {
           log('Generating Agent Skills package (SKILL.md format)...');
 
@@ -988,9 +1253,7 @@ exportCommand.action(
           });
 
           if (!symfonyResult.success) {
-            throw new Error(
-              symfonyResult.error || 'Symfony export failed'
-            );
+            throw new Error(symfonyResult.error || 'Symfony export failed');
           }
 
           const symfonyName =
@@ -1008,11 +1271,15 @@ exportCommand.action(
               fs.writeFileSync(filePath, file.content);
               logVerbose(`  Created: ${file.path}`);
             }
-            logSuccess(`\nSymfony AI Agent package exported to: ${symfonyOutputDir}`);
+            logSuccess(
+              `\nSymfony AI Agent package exported to: ${symfonyOutputDir}`
+            );
             log(`  ${symfonyResult.files.length} files generated`);
             log('  Run: composer require symfony/ai-agent symfony/ai-platform');
           } else if (options.dryRun) {
-            log(`\nDRY RUN: Would generate ${symfonyResult.files.length} files in: ${symfonyOutputDir}`);
+            log(
+              `\nDRY RUN: Would generate ${symfonyResult.files.length} files in: ${symfonyOutputDir}`
+            );
             symfonyResult.files.forEach((f) => logVerbose(`  - ${f.path}`));
           }
           return;

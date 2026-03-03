@@ -26,25 +26,54 @@ export interface SkillGenerationOptions {
 @injectable()
 export class ClaudeSkillsService {
   /**
-   * Discover Claude Skills from standard locations
+   * Discover Claude Skills from standard locations, or a single path when provided.
    */
-  async discoverSkills(): Promise<ClaudeSkill[]> {
+  async discoverSkills(customPath?: string): Promise<ClaudeSkill[]> {
+    if (customPath) {
+      const resolved = path.resolve(customPath);
+      if (fs.existsSync(resolved) && fs.statSync(resolved).isDirectory()) {
+        return this.scanSkillsDirectory(resolved);
+      }
+      return [];
+    }
     const skills: ClaudeSkill[] = [];
     const skillPaths = [
+      process.env.SKILLS_PATH,
       path.join(process.env.HOME || '~', '.claude', 'skills'),
       path.join(process.cwd(), '.claude', 'skills'),
       path.join(process.cwd(), 'skills'),
-    ];
+    ].filter(Boolean) as string[];
 
     for (const skillPath of skillPaths) {
       const resolvedPath = path.resolve(skillPath);
-      if (fs.existsSync(resolvedPath)) {
+      if (
+        fs.existsSync(resolvedPath) &&
+        fs.statSync(resolvedPath).isDirectory()
+      ) {
         const discovered = await this.scanSkillsDirectory(resolvedPath);
         skills.push(...discovered);
       }
     }
 
     return skills;
+  }
+
+  /**
+   * Get full SKILL.md content and metadata by skill name from a base path.
+   */
+  async getSkillContentByName(
+    name: string,
+    basePath: string
+  ): Promise<{ content: string; name: string; path: string }> {
+    const resolved = path.resolve(basePath);
+    const skillDir = path.join(resolved, name);
+    const skillFile = path.join(skillDir, 'SKILL.md');
+    if (!fs.existsSync(skillFile)) {
+      throw new Error(`Skill not found: ${name} (looked at ${skillFile})`);
+    }
+    const content = fs.readFileSync(skillFile, 'utf-8');
+    const parsed = await this.parseSkillFile(skillFile);
+    return { content, name: parsed.name, path: skillFile };
   }
 
   /**

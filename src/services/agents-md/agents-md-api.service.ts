@@ -41,9 +41,11 @@ const DEFAULT_AGENTS_DIR = '.agents';
 @injectable()
 export class AgentsMdApiService {
   constructor(
-    @inject(ManifestRepository) private readonly manifestRepo: ManifestRepository,
+    @inject(ManifestRepository)
+    private readonly manifestRepo: ManifestRepository,
     @inject(AgentsMdService) private readonly agentsMdService: AgentsMdService,
-    @inject(AgentsMdDiscoveryService) private readonly discoveryService: AgentsMdDiscoveryService
+    @inject(AgentsMdDiscoveryService)
+    private readonly discoveryService: AgentsMdDiscoveryService
   ) {}
 
   /**
@@ -72,7 +74,12 @@ export class AgentsMdApiService {
    * Resolve manifest path for an agent by name (convention: .agents/{name}/manifest.ossa.yaml)
    */
   resolveManifestPath(baseDir: string, agentName: string): string {
-    return path.join(baseDir, DEFAULT_AGENTS_DIR, agentName, 'manifest.ossa.yaml');
+    return path.join(
+      baseDir,
+      DEFAULT_AGENTS_DIR,
+      agentName,
+      'manifest.ossa.yaml'
+    );
   }
 
   /**
@@ -104,8 +111,13 @@ export class AgentsMdApiService {
       return null;
     }
 
-    const outputPath = manifest.extensions?.agents_md?.output_path || 'AGENTS.md';
-    const agentsMdPath = this.resolveAgentsMdPath(baseDir, agentName, outputPath);
+    const outputPath =
+      manifest.extensions?.agents_md?.output_path || 'AGENTS.md';
+    const agentsMdPath = this.resolveAgentsMdPath(
+      baseDir,
+      agentName,
+      outputPath
+    );
 
     try {
       const content = await fs.readFile(agentsMdPath, 'utf-8');
@@ -140,7 +152,11 @@ export class AgentsMdApiService {
       body.options?.outputPath ??
       manifest.extensions?.agents_md?.output_path ??
       'AGENTS.md';
-    const agentsMdPath = this.resolveAgentsMdPath(baseDir, agentName, outputPath);
+    const agentsMdPath = this.resolveAgentsMdPath(
+      baseDir,
+      agentName,
+      outputPath
+    );
 
     if (body.content !== undefined && body.content !== '') {
       await fs.mkdir(path.dirname(agentsMdPath), { recursive: true });
@@ -149,7 +165,10 @@ export class AgentsMdApiService {
     }
 
     if (!manifest.extensions?.agents_md) {
-      manifest.extensions = { ...manifest.extensions, agents_md: { enabled: true } };
+      manifest.extensions = {
+        ...manifest.extensions,
+        agents_md: { enabled: true },
+      };
     }
     manifest.extensions!.agents_md!.enabled = true;
     if (body.options?.outputPath) {
@@ -170,10 +189,7 @@ export class AgentsMdApiService {
   /**
    * DELETE: Remove AGENTS.md file for an agent.
    */
-  async deleteAgentsMd(
-    agentName: string,
-    baseDir: string
-  ): Promise<boolean> {
+  async deleteAgentsMd(agentName: string, baseDir: string): Promise<boolean> {
     const manifestPath = this.resolveManifestPath(baseDir, agentName);
     try {
       await this.manifestRepo.load(manifestPath);
@@ -182,7 +198,11 @@ export class AgentsMdApiService {
     }
 
     const outputPath = 'AGENTS.md';
-    const agentsMdPath = this.resolveAgentsMdPath(baseDir, agentName, outputPath);
+    const agentsMdPath = this.resolveAgentsMdPath(
+      baseDir,
+      agentName,
+      outputPath
+    );
     try {
       await fs.unlink(agentsMdPath);
       return true;

@@ -18,6 +18,7 @@ import { convertRouter } from './routes/convert.router.js';
 import { skillsRouter } from './routes/skills.router.js';
 import { workspaceRouter } from './routes/workspace.router.js';
 import { versionRouter } from './routes/version.router.js';
+import { validateRouter } from './routes/validate.router.js';
 
 export interface CreateAppOptions {
   corsOrigin?: string;
@@ -42,6 +43,7 @@ export function createApp(opts?: CreateAppOptions): express.Application {
   app.use('/api/v1/skills', skillsRouter());
   app.use('/api/v1/workspace', workspaceRouter());
   app.use('/api/v1/version', versionRouter());
+  app.use('/api/v1/validate', validateRouter());
 
   // Error handler (must be last)
   app.use(errorHandler());

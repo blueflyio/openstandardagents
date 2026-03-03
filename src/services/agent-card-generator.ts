@@ -134,8 +134,7 @@ export class AgentCardGenerator {
     const tokenEfficiencySummary = this.extractTokenEfficiencySummary(manifest);
     const separation = this.extractSeparation(manifest);
     const metaManifest = manifest.metadata as ManifestSection | undefined;
-    const manifestRef =
-      options?.manifestRef ?? metaManifest?.manifest_ref;
+    const manifestRef = options?.manifestRef ?? metaManifest?.manifest_ref;
     const manifestDigest =
       options?.manifestDigest ??
       metaManifest?.manifest_digest ??

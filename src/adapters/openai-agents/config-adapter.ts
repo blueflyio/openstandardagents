@@ -61,8 +61,7 @@ export class OpenAIConfigAdapter extends BaseAdapter {
         function: {
           name: t.name || 'unnamed',
           description: (t.description as string) || '',
-          parameters:
-            t.inputSchema ||
+          parameters: t.inputSchema ||
             t.input_schema ||
             t.parameters || { type: 'object', properties: {} },
         },

@@ -134,7 +134,9 @@ export async function reviewAndSaveStep(
         }
       }
 
-      const drupalExt = state.agent.extensions?.drupal as { enabled?: boolean; generate_tools_eca?: boolean } | undefined;
+      const drupalExt = state.agent.extensions?.drupal as
+        | { enabled?: boolean; generate_tools_eca?: boolean }
+        | undefined;
       if (
         drupalExt?.enabled &&
         drupalExt?.generate_tools_eca &&
@@ -144,8 +146,7 @@ export async function reviewAndSaveStep(
           const exporter = new DrupalManifestExporter();
           const result = await exporter.export(state.agent as OssaAgent);
           if (result.success && result.files?.length) {
-            const agentName =
-              state.agent.metadata?.name || 'agent';
+            const agentName = state.agent.metadata?.name || 'agent';
             const drupalDir = path.join(
               path.dirname(outputPath),
               `drupal-${agentName}`
@@ -207,9 +208,15 @@ export async function reviewAndSaveStep(
       `6. AGENTS.md: Validate or edit with ossa agents-md validate/generate`
     );
   }
-  if ((state.agent.extensions?.drupal as { enabled?: boolean } | undefined)?.enabled) {
+  if (
+    (state.agent.extensions?.drupal as { enabled?: boolean } | undefined)
+      ?.enabled
+  ) {
     const agentName = state.agent.metadata?.name || 'agent';
-    const drupalDir = path.join(path.dirname(outputPath), `drupal-${agentName}`);
+    const drupalDir = path.join(
+      path.dirname(outputPath),
+      `drupal-${agentName}`
+    );
     console_ui.info(
       `7. Drupal: Import package at ${drupalDir} (drush config:import, recipe, or composer)`
     );

@@ -45,6 +45,10 @@
       "$ref": "#/definitions/ProtocolDeclarations",
       "description": "Protocol declarations for MCP, A2A, and ANP interoperability (v0.5)"
     },
+    "token_efficiency": {
+      "$ref": "#/definitions/TokenEfficiency",
+      "description": "Token efficiency configuration for cost-optimized execution (v0.5)"
+    },
     "extensions": {
       "type": "object",
       "description": "Framework-specific extensions (inherited from v0.4)",
@@ -52,6 +56,10 @@
     },
     "runtime": {
       "description": "Runtime-specific capability bindings (for Task and Workflow kinds)"
+    },
+    "composition": {
+      "$ref": "#/definitions/WorkflowComposition",
+      "description": "Workflow composition with sequential/parallel projection (v0.5, when kind is Workflow)"
     }
   },
   "definitions": {
@@ -82,6 +90,42 @@
           "type": "string",
           "maxLength": 2000,
           "description": "Human-readable description"
+        },
+        "uuid": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Optional UUID v4 for stable cross-system reference"
+        },
+        "machine_name": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$",
+          "maxLength": 128,
+          "description": "Drupal-friendly machine name (config/entity identifier)"
+        },
+        "signature": {
+          "type": "string",
+          "description": "Optional manifest signature (e.g. Ed25519) for signing"
+        },
+        "sbom_pointer": {
+          "type": "string",
+          "format": "uri",
+          "description": "Optional URL or path to SBOM document (e.g. CycloneDX JSON)"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "deprecated", "revoked"],
+          "default": "active",
+          "description": "Agent status: active, deprecated, revoked"
+        },
+        "revoked_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 when agent was revoked"
+        },
+        "deprecated_message": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Message when status is deprecated"
         },
         "labels": {
           "type": "object",
@@ -134,6 +178,10 @@
           },
           "additionalProperties": false
         },
+        "mesh_bindings": {
+          "$ref": "#/definitions/MeshBindings",
+          "description": "Spatial and execution bindings for the BlueFly Synaptic Mesh (GitLab/Drupal integration)"
+        },
         "agentType": {
           "type": "string",
           "enum": [
@@ -154,6 +202,21 @@
         }
       },
       "additionalProperties": true
+    },
+    "MeshBindings": {
+      "type": "object",
+      "description": "Bindings linking this OSSA agent to its GitLab execution environment and Drupal spatial matrix.",
+      "properties": {
+        "gitlab_project_id": {
+          "type": "string",
+          "description": "The numeric or namespaced GitLab Project ID serving as the execution substrate for this agent."
+        },
+        "drupal_canvas_node_id": {
+          "type": "string",
+          "description": "The Drupal UUID representing this agent in the Experience Builder / Canvas spatial matrix."
+        }
+      },
+      "additionalProperties": false
     },
     "AgentIdentity": {
       "type": "object",
@@ -763,6 +826,223 @@
         }
       },
       "additionalProperties": false
+    },
+    "TokenEfficiency": {
+      "type": "object",
+      "description": "Token efficiency configuration for cost-optimized agent execution",
+      "properties": {
+        "serialization_profile": {
+          "type": "string",
+          "enum": ["full", "compact", "fingerprint"],
+          "default": "compact",
+          "description": "Manifest serialization profile. full=200-400 tokens (discovery), compact=60-120 tokens (runtime), fingerprint=15-30 tokens (routing)"
+        },
+        "observation_format": {
+          "type": "string",
+          "enum": ["full", "diff", "projected", "summary"],
+          "default": "projected",
+          "description": "How tool observations are formatted. diff=returns diff not full file. projected=only matched fields. summary=compressed summary."
+        },
+        "budget": { "$ref": "#/definitions/TokenBudget" },
+        "routing": { "$ref": "#/definitions/ModelRouting" },
+        "consolidation": { "$ref": "#/definitions/ConsolidationStrategy" },
+        "compression": { "$ref": "#/definitions/CompressionConfig" },
+        "custom_metrics": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/CustomMetric" },
+          "description": "Agent-specific token efficiency metrics"
+        }
+      },
+      "additionalProperties": false
+    },
+    "TokenBudget": {
+      "type": "object",
+      "description": "Token budget allocation and enforcement",
+      "properties": {
+        "max_input_tokens": { "type": "integer", "description": "Maximum input tokens per request" },
+        "max_output_tokens": { "type": "integer", "description": "Maximum output tokens per request" },
+        "allocation_strategy": {
+          "type": "string",
+          "enum": ["equal", "proportional", "adaptive"],
+          "default": "adaptive",
+          "description": "How budget is divided across pipeline stages"
+        },
+        "cascade": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/CascadeStage" },
+          "description": "Model cascade for cost-optimized routing"
+        }
+      }
+    },
+    "CascadeStage": {
+      "type": "object",
+      "description": "A stage in a model cascade pipeline",
+      "required": ["model", "max_complexity"],
+      "properties": {
+        "model": { "type": "string", "description": "Model identifier" },
+        "max_complexity": {
+          "type": "string",
+          "enum": ["low", "medium", "high"],
+          "description": "Maximum complexity this model handles"
+        },
+        "budget_share": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Fraction of total budget allocated to this stage"
+        },
+        "budget_tokens": { "type": "integer", "description": "Absolute token budget for this stage" },
+        "condition": { "type": "string", "description": "Condition expression for when to use this stage" }
+      }
+    },
+    "ModelRouting": {
+      "type": "object",
+      "description": "Intelligent model routing configuration",
+      "properties": {
+        "cascade": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Model tiers in order of cost (e.g., [haiku, sonnet, opus])"
+        },
+        "complexity_threshold": {
+          "type": "array",
+          "items": { "type": "number" },
+          "description": "Complexity score thresholds between tiers (e.g., [0.3, 0.7])"
+        },
+        "strategy": {
+          "type": "string",
+          "enum": ["cost_optimized", "quality_optimized", "balanced"],
+          "default": "cost_optimized"
+        }
+      }
+    },
+    "ConsolidationStrategy": {
+      "type": "object",
+      "description": "Trajectory consolidation strategy for multi-turn interactions",
+      "properties": {
+        "strategy": {
+          "type": "string",
+          "enum": ["aggressive", "moderate", "minimal", "none"],
+          "default": "moderate",
+          "description": "How aggressively to consolidate trajectory history"
+        },
+        "retain": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Fields to always retain (e.g., final_answer, confidence)"
+        },
+        "summarize": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Fields to summarize instead of keeping verbatim"
+        },
+        "drop": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Fields to drop entirely (e.g., raw_observations, intermediate_diffs)"
+        },
+        "accumulate": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Fields to accumulate with a token cap"
+        },
+        "max_accumulated_tokens": {
+          "type": "integer",
+          "default": 5000,
+          "description": "Maximum tokens for accumulated fields"
+        }
+      }
+    },
+    "CompressionConfig": {
+      "type": "object",
+      "description": "Prompt and context compression configuration",
+      "properties": {
+        "enabled": { "type": "boolean", "default": true },
+        "strategy": {
+          "type": "string",
+          "enum": ["template", "semantic", "hybrid", "none"],
+          "description": "Compression approach: template=pattern replacement, semantic=LLMLingua-style, hybrid=both"
+        },
+        "compression_ratio": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Target compression ratio (0.2 = 5x compression)"
+        },
+        "min_quality": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.95,
+          "description": "Minimum quality threshold - do not compress if quality drops below this"
+        },
+        "templates": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/CompressionTemplate" }
+        }
+      }
+    },
+    "CompressionTemplate": {
+      "type": "object",
+      "required": ["name", "pattern"],
+      "properties": {
+        "name": { "type": "string" },
+        "pattern": { "type": "string", "description": "Compact pattern (e.g., scan_ctx[{{lang}}|{{framework}}|{{file_count}}])" },
+        "expands_to": { "type": "string", "description": "Full expansion template" },
+        "savings": { "type": "integer", "description": "Estimated tokens saved per use" }
+      }
+    },
+    "CustomMetric": {
+      "type": "object",
+      "required": ["name", "type"],
+      "properties": {
+        "name": { "type": "string" },
+        "type": { "type": "string", "enum": ["counter", "gauge", "histogram"] },
+        "description": { "type": "string" },
+        "labels": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "Capability": {
+      "type": "object",
+      "description": "Capability declaration with optional fingerprint for routing without loading full descriptions",
+      "properties": {
+        "fingerprint": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "description": "Deterministic hash of capability type signature for routing without loading full descriptions"
+        }
+      }
+    },
+    "WorkflowComposition": {
+      "type": "object",
+      "description": "Workflow composition with output projection for sequential and parallel agent execution",
+      "properties": {
+        "sequential": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "agent": { "type": "string" },
+              "project": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Output field projection - only these fields pass to the next agent"
+              }
+            }
+          }
+        },
+        "parallel": {
+          "type": "object",
+          "properties": {
+            "shared_context": {
+              "type": "boolean",
+              "default": true,
+              "description": "Deduplicate input context across parallel branches"
+            },
+            "agents": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      }
     }
   }
 }
