@@ -1,0 +1,693 @@
+openapi: 3.1.0
+info:
+  title: Universal Agent Discovery Protocol (UADP) — REST API
+  version: 0.4.0
+  description: |
+    ## Universal Agent Discovery Protocol (UADP) v0.4
+    
+    UADP is the decentralized discovery and registry standard that is the "missing contract"
+    for software agents — part of the Open Standard for Software Agents (OSSA) specification.
+
+    ### What UADP Provides
+    - **Decentralized registry**: Agents self-register without a single point of control
+    - **Taxonomy-driven discovery**: Discover agents by domain, subdomain, capability, and concern
+    - **Cryptographic trust**: `x-signature` blocks (Ed25519, DID, JWT) for verifiable provenance
+    - **NIST CAISI Alignment**: Designed to satisfy the February 2026 AI Agent Standards Initiative
+      requirements for Interoperability, Identity, and Authorization
+
+    ### Trust Tiers
+    | Tier                    | Criteria                                                        |
+    |-------------------------|-----------------------------------------------------------------|
+    | `official`              | Published by OSSA Steering Committee                            |
+    | `verified-signature`    | `x-signature` present with type + value + publicKey            |
+    | `signed`                | `x-signature` present but missing publicKey for live verify     |
+    | `community`             | No cryptographic provenance                                     |
+    | `experimental`          | Pre-release, not suitable for production                        |
+
+    ### Specification Documents
+    - **OpenAPI (this file)**: REST endpoints for agent CRUD, discovery, and health
+    - **AsyncAPI** (`uadp-asyncapi.yaml`): Event-driven pubsub for registration, heartbeat, revocation
+
+  contact:
+    name: OSSA Maintainers
+    url: https://openstandardagents.org
+    email: registry@openstandardagents.org
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  externalDocs:
+    description: OSSA specification and schema repository
+    url: https://openstandardagents.org/docs
+
+servers:
+  - url: https://registry.openstandardagents.org/api/v1
+    description: Production UADP Registry
+  - url: https://staging.registry.openstandardagents.org/api/v1
+    description: Staging Registry
+  - url: http://localhost:3100/api/v1
+    description: Local / DDEV Development
+
+tags:
+  - name: registry
+    description: Agent registration and lifecycle management
+  - name: discovery
+    description: Agent discovery, search, and filtering
+  - name: trust
+    description: Signature verification and trust badge resolution
+  - name: health
+    description: Registry and agent health endpoints
+  - name: revocation
+    description: Agent status and revocation management
+
+paths:
+  # ─────────────────────────────────────────────
+  # REGISTRY
+  # ─────────────────────────────────────────────
+  /registry/register:
+    post:
+      summary: Register an agent with the UADP registry
+      description: |
+        Self-registration endpoint for agents. Agents submit their full OSSA manifest,
+        which is parsed to extract taxonomy, capabilities, and optionally `x-signature`
+        for cryptographic trust elevation.
+      operationId: uadp_registerAgent
+      tags: [registry]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistrationRequest'
+            examples:
+              signedAgent:
+                summary: Agent with Ed25519 x-signature
+                value:
+                  agentId: compliance-scanner-01
+                  name: compliance-scanner
+                  version: 1.2.0
+                  manifest:
+                    apiVersion: ossa/v0.4
+                    kind: Agent
+                    metadata:
+                      name: compliance-scanner
+                      version: 1.2.0
+                      uuid: 5d3f9a2b-7e8c-4f1d-a0b3-123456789abc
+                      x-signature:
+                        type: Ed25519
+                        value: "base64encodedSignaturePayload=="
+                        publicKey: "base64encodedPublicKey=="
+                        issuer: "did:web:agents.bluefly.io:compliance-scanner"
+                        timestamp: "2026-03-02T00:00:00Z"
+                  endpoint: https://agents.example.com/compliance-scanner
+                  domains: [domain::security]
+                  subdomains: [subdomain::compliance]
+                  capabilities: [audit, policy-enforcement]
+                  status: active
+      responses:
+        '201':
+          description: Agent successfully registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistrationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: Agent ID conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /registry/unregister/{agentId}:
+    delete:
+      summary: Unregister an agent
+      description: Graceful unregistration. Registry also auto-expires agents that fail health checks.
+      operationId: uadp_unregisterAgent
+      tags: [registry]
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AgentIdPath'
+      responses:
+        '204':
+          description: Agent successfully unregistered
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /registry/heartbeat/{agentId}:
+    put:
+      summary: Renew agent registration heartbeat
+      description: Agents must call this endpoint periodically (default every 30s) to remain active.
+      operationId: uadp_heartbeat
+      tags: [registry]
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AgentIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [active, degraded, maintenance]
+                metrics:
+                  type: object
+                  additionalProperties: true
+                  description: Optional runtime telemetry
+      responses:
+        '200':
+          description: Heartbeat acknowledged
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ttl:
+                    type: integer
+                    description: Seconds until next heartbeat required
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ─────────────────────────────────────────────
+  # DISCOVERY
+  # ─────────────────────────────────────────────
+  /discovery/agents:
+    get:
+      summary: Discover agents by taxonomy, capabilities, and trust
+      description: |
+        The primary UADP discovery endpoint. Supports filtering by:
+        - **domain/subdomain/concern** (taxonomy-based)
+        - **capabilities** (capability matching — all must match)
+        - **trust** (`verified-signature`, `signed`, `community`, `official`, `experimental`)
+        - **status** (active, deprecated, revoked)
+        
+        pagination via `limit` + `cursor` for large registries.
+      operationId: uadp_discoverAgents
+      tags: [discovery]
+      parameters:
+        - name: domain
+          in: query
+          schema:
+            type: string
+            pattern: '^domain::[a-z0-9-]+$'
+          example: domain::security
+        - name: subdomain
+          in: query
+          schema:
+            type: string
+            pattern: '^subdomain::[a-z0-9-]+$'
+          example: subdomain::compliance
+        - name: concerns
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+              pattern: '^concern::[a-z0-9-]+$'
+          style: form
+          explode: false
+          example: concern::quality,concern::governance
+        - name: capabilities
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: false
+        - name: trust
+          in: query
+          description: Minimum trust tier required
+          schema:
+            type: string
+            enum: [official, verified-signature, signed, community, experimental]
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, deprecated, revoked]
+          description: Defaults to active — pass 'revoked' to include only revoked agents
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: cursor
+          in: query
+          description: Opaque cursor for pagination (from `nextCursor` in a previous response)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Matching agents
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscoveryResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /discovery/agents/{agentId}:
+    get:
+      summary: Get a single agent by ID
+      operationId: uadp_getAgent
+      tags: [discovery]
+      parameters:
+        - $ref: '#/components/parameters/AgentIdPath'
+      responses:
+        '200':
+          description: Agent found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentRecord'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ─────────────────────────────────────────────
+  # TRUST
+  # ─────────────────────────────────────────────
+  /trust/verify:
+    post:
+      summary: Verify an agent's x-signature
+      description: |
+        Accepts an agent manifest (or just the `metadata.x-signature` block) and performs
+        cryptographic verification of the signature against the embedded public key.
+        
+        Returns a `TrustVerificationResult` indicating whether the signature is valid,
+        what tier it earns, and why.
+      operationId: uadp_verifySignature
+      tags: [trust]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [signature]
+              properties:
+                agentId:
+                  type: string
+                canonicalManifest:
+                  type: string
+                  description: Canonicalized YAML/JSON of the manifest that was signed
+                signature:
+                  $ref: '#/components/schemas/XSignature'
+      responses:
+        '200':
+          description: Verification result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrustVerificationResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  # ─────────────────────────────────────────────
+  # REVOCATION
+  # ─────────────────────────────────────────────
+  /registry/revoke/{agentId}:
+    put:
+      summary: Revoke an agent (NIST CAISI alignment)
+      description: |
+        Sets agent status to `revoked` with a timestamp. Revoked agents are not returned
+        by the discovery endpoint by default. Required for NIST CAISI compliance.
+      operationId: uadp_revokeAgent
+      tags: [revocation, registry]
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AgentIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason:
+                  type: string
+                  description: Human-readable reason for revocation
+                revokedAt:
+                  type: string
+                  format: date-time
+                  description: Defaults to now if not provided
+      responses:
+        '200':
+          description: Agent revoked
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  agentId:
+                    type: string
+                  status:
+                    type: string
+                    enum: [revoked]
+                  revokedAt:
+                    type: string
+                    format: date-time
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ─────────────────────────────────────────────
+  # HEALTH
+  # ─────────────────────────────────────────────
+  /health:
+    get:
+      summary: Registry health and statistics
+      operationId: uadp_health
+      tags: [health]
+      responses:
+        '200':
+          description: Registry healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          description: Registry unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT or DID-authenticated bearer token
+
+  parameters:
+    AgentIdPath:
+      name: agentId
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+        maxLength: 253
+      description: Unique agent identifier (DNS-1123 subdomain format)
+
+  schemas:
+    # ── SIGNATURE ──────────────────────────────
+    XSignature:
+      type: object
+      description: |
+        Cryptographic signature block for NIST CAISI identity alignment.
+        Matches `metadata.x-signature` in the OSSA agent.schema.json v0.4+.
+      required: [type, value, publicKey]
+      properties:
+        type:
+          type: string
+          enum: [Ed25519, RSA-PSS, ECDSA, jwt, vc, did]
+          description: Signature scheme or protocol used
+        value:
+          type: string
+          description: Base64-encoded signature payload
+        publicKey:
+          type: string
+          description: Public key (base64 or PEM) matching the signature
+        issuer:
+          type: string
+          description: DID or URI of the entity that issued the signature
+          example: "did:web:agents.bluefly.io:my-agent"
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of signature generation
+
+    # ── TRUST ──────────────────────────────────
+    TrustTier:
+      type: string
+      enum: [official, verified-signature, signed, community, experimental]
+      description: |
+        Trust tier resolved from the agent's `x-signature` metadata:
+        - `official` — Published by OSSA Steering Committee
+        - `verified-signature` — Fully verifiable x-signature (type + value + publicKey)
+        - `signed` — x-signature present but incomplete (e.g. missing publicKey)
+        - `community` — No cryptographic provenance
+        - `experimental` — Pre-release
+
+    TrustVerificationResult:
+      type: object
+      required: [verified, tier, agentId]
+      properties:
+        agentId:
+          type: string
+        verified:
+          type: boolean
+        tier:
+          $ref: '#/components/schemas/TrustTier'
+        signatureType:
+          type: string
+        issuer:
+          type: string
+        verifiedAt:
+          type: string
+          format: date-time
+        reason:
+          type: string
+          description: Human-readable explanation when verified is false
+
+    # ── REGISTRATION ───────────────────────────
+    RegistrationRequest:
+      type: object
+      required: [agentId, name, version, manifest, endpoint, status]
+      properties:
+        agentId:
+          type: string
+          pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+          maxLength: 253
+        name:
+          type: string
+        version:
+          type: string
+          description: semver 2.0.0
+        manifest:
+          type: object
+          description: Full OSSA manifest (apiVersion, kind, metadata, spec…)
+          additionalProperties: true
+        endpoint:
+          type: string
+          format: uri
+        domains:
+          type: array
+          items:
+            type: string
+            pattern: '^domain::[a-z0-9-]+$'
+        subdomains:
+          type: array
+          items:
+            type: string
+            pattern: '^subdomain::[a-z0-9-]+$'
+        concerns:
+          type: array
+          items:
+            type: string
+            pattern: '^concern::[a-z0-9-]+$'
+        capabilities:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum: [active, degraded, maintenance]
+        healthEndpoint:
+          type: string
+          format: uri
+
+    RegistrationResponse:
+      type: object
+      required: [agentId, status, registeredAt, tier]
+      properties:
+        agentId:
+          type: string
+        status:
+          type: string
+          enum: [registered, updated]
+        registeredAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+        tier:
+          $ref: '#/components/schemas/TrustTier'
+
+    # ── AGENT RECORD ───────────────────────────
+    AgentRecord:
+      type: object
+      required: [agentId, name, version, status, endpoint, tier, registeredAt, lastSeen]
+      properties:
+        agentId:
+          type: string
+        name:
+          type: string
+        version:
+          type: string
+        domains:
+          type: array
+          items:
+            type: string
+        subdomains:
+          type: array
+          items:
+            type: string
+        concerns:
+          type: array
+          items:
+            type: string
+        capabilities:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum: [active, deprecated, revoked, degraded, maintenance]
+        tier:
+          $ref: '#/components/schemas/TrustTier'
+        endpoint:
+          type: string
+          format: uri
+        healthEndpoint:
+          type: string
+          format: uri
+        registeredAt:
+          type: string
+          format: date-time
+        lastSeen:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+        revokedAt:
+          type: string
+          format: date-time
+        metadata:
+          type: object
+          description: Agent metadata including x-signature if present
+          properties:
+            x-signature:
+              $ref: '#/components/schemas/XSignature'
+          additionalProperties: true
+
+    # ── DISCOVERY ──────────────────────────────
+    DiscoveryResponse:
+      type: object
+      required: [agents, total]
+      properties:
+        agents:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentRecord'
+        total:
+          type: integer
+        nextCursor:
+          type: string
+          description: Opaque pagination cursor — pass as `cursor` in the next request
+        source:
+          type: string
+          description: Discovery source identifier (e.g. local_uadp, agent-mesh, fallback)
+
+    # ── HEALTH ─────────────────────────────────
+    HealthResponse:
+      type: object
+      required: [status, timestamp, version]
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+        timestamp:
+          type: string
+          format: date-time
+        version:
+          type: string
+        uptime:
+          type: integer
+          description: Uptime in seconds
+        statistics:
+          type: object
+          properties:
+            totalAgents:
+              type: integer
+            activeAgents:
+              type: integer
+            verifiedAgents:
+              type: integer
+              description: Agents with a verified x-signature
+            revokedAgents:
+              type: integer
+            totalDomains:
+              type: integer
+            totalCapabilities:
+              type: integer
+
+    # ── ERRORS ─────────────────────────────────
+    Error:
+      type: object
+      required: [error, message]
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+        trace_id:
+          type: string
+          format: uuid
+
+  responses:
+    BadRequest:
+      description: Bad request — invalid input
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Unauthorized — missing or invalid authentication
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
