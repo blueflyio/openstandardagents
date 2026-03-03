@@ -7,20 +7,6 @@
     "./schema/v0.4.1": "./spec/v0.4/agent.schema.json",
     "./schema/v0.3.6": "./spec/v0.3/ossa-0.3.6.schema.json",
     "./schema/v0.3.5": "./spec/v0.3/ossa-0.3.5.schema.json",
-    "./schema/v0.3.4": "./spec/v0.3/ossa-v0.3.schema.json",
-    "./schema/v0.3.3": "./spec/v0.3/ossa-v0.3.schema.json",
-    "./ag2/swarm-topology": "./spec/v0.3.4/extensions/ag2/swarm-topology.schema.json",
-    "./ag2/group-chat": "./spec/v0.3.4/extensions/ag2/group-chat.schema.json",
-    "./ag2/nested-chat": "./spec/v0.3.4/extensions/ag2/nested-chat.schema.json",
-    "./hitl/intervention-points": "./spec/v0.3.4/protocols/hitl/intervention-points.schema.json",
-    "./hitl/human-input-modes": "./spec/v0.3.4/protocols/hitl/human-input-modes.schema.json",
-    "./hitl/approval-workflows": "./spec/v0.3.4/protocols/hitl/approval-workflows.schema.json",
-    "./a2a/service-discovery": "./spec/v0.3.4/protocols/a2a/service-discovery.schema.json",
-    "./a2a/handoff-protocol": "./spec/v0.3.4/protocols/a2a/handoff-protocol.schema.json",
-    "./a2a/capability-advertisement": "./spec/v0.3.4/protocols/a2a/capability-advertisement.schema.json",
-    "./state/context-serialization": "./spec/v0.3.4/runtime/state/context-serialization.schema.json",
-    "./state/memory-portability": "./spec/v0.3.4/runtime/state/memory-portability.schema.json",
-    "./state/teachability": "./spec/v0.3.4/runtime/state/teachability.schema.json",
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
@@ -83,6 +69,11 @@
       "types": "./dist/sdks/kagent/index.d.ts",
       "import": "./dist/sdks/kagent/index.js",
       "require": "./dist/sdks/kagent/index.js"
+    },
+    "./trust": {
+      "types": "./dist/services/trust/trust.service.d.ts",
+      "import": "./dist/services/trust/trust.service.js",
+      "require": "./dist/services/trust/trust.service.js"
     }
   },
   "description": "OSSA - Open Standard for Software Agents. Infrastructure bridge between agent protocols (MCP, A2A) and deployment platforms. Define once in YAML, export to 9+ platforms (Docker, Kubernetes, LangChain, CrewAI, Claude Skills, etc.).",
@@ -141,7 +132,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://gitlab.com/blueflyio/ossa/openstandardagents/"
+    "url": "git+https://gitlab.com/blueflyio/ossa/openstandardagents.git"
   },
   "bugs": {
     "url": "https://gitlab.com/blueflyio/ossa/openstandardagents/-/issues"
@@ -195,7 +186,7 @@
     "validate:versions": "tsx src/tools/validate-versions.ts",
     "fix:versions": "tsx src/tools/fix-versions.ts",
     "validate:power": "tsx src/tools/validation/validate-ossa.ts",
-    "validate:openapi": "tsx src/tools/validation/openapi-validate-all.ts",
+    "validate:openapi": "spectral lint openapi/**/*.yaml --ruleset .spectral.yml 2>/dev/null || spectral lint openapi/**/*.yaml",
     "validate:openapi:ossa": "tsx src/tools/validation/validate-openapi-extensions.ts",
     "validate:no-symlinks": "tsx src/tools/validate-no-symlinks.ts",
     "// VERSION MANAGEMENT (via ossa-dev CLI - single source of truth)": "",
@@ -232,15 +223,13 @@
     "prepare": "lefthook install || true",
     "postinstall": "node bin/postinstall || true",
     "// RELEASE & PUBLISH": "",
-    "prerelease": "npm run quality && npm run test && npm run validate",
-    "prepublishOnly": "tsx src/tools/validate-package.ts",
-    "validate:deps": "tsx src/tools/validate-dependencies.ts",
-    "validate:package": "tsx src/tools/validate-package.ts",
-    "publish:check": "tsx src/tools/pre-publish-check.ts",
+    "prepublishOnly": "publint && npm run build",
+    "validate:deps": "depcheck --ignores='@types/*,ts-jest,eslint*,prettier*,lefthook,jest*,vitest,semantic-release*,@semantic-release/*,keep-a-changelog,jest-junit,publint,conventional-changelog-conventionalcommits'",
+    "validate:package": "publint",
     "publish:dry-run": "npm publish --dry-run",
-    "release:check": "npm run prerelease && echo '✅ Ready for release'",
-    "release:verify": "tsx src/dev-cli/src/index.ts release verify",
-    "release:prep": "tsx src/dev-cli/src/index.ts release prep v$(node -p \"require('./.version.json').latest_stable\")"
+    "release:check": "npm run typecheck && npm run test:unit && npm run validate:schema && publint",
+    "release:semantic": "npx semantic-release",
+    "release:semantic:dry": "npx semantic-release --dry-run"
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "^0.2.50",
@@ -253,6 +242,8 @@
     "@langchain/core": "^0.3.29",
     "@langchain/openai": "^0.3.17",
     "@modelcontextprotocol/sdk": "^0.6.0",
+    "@noble/ed25519": "^2.3.0",
+    "@noble/hashes": "^2.0.1",
     "@octokit/rest": "^20.0.0",
     "@openai/agents": "^0.4.6",
     "@opentelemetry/api": "^1.9.0",
@@ -280,13 +271,16 @@
     "chokidar": "^5.0.0",
     "cli-table3": "^0.6.5",
     "commander": "^11.1.0",
+    "did-resolver": "^4.1.0",
     "express": "^4.18.2",
     "fast-glob": "^3.3.2",
     "glob": "^11.0.3",
     "gradient-string": "^2.0.2",
     "inquirer": "^9.2.12",
     "inversify": "^7.10.4",
+    "jose": "^5.9.6",
     "js-yaml": "^4.1.0",
+    "json-canonicalize": "^1.0.6",
     "langchain": "^0.3.9",
     "open": "^11.0.0",
     "openai": "^6.9.1",
@@ -299,6 +293,7 @@
     "semver": "^7.7.3",
     "tar": "^7.5.3",
     "uuid": "^11.0.5",
+    "web-did-resolver": "^2.0.32",
     "ws": "^8.19.0",
     "yaml": "^2.3.0",
     "zod": "^4.1.11"
@@ -324,6 +319,7 @@
     "@typescript-eslint/eslint-plugin": "^8.48.0",
     "@typescript-eslint/parser": "^8.48.0",
     "ajv-cli": "^5.0.0",
+    "conventional-changelog-conventionalcommits": "^9.2.0",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
@@ -334,6 +330,7 @@
     "keep-a-changelog": "^2.8.0",
     "lefthook": "^1.12.3",
     "prettier": "^3.6.2",
+    "publint": "^0.3.18",
     "semantic-release": "^25.0.1",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
@@ -355,5 +352,9 @@
   "volta": {
     "node": "18.20.8",
     "npm": "10.9.4"
-  }
+  },
+  "bundleDependencies": [
+    "ajv",
+    "ajv-formats"
+  ]
 }
