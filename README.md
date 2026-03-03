@@ -14,6 +14,14 @@ OSSA is not a protocol (like MCP or A2A) and not a framework (like LangChain or 
 - **Builds on A2A** - Supports A2A messaging and agent-to-agent communication
 - **Extends protocols** - Adds deployment and packaging layer on top of communication protocols
 
+## 🇺🇸 NIST AI Agent Standards Alignment
+
+OSSA v0.4.6 natively aligns with the [NIST AI Agent Standards Initiative](https://www.nist.gov/caisi/ai-agent-standards-initiative) driven by the Center for AI Standards and Innovation (CAISI) and the Information Technology Laboratory (ITL).
+
+- **Secure Interoperability**: OSSA's `A2AExtension` schema guarantees seamless multi-vendor agent coordination across network boundaries using standardized protocols.
+- **Agent Identity & Authorization**: Built-in `AgentIdentity`, `AccessTier`, and `SeparationOfDuties` schemas immediately fulfill ITL's criteria for zero-trust verifiable credentials, semantic role isolation, and self-rotating service accounts.
+- **Provable Compliance**: The `metadata.compliance` specification allows agents to cryptographically declare their alignment to Federal and industry governance frameworks directly in their manifest.
+
 ## What's New
 
 ### OpenAI Agents SDK Export (2026-02-16)

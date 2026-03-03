@@ -403,9 +403,17 @@
             {
               "type": "object",
               "properties": {
-                "http": { "type": "string", "format": "uri" },
-                "grpc": { "type": "string" },
-                "websocket": { "type": "string", "format": "uri" }
+                "http": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "grpc": {
+                  "type": "string"
+                },
+                "websocket": {
+                  "type": "string",
+                  "format": "uri"
+                }
               },
               "additionalProperties": false
             },
@@ -414,10 +422,22 @@
               "items": {
                 "type": "object",
                 "properties": {
-                  "url": { "type": "string", "format": "uri" },
-                  "agentId": { "type": "string" },
-                  "capabilities": { "type": "array", "items": { "type": "string" } },
-                  "priority": { "type": "integer" }
+                  "url": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "agentId": {
+                    "type": "string"
+                  },
+                  "capabilities": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "priority": {
+                    "type": "integer"
+                  }
                 }
               }
             }
@@ -428,16 +448,36 @@
           "oneOf": [
             {
               "type": "array",
-              "items": { "type": "string", "enum": ["mtls", "bearer", "oidc", "api_key", "none"] }
+              "items": {
+                "type": "string",
+                "enum": [
+                  "mtls",
+                  "bearer",
+                  "oidc",
+                  "api_key",
+                  "none"
+                ]
+              }
             },
             {
               "type": "object",
               "properties": {
                 "methods": {
                   "type": "array",
-                  "items": { "type": "string", "enum": ["mtls", "bearer", "oidc", "api_key", "none"] }
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "mtls",
+                      "bearer",
+                      "oidc",
+                      "api_key",
+                      "none"
+                    ]
+                  }
                 },
-                "type": { "type": "string" }
+                "type": {
+                  "type": "string"
+                }
               }
             }
           ],
@@ -446,9 +486,23 @@
         "encryption": {
           "type": "object",
           "properties": {
-            "tlsRequired": { "type": "boolean", "default": true },
-            "minTlsVersion": { "type": "string", "enum": ["1.2", "1.3"] },
-            "cipherSuites": { "type": "array", "items": { "type": "string" } }
+            "tlsRequired": {
+              "type": "boolean",
+              "default": true
+            },
+            "minTlsVersion": {
+              "type": "string",
+              "enum": [
+                "1.2",
+                "1.3"
+              ]
+            },
+            "cipherSuites": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
           },
           "description": "TLS/encryption requirements. Projected to agent card encryption."
         }
@@ -806,10 +860,12 @@
                 "group_access_token",
                 "deploy_token",
                 "oauth2",
+                "oidc",
                 "ssh_key",
                 "mtls",
                 "github_app",
-                "azure_service_principal"
+                "azure_service_principal",
+                "verifiable_credential"
               ],
               "default": "personal_access_token",
               "description": "Authentication method type"
@@ -837,6 +893,26 @@
               "minimum": 1,
               "maximum": 90,
               "description": "Days before expiry to warn about token rotation"
+            },
+            "verifiable_credentials": {
+              "type": "object",
+              "description": "Configuration for NIST ITL aligned zero-trust verifiable credentials",
+              "properties": {
+                "issuer": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "presentations": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "require_proof": {
+                  "type": "boolean",
+                  "default": true
+                }
+              }
             },
             "rotation_policy": {
               "type": "object",
@@ -1400,6 +1476,29 @@
           "maxLength": 2000,
           "description": "Human-readable description"
         },
+        "compliance": {
+          "type": "object",
+          "description": "Declaration of alignment with external frameworks and standards",
+          "properties": {
+            "frameworks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "List of compliant frameworks (e.g. ['nist-caisi', 'nist-itl-identity'])"
+            },
+            "audit_ready": {
+              "type": "boolean",
+              "description": "Declares if the agent's telemetry and logging are ready for compliance audits"
+            },
+            "certifications": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
         "labels": {
           "type": "object",
           "additionalProperties": {
@@ -1449,6 +1548,46 @@
           "format": "uuid",
           "description": "Optional UUID v4 for stable cross-system reference (e.g. Drupal, registries)"
         },
+        "x-signature": {
+          "type": "object",
+          "description": "Optional cryptographic signature block for NIST CAISI identity alignment and provenance verification",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "Ed25519",
+                "RSA-PSS",
+                "ECDSA",
+                "jwt",
+                "vc",
+                "did"
+              ],
+              "description": "Signature scheme or protocol used"
+            },
+            "value": {
+              "type": "string",
+              "description": "The base64 encoded signature payload"
+            },
+            "publicKey": {
+              "type": "string",
+              "description": "Public key matching the signature, formatted as base64 or PEM"
+            },
+            "issuer": {
+              "type": "string",
+              "description": "Optional DID or URI of the entity that issued the signature for trust path building"
+            },
+            "timestamp": {
+              "type": "string",
+              "format": "date-time",
+              "description": "ISO 8601 timestamp of when the signature was generated"
+            }
+          },
+          "required": [
+            "type",
+            "value",
+            "publicKey"
+          ]
+        },
         "machine_name": {
           "type": "string",
           "pattern": "^[a-z0-9_]+$",
@@ -1471,7 +1610,11 @@
         },
         "status": {
           "type": "string",
-          "enum": ["active", "deprecated", "revoked"],
+          "enum": [
+            "active",
+            "deprecated",
+            "revoked"
+          ],
           "default": "active",
           "description": "Agent status: active (default), deprecated (show warning), revoked (withdrawn)"
         },
@@ -2289,7 +2432,9 @@
           "description": "Direct delegation targets for agent card and discovery (to + optional condition)",
           "items": {
             "type": "object",
-            "required": ["to"],
+            "required": [
+              "to"
+            ],
             "properties": {
               "to": {
                 "type": "string",
@@ -2484,7 +2629,10 @@
     "TeamDefinition": {
       "type": "object",
       "description": "Multi-agent team configuration with lead-teammate or peer-to-peer patterns (v0.4.6+)",
-      "required": ["model", "members"],
+      "required": [
+        "model",
+        "members"
+      ],
       "properties": {
         "model": {
           "type": "string",
@@ -2516,7 +2664,10 @@
           "description": "Team member definitions",
           "items": {
             "type": "object",
-            "required": ["name", "role"],
+            "required": [
+              "name",
+              "role"
+            ],
             "properties": {
               "name": {
                 "type": "string",
@@ -2544,12 +2695,16 @@
               },
               "tools": {
                 "type": "array",
-                "items": { "type": "string" },
+                "items": {
+                  "type": "string"
+                },
                 "description": "Tool names this member can access"
               },
               "skills": {
                 "type": "array",
-                "items": { "type": "string" },
+                "items": {
+                  "type": "string"
+                },
                 "description": "Skill references this member has"
               },
               "contextIsolation": {
@@ -2572,13 +2727,21 @@
           "properties": {
             "persistence": {
               "type": "string",
-              "enum": ["file-backed", "in-memory", "database"],
+              "enum": [
+                "file-backed",
+                "in-memory",
+                "database"
+              ],
               "default": "file-backed",
               "description": "How the task list is persisted"
             },
             "format": {
               "type": "string",
-              "enum": ["markdown", "json", "yaml"],
+              "enum": [
+                "markdown",
+                "json",
+                "yaml"
+              ],
               "default": "markdown",
               "description": "Format of the task list file"
             },
@@ -2654,7 +2817,10 @@
     "SubagentDefinition": {
       "type": "object",
       "description": "Child agent that can be spawned by a parent agent for task delegation (v0.4.6+)",
-      "required": ["name", "role"],
+      "required": [
+        "name",
+        "role"
+      ],
       "properties": {
         "name": {
           "type": "string",
@@ -2682,7 +2848,9 @@
         },
         "tools": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "description": "Tool names this subagent can access"
         },
         "contextIsolation": {
@@ -3867,7 +4035,10 @@
               "description": "Ordered list of memory files loaded per session",
               "items": {
                 "type": "object",
-                "required": ["path", "type"],
+                "required": [
+                  "path",
+                  "type"
+                ],
                 "properties": {
                   "path": {
                     "type": "string",
@@ -3875,7 +4046,15 @@
                   },
                   "type": {
                     "type": "string",
-                    "enum": ["managed-policy", "project", "rules", "user", "local", "auto-memory", "import"],
+                    "enum": [
+                      "managed-policy",
+                      "project",
+                      "rules",
+                      "user",
+                      "local",
+                      "auto-memory",
+                      "import"
+                    ],
                     "description": "Memory file type in the loading hierarchy"
                   },
                   "priority": {
@@ -3913,7 +4092,10 @@
               "description": "Section classifications for extraction targeting",
               "items": {
                 "type": "object",
-                "required": ["domain", "paths"],
+                "required": [
+                  "domain",
+                  "paths"
+                ],
                 "properties": {
                   "domain": {
                     "type": "string",
@@ -3921,12 +4103,16 @@
                   },
                   "paths": {
                     "type": "array",
-                    "items": { "type": "string" },
+                    "items": {
+                      "type": "string"
+                    },
                     "description": "Glob patterns for conditional loading (e.g. ['drupal/**', '*.module'])"
                   },
                   "keywords": {
                     "type": "array",
-                    "items": { "type": "string" },
+                    "items": {
+                      "type": "string"
+                    },
                     "description": "Keywords that trigger classification of sections into this domain"
                   }
                 }
@@ -17219,23 +17405,42 @@
       "properties": {
         "serialization_profile": {
           "type": "string",
-          "enum": ["full", "compact", "fingerprint"],
+          "enum": [
+            "full",
+            "compact",
+            "fingerprint"
+          ],
           "default": "compact",
           "description": "Manifest serialization profile. full=200-400 tokens (discovery), compact=60-120 tokens (runtime), fingerprint=15-30 tokens (routing)"
         },
         "observation_format": {
           "type": "string",
-          "enum": ["full", "diff", "projected", "summary"],
+          "enum": [
+            "full",
+            "diff",
+            "projected",
+            "summary"
+          ],
           "default": "projected",
           "description": "How tool observations are formatted. diff=returns diff not full file. projected=only matched fields. summary=compressed summary."
         },
-        "budget": { "$ref": "#/definitions/TokenBudget" },
-        "routing": { "$ref": "#/definitions/ModelRouting" },
-        "consolidation": { "$ref": "#/definitions/ConsolidationStrategy" },
-        "compression": { "$ref": "#/definitions/CompressionConfig" },
+        "budget": {
+          "$ref": "#/definitions/TokenBudget"
+        },
+        "routing": {
+          "$ref": "#/definitions/ModelRouting"
+        },
+        "consolidation": {
+          "$ref": "#/definitions/ConsolidationStrategy"
+        },
+        "compression": {
+          "$ref": "#/definitions/CompressionConfig"
+        },
         "custom_metrics": {
           "type": "array",
-          "items": { "$ref": "#/definitions/CustomMetric" },
+          "items": {
+            "$ref": "#/definitions/CustomMetric"
+          },
           "description": "Agent-specific token efficiency metrics"
         }
       },
@@ -17245,17 +17450,29 @@
       "type": "object",
       "description": "Token budget allocation and enforcement",
       "properties": {
-        "max_input_tokens": { "type": "integer", "description": "Maximum input tokens per request" },
-        "max_output_tokens": { "type": "integer", "description": "Maximum output tokens per request" },
+        "max_input_tokens": {
+          "type": "integer",
+          "description": "Maximum input tokens per request"
+        },
+        "max_output_tokens": {
+          "type": "integer",
+          "description": "Maximum output tokens per request"
+        },
         "allocation_strategy": {
           "type": "string",
-          "enum": ["equal", "proportional", "adaptive"],
+          "enum": [
+            "equal",
+            "proportional",
+            "adaptive"
+          ],
           "default": "adaptive",
           "description": "How budget is divided across pipeline stages"
         },
         "cascade": {
           "type": "array",
-          "items": { "$ref": "#/definitions/CascadeStage" },
+          "items": {
+            "$ref": "#/definitions/CascadeStage"
+          },
           "description": "Model cascade for cost-optimized routing"
         }
       }
@@ -17263,12 +17480,22 @@
     "CascadeStage": {
       "type": "object",
       "description": "A stage in a model cascade pipeline",
-      "required": ["model", "max_complexity"],
+      "required": [
+        "model",
+        "max_complexity"
+      ],
       "properties": {
-        "model": { "type": "string", "description": "Model identifier" },
+        "model": {
+          "type": "string",
+          "description": "Model identifier"
+        },
         "max_complexity": {
           "type": "string",
-          "enum": ["low", "medium", "high"],
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ],
           "description": "Maximum complexity this model handles"
         },
         "budget_share": {
@@ -17277,8 +17504,14 @@
           "maximum": 1,
           "description": "Fraction of total budget allocated to this stage"
         },
-        "budget_tokens": { "type": "integer", "description": "Absolute token budget for this stage" },
-        "condition": { "type": "string", "description": "Condition expression for when to use this stage" }
+        "budget_tokens": {
+          "type": "integer",
+          "description": "Absolute token budget for this stage"
+        },
+        "condition": {
+          "type": "string",
+          "description": "Condition expression for when to use this stage"
+        }
       }
     },
     "ModelRouting": {
@@ -17287,17 +17520,25 @@
       "properties": {
         "cascade": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "description": "Model tiers in order of cost (e.g., [haiku, sonnet, opus])"
         },
         "complexity_threshold": {
           "type": "array",
-          "items": { "type": "number" },
+          "items": {
+            "type": "number"
+          },
           "description": "Complexity score thresholds between tiers (e.g., [0.3, 0.7])"
         },
         "strategy": {
           "type": "string",
-          "enum": ["cost_optimized", "quality_optimized", "balanced"],
+          "enum": [
+            "cost_optimized",
+            "quality_optimized",
+            "balanced"
+          ],
           "default": "cost_optimized"
         }
       }
@@ -17308,28 +17549,41 @@
       "properties": {
         "strategy": {
           "type": "string",
-          "enum": ["aggressive", "moderate", "minimal", "none"],
+          "enum": [
+            "aggressive",
+            "moderate",
+            "minimal",
+            "none"
+          ],
           "default": "moderate",
           "description": "How aggressively to consolidate trajectory history"
         },
         "retain": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "description": "Fields to always retain (e.g., final_answer, confidence)"
         },
         "summarize": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "description": "Fields to summarize instead of keeping verbatim"
         },
         "drop": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "description": "Fields to drop entirely (e.g., raw_observations, intermediate_diffs)"
         },
         "accumulate": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "description": "Fields to accumulate with a token cap"
         },
         "max_accumulated_tokens": {
@@ -17343,10 +17597,18 @@
       "type": "object",
       "description": "Prompt and context compression configuration",
       "properties": {
-        "enabled": { "type": "boolean", "default": true },
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
         "strategy": {
           "type": "string",
-          "enum": ["template", "semantic", "hybrid", "none"],
+          "enum": [
+            "template",
+            "semantic",
+            "hybrid",
+            "none"
+          ],
           "description": "Compression approach: template=pattern replacement, semantic=LLMLingua-style, hybrid=both"
         },
         "compression_ratio": {
@@ -17364,28 +17626,63 @@
         },
         "templates": {
           "type": "array",
-          "items": { "$ref": "#/definitions/CompressionTemplate" }
+          "items": {
+            "$ref": "#/definitions/CompressionTemplate"
+          }
         }
       }
     },
     "CompressionTemplate": {
       "type": "object",
-      "required": ["name", "pattern"],
+      "required": [
+        "name",
+        "pattern"
+      ],
       "properties": {
-        "name": { "type": "string" },
-        "pattern": { "type": "string", "description": "Compact pattern (e.g., scan_ctx[{{lang}}|{{framework}}|{{file_count}}])" },
-        "expands_to": { "type": "string", "description": "Full expansion template" },
-        "savings": { "type": "integer", "description": "Estimated tokens saved per use" }
+        "name": {
+          "type": "string"
+        },
+        "pattern": {
+          "type": "string",
+          "description": "Compact pattern (e.g., scan_ctx[{{lang}}|{{framework}}|{{file_count}}])"
+        },
+        "expands_to": {
+          "type": "string",
+          "description": "Full expansion template"
+        },
+        "savings": {
+          "type": "integer",
+          "description": "Estimated tokens saved per use"
+        }
       }
     },
     "CustomMetric": {
       "type": "object",
-      "required": ["name", "type"],
+      "required": [
+        "name",
+        "type"
+      ],
       "properties": {
-        "name": { "type": "string" },
-        "type": { "type": "string", "enum": ["counter", "gauge", "histogram"] },
-        "description": { "type": "string" },
-        "labels": { "type": "array", "items": { "type": "string" } }
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "counter",
+            "gauge",
+            "histogram"
+          ]
+        },
+        "description": {
+          "type": "string"
+        },
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
       }
     },
     "WorkflowComposition": {
@@ -17397,10 +17694,14 @@
           "items": {
             "type": "object",
             "properties": {
-              "agent": { "type": "string" },
+              "agent": {
+                "type": "string"
+              },
               "project": {
                 "type": "array",
-                "items": { "type": "string" },
+                "items": {
+                  "type": "string"
+                },
                 "description": "Output field projection - only these fields pass to the next agent"
               }
             }
@@ -17414,7 +17715,12 @@
               "default": true,
               "description": "Deduplicate input context across parallel branches"
             },
-            "agents": { "type": "array", "items": { "type": "string" } }
+            "agents": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
           }
         }
       }
