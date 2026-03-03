@@ -285,6 +285,32 @@ package:gitlab:
     url: https://gitlab.com/blueflyio/ossa/openstandardagents/-/packages
 
 # =============================================================================
+# RELEASE STAGE - Next patch on merge to main (tag v0.4.X + GitLab Release)
+# =============================================================================
+release:patch-on-main:
+  stage: release
+  image: alpine:latest
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+  before_script:
+    - apk add --no-cache git curl
+    - git config user.email "ci@blueflyio"
+    - git config user.name "GitLab CI"
+    - |
+      if [ -n "${GITLAB_TOKEN}" ]; then
+        git remote set-url origin "https://oauth2:${GITLAB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      fi
+  script:
+    - LATEST=$(git describe --tags --match 'v0.4.*' --abbrev=0 2>/dev/null || echo "v0.4.0")
+    - PATCH=$(echo "$LATEST" | sed 's/v0\.4\.\(.*\)/\1/')
+    - N=$((PATCH+1))
+    - NEW_TAG="v0.4.$N"
+    - echo "Creating tag $NEW_TAG"
+    - git tag "$NEW_TAG"
+    - git push origin "$NEW_TAG"
+  allow_failure: true
+
+# =============================================================================
 # RELEASE STAGE - Manual npm Publish with OTP Support
 # =============================================================================
 release:npmjs:
