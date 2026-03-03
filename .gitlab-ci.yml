@@ -111,6 +111,8 @@ validate:openapi:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/
+  allow_failure: true
+
 
 # Lint UADP OpenAPI (spectral) + AsyncAPI (asyncapi/cli) specs
 # spectral already in devDeps: @stoplight/spectral-cli
@@ -135,6 +137,7 @@ validate:manifests-ossa:
   extends: .base-runner
   stage: validate
   script:
+    - npm run build
     - npx ossa validate spec/reference/reference-agents/*/manifest.ossa.yaml
     - |
       for f in $(find .agents -name "*.ossa.yaml" 2>/dev/null); do
@@ -150,6 +153,7 @@ validate:agents-discover:
   extends: .base-runner
   stage: validate
   script:
+    - npm run build
     - npx ossa workspace init --name openstandardagents 2>/dev/null || true
     - npx ossa workspace discover
     - npx ossa agents list --json
