@@ -1,0 +1,118 @@
+{
+  "uuid": "ossa-component-2026-03",
+  "metadata": {
+    "title": "OSSA Agent Manifest — OSCAL Component Definition",
+    "last-modified": "2026-03-02",
+    "version": "0.4.0",
+    "oscal-version": "1.1.2",
+    "links": [
+      { "href": "https://openstandardagents.org", "rel": "homepage" },
+      { "href": "https://openstandardagents.org/docs/specs/uadp", "rel": "specification" }
+    ]
+  },
+  "component-definition": {
+    "components": [
+      {
+        "uuid": "ossa-agent-manifest-component",
+        "type": "software",
+        "title": "OSSA Agent Manifest (v0.4)",
+        "description": "Declarative YAML manifest defining an AI agent's identity, capabilities, security controls, and lifecycle. Enforced by the OSSA CLI and UADP registry.",
+        "control-implementations": [
+          {
+            "uuid": "ossa-nist-sp800-53-r5",
+            "source": "https://doi.org/10.6028/NIST.SP.800-53r5",
+            "description": "OSSA manifest security controls mapped to NIST SP 800-53 Rev 5",
+            "set-parameters": [],
+            "implemented-requirements": [
+
+              {
+                "uuid": "impl-ac-3",
+                "control-id": "ac-3",
+                "description": "Access Enforcement: `spec.autonomy.allowed_actions` defines an explicit allowlist of permitted agent actions. `spec.autonomy.blocked_actions` provides a blocklist. Both are enforced by the scaffold runtime — not by the LLM."
+              },
+
+              {
+                "uuid": "impl-ac-6",
+                "control-id": "ac-6",
+                "description": "Least Privilege: `spec.autonomy.mode: supervised` restricts the agent to human-approved actions only. `spec.tools[].permissions` scopes per-tool access to the minimum required operations (e.g., read only)."
+              },
+
+              {
+                "uuid": "impl-ac-17",
+                "control-id": "ac-17",
+                "description": "Remote Access: `spec.constraints.network: internal_only` restricts the agent's network access to internal resources. `none` disables all network access. Enforced at the container/sandbox level."
+              },
+
+              {
+                "uuid": "impl-au-2",
+                "control-id": "au-2",
+                "description": "Event Logging: `spec.observability.tracing.enabled` enables OpenTelemetry trace emission. `spec.observability.security_events` emits structured security events (action.attempted, action.blocked, prompt_injection.detected) to OTEL-compatible collectors."
+              },
+
+              {
+                "uuid": "impl-au-12",
+                "control-id": "au-12",
+                "description": "Audit Record Generation: OSSA security events provide per-action audit records including agentId, toolName, action, timestamp, and blocking reason — consumable by SIEMs without agent-specific plugins."
+              },
+
+              {
+                "uuid": "impl-ia-3",
+                "control-id": "ia-3",
+                "description": "Device Identification and Authentication: `metadata.x-signature` with `type: did` enables DID-based cryptographic identity for agents, resolved via `did:web:` or `did:key:` using the UADP trust verification endpoint."
+              },
+
+              {
+                "uuid": "impl-ia-5",
+                "control-id": "ia-5",
+                "description": "Authenticator Management: `metadata.x-signature.publicKey` carries the verification key. Key revocation is propagated in real time via the `uadp.agents.trust-invalidated` AsyncAPI channel."
+              },
+
+              {
+                "uuid": "impl-sc-7",
+                "control-id": "sc-7",
+                "description": "Boundary Protection: `spec.constraints.network` controls agent network egress (none | internal_only | allowlist). Works with container network policies for enforcement."
+              },
+
+              {
+                "uuid": "impl-sc-17",
+                "control-id": "sc-17",
+                "description": "Public Key Infrastructure: `metadata.x-signature` supports Ed25519, ECDSA, RSA-PSS, JWT, VC, and DID as trust schemes. Verification uses @noble/ed25519 and jose — both widely audited open-source libraries."
+              },
+
+              {
+                "uuid": "impl-sc-28",
+                "control-id": "sc-28",
+                "description": "Protection of Information at Rest: `metadata.sbom_pointer` references an externally generated SBOM (CycloneDX / SPDX) describing all agent dependencies, supporting supply chain risk management."
+              },
+
+              {
+                "uuid": "impl-si-3",
+                "control-id": "si-3",
+                "description": "Malicious Code Protection: `spec.safety.guardrails` enforces pattern-based content filtering on agent inputs and tool outputs, blocking known prompt injection attack patterns before they reach the model context."
+              },
+
+              {
+                "uuid": "impl-si-7",
+                "control-id": "si-7",
+                "description": "Software, Firmware, and Information Integrity: `metadata.x-signature.value` is computed over the canonical manifest (RFC 8785 json-canonicalize). Consumers verify this before executing the agent, providing manifest integrity assurance."
+              },
+
+              {
+                "uuid": "impl-sa-11",
+                "control-id": "sa-11",
+                "description": "Developer Testing and Evaluation: The OSSA CLI provides `ossa validate` for schema-time security control verification, and integrates with @stoplight/spectral-cli for OpenAPI spec linting in CI pipelines."
+              },
+
+              {
+                "uuid": "impl-cp-10",
+                "control-id": "cp-10",
+                "description": "System Recovery and Reconstitution: `spec.constraints.rollback_policy: automatic` signals scaffold orchestrators (Temporal, n8n) to execute compensating transactions when an agent trajectory is flagged for rollback."
+              }
+
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
