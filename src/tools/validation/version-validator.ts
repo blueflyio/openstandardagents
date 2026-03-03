@@ -24,8 +24,12 @@ export class VersionValidator {
       try {
         const v = JSON.parse(readFileSync('.version.json', 'utf-8'));
         this.expectedVersion =
-          (v.current && String(v.current).match(/^\d+\.\d+\.\d+/) ? v.current : null) ??
-          (v.spec_version && String(v.spec_version).match(/^\d+\.\d+\.\d+/) ? v.spec_version : null) ??
+          (v.current && String(v.current).match(/^\d+\.\d+\.\d+/)
+            ? v.current
+            : null) ??
+          (v.spec_version && String(v.spec_version).match(/^\d+\.\d+\.\d+/)
+            ? v.spec_version
+            : null) ??
           null;
       } catch {
         this.expectedVersion = null;
@@ -77,7 +81,9 @@ export class VersionValidator {
       pkg.version !== expected &&
       !this.isReleaseBranch
     ) {
-      this.messages.push('ERROR: package.json version does not match .version.json');
+      this.messages.push(
+        'ERROR: package.json version does not match .version.json'
+      );
       this.messages.push('');
       this.messages.push(
         `package.json "version" MUST match .version.json (current source of truth).`
@@ -92,7 +98,11 @@ export class VersionValidator {
       this.errors++;
     }
 
-    if (pkg.exports && pkg.exports['./schema'] && typeof pkg.exports['./schema'] === 'string') {
+    if (
+      pkg.exports &&
+      pkg.exports['./schema'] &&
+      typeof pkg.exports['./schema'] === 'string'
+    ) {
       const schemaPath = pkg.exports['./schema'];
       let expectedPrefix: string | null = null;
       if (existsSync('.version.json')) {
@@ -109,10 +119,14 @@ export class VersionValidator {
         !schemaPath.startsWith(expectedPrefix) &&
         !this.isReleaseBranch
       ) {
-        this.messages.push('WARNING: package.json "./schema" path may not match .version.json spec_path');
+        this.messages.push(
+          'WARNING: package.json "./schema" path may not match .version.json spec_path'
+        );
         this.messages.push('');
         this.messages.push(`Current: "${schemaPath}"`);
-        this.messages.push(`Expected prefix (from .version.json spec_path): "${expectedPrefix}"`);
+        this.messages.push(
+          `Expected prefix (from .version.json spec_path): "${expectedPrefix}"`
+        );
         this.messages.push('');
       }
     }

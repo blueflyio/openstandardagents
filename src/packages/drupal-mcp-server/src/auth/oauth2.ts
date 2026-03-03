@@ -75,7 +75,7 @@ export class OAuth2Auth {
       });
 
       this.token = response.data;
-      this.tokenExpiry = Date.now() + (this.token.expires_in * 1000) - 60000; // 1 minute buffer
+      this.tokenExpiry = Date.now() + this.token.expires_in * 1000 - 60000; // 1 minute buffer
     } catch (error: any) {
       throw new Error(`OAuth2 authentication failed: ${error.message}`);
     }

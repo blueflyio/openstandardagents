@@ -10,9 +10,8 @@
  * Token: GITLAB_TOKEN | SERVICE_ACCOUNT_OSSA_TOKEN | GITLAB_PUSH_TOKEN
  */
 
-import fs from 'fs';
-import path from 'path';
 import { Gitlab } from '@gitbeaker/rest';
+import fs from 'fs';
 
 const GITLAB_API_URL = process.env.CI_API_V4_URL || 'https://gitlab.com/api/v4';
 const GITLAB_TOKEN =
@@ -21,7 +20,9 @@ const GITLAB_TOKEN =
   process.env.GITLAB_PUSH_TOKEN ||
   '';
 const PROJECT_ID =
-  process.env.CI_PROJECT_ID || process.env.GITLAB_PROJECT_ID || 'blueflyio/ossa/openstandardagents';
+  process.env.CI_PROJECT_ID ||
+  process.env.GITLAB_PROJECT_ID ||
+  'blueflyio/ossa/openstandardagents';
 
 const NAS_WEBSITE_AUDIT_BODY =
   '/Volumes/AgentPlatform/applications/Research/openstandardagents/website/gitlab-issue-ossa-website-audit.md';
@@ -49,11 +50,17 @@ function buildIssueUpdates(): IssueUpdate[] {
   const websiteBody = getWebsiteAuditBody();
   return [
     {
-      titleMatch: /Website positioning|SEO|trust signals|competitive landscape|critical fixes/i,
+      titleMatch:
+        /Website positioning|SEO|trust signals|competitive landscape|critical fixes/i,
       description:
         websiteBody ||
         '[AUDIT] Website positioning, SEO, trust signals, competitive landscape. See Research website/gitlab-issue-ossa-website-audit.md for full body.',
-      labels: ['priority::critical', 'type::improvement', 'website', 'strategy'],
+      labels: [
+        'priority::critical',
+        'type::improvement',
+        'website',
+        'strategy',
+      ],
       milestone: 'v0.4.0',
       dueDate: '2026-03-15',
     },
@@ -95,7 +102,8 @@ Ref: Research roadmaps-prds/GITLAB-AGENT-ENHANCEMENT.md.`,
       milestone: 'v0.4.0',
     },
     {
-      titleMatch: /ossa skills research|generate|export|Claude Skills pipeline/i,
+      titleMatch:
+        /ossa skills research|generate|export|Claude Skills pipeline/i,
       description: `**Scope:** PRD Goals G2–G4: ossa skills research, ossa skills generate (OSSA/Oracle/AGENTS.md/A2A), ossa skills export (npm package for .claude/skills/). P0 acceptance from PRD.
 **Prerequisite:** Phase 0 complete; schema v0.4 if skills reference team/subagents.
 Ref: Wiki and Research roadmaps-prds/PRD-OSSA-SKILLS-RESEARCHER-GENERATOR-EXPORTER.md.`,
@@ -110,7 +118,7 @@ Can be sub-issues of Website audit or single implementation issue.`,
       milestone: 'v0.4.0',
     },
     {
-      titleMatch: /canonical version|/ecosystem/|positioning page/i,
+      titleMatch: /canonical version|\/ecosystem\/|positioning page/i,
       description: `(1) One version number across site, GitHub README, npm, changelog; update title/meta and version badge. (2) Add /ecosystem/ or /landscape/ page: stack diagram (contract layer between protocols and platforms), honest comparison with AGNTCY, ADL, ANS, LOKA, Entra; "why OSSA" in context.
 Ref: Audit items 3–4; Research website/ossa-website-content-guide.md.`,
       labels: ['website', 'strategy'],
@@ -120,18 +128,24 @@ Ref: Audit items 3–4; Research website/ossa-website-content-guide.md.`,
 }
 
 function titleMatches(issueTitle: string, match: string | RegExp): boolean {
-  if (typeof match === 'string') return issueTitle.toLowerCase().includes(match.toLowerCase());
+  if (typeof match === 'string')
+    return issueTitle.toLowerCase().includes(match.toLowerCase());
   return match.test(issueTitle);
 }
 
 async function main(): Promise<void> {
   const dryRun = process.argv.includes('--dry-run');
   if (!GITLAB_TOKEN) {
-    console.error('No GitLab token. Set GITLAB_TOKEN, SERVICE_ACCOUNT_OSSA_TOKEN, or GITLAB_PUSH_TOKEN');
+    console.error(
+      'No GitLab token. Set GITLAB_TOKEN, SERVICE_ACCOUNT_OSSA_TOKEN, or GITLAB_PUSH_TOKEN'
+    );
     process.exit(1);
   }
 
-  const gitlab = new Gitlab({ token: GITLAB_TOKEN, host: GITLAB_API_URL.replace(/\/api\/v4\/?$/, '') });
+  const gitlab = new Gitlab({
+    token: GITLAB_TOKEN,
+    host: GITLAB_API_URL.replace(/\/api\/v4\/?$/, ''),
+  });
   const updates = buildIssueUpdates();
 
   const issues: { iid: number; title: string; description: string }[] = [];
@@ -144,8 +158,16 @@ async function main(): Promise<void> {
       perPage,
       page,
     });
-    for (const i of chunk as { iid: number; title: string; description: string }[]) {
-      issues.push({ iid: i.iid, title: i.title, description: i.description || '' });
+    for (const i of chunk as {
+      iid: number;
+      title: string;
+      description: string;
+    }[]) {
+      issues.push({
+        iid: i.iid,
+        title: i.title,
+        description: i.description || '',
+      });
     }
     if (chunk.length < perPage) break;
     page += 1;
@@ -162,19 +184,29 @@ async function main(): Promise<void> {
       console.log(`No match: "${def.titleMatch}"`);
       continue;
     }
-    const payload: { description?: string; labels?: string; milestone_id?: number; due_date?: string } = {};
+    const payload: {
+      description?: string;
+      labels?: string;
+      milestone_id?: number;
+      due_date?: string;
+    } = {};
     if (def.description) payload.description = def.description;
     if (def.labels?.length) payload.labels = def.labels.join(',');
     if (def.dueDate) payload.due_date = def.dueDate;
     if (def.milestone) {
-      const milestones = (await gitlab.ProjectMilestones.all(PROJECT_ID)) as { id: number; title: string }[];
+      const milestones = (await gitlab.ProjectMilestones.all(PROJECT_ID)) as {
+        id: number;
+        title: string;
+      }[];
       const m = milestones.find((x) => x.title === def.milestone);
       if (m) payload.milestone_id = m.id;
     }
 
     if (dryRun) {
       console.log(`Would update !${found.iid}: ${found.title}`);
-      console.log(`  description length: ${(payload.description || '').length}`);
+      console.log(
+        `  description length: ${(payload.description || '').length}`
+      );
       if (payload.labels) console.log(`  labels: ${payload.labels}`);
       updated++;
       continue;
@@ -189,7 +221,9 @@ async function main(): Promise<void> {
     }
   }
 
-  console.log(dryRun ? `Would update ${updated} issues.` : `Updated ${updated} issues.`);
+  console.log(
+    dryRun ? `Would update ${updated} issues.` : `Updated ${updated} issues.`
+  );
 }
 
 main().catch((e) => {

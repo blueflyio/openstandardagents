@@ -113,7 +113,9 @@ export class AutoGenConverter implements FrameworkConverter {
         },
         annotations: {
           'ossa.io/human-input-mode': config.human_input_mode || 'NEVER',
-          'ossa.io/max-auto-reply': String(config.max_consecutive_auto_reply || 10),
+          'ossa.io/max-auto-reply': String(
+            config.max_consecutive_auto_reply || 10
+          ),
         },
       },
       spec,
@@ -165,7 +167,8 @@ export class AutoGenConverter implements FrameworkConverter {
         },
         annotations: {
           'ossa.io/max-rounds': String(config.max_round || 10),
-          'ossa.io/speaker-selection': config.speaker_selection_method || 'auto',
+          'ossa.io/speaker-selection':
+            config.speaker_selection_method || 'auto',
         },
       },
       spec,
@@ -284,7 +287,10 @@ export class AutoGenConverter implements FrameworkConverter {
       });
     }
 
-    if (config.max_consecutive_auto_reply && config.max_consecutive_auto_reply > 10) {
+    if (
+      config.max_consecutive_auto_reply &&
+      config.max_consecutive_auto_reply > 10
+    ) {
       capabilities.push({
         name: 'extended_reasoning',
         description: 'Configured for extended multi-turn reasoning',
@@ -306,7 +312,10 @@ export class AutoGenConverter implements FrameworkConverter {
       };
     }
 
-    if (config.code_execution_config && !config.code_execution_config.use_docker) {
+    if (
+      config.code_execution_config &&
+      !config.code_execution_config.use_docker
+    ) {
       warnings.push(
         'Code execution without Docker detected - consider security implications'
       );

@@ -39,7 +39,7 @@ interface Fix {
 const fixes: Fix[] = [];
 
 function shouldIgnore(filepath: string): boolean {
-  return IGNORE_PATTERNS.some(pattern => pattern.test(filepath));
+  return IGNORE_PATTERNS.some((pattern) => pattern.test(filepath));
 }
 
 function fixFile(filepath: string) {
@@ -52,20 +52,27 @@ function fixFile(filepath: string) {
     // For TypeScript/JavaScript test files
     if (filepath.endsWith('.test.ts') || filepath.endsWith('.spec.ts')) {
       // Check if file already has the API_VERSION import statement
-      const hasImport = /import\s*\{\s*API_VERSION\s*\}\s*from\s*['"'].*version\.js['"]/.test(content);
+      const hasImport =
+        /import\s*\{\s*API_VERSION\s*\}\s*from\s*['"'].*version\.js['"]/.test(
+          content
+        );
 
       if (!hasImport) {
         // Calculate correct relative path to src/version.js based on file depth
-        const relativePath = relative(dirname(filepath), join(process.cwd(), 'src/version.js'));
+        const relativePath = relative(
+          dirname(filepath),
+          join(process.cwd(), 'src/version.js')
+        );
 
         // Add import at the top after other imports
         const importRegex = /(import .* from .*;\n)+/;
         const match = content.match(importRegex);
         if (match) {
           const lastImportIndex = match.index! + match[0].length;
-          content = content.slice(0, lastImportIndex) +
-                   `import { API_VERSION } from '${relativePath}';\n` +
-                   content.slice(lastImportIndex);
+          content =
+            content.slice(0, lastImportIndex) +
+            `import { API_VERSION } from '${relativePath}';\n` +
+            content.slice(lastImportIndex);
           changeCount++;
         }
       }
@@ -88,8 +95,12 @@ function fixFile(filepath: string) {
     }
 
     // For JSON/YAML files (examples, configs)
-    if ((filepath.endsWith('.json') || filepath.endsWith('.yaml') || filepath.endsWith('.yml')) &&
-        !shouldIgnore(filepath)) {
+    if (
+      (filepath.endsWith('.json') ||
+        filepath.endsWith('.yaml') ||
+        filepath.endsWith('.yml')) &&
+      !shouldIgnore(filepath)
+    ) {
       // Replace with current version (these can't import)
       const versionRegex = /(['"]?)ossa\/v\d+\.\d+(?:\.\d+)?\1/g;
       const matches = content.match(versionRegex);
@@ -156,14 +167,18 @@ if (fixes.length === 0) {
 } else {
   console.log(`\n✅ Fixed ${fixes.length} files:\n`);
 
-  fixes.forEach(fix => {
+  fixes.forEach((fix) => {
     const relPath = relative(rootDir, fix.file);
     console.log(`  ${relPath}`);
-    console.log(`    ${fix.oldVersion} → ${fix.newVersion} (${fix.changes} changes)`);
+    console.log(
+      `    ${fix.oldVersion} → ${fix.newVersion} (${fix.changes} changes)`
+    );
   });
 
   const totalChanges = fixes.reduce((sum, f) => sum + f.changes, 0);
-  console.log(`\n✅ Total: ${totalChanges} changes across ${fixes.length} files\n`);
+  console.log(
+    `\n✅ Total: ${totalChanges} changes across ${fixes.length} files\n`
+  );
 
   process.exit(0);
 }

@@ -19,7 +19,9 @@ export class GitLabDuoExporter {
    * Export OSSA manifest to GitLab Duo format.
    * When projectId and GITLAB_TOKEN are set, pushes to GitLab Duo API.
    */
-  async export(options: GitLabDuoExportOptions): Promise<GitLabDuoExportResult> {
+  async export(
+    options: GitLabDuoExportOptions
+  ): Promise<GitLabDuoExportResult> {
     const { manifest, projectId } = options;
 
     const gitlabFormat = this.convertToGitLabFormat(manifest);
@@ -40,7 +42,11 @@ export class GitLabDuoExporter {
           }
         );
         if (!res.ok) {
-          console.warn('GitLab Duo API push failed:', res.status, await res.text());
+          console.warn(
+            'GitLab Duo API push failed:',
+            res.status,
+            await res.text()
+          );
         }
       } catch (e) {
         console.warn('GitLab Duo API push failed:', e);

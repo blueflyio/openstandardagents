@@ -61,9 +61,7 @@ export class EntityTools {
    * Query Drupal entities with filters
    */
   async queryEntities(input: EntityQueryInput): Promise<DrupalEntity[]> {
-    const resourceType = input.bundle
-      ? `${input.entity_type}--${input.bundle}`
-      : input.entity_type;
+    const resourceType = input.bundle ? `${input.entity_type}--${input.bundle}` : input.entity_type;
 
     const queryParams = this.client.buildJsonApiQuery({
       filter: input.filters,

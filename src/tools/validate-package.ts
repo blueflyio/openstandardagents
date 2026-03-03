@@ -29,13 +29,7 @@ interface ValidationResult {
   warnings: string[];
 }
 
-const CRITICAL_FILES = [
-  '.version.json',
-  'dist/',
-  'spec/',
-  'bin/',
-  'README.md',
-];
+const CRITICAL_FILES = ['.version.json', 'dist/', 'spec/', 'bin/', 'README.md'];
 
 const REQUIRED_EXPORTS = [
   'dist/index.js',
@@ -99,7 +93,7 @@ class PackageValidator {
     const missingFiles: string[] = [];
 
     for (const file of CRITICAL_FILES) {
-      const isIncluded = this.pkg.files.some(pattern => {
+      const isIncluded = this.pkg.files.some((pattern) => {
         // Check exact match or directory match
         return pattern === file || pattern === file.replace('/', '');
       });
@@ -183,10 +177,14 @@ class PackageValidator {
 
     try {
       // Create tarball in current directory (explicit so it works when run from prepublishOnly)
-      const packOutput = execFileSync('npm', ['pack', '--pack-destination', cwd], {
-        encoding: 'utf-8',
-        cwd,
-      });
+      const packOutput = execFileSync(
+        'npm',
+        ['pack', '--pack-destination', cwd],
+        {
+          encoding: 'utf-8',
+          cwd,
+        }
+      );
       tarball = packOutput.trim().split('\n').pop()?.trim();
 
       if (!tarball) {
@@ -215,7 +213,9 @@ class PackageValidator {
     } finally {
       // Cleanup: uninstall global package and remove tarball
       try {
-        execFileSync('npm', ['uninstall', '-g', this.pkg.name], { stdio: 'pipe' });
+        execFileSync('npm', ['uninstall', '-g', this.pkg.name], {
+          stdio: 'pipe',
+        });
       } catch {
         // Ignore uninstall errors
       }
@@ -248,8 +248,11 @@ class PackageValidator {
         execSync(cmd, { stdio: 'pipe' });
         console.log(`   ✅ ${desc}: OK`);
       } catch (error: any) {
-        const output = error.stdout?.toString() || error.stderr?.toString() || '';
-        this.errors.push(`❌ ${desc} failed:\n   Command: ${cmd}\n   Output: ${output}`);
+        const output =
+          error.stdout?.toString() || error.stderr?.toString() || '';
+        this.errors.push(
+          `❌ ${desc} failed:\n   Command: ${cmd}\n   Output: ${output}`
+        );
       }
     }
 
@@ -270,12 +273,12 @@ async function main() {
 
   if (result.warnings.length > 0) {
     console.log('\n⚠️  WARNINGS:\n');
-    result.warnings.forEach(warning => console.log(warning));
+    result.warnings.forEach((warning) => console.log(warning));
   }
 
   if (result.errors.length > 0) {
     console.log('\n❌ ERRORS:\n');
-    result.errors.forEach(error => console.log(error));
+    result.errors.forEach((error) => console.log(error));
     console.log('\n💡 Fix these errors before publishing to NPM');
     process.exit(1);
   }
@@ -285,7 +288,7 @@ async function main() {
   process.exit(0);
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error('💥 Validation crashed:', err);
   process.exit(1);
 });
