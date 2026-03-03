@@ -24,54 +24,54 @@ import 'reflect-metadata';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import {
-  CallToolRequestSchema,
-  ListToolsRequestSchema,
-  ListResourcesRequestSchema,
-  ReadResourceRequestSchema,
-  ListPromptsRequestSchema,
-  GetPromptRequestSchema,
-  type Tool,
+    CallToolRequestSchema,
+    GetPromptRequestSchema,
+    ListPromptsRequestSchema,
+    ListResourcesRequestSchema,
+    ListToolsRequestSchema,
+    ReadResourceRequestSchema,
+    type Tool,
 } from '@modelcontextprotocol/sdk/types.js';
-import { z } from 'zod';
-import pino from 'pino';
+import axios from 'axios';
 import fg from 'fast-glob';
 import yaml from 'js-yaml';
-import axios from 'axios';
-import semver from 'semver';
+import { spawnSync } from 'node:child_process';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { spawnSync } from 'node:child_process';
+import pino from 'pino';
+import semver from 'semver';
+import { z } from 'zod';
 
+import { registry as convertRegistry, initializeAdapters } from '../adapters/index.js';
+import {
+    getAgentTypeConfigs,
+    getDefaultAgentKind,
+    getDefaultAgentVersion,
+    getDefaultDescriptionTemplate,
+    getDefaultRoleTemplate,
+} from '../config/defaults.js';
 import { container } from '../di-container.js';
 import { ManifestRepository } from '../repositories/manifest.repository.js';
-import { ValidationService } from '../services/validation.service.js';
-import { MigrationTransformService } from '../services/migration-transform.service.js';
-import { VersionDetectionService } from '../services/version-detection.service.js';
 import { AgentCardGenerator } from '../services/agent-card-generator.js';
-import { RegistryService } from '../services/registry.service.js';
+import { MigrationTransformService } from '../services/migration-transform.service.js';
 import type { PublishRequest } from '../services/registry.service.js';
-import { getApiVersion, getVersion } from '../utils/version.js';
-import { scanManifests } from '../utils/manifest-scanner.js';
-import {
-  getDefaultAgentVersion,
-  getDefaultAgentKind,
-  getDefaultRoleTemplate,
-  getDefaultDescriptionTemplate,
-  getAgentTypeConfigs,
-} from '../config/defaults.js';
-import { initializeAdapters, registry as convertRegistry } from '../adapters/index.js';
-import type { OssaAgent, ValidationResult } from '../types/index.js';
-import { CursorValidator } from '../services/validators/cursor.validator.js';
-import { OpenAIValidator } from '../services/validators/openai.validator.js';
-import { CrewAIValidator } from '../services/validators/crewai.validator.js';
-import { LangChainValidator } from '../services/validators/langchain.validator.js';
+import { RegistryService } from '../services/registry.service.js';
+import { ValidationService } from '../services/validation.service.js';
 import { AnthropicValidator } from '../services/validators/anthropic.validator.js';
-import { LangflowValidator } from '../services/validators/langflow.validator.js';
 import { AutoGenValidator } from '../services/validators/autogen.validator.js';
-import { VercelAIValidator } from '../services/validators/vercel-ai.validator.js';
-import { LlamaIndexValidator } from '../services/validators/llamaindex.validator.js';
-import { LangGraphValidator } from '../services/validators/langgraph.validator.js';
+import { CrewAIValidator } from '../services/validators/crewai.validator.js';
+import { CursorValidator } from '../services/validators/cursor.validator.js';
 import { KagentValidator } from '../services/validators/kagent.validator.js';
+import { LangChainValidator } from '../services/validators/langchain.validator.js';
+import { LangflowValidator } from '../services/validators/langflow.validator.js';
+import { LangGraphValidator } from '../services/validators/langgraph.validator.js';
+import { LlamaIndexValidator } from '../services/validators/llamaindex.validator.js';
+import { OpenAIValidator } from '../services/validators/openai.validator.js';
+import { VercelAIValidator } from '../services/validators/vercel-ai.validator.js';
+import { VersionDetectionService } from '../services/version-detection.service.js';
+import type { OssaAgent, ValidationResult } from '../types/index.js';
+import { scanManifests } from '../utils/manifest-scanner.js';
+import { getApiVersion, getVersion } from '../utils/version.js';
 
 // ---------------------------------------------------------------------------
 // Logging — pino (structured JSON to stderr so MCP stdio stays clean)
@@ -899,6 +899,10 @@ async function handleScaffold(args: Record<string, unknown>) {
       name: input.name,
       version: input.version || getDefaultAgentVersion(),
       description: input.description || getDefaultDescriptionTemplate(input.name),
+      mesh_bindings: {
+        gitlab_project_id: '',
+        drupal_canvas_node_id: '',
+      },
     },
     spec: {
       role: input.role || getDefaultRoleTemplate(input.name),
@@ -1170,6 +1174,7 @@ async function handleInspect(args: Record<string, unknown>) {
     llm: spec?.llm || null,
     tools: toolSummary,
     tool_count: specTools.length,
+    mesh_bindings: meta?.mesh_bindings || null,
     access_tier: access?.tier || null,
     autonomy_level: autonomy?.level || autonomy?.humanInLoop || null,
     deploy_targets: deployTargets,
