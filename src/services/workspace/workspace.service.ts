@@ -9,6 +9,7 @@ import { injectable } from 'inversify';
 import yaml from 'js-yaml';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import { getApiVersion } from '../../utils/version.js';
 import { IdentityService } from '../identity/identity.service.js';
 
 export interface WorkspaceInitResult {
@@ -97,19 +98,19 @@ export class WorkspaceService {
         const agentsDir = path.join(pDir, '.agents');
         if (!fs.existsSync(agentsDir)) {
           fs.mkdirSync(agentsDir, { recursive: true });
-          
+
           const identity = IdentityService.provisionIdentityForAgent(pDir);
 
           const stubYaml = yaml.dump({
-            apiVersion: 'agents.bluefly.io/v1alpha1',
+            apiVersion: getApiVersion(),
             kind: 'Agent',
-            metadata: { 
-              name: path.basename(pDir), 
+            metadata: {
+              name: path.basename(pDir),
               version: '0.1.0',
               identity: {
                 publicKey: identity.publicKey,
-                algorithm: identity.algorithm
-              }
+                algorithm: identity.algorithm,
+              },
             },
             spec: { capabilities: [] },
           });

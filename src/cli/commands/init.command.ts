@@ -117,8 +117,8 @@ export const initCommand = new Command('init')
               description || `${agentDisplayName} - OSSA-compliant agent`,
             identity: {
               publicKey: identity.publicKey,
-              algorithm: identity.algorithm
-            }
+              algorithm: identity.algorithm,
+            },
           },
           spec: {
             role: role || `You are ${agentDisplayName}. ${description}`,
@@ -190,8 +190,16 @@ export const initCommand = new Command('init')
         );
         console.log(chalk.gray(`  Name: ${agentName}`));
         console.log(chalk.gray(`  Version: ${version}`));
-        console.log(chalk.cyan(`  Identity PUB: ${identity.publicKey.substring(0, 64)}...`));
-        console.log(chalk.red(`  Private Key securely generated in: ${identity.privateKeyPath}`));
+        console.log(
+          chalk.cyan(
+            `  Identity PUB: ${identity.publicKey.substring(0, 64)}...`
+          )
+        );
+        console.log(
+          chalk.red(
+            `  Private Key securely generated in: ${identity.privateKeyPath}`
+          )
+        );
         if (platforms.length > 0) {
           console.log(chalk.gray(`  Platforms: ${platforms.join(', ')}`));
         }
