@@ -24,6 +24,7 @@ import { GitService } from './services/git.service.js';
 import { KnowledgeService } from './services/knowledge.service.js';
 import { LlmsTxtService } from './services/llms-txt/llms-txt.service.js';
 import { ManifestCrudService } from './services/manifest/manifest-crud.service.js';
+import { McpBridgeService } from './services/mcp/bridge.service.js';
 import { MigrationTransformService } from './services/migration-transform.service.js';
 import { MigrationService } from './services/migration.service.js';
 import { LangChainMigrationService } from './services/migration/langchain-migration.service.js';
@@ -63,10 +64,10 @@ import { IndexService } from './services/registry/index.service.js';
 
 // Skills Pipeline Services
 import {
-  SkillsExportService,
-  SkillsGeneratorService,
-  SkillsInstallService,
-  SkillsResearchService,
+    SkillsExportService,
+    SkillsGeneratorService,
+    SkillsInstallService,
+    SkillsResearchService,
 } from './services/skills-pipeline/index.js';
 
 // DI Type Identifiers
@@ -117,6 +118,7 @@ container.bind(AgentTypeDetectorService).toSelf();
 container.bind(TYPES.AgentTypeDetectorService).to(AgentTypeDetectorService);
 container.bind(ManifestCrudService).toSelf();
 container.bind(WorkspaceService).toSelf();
+container.bind(McpBridgeService).toSelf();
 
 // Bind codegen generators (must be bound before CodegenService)
 container.bind(ManifestGenerator).toSelf();

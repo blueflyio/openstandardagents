@@ -5,20 +5,21 @@
  *   CLI (inquirer) → Service Layer ← REST API (Express) ← MCP Server (stdio)
  */
 
-import 'reflect-metadata';
 import express from 'express';
-import { requestId } from './middleware/request-id.js';
+import 'reflect-metadata';
 import { corsMiddleware } from './middleware/cors.js';
 import { errorHandler } from './middleware/error-handler.js';
+import { requestId } from './middleware/request-id.js';
+import { convertRouter } from './routes/convert.router.js';
+import { exportRouter } from './routes/export.router.js';
 import { healthRouter } from './routes/health.router.js';
 import { manifestsRouter } from './routes/manifests.router.js';
-import { wizardRouter } from './routes/wizard.router.js';
-import { exportRouter } from './routes/export.router.js';
-import { convertRouter } from './routes/convert.router.js';
+import { mcpRouter } from './routes/mcp.router.js';
 import { skillsRouter } from './routes/skills.router.js';
-import { workspaceRouter } from './routes/workspace.router.js';
-import { versionRouter } from './routes/version.router.js';
 import { validateRouter } from './routes/validate.router.js';
+import { versionRouter } from './routes/version.router.js';
+import { wizardRouter } from './routes/wizard.router.js';
+import { workspaceRouter } from './routes/workspace.router.js';
 
 export interface CreateAppOptions {
   corsOrigin?: string;
@@ -42,6 +43,7 @@ export function createApp(opts?: CreateAppOptions): express.Application {
   app.use('/api/v1/convert', convertRouter());
   app.use('/api/v1/skills', skillsRouter());
   app.use('/api/v1/workspace', workspaceRouter());
+  app.use('/api/v1/mcp', mcpRouter());
   app.use('/api/v1/version', versionRouter());
   app.use('/api/v1/validate', validateRouter());
 
