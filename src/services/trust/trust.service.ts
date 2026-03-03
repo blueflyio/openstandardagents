@@ -11,15 +11,14 @@
  */
 
 import * as ed from '@noble/ed25519';
-import { sha512 } from '@noble/hashes/sha512';
-import { compactVerify, importJWK, importSPKI, jwtVerify } from 'jose';
+// @noble/ed25519 v2 has internal SHA-512 — no separate import needed
 import { Resolver } from 'did-resolver';
+import { compactVerify, importJWK, importSPKI, jwtVerify } from 'jose';
 import { getResolver as webResolver } from 'web-did-resolver';
 // @ts-ignore — json-canonicalize is CJS
 import canonicalize from 'json-canonicalize';
 
-// noble/ed25519 v2 requires an async SHA-512 implementation
-ed.etc.sha512Sync = (...m) => sha512(ed.etc.concatBytes(...m));
+
 
 export interface XSignature {
   type: 'Ed25519' | 'RSA-PSS' | 'ECDSA' | 'jwt' | 'vc' | 'did';
@@ -53,7 +52,7 @@ export function canonicalManifestBytes(manifest: Record<string, unknown>): Uint8
   const { metadata, ...rest } = manifest as any;
   const { 'x-signature': _sig, ...cleanMetadata } = metadata ?? {};
   const cleaned = { ...rest, metadata: cleanMetadata };
-  const canonical = canonicalize(cleaned);
+  const canonical = (canonicalize as unknown as (v: unknown) => string)(cleaned);
   return new TextEncoder().encode(canonical);
 }
 
@@ -220,14 +219,20 @@ function base64ToBytes(b64: string): Uint8Array {
   return bytes;
 }
 
+/**
+ * Decode base58 string to bytes and return as base64.
+ * Uses the standard base58 alphabet — no external package needed.
+ */
 function base58ToBase64(b58: string): string {
-  // Minimal base58 decode — for production use the `bs58` package
   const ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-  let n = BigInt(0);
+  const alphabetMap = new Map<string, number>(ALPHABET.split('').map((c, i) => [c, i]));
+  let value = BigInt(0);
   for (const char of b58) {
-    n = n * BigInt(58) + BigInt(ALPHABET.indexOf(char));
+    const digit = alphabetMap.get(char);
+    if (digit === undefined) throw new Error(`Invalid base58 character: ${char}`);
+    value = value * BigInt(58) + BigInt(digit);
   }
-  const hex = n.toString(16).padStart(64, '0');
-  const bytes = hex.match(/.{1,2}/g)!.map(b => parseInt(b, 16));
-  return btoa(String.fromCharCode(...bytes));
+  const hex = value.toString(16).padStart(b58.length * 2, '0');
+  const bytes = Buffer.from(hex.length % 2 === 0 ? hex : '0' + hex, 'hex');
+  return bytes.toString('base64');
 }
