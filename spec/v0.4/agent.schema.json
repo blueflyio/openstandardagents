@@ -2254,6 +2254,36 @@
           "$ref": "#/definitions/DelegationConfig",
           "description": "Delegation configuration for multi-agent hierarchies (v{{VERSION}})"
         },
+        "infrastructure": {
+          "type": "object",
+          "description": "Version control/execution environment where the agent's logic, config, and registry live (e.g. GitLab project, GitHub repo).",
+          "properties": {
+            "provider": {
+              "type": "string",
+              "description": "Infrastructure provider (e.g. 'gitlab', 'github', 'azure-devops')"
+            },
+            "repository_id": {
+              "type": "string",
+              "description": "Identifier for the agent repository (e.g. project ID, repo path)"
+            }
+          },
+          "additionalProperties": true
+        },
+        "spatial_mapping": {
+          "type": "object",
+          "description": "Spatial/visual interface context where the agent is orchestrated natively (e.g. Drupal Canvas, Node-RED).",
+          "properties": {
+            "provider": {
+              "type": "string",
+              "description": "Spatial UI provider (e.g. 'drupal_canvas', 'layout_builder', 'node_red')"
+            },
+            "node_id": {
+              "type": "string",
+              "description": "Unique identifier for the agent on the spatial canvas"
+            }
+          },
+          "additionalProperties": true
+        },
         "handoffs": {
           "type": "array",
           "description": "Direct delegation targets for agent card and discovery (to + optional condition)",

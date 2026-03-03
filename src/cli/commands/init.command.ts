@@ -6,11 +6,13 @@
 import chalk from 'chalk';
 import { Command } from 'commander';
 import * as fs from 'fs';
+import path from 'path';
 import readline from 'readline';
 import { getInitDefaults } from '../../config/defaults.js';
+import { IdCardService } from '../../services/id-card.service.js';
+import { IdentityService } from '../../services/identity/identity.service.js';
 import type { OssaAgent } from '../../types/index.js';
 import { getApiVersion } from '../../utils/version.js';
-import { IdCardService } from '../../services/id-card.service.js';
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -101,6 +103,10 @@ export const initCommand = new Command('init')
           platforms = initDefaults.defaultPlatforms;
         }
 
+        // 1. Generate core NIST identity payload
+        const agentDir = path.dirname(path.resolve(outputPath));
+        const identity = IdentityService.provisionIdentityForAgent(agentDir);
+
         const manifest: OssaAgent = {
           apiVersion: getApiVersion(),
           kind: 'Agent',
@@ -109,6 +115,10 @@ export const initCommand = new Command('init')
             version: version,
             description:
               description || `${agentDisplayName} - OSSA-compliant agent`,
+            identity: {
+              publicKey: identity.publicKey,
+              algorithm: identity.algorithm
+            }
           },
           spec: {
             role: role || `You are ${agentDisplayName}. ${description}`,
@@ -180,6 +190,8 @@ export const initCommand = new Command('init')
         );
         console.log(chalk.gray(`  Name: ${agentName}`));
         console.log(chalk.gray(`  Version: ${version}`));
+        console.log(chalk.cyan(`  Identity PUB: ${identity.publicKey.substring(0, 64)}...`));
+        console.log(chalk.red(`  Private Key securely generated in: ${identity.privateKeyPath}`));
         if (platforms.length > 0) {
           console.log(chalk.gray(`  Platforms: ${platforms.join(', ')}`));
         }
