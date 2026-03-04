@@ -1,10 +1,11 @@
 import * as fs from 'fs';
 import { globSync } from 'glob';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
 
 /**
  * OSSA Architectural Validation Gate
- * 
+ *
  * This script runs in CI/CD and pre-commit hooks to strictly enforce
  * repository boundaries against autonomous agent drift or human error.
  */
@@ -12,6 +13,7 @@ function runAudit() {
   console.log('[OSSA Audit] Starting Architectural Boundary Verification...');
   let hasErrors = false;
 
+  const __dirname = path.dirname(fileURLToPath(import.meta.url));
   const rootDir = path.resolve(__dirname, '../../..');
 
   // Rule 1: No Frontend Code (UI belongs in other repos)
