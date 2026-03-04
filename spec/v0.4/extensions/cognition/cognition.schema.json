@@ -1,0 +1,94 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openstandardagents.org/schemas/v0.5/extensions/cognition.schema.json",
+  "title": "OSSA Cognition Extension (v0.5.0 draft)",
+  "description": "Reasoning pattern, thought schema, trace configuration, and governance for auditable agent cognition. First-class spec-level primitive for NIST/FedRAMP alignment.",
+  "type": "object",
+  "properties": {
+    "pattern": {
+      "type": "string",
+      "enum": [
+        "sequential",
+        "tree_of_thought",
+        "react",
+        "plan_and_execute"
+      ],
+      "description": "Cognitive architecture pattern: sequential (linear chain), tree_of_thought (branching), react (reason-act-observe), plan_and_execute"
+    },
+    "constraints": {
+      "type": "object",
+      "properties": {
+        "max_depth": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Max thought steps before forced convergence"
+        },
+        "branching": {
+          "type": "boolean",
+          "default": true,
+          "description": "Allow alternative reasoning paths"
+        },
+        "revision": {
+          "type": "boolean",
+          "default": true,
+          "description": "Allow backtracking and revision of prior thoughts"
+        },
+        "confidence_threshold": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Minimum confidence to proceed without human review"
+        }
+      },
+      "additionalProperties": false
+    },
+    "trace": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "type": "string",
+          "enum": ["otel_spans", "ossa_native", "both"],
+          "default": "both",
+          "description": "Trace format for observability"
+        },
+        "storage": {
+          "type": "string",
+          "enum": ["vector", "graph", "both"],
+          "default": "graph",
+          "description": "Where thought graphs are stored (vector=embeddings, graph=Neo4j-style)"
+        },
+        "retention": {
+          "type": "string",
+          "pattern": "^(\\d+d|\\d+w|\\d+\\s*days?)$",
+          "description": "Retention period (e.g. 90d, 30 days)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "governance": {
+      "type": "object",
+      "properties": {
+        "human_review_triggers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "confidence_below": { "type": "number", "minimum": 0, "maximum": 1 },
+              "contradiction_detected": { "type": "boolean" },
+              "branch_depth_exceeds": { "type": "integer", "minimum": 1 }
+            },
+            "additionalProperties": true
+          },
+          "description": "Conditions that escalate to human review"
+        },
+        "audit_required": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether reasoning chain must be retained for compliance audit"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

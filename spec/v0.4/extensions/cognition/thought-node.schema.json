@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openstandardagents.org/schemas/v0.5/extensions/cognition/thought-node.schema.json",
+  "title": "OSSA ThoughtNode (v0.5.0 draft)",
+  "description": "Single node in a reasoning thought graph. Used by agent-brain and agent-tracer for persistence and analytics.",
+  "type": "object",
+  "required": ["id", "content", "thought_number", "timestamp"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique node identifier"
+    },
+    "agent_gaid": {
+      "type": "string",
+      "description": "Agent GAID (e.g. did:ossa:<uuid>)"
+    },
+    "session_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Session or run identifier"
+    },
+    "thought_number": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Ordinal step in the reasoning chain"
+    },
+    "content": {
+      "type": "string",
+      "description": "Thought step content"
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Confidence score for this step"
+    },
+    "parent": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Previous thought node id"
+    },
+    "branches": {
+      "type": "array",
+      "items": { "type": "string", "format": "uuid" },
+      "description": "Alternative paths explored from this node"
+    },
+    "revision_of": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "If this step revises a prior thought"
+    },
+    "tools_invoked": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Tools called during this thought step"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO8601 timestamp"
+    },
+    "duration_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Duration of this step in milliseconds"
+    },
+    "token_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Tokens consumed for this step"
+    },
+    "governance_triggers": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Which governance triggers fired, if any"
+    }
+  },
+  "additionalProperties": false
+}
