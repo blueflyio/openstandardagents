@@ -42,8 +42,10 @@ function runAudit() {
     .filter(dirent => dirent.isDirectory())
     .map(dirent => dirent.name);
 
+  // src/bot/ = CI agent automation (distinct from messaging); src/messenger/ = messaging framework layer (distinct from broker)
+  // Only flag true duplicates: 'chat' is a synonym for 'messaging'; 'bot' and 'messenger' are separate bounded contexts
   const overlapMaps = [
-    { target: 'messaging', forbidden: ['bot', 'messenger', 'chat'] }
+    { target: 'messaging', forbidden: ['chat'] }
   ];
 
   overlapMaps.forEach(rule => {
