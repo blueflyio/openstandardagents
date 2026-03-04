@@ -9,7 +9,7 @@
     "type": {
       "type": "string",
       "description": "Adapter type identifier (e.g., scm.github, runtime.kagent)",
-      "pattern": "^[a-z0-9]+(\.[a-z0-9]+)+$"
+      "pattern": "^[a-z0-9]+(\\.[a-z0-9]+)+$"
     },
     "version": {
       "type": "string",

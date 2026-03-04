@@ -1,4 +1,0 @@
-@bluefly:registry=https://gitlab.com/api/v4/groups/87749026/-/packages/npm/
-# npmjs publish handled via publishConfig in package.json
-# GitLab publish: npm publish --registry https://gitlab.com/api/v4/projects/76265294/packages/npm/
-# Auth tokens set in CI variables, NOT here

@@ -149,6 +149,13 @@ paths:
                 strict:
                   type: boolean
                   description: Enable strict validation mode
+                reasoning:
+                  type: string
+                  enum: [sequential, tree_of_thought, react, plan_and_execute]
+                  description: >
+                    Require or validate cognition pattern (v0.5.0 draft). When set,
+                    checks that manifest cognition.pattern matches this value.
+                    Fails validation if cognition block is absent or pattern mismatches.
       responses:
         '200':
           description: Validation result
