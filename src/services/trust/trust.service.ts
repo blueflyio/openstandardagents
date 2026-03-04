@@ -18,8 +18,6 @@ import { getResolver as webResolver } from 'web-did-resolver';
 // @ts-ignore — json-canonicalize is CJS
 import canonicalize from 'json-canonicalize';
 
-
-
 export interface XSignature {
   type: 'Ed25519' | 'RSA-PSS' | 'ECDSA' | 'jwt' | 'vc' | 'did';
   value: string;
@@ -49,8 +47,9 @@ const didResolver = new Resolver({ ...webResolver() });
 export function canonicalManifestBytes(manifest: Record<string, unknown>): Uint8Array {
   // Remove x-signature from the manifest before canonicalizing — it must not
   // be part of the signed payload (same as JWT header exclusion)
-  const { metadata, ...rest } = manifest as any;
-  const { 'x-signature': _sig, ...cleanMetadata } = metadata ?? {};
+  const { metadata, ...rest } = manifest;
+  const meta = metadata as Record<string, unknown> | null | undefined;
+  const { 'x-signature': _sig, ...cleanMetadata } = meta ?? {};
   const cleaned = { ...rest, metadata: cleanMetadata };
   const canonical = (canonicalize as unknown as (v: unknown) => string)(cleaned);
   return new TextEncoder().encode(canonical);
@@ -200,12 +199,13 @@ export async function verifyAgentSignature(
       tier: verified ? 'verified-signature' : 'signed',
       reason: verified ? undefined : 'Signature verification failed — payload mismatch or invalid key',
     };
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'unknown';
     return {
       ...base,
       verified: false,
       tier: 'signed',
-      reason: `Verification error: ${err?.message ?? 'unknown'}`,
+      reason: `Verification error: ${message}`,
     };
   }
 }

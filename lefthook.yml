@@ -46,9 +46,9 @@ pre-push:
           LOCAL=$(git rev-parse HEAD)
           REMOTE=$(git rev-parse "origin/$BRANCH" 2>/dev/null || echo "")
           if [ -n "$REMOTE" ] && [ "$LOCAL" != "$REMOTE" ]; then
-            echo "Syncing with origin/$BRANCH before push..."
-            git pull origin "$BRANCH" || {
-              echo "Pull failed. Resolve conflicts, then push again."
+            echo "Syncing with origin/$BRANCH before push (merge only)..."
+            git pull --no-rebase origin "$BRANCH" || {
+              echo "Pull failed. Resolve conflicts or commit unstaged changes, then push again."
               exit 1
             }
           fi
@@ -65,6 +65,10 @@ pre-push:
           echo "Direct push to $branch is blocked. Use a feature branch + MR."
           exit 1
         fi
+
+    architecture-audit:
+      priority: 3
+      run: tsx src/tools/validation/architecture-audit.ts
 
     validate-all:
       run: npm run validate

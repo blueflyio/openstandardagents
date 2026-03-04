@@ -14,6 +14,16 @@
       "slug": "Platform-Matrix",
       "title": "Platform Matrix",
       "file": "docs/wiki/Platform-Matrix.md"
+    },
+    {
+      "slug": "research/Human-Centric-Agent-Design-Analysis",
+      "title": "Human-Centric Agent Design Analysis",
+      "file": "docs/wiki/research/Human-Centric-Agent-Design-Analysis.md"
+    },
+    {
+      "slug": "architecture/OSSA-Ecosystem-Architecture-And-Execution-Plan",
+      "title": "OSSA Ecosystem: Architecture Statement & Execution Plan",
+      "file": "docs/wiki/architecture/OSSA-Ecosystem-Architecture-And-Execution-Plan.md"
     }
   ]
 }

@@ -1,6 +1,6 @@
 # A2A (Agent-to-Agent) Communication Extension
 
-**Version**: 0.3.5
+**Version**: 0.4.6
 **Status**: Stable
 **Protocol**: Production-Ready A2A
 
@@ -131,7 +131,7 @@ extensions:
 ### 1. Multi-Agent Code Review System
 
 ```yaml
-apiVersion: ossa/v0.3.5
+apiVersion: ossa/v0.4.6
 kind: Agent
 metadata:
   name: mr-coordinator
@@ -159,7 +159,7 @@ spec:
 ### 2. Service Discovery with Kubernetes
 
 ```yaml
-apiVersion: ossa/v0.3.5
+apiVersion: ossa/v0.4.6
 kind: Agent
 metadata:
   name: distributed-agent
@@ -188,6 +188,6 @@ spec:
 
 ## References
 
-- [OSSA v0.3.5 Specification](../../README.md)
+- [OSSA v0.4.6 Specification](../../README.md)
 - [MCP Extension](../mcp/README.md)
 - [Kagent Extension](../kagent/README.md)

@@ -232,13 +232,11 @@ metadata:
   name: ${name}
   version: ${version}
   description: |
-    TODO: Describe what this agent does
+    Edit this: one-line purpose of the agent.
 
 spec:
   role: |
-    You are a helpful AI assistant.
-
-    TODO: Define the agent's role, capabilities, and behavior guidelines.
+    You are a helpful AI assistant. Edit: define role, capabilities, and behavior guidelines.
 
   llm:
     provider: ${provider}
@@ -291,13 +289,13 @@ metadata:
   name: ${name}
   version: ${version}
   description: |
-    TODO: Describe what this task does
+    Edit this: what this task accomplishes.
 
 spec:
   steps:
     - name: step1
       type: script
-      description: TODO: Describe this step
+      description: Edit: what this step does
       config:
         command: echo
         args:
@@ -330,7 +328,7 @@ metadata:
   name: ${name}
   version: ${version}
   description: |
-    TODO: Describe what this workflow orchestrates
+    Edit this: what this workflow orchestrates and when to use it.
 
 spec:
   entrypoint: main

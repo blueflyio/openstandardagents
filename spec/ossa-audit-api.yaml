@@ -48,8 +48,8 @@ paths:
                 specVersion:
                   type: string
                   description: OSSA spec version to validate against
-                  example: "0.3.5"
-                  default: "0.3.5"
+                  example: "0.4.6"
+                  default: "0.4.6"
                 includeExamples:
                   type: boolean
                   description: Include example manifests in scan
@@ -137,7 +137,7 @@ paths:
                   description: Path to manifest file
                 specVersion:
                   type: string
-                  default: "0.3.5"
+                  default: "0.4.6"
       responses:
         '200':
           description: Validation result
