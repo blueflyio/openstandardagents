@@ -225,6 +225,23 @@ components:
         federationNode:
           type: string
 
+    Certification:
+      type: object
+      description: Certification or compliance attestation for the agent
+      properties:
+        id:
+          type: string
+          format: uuid
+        level:
+          type: string
+          description: Certification level or standard
+        issuedAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+
     AgentMetrics:
       type: object
       properties:

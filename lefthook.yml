@@ -47,8 +47,8 @@ pre-push:
           REMOTE=$(git rev-parse "origin/$BRANCH" 2>/dev/null || echo "")
           if [ -n "$REMOTE" ] && [ "$LOCAL" != "$REMOTE" ]; then
             echo "Syncing with origin/$BRANCH before push..."
-            git pull --rebase origin "$BRANCH" || {
-              echo "Rebase failed. Resolve conflicts, then push again."
+            git pull origin "$BRANCH" || {
+              echo "Pull failed. Resolve conflicts, then push again."
               exit 1
             }
           fi

@@ -80,17 +80,17 @@ paths:
                 $ref: '#/components/schemas/Error'
 
       x-websocket-events:
-        - $ref: '#/components/websocket-events/Register'
-        - $ref: '#/components/websocket-events/Message'
-        - $ref: '#/components/websocket-events/CapabilityCall'
-        - $ref: '#/components/websocket-events/StatusUpdate'
-        - $ref: '#/components/websocket-events/Error'
-        - $ref: '#/components/websocket-events/Acknowledgment'
-        - $ref: '#/components/websocket-events/Ping'
-        - $ref: '#/components/websocket-events/Pong'
+        - $ref: '#/components/x-websocket-events/Register'
+        - $ref: '#/components/x-websocket-events/Message'
+        - $ref: '#/components/x-websocket-events/CapabilityCall'
+        - $ref: '#/components/x-websocket-events/StatusUpdate'
+        - $ref: '#/components/x-websocket-events/Error'
+        - $ref: '#/components/x-websocket-events/Acknowledgment'
+        - $ref: '#/components/x-websocket-events/Ping'
+        - $ref: '#/components/x-websocket-events/Pong'
 
 components:
-  websocket-events:
+  x-websocket-events:
     Register:
       summary: Agent registration event
       description: Sent by client immediately after connection to register agent identity
