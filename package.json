@@ -224,7 +224,7 @@
     "postinstall": "node bin/postinstall || true",
     "// RELEASE & PUBLISH": "",
     "prepublishOnly": "publint && npm run build",
-    "validate:deps": "depcheck --ignores='@types/*,ts-jest,eslint*,prettier*,lefthook,jest*,vitest,semantic-release*,@semantic-release/*,keep-a-changelog,jest-junit,publint,conventional-changelog-conventionalcommits'",
+    "validate:deps": "depcheck --ignores='@anthropic-ai/claude-agent-sdk,@langchain/openai,@openai/agents,@temporalio/activity,@temporalio/workflow,pino-pretty,readline,@types/*,ts-jest,eslint*,prettier*,lefthook,jest*,vitest,semantic-release*,@semantic-release/*,keep-a-changelog,jest-junit,publint,conventional-changelog-conventionalcommits'",
     "validate:package": "publint",
     "publish:dry-run": "npm publish --dry-run",
     "release:check": "npm run typecheck && npm run test:unit && npm run validate:schema && publint",

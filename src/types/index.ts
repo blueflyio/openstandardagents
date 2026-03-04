@@ -413,8 +413,8 @@ export interface OssaAgent {
     annotations?: Record<string, string>;
     tags?: string[];
     mesh_bindings?: {
-      gitlab_project_id?: string;
-      drupal_canvas_node_id?: string;
+      source_project_id?: string;
+      execution_node_id?: string;
     };
     lifecycle?: {
       state?: 'active' | 'deprecated' | 'retired';

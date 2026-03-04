@@ -278,15 +278,15 @@
     },
     "MeshBindings": {
       "type": "object",
-      "description": "Bindings linking this OSSA agent to its GitLab execution environment and Drupal spatial matrix.",
+      "description": "Bindings linking this OSSA agent to its external execution and spatial environments.",
       "properties": {
-        "gitlab_project_id": {
+        "source_project_id": {
           "type": "string",
-          "description": "The numeric or namespaced GitLab Project ID serving as the execution substrate for this agent."
+          "description": "The numeric or namespaced source project identifier serving as the execution substrate for this agent."
         },
-        "drupal_canvas_node_id": {
+        "execution_node_id": {
           "type": "string",
-          "description": "The Drupal UUID representing this agent in the Experience Builder / Canvas spatial matrix."
+          "description": "The UUID representing this agent in the spatial interaction matrix."
         }
       },
       "additionalProperties": false
@@ -302,9 +302,9 @@
           "type": "string",
           "pattern": "^[a-z0-9]([-a-z0-9./]*[a-z0-9])?$",
           "maxLength": 253,
-          "description": "Hierarchical namespace for scoping agent identifiers (e.g., 'blueflyio/platform', 'org.example.agents'). Supports DNS-style or path-style naming.",
+          "description": "Hierarchical namespace for scoping agent identifiers (e.g., 'acme/platform', 'org.example.agents'). Supports DNS-style or path-style naming.",
           "examples": [
-            "blueflyio/platform",
+            "acme/platform",
             "org.example.agents",
             "gitlab.com/my-org/agents"
           ]
