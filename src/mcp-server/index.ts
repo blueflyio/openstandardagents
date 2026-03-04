@@ -127,6 +127,8 @@ const ScaffoldInput = z.object({
     .optional()
     .default('worker'),
   version: z.string().optional(),
+  source_project_id: z.string().optional(),
+  execution_node_id: z.string().optional(),
 });
 
 const GenerateInput = z.object({
@@ -1161,8 +1163,8 @@ async function handleScaffold(args: Record<string, unknown>) {
       description:
         input.description || getDefaultDescriptionTemplate(input.name),
       mesh_bindings: {
-        gitlab_project_id: '',
-        drupal_canvas_node_id: '',
+        source_project_id: input.source_project_id || process.env.OSSA_DEFAULT_SOURCE_PROJECT_ID || '',
+        execution_node_id: input.execution_node_id || process.env.OSSA_DEFAULT_EXECUTION_NODE_ID || '',
       },
     },
     spec: {
