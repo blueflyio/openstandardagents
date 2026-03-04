@@ -1,6 +1,6 @@
 # MCP (Model Context Protocol) Extension
 
-**Version**: 0.3.5
+**Version**: 0.4.6
 **Status**: Stable
 **Framework**: [Anthropic MCP](https://modelcontextprotocol.io/)
 
@@ -142,7 +142,7 @@ extensions:
 ### 1. Filesystem MCP Server
 
 ```yaml
-apiVersion: ossa/v0.3.5
+apiVersion: ossa/v0.4.6
 kind: Agent
 metadata:
   name: file-assistant
@@ -169,7 +169,7 @@ spec:
 ### 2. Database MCP Server
 
 ```yaml
-apiVersion: ossa/v0.3.5
+apiVersion: ossa/v0.4.6
 kind: Agent
 metadata:
   name: database-assistant
@@ -196,7 +196,7 @@ spec:
 ### 3. Custom MCP Resources
 
 ```yaml
-apiVersion: ossa/v0.3.5
+apiVersion: ossa/v0.4.6
 kind: Agent
 metadata:
   name: documentation-agent
@@ -273,4 +273,4 @@ MCP servers are automatically initialized when an agent starts. Resources, promp
 
 - [Model Context Protocol Specification](https://modelcontextprotocol.io/)
 - [MCP Server Examples](https://github.com/modelcontextprotocol/servers)
-- [OSSA v0.3.5 Specification](../../README.md)
+- [OSSA v0.4.6 Specification](../../README.md)
