@@ -109,10 +109,10 @@ paths:
         - queryToken: []
 
       x-sse-events:
-        - $ref: '#/components/sse-events/Message'
-        - $ref: '#/components/sse-events/Status'
-        - $ref: '#/components/sse-events/CapabilityResponse'
-        - $ref: '#/components/sse-events/Error'
+        - $ref: '#/components/x-sse-events/Message'
+        - $ref: '#/components/x-sse-events/Status'
+        - $ref: '#/components/x-sse-events/CapabilityResponse'
+        - $ref: '#/components/x-sse-events/Error'
 
   /events/stream/{streamId}:
     get:
@@ -217,7 +217,7 @@ paths:
         - bearerAuth: []
 
 components:
-  sse-events:
+  x-sse-events:
     Message:
       summary: General message event
       description: Standard event delivery
