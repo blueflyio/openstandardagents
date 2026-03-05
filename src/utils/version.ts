@@ -4,8 +4,8 @@
  * Provides dynamic version detection from package.json.
  * The package version IS the spec version — they track together.
  *
- * - getVersion() → '0.4.5' (from package.json)
- * - getApiVersion() → 'ossa/v0.4.5' (for manifest apiVersion fields)
+ * - getVersion() → '0.4.6' (from package.json)
+ * - getApiVersion() → 'ossa/v0.4.6' (for manifest apiVersion fields)
  * - getSchemaDir() → 'v0.4' (for JSON Schema file resolution)
  *
  * NOTE: This module is designed to work with both ESM and CommonJS (Jest).

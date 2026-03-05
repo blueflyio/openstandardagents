@@ -86,7 +86,7 @@ func (m *Manifest) ToJSON() (string, error) {
 // NewManifest creates a new manifest with defaults.
 func NewManifest(name string, kind Kind) *Manifest {
 	return &Manifest{
-		APIVersion: "ossa/v0.4.5",
+		APIVersion: "ossa/v0.4.6",
 		Kind:       kind,
 		Metadata: Metadata{
 			Name: name,

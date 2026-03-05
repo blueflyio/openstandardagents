@@ -12,7 +12,7 @@ class Manifest:
 
     def __init__(
         self,
-        api_version: str = "ossa/v0.4.5",
+        api_version: str = "ossa/v0.4.6",
         kind: str = "Agent",
         metadata: Optional[dict[str, Any]] = None,
         spec: Optional[dict[str, Any]] = None,
