@@ -1,434 +1,153 @@
-"""
-Agent execution engine for OSSA.
+"""Agent execution engine — run OSSA agents against LLM providers."""
 
-This module provides runtime execution for OSSA Agent manifests, including
-LLM integration, tool calling, safety checks, and state management.
-"""
+from __future__ import annotations
 
-import asyncio
 import time
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel
-
-from .exceptions import ConfigurationError, OSSAError
-from .types import AgentSpec, OSSAManifest
-
-
-class AgentResponse(BaseModel):
-    """
-    Response from an agent execution.
-
-    Attributes:
-        content: Main response text from the agent
-        role: Role of the message (assistant, user, system)
-        usage: Token usage statistics (if available)
-        tool_calls: List of tool calls made during execution
-        metadata: Additional metadata about the execution
-        duration_ms: Execution time in milliseconds
-        cost: Estimated cost of the execution (if tracking enabled)
-    """
-
-    content: str
-    role: str = "assistant"
-    usage: Optional[Dict[str, int]] = None
-    tool_calls: List[Dict[str, Any]] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
-    duration_ms: Optional[float] = None
-    cost: Optional[float] = None
+from .exceptions import ConfigurationError, ExecutionError, ProviderError
+from .types import OSSAManifest
 
 
 @dataclass
-class ConversationHistory:
-    """
-    Manages conversation history for an agent.
-
-    Attributes:
-        messages: List of messages in the conversation
-        max_messages: Maximum number of messages to retain
-    """
-
-    messages: List[Dict[str, Any]] = field(default_factory=list)
-    max_messages: int = 100
-
-    def add_message(self, role: str, content: str, **kwargs: Any) -> None:
-        """
-        Add a message to the conversation history.
-
-        Args:
-            role: Message role (user, assistant, system)
-            content: Message content
-            **kwargs: Additional message metadata
-        """
-        message = {"role": role, "content": content, **kwargs}
-        self.messages.append(message)
-
-        # Trim if exceeds max
-        if len(self.messages) > self.max_messages:
-            # Keep system message (first) and trim oldest user/assistant messages
-            system_messages = [m for m in self.messages if m["role"] == "system"]
-            other_messages = [m for m in self.messages if m["role"] != "system"]
-            self.messages = system_messages + other_messages[-(self.max_messages - len(system_messages)) :]
-
-    def get_messages(self) -> List[Dict[str, Any]]:
-        """Get all messages in the conversation."""
-        return self.messages.copy()
-
-    def clear(self) -> None:
-        """Clear all messages from the conversation."""
-        self.messages.clear()
+class AgentResponse:
+    """Response from an agent execution."""
+    content: str
+    duration_ms: float
+    metadata: Dict[str, Any] = field(default_factory=dict)
+    tool_calls: List[Dict[str, Any]] = field(default_factory=list)
 
 
-class AgentRunner:
-    """
-    Execute an OSSA Agent manifest.
+class Agent:
+    """Execute an OSSA agent manifest against an LLM provider.
 
-    This class provides a complete runtime for OSSA agents, including:
-    - LLM integration (Anthropic, OpenAI, etc.)
-    - Tool/function calling
-    - Conversation history management
-    - Safety checks (PII detection, rate limiting)
-    - Cost tracking
-    - State persistence
-
-    Example:
-        >>> from ossa import load, Agent
-        >>> manifest = load("my-agent.yaml")
-        >>> agent = Agent(manifest)
-        >>> response = agent.run("What is 2 + 2?")
-        >>> print(response.content)
-        "2 + 2 equals 4"
-
-        >>> # Async usage
-        >>> response = await agent.arun("Explain quantum computing")
+    Usage:
+        manifest = load("agent.ossa.yaml")
+        agent = Agent(manifest, api_key="sk-...")
+        response = agent.run("What is 2+2?")
+        print(response.content)
     """
 
     def __init__(
         self,
-        manifest: Union[OSSAManifest, str],
+        manifest: OSSAManifest,
         api_key: Optional[str] = None,
-        **runtime_options: Any,
+        base_url: Optional[str] = None,
     ) -> None:
-        """
-        Initialize the agent runner.
-
-        Args:
-            manifest: OSSA Agent manifest (OSSAManifest object or file path)
-            api_key: API key for the LLM provider (optional, can use env vars)
-            **runtime_options: Additional runtime configuration options
-                - enable_tools: Enable tool calling (default: True)
-                - enable_safety: Enable safety checks (default: True)
-                - enable_state: Enable state persistence (default: True)
-                - max_retries: Maximum retry attempts (default: from manifest)
-                - timeout: Request timeout in seconds (default: 30)
-
-        Raises:
-            ConfigurationError: If manifest is invalid or missing required fields
-            OSSAError: If initialization fails
-
-        Example:
-            >>> agent = AgentRunner(manifest, api_key="sk-...")
-            >>> # Or load from file
-            >>> agent = AgentRunner("agent.yaml")
-        """
-        # Load manifest if string path
-        if isinstance(manifest, str):
-            from .manifest import load_manifest
-
-            manifest = load_manifest(manifest)
-
-        # Validate manifest kind
-        if not manifest.is_agent:
+        if not manifest.is_agent():
             raise ConfigurationError(f"Expected Agent manifest, got {manifest.kind.value}")
 
-        self.manifest = manifest
-        self.spec: AgentSpec = manifest.spec  # type: ignore
-        self.api_key = api_key
-        self.runtime_options = runtime_options
-
-        # Initialize conversation history
-        self.history = ConversationHistory()
-
-        # Add system prompt if defined
-        if self.spec.role:
-            self.history.add_message("system", self.spec.role)
-
-        # Runtime state
-        self._total_cost = 0.0
+        self._manifest = manifest
+        self._api_key = api_key
+        self._base_url = base_url
+        self._history: List[Dict[str, str]] = []
         self._request_count = 0
-        self._client: Optional[Any] = None
 
-        # Initialize LLM client (lazy loading)
-        self._initialize_client()
+        spec = manifest.spec or {}
+        self._role = spec.get("role", "")
+        self._llm = spec.get("llm", {})
+        self._provider_name = self._llm.get("provider", "")
+        self._model = self._llm.get("model", "")
+        self._temperature = self._llm.get("temperature")
+        self._max_tokens = self._llm.get("maxTokens") or self._llm.get("max_tokens")
 
-    def _initialize_client(self) -> None:
-        """
-        Initialize the LLM client based on the provider.
+        self._adapter = self._create_adapter()
 
-        This method performs lazy initialization of the LLM client.
-        Actual client creation happens on first use.
-        """
-        # Client initialization is deferred until first run()
-        # This allows for proper error handling and provider-specific setup
-        pass
-
-    def _get_client(self) -> Any:
-        """
-        Get or create the LLM client.
-
-        Returns:
-            Initialized LLM client
-
-        Raises:
-            ConfigurationError: If provider is not supported
-        """
-        if self._client is not None:
-            return self._client
-
-        provider = self.spec.llm.provider.lower()
-
-        # Anthropic
-        if provider == "anthropic":
+    def _create_adapter(self) -> Any:
+        """Create the appropriate LLM adapter."""
+        if self._provider_name == "anthropic":
             try:
-                import anthropic
-
-                self._client = anthropic.Anthropic(api_key=self.api_key)
-                return self._client
+                from .adapters.anthropic import AnthropicAdapter
+                return AnthropicAdapter(
+                    api_key=self._api_key,
+                    model=self._model,
+                    temperature=self._temperature,
+                    max_tokens=self._max_tokens,
+                    system=self._role,
+                )
             except ImportError:
                 raise ConfigurationError(
-                    "Anthropic SDK not installed. Install with: pip install anthropic"
+                    "Anthropic provider requires 'anthropic' package. "
+                    "Install with: pip install ossa-sdk[anthropic]"
                 )
-
-        # OpenAI
-        elif provider == "openai":
+        elif self._provider_name == "openai":
             try:
-                import openai
-
-                self._client = openai.OpenAI(api_key=self.api_key)
-                return self._client
+                from .adapters.openai import OpenAIAdapter
+                return OpenAIAdapter(
+                    api_key=self._api_key,
+                    base_url=self._base_url,
+                    model=self._model,
+                    temperature=self._temperature,
+                    max_tokens=self._max_tokens,
+                    system=self._role,
+                )
             except ImportError:
-                raise ConfigurationError("OpenAI SDK not installed. Install with: pip install openai")
-
+                raise ConfigurationError(
+                    "OpenAI provider requires 'openai' package. "
+                    "Install with: pip install ossa-sdk[openai]"
+                )
         else:
             raise ConfigurationError(
-                f"Provider '{provider}' is not supported. "
-                f"Supported: anthropic, openai."
+                f"Unsupported provider: {self._provider_name}. "
+                f"Supported: anthropic, openai"
             )
 
-    def run(self, input_text: str, **kwargs: Any) -> AgentResponse:
-        """
-        Execute the agent with input text (synchronous).
+    def run(self, message: str) -> AgentResponse:
+        """Send a message and get a response."""
+        self._history.append({"role": "user", "content": message})
 
-        Args:
-            input_text: User input/prompt to send to the agent
-            **kwargs: Additional parameters:
-                - temperature: Override LLM temperature
-                - max_tokens: Override max tokens
-                - tools: Override tools list
-                - stream: Enable streaming (default: False)
-
-        Returns:
-            AgentResponse with the agent's reply and metadata
-
-        Raises:
-            OSSAError: If execution fails
-
-        Example:
-            >>> response = agent.run("What is the capital of France?")
-            >>> print(response.content)
-            "The capital of France is Paris."
-            >>> print(f"Cost: ${response.cost:.4f}")
-        """
-        start_time = time.time()
-
-        # Add user message to history
-        self.history.add_message("user", input_text)
-
+        start = time.perf_counter()
         try:
-            # Get LLM client
-            client = self._get_client()
-            provider = self.spec.llm.provider.lower()
-
-            # Prepare request parameters
-            temperature = kwargs.get("temperature", self.spec.llm.temperature)
-            max_tokens = kwargs.get("max_tokens", self.spec.llm.max_tokens)
-
-            # Execute based on provider
-            if provider == "anthropic":
-                response_content = self._execute_anthropic(
-                    client, input_text, temperature, max_tokens, **kwargs
-                )
-            elif provider == "openai":
-                response_content = self._execute_openai(
-                    client, input_text, temperature, max_tokens, **kwargs
-                )
-            else:
-                raise ConfigurationError(f"Provider '{provider}' is not supported for execution")
-
-            # Add assistant response to history
-            self.history.add_message("assistant", response_content)
-
-            # Calculate duration
-            duration_ms = (time.time() - start_time) * 1000
-
-            # Increment request counter
-            self._request_count += 1
-
-            # Build response
-            return AgentResponse(
-                content=response_content,
-                role="assistant",
-                duration_ms=duration_ms,
-                metadata={
-                    "agent_name": self.manifest.metadata.name,
-                    "agent_version": self.manifest.metadata.version,
-                    "provider": provider,
-                    "model": self.spec.llm.model,
-                    "request_count": self._request_count,
-                },
-            )
-
+            result = self._adapter.chat(self._history)
         except Exception as e:
-            raise OSSAError(f"Agent execution failed: {e}") from e
+            raise ExecutionError(f"Provider error: {e}") from e
+        duration_ms = (time.perf_counter() - start) * 1000
 
-    async def arun(self, input_text: str, **kwargs: Any) -> AgentResponse:
-        """
-        Execute the agent with input text (asynchronous).
+        self._history.append({"role": "assistant", "content": result})
+        self._request_count += 1
 
-        Args:
-            input_text: User input/prompt to send to the agent
-            **kwargs: Additional parameters (same as run())
-
-        Returns:
-            AgentResponse with the agent's reply and metadata
-
-        Example:
-            >>> response = await agent.arun("Explain quantum computing")
-            >>> print(response.content)
-        """
-        # For now, run synchronously in a thread pool
-        # Future: Implement proper async clients
-        loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(None, lambda: self.run(input_text, **kwargs))
-
-    def _execute_anthropic(
-        self,
-        client: Any,
-        input_text: str,
-        temperature: Optional[float],
-        max_tokens: Optional[int],
-        **kwargs: Any,
-    ) -> str:
-        """
-        Execute using Anthropic API.
-
-        Args:
-            client: Anthropic client instance
-            input_text: User input
-            temperature: Sampling temperature
-            max_tokens: Maximum tokens to generate
-            **kwargs: Additional parameters
-
-        Returns:
-            Response content text
-        """
-        # Build messages (exclude system message for Anthropic)
-        messages = [m for m in self.history.get_messages() if m["role"] != "system"]
-
-        # Create message
-        response = client.messages.create(
-            model=self.spec.llm.model,
-            max_tokens=max_tokens or 4096,
-            temperature=temperature if temperature is not None else 0.7,
-            system=self.spec.role if self.spec.role else None,
-            messages=messages,
+        return AgentResponse(
+            content=result,
+            duration_ms=duration_ms,
+            metadata={
+                "provider": self._provider_name,
+                "model": self._model,
+                "agent_name": self._manifest.metadata.name,
+            },
         )
 
-        # Extract content
-        if response.content and len(response.content) > 0:
-            return response.content[0].text
-        return ""
+    async def arun(self, message: str) -> AgentResponse:
+        """Async version of run."""
+        self._history.append({"role": "user", "content": message})
 
-    def _execute_openai(
-        self,
-        client: Any,
-        input_text: str,
-        temperature: Optional[float],
-        max_tokens: Optional[int],
-        **kwargs: Any,
-    ) -> str:
-        """
-        Execute using OpenAI API.
+        start = time.perf_counter()
+        try:
+            result = await self._adapter.achat(self._history)
+        except Exception as e:
+            raise ExecutionError(f"Provider error: {e}") from e
+        duration_ms = (time.perf_counter() - start) * 1000
 
-        Args:
-            client: OpenAI client instance
-            input_text: User input
-            temperature: Sampling temperature
-            max_tokens: Maximum tokens to generate
-            **kwargs: Additional parameters
+        self._history.append({"role": "assistant", "content": result})
+        self._request_count += 1
 
-        Returns:
-            Response content text
-        """
-        # Build messages
-        messages = self.history.get_messages()
-
-        # Create completion
-        response = client.chat.completions.create(
-            model=self.spec.llm.model,
-            messages=messages,
-            temperature=temperature if temperature is not None else 0.7,
-            max_tokens=max_tokens,
+        return AgentResponse(
+            content=result,
+            duration_ms=duration_ms,
+            metadata={
+                "provider": self._provider_name,
+                "model": self._model,
+                "agent_name": self._manifest.metadata.name,
+            },
         )
-
-        # Extract content
-        if response.choices and len(response.choices) > 0:
-            return response.choices[0].message.content or ""
-        return ""
 
     def reset(self) -> None:
-        """
-        Reset the agent's conversation history.
-
-        Clears all messages except the system prompt (if defined).
-
-        Example:
-            >>> agent.run("Hello")
-            >>> agent.run("What did I just say?")  # Agent remembers
-            >>> agent.reset()
-            >>> agent.run("What did I just say?")  # Agent has no memory
-        """
-        self.history.clear()
-        if self.spec.role:
-            self.history.add_message("system", self.spec.role)
-
-    def get_cost(self) -> float:
-        """
-        Get the total estimated cost for all agent executions.
-
-        Returns:
-            Total cost in USD
-
-        Example:
-            >>> agent.run("Test 1")
-            >>> agent.run("Test 2")
-            >>> print(f"Total cost: ${agent.get_cost():.4f}")
-        """
-        return self._total_cost
+        """Clear conversation history."""
+        self._history.clear()
 
     def get_request_count(self) -> int:
-        """
-        Get the total number of requests made.
-
-        Returns:
-            Number of requests
-
-        Example:
-            >>> print(f"Requests: {agent.get_request_count()}")
-        """
         return self._request_count
 
-
-# Convenience alias
-Agent = AgentRunner
+    @property
+    def manifest(self) -> OSSAManifest:
+        return self._manifest
