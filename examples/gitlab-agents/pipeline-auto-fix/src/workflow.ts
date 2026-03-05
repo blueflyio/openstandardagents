@@ -100,7 +100,7 @@ Analyze and provide fix in JSON:
       // Step 6: Apply Code Fixes
       this.logger.info('Executing step: Apply Code Fixes');
       context.outputs.apply-fixes = await this.gitlabClient.createCommit(
-        context.variables.PROJECT_ID, context.variables.branch.name, "${analysis.commit_message}\n\nAuto-generated fix for pipeline #${PIPELINE_ID}\n\nRoot cause: ${analysis.root_cause}\n\nCo-Authored-By: Pipeline Auto-Fix Agent <pipeline-remediation@blueflyagents.com>\n", context.variables.analysis.code_changes
+        context.variables.PROJECT_ID, context.variables.branch.name, "${analysis.commit_message}\n\nAuto-generated fix for pipeline #${PIPELINE_ID}\n\nRoot cause: ${analysis.root_cause}\n\nCo-Authored-By: Pipeline Auto-Fix Agent <pipeline-remediation@example.com>\n", context.variables.analysis.code_changes
       );
 
 

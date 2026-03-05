@@ -2632,11 +2632,10 @@ Guidelines:
         ? `${process.env.HOME}/.claude/skills`
         : path.join(process.cwd(), '.claude', 'skills'));
     const marketplacePath =
-      process.platform === 'darwin'
-        ? '/Volumes/AgentPlatform/services/marketplace/skills'
-        : process.env.HOME
-          ? `${process.env.HOME}/.ossa/skills`
-          : path.join(process.cwd(), 'skills');
+      process.env.OSSA_SKILLS_PATH ||
+      (process.env.HOME
+        ? `${process.env.HOME}/.ossa/skills`
+        : path.join(process.cwd(), 'skills'));
 
     const { skillSource } = await inquirer.prompt([
       {

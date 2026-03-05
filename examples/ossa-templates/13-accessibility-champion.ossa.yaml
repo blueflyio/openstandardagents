@@ -185,7 +185,7 @@ extensions:
       - user_feedback
   infrastructure:
   - type: agent_mesh
-    endpoint: mesh.blueflyagents.com:3005
+    endpoint: your-mesh-registry.example.com:3005
     capabilities:
     - performance_monitoring
     - code_analysis

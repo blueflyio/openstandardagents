@@ -228,8 +228,8 @@ skillsCommandGroup
  * Add Command
  * Install a skill from a GitHub repo or from skills.sh URL into a target directory (AgentSkills / Claude Skill format).
  * Examples:
- *   ossa skills add https://github.com/sparkfabrik/sf-awesome-copilot --skill drupal-cache-maxage --path /Volumes/AgentPlatform/services/marketplace/skills
- *   ossa skills add https://skills.sh/sparkfabrik/sf-awesome-copilot/drupal-cache-maxage --path /Volumes/AgentPlatform/services/marketplace/skills
+ *   ossa skills add https://github.com/sparkfabrik/sf-awesome-copilot --skill drupal-cache-maxage --path ~/.ossa/skills
+ *   ossa skills add https://skills.sh/sparkfabrik/sf-awesome-copilot/drupal-cache-maxage --path ~/.ossa/skills
  */
 skillsCommandGroup
   .command('add <repo-url>')

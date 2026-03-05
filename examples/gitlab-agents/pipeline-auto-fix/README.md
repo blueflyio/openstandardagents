@@ -69,7 +69,7 @@ kubectl apply -f k8s/deployment.yaml
 Configure the webhook in your GitLab project:
 
 1. Go to **Settings** → **Webhooks**
-2. Add webhook URL: `http://mesh.blueflyagents.com/webhook/pipeline-auto-fix`
+2. Add webhook URL: `http://your-mesh-registry.example.com/webhook/pipeline-auto-fix`
 3. Set secret token (from .env WEBHOOK_SECRET)
 4. Select events: Pipelines
 5. Save webhook

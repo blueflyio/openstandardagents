@@ -98,7 +98,7 @@ spec:
 
   ingress:
     enabled: true
-    host: mesh.blueflyagents.com
+    host: your-mesh-registry.example.com
     path: /webhook/duo-comment-responder
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-prod
@@ -167,7 +167,7 @@ spec:
 
   ingress:
     enabled: true
-    host: mesh.blueflyagents.com
+    host: your-mesh-registry.example.com
     path: /webhook/mr-reviewer
 
 ---
@@ -232,7 +232,7 @@ spec:
 
   ingress:
     enabled: true
-    host: mesh.blueflyagents.com
+    host: your-mesh-registry.example.com
     path: /webhook/pipeline-auto-fix
 
 ---
@@ -312,10 +312,10 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - mesh.blueflyagents.com
+        - your-mesh-registry.example.com
       secretName: gitlab-agents-tls
   rules:
-    - host: mesh.blueflyagents.com
+    - host: your-mesh-registry.example.com
       http:
         paths:
           - path: /webhook/duo-comment-responder(/|$)(.*)

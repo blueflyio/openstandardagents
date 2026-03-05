@@ -21,8 +21,8 @@ info:
 servers:
   - url: http://localhost:4000/api/v1
     description: Local development server
-  - url: https://mesh.blueflyagents.com/api/v1
-    description: Production API server
+  - url: https://your-registry.example.com/api/v1
+    description: Production API server (set OSSA_REGISTRY_URL)
 
 tags:
   - name: knowledge
@@ -270,7 +270,7 @@ components:
         sourcePath:
           type: string
           description: Path to source codebase
-          example: ~/Sites/blueflyio/compliance-engine
+          example: ./my-compliance-engine
         patterns:
           type: array
           items:
