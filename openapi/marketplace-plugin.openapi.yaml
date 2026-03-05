@@ -1,0 +1,2285 @@
+openapi: 3.1.0
+info:
+  title: OSSA Marketplace & Plugin API
+  version: 1.0.0
+  description: |
+    Standard API contract for OSSA agent marketplaces, plugin registries, and toolbox endpoints.
+    Any compliant marketplace (self-hosted, SaaS, or federated) implements this spec so the
+    OSSA CLI, wizard, and CI pipeline can discover, install, manage, and export agents, skills,
+    MCP servers, tools, templates, workflows, and policies.
+
+    BUILD ONCE, RUN ANYWHERE: Agents defined via OSSA manifest export to Claude, OpenAI,
+    LangChain, CrewAI, AG2, kagent (K8s), Bedrock, Vertex AI, Pydantic AI, Semantic Kernel,
+    Agent SDK, ADK, A2A, MCP, Drupal AI, and custom platforms.
+
+    NIST CAISI ALIGNED: Identity (W3C DID/GAID), Authorization (Cedar), Tool Disclosure,
+    Trust Tiers, Token Governance, Audit, OSCAL control mapping.
+
+    CONFIGURATION:
+      OSSA_MARKETPLACE_URL  - Base URL of the marketplace (e.g. https://plugins.example.com)
+      OSSA_MARKETPLACE_TOKEN - Bearer token for authenticated endpoints
+      OSSA_ORG              - Organization/namespace (e.g. my-org)
+      OSSA_SKILLS_PATH      - Local skills installation directory
+      OSSA_REGISTRY_URL     - UADP registry URL for agent discovery
+      OSSA_TRUST_TIER       - Minimum trust tier filter (official|verified-signature|signed|community|experimental)
+
+    CLI USAGE:
+      ossa marketplace add <url>          # Register a marketplace
+      ossa marketplace list               # List registered marketplaces
+      ossa marketplace search <query>     # Search across all marketplaces
+      ossa marketplace browse             # Interactive catalog browser
+      ossa plugin install <id>            # Install from marketplace
+      ossa plugin list                    # List installed plugins
+      ossa plugin update [id]             # Update installed plugins
+      ossa plugin remove <id>             # Remove installed plugin
+  contact:
+    name: OSSA Standards Team
+    email: info@blueflyagents.com
+    url: https://openstandardagents.org
+  license:
+    name: Apache-2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+
+servers:
+  - url: '{marketplace_url}/api/v1'
+    description: Any OSSA-compliant marketplace
+    variables:
+      marketplace_url:
+        default: http://localhost:4000
+        description: Set via OSSA_MARKETPLACE_URL env var
+
+tags:
+  - name: catalog
+    description: Browse and search the marketplace catalog
+  - name: plugins
+    description: Install, manage, and update plugins (agents, skills, MCP servers, tools, etc.)
+  - name: agents
+    description: Agent CRUD, composition, and lifecycle
+  - name: skills
+    description: Skill discovery, install, and generation
+  - name: mcp-servers
+    description: MCP server registry and management
+  - name: tools
+    description: Tool catalog and configuration
+  - name: templates
+    description: Agent and workflow templates
+  - name: workflows
+    description: Multi-agent workflow definitions
+  - name: policies
+    description: Security policies, Cedar rules, and trust tiers
+  - name: export
+    description: Export agents to target platforms
+  - name: identity
+    description: GAID/DID identity management and attestation
+  - name: registry
+    description: UADP-compliant agent registry operations
+
+# =============================================================================
+# PATHS
+# =============================================================================
+paths:
+
+  # ---------------------------------------------------------------------------
+  # CATALOG — Browse and search across all item types
+  # ---------------------------------------------------------------------------
+  /catalog:
+    get:
+      operationId: browseCatalog
+      summary: Browse the full marketplace catalog
+      description: |
+        Returns all available items (agents, skills, MCP servers, tools, templates,
+        workflows, policies) with filtering, pagination, and sorting.
+      tags: [catalog]
+      parameters:
+        - $ref: '#/components/parameters/ItemTypeFilter'
+        - $ref: '#/components/parameters/TagFilter'
+        - $ref: '#/components/parameters/TrustTierFilter'
+        - $ref: '#/components/parameters/AgentTypeFilter'
+        - $ref: '#/components/parameters/AgentKindFilter'
+        - $ref: '#/components/parameters/CapabilityFilter'
+        - $ref: '#/components/parameters/PlatformFilter'
+        - $ref: '#/components/parameters/SortBy'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: Catalog listing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogResponse'
+
+  /catalog/search:
+    get:
+      operationId: searchCatalog
+      summary: Semantic search across all catalog items
+      description: |
+        Full-text and semantic search across agents, skills, tools, MCP servers,
+        templates, workflows, and policies. Supports natural language queries.
+      tags: [catalog]
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: Search query (natural language or keywords)
+          schema:
+            type: string
+            example: 'drupal content moderation agent with MCP tools'
+        - $ref: '#/components/parameters/ItemTypeFilter'
+        - $ref: '#/components/parameters/TrustTierFilter'
+        - $ref: '#/components/parameters/PlatformFilter'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Search results ranked by relevance
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+
+  /catalog/{itemType}/{itemId}:
+    get:
+      operationId: getCatalogItem
+      summary: Get full details for a catalog item
+      tags: [catalog]
+      parameters:
+        - name: itemType
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/ItemType'
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: version
+          in: query
+          schema:
+            type: string
+            description: Specific version (default latest)
+      responses:
+        '200':
+          description: Full item details including manifest, dependencies, and metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogItemDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /catalog/{itemType}/{itemId}/versions:
+    get:
+      operationId: listItemVersions
+      summary: List all versions of a catalog item
+      tags: [catalog]
+      parameters:
+        - name: itemType
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/ItemType'
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Version history
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  itemId:
+                    type: string
+                  versions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/VersionEntry'
+
+  # ---------------------------------------------------------------------------
+  # PLUGINS — Install, manage, update local plugins
+  # ---------------------------------------------------------------------------
+  /plugins:
+    get:
+      operationId: listInstalledPlugins
+      summary: List all installed plugins
+      tags: [plugins]
+      parameters:
+        - $ref: '#/components/parameters/ItemTypeFilter'
+      responses:
+        '200':
+          description: Installed plugins
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                  plugins:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/InstalledPlugin'
+
+    post:
+      operationId: installPlugin
+      summary: Install a plugin from marketplace
+      description: |
+        Installs an agent, skill, MCP server, tool, template, workflow, or policy
+        from any registered marketplace. Resolves dependencies automatically.
+        Validates trust tier against OSSA_TRUST_TIER minimum.
+      tags: [plugins]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InstallRequest'
+      responses:
+        '200':
+          description: Plugin installed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstallResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          description: Trust tier below minimum or policy violation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrustViolation'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /plugins/{pluginId}:
+    get:
+      operationId: getInstalledPlugin
+      summary: Get details of an installed plugin
+      tags: [plugins]
+      parameters:
+        - name: pluginId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Installed plugin details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstalledPlugin'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      operationId: updatePlugin
+      summary: Update an installed plugin to a new version
+      tags: [plugins]
+      parameters:
+        - name: pluginId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                version:
+                  type: string
+                  description: Target version (default latest)
+      responses:
+        '200':
+          description: Plugin updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstallResult'
+
+    delete:
+      operationId: removePlugin
+      summary: Remove an installed plugin
+      tags: [plugins]
+      parameters:
+        - name: pluginId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: force
+          in: query
+          schema:
+            type: boolean
+            default: false
+            description: Remove even if other plugins depend on it
+      responses:
+        '200':
+          description: Plugin removed
+        '409':
+          description: Plugin has dependents
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  dependents:
+                    type: array
+                    items:
+                      type: string
+
+  /plugins/check-updates:
+    get:
+      operationId: checkPluginUpdates
+      summary: Check for available updates across all installed plugins
+      tags: [plugins]
+      responses:
+        '200':
+          description: Available updates
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  updatesAvailable:
+                    type: integer
+                  updates:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        pluginId:
+                          type: string
+                        currentVersion:
+                          type: string
+                        latestVersion:
+                          type: string
+                        changelog:
+                          type: string
+
+  /plugins/resolve:
+    post:
+      operationId: resolveDependencies
+      summary: Resolve full dependency tree for an install
+      description: |
+        Given a set of items to install, resolves all transitive dependencies,
+        checks version compatibility, and returns the full install plan.
+      tags: [plugins]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [items]
+              properties:
+                items:
+                  type: array
+                  items:
+                    type: object
+                    required: [itemType, itemId]
+                    properties:
+                      itemType:
+                        $ref: '#/components/schemas/ItemType'
+                      itemId:
+                        type: string
+                      version:
+                        type: string
+      responses:
+        '200':
+          description: Resolved dependency tree
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DependencyResolution'
+
+  # ---------------------------------------------------------------------------
+  # AGENTS — Full OSSA agent lifecycle
+  # ---------------------------------------------------------------------------
+  /agents:
+    get:
+      operationId: listAgents
+      summary: List available agents
+      tags: [agents]
+      parameters:
+        - $ref: '#/components/parameters/AgentTypeFilter'
+        - $ref: '#/components/parameters/AgentKindFilter'
+        - $ref: '#/components/parameters/CapabilityFilter'
+        - $ref: '#/components/parameters/TrustTierFilter'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: Agent listing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                  agents:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AgentSummary'
+
+    post:
+      operationId: publishAgent
+      summary: Publish an agent to the marketplace
+      description: |
+        Publishes a full OSSA agent manifest. Validates against spec, checks trust tier,
+        generates GAID if not present, signs manifest if key provided.
+      tags: [agents]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublishAgentRequest'
+      responses:
+        '201':
+          description: Agent published
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublishResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Agent version already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /agents/{agentId}:
+    get:
+      operationId: getAgent
+      summary: Get full agent manifest and metadata
+      tags: [agents]
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: version
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Full agent manifest
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentDetail'
+            application/yaml:
+              schema:
+                $ref: '#/components/schemas/AgentDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /agents/{agentId}/export:
+    post:
+      operationId: exportAgent
+      summary: Export agent to target platform format
+      description: |
+        Transforms an OSSA agent manifest into the native format of a target platform.
+        Supports all major agentic frameworks and protocols.
+      tags: [export]
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportRequest'
+      responses:
+        '200':
+          description: Exported agent in target format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportResult'
+
+  /agents/{agentId}/compose:
+    post:
+      operationId: composeAgent
+      summary: Compose an agent from marketplace components
+      description: |
+        Assembles an agent from skills, tools, MCP servers, and policies
+        available in the marketplace. Creates a complete OSSA manifest
+        with all dependencies resolved.
+      tags: [agents]
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ComposeRequest'
+      responses:
+        '200':
+          description: Composed agent manifest
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentDetail'
+
+  # ---------------------------------------------------------------------------
+  # SKILLS — Skill discovery, install, and management
+  # ---------------------------------------------------------------------------
+  /skills:
+    get:
+      operationId: listSkills
+      summary: List available skills
+      tags: [skills]
+      parameters:
+        - $ref: '#/components/parameters/TagFilter'
+        - $ref: '#/components/parameters/PlatformFilter'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: Skills listing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                  skills:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SkillSummary'
+
+  /skills/{skillId}:
+    get:
+      operationId: getSkill
+      summary: Get full skill definition (SKILL.md content + metadata)
+      tags: [skills]
+      parameters:
+        - name: skillId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Full skill definition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SkillDetail'
+
+  # ---------------------------------------------------------------------------
+  # MCP SERVERS — MCP server registry
+  # ---------------------------------------------------------------------------
+  /mcp-servers:
+    get:
+      operationId: listMcpServers
+      summary: List available MCP servers
+      tags: [mcp-servers]
+      parameters:
+        - name: transport
+          in: query
+          schema:
+            type: string
+            enum: [stdio, sse, streamable-http]
+        - $ref: '#/components/parameters/TagFilter'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: MCP server listing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                  servers:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/McpServerSummary'
+
+  /mcp-servers/{serverId}:
+    get:
+      operationId: getMcpServer
+      summary: Get MCP server details including discovered tools
+      tags: [mcp-servers]
+      parameters:
+        - name: serverId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: MCP server details with tool listing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/McpServerDetail'
+
+  # ---------------------------------------------------------------------------
+  # TOOLS — Individual tool catalog
+  # ---------------------------------------------------------------------------
+  /tools:
+    get:
+      operationId: listTools
+      summary: List available tools (standalone and from MCP servers)
+      tags: [tools]
+      parameters:
+        - $ref: '#/components/parameters/TagFilter'
+        - name: source
+          in: query
+          description: Filter by tool source
+          schema:
+            type: string
+            enum: [mcp, standalone, builtin]
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Tool listing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                  tools:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ToolSummary'
+
+  # ---------------------------------------------------------------------------
+  # TEMPLATES — Agent and workflow scaffolding
+  # ---------------------------------------------------------------------------
+  /templates:
+    get:
+      operationId: listTemplates
+      summary: List available agent and workflow templates
+      tags: [templates]
+      parameters:
+        - $ref: '#/components/parameters/AgentTypeFilter'
+        - $ref: '#/components/parameters/AgentKindFilter'
+        - name: architecture
+          in: query
+          schema:
+            $ref: '#/components/schemas/ArchitecturePattern'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Template listing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                  templates:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TemplateSummary'
+
+  /templates/{templateId}/scaffold:
+    post:
+      operationId: scaffoldFromTemplate
+      summary: Generate a new agent manifest from a template
+      tags: [templates]
+      parameters:
+        - name: templateId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                  description: Agent name
+                namespace:
+                  type: string
+                  description: Agent namespace
+                variables:
+                  type: object
+                  additionalProperties:
+                    type: string
+                  description: Template variable overrides
+      responses:
+        '200':
+          description: Scaffolded agent manifest
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentDetail'
+
+  # ---------------------------------------------------------------------------
+  # WORKFLOWS — Multi-agent workflow definitions
+  # ---------------------------------------------------------------------------
+  /workflows:
+    get:
+      operationId: listWorkflows
+      summary: List available multi-agent workflows
+      tags: [workflows]
+      parameters:
+        - $ref: '#/components/parameters/TagFilter'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Workflow listing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                  workflows:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/WorkflowSummary'
+
+  # ---------------------------------------------------------------------------
+  # POLICIES — Security policies, Cedar rules, trust configuration
+  # ---------------------------------------------------------------------------
+  /policies:
+    get:
+      operationId: listPolicies
+      summary: List available security policies and Cedar rule sets
+      tags: [policies]
+      parameters:
+        - name: policyType
+          in: query
+          schema:
+            type: string
+            enum: [cedar, tool-allowlist, trust-tier, resource-budget, audit-rule, conformance-profile]
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Policy listing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                  policies:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PolicySummary'
+
+  # ---------------------------------------------------------------------------
+  # EXPORT — Transform agent to any target platform
+  # ---------------------------------------------------------------------------
+  /export/platforms:
+    get:
+      operationId: listExportPlatforms
+      summary: List all supported export target platforms
+      tags: [export]
+      responses:
+        '200':
+          description: Supported export platforms
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  platforms:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ExportPlatform'
+
+  /export:
+    post:
+      operationId: exportManifest
+      summary: Export an OSSA manifest to target platform format
+      description: |
+        Accepts a raw OSSA manifest and transforms it into the native format
+        of any supported target platform. Build once, run anywhere.
+      tags: [export]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [manifest, target]
+              properties:
+                manifest:
+                  description: Full OSSA agent manifest
+                  type: object
+                target:
+                  $ref: '#/components/schemas/ExportTarget'
+                options:
+                  $ref: '#/components/schemas/ExportOptions'
+      responses:
+        '200':
+          description: Exported result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportResult'
+
+  # ---------------------------------------------------------------------------
+  # IDENTITY — GAID/DID management
+  # ---------------------------------------------------------------------------
+  /identity/gaid:
+    post:
+      operationId: generateGaid
+      summary: Generate a new GAID (Global Agent Identifier)
+      description: |
+        Creates a new W3C DID-based GAID for an agent. Supports did:web and did:ossa methods.
+      tags: [identity]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [agentName]
+              properties:
+                agentName:
+                  type: string
+                namespace:
+                  type: string
+                didMethod:
+                  type: string
+                  enum: [did:web, did:ossa, did:key]
+                  default: 'did:web'
+                generateKeys:
+                  type: boolean
+                  default: true
+                  description: Generate Ed25519 keypair for verification
+      responses:
+        '201':
+          description: GAID created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GaidResult'
+
+  /identity/verify:
+    post:
+      operationId: verifyManifestSignature
+      summary: Verify an agent manifest signature and trust tier
+      tags: [identity]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [manifest]
+              properties:
+                manifest:
+                  type: object
+                  description: OSSA manifest with x-signature block
+      responses:
+        '200':
+          description: Verification result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerificationResult'
+
+  # ---------------------------------------------------------------------------
+  # REGISTRY — UADP-compliant agent registry
+  # ---------------------------------------------------------------------------
+  /registry:
+    get:
+      operationId: listRegistryAgents
+      summary: List agents in the UADP registry
+      description: |
+        UADP-compliant discovery endpoint. Returns registered agents
+        with filtering by trust tier, capability, and type.
+      tags: [registry]
+      parameters:
+        - $ref: '#/components/parameters/TrustTierFilter'
+        - $ref: '#/components/parameters/AgentTypeFilter'
+        - $ref: '#/components/parameters/CapabilityFilter'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Registry listing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  agents:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RegistryEntry'
+
+  /registry/{agentId}:
+    get:
+      operationId: getRegistryAgent
+      summary: Get agent from registry by GAID
+      tags: [registry]
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+            description: GAID or agent name
+      responses:
+        '200':
+          description: Registry entry
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistryEntry'
+
+  /registry/revoke/{agentId}:
+    put:
+      operationId: revokeAgent
+      summary: Revoke an agent registration
+      description: |
+        Marks agent as revoked in the registry. Emits uadp.agents.revoked event.
+        Revoked agents are excluded from discovery by default.
+      tags: [registry]
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                revokedBy:
+                  type: string
+                  description: DID of revoking principal
+      responses:
+        '200':
+          description: Agent revoked
+      security:
+        - bearerAuth: []
+
+  # ---------------------------------------------------------------------------
+  # WELL-KNOWN — Standard discovery endpoints
+  # ---------------------------------------------------------------------------
+  /.well-known/agent-card.json:
+    get:
+      operationId: getAgentCard
+      summary: UADP well-known agent card
+      description: Returns the marketplace's own agent card for discovery
+      tags: [registry]
+      responses:
+        '200':
+          description: Agent card
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentCard'
+
+  /.well-known/ossa-marketplace.json:
+    get:
+      operationId: getMarketplaceInfo
+      summary: Marketplace discovery endpoint
+      description: |
+        Standard well-known endpoint for marketplace auto-discovery.
+        The CLI uses this to verify a URL is a valid OSSA marketplace.
+      tags: [catalog]
+      responses:
+        '200':
+          description: Marketplace metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketplaceInfo'
+
+# =============================================================================
+# COMPONENTS
+# =============================================================================
+components:
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: OSSA_MARKETPLACE_TOKEN env var
+
+  # ---------------------------------------------------------------------------
+  # PARAMETERS
+  # ---------------------------------------------------------------------------
+  parameters:
+    ItemTypeFilter:
+      name: type
+      in: query
+      description: Filter by item type
+      schema:
+        $ref: '#/components/schemas/ItemType'
+
+    TagFilter:
+      name: tags
+      in: query
+      description: Filter by tags (comma-separated)
+      schema:
+        type: string
+        example: 'drupal,security,content'
+
+    TrustTierFilter:
+      name: trustTier
+      in: query
+      description: Minimum trust tier
+      schema:
+        $ref: '#/components/schemas/TrustTier'
+
+    AgentTypeFilter:
+      name: agentType
+      in: query
+      description: Filter by agent execution platform
+      schema:
+        $ref: '#/components/schemas/AgentType'
+
+    AgentKindFilter:
+      name: agentKind
+      in: query
+      description: Filter by agent functional role
+      schema:
+        $ref: '#/components/schemas/AgentKind'
+
+    CapabilityFilter:
+      name: capability
+      in: query
+      description: Filter by capability (comma-separated)
+      schema:
+        type: string
+        example: 'tools,streaming,handoff'
+
+    PlatformFilter:
+      name: platform
+      in: query
+      description: Filter by compatible export platform
+      schema:
+        $ref: '#/components/schemas/ExportTarget'
+
+    SortBy:
+      name: sort
+      in: query
+      schema:
+        type: string
+        enum: [name, popularity, updated, trustTier, relevance]
+        default: relevance
+
+    Limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        default: 50
+        maximum: 200
+
+    Offset:
+      name: offset
+      in: query
+      schema:
+        type: integer
+        default: 0
+
+  # ---------------------------------------------------------------------------
+  # SCHEMAS
+  # ---------------------------------------------------------------------------
+  schemas:
+
+    # === ENUMS ===
+
+    ItemType:
+      type: string
+      enum:
+        - agent
+        - skill
+        - mcp-server
+        - tool
+        - template
+        - workflow
+        - policy
+        - adapter
+        - extension
+
+    TrustTier:
+      type: string
+      enum: [official, verified-signature, signed, community, experimental]
+      description: |
+        OSSA trust tiers (NIST-aligned):
+        - official: Curated by registry owner, GAID allow-listed
+        - verified-signature: Manifest signed, key verifies against DID
+        - signed: Signature present and valid, key not necessarily trusted
+        - community: Listed in registry, no signature requirement
+        - experimental: Not for production, sandbox only
+
+    AgentType:
+      type: string
+      description: Runtime platform/framework for agent execution
+      enum:
+        - claude
+        - openai
+        - kagent
+        - langchain
+        - crewai
+        - autogen
+        - llamaindex
+        - haystack
+        - semantic-kernel
+        - vertex-ai
+        - bedrock
+        - pydantic-ai
+        - swarm
+        - a2a
+        - mcp-server
+        - agent-sdk
+        - adk
+        - dspy
+        - composio
+        - flowise
+        - n8n
+        - dify
+        - rivet
+        - langflow
+        - custom
+
+    AgentKind:
+      type: string
+      description: Functional role of the agent
+      enum:
+        - assistant
+        - orchestrator
+        - worker
+        - coordinator
+        - supervisor
+        - tool
+        - reviewer
+        - planner
+        - executor
+        - monitor
+        - analyst
+        - researcher
+        - specialist
+        - team-lead
+        - teammate
+        - subagent
+        - debugger
+
+    ArchitecturePattern:
+      type: string
+      enum: [single, swarm, pipeline, graph, hierarchical, reactive, cognitive, lead-teammate]
+
+    ExportTarget:
+      type: string
+      description: |
+        Target platform for agent export. BUILD ONCE, RUN ANYWHERE.
+      enum:
+        - claude-code          # SKILL.md + CLAUDE.md
+        - claude-agent-sdk     # Anthropic Agent SDK (Python/TS)
+        - openai-agents-sdk    # OpenAI Agents SDK
+        - openai-assistants    # OpenAI Assistants API
+        - google-adk           # Google Agent Development Kit
+        - langchain            # LangChain agent
+        - langgraph            # LangGraph workflow
+        - crewai               # CrewAI crew definition
+        - autogen              # Microsoft AutoGen/AG2
+        - kagent               # Kubernetes kagent CRD
+        - bedrock              # AWS Bedrock Agent
+        - vertex-ai            # Google Vertex AI Agent
+        - semantic-kernel      # Microsoft Semantic Kernel
+        - pydantic-ai          # Pydantic AI agent
+        - llamaindex           # LlamaIndex agent
+        - haystack             # Haystack pipeline
+        - dspy                 # DSPy module
+        - mcp-server           # MCP server definition
+        - a2a                  # A2A agent card
+        - drupal-ai            # Drupal AI module
+        - npm-package          # npm package with TypeScript
+        - docker               # Dockerfile + compose
+        - helm                 # Helm chart for K8s
+        - terraform            # Terraform module
+        - github-actions       # GitHub Actions workflow
+        - gitlab-ci            # GitLab CI pipeline
+        - flowise              # Flowise flow definition
+        - n8n                  # n8n workflow
+        - dify                 # Dify app definition
+        - langflow             # Langflow flow
+        - composio             # Composio integration
+
+    # === CATALOG SCHEMAS ===
+
+    CatalogItem:
+      type: object
+      required: [id, type, name, version]
+      properties:
+        id:
+          type: string
+          description: Unique item identifier
+        type:
+          $ref: '#/components/schemas/ItemType'
+        name:
+          type: string
+        version:
+          type: string
+        description:
+          type: string
+        author:
+          type: string
+        namespace:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        trustTier:
+          $ref: '#/components/schemas/TrustTier'
+        downloads:
+          type: integer
+        rating:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 5
+        updatedAt:
+          type: string
+          format: date-time
+        license:
+          type: string
+        sourceUrl:
+          type: string
+          format: uri
+        # Agent-specific fields (present when type=agent)
+        agentType:
+          $ref: '#/components/schemas/AgentType'
+        agentKind:
+          $ref: '#/components/schemas/AgentKind'
+        architecture:
+          $ref: '#/components/schemas/ArchitecturePattern'
+        capabilities:
+          type: array
+          items:
+            type: string
+        exportTargets:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExportTarget'
+          description: Platforms this item can export to
+
+    CatalogResponse:
+      type: object
+      properties:
+        total:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CatalogItem'
+        facets:
+          type: object
+          description: Aggregated facets for filtering UI
+          properties:
+            types:
+              type: object
+              additionalProperties:
+                type: integer
+            tags:
+              type: object
+              additionalProperties:
+                type: integer
+            trustTiers:
+              type: object
+              additionalProperties:
+                type: integer
+            agentTypes:
+              type: object
+              additionalProperties:
+                type: integer
+
+    SearchResponse:
+      type: object
+      properties:
+        total:
+          type: integer
+        query:
+          type: string
+        items:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/CatalogItem'
+              - type: object
+                properties:
+                  score:
+                    type: number
+                    format: float
+                    description: Relevance score 0-1
+                  highlights:
+                    type: object
+                    additionalProperties:
+                      type: string
+
+    CatalogItemDetail:
+      allOf:
+        - $ref: '#/components/schemas/CatalogItem'
+        - type: object
+          properties:
+            manifest:
+              type: object
+              description: Full OSSA manifest (when type=agent)
+            content:
+              type: string
+              description: Full content (SKILL.md when type=skill)
+            dependencies:
+              type: array
+              items:
+                $ref: '#/components/schemas/Dependency'
+            readme:
+              type: string
+            changelog:
+              type: string
+            installCount:
+              type: integer
+            conformanceScore:
+              type: number
+              format: float
+              description: OSSA conformance score 0-100
+            securityPosture:
+              type: object
+              description: Security posture summary
+              properties:
+                tier:
+                  $ref: '#/components/schemas/TrustTier'
+                cedarPolicies:
+                  type: integer
+                toolCount:
+                  type: integer
+                mcpServers:
+                  type: integer
+                signatureValid:
+                  type: boolean
+            sbomUrl:
+              type: string
+              format: uri
+              description: CycloneDX SBOM URL
+
+    VersionEntry:
+      type: object
+      properties:
+        version:
+          type: string
+        publishedAt:
+          type: string
+          format: date-time
+        changelog:
+          type: string
+        ossaVersion:
+          type: string
+          description: OSSA spec version this was built against
+
+    # === PLUGIN SCHEMAS ===
+
+    InstalledPlugin:
+      type: object
+      properties:
+        pluginId:
+          type: string
+        type:
+          $ref: '#/components/schemas/ItemType'
+        name:
+          type: string
+        version:
+          type: string
+        installedAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        path:
+          type: string
+          description: Local installation path
+        marketplace:
+          type: string
+          description: Source marketplace URL
+        trustTier:
+          $ref: '#/components/schemas/TrustTier'
+        dependencies:
+          type: array
+          items:
+            type: string
+        enabled:
+          type: boolean
+          default: true
+
+    InstallRequest:
+      type: object
+      required: [itemId]
+      properties:
+        itemId:
+          type: string
+        itemType:
+          $ref: '#/components/schemas/ItemType'
+        version:
+          type: string
+          description: Version constraint (semver range or exact)
+        marketplace:
+          type: string
+          format: uri
+          description: Override marketplace URL for this install
+        path:
+          type: string
+          description: Custom installation path
+        dryRun:
+          type: boolean
+          default: false
+        skipDependencies:
+          type: boolean
+          default: false
+        trustTierMinimum:
+          $ref: '#/components/schemas/TrustTier'
+
+    InstallResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+        pluginId:
+          type: string
+        version:
+          type: string
+        path:
+          type: string
+        dependenciesInstalled:
+          type: array
+          items:
+            type: string
+        trustTier:
+          $ref: '#/components/schemas/TrustTier'
+        signatureVerified:
+          type: boolean
+
+    Dependency:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          $ref: '#/components/schemas/ItemType'
+        version:
+          type: string
+          description: Semver version constraint
+        optional:
+          type: boolean
+          default: false
+
+    DependencyResolution:
+      type: object
+      properties:
+        resolved:
+          type: boolean
+        installPlan:
+          type: array
+          description: Ordered list of items to install
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              type:
+                $ref: '#/components/schemas/ItemType'
+              version:
+                type: string
+              reason:
+                type: string
+                description: Why this is included (direct, transitive-dep, peer-dep)
+        conflicts:
+          type: array
+          items:
+            type: object
+            properties:
+              item:
+                type: string
+              requiredBy:
+                type: array
+                items:
+                  type: string
+              versions:
+                type: array
+                items:
+                  type: string
+              resolution:
+                type: string
+
+    TrustViolation:
+      type: object
+      properties:
+        error:
+          type: string
+        itemId:
+          type: string
+        itemTrustTier:
+          $ref: '#/components/schemas/TrustTier'
+        requiredTrustTier:
+          $ref: '#/components/schemas/TrustTier'
+        recommendation:
+          type: string
+
+    # === AGENT SCHEMAS ===
+
+    AgentSummary:
+      type: object
+      properties:
+        id:
+          type: string
+        gaid:
+          type: string
+          description: Global Agent Identifier (W3C DID)
+        name:
+          type: string
+        version:
+          type: string
+        description:
+          type: string
+        agentType:
+          $ref: '#/components/schemas/AgentType'
+        agentKind:
+          $ref: '#/components/schemas/AgentKind'
+        architecture:
+          $ref: '#/components/schemas/ArchitecturePattern'
+        capabilities:
+          type: array
+          items:
+            type: string
+        toolCount:
+          type: integer
+        mcpServerCount:
+          type: integer
+        skillCount:
+          type: integer
+        trustTier:
+          $ref: '#/components/schemas/TrustTier'
+        exportTargets:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExportTarget'
+
+    AgentDetail:
+      allOf:
+        - $ref: '#/components/schemas/AgentSummary'
+        - type: object
+          properties:
+            manifest:
+              type: object
+              description: Full OSSA v0.4+ manifest (apiVersion/kind/metadata/spec)
+            identity:
+              type: object
+              description: W3C DID Document
+            securityPosture:
+              type: object
+              description: Full OSSA SecurityPosture
+            protocols:
+              type: object
+              description: Protocol declarations (MCP, A2A, ANP)
+            extensions:
+              type: object
+              description: agents_md, llms_txt, cursor, openai_agents_sdk
+            team:
+              type: object
+              description: Team definition if multi-agent
+            dependencies:
+              type: array
+              items:
+                $ref: '#/components/schemas/Dependency'
+
+    PublishAgentRequest:
+      type: object
+      required: [manifest]
+      properties:
+        manifest:
+          type: object
+          description: Full OSSA agent manifest
+        signWithKey:
+          type: string
+          description: Ed25519 private key (base64) for manifest signing
+        generateGaid:
+          type: boolean
+          default: true
+          description: Auto-generate GAID if not present
+        visibility:
+          type: string
+          enum: [public, unlisted, private]
+          default: public
+
+    PublishResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+        agentId:
+          type: string
+        gaid:
+          type: string
+        version:
+          type: string
+        trustTier:
+          $ref: '#/components/schemas/TrustTier'
+        conformanceScore:
+          type: number
+        registryUrl:
+          type: string
+          format: uri
+
+    # === COMPOSITION SCHEMA ===
+
+    ComposeRequest:
+      type: object
+      properties:
+        skills:
+          type: array
+          items:
+            type: string
+          description: Skill IDs to attach
+        mcpServers:
+          type: array
+          items:
+            type: string
+          description: MCP server IDs to configure
+        tools:
+          type: array
+          items:
+            type: string
+          description: Tool IDs to add
+        policies:
+          type: array
+          items:
+            type: string
+          description: Policy IDs to apply
+        team:
+          type: object
+          description: Team composition (member agent IDs)
+          properties:
+            model:
+              type: string
+              enum: [lead-teammate, peer-to-peer, hierarchical, swarm]
+            members:
+              type: array
+              items:
+                type: string
+                description: Agent IDs for team members
+
+    # === SKILL SCHEMAS ===
+
+    SkillSummary:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        version:
+          type: string
+        platforms:
+          type: array
+          items:
+            type: string
+            enum: [claude, openai, cursor, windsurf, generic]
+        triggerKeywords:
+          type: array
+          items:
+            type: string
+        sourceRepo:
+          type: string
+          format: uri
+        tags:
+          type: array
+          items:
+            type: string
+
+    SkillDetail:
+      allOf:
+        - $ref: '#/components/schemas/SkillSummary'
+        - type: object
+          properties:
+            content:
+              type: string
+              description: Full SKILL.md content
+            frontmatter:
+              type: object
+              description: YAML frontmatter metadata
+            examples:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  input:
+                    type: string
+                  output:
+                    type: string
+
+    # === MCP SERVER SCHEMAS ===
+
+    McpServerSummary:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        transport:
+          type: string
+          enum: [stdio, sse, streamable-http]
+        toolCount:
+          type: integer
+        command:
+          type: string
+          description: stdio command
+        url:
+          type: string
+          description: SSE/HTTP URL
+        tags:
+          type: array
+          items:
+            type: string
+
+    McpServerDetail:
+      allOf:
+        - $ref: '#/components/schemas/McpServerSummary'
+        - type: object
+          properties:
+            tools:
+              type: array
+              items:
+                $ref: '#/components/schemas/ToolSummary'
+            args:
+              type: array
+              items:
+                type: string
+            env:
+              type: object
+              additionalProperties:
+                type: string
+              description: Required environment variables
+            installCommand:
+              type: string
+              description: npm/pip install command
+            rateLimit:
+              type: string
+              description: Global rate limit for this server
+
+    # === TOOL SCHEMAS ===
+
+    ToolSummary:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        source:
+          type: string
+          enum: [mcp, standalone, builtin]
+        mcpServer:
+          type: string
+          description: Parent MCP server (if source=mcp)
+        inputSchema:
+          type: object
+          description: JSON Schema for tool inputs
+        outputSchema:
+          type: object
+          description: JSON Schema for tool outputs
+        rateLimit:
+          type: string
+        requiresCapability:
+          type: string
+          description: Required Cedar capability
+        tags:
+          type: array
+          items:
+            type: string
+
+    # === TEMPLATE SCHEMAS ===
+
+    TemplateSummary:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        agentType:
+          $ref: '#/components/schemas/AgentType'
+        agentKind:
+          $ref: '#/components/schemas/AgentKind'
+        architecture:
+          $ref: '#/components/schemas/ArchitecturePattern'
+        variables:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              description:
+                type: string
+              default:
+                type: string
+              required:
+                type: boolean
+        includedSkills:
+          type: array
+          items:
+            type: string
+        includedTools:
+          type: array
+          items:
+            type: string
+        exportTargets:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExportTarget'
+
+    # === WORKFLOW SCHEMAS ===
+
+    WorkflowSummary:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        agentCount:
+          type: integer
+        steps:
+          type: integer
+        pattern:
+          $ref: '#/components/schemas/ArchitecturePattern'
+        tags:
+          type: array
+          items:
+            type: string
+
+    # === POLICY SCHEMAS ===
+
+    PolicySummary:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        policyType:
+          type: string
+          enum: [cedar, tool-allowlist, trust-tier, resource-budget, audit-rule, conformance-profile]
+        scope:
+          type: string
+          enum: [global, workspace, agent, tool]
+        content:
+          type: string
+          description: Policy content (Cedar rules, YAML config, etc.)
+
+    # === EXPORT SCHEMAS ===
+
+    ExportPlatform:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/ExportTarget'
+        name:
+          type: string
+        description:
+          type: string
+        outputFormat:
+          type: string
+          enum: [python, typescript, yaml, json, dockerfile, helm, terraform, hcl, markdown]
+        requiredFields:
+          type: array
+          items:
+            type: string
+          description: OSSA manifest fields required for this export
+        website:
+          type: string
+          format: uri
+
+    ExportRequest:
+      type: object
+      required: [target]
+      properties:
+        target:
+          $ref: '#/components/schemas/ExportTarget'
+        options:
+          $ref: '#/components/schemas/ExportOptions'
+
+    ExportOptions:
+      type: object
+      properties:
+        outputDir:
+          type: string
+          description: Output directory
+        includeTests:
+          type: boolean
+          default: false
+        includeDocker:
+          type: boolean
+          default: false
+        includeCI:
+          type: boolean
+          default: false
+          description: Include CI/CD pipeline config
+        packageScope:
+          type: string
+          description: npm scope for npm-package export
+        pythonPackageName:
+          type: string
+          description: Python package name for Python exports
+        kubernetesNamespace:
+          type: string
+          description: K8s namespace for kagent/helm exports
+        validate:
+          type: boolean
+          default: true
+          description: Validate manifest before export
+
+    ExportResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+        target:
+          $ref: '#/components/schemas/ExportTarget'
+        files:
+          type: array
+          items:
+            type: object
+            properties:
+              path:
+                type: string
+              content:
+                type: string
+              language:
+                type: string
+        warnings:
+          type: array
+          items:
+            type: string
+        unsupportedFeatures:
+          type: array
+          items:
+            type: string
+            description: OSSA features not supported by this target
+
+    # === IDENTITY SCHEMAS ===
+
+    GaidResult:
+      type: object
+      properties:
+        gaid:
+          type: string
+          description: Generated GAID (e.g. did:web:example.com:agents:my-agent)
+        didDocument:
+          type: object
+          description: W3C DID Document
+        publicKey:
+          type: string
+          description: Ed25519 public key (multibase)
+        privateKey:
+          type: string
+          description: Ed25519 private key (base64, only returned once)
+
+    VerificationResult:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        trustTier:
+          $ref: '#/components/schemas/TrustTier'
+        signatureAlgorithm:
+          type: string
+        signerDid:
+          type: string
+        manifestHash:
+          type: string
+        errors:
+          type: array
+          items:
+            type: string
+
+    # === REGISTRY SCHEMAS ===
+
+    RegistryEntry:
+      type: object
+      properties:
+        gaid:
+          type: string
+        name:
+          type: string
+        version:
+          type: string
+        description:
+          type: string
+        agentType:
+          $ref: '#/components/schemas/AgentType'
+        capabilities:
+          type: array
+          items:
+            type: string
+        trustTier:
+          $ref: '#/components/schemas/TrustTier'
+        serviceEndpoint:
+          type: string
+          format: uri
+        manifestUrl:
+          type: string
+          format: uri
+        revoked:
+          type: boolean
+          default: false
+        lastValidated:
+          type: string
+          format: date-time
+        registeredAt:
+          type: string
+          format: date-time
+
+    AgentCard:
+      type: object
+      description: UADP well-known agent card
+      required: [uri, name, version, ossaVersion, capabilities, transport, authentication]
+      properties:
+        uri:
+          type: string
+          pattern: '^agent://'
+        name:
+          type: string
+        version:
+          type: string
+        ossaVersion:
+          type: string
+        capabilities:
+          type: array
+          items:
+            type: string
+        tools:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              description:
+                type: string
+              inputSchema:
+                type: object
+        mcpServers:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              transport:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    enum: [stdio, sse, streamable-http]
+                  url:
+                    type: string
+        endpoints:
+          type: object
+          properties:
+            api:
+              type: string
+              format: uri
+            mcp:
+              type: string
+            a2a:
+              type: string
+              format: uri
+        transport:
+          type: object
+          properties:
+            protocols:
+              type: array
+              items:
+                type: string
+                enum: [http, websocket, grpc, a2a, mcp]
+        authentication:
+          type: object
+          properties:
+            methods:
+              type: array
+              items:
+                type: string
+                enum: [bearer, api-key, oauth2, mtls, did-auth, none]
+        encryption:
+          type: object
+          properties:
+            atRest:
+              type: boolean
+            inTransit:
+              type: boolean
+            algorithm:
+              type: string
+
+    # === MARKETPLACE INFO ===
+
+    MarketplaceInfo:
+      type: object
+      required: [name, version, apiVersion, endpoints]
+      properties:
+        name:
+          type: string
+          description: Marketplace display name
+        version:
+          type: string
+          description: Marketplace software version
+        apiVersion:
+          type: string
+          description: OSSA marketplace API version
+          example: '1.0.0'
+        ossaVersion:
+          type: string
+          description: OSSA spec version supported
+          example: '0.4.6'
+        description:
+          type: string
+        endpoints:
+          type: object
+          required: [catalog, plugins]
+          properties:
+            catalog:
+              type: string
+              format: uri
+            plugins:
+              type: string
+              format: uri
+            agents:
+              type: string
+              format: uri
+            skills:
+              type: string
+              format: uri
+            mcpServers:
+              type: string
+              format: uri
+            tools:
+              type: string
+              format: uri
+            registry:
+              type: string
+              format: uri
+            export:
+              type: string
+              format: uri
+            identity:
+              type: string
+              format: uri
+        stats:
+          type: object
+          properties:
+            agents:
+              type: integer
+            skills:
+              type: integer
+            mcpServers:
+              type: integer
+            tools:
+              type: integer
+            templates:
+              type: integer
+            workflows:
+              type: integer
+        features:
+          type: array
+          items:
+            type: string
+            enum:
+              - search
+              - semantic-search
+              - dependency-resolution
+              - trust-verification
+              - signature-verification
+              - export
+              - identity
+              - cedar-policies
+              - sbom
+              - conformance-scoring
+
+    # === ERROR SCHEMAS ===
+
+    Error:
+      type: object
+      required: [error, message]
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        code:
+          type: string
+        details:
+          type: object
+
+  # ---------------------------------------------------------------------------
+  # RESPONSES
+  # ---------------------------------------------------------------------------
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFound:
+      description: Item not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
