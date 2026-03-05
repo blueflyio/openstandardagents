@@ -253,6 +253,39 @@ paths:
         '400':
           $ref: '#/components/responses/ValidationError'
 
+  /api/v1/wizard/definitions:
+    get:
+      operationId: getWizardDefinitions
+      summary: Get wizard step definitions for a kind and mode
+      description: Returns step definitions (id, title, description, fields) without session. Use to drive UI wizards.
+      tags: [Wizard]
+      parameters:
+        - name: kind
+          in: query
+          schema:
+            type: string
+            enum: [Agent, Skill, MCPServer]
+            default: Agent
+        - name: mode
+          in: query
+          schema:
+            type: string
+            enum: [quick, guided, expert]
+            default: guided
+      responses:
+        '200':
+          description: Step definitions for the wizard
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [steps]
+                properties:
+                  steps:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/StepDefinition'
+
   /api/v1/wizard/sessions:
     post:
       operationId: createWizardSession
