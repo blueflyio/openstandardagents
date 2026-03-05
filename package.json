@@ -114,6 +114,7 @@
   "files": [
     "dist/",
     "!dist/dev-cli/",
+    "!dist/services/release-automation/",
     "!dist/sdks/python-generator/",
     "!dist/sdks/typescript/",
     "!dist/**/*.js.map",

@@ -1,5 +1,5 @@
 {
-  "url": "http://mesh.blueflyagents.com/webhook/mr-reviewer",
+  "url": "http://your-mesh-registry.example.com/webhook/mr-reviewer",
   "token": "${WEBHOOK_SECRET}",
   "enable_ssl_verification": false,
   "push_events": false,

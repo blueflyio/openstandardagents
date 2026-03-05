@@ -8,7 +8,7 @@ info:
     For production API, see platform-agents/@ossa/token-rotation-manager/openapi.yaml
 
 servers:
-  - url: https://workflow.blueflyagents.com/v1
+  - url: https://your-workflow.example.com/v1
     description: Production
 
 paths:

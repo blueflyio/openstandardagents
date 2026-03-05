@@ -1,4 +1,4 @@
-apiVersion: ossa/v0.4.4
+apiVersion: ossa/v0.4.6
 kind: Agent
 metadata:
   name: customer-service-swarm
