@@ -14,11 +14,27 @@ const CreateSessionSchema = z.object({
   template: z.string().optional(),
 });
 
+const DefinitionsQuerySchema = z.object({
+  kind: z.enum(['Agent', 'Skill', 'MCPServer']).optional().default('Agent'),
+  mode: z.enum(['quick', 'guided', 'expert']).optional().default('guided'),
+});
+
 const SubmitStepSchema = z.object({}).passthrough();
 
 export function wizardRouter(): Router {
   const router = Router();
   const service = container.get(WizardStateService);
+
+  // Get step definitions (no session required)
+  router.get('/definitions', (req, res) => {
+    const parsed = DefinitionsQuerySchema.safeParse(req.query);
+    if (!parsed.success) {
+      res.status(400).json({ error: 'Invalid query', details: parsed.error.flatten() });
+      return;
+    }
+    const steps = service.getStepDefinitions(parsed.data.kind, parsed.data.mode);
+    res.json({ steps });
+  });
 
   // Create session
   router.post('/sessions', validateBody(CreateSessionSchema), (req, res) => {
