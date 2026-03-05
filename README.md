@@ -501,7 +501,7 @@ import { validateManifest } from '@bluefly/openstandardagents/validation';
 import type { OssaAgent } from '@bluefly/openstandardagents/types';
 
 const agent: OssaAgent = {
-  apiVersion: 'ossa/v0.4.5',
+  apiVersion: 'ossa/v0.4.6',
   kind: 'Agent',
   metadata: { name: 'creative-agent-naming', version: '1.0.0' },
   spec: {
