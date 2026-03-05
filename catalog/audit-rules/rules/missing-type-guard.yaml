@@ -1,0 +1,11 @@
+id: missing-type-guard
+description: Value used without runtime type check (e.g. JSON parse or API response).
+anti_pattern:
+  type: regex
+  pattern: (JSON\.parse|response\.(data|json)|\.body)\s*[;)\]]|as\s+[A-Z][a-zA-Z]*
+  path_glob: "**/*.{ts,tsx}"
+fix_suggestion: Add a type guard or validate with Zod/schema before use; avoid bare 'as' casts.
+severity: warning
+dimension: syntax
+target_languages: [typescript]
+tags: [vibecoding, type-safety]

@@ -1,0 +1,11 @@
+id: empty-catch-block
+description: Empty catch block or catch that only rethrows without context.
+anti_pattern:
+  type: regex
+  pattern: catch\s*\([^)]*\)\s*\{\s*(throw\s+)?\s*\}
+  path_glob: "**/*.{ts,js,php}"
+fix_suggestion: Log and/or wrap in a domain error before rethrowing; preserve stack.
+severity: warning
+dimension: best-practices
+target_languages: [typescript, javascript, php]
+tags: [vibecoding, exceptions]

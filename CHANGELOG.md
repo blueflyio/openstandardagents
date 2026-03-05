@@ -7,15 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.4.6] - 2026-02-19
+## [0.4.6] - 2026-03-05
 
 ### Changed
 - Updated package version from 0.4.5 to 0.4.6
 - Updated all version references throughout codebase
 - Updated example manifests to use `ossa/v0.4.6`
 - Updated schema descriptions to reference v0.4.6
+- Replaced hardcoded internal URLs with env-var-configurable defaults (`OSSA_REGISTRY_URL`, `OSSA_ORG`)
+- Excluded `dist/tools/`, `dist/dev-cli/`, and source maps from npm package (reduced package size)
+- Fixed 13 failing test suites (ESM `import.meta.url` compat via ts-jest AST transformer)
 
 ### Added
+- **Daemon (experimental)**: Local development daemon for real-time builder integration
+  - `ossa daemon start` — WebSocket + SSE server on localhost
+  - File watcher, skill aggregation, execution service, audit logging
+  - NIST-compliant pairing (6-digit code auth, memory-only sessions)
+  - OpenAPI spec: `openapi/daemon-api.openapi.yaml`
+  - Audit rules catalog: `catalog/audit-rules/`
 
 #### Schema v0.5 - Agent Identity, Security Posture, Protocol Declarations (#408)
 - **Agent Identity Model** (`metadata.identity`): namespace, agent_id, version, publisher

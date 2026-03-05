@@ -113,6 +113,11 @@
   },
   "files": [
     "dist/",
+    "!dist/dev-cli/",
+    "!dist/sdks/python-generator/",
+    "!dist/sdks/typescript/",
+    "!dist/**/*.js.map",
+    "!dist/**/*.d.ts.map",
     "spec/",
     "bin/",
     "examples/",

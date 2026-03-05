@@ -1,0 +1,11 @@
+id: console-log-in-production
+description: console.log/debug left in production code.
+anti_pattern:
+  type: grep
+  pattern: console\.(log|debug|info)\(
+  path_glob: "**/*.{ts,tsx,js,jsx}"
+fix_suggestion: Use a logger with levels; strip or gate debug in production.
+severity: warning
+dimension: best-practices
+target_languages: [typescript, javascript]
+tags: [vibecoding, logging]

@@ -691,7 +691,7 @@ export interface WorkflowContext {
       {
         url:
           extensions?.webhook?.url ||
-          `http://mesh.blueflyagents.com/webhook/${agentName}`,
+          extensions?.webhook?.url || `http://localhost:8080/webhook/${agentName}`,
         token: '${WEBHOOK_SECRET}',
         enable_ssl_verification: extensions?.webhook?.ssl_verification ?? false,
         push_events: false,
@@ -953,7 +953,7 @@ ${
 Configure the webhook in your GitLab project:
 
 1. Go to **Settings** → **Webhooks**
-2. Add webhook URL: \`http://mesh.blueflyagents.com/webhook/${agentName}\`
+2. Add webhook URL: \`http://<your-registry>/webhook/${agentName}\`
 3. Set secret token (from .env WEBHOOK_SECRET)
 4. Select events: ${this.getWebhookEvents(manifest).join(', ')}
 5. Save webhook

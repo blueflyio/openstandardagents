@@ -71,6 +71,9 @@ const config: Config = {
       {
         useESM: true,
         tsconfig: 'tsconfig.test.json',
+        astTransformers: {
+          before: ['<rootDir>/tests/import-meta-transformer.ts'],
+        },
       },
     ],
   },

@@ -1,0 +1,826 @@
+openapi: 3.1.0
+info:
+  title: OSSA Daemon API
+  version: 0.4.0
+  description: |
+    Local daemon API for the OSSA Neural Forge builder.
+    Runs on localhost:4242, provides real-time workspace sync,
+    skill aggregation, and agent execution via WebSocket/SSE.
+    NIST-compliant: localhost-only binding, pairing-based auth,
+    full audit logging.
+  contact:
+    name: Bluefly.io
+    url: https://openstandardagents.org
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:4242
+    description: Local daemon (127.0.0.1 only)
+
+tags:
+  - name: Pairing
+    description: NIST-grade local authentication via 6-digit pairing codes
+  - name: Health
+    description: Daemon health and status
+  - name: Workspace
+    description: Workspace file operations with path traversal prevention
+  - name: Skills
+    description: Aggregated skill catalog from local, built-in, GitHub, and registry sources
+  - name: Execution
+    description: Agent execution with real-time streaming
+  - name: SSE
+    description: Server-Sent Events for real-time updates
+  - name: WebSocket
+    description: Bidirectional real-time communication
+
+security:
+  - pairingToken: []
+
+components:
+  securitySchemes:
+    pairingToken:
+      type: http
+      scheme: bearer
+      bearerFormat: HMAC-SHA256
+      description: |
+        Session token obtained via pairing protocol.
+        Sent as Bearer token in Authorization header (HTTP)
+        or via Sec-WebSocket-Protocol header (WebSocket).
+
+  schemas:
+    PairRequest:
+      type: object
+      required: [code]
+      properties:
+        code:
+          type: string
+          pattern: '^\d{6}$'
+          description: 6-digit pairing code displayed in daemon terminal
+
+    PairResponse:
+      type: object
+      required: [sessionId, token, expiresAt]
+      properties:
+        sessionId:
+          type: string
+          format: uuid
+        token:
+          type: string
+          description: HMAC-SHA256 session token for subsequent requests
+        expiresAt:
+          type: string
+          format: date-time
+          description: Token expiry (24h from creation)
+
+    HealthResponse:
+      type: object
+      required: [status, version, uptime, workspace]
+      properties:
+        status:
+          type: string
+          enum: [ok, degraded]
+        version:
+          type: string
+          example: '0.4.0'
+        uptime:
+          type: integer
+          description: Daemon uptime in seconds
+        workspace:
+          type: object
+          required: [path, manifestCount]
+          properties:
+            path:
+              type: string
+            manifestCount:
+              type: integer
+        activeSessions:
+          type: integer
+          maximum: 3
+
+    WorkspaceState:
+      type: object
+      required: [root, files, manifests]
+      properties:
+        root:
+          type: string
+          description: Workspace root absolute path
+        files:
+          type: array
+          items:
+            $ref: '#/components/schemas/FileEntry'
+        manifests:
+          type: array
+          items:
+            $ref: '#/components/schemas/ManifestSummary'
+
+    FileEntry:
+      type: object
+      required: [path, modified, size]
+      properties:
+        path:
+          type: string
+          description: Relative path from workspace root
+        modified:
+          type: string
+          format: date-time
+        size:
+          type: integer
+
+    FileTree:
+      type: object
+      required: [root, entries]
+      properties:
+        root:
+          type: string
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/FileEntry'
+
+    FileWriteRequest:
+      type: object
+      required: [content]
+      properties:
+        content:
+          type: string
+          maxLength: 1048576
+          description: File content (max 1MB)
+        createDirectories:
+          type: boolean
+          default: false
+
+    FileWriteResponse:
+      type: object
+      required: [path, written, validated]
+      properties:
+        path:
+          type: string
+        written:
+          type: boolean
+        validated:
+          type: boolean
+          description: Whether content passed OSSA validation (for .ossa.yaml files)
+        validationErrors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+
+    ManifestSummary:
+      type: object
+      required: [path, kind, name]
+      properties:
+        path:
+          type: string
+        kind:
+          type: string
+          enum: [Agent, Skill, MCPServer, Team]
+        name:
+          type: string
+        version:
+          type: string
+
+    ValidationError:
+      type: object
+      required: [path, message, severity]
+      properties:
+        path:
+          type: string
+        message:
+          type: string
+        severity:
+          type: string
+          enum: [error, warning, info]
+
+    SkillCatalog:
+      type: object
+      required: [skills, sources]
+      properties:
+        skills:
+          type: array
+          items:
+            $ref: '#/components/schemas/SkillEntry'
+        sources:
+          type: array
+          items:
+            type: object
+            required: [name, status, count]
+            properties:
+              name:
+                type: string
+                enum: [local, builtin, github, registry]
+              status:
+                type: string
+                enum: [loaded, error, loading]
+              count:
+                type: integer
+
+    SkillEntry:
+      type: object
+      required: [name, source, description]
+      properties:
+        name:
+          type: string
+        source:
+          type: string
+          enum: [local, builtin, github, registry]
+        description:
+          type: string
+        version:
+          type: string
+        capabilities:
+          type: array
+          items:
+            type: string
+        tags:
+          type: array
+          items:
+            type: string
+
+    SkillInstallRequest:
+      type: object
+      required: [name, source]
+      properties:
+        name:
+          type: string
+        source:
+          type: string
+          enum: [builtin, github, registry]
+        targetPath:
+          type: string
+          description: Relative path in workspace to install skill
+
+    SkillInstallResponse:
+      type: object
+      required: [installed, path]
+      properties:
+        installed:
+          type: boolean
+        path:
+          type: string
+        files:
+          type: array
+          items:
+            type: string
+
+    ExecuteRequest:
+      type: object
+      required: [manifestPath]
+      properties:
+        manifestPath:
+          type: string
+          description: Path to agent manifest (relative to workspace)
+        input:
+          type: object
+          description: Agent input parameters
+        runtime:
+          type: string
+          enum: [claude, openai, ollama, groq, together, deepseek, gemini, mock]
+          default: claude
+        stream:
+          type: boolean
+          default: true
+
+    ExecuteResponse:
+      type: object
+      required: [executionId, status]
+      properties:
+        executionId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [running, completed, failed, cancelled]
+        sseUrl:
+          type: string
+          format: uri
+          description: SSE endpoint for streaming output
+
+    ExecutionStatus:
+      type: object
+      required: [executionId, status, startedAt]
+      properties:
+        executionId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [running, completed, failed, cancelled]
+        startedAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+        output:
+          type: object
+          description: Final output (only when completed)
+        error:
+          type: string
+          description: Error message (only when failed)
+
+    ErrorResponse:
+      type: object
+      required: [error, message]
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+
+    # WebSocket event schemas
+    DaemonWebSocketEvent:
+      type: object
+      required: [type, id, timestamp, payload, metadata]
+      properties:
+        type:
+          type: string
+          enum:
+            - message
+            - capability_call
+            - status_update
+            - error
+            - ack
+            - ping
+            - pong
+            - register
+            - file_changed
+            - manifest_updated
+            - execution_output
+            - workspace_state
+            - skill_catalog
+            - validation_result
+        id:
+          type: string
+          format: uuid
+        timestamp:
+          type: string
+          format: date-time
+        payload:
+          type: object
+        metadata:
+          type: object
+          required: [agentId]
+          properties:
+            agentId:
+              type: string
+            correlationId:
+              type: string
+            replyTo:
+              type: string
+            priority:
+              type: string
+              enum: [low, normal, high, critical]
+            ttl:
+              type: integer
+            sessionId:
+              type: string
+
+    # SSE event schemas
+    SSEExecutionEvent:
+      type: object
+      required: [type, data]
+      properties:
+        type:
+          type: string
+          enum: [stdout, stderr, tool_call, tool_result, completion, error]
+        data:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        executionId:
+          type: string
+
+    SSEWorkspaceEvent:
+      type: object
+      required: [type, path, timestamp]
+      properties:
+        type:
+          type: string
+          enum: [added, changed, removed]
+        path:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        validated:
+          type: boolean
+        validationErrors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+
+paths:
+  # === Pairing ===
+  /pair:
+    post:
+      operationId: submitPairingCode
+      summary: Submit pairing code to establish session
+      tags: [Pairing]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PairRequest'
+      responses:
+        '200':
+          description: Pairing successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PairResponse'
+        '401':
+          description: Invalid or expired pairing code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Max sessions reached (3) or rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /pair/{sessionId}:
+    delete:
+      operationId: revokeSession
+      summary: Revoke a pairing session
+      tags: [Pairing]
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Session revoked
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  revoked:
+                    type: boolean
+        '404':
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # === Health ===
+  /health:
+    get:
+      operationId: getDaemonHealth
+      summary: Daemon health check and workspace info
+      tags: [Health]
+      security: []
+      responses:
+        '200':
+          description: Daemon is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  # === Workspace ===
+  /workspace:
+    get:
+      operationId: getWorkspaceState
+      summary: Full workspace state (files + manifests)
+      tags: [Workspace]
+      responses:
+        '200':
+          description: Workspace state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceState'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /workspace/files:
+    get:
+      operationId: getFileTree
+      summary: Workspace file tree
+      tags: [Workspace]
+      responses:
+        '200':
+          description: File tree
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileTree'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /workspace/files/{path}:
+    put:
+      operationId: writeFile
+      summary: Write file to workspace (validated for OSSA manifests)
+      tags: [Workspace]
+      parameters:
+        - name: path
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Relative file path from workspace root
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FileWriteRequest'
+      responses:
+        '200':
+          description: File written successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileWriteResponse'
+        '400':
+          description: Path traversal attempt or invalid content
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '413':
+          description: Content too large (max 1MB)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # === Skills ===
+  /skills:
+    get:
+      operationId: getSkillCatalog
+      summary: Aggregated skill catalog from all sources
+      tags: [Skills]
+      parameters:
+        - name: source
+          in: query
+          schema:
+            type: string
+            enum: [local, builtin, github, registry]
+          description: Filter by source
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Search skills by name or description
+      responses:
+        '200':
+          description: Skill catalog
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SkillCatalog'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /skills/install:
+    post:
+      operationId: installSkill
+      summary: Install a skill to the workspace
+      tags: [Skills]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SkillInstallRequest'
+      responses:
+        '200':
+          description: Skill installed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SkillInstallResponse'
+        '400':
+          description: Invalid skill or target path
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Skill not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # === Execution ===
+  /execute:
+    post:
+      operationId: startExecution
+      summary: Start agent execution
+      tags: [Execution]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExecuteRequest'
+      responses:
+        '200':
+          description: Execution started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExecuteResponse'
+        '400':
+          description: Invalid manifest or runtime
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /execute/{executionId}:
+    get:
+      operationId: getExecutionStatus
+      summary: Get execution status
+      tags: [Execution]
+      parameters:
+        - name: executionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Execution status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExecutionStatus'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Execution not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      operationId: cancelExecution
+      summary: Cancel a running execution
+      tags: [Execution]
+      parameters:
+        - name: executionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Execution cancelled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cancelled:
+                    type: boolean
+                  executionId:
+                    type: string
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Execution not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # === SSE Streams ===
+  /sse/execution/{executionId}:
+    get:
+      operationId: streamExecution
+      summary: Stream agent execution output via SSE
+      tags: [SSE]
+      parameters:
+        - name: executionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: SSE event stream
+          content:
+            text/event-stream:
+              schema:
+                $ref: '#/components/schemas/SSEExecutionEvent'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Execution not found
+
+  /sse/workspace:
+    get:
+      operationId: streamWorkspace
+      summary: Stream workspace file change events via SSE
+      tags: [SSE]
+      responses:
+        '200':
+          description: SSE event stream
+          content:
+            text/event-stream:
+              schema:
+                $ref: '#/components/schemas/SSEWorkspaceEvent'
+        '401':
+          description: Unauthorized
+
+  /sse/status:
+    get:
+      operationId: streamStatus
+      summary: Stream daemon health metrics via SSE
+      tags: [SSE]
+      responses:
+        '200':
+          description: SSE event stream
+          content:
+            text/event-stream:
+              schema:
+                type: object
+                properties:
+                  uptime:
+                    type: integer
+                  connections:
+                    type: integer
+                  executions:
+                    type: integer
+                  timestamp:
+                    type: string
+                    format: date-time
+        '401':
+          description: Unauthorized
+
+  # === WebSocket ===
+  /ws:
+    get:
+      operationId: websocketUpgrade
+      summary: WebSocket upgrade for bidirectional real-time communication
+      tags: [WebSocket]
+      description: |
+        Upgrade to WebSocket connection. Token sent via Sec-WebSocket-Protocol header.
+        Events use DaemonWebSocketEvent schema. Rate limit: 1000 msg/min per session.
+        Max message size: 1MB.
+      responses:
+        '101':
+          description: Switching to WebSocket protocol
+        '401':
+          description: Invalid or missing pairing token
+        '429':
+          description: Rate limited

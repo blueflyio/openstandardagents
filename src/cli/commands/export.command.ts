@@ -81,7 +81,7 @@ export const exportCommand = new Command('export')
   )
   .option(
     '--gitlab-project <path>',
-    'GitLab project path or ID for generated agents (default: blueflyio/ossa/lab/openstandard-generated-agents)'
+    'GitLab project path or ID for generated agents (env: EXPORT_GITLAB_PROJECT_PATH)'
   );
 
 // Add production-grade standard options
@@ -143,7 +143,7 @@ exportCommand.action(
         options.gitlabProject ||
         process.env.EXPORT_GITLAB_PROJECT_PATH ||
         process.env.EXPORT_GITLAB_PROJECT_ID ||
-        'blueflyio%2Fossa%2Flab%2Fopenstandard-generated-agents';
+        process.env.EXPORT_GITLAB_PROJECT_PATH || 'my-org%2Fossa%2Fgenerated-agents';
       const ref = process.env.EXPORT_REF || 'main';
       const platform = options.platform || 'docker';
       const platforms = process.env.EXPORT_PLATFORMS;
@@ -662,9 +662,9 @@ exportCommand.action(
             log(
               useColor
                 ? chalk.gray(
-                    '  Langflow: https://langflow.blueflyagents.com or http://127.0.0.1:7860'
+                    '  Langflow: http://127.0.0.1:7860 (or set LANGFLOW_URL env)'
                   )
-                : '  Langflow: https://langflow.blueflyagents.com or http://127.0.0.1:7860'
+                : '  Langflow: http://127.0.0.1:7860 (or set LANGFLOW_URL env)'
             );
           } else if (options.dryRun) {
             log(`\nDRY RUN: Would write Langflow JSON to: ${outPath}`);

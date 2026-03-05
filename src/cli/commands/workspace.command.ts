@@ -694,7 +694,7 @@ workspaceCommand
   )
   .option(
     '--registry-url <url>',
-    'Registry base URL (e.g. https://mesh.blueflyagents.com). Default: MESH_URL or AGENT_REGISTRY_URL env. POSTs to <url>/api/v1/discovery'
+    'Registry base URL (e.g. https://your-registry.example.com). Default: MESH_URL or AGENT_REGISTRY_URL env. POSTs to <url>/api/v1/discovery'
   )
   .option('--discover', 'Run workspace discover first if registry is missing')
   .action(async (options: { registryUrl?: string; discover?: boolean }) => {
@@ -793,7 +793,7 @@ workspaceCommand
   )
   .requiredOption(
     '--registry-url <url>',
-    'Registry base URL (e.g. https://mesh.blueflyagents.com)'
+    'Registry base URL (e.g. https://your-registry.example.com)'
   )
   .option('--json', 'Output raw JSON')
   .action(async (options: { registryUrl: string; json?: boolean }) => {

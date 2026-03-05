@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openstandardagents.org/schemas/audit-rules/catalog.json",
+  "title": "Audit Rules Catalog Index",
+  "description": "Index of available audit rules: version and list of rule ids. Individual rules live in rules/*.yaml.",
+  "type": "object",
+  "required": ["version", "rules"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Catalog version (semver)"
+    },
+    "dimensions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Supported dimensions (security, performance, accessibility, seo, architecture, best-practices, syntax, aeo, veo)"
+    },
+    "rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id"],
+        "properties": {
+          "id": { "type": "string" },
+          "file": { "type": "string", "description": "Relative path to rule file, e.g. rules/swallowed-exceptions.yaml" }
+        }
+      },
+      "description": "List of rule ids (and optional file path) in this catalog"
+    }
+  },
+  "additionalProperties": false
+}

@@ -70,6 +70,15 @@ import {
     SkillsResearchService,
 } from './services/skills-pipeline/index.js';
 
+// Daemon Services (Neural Forge)
+import { AuditLogService } from './services/daemon/audit-log.service.js';
+import { DaemonWebSocketServer } from './services/daemon/ws-server.js';
+import { ExecutionService } from './services/daemon/execution.service.js';
+import { FileWatcherService } from './services/daemon/fs-watcher.service.js';
+import { PairingService } from './services/daemon/pairing.service.js';
+import { SkillAggregatorService } from './services/daemon/skill-aggregator.service.js';
+import { SSEEndpoints } from './services/daemon/sse-endpoints.js';
+
 // DI Type Identifiers
 export const TYPES = {
   ManifestRepository: Symbol.for('ManifestRepository'),
@@ -148,6 +157,16 @@ container.bind(SkillsResearchService).toSelf();
 container.bind(SkillsGeneratorService).toSelf();
 container.bind(SkillsExportService).toSelf();
 container.bind(SkillsInstallService).toSelf();
+
+// Bind daemon services (Neural Forge) — singletons for shared state
+container.bind(PairingService).toSelf().inSingletonScope();
+container.bind(DaemonWebSocketServer).toSelf().inSingletonScope();
+container.bind(FileWatcherService).toSelf().inSingletonScope();
+container.bind(AuditLogService).toSelf().inSingletonScope();
+container.bind(SSEEndpoints).toSelf();
+// Transient: new instance per resolution
+container.bind(SkillAggregatorService).toSelf();
+container.bind(ExecutionService).toSelf();
 
 /**
  * Get service from container

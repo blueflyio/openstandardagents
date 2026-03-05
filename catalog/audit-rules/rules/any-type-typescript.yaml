@@ -1,0 +1,11 @@
+id: any-type-typescript
+description: Explicit 'any' type weakens type safety.
+anti_pattern:
+  type: regex
+  pattern: :\s*any\b|<\s*any\s*>
+  path_glob: "**/*.{ts,tsx}"
+fix_suggestion: Use 'unknown' and narrow, or define a proper type/interface.
+severity: warning
+dimension: best-practices
+target_languages: [typescript]
+tags: [vibecoding, type-safety]

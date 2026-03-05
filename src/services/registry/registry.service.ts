@@ -118,7 +118,7 @@ export class RegistryService {
   ): Promise<void> {
     const { Octokit } = await import('@octokit/rest');
     const octokit = new Octokit({ auth: this.config.token });
-    const owner = this.config.owner || 'blueflyio';
+    const owner = this.config.owner || process.env.OSSA_ORG || '';
     const repo = this.config.repo || 'openstandardagents';
     const tagName = `${agentName}-v${version}`;
 
@@ -176,7 +176,7 @@ export class RegistryService {
   ): Promise<AgentRelease[]> {
     const { Octokit } = await import('@octokit/rest');
     const octokit = new Octokit({ auth: this.config.token });
-    const owner = this.config.owner || 'blueflyio';
+    const owner = this.config.owner || process.env.OSSA_ORG || '';
     const repo = this.config.repo || 'openstandardagents';
 
     const { data: releases } = await octokit.repos.listReleases({
@@ -245,7 +245,7 @@ export class RegistryService {
   ): Promise<AgentRelease> {
     const { Octokit } = await import('@octokit/rest');
     const octokit = new Octokit({ auth: this.config.token });
-    const owner = this.config.owner || 'blueflyio';
+    const owner = this.config.owner || process.env.OSSA_ORG || '';
     const repo = this.config.repo || 'openstandardagents';
     const tagName =
       version === 'latest' ? agentName : `${agentName}-v${version}`;

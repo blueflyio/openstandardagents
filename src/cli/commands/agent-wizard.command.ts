@@ -1479,7 +1479,7 @@ async function idCardWizard(options: {
   ]);
 
   const defaultRegistryId = agent.metadata.name
-    ? `ossa://blueflyio/${agent.metadata.name}@${agent.metadata.version || getVersion()}`
+    ? `ossa://${process.env.OSSA_ORG || 'my-org'}/${agent.metadata.name}@${agent.metadata.version || getVersion()}`
     : '';
 
   const { registryId } = await inquirer.prompt([

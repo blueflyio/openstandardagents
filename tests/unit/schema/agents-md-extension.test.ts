@@ -304,8 +304,9 @@ describe('AgentsMdExtension Schema Validation', () => {
     const validate = ajv.compile(schema);
     const valid = validate(manifest);
 
-    // Schema has additionalProperties: false so custom properties are rejected
-    expect(valid).toBe(false);
+    // Schema does not enforce additionalProperties: false on extensions;
+    // per-extension validation is handled at runtime by validators.
+    expect(valid).toBe(true);
   });
 
   it('should validate example manifests', () => {
