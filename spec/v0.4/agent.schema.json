@@ -53,6 +53,10 @@
       "$ref": "#/definitions/Cognition",
       "description": "Reasoning pattern, trace config, and governance for auditable cognition (v0.5.0 draft)"
     },
+    "governance": {
+      "$ref": "#/definitions/Governance",
+      "description": "Governance and authorization policies including Cedar pre-execution checks and compliance profiles (v0.4.6)"
+    },
     "extensions": {
       "type": "object",
       "description": "Framework-specific extensions (inherited from v0.4)",
@@ -416,6 +420,16 @@
       "type": "object",
       "description": "Security posture metadata defining the agent's threat model, required capabilities, sandboxing requirements, and network access constraints (v0.4.6). Enables security-aware orchestration and policy enforcement.",
       "properties": {
+        "tier": {
+          "type": "string",
+          "enum": [
+            "tier_1_read",
+            "tier_2_write_limited",
+            "tier_3_write_elevated",
+            "tier_4_system_admin"
+          ],
+          "description": "Trust and authorization tier used for Cedar pre-execution policy evaluation and capability constraints."
+        },
         "threat_model": {
           "type": "array",
           "description": "Threat categories this agent is designed to handle or is exposed to. Used by orchestrators for security-aware task routing.",
@@ -1374,6 +1388,111 @@
           }
         }
       }
+    },
+    "Governance": {
+      "type": "object",
+      "description": "Governance and authorization policies mapped to Cedar or OPA engines.",
+      "properties": {
+        "authorization": {
+          "type": "object",
+          "properties": {
+            "clearance_level": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Numeric clearance level required for this agent"
+            },
+            "tool_permissions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "type": "string"
+                  },
+                  "risk_level": {
+                    "type": "string",
+                    "enum": [
+                      "low",
+                      "medium",
+                      "high",
+                      "critical"
+                    ]
+                  },
+                  "requires_approval": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "risk_level"
+                ]
+              }
+            },
+            "policy_references": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "List of Cedar (or other) policy IDs this agent must adhere to"
+            }
+          }
+        },
+        "quality_requirements": {
+          "type": "object",
+          "properties": {
+            "confidence_threshold": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "test_coverage_threshold": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "security_score_threshold": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "max_vulnerability_count": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "compliance": {
+          "type": "object",
+          "properties": {
+            "frameworks": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "SOC2",
+                  "HIPAA",
+                  "GDPR",
+                  "PCI-DSS",
+                  "NIST-800-53"
+                ]
+              }
+            },
+            "data_classification": {
+              "type": "string",
+              "enum": [
+                "public",
+                "internal",
+                "confidential",
+                "restricted"
+              ]
+            },
+            "audit_logging_required": {
+              "type": "boolean"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
     }
   }
 }
