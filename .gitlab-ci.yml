@@ -262,57 +262,92 @@ test:smoke:
     - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/
 
 # =============================================================================
-# PACKAGE STAGE - Auto-publish to GitLab Package Registry
+# PACKAGE STAGE - Prerelease publishing pipeline
 # =============================================================================
-package:gitlab:
+# Flow:
+#   release/* push  → 0.4.6-dev.N  → GitLab Package Registry (auto)
+#   main push       → 0.4.6-rc.N   → GitLab Package Registry (auto)
+#   manual trigger  → 0.4.6        → npmjs.org (button in UI)
+# =============================================================================
+
+# Shared setup for all package jobs
+.package-base:
   extends: .base-runner
   stage: package
   needs:
     - job: build
       artifacts: true
-    - job: sbom:generate
-      artifacts: true
+    - job: test:unit
+    - job: test:smoke
   before_script:
     - npm ci --cache .npm --prefer-offline
     - |
       echo "@bluefly:registry=https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/packages/npm/" > .npmrc
       echo "//gitlab.com/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> .npmrc
+
+# --- DEV: release/* → 0.4.6-dev.N to GitLab ---
+package:dev:
+  extends: .package-base
   script:
     - |
-      VERSION=$(node -p "require('./package.json').version")
-      echo "Publishing v${VERSION} to GitLab Package Registry..."
+      BASE_VERSION=$(node -p "require('./package.json').version")
+      # Count existing dev packages to auto-increment
+      DEV_COUNT=$(npm view "@bluefly/openstandardagents" versions --json --registry=https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/packages/npm/ 2>/dev/null \
+        | node -e "try{const v=JSON.parse(require('fs').readFileSync(0,'utf8'));const d=Array.isArray(v)?v:[];console.log(d.filter(x=>x.startsWith('${BASE_VERSION}-dev.')).length)}catch{console.log(0)}" || echo 0)
+      DEV_VERSION="${BASE_VERSION}-dev.$((DEV_COUNT + 1))"
 
-      # Create tarball
-      npm pack
-
-      # Publish to GitLab Package Registry
-      npm publish --registry=https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/packages/npm/
-
-      echo "Package published to GitLab Package Registry"
-      echo "Install: npm install @bluefly/openstandardagents@${VERSION}"
+      echo "Publishing ${DEV_VERSION} to GitLab Package Registry..."
+      npm version "${DEV_VERSION}" --no-git-tag-version
+      npm publish --tag dev --registry=https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/packages/npm/
+      echo "Published: npm install @bluefly/openstandardagents@${DEV_VERSION}"
   artifacts:
     paths:
       - "*.tgz"
-      - gl-sbom-*.cdx.json
-    expire_in: 90 days
-    reports:
-      # GitLab Ultimate: Package metadata
-      cyclonedx: gl-sbom-*.cdx.json
+    expire_in: 30 days
   rules:
-    # Auto-publish on main or release branches
-    - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
       when: on_success
   environment:
-    name: package-registry
+    name: dev-registry
     url: https://gitlab.com/blueflyio/ossa/openstandardagents/-/packages
 
-# =============================================================================
-# RELEASE STAGE - semantic-release (auto version, changelog, npm publish, GitLab release)
-# Triggered automatically on merge to main.
-# Requires CI/CD variables: NPM_TOKEN, GITLAB_TOKEN (or GL_TOKEN)
-# Config: .releaserc.json
-# =============================================================================
-release:semantic:
+# --- RC: main → 0.4.6-rc.N to GitLab ---
+package:rc:
+  extends: .package-base
+  script:
+    - |
+      BASE_VERSION=$(node -p "require('./package.json').version")
+      # Count existing RC packages to auto-increment
+      RC_COUNT=$(npm view "@bluefly/openstandardagents" versions --json --registry=https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/packages/npm/ 2>/dev/null \
+        | node -e "try{const v=JSON.parse(require('fs').readFileSync(0,'utf8'));const d=Array.isArray(v)?v:[];console.log(d.filter(x=>x.startsWith('${BASE_VERSION}-rc.')).length)}catch{console.log(0)}" || echo 0)
+      RC_VERSION="${BASE_VERSION}-rc.$((RC_COUNT + 1))"
+
+      echo "Publishing ${RC_VERSION} to GitLab Package Registry..."
+      npm version "${RC_VERSION}" --no-git-tag-version
+      npm publish --tag rc --registry=https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/packages/npm/
+      echo "Published: npm install @bluefly/openstandardagents@${RC_VERSION}"
+
+      # Tag the commit for GitLab release creation
+      git config user.email "ci@blueflyio"
+      git config user.name "OSSA Release Bot"
+      git remote set-url origin "https://oauth2:${GITLAB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      git tag "v${RC_VERSION}" || true
+      git push origin "v${RC_VERSION}" || true
+  artifacts:
+    paths:
+      - "*.tgz"
+    expire_in: 90 days
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: on_success
+  environment:
+    name: rc-registry
+    url: https://gitlab.com/blueflyio/ossa/openstandardagents/-/packages
+
+# --- STABLE: Manual publish to npmjs.org ---
+# Trigger: Run pipeline with PUBLISH_NPMJS=true, or click "Play" button in UI
+# Requires CI/CD variable: NPM_TOKEN (npmjs.org auth token)
+release:npmjs:
   stage: release
   image: node:${NODE_VERSION}
   tags:
@@ -322,25 +357,27 @@ release:semantic:
       artifacts: true
     - job: test:unit
     - job: test:smoke
-    - job: package:gitlab
-      artifacts: true
   before_script:
     - npm ci --cache .npm --prefer-offline
     - |
-      # Configure npmjs.org auth (no scope override — .releaserc.json handles publish target)
       echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
-      git config user.email "ci@blueflyio"
-      git config user.name "OSSA Release Bot"
-      git remote set-url origin "https://oauth2:${GITLAB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
   script:
-    - npx semantic-release
+    - |
+      VERSION=$(node -p "require('./package.json').version")
+      echo "Publishing v${VERSION} to npmjs.org..."
+      npm publish --registry=https://registry.npmjs.org/ --access public
+      echo "Published: https://www.npmjs.com/package/@bluefly/openstandardagents/v/${VERSION}"
   environment:
     name: npmjs-production
     deployment_tier: production
     url: https://www.npmjs.com/package/@bluefly/openstandardagents
   rules:
-    - if: $CI_COMMIT_BRANCH == "main"
-      when: on_success
+    # Manual trigger on main branch only
+    - if: $CI_COMMIT_BRANCH == "main" && $PUBLISH_NPMJS == "true"
+      when: manual
+    # Also allow manual trigger on release branches for hotfix publishes
+    - if: $CI_COMMIT_BRANCH =~ /^release\// && $PUBLISH_NPMJS == "true"
+      when: manual
 
 
 # GitLab release on tag creation (covers RC and stable tags from any branch)
