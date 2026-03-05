@@ -1,0 +1,302 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openstandardagents.org/schemas/v0.4/extensions/identity.json",
+  "title": "OSSA Identity Extension Schema (DID Document)",
+  "description": "Validates W3C DID Core-compliant identity documents for OSSA agents. Provides decentralized identity binding so agents can be cryptographically verified across platforms.",
+  "type": "object",
+  "required": ["@context", "id"],
+  "properties": {
+    "@context": {
+      "description": "JSON-LD context. Must include the W3C DID Core context.",
+      "oneOf": [
+        {
+          "type": "string",
+          "const": "https://www.w3.org/ns/did/v1"
+        },
+        {
+          "type": "array",
+          "items": { "type": "string" },
+          "contains": {
+            "const": "https://www.w3.org/ns/did/v1"
+          },
+          "minItems": 1
+        }
+      ]
+    },
+    "id": {
+      "type": "string",
+      "description": "DID identifier. Must use the did:web method for OSSA agents.",
+      "pattern": "^did:web:.+$",
+      "examples": [
+        "did:web:openstandardagents.org:agents:my-agent",
+        "did:web:example.com:agents:code-reviewer"
+      ]
+    },
+    "controller": {
+      "description": "DID(s) authorized to make changes to this DID document",
+      "oneOf": [
+        {
+          "type": "string",
+          "pattern": "^did:.+$"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^did:.+$"
+          },
+          "minItems": 1
+        }
+      ]
+    },
+    "alsoKnownAs": {
+      "type": "array",
+      "description": "Alternative identifiers for this agent (URIs)",
+      "items": {
+        "type": "string",
+        "format": "uri"
+      }
+    },
+    "verificationMethod": {
+      "type": "array",
+      "description": "Cryptographic verification methods (public keys) associated with this DID",
+      "items": {
+        "$ref": "#/definitions/VerificationMethod"
+      }
+    },
+    "authentication": {
+      "type": "array",
+      "description": "Verification methods used for authentication. References verificationMethod entries by id or embeds them inline.",
+      "items": {
+        "oneOf": [
+          {
+            "type": "string",
+            "description": "Reference to a verificationMethod id"
+          },
+          {
+            "$ref": "#/definitions/VerificationMethod"
+          }
+        ]
+      }
+    },
+    "assertionMethod": {
+      "type": "array",
+      "description": "Verification methods used for issuing verifiable credentials or assertions",
+      "items": {
+        "oneOf": [
+          {
+            "type": "string",
+            "description": "Reference to a verificationMethod id"
+          },
+          {
+            "$ref": "#/definitions/VerificationMethod"
+          }
+        ]
+      }
+    },
+    "keyAgreement": {
+      "type": "array",
+      "description": "Verification methods used for key agreement (e.g., establishing shared secrets)",
+      "items": {
+        "oneOf": [
+          {
+            "type": "string",
+            "description": "Reference to a verificationMethod id"
+          },
+          {
+            "$ref": "#/definitions/VerificationMethod"
+          }
+        ]
+      }
+    },
+    "capabilityInvocation": {
+      "type": "array",
+      "description": "Verification methods used to invoke cryptographic capabilities (e.g., authorization to update the DID document)",
+      "items": {
+        "oneOf": [
+          {
+            "type": "string",
+            "description": "Reference to a verificationMethod id"
+          },
+          {
+            "$ref": "#/definitions/VerificationMethod"
+          }
+        ]
+      }
+    },
+    "capabilityDelegation": {
+      "type": "array",
+      "description": "Verification methods used to delegate capabilities to other DIDs",
+      "items": {
+        "oneOf": [
+          {
+            "type": "string",
+            "description": "Reference to a verificationMethod id"
+          },
+          {
+            "$ref": "#/definitions/VerificationMethod"
+          }
+        ]
+      }
+    },
+    "service": {
+      "type": "array",
+      "description": "Service endpoints associated with this agent DID",
+      "items": {
+        "$ref": "#/definitions/ServiceEndpoint"
+      }
+    }
+  },
+  "additionalProperties": true,
+  "definitions": {
+    "VerificationMethod": {
+      "type": "object",
+      "description": "A cryptographic verification method (public key) per W3C DID Core",
+      "required": ["id", "type", "controller"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for this verification method, typically DID + fragment",
+          "examples": ["did:web:openstandardagents.org:agents:my-agent#key-1"]
+        },
+        "type": {
+          "type": "string",
+          "description": "Cryptographic suite type",
+          "enum": [
+            "JsonWebKey2020",
+            "Ed25519VerificationKey2020",
+            "Ed25519VerificationKey2018",
+            "X25519KeyAgreementKey2020",
+            "X25519KeyAgreementKey2019",
+            "EcdsaSecp256k1VerificationKey2019",
+            "EcdsaSecp256r1VerificationKey2019",
+            "Multikey"
+          ]
+        },
+        "controller": {
+          "type": "string",
+          "description": "DID of the entity that controls this key",
+          "pattern": "^did:.+$"
+        },
+        "publicKeyJwk": {
+          "type": "object",
+          "description": "Public key in JWK format (RFC 7517)",
+          "properties": {
+            "kty": {
+              "type": "string",
+              "description": "Key type",
+              "enum": ["EC", "OKP", "RSA"]
+            },
+            "crv": {
+              "type": "string",
+              "description": "Curve name (for EC and OKP key types)",
+              "enum": ["Ed25519", "X25519", "P-256", "P-384", "P-521", "secp256k1"]
+            },
+            "x": {
+              "type": "string",
+              "description": "Public key x-coordinate (base64url-encoded)"
+            },
+            "y": {
+              "type": "string",
+              "description": "Public key y-coordinate (base64url-encoded, for EC keys)"
+            },
+            "kid": {
+              "type": "string",
+              "description": "Key identifier"
+            },
+            "use": {
+              "type": "string",
+              "description": "Intended use of the key",
+              "enum": ["sig", "enc"]
+            },
+            "alg": {
+              "type": "string",
+              "description": "Algorithm intended for use with this key"
+            }
+          },
+          "required": ["kty"],
+          "additionalProperties": true
+        },
+        "publicKeyMultibase": {
+          "type": "string",
+          "description": "Public key in multibase format (e.g., z-prefixed base58btc)",
+          "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
+        },
+        "publicKeyBase58": {
+          "type": "string",
+          "description": "Public key in base58btc format (deprecated, use publicKeyMultibase)"
+        },
+        "blockchainAccountId": {
+          "type": "string",
+          "description": "CAIP-10 blockchain account identifier"
+        },
+        "revoked": {
+          "type": "boolean",
+          "description": "Whether this verification method has been revoked",
+          "default": false
+        }
+      },
+      "additionalProperties": true
+    },
+    "ServiceEndpoint": {
+      "type": "object",
+      "description": "A service endpoint associated with the agent DID",
+      "required": ["id", "type", "serviceEndpoint"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for this service, typically DID + fragment",
+          "examples": ["did:web:openstandardagents.org:agents:my-agent#agent-endpoint"]
+        },
+        "type": {
+          "type": "string",
+          "description": "Service type identifier",
+          "examples": [
+            "OSSAAgentService",
+            "A2AService",
+            "MCPServerService",
+            "LinkedDomains",
+            "DIDCommMessaging",
+            "CredentialRegistry"
+          ]
+        },
+        "serviceEndpoint": {
+          "description": "The service endpoint URL(s)",
+          "oneOf": [
+            {
+              "type": "string",
+              "format": "uri"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uri"
+              }
+            },
+            {
+              "type": "object",
+              "description": "Structured endpoint with multiple properties",
+              "additionalProperties": true
+            }
+          ]
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of this service endpoint"
+        },
+        "routingKeys": {
+          "type": "array",
+          "description": "DIDComm routing keys for message encryption",
+          "items": { "type": "string" }
+        },
+        "accept": {
+          "type": "array",
+          "description": "Accepted media types or protocol versions",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}
