@@ -1,8 +1,8 @@
 module github.com/blueflyio/ossa-sdk-go
 
-go 1.21
+go 1.22
 
 require (
-	gopkg.in/yaml.v3 v3.0.1
-	github.com/xeipuuv/gojsonschema v1.2.0
+	github.com/goccy/go-yaml v1.15.23
+	github.com/santhosh-tekuri/jsonschema/v6 v6.0.1
 )

@@ -1,3 +1,1 @@
-"""
-Tests for OSSA Python SDK.
-"""
+"""Tests for OSSA Python SDK."""

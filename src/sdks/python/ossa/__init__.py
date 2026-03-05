@@ -1,69 +1,125 @@
+"""OSSA Python SDK — Open Standard for Software Agents.
+
+Load, validate, build, and run OSSA agent manifests.
+
+Quick start:
+    from ossa import load, validate, ManifestBuilder
+
+    # Load from file
+    manifest = load("agent.ossa.yaml")
+    result = validate(manifest)
+
+    # Build programmatically
+    manifest = (
+        ManifestBuilder.agent("my-agent")
+        .version("1.0.0")
+        .role("You are a helpful assistant.")
+        .llm(LLMConfigBuilder.anthropic().temperature(0.7).build())
+        .build()
+    )
 """
-OSSA SDK for Python
 
-Open Standard for Scalable Agents - Python implementation.
+__version__ = "0.5.0"
 
-This SDK provides complete support for OSSA manifests including:
-- Agent execution with multiple LLM providers (Anthropic, OpenAI, etc.)
-- Task orchestration and workflow execution
-- Manifest loading, validation, and manipulation
-- Type-safe Python API with full IDE support
-- CLI tools for manifest management
+# Core manifest I/O
+from .manifest import load, load_string, save, export
 
-Quick Start:
-    >>> from ossa import Agent, load
-    >>> manifest = load("agent.yaml")
-    >>> agent = Agent(manifest, api_key="sk-...")
-    >>> response = agent.run("Hello!")
-    >>> print(response.content)
+# Validation
+from .validator import validate, validate_or_raise, ValidationResult
 
-For more examples, see: https://openstandardagents.org/docs/sdks/python
-"""
+# Types
+from .types import (
+    Kind,
+    LLMProvider,
+    AccessTier,
+    SecurityTier,
+    OSSAManifest,
+    AgentManifest,
+    TaskManifest,
+    WorkflowManifest,
+    Metadata,
+    LLMConfig,
+    Tool,
+    Safety,
+    Autonomy,
+    Identity,
+    SecurityPosture,
+    Governance,
+    ProtocolDeclarations,
+    TokenEfficiency,
+    Cognition,
+    AgentIdentity,
+    Publisher,
+)
 
-__version__ = "0.4.0"
+# Builders
+from .builders import (
+    ManifestBuilder,
+    ToolBuilder,
+    LLMConfigBuilder,
+    SecurityBuilder,
+)
+
+# Agent execution
+from .agent import Agent, AgentResponse
+
+# Exceptions
+from .exceptions import (
+    OSSAError,
+    ValidationError,
+    ConfigurationError,
+    ExecutionError,
+    ProviderError,
+    SchemaError,
+)
+
 __all__ = [
-    # Core manifest types
-    "Manifest",
-    "load_manifest",
-    "load",  # Alias for load_manifest
-
+    # Version
+    "__version__",
+    # I/O
+    "load",
+    "load_string",
+    "save",
+    "export",
     # Validation
-    "Validator",
+    "validate",
+    "validate_or_raise",
     "ValidationResult",
-    "validate_manifest",
-    "validate",  # Alias for validate_manifest
-
-    # Agent card (discovery projection)
-    "generate_agent_card",
-    "compute_manifest_digest",
-
-    # Runtime execution
+    # Types
+    "Kind",
+    "LLMProvider",
+    "AccessTier",
+    "SecurityTier",
+    "OSSAManifest",
+    "AgentManifest",
+    "TaskManifest",
+    "WorkflowManifest",
+    "Metadata",
+    "LLMConfig",
+    "Tool",
+    "Safety",
+    "Autonomy",
+    "Identity",
+    "SecurityPosture",
+    "Governance",
+    "ProtocolDeclarations",
+    "TokenEfficiency",
+    "Cognition",
+    "AgentIdentity",
+    "Publisher",
+    # Builders
+    "ManifestBuilder",
+    "ToolBuilder",
+    "LLMConfigBuilder",
+    "SecurityBuilder",
+    # Execution
     "Agent",
-    "AgentRunner",
     "AgentResponse",
-    "Task",
-    "TaskRunner",
-    "Workflow",
-    "WorkflowRunner",
-
     # Exceptions
     "OSSAError",
     "ValidationError",
     "ConfigurationError",
     "ExecutionError",
-
-    # Version
-    "__version__",
+    "ProviderError",
+    "SchemaError",
 ]
-
-from .manifest import Manifest, load_manifest
-from .validator import Validator, ValidationResult, validate_manifest
-from .agent_card import generate_agent_card, compute_manifest_digest
-from .exceptions import OSSAError, ValidationError, ConfigurationError, ExecutionError
-from .agent import Agent, AgentRunner, AgentResponse
-from .task import Task, TaskRunner
-from .workflow import Workflow, WorkflowRunner
-
-# Convenience aliases
-load = load_manifest
-validate = validate_manifest

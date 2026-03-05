@@ -1,66 +1,35 @@
-"""
-OSSA SDK Exceptions
+"""OSSA SDK Exception Hierarchy."""
 
-Comprehensive exception hierarchy for OSSA SDK operations.
-"""
+from __future__ import annotations
 
 
 class OSSAError(Exception):
-    """
-    Base exception for all OSSA SDK errors.
-
-    All OSSA-specific exceptions inherit from this base class,
-    allowing for catch-all error handling when needed.
-    """
-    pass
+    """Base exception for all OSSA SDK errors."""
 
 
 class ValidationError(OSSAError):
-    """
-    Manifest validation error.
+    """Manifest validation failed."""
 
-    Raised when a manifest fails schema validation or
-    OSSA-specific semantic validation rules.
-    """
-    pass
+    def __init__(self, errors: list[str], warnings: list[str] | None = None) -> None:
+        self.errors = errors
+        self.warnings = warnings or []
+        msg = f"Validation failed with {len(errors)} error(s): {'; '.join(errors[:3])}"
+        if len(errors) > 3:
+            msg += f" ... and {len(errors) - 3} more"
+        super().__init__(msg)
 
 
 class ConfigurationError(OSSAError):
-    """
-    Configuration or setup error.
-
-    Raised when:
-    - Required configuration is missing or invalid
-    - LLM provider is not supported or not properly configured
-    - Runtime options are incompatible
-    - API keys or credentials are missing
-    """
-    pass
+    """Invalid SDK or agent configuration."""
 
 
 class ExecutionError(OSSAError):
-    """
-    Runtime execution error.
+    """Agent execution failed."""
 
-    Raised when agent, task, or workflow execution fails
-    due to runtime issues (not configuration issues).
-    """
-    pass
+
+class ProviderError(OSSAError):
+    """LLM provider error (API failure, auth, rate limit)."""
 
 
 class SchemaError(OSSAError):
-    """
-    Schema loading or parsing error.
-
-    Raised when JSON Schema files cannot be loaded or parsed.
-    """
-    pass
-
-
-class ManifestError(OSSAError):
-    """
-    Manifest loading or parsing error.
-
-    Raised when OSSA manifest files cannot be loaded or parsed.
-    """
-    pass
+    """JSON Schema loading or resolution error."""

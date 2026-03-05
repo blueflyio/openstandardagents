@@ -1,87 +1,95 @@
-"""OSSA CLI - Command-line interface for the OSSA SDK."""
+"""OSSA Python SDK CLI."""
+
+from __future__ import annotations
 
 import argparse
+import json
 import sys
-from pathlib import Path
 
 from . import __version__
-from .manifest import load_manifest
-from .validator import validate_manifest
+from .manifest import load, export
+from .validator import validate
 
 
-def main() -> int:
-    """Main CLI entry point."""
-    parser = argparse.ArgumentParser(prog="ossa", description="OSSA SDK")
-    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
+def main() -> None:
+    parser = argparse.ArgumentParser(prog="ossa-py", description="OSSA Python SDK CLI")
+    parser.add_argument("--version", action="version", version=f"ossa-sdk {__version__}")
 
-    subparsers = parser.add_subparsers(dest="command", help="Commands")
+    sub = parser.add_subparsers(dest="command")
 
-    validate_parser = subparsers.add_parser("validate", help="Validate manifest(s)")
-    validate_parser.add_argument("files", nargs="+", help="Manifest file(s)")
-    validate_parser.add_argument("--strict", action="store_true", help="Warnings as errors")
+    # validate
+    val = sub.add_parser("validate", help="Validate an OSSA manifest")
+    val.add_argument("manifest", help="Path to manifest file")
+    val.add_argument("--schema", help="Path to JSON Schema file")
+    val.add_argument("--strict", action="store_true")
 
-    info_parser = subparsers.add_parser("info", help="Show manifest info")
-    info_parser.add_argument("file", help="Manifest file")
+    # inspect
+    ins = sub.add_parser("inspect", help="Display manifest info")
+    ins.add_argument("manifest", help="Path to manifest file")
+
+    # export
+    exp = sub.add_parser("export", help="Export manifest to different format")
+    exp.add_argument("manifest", help="Path to manifest file")
+    exp.add_argument("--format", choices=["yaml", "json"], default="json")
 
     args = parser.parse_args()
 
-    if args.command == "validate":
-        return cmd_validate(args)
-    elif args.command == "info":
-        return cmd_info(args)
-    else:
+    if not args.command:
         parser.print_help()
-        return 0
+        sys.exit(1)
 
-
-def cmd_validate(args: argparse.Namespace) -> int:
-    """Validate command handler."""
-    exit_code = 0
-    for file_path in args.files:
-        path = Path(file_path)
-        if not path.exists():
-            print(f"ERROR: File not found: {path}")
-            exit_code = 1
-            continue
+    if args.command == "validate":
         try:
-            manifest = load_manifest(path)
-            result = validate_manifest(manifest)
+            manifest = load(args.manifest)
+            result = validate(manifest, schema_path=args.schema, strict=args.strict)
             if result.valid:
-                print(f"OK: {path}")
-                for warning in result.warnings:
-                    print(f"  WARNING: {warning}")
-                    if args.strict:
-                        exit_code = 1
+                print(f"Valid: {manifest.metadata.name} ({manifest.kind.value})")
+                if result.warnings:
+                    for w in result.warnings:
+                        print(f"  warn: {w}")
+                sys.exit(0)
             else:
-                print(f"INVALID: {path}")
-                for error in result.errors:
-                    print(f"  ERROR: {error}")
-                exit_code = 1
+                print("Invalid:")
+                for e in result.errors:
+                    print(f"  error: {e}")
+                sys.exit(1)
         except Exception as e:
-            print(f"ERROR: {path}: {e}")
-            exit_code = 1
-    return exit_code
+            print(f"Error: {e}", file=sys.stderr)
+            sys.exit(1)
 
+    elif args.command == "inspect":
+        try:
+            manifest = load(args.manifest)
+            print(f"Name:        {manifest.metadata.name}")
+            print(f"Kind:        {manifest.kind.value}")
+            print(f"Version:     {manifest.metadata.version or 'unset'}")
+            print(f"API Version: {manifest.apiVersion}")
+            if manifest.metadata.description:
+                print(f"Description: {manifest.metadata.description[:100]}")
+            if manifest.security:
+                print(f"Security:    tier={manifest.security.tier or 'unset'}")
+            if manifest.protocols:
+                protos = []
+                if manifest.protocols.mcp:
+                    protos.append("MCP")
+                if manifest.protocols.a2a:
+                    protos.append("A2A")
+                if manifest.protocols.anp:
+                    protos.append("ANP")
+                if protos:
+                    print(f"Protocols:   {', '.join(protos)}")
+        except Exception as e:
+            print(f"Error: {e}", file=sys.stderr)
+            sys.exit(1)
 
-def cmd_info(args: argparse.Namespace) -> int:
-    """Info command handler."""
-    path = Path(args.file)
-    if not path.exists():
-        print(f"ERROR: File not found: {path}")
-        return 1
-    try:
-        manifest = load_manifest(path)
-        print(f"File: {path}")
-        print(f"API Version: {manifest.api_version}")
-        print(f"Kind: {manifest.kind}")
-        print(f"Name: {manifest.name}")
-        if manifest.version:
-            print(f"Version: {manifest.version}")
-        return 0
-    except Exception as e:
-        print(f"ERROR: {e}")
-        return 1
+    elif args.command == "export":
+        try:
+            manifest = load(args.manifest)
+            print(export(manifest, args.format))
+        except Exception as e:
+            print(f"Error: {e}", file=sys.stderr)
+            sys.exit(1)
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()
