@@ -96,6 +96,7 @@ import { devCommand } from './commands/dev.command.js';
 import { estimateCommand } from './commands/estimate.command.js';
 import { migrateLangchainCommand } from './commands/migrate-langchain.command.js';
 import { releaseCommand } from './commands/release.command.js';
+import { daemonCommand } from './commands/daemon.command.js';
 import { serveCommand } from './commands/serve.command.js';
 import { syncCommand } from './commands/sync.command.js';
 import { upgradeCommand } from './commands/upgrade.command.js';
@@ -232,6 +233,7 @@ program.addCommand(generateGaidCommand);
 
 // --- Development ---
 program.addCommand(generateCommand);
+program.addCommand(daemonCommand);
 program.addCommand(devCommand);
 program.addCommand(serveCommand);
 program.addCommand(runCommand);
@@ -314,7 +316,7 @@ program.addHelpText(
   `
   Core:       wizard, init, validate, export, lint, diff, build, migrate
   Agents:     agents, agents-local, agent-card, generate-gaid
-  Dev:        generate, dev, serve, run, test
+  Dev:        generate, daemon, dev, serve, run, test
   Distribute: publish, install, update, search
   Deploy:     deploy, status, rollback, stop
   Docs:       agents-md, llms-txt, docs

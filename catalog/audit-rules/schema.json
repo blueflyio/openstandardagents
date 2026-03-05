@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openstandardagents.org/schemas/audit-rules/rule.json",
+  "title": "Agent Audit Rule",
+  "description": "Single rule for AI-generated code quality: anti-pattern to detect, severity, dimension, and fix suggestion. Consumed by Dragonfly and other audit engines.",
+  "type": "object",
+  "required": ["id", "description", "severity", "dimension"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*[a-z0-9]$",
+      "description": "Unique rule identifier (kebab-case), e.g. react-missing-type-guard"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of what the rule checks for"
+    },
+    "anti_pattern": {
+      "type": "object",
+      "description": "How to detect the bad code",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["regex", "ast", "semantic", "grep"],
+          "description": "Match strategy: regex (code text), ast (parsed tree), semantic (language-specific), grep (line-level)"
+        },
+        "pattern": {
+          "type": "string",
+          "description": "Regex or pattern string; interpretation depends on type"
+        },
+        "flags": {
+          "type": "string",
+          "description": "Optional regex flags (e.g. gm)"
+        },
+        "path_glob": {
+          "type": "string",
+          "description": "Optional glob to restrict which files the rule applies to, e.g. **/*.ts"
+        }
+      },
+      "required": ["type", "pattern"]
+    },
+    "fix_suggestion": {
+      "type": "string",
+      "description": "How the agent or developer should fix the issue"
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["error", "warning", "info"],
+      "description": "error = fail gate; warning = report; info = advisory"
+    },
+    "dimension": {
+      "type": "string",
+      "enum": ["security", "performance", "accessibility", "seo", "architecture", "best-practices", "syntax", "aeo", "veo"],
+      "description": "Quality dimension: security (AEO/VEO), a11y, SEO, architecture (e.g. API-first), best-practices, syntax"
+    },
+    "target_languages": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Applicable languages/frameworks, e.g. [\"typescript\", \"javascript\", \"php\", \"drupal\"]"
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Optional tags for filtering, e.g. vibecoding, xss, credentials"
+    }
+  },
+  "additionalProperties": false
+}

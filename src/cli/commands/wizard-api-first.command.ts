@@ -258,7 +258,7 @@ class APIFirstWizard {
     // Build ID card via IdCardService (DRY — single source of truth)
     const registryId = this.agent.metadata?.name
       ? IdCardService.buildRegistryId(
-          'blueflyio',
+          process.env.OSSA_ORG || 'my-org',
           this.agent.metadata.name,
           getVersion()
         )

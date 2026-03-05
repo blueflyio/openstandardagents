@@ -1,0 +1,11 @@
+id: missing-null-check
+description: Optional chaining or null check missing before property access.
+anti_pattern:
+  type: regex
+  pattern: (response|result|data|res)\.(data|body|json)\.[a-zA-Z]+(?!\?\.)
+  path_glob: "**/*.{ts,tsx}"
+fix_suggestion: Use optional chaining (?.) or explicit null/undefined check before access.
+severity: warning
+dimension: syntax
+target_languages: [typescript, javascript]
+tags: [vibecoding, null-safety]
