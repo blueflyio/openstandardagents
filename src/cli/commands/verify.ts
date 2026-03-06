@@ -8,7 +8,7 @@
  *   ossa verify did:ossa:blueflyio:agent-123 --json
  */
 
-import { UadpClient, resolveGaid } from '@ossa/uadp';
+import { UadpClient, resolveGaid } from '@bluefly/duadp';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import * as fs from 'fs';

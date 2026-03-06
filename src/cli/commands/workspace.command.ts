@@ -11,7 +11,7 @@
  *   ossa workspace publish       - POST discovery to a registry API (e.g. mesh /api/v1/discovery)
  */
 
-import { UadpClient } from '@ossa/uadp';
+import { UadpClient } from '@bluefly/duadp';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import * as fs from 'fs';

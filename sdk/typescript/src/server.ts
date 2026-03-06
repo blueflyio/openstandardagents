@@ -38,7 +38,7 @@ export interface UadpDataProvider {
  * Usage:
  * ```ts
  * import express from 'express';
- * import { createUadpRouter } from '@ossa/uadp/server';
+ * import { createUadpRouter } from '@bluefly/duadp/server';
  *
  * const app = express();
  * app.use(createUadpRouter({ nodeName: 'My Node', baseUrl: 'https://my-node.com' }, myProvider));
