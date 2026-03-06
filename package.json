@@ -316,7 +316,7 @@
     "@types/inquirer": "^9.0.9",
     "@types/jest": "^29.5.14",
     "@types/js-yaml": "^4.0.9",
-    "@types/node": "^20.19.19",
+    "@types/node": "^25.3.5",
     "@types/nodemailer": "^6.4.0",
     "@types/pg": "^8.15.5",
     "@types/redis": "^4.0.10",
