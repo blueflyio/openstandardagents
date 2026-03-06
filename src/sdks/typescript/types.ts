@@ -7,7 +7,7 @@
  * Version is derived dynamically from package.json via utils/version.ts
  */
 
-import { getVersion, getApiVersion } from '../../utils/version.js';
+import { getApiVersion, getVersion } from '../../utils/version.js';
 
 export const VERSION = getVersion();
 export const OSSA_VERSION = getApiVersion();
@@ -134,6 +134,56 @@ export interface Capability {
 }
 
 // ============================================================================
+// Trust & Provenance (v0.5.0)
+// ============================================================================
+
+export interface UserControls {
+  pause?: boolean;
+  stop?: boolean;
+  undo?: boolean;
+}
+
+export interface Consent {
+  data_collected?: string[];
+  opt_out?: boolean;
+}
+
+export interface Impact {
+  reversible?: boolean;
+  blast_radius?: 'isolated' | 'local' | 'system' | 'external';
+}
+
+export interface Transparency {
+  self_disclosure?: boolean;
+  provenance?: string;
+}
+
+export interface CognitionConstraints {
+  max_depth?: number;
+  branching?: boolean;
+  revision?: boolean;
+  confidence_threshold?: number;
+}
+
+export interface CognitionTrace {
+  format?: 'otel_spans' | 'ossa_native' | 'both';
+  storage?: 'vector' | 'graph' | 'both';
+  retention?: string;
+}
+
+export interface CognitionGovernance {
+  human_review_triggers?: Record<string, unknown>[];
+  audit_required?: boolean;
+}
+
+export interface Cognition {
+  pattern?: 'sequential' | 'tree_of_thought' | 'react' | 'plan_and_execute';
+  constraints?: CognitionConstraints;
+  trace?: CognitionTrace;
+  governance?: CognitionGovernance;
+}
+
+// ============================================================================
 // Spec Types
 // ============================================================================
 
@@ -145,6 +195,11 @@ export interface AgentSpec {
   safety?: Safety;
   access_tier?: AccessTier;
   identity?: Identity;
+  user_controls?: UserControls;
+  consent?: Consent;
+  impact?: Impact;
+  transparency?: Transparency;
+  cognition?: Cognition;
 }
 
 export interface TaskStep {
