@@ -88,7 +88,7 @@ export const A2A_TOOL: Tool = {
       targetAgent: {
         type: 'string',
         description:
-          'Agent ID or URI to communicate with (format: agent://namespace/name or UUID)',
+          'Agent ID or URI to communicate with (format: uadp://namespace/name or UUID)',
       },
       message: {
         type: 'object',
@@ -352,7 +352,7 @@ export class A2AToolHandler {
     }
 
     // Parse agent URI if provided
-    if (agentId.startsWith('agent://')) {
+    if (agentId.startsWith('uadp://')) {
       const match = agentId.match(/^agent:\/\/([^/]+)\/(.+)$/);
       if (match) {
         return {
@@ -375,7 +375,7 @@ export class A2AToolHandler {
       id: 'current-agent',
       namespace: 'default',
       name: 'current',
-      uri: 'agent://default/current',
+      uri: 'uadp://default/current',
       capabilities: [],
       version: '1.0.0',
     };

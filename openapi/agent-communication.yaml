@@ -65,8 +65,8 @@ paths:
               taskAssignment:
                 summary: Assign task to worker
                 value:
-                  to: agent://worker-001
-                  from: agent://orchestrator-main
+                  to: uadp://worker-001
+                  from: uadp://orchestrator-main
                   type: TaskAssigned
                   payload:
                     taskId: task-123
@@ -78,8 +78,8 @@ paths:
               queryRequest:
                 summary: Query another agent
                 value:
-                  to: agent://specialist-nlp
-                  from: agent://worker-002
+                  to: uadp://specialist-nlp
+                  from: uadp://worker-002
                   type: QueryRequest
                   payload:
                     query: "Extract entities from text"
@@ -299,7 +299,7 @@ paths:
               webhookSubscription:
                 summary: Webhook-based subscription
                 value:
-                  agentId: agent://worker-003
+                  agentId: uadp://worker-003
                   deliveryMode: push
                   webhookUrl: https://worker-003.example.com/channels/task-updates
                   filter:
@@ -307,7 +307,7 @@ paths:
               pollingSubscription:
                 summary: Polling-based subscription
                 value:
-                  agentId: agent://monitor-001
+                  agentId: uadp://monitor-001
                   deliveryMode: pull
                   filter:
                     messageTypes: [TaskCompleted]
@@ -386,7 +386,7 @@ paths:
                 value:
                   type: AgentStarted
                   payload:
-                    agentId: agent://worker-005
+                    agentId: uadp://worker-005
                     version: 1.2.0
                     capabilities: [text_analysis, entity_extraction]
                     startedAt: "2025-12-18T14:25:00Z"
@@ -627,13 +627,13 @@ components:
         to:
           type: string
           format: uri
-          description: Target agent URI (e.g., agent://worker-001)
-          pattern: '^agent://[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+          description: Target agent URI (e.g., uadp://worker-001)
+          pattern: '^uadp://[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
         from:
           type: string
           format: uri
           description: Source agent URI
-          pattern: '^agent://[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+          pattern: '^uadp://[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
         type:
           $ref: '#/components/schemas/MessageType'
         payload:
@@ -865,7 +865,7 @@ components:
         agentId:
           type: string
           format: uri
-          pattern: '^agent://[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+          pattern: '^uadp://[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
           description: Subscribing agent URI
         deliveryMode:
           type: string
@@ -970,7 +970,7 @@ components:
         agentId:
           type: string
           format: uri
-          pattern: '^agent://[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+          pattern: '^uadp://[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
         description:
           type: string
         events:

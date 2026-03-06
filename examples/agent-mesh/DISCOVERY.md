@@ -115,7 +115,7 @@ const discovery = new DiscoveryService(registry);
 
 // Define your agent
 const myAgent: AgentCard = {
-  uri: 'agent://team/creative-agent-naming',
+  uri: 'uadp://team/creative-agent-naming',
   name: 'My Agent',
   version: '1.0.0',
   ossaVersion: '0.4.1',
@@ -172,16 +172,16 @@ const graph = new AgentGraphBuilder()
     {
       id: 'security',
       name: 'Security Team',
-      leader: 'agent://security/leader',
-      members: ['agent://security/scanner'],
-      specialists: ['agent://security/secrets-detector'],
+      leader: 'uadp://security/leader',
+      members: ['uadp://security/scanner'],
+      specialists: ['uadp://security/secrets-detector'],
       capabilities: ['vulnerability-scanning', 'secret-detection'],
     },
   ])
   .withRelationships([
     {
-      from: 'agent://security/leader',
-      to: 'agent://security/scanner',
+      from: 'uadp://security/leader',
+      to: 'uadp://security/scanner',
       type: 'leader',
       weight: 1.0,
       bidirectional: false,
@@ -192,8 +192,8 @@ const graph = new AgentGraphBuilder()
 
 // Record communication
 graph.recordCommunication({
-  from: 'agent://security/scanner',
-  to: 'agent://compliance/auditor',
+  from: 'uadp://security/scanner',
+  to: 'uadp://compliance/auditor',
   channel: 'security.vulnerabilities',
   frequency: 5.2,
   latencyMs: 45,
@@ -206,8 +206,8 @@ const topAgents = graph.getTopAgents(5);
 
 // Find path
 const path = graph.findPath(
-  'agent://security/scanner',
-  'agent://compliance/auditor'
+  'uadp://security/scanner',
+  'uadp://compliance/auditor'
 );
 ```
 
@@ -231,7 +231,7 @@ const router = new AdvancedAgentRouter({
 const agent = await router.routeByCapability('data-processing', {
   preferredRegion: 'us-east-1',
   maxLatencyMs: 100,
-  excludeAgents: ['agent://workers/worker-1'],
+  excludeAgents: ['uadp://workers/worker-1'],
 });
 
 // Route to multiple agents
@@ -266,7 +266,7 @@ Uses DNS SRV and TXT records for discovery.
 **DNS Structure:**
 ```
 _agents._tcp.agents.internal           SRV    0 0 8080 agent1.agents.internal
-agent1.agents.internal                 TXT    {"uri":"agent://team/agent1","capabilities":["scan"]}
+agent1.agents.internal                 TXT    {"uri":"uadp://team/agent1","capabilities":["scan"]}
 
 _vulnerability-scanning._tcp.agents.internal  SRV    0 0 8080 scanner.agents.internal
 ```
@@ -317,7 +317,7 @@ await consul.unregister(myAgent.uri);
   "Name": "security-scanner",
   "Tags": ["ossa-agent", "vulnerability-scanning"],
   "Meta": {
-    "uri": "agent://security/scanner",
+    "uri": "uadp://security/scanner",
     "version": "1.0.0",
     "ossaVersion": "0.4.1",
     "capabilities": "vulnerability-scanning,secret-detection"
@@ -362,7 +362,7 @@ metadata:
     app.kubernetes.io/component: ossa-agent
     app.kubernetes.io/version: "1.0.0"
   annotations:
-    ossa.io/agent-uri: "agent://security/scanner"
+    ossa.io/agent-uri: "uadp://security/scanner"
     ossa.io/version: "0.4.1"
     ossa.io/capabilities: "vulnerability-scanning,secret-detection"
 spec:
@@ -506,8 +506,8 @@ states.forEach((state, uri) => {
 
 ```typescript
 graph.addRelationship({
-  from: 'agent://security/leader',
-  to: 'agent://security/scanner',
+  from: 'uadp://security/leader',
+  to: 'uadp://security/scanner',
   type: 'leader',
   weight: 1.0,
   bidirectional: false,
@@ -519,7 +519,7 @@ graph.addRelationship({
 
 // Get related agents
 const workers = graph.findRelatedAgents(
-  'agent://security/leader',
+  'uadp://security/leader',
   'leader'
 );
 ```
@@ -530,8 +530,8 @@ Track message frequency, latency, and errors between agents.
 
 ```typescript
 graph.recordCommunication({
-  from: 'agent://security/scanner',
-  to: 'agent://compliance/auditor',
+  from: 'uadp://security/scanner',
+  to: 'uadp://compliance/auditor',
   channel: 'security.vulnerabilities',
   frequency: 5.2,  // messages per minute
   latencyMs: 45,
@@ -540,8 +540,8 @@ graph.recordCommunication({
 
 // Get statistics
 const stats = graph.getCommunicationStats(
-  'agent://security/scanner',
-  'agent://compliance/auditor'
+  'uadp://security/scanner',
+  'uadp://compliance/auditor'
 );
 
 console.log(`Total messages: ${stats.totalMessages}`);
@@ -640,7 +640,7 @@ process.on('SIGTERM', async () => {
 
 ```typescript
 // Check if agent is registered
-const agent = await discovery.discoverByUri('agent://team/creative-agent-naming');
+const agent = await discovery.discoverByUri('uadp://team/creative-agent-naming');
 if (!agent) {
   console.log('Agent not registered');
 }
@@ -657,9 +657,9 @@ const healthyAgents = await discovery.findHealthyAgents();
 
 ```typescript
 const states = router.getCircuitBreakerStates();
-if (states.get('agent://team/agent') === 'open') {
+if (states.get('uadp://team/agent') === 'open') {
   // Reset manually if issue resolved
-  router.resetCircuitBreaker('agent://team/agent');
+  router.resetCircuitBreaker('uadp://team/agent');
 }
 ```
 
@@ -667,7 +667,7 @@ if (states.get('agent://team/agent') === 'open') {
 
 ```typescript
 // Check communication patterns
-const stats = graph.getCommunicationStats('agent://source', 'agent://target');
+const stats = graph.getCommunicationStats('uadp://source', 'uadp://target');
 console.log(`Avg latency: ${stats.avgLatency}ms`);
 
 // Route to nearest agent

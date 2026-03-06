@@ -39,7 +39,7 @@
  *
  * // 2. Define your agent
  * const agent = {
- *   uri: 'agent://team/my-agent',
+ *   uri: 'uadp://team/my-agent',
  *   name: 'My Agent',
  *   version: '1.0.0',
  *   ossaVersion: '0.3.0',
@@ -136,7 +136,7 @@
  * ```typescript
  * // Requester
  * const response = await client.request(
- *   'agent://team/analyzer',
+ *   'uadp://team/analyzer',
  *   { action: 'analyze', data: 'sample' },
  *   { timeoutMs: 30000 }
  * );
@@ -168,7 +168,7 @@
  *
  * ```typescript
  * // Send message directly to specific agent
- * await client.send('agent://team/specific-agent', {
+ * await client.send('uadp://team/specific-agent', {
  *   message: 'Hello!',
  * });
  * ```
@@ -183,11 +183,11 @@
  * const router = new DefaultMessageRouter();
  *
  * router.addRule({
- *   source: 'agent://security/scanner',
+ *   source: 'uadp://security/scanner',
  *   channel: 'security.vulnerabilities',
  *   targets: [
- *     'agent://compliance/auditor',
- *     'agent://monitoring/alerter',
+ *     'uadp://compliance/auditor',
+ *     'uadp://monitoring/alerter',
  *   ],
  *   filter: {
  *     fields: { severity: ['critical', 'high'] }

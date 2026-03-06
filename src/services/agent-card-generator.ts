@@ -58,7 +58,7 @@ function resolveExtensionBlock(
 }
 
 export interface AgentCardGeneratorOptions {
-  /** Override the agent URI (default: agent://{namespace}/{name}) */
+  /** Override the agent URI (default: uadp://{namespace}/{name}) */
   uri?: string;
   /** Namespace for the agent URI (default: 'default') */
   namespace?: string;
@@ -112,7 +112,7 @@ export class AgentCardGenerator {
     const name = manifest.metadata!.name;
     const version = manifest.metadata?.version || '1.0.0';
     const namespace = options?.namespace || 'default';
-    const uri = options?.uri || `agent://${namespace}/${name}`;
+    const uri = options?.uri || `uadp://${namespace}/${name}`;
 
     // Extract all features
     const taxonomy = this.extractTaxonomy(manifest);

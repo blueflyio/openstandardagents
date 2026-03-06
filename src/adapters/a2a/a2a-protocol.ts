@@ -24,7 +24,7 @@ export interface AgentIdentity {
   namespace: string;
   /** Agent name */
   name: string;
-  /** Agent URI format: agent://{namespace}/{name} */
+  /** Agent URI format: uadp://{namespace}/{name} */
   uri: string;
   /** Agent capabilities */
   capabilities: string[];

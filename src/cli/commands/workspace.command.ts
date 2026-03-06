@@ -11,6 +11,7 @@
  *   ossa workspace publish       - POST discovery to a registry API (e.g. mesh /api/v1/discovery)
  */
 
+import { UadpClient } from '@ossa/uadp';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import * as fs from 'fs';
@@ -18,17 +19,17 @@ import { glob } from 'glob';
 import * as path from 'path';
 import * as yaml from 'yaml';
 import {
-  getDefaultAgentVersion,
-  getDefaultDiscoveryPatterns,
-  getDefaultDiscoveryRefresh,
-  getDefaultDiscoveryStrategy,
-  getDefaultOSSAAPIVersion,
-  getDefaultPolicyKind,
-  getDefaultRegistryKind,
-  getDefaultWorkspaceDir,
-  getRequiredWorkspaceDirs,
-  getWorkspacePolicyPath,
-  getWorkspaceRegistryPath,
+    getDefaultAgentVersion,
+    getDefaultDiscoveryPatterns,
+    getDefaultDiscoveryRefresh,
+    getDefaultDiscoveryStrategy,
+    getDefaultOSSAAPIVersion,
+    getDefaultPolicyKind,
+    getDefaultRegistryKind,
+    getDefaultWorkspaceDir,
+    getRequiredWorkspaceDirs,
+    getWorkspacePolicyPath,
+    getWorkspaceRegistryPath,
 } from '../../config/defaults.js';
 import { getVersion } from '../../utils/version.js';
 import { handleCommandError, outputJSON } from '../utils/index.js';
@@ -685,30 +686,33 @@ workspaceCommand
   });
 
 // ============================================================================
-// Subcommand: workspace publish (POST to registry/mesh discovery API)
+// Subcommand: workspace publish (POST to UADP registry)
 // ============================================================================
 workspaceCommand
   .command('publish')
   .description(
-    'POST workspace discovery to a registry API (e.g. mesh /api/v1/discovery). Run "ossa workspace discover" first.'
+    'Publish all discovered workspace agents to a UADP registry. Run "ossa workspace discover" first.'
   )
   .option(
     '--registry-url <url>',
-    'Registry base URL (e.g. https://your-registry.example.com). Default: MESH_URL or AGENT_REGISTRY_URL env. POSTs to <url>/api/v1/discovery'
+    'Registry base URL (e.g. https://skills.sh). Default: OSSA_REGISTRY_URL env.'
+  )
+  .option(
+    '--token <token>',
+    'Authentication token for publishing. Default: AGENT_PROTOCOL_TOKEN env.'
   )
   .option('--discover', 'Run workspace discover first if registry is missing')
-  .action(async (options: { registryUrl?: string; discover?: boolean }) => {
+  .action(async (options: { registryUrl?: string; token?: string; discover?: boolean }) => {
     try {
       const registryUrl =
         options.registryUrl ||
+        process.env.OSSA_REGISTRY_URL ||
         process.env.MESH_URL ||
-        process.env.AGENT_REGISTRY_URL;
-      if (!registryUrl) {
-        console.error(
-          chalk.red('Missing --registry-url or MESH_URL / AGENT_REGISTRY_URL')
-        );
-        process.exit(1);
-      }
+        process.env.AGENT_REGISTRY_URL ||
+        'https://registry.openstandardagents.org';
+
+      const token = options.token || process.env.AGENT_PROTOCOL_TOKEN || process.env.GITLAB_PRIVATE_TOKEN;
+
       const cwd = process.cwd();
       const registryPath = path.resolve(
         cwd,
@@ -742,39 +746,40 @@ workspaceCommand
 
       const content = fs.readFileSync(registryPath, 'utf-8');
       const registry = yaml.parse(content);
-      const agents = registry.agents || [];
-      const workspaceName = registry.metadata?.name || 'workspace';
-      const scannedAt = new Date().toISOString();
+      const projects = registry.agents || [];
+      let totalPublished = 0;
+      let totalFailed = 0;
 
-      const payload = {
-        source_id: workspaceName,
-        workspace: { name: workspaceName, scanned_at: scannedAt },
-        projects: agents.map(
-          (p: { project?: string; path?: string; agents?: unknown[] }) => ({
-            name: p.project ?? p.path,
-            path: p.path ?? `./${p.project ?? ''}`,
-            agents: p.agents ?? [],
-          })
-        ),
-      };
+      const client = new UadpClient(registryUrl, { token });
 
-      const base = registryUrl.replace(/\/$/, '');
-      const url = `${base}/api/v1/discovery`;
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+      console.log(chalk.blue(`Publishing workspace agents to ${registryUrl}...`));
+      console.log(chalk.gray('─'.repeat(50)));
 
-      if (res.ok || res.status === 202) {
-        console.log(
-          chalk.green('Published to registry: ') +
-            base +
-            ` (${payload.projects.length} projects)`
-        );
-      } else {
-        const text = await res.text();
-        console.error(chalk.red('Publish failed: ') + res.status + ' ' + text);
+      for (const project of projects) {
+        const projectPath = path.resolve(cwd, project.path || '.');
+        for (const agentRef of project.agents || []) {
+          const manifestPath = path.resolve(projectPath, agentRef.manifest);
+          if (!fs.existsSync(manifestPath)) {
+            console.log(chalk.yellow(`  ⚠ Skipping ${agentRef.name} (Manifest not found: ${manifestPath})`));
+            continue;
+          }
+
+          try {
+            const agentManifest = yaml.parse(fs.readFileSync(manifestPath, 'utf-8'));
+            await client.publishAgent(agentManifest);
+            console.log(chalk.green(`  ✓ Published `) + agentRef.name);
+            totalPublished++;
+          } catch (e: any) {
+             console.log(chalk.red(`  ✗ Failed to publish `) + agentRef.name + `: ${e.message}`);
+             totalFailed++;
+          }
+        }
+      }
+
+      console.log(chalk.gray('─'.repeat(50)));
+      console.log(chalk.green(`Successfully published ${totalPublished} agent(s).`));
+      if (totalFailed > 0) {
+        console.log(chalk.red(`${totalFailed} agent(s) failed to publish.`));
         process.exit(1);
       }
       process.exit(0);
@@ -784,69 +789,54 @@ workspaceCommand
   });
 
 // ============================================================================
-// Subcommand: workspace list-remote (GET from registry/mesh discovery API)
+// Subcommand: workspace list-remote (GET from UADP registry)
 // ============================================================================
 workspaceCommand
   .command('list-remote')
   .description(
-    'List agents from a registry API (GET /api/v1/discovery). No local workspace required.'
+    'List agents from a UADP registry API. No local workspace required.'
   )
-  .requiredOption(
+  .option(
     '--registry-url <url>',
-    'Registry base URL (e.g. https://your-registry.example.com)'
+    'Registry base URL (e.g. https://skills.sh). Default: OSSA_REGISTRY_URL env.'
   )
   .option('--json', 'Output raw JSON')
-  .action(async (options: { registryUrl: string; json?: boolean }) => {
+  .option('--limit <limit>', 'Max number of agents to fetch', '50')
+  .action(async (options: { registryUrl?: string; json?: boolean; limit?: string }) => {
     try {
-      const base = options.registryUrl.replace(/\/$/, '');
-      const res = await fetch(`${base}/api/v1/discovery`);
-      if (!res.ok) {
-        console.error(
-          chalk.red('Registry request failed: ') +
-            res.status +
-            ' ' +
-            (await res.text())
-        );
-        process.exit(1);
-      }
-      const data = (await res.json()) as {
-        sources?: string[];
-        projects?: Array<{
-          name?: string;
-          path?: string;
-          project_name?: string;
-          project_path?: string;
-          agents?: unknown[];
-        }>;
-        by_source?: Record<string, unknown>;
-      };
+      const registryUrl =
+        options.registryUrl ||
+        process.env.OSSA_REGISTRY_URL ||
+        'https://registry.openstandardagents.org';
+
+      const client = new UadpClient(registryUrl);
+      const res = await client.listAgents({ limit: parseInt(options.limit || '50', 10) });
+
       if (options.json) {
-        console.log(JSON.stringify(data, null, 2));
+        console.log(JSON.stringify(res, null, 2));
         process.exit(0);
       }
-      const projects = data.projects ?? [];
-      const total = projects.reduce((n, p) => n + (p.agents?.length ?? 0), 0);
-      console.log(chalk.blue('Registry: ') + base);
-      console.log(
-        chalk.gray('Sources: ') +
-          (data.sources?.length ?? 0) +
-          '  ' +
-          chalk.gray('Agents: ') +
-          total
-      );
-      for (const p of projects) {
-        const projName =
-          p.project_name ?? p.name ?? p.project_path ?? p.path ?? '?';
-        for (const a of p.agents ?? []) {
-          const label =
-            typeof a === 'string'
-              ? a
-              : ((a as { name?: string }).name ??
-                (a as { path?: string }).path ??
-                '?');
-          console.log('  ' + projName + ' / ' + label);
+
+      const agents = res.data || [];
+      console.log(chalk.blue('Registry: ') + registryUrl);
+      console.log(chalk.gray('Total Agents: ' + agents.length));
+      console.log(chalk.gray('─'.repeat(50)));
+
+      for (const a of agents) {
+        const agent = a as any;
+        console.log(`\n  ${chalk.cyan(agent.metadata?.name || 'unknown')}`);
+        if (agent.metadata?.identity?.namespace) {
+          console.log(chalk.gray(`    Namespace: ${agent.metadata.identity.namespace}`));
+        }
+        if (agent.metadata?.description) {
+          console.log(chalk.gray(`    Description: ${agent.metadata.description}`));
+        }
+        const caps = agent.spec?.capabilities || [];
+        if (caps.length > 0) {
+          console.log(chalk.gray(`    Capabilities: ${caps.map((c: any) => typeof c === 'string' ? c : c.name).join(', ')}`));
         }
       }
+      console.log('');
       process.exit(0);
     } catch (error) {
       handleCommandError(error);

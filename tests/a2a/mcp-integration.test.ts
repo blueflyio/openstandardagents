@@ -75,7 +75,7 @@ describe.skip('MCP Integration', () => {
         id: crypto.randomUUID(),
         namespace: 'production',
         name: 'code-generator',
-        uri: 'agent://production/code-generator',
+        uri: 'uadp://production/code-generator',
         capabilities: ['code-generation', 'typescript', 'testing'],
         version: '1.0.0',
       };
@@ -332,7 +332,7 @@ function createAgentIdentity(
     id: crypto.randomUUID(),
     namespace: 'test',
     name,
-    uri: `agent://test/${name}`,
+    uri: `uadp://test/${name}`,
     capabilities,
     version: '1.0.0',
   };

@@ -35,7 +35,7 @@
             "description": { "type": "string" },
             "uri": {
               "type": "string",
-              "pattern": "^agent://"
+              "pattern": "^uadp://"
             },
             "trust_tier": {
               "type": "string",

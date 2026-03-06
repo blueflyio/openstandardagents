@@ -97,7 +97,7 @@ describe('WebSocketTransport', () => {
   beforeEach(() => {
     transport = new WebSocketTransport({
       url: 'wss://test.example.com/ws',
-      agentId: 'agent://test/agent-1',
+      agentId: 'uadp://test/agent-1',
       capabilities: ['test_capability'],
     });
   });
@@ -128,7 +128,7 @@ describe('WebSocketTransport', () => {
       const registration = ws.getLastMessage() as any;
 
       expect(registration.type).toBe('register');
-      expect(registration.payload.agentId).toBe('agent://test/agent-1');
+      expect(registration.payload.agentId).toBe('uadp://test/agent-1');
       expect(registration.payload.capabilities).toEqual(['test_capability']);
     });
 
@@ -165,7 +165,7 @@ describe('WebSocketTransport', () => {
 
       expect(message.type).toBe('message');
       expect(message.payload).toEqual({ test: 'data' });
-      expect(message.metadata.agentId).toBe('agent://test/agent-1');
+      expect(message.metadata.agentId).toBe('uadp://test/agent-1');
     });
 
     it('should send message with metadata', async () => {
@@ -218,7 +218,7 @@ describe('WebSocketTransport', () => {
           id: 'msg-123',
           timestamp: new Date().toISOString(),
           payload: { received: 'data' },
-          metadata: { agentId: 'agent://test/agent-2' },
+          metadata: { agentId: 'uadp://test/agent-2' },
         })
       );
     });
@@ -272,7 +272,7 @@ describe('WebSocketTransport', () => {
           timestamp: new Date().toISOString(),
           payload: { result: 'success' },
           metadata: {
-            agentId: 'agent://test/agent-2',
+            agentId: 'uadp://test/agent-2',
             correlationId: call.metadata.correlationId,
           },
         })
@@ -370,7 +370,7 @@ describe('WebSocketTransport', () => {
     it('should handle connection errors', async () => {
       const errorTransport = new WebSocketTransport({
         url: 'wss://invalid.example.com/ws',
-        agentId: 'agent://test/agent-1',
+        agentId: 'uadp://test/agent-1',
         capabilities: [],
       });
 

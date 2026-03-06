@@ -724,6 +724,8 @@ export interface AgentsMdSection {
   enabled?: boolean;
   source?: string;
   custom?: string;
+  append?: string;
+  prepend?: string;
   title_format?: string;
 }
 

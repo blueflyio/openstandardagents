@@ -217,18 +217,18 @@ describe('WebRTCTransport', () => {
 
   beforeEach(() => {
     signalingServer = new InMemorySignalingServer();
-    signaling1 = signalingServer.registerAgent('agent://test/agent-1');
-    signaling2 = signalingServer.registerAgent('agent://test/agent-2');
+    signaling1 = signalingServer.registerAgent('uadp://test/agent-1');
+    signaling2 = signalingServer.registerAgent('uadp://test/agent-2');
 
     transport1 = new WebRTCTransport({
-      agentId: 'agent://test/agent-1',
-      remoteAgentId: 'agent://test/agent-2',
+      agentId: 'uadp://test/agent-1',
+      remoteAgentId: 'uadp://test/agent-2',
       signaling: signaling1,
     });
 
     transport2 = new WebRTCTransport({
-      agentId: 'agent://test/agent-2',
-      remoteAgentId: 'agent://test/agent-1',
+      agentId: 'uadp://test/agent-2',
+      remoteAgentId: 'uadp://test/agent-1',
       signaling: signaling2,
     });
   });
@@ -249,8 +249,8 @@ describe('WebRTCTransport', () => {
       const offerPromise = new Promise<void>((resolve) => {
         signaling2.on('message', (msg) => {
           if (msg.type === 'offer') {
-            expect(msg.from).toBe('agent://test/agent-1');
-            expect(msg.to).toBe('agent://test/agent-2');
+            expect(msg.from).toBe('uadp://test/agent-1');
+            expect(msg.to).toBe('uadp://test/agent-2');
             resolve();
           }
         });
@@ -264,7 +264,7 @@ describe('WebRTCTransport', () => {
       const answerPromise = new Promise<void>((resolve) => {
         signaling1.on('message', (msg) => {
           if (msg.type === 'answer') {
-            expect(msg.from).toBe('agent://test/agent-2');
+            expect(msg.from).toBe('uadp://test/agent-2');
             resolve();
           }
         });
@@ -435,7 +435,7 @@ describe('WebRTCTransport', () => {
           id: 'msg-123',
           timestamp: new Date().toISOString(),
           payload: { received: 'data' },
-          metadata: { agentId: 'agent://test/agent-2' },
+          metadata: { agentId: 'uadp://test/agent-2' },
         })
       );
     });
@@ -475,7 +475,7 @@ describe('WebRTCTransport', () => {
           timestamp: new Date().toISOString(),
           payload: { result: 'success' },
           metadata: {
-            agentId: 'agent://test/agent-2',
+            agentId: 'uadp://test/agent-2',
             correlationId: call.metadata.correlationId,
           },
         })
@@ -555,7 +555,7 @@ describe('WebRTCTransport', () => {
         id: 'msg-123',
         timestamp: new Date().toISOString(),
         payload: testPayload,
-        metadata: { agentId: 'agent://test/agent-2' },
+        metadata: { agentId: 'uadp://test/agent-2' },
       };
 
       const data = JSON.stringify(fullMessage);
@@ -567,7 +567,7 @@ describe('WebRTCTransport', () => {
           type: 'message',
           payload: chunk1,
           metadata: {
-            agentId: 'agent://test/agent-2',
+            agentId: 'uadp://test/agent-2',
             chunked: { chunkIndex: 0, totalChunks: 2, messageId },
           },
         })
@@ -578,7 +578,7 @@ describe('WebRTCTransport', () => {
           type: 'message',
           payload: chunk2,
           metadata: {
-            agentId: 'agent://test/agent-2',
+            agentId: 'uadp://test/agent-2',
             chunked: { chunkIndex: 1, totalChunks: 2, messageId },
           },
         })

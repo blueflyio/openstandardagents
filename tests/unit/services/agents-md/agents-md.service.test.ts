@@ -222,6 +222,41 @@ describe('AgentsMdService', () => {
 
       expect(content).toContain('[backend]');
     });
+
+    it('should include append text for generated sections', async () => {
+      const manifest: OssaAgent = {
+        apiVersion: API_VERSION,
+        kind: 'Agent',
+        metadata: {
+          name: 'test-agent',
+        },
+        spec: {
+          role: 'Test role',
+          autonomy: {
+            level: 'supervised',
+            approval_required: true,
+          },
+        },
+        extensions: {
+          agents_md: {
+            enabled: true,
+            sections: {
+              pr_instructions: {
+                enabled: true,
+                source: 'spec.autonomy',
+                append:
+                  '- Task intake (required): include target path, exact change, and expected result.',
+              },
+            },
+          },
+        },
+      };
+
+      const content = await service.generateAgentsMd(manifest);
+
+      expect(content).toContain('Task intake (required)');
+      expect(content).toContain('Autonomy level: supervised');
+    });
   });
 
   describe('writeAgentsMd', () => {

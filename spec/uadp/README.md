@@ -117,7 +117,7 @@ GET /uadp/v1/skills
         "name": "code-review",
         "version": "1.2.0",
         "description": "Reviews code for quality, security, and best practices",
-        "uri": "agent://acme.com/skills/code-review",
+        "uri": "uadp://acme.com/skills/code-review",
         "category": "development",
         "trust_tier": "verified-signature",
         "created": "2026-01-15T10:30:00Z",
@@ -157,7 +157,7 @@ Same query parameters as Skills. Response shape:
         "name": "security-auditor",
         "version": "2.0.0",
         "description": "Audits infrastructure for vulnerabilities",
-        "uri": "agent://acme.com/agents/security-auditor"
+        "uri": "uadp://acme.com/agents/security-auditor"
       },
       "spec": {
         "role": "You are a security auditor...",
@@ -316,18 +316,18 @@ Nodes SHOULD include `trust_tier` in skill/agent metadata. Consuming nodes SHOUL
 
 ## 7. Agent Identifiers (GAID)
 
-Skills and agents MAY include a Global Agent Identifier (GAID) using the `agent://` URI scheme:
+Skills and agents MAY include a Global Agent Identifier (GAID) using the `uadp://` URI scheme:
 
 ```
-agent://<namespace>/<type>/<name>
+uadp://<namespace>/<type>/<name>
 ```
 
 Examples:
-- `agent://acme.com/skills/code-review`
-- `agent://marketplace.openstandardagents.org/agents/security-auditor`
-- `agent://skills.sh/skills/web-search`
+- `uadp://acme.com/skills/code-review`
+- `uadp://marketplace.openstandardagents.org/agents/security-auditor`
+- `uadp://skills.sh/skills/web-search`
 
-GAIDs enable cross-registry resolution: a consumer seeing `agent://skills.sh/skills/web-search` knows to query `skills.sh/.well-known/uadp.json` to find the skills endpoint, then search for `web-search`.
+GAIDs enable cross-registry resolution: a consumer seeing `uadp://skills.sh/skills/web-search` knows to query `skills.sh/.well-known/uadp.json` to find the skills endpoint, then search for `web-search`.
 
 ## 8. OSSA Integration
 

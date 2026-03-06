@@ -24,7 +24,7 @@ ${chalk.cyan('╚═════════════════════
 
 /** Standalone wizard logo: bold ASCII/ANSI art for agent creation wizard. */
 export const WIZARD_LOGO = `
-${chalk.cyan('  ') + chalk.bold.blue('  ___   ____   ____   ___   ') + chalk.cyan('     ') + chalk.blue('agent://')}
+${chalk.cyan('  ') + chalk.bold.blue('  ___   ____   ____   ___   ') + chalk.cyan('     ') + chalk.blue('uadp://')}
 ${chalk.cyan('  ') + chalk.bold.blue(' / _ \\ / __ \\ / ___| / _ \\  ') + chalk.cyan('     ') + chalk.gray('open standard')}
 ${chalk.cyan('  ') + chalk.bold.blue('| | | | |  | \\___ \\| | | | ') + chalk.cyan('  ') + chalk.cyan('---') + chalk.blue('---') + chalk.cyan('---') + chalk.blue('---')}
 ${chalk.cyan('  ') + chalk.bold.blue('| | | | |  | |___) | |_| | ') + chalk.cyan('  ') + chalk.white('O') + chalk.cyan(' S ') + chalk.white('S') + chalk.cyan(' A')}

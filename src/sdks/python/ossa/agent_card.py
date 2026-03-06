@@ -145,7 +145,7 @@ def generate_agent_card(
     Args:
         manifest: OSSA manifest dict or Manifest instance.
         namespace: Agent namespace for URI (if uri not set).
-        uri: Override agent URI (default agent://{namespace}/{name}).
+        uri: Override agent URI (default uadp://{namespace}/{name}).
         endpoints: Optional {http?, grpc?, websocket?} URLs.
         manifest_ref: URL to full OSSA manifest.
         manifest_digest: Content digest (e.g. SHA-256). If not set and manifest_content given, computed.
@@ -163,7 +163,7 @@ def generate_agent_card(
     name = (data.get("metadata") or {}).get("name") or "unnamed"
     version = (data.get("metadata") or {}).get("version") or "1.0.0"
     api_version = data.get("apiVersion") or "ossa/v0.4"
-    resolved_uri = uri or f"agent://{namespace}/{name}"
+    resolved_uri = uri or f"uadp://{namespace}/{name}"
 
     transport = ["http"]
     if endpoints:

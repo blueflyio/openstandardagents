@@ -53,7 +53,7 @@ async function exampleMultiProviderDiscovery() {
     // Register some test agents in memory
     const testAgents: AgentCard[] = [
       {
-        uri: 'agent://security/scanner-1',
+        uri: 'uadp://security/scanner-1',
         name: 'Security Scanner 1',
         version: '1.0.0',
         ossaVersion: '0.4.1',
@@ -66,7 +66,7 @@ async function exampleMultiProviderDiscovery() {
         metadata: { region: 'us-east-1', team: 'security' },
       },
       {
-        uri: 'agent://security/scanner-2',
+        uri: 'uadp://security/scanner-2',
         name: 'Security Scanner 2',
         version: '1.0.0',
         ossaVersion: '0.4.1',
@@ -79,7 +79,7 @@ async function exampleMultiProviderDiscovery() {
         metadata: { region: 'us-west-2', team: 'security' },
       },
       {
-        uri: 'agent://compliance/auditor',
+        uri: 'uadp://compliance/auditor',
         name: 'Compliance Auditor',
         version: '1.0.0',
         ossaVersion: '0.4.1',
@@ -127,7 +127,7 @@ async function exampleAgentGraph() {
   const agents: AgentCard[] = [
     // Security Team
     {
-      uri: 'agent://security/leader',
+      uri: 'uadp://security/leader',
       name: 'Security Team Leader',
       version: '1.0.0',
       ossaVersion: '0.4.1',
@@ -140,7 +140,7 @@ async function exampleAgentGraph() {
       metadata: { team: 'security', role: 'leader' },
     },
     {
-      uri: 'agent://security/scanner',
+      uri: 'uadp://security/scanner',
       name: 'Security Scanner',
       version: '1.0.0',
       ossaVersion: '0.4.1',
@@ -153,7 +153,7 @@ async function exampleAgentGraph() {
       metadata: { team: 'security', role: 'worker' },
     },
     {
-      uri: 'agent://security/secrets-detector',
+      uri: 'uadp://security/secrets-detector',
       name: 'Secrets Detector',
       version: '1.0.0',
       ossaVersion: '0.4.1',
@@ -167,7 +167,7 @@ async function exampleAgentGraph() {
     },
     // Compliance Team
     {
-      uri: 'agent://compliance/auditor',
+      uri: 'uadp://compliance/auditor',
       name: 'Compliance Auditor',
       version: '1.0.0',
       ossaVersion: '0.4.1',
@@ -188,38 +188,38 @@ async function exampleAgentGraph() {
       {
         id: 'security',
         name: 'Security Team',
-        leader: 'agent://security/leader',
-        members: ['agent://security/scanner'],
-        specialists: ['agent://security/secrets-detector'],
+        leader: 'uadp://security/leader',
+        members: ['uadp://security/scanner'],
+        specialists: ['uadp://security/secrets-detector'],
         capabilities: ['vulnerability-scanning', 'secret-detection', 'security-management'],
       },
       {
         id: 'compliance',
         name: 'Compliance Team',
         leader: undefined,
-        members: ['agent://compliance/auditor'],
+        members: ['uadp://compliance/auditor'],
         specialists: [],
         capabilities: ['policy-enforcement', 'audit-logging'],
       },
     ])
     .withRelationships([
       {
-        from: 'agent://security/leader',
-        to: 'agent://security/scanner',
+        from: 'uadp://security/leader',
+        to: 'uadp://security/scanner',
         type: 'leader',
         weight: 1.0,
         bidirectional: false,
       },
       {
-        from: 'agent://security/leader',
-        to: 'agent://security/secrets-detector',
+        from: 'uadp://security/leader',
+        to: 'uadp://security/secrets-detector',
         type: 'leader',
         weight: 1.0,
         bidirectional: false,
       },
       {
-        from: 'agent://security/scanner',
-        to: 'agent://compliance/auditor',
+        from: 'uadp://security/scanner',
+        to: 'uadp://compliance/auditor',
         type: 'dependency',
         weight: 0.8,
         bidirectional: false,
@@ -231,8 +231,8 @@ async function exampleAgentGraph() {
   // Record some communication patterns
   console.log('📊 Recording communication patterns...');
   graph.recordCommunication({
-    from: 'agent://security/scanner',
-    to: 'agent://compliance/auditor',
+    from: 'uadp://security/scanner',
+    to: 'uadp://compliance/auditor',
     channel: 'security.vulnerabilities',
     frequency: 5.2,
     latencyMs: 45,
@@ -240,8 +240,8 @@ async function exampleAgentGraph() {
   });
 
   graph.recordCommunication({
-    from: 'agent://security/leader',
-    to: 'agent://security/scanner',
+    from: 'uadp://security/leader',
+    to: 'uadp://security/scanner',
     channel: 'security.tasks',
     frequency: 10.5,
     latencyMs: 20,
@@ -274,7 +274,7 @@ async function exampleAgentGraph() {
 
   // Find path between agents
   console.log('\n🔗 Finding path from scanner to auditor...');
-  const path = graph.findPath('agent://security/scanner', 'agent://compliance/auditor');
+  const path = graph.findPath('uadp://security/scanner', 'uadp://compliance/auditor');
   if (path) {
     console.log(`  Path: ${path.join(' → ')}`);
   }
@@ -301,7 +301,7 @@ async function exampleAdvancedRouting() {
   // Register multiple agents with same capability
   const agents: AgentCard[] = [
     {
-      uri: 'agent://workers/worker-1',
+      uri: 'uadp://workers/worker-1',
       name: 'Worker 1',
       version: '1.0.0',
       ossaVersion: '0.4.1',
@@ -314,7 +314,7 @@ async function exampleAdvancedRouting() {
       metadata: { region: 'us-east-1' },
     },
     {
-      uri: 'agent://workers/worker-2',
+      uri: 'uadp://workers/worker-2',
       name: 'Worker 2',
       version: '1.0.0',
       ossaVersion: '0.4.1',
@@ -327,7 +327,7 @@ async function exampleAdvancedRouting() {
       metadata: { region: 'us-west-2' },
     },
     {
-      uri: 'agent://workers/worker-3',
+      uri: 'uadp://workers/worker-3',
       name: 'Worker 3',
       version: '1.0.0',
       ossaVersion: '0.4.1',
@@ -389,8 +389,8 @@ async function exampleAdvancedRouting() {
   });
 
   // Simulate some failures for worker-2 to lower its weight
-  weightedRouter.recordResult('agent://workers/worker-2', false);
-  weightedRouter.recordResult('agent://workers/worker-2', false, 200);
+  weightedRouter.recordResult('uadp://workers/worker-2', false);
+  weightedRouter.recordResult('uadp://workers/worker-2', false, 200);
 
   for (let i = 0; i < 5; i++) {
     const agent = await weightedRouter.routeByCapability('data-processing');
@@ -430,7 +430,7 @@ async function exampleCircuitBreaker() {
 
   // Register agents
   const healthyAgent: AgentCard = {
-    uri: 'agent://stable/worker',
+    uri: 'uadp://stable/worker',
     name: 'Stable Worker',
     version: '1.0.0',
     ossaVersion: '0.4.1',
@@ -443,7 +443,7 @@ async function exampleCircuitBreaker() {
   };
 
   const flakyAgent: AgentCard = {
-    uri: 'agent://flaky/worker',
+    uri: 'uadp://flaky/worker',
     name: 'Flaky Worker',
     version: '1.0.0',
     ossaVersion: '0.4.1',
@@ -468,7 +468,7 @@ async function exampleCircuitBreaker() {
   // Simulate failures
   for (let i = 0; i < 6; i++) {
     const agent = await router.routeByCapability('task-execution');
-    if (agent?.uri === 'agent://flaky/worker') {
+    if (agent?.uri === 'uadp://flaky/worker') {
       console.log(`  Request ${i + 1} → ${agent.name} (FAILED)`);
       router.recordResult(agent.uri, false);
     } else if (agent) {
@@ -514,7 +514,7 @@ async function exampleCompleteSystem() {
   // Register agents
   const agents: AgentCard[] = [
     {
-      uri: 'agent://platform/orchestrator',
+      uri: 'uadp://platform/orchestrator',
       name: 'Platform Orchestrator',
       version: '1.0.0',
       ossaVersion: '0.4.1',
@@ -526,7 +526,7 @@ async function exampleCompleteSystem() {
       status: 'healthy',
     },
     {
-      uri: 'agent://platform/analyzer',
+      uri: 'uadp://platform/analyzer',
       name: 'Code Analyzer',
       version: '1.0.0',
       ossaVersion: '0.4.1',
@@ -548,15 +548,15 @@ async function exampleCompleteSystem() {
   graph.defineTeam({
     id: 'platform',
     name: 'Platform Team',
-    leader: 'agent://platform/orchestrator',
-    members: ['agent://platform/analyzer'],
+    leader: 'uadp://platform/orchestrator',
+    members: ['uadp://platform/analyzer'],
     specialists: [],
     capabilities: ['workflow-orchestration', 'code-analysis'],
   });
 
   graph.addRelationship({
-    from: 'agent://platform/orchestrator',
-    to: 'agent://platform/analyzer',
+    from: 'uadp://platform/orchestrator',
+    to: 'uadp://platform/analyzer',
     type: 'leader',
     weight: 1.0,
     bidirectional: false,
@@ -619,7 +619,7 @@ async function exampleCompleteSystem() {
 
       // Record in graph
       graph.recordCommunication({
-        from: 'agent://platform/orchestrator',
+        from: 'uadp://platform/orchestrator',
         to: analyzer.uri,
         channel: 'code-analysis',
         frequency: 1,
