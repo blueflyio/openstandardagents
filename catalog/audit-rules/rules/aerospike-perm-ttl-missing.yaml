@@ -1,0 +1,12 @@
+id: aerospike-perm-ttl-missing
+description: "Aerospike cache enabled without permanent-item TTL. Permanent items may evict unexpectedly."
+severity: warning
+dimension: configuration
+anti_pattern:
+  type: regex
+  pattern: "cache\\.backend\\.aerospike"
+  flags: gm
+  path_glob: "**/*.php"
+fix_suggestion: "Set $settings['aerospike.cache_perm_ttl'] = 31536000; (1 year)"
+target_languages: [php]
+tags: [aerospike, cache, ttl, pavlosdan]

@@ -1,0 +1,12 @@
+id: aerospike-queue-without-namespace
+description: "Aerospike queue backend without dedicated namespace. Queues compete with cache for memory."
+severity: warning
+dimension: performance
+anti_pattern:
+  type: regex
+  pattern: "queue_default.*=.*'queue\\.aerospike'"
+  flags: gm
+  path_glob: "**/*.php"
+fix_suggestion: "Add $settings['aerospike.namespace.queue'] = 'drupal_queue'; with dedicated namespace config"
+target_languages: [php]
+tags: [aerospike, queue, namespace, pavlosdan]

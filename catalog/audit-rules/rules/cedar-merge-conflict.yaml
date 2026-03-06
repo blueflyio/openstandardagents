@@ -1,0 +1,12 @@
+id: cedar-merge-conflict
+description: "Unresolved merge conflict markers in source. Will cause parse errors."
+severity: error
+dimension: best-practices
+anti_pattern:
+  type: regex
+  pattern: "^(<{7}|={7}|>{7}|\\|{7})"
+  flags: gm
+  path_glob: "**/*.{php,yml,yaml,module,inc,install,ts,js}"
+fix_suggestion: "Resolve merge conflicts and remove conflict markers"
+target_languages: [php, typescript]
+tags: [cedar-policy, merge-conflict, git]

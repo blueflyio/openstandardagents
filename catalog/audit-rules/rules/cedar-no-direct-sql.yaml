@@ -1,0 +1,12 @@
+id: cedar-no-direct-sql
+description: "Direct SQL query. Use Drupal database API per cedar dev_policy.no_direct_sql."
+severity: warning
+dimension: best-practices
+anti_pattern:
+  type: regex
+  pattern: "\\b(mysql_query|mysqli_query|pg_query|db_query)\\s*\\("
+  flags: gm
+  path_glob: "**/*.{php,module,inc,install}"
+fix_suggestion: "Use Entity API or \\Drupal::database() abstraction layer"
+target_languages: [php]
+tags: [cedar-policy, database, dev-policy]

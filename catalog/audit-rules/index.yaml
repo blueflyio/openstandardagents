@@ -1,0 +1,43 @@
+version: "1.0.0"
+dimensions:
+  - security
+  - performance
+  - best-practices
+  - architecture
+  - configuration
+rules:
+  # --- Aerospike (Drupal module by pavlosdan) ---
+  - id: aerospike-missing-prefix
+    file: rules/aerospike-missing-prefix.yaml
+  - id: aerospike-hardcoded-socket
+    file: rules/aerospike-hardcoded-socket.yaml
+  - id: aerospike-no-failover
+    file: rules/aerospike-no-failover.yaml
+  - id: aerospike-default-namespace
+    file: rules/aerospike-default-namespace.yaml
+  - id: aerospike-perm-ttl-missing
+    file: rules/aerospike-perm-ttl-missing.yaml
+  - id: aerospike-queue-without-namespace
+    file: rules/aerospike-queue-without-namespace.yaml
+  # --- Cedar Policy (Drupal compliance engine) ---
+  - id: cedar-missing-compliance-engine
+    file: rules/cedar-missing-compliance-engine.yaml
+  - id: cedar-gate-disabled
+    file: rules/cedar-gate-disabled.yaml
+  - id: cedar-hardcoded-api-key
+    file: rules/cedar-hardcoded-api-key.yaml
+  - id: cedar-dangerous-functions
+    file: rules/cedar-dangerous-functions.yaml
+  - id: cedar-missing-ossa-manifest
+    file: rules/cedar-missing-ossa-manifest.yaml
+  - id: cedar-no-direct-sql
+    file: rules/cedar-no-direct-sql.yaml
+  - id: cedar-merge-conflict
+    file: rules/cedar-merge-conflict.yaml
+  # --- General Drupal ---
+  - id: drupal-empty-catch
+    file: rules/drupal-empty-catch.yaml
+  - id: drupal-hardcoded-credentials
+    file: rules/drupal-hardcoded-credentials.yaml
+  - id: drupal-unescaped-input
+    file: rules/drupal-unescaped-input.yaml

@@ -1,0 +1,12 @@
+id: cedar-hardcoded-api-key
+description: "Hardcoded API key or bearer token. Use Key module per cedar dev_policy.no_hardcoded_keys."
+severity: error
+dimension: security
+anti_pattern:
+  type: regex
+  pattern: "sk-[a-zA-Z0-9]{20,}|Bearer [a-zA-Z0-9]{20,}"
+  flags: gm
+  path_glob: "**/*.{php,yml,yaml,module,inc}"
+fix_suggestion: "Use drupal/key module. Reference by key ID, never embed raw values."
+target_languages: [php]
+tags: [cedar-policy, security, keys, dev-policy]
