@@ -1,0 +1,29 @@
+{
+  "apiVersion": "ossa/v0.5",
+  "kind": "Project",
+  "metadata": {
+    "name": "openstandardagents",
+    "description": "Decentralized AI project operating within the OSSA/Bluefly ecosystem.",
+    "uri": "uadp://bluefly.io/projects/openstandardagents",
+    "trust_tier": "verified-signature"
+  },
+  "spec": {
+    "discovery": {
+      "llms_url": "./llms.txt",
+      "agents_url": "./AGENTS.md"
+    },
+    "endpoints": {
+      "uadp": "https://uadp.bluefly.io",
+      "mcp": "./mcp.json"
+    },
+    "execution": {
+      "cursor_rules": "./.cursorrules"
+    },
+    "verification": {
+      "data_provenance": "./DATA.md",
+      "security_policies": "./SECURITY-AI.md"
+    },
+    "training_license": "Permissive (See repository LICENSE)",
+    "model_requirements": []
+  }
+}
