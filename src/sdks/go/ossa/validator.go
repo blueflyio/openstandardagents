@@ -9,11 +9,20 @@ import (
 	"github.com/xeipuuv/gojsonschema"
 )
 
+// OSSAVersion is the OSSA spec version.
+const OSSAVersion = "0.5.0"
+
 // ValidationResult contains validation results.
 type ValidationResult struct {
 	Valid    bool
-	Errors   []string
+	Errors   []ValidationIssue
 	Warnings []string
+}
+
+// ValidationIssue represents a single validation error with path context.
+type ValidationIssue struct {
+	Path    string
+	Message string
 }
 
 // Validator validates OSSA manifests.
@@ -23,8 +32,6 @@ type Validator struct {
 }
 
 // NewValidator creates a new validator.
-// If schemaPath is provided, loads JSON Schema for validation.
-// If empty, only structural validation is performed.
 func NewValidator(schemaPath string) *Validator {
 	v := &Validator{schemaPath: schemaPath}
 	if schemaPath != "" {
@@ -62,21 +69,20 @@ var apiVersionPattern = regexp.MustCompile(`^ossa/v\d+\.\d+\.\d+$`)
 func (v *Validator) Validate(m *Manifest) *ValidationResult {
 	result := &ValidationResult{Valid: true}
 
-	// Required fields
 	if m.APIVersion == "" {
-		result.addError("Missing apiVersion")
+		result.addError("", "Missing apiVersion")
 	} else if !apiVersionPattern.MatchString(m.APIVersion) {
-		result.addError(fmt.Sprintf("Invalid apiVersion: %s", m.APIVersion))
+		result.addError("apiVersion", fmt.Sprintf("Invalid apiVersion: %s", m.APIVersion))
 	}
 
 	if m.Kind == "" {
-		result.addError("Missing kind")
+		result.addError("", "Missing kind")
 	} else if !ValidKinds[m.Kind] {
-		result.addError(fmt.Sprintf("Invalid kind: %s", m.Kind))
+		result.addError("kind", fmt.Sprintf("Invalid kind: %s", m.Kind))
 	}
 
 	if m.Metadata.Name == "" {
-		result.addError("Missing metadata.name")
+		result.addError("metadata.name", "Missing metadata.name")
 	}
 
 	if m.Kind == KindAgent && m.Spec.Role == "" {
@@ -91,7 +97,7 @@ func (v *Validator) Validate(m *Manifest) *ValidationResult {
 			schemaResult, err := v.schema.Validate(docLoader)
 			if err == nil && !schemaResult.Valid() {
 				for _, desc := range schemaResult.Errors() {
-					result.addError(fmt.Sprintf("Schema: %s", desc.Description()))
+					result.addError(desc.Field(), desc.Description())
 				}
 			}
 		}
@@ -109,9 +115,9 @@ func (v *Validator) Validate(m *Manifest) *ValidationResult {
 	return result
 }
 
-func (r *ValidationResult) addError(msg string) {
+func (r *ValidationResult) addError(path, msg string) {
 	r.Valid = false
-	r.Errors = append(r.Errors, msg)
+	r.Errors = append(r.Errors, ValidationIssue{Path: path, Message: msg})
 }
 
 func (r *ValidationResult) addWarning(msg string) {
@@ -121,4 +127,13 @@ func (r *ValidationResult) addWarning(msg string) {
 // ValidateManifest validates a manifest (convenience function).
 func ValidateManifest(m *Manifest) *ValidationResult {
 	return NewValidator("").Validate(m)
+}
+
+// ValidateFile loads and validates a manifest file.
+func ValidateFile(path string, schemaPath string) (*ValidationResult, error) {
+	m, err := LoadManifest(path)
+	if err != nil {
+		return nil, err
+	}
+	return NewValidator(schemaPath).Validate(m), nil
 }

@@ -129,7 +129,6 @@ validate:uadp-specs:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/
-  allow_failure: true  # Non-blocking until specs are fully stable
 
 
 # Validate all OSSA manifests in spec/reference and .agents/ using ossa validate
@@ -224,7 +223,7 @@ sbom:generate:
     - job: build
       artifacts: true
   script:
-    - npx @cyclonedx/cyclonedx-npm --output-file gl-sbom-npm.cdx.json
+    - npx @appthreat/cdxgen -o gl-sbom-npm.cdx.json
   artifacts:
     reports:
       cyclonedx: gl-sbom-*.cdx.json
