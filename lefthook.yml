@@ -48,8 +48,9 @@ pre-push:
         if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
           LOCAL=$(git rev-parse HEAD)
           REMOTE=$(git rev-parse "origin/$BRANCH" 2>/dev/null || echo "")
-          if [ -n "$REMOTE" ] && [ "$LOCAL" != "$REMOTE" ]; then
-            echo "Syncing with origin/$BRANCH before push..."
+          BEHIND=$(git rev-list --count HEAD..origin/$BRANCH 2>/dev/null || echo "0")
+          if [ -n "$REMOTE" ] && [ "$BEHIND" -gt 0 ]; then
+            echo "Syncing with origin/$BRANCH before push ($BEHIND commits behind)..."
             git pull --rebase origin "$BRANCH" || {
               echo "Rebase failed. Resolve conflicts, then push again."
               exit 1
