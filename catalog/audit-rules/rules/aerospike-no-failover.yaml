@@ -1,0 +1,12 @@
+id: aerospike-no-failover
+description: "Aerospike backend enabled without failover config. Drupal will throw exceptions if cluster is unavailable."
+severity: warning
+dimension: best-practices
+anti_pattern:
+  type: regex
+  pattern: "cache\\.backend\\.aerospike"
+  flags: gm
+  path_glob: "**/*.php"
+fix_suggestion: "Set $settings['aerospike.failover'] = TRUE; and include example.failover.services.yml"
+target_languages: [php]
+tags: [aerospike, resilience, failover, pavlosdan]

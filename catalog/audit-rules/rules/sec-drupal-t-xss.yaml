@@ -1,0 +1,12 @@
+id: sec-drupal-t-xss
+description: "Using t() or $this->t() with direct variable interpolation instead of placeholders (@, %, :)."
+severity: error
+dimension: security
+anti_pattern:
+  type: regex
+  pattern: "(?:->t|\\bt)\\s*\\(\\s*[\"'].*\\$[a-zA-Z_].*[\"']\\s*\\)"
+  flags: gm
+  path_glob: "**/*.{php,module,inc,install}"
+fix_suggestion: "Use t('Hello @name', ['@name' => $name]) with proper placeholders. @ for plain text, % for emphasized, : for URLs."
+target_languages: [php]
+tags: [security, xss, drupal, translation]

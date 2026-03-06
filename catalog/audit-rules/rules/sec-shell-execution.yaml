@@ -1,0 +1,12 @@
+id: sec-shell-execution
+description: "Direct shell command execution via exec, system, passthru, popen, proc_open, or backticks."
+severity: error
+dimension: security
+anti_pattern:
+  type: regex
+  pattern: "\\b(exec|system|passthru|popen|proc_open|shell_exec)\\s*\\(|`[^`]+`"
+  flags: gm
+  path_glob: "**/*.{php,module,inc,install}"
+fix_suggestion: "Use Symfony Process component or Drupal's built-in APIs. If shell execution is unavoidable, use escapeshellarg/escapeshellcmd on all inputs."
+target_languages: [php]
+tags: [security, command-injection, shell]

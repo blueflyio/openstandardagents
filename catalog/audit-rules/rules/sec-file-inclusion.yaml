@@ -1,0 +1,12 @@
+id: sec-file-inclusion
+description: "Dynamic file inclusion with variables allows local/remote file inclusion attacks."
+severity: error
+dimension: security
+anti_pattern:
+  type: regex
+  pattern: "\\b(include|require|include_once|require_once)\\s*\\(?\\s*\\$"
+  flags: gm
+  path_glob: "**/*.{php,module,inc,install}"
+fix_suggestion: "Use a whitelist of allowed files or Drupal's module/theme loading APIs. Never include files based on user input."
+target_languages: [php]
+tags: [security, file-inclusion, lfi, rfi]

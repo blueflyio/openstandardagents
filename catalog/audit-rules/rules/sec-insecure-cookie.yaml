@@ -1,0 +1,12 @@
+id: sec-insecure-cookie
+description: "Setting cookies without httponly, secure, or samesite flags."
+severity: warning
+dimension: security
+anti_pattern:
+  type: regex
+  pattern: "\\bsetcookie\\s*\\([^)]{1,200}\\)(?!.*(?:httponly|secure|samesite))"
+  flags: gmi
+  path_glob: "**/*.{php,module,inc,install}"
+fix_suggestion: "Use setcookie with options array: setcookie('name', 'value', ['httponly' => true, 'secure' => true, 'samesite' => 'Strict'])."
+target_languages: [php]
+tags: [security, cookies, session]

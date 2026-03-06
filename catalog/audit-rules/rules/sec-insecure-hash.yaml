@@ -1,0 +1,12 @@
+id: sec-insecure-hash
+description: "Using md5() or sha1() for password hashing is cryptographically weak."
+severity: error
+dimension: security
+anti_pattern:
+  type: regex
+  pattern: "\\b(md5|sha1)\\s*\\(.*\\b(pass|pwd|password|secret)"
+  flags: gmi
+  path_glob: "**/*.{php,module,inc,install}"
+fix_suggestion: "Use password_hash() with PASSWORD_DEFAULT or Drupal's password service (\\Drupal::service('password'))."
+target_languages: [php]
+tags: [security, cryptography, passwords]

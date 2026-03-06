@@ -1,0 +1,12 @@
+id: aerospike-default-namespace
+description: "Using default 'drupal' namespace without per-subsystem overrides. Separate namespaces enable independent eviction."
+severity: info
+dimension: performance
+anti_pattern:
+  type: regex
+  pattern: "\\['aerospike\\.connection'\\]\\['namespace'\\]\\s*=\\s*'drupal'\\s*;"
+  flags: gm
+  path_glob: "**/*.php"
+fix_suggestion: "Configure aerospike.namespace.cache, .lock, .flood, .queue separately"
+target_languages: [php]
+tags: [aerospike, namespace, performance, pavlosdan]

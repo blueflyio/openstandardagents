@@ -1,0 +1,12 @@
+id: cedar-missing-compliance-engine
+description: "Cedar Policy compliance_engine_api_url set to localhost. Production requires real endpoint."
+severity: error
+dimension: configuration
+anti_pattern:
+  type: regex
+  pattern: "cedar_policy\\.settings.*compliance_engine_api_url.*localhost"
+  flags: gm
+  path_glob: "**/*.php"
+fix_suggestion: "Set COMPLIANCE_ENGINE_API_URL to production endpoint"
+target_languages: [php]
+tags: [cedar-policy, compliance-engine, configuration]

@@ -1,0 +1,12 @@
+id: sec-unsafe-unserialize
+description: "Using unserialize() without allowed_classes restriction enables object injection attacks."
+severity: error
+dimension: security
+anti_pattern:
+  type: regex
+  pattern: "\\bunserialize\\s*\\([^)]*\\)(?!.*allowed_classes)"
+  flags: gm
+  path_glob: "**/*.{php,module,inc,install}"
+fix_suggestion: "Use unserialize($data, ['allowed_classes' => false]) or specify exact allowed classes. Prefer json_decode for data interchange."
+target_languages: [php]
+tags: [security, deserialization, object-injection]

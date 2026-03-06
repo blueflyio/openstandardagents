@@ -1,0 +1,12 @@
+id: drupal-empty-catch
+description: "Empty catch block swallows exceptions silently."
+severity: error
+dimension: best-practices
+anti_pattern:
+  type: regex
+  pattern: "catch\\s*\\([^)]+\\)\\s*\\{\\s*\\}"
+  flags: gm
+  path_glob: "**/*.php"
+fix_suggestion: "Add logging or rethrow the exception"
+target_languages: [php]
+tags: [drupal, exception-handling]

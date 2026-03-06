@@ -1,0 +1,12 @@
+id: cedar-missing-ossa-manifest
+description: "OSSA agent references without manifest. Required by cedar dev_policy.ossa_valid_manifest."
+severity: warning
+dimension: architecture
+anti_pattern:
+  type: regex
+  pattern: "ossa.*manifest|agent.*tier|ossa.*capabilities"
+  flags: gim
+  path_glob: "**/*.{php,yml,yaml}"
+fix_suggestion: "Create ossa.manifest.yml per OSSA v0.4.1 spec"
+target_languages: [php]
+tags: [cedar-policy, ossa, manifest, dev-policy]

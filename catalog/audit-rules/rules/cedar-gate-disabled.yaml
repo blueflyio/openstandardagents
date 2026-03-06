@@ -1,0 +1,12 @@
+id: cedar-gate-disabled
+description: "Cedar gate middleware disabled. Tool execution bypasses Cedar authorization."
+severity: warning
+dimension: security
+anti_pattern:
+  type: regex
+  pattern: "cedar_gate_enabled.*(?:false|FALSE|0)"
+  flags: gm
+  path_glob: "**/*.{php,yml,yaml}"
+fix_suggestion: "Set cedar_gate_enabled to TRUE to enforce authorization"
+target_languages: [php]
+tags: [cedar-policy, security, authorization]

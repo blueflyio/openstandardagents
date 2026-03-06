@@ -1,0 +1,12 @@
+id: drupal-unescaped-input
+description: "Raw superglobal access without sanitization. XSS risk."
+severity: error
+dimension: security
+anti_pattern:
+  type: regex
+  pattern: "\\$_(?:GET|POST|REQUEST|COOKIE)\\s*\\["
+  flags: gm
+  path_glob: "**/*.{php,module,inc}"
+fix_suggestion: "Use \\Drupal::request()->query->get() with Xss::filter() or Html::escape()"
+target_languages: [php]
+tags: [drupal, security, xss]
