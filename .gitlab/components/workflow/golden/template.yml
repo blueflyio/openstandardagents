@@ -239,7 +239,7 @@ test:ai-ml:
         if [ "$OSSA_COMPLIANCE_CHECK" = "true" ] && [ -f "package.json" ]; then
           npm ci
           
-          # Test UADP (Universal Agent Discovery Protocol)
+          # Test UADP (Universal AI Discovery Protocol)
           npm run test:uadp 2>/dev/null || echo "UADP tests not available"
           
           # Test Registry Bridge Service

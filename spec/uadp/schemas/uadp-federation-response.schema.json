@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openstandardagents.org/spec/uadp/v0.1/schemas/uadp-federation-response.schema.json",
+  "title": "UADP Federation Response",
+  "description": "Schema for GET /uadp/v1/federation response.",
+  "type": "object",
+  "required": ["protocol_version", "node_name", "peers"],
+  "properties": {
+    "protocol_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "node_name": {
+      "type": "string"
+    },
+    "peers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["url", "name", "status"],
+        "properties": {
+          "url": { "type": "string", "format": "uri" },
+          "name": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["healthy", "degraded", "unreachable"]
+          },
+          "last_synced": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          },
+          "skill_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "agent_count": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,387 @@
+openapi: "3.1.0"
+info:
+  title: Universal AI Discovery Protocol (UADP)
+  version: "0.1.0"
+  description: |
+    Decentralized, hybrid-federated protocol for the discovery, validation,
+    and exchange of AI Agents, Skills, Tools, and Marketplaces.
+    Built on the Open Standard for Agent Systems (OSSA).
+  license:
+    name: Apache-2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  contact:
+    name: OSSA Project
+    url: https://openstandardagents.org
+
+servers:
+  - url: https://{domain}
+    description: Any UADP node
+    variables:
+      domain:
+        default: example.com
+
+paths:
+  /.well-known/uadp.json:
+    get:
+      operationId: getUadpManifest
+      summary: UADP Node Discovery Manifest
+      description: Returns the node's discovery manifest with endpoint URLs and capabilities.
+      tags: [Discovery]
+      responses:
+        "200":
+          description: UADP node manifest
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UadpManifest"
+
+  /uadp/v1/skills:
+    get:
+      operationId: listSkills
+      summary: List Skills
+      description: Returns a paginated list of OSSA-compliant skill manifests.
+      tags: [Skills]
+      parameters:
+        - $ref: "#/components/parameters/Search"
+        - $ref: "#/components/parameters/Category"
+        - $ref: "#/components/parameters/TrustTier"
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Paginated skills list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SkillsResponse"
+
+  /uadp/v1/skills/validate:
+    post:
+      operationId: validateSkill
+      summary: Validate Skill Manifest
+      description: Validates an OSSA skill manifest and returns errors/warnings.
+      tags: [Skills]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [manifest]
+              properties:
+                manifest:
+                  type: string
+                  description: YAML or JSON string of the OSSA manifest.
+      responses:
+        "200":
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationResult"
+        "400":
+          description: Missing manifest field
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /uadp/v1/agents:
+    get:
+      operationId: listAgents
+      summary: List Agents
+      description: Returns a paginated list of OSSA-compliant agent manifests.
+      tags: [Agents]
+      parameters:
+        - $ref: "#/components/parameters/Search"
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Paginated agents list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentsResponse"
+
+  /uadp/v1/federation:
+    get:
+      operationId: listPeers
+      summary: List Federation Peers
+      description: Returns this node's peer list and federation metadata.
+      tags: [Federation]
+      responses:
+        "200":
+          description: Federation peer list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FederationResponse"
+    post:
+      operationId: registerPeer
+      summary: Register as Federation Peer
+      description: Another UADP node requests to register as a peer.
+      tags: [Federation]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [url, name]
+              properties:
+                url:
+                  type: string
+                  format: uri
+                  description: Base URL of the registering UADP node.
+                name:
+                  type: string
+                  description: Human-readable name of the registering node.
+      responses:
+        "201":
+          description: Peer registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  peer:
+                    $ref: "#/components/schemas/Peer"
+        "400":
+          description: Invalid peer URL or unreachable node
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+components:
+  parameters:
+    Search:
+      name: search
+      in: query
+      schema:
+        type: string
+      description: Full-text search across name and description.
+    Category:
+      name: category
+      in: query
+      schema:
+        type: string
+      description: Filter by category.
+    TrustTier:
+      name: trust_tier
+      in: query
+      schema:
+        type: string
+        enum: [official, verified-signature, signed, community, experimental]
+      description: Filter by trust tier.
+    Page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+      description: Page number (1-indexed).
+    Limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+      description: Items per page.
+
+  schemas:
+    UadpManifest:
+      type: object
+      required: [protocol_version, node_name, endpoints]
+      properties:
+        protocol_version:
+          type: string
+          pattern: "^\\d+\\.\\d+\\.\\d+$"
+        node_name:
+          type: string
+        node_description:
+          type: string
+        contact:
+          type: string
+        endpoints:
+          type: object
+          properties:
+            skills:
+              type: string
+              format: uri
+            agents:
+              type: string
+              format: uri
+            federation:
+              type: string
+              format: uri
+            validate:
+              type: string
+              format: uri
+          anyOf:
+            - required: [skills]
+            - required: [agents]
+        capabilities:
+          type: array
+          items:
+            type: string
+        public_key:
+          type: string
+        ossa_versions:
+          type: array
+          items:
+            type: string
+
+    OssaMetadata:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        version:
+          type: string
+        description:
+          type: string
+        uri:
+          type: string
+          description: "GAID — agent://namespace/type/name"
+        category:
+          type: string
+        trust_tier:
+          type: string
+          enum: [official, verified-signature, signed, community, experimental]
+        created:
+          type: string
+          format: date-time
+        updated:
+          type: string
+          format: date-time
+
+    OssaSkill:
+      type: object
+      required: [apiVersion, kind, metadata]
+      properties:
+        apiVersion:
+          type: string
+          pattern: "^ossa/v\\d+\\.\\d+$"
+        kind:
+          type: string
+          const: Skill
+        metadata:
+          $ref: "#/components/schemas/OssaMetadata"
+        spec:
+          type: object
+
+    OssaAgent:
+      type: object
+      required: [apiVersion, kind, metadata]
+      properties:
+        apiVersion:
+          type: string
+          pattern: "^ossa/v\\d+\\.\\d+$"
+        kind:
+          type: string
+          const: Agent
+        metadata:
+          $ref: "#/components/schemas/OssaMetadata"
+        spec:
+          type: object
+
+    PaginationMeta:
+      type: object
+      required: [total, page, limit, node_name]
+      properties:
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+        node_name:
+          type: string
+
+    SkillsResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/OssaSkill"
+        meta:
+          $ref: "#/components/schemas/PaginationMeta"
+
+    AgentsResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/OssaAgent"
+        meta:
+          $ref: "#/components/schemas/PaginationMeta"
+
+    FederationResponse:
+      type: object
+      required: [protocol_version, node_name, peers]
+      properties:
+        protocol_version:
+          type: string
+        node_name:
+          type: string
+        peers:
+          type: array
+          items:
+            $ref: "#/components/schemas/Peer"
+
+    Peer:
+      type: object
+      required: [url, name, status]
+      properties:
+        url:
+          type: string
+          format: uri
+        name:
+          type: string
+        status:
+          type: string
+          enum: [healthy, degraded, unreachable]
+        last_synced:
+          type: string
+          format: date-time
+          nullable: true
+        skill_count:
+          type: integer
+        agent_count:
+          type: integer
+
+    ValidationResult:
+      type: object
+      required: [valid]
+      properties:
+        valid:
+          type: boolean
+        errors:
+          type: array
+          items:
+            type: string
+        warnings:
+          type: array
+          items:
+            type: string
+
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+        code:
+          type: string
