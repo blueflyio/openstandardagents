@@ -226,7 +226,9 @@ export class SkillsGeneratorService {
           const issues = result.error.issues
             .map((i) => `  Line ~${i.path.join('.')}: ${i.message}`)
             .join('\n');
-          throw new Error(`Oracle Agent Spec validation failed:\n${issues}`);
+          throw new Error(
+            `Oracle Agent Spec validation failed:\n${issues}`
+          );
         }
         return result.data;
       }
@@ -358,7 +360,9 @@ export class SkillsGeneratorService {
         for (const item of bulletItems) {
           const cleaned = item.replace(/^[-*]\s+/, '').trim();
           // Handle "**toolname** - description" or "toolname: description"
-          const descMatch = cleaned.match(/^\*\*([^*]+)\*\*\s*[-–—:]\s*(.+)$/);
+          const descMatch = cleaned.match(
+            /^\*\*([^*]+)\*\*\s*[-–—:]\s*(.+)$/
+          );
           if (descMatch) {
             tools.push({
               name: descMatch[1].trim(),
@@ -734,7 +738,9 @@ export class SkillsGeneratorService {
     }
 
     // Validate frontmatter against schema
-    const parseResult = SkillFrontmatterSchema.safeParse(skillData.frontmatter);
+    const parseResult = SkillFrontmatterSchema.safeParse(
+      skillData.frontmatter
+    );
     if (!parseResult.success) {
       for (const issue of parseResult.error.issues) {
         errors.push(`Frontmatter: ${issue.path.join('.')} — ${issue.message}`);

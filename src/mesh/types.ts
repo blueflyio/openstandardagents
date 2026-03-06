@@ -466,6 +466,206 @@ export interface AgentObservability {
 }
 
 /**
+ * Agent Taxonomy
+ * Classifies the agent by runtime platform, functional role, and architecture pattern.
+ */
+export interface AgentTaxonomy {
+  /** Runtime platform: claude, kagent, openai, langchain, crewai, etc. */
+  agentType?: string;
+  /** Functional role: orchestrator, worker, reviewer, analyzer, etc. */
+  agentKind?: string;
+  /** Architecture pattern and capabilities */
+  architecture?: {
+    /** Pattern: swarm, pipeline, tree, graph, etc. */
+    pattern?: string;
+    /** Architecture capabilities: handoff, streaming, context, tools, vision */
+    capabilities?: string[];
+    /** Coordination strategy */
+    coordination?: {
+      handoffStrategy?: string;
+      maxDepth?: number;
+    };
+    /** Runtime characteristics */
+    runtime?: {
+      scalability?: string;
+      executionModel?: string;
+      preferredRegion?: string;
+    };
+  };
+}
+
+/**
+ * Agent Model Info
+ * LLM configuration powering this agent.
+ */
+export interface AgentModelInfo {
+  provider?: string;
+  model?: string;
+  temperature?: number;
+  maxTokens?: number;
+  topP?: number;
+}
+
+/**
+ * MCP Server Descriptor
+ * Model Context Protocol server this agent connects to.
+ */
+export interface McpServerDescriptor {
+  name: string;
+  description?: string;
+  transport?: {
+    type: string;
+    command?: string;
+    args?: string[];
+    url?: string;
+  };
+  version?: string;
+  capabilities?: {
+    resources?: { subscribe?: boolean; listChanged?: boolean };
+    tools?: { listChanged?: boolean };
+    logging?: { enabled?: boolean; level?: string };
+  };
+  resources?: McpResourceDescriptor[];
+}
+
+/**
+ * MCP Resource Descriptor
+ */
+export interface McpResourceDescriptor {
+  uri: string;
+  name: string;
+  description?: string;
+  mimeType?: string;
+}
+
+/**
+ * A2A Protocol Descriptor
+ * How this agent communicates with other agents.
+ */
+export interface A2AProtocolDescriptor {
+  /** Protocol type and version */
+  protocol?: {
+    type?: string;
+    version?: string;
+    messageFormat?: string;
+  };
+  /** Connected agent endpoints */
+  agentEndpoints?: Array<{
+    agentId: string;
+    url: string;
+    capabilities?: string[];
+    priority?: number;
+  }>;
+  /** Routing configuration */
+  routing?: {
+    strategy?: string;
+    rules?: Array<{
+      name: string;
+      condition: string;
+      target: string;
+      priority?: number;
+    }>;
+  };
+  /** Delegation and handoff rules */
+  delegation?: {
+    enabled?: boolean;
+    maxDepth?: number;
+    timeout?: number;
+    handoffRules?: Array<{
+      name: string;
+      condition: string;
+      target: string;
+      message?: string;
+    }>;
+  };
+  /** Completion signals */
+  completionSignals?: {
+    signals?: string[];
+    handlers?: Array<{
+      signal: string;
+      action: string;
+      target?: string;
+    }>;
+  };
+  /** Retry policy */
+  retryPolicy?: {
+    maxRetries?: number;
+    backoff?: string;
+    retryableErrors?: string[];
+  };
+  /** Circuit breaker */
+  circuitBreaker?: {
+    enabled?: boolean;
+    failureThreshold?: number;
+    timeout?: number;
+  };
+}
+
+/**
+ * Agent Handoff
+ * Direct delegation targets from spec.handoffs.
+ */
+export interface AgentHandoff {
+  to: string;
+  condition?: string;
+}
+
+/**
+ * Agent Autonomy
+ * How independently this agent operates.
+ */
+export interface AgentAutonomy {
+  level?: string;
+  approvalRequired?: boolean;
+  allowedActions?: string[];
+  blockedActions?: string[];
+}
+
+/**
+ * Agent Constraints
+ * Operational limits for cost, performance, and resources.
+ */
+export interface AgentConstraints {
+  cost?: {
+    maxTokensPerDay?: number;
+    maxTokensPerRequest?: number;
+    maxCostPerDay?: number;
+    currency?: string;
+  };
+  performance?: {
+    maxLatencySeconds?: number;
+    maxConcurrentRequests?: number;
+    timeoutSeconds?: number;
+  };
+  resources?: {
+    cpu?: string;
+    memory?: string;
+  };
+}
+
+/**
+ * Agent Observability
+ * Tracing, metrics, and logging configuration.
+ */
+export interface AgentObservability {
+  tracing?: {
+    enabled?: boolean;
+    exporter?: string;
+    endpoint?: string;
+    samplingRate?: number;
+  };
+  metrics?: {
+    enabled?: boolean;
+    exporter?: string;
+    endpoint?: string;
+  };
+  logging?: {
+    level?: string;
+    format?: string;
+  };
+}
+
+/**
  * Tool Descriptor
  */
 export interface ToolDescriptor {

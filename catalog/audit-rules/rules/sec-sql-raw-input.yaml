@@ -1,0 +1,12 @@
+id: sec-sql-raw-input
+description: "Superglobal user input ($_GET, $_POST, $_REQUEST) used directly in database queries."
+severity: error
+dimension: security
+anti_pattern:
+  type: regex
+  pattern: "(db_query|->query|->where|->condition)\\s*\\([^)]*\\$_(GET|POST|REQUEST|COOKIE)"
+  flags: gm
+  path_glob: "**/*.{php,module,inc,install}"
+fix_suggestion: "Use parameterized queries with placeholders. Access user input through \\Drupal::request() and validate/sanitize before use."
+target_languages: [php]
+tags: [security, sql-injection, input-validation]

@@ -1,0 +1,12 @@
+id: sec-ssrf-url
+description: "Server-side request using user-controlled URL without validation enables SSRF attacks."
+severity: error
+dimension: security
+anti_pattern:
+  type: regex
+  pattern: "(file_get_contents|fopen|curl_exec|httpClient->(?:get|post|request)|\\$client->(?:get|post|request))\\s*\\(\\s*\\$"
+  flags: gm
+  path_glob: "**/*.{php,module,inc,install}"
+fix_suggestion: "Validate and whitelist URLs before making server-side requests. Use Drupal's httpClient with URL validation against allowed domains."
+target_languages: [php]
+tags: [security, ssrf, url-validation]

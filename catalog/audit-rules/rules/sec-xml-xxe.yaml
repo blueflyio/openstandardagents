@@ -1,0 +1,12 @@
+id: sec-xml-xxe
+description: "XML parsing without disabling external entities enables XXE attacks."
+severity: error
+dimension: security
+anti_pattern:
+  type: regex
+  pattern: "(simplexml_load_string|simplexml_load_file|DOMDocument\\s*\\(|->loadXML|->load\\s*\\()(?!.*LIBXML_NOENT)"
+  flags: gm
+  path_glob: "**/*.{php,module,inc,install}"
+fix_suggestion: "Disable external entity loading: libxml_disable_entity_loader(true) (PHP < 8.0) or use LIBXML_NONET flag. Consider using JSON instead of XML."
+target_languages: [php]
+tags: [security, xxe, xml, injection]

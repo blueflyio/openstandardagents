@@ -1,0 +1,12 @@
+id: sec-xss-output
+description: "Direct echo/print of superglobal variables without escaping enables XSS."
+severity: error
+dimension: security
+anti_pattern:
+  type: regex
+  pattern: "(echo|print)\\s+\\$_(GET|POST|REQUEST|COOKIE|SERVER)"
+  flags: gm
+  path_glob: "**/*.{php,module,inc,install}"
+fix_suggestion: "Use Html::escape(), Xss::filter(), or render arrays with #plain_text. Never output raw user input."
+target_languages: [php]
+tags: [security, xss, output-encoding]

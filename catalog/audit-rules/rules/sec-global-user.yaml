@@ -1,0 +1,12 @@
+id: sec-global-user
+description: "Direct use of global $user variable instead of \\Drupal::currentUser() service."
+severity: warning
+dimension: security
+anti_pattern:
+  type: regex
+  pattern: "\\bglobal\\s+\\$user\\b"
+  flags: gm
+  path_glob: "**/*.{php,module,inc,install}"
+fix_suggestion: "Use \\Drupal::currentUser() or inject the current_user service. The global $user is a Drupal 7 pattern."
+target_languages: [php]
+tags: [security, drupal, deprecated, authentication]
