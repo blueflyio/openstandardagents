@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openstandardagents.org/spec/uadp/v0.1/schemas/uadp-skills-response.schema.json",
+  "title": "UADP Skills Response",
+  "description": "Schema for GET /uadp/v1/skills response.",
+  "type": "object",
+  "required": ["data", "meta"],
+  "properties": {
+    "data": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/OssaSkill" }
+    },
+    "meta": { "$ref": "#/$defs/PaginationMeta" }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "OssaSkill": {
+      "type": "object",
+      "required": ["apiVersion", "kind", "metadata"],
+      "properties": {
+        "apiVersion": {
+          "type": "string",
+          "pattern": "^ossa/v\\d+\\.\\d+$",
+          "description": "OSSA specification version."
+        },
+        "kind": {
+          "type": "string",
+          "const": "Skill"
+        },
+        "metadata": {
+          "type": "object",
+          "required": ["name"],
+          "properties": {
+            "name": { "type": "string", "minLength": 1 },
+            "version": { "type": "string" },
+            "description": { "type": "string" },
+            "uri": {
+              "type": "string",
+              "pattern": "^agent://",
+              "description": "Global Agent Identifier (GAID)."
+            },
+            "category": { "type": "string" },
+            "trust_tier": {
+              "type": "string",
+              "enum": ["official", "verified-signature", "signed", "community", "experimental"]
+            },
+            "created": { "type": "string", "format": "date-time" },
+            "updated": { "type": "string", "format": "date-time" }
+          },
+          "additionalProperties": true
+        },
+        "spec": {
+          "type": "object",
+          "description": "OSSA skill specification body.",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "PaginationMeta": {
+      "type": "object",
+      "required": ["total", "page", "limit", "node_name"],
+      "properties": {
+        "total": { "type": "integer", "minimum": 0 },
+        "page": { "type": "integer", "minimum": 1 },
+        "limit": { "type": "integer", "minimum": 1, "maximum": 100 },
+        "node_name": { "type": "string" }
+      },
+      "additionalProperties": true
+    }
+  }
+}

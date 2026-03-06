@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openstandardagents.org/spec/uadp/v0.1/schemas/uadp-manifest.schema.json",
+  "title": "UADP Node Manifest",
+  "description": "Schema for /.well-known/uadp.json — the discovery manifest for a UADP node.",
+  "type": "object",
+  "required": ["protocol_version", "node_name", "endpoints"],
+  "properties": {
+    "protocol_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version of the UADP protocol this node implements."
+    },
+    "node_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "Human-readable name of this UADP node."
+    },
+    "node_description": {
+      "type": "string",
+      "maxLength": 1024,
+      "description": "Short description of the node's purpose."
+    },
+    "contact": {
+      "type": "string",
+      "description": "Admin contact email or URL."
+    },
+    "endpoints": {
+      "type": "object",
+      "description": "Map of capability name to absolute URL.",
+      "properties": {
+        "skills": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL for GET /uadp/v1/skills"
+        },
+        "agents": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL for GET /uadp/v1/agents"
+        },
+        "federation": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL for GET/POST /uadp/v1/federation"
+        },
+        "validate": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL for POST /uadp/v1/skills/validate"
+        }
+      },
+      "anyOf": [
+        { "required": ["skills"] },
+        { "required": ["agents"] }
+      ],
+      "additionalProperties": {
+        "type": "string",
+        "format": "uri"
+      }
+    },
+    "capabilities": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["skills", "agents", "federation", "validation"]
+      },
+      "description": "List of supported UADP capabilities."
+    },
+    "public_key": {
+      "type": "string",
+      "description": "PEM-encoded public key for signature verification."
+    },
+    "ossa_versions": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^v\\d+\\.\\d+$" },
+      "description": "Supported OSSA specification versions."
+    }
+  },
+  "additionalProperties": false
+}

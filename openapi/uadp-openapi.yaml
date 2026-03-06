@@ -1,9 +1,9 @@
 openapi: 3.1.0
 info:
-  title: Universal Agent Discovery Protocol (UADP) — REST API
+  title: Universal AI Discovery Protocol (UADP) — REST API
   version: 0.4.0
   description: |
-    ## Universal Agent Discovery Protocol (UADP) v0.4
+    ## Universal AI Discovery Protocol (UADP) v0.4
     
     UADP is the decentralized discovery and registry standard that is the "missing contract"
     for software agents — part of the Open Standard for Software Agents (OSSA) specification.

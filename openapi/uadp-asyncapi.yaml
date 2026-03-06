@@ -1,6 +1,6 @@
 asyncapi: 3.0.0
 info:
-  title: Universal Agent Discovery Protocol (UADP) — Event Streams
+  title: Universal AI Discovery Protocol (UADP) — Event Streams
   version: 0.4.0
   description: |
     ## UADP AsyncAPI Specification v0.4
