@@ -1,0 +1,12 @@
+id: aerospike-hardcoded-socket
+description: "Aerospike ACM socket path hardcoded. Use env var for portability across environments."
+severity: warning
+dimension: architecture
+anti_pattern:
+  type: regex
+  pattern: "\\['aerospike\\.connection'\\]\\['socket'\\]\\s*=\\s*'/tmp/"
+  flags: gm
+  path_glob: "**/*.php"
+fix_suggestion: "Use getenv('AEROSPIKE_SOCKET') ?? '/tmp/asld_grpc.sock' or settings.local.php"
+target_languages: [php]
+tags: [aerospike, configuration, portability, pavlosdan]

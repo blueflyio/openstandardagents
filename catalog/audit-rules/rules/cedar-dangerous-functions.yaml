@@ -1,0 +1,12 @@
+id: cedar-dangerous-functions
+description: "Dangerous function (eval/exec/system/passthru/shell_exec). Forbidden by cedar dev_policy.no_eval."
+severity: error
+dimension: security
+anti_pattern:
+  type: regex
+  pattern: "\\b(eval|exec|system|passthru|shell_exec)\\s*\\("
+  flags: gm
+  path_glob: "**/*.{php,module,inc,install}"
+fix_suggestion: "Remove dangerous calls. Use Drupal APIs or Symfony Process."
+target_languages: [php]
+tags: [cedar-policy, security, code-execution, dev-policy]
