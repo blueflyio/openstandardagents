@@ -54,6 +54,7 @@ import { runCommand } from './commands/run.command.js';
 import { scaffoldCommand } from './commands/scaffold.command.js';
 import { schemaCommand } from './commands/schema.command.js';
 import { searchCommand } from './commands/search.command.js';
+import { signCommand } from './commands/sign.command.js';
 import { standardizeCommand } from './commands/standardize.command.js';
 import { testCommand } from './commands/test.command.js';
 import { updateCommand } from './commands/update.command.js';
@@ -92,11 +93,11 @@ import { knowledgeCommandGroup } from './commands/knowledge.command.js';
 import { platformsCommand } from './commands/platforms.command.js';
 // Note: knowledge-index and knowledge-query are subcommands within knowledgeCommandGroup
 import { createAuditCommand } from './commands/audit.js';
+import { daemonCommand } from './commands/daemon.command.js';
 import { devCommand } from './commands/dev.command.js';
 import { estimateCommand } from './commands/estimate.command.js';
 import { migrateLangchainCommand } from './commands/migrate-langchain.command.js';
 import { releaseCommand } from './commands/release.command.js';
-import { daemonCommand } from './commands/daemon.command.js';
 import { serveCommand } from './commands/serve.command.js';
 import { syncCommand } from './commands/sync.command.js';
 import { upgradeCommand } from './commands/upgrade.command.js';
@@ -271,6 +272,7 @@ program.addCommand(conformanceCommand);
 program.addCommand(complianceCommand);
 program.addCommand(governanceCommand);
 program.addCommand(contractCommand);
+program.addCommand(signCommand);
 
 // --- Advanced (hidden from main --help, still fully accessible) ---
 for (const cmd of [

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/blueflyio/ossa-go/ossa"
+	"github.com/blueflyio/ossa-sdk-go/ossa"
 	"github.com/spf13/cobra"
 )
 

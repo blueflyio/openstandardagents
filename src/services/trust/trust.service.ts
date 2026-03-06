@@ -210,6 +210,51 @@ export async function verifyAgentSignature(
   }
 }
 
+/**
+ * Sign an agent manifest using an Ed25519 private key.
+ *
+ * @param manifest The agent manifest to sign
+ * @param privateKeyHex The Ed25519 private key in hex format
+ * @param issuer Optional DID or identifier of the signer
+ * @returns The manifest with the appended x-signature block
+ */
+export async function signAgentManifest(
+  manifest: Record<string, unknown>,
+  privateKeyHex: string,
+  issuer?: string
+): Promise<Record<string, unknown>> {
+  const payload = canonicalManifestBytes(manifest);
+
+  // Use @noble/ed25519 to sign the payload
+  const sigBytes = await ed.signAsync(payload, privateKeyHex);
+  const pubBytes = await ed.getPublicKeyAsync(privateKeyHex);
+
+  // Convert to base64 for the signature block
+  const signatureB64 = Buffer.from(sigBytes).toString('base64');
+  const publicKeyB64 = Buffer.from(pubBytes).toString('base64');
+
+  const signature: XSignature = {
+    type: 'Ed25519',
+    value: signatureB64,
+    publicKey: publicKeyB64,
+    timestamp: new Date().toISOString()
+  };
+
+  if (issuer) {
+    signature.issuer = issuer;
+  }
+
+  // Insert x-signature into metadata
+  const metadata = (manifest.metadata as Record<string, unknown>) || {};
+  return {
+    ...manifest,
+    metadata: {
+      ...metadata,
+      'x-signature': signature
+    }
+  };
+}
+
 // ─── Utilities ──────────────────────────────────────────────
 
 function base64ToBytes(b64: string): Uint8Array {
