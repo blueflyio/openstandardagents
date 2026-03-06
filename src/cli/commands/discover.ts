@@ -8,13 +8,13 @@
  *   ossa discover --json
  */
 
-import { Command } from 'commander';
+import { UadpClient } from '@ossa/uadp';
 import chalk from 'chalk';
 import Table from 'cli-table3';
-import axios from 'axios';
+import { Command } from 'commander';
 import {
-  addRegistryOptions,
-  resolveRegistryUrl,
+    addRegistryOptions,
+    resolveRegistryUrl,
 } from '../utils/standard-options.js';
 
 /**
@@ -43,86 +43,63 @@ interface SearchFilters {
 }
 
 /**
- * Agent Protocol Client for interacting with agent-protocol service
+ * Agent Protocol Client for interacting with UADP registry
  */
 class AgentProtocolClient {
-  private baseUrl: string;
-  private token?: string;
+  private client: UadpClient;
 
   constructor(config?: { baseUrl?: string; apiKey?: string }) {
-    this.baseUrl = config?.baseUrl || process.env.OSSA_REGISTRY_URL || '';
-    this.token =
-      config?.apiKey ||
-      process.env.AGENT_PROTOCOL_TOKEN ||
-      process.env.GITLAB_PRIVATE_TOKEN;
+    const baseUrl = config?.baseUrl || process.env.OSSA_REGISTRY_URL || 'https://uadp.blueflyagents.com';
+    this.client = new UadpClient(baseUrl, {
+      token: config?.apiKey || process.env.AGENT_PROTOCOL_TOKEN || process.env.GITLAB_PRIVATE_TOKEN,
+    });
   }
 
   /**
-   * Search for agents in the registry
+   * Search for agents in the registry using UADP
    */
   async searchAgents(
     query?: string,
     filters?: Omit<SearchFilters, 'query'>
   ): Promise<AgentSearchResult[]> {
     try {
-      const params = new URLSearchParams();
-
-      if (query) {
-        params.append('q', query);
-      }
-
-      if (filters?.capability) {
-        params.append('capability', filters.capability);
-      }
-
-      if (filters?.org) {
-        params.append('org', filters.org);
-      }
-
-      if (filters?.minTrust !== undefined) {
-        params.append('minTrust', filters.minTrust.toString());
-      }
-
-      if (filters?.limit !== undefined) {
-        params.append('limit', filters.limit.toString());
-      }
-
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
-
-      if (this.token) {
-        headers['Authorization'] = `Bearer ${this.token}`;
-      }
-
-      const response = await axios.get(`${this.baseUrl}/api/v1/agents/search`, {
-        params,
-        headers,
-        timeout: 30000,
+      const response = await this.client.listAgents({
+        search: query,
+        limit: filters?.limit,
       });
 
-      return response.data.agents || response.data || [];
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        if (error.response?.status === 404) {
-          throw new Error(
-            'Agent search endpoint not found. Ensure agent-protocol service is running.'
-          );
-        } else if (error.response?.status === 401) {
-          throw new Error(
-            'Authentication failed. Set AGENT_PROTOCOL_TOKEN environment variable.'
-          );
-        } else if (error.code === 'ECONNREFUSED') {
-          throw new Error(
-            `Cannot connect to agent-protocol service at ${this.baseUrl}. ` +
-              `Set AGENT_PROTOCOL_URL to the correct endpoint.`
-          );
-        }
-        throw new Error(
-          `Agent search failed: ${error.response?.data?.message || error.message}`
-        );
-      }
-      throw error;
+      // Map UADP OssaAgent to AgentSearchResult
+      return response.data.map((agent: any) => {
+        // Handle variations in agent schema mapping
+        const capabilities: any[] = agent.spec?.capabilities || [];
+        const mappedCapabilities = capabilities.map((c: any) => typeof c === 'string' ? c : (c.name || 'unknown'));
+
+        // Map Tier 1 to 4 to a trust score 0-1
+        let trustLevel = 0.5;
+        const tier = agent.security?.tier;
+        if (tier === 'tier_4_system_admin') trustLevel = 1.0;
+        else if (tier === 'tier_3_write_elevated') trustLevel = 0.8;
+        else if (tier === 'tier_2_write_limited') trustLevel = 0.6;
+        else if (tier === 'tier_1_read') trustLevel = 0.4;
+
+        return {
+          gaid: (agent.metadata?.catalog as any)?.catalog_id || `uadp://${(this.client as any).nodeInfo?.node_id || 'remote'}/${agent.metadata?.name}`,
+          name: agent.metadata?.name || 'unknown',
+          organization: (agent.metadata?.identity as any)?.namespace || 'community',
+          capabilities: mappedCapabilities,
+          trustLevel: trustLevel,
+          trustTier: tier || 'unverified',
+          description: agent.metadata?.description || '',
+          verified: !!(agent.metadata?.identity as any)?.publisher?.pgp_key,
+        };
+      }).filter((a: AgentSearchResult) => {
+        if (filters?.minTrust && (a.trustLevel || 0) < filters.minTrust) return false;
+        if (filters?.org && a.organization !== filters.org) return false;
+        if (filters?.capability && !a.capabilities.includes(filters.capability)) return false;
+        return true;
+      });
+    } catch (error: any) {
+      throw new Error(`UADP search failed: ${error.message}`);
     }
   }
 }

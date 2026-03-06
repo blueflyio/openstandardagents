@@ -174,7 +174,7 @@ describe('SSETransport', () => {
           id: 'msg-123',
           timestamp: new Date().toISOString(),
           payload: { channel: 'test', data: 'value' },
-          metadata: { agentId: 'agent://test/agent-1' },
+          metadata: { agentId: 'uadp://test/agent-1' },
         }),
         'msg-123'
       );
@@ -195,7 +195,7 @@ describe('SSETransport', () => {
           id: 'status-123',
           timestamp: new Date().toISOString(),
           payload: { status: 'healthy', load: 0.5 },
-          metadata: { agentId: 'agent://test/agent-1' },
+          metadata: { agentId: 'uadp://test/agent-1' },
         }),
         'status-123'
       );
@@ -220,7 +220,7 @@ describe('SSETransport', () => {
             result: { success: true },
           },
           metadata: {
-            agentId: 'agent://test/agent-1',
+            agentId: 'uadp://test/agent-1',
             final: false,
           },
         }),
@@ -246,7 +246,7 @@ describe('SSETransport', () => {
             result: { success: true },
           },
           metadata: {
-            agentId: 'agent://test/agent-1',
+            agentId: 'uadp://test/agent-1',
             final: true,
           },
         }),
@@ -263,7 +263,7 @@ describe('SSETransport', () => {
           id: 'msg-123',
           timestamp: new Date().toISOString(),
           payload: {},
-          metadata: { agentId: 'agent://test/agent-1' },
+          metadata: { agentId: 'uadp://test/agent-1' },
         }),
         'msg-123'
       );
@@ -389,7 +389,7 @@ describe('SSEStreamClient', () => {
               capability: 'analyze_content',
               progress: { percent: 50 },
             },
-            metadata: { agentId: 'agent://test/agent-1', final: false },
+            metadata: { agentId: 'uadp://test/agent-1', final: false },
           })
         );
 
@@ -406,7 +406,7 @@ describe('SSEStreamClient', () => {
               capability: 'analyze_content',
               result: { sentiment: 'positive' },
             },
-            metadata: { agentId: 'agent://test/agent-1', final: true },
+            metadata: { agentId: 'uadp://test/agent-1', final: true },
           })
         );
       }

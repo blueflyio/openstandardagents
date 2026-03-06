@@ -8,8 +8,8 @@
   "properties": {
     "uri": {
       "type": "string",
-      "pattern": "^agent://",
-      "description": "Agent URI in the format agent://{namespace}/{name}"
+      "pattern": "^uadp://",
+      "description": "Agent URI in the format uadp://{namespace}/{name}"
     },
     "name": {
       "type": "string",

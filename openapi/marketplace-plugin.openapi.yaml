@@ -2093,7 +2093,7 @@ components:
       properties:
         uri:
           type: string
-          pattern: '^agent://'
+          pattern: '^uadp://'
         name:
           type: string
         version:

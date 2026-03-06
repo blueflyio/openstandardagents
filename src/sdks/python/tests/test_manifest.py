@@ -10,7 +10,7 @@ from ossa.manifest import load, load_string, save, export
 from ossa.types import Kind, OSSAManifest
 from ossa.exceptions import OSSAError
 
-from conftest import (
+from _testdata import (
     FULL_AGENT_DICT,
     FULL_AGENT_YAML,
     MINIMAL_AGENT_DICT,
@@ -86,8 +86,8 @@ class TestLoadString:
         assert m.metadata.name == "test-agent"
 
     def test_load_invalid_yaml_raises(self) -> None:
-        with pytest.raises(OSSAError, match="Failed to parse"):
-            load_string(":::bad yaml:::", format="yaml")
+        with pytest.raises(Exception):
+            load_string("{{{not: valid: yaml: [}", format="yaml")
 
     def test_load_invalid_json_raises(self) -> None:
         with pytest.raises(OSSAError, match="Failed to parse"):

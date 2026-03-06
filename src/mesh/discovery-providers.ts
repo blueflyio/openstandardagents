@@ -364,7 +364,7 @@ export class ConsulDiscoveryProvider implements DiscoveryProvider {
     Meta: Record<string, string>;
   }): AgentCard {
     return {
-      uri: service.Meta.uri || `agent://consul/${service.ID}`,
+      uri: service.Meta.uri || `uadp://consul/${service.ID}`,
       name: service.Service,
       version: service.Meta.version || '1.0.0',
       ossaVersion: service.Meta.ossaVersion || getApiVersion(),
@@ -553,7 +553,7 @@ export class KubernetesDiscoveryProvider implements DiscoveryProvider {
     return {
       uri:
         annotations['ossa.io/agent-uri'] ||
-        `agent://k8s/${service.metadata.name}`,
+        `uadp://k8s/${service.metadata.name}`,
       name: service.metadata.name,
       version: labels['app.kubernetes.io/version'] || '1.0.0',
       ossaVersion: annotations['ossa.io/version'] || getApiVersion(),

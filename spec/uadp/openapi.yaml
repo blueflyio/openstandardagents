@@ -250,7 +250,7 @@ components:
           type: string
         uri:
           type: string
-          description: "GAID — agent://namespace/type/name"
+          description: "GAID — uadp://namespace/type/name"
         category:
           type: string
         trust_tier:

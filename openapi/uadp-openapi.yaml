@@ -4,7 +4,7 @@ info:
   version: 0.4.0
   description: |
     ## Universal AI Discovery Protocol (UADP) v0.4
-    
+
     UADP is the decentralized discovery and registry standard that is the "missing contract"
     for software agents — part of the Open Standard for Software Agents (OSSA) specification.
 
@@ -52,6 +52,8 @@ tags:
     description: Agent registration and lifecycle management
   - name: discovery
     description: Agent discovery, search, and filtering
+  - name: federation
+    description: Peer-to-peer gossip and node federation (v0.6.0)
   - name: trust
     description: Signature verification and trust badge resolution
   - name: health
@@ -60,6 +62,43 @@ tags:
     description: Agent status and revocation management
 
 paths:
+  # ─────────────────────────────────────────────
+  # WEBFINGER (Decentralized Discovery)
+  # ─────────────────────────────────────────────
+  /.well-known/webfinger:
+    get:
+      summary: RFC 7033 WebFinger Discovery
+      description: |
+        Given a resource URI (like `uadp://skills.sh/code-review` or `acct:alice@example.com`),
+        this endpoint returns JRD (JSON Resource Descriptor) format links pointing to
+        the agent's OSSA manifest, UADP status, or PGP keys.
+        This prevents UADP from requiring a centralized registry.
+      operationId: uadp_webfinger
+      tags: [discovery]
+      parameters:
+        - name: resource
+          in: query
+          required: true
+          schema:
+            type: string
+          description: "URI to look up (e.g., uadp://skills.sh/tools/linter)"
+          example: "uadp://skills.sh/tools/linter"
+        - name: rel
+          in: query
+          schema:
+            type: string
+          description: "Optional link relation to filter by (e.g., https://openstandardagents.org/rel/manifest)"
+      responses:
+        '200':
+          description: JRD Resource Descriptor
+          content:
+            application/jrd+json:
+              schema:
+                $ref: '#/components/schemas/WebFingerJRD'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
   # ─────────────────────────────────────────────
   # REGISTRY
   # ─────────────────────────────────────────────
@@ -80,6 +119,15 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/RegistrationRequest'
+      parameters:
+        - name: gossip
+          in: query
+          description: |
+            If true, the registering node/agent wishes to participate in P2P gossip.
+            The response will include a `peers` array of known active UADP nodes.
+          schema:
+            type: boolean
+            default: false
             examples:
               signedAgent:
                 summary: Agent with Ed25519 x-signature
@@ -196,7 +244,7 @@ paths:
         - **capabilities** (capability matching — all must match)
         - **trust** (`verified-signature`, `signed`, `community`, `official`, `experimental`)
         - **status** (active, deprecated, revoked)
-        
+
         pagination via `limit` + `cursor` for large registries.
       operationId: uadp_discoverAgents
       tags: [discovery]
@@ -293,7 +341,7 @@ paths:
       description: |
         Accepts an agent manifest (or just the `metadata.x-signature` block) and performs
         cryptographic verification of the signature against the embedded public key.
-        
+
         Returns a `TrustVerificationResult` indicating whether the signature is valid,
         what tier it earns, and why.
       operationId: uadp_verifySignature
@@ -416,6 +464,46 @@ components:
       description: Unique agent identifier (DNS-1123 subdomain format)
 
   schemas:
+    # ── WEBFINGER JRD ──────────────────────────
+    WebFingerJRD:
+      type: object
+      required: [subject, links]
+      properties:
+        subject:
+          type: string
+          description: The URI of the requested resource
+        aliases:
+          type: array
+          items:
+            type: string
+            format: uri
+        properties:
+          type: object
+          additionalProperties:
+            type: string
+        links:
+          type: array
+          items:
+            type: object
+            required: [rel, href]
+            properties:
+              rel:
+                type: string
+                description: Link relation type
+              type:
+                type: string
+                description: Media type
+              href:
+                type: string
+                format: uri
+              titles:
+                type: object
+                additionalProperties:
+                  type: string
+              properties:
+                type: object
+                additionalProperties:
+                  type: string
     # ── SIGNATURE ──────────────────────────────
     XSignature:
       type: object
@@ -540,6 +628,12 @@ components:
           format: date-time
         tier:
           $ref: '#/components/schemas/TrustTier'
+        peers:
+          type: array
+          description: "List of known UADP node URIs for P2P gossip (present if `gossip=true` was sent)"
+          items:
+            type: string
+            format: uri
 
     # ── AGENT RECORD ───────────────────────────
     AgentRecord:

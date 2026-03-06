@@ -19,7 +19,7 @@
       "type": "object",
       "description": "Agent identity card for A2A",
       "properties": {
-        "agent_uri": { "type": "string", "pattern": "^agent://" },
+        "agent_uri": { "type": "string", "pattern": "^uadp://" },
         "capabilities": { "type": "array", "items": { "type": "string" } },
         "protocols": {
           "type": "array",

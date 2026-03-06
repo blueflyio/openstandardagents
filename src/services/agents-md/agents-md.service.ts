@@ -14,6 +14,16 @@ import type { OssaAgent, AgentsMdSection } from '../../types/index.js';
 @injectable()
 export class AgentsMdService {
   /**
+   * Append optional configured block content to a generated section.
+   */
+  private addOptionalBlock(lines: string[], content?: string): void {
+    if (!content?.trim()) {
+      return;
+    }
+    lines.push('', content);
+  }
+
+  /**
    * Generate AGENTS.md content from OSSA manifest
    * @param manifest - OSSA agent manifest
    * @returns Generated AGENTS.md content as string
@@ -83,10 +93,12 @@ export class AgentsMdService {
     config?: AgentsMdSection
   ): string {
     const lines: string[] = ['# Dev environment tips'];
+    this.addOptionalBlock(lines, config?.prepend);
 
     // Use custom content if provided
     if (config?.custom) {
       lines.push('', config.custom);
+      this.addOptionalBlock(lines, config?.append);
       return lines.join('\n');
     }
 
@@ -118,6 +130,7 @@ export class AgentsMdService {
       lines.push('- Ensure all required dependencies are installed');
       lines.push('- Configure environment variables as needed');
     }
+    this.addOptionalBlock(lines, config?.append);
 
     return lines.join('\n');
   }
@@ -130,10 +143,12 @@ export class AgentsMdService {
     config?: AgentsMdSection
   ): string {
     const lines: string[] = ['# Testing instructions'];
+    this.addOptionalBlock(lines, config?.prepend);
 
     // Use custom content if provided
     if (config?.custom) {
       lines.push('', config.custom);
+      this.addOptionalBlock(lines, config?.append);
       return lines.join('\n');
     }
 
@@ -169,6 +184,7 @@ export class AgentsMdService {
         '- Validate against OSSA schema: `ossa validate manifest.yaml`'
       );
     }
+    this.addOptionalBlock(lines, config?.append);
 
     return lines.join('\n');
   }
@@ -181,10 +197,12 @@ export class AgentsMdService {
     config?: AgentsMdSection
   ): string {
     const lines: string[] = ['# PR instructions'];
+    this.addOptionalBlock(lines, config?.prepend);
 
     // Use custom content if provided
     if (config?.custom) {
       lines.push('', config.custom);
+      this.addOptionalBlock(lines, config?.append);
       return lines.join('\n');
     }
 
@@ -223,6 +241,7 @@ export class AgentsMdService {
       lines.push('- Update documentation as needed');
       lines.push('- Ensure CI passes before requesting review');
     }
+    this.addOptionalBlock(lines, config?.append);
 
     return lines.join('\n');
   }

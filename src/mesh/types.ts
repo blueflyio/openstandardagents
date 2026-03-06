@@ -85,7 +85,7 @@ export interface MessageEnvelope<T = unknown> {
   id: string;
   /** Message creation timestamp (ISO 8601) */
   timestamp: string;
-  /** Sender agent URI (format: agent://{namespace}/{name}) */
+  /** Sender agent URI (format: uadp://{namespace}/{name}) */
   from: string;
   /** Recipient agent URI or topic */
   to: string;

@@ -21,7 +21,7 @@
  *
  * // Define local agent
  * const localAgent = {
- *   uri: 'agent://team-a/my-agent',
+ *   uri: 'uadp://team-a/my-agent',
  *   name: 'My Agent',
  *   version: '1.0.0',
  *   ossaVersion: '0.3.0',
@@ -62,7 +62,7 @@
  *
  * // Request/response
  * const response = await client.request(
- *   'agent://team-b/analyzer',
+ *   'uadp://team-b/analyzer',
  *   { action: 'analyze', data: 'sample' }
  * );
  *

@@ -1,5 +1,5 @@
 {
-  "uri": "agent://default/demo-agent",
+  "uri": "uadp://default/demo-agent",
   "name": "demo-agent",
   "version": "1.0.0",
   "ossaVersion": "ossa/v0.4.6",

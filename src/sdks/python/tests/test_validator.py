@@ -9,7 +9,7 @@ from ossa.validator import validate, validate_or_raise, ValidationResult
 from ossa.types import Kind, Metadata, OSSAManifest
 from ossa.exceptions import ValidationError, SchemaError
 
-from conftest import FULL_AGENT_DICT, MINIMAL_AGENT_DICT
+from _testdata import FULL_AGENT_DICT, MINIMAL_AGENT_DICT
 
 
 class TestValidationResult:
@@ -91,7 +91,7 @@ class TestValidate:
             apiVersion="ossa/v0.5",
             kind=Kind.AGENT,
             metadata=Metadata(name="no-role"),
-            spec={},
+            spec={"llm": {"provider": "anthropic", "model": "test"}},
         )
         result = validate(m)
         assert result.valid is True
@@ -145,7 +145,7 @@ class TestStrictMode:
             apiVersion="ossa/v0.5",
             kind=Kind.AGENT,
             metadata=Metadata(name="no-spec"),
-            spec={},
+            spec={"role": "test"},  # has role but no llm -> warning
         )
         result = validate(m, strict=True)
         assert result.valid is False

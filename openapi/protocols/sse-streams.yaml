@@ -80,14 +80,14 @@ paths:
                   value: |
                     event: message
                     id: msg-123e4567-e89b-12d3-a456-426614174000
-                    data: {"type":"message","timestamp":"2025-12-18T14:00:00Z","payload":{"channel":"content.published","data":{"contentId":"node-123"}},"metadata":{"agentId":"agent://example.com/publisher"}}
+                    data: {"type":"message","timestamp":"2025-12-18T14:00:00Z","payload":{"channel":"content.published","data":{"contentId":"node-123"}},"metadata":{"agentId":"uadp://example.com/publisher"}}
 
                 status_event:
                   summary: Status update event
                   value: |
                     event: status
                     id: status-456e7890-a12b-34c5-d678-901234567890
-                    data: {"type":"status","timestamp":"2025-12-18T14:00:00Z","payload":{"status":"healthy","load":0.45},"metadata":{"agentId":"agent://example.com/agent"}}
+                    data: {"type":"status","timestamp":"2025-12-18T14:00:00Z","payload":{"status":"healthy","load":0.45},"metadata":{"agentId":"uadp://example.com/agent"}}
 
         '401':
           description: Unauthorized - Invalid authentication
@@ -401,7 +401,7 @@ components:
           type: string
           format: uri
           description: Agent URI of sender
-          example: agent://example.com/supercali-fragilisticagent
+          example: uadp://example.com/supercali-fragilisticagent
         streamId:
           type: string
           format: uuid
