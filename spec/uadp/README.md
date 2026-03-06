@@ -367,7 +367,7 @@ A more complete implementation adds:
 
 Reference implementations:
 - **Drupal**: `ai_agents_marketplace` module (PHP)
-- **Express**: `@ossa/uadp-node` (TypeScript) — planned
+- **Express**: `@bluefly/duadp` (TypeScript) — planned
 - **Static**: GitHub Pages with JSON files — planned
 
 ## Appendix A: JSON Schemas

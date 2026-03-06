@@ -175,6 +175,8 @@ const server = await mcpService.exposeMCPServer(typescriptAgent);
 npm install -g @bluefly/openstandardagents
 ```
 
+OSSA uses [`@bluefly/duadp`](https://www.npmjs.com/package/@bluefly/duadp) for agent discovery and federation via the [UADP protocol](https://github.com/blueflyio/duadp).
+
 ## Quick Start
 
 ```bash

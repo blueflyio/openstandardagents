@@ -261,7 +261,7 @@
     "@opentelemetry/sdk-metrics": "^2.5.0",
     "@opentelemetry/sdk-node": "^0.54.0",
     "@opentelemetry/sdk-trace-base": "^1.28.0",
-    "@ossa/uadp": "file:../openstandard-uadp/sdk/typescript",
+    "@bluefly/duadp": "^0.1.2",
     "@qdrant/js-client-rest": "^1.9.0",
     "@temporalio/activity": "^1.11.3",
     "@temporalio/workflow": "^1.11.3",
