@@ -185,7 +185,7 @@ export const ERROR_CATALOG: Record<OSSAErrorCode, ErrorDetails> = {
         title: 'Missing apiVersion',
         invalid: '{ "kind": "Agent", "metadata": {} }',
         valid:
-          '{ "apiVersion": "ossa/v0.4.6", "kind": "Agent", "metadata": {} }',
+          `{ "apiVersion": "${API_VERSION}", "kind": "Agent", "metadata": {} }`,
         explanation: 'apiVersion is a required top-level field',
       },
     ],

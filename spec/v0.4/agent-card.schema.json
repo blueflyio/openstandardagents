@@ -22,7 +22,7 @@
     },
     "ossaVersion": {
       "type": "string",
-      "description": "OSSA specification version (e.g., ossa/v0.4.6)"
+      "description": "OSSA specification version (e.g., ossa/v0.4.7)"
     },
     "taxonomy": {
       "type": "object",

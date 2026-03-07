@@ -265,9 +265,9 @@ test:smoke:
 # PACKAGE STAGE - Prerelease publishing pipeline
 # =============================================================================
 # Flow:
-#   release/* push  → 0.4.6-dev.N  → GitLab Package Registry (auto)
-#   main push       → 0.4.6-rc.N   → GitLab Package Registry (auto)
-#   manual trigger  → 0.4.6        → npmjs.org (button in UI)
+#   release/* push  → <version>-dev.N  → GitLab Package Registry (auto)
+#   main push       → <version>-rc.N   → GitLab Package Registry (auto)
+#   manual trigger  → <version>        → npmjs.org (button in UI)
 # =============================================================================
 
 # Shared setup for all package jobs
@@ -285,7 +285,7 @@ test:smoke:
       echo "@bluefly:registry=https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/packages/npm/" > .npmrc
       echo "//gitlab.com/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> .npmrc
 
-# --- DEV: release/* → 0.4.6-dev.N to GitLab ---
+# --- DEV: release/* → <version>-dev.N to GitLab ---
 package:dev:
   extends: .package-base
   script:
@@ -311,7 +311,7 @@ package:dev:
     name: dev-registry
     url: https://gitlab.com/blueflyio/ossa/openstandardagents/-/packages
 
-# --- RC: main → 0.4.6-rc.N to GitLab ---
+# --- RC: main → <version>-rc.N to GitLab ---
 package:rc:
   extends: .package-base
   script:
