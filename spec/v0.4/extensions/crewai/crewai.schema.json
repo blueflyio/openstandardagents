@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://openstandardagents.org/schemas/v0.4.6/extensions/crewai/crewai.json",
+  "$id": "https://openstandardagents.org/schemas/v0.4.7/extensions/crewai/crewai.json",
   "title": "CrewAI Extension",
   "description": "Native integration with CrewAI framework for role-based multi-agent collaboration with sequential and hierarchical processes.",
   "type": "object",

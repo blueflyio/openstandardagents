@@ -2,7 +2,7 @@
   "uri": "agent://default/demo-agent",
   "name": "demo-agent",
   "version": "1.0.0",
-  "ossaVersion": "ossa/v0.4.6",
+  "ossaVersion": "ossa/v0.4.7",
   "capabilities": [],
   "role": "You are demo-agent, a helpful AI agent.",
   "model": {

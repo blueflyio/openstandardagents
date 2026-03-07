@@ -1,4 +1,4 @@
-// OSSA v{{VERSION}} - MCP (Model Context Protocol) Export Adapter
+// OSSA - MCP (Model Context Protocol) Export Adapter
 import {
   BaseAdapter,
   ExportOptions,
@@ -6,6 +6,7 @@ import {
   ExportFile,
   OssaAgent,
 } from '../base/adapter.interface.js';
+import { SPEC_VERSION } from '../../version.js';
 
 /**
  * MCP export adapter - generates JSON-RPC 2.0 MCP servers
@@ -16,9 +17,9 @@ export class MCPAdapter extends BaseAdapter {
   readonly displayName = 'MCP Server';
   readonly description = 'Export OSSA agents as Model Context Protocol servers';
   readonly status = 'production' as const;
-  readonly supportedVersions = ['0.3.6', '0.4.x', '0.4.6'];
+  readonly supportedVersions = ['0.3.6', '0.4.x', SPEC_VERSION];
   readonly version = '1.0.0';
-  readonly supportedOssaVersions = ['0.3.6', '0.4.x', '0.4.6'];
+  readonly supportedOssaVersions = ['0.3.6', '0.4.x', SPEC_VERSION];
   readonly outputFormat = ['typescript'];
 
   async export(

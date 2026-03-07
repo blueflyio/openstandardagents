@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.7] - 2026-03-06
+
+### Fixed
+- **CLI broken import**: Removed `!dist/services/release-automation/` from package `files` exclusion — the core CLI (`release.command.ts`) imports `ReleaseAgentService` from that directory, so excluding it broke `ossa release` at runtime in v0.4.6
+
 ## [0.4.6] - 2026-03-05
 
 ### Changed

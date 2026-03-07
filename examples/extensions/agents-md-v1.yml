@@ -2,7 +2,7 @@
 # agents.md standard: repository-level agent guidance (AAIF / agents.md)
 # See: https://agents.md | https://github.com/agentsmd/agents.md
 
-apiVersion: ossa/v0.4.6
+apiVersion: ossa/v0.4.7
 kind: ExtensionSchema
 metadata:
   name: agents-md-extension

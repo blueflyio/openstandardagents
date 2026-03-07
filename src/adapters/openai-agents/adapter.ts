@@ -151,7 +151,7 @@ export class OpenAIAgentsAdapter extends BaseAdapter {
 
       return this.createResult(true, files, undefined, {
         duration: Date.now() - startTime,
-        version: '0.4.6',
+        version: SPEC_VERSION,
         warnings: [],
       });
     } catch (error: any) {

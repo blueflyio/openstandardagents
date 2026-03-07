@@ -12,7 +12,7 @@
 #   - Context isolation enforced for all subagents
 #   - Results flow up: subagent -> parent -> user
 
-apiVersion: ossa/v0.4.6
+apiVersion: ossa/v0.4.7
 kind: Agent
 metadata:
   name: code-review-pipeline

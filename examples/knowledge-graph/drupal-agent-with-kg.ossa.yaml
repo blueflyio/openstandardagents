@@ -1,7 +1,7 @@
 # OSSA v0.4.1 Agent with Knowledge Graph Extension
 # Portable, configurable - works with ANY git platform, vector DB, wiki format
 
-apiVersion: ossa/v0.4.6
+apiVersion: ossa/v0.4.7
 kind: Agent
 
 metadata:

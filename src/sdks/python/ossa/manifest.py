@@ -1,5 +1,6 @@
 """OSSA Manifest Operations - Load, save, and manipulate OSSA manifests."""
 
+import json as _json
 from pathlib import Path
 from typing import Any, Optional, Union
 import yaml
@@ -7,12 +8,28 @@ import yaml
 from .exceptions import OSSAError
 
 
+def _get_default_api_version() -> str:
+    """Read current API version from .version.json (single source of truth)."""
+    # Search upward from this file to find .version.json
+    current = Path(__file__).resolve().parent
+    for _ in range(10):
+        candidate = current / ".version.json"
+        if candidate.exists():
+            data = _json.loads(candidate.read_text(encoding="utf-8"))
+            return f"ossa/v{data['current']}"
+        current = current.parent
+    return "ossa/v0.4"  # safe fallback
+
+
+_DEFAULT_API_VERSION = _get_default_api_version()
+
+
 class Manifest:
     """OSSA Manifest wrapper with fluent interface."""
 
     def __init__(
         self,
-        api_version: str = "ossa/v0.4.6",
+        api_version: str = _DEFAULT_API_VERSION,
         kind: str = "Agent",
         metadata: Optional[dict[str, Any]] = None,
         spec: Optional[dict[str, Any]] = None,
