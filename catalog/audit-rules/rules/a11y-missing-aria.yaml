@@ -1,0 +1,12 @@
+id: a11y-missing-aria
+description: "Interactive elements without ARIA attributes are not accessible to assistive technologies."
+severity: warning
+dimension: accessibility
+anti_pattern:
+  type: regex
+  pattern: "<(button|a|div)\\s+(?:(?!aria-|role=)[^>])*onclick"
+  flags: gim
+  path_glob: "**/*.{html.twig,twig,htm,html,js}"
+fix_suggestion: "Add appropriate ARIA roles and attributes (aria-label, aria-expanded, role='button') to interactive elements."
+target_languages: [twig, html, javascript]
+tags: [accessibility, wcag, aria]

@@ -1,0 +1,12 @@
+id: bp-missing-param-type
+description: "Function parameters without type hints allow unexpected input types."
+severity: info
+dimension: best-practices
+anti_pattern:
+  type: regex
+  pattern: "function\\s+\\w+\\(\\s*\\$\\w+[^)]*(,\\s*\\$\\w+)*\\)"
+  flags: gm
+  path_glob: "**/*.php"
+fix_suggestion: "Add type hints to all function parameters (string, int, array, object type, etc.)."
+target_languages: [php]
+tags: [best-practices, type-safety, php]

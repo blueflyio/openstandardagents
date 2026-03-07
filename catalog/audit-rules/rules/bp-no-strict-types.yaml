@@ -1,0 +1,12 @@
+id: bp-no-strict-types
+description: "PHP files missing declare(strict_types=1) allow implicit type coercion."
+severity: warning
+dimension: best-practices
+anti_pattern:
+  type: regex
+  pattern: "^<\\?php\\n(?!declare\\(strict_types)"
+  flags: gm
+  path_glob: "**/*.php"
+fix_suggestion: "Add declare(strict_types=1); after the opening <?php tag."
+target_languages: [php]
+tags: [best-practices, php, type-safety]

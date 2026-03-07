@@ -1,0 +1,12 @@
+id: bp-no-access-check
+description: "Entity queries missing accessCheck() bypass entity access control."
+severity: error
+dimension: best-practices
+anti_pattern:
+  type: regex
+  pattern: "getStorage\\([^)]+\\)->getQuery\\((?!.*accessCheck)"
+  flags: gm
+  path_glob: "**/*.{php,module,inc}"
+fix_suggestion: "Add ->accessCheck(TRUE) or ->accessCheck(FALSE) explicitly to all entity queries. Omitting it is deprecated."
+target_languages: [php]
+tags: [best-practices, security, entity-api, drupal]

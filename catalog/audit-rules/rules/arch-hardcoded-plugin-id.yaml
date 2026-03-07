@@ -1,0 +1,12 @@
+id: arch-hardcoded-plugin-id
+description: "Plugin IDs hardcoded in consuming code create brittle dependencies."
+severity: info
+dimension: architecture
+anti_pattern:
+  type: regex
+  pattern: "createInstance\\(['\"][a-z_]+['\"]\\)"
+  flags: gm
+  path_glob: "**/*.{php,module,inc}"
+fix_suggestion: "Use configuration or dependency injection to provide plugin IDs. Store plugin selections in config entities."
+target_languages: [php]
+tags: [architecture, plugins, drupal]

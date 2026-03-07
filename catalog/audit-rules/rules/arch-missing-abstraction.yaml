@@ -1,0 +1,12 @@
+id: arch-missing-abstraction
+description: "Repeated conditional logic that should be extracted into a strategy or policy pattern."
+severity: info
+dimension: architecture
+anti_pattern:
+  type: regex
+  pattern: "(switch\\s*\\(\\$\\w+->getType\\(\\)|switch\\s*\\(\\$\\w+->bundle\\(\\))"
+  flags: gm
+  path_glob: "**/*.{php,module,inc}"
+fix_suggestion: "Replace repeated type-switching with strategy pattern, plugin system, or entity bundle classes."
+target_languages: [php]
+tags: [architecture, patterns, solid]

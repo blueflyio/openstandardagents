@@ -1,0 +1,12 @@
+id: bp-hook-instead-of-event
+description: "Using hooks that have event subscriber alternatives in Drupal 9+."
+severity: info
+dimension: best-practices
+anti_pattern:
+  type: regex
+  pattern: "function\\s+\\w+_(form_alter|entity_presave|entity_insert|entity_update|entity_delete|entity_view)\\("
+  flags: gm
+  path_glob: "**/*.module"
+fix_suggestion: "Use event subscribers instead of hooks where available. Register in services.yml with 'event_subscriber' tag."
+target_languages: [php]
+tags: [best-practices, events, hooks, drupal]

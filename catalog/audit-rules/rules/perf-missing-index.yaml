@@ -1,0 +1,12 @@
+id: perf-missing-index
+description: "Database schema hook missing indexes on columns used in queries."
+severity: info
+dimension: performance
+anti_pattern:
+  type: regex
+  pattern: "function\\s+\\w+_schema\\(\\)\\s*\\{[^}]*'fields'\\s*=>(?:(?!'indexes').)*\\}"
+  flags: gms
+  path_glob: "**/*.install"
+fix_suggestion: "Add 'indexes' to schema definitions for columns used in WHERE, ORDER BY, or JOIN clauses."
+target_languages: [php]
+tags: [performance, database, schema, drupal]

@@ -1,0 +1,12 @@
+id: bp-todo-in-code
+description: "TODO/FIXME/HACK comments left in production code indicate incomplete work."
+severity: info
+dimension: best-practices
+anti_pattern:
+  type: regex
+  pattern: "//\\s*(TODO|FIXME|HACK|XXX|WORKAROUND)\\b"
+  flags: gm
+  path_glob: "**/*.{php,module,inc,js,ts}"
+fix_suggestion: "Resolve TODO items and track remaining work in issue tracker instead of code comments."
+target_languages: [php, javascript, typescript]
+tags: [best-practices, code-quality]

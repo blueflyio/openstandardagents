@@ -1,0 +1,12 @@
+id: perf-missing-cache-tags
+description: "Render arrays without #cache tags cause unnecessary cache invalidation."
+severity: warning
+dimension: performance
+anti_pattern:
+  type: regex
+  pattern: "\\$build\\s*=\\s*\\[(?:(?!#cache).)*\\]"
+  flags: gms
+  path_glob: "**/*.{php,module,inc}"
+fix_suggestion: "Add '#cache' => ['tags' => [...]] to render arrays with entity or config data."
+target_languages: [php]
+tags: [performance, caching, drupal]

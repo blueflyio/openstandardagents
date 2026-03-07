@@ -1,0 +1,12 @@
+id: perf-config-load-in-loop
+description: "Loading config objects inside loops causes repeated disk/database reads."
+severity: warning
+dimension: performance
+anti_pattern:
+  type: regex
+  pattern: "(foreach|for|while)\\s*\\([^)]*\\)\\s*\\{[^}]*(\\\\Drupal::config|->get\\(['\"]\\w+\\.\\w+)"
+  flags: gms
+  path_glob: "**/*.{php,module,inc}"
+fix_suggestion: "Load the config object once before the loop and reuse it."
+target_languages: [php]
+tags: [performance, config, drupal]

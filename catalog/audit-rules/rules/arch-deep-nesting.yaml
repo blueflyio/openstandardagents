@@ -1,0 +1,12 @@
+id: arch-deep-nesting
+description: "Code with more than 4 levels of nesting is hard to read and maintain."
+severity: warning
+dimension: architecture
+anti_pattern:
+  type: regex
+  pattern: "^(\\s{16,}|\\t{4,})(if|foreach|for|while|switch)\\s*\\("
+  flags: gm
+  path_glob: "**/*.{php,module,inc}"
+fix_suggestion: "Use early returns, extract methods, or guard clauses to reduce nesting depth."
+target_languages: [php]
+tags: [architecture, readability, code-quality]

@@ -1,0 +1,12 @@
+id: bp-deprecated-api
+description: "Using deprecated Drupal API functions that will be removed in future versions."
+severity: warning
+dimension: best-practices
+anti_pattern:
+  type: regex
+  pattern: "(drupal_set_message|db_select|db_query|db_insert|db_update|db_delete|format_date|drupal_render|entity_load|file_scan_directory|drupal_get_path)\\s*\\("
+  flags: gm
+  path_glob: "**/*.{php,module,inc,install}"
+fix_suggestion: "Replace deprecated functions with current Drupal API equivalents. See https://www.drupal.org/docs/upgrading-drupal/how-to-resolve-a-drupal-deprecation-error."
+target_languages: [php]
+tags: [best-practices, deprecated, drupal]

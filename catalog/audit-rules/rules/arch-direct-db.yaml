@@ -1,0 +1,12 @@
+id: arch-direct-db
+description: "Direct database queries instead of using Entity API bypass access control and caching."
+severity: warning
+dimension: architecture
+anti_pattern:
+  type: regex
+  pattern: "(\\\\Drupal::database\\(\\)->|\\$this->database->|\\$connection->)(select|insert|update|delete|query)\\("
+  flags: gm
+  path_glob: "**/*.{php,module,inc}"
+fix_suggestion: "Use Entity API (entityTypeManager, entity queries) instead of direct database queries where possible."
+target_languages: [php]
+tags: [architecture, entity-api, database, drupal]

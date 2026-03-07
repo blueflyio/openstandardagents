@@ -1,0 +1,12 @@
+id: arch-missing-interface
+description: "Plugin types without interfaces prevent proper type hinting and swappability."
+severity: info
+dimension: architecture
+anti_pattern:
+  type: regex
+  pattern: "class\\s+\\w+\\s+extends\\s+(BlockBase|FieldFormatterBase|FieldWidgetBase|PluginBase)\\s*(?:(?!implements).)*\\{"
+  flags: gms
+  path_glob: "**/*.php"
+fix_suggestion: "Create an interface for plugin types and implement it alongside the base class extension."
+target_languages: [php]
+tags: [architecture, interfaces, plugins, drupal]

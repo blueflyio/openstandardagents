@@ -1,0 +1,12 @@
+id: arch-fat-controller
+description: "Controllers containing business logic instead of delegating to services."
+severity: warning
+dimension: architecture
+anti_pattern:
+  type: regex
+  pattern: "class\\s+\\w+Controller\\s+extends\\s+ControllerBase\\s*\\{[^}]*(->query|->condition|->execute|->save)"
+  flags: gms
+  path_glob: "**/*.php"
+fix_suggestion: "Move business logic to service classes. Controllers should only handle request/response coordination."
+target_languages: [php]
+tags: [architecture, mvc, solid, drupal]

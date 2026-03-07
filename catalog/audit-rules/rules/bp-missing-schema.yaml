@@ -1,0 +1,12 @@
+id: bp-missing-schema
+description: "Config entities without schema definition break config validation and translation."
+severity: error
+dimension: best-practices
+anti_pattern:
+  type: regex
+  pattern: "config/install/\\w+\\.\\w+\\.yml"
+  flags: gm
+  path_glob: "**/*.info.yml"
+fix_suggestion: "Create config/schema/*.schema.yml files for all configuration objects. Required for config validation and multilingual support."
+target_languages: [yaml]
+tags: [best-practices, config, schema, drupal]

@@ -1,0 +1,12 @@
+id: bp-global-functions
+description: "Defining global functions outside of .module files breaks Drupal conventions."
+severity: warning
+dimension: best-practices
+anti_pattern:
+  type: regex
+  pattern: "^function\\s+\\w+\\("
+  flags: gm
+  path_glob: "**/*.{php,inc}"
+fix_suggestion: "Move functions to service classes. Global functions should only exist in .module files for hook implementations."
+target_languages: [php]
+tags: [best-practices, architecture, drupal]

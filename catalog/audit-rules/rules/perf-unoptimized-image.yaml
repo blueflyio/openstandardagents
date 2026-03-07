@@ -1,0 +1,12 @@
+id: perf-unoptimized-image
+description: "Image fields rendered without image styles serve full-size originals."
+severity: info
+dimension: performance
+anti_pattern:
+  type: regex
+  pattern: "['\"]type['\"]\\s*=>\\s*['\"]image['\"](?:(?!image_style).)*\\}"
+  flags: gms
+  path_glob: "**/*.{php,module}"
+fix_suggestion: "Use image styles and responsive image module to serve appropriately sized images."
+target_languages: [php]
+tags: [performance, images, drupal]

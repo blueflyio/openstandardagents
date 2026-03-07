@@ -1,0 +1,12 @@
+id: a11y-missing-form-label
+description: "Form elements without associated labels are unusable for assistive technology users."
+severity: error
+dimension: accessibility
+anti_pattern:
+  type: regex
+  pattern: "<input\\s+(?:(?!aria-label|id=)[^>])*>"
+  flags: gim
+  path_glob: "**/*.{html.twig,twig,htm,html}"
+fix_suggestion: "Add a <label for='id'> element or aria-label attribute for every form input."
+target_languages: [twig, html]
+tags: [accessibility, wcag, forms]

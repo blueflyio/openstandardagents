@@ -1,0 +1,12 @@
+id: arch-circular-dependency
+description: "Modules with circular service dependencies cause container compilation errors."
+severity: error
+dimension: architecture
+anti_pattern:
+  type: regex
+  pattern: "arguments:\\s*\\[.*'@\\w+\\.\\w+'.*\\]"
+  flags: gm
+  path_glob: "**/*.services.yml"
+fix_suggestion: "Break circular dependencies using events, service tags, or the service_collector pattern."
+target_languages: [yaml]
+tags: [architecture, dependency-injection, drupal]

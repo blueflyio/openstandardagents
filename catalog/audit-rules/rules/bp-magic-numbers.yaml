@@ -1,0 +1,12 @@
+id: bp-magic-numbers
+description: "Magic numbers without named constants reduce code readability."
+severity: info
+dimension: best-practices
+anti_pattern:
+  type: regex
+  pattern: "(if|elseif|case|==|===|!=|!==|>=|<=|>|<)\\s*\\d{2,}"
+  flags: gm
+  path_glob: "**/*.{php,module,inc}"
+fix_suggestion: "Define magic numbers as named class constants or configuration values."
+target_languages: [php]
+tags: [best-practices, readability, code-quality]

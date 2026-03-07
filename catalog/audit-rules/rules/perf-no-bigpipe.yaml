@@ -1,0 +1,12 @@
+id: perf-no-bigpipe
+description: "Heavy block plugins without BigPipe placeholders delay initial page render."
+severity: info
+dimension: performance
+anti_pattern:
+  type: regex
+  pattern: "class\\s+\\w+\\s+extends\\s+BlockBase\\s*\\{(?:(?!#create_placeholder).)*\\}"
+  flags: gms
+  path_glob: "**/*.{php,module}"
+fix_suggestion: "Use #create_placeholder or lazy_builder for blocks with expensive computations to leverage BigPipe."
+target_languages: [php]
+tags: [performance, bigpipe, drupal]

@@ -1,0 +1,12 @@
+id: perf-uncacheable-response
+description: "Responses with max-age=0 or kill switch caching unnecessarily defeat page cache."
+severity: warning
+dimension: performance
+anti_pattern:
+  type: regex
+  pattern: "(max-age['\"]\\s*=>\\s*0|#cache['\"]\\s*=>\\s*\\[\\s*['\"]max-age['\"]\\s*=>\\s*0)"
+  flags: gm
+  path_glob: "**/*.{php,module,inc}"
+fix_suggestion: "Use appropriate max-age values and cache contexts instead of disabling caching entirely. Use 'session' or 'user' cache contexts for per-user content."
+target_languages: [php]
+tags: [performance, caching, drupal]

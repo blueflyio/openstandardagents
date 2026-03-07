@@ -1,0 +1,12 @@
+id: seo-missing-canonical
+description: "Pages without canonical URL cause duplicate content issues in search indexes."
+severity: warning
+dimension: seo
+anti_pattern:
+  type: regex
+  pattern: "<head>[^]*?</head>(?!.*rel=['\"]canonical['\"])"
+  flags: gims
+  path_glob: "**/*.{html.twig,twig,htm,html}"
+fix_suggestion: "Add <link rel='canonical' href='...'> or ensure Metatag module's canonical URL is configured."
+target_languages: [twig, html]
+tags: [seo, canonical, drupal]

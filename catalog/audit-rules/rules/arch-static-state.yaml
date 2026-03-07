@@ -1,0 +1,12 @@
+id: arch-static-state
+description: "Using static properties for mutable state causes issues in long-running processes and tests."
+severity: warning
+dimension: architecture
+anti_pattern:
+  type: regex
+  pattern: "(private|protected)\\s+static\\s+\\$\\w+\\s*=\\s*(?!NULL|null|\\[\\]|''|0|false)"
+  flags: gm
+  path_glob: "**/*.php"
+fix_suggestion: "Use instance properties with dependency injection instead of static mutable state. Use services for shared state."
+target_languages: [php]
+tags: [architecture, static, testing, drupal]
