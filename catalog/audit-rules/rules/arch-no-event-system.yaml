@@ -1,0 +1,12 @@
+id: arch-no-event-system
+description: "Tightly coupled module communication without events creates fragile dependencies."
+severity: info
+dimension: architecture
+anti_pattern:
+  type: regex
+  pattern: "\\\\Drupal::moduleHandler\\(\\)->invoke(All)?\\("
+  flags: gm
+  path_glob: "**/*.{php,module,inc}"
+fix_suggestion: "Use Symfony event dispatcher instead of module_invoke. Dispatch custom events for cross-module communication."
+target_languages: [php]
+tags: [architecture, events, decoupling, drupal]

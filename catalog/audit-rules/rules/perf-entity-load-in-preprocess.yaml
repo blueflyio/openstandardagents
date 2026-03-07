@@ -1,0 +1,12 @@
+id: perf-entity-load-in-preprocess
+description: "Entity loads in preprocess/theme hooks run on every page render and cannot be cached independently."
+severity: warning
+dimension: performance
+anti_pattern:
+  type: regex
+  pattern: "function\\s+\\w+_(preprocess|theme)_[^(]+\\([^)]*\\)\\s*\\{[^}]*(?:Node::load|User::load|entityTypeManager|\\\\Drupal::entityTypeManager)"
+  flags: gms
+  path_glob: "**/*.{module,theme}"
+fix_suggestion: "Move entity loading to a controller or service, and pass data via render arrays with proper cache metadata."
+target_languages: [php]
+tags: [performance, preprocess, drupal]

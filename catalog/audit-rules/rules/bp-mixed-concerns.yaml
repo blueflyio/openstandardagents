@@ -1,0 +1,12 @@
+id: bp-mixed-concerns
+description: "Form handlers containing business logic instead of delegating to services."
+severity: warning
+dimension: best-practices
+anti_pattern:
+  type: regex
+  pattern: "function\\s+submitForm\\([^)]*\\)\\s*\\{[^}]*(->query|->save|->delete|->execute|db_)"
+  flags: gms
+  path_glob: "**/*.{php,module}"
+fix_suggestion: "Extract business logic from form submit handlers into dedicated service classes."
+target_languages: [php]
+tags: [best-practices, separation-of-concerns, drupal]

@@ -1,0 +1,12 @@
+id: arch-god-class
+description: "Classes with excessive size (>500 lines or >20 methods) are hard to maintain."
+severity: warning
+dimension: architecture
+anti_pattern:
+  type: regex
+  pattern: "class\\s+\\w+[^{]*\\{[\\s\\S]{15000,}"
+  flags: gm
+  path_glob: "**/*.php"
+fix_suggestion: "Split large classes into smaller, focused classes following Single Responsibility Principle."
+target_languages: [php]
+tags: [architecture, solid, code-quality]

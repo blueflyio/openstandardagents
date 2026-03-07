@@ -1,0 +1,12 @@
+id: perf-missing-cache-contexts
+description: "Render arrays without cache contexts may serve incorrect content per user/route."
+severity: warning
+dimension: performance
+anti_pattern:
+  type: regex
+  pattern: "#cache['\"]\\s*=>\\s*\\[(?:(?!contexts).)*\\]"
+  flags: gms
+  path_glob: "**/*.{php,module,inc}"
+fix_suggestion: "Add 'contexts' => ['user', 'url'] or appropriate cache contexts to #cache metadata."
+target_languages: [php]
+tags: [performance, caching, drupal]

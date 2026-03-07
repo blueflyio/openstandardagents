@@ -1,0 +1,12 @@
+id: seo-missing-meta
+description: "Pages without meta description hurt search engine rankings and click-through rates."
+severity: warning
+dimension: seo
+anti_pattern:
+  type: regex
+  pattern: "<head>[^]*?</head>(?!.*meta\\s+name=['\"]description['\"])"
+  flags: gims
+  path_glob: "**/*.{html.twig,twig,htm,html}"
+fix_suggestion: "Add <meta name='description' content='...'> or use Metatag module for dynamic meta descriptions."
+target_languages: [twig, html]
+tags: [seo, meta, drupal]

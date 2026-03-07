@@ -1,0 +1,12 @@
+id: a11y-missing-alt
+description: "Image elements without alt attributes are inaccessible to screen readers."
+severity: error
+dimension: accessibility
+anti_pattern:
+  type: regex
+  pattern: "<img\\s+(?:(?!alt=)[^>])*>"
+  flags: gim
+  path_glob: "**/*.{html.twig,twig,htm,html,php,module}"
+fix_suggestion: "Add descriptive alt attributes to all img elements. Use alt='' for decorative images."
+target_languages: [twig, html, php]
+tags: [accessibility, wcag, images]

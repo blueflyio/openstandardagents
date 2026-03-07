@@ -12,23 +12,214 @@ dimensions:
   - aeo
   - veo
 rules:
-  - id: swallowed-exceptions
-    file: rules/swallowed-exceptions.yaml
-  - id: missing-type-guard
-    file: rules/missing-type-guard.yaml
-  - id: unescaped-user-input
-    file: rules/unescaped-user-input.yaml
-  - id: hardcoded-credentials
-    file: rules/hardcoded-credentials.yaml
-  - id: empty-catch-block
-    file: rules/empty-catch-block.yaml
-  - id: duplicate-logic
-    file: rules/duplicate-logic.yaml
-  - id: console-log-in-production
-    file: rules/console-log-in-production.yaml
+  # Accessibility (a11y)
+  - id: a11y-heading-hierarchy
+    file: rules/a11y-heading-hierarchy.yaml
+  - id: a11y-missing-alt
+    file: rules/a11y-missing-alt.yaml
+  - id: a11y-missing-aria
+    file: rules/a11y-missing-aria.yaml
+  - id: a11y-missing-form-label
+    file: rules/a11y-missing-form-label.yaml
+  - id: a11y-missing-lang
+    file: rules/a11y-missing-lang.yaml
+  - id: a11y-no-semantic-html
+    file: rules/a11y-no-semantic-html.yaml
+  # Aerospike
+  - id: aerospike-default-namespace
+    file: rules/aerospike-default-namespace.yaml
+  - id: aerospike-hardcoded-socket
+    file: rules/aerospike-hardcoded-socket.yaml
+  - id: aerospike-missing-prefix
+    file: rules/aerospike-missing-prefix.yaml
+  - id: aerospike-no-failover
+    file: rules/aerospike-no-failover.yaml
+  - id: aerospike-perm-ttl-missing
+    file: rules/aerospike-perm-ttl-missing.yaml
+  - id: aerospike-queue-without-namespace
+    file: rules/aerospike-queue-without-namespace.yaml
+  # General
   - id: any-type-typescript
     file: rules/any-type-typescript.yaml
+  # Architecture (arch)
+  - id: arch-circular-dependency
+    file: rules/arch-circular-dependency.yaml
+  - id: arch-deep-nesting
+    file: rules/arch-deep-nesting.yaml
+  - id: arch-direct-db
+    file: rules/arch-direct-db.yaml
+  - id: arch-fat-controller
+    file: rules/arch-fat-controller.yaml
+  - id: arch-god-class
+    file: rules/arch-god-class.yaml
+  - id: arch-hardcoded-plugin-id
+    file: rules/arch-hardcoded-plugin-id.yaml
+  - id: arch-long-method
+    file: rules/arch-long-method.yaml
+  - id: arch-missing-abstraction
+    file: rules/arch-missing-abstraction.yaml
+  - id: arch-missing-interface
+    file: rules/arch-missing-interface.yaml
+  - id: arch-mixed-layers
+    file: rules/arch-mixed-layers.yaml
+  - id: arch-no-event-system
+    file: rules/arch-no-event-system.yaml
+  - id: arch-no-srp
+    file: rules/arch-no-srp.yaml
+  - id: arch-static-state
+    file: rules/arch-static-state.yaml
+  - id: arch-tight-coupling
+    file: rules/arch-tight-coupling.yaml
+  - id: arch-too-many-params
+    file: rules/arch-too-many-params.yaml
+  # Best Practices (bp)
+  - id: bp-deprecated-api
+    file: rules/bp-deprecated-api.yaml
+  - id: bp-global-functions
+    file: rules/bp-global-functions.yaml
+  - id: bp-hardcoded-config
+    file: rules/bp-hardcoded-config.yaml
+  - id: bp-hook-instead-of-event
+    file: rules/bp-hook-instead-of-event.yaml
+  - id: bp-magic-numbers
+    file: rules/bp-magic-numbers.yaml
+  - id: bp-missing-param-type
+    file: rules/bp-missing-param-type.yaml
+  - id: bp-missing-return-type
+    file: rules/bp-missing-return-type.yaml
+  - id: bp-missing-schema
+    file: rules/bp-missing-schema.yaml
+  - id: bp-mixed-concerns
+    file: rules/bp-mixed-concerns.yaml
+  - id: bp-no-access-check
+    file: rules/bp-no-access-check.yaml
+  - id: bp-no-batch-api
+    file: rules/bp-no-batch-api.yaml
+  - id: bp-no-changelog
+    file: rules/bp-no-changelog.yaml
+  - id: bp-no-interface
+    file: rules/bp-no-interface.yaml
+  - id: bp-no-strict-types
+    file: rules/bp-no-strict-types.yaml
+  - id: bp-service-no-di
+    file: rules/bp-service-no-di.yaml
+  - id: bp-todo-in-code
+    file: rules/bp-todo-in-code.yaml
+  - id: bp-unused-dependency
+    file: rules/bp-unused-dependency.yaml
+  # Cedar
+  - id: cedar-dangerous-functions
+    file: rules/cedar-dangerous-functions.yaml
+  - id: cedar-gate-disabled
+    file: rules/cedar-gate-disabled.yaml
+  - id: cedar-hardcoded-api-key
+    file: rules/cedar-hardcoded-api-key.yaml
+  - id: cedar-merge-conflict
+    file: rules/cedar-merge-conflict.yaml
+  - id: cedar-missing-compliance-engine
+    file: rules/cedar-missing-compliance-engine.yaml
+  - id: cedar-missing-ossa-manifest
+    file: rules/cedar-missing-ossa-manifest.yaml
+  - id: cedar-no-direct-sql
+    file: rules/cedar-no-direct-sql.yaml
+  # General
+  - id: console-log-in-production
+    file: rules/console-log-in-production.yaml
+  - id: drupal-empty-catch
+    file: rules/drupal-empty-catch.yaml
+  - id: drupal-hardcoded-credentials
+    file: rules/drupal-hardcoded-credentials.yaml
+  - id: drupal-unescaped-input
+    file: rules/drupal-unescaped-input.yaml
+  - id: duplicate-logic
+    file: rules/duplicate-logic.yaml
+  - id: empty-catch-block
+    file: rules/empty-catch-block.yaml
+  - id: hardcoded-credentials
+    file: rules/hardcoded-credentials.yaml
   - id: hardcoded-url
     file: rules/hardcoded-url.yaml
   - id: missing-null-check
     file: rules/missing-null-check.yaml
+  - id: missing-type-guard
+    file: rules/missing-type-guard.yaml
+  # Performance (perf)
+  - id: perf-config-load-in-loop
+    file: rules/perf-config-load-in-loop.yaml
+  - id: perf-db-query-in-loop
+    file: rules/perf-db-query-in-loop.yaml
+  - id: perf-entity-load-in-preprocess
+    file: rules/perf-entity-load-in-preprocess.yaml
+  - id: perf-entity-load-multiple
+    file: rules/perf-entity-load-multiple.yaml
+  - id: perf-missing-cache-contexts
+    file: rules/perf-missing-cache-contexts.yaml
+  - id: perf-missing-cache-tags
+    file: rules/perf-missing-cache-tags.yaml
+  - id: perf-missing-index
+    file: rules/perf-missing-index.yaml
+  - id: perf-missing-lazy-builder
+    file: rules/perf-missing-lazy-builder.yaml
+  - id: perf-n1-queries
+    file: rules/perf-n1-queries.yaml
+  - id: perf-no-bigpipe
+    file: rules/perf-no-bigpipe.yaml
+  - id: perf-no-render-cache
+    file: rules/perf-no-render-cache.yaml
+  - id: perf-synchronous-http
+    file: rules/perf-synchronous-http.yaml
+  - id: perf-uncacheable-response
+    file: rules/perf-uncacheable-response.yaml
+  - id: perf-unoptimized-image
+    file: rules/perf-unoptimized-image.yaml
+  - id: perf-views-no-cache
+    file: rules/perf-views-no-cache.yaml
+  # Security (sec)
+  - id: sec-dangerous-permissions
+    file: rules/sec-dangerous-permissions.yaml
+  - id: sec-drupal-t-xss
+    file: rules/sec-drupal-t-xss.yaml
+  - id: sec-error-disclosure
+    file: rules/sec-error-disclosure.yaml
+  - id: sec-file-inclusion
+    file: rules/sec-file-inclusion.yaml
+  - id: sec-global-user
+    file: rules/sec-global-user.yaml
+  - id: sec-insecure-cookie
+    file: rules/sec-insecure-cookie.yaml
+  - id: sec-insecure-hash
+    file: rules/sec-insecure-hash.yaml
+  - id: sec-open-redirect
+    file: rules/sec-open-redirect.yaml
+  - id: sec-preg-replace-eval
+    file: rules/sec-preg-replace-eval.yaml
+  - id: sec-shell-execution
+    file: rules/sec-shell-execution.yaml
+  - id: sec-sql-raw-input
+    file: rules/sec-sql-raw-input.yaml
+  - id: sec-ssrf-url
+    file: rules/sec-ssrf-url.yaml
+  - id: sec-text-format-php
+    file: rules/sec-text-format-php.yaml
+  - id: sec-unsafe-unserialize
+    file: rules/sec-unsafe-unserialize.yaml
+  - id: sec-xml-xxe
+    file: rules/sec-xml-xxe.yaml
+  - id: sec-xss-output
+    file: rules/sec-xss-output.yaml
+  # SEO
+  - id: seo-missing-canonical
+    file: rules/seo-missing-canonical.yaml
+  - id: seo-missing-meta
+    file: rules/seo-missing-meta.yaml
+  - id: seo-missing-og
+    file: rules/seo-missing-og.yaml
+  - id: seo-missing-sitemap
+    file: rules/seo-missing-sitemap.yaml
+  - id: seo-missing-structured-data
+    file: rules/seo-missing-structured-data.yaml
+  # General
+  - id: swallowed-exceptions
+    file: rules/swallowed-exceptions.yaml
+  - id: unescaped-user-input
+    file: rules/unescaped-user-input.yaml
