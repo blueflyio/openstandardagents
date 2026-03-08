@@ -31,11 +31,12 @@ export class OSSAValidator {
    * the Ajv validator with format validation support.
    */
   constructor() {
-    this.diagnosticCollection = vscode.languages.createDiagnosticCollection('ossa');
+    this.diagnosticCollection =
+      vscode.languages.createDiagnosticCollection('ossa');
     this.ajv = new Ajv({
       allErrors: true,
       strict: false,
-      validateFormats: true
+      validateFormats: true,
     });
     addFormats(this.ajv);
   }
@@ -67,8 +68,12 @@ export class OSSAValidator {
 
       // Get schema version from config or manifest
       const config = vscode.workspace.getConfiguration('ossa');
-      const configVersion = config.get<string>('validation.schemaVersion', 'v0.3.3');
-      const manifestVersion = data?.apiVersion?.replace('ossa/', '') || configVersion;
+      const configVersion = config.get<string>(
+        'validation.schemaVersion',
+        'v0.3.3'
+      );
+      const manifestVersion =
+        data?.apiVersion?.replace('ossa/', '') || configVersion;
 
       // Fetch and validate against schema
       const schema = await this.getSchema(manifestVersion);
@@ -86,7 +91,6 @@ export class OSSAValidator {
 
       // Additional OSSA-specific validations
       this.performOSSAValidations(data, diagnostics, document);
-
     } catch (error) {
       // Parse errors
       const diagnostic = new vscode.Diagnostic(
@@ -103,8 +107,12 @@ export class OSSAValidator {
     if (diagnostics.length === 0) {
       vscode.window.setStatusBarMessage('$(check) OSSA: Valid', 3000);
     } else {
-      const errorCount = diagnostics.filter(d => d.severity === vscode.DiagnosticSeverity.Error).length;
-      const warningCount = diagnostics.filter(d => d.severity === vscode.DiagnosticSeverity.Warning).length;
+      const errorCount = diagnostics.filter(
+        (d) => d.severity === vscode.DiagnosticSeverity.Error
+      ).length;
+      const warningCount = diagnostics.filter(
+        (d) => d.severity === vscode.DiagnosticSeverity.Warning
+      ).length;
       vscode.window.setStatusBarMessage(
         `$(warning) OSSA: ${errorCount} errors, ${warningCount} warnings`,
         5000
@@ -149,8 +157,8 @@ export class OSSAValidator {
         properties: {
           apiVersion: { type: 'string' },
           kind: { type: 'string', enum: ['Agent', 'Task', 'Workflow'] },
-          metadata: { type: 'object' }
-        }
+          metadata: { type: 'object' },
+        },
       };
     }
   }
@@ -165,7 +173,10 @@ export class OSSAValidator {
    * @param document - VS Code document being validated
    * @returns VS Code diagnostic for display in the editor
    */
-  private createDiagnostic(error: ErrorObject, document: vscode.TextDocument): vscode.Diagnostic | null {
+  private createDiagnostic(
+    error: ErrorObject,
+    document: vscode.TextDocument
+  ): vscode.Diagnostic | null {
     // Find the line number for the error
     const instancePath = error.instancePath || '';
     const line = this.findLineForPath(document, instancePath);
@@ -205,8 +216,10 @@ export class OSSAValidator {
    */
   private findLineForPath(document: vscode.TextDocument, path: string): number {
     // Simple implementation - find the line containing the path key
-    const pathParts = path.split('/').filter(p => p);
-    if (pathParts.length === 0) {return 0;}
+    const pathParts = path.split('/').filter((p) => p);
+    if (pathParts.length === 0) {
+      return 0;
+    }
 
     const lastKey = pathParts[pathParts.length - 1];
     const text = document.getText();
@@ -241,19 +254,23 @@ export class OSSAValidator {
     // Validate kind-specific requirements
     if (data.kind === 'Agent') {
       if (!data.spec?.role && !data.spec?.prompts?.system) {
-        diagnostics.push(new vscode.Diagnostic(
-          new vscode.Range(0, 0, 0, 0),
-          'Agent must have either spec.role or spec.prompts.system defined',
-          vscode.DiagnosticSeverity.Error
-        ));
+        diagnostics.push(
+          new vscode.Diagnostic(
+            new vscode.Range(0, 0, 0, 0),
+            'Agent must have either spec.role or spec.prompts.system defined',
+            vscode.DiagnosticSeverity.Error
+          )
+        );
       }
 
       if (!data.spec?.llm) {
-        diagnostics.push(new vscode.Diagnostic(
-          new vscode.Range(0, 0, 0, 0),
-          'Agent must have spec.llm configuration',
-          vscode.DiagnosticSeverity.Error
-        ));
+        diagnostics.push(
+          new vscode.Diagnostic(
+            new vscode.Range(0, 0, 0, 0),
+            'Agent must have spec.llm configuration',
+            vscode.DiagnosticSeverity.Error
+          )
+        );
       }
     }
 
@@ -261,31 +278,38 @@ export class OSSAValidator {
     if (data.metadata?.name) {
       const name = data.metadata.name;
       if (name !== name.toLowerCase()) {
-        diagnostics.push(new vscode.Diagnostic(
-          this.findRangeForKey(document, 'name'),
-          'metadata.name should be lowercase (Kubernetes DNS-1123 format)',
-          vscode.DiagnosticSeverity.Warning
-        ));
+        diagnostics.push(
+          new vscode.Diagnostic(
+            this.findRangeForKey(document, 'name'),
+            'metadata.name should be lowercase (Kubernetes DNS-1123 format)',
+            vscode.DiagnosticSeverity.Warning
+          )
+        );
       }
       if (name.includes('_')) {
-        diagnostics.push(new vscode.Diagnostic(
-          this.findRangeForKey(document, 'name'),
-          'metadata.name should use hyphens instead of underscores',
-          vscode.DiagnosticSeverity.Warning
-        ));
+        diagnostics.push(
+          new vscode.Diagnostic(
+            this.findRangeForKey(document, 'name'),
+            'metadata.name should use hyphens instead of underscores',
+            vscode.DiagnosticSeverity.Warning
+          )
+        );
       }
     }
 
     // Validate version format
     if (data.metadata?.version) {
       const version = data.metadata.version;
-      const semverPattern = /^\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?(\+[a-zA-Z0-9.-]+)?$/;
+      const semverPattern =
+        /^\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?(\+[a-zA-Z0-9.-]+)?$/;
       if (!semverPattern.test(version)) {
-        diagnostics.push(new vscode.Diagnostic(
-          this.findRangeForKey(document, 'version'),
-          'metadata.version should follow semantic versioning (e.g., 1.0.0)',
-          vscode.DiagnosticSeverity.Warning
-        ));
+        diagnostics.push(
+          new vscode.Diagnostic(
+            this.findRangeForKey(document, 'version'),
+            'metadata.version should follow semantic versioning (e.g., 1.0.0)',
+            vscode.DiagnosticSeverity.Warning
+          )
+        );
       }
     }
   }
@@ -300,7 +324,10 @@ export class OSSAValidator {
    * @param key - YAML key to find (e.g., "name", "version")
    * @returns VS Code range or 0,0 if not found
    */
-  private findRangeForKey(document: vscode.TextDocument, key: string): vscode.Range {
+  private findRangeForKey(
+    document: vscode.TextDocument,
+    key: string
+  ): vscode.Range {
     const text = document.getText();
     const lines = text.split('\n');
 

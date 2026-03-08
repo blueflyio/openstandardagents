@@ -132,6 +132,16 @@ hooks/
 # Public folder (GitLab Pages only)
 public/
 
+# Compiled dev tooling (should not ship in npm package)
+dist/tools/
+dist/dev-cli/
+dist/deployment-templates/
+dist/packages/
+
+# Source maps (reduce package size)
+dist/**/*.js.map
+dist/**/*.d.ts.map
+
 # Keep these for npm package (listed in package.json "files"):
 # - dist/ (compiled TypeScript code)
 # - bin/ (CLI entry point)

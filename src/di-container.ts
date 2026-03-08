@@ -24,6 +24,7 @@ import { GitService } from './services/git.service.js';
 import { KnowledgeService } from './services/knowledge.service.js';
 import { LlmsTxtService } from './services/llms-txt/llms-txt.service.js';
 import { ManifestCrudService } from './services/manifest/manifest-crud.service.js';
+import { McpBridgeService } from './services/mcp/bridge.service.js';
 import { MigrationTransformService } from './services/migration-transform.service.js';
 import { MigrationService } from './services/migration.service.js';
 import { LangChainMigrationService } from './services/migration/langchain-migration.service.js';
@@ -68,6 +69,15 @@ import {
     SkillsInstallService,
     SkillsResearchService,
 } from './services/skills-pipeline/index.js';
+
+// Daemon Services (Neural Forge)
+import { AuditLogService } from './services/daemon/audit-log.service.js';
+import { DaemonWebSocketServer } from './services/daemon/ws-server.js';
+import { ExecutionService } from './services/daemon/execution.service.js';
+import { FileWatcherService } from './services/daemon/fs-watcher.service.js';
+import { PairingService } from './services/daemon/pairing.service.js';
+import { SkillAggregatorService } from './services/daemon/skill-aggregator.service.js';
+import { SSEEndpoints } from './services/daemon/sse-endpoints.js';
 
 // DI Type Identifiers
 export const TYPES = {
@@ -117,6 +127,7 @@ container.bind(AgentTypeDetectorService).toSelf();
 container.bind(TYPES.AgentTypeDetectorService).to(AgentTypeDetectorService);
 container.bind(ManifestCrudService).toSelf();
 container.bind(WorkspaceService).toSelf();
+container.bind(McpBridgeService).toSelf();
 
 // Bind codegen generators (must be bound before CodegenService)
 container.bind(ManifestGenerator).toSelf();
@@ -146,6 +157,16 @@ container.bind(SkillsResearchService).toSelf();
 container.bind(SkillsGeneratorService).toSelf();
 container.bind(SkillsExportService).toSelf();
 container.bind(SkillsInstallService).toSelf();
+
+// Bind daemon services (Neural Forge) — singletons for shared state
+container.bind(PairingService).toSelf().inSingletonScope();
+container.bind(DaemonWebSocketServer).toSelf().inSingletonScope();
+container.bind(FileWatcherService).toSelf().inSingletonScope();
+container.bind(AuditLogService).toSelf().inSingletonScope();
+container.bind(SSEEndpoints).toSelf();
+// Transient: new instance per resolution
+container.bind(SkillAggregatorService).toSelf();
+container.bind(ExecutionService).toSelf();
 
 /**
  * Get service from container

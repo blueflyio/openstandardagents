@@ -17,7 +17,10 @@ import chalk from 'chalk';
 const CWD = process.cwd();
 const REGISTRY_PATH = resolve(CWD, 'openapi/registry.yaml');
 const RULESET_PATH = resolve(CWD, 'config/linting/.spectral.yaml');
-const OSSA_VALIDATOR = resolve(CWD, 'src/tools/validation/validate-openapi-extensions.ts');
+const OSSA_VALIDATOR = resolve(
+  CWD,
+  'src/tools/validation/validate-openapi-extensions.ts'
+);
 
 interface RegistrySpec {
   path: string;
@@ -48,7 +51,10 @@ function getSpecPaths(): string[] {
   function walk(dir: string): void {
     let entries: { name: string; isFile: () => boolean }[];
     try {
-      entries = readdirSync(dir, { withFileTypes: true }) as { name: string; isFile: () => boolean }[];
+      entries = readdirSync(dir, { withFileTypes: true }) as {
+        name: string;
+        isFile: () => boolean;
+      }[];
     } catch {
       return;
     }
@@ -68,7 +74,11 @@ function getSpecPaths(): string[] {
 
 function runSpectral(specPaths: string[]): boolean {
   if (!existsSync(RULESET_PATH)) {
-    console.warn(chalk.yellow('Ruleset not found: config/linting/.spectral.yaml, skipping Spectral'));
+    console.warn(
+      chalk.yellow(
+        'Ruleset not found: config/linting/.spectral.yaml, skipping Spectral'
+      )
+    );
     return true;
   }
   console.log(chalk.cyan('Spectral lint (OpenAPI 3.x structure)...'));
@@ -85,12 +95,16 @@ function runSpectral(specPaths: string[]): boolean {
 
 function runOssaExtensions(specPaths: string[]): boolean {
   if (!existsSync(OSSA_VALIDATOR)) {
-    console.warn(chalk.yellow('OSSA validator not found, skipping OSSA extensions'));
+    console.warn(
+      chalk.yellow('OSSA validator not found, skipping OSSA extensions')
+    );
     return true;
   }
   console.log(chalk.cyan('OSSA OpenAPI extensions validation...'));
   try {
-    const relPaths = specPaths.map((p) => p.replace(CWD + '/', '').replace(CWD + '\\', ''));
+    const relPaths = specPaths.map((p) =>
+      p.replace(CWD + '/', '').replace(CWD + '\\', '')
+    );
     execSync(
       `npx tsx "${OSSA_VALIDATOR}" ${relPaths.map((p) => `"${p}"`).join(' ')}`,
       { stdio: 'inherit', cwd: CWD, shell: true }
@@ -111,7 +125,11 @@ function main(): void {
   const ossaOk = runOssaExtensions(specPaths);
 
   if (!spectralOk) {
-    console.warn(chalk.yellow('\nSpectral lint had issues (e.g. unresolved $ref). OSSA extension validation is the gate.'));
+    console.warn(
+      chalk.yellow(
+        '\nSpectral lint had issues (e.g. unresolved $ref). OSSA extension validation is the gate.'
+      )
+    );
   }
   if (!ossaOk) {
     console.error(chalk.red('\nOpenAPI validation failed (OSSA extensions)'));

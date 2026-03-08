@@ -24,7 +24,9 @@ export class DrupalExporter {
 
     const drupalFormat = this.convertToDrupalFormat(manifest);
     const skillId = `drupal-${manifest.metadata.name}`;
-    const url = targetUrl ? `${targetUrl}/agent-skills/${manifest.metadata.name}` : undefined;
+    const url = targetUrl
+      ? `${targetUrl}/agent-skills/${manifest.metadata.name}`
+      : undefined;
 
     if (targetUrl) {
       try {

@@ -187,9 +187,10 @@ export function addStandardValidationOptions(command: Command): Command {
  * Resolution order:
  * 1. --registry flag (highest priority)
  * 2. OSSA_REGISTRY_URL environment variable
- * 3. Default: https://mesh.blueflyagents.com
+ * 3. Default: OSSA_REGISTRY_URL env var (empty if not set)
  */
-export const DEFAULT_REGISTRY_URL = 'https://mesh.blueflyagents.com';
+export const DEFAULT_REGISTRY_URL =
+  process.env.OSSA_REGISTRY_URL || '';
 
 export function addRegistryOptions(command: Command): Command {
   return command

@@ -435,7 +435,10 @@ function printSummary(results: ValidationResult[]): void {
   const skippedCount = results.length - openapiResults.length;
   const validCount = openapiResults.filter((r) => r.valid).length;
   const invalidCount = openapiResults.length - validCount;
-  const totalWarnings = openapiResults.reduce((acc, r) => acc + r.warnings.length, 0);
+  const totalWarnings = openapiResults.reduce(
+    (acc, r) => acc + r.warnings.length,
+    0
+  );
   const totalOssaExtensions = openapiResults.reduce(
     (acc, r) =>
       acc +
@@ -533,7 +536,9 @@ function main(): void {
       process.exit(2);
     }
     if (!jsonOutput) {
-      console.log(chalk.blue(`Validating ${files.length} OpenAPI spec(s) (openapi/)\n`));
+      console.log(
+        chalk.blue(`Validating ${files.length} OpenAPI spec(s) (openapi/)\n`)
+      );
     }
   }
 

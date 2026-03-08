@@ -1,0 +1,11 @@
+id: unescaped-user-input
+description: User or request input rendered without escaping (XSS risk).
+anti_pattern:
+  type: regex
+  pattern: (innerHTML|dangerouslySetInnerHTML|document\.write)\s*=\s*[^;]*(\$\{|`|\+.*(req\.|params\.|query\.|body\.))
+  path_glob: "**/*.{ts,tsx,js,jsx,php}"
+fix_suggestion: Escape user input (e.g. textContent, React default escaping, or server-side escape).
+severity: error
+dimension: security
+target_languages: [typescript, javascript, php]
+tags: [xss, security, vibecoding]

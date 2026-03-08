@@ -48,6 +48,10 @@ export const validateCommand = new Command('validate')
     '--min-api-version <version>',
     'Require manifest apiVersion to be in the allowed set for this minimum (e.g. ossa/v0.4). Fails validation if not compliant.'
   )
+  .option(
+    '--reasoning <pattern>',
+    'Require or validate cognition pattern (sequential, tree_of_thought, react, plan_and_execute). When set, checks manifest cognition.pattern or suggests adding spec.cognition (v0.5.0 draft).'
+  )
   .description(
     'Validate OSSA agent manifest or OpenAPI spec against JSON schema'
   );
@@ -73,6 +77,7 @@ validateCommand.action(
       platform?: string;
       all?: boolean;
       minApiVersion?: string;
+      reasoning?: string;
     }
   ) => {
     const useColor = shouldUseColor(options);
@@ -97,6 +102,41 @@ validateCommand.action(
         log(`Validating OSSA agent: ${path}`, chalk.blue);
       }
       const manifest = await manifestRepo.load(path);
+
+      // Hard-fail on revoked lifecycle/status (governance; schema supports metadata.status)
+      if (!options.openapi) {
+        const meta = (manifest as Record<string, unknown>)?.metadata as
+          | Record<string, unknown>
+          | undefined;
+        if (meta?.status === 'revoked' || meta?.lifecycle === 'revoked') {
+          const err = {
+            instancePath: '',
+            message:
+              'Manifest is revoked (metadata.status or metadata.lifecycle). Revoked agents must not pass validation.',
+            keyword: 'revocationStatus',
+          } as const;
+          if (options.json || options.output === 'json') {
+            outputJSON({
+              valid: false,
+              path,
+              errors: [err],
+              warnings: [],
+            });
+            process.exit(ExitCode.GENERAL_ERROR);
+          }
+          if (!options.quiet) {
+            console.error(
+              useColor
+                ? chalk.red.bold('\nValidation Failed')
+                : '\nValidation Failed'
+            );
+            console.error(
+              useColor ? chalk.red(`  ${err.message}`) : `  ${err.message}`
+            );
+          }
+          process.exit(ExitCode.GENERAL_ERROR);
+        }
+      }
 
       // Validate
       let result: ValidationResult;
@@ -130,6 +170,52 @@ validateCommand.action(
                 instancePath: '',
                 message: `apiVersion "${m.apiVersion ?? 'missing'}" is not compliant; required: ${vc.requiredVersion} (use ossa/v0.4 or later)`,
                 keyword: 'versionCompliance',
+              } as any,
+            ],
+          };
+        }
+      }
+
+      // Cognition pattern (--reasoning): require or validate spec.cognition (v0.5.0 draft)
+      const validReasoningPatterns = [
+        'sequential',
+        'tree_of_thought',
+        'react',
+        'plan_and_execute',
+      ];
+      if (
+        options.reasoning &&
+        !options.openapi &&
+        result.valid &&
+        validReasoningPatterns.includes(options.reasoning)
+      ) {
+        const manifestObj = manifest as Record<string, unknown>;
+        const cognition = manifestObj?.cognition as
+          | { pattern?: string }
+          | undefined;
+        if (!cognition) {
+          result = {
+            ...result,
+            valid: false,
+            errors: [
+              ...(result.errors || []),
+              {
+                instancePath: '/cognition',
+                message: `--reasoning ${options.reasoning} requires spec.cognition (v0.5.0 draft). Add a top-level "cognition" block with "pattern": "${options.reasoning}".`,
+                keyword: 'cognition',
+              } as any,
+            ],
+          };
+        } else if (cognition.pattern !== options.reasoning) {
+          result = {
+            ...result,
+            valid: false,
+            errors: [
+              ...(result.errors || []),
+              {
+                instancePath: '/cognition/pattern',
+                message: `cognition.pattern is "${cognition.pattern ?? 'missing'}"; --reasoning requires "${options.reasoning}".`,
+                keyword: 'cognition',
               } as any,
             ],
           };

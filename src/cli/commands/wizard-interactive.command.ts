@@ -3720,7 +3720,7 @@ Guidelines:
         type: 'input',
         name: 'organization',
         message: '  Organization name (for GAID):',
-        default: 'blueflyio',
+        default: process.env.OSSA_ORG || 'my-org',
         when: (answers: any) => answers.generate_gaid,
       },
       {
@@ -3741,7 +3741,7 @@ Guidelines:
         type: 'input',
         name: 'api_url',
         message: '  Registry API URL:',
-        default: 'https://mesh.blueflyagents.com',
+        default: process.env.OSSA_REGISTRY_URL || '',
         when: (answers: any) => answers.register_agent,
       },
     ]);
@@ -3762,7 +3762,7 @@ Guidelines:
     if (outputAnswers.generate_gaid) {
       printInfo('\n🆔 Generating Global Agent ID (GAID)...');
 
-      const org = outputAnswers.organization || 'blueflyio';
+      const org = outputAnswers.organization || process.env.OSSA_ORG || 'my-org';
       const prefix = outputAnswers.serial_prefix || 'AG';
 
       // Generate deterministic UUID v5 based on agent metadata

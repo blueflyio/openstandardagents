@@ -1,0 +1,34 @@
+# Audit Rules Catalog Index
+# Consumed by Dragonfly and other audit engines. Rule definitions live in rules/*.yaml.
+version: "1.0.0"
+dimensions:
+  - security
+  - performance
+  - accessibility
+  - seo
+  - architecture
+  - best-practices
+  - syntax
+  - aeo
+  - veo
+rules:
+  - id: swallowed-exceptions
+    file: rules/swallowed-exceptions.yaml
+  - id: missing-type-guard
+    file: rules/missing-type-guard.yaml
+  - id: unescaped-user-input
+    file: rules/unescaped-user-input.yaml
+  - id: hardcoded-credentials
+    file: rules/hardcoded-credentials.yaml
+  - id: empty-catch-block
+    file: rules/empty-catch-block.yaml
+  - id: duplicate-logic
+    file: rules/duplicate-logic.yaml
+  - id: console-log-in-production
+    file: rules/console-log-in-production.yaml
+  - id: any-type-typescript
+    file: rules/any-type-typescript.yaml
+  - id: hardcoded-url
+    file: rules/hardcoded-url.yaml
+  - id: missing-null-check
+    file: rules/missing-null-check.yaml

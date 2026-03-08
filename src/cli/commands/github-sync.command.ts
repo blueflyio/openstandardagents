@@ -43,13 +43,13 @@ export function createGitHubSyncCommand(): Command {
 function createService(): GitHubSyncService {
   const config = {
     github: {
-      owner: process.env.GITHUB_OWNER || 'blueflyio',
+      owner: process.env.GITHUB_OWNER || process.env.OSSA_ORG || '',
       repo: process.env.GITHUB_REPO || 'openstandardagents',
       token: process.env.GITHUB_TOKEN || '',
     },
     gitlab: {
       projectId:
-        process.env.GITLAB_PROJECT_ID || 'blueflyio%2Fopenstandardagents',
+        process.env.GITLAB_PROJECT_ID || '',
       token: process.env.GITLAB_TOKEN || '',
     },
   };

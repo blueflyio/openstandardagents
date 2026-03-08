@@ -1,0 +1,11 @@
+id: hardcoded-url
+description: Production or environment-specific URL hardcoded in code.
+anti_pattern:
+  type: regex
+  pattern: https?://[a-zA-Z0-9.-]+\.(com|io|org|net|blueflyagents\.com)[^\s'"]*
+  path_glob: "**/*.{ts,js,php}"
+fix_suggestion: Use config, environment variable, or settings (e.g. baseURL from config).
+severity: warning
+dimension: architecture
+target_languages: [typescript, javascript, php]
+tags: [config-first, vibecoding]

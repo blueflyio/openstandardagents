@@ -35,7 +35,9 @@ function check(dir: string): string[] {
 
 const symlinks = check(ROOT);
 if (symlinks.length > 0) {
-  console.error('Symlinks found (policy violation). Remove them and use direct paths or config paths.');
+  console.error(
+    'Symlinks found (policy violation). Remove them and use direct paths or config paths.'
+  );
   symlinks.forEach((s) => console.error('  ', s));
   process.exit(1);
 }

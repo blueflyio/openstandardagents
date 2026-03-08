@@ -24,7 +24,10 @@ program
   .command('convert')
   .description('Convert agent configuration to OSSA manifest')
   .argument('<input>', 'Input file (JSON or YAML)')
-  .option('-f, --framework <name>', 'Framework name (langchain, crewai, autogen)')
+  .option(
+    '-f, --framework <name>',
+    'Framework name (langchain, crewai, autogen)'
+  )
   .option('-o, --output <file>', 'Output file (default: stdout)')
   .option('-s, --strict', 'Enable strict mode', false)
   .option('--target-version <version>', 'Target OSSA version', '0.3')
@@ -72,7 +75,9 @@ program
 
       // Show metadata
       console.log(chalk.dim('\nMetadata:'));
-      console.log(chalk.dim(`  Framework: ${result.metadata.source_framework}`));
+      console.log(
+        chalk.dim(`  Framework: ${result.metadata.source_framework}`)
+      );
       console.log(chalk.dim(`  OSSA Version: ${result.metadata.ossa_version}`));
       console.log(chalk.dim(`  Converted: ${result.metadata.conversion_time}`));
     } catch (error) {
@@ -86,7 +91,10 @@ program
   .command('validate')
   .description('Validate if input can be converted')
   .argument('<input>', 'Input file (JSON or YAML)')
-  .option('-f, --framework <name>', 'Framework name (langchain, crewai, autogen)')
+  .option(
+    '-f, --framework <name>',
+    'Framework name (langchain, crewai, autogen)'
+  )
   .action(async (input: string, options: Record<string, unknown>) => {
     const spinner = ora('Validating input...').start();
 
@@ -135,8 +143,12 @@ program
     });
 
     console.log(chalk.dim('\nUsage:'));
-    console.log(chalk.dim('  ossa-convert convert input.json --framework langchain'));
-    console.log(chalk.dim('  ossa-convert convert input.json --output agent.ossa.yaml'));
+    console.log(
+      chalk.dim('  ossa-convert convert input.json --framework langchain')
+    );
+    console.log(
+      chalk.dim('  ossa-convert convert input.json --output agent.ossa.yaml')
+    );
   });
 
 program.parse();

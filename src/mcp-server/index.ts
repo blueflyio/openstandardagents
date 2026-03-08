@@ -42,7 +42,10 @@ import pino from 'pino';
 import semver from 'semver';
 import { z } from 'zod';
 
-import { registry as convertRegistry, initializeAdapters } from '../adapters/index.js';
+import {
+    registry as convertRegistry,
+    initializeAdapters,
+} from '../adapters/index.js';
 import {
     getAgentTypeConfigs,
     getDefaultAgentKind,
@@ -124,6 +127,8 @@ const ScaffoldInput = z.object({
     .optional()
     .default('worker'),
   version: z.string().optional(),
+  source_project_id: z.string().optional(),
+  execution_node_id: z.string().optional(),
 });
 
 const GenerateInput = z.object({
@@ -1158,8 +1163,8 @@ async function handleScaffold(args: Record<string, unknown>) {
       description:
         input.description || getDefaultDescriptionTemplate(input.name),
       mesh_bindings: {
-        gitlab_project_id: '',
-        drupal_canvas_node_id: '',
+        source_project_id: input.source_project_id || process.env.OSSA_DEFAULT_SOURCE_PROJECT_ID || '',
+        execution_node_id: input.execution_node_id || process.env.OSSA_DEFAULT_EXECUTION_NODE_ID || '',
       },
     },
     spec: {
@@ -1452,6 +1457,7 @@ async function handleInspect(args: Record<string, unknown>) {
       : null,
     kind: manifest.kind,
     apiVersion: manifest.apiVersion,
+    mesh_bindings: meta?.mesh_bindings || null,
     description: meta?.description,
     role: spec?.role
       ? String(spec.role).substring(0, 200) +
@@ -1460,7 +1466,6 @@ async function handleInspect(args: Record<string, unknown>) {
     llm: spec?.llm || null,
     tools: toolSummary,
     tool_count: specTools.length,
-    mesh_bindings: meta?.mesh_bindings || null,
     access_tier: access?.tier || null,
     autonomy_level: autonomy?.level || autonomy?.humanInLoop || null,
     deploy_targets: deployTargets,

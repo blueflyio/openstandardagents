@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://openstandardagents.org/schemas/v0.3.5/extensions/ag2/ag2.json",
+  "$id": "https://openstandardagents.org/schemas/v0.4.6/extensions/ag2/ag2.json",
   "title": "AG2 (AutoGen) Extension",
   "description": "Native integration with Microsoft AG2 (AutoGen) for multi-agent conversations, group chats, nested chats, and swarm topologies.",
   "type": "object",

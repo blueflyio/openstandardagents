@@ -1,4 +1,4 @@
-# Kagent Extension for OSSA v0.3.5
+# Kagent Extension for OSSA v0.4.6
 
 ## Overview
 
@@ -137,7 +137,7 @@ Production-ready monitoring:
 ### Basic Kagent Agent
 
 ```yaml
-apiVersion: ossa/v0.3.5
+apiVersion: ossa/v0.4.6
 kind: Agent
 metadata:
   name: k8s-troubleshooter
@@ -161,7 +161,7 @@ spec:
 ### Enterprise Compliance Agent
 
 ```yaml
-apiVersion: ossa/v0.3.5
+apiVersion: ossa/v0.4.6
 kind: Agent
 metadata:
   name: compliance-validator
