@@ -14,13 +14,14 @@ OSSA is not a protocol (like MCP or A2A) and not a framework (like LangChain or 
 - **Builds on A2A** - Supports A2A messaging and agent-to-agent communication
 - **Extends protocols** - Adds deployment and packaging layer on top of communication protocols
 
-## 🇺🇸 NIST AI Agent Standards Alignment
+## 🇺🇸 NIST CAISI RFI Alignment (NIST-2025-0035)
 
-OSSA v0.4.6 natively aligns with the [NIST AI Agent Standards Initiative](https://www.nist.gov/caisi/ai-agent-standards-initiative) driven by the Center for AI Standards and Innovation (CAISI) and the Information Technology Laboratory (ITL).
+OSSA natively aligns with the [NIST CAISI Request for Information on Collaborative AI Systems Integration](https://www.regulations.gov/docket/NIST-2025-0035), providing the critical **Contract Layer** missing from current agent protocols.
 
-- **Secure Interoperability**: OSSA's `A2AExtension` schema guarantees seamless multi-vendor agent coordination across network boundaries using standardized protocols.
-- **Agent Identity & Authorization**: Built-in `AgentIdentity`, `AccessTier`, and `SeparationOfDuties` schemas immediately fulfill ITL's criteria for zero-trust verifiable credentials, semantic role isolation, and self-rotating service accounts.
-- **Provable Compliance**: The `metadata.compliance` specification allows agents to cryptographically declare their alignment to Federal and industry governance frameworks directly in their manifest.
+- **Agent Identity (IA-3)**: W3C Decentralized Identifiers (GAID) provide cryptographic origin authentication for agents.
+- **Pre-Authorization (AC-3, AC-6)**: Deterministic AWS Cedar policies evaluated at the transport layer enforce zero-trust bounds before an LLM receives context.
+- **Federated Discovery**: Integration with DUADP (`.well-known` endpoints) scales agent discovery securely across organizational boundaries without centralized lock-in.
+- **Supply Chain Security (SI-7)**: Cryptographically signed manifests (`x-signature`) and explicit OSCAL/SBOM pointers prevent tool poisoning and supply chain attacks.
 
 ## What's New
 
