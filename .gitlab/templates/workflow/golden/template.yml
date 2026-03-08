@@ -635,10 +635,10 @@ security:secrets:
 
 security:container:
   stage: security
-  image: docker:24.0.5
+  image: docker:27
   needs: ['setup:project-detection']
   services:
-    - docker:24.0.5-dind
+    - docker:27-dind
   variables:
     DOCKER_TLS_CERTDIR: '/certs'
   script:
@@ -867,10 +867,10 @@ build:nodejs:
 
 build:docker:
   stage: build
-  image: docker:24.0.5
+  image: docker:27
   needs: ['security:container']
   services:
-    - docker:24.0.5-dind
+    - docker:27-dind
   variables:
     DOCKER_TLS_CERTDIR: '/certs'
   script:
