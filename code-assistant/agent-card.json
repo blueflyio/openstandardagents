@@ -1,0 +1,82 @@
+{
+  "uri": "uadp://default/code-assistant",
+  "name": "code-assistant",
+  "version": "1.0.0",
+  "ossaVersion": "ossa/v0.4",
+  "taxonomy": {
+    "agentType": "claude",
+    "agentKind": "assistant",
+    "architecture": {
+      "pattern": "single",
+      "capabilities": [
+        "tools",
+        "code",
+        "context"
+      ]
+    }
+  },
+  "capabilities": [
+    "tools",
+    "code",
+    "context",
+    "assistant"
+  ],
+  "tools": [
+    {
+      "name": "read_file",
+      "description": "Read a file from the filesystem",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "write_file",
+      "description": "Write content to a file",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "run_tests",
+      "description": "Execute test suite",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ],
+  "role": "You are an expert code assistant. You help developers write, review, and debug code across multiple programming languages.\n",
+  "model": {
+    "provider": "anthropic",
+    "model": "claude-sonnet-4-5-20250514",
+    "temperature": 0.3,
+    "maxTokens": 8192
+  },
+  "constraints": {
+    "cost": {
+      "maxTokensPerDay": 500000,
+      "maxTokensPerRequest": 8192
+    },
+    "performance": {
+      "maxLatencySeconds": 30,
+      "timeoutSeconds": 120
+    }
+  },
+  "endpoints": {},
+  "transport": [
+    "http"
+  ],
+  "authentication": [
+    "bearer"
+  ],
+  "encryption": {
+    "tlsRequired": true,
+    "minTlsVersion": "1.2"
+  },
+  "metadata": {
+    "description": "A single code assistant agent"
+  },
+  "cardProfile": "discovery"
+}
