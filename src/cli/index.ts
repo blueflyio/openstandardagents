@@ -47,6 +47,7 @@ import { lintCommand } from './commands/lint.command.js';
 import { llmsTxtCommand } from './commands/llms-txt.command.js';
 import { migrateBatchCommand } from './commands/migrate-batch.command.js';
 import { migrateCommand } from './commands/migrate.command.js';
+import { policyCommand } from './commands/policy.command.js';
 import { publishCommand } from './commands/publish.command.js';
 import { quickstartCommand } from './commands/quickstart.command.js';
 import { registryCommand } from './commands/registry.command.js';
@@ -277,6 +278,7 @@ program.addCommand(complianceCommand);
 program.addCommand(governanceCommand);
 program.addCommand(contractCommand);
 program.addCommand(signCommand);
+program.addCommand(policyCommand);
 
 // --- Advanced (hidden from main --help, still fully accessible) ---
 for (const cmd of [
@@ -328,7 +330,7 @@ program.addHelpText(
   Lifecycle:  lifecycle (score, review, approve, reject, deprecate, archive, catalog, duadp-sync)
   Docs:       agents-md, llms-txt, docs
   Skills:     skills, template
-  Compliance: conformance, compliance, governance, contract
+  Compliance: conformance, compliance, governance, contract, policy
   More:       platforms (matrix: GitLab, Drupal, kagent, OpenAI, Claude, etc.),
               quickstart, import, enhance, registry, migrate-batch, langchain, langflow.
 `

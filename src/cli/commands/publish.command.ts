@@ -15,7 +15,7 @@ import {
 } from '../utils/standard-options.js';
 
 export const publishCommand = new Command('publish')
-  .description('Publish an OSSA agent to the registry')
+  .description('Publish an OSSA agent to the registry (local or remote DUADP node)')
   .argument('<manifest>', 'Path to OSSA manifest file')
   .option(
     '-v, --version <version>',
@@ -24,6 +24,14 @@ export const publishCommand = new Command('publish')
   .option(
     '-r, --registry <path>',
     'Registry path (defaults to .ossa-registry)'
+  )
+  .option(
+    '--remote <url>',
+    'Publish to a remote DUADP node (e.g., https://discover.duadp.org)'
+  )
+  .option(
+    '--token <token>',
+    'Bearer token for remote DUADP node authentication'
   );
 
 // Apply production-grade standard options
@@ -36,6 +44,8 @@ publishCommand.action(
     options: {
       version?: string;
       registry?: string;
+      remote?: string;
+      token?: string;
       verbose?: boolean;
       quiet?: boolean;
       dryRun?: boolean;
@@ -64,7 +74,33 @@ publishCommand.action(
       }
 
       if (options.dryRun) {
-        log('🔍 DRY RUN MODE - Not publishing to registry', chalk.yellow);
+        log('DRY RUN MODE - Not publishing to registry', chalk.yellow);
+      }
+
+      // Remote DUADP node publishing
+      if (options.remote) {
+        const { DuadpClient } = await import('@bluefly/duadp');
+        const client = new DuadpClient(options.remote, {
+          token: options.token || process.env.DUADP_TOKEN,
+        });
+
+        if (options.dryRun) {
+          const id = manifest.metadata?.name || 'unknown';
+          log(`\nWould publish to ${options.remote}: ${id}`, chalk.blue);
+          process.exit(ExitCode.SUCCESS);
+        }
+
+        const result = await client.publish(manifest as any);
+        if (result.success) {
+          log(`\nPublished to ${options.remote}: ${(result as any).gaid || manifest.metadata?.name}`, chalk.green);
+          if (options.verbose && (result as any).trust_verification) {
+            log(`  Trust tier: ${(result as any).trust_verification.verified_tier}`, chalk.gray);
+          }
+        } else {
+          console.error(useColor ? chalk.red(`\nPublish failed: ${(result as any).error || 'Unknown error'}`) : `\nPublish failed`);
+          process.exit(ExitCode.GENERAL_ERROR);
+        }
+        process.exit(ExitCode.SUCCESS);
       }
 
       // Initialize registry
