@@ -1,0 +1,32 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ossa-agentscope"
+version = "0.1.0"
+description = "OSSA manifest adapter for AgentScope - reads OSSA v0.4.6 manifests and instantiates AgentScope agents"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.10"
+authors = [{ name = "BlueFly Collective", email = "dev@bluefly.io" }]
+dependencies = [
+    "agentscope>=1.0.16",
+    "pydantic>=2.0",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "pytest-asyncio>=0.23", "ruff>=0.4"]
+mem0 = ["mem0ai"]
+redis = ["redis"]
+
+[project.scripts]
+ossa-agentscope = "adapters.agentscope.cli:main"
+
+[tool.ruff]
+target-version = "py310"
+line-length = 120
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"

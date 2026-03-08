@@ -41,3 +41,7 @@ agents:
   - name: version-migrator
     manifest: version-migrator/agent.ossa.yaml
     labels: { category: migration, tier: production, criticality: high }
+
+  - name: agentscope-react-assistant
+    manifest: agentscope-react-assistant/agent.ossa.yaml
+    labels: { category: example, tier: alpha, criticality: low }

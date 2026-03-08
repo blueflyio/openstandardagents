@@ -127,6 +127,7 @@ export type AgentType =
   | 'mcp-server' // MCP server
   | 'agent-sdk' // Claude Agent SDK
   | 'adk' // Google Agent Development Kit
+  | 'agentscope' // AgentScope multi-agent framework
   | 'custom'; // Custom implementations
 
 /**
