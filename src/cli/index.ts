@@ -84,6 +84,9 @@ import { frameworkCommand } from './commands/framework.command.js';
 import { langchainCommand } from './commands/langchain.command.js';
 import { langflowCommand } from './commands/langflow.command.js';
 
+// Lifecycle & curation commands
+import { createLifecycleCommand } from './commands/lifecycle.command.js';
+
 // Additional commands (previously unregistered)
 import { agentWizardCommand } from './commands/agent-wizard.command.js';
 import { docsCommand } from './commands/docs.command.js';
@@ -246,11 +249,12 @@ program.addCommand(installCommand);
 program.addCommand(updateCommand);
 program.addCommand(searchCommand);
 
-// --- Deployment ---
+// --- Deployment & Lifecycle ---
 program.addCommand(deployCommand);
 program.addCommand(statusCommand);
 program.addCommand(rollbackCommand);
 program.addCommand(stopCommand);
+program.addCommand(createLifecycleCommand());
 
 // --- Documentation ---
 program.addCommand(agentsMdCommand);
@@ -321,6 +325,7 @@ program.addHelpText(
   Dev:        generate, daemon, dev, serve, run, test
   Distribute: publish, install, update, search
   Deploy:     deploy, status, rollback, stop
+  Lifecycle:  lifecycle (score, review, approve, reject, deprecate, archive, catalog, duadp-sync)
   Docs:       agents-md, llms-txt, docs
   Skills:     skills, template
   Compliance: conformance, compliance, governance, contract

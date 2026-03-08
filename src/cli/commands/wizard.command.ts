@@ -1192,7 +1192,19 @@ export const wizardCommand = new Command('wizard')
         console.log(
           chalk.gray(`  ${stepNum}. Register: ossa workspace discover`)
         );
+        stepNum++;
       }
+      console.log(
+        chalk.gray(`  ${stepNum}. Score: ossa lifecycle score ${outputPath}`)
+      );
+      stepNum++;
+      console.log(
+        chalk.gray(`  ${stepNum}. Publish to DUADP: ossa lifecycle duadp-register <name>`)
+      );
+      stepNum++;
+      console.log(
+        chalk.gray(`  ${stepNum}. Export to platform: ossa export ${outputPath} --platform docker`)
+      );
 
       rl.close();
       process.exit(0);
