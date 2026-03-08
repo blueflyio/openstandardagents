@@ -1230,6 +1230,13 @@ class APIFirstWizard {
     }
 
     printSuccess('All files generated successfully');
+
+    console.log('');
+    console.log('Next steps:');
+    console.log(`  1. Validate: ossa validate ${outputPath}`);
+    console.log(`  2. Score:    ossa lifecycle score ${outputPath}`);
+    console.log(`  3. Export:   ossa export ${outputPath} --platform docker`);
+    console.log(`  4. Register: ossa lifecycle duadp-register <name>`);
   }
 
   private generateAgentsMd(directory: string): void {

@@ -151,6 +151,8 @@ export interface AgentCard {
   name: string;
   version: string;
   ossaVersion: string;
+  uuid?: string;
+  gaid?: string;
 
   // Taxonomy — what kind of agent is this?
   taxonomy?: AgentTaxonomy;

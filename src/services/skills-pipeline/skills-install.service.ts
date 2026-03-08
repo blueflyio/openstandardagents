@@ -4,10 +4,10 @@
  * Compatible with AgentSkills.io layout and npx skills add style (repo + --skill name).
  */
 
-import { injectable } from 'inversify';
-import * as fs from 'fs/promises';
-import * as path from 'path';
 import { Octokit } from '@octokit/rest';
+import * as fs from 'fs/promises';
+import { injectable } from 'inversify';
+import * as path from 'path';
 
 export interface SkillsInstallOptions {
   repoUrl: string;
@@ -156,7 +156,7 @@ export class SkillsInstallService {
 
       const prefix = skillPath.endsWith('/') ? skillPath : `${skillPath}/`;
       const blobEntries = (fullTree.data.tree || []).filter(
-        (e: { path?: string; type: string }) =>
+        (e: any) =>
           e.type === 'blob' &&
           e.path &&
           (e.path === skillPath || e.path.startsWith(prefix))
@@ -250,10 +250,10 @@ export class SkillsInstallService {
 
       const skillMdPaths = (tree.tree || [])
         .filter(
-          (e: { path?: string; type: string }) =>
+          (e: any) =>
             e.type === 'blob' && e.path?.endsWith('SKILL.md')
         )
-        .map((e: { path: string }) => e.path);
+        .map((e: any) => e.path);
 
       const dirs = new Map<string, string>();
       for (const p of skillMdPaths) {
