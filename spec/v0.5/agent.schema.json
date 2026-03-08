@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://openstandardagents.org/schemas/v0.4.6/agent.schema.json",
-  "title": "OSSA v0.4.6 Agent Manifest Schema",
-  "description": "Open Standard for Software Agents (OSSA) v0.4.6 - Extends v0.4 with Agent Identity, Security Posture, and Protocol Declarations. Backward compatible with v0.4 manifests.",
+  "$id": "https://openstandardagents.org/schemas/v0.4.7/agent.schema.json",
+  "title": "OSSA v0.4.7 Agent Manifest Schema",
+  "description": "Open Standard for Software Agents (OSSA) v0.4.7 - Extends v0.4 with Agent Identity, Security Posture, and Protocol Declarations. Backward compatible with v0.4 manifests.",
   "type": "object",
   "required": [
     "apiVersion",
@@ -13,10 +13,10 @@
     "apiVersion": {
       "type": "string",
       "pattern": "^ossa/v(0\\.5(\\.[0-9]+(-[a-zA-Z0-9.]+)?)?|0\\.4(\\.[0-9]+(-[a-zA-Z0-9.]+)?)?|0\\.3(\\.[4-9]|\\.[0-9]+(-[a-zA-Z0-9.]+)?)?|0\\.2\\.[2-9](-dev)?|1)(\\.[0-9]+)?(-[a-zA-Z0-9.]+)?$",
-      "description": "OSSA API version (v0.4.6 introduces identity, security posture, and protocol declarations)",
+      "description": "OSSA API version (v0.4.7 introduces identity, security posture, and protocol declarations)",
       "examples": [
-        "ossa/v0.4.6",
-        "ossa/v0.4.6.0",
+        "ossa/v0.4.7",
+        "ossa/v0.4.7.0",
         "ossa/v0.4",
         "ossa/v1"
       ]
@@ -35,34 +35,19 @@
       "$ref": "#/definitions/Metadata"
     },
     "spec": {
-      "description": "Specification varies based on kind",
-      "type": "object",
-      "properties": {
-        "user_controls": {
-          "$ref": "#/definitions/UserControls"
-        },
-        "consent": {
-          "$ref": "#/definitions/Consent"
-        },
-        "impact": {
-          "$ref": "#/definitions/Impact"
-        },
-        "transparency": {
-          "$ref": "#/definitions/Transparency"
-        }
-      }
+      "description": "Specification varies based on kind"
     },
     "security": {
       "$ref": "#/definitions/SecurityPosture",
-      "description": "Security posture metadata defining threat model, capability requirements, sandboxing, and network access constraints (v0.4.6)"
+      "description": "Security posture metadata defining threat model, capability requirements, sandboxing, and network access constraints (v0.4.7)"
     },
     "protocols": {
       "$ref": "#/definitions/ProtocolDeclarations",
-      "description": "Protocol declarations for MCP, A2A, and ANP interoperability (v0.4.6)"
+      "description": "Protocol declarations for MCP, A2A, and ANP interoperability (v0.4.7)"
     },
     "token_efficiency": {
       "$ref": "#/definitions/TokenEfficiency",
-      "description": "Token efficiency configuration for cost-optimized execution (v0.4.6)"
+      "description": "Token efficiency configuration for cost-optimized execution (v0.4.7)"
     },
     "cognition": {
       "$ref": "#/definitions/Cognition",
@@ -70,7 +55,7 @@
     },
     "governance": {
       "$ref": "#/definitions/Governance",
-      "description": "Governance and authorization policies including Cedar pre-execution checks and compliance profiles (v0.4.6)"
+      "description": "Governance and authorization policies including Cedar pre-execution checks and compliance profiles (v0.4.7)"
     },
     "extensions": {
       "type": "object",
@@ -87,7 +72,7 @@
     },
     "composition": {
       "$ref": "#/definitions/WorkflowComposition",
-      "description": "Workflow composition with sequential/parallel projection (v0.4.6, when kind is Workflow)"
+      "description": "Workflow composition with sequential/parallel projection (v0.4.7, when kind is Workflow)"
     }
   },
   "definitions": {
@@ -216,7 +201,7 @@
         },
         "identity": {
           "$ref": "#/definitions/AgentIdentity",
-          "description": "Agent identity model with namespace, versioned identifier, and publisher information (v0.4.6)"
+          "description": "Agent identity model with namespace, versioned identifier, and publisher information (v0.4.7)"
         },
         "catalog": {
           "type": "object",
@@ -322,7 +307,7 @@
     },
     "AgentIdentity": {
       "type": "object",
-      "description": "Agent identity model for unique identification, versioning, and publisher attribution (v0.4.6). Enables trust chains, agent discovery, and provenance tracking across registries.",
+      "description": "Agent identity model for unique identification, versioning, and publisher attribution (v0.4.7). Enables trust chains, agent discovery, and provenance tracking across registries.",
       "required": [
         "agent_id"
       ],
@@ -502,7 +487,7 @@
     },
     "SecurityPosture": {
       "type": "object",
-      "description": "Security posture metadata defining the agent's threat model, required capabilities, sandboxing requirements, and network access constraints (v0.4.6). Enables security-aware orchestration and policy enforcement.",
+      "description": "Security posture metadata defining the agent's threat model, required capabilities, sandboxing requirements, and network access constraints (v0.4.7). Enables security-aware orchestration and policy enforcement.",
       "properties": {
         "tier": {
           "type": "string",
@@ -790,7 +775,7 @@
     },
     "ProtocolDeclarations": {
       "type": "object",
-      "description": "Protocol declarations for agent interoperability (v0.4.6). Declares which agent communication protocols this agent supports, enabling automatic discovery and routing by orchestrators.",
+      "description": "Protocol declarations for agent interoperability (v0.4.7). Declares which agent communication protocols this agent supports, enabling automatic discovery and routing by orchestrators.",
       "properties": {
         "mcp": {
           "$ref": "#/definitions/MCPProtocol",
@@ -1575,49 +1560,6 @@
             }
           }
         }
-      },
-      "additionalProperties": false
-    },
-    "UserControls": {
-      "type": "object",
-      "description": "Declares what granular runtime controls the orchestrator has over this agent.",
-      "properties": {
-        "pause": { "type": "boolean", "default": true },
-        "stop": { "type": "boolean", "default": true },
-        "undo": { "type": "boolean", "default": false }
-      },
-      "additionalProperties": false
-    },
-    "Consent": {
-      "type": "object",
-      "description": "Data privacy and telemetry consent properties.",
-      "properties": {
-        "data_collected": {
-          "type": "array",
-          "items": { "type": "string" }
-        },
-        "opt_out": { "type": "boolean", "default": false }
-      },
-      "additionalProperties": false
-    },
-    "Impact": {
-      "type": "object",
-      "description": "Calculated potential blast radius and reversibility of actions.",
-      "properties": {
-        "reversible": { "type": "boolean", "default": true },
-        "blast_radius": {
-          "type": "string",
-          "enum": ["isolated", "local", "system", "external"]
-        }
-      },
-      "additionalProperties": false
-    },
-    "Transparency": {
-      "type": "object",
-      "description": "Transparency and provenance declarations.",
-      "properties": {
-        "self_disclosure": { "type": "boolean", "default": true },
-        "provenance": { "type": "string" }
       },
       "additionalProperties": false
     }

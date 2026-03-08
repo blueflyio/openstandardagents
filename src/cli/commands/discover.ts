@@ -8,7 +8,7 @@
  *   ossa discover --json
  */
 
-import { UadpClient } from '@bluefly/duadp';
+import { DuadpClient } from '@bluefly/duadp';
 import chalk from 'chalk';
 import Table from 'cli-table3';
 import { Command } from 'commander';
@@ -46,11 +46,11 @@ interface SearchFilters {
  * Agent Protocol Client for interacting with UADP registry
  */
 class AgentProtocolClient {
-  private client: UadpClient;
+  private client: DuadpClient;
 
   constructor(config?: { baseUrl?: string; apiKey?: string }) {
     const baseUrl = config?.baseUrl || process.env.OSSA_REGISTRY_URL || 'https://uadp.blueflyagents.com';
-    this.client = new UadpClient(baseUrl, {
+    this.client = new DuadpClient(baseUrl, {
       token: config?.apiKey || process.env.AGENT_PROTOCOL_TOKEN || process.env.GITLAB_PRIVATE_TOKEN,
     });
   }

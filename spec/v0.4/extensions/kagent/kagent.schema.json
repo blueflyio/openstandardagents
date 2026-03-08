@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://openstandardagents.org/schemas/v0.4.6/extensions/kagent/kagent.json",
+  "$id": "https://openstandardagents.org/schemas/v0.4.7/extensions/kagent/kagent.json",
   "title": "Kagent (GitLab Kubernetes Agents) Extension",
   "description": "Native integration with GitLab's Kagent framework for Kubernetes-native agent deployment, management, and orchestration. Enables GitLab CI/CD integration, Kubernetes-native deployment, service mesh integration, and GitLab agent registry compatibility.",
   "type": "object",

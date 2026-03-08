@@ -24,6 +24,18 @@ OSSA v0.4.6 natively aligns with the [NIST AI Agent Standards Initiative](https:
 
 ## What's New
 
+### AgentScope Integration (v0.4.8)
+
+- **New agent framework**: `agentscope` — Alibaba's production-ready Python agent framework (Apache 2.0, 17.8k stars) now supported as an OSSA agent type
+- **Python adapter**: Full OSSA-to-AgentScope bridge — reads OSSA manifests, instantiates ReActAgent with MCP tools, A2A protocol, memory backends (Mem0, Redis, ReMe)
+- **MCP server wrapper**: Expose any AgentScope agent as an MCP server for Claude Code, Cursor, VS Code
+- **A2A endpoint**: Serve AgentScope agents as discoverable A2A protocol endpoints with `.well-known/agent.json`
+- **Drupal module**: `ai_agents_agentscope` — contrib-first AiProvider plugin bridging AgentScope into Drupal's AI Agents ecosystem
+- **Docker support**: Dockerfile + docker-compose for containerized AgentScope runtime
+- **CLI**: `ossa-agentscope run|validate|serve` commands for manifest-driven agent execution
+- **Unique capabilities** not available in other frameworks: RL-based agent training, realtime voice agents, built-in evaluation framework
+- **Schema**: `extensions.agentscope` block in v0.4 and v0.5 specs with agent_class, capabilities, memory_backend, orchestration, formatter, compression, skill_dirs
+
 ### OpenAI Agents SDK Export (2026-02-16)
 
 - **New export platform**: `openai-agents-sdk` (22nd platform) — generates runnable `@openai/agents` TypeScript packages from OSSA manifests

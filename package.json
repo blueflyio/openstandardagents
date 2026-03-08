@@ -114,7 +114,6 @@
   "files": [
     "dist/",
     "!dist/dev-cli/",
-    "!dist/services/release-automation/",
     "!dist/sdks/python-generator/",
     "!dist/sdks/typescript/",
     "!dist/**/*.js.map",
@@ -227,7 +226,7 @@
     "prepare": "lefthook install || true",
     "postinstall": "node bin/postinstall || true",
     "// RELEASE & PUBLISH": "",
-    "prepublishOnly": "publint && npm run build",
+    "prepublishOnly": "publint && npm run test:unit && npm run build",
     "validate:deps": "depcheck --ignore-dirs=examples --ignores='@anthropic-ai/claude-agent-sdk,@langchain/openai,@openai/agents,@temporalio/activity,@temporalio/workflow,pino-pretty,readline,@types/*,ts-jest,eslint*,prettier*,lefthook,jest*,vitest,semantic-release*,@semantic-release/*,keep-a-changelog,jest-junit,publint,conventional-changelog-conventionalcommits,ajv-cli,json-schema-to-typescript,json-schema-to-zod,ts-node,@playwright/test,@langchain/anthropic,@langchain/core,langchain'",
     "validate:package": "publint",
     "publish:dry-run": "npm publish --dry-run",
@@ -261,7 +260,6 @@
     "@opentelemetry/sdk-metrics": "^2.5.0",
     "@opentelemetry/sdk-node": "^0.54.0",
     "@opentelemetry/sdk-trace-base": "^1.28.0",
-    "@bluefly/duadp": "^0.1.2",
     "@qdrant/js-client-rest": "^1.9.0",
     "@temporalio/activity": "^1.11.3",
     "@temporalio/workflow": "^1.11.3",
@@ -303,6 +301,7 @@
     "zod": "^4.1.11"
   },
   "devDependencies": {
+    "@bluefly/duadp": "^0.1.2",
     "@jest/globals": "^29.7.0",
     "@octokit/rest": "^22.0.1",
     "@semantic-release/changelog": "^6.0.3",
@@ -351,12 +350,12 @@
     "ajv-formats"
   ],
   "engines": {
-    "node": ">=16.20.0 || >=18.0.0 || >=20.0.0 || >=22.0.0",
-    "npm": ">=8.0.0"
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
   },
   "volta": {
-    "node": "18.20.8",
-    "npm": "10.9.4"
+    "node": "22.19.0",
+    "npm": "11.10.0"
   },
   "bundleDependencies": [
     "ajv",

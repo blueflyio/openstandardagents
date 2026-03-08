@@ -10,6 +10,29 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// defaultAPIVersion is resolved once at init from .version.json if available.
+var defaultAPIVersion = "ossa/v0.4"
+
+func init() {
+	// Walk up from CWD to find .version.json (single source of truth)
+	dir, _ := os.Getwd()
+	for i := 0; i < 10; i++ {
+		candidate := filepath.Join(dir, ".version.json")
+		if data, err := os.ReadFile(candidate); err == nil {
+			var v struct{ Current string `json:"current"` }
+			if json.Unmarshal(data, &v) == nil && v.Current != "" {
+				defaultAPIVersion = "ossa/v" + v.Current
+			}
+			break
+		}
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			break
+		}
+		dir = parent
+	}
+}
+
 // LoadManifest loads a manifest from a file.
 func LoadManifest(path string) (*Manifest, error) {
 	data, err := os.ReadFile(path)
@@ -86,7 +109,7 @@ func (m *Manifest) ToJSON() (string, error) {
 // NewManifest creates a new manifest with defaults.
 func NewManifest(name string, kind Kind) *Manifest {
 	return &Manifest{
-		APIVersion: "ossa/v0.5.0",
+		APIVersion: defaultAPIVersion,
 		Kind:       kind,
 		Metadata: Metadata{
 			Name: name,

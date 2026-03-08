@@ -1,6 +1,6 @@
 {
   "current": "0.5.0",
-  "latest_stable": "0.4.6",
+  "latest_stable": "0.4.8",
   "spec_version": "0.5.0",
   "spec_path": "spec/v0.5",
   "schema_file": "agent.schema.json"

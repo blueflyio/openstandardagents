@@ -7,6 +7,7 @@ import {
   QualityGateRequest,
   QualityGateResult
 } from '../interfaces/governance-provider.interface.js';
+import { SPEC_VERSION } from '../../version.js';
 
 /**
  * Cedar Governance Provider
@@ -17,7 +18,7 @@ import {
  */
 export class CedarGovernanceProvider implements GovernanceProvider {
   name = 'cedar';
-  version = 'v0.4.6';
+  version = `v${SPEC_VERSION}`;
 
   /**
    * Checks if the agent's governance config satisfies basic Cedar alignment.

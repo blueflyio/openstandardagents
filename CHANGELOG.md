@@ -7,15 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
-- **AgentScope adapter example**: Drupal module (`examples/drupal/ai_agents_agentscope/`) demonstrating AgentScope ReAct assistant integration via OSSA manifest
+## [0.5.0] - 2026-03-08
 
-## [0.5.0] - TBD
+### Added
+- **AgentScope integration**: Add AgentScope as supported agent framework with Python adapter, Drupal module, MCP server, A2A endpoint, and example manifests
+- **AgentScope adapter example**: Drupal module (`examples/drupal/ai_agents_agentscope/`) demonstrating AgentScope ReAct assistant integration via OSSA manifest
+- **v0.5 spec directory**: `spec/v0.5/` with agent identity, security posture, and protocol declarations schemas
 
 ### Changed
-- Bumped version to 0.5.0 for next development cycle
+- Bumped version to 0.5.0
+- Schema default export now points to `spec/v0.5/agent.schema.json`
+
+## [0.4.8] - 2026-03-07
+
+### Changed
+- Backported AgentScope framework support to v0.4.x
+- Updated README with AgentScope in What's New
+
+## [0.4.7] - 2026-03-06
+
+### Fixed
+- **CLI broken import**: Removed `!dist/services/release-automation/` from package `files` exclusion — the core CLI (`release.command.ts`) imports `ReleaseAgentService` from that directory, so excluding it broke `ossa release` at runtime in v0.4.6
 
 ## [0.4.6] - 2026-03-05
+
+### Added
+- **`ossa config` command** — Get/set CLI config persisted to `~/.ossa/config.json` (overridable with `OSSA_CONFIG_PATH`). Env vars override config when running commands.
+  - `ossa config set <key> <value>` — set a key (e.g. `SKILLS_PATH`, `BLUEFLY_SKILLS_CATALOG`)
+  - `ossa config get [key]` — get value or config file path
+  - `ossa config list` — list all keys in config file
+  - `ossa config unset <key>` — remove key from config file
+- **Config-driven skills path** — `ossa skills add` and both wizards (interactive and API-first) resolve the default skills directory from config file then env (`SKILLS_PATH`, `BLUEFLY_SKILLS_PATH`), then `~/.claude/skills`. Use `ossa config set SKILLS_PATH /path/to/skills` so you no longer need to set env or pass `--path` every time.
 
 ### Changed
 - Updated package version from 0.4.5 to 0.4.6

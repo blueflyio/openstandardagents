@@ -65,9 +65,6 @@ import { wizardCommand } from './commands/wizard.command.js';
 // Agent Card (A2A discovery)
 import { agentCardCommand } from './commands/agent-card.command.js';
 
-// Agent Card (A2A discovery)
-import { agentCardCommand } from './commands/agent-card.command.js';
-
 // Registry commands (GAID/DID)
 import { capabilityCommandGroup } from './commands/capability/index.js';
 import { discoverCommand } from './commands/discover.js';

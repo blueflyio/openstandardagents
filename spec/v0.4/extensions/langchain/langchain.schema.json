@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://openstandardagents.org/schemas/v0.4.6/extensions/langchain/langchain.json",
+  "$id": "https://openstandardagents.org/schemas/v0.4.7/extensions/langchain/langchain.json",
   "title": "LangChain Extension",
   "description": "Native integration with LangChain framework for building LLM applications with chains, agents, memory, and RAG capabilities.",
   "type": "object",
