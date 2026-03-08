@@ -4,7 +4,7 @@
   "metadata": {
     "name": "openstandardagents",
     "description": "Decentralized AI project operating within the OSSA/Bluefly ecosystem.",
-    "uri": "uadp://bluefly.io/projects/openstandardagents",
+    "uri": "duadp://bluefly.io/projects/openstandardagents",
     "trust_tier": "verified-signature"
   },
   "spec": {
@@ -13,7 +13,7 @@
       "agents_url": "./AGENTS.md"
     },
     "endpoints": {
-      "uadp": "https://uadp.bluefly.io",
+      "duadp": "https://discover.duadp.org",
       "mcp": "./mcp.json"
     },
     "execution": {
