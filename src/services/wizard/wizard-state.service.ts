@@ -53,6 +53,25 @@ export interface StepDefinition {
   condition?: (session: WizardSession) => boolean;
 }
 
+/** API-safe step definition (no validation/condition). */
+export interface StepDefinitionApi {
+  id: string;
+  title: string;
+  description: string;
+  fields: FieldDefinitionApi[];
+}
+
+/** API-safe field definition (no validation). */
+export interface FieldDefinitionApi {
+  name: string;
+  type: FieldType;
+  label: string;
+  description?: string;
+  default?: unknown;
+  required?: boolean;
+  options?: Array<{ label: string; value: string; description?: string }>;
+}
+
 export interface WizardSession {
   id: string;
   currentStepIndex: number;
@@ -429,6 +448,42 @@ export class WizardStateService {
   getSteps(session: WizardSession): StepDefinition[] {
     const all = this.getAllStepsForKind(session.kind);
     return all.filter((step) => !step.condition || step.condition(session));
+  }
+
+  /**
+   * Step definitions for API consumption (no session required).
+   * Strips validation and condition so response is JSON-serializable.
+   */
+  getStepDefinitions(kind: WizardKind = 'Agent', mode: WizardMode = 'guided'): StepDefinitionApi[] {
+    const session = this.createSession({ kind, mode });
+    try {
+      const steps = this.getSteps(session);
+      return steps.map((step) => this.toStepDefinitionApi(step));
+    } finally {
+      this.deleteSession(session.id);
+    }
+  }
+
+  private toStepDefinitionApi(step: StepDefinition): StepDefinitionApi {
+    return {
+      id: step.id,
+      title: step.title,
+      description: step.description,
+      fields: step.fields.map((f) => this.toFieldDefinitionApi(f)),
+    };
+  }
+
+  private toFieldDefinitionApi(field: FieldDefinition): FieldDefinitionApi {
+    const out: FieldDefinitionApi = {
+      name: field.name,
+      type: field.type,
+      label: field.label,
+    };
+    if (field.description !== undefined) out.description = field.description;
+    if (field.default !== undefined) out.default = field.default;
+    if (field.required !== undefined) out.required = field.required;
+    if (field.options !== undefined) out.options = field.options;
+    return out;
   }
 
   getCurrentStep(session: WizardSession): StepDefinition | null {

@@ -1,0 +1,432 @@
+asyncapi: 3.0.0
+info:
+  title: Universal Agent Discovery Protocol (UADP) — Event Streams
+  version: 0.4.0
+  description: |
+    ## UADP AsyncAPI Specification v0.4
+
+    This document describes the **event-driven** surface of the Universal Agent Discovery
+    Protocol — the pub/sub channels over which agents broadcast lifecycle events, registry
+    nodes exchange state, and consumer platforms subscribe to real-time updates.
+
+    ### Why AsyncAPI alongside OpenAPI?
+    The REST OpenAPI spec handles request/response registration and discovery.
+    AsyncAPI covers everything that _happens over time_:
+    - An agent comes online → **agent.registered** event
+    - An agent sends its heartbeat → **agent.heartbeat** event
+    - An administrator revokes a compromised agent → **agent.revoked** event
+    - A consumer wants a live feed of active agents → **registry.snapshot** stream
+
+    ### Broker Support
+    UADP event streams are transport-agnostic. Reference implementations are provided for:
+    - **NATS JetStream** (default, recommended for edge deployments)
+    - **Kafka** (enterprise / high-throughput)
+    - **MQTT 5** (IoT / constrained environments)
+
+    ### NIST CAISI Alignment
+    Real-time revocation events (`agent.revoked`) enable platforms to immediately stop
+    trusting a compromised agent without polling, satisfying the CAISI requirement for
+    timely identity lifecycle management.
+
+  contact:
+    name: OSSA Maintainers
+    url: https://openstandardagents.org
+    email: registry@openstandardagents.org
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+
+defaultContentType: application/json
+
+servers:
+  nats-production:
+    host: nats.registry.openstandardagents.org:4222
+    protocol: nats
+    description: Production NATS JetStream broker
+    security:
+      - $ref: '#/components/securitySchemes/oauthFlows'
+  nats-local:
+    host: localhost:4222
+    protocol: nats
+    description: Local development NATS (Docker Compose)
+
+channels:
+  # ─────────────────────────────────────────────────────────────
+  # AGENT LIFECYCLE CHANNELS
+  # ─────────────────────────────────────────────────────────────
+  agents/registered:
+    address: uadp.agents.registered
+    description: |
+      Published when an agent successfully joins the registry for the first time.
+      Consumers should use this to warm caches or trigger onboarding workflows.
+    messages:
+      AgentRegisteredMessage:
+        $ref: '#/components/messages/AgentRegisteredMessage'
+
+  agents/updated:
+    address: uadp.agents.updated
+    description: |
+      Published when an already-registered agent updates its OSSA manifest,
+      status, or capabilities (e.g. after a new deployment or config change).
+    messages:
+      AgentUpdatedMessage:
+        $ref: '#/components/messages/AgentUpdatedMessage'
+
+  agents/heartbeat:
+    address: uadp.agents.heartbeat.{agentId}
+    description: |
+      High-frequency channel for per-agent heartbeat pulses.
+      Registry nodes consume these to update `lastSeen` timestamps and set
+      agents to `inactive` after a configurable TTL (default 90 seconds).
+
+      Consumers subscribing to `uadp.agents.heartbeat.*` receive all agents.
+    parameters:
+      agentId:
+        $ref: '#/components/parameters/AgentIdParam'
+    messages:
+      HeartbeatMessage:
+        $ref: '#/components/messages/HeartbeatMessage'
+
+  agents/revoked:
+    address: uadp.agents.revoked
+    description: |
+      Published immediately when an agent is revoked (by administrator or policy).
+      **NIST CAISI critical channel** — consumers must remove the agent from any
+      active trust stores upon receipt. No polling required.
+    messages:
+      AgentRevokedMessage:
+        $ref: '#/components/messages/AgentRevokedMessage'
+
+  agents/deprecated:
+    address: uadp.agents.deprecated
+    description: Published when an agent's status transitions to `deprecated`.
+    messages:
+      AgentDeprecatedMessage:
+        $ref: '#/components/messages/AgentDeprecatedMessage'
+
+  # ─────────────────────────────────────────────────────────────
+  # REGISTRY STATE CHANNELS
+  # ─────────────────────────────────────────────────────────────
+  registry/snapshot:
+    address: uadp.registry.snapshot
+    description: |
+      Periodic full registry snapshot broadcast (default every 60 seconds).
+      New registry nodes and cold-start consumers use this to bootstrap their
+      local cache without replaying the full event history.
+    messages:
+      RegistrySnapshotMessage:
+        $ref: '#/components/messages/RegistrySnapshotMessage'
+
+  registry/trust-invalidated:
+    address: uadp.registry.trust-invalidated
+    description: |
+      Published when a public key or DID associated with one or more agents
+      is marked as compromised. Triggers re-verification of all agents
+      signed by that key. Core to the UADP trust chain architecture.
+    messages:
+      TrustInvalidatedMessage:
+        $ref: '#/components/messages/TrustInvalidatedMessage'
+
+operations:
+  # ─── PUBLISH (agent → registry) ───────────────────────────
+  publishAgentHeartbeat:
+    action: send
+    channel:
+      $ref: '#/channels/agents~1heartbeat'
+    description: Agents publish heartbeats to keep their registration alive.
+    messages:
+      - $ref: '#/channels/agents~1heartbeat/messages/HeartbeatMessage'
+
+  # ─── SUBSCRIBE (registry / consumers ← registry) ──────────
+  receiveAgentRegistered:
+    action: receive
+    channel:
+      $ref: '#/channels/agents~1registered'
+    description: Consumers receive agent registration events.
+    messages:
+      - $ref: '#/channels/agents~1registered/messages/AgentRegisteredMessage'
+
+  receiveAgentUpdated:
+    action: receive
+    channel:
+      $ref: '#/channels/agents~1updated'
+    description: Consumers receive agent update events.
+    messages:
+      - $ref: '#/channels/agents~1updated/messages/AgentUpdatedMessage'
+
+  receiveAgentRevoked:
+    action: receive
+    channel:
+      $ref: '#/channels/agents~1revoked'
+    description: |
+      Consumers (orchestrators, policy engines, trust stores) subscribe here
+      to receive immediate notification of agent revocation.
+    messages:
+      - $ref: '#/channels/agents~1revoked/messages/AgentRevokedMessage'
+
+  receiveRegistrySnapshot:
+    action: receive
+    channel:
+      $ref: '#/channels/registry~1snapshot'
+    description: Cold-start consumers subscribe for full registry snapshots.
+    messages:
+      - $ref: '#/channels/registry~1snapshot/messages/RegistrySnapshotMessage'
+
+  receiveTrustInvalidated:
+    action: receive
+    channel:
+      $ref: '#/channels/registry~1trust-invalidated'
+    description: |
+      Trust-aware consumers subscribe to flush any locally cached
+      verified-signature states when a key is compromised.
+    messages:
+      - $ref: '#/channels/registry~1trust-invalidated/messages/TrustInvalidatedMessage'
+
+components:
+  securitySchemes:
+    oauthFlows:
+      type: oauth2
+      description: OAuth2 with client credentials for agent-to-registry auth
+      flows:
+        clientCredentials:
+          authorizationUrl: https://auth.openstandardagents.org/oauth/token
+          availableScopes:
+            uadp:publish: Publish agent lifecycle events
+            uadp:subscribe: Subscribe to registry events
+            uadp:admin: Revoke agents and invalidate trust
+
+  parameters:
+    AgentIdParam:
+      description: Unique agent identifier (DNS-1123 subdomain format)
+      location: $message.payload#/agentId
+
+  messages:
+    AgentRegisteredMessage:
+      name: AgentRegistered
+      title: Agent Registered
+      summary: A new agent joined the UADP registry
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/AgentLifecycleEvent'
+      examples:
+        - name: Ed25519SignedAgent
+          summary: Agent with Ed25519 x-signature registered
+          payload:
+            eventType: registered
+            agentId: compliance-scanner-01
+            name: compliance-scanner
+            version: 1.2.0
+            tier: verified-signature
+            endpoint: https://agents.example.com/compliance-scanner
+            domains: [domain::security]
+            capabilities: [audit, policy-enforcement]
+            registeredAt: '2026-03-02T23:00:00Z'
+            signature:
+              type: Ed25519
+              value: "base64encodedValue=="
+              publicKey: "base64encodedPublicKey=="
+              issuer: "did:web:agents.bluefly.io:compliance-scanner"
+              timestamp: '2026-03-02T23:00:00Z'
+
+    AgentUpdatedMessage:
+      name: AgentUpdated
+      title: Agent Updated
+      summary: An agent's manifest or status was updated
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/AgentLifecycleEvent'
+
+    HeartbeatMessage:
+      name: AgentHeartbeat
+      title: Agent Heartbeat
+      summary: Periodic alive signal from a running agent
+      contentType: application/json
+      payload:
+        type: object
+        required: [agentId, status, timestamp]
+        properties:
+          agentId:
+            type: string
+          status:
+            type: string
+            enum: [active, degraded, maintenance]
+          timestamp:
+            type: string
+            format: date-time
+          metrics:
+            type: object
+            additionalProperties: true
+            description: Optional runtime telemetry (request count, latency p99, etc.)
+
+    AgentRevokedMessage:
+      name: AgentRevoked
+      title: Agent Revoked
+      summary: |
+        An agent was revoked. Consumers MUST stop trusting this agent immediately.
+        This is the NIST CAISI-aligned event for real-time trust lifecycle management.
+      contentType: application/json
+      payload:
+        type: object
+        required: [agentId, revokedAt, reason]
+        properties:
+          agentId:
+            type: string
+          revokedAt:
+            type: string
+            format: date-time
+          reason:
+            type: string
+            description: Human-readable reason for revocation
+          revokedBy:
+            type: string
+            description: DID or identifier of the administrator that issued the revocation
+          affectedTier:
+            type: string
+            description: The trust tier the agent held before revocation
+      examples:
+        - name: CompromisedKey
+          payload:
+            agentId: compliance-scanner-01
+            revokedAt: '2026-03-02T23:05:00Z'
+            reason: Private key compromise detected
+            revokedBy: did:web:admin.openstandardagents.org
+            affectedTier: verified-signature
+
+    AgentDeprecatedMessage:
+      name: AgentDeprecated
+      title: Agent Deprecated
+      summary: An agent was marked deprecated (still functional, migration path available)
+      contentType: application/json
+      payload:
+        type: object
+        required: [agentId, deprecatedAt]
+        properties:
+          agentId:
+            type: string
+          deprecatedAt:
+            type: string
+            format: date-time
+          message:
+            type: string
+            description: Migration guidance
+
+    RegistrySnapshotMessage:
+      name: RegistrySnapshot
+      title: Registry Snapshot
+      summary: Full agent registry state snapshot for cold-start consumers
+      contentType: application/json
+      payload:
+        type: object
+        required: [snapshotAt, totalAgents, agents]
+        properties:
+          snapshotAt:
+            type: string
+            format: date-time
+          totalAgents:
+            type: integer
+          agents:
+            type: array
+            items:
+              $ref: '#/components/schemas/AgentSummary'
+
+    TrustInvalidatedMessage:
+      name: TrustInvalidated
+      title: Trust Key Invalidated
+      summary: |
+        A signing key or DID has been marked compromised.
+        All agents signed by this key should be re-verified or downgraded to `community`.
+      contentType: application/json
+      payload:
+        type: object
+        required: [publicKey, invalidatedAt, affectedAgents]
+        properties:
+          publicKey:
+            type: string
+            description: The compromised public key (base64)
+          issuerDid:
+            type: string
+            description: The DID of the issuer whose key was compromised
+          invalidatedAt:
+            type: string
+            format: date-time
+          affectedAgents:
+            type: array
+            items:
+              type: string
+            description: List of agentIds that used this key
+
+  schemas:
+    AgentLifecycleEvent:
+      type: object
+      required: [eventType, agentId, name, version, tier, registeredAt]
+      properties:
+        eventType:
+          type: string
+          enum: [registered, updated]
+        agentId:
+          type: string
+        name:
+          type: string
+        version:
+          type: string
+        tier:
+          type: string
+          enum: [official, verified-signature, signed, community, experimental]
+        endpoint:
+          type: string
+          format: uri
+        domains:
+          type: array
+          items:
+            type: string
+        subdomains:
+          type: array
+          items:
+            type: string
+        capabilities:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum: [active, degraded, maintenance]
+        registeredAt:
+          type: string
+          format: date-time
+        signature:
+          type: object
+          description: x-signature block if present
+          properties:
+            type:
+              type: string
+            value:
+              type: string
+            publicKey:
+              type: string
+            issuer:
+              type: string
+            timestamp:
+              type: string
+              format: date-time
+
+    AgentSummary:
+      type: object
+      required: [agentId, name, tier, status]
+      properties:
+        agentId:
+          type: string
+        name:
+          type: string
+        version:
+          type: string
+        tier:
+          type: string
+        status:
+          type: string
+        domains:
+          type: array
+          items:
+            type: string
+        lastSeen:
+          type: string
+          format: date-time

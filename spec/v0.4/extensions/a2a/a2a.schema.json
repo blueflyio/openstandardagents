@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://openstandardagents.org/schemas/v0.3.5/extensions/a2a.json",
+  "$id": "https://openstandardagents.org/schemas/v0.4.6/extensions/a2a.json",
   "title": "A2A Extension Schema",
   "description": "Agent-to-Agent communication extension for OSSA",
   "type": "object",

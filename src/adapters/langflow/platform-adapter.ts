@@ -25,7 +25,7 @@ export class LangflowPlatformAdapter extends BaseAdapter {
   readonly platform = 'langflow';
   readonly displayName = 'LangFlow';
   readonly description =
-    'LangFlow visual flow builder (flow JSON for import at langflow.blueflyagents.com or localhost:7860)';
+    'LangFlow visual flow builder (flow JSON for import at localhost:7860 or your LangFlow instance)';
   readonly status = 'beta' as const;
   readonly supportedVersions = ['v0.3.6', 'v0.4', 'v{{VERSION}}'];
 

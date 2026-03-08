@@ -4,6 +4,7 @@
  */
 
 import { Router } from 'express';
+import yaml from 'js-yaml';
 import { z } from 'zod';
 import { container } from '../../di-container.js';
 import { ManifestCrudService } from '../../services/manifest/manifest-crud.service.js';
@@ -11,6 +12,7 @@ import { validateBody } from '../middleware/validate.js';
 
 const ValidateSchema = z.object({
   manifest: z.record(z.string(), z.unknown()).optional(),
+  manifestYaml: z.string().optional(),
   path: z.string().optional(),
   platform: z.string().optional(),
   strict: z.boolean().optional(),
@@ -23,7 +25,9 @@ export function validateRouter(): Router {
   router.post('/', validateBody(ValidateSchema), async (req, res, next) => {
     try {
       let manifest = req.body.manifest;
-      if (!manifest && req.body.path) {
+      if (!manifest && req.body.manifestYaml) {
+        manifest = yaml.load(req.body.manifestYaml);
+      } else if (!manifest && req.body.path) {
         manifest = await service.read(req.body.path);
       }
       const result = await service.validate(manifest, {

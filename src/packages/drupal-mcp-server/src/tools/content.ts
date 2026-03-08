@@ -4,12 +4,7 @@
  */
 
 import { DrupalClient } from '../client/drupal-client.js';
-import {
-  NodeCreateInput,
-  NodeUpdateInput,
-  DrupalNode,
-  DrupalResponse,
-} from '../types/drupal.js';
+import { NodeCreateInput, NodeUpdateInput, DrupalNode, DrupalResponse } from '../types/drupal.js';
 
 export class ContentTools {
   constructor(private client: DrupalClient) {}
@@ -39,10 +34,7 @@ export class ContentTools {
       }
     });
 
-    const response = await this.client.post<DrupalResponse<DrupalNode>>(
-      '/node',
-      nodeData
-    );
+    const response = await this.client.post<DrupalResponse<DrupalNode>>('/node', nodeData);
 
     return response.data;
   }
@@ -96,9 +88,7 @@ export class ContentTools {
    * Get a Drupal node by ID
    */
   async getNode(nid: string): Promise<DrupalNode> {
-    const response = await this.client.get<DrupalResponse<DrupalNode>>(
-      `/node/${nid}`
-    );
+    const response = await this.client.get<DrupalResponse<DrupalNode>>(`/node/${nid}`);
     return response.data;
   }
 
@@ -115,8 +105,8 @@ export class ContentTools {
     const queryParams = this.client.buildJsonApiQuery({
       filter: {
         ...(params.type && { 'type.target_id': params.type }),
-        ...(params.title && { 'title': params.title }),
-        ...(params.status !== undefined && { 'status': params.status }),
+        ...(params.title && { title: params.title }),
+        ...(params.status !== undefined && { status: params.status }),
       },
       page: {
         limit: params.limit || 50,

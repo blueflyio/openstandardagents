@@ -1,0 +1,11 @@
+id: duplicate-logic
+description: Same logic repeated in multiple places (DRY violation).
+anti_pattern:
+  type: semantic
+  pattern: "(detect via AST or tool: repeated block similarity)"
+  path_glob: "**/*.{ts,js,php}"
+fix_suggestion: Extract to a shared function or module; reuse from a single source.
+severity: info
+dimension: architecture
+target_languages: [typescript, javascript, php]
+tags: [dry, vibecoding]

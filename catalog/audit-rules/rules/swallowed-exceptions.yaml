@@ -1,0 +1,11 @@
+id: swallowed-exceptions
+description: Exception is caught but not logged or rethrown (silent failure).
+anti_pattern:
+  type: regex
+  pattern: catch\s*\([^)]*\)\s*\{\s*\}
+  path_glob: "**/*.{ts,js,php}"
+fix_suggestion: Log the error (e.g. logger.error) or rethrow; never leave catch block empty.
+severity: error
+dimension: best-practices
+target_languages: [typescript, javascript, php]
+tags: [vibecoding, exceptions, logging]

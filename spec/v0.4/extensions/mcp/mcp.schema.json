@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://openstandardagents.org/schemas/v0.3.5/extensions/mcp.json",
+  "$id": "https://openstandardagents.org/schemas/v0.4.6/extensions/mcp.json",
   "title": "MCP Extension Schema",
   "description": "Model Context Protocol extension for OSSA agents",
   "type": "object",

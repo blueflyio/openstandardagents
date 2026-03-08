@@ -9,7 +9,10 @@ import {
 import { join, relative } from 'path';
 import yaml from 'js-yaml';
 
-import { GITLAB_AGENTS_DIR, GITLAB_MANIFEST_NAME } from '../../utils/constants.js';
+import {
+  GITLAB_AGENTS_DIR,
+  GITLAB_MANIFEST_NAME,
+} from '../../utils/constants.js';
 
 const AGENTS_DIR = join(process.cwd(), GITLAB_AGENTS_DIR);
 const OUTPUT_FILE = join(
@@ -31,7 +34,7 @@ function findAgents(): Agent[] {
   const entries = readdirSync(AGENTS_DIR);
 
   for (const entry of entries) {
-import { GITLAB_MANIFEST_NAME } from '../../utils/constants.js';
+    import { GITLAB_MANIFEST_NAME } from '../../utils/constants.js';
     try {
       const content = readFileSync(manifestPath, 'utf-8');
       // Use safeLoad to prevent arbitrary code execution (CWE-502)

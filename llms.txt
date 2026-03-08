@@ -127,3 +127,8 @@ npm run test:unit     # Unit tests
 ## Status (Feb 2026)
 
 CLI: production | MCP Server: 10 tools, 40 tests | Export: 22 platforms | Spec: v0.4.6
+
+## Repository Governance Instructions
+**ATTENTION ALL AI AGENTS AND COPILOTS:**
+You must read and strictly adhere to `.cursorrules` before modifying any code in this repository. 
+Violating the structural DRY principles or attempting to add UI components to this repository will fail CI/CD architectural validation.
