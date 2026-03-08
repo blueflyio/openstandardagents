@@ -63,6 +63,16 @@
       "properties": {
         "agentscope": {
           "$ref": "#/definitions/AgentScopeExtension"
+        },
+        "security": {
+          "type": "object",
+          "description": "Security extensions including inline authorization policies",
+          "properties": {
+            "cedar": {
+              "$ref": "#/definitions/CedarPolicyExtension"
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": true
@@ -1562,6 +1572,55 @@
         }
       },
       "additionalProperties": false
+    },
+    "CedarPolicyExtension": {
+      "type": "object",
+      "description": "Inline Cedar authorization policies embedded in the manifest for pre-execution evaluation (v0.5)",
+      "required": ["policies"],
+      "properties": {
+        "policies": {
+          "type": "array",
+          "description": "One or more Cedar policy sets",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id", "policy_text"],
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Unique policy identifier"
+              },
+              "description": {
+                "type": "string"
+              },
+              "policy_text": {
+                "type": "string",
+                "description": "Cedar policy source code"
+              },
+              "version": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "schema_text": {
+          "type": "string",
+          "description": "Cedar schema defining entity types, actions, and their relationships"
+        },
+        "entity_types": {
+          "type": "array",
+          "description": "Cedar entity type names referenced by the policies (e.g., Agent, Tool, User)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "default_decision": {
+          "type": "string",
+          "enum": ["deny", "allow"],
+          "default": "deny",
+          "description": "Default authorization decision when no policy matches"
+        }
+      }
     }
   }
 }
