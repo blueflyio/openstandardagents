@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **AgentScope integration**: Add AgentScope as supported agent framework with Python adapter, Drupal module, MCP server, A2A endpoint, and example manifests
+
 ## [0.4.7] - 2026-03-06
 
 ### Fixed
