@@ -60,6 +60,11 @@
     "extensions": {
       "type": "object",
       "description": "Framework-specific extensions (inherited from v0.4)",
+      "properties": {
+        "agentscope": {
+          "$ref": "#/definitions/AgentScopeExtension"
+        }
+      },
       "additionalProperties": true
     },
     "runtime": {
@@ -251,6 +256,7 @@
             "langchain",
             "crewai",
             "autogen",
+            "agentscope",
             "llamaindex",
             "haystack",
             "semantic-kernel",
@@ -359,6 +365,69 @@
           "type": "string",
           "format": "date-time",
           "description": "ISO 8601 timestamp of the last identity update"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AgentScopeExtension": {
+      "type": "object",
+      "description": "AgentScope framework-specific runtime configuration. AgentScope is a production-ready Python agent framework with ReAct agents, RL training, realtime voice, MCP/A2A support, and rich memory backends.",
+      "properties": {
+        "version": {
+          "type": "string",
+          "description": "AgentScope framework version (e.g., 1.0.16)",
+          "pattern": "^\\d+\\.\\d+\\.\\d+"
+        },
+        "agent_class": {
+          "type": "string",
+          "description": "Python agent class to instantiate",
+          "enum": ["ReActAgent", "UserAgent", "A2AAgent", "RealtimeAgent", "custom"],
+          "default": "ReActAgent"
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["rl_training", "realtime_voice", "evaluation", "planning", "rag", "parallel_tool_calls", "meta_tools", "tts"]
+          },
+          "description": "AgentScope-specific capabilities enabled for this agent"
+        },
+        "memory_backend": {
+          "type": "string",
+          "enum": ["in_memory", "redis", "sqlalchemy", "mem0", "reme_personal", "reme_task", "reme_tool"],
+          "default": "in_memory",
+          "description": "Memory backend for working/long-term memory"
+        },
+        "orchestration": {
+          "type": "string",
+          "enum": ["msghub", "sequential_pipeline", "fanout_pipeline", "chatroom"],
+          "description": "Multi-agent orchestration pattern when used in composition"
+        },
+        "max_iters": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 10,
+          "description": "Maximum reasoning-acting loop iterations for ReActAgent"
+        },
+        "formatter": {
+          "type": "string",
+          "enum": ["openai", "anthropic", "gemini", "dashscope", "ollama", "deepseek", "a2a"],
+          "description": "Message formatter for the model provider"
+        },
+        "compression": {
+          "type": "object",
+          "properties": {
+            "enable": { "type": "boolean", "default": false },
+            "trigger_threshold": { "type": "integer", "description": "Token count to trigger compression" },
+            "keep_recent": { "type": "integer", "default": 3, "description": "Recent messages to preserve" }
+          },
+          "description": "Memory compression configuration"
+        },
+        "skill_dirs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Paths to SKILL.md directories to register as agent skills"
         }
       },
       "additionalProperties": false

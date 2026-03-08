@@ -1,0 +1,132 @@
+apiVersion: ossa/v0.4.6
+kind: Agent
+metadata:
+  name: agentscope-react-assistant
+  namespace: bluefly/examples
+  version: "1.0.0"
+  description: "Example ReAct agent powered by AgentScope runtime with MCP tool integration, A2A protocol support, and Mem0 long-term memory."
+  agentType: agentscope
+  agentKind: assistant
+  status: active
+  labels:
+    tier: experimental
+    category: example
+    framework: agentscope
+  identity:
+    agent_id: agentscope-react-assistant
+    namespace: bluefly/examples
+    version: "1.0.0"
+    publisher:
+      name: BlueFly Collective
+      website: https://bluefly.io
+
+spec:
+  role: >
+    You are a helpful assistant that uses tools to answer questions accurately.
+    Always verify information before responding. Use available MCP tools for
+    real-time data retrieval and knowledge base queries.
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    temperature: 0.7
+    maxTokens: 4096
+    streaming: true
+  taxonomy:
+    domain: agents
+    subdomain: assistant
+    capability: react-tool-use
+  tools:
+    - type: mcp
+      name: knowledge-base
+      endpoint: https://gkg.blueflyagents.com/mcp/sse
+      description: "Graph knowledge base for codebase analysis"
+    - type: mcp
+      name: web-search
+      endpoint: https://mcp.blueflyagents.com/api/mcp/sse
+      description: "Web search and content retrieval"
+  inputs:
+    type: object
+    properties:
+      query:
+        type: string
+        description: "User query or task"
+    required: [query]
+  outputs:
+    type: object
+    properties:
+      response:
+        type: string
+      tool_calls_made:
+        type: integer
+      confidence:
+        type: number
+
+security:
+  tier: tier_1_read
+  capabilities:
+    required: [network-outbound, tool-execution]
+    optional: [memory-extended]
+  network_access:
+    allowed_domains:
+      - "*.blueflyagents.com"
+      - "api.anthropic.com"
+    protocols: [https, wss]
+    egress_policy: allow-list
+  data_classification: internal
+
+protocols:
+  mcp:
+    version: "1.0.0"
+    role: client
+    capabilities:
+      tools: true
+      resources: true
+      prompts: false
+      sampling: false
+  a2a:
+    version: "0.2.1"
+    endpoint: https://agents.blueflyagents.com/a2a/react-assistant
+    agent_card:
+      name: AgentScope React Assistant
+      description: "ReAct agent with tool use and memory"
+      skills:
+        - id: question-answering
+          name: Question Answering
+          description: "Answer questions using tools and knowledge"
+        - id: code-analysis
+          name: Code Analysis
+          description: "Analyze code using knowledge graph"
+    capabilities:
+      streaming: true
+      pushNotifications: false
+      stateTransitionHistory: false
+
+token_efficiency:
+  serialization_profile: compact
+  observation_format: projected
+  budget:
+    max_input_tokens: 100000
+    max_output_tokens: 4096
+    allocation_strategy: adaptive
+  routing:
+    cascade: [claude-haiku-4-5-20251001, claude-sonnet-4-20250514, claude-opus-4-20250514]
+    complexity_threshold: [0.3, 0.7]
+    strategy: cost_optimized
+
+extensions:
+  agentscope:
+    version: "1.0.16"
+    agent_class: ReActAgent
+    capabilities:
+      - rag
+      - parallel_tool_calls
+    memory_backend: mem0
+    orchestration: msghub
+    max_iters: 10
+    formatter: anthropic
+    compression:
+      enable: true
+      trigger_threshold: 50000
+      keep_recent: 5
+    skill_dirs:
+      - ./skills/

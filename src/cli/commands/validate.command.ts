@@ -16,7 +16,6 @@ import { KAgentValidator } from '../../sdks/kagent/validator.js';
 import {
   formatValidationErrors,
   formatErrorCompact,
-  isJSONOutput,
   outputJSON,
 } from '../utils/index.js';
 import {
@@ -41,7 +40,7 @@ export const validateCommand = new Command('validate')
   .option('--check-messaging', 'Validate messaging extension (v0.3.0+)')
   .option(
     '-p, --platform <platform>',
-    'Platform-specific validation (kagent, langchain, crewai, docker, kubernetes)'
+    'Platform-specific validation (kagent, langchain, crewai, agentscope, docker, kubernetes)'
   )
   .option('--all', 'Validate for all platforms', false)
   .option(
@@ -356,7 +355,7 @@ validateCommand.action(
 
         // Platform-specific validation
         const platforms = options.all
-          ? ['kagent', 'langchain', 'crewai', 'docker', 'kubernetes']
+          ? ['kagent', 'langchain', 'crewai', 'agentscope', 'docker', 'kubernetes']
           : options.platform
             ? [options.platform]
             : [];
@@ -427,6 +426,71 @@ async function validateForPlatform(
       const result = validator.validate(manifest);
       if (!result.valid) {
         throw new Error(result.errors.join('; '));
+      }
+      break;
+    }
+
+    case 'agentscope': {
+      // AgentScope-specific validation: check extensions.agentscope completeness
+      const ext = (manifest as any)?.extensions?.agentscope;
+      const agentScopeErrors: string[] = [];
+      if (!ext) {
+        agentScopeErrors.push(
+          'AgentScope platform requires extensions.agentscope in manifest'
+        );
+      } else {
+        const validAgentClasses = [
+          'ReActAgent',
+          'DialogAgent',
+          'DictDialogAgent',
+          'UserAgent',
+          'TextToImageAgent',
+          'RpcAgent',
+        ];
+        if (!ext.agent_class) {
+          agentScopeErrors.push(
+            'extensions.agentscope.agent_class is required'
+          );
+        } else if (!validAgentClasses.includes(ext.agent_class)) {
+          console.log(
+            chalk.yellow(
+              `  agentscope: agent_class "${ext.agent_class}" is not a known class (${validAgentClasses.join(', ')})`
+            )
+          );
+        }
+        const validMemoryBackends = ['mem0', 'local', 'redis', 'none'];
+        if (
+          ext.memory_backend &&
+          !validMemoryBackends.includes(ext.memory_backend)
+        ) {
+          console.log(
+            chalk.yellow(
+              `  agentscope: memory_backend "${ext.memory_backend}" is not a known backend`
+            )
+          );
+        }
+        const validOrchestrations = [
+          'msghub',
+          'pipeline',
+          'sequential',
+          'forlooppipeline',
+          'whilelooppipeline',
+          'ifelsepipeline',
+          'switchpipeline',
+        ];
+        if (
+          ext.orchestration &&
+          !validOrchestrations.includes(ext.orchestration)
+        ) {
+          console.log(
+            chalk.yellow(
+              `  agentscope: orchestration "${ext.orchestration}" is not a known pattern`
+            )
+          );
+        }
+      }
+      if (agentScopeErrors.length > 0) {
+        throw new Error(agentScopeErrors.join('; '));
       }
       break;
     }

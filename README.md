@@ -473,6 +473,7 @@ ossa export --list-platforms
 | `claude-skills` | beta | 3 files | - | Claude Skills format with team support |
 | `mobile-agent` | alpha | 1 file | - | Mobile LLM platform export |
 | `symfony` | alpha | 1 file | - | Symfony bundle for PHP-based agents |
+| `agentscope` | alpha | 10 files | agentscope | AgentScope ReAct assistant for Drupal AI Agents |
 
 Every export includes `agent.ossa.yaml` (the source manifest) for provenance.
 

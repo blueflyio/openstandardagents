@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "agentscope-agent": {
+      "command": "python",
+      "args": ["-m", "adapters.agentscope.mcp_server", "path/to/agent.ossa.yaml"],
+      "env": {
+        "ANTHROPIC_API_KEY": "sk-ant-..."
+      }
+    }
+  }
+}

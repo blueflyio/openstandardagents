@@ -457,6 +457,36 @@ export const PLATFORM_MATRIX: PlatformMatrixEntry[] = [
     specUsage: ['Export produces Warp-compatible agent config from manifest.'],
   },
   {
+    id: 'agentscope',
+    name: 'AgentScope',
+    description:
+      'AgentScope multi-agent Python framework with MCP tool integration, A2A support, and Mem0 memory',
+    status: 'beta',
+    whatTheyNeed: [
+      'Python 3.9+',
+      'AgentScope SDK (pip install agentscope)',
+      'LLM API key (OpenAI, Anthropic, etc.)',
+      'Optional: Mem0 for long-term memory',
+    ],
+    folderStructure: [
+      '.agents/{name}/manifest.ossa.yaml',
+      '.agents/{name}/src/ (Python agent code)',
+      'requirements.txt with agentscope',
+    ],
+    sdkNpm: [
+      'agentscope (PyPI)',
+      'agentscope[service] (with tool service)',
+    ],
+    exportHow: 'ossa export <manifest> --platform agentscope -o dist/',
+    importHow: 'partial',
+    specUsage: [
+      'Map spec.role to system message; spec.llm to model_config; spec.tools to service_toolkit.',
+      'extensions.agentscope.agent_class selects AgentScope agent type (ReActAgent, DialogAgent, etc.).',
+      'extensions.agentscope.memory_backend configures memory (mem0, local, etc.).',
+      'extensions.agentscope.orchestration selects multi-agent pattern (msghub, pipeline, etc.).',
+    ],
+  },
+  {
     id: 'symfony',
     name: 'Symfony AI Agent',
     description:

@@ -1,0 +1,4 @@
+services:
+  logger.channel.ai_agents_agentscope:
+    parent: logger.channel_base
+    arguments: ['ai_agents_agentscope']
