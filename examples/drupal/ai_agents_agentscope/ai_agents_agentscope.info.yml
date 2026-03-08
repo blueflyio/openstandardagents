@@ -1,0 +1,13 @@
+name: 'AI Agents: AgentScope Provider'
+type: module
+description: 'Thin AiProvider bridge to AgentScope Python HTTP runtime. Agent plugins are handled by ai_agents_ossa.'
+core_version_requirement: ^10.4 || ^11
+package: AI
+php: 8.3
+
+dependencies:
+  - drupal:ai
+  - ai_agents_ossa:ai_agents_ossa
+
+lifecycle: experimental
+configure: ai_agents_agentscope.settings

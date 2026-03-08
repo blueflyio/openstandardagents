@@ -9,11 +9,13 @@ export * from './converters/langchain.js';
 export * from './converters/crewai.js';
 export * from './converters/autogen.js';
 export * from './converters/langflow.js';
+export * from './converters/agentscope.js';
 
 import { langchainConverter } from './converters/langchain.js';
 import { crewaiConverter } from './converters/crewai.js';
 import { autogenConverter } from './converters/autogen.js';
 import { langflowConverter } from './converters/langflow.js';
+import { agentscopeConverter } from './converters/agentscope.js';
 import type { FrameworkConverter } from './types.js';
 
 /**
@@ -24,6 +26,7 @@ export const converters: Record<string, FrameworkConverter> = {
   crewai: crewaiConverter,
   autogen: autogenConverter,
   langflow: langflowConverter,
+  agentscope: agentscopeConverter,
 };
 
 /**

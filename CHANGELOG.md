@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **AgentScope adapter example**: Drupal module (`examples/drupal/ai_agents_agentscope/`) demonstrating AgentScope ReAct assistant integration via OSSA manifest
+
 ## [0.5.0] - TBD
 
 ### Changed

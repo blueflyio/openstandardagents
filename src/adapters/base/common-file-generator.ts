@@ -35,6 +35,7 @@ import {
 export type Platform =
   | 'langchain'
   | 'crewai'
+  | 'agentscope'
   | 'mcp'
   | 'npm'
   | 'drupal'
@@ -137,6 +138,9 @@ const PLATFORM_SCRIPTS: Record<string, Record<string, string>> = {
   crewai: {
     start: 'python main.py',
   },
+  agentscope: {
+    start: 'python main.py',
+  },
   'gitlab-duo': {
     build: 'tsc',
     start: 'node dist/index.js',
@@ -171,6 +175,7 @@ const PLATFORM_DEPENDENCIES: Record<string, Record<string, string>> = {
   },
   npm: {},
   crewai: {},
+  agentscope: {},
   'gitlab-duo': {},
   docker: {},
   kubernetes: {},
@@ -193,6 +198,7 @@ const PLATFORM_DEV_DEPENDENCIES: Record<string, Record<string, string>> = {
   },
   npm: {},
   crewai: {},
+  agentscope: {},
   'gitlab-duo': {
     '@types/node': '^20.0.0',
     typescript: '^5.0.0',
@@ -393,6 +399,19 @@ venv/
 .venv/
 *.egg-info/
 `,
+  agentscope: `
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+venv/
+.venv/
+*.egg-info/
+# AgentScope
+runs/
+.agentscope/
+`,
   mcp: '',
   npm: '',
   drupal: `
@@ -586,6 +605,8 @@ function getDefaultInstallCommand(platform: Platform): string {
       return 'npm install';
     case 'crewai':
       return 'pip install -r requirements.txt';
+    case 'agentscope':
+      return 'pip install agentscope\npip install -r requirements.txt';
     case 'docker':
       return 'docker build -t agent .';
     case 'kubernetes':
@@ -607,6 +628,8 @@ function getDefaultUsage(platform: Platform, name: string): string {
     case 'npm':
       return `import agent from '${name}';\nconsole.log(agent.metadata);`;
     case 'crewai':
+      return 'python main.py';
+    case 'agentscope':
       return 'python main.py';
     case 'docker':
       return 'docker run agent';
