@@ -40,9 +40,9 @@ validate:manifest:
 # Build container image (for Kubernetes/Docker deployments)
 build:image:
   stage: build
-  image: docker:24-dind
+  image: docker:27-dind
   services:
-    - docker:24-dind
+    - docker:27-dind
   before_script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
