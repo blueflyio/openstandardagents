@@ -80,7 +80,7 @@ class AgentProtocolClient {
     try {
       // 1. If it's a URI, resolve directly
       if (gaid.startsWith('uadp://') || gaid.startsWith('uadp://')) {
-        const resolution = resolveGaid(gaid, { token: this.client['token'] });
+        const resolution = await resolveGaid(gaid, { token: this.client['token'] });
         if (resolution.kind === 'agents') {
            const agent = await resolution.client.getAgent(resolution.name);
            return this.mapToDIDResult(agent, gaid);
