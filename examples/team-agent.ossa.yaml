@@ -14,7 +14,7 @@
 #   - Mixed model tiers (Opus lead, Sonnet workers, Haiku explorer)
 #   - In-process deployment with fixed scaling
 
-apiVersion: ossa/v0.4.6
+apiVersion: ossa/v0.4.7
 kind: Agent
 metadata:
   name: fullstack-dev-team

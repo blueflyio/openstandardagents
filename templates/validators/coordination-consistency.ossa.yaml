@@ -1,4 +1,4 @@
-apiVersion: ossa/v0.4.6
+apiVersion: ossa/v0.4.7
 kind: Validator
 metadata:
   name: coordination-consistency-validator

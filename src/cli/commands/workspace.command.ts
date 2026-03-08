@@ -11,7 +11,7 @@
  *   ossa workspace publish       - POST discovery to a registry API (e.g. mesh /api/v1/discovery)
  */
 
-import { UadpClient } from '@bluefly/duadp';
+import { DuadpClient } from '@bluefly/duadp';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import * as fs from 'fs';
@@ -750,7 +750,7 @@ workspaceCommand
       let totalPublished = 0;
       let totalFailed = 0;
 
-      const client = new UadpClient(registryUrl, { token });
+      const client = new DuadpClient(registryUrl, { token });
 
       console.log(chalk.blue(`Publishing workspace agents to ${registryUrl}...`));
       console.log(chalk.gray('─'.repeat(50)));
@@ -809,7 +809,7 @@ workspaceCommand
         process.env.OSSA_REGISTRY_URL ||
         'https://registry.openstandardagents.org';
 
-      const client = new UadpClient(registryUrl);
+      const client = new DuadpClient(registryUrl);
       const res = await client.listAgents({ limit: parseInt(options.limit || '50', 10) });
 
       if (options.json) {

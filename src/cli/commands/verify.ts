@@ -8,7 +8,7 @@
  *   ossa verify did:ossa:blueflyio:agent-123 --json
  */
 
-import { UadpClient, resolveGaid } from '@bluefly/duadp';
+import { DuadpClient, resolveGaid } from '@bluefly/duadp';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import * as fs from 'fs';
@@ -64,11 +64,11 @@ interface AgentCard {
  * Agent Protocol Client for DID resolution using UADP
  */
 class AgentProtocolClient {
-  private client: UadpClient;
+  private client: DuadpClient;
 
   constructor(config?: { baseUrl?: string; apiKey?: string }) {
     const baseUrl = config?.baseUrl || process.env.OSSA_REGISTRY_URL || 'https://registry.openstandardagents.org';
-    this.client = new UadpClient(baseUrl, {
+    this.client = new DuadpClient(baseUrl, {
       token: config?.apiKey || process.env.AGENT_PROTOCOL_TOKEN || process.env.GITLAB_PRIVATE_TOKEN,
     });
   }
