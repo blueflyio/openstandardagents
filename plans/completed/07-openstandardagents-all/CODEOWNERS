@@ -1,0 +1,34 @@
+# =============================================================================
+# Bluefly.io — Separation of Duties: CODEOWNERS
+# =============================================================================
+# Every @bluefly/* package is owned by the service account.
+# MR approval requires a DIFFERENT-TIER agent (enforced by approval rules).
+# GitLab evaluates CODEOWNERS bottom-up; last match wins.
+# =============================================================================
+
+# --- Default owner for all files ---
+* @bluefly-agent-service
+
+# --- Package-level ownership with tier annotations ---
+
+# T3 Executor tier packages (push/deploy/pipeline/secrets)
+/common_npm/agent-brain/       @bluefly-agent-service  # T3 Executor
+/common_npm/agent-docker/      @bluefly-agent-service  # T3 Executor
+/common_npm/agent-mesh/        @bluefly-agent-service  # T3 Executor
+/common_npm/agent-protocol/    @bluefly-agent-service  # T3 Executor
+/common_npm/agent-router/      @bluefly-agent-service  # T3 Executor
+/common_npm/agent-tailscale/   @bluefly-agent-service  # T3 Executor
+/common_npm/workflow-engine/   @bluefly-agent-service  # T3 Executor
+/common_npm/foundation-bridge/ @bluefly-agent-service  # T3 Executor
+/common_npm/agentic-flows/     @bluefly-agent-service  # T3 Executor
+/common_npm/studio-ui/         @bluefly-agent-service  # T3 Executor
+
+# T1 Analyzer tier packages (read-only, scanning)
+/common_npm/agent-tracer/      @bluefly-agent-service  # T1 Analyzer
+
+# T4 Approver tier packages (merge/release/tag)
+/common_npm/compliance-engine/ @bluefly-agent-service  # T4 Approver
+
+# --- SOD policy files: require T4 Approver for changes ---
+/common_npm/*/src/sod/         @bluefly-agent-service  # SOD enforcement code
+/common_npm/compliance-engine/cedar/ @bluefly-agent-service  # Cedar policies

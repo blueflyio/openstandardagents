@@ -1,0 +1,148 @@
+# Plan: Export Issues, Divide by Project, Merge Todo, Close & Rebuild
+
+Generated: 2026-03-04
+Source: GitLab group blueflyio + local todo at ~/.agent-platform/agent-buildkit/todo
+
+---
+
+## SUMMARY (WHAT YOU ASKED FOR)
+
+1. **Export** all group issues to local JSON (opened and all).
+2. **Divide by project** so you see counts and lists per GitLab project.
+3. **Merge todo**: map ~/.agent-platform/agent-buildkit/todo task files to GitLab; create/update issues linked to epics; then archive todo so GitLab is the single backlog.
+4. **Close existing** only when allowed: do not close until code is merged to release and main; close only duplicates/superseded after commenting "Consolidated into #X".
+5. **Build new**: create new issues only when epic-linked; keep few issues per epic.
+
+First export attempt aborted (API timeout/large response). Use smaller batches (section 1.4) then concatenate, or run with --max 500.
+
+---
+
+## 1. EXPORT ALL GITLAB ISSUES (LOCAL)
+
+### 1.1 Prerequisites
+- Token: GITLAB_TOKEN or GITLAB_TOKEN_PAT in /Volumes/AgentPlatform/.env.local (or platform config).
+- BuildKit: From agent-buildkit worktree, run:
+  set -a && [ -f /Volumes/AgentPlatform/.env.local ] && source /Volumes/AgentPlatform/.env.local; set +a
+  cd $HOME/Sites/blueflyio/worktrees/agent-buildkit
+
+### 1.2 Export commands (run in order)
+
+# Open issues only (default)
+node dist/cli/index.js gitlab issues list --group blueflyio --state opened --max 0 --json > tmp/issues-export-opened.json
+
+# All issues (opened + closed) for full snapshot
+node dist/cli/index.js gitlab issues list --group blueflyio --state all --max 0 --json > tmp/issues-export-all.json
+
+# Optional: count only (sanity check)
+node dist/cli/index.js gitlab issues list --group blueflyio --state opened --count-only
+
+Do not pipe through head -c; that truncates JSON and breaks parsing.
+
+### 1.3 If token check fails
+Run: node dist/cli/index.js gitlab token check
+If 401/invalid: set GITLAB_TOKEN or GITLAB_TOKEN_PAT in /Volumes/AgentPlatform/.env.local (create PAT at https://gitlab.com/-/user_settings/personal_access_tokens, scopes: api, read_repository, write_repository).
+
+---
+
+## 2. DIVIDE BY PROJECT
+
+### 2.1 Parse export
+Group issues by project. Each issue from the group API has:
+- iid, title, state, web_url, project_id (optional), references.relative (e.g. "group/project#123").
+
+Extract project path from web_url (e.g. https://gitlab.com/blueflyio/agent-platform/tools/agent-buildkit/-/issues/123 -> blueflyio/agent-platform/tools/agent-buildkit) or from references.relative.
+
+### 2.2 One-time script (optional)
+In workspace tmp/, a small Node script can:
+- Read tmp/issues-export-all.json
+- Group by project path (parse web_url or references)
+- Write tmp/issues-by-project.json { "project/path": [ issue, ... ], ... }
+- Print per-project counts and list of projects with open count.
+
+No new .sh; use Node/ts-node or buildkit if you add a subcommand later.
+
+### 2.3 Manual alternative
+Open issues-export-opened.json in an editor; search for "web_url" and group by the path segment (blueflyio/.../project-name). Or use jq:
+jq 'group_by(.web_url | split("/")[4:6] | join("/")) | map({project: .[0].web_url | split("/")[4:6] | join("/"), count: length, issues: map(.iid)})' tmp/issues-export-opened.json
+
+---
+
+## 3. MERGE THE TODO (LOCAL)
+
+### 3.1 Todo layout (current)
+~/.agent-platform/agent-buildkit/todo/
+  __NEEDORG/     (_completed, _duplicates, _garbage, _has-todos, _recovery, _reference)
+  drupalcon-go-live/TODO/
+  my-plans/      (AgentDash, CI-Infrastructure, Dragonfly, Drupal, Kagent, OSSA, Testing)
+  oracle-live/   (INPROGRESS, TODO)
+  ossa-fleet/    (INPROGRESS, TODO)
+  phase8-drupal/ TODO/
+
+Notable: my-plans/OSSA/ has MASTER-PLAN.md, phase8-drupal-*.md, fleet-*.md; OSSA innovation, nist-submissions, completed.
+
+### 3.2 Merge strategy
+- Treat todo as scratch/session backlog only (per AGENTS.md). Real work items belong in GitLab.
+- For each .md task file in todo that is still relevant:
+  1. Decide target GitLab project (from path or topic).
+  2. Either create a new GitLab Issue in that project linked to the right Epic, or add content to an existing issue as a comment.
+  3. Do not create micro-issues; consolidate into one issue per coherent deliverable (e.g. one "Phase 8 Drupal: api-normalization CI + AgentDash audit" epic or issue with checklist).
+- After migration: archive or empty todo subdirs so todo is no longer a second backlog. Keep todo/ for spawn-team seed and plans-sync only.
+
+### 3.3 Mapping todo -> GitLab
+- phase8-drupal-* -> agent-buildkit or technical-docs; link to Phase 8 / release epic.
+- ossa-fleet, oracle-live -> platform-agents or agent-buildkit; link to OSSA Fleet / Oracle epic.
+- my-plans/OSSA (MASTER-PLAN, fleet-*, nist-submissions) -> technical-docs wiki or epic "OSSA Ecosystem"; create one parent epic and few child issues.
+- drupalcon-go-live -> agent-buildkit or technical-docs; one issue or epic.
+
+---
+
+## 4. CLOSE EXISTING ISSUES & BUILD NEW
+
+### 4.1 Rules (mandatory)
+- Do NOT close an issue (or epic) unless the code is merged to the release branch and into main (per AGENTS.md).
+- Orphan issues: close only if duplicate, obsolete, or consolidated into another issue (comment with "Consolidated into #X" before closing).
+
+### 4.2 Closure strategy
+1. Export and divide (steps 1-2). Produce:
+   - List of projects with open-issue count.
+   - List of issues with no epic (--no-epic) as candidates for linking or consolidation.
+2. Triage (use n8n GitLab nodes or GitLab Duo; no new BuildKit bulk commands per AGENTS.md):
+   - Link every orphan issue to an Epic or parent, or mark "to close: duplicate/obsolete" with a comment.
+   - Do not close in bulk; close only after human or script confirms each.
+3. Consolidation:
+   - For each project (or group), pick a small set of "umbrella" issues or epics (e.g. "Release v0.1.x", "OSSA Fleet", "Drupal Phase 8").
+   - Add comments to micro-issues: "Superseded by #X" or "Consolidated into Epic Y" then close.
+   - Prefer updating existing issues over creating new ones.
+
+### 4.3 Build new (after cleanup)
+- New issues: create only when linked to an Epic or parent. Use buildkit gitlab issues create --project <path> and link via GitLab UI or API (issue link type "relates to" / "parent").
+- New epics: create at group level for big themes (e.g. "Platform health", "OSSA 0.4", "Drupal CMS 2.0"). Then create few child issues per epic, not hundreds of micro-issues.
+- Todo-derived work: create one issue per coherent chunk (e.g. "Complete OSSA MASTER-PLAN Phase 0" with checklist in description), link to epic, then close or archive the local todo file.
+
+---
+
+## 5. EXECUTION ORDER (RECOMMENDED)
+
+1. Export: run 1.2, save to tmp/issues-export-opened.json and tmp/issues-export-all.json.
+2. Divide: run 2.2 or 2.3, produce tmp/issues-by-project.json and a short summary (per-project counts).
+3. Merge todo: list all .md task files in todo; for each, decide "create issue" or "add to existing" or "archive". Create/update issues and link to epics; then archive todo content.
+4. Triage: link orphans to epics; mark duplicates/obsolete; do not close yet unless consolidated.
+5. Consolidate: add "Consolidated into #X" comments, then close only those that are duplicates/superseded.
+6. Build new: create new epics/issues only when linked; keep count low (epic-first, few issues per epic).
+
+---
+
+## 6. DELIVERABLES (AFTER YOU RUN THIS)
+
+- tmp/issues-export-opened.json, tmp/issues-export-all.json (full export).
+- tmp/issues-by-project.json (grouped by project path).
+- A short summary: total open, per-project open count, orphan count (no epic), suggested epics to link.
+- This plan published to GitLab Wiki (e.g. technical-docs or agent-buildkit wiki "Issue-Export-Consolidate-Plan") so it is the single runbook. Do not leave the plan only in tmp; move to Wiki and then delete or archive from tmp.
+
+---
+
+## 7. NOTES
+
+- buildkit gitlab issues list does not support writing to file directly; redirect stdout (e.g. > tmp/file.json).
+- For bulk close/update, use n8n (https://n8n.blueflyagents.com) with GitLab nodes or GitLab Duo; BuildKit stays for single-issue create/update/comment.
+- Token: single source /Volumes/AgentPlatform/.env.local; run token check before any export.

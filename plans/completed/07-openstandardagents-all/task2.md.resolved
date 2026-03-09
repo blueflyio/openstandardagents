@@ -1,0 +1,55 @@
+# Drupal Contrib Consolidation Plan
+
+- [x] Analyze the current custom code patterns (specifically around API integration, AI, workflows, and registries).
+- [x] Identify industry-standard Drupal contrib modules for each domain (e.g., HTTP Client Manager, ECA, AI module, subrequests).
+- [x] Draft a comprehensive mapping document ([drupal_contrib_consolidation_plan.md](file:///Users/flux423/.gemini/antigravity/brain/8dd25cba-1bbc-4c8e-a4e5-bc19b84dbf09/drupal_contrib_consolidation_plan.md)) guiding the transition from custom to contrib.
+- [x] Present the extremely detailed, hard-task strategy to the user.
+- [ ] Proceed with structural isolation of custom modules based on the new explicit task list.
+
+## Phase A: Fix Broken Custom Code & Bootstrap (Completed)
+- [x] Fix PHP Parse Errors and missing methods in `mcp_registry` to unblock `drush cr`.
+- [x] Fix variable shadowing and syntax errors in `ai_agents_client`, `ai_agents_claude`, `ai_agents_cursor`.
+- [x] Fix routing file referencing non-existent controllers (`ai_agents_kagent`, `mcp_registry`).
+- [x] Fix Git conflict markers in [DragonflySettingsForm](file:///Users/flux423/Sites/blueflyio/TESTING_DEMOS/DEMO_SITE_drupal_testing/web/modules/custom/dragonfly_client/src/Form/DragonflySettingsForm.php#14-430) causing Parse Errors.
+- [x] Confirm `ddev drush cr` successfully completes.
+
+## Phase B: Execute Consolidation Pillars
+
+### Pillar 1: Tool API (drupal/tool)
+- [x] **Audit**: Identify all custom PHP scripts and Guzzle wrappers acting as executable functions for agents (e.g., in `mcp_registry`).
+- [ ] **Adopt `tool_belt`**: Review `drupal/tool_belt`. If standard tools exist, delete custom equivalents.
+- [x] **Migrate to [tool](file:///Users/flux423/Sites/blueflyio/TESTING_DEMOS/DEMO_SITE_drupal_testing/web/modules/custom/mcp_registry/src/Service/ToolManager.php#271-274) Plugins**: Rewrite remaining custom executable functions as standard [Tool](file:///Users/flux423/Sites/blueflyio/TESTING_DEMOS/DEMO_SITE_drupal_testing/web/modules/custom/mcp_registry/src/Plugin/rest/resource/McpServersResource.php#271-300) plugins under `src/Plugin/Tool/`.
+- [x] **Enforcement**: Ensure all executable logic is registered as a standard [Tool](file:///Users/flux423/Sites/blueflyio/TESTING_DEMOS/DEMO_SITE_drupal_testing/web/modules/custom/mcp_registry/src/Plugin/rest/resource/McpServersResource.php#271-300) plugin.
+
+### Pillar 2: Orchestration (drupal/orchestration)
+- [ ] **Deprecate Custom Loops**: Identify and deprecate bespoke orchestrators (`ServiceIntegrationOrchestrator`, `FleetOrchestratorService`).
+- [ ] **Adopt `orchestration`**: Install `drupal/orchestration` & `drupal/orchestration_recipe_workflow_blog`.
+- [ ] **Implement `maestro`**: Use `drupal/maestro` for visual state machines.
+- [ ] **External Hooks**: Route through `drupal/maestro_activepieces`.
+
+### Pillar 3: AI Ecosystem (drupal/ai)
+- [ ] **Adopt Core [ai](file:///Users/flux423/Sites/blueflyio/TESTING_DEMOS/DEMO_SITE_drupal_testing/web/modules/custom/ai_agents_kagent/src/Controller/KAgentController.php#70-97)**: Rely exclusively on `drupal/ai` for routing and key management. Delete custom bridges.
+- [ ] **Deprecate Custom Registries**: Replace custom discovery (`McpServerProject` entities) with `drupal/ai_agents`.
+- [ ] **Adopt `ai_agents_ossa`**: Install OSSA submodule to natively parse capabilities into Tool plugins. Turn off custom scrapers.
+
+### Pillar 4: API Normalization (drupal/api_normalization)
+- [ ] **Ban Raw Guzzle**: Stop using direct `@http_client` injection in custom modules.
+- [ ] **Import OpenAPI Specs**: Locate OpenAPI specs for core Mesh and MCP servers.
+- [ ] **Auto-generate Tools**: Feed OpenAPI specs into `drupal/api_normalization` to generate strongly-typed Tool plugins.
+
+### Pillar 5: Flowdrop Ecosystem
+- [ ] **Install Flowdrop Visuals**: Install `drupal/flowdrop`, `drupal/flowdrop_ui`.
+- [ ] **Expose Tools**: Install `drupal/flowdrop_tool_provider`.
+- [ ] **Connect AI Actions**: Install `drupal/flowdrop_ai`, `drupal/flowdrop_ai_provider`.
+- [ ] **UI Extensions**: Implement `drupal/flowdrop_ui_agents`, `drupal/flowdrop_field_widget_actions`.
+
+### Pillar 6: Observability (drupal/audit_export)
+- [ ] **Purge Metric Tables**: Drop custom tables for time-series/token logs.
+- [ ] **Install `audit_export`**: Use `drupal/audit_export` for system metadata.
+- [ ] **Externalize Telemetry**: Pipe execution histories through `audit_export` to `tracer.blueflyagents.com`.
+
+### Pillar 7: Architecture via Config (Partially complete via user's script)
+- [ ] **Zero Hardcoded Endpoints**: Purge hardcoded URLs in custom module code.
+- [ ] **Adopt `key` Module**: Migrate secrets/keys to the `key` module natively.
+- [ ] **Config Schema**: Add `config/schema/*.schema.yml` for all custom settings.
+- [ ] **Admin Control First**: Ensure all parameters are editable via Admin UI route.

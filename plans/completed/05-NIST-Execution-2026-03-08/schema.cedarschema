@@ -1,0 +1,56 @@
+// =============================================================================
+// Bluefly.io — SOD Sprint 3: Cedar Policy Schema
+// =============================================================================
+// Namespace: BlueflySOD
+//
+// Entities:
+//   Agent  — OSSA agent with tier, role, and agent_id
+//   Workflow — Multi-phase workflow with agent assignments per phase
+//
+// Actions:
+//   review, approve, execute, deploy
+//
+// The schema enforces type-safe policy authoring for the 4-tier SOD model.
+// =============================================================================
+
+namespace BlueflySOD {
+
+  entity Agent = {
+    "agent_id": String,
+    "tier": String,       // "T1" | "T2" | "T3" | "T4"
+    "role": String,       // "analyzer" | "reviewer" | "executor" | "approver"
+  };
+
+  entity Workflow = {
+    "workflow_id": String,
+    "analysis_agent": String,
+    "review_agent": String,
+    "execution_agent": String,
+    "approval_agent": String,
+    "analysis_tier": String,
+    "review_tier": String,
+    "execution_tier": String,
+    "approval_tier": String,
+  };
+
+  action "review" appliesTo {
+    principal: [Agent],
+    resource: [Workflow],
+  };
+
+  action "approve" appliesTo {
+    principal: [Agent],
+    resource: [Workflow],
+  };
+
+  action "execute" appliesTo {
+    principal: [Agent],
+    resource: [Workflow],
+  };
+
+  action "deploy" appliesTo {
+    principal: [Agent],
+    resource: [Workflow],
+  };
+
+}
