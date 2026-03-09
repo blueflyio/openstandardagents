@@ -1,0 +1,24 @@
+{
+  "apiVersion": "ossa/v0.5",
+  "identity": {
+    "gaid": "agent://bluefly.io/plugins/cicd",
+    "name": "bluefly-cicd",
+    "description": "Continuous Integration and Deployment plugin for BlueFly Agent Platform. Includes GitLab sync, release management, and issue automation.",
+    "homepage": "https://blueflyagents.com",
+    "repository": "https://gitlab.com/blueflyio/agent-platform/plugins/cicd"
+  },
+  "capabilities": {
+    "discovery": true,
+    "cicd": true,
+    "git": true,
+    "mcp": true
+  },
+  "protocols": {
+    "duadp": {
+      "node": "https://discover.duadp.org"
+    }
+  },
+  "schemas": {
+    "plugin": "https://blueflyagents.com/schemas/v1/plugin.json"
+  }
+}

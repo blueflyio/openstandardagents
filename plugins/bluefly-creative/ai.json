@@ -1,0 +1,24 @@
+{
+  "apiVersion": "ossa/v0.5",
+  "identity": {
+    "gaid": "agent://bluefly.io/plugins/creative",
+    "name": "bluefly-creative",
+    "description": "Creative and visual design tools for BlueFly Agent Platform. Includes algorithmic art, canvas design, and web artifact builders.",
+    "homepage": "https://blueflyagents.com",
+    "repository": "https://gitlab.com/blueflyio/agent-platform/plugins/creative"
+  },
+  "capabilities": {
+    "discovery": true,
+    "creative": true,
+    "design": true,
+    "mcp": true
+  },
+  "protocols": {
+    "duadp": {
+      "node": "https://discover.duadp.org"
+    }
+  },
+  "schemas": {
+    "plugin": "https://blueflyagents.com/schemas/v1/plugin.json"
+  }
+}

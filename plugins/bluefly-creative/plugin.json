@@ -1,0 +1,14 @@
+{
+  "name": "bluefly-creative",
+  "version": "0.1.0",
+  "description": "Creative and visual design tools for BlueFly Agent Platform.",
+  "author": "BlueFly.io",
+  "skills": [
+    "skills/algorithmic-art.md",
+    "skills/canvas-design.md",
+    "skills/brand-guidelines.md",
+    "skills/web-artifacts-builder.md",
+    "skills/slack-gif-creator.md",
+    "skills/theme-factory.md"
+  ]
+}
