@@ -1,7 +1,7 @@
 {
-  "current": "0.5.0",
+  "current": "0.4.9",
   "latest_stable": "0.4.8",
-  "spec_version": "0.5.0",
+  "spec_version": "0.4.9",
   "spec_path": "spec/v0.5",
   "schema_file": "agent.schema.json"
 }
