@@ -1,0 +1,12 @@
+{
+  "name": "bluefly-drupal",
+  "version": "0.1.0",
+  "description": "Drupal-specific workflows and standards plugin for BlueFly Agent Platform.",
+  "author": "BlueFly.io",
+  "skills": [
+    "skills/drupal-cms2.md",
+    "skills/drupal-standards-worker.md",
+    "skills/module-scaffolder.md",
+    "skills/recipe-publisher.md"
+  ]
+}
