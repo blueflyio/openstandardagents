@@ -40,5 +40,5 @@ A strict rule is enforced across all custom modules to maintain architectural pu
 - **Cedar Zero-Trust Authorization**: [x] `ossa policy validate` with `@cedar-policy/cedar-wasm`, DUADP `cedar-evaluator.ts` evaluates at runtime.
 - **Federated Discovery**: [x] `_duadp.<domain>` and `_agent.<uuid>.<domain>` DNS TXT verification in DUADP SDK.
 - **CLI Integration**: [x] `ossa publish --remote` and `ossa search --remote --federated` use `DuadpClient`.
-- **Builder Separation**: [x] `openstandardagents.org` redirects to `build.openstandardagents.org/builder`. Builder components migrated to `ossa-studio`.
+- **Builder Separation**: [x] `openstandardagents.org` redirects to `build.openstandardagents.org/builder`. Builder components migrated to `ossa-ui-api`.
 - **Contrib-First Rules Compliance**: [In Progress] Active auditing and refactoring of raw HTTP calls to use `drupal/ai` abstractions.
