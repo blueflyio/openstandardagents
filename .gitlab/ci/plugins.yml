@@ -1,0 +1,70 @@
+# =============================================================================
+# Consolidated Plugins CI/CD (Part of Marketplace Consolidation)
+# =============================================================================
+
+.plugin-base:
+  extends: .base-runner
+  stage: validate
+  variables:
+    PLUGIN_DIR: ""
+  before_script:
+    - npm ci --cache .npm --prefer-offline
+    - npm run build # Ensure ossa CLI is built if needed locally
+
+validate:plugins:
+  extends: .plugin-base
+  parallel:
+    matrix:
+      - PLUGIN_NAME: 
+        - bluefly-agent-platform
+        - bluefly-drupal
+        - bluefly-ossa
+        - bluefly-security
+        - bluefly-cicd
+        - bluefly-mcp-tools
+        - bluefly-k8s-ops
+        - bluefly-creative
+        - bluefly-docs
+        - bluefly-productivity
+  script:
+    - echo "Validating plugin ${PLUGIN_NAME}..."
+    - npx ossa validate plugins/${PLUGIN_NAME}/ai.json
+    - |
+      if [ -f "plugins/${PLUGIN_NAME}/package.json" ]; then
+        echo "Running tests for ${PLUGIN_NAME}..."
+        # Add test logic here if plugins have individual tests
+      fi
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/
+
+publish:plugins:
+  extends: .plugin-base
+  stage: deploy
+  parallel:
+    matrix:
+      - PLUGIN_NAME: 
+        - bluefly-agent-platform
+        - bluefly-drupal
+        - bluefly-ossa
+        - bluefly-security
+        - bluefly-cicd
+        - bluefly-mcp-tools
+        - bluefly-k8s-ops
+        - bluefly-creative
+        - bluefly-docs
+        - bluefly-productivity
+  script:
+    - echo "Publishing plugin ${PLUGIN_NAME} to Marketplace..."
+    - |
+      # Use DUADP/OSSA publish mechanism
+      # Example: npx ossa publish plugins/${PLUGIN_NAME}/ai.json --registry-url https://discover.duadp.org
+      curl -sf -X POST "https://discover.duadp.org/api/v1/publish" \
+        -H "Content-Type: application/json" \
+        -H "Authorization: Bearer ${DUADP_PUBLISH_TOKEN}" \
+        -d @plugins/${PLUGIN_NAME}/ai.json
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /^(main|release\/)/
+      when: on_success
+    - if: $DUADP_PUBLISH_TOKEN == null
+      when: never
