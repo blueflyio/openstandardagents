@@ -4,13 +4,14 @@ This plan outlines the remaining work for all active projects as of March 8, 202
 
 ## 1. High-Priority: Marketplace Consolidation (Project 06)
 - **Goal:** Consolidate 60+ skills into 10 cohesive plugins and deploy stable registry.
-- [ ] **Plugin Creation:** Scaffold the 10 domain-bounded plugins (`bluefly-agent-platform`, `bluefly-drupal`, `bluefly-ossa`, `bluefly-security`, `bluefly-cicd`, `bluefly-mcp-tools`, `bluefly-k8s-ops`, `bluefly-creative`, `bluefly-docs`, `bluefly-productivity`).
-- [ ] **Migration:** Move existing `.gemini/skills/` and commands into respective plugin directories.
-- [ ] **CI/CD:** Finalize GitLab CI pipeline for automated validation and publishing to `marketplace.drupl.ai`.
+- [x] **Plugin Creation:** Scaffold the 10 domain-bounded plugins (`bluefly-agent-platform`, `bluefly-drupal`, `bluefly-ossa`, `bluefly-security`, `bluefly-cicd`, `bluefly-mcp-tools`, `bluefly-k8s-ops`, `bluefly-creative`, `bluefly-docs`, `bluefly-productivity`).
+- [x] **Migration:** Move existing `.gemini/skills/` and commands into respective plugin directories.
+- [x] **CI/CD:** Finalize GitLab CI pipeline for automated validation and publishing to `marketplace.drupl.ai`.
 - [ ] **Backend:** Verify `marketplace-api.mjs` on Oracle handles all JSON:API requests correctly.
 
 ## 2. OSSA Builder Separation of Duties (Project 07)
 - **Goal:** Cleanly separate marketing (`openstandardagents.org`) from builder runtime (`build.openstandardagents.org`).
+- [x] **UI Porting:** Ported `daemon` and `skills` components from `ossa-studio` to `studio-ui` npm package.
 - [ ] **Phase 2 (ossa-studio cleanup):**
   - [ ] Remove all marketing pages (`about/`, `blog/`, `brand/`, etc.) from `ossa-studio/app/builder/app/`.
   - [ ] Remove marketing components and libs from `ossa-studio`.
@@ -19,6 +20,13 @@ This plan outlines the remaining work for all active projects as of March 8, 202
   - [ ] Fix `GET /api/wizard/definitions` (currently 404).
 - [ ] **Phase 4 (Cross-site):**
   - [ ] Update `duadp.org` and `duadp.org` to point all builder references to the external host.
+
+## NEW: Power Tool Decentralization (Project 08 - COMPLETED)
+- **Goal:** Make `agent-buildkit` a lightweight router and decentralize logic.
+- [x] **CLI Aggregation:** Refactored `buildkit` to proxy `deploy` (to `iac`), `duadp`, and `ide` CLIs.
+- [x] **Logic Extraction:** Moved 27 deployment scripts to `iac` repository.
+- [x] **Script Decentralization:** Moved orchestration and IDE scripts to `platform-agents` and `ide-supercharger`.
+- [x] **Distributed Manifests:** Initialized `.agents/agents` structure across all critical projects.
 
 ## 3. NIST CAISI RFI Mapping (Project 05 Remaining)
 - **Goal:** Deliver the final mapping appendix.
