@@ -58,7 +58,7 @@ Use `~/.agent-platform/agent-buildkit/todo/` to drive work that **builds in** th
 
 Concrete tasks to pull from todo into execution (no new docs):
 
-1. **Audit and fix remaining hardcoded URLs** in the five repos (env or config only); track in a short checklist in todo (e.g. one file `todo/URL-AUDIT-OSSA-STUDIO.md` with repo + status) or in existing RUNBOOK/NEXT.
+1. **Audit and fix remaining hardcoded URLs** in the five repos (env or config only); track in a short checklist in todo (e.g. one file `todo/URL-AUDIT-OSSA-UI-API.md` with repo + status) or in existing RUNBOOK/NEXT.
 2. **Push any unpushed work** from the registry parallel run (REGISTRY-REFERENCE, NEXT.md: "push changes; deploy api-schema-registry to Oracle if needed").
 3. **Define validate commands** for each of the five (e.g. `pnpm build && pnpm test` or `npm run build && npm run test`) and document them in the single runbook so "local validation" is unambiguous before merge-release.
 

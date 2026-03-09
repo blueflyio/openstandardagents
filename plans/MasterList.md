@@ -8,7 +8,7 @@ This file is the execution source-of-truth for:
 ## Active Priority Queue (Confirmed 2026-03-08)
 
 1. **OSSA Builder Separation of Duties (Phase 2)**
-   - Remove marketing pages/components/libs from `ossa-studio` (SoD violation).
+   - Remove marketing pages/components/libs from `ossa-ui-api` (SoD violation).
    - Consolidate dual builder component trees into a single canonical source.
    - Fix `@bluefly/studio-ui` package artifacts for runtime safety.
 
@@ -32,20 +32,20 @@ This file is the execution source-of-truth for:
 
 ## OSSA Builder Separation of Duties - Refactor Plan (Phase 2/3)
 
-### Phase 2 - ossa-studio: remove marketing-site copy and keep builder runtime
+### Phase 2 - ossa-ui-api: remove marketing-site copy and keep builder runtime
 
 - [ ] Remove `app/builder/app/` marketing pages (`about/`, `blog/`, `docs/`, `enterprise/`, etc.).
 - [ ] Remove `app/builder/components/` marketing elements (`blog/`, `social/`, `AnimatedHeroBackground.tsx`, etc.).
 - [ ] Remove `app/builder/lib/` marketing data sync/fetch libs.
 - [ ] Audit and remove marketing API routes from `app/builder/app/api/`.
 
-### Phase 2A - consolidate best builder implementations into `ossa-studio`
+### Phase 2A - consolidate best builder implementations into `ossa-ui-api`
 
-- [ ] Define one canonical builder component tree in `ossa-studio` (merge `components/agent-builder/*` and `app/builder/components/agent-builder/*`).
+- [ ] Define one canonical builder component tree in `ossa-ui-api` (merge `components/agent-builder/*` and `app/builder/components/agent-builder/*`).
 - [ ] Merge strongest builder capabilities into canonical runtime (`VisualFlowBuilder`, `FlowDropBuilder`, `InteractiveBuilder`).
 - [ ] Standardize route ownership: `/builder` as the canonical UI.
 
-### Phase 3 - API parity and route audit in ossa-studio
+### Phase 3 - API parity and route audit in ossa-ui-api
 
 - [ ] Audit `POST /api/builder/transform`; promote nested/legacy APIs to stable top-level.
 - [ ] Fix `@bluefly/studio-ui` package imports (currently using temporary mitigation adapter).

@@ -11,10 +11,10 @@ This plan outlines the remaining work for all active projects as of March 8, 202
 
 ## 2. OSSA Builder Separation of Duties (Project 07)
 - **Goal:** Cleanly separate marketing (`openstandardagents.org`) from builder runtime (`build.openstandardagents.org`).
-- [x] **UI Porting:** Ported `daemon` and `skills` components from `ossa-studio` to `studio-ui` npm package.
-- [ ] **Phase 2 (ossa-studio cleanup):**
-  - [ ] Remove all marketing pages (`about/`, `blog/`, `brand/`, etc.) from `ossa-studio/app/builder/app/`.
-  - [ ] Remove marketing components and libs from `ossa-studio`.
+- [x] **UI Porting:** Ported `daemon` and `skills` components from `ossa-ui-api` to `studio-ui` npm package.
+- [ ] **Phase 2 (ossa-ui-api cleanup):**
+  - [ ] Remove all marketing pages (`about/`, `blog/`, `brand/`, etc.) from `ossa-ui-api/app/builder/app/`.
+  - [ ] Remove marketing components and libs from `ossa-ui-api`.
 - [ ] **Phase 3 (API Parity):**
   - [ ] Audit and promote `POST /api/builder/transform` to a stable top-level API.
   - [ ] Fix `GET /api/wizard/definitions` (currently 404).
