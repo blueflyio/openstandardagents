@@ -14,11 +14,9 @@ OSSA is not a protocol (like MCP or A2A) and not a framework (like LangChain or 
 - **Builds on A2A** - Supports A2A messaging and agent-to-agent communication
 - **Extends protocols** - Adds deployment and packaging layer on top of communication protocols
 
-## The Three-Layer Agent Security Architecture
+## Why OSSA + DUADP
 
-> *"AI agents require the same foundational infrastructure the internet required: identity, discovery, and governance."*
-
-OSSA is **Layer 1** of a three-layer open standard for secure, interoperable AI agents:
+AI agents need the same foundational infrastructure the internet has: **identity**, **discovery**, and **governance**. OSSA and DUADP together deliver that stack:
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
@@ -51,20 +49,22 @@ OSSA is **Layer 1** of a three-layer open standard for secure, interoperable AI 
 └──────────────────────────────────────────────────────────────┘
 ```
 
-**OSSA defines the agent. DUADP discovers it. Together they answer every NIST CAISI concern.**
+**OSSA defines the agent. DUADP discovers it.**
 
-| NIST Concern (NIST-2025-0035) | OSSA | DUADP |
+| Security requirement | OSSA | DUADP |
 |---|---|---|
 | Agent identity & authentication | ✅ W3C DID (GAID) per agent | ✅ DID-verified nodes |
 | Authorization & least-privilege | ✅ AWS Cedar policies in manifest | ✅ Trust-tier gating |
 | Governance & human oversight | ✅ Signed manifests + OSCAL pointers | ✅ Audit log + attestation API |
-| Interoperability | ✅ 22 platform exports | ✅ Federated gossip discovery |
+| Cross-system interoperability | ✅ 22 platform exports | ✅ Federated gossip discovery |
 | Monitoring & incident response | ✅ Observability config in spec | ✅ Revocation + incident endpoints |
 | Supply chain security | ✅ `x-signature` + SBOM | ✅ Signed resource registry |
 
-> See NIST whitepaper: [openstandardagents.org/nist/whitepaper](https://openstandardagents.org/nist/whitepaper) | DUADP: [duadp.org](https://duadp.org)
+> [openstandardagents.org/specification →](https://openstandardagents.org/specification) | [duadp.org →](https://duadp.org)
 
-## 🇺🇸 NIST CAISI RFI Details (NIST-2025-0035)
+## 🇺🇸 NIST CAISI Alignment (NIST-2025-0035)
+
+If you're evaluating OSSA/DUADP for federal or regulated deployments, see the detailed alignment documentation:
 
 OSSA natively aligns with the [NIST CAISI Request for Information on Collaborative AI Systems Integration](https://www.regulations.gov/docket/NIST-2025-0035), providing the critical **Contract Layer** missing from current agent protocols.
 
