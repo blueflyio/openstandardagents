@@ -1,0 +1,70 @@
+{
+  "entities": [
+    {
+      "uid": { "type": "BlueflySOD::Agent", "id": "sast-scanner" },
+      "attrs": {
+        "agent_id": "sast-scanner",
+        "tier": "T1",
+        "role": "analyzer"
+      },
+      "parents": []
+    },
+    {
+      "uid": { "type": "BlueflySOD::Agent", "id": "code-reviewer" },
+      "attrs": {
+        "agent_id": "code-reviewer",
+        "tier": "T2",
+        "role": "reviewer"
+      },
+      "parents": []
+    },
+    {
+      "uid": { "type": "BlueflySOD::Agent", "id": "deploy-bot" },
+      "attrs": {
+        "agent_id": "deploy-bot",
+        "tier": "T3",
+        "role": "executor"
+      },
+      "parents": []
+    },
+    {
+      "uid": { "type": "BlueflySOD::Agent", "id": "merge-guardian" },
+      "attrs": {
+        "agent_id": "merge-guardian",
+        "tier": "T4",
+        "role": "approver"
+      },
+      "parents": []
+    },
+    {
+      "uid": { "type": "BlueflySOD::Workflow", "id": "valid-chain" },
+      "attrs": {
+        "workflow_id": "valid-chain",
+        "analysis_agent": "sast-scanner",
+        "review_agent": "code-reviewer",
+        "execution_agent": "deploy-bot",
+        "approval_agent": "merge-guardian",
+        "analysis_tier": "T1",
+        "review_tier": "T2",
+        "execution_tier": "T3",
+        "approval_tier": "T4"
+      },
+      "parents": []
+    },
+    {
+      "uid": { "type": "BlueflySOD::Workflow", "id": "self-review-violation" },
+      "attrs": {
+        "workflow_id": "self-review-violation",
+        "analysis_agent": "sast-scanner",
+        "review_agent": "deploy-bot",
+        "execution_agent": "deploy-bot",
+        "approval_agent": "merge-guardian",
+        "analysis_tier": "T1",
+        "review_tier": "T3",
+        "execution_tier": "T3",
+        "approval_tier": "T4"
+      },
+      "parents": []
+    }
+  ]
+}

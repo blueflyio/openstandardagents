@@ -1,0 +1,997 @@
+
+
+
+
+
+
+BLUEFLY.IO
+Agent Platform Marketplace
+Comprehensive Buildout Plan
+
+
+Version 1.0 — March 2026
+Prepared for: Thomas Scola, Founder & Principal
+Classification: INTERNAL — Bluefly.io
+
+Table of Contents
+
+
+
+1. Executive Summary
+This plan defines the strategy and phased roadmap to transform the Bluefly.io Agent Platform marketplace from its current foundation (60 skills, 5 agents, 9 commands, 10 plugin directories) into a comprehensive, multi-IDE, OSSA-compliant agent ecosystem. The marketplace at plugins.blueflyagents.com will serve as the canonical distribution point for Claude Code, Cursor, Windsurf, and future IDE integrations.
+
+Current State: Operational infrastructure with Cloudflare Tunnel → Oracle Cloud → Drupal backend. Core OSSA three-tier architecture established. marketplace.json plugins array is EMPTY — no plugins are formally registered despite 60+ skills existing on disk.
+Target State: Fully populated marketplace with categorized, versioned plugins; cross-IDE packaging; automated CI/CD for plugin publishing; OSSA v0.4.6 compliance across all agents; A2A/MCP protocol bridges; Drupal CMS 2.0 backend integration; and enterprise-grade observability.
+Timeline: 16 weeks across 4 phases — Foundation (Wk 1-4), Packaging (Wk 5-8), Integration (Wk 9-12), Scale (Wk 13-16).
+
+2. Current State Assessment
+2.1 Asset Inventory
+Category
+Count
+Status
+Notes
+Skills
+60
+On disk
+Mixed maturity; no plugin.json manifests
+Agents
+5
+Defined
+cost-monitor, deployment-orchestrator, drupal-standards, mr-reviewer, security-scanner
+Commands
+9
+Defined
+agents, buildkit, deploy, fleet, gitlab, observe, platform, research, services
+Plugin Dirs
+10
+Partial
+Directory structures exist; no formal plugin.json packaging
+marketplace.json
+1
+Empty
+CRITICAL: plugins[] array has zero entries
+index.json
+1
+Active
+Lists 2 agents (task-dispatcher, merge-request-reviewer) proxying to Drupal
+hooks.json
+1
+Present
+Hook definitions exist but need audit
+
+2.2 Infrastructure Topology
+Component
+Endpoint / Address
+Role
+Public Marketplace
+plugins.blueflyagents.com
+Static plugin registry (Cloudflare Tunnel → Oracle port 3095)
+Drupal Backend
+marketplace.blueflyagents.com
+Agent marketplace API (discovery, search, CRUD)
+Tailscale Internal
+oracle-platform.tailcf98b3.ts.net:3095
+Internal mesh access
+Synology NAS
+192.168.68.54
+MinIO S3 (:9000), webhooks (:3001), mesh (:3005)
+Vast.ai GPU
+Instance 29484611
+RTX 4090 for ML inference
+LiteLLM Gateway
+Port 4000
+Multi-provider LLM routing
+Qdrant Vector DB
+Port 6333
+Embeddings / RAG search
+
+2.3 Gap Analysis
+Gap
+Severity
+Impact
+Resolution Phase
+marketplace.json plugins[] empty
+CRITICAL
+No plugins discoverable by IDE clients
+Phase 1
+No plugin.json manifests for skills
+HIGH
+Skills not installable as Claude Code plugins
+Phase 1
+No cross-IDE packaging (Cursor/Windsurf)
+HIGH
+Locked to Claude Code only
+Phase 2
+OSSA v0.4.6 alignment incomplete
+MEDIUM
+Agent interop limited
+Phase 2
+No automated plugin publishing CI/CD
+HIGH
+Manual process, error-prone
+Phase 2
+A2A protocol bridge missing
+MEDIUM
+No Google agent interop
+Phase 3
+Drupal CMS 2.0 backend partial
+MEDIUM
+Search/discovery API incomplete
+Phase 3
+No plugin analytics/telemetry
+LOW
+No usage data for optimization
+Phase 4
+Enterprise private marketplace not configured
+MEDIUM
+Can't serve org-scoped plugins
+Phase 4
+
+3. Target Architecture
+3.1 Three-Tier OSSA Model
+The existing three-tier architecture remains canonical. This plan extends it with IDE-specific packaging layers and protocol bridges.
+
+Tier
+Repository
+Content
+Extension
+Tier 1 — Manifests
+platform-agents/
+OSSA agent YAML definitions
+Add plugin.json + marketplace entries
+Tier 2 — Packages
+common_npm/agent-*
+18 TypeScript infrastructure packages
+MCP server wrappers for IDE consumption
+Tier 3 — Runtime
+gitlab-agent_ossa/
+Go platform implementation
+A2A protocol bridge, webhook handlers
+
+3.2 Plugin Packaging Model
+Each distributable unit becomes a Claude Code plugin with the following structure:
+
+	•	.claude-plugin/plugin.json — Manifest (name, version, description, author, skills[], commands[], hooks[], mcpServers[])
+	•	skills/ — SKILL.md files with frontmatter (name, description, disable-model-invocation, user-invocable)
+	•	commands/ — Command definitions referenced by plugin.json
+	•	hooks/ — hooks.json with PreToolUse/PostToolUse/SessionStart/Stop events
+	•	.mcp.json — MCP server configuration for tool integration
+	•	README.md — Plugin documentation and usage instructions
+
+3.3 Marketplace Registry Schema
+The marketplace.json plugins[] array will be populated with entries following the Claude Code marketplace schema:
+
+	•	name — Plugin identifier (e.g., 'bluefly-agent-platform')
+	•	source — Object with type ('relative', 'github', 'npm', 'url') and path/url
+	•	description — Human-readable summary for IDE search
+	•	version — Semver string
+	•	author — Publisher identity (bluefly.io)
+	•	category — One of: architecture, security, tdd, cost, git, ossa, openapi, drupal
+	•	keywords — Search tags for discoverability
+
+3.4 Cross-IDE Compatibility Matrix
+Feature
+Claude Code
+Cursor
+Windsurf
+VS Code
+Plugin Install
+plugin.json + marketplace
+MCP config + .cursorrules
+MCP config + cascade
+Extension + MCP
+Skills (SKILL.md)
+Native
+Via .cursorrules mapping
+Via cascade instructions
+Custom provider
+MCP Servers
+Native .mcp.json
+Native mcp.json
+Native mcp.json
+Extension-based
+Hooks System
+hooks.json (7+ events)
+N/A (use MCP)
+N/A (use MCP)
+Extension API
+Commands
+Slash commands
+Custom commands
+Custom commands
+Command palette
+Agent Invocation
+Native task/agent
+Composer agent
+Cascade agent
+Extension agent
+
+4. Plugin Consolidation Plan
+The 60 existing skills, 5 agents, and 9 commands will be consolidated into a curated set of distributable plugins. The strategy groups related assets by domain to minimize plugin sprawl while maintaining separation of concerns.
+
+4.1 Proposed Plugin Registry
+Plugin Name
+Type
+Skills Included
+Category
+bluefly-agent-platform
+Core
+agent-ops, buildkit-cli, gitlab-workflow, platform-status, infrastructure, separation-of-duties, wiki-nas, gkg-knowledge, ide-supercharger-ref, observability, fleet-ops, research
+architecture
+bluefly-drupal
+Domain
+drupal-dev, drupal-cms2, drupal-demos, drupal-standards-worker, module-scaffolder, recipe-publisher
+drupal
+bluefly-ossa
+Protocol
+ossa-research, ossa-validation, ossa-validator, agent-mr-reviewer, agent-platform
+ossa
+bluefly-security
+Security
+security-scanner, code-reviewer, tdd-workflow, openapi-validation
+security
+bluefly-cicd
+DevOps
+ci-fixer-worker, release-manager, gitlab-sync, issue-worker, mr-reviewer
+git
+bluefly-mcp-tools
+Tooling
+mcp-builder, mcp-builder-worker
+architecture
+bluefly-k8s-ops
+Infra
+k8s-ops-worker, kagent-worker, swarm-execution, token-optimizer
+architecture
+bluefly-creative
+Creative
+canvas-design, algorithmic-art, web-artifacts-builder, theme-factory, slack-gif-creator, brand-guidelines
+architecture
+bluefly-docs
+Docs
+docx, pptx, xlsx, pdf, internal-comms
+architecture
+bluefly-productivity
+Workflow
+skill-creator, schedule, terminal-setup, default-orchestrator, wiki-aggregator
+architecture
+
+This consolidation reduces 60 individual skills into 10 cohesive plugins, each with a clear domain boundary and independent versioning.
+
+4.2 marketplace.json Population
+Each plugin above will have a corresponding entry in marketplace.json. The source type will be 'relative' for locally-served plugins and 'url' for CDN-distributed packages. Example entry structure:
+
+	•	name: 'bluefly-agent-platform'
+	•	source: { type: 'relative', path: './plugins/bluefly-agent-platform' }
+	•	description: 'Core platform skills for the Bluefly.io Agent Platform ecosystem'
+	•	version: '0.1.0'
+	•	author: 'Bluefly.io'
+	•	category: 'architecture'
+	•	keywords: ['ossa', 'buildkit', 'gitlab', 'agents', 'platform']
+
+5. Protocol Integration Strategy
+5.1 MCP Server Packaging
+Each @bluefly/agent-* package that exposes functionality to IDEs will be wrapped as an MCP server. This provides tool-use access from Claude Code, Cursor, and Windsurf through a unified protocol.
+
+Package
+MCP Server Name
+Tools Exposed
+Priority
+@bluefly/agent-brain
+bluefly-brain
+vector_search, rag_query, embed_text, index_document
+P0
+@bluefly/agent-router
+bluefly-router
+route_request, discover_agents, health_check
+P0
+@bluefly/agent-mesh
+bluefly-mesh
+send_message, broadcast, subscribe_topic
+P1
+@bluefly/agent-protocol
+bluefly-protocol
+validate_manifest, register_agent, query_registry
+P0
+@bluefly/agent-tracer
+bluefly-tracer
+start_span, log_event, query_traces
+P1
+@bluefly/agent-docker
+bluefly-docker
+list_containers, deploy_agent, scale_service
+P2
+@bluefly/compliance-engine
+bluefly-compliance
+check_policy, audit_action, validate_separation
+P1
+@bluefly/foundation-bridge
+bluefly-llm
+complete, embed, list_models, switch_provider
+P0
+
+5.2 A2A Protocol Bridge
+Google's Agent-to-Agent protocol enables peer-to-peer agent communication. An A2A bridge in Tier 3 (Go runtime) will expose OSSA agents as A2A-compatible endpoints, enabling interoperability with Google's agent ecosystem.
+
+	•	Agent Card Mapping: OSSA manifest → A2A Agent Card (name, description, capabilities, endpoint)
+	•	Task Protocol: A2A tasks mapped to OSSA workflow invocations via agent-mesh
+	•	Discovery: A2A /.well-known/agent.json served from Drupal backend for each registered agent
+	•	Authentication: OAuth 2.0 bearer tokens with Tailscale mesh as transport security layer
+
+5.3 ACP (Agent Communication Protocol) Alignment
+ACP from IBM provides structured agent-to-agent messaging. The compliance-engine will validate ACP message formats when agents operate in hybrid environments. This is a Phase 3 integration — monitor spec maturity before committing resources.
+
+6. CI/CD & Publishing Pipeline
+6.1 Plugin Publishing Flow
+A GitLab CI pipeline in gitlab_components will automate the full plugin lifecycle from commit to marketplace publication.
+
+	•	Stage 1 — Validate: Lint plugin.json, validate SKILL.md frontmatter, check OSSA manifest schema
+	•	Stage 2 — Test: Run unit tests, integration tests against mock IDE environments
+	•	Stage 3 — Package: Bundle plugin directory, generate checksums, create release archive
+	•	Stage 4 — Publish: Update marketplace.json plugins[] array, push to static host, notify Drupal backend API
+	•	Stage 5 — Verify: Smoke test plugin installation via Claude Code CLI, validate MCP server startup
+
+6.2 Version Strategy
+Version authority follows the existing OSSA model: HUMAN (milestone) → CI PIPELINE (semantic-release) → GIT TAG (output). AI agents remain READ-ONLY for all version information. Each plugin gets independent semver versioning, decoupled from the platform version.
+
+6.3 Release Channels
+Channel
+Audience
+Update Frequency
+Validation
+stable
+Production users
+Bi-weekly
+Full test suite + manual QA
+beta
+Early adopters
+Weekly
+Automated tests + smoke tests
+nightly
+Internal developers
+Daily
+CI pass only
+enterprise
+Org-scoped customers
+On-demand
+Customer-specific test suite
+
+7. Drupal CMS 2.0 Backend Integration
+The Drupal backend at marketplace.blueflyagents.com serves as the dynamic registry, providing search, discovery, CRUD operations, and analytics. CMS 2.0 capabilities (Canvas, AI Agents module, MCP Server module, ECA) enable intelligent marketplace management.
+
+7.1 API Endpoints (Target)
+Endpoint
+Method
+Purpose
+Status
+/api/v1/agents
+GET
+List all registered agents/plugins
+Exists
+/api/v1/discovery
+GET
+IDE auto-discovery manifest
+Exists
+/api/v1/search
+GET
+Full-text + faceted search
+Partial
+/api/v1/plugins
+GET/POST
+Plugin CRUD operations
+NEW
+/api/v1/plugins/{id}/install
+POST
+Track installation events
+NEW
+/api/v1/plugins/{id}/reviews
+GET/POST
+User ratings and reviews
+NEW
+/api/v1/analytics/usage
+GET
+Plugin usage telemetry
+NEW
+/api/v1/enterprise/registry
+GET
+Org-scoped plugin registry
+NEW
+
+7.2 Drupal Modules Required
+	•	bluefly_marketplace — Core marketplace entity type, REST resources, search API
+	•	bluefly_marketplace_analytics — Usage tracking, download counts, telemetry aggregation
+	•	bluefly_marketplace_enterprise — Org-scoped registries, access control, private plugins
+	•	bluefly_ai_integration — Drupal AI module bridge for intelligent recommendations and curation
+	•	bluefly_ossa_sync — OSSA manifest ingestion from GitLab, auto-registration on merge to release branch
+
+All modules go in all_drupal_custom/modules/ per platform conventions. NEVER edit demo_llm-platform/web/ directly. Use 'buildkit drupal sync' for deployment.
+
+8. Hooks & Automation Framework
+Claude Code's hooks system (hooks.json) provides lifecycle interception points. The platform will use hooks for quality gates, compliance enforcement, and workflow automation.
+
+8.1 Platform Hooks
+Hook Event
+Type
+Purpose
+Plugin
+PreToolUse
+command
+Validate OSSA compliance before agent invocation
+bluefly-ossa
+PostToolUse
+command
+Log telemetry to agent-tracer after tool execution
+bluefly-agent-platform
+SessionStart
+prompt
+Load platform context, check workspace status
+bluefly-agent-platform
+SubagentStart
+command
+Enforce separation-of-duties policy before agent spawn
+bluefly-security
+PermissionRequest
+prompt
+Apply Cedar policy gates for protected operations
+bluefly-security
+TaskCompleted
+http
+POST completion event to mesh.blueflyagents.com
+bluefly-agent-platform
+PreCompact
+prompt
+Preserve critical platform state before context compaction
+bluefly-agent-platform
+
+8.2 Cedar Policy Integration
+The fleet-ops 7-step flow uses Cedar policy gates for change control. Hooks will invoke the compliance-engine MCP server to evaluate Cedar policies in real-time, enforcing the 4-tier agent role separation (read → write → full → orchestrator) at IDE level.
+
+9. Phased Rollout Plan
+9.1 Phase 1 — Foundation (Weeks 1-4)
+Goal: Populate marketplace.json, create plugin.json manifests, establish publishing pipeline.
+
+Week
+Deliverable
+Owner
+Validation
+1
+Create plugin.json for top 3 plugins (agent-platform, drupal, ossa)
+Dev
+Schema validation pass
+1
+Populate marketplace.json with 3 plugin entries
+Dev
+Claude Code 'plugin install' succeeds
+2
+Create plugin.json for remaining 7 plugins
+Dev
+All 10 plugins schema-valid
+2
+Implement CI Stage 1+2 (validate + test)
+DevOps
+Pipeline green on MR
+3
+Implement CI Stage 3+4 (package + publish)
+DevOps
+Auto-publish on release merge
+3
+Write MCP server wrappers for P0 packages (brain, router, protocol, llm)
+Dev
+MCP health check pass
+4
+End-to-end: commit → publish → install → verify
+QA
+Full lifecycle test pass
+4
+Documentation: plugin authoring guide in GitLab Wiki
+Docs
+Peer review approval
+
+9.2 Phase 2 — Packaging & Cross-IDE (Weeks 5-8)
+Goal: Cross-IDE compatibility, OSSA v0.4.6 full alignment, release channels.
+
+Week
+Deliverable
+Owner
+Validation
+5
+Cursor adapter: .cursorrules + mcp.json generation from plugin.json
+Dev
+Cursor install + tool invocation
+5
+Windsurf adapter: cascade config generation
+Dev
+Windsurf install + tool invocation
+6
+OSSA v0.4.6 audit: validate all 5 agents against latest schema
+Dev
+buildkit agents marketplace validate pass
+6
+Implement beta release channel
+DevOps
+Beta install from marketplace
+7
+MCP server wrappers for P1 packages (mesh, tracer, compliance)
+Dev
+MCP health check pass
+7
+Hook system deployment for all 7 platform hooks
+Dev
+Hook trigger verification
+8
+Cross-IDE integration test suite
+QA
+All 3 IDEs pass
+8
+Performance benchmarks: plugin install time, MCP latency
+QA
+Meets SLO targets
+
+9.3 Phase 3 — Integration (Weeks 9-12)
+Goal: A2A bridge, Drupal backend API completion, enterprise features.
+
+Week
+Deliverable
+Owner
+Validation
+9
+A2A protocol bridge in gitlab-agent_ossa
+Dev
+A2A agent card served, task roundtrip
+9
+Drupal bluefly_marketplace module — core entity + REST
+Dev
+/api/v1/plugins CRUD works
+10
+Drupal bluefly_marketplace_analytics — tracking + telemetry
+Dev
+Install events recorded
+10
+Drupal bluefly_ossa_sync — GitLab webhook → auto-registration
+Dev
+Merge triggers agent registration
+11
+Enterprise private marketplace configuration
+Dev
+Org-scoped registry serves plugins
+11
+bluefly_marketplace_enterprise module — ACL + private plugins
+Dev
+Access control enforced
+12
+Full integration test: GitLab merge → Drupal sync → marketplace publish → IDE install
+QA
+End-to-end green
+12
+Security audit: SAST/DAST scan of all MCP servers and Drupal modules
+Security
+No critical/high findings
+
+9.4 Phase 4 — Scale (Weeks 13-16)
+Goal: Analytics dashboard, community features, performance optimization, external launch.
+
+Week
+Deliverable
+Owner
+Validation
+13
+Analytics dashboard: Grafana + Prometheus for plugin metrics
+DevOps
+DORA metrics visible
+13
+P2 MCP servers (docker, tailscale)
+Dev
+Health check pass
+14
+Plugin review/rating system in Drupal
+Dev
+Submit + display reviews
+14
+AI-powered plugin recommendations (Drupal AI module)
+Dev
+Recommendations relevant
+15
+Performance optimization: CDN caching, lazy loading, connection pooling
+DevOps
+P95 latency < 200ms
+15
+Documentation: marketplace user guide, contributor guide
+Docs
+Published to Wiki
+16
+External launch prep: landing page, announcement, onboarding flow
+Product
+Launch checklist complete
+16
+Community plugin submission workflow (external contributors)
+Dev
+Submit → review → publish flow works
+
+10. Observability & SLOs
+10.1 Metrics
+Metric
+Target SLO
+Source
+Alert Threshold
+Plugin install success rate
+99.5%
+marketplace publish pipeline
+< 98%
+MCP server availability
+99.9%
+Prometheus health checks
+< 99.5%
+Marketplace API latency (P95)
+< 200ms
+Drupal application metrics
+> 500ms
+Plugin validation time
+< 30s
+CI pipeline metrics
+> 60s
+A2A task roundtrip time
+< 2s
+agent-tracer spans
+> 5s
+Drupal backend uptime
+99.9%
+Cloudflare analytics
+< 99.5%
+
+10.2 Dashboards
+	•	Platform Health — Service status, MCP server health, Tailscale mesh connectivity
+	•	Marketplace Analytics — Install counts, search queries, popular plugins, error rates
+	•	CI/CD Pipeline — Build times, publish success rate, test coverage trends
+	•	Agent Performance — Task completion rates, latency distributions, cost per invocation
+	•	Security — Vulnerability scan results, policy violations, audit log analysis
+
+11. Security & Compliance
+11.1 Plugin Security Model
+	•	All plugins signed with GPG keys from the bluefly.io keyring
+	•	Checksums published alongside every release archive
+	•	SAST scanning (GitLab SAST) on every MR, DAST on staging deployments
+	•	Dependency scanning with GitLab dependency-scanning and license-scanning jobs
+	•	MCP servers run with least-privilege: scoped API tokens, read-only filesystem by default
+	•	Cedar policy evaluation for all tier_3_full operations (agent-docker, release-manager)
+
+11.2 Agent Role Separation Enforcement
+The 4-tier separation model is enforced at both CI/CD and IDE levels:
+
+Tier
+Access Level
+Example Agents
+Enforcement Point
+tier_1_read
+Read-only analysis
+vulnerability-scanner, cost-monitor
+Cedar policy + MCP scope
+tier_2_write
+Write with approval
+merge-request-reviewer, release-coordinator
+MR approval rules + hooks
+tier_3_full
+Full execution
+pipeline-remediation, deployment-orchestrator
+Cedar + manual gate
+tier_4_admin
+Platform admin
+None (human only)
+GitLab protected branches
+
+11.3 Compliance Alignment
+	•	FedRAMP: All infrastructure components mapped to NIST 800-53 controls
+	•	SOC 2 Type II: Audit logging via agent-tracer, access controls via Cedar policies
+	•	WCAG 2.1 AA: All Drupal-rendered marketplace UI meets accessibility standards
+	•	Supply chain: SBOM generation for all published plugins
+
+12. Risk Register
+Risk
+Likelihood
+Impact
+Mitigation
+Claude Code plugin API breaking changes
+Medium
+High
+Pin to stable API version; abstract behind facade
+OSSA spec incompatible revision
+Low
+High
+Version-lock manifests; maintain backward compat layer
+Vast.ai GPU availability disruption
+Medium
+Medium
+Fallback to LiteLLM with CPU providers; queue non-urgent tasks
+Drupal CMS 2.0 API instability
+Medium
+Medium
+Feature-flag new CMS 2.0 integrations; maintain REST fallback
+Cross-IDE compatibility regression
+High
+Medium
+Automated cross-IDE test suite in CI; canary releases
+Key person dependency (single maintainer)
+High
+High
+Document all procedures in GitLab Wiki; pair on critical paths
+Cloudflare Tunnel connectivity issues
+Low
+High
+Health check monitoring; automatic tunnel restart via systemd
+
+13. Resource Requirements
+13.1 Effort Estimates
+Phase
+Duration
+Dev Hours
+Key Skills Needed
+Phase 1 — Foundation
+Weeks 1-4
+120-160h
+TypeScript, Claude Code plugin API, GitLab CI
+Phase 2 — Packaging
+Weeks 5-8
+100-140h
+Cross-IDE tooling, OSSA schema, MCP protocol
+Phase 3 — Integration
+Weeks 9-12
+140-180h
+Go, A2A protocol, Drupal 11, REST API design
+Phase 4 — Scale
+Weeks 13-16
+80-120h
+Grafana, performance tuning, technical writing
+TOTAL
+16 weeks
+440-600h
+Full-stack + DevOps + documentation
+
+13.2 Infrastructure Costs (Incremental)
+Item
+Monthly Cost
+Notes
+Vast.ai GPU (RTX 4090)
+$150-300
+Existing; scale based on usage
+Oracle Cloud compute
+$0
+Free tier sufficient for current scale
+Cloudflare Pro
+$20
+Existing tunnel; no change
+Qdrant Cloud (if scaling)
+$25-100
+Only if local instance capacity exceeded
+LLM API costs (LiteLLM)
+$50-200
+Variable; depends on agent invocation volume
+
+14. Success Criteria
+14.1 Phase Gate Criteria
+Phase
+Gate Criteria
+Measured By
+Phase 1 Complete
+10 plugins in marketplace.json; 'plugin install' succeeds for all; CI publish pipeline green
+Automated test + manual verification
+Phase 2 Complete
+All 10 plugins installable in Claude Code, Cursor, and Windsurf; 8 MCP servers running; OSSA v0.4.6 audit pass
+Cross-IDE test suite
+Phase 3 Complete
+A2A bridge operational; Drupal API serving all endpoints; enterprise registry configured; security audit clean
+Integration test suite + pen test
+Phase 4 Complete
+Analytics dashboard live; P95 < 200ms; documentation published; external launch checklist complete
+Performance benchmarks + stakeholder review
+
+14.2 Key Performance Indicators
+	•	Plugin count in marketplace: 10+ (Phase 1) → 20+ (Phase 4)
+	•	Monthly active plugin installations: 50+ (Phase 2) → 200+ (Phase 4)
+	•	MCP server uptime: 99.9%
+	•	Mean time to publish (commit → marketplace): < 10 minutes
+	•	Cross-IDE compatibility score: 100% of plugins work on 3+ IDEs
+	•	Security: Zero critical/high vulnerabilities in published plugins
+
+Appendix A: Full Skill Inventory
+Complete list of 60 existing skills with proposed plugin assignment:
+
+Skill Name
+Assigned Plugin
+Maturity
+agent-mr-reviewer
+bluefly-cicd
+Production
+agent-ops
+bluefly-agent-platform
+Production
+agent-platform
+bluefly-ossa
+Production
+algorithmic-art
+bluefly-creative
+Production
+bluefly-agent-platform
+bluefly-agent-platform
+Production
+brand-guidelines
+bluefly-creative
+Production
+buildkit-cli
+bluefly-agent-platform
+Production
+buildkit-command
+bluefly-agent-platform
+Beta
+canvas-design
+bluefly-creative
+Production
+ci-fixer-worker
+bluefly-cicd
+Beta
+code-reviewer
+bluefly-security
+Production
+default-orchestrator
+bluefly-productivity
+Beta
+docx
+bluefly-docs
+Production
+drupal-cms-2
+bluefly-drupal
+Beta
+drupal-cms2
+bluefly-drupal
+Beta
+drupal-demos
+bluefly-drupal
+Production
+drupal-dev
+bluefly-drupal
+Production
+drupal-standards-worker
+bluefly-drupal
+Beta
+fleet-ops
+bluefly-agent-platform
+Production
+gitlab-sync
+bluefly-cicd
+Beta
+gitlab-workflow
+bluefly-agent-platform
+Production
+gkg-knowledge
+bluefly-agent-platform
+Beta
+ide-supercharger-ref
+bluefly-agent-platform
+Production
+infrastructure
+bluefly-agent-platform
+Production
+internal-comms
+bluefly-docs
+Production
+issue-worker
+bluefly-cicd
+Beta
+k8s-ops-worker
+bluefly-k8s-ops
+Beta
+kagent-worker
+bluefly-k8s-ops
+Alpha
+mcp-builder
+bluefly-mcp-tools
+Production
+mcp-builder-worker
+bluefly-mcp-tools
+Beta
+module-scaffolder
+bluefly-drupal
+Beta
+mr-reviewer
+bluefly-cicd
+Production
+observability
+bluefly-agent-platform
+Production
+openapi-validation
+bluefly-security
+Beta
+ossa-research
+bluefly-ossa
+Production
+ossa-validation
+bluefly-ossa
+Beta
+ossa-validator
+bluefly-ossa
+Beta
+pdf
+bluefly-docs
+Production
+platform-status
+bluefly-agent-platform
+Production
+powers-skills
+bluefly-productivity
+Alpha
+pptx
+bluefly-docs
+Production
+recipe-publisher
+bluefly-drupal
+Beta
+release-manager
+bluefly-cicd
+Beta
+research
+bluefly-agent-platform
+Production
+schedule
+bluefly-productivity
+Production
+security-scanner
+bluefly-security
+Production
+separation-of-duties
+bluefly-agent-platform
+Production
+skill-creator
+bluefly-productivity
+Production
+skills.agentplatform
+bluefly-agent-platform
+Alpha
+skills.claude-code-export
+bluefly-productivity
+Alpha
+slack-gif-creator
+bluefly-creative
+Production
+swarm-execution
+bluefly-k8s-ops
+Alpha
+tdd-workflow
+bluefly-security
+Production
+terminal-setup
+bluefly-productivity
+Beta
+test-skill
+N/A (remove)
+Test
+theme-factory
+bluefly-creative
+Production
+token-optimizer
+bluefly-k8s-ops
+Beta
+web-artifacts-builder
+bluefly-creative
+Production
+wiki-aggregator
+bluefly-productivity
+Beta
+wiki-nas
+bluefly-agent-platform
+Production
+xlsx
+bluefly-docs
+Production
+
+Appendix B: Reference URLs
+Key reference documentation for implementation:
+
+	•	GitLab CI Components: docs.gitlab.com/ci/components/examples/
+	•	GitLab CI Inputs: docs.gitlab.com/ci/inputs/
+	•	GitLab ML Model Registry: docs.gitlab.com/user/project/ml/model_registry/
+	•	Drupal 11 API: api.drupal.org/api/drupal/11.x
+	•	Drupal MCP Module: drupal.org/project/mcp
+	•	Drupal Experience Builder: drupal.org/project/experience_builder
+	•	Drupal ECA: drupal.org/project/eca
+	•	MCP Specification: modelcontextprotocol.io/specification
+	•	A2A Protocol: google.github.io/A2A/
+	•	OSSA Specification: github.com/open-standard-agents/ossa
+
+— End of Document —

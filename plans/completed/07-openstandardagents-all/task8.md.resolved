@@ -1,0 +1,19 @@
+# Agent Workspace Integration Task List
+
+- [x] Audit [/Volumes/AgentPlatform/config/SOD/SEPARATION-OF-DUTIES.md](file:///Volumes/AgentPlatform/config/SOD/SEPARATION-OF-DUTIES.md)
+- [x] Inspect `/Users/flux423/Sites/blueflyio/.agents-workspace` and project `.agents` folders
+- [x] Create implementation plan based on the audit
+- [x] Create `.agents` directories in workspace projects
+- [x] Verify discovery via `buildkit agents validate` and `buildkit agents discover`
+- [x] Produce architecture audit, gap analysis, and prioritized remediation plan
+- [x] Phase 1: Generate valid OSSA v0.4.x manifests for the 4 target projects
+- [x] Phase 1: Re-run discovery validation to ensure agent count increments
+- [x] Phase 2: Sync to `$MESH_URL` via Buildkit discovery publish
+- [x] Phase 3: Wire frontend projects to query `agent-router` for deployed agents
+- [x] Implement CI/CD discovery publish job in `gitlab_components`
+
+## Phase 5: Honest Gap Remediation (Correcting the Architecture)
+- [ ] **Purge Fake Data:** Remove the final remaining mocked `ui-creator/.agents` data.
+- [ ] **Domain Standardization:** Update all APIs and configs to strictly rely on `*.blueflyagents.com` (e.g., `ossa.blueflyagents.com/v1alpha1`, `mesh.blueflyagents.com`).
+- [ ] **CLI-First Generation:** Generate OSSA manifests utilizing actual JSON-schema validated fields for the target projects.
+- [ ] **UI Abstraction Cleanup:** Refactor `Step1Template.tsx` to handle dynamic mesh responses securely without brute-forcing them into manual React presets with custom colors.
