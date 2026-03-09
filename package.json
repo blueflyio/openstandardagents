@@ -1,6 +1,6 @@
 {
   "name": "@bluefly/openstandardagents",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "exports": {
     "./schema": "./spec/v0.4/agent.schema.json",
     "./schema/v0.4": "./spec/v0.4/agent.schema.json",
@@ -302,7 +302,7 @@
     "zod": "^4.1.11"
   },
   "devDependencies": {
-    "@bluefly/duadp": "^0.1.2",
+    "@bluefly/duadp": "^0.1.3",
     "@jest/globals": "^29.7.0",
     "@octokit/rest": "^22.0.1",
     "@semantic-release/changelog": "^6.0.3",
@@ -346,10 +346,6 @@
   "optionalDependencies": {
     "nodemailer": "^6.9.0"
   },
-  "bundledDependencies": [
-    "ajv",
-    "ajv-formats"
-  ],
   "engines": {
     "node": ">=20.0.0",
     "npm": ">=10.0.0"
@@ -357,9 +353,5 @@
   "volta": {
     "node": "22.19.0",
     "npm": "11.10.0"
-  },
-  "bundleDependencies": [
-    "ajv",
-    "ajv-formats"
-  ]
+  }
 }
