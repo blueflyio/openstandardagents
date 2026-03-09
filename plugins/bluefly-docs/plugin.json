@@ -1,0 +1,16 @@
+{
+  "name": "bluefly-docs",
+  "version": "0.1.0",
+  "description": "Documentation and knowledge management tools for BlueFly Agent Platform.",
+  "author": "BlueFly.io",
+  "skills": [
+    "skills/wiki-aggregator.md",
+    "skills/wiki-nas.md",
+    "skills/internal-comms.md",
+    "skills/docx.md",
+    "skills/pdf.md",
+    "skills/pptx.md",
+    "skills/xlsx.md",
+    "skills/research.md"
+  ]
+}

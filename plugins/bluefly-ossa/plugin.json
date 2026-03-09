@@ -1,0 +1,12 @@
+{
+  "name": "bluefly-ossa",
+  "version": "0.1.0",
+  "description": "Open Standard for Software Agents (OSSA) protocol plugin.",
+  "author": "BlueFly.io",
+  "skills": [
+    "skills/ossa-research.md",
+    "skills/ossa-validation.md",
+    "skills/ossa-validator.md",
+    "skills/gkg-knowledge.md"
+  ]
+}

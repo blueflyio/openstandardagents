@@ -1,0 +1,24 @@
+{
+  "apiVersion": "ossa/v0.5",
+  "identity": {
+    "gaid": "agent://bluefly.io/plugins/productivity",
+    "name": "bluefly-productivity",
+    "description": "Developer productivity and agent optimization tools for BlueFly Agent Platform. Includes skill creation, token optimization, and orchestration patterns.",
+    "homepage": "https://blueflyagents.com",
+    "repository": "https://gitlab.com/blueflyio/agent-platform/plugins/productivity"
+  },
+  "capabilities": {
+    "discovery": true,
+    "productivity": true,
+    "orchestration": true,
+    "mcp": true
+  },
+  "protocols": {
+    "duadp": {
+      "node": "https://discover.duadp.org"
+    }
+  },
+  "schemas": {
+    "plugin": "https://blueflyagents.com/schemas/v1/plugin.json"
+  }
+}
