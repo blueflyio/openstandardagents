@@ -57,6 +57,7 @@ include:
   - local: '.gitlab/ci/token-rotation.yml'
   - local: '.gitlab/ci/export-langflow.yml'
   - local: '.gitlab/ci/mirror-github.yml'
+  - local: '.gitlab/ci/plugins.yml'
 
 # =============================================================================
 # BASE JOB TEMPLATE
