@@ -20,6 +20,7 @@ specs:
   - path: openapi/core/unified-agent-gateway.openapi.yaml
   - path: openapi/dev-cli/openapi.yaml
   - path: openapi/github-sync.yaml
+  - path: openapi/ossa-api.openapi.yaml
   - path: openapi/ossa-cli-enhancements.openapi.yaml
   - path: openapi/ossa-cli.yaml
   - path: openapi/protocols/sse-streams.yaml

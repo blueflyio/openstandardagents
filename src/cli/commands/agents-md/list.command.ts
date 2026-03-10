@@ -1,13 +1,10 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import path from 'path';
-import fs from 'fs/promises';
 import { container } from '../../../di-container.js';
-import {
-  RepoAgentsMdService,
-  RepoConfig,
-} from '../../../services/agents-md/repo-agents-md.service.js';
+import { RepoAgentsMdService } from '../../../services/agents-md/repo-agents-md.service.js';
 import { handleCommandError } from '../../utils/index.js';
+import { discoverRepos } from './repo-discovery.js';
 
 export const listCommand = new Command('list')
   .description('List repositories and their AGENTS.md status')
@@ -25,49 +22,29 @@ export const listCommand = new Command('list')
       );
 
       const service = container.get(RepoAgentsMdService);
-
-      const entries = await fs.readdir(baseDir, { withFileTypes: true });
+      const repos = await discoverRepos(baseDir);
 
       console.log(chalk.bold('\nStatus Report:'));
       console.log('─'.repeat(50));
 
-      for (const entry of entries) {
-        if (entry.isDirectory()) {
-          const repoPath = path.join(baseDir, entry.name);
-          // Check if it's a repository (has package.json or .git)
-          let isRepo = false;
-          try {
-            await fs.access(path.join(repoPath, 'package.json'));
-            isRepo = true;
-          } catch {
-            try {
-              await fs.access(path.join(repoPath, '.git'));
-              isRepo = true;
-            } catch {
-              // Not a repo we care about
-            }
-          }
+      for (const repo of repos) {
+        const status = await service.getStatus(repo.repoPath);
 
-          if (isRepo) {
-            const status = await service.getStatus(repoPath);
+        if (options.missing && status.exists) continue;
 
-            if (options.missing && status.exists) continue;
+        const statusStr = status.exists
+          ? chalk.green('EXISTS')
+          : chalk.red('MISSING');
 
-            const statusStr = status.exists
-              ? chalk.green('EXISTS')
-              : chalk.red('MISSING');
+        const validationStr = status.exists
+          ? status.validates
+            ? chalk.green('VALID')
+            : chalk.red('INVALID')
+          : '-';
 
-            const validationStr = status.exists
-              ? status.validates
-                ? chalk.green('VALID')
-                : chalk.red('INVALID')
-              : '-';
-
-            console.log(
-              `${entry.name.padEnd(30)} | ${statusStr.padEnd(10)} | ${validationStr}`
-            );
-          }
-        }
+        console.log(
+          `${repo.name.padEnd(30)} | ${statusStr.padEnd(10)} | ${validationStr}`
+        );
       }
     } catch (error) {
       handleCommandError(error);

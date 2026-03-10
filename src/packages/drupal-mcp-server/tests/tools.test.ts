@@ -2,7 +2,7 @@
  * Tool Tests
  */
 
-import { describe, expect, test, jest, beforeEach } from '@jest/globals';
+import { describe, expect, test } from '@jest/globals';
 import { contentToolDefinitions } from '../src/tools/content';
 import { entityToolDefinitions } from '../src/tools/entities';
 import { viewsToolDefinitions } from '../src/tools/views';
@@ -10,6 +10,7 @@ import { userToolDefinitions } from '../src/tools/users';
 import { configToolDefinitions } from '../src/tools/config';
 import { moduleToolDefinitions } from '../src/tools/modules';
 import { cacheToolDefinitions } from '../src/tools/cache';
+import { DEFAULT_PAGE_LIMIT, DEFAULT_PAGE_OFFSET } from '../src/tools/tool-helpers';
 
 describe('Tool Definitions', () => {
   test('should have 5 content tools', () => {
@@ -124,5 +125,35 @@ describe('Tool Definitions', () => {
     const uniqueNames = new Set(names);
 
     expect(names.length).toBe(uniqueNames.size);
+  });
+
+  test('content and entity query tools share pagination defaults', () => {
+    const contentSearchTool = contentToolDefinitions.find(
+      (tool) => tool.name === 'drupal_search_content'
+    );
+    const entityQueryTool = entityToolDefinitions.find(
+      (tool) => tool.name === 'drupal_query_entities'
+    );
+
+    expect(contentSearchTool).toBeDefined();
+    expect(entityQueryTool).toBeDefined();
+
+    const contentLimit = contentSearchTool!.inputSchema.properties.limit as {
+      default: number;
+    };
+    const contentOffset = contentSearchTool!.inputSchema.properties.offset as {
+      default: number;
+    };
+    const entityLimit = entityQueryTool!.inputSchema.properties.limit as {
+      default: number;
+    };
+    const entityOffset = entityQueryTool!.inputSchema.properties.offset as {
+      default: number;
+    };
+
+    expect(contentLimit.default).toBe(DEFAULT_PAGE_LIMIT);
+    expect(contentOffset.default).toBe(DEFAULT_PAGE_OFFSET);
+    expect(entityLimit.default).toBe(DEFAULT_PAGE_LIMIT);
+    expect(entityOffset.default).toBe(DEFAULT_PAGE_OFFSET);
   });
 });

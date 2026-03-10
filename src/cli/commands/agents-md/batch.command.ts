@@ -1,13 +1,10 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import path from 'path';
-import fs from 'fs/promises';
 import { container } from '../../../di-container.js';
-import {
-  RepoAgentsMdService,
-  RepoConfig,
-} from '../../../services/agents-md/repo-agents-md.service.js';
+import { RepoAgentsMdService } from '../../../services/agents-md/repo-agents-md.service.js';
 import { handleCommandError } from '../../utils/index.js';
+import { discoverRepos, toRepoConfigs } from './repo-discovery.js';
 
 export const batchCommand = new Command('batch')
   .description('Batch generate AGENTS.md for multiple repositories')
@@ -29,28 +26,8 @@ export const batchCommand = new Command('batch')
         );
 
         const service = container.get(RepoAgentsMdService);
-
-        // Discover repositories (simplified discovery)
-        const entries = await fs.readdir(baseDir, { withFileTypes: true });
-        const repos: RepoConfig[] = [];
-
-        for (const entry of entries) {
-          if (entry.isDirectory()) {
-            const repoPath = path.join(baseDir, entry.name);
-            // Check if it's a repository (has package.json or .git)
-            try {
-              await fs.access(path.join(repoPath, 'package.json'));
-              repos.push({ repo_path: repoPath });
-            } catch {
-              try {
-                await fs.access(path.join(repoPath, '.git'));
-                repos.push({ repo_path: repoPath });
-              } catch {
-                // Not a repo we care about
-              }
-            }
-          }
-        }
+        const discoveredRepos = await discoverRepos(baseDir, options.pattern);
+        const repos = toRepoConfigs(discoveredRepos);
 
         if (repos.length === 0) {
           console.log(chalk.yellow('No repositories found.'));

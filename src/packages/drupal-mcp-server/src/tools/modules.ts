@@ -10,6 +10,7 @@ import {
   ModuleDisableInput,
   DrupalModule,
 } from '../types/drupal.js';
+import { runToolAction } from './tool-helpers.js';
 
 export class ModuleTools {
   constructor(private client: DrupalClient) {}
@@ -36,30 +37,24 @@ export class ModuleTools {
    * Enable Drupal modules
    */
   async enableModule(input: ModuleEnableInput): Promise<{ success: boolean; message: string }> {
-    try {
-      await this.client.post('/system/modules/enable', { modules: input.modules });
-      return {
-        success: true,
-        message: `Modules enabled: ${input.modules.join(', ')}`,
-      };
-    } catch (error: any) {
-      return { success: false, message: error.message };
-    }
+    return runToolAction(
+      async () => {
+        await this.client.post('/system/modules/enable', { modules: input.modules });
+      },
+      `Modules enabled: ${input.modules.join(', ')}`
+    );
   }
 
   /**
    * Disable Drupal modules
    */
   async disableModule(input: ModuleDisableInput): Promise<{ success: boolean; message: string }> {
-    try {
-      await this.client.post('/system/modules/disable', { modules: input.modules });
-      return {
-        success: true,
-        message: `Modules disabled: ${input.modules.join(', ')}`,
-      };
-    } catch (error: any) {
-      return { success: false, message: error.message };
-    }
+    return runToolAction(
+      async () => {
+        await this.client.post('/system/modules/disable', { modules: input.modules });
+      },
+      `Modules disabled: ${input.modules.join(', ')}`
+    );
   }
 }
 
