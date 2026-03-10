@@ -31,6 +31,8 @@ tags:
     description: Skill manifest CRUD
   - name: Workspace
     description: Workspace initialization, discovery, and status
+  - name: Validation
+    description: Top-level manifest validation
   - name: Version
     description: OSSA spec version detection and validation
 
@@ -243,6 +245,41 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MigrateResult'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /api/v1/validate:
+    post:
+      operationId: validateManifestTopLevel
+      summary: Validate a manifest via top-level endpoint
+      tags: [Validation]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                manifest:
+                  type: object
+                  additionalProperties: true
+                  description: Inline manifest to validate
+                path:
+                  type: string
+                  description: Path to manifest file (alternative to inline)
+                platform:
+                  type: string
+                  description: Target platform for platform-specific validation
+                strict:
+                  type: boolean
+                  description: Enable strict validation mode
+      responses:
+        '200':
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResult'
         '400':
           $ref: '#/components/responses/ValidationError'
 
@@ -557,16 +594,30 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                  directory:
-                    type: string
-                  created:
-                    type: array
-                    items:
-                      type: string
+                $ref: '#/components/schemas/WorkspaceInitResult'
+
+  /api/v1/workspace/scaffold:
+    post:
+      operationId: scaffoldWorkspace
+      summary: Scaffold `.agents` folders and VS Code workspace
+      tags: [Workspace]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                directory:
+                  type: string
+                  default: '.'
+      responses:
+        '200':
+          description: Scaffold result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceScaffoldResult'
 
   /api/v1/workspace/discover:
     post:
@@ -1027,30 +1078,76 @@ components:
     DiscoveryResult:
       type: object
       properties:
+        action:
+          type: string
+          enum: [discover]
+        count:
+          type: integer
         agents:
           type: array
           items:
-            type: object
-            properties:
-              path:
-                type: string
-              name:
-                type: string
-              kind:
-                type: string
-        total:
-          type: integer
-        directory:
+            $ref: '#/components/schemas/DiscoveryAgent'
+      required: [action, count, agents]
+
+    DiscoveryAgent:
+      type: object
+      properties:
+        name:
           type: string
+        path:
+          type: string
+        version:
+          type: string
+        kind:
+          type: string
+        description:
+          type: string
+      required: [name, path, version, kind, description]
+
+    WorkspaceInitResult:
+      type: object
+      properties:
+        action:
+          type: string
+          enum: [init]
+        status:
+          type: string
+          enum: [created, already_exists]
+        path:
+          type: string
+        name:
+          type: string
+      required: [action, status, path]
+
+    WorkspaceScaffoldResult:
+      type: object
+      properties:
+        action:
+          type: string
+          enum: [scaffold]
+        status:
+          type: string
+          enum: [completed]
+        workspacePath:
+          type: string
+        projectsScaffolded:
+          type: integer
+        codeWorkspacePath:
+          type: string
+      required:
+        [action, status, workspacePath, projectsScaffolded, codeWorkspacePath]
 
     WorkspaceStatus:
       type: object
       properties:
+        action:
+          type: string
+          enum: [status]
         initialized:
           type: boolean
-        directory:
+        workspace:
+          type: object
+          additionalProperties: true
+        message:
           type: string
-        agents:
-          type: integer
-        hasRegistry:
-          type: boolean
+      required: [action, initialized]
