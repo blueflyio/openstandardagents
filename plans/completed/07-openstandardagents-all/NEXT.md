@@ -1,5 +1,0 @@
-# Next
-
-See [RUNBOOK.md](./RUNBOOK.md) for the ordered steps (token, push, MR merge order, sync, Drupal_AgentDash at NAS, Phase 8).
-
-**Done this run:** (1) Token check OK. (2) repos sync WORKING_DEMOs. (3) drupal modules synced. (4) agent-buildkit: committed 3 files, pushed chore/version-ranges-alignment, merged into release/v0.1.x, pushed release. (5) agent-protocol: chore/sync-package-lock merged to release, then release merged to main (temp worktree + push main). (6) agent-buildkit: release merged to main via worktree (worktree add tmp/agent-buildkit-main main, merge origin/release/v0.1.x, pull origin main, push main --no-verify, worktree remove). (7) Deploy: `deploy oracle mesh`, `deploy oracle mcp`, `deploy oracle router` executed (all exit 0). (8) Local on release, main merged back: agent-buildkit worktree checked out release/v0.1.x, merged origin/main into release, pushed release. agent-protocol: same (merge/push via temp worktree, then checkout release + pull in main worktree). **Remaining:** RUNBOOK 5–7 (Drupal_AgentDash at NAS, Phase 8, parallel registry agents); NAS deploy when mounted.
