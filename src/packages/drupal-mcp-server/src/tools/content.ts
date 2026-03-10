@@ -4,12 +4,8 @@
  */
 
 import { DrupalClient } from '../client/drupal-client.js';
-import {
-  NodeCreateInput,
-  NodeUpdateInput,
-  DrupalNode,
-  DrupalResponse,
-} from '../types/drupal.js';
+import { NodeCreateInput, NodeUpdateInput, DrupalNode, DrupalResponse } from '../types/drupal.js';
+import { DEFAULT_PAGE_LIMIT, DEFAULT_PAGE_OFFSET, getErrorMessage } from './tool-helpers.js';
 
 export class ContentTools {
   constructor(private client: DrupalClient) {}
@@ -39,10 +35,7 @@ export class ContentTools {
       }
     });
 
-    const response = await this.client.post<DrupalResponse<DrupalNode>>(
-      '/node',
-      nodeData
-    );
+    const response = await this.client.post<DrupalResponse<DrupalNode>>('/node', nodeData);
 
     return response.data;
   }
@@ -87,8 +80,8 @@ export class ContentTools {
     try {
       await this.client.delete(`/node/${nid}`);
       return { success: true, message: `Node ${nid} deleted successfully` };
-    } catch (error: any) {
-      return { success: false, message: error.message };
+    } catch (error: unknown) {
+      return { success: false, message: getErrorMessage(error) };
     }
   }
 
@@ -96,9 +89,7 @@ export class ContentTools {
    * Get a Drupal node by ID
    */
   async getNode(nid: string): Promise<DrupalNode> {
-    const response = await this.client.get<DrupalResponse<DrupalNode>>(
-      `/node/${nid}`
-    );
+    const response = await this.client.get<DrupalResponse<DrupalNode>>(`/node/${nid}`);
     return response.data;
   }
 
@@ -115,12 +106,12 @@ export class ContentTools {
     const queryParams = this.client.buildJsonApiQuery({
       filter: {
         ...(params.type && { 'type.target_id': params.type }),
-        ...(params.title && { 'title': params.title }),
-        ...(params.status !== undefined && { 'status': params.status }),
+        ...(params.title && { title: params.title }),
+        ...(params.status !== undefined && { status: params.status }),
       },
       page: {
-        limit: params.limit || 50,
-        offset: params.offset || 0,
+        limit: params.limit ?? DEFAULT_PAGE_LIMIT,
+        offset: params.offset ?? DEFAULT_PAGE_OFFSET,
       },
     });
 
@@ -237,12 +228,12 @@ export const contentToolDefinitions = [
         limit: {
           type: 'number',
           description: 'Number of results to return',
-          default: 50,
+          default: DEFAULT_PAGE_LIMIT,
         },
         offset: {
           type: 'number',
           description: 'Number of results to skip',
-          default: 0,
+          default: DEFAULT_PAGE_OFFSET,
         },
       },
     },

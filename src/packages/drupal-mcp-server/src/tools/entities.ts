@@ -4,7 +4,8 @@
  */
 
 import { DrupalClient } from '../client/drupal-client.js';
-import { DrupalEntity, EntityQueryInput, DrupalResponse } from '../types/drupal.js';
+import { DrupalEntity, EntityQueryInput } from '../types/drupal.js';
+import { DEFAULT_PAGE_LIMIT, DEFAULT_PAGE_OFFSET, getErrorMessage } from './tool-helpers.js';
 
 export class EntityTools {
   constructor(private client: DrupalClient) {}
@@ -52,8 +53,8 @@ export class EntityTools {
       const resourceType = `${input.entity_type}--${input.bundle}`;
       await this.client.jsonApiDelete(resourceType, input.id);
       return { success: true, message: `Entity ${input.id} deleted successfully` };
-    } catch (error: any) {
-      return { success: false, message: error.message };
+    } catch (error: unknown) {
+      return { success: false, message: getErrorMessage(error) };
     }
   }
 
@@ -61,16 +62,14 @@ export class EntityTools {
    * Query Drupal entities with filters
    */
   async queryEntities(input: EntityQueryInput): Promise<DrupalEntity[]> {
-    const resourceType = input.bundle
-      ? `${input.entity_type}--${input.bundle}`
-      : input.entity_type;
+    const resourceType = input.bundle ? `${input.entity_type}--${input.bundle}` : input.entity_type;
 
     const queryParams = this.client.buildJsonApiQuery({
       filter: input.filters,
       sort: input.sort,
       page: {
-        limit: input.limit || 50,
-        offset: input.offset || 0,
+        limit: input.limit ?? DEFAULT_PAGE_LIMIT,
+        offset: input.offset ?? DEFAULT_PAGE_OFFSET,
       },
     });
 
@@ -181,12 +180,12 @@ export const entityToolDefinitions = [
         limit: {
           type: 'number',
           description: 'Maximum results to return',
-          default: 50,
+          default: DEFAULT_PAGE_LIMIT,
         },
         offset: {
           type: 'number',
           description: 'Number of results to skip',
-          default: 0,
+          default: DEFAULT_PAGE_OFFSET,
         },
       },
       required: ['entity_type'],
