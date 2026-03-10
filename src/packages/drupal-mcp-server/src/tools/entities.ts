@@ -5,7 +5,7 @@
 
 import { DrupalClient } from '../client/drupal-client.js';
 import { DrupalEntity, EntityQueryInput } from '../types/drupal.js';
-import { DEFAULT_PAGE_LIMIT, DEFAULT_PAGE_OFFSET, getErrorMessage } from './tool-helpers.js';
+import { DEFAULT_PAGE_LIMIT, DEFAULT_PAGE_OFFSET, runToolAction } from './tool-helpers.js';
 
 export class EntityTools {
   constructor(private client: DrupalClient) {}
@@ -49,13 +49,10 @@ export class EntityTools {
     bundle: string;
     id: string;
   }): Promise<{ success: boolean; message: string }> {
-    try {
+    return runToolAction(async () => {
       const resourceType = `${input.entity_type}--${input.bundle}`;
       await this.client.jsonApiDelete(resourceType, input.id);
-      return { success: true, message: `Entity ${input.id} deleted successfully` };
-    } catch (error: unknown) {
-      return { success: false, message: getErrorMessage(error) };
-    }
+    }, `Entity ${input.id} deleted successfully`);
   }
 
   /**

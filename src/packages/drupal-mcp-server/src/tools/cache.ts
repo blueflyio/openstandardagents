@@ -5,6 +5,7 @@
 
 import { DrupalClient } from '../client/drupal-client.js';
 import { CacheClearInput, CacheRebuildInput } from '../types/drupal.js';
+import { runToolAction } from './tool-helpers.js';
 
 export class CacheTools {
   constructor(private client: DrupalClient) {}
@@ -13,30 +14,23 @@ export class CacheTools {
    * Clear Drupal caches
    */
   async clearCache(input: CacheClearInput = {}): Promise<{ success: boolean; message: string }> {
-    try {
-      const params: Record<string, any> = {};
+    const params: Record<string, any> = {};
 
-      if (input.cid) {
-        params.cid = input.cid;
-      }
-
-      if (input.bin) {
-        params.bin = input.bin;
-      }
-
-      if (input.tags && input.tags.length > 0) {
-        params.tags = input.tags.join(',');
-      }
-
-      await this.client.post('/system/cache/clear', params);
-
-      return {
-        success: true,
-        message: 'Cache cleared successfully',
-      };
-    } catch (error: any) {
-      return { success: false, message: error.message };
+    if (input.cid) {
+      params.cid = input.cid;
     }
+
+    if (input.bin) {
+      params.bin = input.bin;
+    }
+
+    if (input.tags && input.tags.length > 0) {
+      params.tags = input.tags.join(',');
+    }
+
+    return runToolAction(async () => {
+      await this.client.post('/system/cache/clear', params);
+    }, 'Cache cleared successfully');
   }
 
   /**
@@ -45,22 +39,15 @@ export class CacheTools {
   async rebuildCache(
     input: CacheRebuildInput = {}
   ): Promise<{ success: boolean; message: string }> {
-    try {
-      const params: Record<string, any> = {
-        rebuild_theme_registry: input.rebuild_theme_registry ?? true,
-        rebuild_menu: input.rebuild_menu ?? true,
-        rebuild_node_access: input.rebuild_node_access ?? false,
-      };
+    const params: Record<string, any> = {
+      rebuild_theme_registry: input.rebuild_theme_registry ?? true,
+      rebuild_menu: input.rebuild_menu ?? true,
+      rebuild_node_access: input.rebuild_node_access ?? false,
+    };
 
+    return runToolAction(async () => {
       await this.client.post('/system/cache/rebuild', params);
-
-      return {
-        success: true,
-        message: 'Cache rebuilt successfully',
-      };
-    } catch (error: any) {
-      return { success: false, message: error.message };
-    }
+    }, 'Cache rebuilt successfully');
   }
 }
 

@@ -5,7 +5,7 @@
 
 import { DrupalClient } from '../client/drupal-client.js';
 import { NodeCreateInput, NodeUpdateInput, DrupalNode, DrupalResponse } from '../types/drupal.js';
-import { DEFAULT_PAGE_LIMIT, DEFAULT_PAGE_OFFSET, getErrorMessage } from './tool-helpers.js';
+import { DEFAULT_PAGE_LIMIT, DEFAULT_PAGE_OFFSET, runToolAction } from './tool-helpers.js';
 
 export class ContentTools {
   constructor(private client: DrupalClient) {}
@@ -77,12 +77,9 @@ export class ContentTools {
    * Delete a Drupal node
    */
   async deleteNode(nid: string): Promise<{ success: boolean; message: string }> {
-    try {
+    return runToolAction(async () => {
       await this.client.delete(`/node/${nid}`);
-      return { success: true, message: `Node ${nid} deleted successfully` };
-    } catch (error: unknown) {
-      return { success: false, message: getErrorMessage(error) };
-    }
+    }, `Node ${nid} deleted successfully`);
   }
 
   /**
