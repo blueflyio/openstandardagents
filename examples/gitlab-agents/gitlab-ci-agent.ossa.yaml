@@ -1,0 +1,200 @@
+apiVersion: ossa/v0.4.7
+kind: Agent
+metadata:
+  name: gitlab-ci-agent
+  version: 1.0.0
+  description: >-
+    Pipeline fixer agent. Detects broken CI/CD pipelines, inspects job logs,
+    diagnoses failures, and applies fixes. Uses BuildKit CLI and GitLab API.
+  labels:
+    use-case: ci-cd-automation
+    production-ready: "false"
+    ossa-native: "true"
+  agentType: custom
+  agentKind: worker
+  identity:
+    namespace: blueflyio/ossa
+    agent_id: gitlab-ci-agent
+    version: 1.0.0
+    publisher:
+      name: BlueFly.io
+      email: agents@bluefly.io
+      website: https://openstandardagents.org
+    created_at: "2026-03-10T12:00:00Z"
+    updated_at: "2026-03-10T12:00:00Z"
+  catalog:
+    published: true
+    visibility: public
+    categories:
+      - devops
+      - ci-cd
+      - gitlab
+    tags:
+      - gitlab
+      - ci
+      - pipeline
+      - buildkit
+      - ossa-native
+
+spec:
+  role: |
+    You are an autonomous GitLab CI/CD pipeline fixer agent.
+
+    Your mission:
+    1. Monitor pipelines across GitLab projects
+    2. Detect failed jobs and inspect their logs
+    3. Diagnose root causes (dependency issues, test failures, config errors)
+    4. Apply fixes (update CI config, fix tests, update dependencies)
+    5. Push fixes and verify the pipeline turns green
+
+    Guidelines:
+    - Never force-push to shared branches
+    - Always create fix branches, never commit directly to main/release
+    - Explain your diagnosis clearly in commit messages
+    - Escalate to humans for infrastructure-level issues
+
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    temperature: 0.1
+    max_tokens: 8192
+
+  tools:
+    - type: command
+      name: pipeline_list
+      description: List recent pipelines for a project
+      operation: read
+      command: buildkit gitlab pipelines list
+      parameters:
+        project:
+          type: string
+          description: GitLab project path (e.g. blueflyio/agent-platform/tools/agent-buildkit)
+        ref:
+          type: string
+          description: Branch to check (e.g. release/v0.1.x)
+
+    - type: command
+      name: pipeline_jobs
+      description: List jobs in a pipeline with status
+      operation: read
+      command: buildkit gitlab pipelines jobs
+      parameters:
+        pipeline_id:
+          type: number
+          description: Pipeline ID to inspect
+
+    - type: command
+      name: job_log
+      description: Fetch the log output of a failed job
+      operation: read
+      command: buildkit gitlab pipelines job-log
+      parameters:
+        job_id:
+          type: number
+          description: Job ID to get log for
+
+    - type: command
+      name: deploy_service
+      description: Deploy a service to Oracle via BuildKit
+      operation: write
+      command: buildkit deploy oracle
+      parameters:
+        service:
+          type: string
+          description: Service name to deploy (e.g. mcp, mesh, router)
+
+    - type: api
+      name: gitlab_api
+      description: Direct GitLab API calls for MR management
+      operation: write
+      parameters:
+        method:
+          type: string
+          enum: [GET, POST, PUT]
+        endpoint:
+          type: string
+          description: GitLab API endpoint path
+
+  capabilities:
+    - name: pipeline-monitoring
+      description: Monitor CI/CD pipeline status across projects
+    - name: failure-diagnosis
+      description: Analyze job logs to identify root causes
+    - name: automated-fix
+      description: Apply fixes for common CI failures
+    - name: deployment
+      description: Deploy services via BuildKit
+
+  safety:
+    guardrails:
+      - no_force_push
+      - no_direct_main_commits
+      - human_escalation_for_infra
+      - audit_all_actions
+    pii_handling: none
+    audit_all_actions: true
+    max_cost_per_execution: 0.30
+
+security:
+  tier: tier_2_write_limited
+  threat_model:
+    - category: privilege-escalation
+      severity: high
+      mitigations:
+        - scoped-tokens
+        - least-privilege
+      description: CI tokens must be scoped to minimum required permissions
+  capabilities:
+    required:
+      - network-outbound
+      - process-spawn
+      - tool-execution
+    optional:
+      - filesystem-read
+      - filesystem-write
+  sandboxing:
+    required: true
+    type: container
+    resource_limits:
+      max_memory_mb: 1024
+      max_cpu_cores: 1
+      max_execution_seconds: 300
+  network_access:
+    allowed_domains:
+      - "gitlab.com"
+      - "*.gitlab.com"
+      - "api.anthropic.com"
+    protocols:
+      - https
+    egress_policy: allow-list
+  data_classification: internal
+
+protocols:
+  mcp:
+    role: client
+    transport: stdio
+    capabilities:
+      tools: true
+    servers:
+      - name: buildkit
+        command: buildkit
+        description: BuildKit CLI for deploy and GitLab operations
+  a2a:
+    role: server
+    endpoint: /agents/gitlab-ci-agent
+    skills:
+      - name: fix-pipeline
+        description: Diagnose and fix a broken CI pipeline
+        input_schema:
+          type: object
+          properties:
+            project:
+              type: string
+            ref:
+              type: string
+          required:
+            - project
+
+governance:
+  cedar_policy_set: blueflyio/cedar-policies
+  pre_execution_check: true
