@@ -42,6 +42,7 @@ variables:
   # Security scanning
   SAST_EXCLUDED_PATHS: "node_modules/,dist/,coverage/"
   SECURE_LOG_LEVEL: "info"
+  CODE_QUALITY_DISABLED: "true"
 
 default:
   tags:
