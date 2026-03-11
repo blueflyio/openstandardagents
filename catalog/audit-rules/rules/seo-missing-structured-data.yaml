@@ -1,0 +1,12 @@
+id: seo-missing-structured-data
+description: "Content types without structured data / JSON-LD miss rich search result opportunities."
+severity: info
+dimension: seo
+anti_pattern:
+  type: regex
+  pattern: "<head>[^]*?</head>(?!.*application/ld\\+json)"
+  flags: gims
+  path_glob: "**/*.{html.twig,twig}"
+fix_suggestion: "Add JSON-LD structured data using Schema.org vocabulary, or use the Schema.org Metatag module."
+target_languages: [twig, html]
+tags: [seo, structured-data, schema-org, drupal]

@@ -1,4 +1,4 @@
-# Universal Agent Discovery Protocol (UADP) v0.4
+# Universal AI Discovery Protocol (UADP) v0.4
 
 UADP is OSSA's open, decentralized protocol for agent registration, discovery, and trust
 verification. It is the **distribution layer** of the OSSA specification — the same way DNS

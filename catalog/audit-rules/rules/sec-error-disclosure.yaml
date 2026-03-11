@@ -1,0 +1,12 @@
+id: sec-error-disclosure
+description: "Enabling full error display in code exposes sensitive information in production."
+severity: warning
+dimension: security
+anti_pattern:
+  type: regex
+  pattern: "(error_reporting\\s*\\(\\s*E_ALL|display_errors\\s*[=,]\\s*[\"']?1|ini_set\\s*\\(\\s*[\"']display_errors[\"']\\s*,\\s*[\"']?1)"
+  flags: gm
+  path_glob: "**/*.{php,module,inc,install}"
+fix_suggestion: "Remove error display settings from code. Configure error reporting in php.ini or settings.php for development only."
+target_languages: [php]
+tags: [security, information-disclosure, errors]

@@ -1,0 +1,12 @@
+id: aerospike-missing-prefix
+description: "Aerospike cache backend enabled without explicit site prefix. Risk of cache key collisions in multisite."
+severity: error
+dimension: configuration
+anti_pattern:
+  type: regex
+  pattern: "\\$settings\\['cache'\\]\\['default'\\]\\s*=\\s*'cache\\.backend\\.aerospike'"
+  flags: gm
+  path_glob: "**/*.php"
+fix_suggestion: "Add $settings['aerospike.prefix'] = 'mysite'; See https://github.com/pavlosdan/aerospike"
+target_languages: [php]
+tags: [aerospike, cache, multisite, pavlosdan]

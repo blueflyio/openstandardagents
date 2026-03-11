@@ -1,0 +1,13 @@
+{
+  "name": "bluefly-cicd",
+  "version": "0.1.0",
+  "description": "Continuous Integration and Deployment plugin for BlueFly Agent Platform.",
+  "author": "BlueFly.io",
+  "skills": [
+    "skills/gitlab-sync.md",
+    "skills/gitlab-workflow.md",
+    "skills/release-manager.md",
+    "skills/issue-worker.md",
+    "skills/ci-fixer-worker.md"
+  ]
+}

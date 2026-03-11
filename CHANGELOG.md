@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-03-08
+
+### Added
+- **AgentScope integration**: Add AgentScope as supported agent framework with Python adapter, Drupal module, MCP server, A2A endpoint, and example manifests
+- **AgentScope adapter example**: Drupal module (`examples/drupal/ai_agents_agentscope/`) demonstrating AgentScope ReAct assistant integration via OSSA manifest
+- **v0.5 spec directory**: `spec/v0.5/` with agent identity, security posture, and protocol declarations schemas
+
+### Changed
+- Bumped version to 0.5.0
+- Schema default export now points to `spec/v0.5/agent.schema.json`
+
+## [0.4.8] - 2026-03-07
+
+### Changed
+- Backported AgentScope framework support to v0.4.x
+- Updated README with AgentScope in What's New
+
+## [0.4.7] - 2026-03-06
+
+### Fixed
+- **CLI broken import**: Removed `!dist/services/release-automation/` from package `files` exclusion — the core CLI (`release.command.ts`) imports `ReleaseAgentService` from that directory, so excluding it broke `ossa release` at runtime in v0.4.6
+
 ## [0.4.6] - 2026-03-05
 
 ### Added

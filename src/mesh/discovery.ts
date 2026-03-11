@@ -289,7 +289,7 @@ export class AgentUriParser {
    * Build an agent URI from namespace and name
    */
   static build(namespace: string, name: string): string {
-    return `agent://${namespace}/${name}`;
+    return `uadp://${namespace}/${name}`;
   }
 
   /**

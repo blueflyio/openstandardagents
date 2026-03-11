@@ -6,8 +6,8 @@
 
 export const marketplaceSkillsCatalog = {
   description:
-    'Curated skills for Bluefly marketplace / AgentSkills. Install with: ossa skills add <repo> --skill <name> --path /Volumes/AgentPlatform/services/marketplace/skills',
-  skillsPath: '/Volumes/AgentPlatform/services/marketplace/skills',
+    'Curated skills for OSSA marketplace / AgentSkills. Install with: ossa skills add <repo> --skill <name> --path <skills-dir>',
+  skillsPath: process.env.OSSA_SKILLS_PATH || '',
   skills: [
     {
       repo: 'https://github.com/anthropics/skills',

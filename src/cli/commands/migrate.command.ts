@@ -26,7 +26,7 @@ export const migrateCommand = new Command('migrate')
   .argument('<source>', 'Path to source OSSA manifest file')
   .option(
     '--to <version>',
-    'Target OSSA version (e.g., 0.3.6, 0.4.6)',
+    'Target OSSA version (e.g., 0.3.6, 0.4.x)',
     getVersion()
   )
   .option('--list', 'List available migration transforms')

@@ -1,116 +1,111 @@
-"""OSSA Validator - Validate OSSA manifests against the schema."""
+"""Manifest validation against OSSA schema and rules."""
 
-import re
+from __future__ import annotations
+
+import json
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
-import yaml
+import jsonschema
 
-from .exceptions import ValidationError
+from .exceptions import SchemaError, ValidationError
+from .types import OSSAManifest
 
 
 @dataclass
 class ValidationResult:
-    """Validation result."""
+    """Result of manifest validation."""
     valid: bool
-    errors: list[str] = field(default_factory=list)
-    warnings: list[str] = field(default_factory=list)
+    errors: List[str] = field(default_factory=list)
+    warnings: List[str] = field(default_factory=list)
 
-    def __bool__(self) -> bool:
+    @property
+    def is_valid(self) -> bool:
         return self.valid
 
-    def raise_if_invalid(self) -> None:
-        if not self.valid:
-            raise ValidationError(f"Validation failed: {'; '.join(self.errors)}")
+
+def validate(
+    manifest: Union[OSSAManifest, Dict[str, Any]],
+    schema_path: Optional[Union[str, Path]] = None,
+    strict: bool = False,
+) -> ValidationResult:
+    """Validate an OSSA manifest.
+
+    Runs structural validation (Pydantic) and optional JSON Schema validation.
+    """
+    errors: List[str] = []
+    warnings: List[str] = []
+
+    if isinstance(manifest, dict):
+        try:
+            manifest = OSSAManifest.model_validate(manifest)
+        except Exception as e:
+            return ValidationResult(valid=False, errors=[f"Structure validation: {e}"])
+
+    if not manifest.apiVersion:
+        errors.append("apiVersion is required")
+    elif not manifest.apiVersion.startswith("ossa/"):
+        errors.append(f"apiVersion must start with 'ossa/', got: {manifest.apiVersion}")
+
+    if not manifest.metadata.name:
+        errors.append("metadata.name is required")
+
+    if manifest.is_agent() and manifest.spec:
+        spec = manifest.spec
+        if not spec.get("role"):
+            warnings.append("Agent should have spec.role defined")
+        if not spec.get("llm"):
+            warnings.append("Agent should have spec.llm configured")
+
+        llm = spec.get("llm")
+        if llm and isinstance(llm, dict):
+            provider = llm.get("provider")
+            valid_providers = [
+                "anthropic", "openai", "azure", "google", "bedrock", "groq", "ollama",
+            ]
+            if provider and provider not in valid_providers:
+                warnings.append(f"Unknown LLM provider: {provider}")
+
+    if schema_path:
+        schema_errors = _validate_json_schema(manifest, schema_path)
+        errors.extend(schema_errors)
+
+    if strict:
+        errors.extend(warnings)
+        warnings = []
+
+    return ValidationResult(valid=len(errors) == 0, errors=errors, warnings=warnings)
 
 
-class Validator:
-    """OSSA Manifest Validator."""
-
-    VALID_KINDS = {"Agent", "Task", "Workflow", "Flow"}
-    VALID_API_VERSION_PATTERN = re.compile(
-        r"^ossa/v(0\.\d+(\.\d+)?(-[a-zA-Z0-9.]+)?|\d+\.\d+\.\d+)$"
-    )
-
-    def __init__(self, schema_path: Optional[Union[str, Path]] = None):
-        self._schema: Optional[dict[str, Any]] = None
-        if schema_path:
-            self._load_schema(Path(schema_path))
-
-    def _load_schema(self, path: Path) -> None:
-        if not path.exists():
-            return
-        content = path.read_text(encoding="utf-8")
-        if path.suffix in (".yaml", ".yml"):
-            self._schema = yaml.safe_load(content)
-        else:
-            import json
-            self._schema = json.loads(content)
-
-    def validate(self, manifest: Any) -> ValidationResult:
-        """Validate a manifest."""
-        errors: list[str] = []
-        warnings: list[str] = []
-
-        if hasattr(manifest, "to_dict"):
-            data = manifest.to_dict()
-        elif isinstance(manifest, dict):
-            data = manifest
-        else:
-            return ValidationResult(valid=False, errors=["Manifest must be a dict or Manifest object"])
-
-        # Required fields
-        if not data.get("apiVersion"):
-            errors.append("Missing apiVersion")
-        elif not self.VALID_API_VERSION_PATTERN.match(data["apiVersion"]):
-            errors.append(f"Invalid apiVersion: {data['apiVersion']}")
-
-        if not data.get("kind"):
-            errors.append("Missing kind")
-        elif data["kind"] not in self.VALID_KINDS:
-            errors.append(f"Invalid kind: {data['kind']}")
-
-        if not data.get("metadata"):
-            errors.append("Missing metadata")
-        elif not data["metadata"].get("name"):
-            errors.append("Missing metadata.name")
-
-        if not data.get("spec"):
-            errors.append("Missing spec")
-        elif data.get("kind") == "Agent" and not data["spec"].get("role"):
-            warnings.append("Agent should have spec.role")
-
-        # JSON Schema validation
-        if self._schema and not errors:
-            try:
-                import jsonschema
-                jsonschema.validate(data, self._schema)
-            except Exception as e:
-                errors.append(f"Schema validation: {e}")
-
-        # Separation of duties (v0.4): role must not be in conflicts_with
-        spec = data.get("spec") or {}
-        separation = spec.get("separation")
-        if isinstance(separation, dict):
-            role = separation.get("role")
-            conflicts = separation.get("conflicts_with") or separation.get("conflictsWith")
-            if role and isinstance(conflicts, list) and role in conflicts:
-                errors.append(
-                    f"Separation of duties: role '{role}' must not be in conflicts_with"
-                )
-
-        # Best practice warnings
-        if data.get("spec"):
-            spec = data["spec"]
-            if not spec.get("llm") and not spec.get("model"):
-                warnings.append("Best practice: Specify LLM configuration")
-            if not spec.get("tools"):
-                warnings.append("Best practice: Define tools/capabilities")
-
-        return ValidationResult(valid=len(errors) == 0, errors=errors, warnings=warnings)
+def validate_or_raise(
+    manifest: Union[OSSAManifest, Dict[str, Any]],
+    schema_path: Optional[Union[str, Path]] = None,
+) -> OSSAManifest:
+    """Validate and return manifest, or raise ValidationError."""
+    if isinstance(manifest, dict):
+        manifest = OSSAManifest.model_validate(manifest)
+    result = validate(manifest, schema_path)
+    if not result.valid:
+        raise ValidationError(result.errors, result.warnings)
+    return manifest
 
 
-def validate_manifest(manifest: Any) -> ValidationResult:
-    """Validate a manifest - convenience function."""
-    return Validator().validate(manifest)
+def _validate_json_schema(manifest: OSSAManifest, schema_path: Union[str, Path]) -> List[str]:
+    path = Path(schema_path)
+    if not path.exists():
+        raise SchemaError(f"Schema file not found: {path}")
+
+    try:
+        schema = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as e:
+        raise SchemaError(f"Failed to load schema: {e}") from e
+
+    data = manifest.model_dump(by_alias=True, exclude_none=True)
+    validator_inst = jsonschema.Draft7Validator(schema)
+
+    errors: List[str] = []
+    for error in validator_inst.iter_errors(data):
+        path_str = ".".join(str(p) for p in error.absolute_path) if error.absolute_path else "root"
+        errors.append(f"{path_str}: {error.message}")
+    return errors

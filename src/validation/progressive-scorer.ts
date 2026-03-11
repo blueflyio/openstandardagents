@@ -73,7 +73,7 @@ export class ProgressiveScorer {
    */
   score(
     manifest: OssaAgent,
-    validationResult: ValidationResult
+    _validationResult: ValidationResult
   ): ValidationScore {
     const dimensions = {
       compatibility: this.scoreCompatibility(manifest),
@@ -194,6 +194,27 @@ export class ProgressiveScorer {
       );
       if (unsupported.length > 0) {
         issues.push(`LangChain may not support: ${unsupported.join(', ')}`);
+        return 1.0 - unsupported.length / capabilities.length;
+      }
+      return 1.0;
+    }
+
+    // AgentScope support
+    if (agentType === 'agentscope') {
+      const unsupported = capabilities.filter(
+        (c) =>
+          ![
+            'handoff',
+            'streaming',
+            'context',
+            'tools',
+            'memory',
+            'rag',
+            'parallel_tool_calls',
+          ].includes(c)
+      );
+      if (unsupported.length > 0) {
+        issues.push(`AgentScope may not support: ${unsupported.join(', ')}`);
         return 1.0 - unsupported.length / capabilities.length;
       }
       return 1.0;
@@ -388,7 +409,7 @@ export class ProgressiveScorer {
    * Rank improvements by ROI (impact / effort)
    */
   private rankImprovements(
-    manifest: OssaAgent,
+    _manifest: OssaAgent,
     dimensions: ValidationScore['dimensions']
   ): RankedImprovement[] {
     const improvements: RankedImprovement[] = [];

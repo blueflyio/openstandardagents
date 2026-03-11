@@ -1,0 +1,12 @@
+id: bp-service-no-di
+description: "Using \\Drupal:: static service calls instead of dependency injection."
+severity: warning
+dimension: best-practices
+anti_pattern:
+  type: regex
+  pattern: "\\\\Drupal::(service|entityTypeManager|database|config|currentUser|moduleHandler|entityQuery)\\("
+  flags: gm
+  path_glob: "**/*.php"
+fix_suggestion: "Inject services via constructor dependency injection. Implement ContainerInjectionInterface or use create() factory method."
+target_languages: [php]
+tags: [best-practices, dependency-injection, drupal]

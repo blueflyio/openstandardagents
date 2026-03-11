@@ -26,7 +26,7 @@ program
   .argument('<input>', 'Input file (JSON or YAML)')
   .option(
     '-f, --framework <name>',
-    'Framework name (langchain, crewai, autogen)'
+    'Framework name (langchain, crewai, autogen, agentscope)'
   )
   .option('-o, --output <file>', 'Output file (default: stdout)')
   .option('-s, --strict', 'Enable strict mode', false)
@@ -93,7 +93,7 @@ program
   .argument('<input>', 'Input file (JSON or YAML)')
   .option(
     '-f, --framework <name>',
-    'Framework name (langchain, crewai, autogen)'
+    'Framework name (langchain, crewai, autogen, agentscope)'
   )
   .action(async (input: string, options: Record<string, unknown>) => {
     const spinner = ora('Validating input...').start();

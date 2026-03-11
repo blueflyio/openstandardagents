@@ -1,4 +1,4 @@
-apiVersion: ossa/v0.4.6
+apiVersion: ossa/v0.4.7
 kind: Agent
 metadata:
   name: react-performance-expert
@@ -305,7 +305,7 @@ extensions:
 
   infrastructure:
     - type: agent_mesh
-      endpoint: mesh.blueflyagents.com:3005
+      endpoint: your-mesh-registry.example.com:3005
       capabilities:
         - performance_monitoring
         - code_analysis

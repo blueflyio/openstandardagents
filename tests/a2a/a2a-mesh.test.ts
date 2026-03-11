@@ -393,7 +393,7 @@ function createAgentIdentity(
     id: randomUUID(),
     namespace: 'test',
     name,
-    uri: `agent://test/${name}`,
+    uri: `uadp://test/${name}`,
     capabilities,
     version: '1.0.0',
   };

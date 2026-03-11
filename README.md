@@ -14,15 +14,78 @@ OSSA is not a protocol (like MCP or A2A) and not a framework (like LangChain or 
 - **Builds on A2A** - Supports A2A messaging and agent-to-agent communication
 - **Extends protocols** - Adds deployment and packaging layer on top of communication protocols
 
-## 🇺🇸 NIST AI Agent Standards Alignment
+## Why OSSA + DUADP
 
-OSSA v0.4.6 natively aligns with the [NIST AI Agent Standards Initiative](https://www.nist.gov/caisi/ai-agent-standards-initiative) driven by the Center for AI Standards and Innovation (CAISI) and the Information Technology Laboratory (ITL).
+AI agents need the same foundational infrastructure the internet has: **identity**, **discovery**, and **governance**. OSSA and DUADP together deliver that stack:
 
-- **Secure Interoperability**: OSSA's `A2AExtension` schema guarantees seamless multi-vendor agent coordination across network boundaries using standardized protocols.
-- **Agent Identity & Authorization**: Built-in `AgentIdentity`, `AccessTier`, and `SeparationOfDuties` schemas immediately fulfill ITL's criteria for zero-trust verifiable credentials, semantic role isolation, and self-rotating service accounts.
-- **Provable Compliance**: The `metadata.compliance` specification allows agents to cryptographically declare their alignment to Federal and industry governance frameworks directly in their manifest.
+```
+┌──────────────────────────────────────────────────────────────┐
+│  Layer 1 — IDENTITY  (this repo)                             │
+│  OSSA (Open Standard for Software Agents)                    │
+│  openstandardagents.org                                      │
+│                                                              │
+│  · Agent DID — W3C decentralized identity per agent          │
+│  · Signed manifests — cryptographic provenance + SBOM        │
+│  · Cedar policies — zero-trust authorization bounds          │
+│  · NIST SP 800-53 control mapping built in                   │
+└─────────────────────┬────────────────────────────────────────┘
+                      │  secure identity
+                      ▼
+┌──────────────────────────────────────────────────────────────┐
+│  Layer 2 — DISCOVERY                                         │
+│  DUADP (Decentralized Universal AI Discovery Protocol)       │
+│  duadp.org | npm install @bluefly/duadp                      │
+│                                                              │
+│  · Federated DNS + WebFinger agent discovery                 │
+│  · Cross-node gossip federation                              │
+│  · Policy-aware capability routing                           │
+│  · Trust-tier gating (community → verified → federal)        │
+└─────────────────────┬────────────────────────────────────────┘
+                      │  policy-filtered
+                      ▼
+┌──────────────────────────────────────────────────────────────┐
+│  Layer 3 — EXECUTION                                         │
+│  Your runtime: Kubernetes, Claude, LangChain, Drupal, etc.   │
+└──────────────────────────────────────────────────────────────┘
+```
+
+**OSSA defines the agent. DUADP discovers it.**
+
+| Security requirement | OSSA | DUADP |
+|---|---|---|
+| Agent identity & authentication | ✅ W3C DID (GAID) per agent | ✅ DID-verified nodes |
+| Authorization & least-privilege | ✅ AWS Cedar policies in manifest | ✅ Trust-tier gating |
+| Governance & human oversight | ✅ Signed manifests + OSCAL pointers | ✅ Audit log + attestation API |
+| Cross-system interoperability | ✅ 22 platform exports | ✅ Federated gossip discovery |
+| Monitoring & incident response | ✅ Observability config in spec | ✅ Revocation + incident endpoints |
+| Supply chain security | ✅ `x-signature` + SBOM | ✅ Signed resource registry |
+
+> [openstandardagents.org/specification →](https://openstandardagents.org/specification) | [duadp.org →](https://duadp.org)
+
+## 🇺🇸 NIST CAISI Alignment (NIST-2025-0035)
+
+If you're evaluating OSSA/DUADP for federal or regulated deployments, see the detailed alignment documentation:
+
+OSSA natively aligns with the [NIST CAISI Request for Information on Collaborative AI Systems Integration](https://www.regulations.gov/docket/NIST-2025-0035), providing the critical **Contract Layer** missing from current agent protocols.
+
+- **Agent Identity (IA-3)**: W3C Decentralized Identifiers (GAID) provide cryptographic origin authentication for agents.
+- **Pre-Authorization (AC-3, AC-6)**: Deterministic AWS Cedar policies evaluated at the transport layer enforce zero-trust bounds before an LLM receives context.
+- **Federated Discovery**: Integration with DUADP (`.well-known` endpoints) scales agent discovery securely across organizational boundaries without centralized lock-in.
+- **Supply Chain Security (SI-7)**: Cryptographically signed manifests (`x-signature`) and explicit OSCAL/SBOM pointers prevent tool poisoning and supply chain attacks.
 
 ## What's New
+
+### AgentScope Integration (v0.4.8)
+
+- **New agent framework**: `agentscope` — Alibaba's production-ready Python agent framework (Apache 2.0, 17.8k stars) now supported as an OSSA agent type
+- **Python adapter**: Full OSSA-to-AgentScope bridge — reads OSSA manifests, instantiates ReActAgent with MCP tools, A2A protocol, memory backends (Mem0, Redis, ReMe)
+- **MCP server wrapper**: Expose any AgentScope agent as an MCP server for Claude Code, Cursor, VS Code
+- **A2A endpoint**: Serve AgentScope agents as discoverable A2A protocol endpoints with `.well-known/agent.json`
+- **Drupal module**: `ai_agents_agentscope` — contrib-first AiProvider plugin bridging AgentScope into Drupal's AI Agents ecosystem
+- **Docker support**: Dockerfile + docker-compose for containerized AgentScope runtime
+- **CLI**: `ossa-agentscope run|validate|serve` commands for manifest-driven agent execution
+- **Unique capabilities** not available in other frameworks: RL-based agent training, realtime voice agents, built-in evaluation framework
+- **Schema**: `extensions.agentscope` block in v0.4 and v0.5 specs with agent_class, capabilities, memory_backend, orchestration, formatter, compression, skill_dirs
 
 ### OpenAI Agents SDK Export (2026-02-16)
 
@@ -174,6 +237,8 @@ const server = await mcpService.exposeMCPServer(typescriptAgent);
 ```bash
 npm install -g @bluefly/openstandardagents
 ```
+
+OSSA uses [`@bluefly/duadp`](https://www.npmjs.com/package/@bluefly/duadp) for agent discovery and federation via the [UADP protocol](https://github.com/blueflyio/duadp).
 
 ## Quick Start
 
@@ -473,6 +538,7 @@ ossa export --list-platforms
 | `claude-skills` | beta | 3 files | - | Claude Skills format with team support |
 | `mobile-agent` | alpha | 1 file | - | Mobile LLM platform export |
 | `symfony` | alpha | 1 file | - | Symfony bundle for PHP-based agents |
+| `agentscope` | alpha | 10 files | agentscope | AgentScope ReAct assistant for Drupal AI Agents |
 
 Every export includes `agent.ossa.yaml` (the source manifest) for provenance.
 
@@ -501,7 +567,7 @@ import { validateManifest } from '@bluefly/openstandardagents/validation';
 import type { OssaAgent } from '@bluefly/openstandardagents/types';
 
 const agent: OssaAgent = {
-  apiVersion: 'ossa/v0.4.5',
+  apiVersion: 'ossa/v0.4.6',
   kind: 'Agent',
   metadata: { name: 'creative-agent-naming', version: '1.0.0' },
   spec: {

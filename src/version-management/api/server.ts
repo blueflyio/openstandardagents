@@ -1,7 +1,7 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 import { VersionManager } from '../core/version-manager';
 
-const app = express();
+const app: any = express();
 const versionManager = new VersionManager();
 
 app.use(express.json());

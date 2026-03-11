@@ -1,0 +1,12 @@
+id: a11y-no-semantic-html
+description: "Using div/span where semantic elements (nav, main, section, article) should be used."
+severity: info
+dimension: accessibility
+anti_pattern:
+  type: regex
+  pattern: "<div\\s+class=['\"]\\s*(nav|navigation|header|footer|main|sidebar|article|section)\\s*['\"]"
+  flags: gim
+  path_glob: "**/*.{html.twig,twig,htm,html}"
+fix_suggestion: "Replace <div class='nav'> with <nav>, <div class='main'> with <main>, etc. Use semantic HTML5 elements."
+target_languages: [twig, html]
+tags: [accessibility, wcag, semantic-html]

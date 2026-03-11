@@ -1,0 +1,10 @@
+{
+  "name": "bluefly-mcp-tools",
+  "version": "0.1.0",
+  "description": "Model Context Protocol (MCP) development tools for BlueFly Agent Platform.",
+  "author": "BlueFly.io",
+  "skills": [
+    "skills/mcp-builder.md",
+    "skills/mcp-builder-worker.md"
+  ]
+}

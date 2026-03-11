@@ -1,0 +1,12 @@
+id: perf-synchronous-http
+description: "Synchronous HTTP requests block the response and degrade page load time."
+severity: warning
+dimension: performance
+anti_pattern:
+  type: regex
+  pattern: "(\\$client->request|\\$client->get|\\$client->post|file_get_contents\\s*\\(\\s*['\"]https?://|curl_exec)"
+  flags: gm
+  path_glob: "**/*.{php,module,inc}"
+fix_suggestion: "Use Guzzle async requests with promises, or move HTTP calls to a queue worker or lazy builder."
+target_languages: [php]
+tags: [performance, http, drupal]

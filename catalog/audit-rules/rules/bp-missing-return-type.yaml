@@ -1,0 +1,12 @@
+id: bp-missing-return-type
+description: "Functions and methods missing return type declarations reduce type safety."
+severity: info
+dimension: best-practices
+anti_pattern:
+  type: regex
+  pattern: "public\\s+function\\s+\\w+\\([^)]*\\)\\s*\\{"
+  flags: gm
+  path_glob: "**/*.php"
+fix_suggestion: "Add return type declarations (: void, : array, : string, : mixed, etc.) to all public methods."
+target_languages: [php]
+tags: [best-practices, type-safety, php]

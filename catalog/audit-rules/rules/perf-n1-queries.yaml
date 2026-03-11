@@ -1,0 +1,12 @@
+id: perf-n1-queries
+description: "Entity loading inside a loop causes N+1 query problem."
+severity: warning
+dimension: performance
+anti_pattern:
+  type: regex
+  pattern: "foreach\\s*\\([^)]+\\)\\s*\\{[^}]*\\\\Drupal::entityTypeManager"
+  flags: gm
+  path_glob: "**/*.{php,module,inc}"
+fix_suggestion: "Use entity query with IN condition or entityTypeManager->getStorage()->loadMultiple()."
+target_languages: [php]
+tags: [performance, database, drupal]

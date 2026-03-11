@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://openstandardagents.org/schemas/v0.4.6/agent.schema.json",
-  "title": "OSSA v0.4.6 Agent Manifest Schema",
-  "description": "Open Standard for Software Agents (OSSA) v0.4.6 - Extends v0.4 with Agent Identity, Security Posture, and Protocol Declarations. Backward compatible with v0.4 manifests.",
+  "$id": "https://openstandardagents.org/schemas/v0.4.7/agent.schema.json",
+  "title": "OSSA v0.4.7 Agent Manifest Schema",
+  "description": "Open Standard for Software Agents (OSSA) v0.4.7 - Extends v0.4 with Agent Identity, Security Posture, and Protocol Declarations. Backward compatible with v0.4 manifests.",
   "type": "object",
   "required": [
     "apiVersion",
@@ -13,10 +13,10 @@
     "apiVersion": {
       "type": "string",
       "pattern": "^ossa/v(0\\.5(\\.[0-9]+(-[a-zA-Z0-9.]+)?)?|0\\.4(\\.[0-9]+(-[a-zA-Z0-9.]+)?)?|0\\.3(\\.[4-9]|\\.[0-9]+(-[a-zA-Z0-9.]+)?)?|0\\.2\\.[2-9](-dev)?|1)(\\.[0-9]+)?(-[a-zA-Z0-9.]+)?$",
-      "description": "OSSA API version (v0.4.6 introduces identity, security posture, and protocol declarations)",
+      "description": "OSSA API version (v0.4.7 introduces identity, security posture, and protocol declarations)",
       "examples": [
-        "ossa/v0.4.6",
-        "ossa/v0.4.6.0",
+        "ossa/v0.4.7",
+        "ossa/v0.4.7.0",
         "ossa/v0.4",
         "ossa/v1"
       ]
@@ -39,23 +39,32 @@
     },
     "security": {
       "$ref": "#/definitions/SecurityPosture",
-      "description": "Security posture metadata defining threat model, capability requirements, sandboxing, and network access constraints (v0.4.6)"
+      "description": "Security posture metadata defining threat model, capability requirements, sandboxing, and network access constraints (v0.4.7)"
     },
     "protocols": {
       "$ref": "#/definitions/ProtocolDeclarations",
-      "description": "Protocol declarations for MCP, A2A, and ANP interoperability (v0.4.6)"
+      "description": "Protocol declarations for MCP, A2A, and ANP interoperability (v0.4.7)"
     },
     "token_efficiency": {
       "$ref": "#/definitions/TokenEfficiency",
-      "description": "Token efficiency configuration for cost-optimized execution (v0.4.6)"
+      "description": "Token efficiency configuration for cost-optimized execution (v0.4.7)"
     },
     "cognition": {
       "$ref": "#/definitions/Cognition",
       "description": "Reasoning pattern, trace config, and governance for auditable cognition (v0.5.0 draft)"
     },
+    "governance": {
+      "$ref": "#/definitions/Governance",
+      "description": "Governance and authorization policies including Cedar pre-execution checks and compliance profiles (v0.4.7)"
+    },
     "extensions": {
       "type": "object",
       "description": "Framework-specific extensions (inherited from v0.4)",
+      "properties": {
+        "agentscope": {
+          "$ref": "#/definitions/AgentScopeExtension"
+        }
+      },
       "additionalProperties": true
     },
     "runtime": {
@@ -63,7 +72,7 @@
     },
     "composition": {
       "$ref": "#/definitions/WorkflowComposition",
-      "description": "Workflow composition with sequential/parallel projection (v0.4.6, when kind is Workflow)"
+      "description": "Workflow composition with sequential/parallel projection (v0.4.7, when kind is Workflow)"
     }
   },
   "definitions": {
@@ -192,7 +201,7 @@
         },
         "identity": {
           "$ref": "#/definitions/AgentIdentity",
-          "description": "Agent identity model with namespace, versioned identifier, and publisher information (v0.4.6)"
+          "description": "Agent identity model with namespace, versioned identifier, and publisher information (v0.4.7)"
         },
         "catalog": {
           "type": "object",
@@ -247,6 +256,7 @@
             "langchain",
             "crewai",
             "autogen",
+            "agentscope",
             "llamaindex",
             "haystack",
             "semantic-kernel",
@@ -297,7 +307,7 @@
     },
     "AgentIdentity": {
       "type": "object",
-      "description": "Agent identity model for unique identification, versioning, and publisher attribution (v0.4.6). Enables trust chains, agent discovery, and provenance tracking across registries.",
+      "description": "Agent identity model for unique identification, versioning, and publisher attribution (v0.4.7). Enables trust chains, agent discovery, and provenance tracking across registries.",
       "required": [
         "agent_id"
       ],
@@ -359,6 +369,69 @@
       },
       "additionalProperties": false
     },
+    "AgentScopeExtension": {
+      "type": "object",
+      "description": "AgentScope framework-specific runtime configuration. AgentScope is a production-ready Python agent framework with ReAct agents, RL training, realtime voice, MCP/A2A support, and rich memory backends.",
+      "properties": {
+        "version": {
+          "type": "string",
+          "description": "AgentScope framework version (e.g., 1.0.16)",
+          "pattern": "^\\d+\\.\\d+\\.\\d+"
+        },
+        "agent_class": {
+          "type": "string",
+          "description": "Python agent class to instantiate",
+          "enum": ["ReActAgent", "UserAgent", "A2AAgent", "RealtimeAgent", "custom"],
+          "default": "ReActAgent"
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["rl_training", "realtime_voice", "evaluation", "planning", "rag", "parallel_tool_calls", "meta_tools", "tts"]
+          },
+          "description": "AgentScope-specific capabilities enabled for this agent"
+        },
+        "memory_backend": {
+          "type": "string",
+          "enum": ["in_memory", "redis", "sqlalchemy", "mem0", "reme_personal", "reme_task", "reme_tool"],
+          "default": "in_memory",
+          "description": "Memory backend for working/long-term memory"
+        },
+        "orchestration": {
+          "type": "string",
+          "enum": ["msghub", "sequential_pipeline", "fanout_pipeline", "chatroom"],
+          "description": "Multi-agent orchestration pattern when used in composition"
+        },
+        "max_iters": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 10,
+          "description": "Maximum reasoning-acting loop iterations for ReActAgent"
+        },
+        "formatter": {
+          "type": "string",
+          "enum": ["openai", "anthropic", "gemini", "dashscope", "ollama", "deepseek", "a2a"],
+          "description": "Message formatter for the model provider"
+        },
+        "compression": {
+          "type": "object",
+          "properties": {
+            "enable": { "type": "boolean", "default": false },
+            "trigger_threshold": { "type": "integer", "description": "Token count to trigger compression" },
+            "keep_recent": { "type": "integer", "default": 3, "description": "Recent messages to preserve" }
+          },
+          "description": "Memory compression configuration"
+        },
+        "skill_dirs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Paths to SKILL.md directories to register as agent skills"
+        }
+      },
+      "additionalProperties": false
+    },
     "Publisher": {
       "type": "object",
       "description": "Publisher information for agent attribution, trust, and contact. Enables trust chains when combined with PGP signatures.",
@@ -414,8 +487,18 @@
     },
     "SecurityPosture": {
       "type": "object",
-      "description": "Security posture metadata defining the agent's threat model, required capabilities, sandboxing requirements, and network access constraints (v0.4.6). Enables security-aware orchestration and policy enforcement.",
+      "description": "Security posture metadata defining the agent's threat model, required capabilities, sandboxing requirements, and network access constraints (v0.4.7). Enables security-aware orchestration and policy enforcement.",
       "properties": {
+        "tier": {
+          "type": "string",
+          "enum": [
+            "tier_1_read",
+            "tier_2_write_limited",
+            "tier_3_write_elevated",
+            "tier_4_system_admin"
+          ],
+          "description": "Trust and authorization tier used for Cedar pre-execution policy evaluation and capability constraints."
+        },
         "threat_model": {
           "type": "array",
           "description": "Threat categories this agent is designed to handle or is exposed to. Used by orchestrators for security-aware task routing.",
@@ -692,7 +775,7 @@
     },
     "ProtocolDeclarations": {
       "type": "object",
-      "description": "Protocol declarations for agent interoperability (v0.4.6). Declares which agent communication protocols this agent supports, enabling automatic discovery and routing by orchestrators.",
+      "description": "Protocol declarations for agent interoperability (v0.4.7). Declares which agent communication protocols this agent supports, enabling automatic discovery and routing by orchestrators.",
       "properties": {
         "mcp": {
           "$ref": "#/definitions/MCPProtocol",
@@ -1374,6 +1457,111 @@
           }
         }
       }
+    },
+    "Governance": {
+      "type": "object",
+      "description": "Governance and authorization policies mapped to Cedar or OPA engines.",
+      "properties": {
+        "authorization": {
+          "type": "object",
+          "properties": {
+            "clearance_level": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Numeric clearance level required for this agent"
+            },
+            "tool_permissions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "type": "string"
+                  },
+                  "risk_level": {
+                    "type": "string",
+                    "enum": [
+                      "low",
+                      "medium",
+                      "high",
+                      "critical"
+                    ]
+                  },
+                  "requires_approval": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "risk_level"
+                ]
+              }
+            },
+            "policy_references": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "List of Cedar (or other) policy IDs this agent must adhere to"
+            }
+          }
+        },
+        "quality_requirements": {
+          "type": "object",
+          "properties": {
+            "confidence_threshold": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "test_coverage_threshold": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "security_score_threshold": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "max_vulnerability_count": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "compliance": {
+          "type": "object",
+          "properties": {
+            "frameworks": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "SOC2",
+                  "HIPAA",
+                  "GDPR",
+                  "PCI-DSS",
+                  "NIST-800-53"
+                ]
+              }
+            },
+            "data_classification": {
+              "type": "string",
+              "enum": [
+                "public",
+                "internal",
+                "confidential",
+                "restricted"
+              ]
+            },
+            "audit_logging_required": {
+              "type": "boolean"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
     }
   }
 }

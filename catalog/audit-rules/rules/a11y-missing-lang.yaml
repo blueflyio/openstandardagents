@@ -1,0 +1,12 @@
+id: a11y-missing-lang
+description: "HTML templates without lang attribute prevent screen readers from using correct pronunciation."
+severity: warning
+dimension: accessibility
+anti_pattern:
+  type: regex
+  pattern: "<html\\s+(?:(?!lang=)[^>])*>"
+  flags: gim
+  path_glob: "**/*.{html.twig,twig,htm,html}"
+fix_suggestion: "Add lang attribute to the html element: <html lang='en'>. Use {{ html_attributes }} in Drupal templates."
+target_languages: [twig, html]
+tags: [accessibility, wcag, i18n]

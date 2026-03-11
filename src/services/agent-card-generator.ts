@@ -18,25 +18,25 @@
  */
 
 import * as crypto from 'crypto';
-import type { OssaAgent } from '../types/index.js';
 import type {
-  AgentCard,
-  AgentTaxonomy,
-  AgentModelInfo,
-  McpServerDescriptor,
-  A2AProtocolDescriptor,
-  AgentHandoff,
-  AgentAutonomy,
-  AgentConstraints,
-  AgentObservability,
-  ToolDescriptor,
-  Transport,
-  AuthMethod,
-  EncryptionSpec,
-  AgentCardState,
-  TokenEfficiencySummary,
-  AgentCardSeparation,
+    A2AProtocolDescriptor,
+    AgentAutonomy,
+    AgentCard,
+    AgentCardSeparation,
+    AgentCardState,
+    AgentConstraints,
+    AgentHandoff,
+    AgentModelInfo,
+    AgentObservability,
+    AgentTaxonomy,
+    AuthMethod,
+    EncryptionSpec,
+    McpServerDescriptor,
+    TokenEfficiencySummary,
+    ToolDescriptor,
+    Transport,
 } from '../mesh/types.js';
+import type { OssaAgent } from '../types/index.js';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ManifestSection = Record<string, any>;
@@ -58,7 +58,7 @@ function resolveExtensionBlock(
 }
 
 export interface AgentCardGeneratorOptions {
-  /** Override the agent URI (default: agent://{namespace}/{name}) */
+  /** Override the agent URI (default: uadp://{namespace}/{name}) */
   uri?: string;
   /** Namespace for the agent URI (default: 'default') */
   namespace?: string;
@@ -112,7 +112,7 @@ export class AgentCardGenerator {
     const name = manifest.metadata!.name;
     const version = manifest.metadata?.version || '1.0.0';
     const namespace = options?.namespace || 'default';
-    const uri = options?.uri || `agent://${namespace}/${name}`;
+    const uri = options?.uri || `uadp://${namespace}/${name}`;
 
     // Extract all features
     const taxonomy = this.extractTaxonomy(manifest);
@@ -159,6 +159,8 @@ export class AgentCardGenerator {
       name,
       version,
       ossaVersion: manifest.apiVersion || 'ossa/v0.4',
+      ...((manifest.metadata as any)?.identity?.uuid ? { uuid: (manifest.metadata as any).identity.uuid } : {}),
+      ...((manifest.metadata as any)?.identity?.gaid ? { gaid: (manifest.metadata as any).identity.gaid } : {}),
 
       // Taxonomy — what kind of agent
       ...(taxonomy ? { taxonomy } : {}),

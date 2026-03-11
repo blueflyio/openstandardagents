@@ -15,7 +15,6 @@
  */
 
 import { readFileSync } from 'fs';
-import { join } from 'path';
 import yaml from 'yaml';
 
 interface ValidationResult {
@@ -32,15 +31,12 @@ interface ValidationResult {
     capability_discovery?: boolean;
     feedback_loops?: boolean;
     infrastructure?: boolean;
+    agentscope?: boolean;
   };
 }
 
 export class V035FeatureValidator {
-  private readonly rootDir: string;
-
-  constructor(rootDir: string = process.cwd()) {
-    this.rootDir = rootDir;
-  }
+  constructor(private readonly _rootDir: string = process.cwd()) {}
 
   /**
    * Validate v0.3.5 features in a manifest
@@ -120,6 +116,12 @@ export class V035FeatureValidator {
           manifest.spec?.infrastructure || manifest.infrastructure,
           result
         );
+      }
+
+      // Validate AgentScope extension
+      if (manifest.extensions?.agentscope) {
+        result.features.agentscope = true;
+        this.validateAgentScope(manifest.extensions.agentscope, result);
       }
 
       result.valid = result.errors.length === 0;
@@ -343,6 +345,137 @@ export class V035FeatureValidator {
         result.errors.push(
           'Infrastructure entry missing required field: hostname'
         );
+      }
+    }
+  }
+
+  /**
+   * Validate AgentScope extension (extensions.agentscope)
+   */
+  private validateAgentScope(agentscope: any, result: ValidationResult): void {
+    // Validate agent_class enum
+    const validAgentClasses = [
+      'ReActAgent',
+      'DialogAgent',
+      'DictDialogAgent',
+      'UserAgent',
+      'TextToImageAgent',
+      'RpcAgent',
+    ];
+    if (agentscope.agent_class) {
+      if (!validAgentClasses.includes(agentscope.agent_class)) {
+        result.warnings.push(
+          `extensions.agentscope.agent_class "${agentscope.agent_class}" is not a known AgentScope class: ${validAgentClasses.join(', ')}`
+        );
+      }
+    } else {
+      result.errors.push(
+        'extensions.agentscope.agent_class is required (e.g. ReActAgent, DialogAgent)'
+      );
+    }
+
+    // Validate memory_backend enum
+    const validMemoryBackends = ['mem0', 'local', 'redis', 'none'];
+    if (agentscope.memory_backend) {
+      if (!validMemoryBackends.includes(agentscope.memory_backend)) {
+        result.warnings.push(
+          `extensions.agentscope.memory_backend "${agentscope.memory_backend}" is not a known backend: ${validMemoryBackends.join(', ')}`
+        );
+      }
+    }
+
+    // Validate orchestration enum
+    const validOrchestrations = [
+      'msghub',
+      'pipeline',
+      'sequential',
+      'forlooppipeline',
+      'whilelooppipeline',
+      'ifelsepipeline',
+      'switchpipeline',
+    ];
+    if (agentscope.orchestration) {
+      if (!validOrchestrations.includes(agentscope.orchestration)) {
+        result.warnings.push(
+          `extensions.agentscope.orchestration "${agentscope.orchestration}" is not a known pattern: ${validOrchestrations.join(', ')}`
+        );
+      }
+    }
+
+    // Validate formatter enum
+    const validFormatters = ['anthropic', 'openai', 'dashscope', 'raw'];
+    if (agentscope.formatter) {
+      if (!validFormatters.includes(agentscope.formatter)) {
+        result.warnings.push(
+          `extensions.agentscope.formatter "${agentscope.formatter}" is not a known formatter: ${validFormatters.join(', ')}`
+        );
+      }
+    }
+
+    // Validate version is present
+    if (!agentscope.version) {
+      result.warnings.push(
+        'extensions.agentscope.version not specified (recommended for reproducibility)'
+      );
+    }
+
+    // Validate max_iters is positive if present
+    if (
+      agentscope.max_iters !== undefined &&
+      (typeof agentscope.max_iters !== 'number' || agentscope.max_iters < 1)
+    ) {
+      result.errors.push(
+        'extensions.agentscope.max_iters must be a positive integer'
+      );
+    }
+
+    // Validate compression config if present
+    if (agentscope.compression) {
+      if (
+        agentscope.compression.trigger_threshold !== undefined &&
+        (typeof agentscope.compression.trigger_threshold !== 'number' ||
+          agentscope.compression.trigger_threshold < 0)
+      ) {
+        result.errors.push(
+          'extensions.agentscope.compression.trigger_threshold must be a non-negative number'
+        );
+      }
+      if (
+        agentscope.compression.keep_recent !== undefined &&
+        (typeof agentscope.compression.keep_recent !== 'number' ||
+          agentscope.compression.keep_recent < 0)
+      ) {
+        result.errors.push(
+          'extensions.agentscope.compression.keep_recent must be a non-negative integer'
+        );
+      }
+    }
+
+    // Validate capabilities array if present
+    if (agentscope.capabilities) {
+      if (!Array.isArray(agentscope.capabilities)) {
+        result.errors.push(
+          'extensions.agentscope.capabilities must be an array'
+        );
+      } else {
+        const knownCapabilities = [
+          'rag',
+          'parallel_tool_calls',
+          'code_execution',
+          'web_search',
+          'file_operations',
+        ];
+        for (const cap of agentscope.capabilities) {
+          if (typeof cap !== 'string') {
+            result.errors.push(
+              'extensions.agentscope.capabilities entries must be strings'
+            );
+          } else if (!knownCapabilities.includes(cap)) {
+            result.warnings.push(
+              `extensions.agentscope.capabilities "${cap}" is not a known capability: ${knownCapabilities.join(', ')}`
+            );
+          }
+        }
       }
     }
   }

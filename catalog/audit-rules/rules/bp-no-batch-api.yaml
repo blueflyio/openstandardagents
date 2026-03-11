@@ -1,0 +1,12 @@
+id: bp-no-batch-api
+description: "Processing large datasets without Batch API risks timeouts and memory exhaustion."
+severity: warning
+dimension: best-practices
+anti_pattern:
+  type: regex
+  pattern: "foreach\\s*\\([^)]*\\)\\s*\\{[^}]*(->save\\(|->delete\\(|entity_create|Node::create)"
+  flags: gms
+  path_glob: "**/*.{php,module,inc}"
+fix_suggestion: "Use Batch API (batch_set()) or Queue API for processing large numbers of entities."
+target_languages: [php]
+tags: [best-practices, batch, scalability, drupal]

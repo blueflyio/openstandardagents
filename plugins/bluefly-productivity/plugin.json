@@ -1,0 +1,16 @@
+{
+  "name": "bluefly-productivity",
+  "version": "0.1.0",
+  "description": "Developer productivity and agent optimization tools for BlueFly Agent Platform.",
+  "author": "BlueFly.io",
+  "skills": [
+    "skills/skill-creator.md",
+    "skills/schedule.md",
+    "skills/token-optimizer.md",
+    "skills/terminal-setup.md",
+    "skills/default-orchestrator.md",
+    "skills/swarm-execution.md",
+    "skills/research.md",
+    "skills/ide-supercharger-ref.md"
+  ]
+}

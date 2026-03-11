@@ -8,7 +8,7 @@
  * - DRY: Shared options across all commands
  */
 
-import { Command, Option } from 'commander';
+import { Command } from 'commander';
 
 /**
  * Global options for ALL commands
@@ -190,7 +190,7 @@ export function addStandardValidationOptions(command: Command): Command {
  * 3. Default: OSSA_REGISTRY_URL env var (empty if not set)
  */
 export const DEFAULT_REGISTRY_URL =
-  process.env.OSSA_REGISTRY_URL || '';
+  process.env.OSSA_REGISTRY_URL || 'https://uadp.blueflyagents.com';
 
 export function addRegistryOptions(command: Command): Command {
   return command

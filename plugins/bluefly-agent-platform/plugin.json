@@ -1,0 +1,14 @@
+{
+  "name": "bluefly-agent-platform",
+  "version": "0.1.0",
+  "description": "Core architecture and operations plugin for BlueFly Agent Platform.",
+  "author": "BlueFly.io",
+  "skills": [
+    "skills/agent-platform.md",
+    "skills/agent-ops.md",
+    "skills/platform-status.md",
+    "skills/separation-of-duties.md",
+    "skills/fleet-ops.md",
+    "skills/infrastructure.md"
+  ]
+}

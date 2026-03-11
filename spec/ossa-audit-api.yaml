@@ -12,8 +12,8 @@ info:
 servers:
   - url: http://localhost:3000
     description: Local development
-  - url: https://ossa-audit.blueflyagents.com
-    description: Production
+  - url: https://your-ossa-audit.example.com
+    description: Production (configure via environment)
 
 paths:
   /audit/scan:

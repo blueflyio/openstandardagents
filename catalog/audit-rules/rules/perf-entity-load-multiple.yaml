@@ -1,0 +1,12 @@
+id: perf-entity-load-multiple
+description: "Individual entity loads that should use loadMultiple for batch efficiency."
+severity: info
+dimension: performance
+anti_pattern:
+  type: regex
+  pattern: "(Node|Term|User|Media)::load\\(\\$\\w+\\)"
+  flags: gm
+  path_glob: "**/*.{php,module,inc}"
+fix_suggestion: "Collect entity IDs and use Entity::loadMultiple($ids) instead of loading entities one at a time."
+target_languages: [php]
+tags: [performance, entity-api, drupal]
