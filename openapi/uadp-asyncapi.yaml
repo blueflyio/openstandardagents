@@ -189,7 +189,7 @@ components:
       description: OAuth2 with client credentials for agent-to-registry auth
       flows:
         clientCredentials:
-          authorizationUrl: https://auth.openstandardagents.org/oauth/token
+          tokenUrl: https://auth.openstandardagents.org/oauth/token
           availableScopes:
             uadp:publish: Publish agent lifecycle events
             uadp:subscribe: Subscribe to registry events
@@ -198,7 +198,9 @@ components:
   parameters:
     AgentIdParam:
       description: Unique agent identifier (DNS-1123 subdomain format)
-      location: $message.payload#/agentId
+      schema:
+        type: string
+        description: Unique agent identifier (DNS-1123 subdomain format)
 
   messages:
     AgentRegisteredMessage:
