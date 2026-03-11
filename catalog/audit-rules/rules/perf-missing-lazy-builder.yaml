@@ -1,0 +1,12 @@
+id: perf-missing-lazy-builder
+description: "Heavy render callbacks that should use lazy builders for deferred rendering."
+severity: info
+dimension: performance
+anti_pattern:
+  type: regex
+  pattern: "#pre_render['\"]\\s*=>\\s*\\[\\s*\\[\\$this"
+  flags: gm
+  path_glob: "**/*.{php,module}"
+fix_suggestion: "Use '#lazy_builder' instead of '#pre_render' for expensive render operations to enable BigPipe streaming."
+target_languages: [php]
+tags: [performance, lazy-builder, drupal]

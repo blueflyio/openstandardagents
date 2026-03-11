@@ -1,0 +1,42 @@
+version: "3.8"
+
+services:
+  agentscope-runtime:
+    build:
+      context: ../../
+      dockerfile: adapters/agentscope/Dockerfile
+    container_name: agentscope-runtime
+    ports:
+      - "12310:12310"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+    volumes:
+      - ./manifests:/app/manifests:ro
+    networks:
+      - agent-platform
+    restart: unless-stopped
+    labels:
+      - "com.bluefly.service=agentscope-runtime"
+      - "com.bluefly.ossa.version=0.4.6"
+
+  # Redis for memory backend (optional)
+  agentscope-redis:
+    image: redis:7-alpine
+    container_name: agentscope-redis
+    ports:
+      - "6380:6379"
+    volumes:
+      - agentscope-redis-data:/data
+    networks:
+      - agent-platform
+    profiles:
+      - redis
+
+networks:
+  agent-platform:
+    external: true
+    name: agent-platform
+
+volumes:
+  agentscope-redis-data:

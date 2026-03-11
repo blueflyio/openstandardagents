@@ -16,29 +16,28 @@ import { Command } from 'commander';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'yaml';
-import { container } from '../../di-container.js';
-import { ManifestRepository } from '../../repositories/manifest.repository.js';
-import { LangChainAdapter } from '../../adapters/langchain/adapter.js';
+import { generatePerfectAgentBundle } from '../../adapters/base/common-file-generator.js';
 import { CrewAIAdapter } from '../../adapters/crewai/adapter.js';
-import { TemporalConverter } from '../../adapters/temporal/converter.js';
-import { N8NConverter } from '../../adapters/n8n/converter.js';
+import { DockerExporter } from '../../adapters/docker/docker-exporter.js';
+import { DrupalManifestExporter } from '../../adapters/drupal/manifest-exporter.js';
 import { GitLabConverter } from '../../adapters/gitlab/converter.js';
 import { GitLabDuoPackageGenerator } from '../../adapters/gitlab/package-generator.js';
-import { DockerExporter } from '../../adapters/docker/docker-exporter.js';
 import { KubernetesManifestGenerator } from '../../adapters/kubernetes/generator.js';
-import { KAgentCRDGenerator } from '../../sdks/kagent/crd-generator.js';
-import { LangflowAdapter } from '../../adapters/langflow-adapter.js';
-import { registry } from '../../adapters/registry/platform-registry.js';
-import { DrupalManifestExporter } from '../../adapters/drupal/manifest-exporter.js';
+import { LangChainAdapter } from '../../adapters/langchain/adapter.js';
+import { N8NConverter } from '../../adapters/n8n/converter.js';
 import { OpenAIAgentsAdapter } from '../../adapters/openai-agents/adapter.js';
-import type { OssaAgent } from '../../types/index.js';
-import { generatePerfectAgentBundle } from '../../adapters/base/common-file-generator.js';
+import { registry } from '../../adapters/registry/platform-registry.js';
+import { TemporalConverter } from '../../adapters/temporal/converter.js';
 import { getPlatformsForExport } from '../../data/platform-matrix.js';
+import { container } from '../../di-container.js';
+import { ManifestRepository } from '../../repositories/manifest.repository.js';
+import { KAgentCRDGenerator } from '../../sdks/kagent/crd-generator.js';
+import { AgentCardGenerator } from '../../services/agent-card-generator.js';
 import {
-  addGlobalOptions,
-  addMutationOptions,
-  addBackupOptions,
-  shouldUseColor,
+    addBackupOptions,
+    addGlobalOptions,
+    addMutationOptions,
+    shouldUseColor,
 } from '../utils/standard-options.js';
 
 export const exportCommand = new Command('export')
@@ -46,7 +45,7 @@ export const exportCommand = new Command('export')
   .argument('[manifest]', 'Path to OSSA agent manifest')
   .option(
     '-p, --platform <platform>',
-    'Target platform (kagent, langchain, langflow, crewai, symfony, temporal, n8n, gitlab, gitlab-agent, docker, kubernetes, npm, drupal, orchestration, agent-skills)'
+    'Target platform (kagent, langchain, langflow, crewai, symfony, temporal, n8n, gitlab, gitlab-agent, docker, kubernetes, npm, drupal, orchestration, agent-skills, agent-card)'
   )
   .option('-o, --output <file>', 'Output file path')
   .option('--format <format>', 'Output format (yaml, json, python)', 'yaml')
@@ -968,6 +967,40 @@ exportCommand.action(
             console.log(chalk.green(`✓ Claude Skill included: SKILL.md`));
           }
           return; // Early return to skip single-file write
+        }
+
+        case 'agent-card': {
+          log('Generating universally standard Agent Card from manifest...');
+
+          const generator = new AgentCardGenerator();
+          const result = generator.generate(manifest, {
+            cardProfile: 'discovery'
+          });
+
+          if (!result.success || !result.card) {
+            throw new Error(result.errors.join(', ') || 'Agent Card generation failed');
+          }
+
+          const agentName = manifest.metadata?.name || 'agent';
+          const outputDir = options.output || `./${agentName}`;
+          const outPath = options.output?.endsWith('.json') ? options.output : path.join(outputDir, 'agent-card.json');
+
+          if (!options.dryRun) {
+            const outDirAbs = path.dirname(outPath);
+            if (outDirAbs !== '.') fs.mkdirSync(outDirAbs, { recursive: true });
+
+            fs.writeFileSync(outPath, JSON.stringify(result.card, null, 2));
+
+            logSuccess(`\\nAgent Card exported to: ${outPath}`);
+            log('  Ready for DUADP network publish and discovery.');
+          } else {
+            log(`\\nDRY RUN: Would export Agent Card to: ${outPath}`);
+          }
+
+          if (options.json) {
+            console.log(JSON.stringify(result.card));
+          }
+          return;
         }
 
         case 'drupal': {

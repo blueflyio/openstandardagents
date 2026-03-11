@@ -1,0 +1,13 @@
+{
+  "name": "bluefly-security",
+  "version": "0.1.0",
+  "description": "Security and quality assurance plugin for BlueFly Agent Platform.",
+  "author": "BlueFly.io",
+  "skills": [
+    "skills/security-scanner.md",
+    "skills/code-reviewer.md",
+    "skills/mr-reviewer.md",
+    "skills/tdd-workflow.md",
+    "skills/openapi-validation.md"
+  ]
+}

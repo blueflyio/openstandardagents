@@ -52,9 +52,9 @@ export class A2AValidator {
 
     if (
       a2aConfig.agent_card &&
-      !a2aConfig.agent_card.agent_uri?.startsWith('agent://')
+      !a2aConfig.agent_card.agent_uri?.startsWith('uadp://')
     ) {
-      errors.push('Agent URI must start with agent://');
+      errors.push('Agent URI must start with uadp://');
     }
 
     if (a2aConfig.handoff_protocol && !a2aConfig.service_discovery?.enabled) {

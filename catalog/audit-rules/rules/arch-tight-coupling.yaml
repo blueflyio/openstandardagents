@@ -1,0 +1,12 @@
+id: arch-tight-coupling
+description: "Direct class instantiation instead of dependency injection creates tight coupling."
+severity: warning
+dimension: architecture
+anti_pattern:
+  type: regex
+  pattern: "new\\s+(\\w+Service|\\w+Manager|\\w+Handler|\\w+Repository|\\w+Client)\\("
+  flags: gm
+  path_glob: "**/*.php"
+fix_suggestion: "Use dependency injection via constructor parameters and register services in *.services.yml."
+target_languages: [php]
+tags: [architecture, dependency-injection, solid, drupal]

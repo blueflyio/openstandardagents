@@ -25,7 +25,7 @@ async function examplePubSub() {
 
   // Define security scanner agent
   const securityAgent: AgentCard = {
-    uri: 'agent://security/scanner',
+    uri: 'uadp://security/scanner',
     name: 'Security Scanner',
     version: '1.0.0',
     ossaVersion: '0.3.0',
@@ -43,7 +43,7 @@ async function examplePubSub() {
 
   // Define monitoring agent
   const monitoringAgent: AgentCard = {
-    uri: 'agent://observability/monitor',
+    uri: 'uadp://observability/monitor',
     name: 'Monitoring Agent',
     version: '1.0.0',
     ossaVersion: '0.3.0',
@@ -120,7 +120,7 @@ async function exampleRequestResponse() {
 
   // Define code analyzer agent
   const analyzerAgent: AgentCard = {
-    uri: 'agent://code/analyzer',
+    uri: 'uadp://code/analyzer',
     name: 'Code Analyzer',
     version: '1.0.0',
     ossaVersion: '0.3.0',
@@ -138,7 +138,7 @@ async function exampleRequestResponse() {
 
   // Define orchestrator agent
   const orchestratorAgent: AgentCard = {
-    uri: 'agent://orchestrator/main',
+    uri: 'uadp://orchestrator/main',
     name: 'Orchestrator',
     version: '1.0.0',
     ossaVersion: '0.3.0',
@@ -205,7 +205,7 @@ async function exampleRequestResponse() {
   // Invoke command from orchestrator
   console.log('📞 Orchestrator invoking code analysis...\n');
   const result = await orchestratorClient.invokeCommand(
-    'agent://code/analyzer',
+    'uadp://code/analyzer',
     'analyze_code',
     {
       repository: 'https://github.com/org/repo',
@@ -234,7 +234,7 @@ async function exampleWorkflow() {
 
   // Define agents
   const validatorAgent: AgentCard = {
-    uri: 'agent://validation/config',
+    uri: 'uadp://validation/config',
     name: 'Config Validator',
     version: '1.0.0',
     ossaVersion: '0.3.0',
@@ -246,7 +246,7 @@ async function exampleWorkflow() {
   };
 
   const deployerAgent: AgentCard = {
-    uri: 'agent://deployment/deployer',
+    uri: 'uadp://deployment/deployer',
     name: 'Deployer',
     version: '1.0.0',
     ossaVersion: '0.3.0',
@@ -258,7 +258,7 @@ async function exampleWorkflow() {
   };
 
   const monitorAgent: AgentCard = {
-    uri: 'agent://observability/monitor',
+    uri: 'uadp://observability/monitor',
     name: 'Monitor',
     version: '1.0.0',
     ossaVersion: '0.3.0',
@@ -344,7 +344,7 @@ async function exampleBroadcast() {
 
   // Define orchestrator
   const orchestrator: AgentCard = {
-    uri: 'agent://orchestrator/main',
+    uri: 'uadp://orchestrator/main',
     name: 'Orchestrator',
     version: '1.0.0',
     ossaVersion: '0.3.0',
@@ -357,7 +357,7 @@ async function exampleBroadcast() {
 
   // Define workers
   const worker1: AgentCard = {
-    uri: 'agent://workers/worker-1',
+    uri: 'uadp://workers/worker-1',
     name: 'Worker 1',
     version: '1.0.0',
     ossaVersion: '0.3.0',
@@ -369,7 +369,7 @@ async function exampleBroadcast() {
   };
 
   const worker2: AgentCard = {
-    uri: 'agent://workers/worker-2',
+    uri: 'uadp://workers/worker-2',
     name: 'Worker 2',
     version: '1.0.0',
     ossaVersion: '0.3.0',

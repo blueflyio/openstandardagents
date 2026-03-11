@@ -1,0 +1,23 @@
+{
+  "apiVersion": "ossa/v0.5",
+  "identity": {
+    "gaid": "agent://bluefly.io/plugins/drupal",
+    "name": "bluefly-drupal",
+    "description": "Drupal-specific workflows and standards plugin for BlueFly Agent Platform. Includes module scaffolding, recipes, and coding standards.",
+    "homepage": "https://blueflyagents.com",
+    "repository": "https://gitlab.com/blueflyio/agent-platform/plugins/drupal"
+  },
+  "capabilities": {
+    "discovery": true,
+    "drupal": true,
+    "mcp": true
+  },
+  "protocols": {
+    "duadp": {
+      "node": "https://discover.duadp.org"
+    }
+  },
+  "schemas": {
+    "plugin": "https://blueflyagents.com/schemas/v1/plugin.json"
+  }
+}

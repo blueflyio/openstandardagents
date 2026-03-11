@@ -1,0 +1,12 @@
+id: arch-long-method
+description: "Methods with more than 50 lines are difficult to understand and test."
+severity: info
+dimension: architecture
+anti_pattern:
+  type: regex
+  pattern: "(public|protected|private)\\s+function\\s+\\w+\\([^)]*\\)[^{]*\\{[\\s\\S]{2000,}?\\n\\s{2,4}\\}"
+  flags: gm
+  path_glob: "**/*.php"
+fix_suggestion: "Extract logic into smaller, well-named private methods or service calls."
+target_languages: [php]
+tags: [architecture, readability, code-quality]

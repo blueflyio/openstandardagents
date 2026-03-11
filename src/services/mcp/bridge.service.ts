@@ -87,6 +87,37 @@ export class McpBridgeService {
     return registryPath;
   }
 
+  private saveToolManifest(workspaceDir: string, server: OssaMcpServerEntry) {
+    const toolsDir = path.join(workspaceDir, '.agents-workspace', 'tools');
+    if (!fs.existsSync(toolsDir)) {
+      fs.mkdirSync(toolsDir, { recursive: true });
+    }
+
+    const manifest = {
+      apiVersion: 'ossa.dev/v0.5',
+      kind: 'Tool',
+      metadata: {
+        name: server.name,
+        description: `Imported MCP server from ${server.source}`,
+        trust_tier: 'experimental',
+        created: server.importedAt,
+      },
+      spec: {
+        protocol: 'mcp',
+        endpoint: {
+          transport: server.transport,
+          command: server.command,
+          args: server.args,
+          url: server.url,
+        },
+        capabilities: server.tools ?? [],
+      },
+    };
+
+    const filePath = path.join(toolsDir, `${server.name}.yaml`);
+    fs.writeFileSync(filePath, yaml.dump(manifest, { lineWidth: -1 }), 'utf8');
+  }
+
   /**
    * Use @modelcontextprotocol/sdk Client to connect to a stdio server and list its tools.
    * Returns an empty array if connection fails (non-fatal — import still proceeds).
@@ -167,6 +198,10 @@ export class McpBridgeService {
 
     const merged = [...existing, ...newEntries];
     const registryPath = this.saveRegistry(dir, merged);
+
+    for (const entry of newEntries) {
+      this.saveToolManifest(dir, entry);
+    }
 
     return { action: 'sync', source, serversFound: parsed.length, serversImported: newEntries.length, registryPath, servers: newEntries };
   }

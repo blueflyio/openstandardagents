@@ -1,0 +1,12 @@
+id: arch-no-srp
+description: "Classes handling multiple unrelated responsibilities violate Single Responsibility Principle."
+severity: warning
+dimension: architecture
+anti_pattern:
+  type: regex
+  pattern: "class\\s+\\w+[^{]*\\{[^}]*(public\\s+function\\s+){10,}"
+  flags: gms
+  path_glob: "**/*.php"
+fix_suggestion: "Split class into focused classes, each handling a single responsibility."
+target_languages: [php]
+tags: [architecture, solid, code-quality]

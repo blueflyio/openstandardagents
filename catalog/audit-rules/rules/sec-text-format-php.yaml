@@ -1,0 +1,12 @@
+id: sec-text-format-php
+description: "PHP code filter enabled in text format configuration allows arbitrary code execution."
+severity: error
+dimension: security
+anti_pattern:
+  type: regex
+  pattern: "php_code|filter_php"
+  flags: gm
+  path_glob: "**/*.{yml,yaml}"
+fix_suggestion: "Remove PHP code text filter entirely. Use custom plugins, hooks, or Twig templates for dynamic content."
+target_languages: [yaml]
+tags: [security, drupal, text-formats, code-execution]

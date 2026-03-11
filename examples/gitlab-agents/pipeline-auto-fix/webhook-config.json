@@ -1,5 +1,5 @@
 {
-  "url": "http://mesh.blueflyagents.com/webhook/pipeline-auto-fix",
+  "url": "http://your-mesh-registry.example.com/webhook/pipeline-auto-fix",
   "token": "${WEBHOOK_SECRET}",
   "enable_ssl_verification": false,
   "push_events": false,

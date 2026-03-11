@@ -111,8 +111,8 @@ components:
             agentId:
               type: string
               format: uri
-              description: Agent URI (agent://domain/agent-id)
-              example: agent://example.com/supercali-fragilisticagent
+              description: Agent URI (uadp://domain/agent-id)
+              example: uadp://example.com/supercali-fragilisticagent
             capabilities:
               type: array
               items:
@@ -353,7 +353,7 @@ components:
           type: string
           format: uri
           description: Agent URI of sender
-          example: agent://example.com/supercali-fragilisticagent
+          example: uadp://example.com/supercali-fragilisticagent
         correlationId:
           type: string
           format: uuid

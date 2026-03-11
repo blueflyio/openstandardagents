@@ -291,7 +291,7 @@ export class DelegationService {
         id: 'consumer',
         namespace: 'default',
         name: 'consumer',
-        uri: 'agent://default/consumer',
+        uri: 'uadp://default/consumer',
         capabilities: [],
         version: '1.0.0',
       },

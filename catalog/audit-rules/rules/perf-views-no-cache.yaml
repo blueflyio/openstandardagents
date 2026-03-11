@@ -1,0 +1,12 @@
+id: perf-views-no-cache
+description: "Views with caching disabled cause repeated expensive queries on every page load."
+severity: warning
+dimension: performance
+anti_pattern:
+  type: regex
+  pattern: "cache:\\s*\\n\\s+type:\\s+none"
+  flags: gm
+  path_glob: "**/*.views.yml"
+fix_suggestion: "Set Views caching to 'tag' or 'time' based caching. Only disable cache during development."
+target_languages: [yaml]
+tags: [performance, caching, views, drupal]

@@ -1,5 +1,10 @@
 # src/ — TypeScript source code
 
+## Task intake (required)
+
+- If a request is ambiguous or truncated, ask one concise clarification question and continue once clarified.
+- Minimum required details for any update request: (1) target file/path (or module/component), (2) exact change requested, (3) success criteria/expected result.
+
 ## Structure
 
 - `adapters/` — 20+ platform export adapters (BaseAdapter pattern)

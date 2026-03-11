@@ -42,7 +42,7 @@ extensions:
       namespace: kagent
     mcpServers:
       gitlab-mcp:
-        url: https://mcp.blueflyagents.com/api/mcp/sse
+        url: https://your-mcp-server.example.com/api/mcp/sse
         transport: sse
       grafana-mcp:
         url: http://grafana-mcp.kagent.svc.cluster.local/sse

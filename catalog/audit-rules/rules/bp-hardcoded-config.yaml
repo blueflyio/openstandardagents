@@ -1,0 +1,12 @@
+id: bp-hardcoded-config
+description: "Hardcoded configuration values instead of using Drupal's config system."
+severity: warning
+dimension: best-practices
+anti_pattern:
+  type: regex
+  pattern: "(define\\(|const\\s+\\w+\\s*=\\s*)['\"]https?://|['\"]smtp\\.|['\"]api_key['\"]\\s*=>"
+  flags: gm
+  path_glob: "**/*.{php,module,inc}"
+fix_suggestion: "Store configurable values in config/install/*.yml and access via \\Drupal::config() or injected config factory."
+target_languages: [php]
+tags: [best-practices, config, drupal]

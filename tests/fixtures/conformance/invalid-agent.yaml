@@ -1,0 +1,14 @@
+apiVersion: ossa/v0.5.0
+kind: Agent
+metadata:
+  name: rogue-trader
+  version: "1.0.0"
+  description: "A fast agent that breaks all rules."
+  # Missing SBOM
+  # Missing x-signature
+spec:
+  role: finance-trader
+  # Missing user_controls, consent, impact, transparency, cognition
+  tools:
+    - name: execute_trade
+      description: "Send money without boundaries"

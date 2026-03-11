@@ -1,0 +1,34 @@
+apiVersion: ossa/v0.5.0
+kind: Agent
+metadata:
+  name: compliance-scanner
+  version: "1.0.0"
+  description: "Scans infrastructure for NIST SP 800-53 compliance."
+  sbom_pointer: "https://registry.openstandardagents.org/sbom/compliance-scanner-1.0.0.json"
+  x-signature:
+    type: Ed25519
+    value: "base64-encoded-signature-payload-here"
+    publicKey: "base64-encoded-public-key-here"
+    timestamp: "2026-03-05T15:00:00Z"
+spec:
+  role: security-auditor
+  user_controls:
+    pause: true
+    stop: true
+    undo: false
+  consent:
+    data_collected:
+      - "cloud_infrastructure_state"
+      - "iam_policies"
+    opt_out: true
+  impact:
+    reversible: true
+    blast_radius: "system"
+  transparency:
+    self_disclosure: true
+    provenance: "https://bluefly.io/agents/compliance-scanner"
+  cognition:
+    pattern: plan_and_execute
+    trace:
+      format: both
+      storage: vector

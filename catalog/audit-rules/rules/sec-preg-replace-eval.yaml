@@ -1,0 +1,12 @@
+id: sec-preg-replace-eval
+description: "Using preg_replace with /e modifier executes matched string as PHP code."
+severity: error
+dimension: security
+anti_pattern:
+  type: regex
+  pattern: "preg_replace\\s*\\(\\s*[\"'][^\"']*\\/e[\"'imsxuADSUXJ]*\\s*,"
+  flags: gm
+  path_glob: "**/*.{php,module,inc,install}"
+fix_suggestion: "Use preg_replace_callback() instead. The /e modifier was removed in PHP 7.0."
+target_languages: [php]
+tags: [security, code-injection, regex]

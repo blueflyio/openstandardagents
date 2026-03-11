@@ -19,33 +19,32 @@ import { Command } from 'commander';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'yaml';
-import { getConfigValue } from '../../config/cli-config.js';
-import { marketplaceSkillsCatalog } from '../../data/marketplace-skills-catalog.js';
-import { container } from '../../di-container.js';
 import { IdCardService } from '../../services/id-card.service.js';
-import { SkillsInstallService } from '../../services/skills-pipeline/index.js';
 import type { OssaAgent } from '../../types/index';
 import { getVersion } from '../../utils/version.js';
 import {
-    printBanner,
-    printCompletion,
-    printError,
-    printInfo,
-    printProgress,
-    printStep,
-    printSuccess,
-    printWarning,
-    printWizardBanner,
+  printBanner,
+  printCompletion,
+  printError,
+  printInfo,
+  printProgress,
+  printStep,
+  printSuccess,
+  printWarning,
+  printWizardBanner,
 } from '../banner.js';
 import {
-    SchemaLoader,
-    UIGenerator,
-    initializeAPIsFirst,
-    inquirer,
+  SchemaLoader,
+  UIGenerator,
+  initializeAPIsFirst,
+  inquirer,
 } from '../schema-driven/index.js';
+import { container } from '../../di-container.js';
+import { SkillsInstallService } from '../../services/skills-pipeline/index.js';
+import { marketplaceSkillsCatalog } from '../../data/marketplace-skills-catalog.js';
 import type {
-    ExportConfig,
-    ExportPlatform,
+  ExportConfig,
+  ExportPlatform,
 } from './types/wizard-config.types.js';
 
 // Initialize API-First infrastructure
@@ -475,13 +474,10 @@ class APIFirstWizard {
     }
 
     const marketplacePath =
-      getConfigValue('SKILLS_PATH') ||
-      getConfigValue('BLUEFLY_SKILLS_PATH') ||
-      (process.platform === 'darwin'
-        ? '/Volumes/AgentPlatform/services/marketplace/skills'
-        : process.env.HOME
-          ? `${process.env.HOME}/.ossa/skills`
-          : path.join(process.cwd(), 'skills'));
+      process.env.OSSA_SKILLS_PATH ||
+      (process.env.HOME
+        ? `${process.env.HOME}/.ossa/skills`
+        : path.join(process.cwd(), 'skills'));
 
     const { skillSource } = await inquirer.prompt([
       {
@@ -541,9 +537,10 @@ class APIFirstWizard {
       }
     } else if (skillSource === 'catalog') {
       const catalogDefault =
-        getConfigValue('BLUEFLY_SKILLS_CATALOG') ||
         process.env.BLUEFLY_SKILLS_CATALOG ||
-        (process.env.HOME ? `${process.env.HOME}/.ossa/marketplace-skills-catalog.json` : '');
+        (process.env.HOME
+          ? `${process.env.HOME}/.ossa/marketplace-skills-catalog.json`
+          : '');
       const { catalogPath, targetPath } = await inquirer.prompt([
         {
           type: 'input',
@@ -1233,6 +1230,13 @@ class APIFirstWizard {
     }
 
     printSuccess('All files generated successfully');
+
+    console.log('');
+    console.log('Next steps:');
+    console.log(`  1. Validate: ossa validate ${outputPath}`);
+    console.log(`  2. Score:    ossa lifecycle score ${outputPath}`);
+    console.log(`  3. Export:   ossa export ${outputPath} --platform docker`);
+    console.log(`  4. Register: ossa lifecycle duadp-register <name>`);
   }
 
   private generateAgentsMd(directory: string): void {

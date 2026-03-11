@@ -12,7 +12,7 @@ import { MCPIntegrationService, MCPMessageType } from '../mcp-integration.js';
 function createTestAgent(name: string, namespace: string): AgentIdentity {
   return {
     id: crypto.randomUUID(),
-    uri: `agent://${namespace}/${name}`,
+    uri: `uadp://${namespace}/${name}`,
     name,
     namespace,
     capabilities: ['test'],

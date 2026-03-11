@@ -1,0 +1,12 @@
+id: arch-too-many-params
+description: "Functions with more than 5 parameters indicate a need for parameter objects."
+severity: info
+dimension: architecture
+anti_pattern:
+  type: regex
+  pattern: "function\\s+\\w+\\(\\s*[^)]*,\\s*[^)]*,\\s*[^)]*,\\s*[^)]*,\\s*[^)]*,\\s*[^)]*\\)"
+  flags: gm
+  path_glob: "**/*.php"
+fix_suggestion: "Group related parameters into a value object or configuration class."
+target_languages: [php]
+tags: [architecture, readability, code-quality]

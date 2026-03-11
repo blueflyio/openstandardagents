@@ -1,0 +1,12 @@
+id: seo-missing-og
+description: "Pages without Open Graph meta tags display poorly when shared on social media."
+severity: info
+dimension: seo
+anti_pattern:
+  type: regex
+  pattern: "<head>[^]*?</head>(?!.*property=['\"]og:)"
+  flags: gims
+  path_glob: "**/*.{html.twig,twig,htm,html}"
+fix_suggestion: "Add Open Graph meta tags (og:title, og:description, og:image) or configure Metatag module's Open Graph submodule."
+target_languages: [twig, html]
+tags: [seo, open-graph, social, drupal]

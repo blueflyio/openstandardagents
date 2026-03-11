@@ -1,0 +1,12 @@
+id: perf-no-render-cache
+description: "Custom blocks missing render cache metadata are rebuilt on every request."
+severity: warning
+dimension: performance
+anti_pattern:
+  type: regex
+  pattern: "function\\s+build\\(\\)\\s*\\{[^}]*return\\s+\\[(?:(?!#cache).)*\\]"
+  flags: gms
+  path_glob: "**/*.{php,module}"
+fix_suggestion: "Add '#cache' => ['tags' => [...], 'contexts' => [...], 'max-age' => ...] to block build() return arrays."
+target_languages: [php]
+tags: [performance, caching, blocks, drupal]

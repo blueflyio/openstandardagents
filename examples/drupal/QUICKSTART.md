@@ -422,13 +422,27 @@ Response → Entity Storage → Views
 - **Issues**: https://gitlab.com/blueflyio/ossa/openstandardagents/-/issues
 - **OSSA Spec**: https://openstandardagents.org/
 
+## Example: AgentScope ReAct Assistant
+
+A complete Drupal module integrating [AgentScope](https://github.com/modelscope/agentscope) ReAct agents:
+
+```bash
+# Copy to Drupal
+cp -r examples/drupal/ai_agents_agentscope /path/to/drupal/web/modules/custom/
+drush en ai_agents_agentscope
+drush cr
+```
+
+See [`ai_agents_agentscope/README.md`](./ai_agents_agentscope/README.md) for details.
+
 ## Next Steps
 
 1. Read the [full documentation](../../docs/adapters/drupal-module-generator.md)
 2. Try the [content moderator example](./content-moderator.ossa.yaml)
-3. Create your own agent manifests
-4. Generate and deploy modules
-5. Share your agents with the community
+3. Try the [AgentScope example](./ai_agents_agentscope/)
+4. Create your own agent manifests
+5. Generate and deploy modules
+6. Share your agents with the community
 
 ---
 

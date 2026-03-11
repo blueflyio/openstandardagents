@@ -1,0 +1,12 @@
+id: arch-mixed-layers
+description: "Mixing presentation and data access in the same class violates separation of concerns."
+severity: warning
+dimension: architecture
+anti_pattern:
+  type: regex
+  pattern: "class\\s+\\w+[^{]*\\{[^}]*(->query|->select|->condition)[^}]*(#markup|#theme|Markup::create)"
+  flags: gms
+  path_glob: "**/*.php"
+fix_suggestion: "Separate data access (repositories/services) from presentation (templates/render arrays)."
+target_languages: [php]
+tags: [architecture, separation-of-concerns, drupal]

@@ -47,6 +47,7 @@ import { lintCommand } from './commands/lint.command.js';
 import { llmsTxtCommand } from './commands/llms-txt.command.js';
 import { migrateBatchCommand } from './commands/migrate-batch.command.js';
 import { migrateCommand } from './commands/migrate.command.js';
+import { policyCommand } from './commands/policy.command.js';
 import { publishCommand } from './commands/publish.command.js';
 import { quickstartCommand } from './commands/quickstart.command.js';
 import { registryCommand } from './commands/registry.command.js';
@@ -54,6 +55,7 @@ import { runCommand } from './commands/run.command.js';
 import { scaffoldCommand } from './commands/scaffold.command.js';
 import { schemaCommand } from './commands/schema.command.js';
 import { searchCommand } from './commands/search.command.js';
+import { signCommand } from './commands/sign.command.js';
 import { standardizeCommand } from './commands/standardize.command.js';
 import { testCommand } from './commands/test.command.js';
 import { updateCommand } from './commands/update.command.js';
@@ -83,6 +85,9 @@ import { frameworkCommand } from './commands/framework.command.js';
 import { langchainCommand } from './commands/langchain.command.js';
 import { langflowCommand } from './commands/langflow.command.js';
 
+// Lifecycle & curation commands
+import { createLifecycleCommand } from './commands/lifecycle.command.js';
+
 // Additional commands (previously unregistered)
 import { agentWizardCommand } from './commands/agent-wizard.command.js';
 import { docsCommand } from './commands/docs.command.js';
@@ -92,11 +97,11 @@ import { knowledgeCommandGroup } from './commands/knowledge.command.js';
 import { platformsCommand } from './commands/platforms.command.js';
 // Note: knowledge-index and knowledge-query are subcommands within knowledgeCommandGroup
 import { createAuditCommand } from './commands/audit.js';
+import { daemonCommand } from './commands/daemon.command.js';
 import { devCommand } from './commands/dev.command.js';
 import { estimateCommand } from './commands/estimate.command.js';
 import { migrateLangchainCommand } from './commands/migrate-langchain.command.js';
 import { releaseCommand } from './commands/release.command.js';
-import { daemonCommand } from './commands/daemon.command.js';
 import { serveCommand } from './commands/serve.command.js';
 import { syncCommand } from './commands/sync.command.js';
 import { upgradeCommand } from './commands/upgrade.command.js';
@@ -245,11 +250,12 @@ program.addCommand(installCommand);
 program.addCommand(updateCommand);
 program.addCommand(searchCommand);
 
-// --- Deployment ---
+// --- Deployment & Lifecycle ---
 program.addCommand(deployCommand);
 program.addCommand(statusCommand);
 program.addCommand(rollbackCommand);
 program.addCommand(stopCommand);
+program.addCommand(createLifecycleCommand());
 
 // --- Documentation ---
 program.addCommand(agentsMdCommand);
@@ -271,6 +277,8 @@ program.addCommand(conformanceCommand);
 program.addCommand(complianceCommand);
 program.addCommand(governanceCommand);
 program.addCommand(contractCommand);
+program.addCommand(signCommand);
+program.addCommand(policyCommand);
 
 // --- Advanced (hidden from main --help, still fully accessible) ---
 for (const cmd of [
@@ -319,9 +327,10 @@ program.addHelpText(
   Dev:        generate, daemon, dev, serve, run, test
   Distribute: publish, install, update, search
   Deploy:     deploy, status, rollback, stop
+  Lifecycle:  lifecycle (score, review, approve, reject, deprecate, archive, catalog, duadp-sync)
   Docs:       agents-md, llms-txt, docs
   Skills:     skills, template
-  Compliance: conformance, compliance, governance, contract
+  Compliance: conformance, compliance, governance, contract, policy
   More:       platforms (matrix: GitLab, Drupal, kagent, OpenAI, Claude, etc.),
               quickstart, import, enhance, registry, migrate-batch, langchain, langflow.
 `

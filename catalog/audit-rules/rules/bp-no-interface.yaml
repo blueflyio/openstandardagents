@@ -1,0 +1,12 @@
+id: bp-no-interface
+description: "Services without interfaces make testing and swapping implementations difficult."
+severity: info
+dimension: best-practices
+anti_pattern:
+  type: regex
+  pattern: "class\\s+\\w+Service\\s*(?:extends\\s+\\w+\\s*)?\\{(?:(?!implements).)*"
+  flags: gms
+  path_glob: "**/*.php"
+fix_suggestion: "Create an interface for each service and reference the interface in services.yml type hints."
+target_languages: [php]
+tags: [best-practices, interfaces, solid, drupal]
