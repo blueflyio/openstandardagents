@@ -1,0 +1,230 @@
+apiVersion: ossa/v0.4.7
+kind: Agent
+metadata:
+  name: security-audit-agent
+  version: 1.0.0
+  description: >-
+    Repository security scanner. Runs static analysis, dependency audits,
+    secret detection, and Dragonfly audit rules against codebases.
+    Reports findings with severity and remediation guidance.
+  labels:
+    use-case: security-audit
+    production-ready: "false"
+    ossa-native: "true"
+  agentType: custom
+  agentKind: specialist
+  identity:
+    namespace: blueflyio/ossa
+    agent_id: security-audit-agent
+    version: 1.0.0
+    publisher:
+      name: BlueFly.io
+      email: agents@bluefly.io
+      website: https://openstandardagents.org
+    created_at: "2026-03-10T12:00:00Z"
+    updated_at: "2026-03-10T12:00:00Z"
+  catalog:
+    published: true
+    visibility: public
+    categories:
+      - security
+      - code-quality
+      - compliance
+    tags:
+      - security
+      - audit
+      - phpstan
+      - phpcs
+      - dragonfly
+      - ossa-native
+
+spec:
+  role: |
+    You are a security audit specialist agent.
+
+    Your mission:
+    1. Scan repositories for vulnerabilities using static analysis tools
+    2. Run PHPStan at strictest levels for type safety issues
+    3. Run PHPCS for coding standard violations
+    4. Execute Dragonfly audit rules for anti-patterns and best practices
+    5. Check for exposed secrets and credentials
+    6. Produce structured reports with severity ratings and remediation steps
+
+    Guidelines:
+    - Never output or log actual secret values
+    - Classify findings by severity: critical, high, medium, low, informational
+    - Provide actionable remediation for each finding
+    - Reference CWE/CVE identifiers where applicable
+    - Map findings to NIST AI RMF and OWASP Top 10 where relevant
+
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    temperature: 0.1
+    max_tokens: 16384
+
+  tools:
+    - type: command
+      name: phpstan_analyze
+      description: Run PHPStan static analysis
+      operation: read
+      command: phpstan analyse
+      parameters:
+        path:
+          type: string
+          description: Path to analyze
+        level:
+          type: number
+          description: Analysis strictness 0-9
+          default: 8
+
+    - type: command
+      name: phpcs_check
+      description: Run PHP CodeSniffer checks
+      operation: read
+      command: phpcs
+      parameters:
+        path:
+          type: string
+          description: Path to check
+        standard:
+          type: string
+          default: Drupal,DrupalPractice
+
+    - type: command
+      name: npm_audit
+      description: Run npm audit for JS/TS dependencies
+      operation: read
+      command: npm audit
+      parameters:
+        path:
+          type: string
+          description: Project path with package.json
+
+    - type: command
+      name: secret_scan
+      description: Scan for exposed secrets and credentials
+      operation: read
+      command: git secrets --scan
+      parameters:
+        path:
+          type: string
+          description: Repository path to scan
+
+    - type: api
+      name: dragonfly_audit
+      description: Run Dragonfly audit rules from catalog
+      operation: read
+      parameters:
+        rule_set:
+          type: string
+          description: Audit rule set (e.g. anti-patterns, best-practices, a11y, seo)
+        target_url:
+          type: string
+          description: URL or path to audit
+
+  capabilities:
+    - name: static-analysis
+      description: PHPStan and PHPCS code analysis
+    - name: dependency-audit
+      description: npm/composer dependency vulnerability checks
+    - name: secret-detection
+      description: Scan for exposed credentials and secrets
+    - name: dragonfly-audit
+      description: Run Dragonfly quality audit rules
+    - name: compliance-mapping
+      description: Map findings to NIST, OWASP, CWE frameworks
+
+  safety:
+    guardrails:
+      - never_output_secrets
+      - read_only_operations
+      - audit_all_actions
+    pii_handling: redact
+    audit_all_actions: true
+    max_cost_per_execution: 0.40
+
+  observability:
+    telemetry:
+      enabled: true
+      export_traces: true
+      export_metrics: true
+
+security:
+  tier: tier_1_read
+  threat_model:
+    - category: information-disclosure
+      severity: critical
+      mitigations:
+        - output-filtering
+        - secret-redaction
+      description: Must never expose secrets found during scanning
+  capabilities:
+    required:
+      - filesystem-read
+      - network-outbound
+      - process-spawn
+      - tool-execution
+    optional:
+      - browser
+  sandboxing:
+    required: true
+    type: container
+    resource_limits:
+      max_memory_mb: 2048
+      max_cpu_cores: 2
+      max_execution_seconds: 600
+  network_access:
+    allowed_domains:
+      - "registry.npmjs.org"
+      - "packagist.org"
+      - "api.anthropic.com"
+      - "nvd.nist.gov"
+    protocols:
+      - https
+    egress_policy: allow-list
+  data_classification: confidential
+  audit:
+    log_inputs: true
+    log_outputs: false
+    log_tool_calls: true
+    retention_days: 365
+
+protocols:
+  mcp:
+    role: client
+    transport: stdio
+    capabilities:
+      tools: true
+      resources: true
+    servers:
+      - name: dragonfly
+        command: dragonfly
+        description: Dragonfly audit engine for quality rules
+  a2a:
+    role: server
+    endpoint: /agents/security-audit-agent
+    skills:
+      - name: audit-repository
+        description: Run a full security audit on a repository
+        input_schema:
+          type: object
+          properties:
+            repo_path:
+              type: string
+            audit_level:
+              type: string
+              enum:
+                - quick
+                - standard
+                - deep
+          required:
+            - repo_path
+
+governance:
+  cedar_policy_set: blueflyio/cedar-policies
+  pre_execution_check: true
+  compliance_profiles:
+    - NIST AI RMF 1.0
+    - OWASP Top 10
+    - CWE Top 25

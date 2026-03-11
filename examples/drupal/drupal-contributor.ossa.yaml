@@ -1,0 +1,244 @@
+apiVersion: ossa/v0.4.7
+kind: Agent
+metadata:
+  name: drupal-contributor
+  version: 1.0.0
+  description: >-
+    Autonomous Drupal issue contributor. Discovers issues on Drupal.org,
+    analyzes discussions, implements patches, pushes merge requests, and
+    monitors CI pipelines. The first OSSA-native development agent.
+  labels:
+    use-case: open-source-contribution
+    drupal-version: "11"
+    production-ready: "false"
+    ossa-native: "true"
+  agentType: custom
+  agentKind: worker
+  identity:
+    namespace: blueflyio/ossa
+    agent_id: drupal-contributor
+    version: 1.0.0
+    publisher:
+      name: BlueFly.io
+      email: agents@bluefly.io
+      website: https://openstandardagents.org
+    created_at: "2026-03-10T12:00:00Z"
+    updated_at: "2026-03-10T12:00:00Z"
+  catalog:
+    published: true
+    visibility: public
+    categories:
+      - development
+      - open-source
+      - drupal
+    tags:
+      - drupal
+      - contributor
+      - issue-fixing
+      - merge-request
+      - ci-monitoring
+      - ossa-native
+
+spec:
+  role: |
+    You are an autonomous Drupal open-source contributor agent.
+
+    Your mission:
+    1. Discover open issues on Drupal.org via the drupalorg-cli
+    2. Analyze issue discussions and existing patches
+    3. Implement fixes following Drupal coding standards
+    4. Run static analysis (PHPStan, PHPCS) before pushing
+    5. Create merge requests on GitLab
+    6. Monitor CI pipeline results and iterate
+
+    Guidelines:
+    - Follow Drupal coding standards strictly
+    - Write tests for all changes
+    - Keep patches minimal and focused
+    - Provide clear commit messages referencing the issue
+    - Respect human reviewer feedback
+
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    temperature: 0.2
+    max_tokens: 8192
+
+  tools:
+    - type: command
+      name: drupal_issue_context
+      description: Fetch issue details and discussion from Drupal.org
+      operation: read
+      command: drupalorg issue:show
+      parameters:
+        issue_id:
+          type: string
+          description: Drupal.org issue ID (e.g. 3456789)
+
+    - type: function
+      name: drupal_issue_checkout
+      description: Checkout issue branch for local development
+      operation: write
+      command: drupalorg issue:checkout
+      parameters:
+        issue_id:
+          type: string
+          description: Drupal.org issue ID to checkout
+
+    - type: function
+      name: drupal_mr_diff
+      description: Show merge request diff for review
+      operation: read
+      command: drupalorg mr:diff
+      parameters:
+        mr_id:
+          type: string
+          description: Merge request ID on Drupal.org GitLab
+
+    - type: function
+      name: phpstan_analyze
+      description: Run PHPStan static analysis on changed files
+      operation: read
+      command: phpstan analyse
+      parameters:
+        path:
+          type: string
+          description: Path to analyze (file or directory)
+        level:
+          type: number
+          description: Analysis level 0-9
+          default: 6
+
+    - type: command
+      name: phpcs_check
+      description: Run PHP CodeSniffer with Drupal coding standards
+      operation: read
+      command: phpcs
+      parameters:
+        path:
+          type: string
+          description: Path to check
+        standard:
+          type: string
+          description: Coding standard to use
+          default: Drupal,DrupalPractice
+
+    - type: command
+      name: git_push_mr
+      description: Stage, commit, and push changes to create a merge request
+      operation: write
+      command: git
+      parameters:
+        message:
+          type: string
+          description: Commit message referencing the issue
+        branch:
+          type: string
+          description: Target branch for the merge request
+
+  capabilities:
+    - name: issue-analysis
+      description: Analyze Drupal.org issue context and patches
+    - name: code-implementation
+      description: Implement fixes following Drupal standards
+    - name: static-analysis
+      description: Run PHPStan and PHPCS checks
+    - name: merge-request-creation
+      description: Create and manage GitLab merge requests
+    - name: ci-monitoring
+      description: Monitor CI pipeline results
+
+  safety:
+    guardrails:
+      - no_production_deploys
+      - human_review_required_before_merge
+      - follow_drupal_coding_standards
+      - audit_all_actions
+    pii_handling: none
+    audit_all_actions: true
+    max_cost_per_execution: 0.50
+
+  observability:
+    telemetry:
+      enabled: true
+      export_traces: true
+      export_metrics: true
+
+security:
+  tier: tier_2_write_limited
+  threat_model:
+    - category: prompt-injection
+      severity: medium
+      mitigations:
+        - input-validation
+        - output-filtering
+      description: Issue text from Drupal.org could contain adversarial content
+    - category: supply-chain
+      severity: high
+      mitigations:
+        - dependency-scanning
+        - code-review
+      description: Patches must be reviewed before merge
+  capabilities:
+    required:
+      - filesystem-read
+      - filesystem-write
+      - network-outbound
+      - process-spawn
+      - tool-execution
+    optional:
+      - browser
+  sandboxing:
+    required: true
+    type: container
+    resource_limits:
+      max_memory_mb: 2048
+      max_cpu_cores: 2
+      max_execution_seconds: 600
+      max_disk_mb: 1024
+  network_access:
+    allowed_domains:
+      - "*.drupal.org"
+      - "*.drupalcode.org"
+      - "gitlab.com"
+      - "api.anthropic.com"
+    protocols:
+      - https
+    egress_policy: allow-list
+  data_classification: internal
+  audit:
+    log_inputs: true
+    log_outputs: true
+    log_tool_calls: true
+    retention_days: 90
+
+protocols:
+  mcp:
+    role: client
+    transport: stdio
+    capabilities:
+      tools: true
+      resources: true
+    servers:
+      - name: drupalorg-cli
+        command: drupalorg
+        description: Drupal.org CLI for issue management
+  a2a:
+    role: server
+    endpoint: /agents/drupal-contributor
+    skills:
+      - name: fix-drupal-issue
+        description: Analyze and fix a Drupal.org issue
+        input_schema:
+          type: object
+          properties:
+            issue_id:
+              type: string
+          required:
+            - issue_id
+
+governance:
+  cedar_policy_set: blueflyio/cedar-policies
+  pre_execution_check: true
+  compliance_profiles:
+    - NIST AI RMF 1.0
