@@ -11,7 +11,7 @@ import {
   checkParseSchema,
   type CheckParseAnswer,
   type DetailedError,
-} from '@cedar-policy/cedar-wasm';
+} from '@cedar-policy/cedar-wasm/nodejs';
 
 export interface CedarValidationResult {
   valid: boolean;
