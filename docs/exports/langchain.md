@@ -56,7 +56,7 @@ from agent import MyAgent
 agent = MyAgent(
     model="claude-3-5-sonnet-20241022",
     temperature=0.7,
-    api_key="your-api-key"
+    api_key="SET_API_KEY"
 )
 
 # Execute

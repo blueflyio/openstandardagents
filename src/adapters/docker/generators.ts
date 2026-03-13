@@ -746,7 +746,7 @@ REDIS_PASSWORD=
 # LLM Configuration
 LLM_PROVIDER=${llm?.provider || 'anthropic'}
 LLM_MODEL=${llm?.model || 'claude-sonnet-3-5'}
-LLM_API_KEY=your-api-key-here
+LLM_API_KEY=SET_API_KEY
 LLM_MAX_TOKENS=${llm?.maxTokens || 4000}
 LLM_TEMPERATURE=${llm?.temperature || 0.7}
 
@@ -756,7 +756,7 @@ METRICS_PORT=9090
 
 # Security
 JWT_SECRET=generate-a-secure-random-secret
-API_KEY=your-api-key-here
+API_KEY=SET_API_KEY
 
 # OSSA Configuration
 OSSA_VERSION=${manifest.apiVersion}

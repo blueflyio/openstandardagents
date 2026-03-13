@@ -856,7 +856,7 @@ CMD ["node", "dist/index.js"]
 
     let env = '# GitLab Agent Environment Variables\n\n';
     env += '# GitLab Configuration\n';
-    env += 'GITLAB_API_TOKEN=glpat-your-token-here\n';
+    env += 'GITLAB_API_TOKEN=SET_GITLAB_PAT_TOKEN\n';
     env += 'GITLAB_API_URL=https://gitlab.com/api/v4\n';
     env += 'WEBHOOK_SECRET=your-webhook-secret\n\n';
 

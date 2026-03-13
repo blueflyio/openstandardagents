@@ -93,7 +93,7 @@ class HttpSinkConfig(BaseModel):
         json_schema_extra = {
             "example": {
                 "url": "https://events.example.com/webhook",
-                "headers": {"Authorization": "Bearer token123"},
+                "headers": {"Authorization": "Bearer TEST_BEARER_TOKEN"},
                 "timeout": 30,
                 "mode": "structured",
             }
@@ -112,7 +112,7 @@ class HttpSink(CloudEventsSink):
         >>> from ossa.events import CloudEventsEmitter, HttpSink
         >>> sink = HttpSink(
         ...     url="https://events.example.com/webhook",
-        ...     headers={"Authorization": "Bearer token123"},
+        ...     headers={"Authorization": "Bearer TEST_BEARER_TOKEN"},
         ...     mode="structured"
         ... )
         >>> emitter = CloudEventsEmitter(source="ossa/my-agent", sink=sink)

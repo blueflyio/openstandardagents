@@ -11,7 +11,7 @@ async function main() {
   const token = process.env.OSSA_TOKEN;
   if (!token) {
     console.error('❌ Error: OSSA_TOKEN environment variable is required');
-    console.error('   Run: export OSSA_TOKEN=ossa_tok_xxx');
+    console.error('   Run: export OSSA_TOKEN=SET_OSSA_BEARER_TOKEN');
     process.exit(1);
   }
 

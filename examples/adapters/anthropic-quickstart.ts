@@ -53,7 +53,7 @@ main().catch(console.error);
  *    npm install @bluefly/openstandardagents yaml
  *
  * 2. Set your API key:
- *    export ANTHROPIC_API_KEY='your-api-key-here'
+ *    export ANTHROPIC_API_KEY='SET_API_KEY'
  *
  * 3. Run this example:
  *    npx tsx examples/adapters/anthropic-quickstart.ts

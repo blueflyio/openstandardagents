@@ -315,7 +315,7 @@ class TestHttpSink:
 
         sink = HttpSink(
             url="https://events.example.com/webhook",
-            headers={"Authorization": "Bearer token123"},
+            headers={"Authorization": "Bearer TEST_BEARER_TOKEN"},
             mode="structured",
         )
 
@@ -332,7 +332,7 @@ class TestHttpSink:
         mock_post.assert_called_once()
         call_args = mock_post.call_args
         assert call_args[1]["headers"]["Content-Type"] == "application/cloudevents+json"
-        assert call_args[1]["headers"]["Authorization"] == "Bearer token123"
+        assert call_args[1]["headers"]["Authorization"] == "Bearer TEST_BEARER_TOKEN"
         assert call_args[1]["json"]["type"] == "dev.ossa.test"
 
     @patch("requests.post")

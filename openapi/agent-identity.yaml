@@ -79,7 +79,7 @@ paths:
                   agent_id: "data-processor-agent"
                   credential:
                     type: "api_key"
-                    api_key: "ossa_ak_1234567890abcdef1234567890abcdef"
+                    api_key: "SET_OSSA_API_KEY"
                   scope: ["read", "execute"]
                   context:
                     tenant_id: "tenant-123"
