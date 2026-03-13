@@ -4,7 +4,6 @@
  */
 
 import { describe, it, expect, beforeAll } from '@jest/globals';
-import { container } from '../../src/di-container.js';
 import { ValidationService } from '../../src/services/validation.service.js';
 import { ManifestRepository } from '../../src/repositories/manifest.repository.js';
 import { SchemaRepository } from '../../src/repositories/schema.repository.js';
@@ -14,9 +13,9 @@ import * as path from 'path';
 import { API_VERSION } from '../../../src/version.js';
 
 describe('Schema Validation Integration', () => {
-  const validationService = container.get(ValidationService);
-  const manifestRepo = container.get(ManifestRepository);
-  const schemaRepo = container.get(SchemaRepository);
+  const schemaRepo = new SchemaRepository();
+  const validationService = new ValidationService(schemaRepo);
+  const manifestRepo = new ManifestRepository();
   // Use current schema version dynamically from SchemaRepository
   let CURRENT_SCHEMA_VERSION: SchemaVersion;
 

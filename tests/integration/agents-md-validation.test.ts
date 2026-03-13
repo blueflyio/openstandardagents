@@ -4,16 +4,16 @@
  */
 
 import { describe, it, expect } from '@jest/globals';
-import { container } from '../../src/di-container.js';
 import { ValidationService } from '../../src/services/validation.service.js';
 import { ManifestRepository } from '../../src/repositories/manifest.repository.js';
+import { SchemaRepository } from '../../src/repositories/schema.repository.js';
 import * as path from 'path';
 import * as fs from 'fs';
 import { API_VERSION } from '../../src/version.js';
 
 describe('agents.md Extension Integration', () => {
-  const validationService = container.get(ValidationService);
-  const manifestRepo = container.get(ManifestRepository);
+  const validationService = new ValidationService(new SchemaRepository());
+  const manifestRepo = new ManifestRepository();
 
   it('should validate agents_md extension in manifest', async () => {
     const manifest = {
