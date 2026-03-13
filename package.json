@@ -2,9 +2,11 @@
   "name": "@bluefly/openstandardagents",
   "version": "0.5.0",
   "exports": {
-    "./schema": "./spec/v0.4/agent.schema.json",
+    "./schema": "./spec/v0.5/agent.schema.json",
     "./schema/v0.4": "./spec/v0.4/agent.schema.json",
     "./schema/v0.4.1": "./spec/v0.4/agent.schema.json",
+    "./schema/v0.5": "./spec/v0.5/agent.schema.json",
+    "./schema/v0.5.0": "./spec/v0.5/agent.schema.json",
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
@@ -46,7 +48,7 @@
       "import": "./dist/services/agent-card-generator.js",
       "require": "./dist/services/agent-card-generator.js"
     },
-    "./agent-card-schema": "./spec/v0.4/agent-card.schema.json",
+    "./agent-card-schema": "./spec/v0.5/agent-card.schema.json",
     "./sdk": {
       "types": "./dist/sdk.d.ts",
       "import": "./dist/sdk.js",

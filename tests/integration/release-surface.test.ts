@@ -58,6 +58,11 @@ describe('Release surface', () => {
   it('keeps release-facing docs aligned with the current release', () => {
     const readme = fs.readFileSync(path.join(rootDir, 'README.md'), 'utf8');
     const llms = fs.readFileSync(path.join(rootDir, 'llms.txt'), 'utf8');
+    const packageJson = JSON.parse(
+      fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8')
+    ) as {
+      exports?: Record<string, string>;
+    };
     const gettingStartedReadme = fs.readFileSync(
       path.join(gettingStartedDir, 'README.md'),
       'utf8'
@@ -70,6 +75,11 @@ describe('Release surface', () => {
     expect(readme).not.toContain('ossa migrate agent.ossa.yaml --to 0.4.6');
     expect(readme).not.toContain('apiVersion: ossa/v0.4.6');
     expect(readme).not.toContain('## Production Status (v0.4.6)');
+
+    expect(packageJson.exports?.['./schema']).toBe(`./${SPEC_PATH}/agent.schema.json`);
+    expect(packageJson.exports?.['./agent-card-schema']).toBe(
+      `./${SPEC_PATH}/agent-card.schema.json`
+    );
 
     expect(llms).toContain(`ossa migrate agent.yaml --to ${VERSION}`);
     expect(llms).toContain(`apiVersion: ${API_VERSION}`);
