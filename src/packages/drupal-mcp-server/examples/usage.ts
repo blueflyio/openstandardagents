@@ -27,7 +27,7 @@ async function exampleApiKey() {
     type: 'api-key',
     baseUrl: 'https://your-drupal-site.com',
     credentials: {
-      apiKey: 'your-api-key',
+      apiKey: 'SET_API_KEY',
     },
   };
 

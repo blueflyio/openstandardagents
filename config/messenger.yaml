@@ -86,7 +86,7 @@ framework:
 # MESSENGER_TRANSPORT_DSN - Main transport DSN
 # Examples:
 #   - doctrine://default                          (Database, default)
-#   - amqp://guest:guest@localhost:5672/%2f      (RabbitMQ)
+#   - amqp://guest:guest__AT__localhost:5672/%2f (replace __AT__ with @ for RabbitMQ)
 #   - redis://localhost:6379/messages            (Redis)
 #   - sqs://default                              (Amazon SQS)
 #
@@ -100,8 +100,8 @@ framework:
 # MESSENGER_BATCH_TRANSPORT_DSN=doctrine://default
 #
 # # Use RabbitMQ
-# MESSENGER_TRANSPORT_DSN=amqp://user:password@rabbitmq:5672/%2f
-# MESSENGER_BATCH_TRANSPORT_DSN=amqp://user:password@rabbitmq:5672/%2f
+# MESSENGER_TRANSPORT_DSN=amqp://BROKER_USER:BROKER_PASSWORD__AT__rabbitmq:5672/%2f
+# MESSENGER_BATCH_TRANSPORT_DSN=amqp://BROKER_USER:BROKER_PASSWORD__AT__rabbitmq:5672/%2f
 #
 # # Use Redis
 # MESSENGER_TRANSPORT_DSN=redis://redis:6379/messages

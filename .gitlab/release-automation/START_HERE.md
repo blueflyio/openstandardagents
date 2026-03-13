@@ -211,7 +211,7 @@ Settings → Webhooks → Recent Deliveries
 # Test webhook
 curl -X POST https://your-webhook-endpoint.com/milestone \
   -H "Content-Type: application/json" \
-  -H "X-Gitlab-Token: YOUR_SECRET" \
+  -H "X-Gitlab-Token: SET_WEBHOOK_SECRET" \
   -d @test-payload.json
 ```
 

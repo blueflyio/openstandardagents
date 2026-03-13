@@ -107,7 +107,7 @@ All implementations support:
 All implementations support authentication via Bearer token:
 
 ```bash
-export OSSA_TOKEN=ossa_tok_xxx
+export OSSA_TOKEN=SET_OSSA_BEARER_TOKEN
 ```
 
 Get a token:
@@ -203,7 +203,7 @@ All implementations include robust error handling:
 
 For production use, always authenticate with a Bearer token:
 ```bash
-export OSSA_TOKEN=ossa_tok_xxx
+export OSSA_TOKEN=SET_OSSA_BEARER_TOKEN
 ```
 
 ### 2. Handle Rate Limiting

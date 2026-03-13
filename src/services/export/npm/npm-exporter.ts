@@ -1300,7 +1300,7 @@ npx tsx examples/basic-usage.ts
 Copy \`.env.example\` to \`.env\` and configure:
 
 \`\`\`bash
-LLM_API_KEY=your-api-key
+LLM_API_KEY=SET_API_KEY
 \`\`\`
 `,
       'basic-usage.ts': `/**
