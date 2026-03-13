@@ -12,7 +12,7 @@ metadata:
   annotations:
     ossa.dev/documentation: https://openstandardagents.org/agents/customer-support
     ossa.dev/llm: claude-sonnet-3-5
-    ossa.dev/token-efficiency: 70-95-percent-savings
+    ossa.dev/token-efficiency: efficiency-optimized
 spec:
   capabilities:
   - type: function

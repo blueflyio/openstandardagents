@@ -86,7 +86,7 @@ function generateEndpointDoc(
   doc += '**Example**:\n\n';
   doc += '```bash\n';
   doc += `curl -X ${methodUpper} "https://api.ossa.dev${path}" \\\n`;
-  doc += '  -H "Authorization: Bearer YOUR_TOKEN"';
+  doc += '  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE"';
   if (operation.requestBody) {
     doc += ' \\\n  -H "Content-Type: application/json" \\\n  -d @request.json';
   }

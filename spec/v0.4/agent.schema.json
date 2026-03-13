@@ -1022,7 +1022,7 @@
           "description": "Decentralized Identifier (DID) for this agent. Enables decentralized identity verification and trust without a central authority.",
           "examples": [
             "did:web:agents.bluefly.io:compliance-scanner",
-            "did:key:z6Mkf5rGMoatrSj1f4CyvuHBeXJELe9RPdzo2PKGNCKVtZxP"
+            "did:key:example-key-material"
           ]
         },
         "verifiable_credentials": {

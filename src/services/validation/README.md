@@ -378,7 +378,7 @@ const manifest = {
         endpoint: 'http://api.example.com', // HTTP, not HTTPS
         auth: {
           type: 'apiKey',
-          credentials: 'sk-1234567890abcdef', // EXPOSED SECRET!
+          credentials: 'redacted-api-key', // EXPOSED SECRET!
         },
       },
     ],

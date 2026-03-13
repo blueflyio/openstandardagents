@@ -75,7 +75,7 @@ echo "creative-agent-naming-$(date +%s)" | sha256sum | cut -c1-48
 {
   "metadata": {
     "decentralized_identity": {
-      "did": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK"
+      "did": "did:key:example-key-material"
     }
   }
 }

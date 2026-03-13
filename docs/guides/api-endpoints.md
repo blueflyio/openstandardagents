@@ -88,7 +88,7 @@ Execute agent with input.
 ```bash
 curl -X POST http://localhost:3000/api/v1/execute \
   -H "Content-Type: application/json" \
-  -H "X-API-Key: SET_API_KEY" \
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE" \
   -d '{
     "input": "Review this code: def hello(): pass",
     "context": {
@@ -360,7 +360,7 @@ curl http://localhost:3000/metadata
 Most endpoints require API key authentication:
 
 ```bash
-curl -H "X-API-Key: SET_API_KEY" \
+curl --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE" \
   http://localhost:3000/api/v1/execute
 ```
 
@@ -379,7 +379,7 @@ X-API-Key: your-secret-key
 ```bash
 # Using the API
 curl -X POST http://localhost:3000/api/v1/auth/keys \
-  -H "Authorization: Bearer admin-token" \
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE" \
   -d '{
     "name": "production-key",
     "scopes": ["execute", "chat"]
@@ -391,7 +391,7 @@ curl -X POST http://localhost:3000/api/v1/auth/keys \
 Some exports support JWT tokens:
 
 ```bash
-curl -H "Authorization: Bearer eyJhbG..." \
+curl --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE" \
   http://localhost:3000/api/v1/execute
 ```
 
@@ -660,7 +660,7 @@ curl http://localhost:3000/health
 # Execute with auth
 curl -X POST http://localhost:3000/api/v1/execute \
   -H "Content-Type: application/json" \
-  -H "X-API-Key: test-key" \
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE" \
   -d '{"input":"test"}'
 
 # Stream response

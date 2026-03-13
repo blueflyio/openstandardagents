@@ -190,7 +190,7 @@ describe('EnhancedValidator', () => {
               name: 'api',
               auth: {
                 type: 'apiKey',
-                credentials: 'sk-1234567890abcdef1234567890abcdef', // Exposed secret
+                credentials: 'redacted-api-key', // Exposed secret
               },
             },
           ],

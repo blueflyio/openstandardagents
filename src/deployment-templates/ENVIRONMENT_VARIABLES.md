@@ -126,7 +126,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 
 **Examples**:
 ```bash
-JWT_SECRET="xK9mPqR8sT2vYnZ5cF7hJ3kL6nQ1wE4r"
+JWT_SECRET="SET_JWT_SECRET_BASE64"
 ```
 
 **Security Notes**:
@@ -164,7 +164,7 @@ openssl rand -base64 32
 
 **Examples**:
 ```bash
-ENCRYPTION_KEY="aB3dE6fG9hI2jK5lM8nO1pQ4rS7tU0vW"
+ENCRYPTION_KEY="SET_ENCRYPTION_KEY_BASE64"
 ```
 
 **Security Notes**:
@@ -1096,7 +1096,7 @@ JWT_SECRET=dev-secret-do-not-use-in-prod
 JWT_SECRET=staging-secret-different-from-prod
 
 # Production
-JWT_SECRET=prod-secret-rotate-every-90-days
+JWT_SECRET=SET_PRODUCTION_JWT_SECRET
 ```
 
 ### 4. Audit Environment Variables

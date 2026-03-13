@@ -37,7 +37,7 @@ GET /agents
 
 ```bash
 curl "https://api.llm.bluefly.io/ossa/v1/agents?capability=text-generation&limit=10" \
-  -H "Authorization: Bearer YOUR_TOKEN"
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE"
 ```
 
 **Example Response:**
@@ -119,7 +119,7 @@ Submit a complete OSSA agent manifest in JSON or YAML format.
 
 ```bash
 curl -X POST https://api.llm.bluefly.io/ossa/v1/agents \
-  -H "Authorization: Bearer YOUR_TOKEN" \
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE" \
   -H "Content-Type: application/json" \
   -d '{
     "apiVersion": "ossa/v0.3.0",
@@ -260,7 +260,7 @@ GET /agents/{agentId}
 
 ```bash
 curl https://api.llm.bluefly.io/ossa/v1/agents/agt_abc123 \
-  -H "Authorization: Bearer YOUR_TOKEN"
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE"
 ```
 
 **Example Response:**
@@ -359,7 +359,7 @@ Complete updated agent manifest.
 
 ```bash
 curl -X PUT https://api.llm.bluefly.io/ossa/v1/agents/agt_abc123 \
-  -H "Authorization: Bearer YOUR_TOKEN" \
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE" \
   -H "Content-Type: application/json" \
   -d '{
     "apiVersion": "ossa/v0.3.0",
@@ -475,7 +475,7 @@ DELETE /agents/{agentId}
 
 ```bash
 curl -X DELETE https://api.llm.bluefly.io/ossa/v1/agents/agt_abc123 \
-  -H "Authorization: Bearer YOUR_TOKEN"
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE"
 ```
 
 **Example Response:**
@@ -528,7 +528,7 @@ GET /agents/{agentId}/manifest
 
 ```bash
 curl https://api.llm.bluefly.io/ossa/v1/agents/agt_abc123/manifest \
-  -H "Authorization: Bearer YOUR_TOKEN" \
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE" \
   -H "Accept: application/yaml"
 ```
 
@@ -568,7 +568,7 @@ Agent manifest to validate (JSON or YAML).
 
 ```bash
 curl -X POST https://api.llm.bluefly.io/ossa/v1/specification/validate \
-  -H "Authorization: Bearer YOUR_TOKEN" \
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE" \
   -H "Content-Type: application/json" \
   -d @agent-manifest.json
 ```
@@ -638,12 +638,12 @@ Agents progress through several states during their lifecycle:
 ```bash
 # Activate a pending agent
 curl -X PATCH https://api.llm.bluefly.io/ossa/v1/agents/agt_abc123/status \
-  -H "Authorization: Bearer YOUR_TOKEN" \
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE" \
   -d '{"status": "active"}'
 
 # Deprecate an agent
 curl -X PATCH https://api.llm.bluefly.io/ossa/v1/agents/agt_abc123/status \
-  -H "Authorization: Bearer YOUR_TOKEN" \
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE" \
   -d '{"status": "deprecated", "reason": "Replaced by v2.0"}'
 ```
 

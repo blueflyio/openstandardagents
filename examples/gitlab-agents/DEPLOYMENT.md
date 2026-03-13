@@ -89,7 +89,7 @@ For each webhook agent, configure in **GitLab Project → Settings → Webhooks*
 # Test duo-comment-responder
 curl -X POST http://your-mesh-registry.example.com/webhook/duo-comment-responder \
   -H "Content-Type: application/json" \
-  -H "X-Gitlab-Token: your-webhook-secret" \
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE" \
   -d '{
     "object_kind": "note",
     "project": {"id": "12345"},
@@ -129,7 +129,7 @@ npm run dev
 # Test webhook
 curl -X POST http://localhost:9090/webhook/duo-comment-responder \
   -H "Content-Type: application/json" \
-  -H "X-Gitlab-Token: your-secret" \
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE" \
   -d @test-event.json
 ```
 
@@ -244,7 +244,7 @@ kubectl get endpoints -n gitlab-agents
 # Test webhook directly
 kubectl port-forward -n gitlab-agents svc/duo-comment-responder 9090:80
 curl -X POST http://localhost:9090/webhook/duo-comment-responder \
-  -H "X-Gitlab-Token: your-secret" \
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE" \
   -d '{}'
 ```
 
@@ -255,7 +255,7 @@ curl -X POST http://localhost:9090/webhook/duo-comment-responder \
 kubectl logs -n gitlab-agents -l app=duo-comment-responder --tail=100
 
 # Verify GitLab token has correct permissions
-curl -H "PRIVATE-TOKEN: $GITLAB_API_TOKEN" \
+curl --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE" \
   https://gitlab.com/api/v4/user
 
 # Test LLM connectivity

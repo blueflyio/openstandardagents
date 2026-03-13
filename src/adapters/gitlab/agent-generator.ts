@@ -963,7 +963,7 @@ Test the webhook:
 \`\`\`bash
 curl -X POST http://localhost:9090/webhook/${agentName} \\
   -H "Content-Type: application/json" \\
-  -H "X-Gitlab-Token: your-secret" \\
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE" \\
   -d @test-event.json
 \`\`\`
 `

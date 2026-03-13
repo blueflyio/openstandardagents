@@ -2533,7 +2533,7 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
     lines.push(
       '  "https://gitlab.com/api/v4/projects/PROJECT_ID/duo/agents/${agentName}/trigger" \\'
     );
-    lines.push('  -H "PRIVATE-TOKEN: YOUR_TOKEN" \\');
+    lines.push('  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE" \\');
     lines.push('  -H "Content-Type: application/json" \\');
     lines.push("  -d '{");
     lines.push('    "input": "Your task description",');
@@ -2565,7 +2565,7 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
     lines.push(
       'curl "https://gitlab.com/api/v4/projects/PROJECT_ID/duo/agents/${agentName}/executions/exec-abc123" \\'
     );
-    lines.push('  -H "PRIVATE-TOKEN: YOUR_TOKEN"');
+    lines.push('  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE"');
     lines.push('```');
     lines.push('');
     lines.push('**Response:**');
@@ -2603,7 +2603,7 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
     lines.push(
       'curl "https://gitlab.com/api/v4/projects/PROJECT_ID/duo/agents/${agentName}/executions?status=completed&per_page=10" \\'
     );
-    lines.push('  -H "PRIVATE-TOKEN: YOUR_TOKEN"');
+    lines.push('  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE"');
     lines.push('```');
     lines.push('');
 
@@ -2628,7 +2628,7 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
     lines.push(
       'curl "https://gitlab.com/api/v4/projects/PROJECT_ID/duo/agents/${agentName}/logs?level=ERROR&limit=50" \\'
     );
-    lines.push('  -H "PRIVATE-TOKEN: YOUR_TOKEN"');
+    lines.push('  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE"');
     lines.push('```');
     lines.push('');
 
@@ -2648,7 +2648,7 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
     lines.push(
       'curl "https://gitlab.com/api/v4/projects/PROJECT_ID/duo/agents/${agentName}/metrics?period=24h" \\'
     );
-    lines.push('  -H "PRIVATE-TOKEN: YOUR_TOKEN"');
+    lines.push('  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE"');
     lines.push('```');
     lines.push('');
     lines.push('**Response:**');
@@ -2683,7 +2683,7 @@ export class GitLabDuoPackageGenerator extends BasePackageGenerator {
     lines.push('```bash');
     lines.push('curl -X POST \\');
     lines.push('  "https://your-instance.com/webhooks/${agentName}" \\');
-    lines.push('  -H "Authorization: Bearer YOUR_WEBHOOK_TOKEN" \\');
+    lines.push('  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE" \\');
     lines.push('  -H "Content-Type: application/json" \\');
     lines.push("  -d '{");
     lines.push('    "event": "custom_event",');

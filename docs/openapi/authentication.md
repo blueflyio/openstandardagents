@@ -28,7 +28,7 @@ API keys are the simplest method for server-to-server authentication.
 Include the API key in the `X-API-Key` header:
 
 ```bash
-curl -H "X-API-Key: SET_OSSA_API_KEY" \
+curl --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE" \
   https://api.llm.bluefly.io/ossa/v1/agents
 ```
 
@@ -98,7 +98,7 @@ Response:
 Include the token in the `Authorization` header with `Bearer` prefix:
 
 ```bash
-curl -H "Authorization: Bearer SET_JWT_TOKEN" \
+curl --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE" \
   https://api.llm.bluefly.io/ossa/v1/agents
 ```
 
@@ -181,7 +181,7 @@ curl -X POST https://api.llm.bluefly.io/ossa/v1/oauth/token \
 **Step 3: Use the access token**
 
 ```bash
-curl -H "Authorization: Bearer ACCESS_TOKEN" \
+curl --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE" \
   https://api.llm.bluefly.io/ossa/v1/agents
 ```
 
@@ -293,8 +293,8 @@ async function fetchWithRetry(url: string, options: RequestInit, maxRetries = 3)
 ```bash
 # .env file (never commit this!)
 OSSA_API_KEY=SET_OSSA_API_KEY
-OSSA_CLIENT_ID=client_abc123
-OSSA_CLIENT_SECRET=secret_xyz789
+OSSA_CLIENT_ID=SET_OSSA_CLIENT_ID
+OSSA_CLIENT_SECRET=SET_OSSA_CLIENT_SECRET
 ```
 
 ```typescript
@@ -333,7 +333,7 @@ Rotate API keys and secrets regularly:
 ```bash
 # Generate new API key
 curl -X POST https://api.llm.bluefly.io/ossa/v1/auth/api-keys \
-  -H "Authorization: Bearer YOUR_TOKEN" \
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE" \
   -d '{
     "name": "Production Key 2025-Q1",
     "expires_in": 7776000
@@ -341,7 +341,7 @@ curl -X POST https://api.llm.bluefly.io/ossa/v1/auth/api-keys \
 
 # Revoke old key
 curl -X DELETE https://api.llm.bluefly.io/ossa/v1/auth/api-keys/{key_id} \
-  -H "Authorization: Bearer YOUR_TOKEN"
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE"
 ```
 
 ### IP Allowlisting
@@ -350,7 +350,7 @@ Restrict API key usage to specific IP addresses:
 
 ```bash
 curl -X PUT https://api.llm.bluefly.io/ossa/v1/auth/api-keys/{key_id}/restrictions \
-  -H "Authorization: Bearer YOUR_TOKEN" \
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE" \
   -H "Content-Type: application/json" \
   -d '{
     "allowed_ips": ["203.0.113.0/24", "198.51.100.42"]
@@ -410,11 +410,11 @@ Test your authentication setup:
 
 ```bash
 # Test API key
-curl -v -H "X-API-Key: YOUR_API_KEY" \
+curl -v --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE" \
   https://api.llm.bluefly.io/ossa/v1/auth/verify
 
 # Test JWT token
-curl -v -H "Authorization: Bearer YOUR_TOKEN" \
+curl -v --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE" \
   https://api.llm.bluefly.io/ossa/v1/auth/verify
 ```
 

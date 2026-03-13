@@ -119,7 +119,7 @@ POST /messaging/channels/{channel}/publish
 
 ```bash
 curl -X POST https://api.llm.bluefly.io/ossa/v1/messaging/channels/audit.findings/publish \
-  -H "Authorization: Bearer YOUR_TOKEN" \
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE" \
   -H "Content-Type: application/json" \
   -d '{
     "message": {
@@ -221,7 +221,7 @@ POST /messaging/subscriptions
 
 ```bash
 curl -X POST https://api.llm.bluefly.io/ossa/v1/messaging/subscriptions \
-  -H "Authorization: Bearer YOUR_TOKEN" \
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE" \
   -H "Content-Type: application/json" \
   -d '{
     "agent_id": "agt_abc123",
@@ -267,7 +267,7 @@ GET /messaging/subscriptions
 
 ```bash
 curl "https://api.llm.bluefly.io/ossa/v1/messaging/subscriptions?agent_id=agt_abc123" \
-  -H "Authorization: Bearer YOUR_TOKEN"
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE"
 ```
 
 ---
@@ -284,7 +284,7 @@ DELETE /messaging/subscriptions/{subscriptionId}
 
 ```bash
 curl -X DELETE https://api.llm.bluefly.io/ossa/v1/messaging/subscriptions/sub_xyz789 \
-  -H "Authorization: Bearer YOUR_TOKEN"
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE"
 ```
 
 ---
@@ -309,7 +309,7 @@ GET /messaging/channels/{channel}/messages
 
 ```bash
 curl "https://api.llm.bluefly.io/ossa/v1/messaging/channels/audit.findings/messages?limit=50" \
-  -H "Authorization: Bearer YOUR_TOKEN"
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE"
 ```
 
 ---
@@ -513,7 +513,7 @@ Track messaging metrics:
 
 ```bash
 curl https://api.llm.bluefly.io/ossa/v1/messaging/metrics \
-  -H "Authorization: Bearer YOUR_TOKEN"
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE"
 ```
 
 **Response:**
@@ -579,7 +579,7 @@ Control who can publish/subscribe:
 
 ```bash
 curl -X PUT https://api.llm.bluefly.io/ossa/v1/messaging/channels/audit.findings/acl \
-  -H "Authorization: Bearer YOUR_TOKEN" \
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE" \
   -H "Content-Type: application/json" \
   -d '{
     "publish": ["agt_auditor*"],
@@ -640,7 +640,7 @@ Check subscription status and filters:
 
 ```bash
 curl "https://api.llm.bluefly.io/ossa/v1/messaging/subscriptions?channel=audit.findings" \
-  -H "Authorization: Bearer YOUR_TOKEN"
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE"
 ```
 
 ### High Latency
@@ -649,7 +649,7 @@ Monitor message queue depth:
 
 ```bash
 curl https://api.llm.bluefly.io/ossa/v1/messaging/channels/audit.findings/stats \
-  -H "Authorization: Bearer YOUR_TOKEN"
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE"
 ```
 
 ### Failed Messages
@@ -658,7 +658,7 @@ Check dead letter queue:
 
 ```bash
 curl https://api.llm.bluefly.io/ossa/v1/messaging/channels/tasks.failed/messages \
-  -H "Authorization: Bearer YOUR_TOKEN"
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE"
 ```
 
 ---

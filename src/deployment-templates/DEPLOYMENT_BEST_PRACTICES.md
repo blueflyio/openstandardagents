@@ -431,7 +431,7 @@ spec:
 apiVersion: v1
 kind: Secret
 data:
-  password: cGFzc3dvcmQxMjM=  # base64 encoded, not encrypted!
+  password: BASE64_ENCODED_PASSWORD_VALUE  # base64 encoded, not encrypted!
 ```
 
 #### ✅ Use External Secret Management

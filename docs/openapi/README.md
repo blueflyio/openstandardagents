@@ -31,11 +31,11 @@ All API requests (except health checks) require authentication. See the [Authent
 
 ```bash
 # Example with API Key
-curl -H "X-API-Key: SET_API_KEY" \
+curl --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE" \
   https://api.llm.bluefly.io/ossa/v1/agents
 
 # Example with Bearer Token
-curl -H "Authorization: Bearer your-jwt-token" \
+curl --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE" \
   https://api.llm.bluefly.io/ossa/v1/agents
 ```
 
@@ -63,7 +63,7 @@ Response:
 
 ```bash
 curl -X POST https://api.llm.bluefly.io/ossa/v1/agents \
-  -H "Authorization: Bearer your-token" \
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE" \
   -H "Content-Type: application/json" \
   -d @agent-manifest.json
 ```
@@ -72,21 +72,21 @@ curl -X POST https://api.llm.bluefly.io/ossa/v1/agents \
 
 ```bash
 curl https://api.llm.bluefly.io/ossa/v1/agents \
-  -H "Authorization: Bearer your-token"
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE"
 ```
 
 ### Search by Capability
 
 ```bash
 curl "https://api.llm.bluefly.io/ossa/v1/agents?capability=text-generation" \
-  -H "Authorization: Bearer your-token"
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE"
 ```
 
 ### Get Agent Details
 
 ```bash
 curl https://api.llm.bluefly.io/ossa/v1/agents/{agentId} \
-  -H "Authorization: Bearer your-token"
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE"
 ```
 
 ## API Reference

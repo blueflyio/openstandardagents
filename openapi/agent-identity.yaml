@@ -90,7 +90,7 @@ paths:
                   agent_id: "analytics-agent"
                   credential:
                     type: "oauth2"
-                    access_token: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    access_token: "header.payload.signature"
                     token_type: "Bearer"
                   scope: ["read", "write", "execute"]
               mtlsAuth:
@@ -112,7 +112,7 @@ paths:
                 success:
                   summary: Successful authentication
                   value:
-                    access_token: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZ2VudC0xMjMiLCJpYXQiOjE2MDk0NTkyMDB9.SflKxwRJSM..."
+                    access_token: "header.payload.signature"
                     token_type: "Bearer"
                     expires_in: 3600
                     scope: ["read", "execute"]

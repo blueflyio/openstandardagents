@@ -55,7 +55,7 @@ GET /discovery/search
 
 ```bash
 curl "https://api.llm.bluefly.io/ossa/v1/discovery/search?q=document+analysis&capability=text-extraction&provider=anthropic" \
-  -H "Authorization: Bearer YOUR_TOKEN"
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE"
 ```
 
 **Example Response:**
@@ -218,7 +218,7 @@ GET /discovery/capabilities
 
 ```bash
 curl https://api.llm.bluefly.io/ossa/v1/discovery/capabilities \
-  -H "Authorization: Bearer YOUR_TOKEN"
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE"
 ```
 
 **Example Response:**
@@ -279,7 +279,7 @@ GET /specification/taxonomies
 
 ```bash
 curl https://api.llm.bluefly.io/ossa/v1/specification/taxonomies \
-  -H "Authorization: Bearer YOUR_TOKEN"
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE"
 ```
 
 **Example Response:**
@@ -355,7 +355,7 @@ GET /discovery/similar/{agentId}
 
 ```bash
 curl "https://api.llm.bluefly.io/ossa/v1/discovery/similar/agt_doc123?limit=5" \
-  -H "Authorization: Bearer YOUR_TOKEN"
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE"
 ```
 
 **Example Response:**
@@ -418,7 +418,7 @@ POST /discovery/recommend
 
 ```bash
 curl -X POST https://api.llm.bluefly.io/ossa/v1/discovery/recommend \
-  -H "Authorization: Bearer YOUR_TOKEN" \
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE" \
   -H "Content-Type: application/json" \
   -d '{
     "use_case": "analyze legal contracts and extract key terms",
@@ -490,7 +490,7 @@ Find agents that support multiple capabilities:
 
 ```bash
 curl "https://api.llm.bluefly.io/ossa/v1/discovery/search?capability=text-extraction&capability=entity-recognition&capability=sentiment-analysis" \
-  -H "Authorization: Bearer YOUR_TOKEN"
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE"
 ```
 
 ```typescript
@@ -510,7 +510,7 @@ Filter by multiple labels:
 
 ```bash
 curl "https://api.llm.bluefly.io/ossa/v1/discovery/search?labels=environment=production&labels=team=data-science&labels=compliance=soc2" \
-  -H "Authorization: Bearer YOUR_TOKEN"
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE"
 ```
 
 ```python
@@ -530,7 +530,7 @@ Use natural language queries:
 
 ```bash
 curl "https://api.llm.bluefly.io/ossa/v1/discovery/search?q=analyze+customer+feedback+and+detect+sentiment+in+multiple+languages" \
-  -H "Authorization: Bearer YOUR_TOKEN"
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE"
 ```
 
 ### Version Range Filtering
@@ -539,7 +539,7 @@ Find agents within a version range:
 
 ```bash
 curl "https://api.llm.bluefly.io/ossa/v1/discovery/search?min_version=2.0.0&max_version=3.0.0" \
-  -H "Authorization: Bearer YOUR_TOKEN"
+  --header "AUTH_HEADER_NAME: AUTH_HEADER_VALUE"
 ```
 
 ---
