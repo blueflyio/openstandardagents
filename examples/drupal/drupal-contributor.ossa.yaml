@@ -1,4 +1,4 @@
-apiVersion: ossa/v0.4.7
+apiVersion: ossa/v0.5.0
 kind: Agent
 metadata:
   name: drupal-contributor
@@ -214,31 +214,34 @@ security:
 
 protocols:
   mcp:
+    version: 1.0.0
     role: client
-    transport: stdio
     capabilities:
       tools: true
       resources: true
     servers:
       - name: drupalorg-cli
+        transport: stdio
         command: drupalorg
-        description: Drupal.org CLI for issue management
   a2a:
-    role: server
-    endpoint: /agents/drupal-contributor
-    skills:
-      - name: fix-drupal-issue
-        description: Analyze and fix a Drupal.org issue
-        input_schema:
-          type: object
-          properties:
-            issue_id:
-              type: string
-          required:
-            - issue_id
+    version: 0.2.0
+    endpoint: https://openstandardagents.org/agents/drupal-contributor
+    agent_card:
+      name: drupal-contributor
+      description: Analyze and fix a Drupal.org issue
+      skills:
+        - id: fix-drupal-issue
+          name: fix-drupal-issue
+          description: Analyze and fix a Drupal.org issue
+    capabilities:
+      stateTransitionHistory: true
 
 governance:
-  cedar_policy_set: blueflyio/cedar-policies
-  pre_execution_check: true
-  compliance_profiles:
-    - NIST AI RMF 1.0
+  authorization:
+    policy_references:
+      - blueflyio/cedar-policies
+  compliance:
+    frameworks:
+      - NIST-800-53
+    data_classification: internal
+    audit_logging_required: true
