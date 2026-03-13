@@ -66,7 +66,9 @@ export class McpBridgeService {
     if (!fs.existsSync(registryPath)) return [];
     try {
       const content = fs.readFileSync(registryPath, 'utf8');
-      const parsed = yaml.load(content) as { servers?: OssaMcpServerEntry[] };
+      const parsed = yaml.load(content, {
+        schema: yaml.JSON_SCHEMA,
+      }) as { servers?: OssaMcpServerEntry[] };
       return parsed?.servers ?? [];
     } catch {
       return [];

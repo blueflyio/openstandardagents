@@ -23,7 +23,11 @@ export const signCommand = new Command('sign')
 
       let manifest: Record<string, unknown>;
       try {
-        manifest = isJson ? JSON.parse(content) : yaml.load(content) as Record<string, unknown>;
+        manifest = isJson
+          ? JSON.parse(content)
+          : (yaml.load(content, {
+              schema: yaml.JSON_SCHEMA,
+            }) as Record<string, unknown>);
       } catch (e: unknown) {
         console.error(`Error parsing manifest: ${e instanceof Error ? e.message : 'Unknown error'}`);
         process.exit(1);

@@ -34,7 +34,9 @@ const validateSubcommand = new Command('validate')
     try {
       manifest = isJson
         ? JSON.parse(content)
-        : (yaml.load(content) as Record<string, unknown>);
+        : (yaml.load(content, {
+            schema: yaml.JSON_SCHEMA,
+          }) as Record<string, unknown>);
     } catch (e: unknown) {
       console.error(
         `Error parsing manifest: ${e instanceof Error ? e.message : 'Unknown error'}`,

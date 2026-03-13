@@ -92,7 +92,7 @@ function renderTemplate(templatePath, values, outputPath) {
 function loadValues(valuesPath) {
   try {
     const valuesContent = fs.readFileSync(valuesPath, 'utf8');
-    return yaml.load(valuesContent);
+    return yaml.load(valuesContent, { schema: yaml.JSON_SCHEMA });
   } catch (error) {
     console.error(`✗ Failed to load values from ${valuesPath}:`, error.message);
     process.exit(1);

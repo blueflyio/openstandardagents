@@ -96,7 +96,10 @@ export async function scanManifests(
   for (const file of files) {
     try {
       const raw = fs.readFileSync(file, 'utf8');
-      const doc = yaml.load(raw) as Record<string, unknown>;
+      const doc = yaml.load(raw, { schema: yaml.JSON_SCHEMA }) as Record<
+        string,
+        unknown
+      >;
       const meta = doc.metadata as Record<string, unknown> | undefined;
 
       results.push({

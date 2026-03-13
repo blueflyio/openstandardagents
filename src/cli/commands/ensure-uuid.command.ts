@@ -98,7 +98,7 @@ export const ensureUuidCommand = new Command('ensure-uuid')
 
         let manifest: OssaAgent;
         try {
-          manifest = yaml.load(content) as OssaAgent;
+          manifest = yaml.load(content, { schema: yaml.JSON_SCHEMA }) as OssaAgent;
         } catch (e) {
           console.error(chalk.red(`Invalid YAML: ${filePath}`), e);
           continue;

@@ -26,7 +26,9 @@ export function validateRouter(): Router {
     try {
       let manifest = req.body.manifest;
       if (!manifest && req.body.manifestYaml) {
-        manifest = yaml.load(req.body.manifestYaml);
+        manifest = yaml.load(req.body.manifestYaml, {
+          schema: yaml.JSON_SCHEMA,
+        });
       } else if (!manifest && req.body.path) {
         manifest = await service.read(req.body.path);
       }

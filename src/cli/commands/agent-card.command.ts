@@ -86,7 +86,7 @@ agentCardCommand
         let manifest: OssaAgent;
 
         if (fullPath.endsWith('.yaml') || fullPath.endsWith('.yml')) {
-          manifest = yaml.load(content) as OssaAgent;
+          manifest = yaml.load(content, { schema: yaml.JSON_SCHEMA }) as OssaAgent;
         } else {
           manifest = JSON.parse(content) as OssaAgent;
         }

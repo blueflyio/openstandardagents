@@ -214,7 +214,10 @@ export class WorkspaceService {
     for (const f of files) {
       try {
         const raw = fs.readFileSync(f, 'utf8');
-        const m = yaml.load(raw) as Record<string, unknown>;
+        const m = yaml.load(raw, { schema: yaml.JSON_SCHEMA }) as Record<
+          string,
+          unknown
+        >;
         const meta = m?.metadata as Record<string, unknown> | undefined;
         agents.push({
           name: (meta?.name as string) || path.basename(path.dirname(f)),
