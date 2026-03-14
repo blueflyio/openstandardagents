@@ -1,4 +1,4 @@
-# OSSA v0.4.5 Example: Pipeline Agent — Data Processing Pipeline
+# OSSA v0.5.0 Example: Pipeline Agent — Data Processing Pipeline
 #
 # Demonstrates the pipeline pattern for sequential data processing. A
 # coordinator manages four team members arranged as sequential stages:
@@ -13,7 +13,7 @@
 #   - Assigned task coordination (coordinator assigns stage work)
 #   - Database-backed persistence for auditability
 
-apiVersion: ossa/v0.4.7
+apiVersion: ossa/v0.5.0
 kind: Agent
 metadata:
   name: data-processing-pipeline
@@ -26,7 +26,7 @@ metadata:
     tools and model.
 
   agentKind: coordinator
-  agentType: workflow
+  agentType: claude
 
   agentArchitecture:
     pattern: pipeline

@@ -58,7 +58,12 @@ function exec(command: string, cwd: string = projectRoot): string {
  */
 function cleanupTempDir() {
   if (existsSync(tempDir)) {
-    rmSync(tempDir, { recursive: true, force: true });
+    rmSync(tempDir, {
+      recursive: true,
+      force: true,
+      maxRetries: 5,
+      retryDelay: 100,
+    });
   }
 }
 

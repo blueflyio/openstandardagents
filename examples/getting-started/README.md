@@ -5,7 +5,7 @@ Learn OSSA step-by-step with these progressively complex examples.
 ## Prerequisites
 
 ```bash
-npm install -g @bluefly/ossa-cli
+npm install -g @bluefly/openstandardagents
 ```
 
 ## Examples
@@ -29,7 +29,7 @@ export ANTHROPIC_API_KEY=your-key
 ossa run 01-minimal-agent.ossa.yaml --input "Hello, how can you help me?"
 
 # Export to framework
-ossa export 02-agent-with-tools.ossa.yaml --format langchain
+ossa export 02-agent-with-tools.ossa.yaml --platform langchain
 ```
 
 ## Learning Path
@@ -66,4 +66,4 @@ export OTEL_ENDPOINT=http://localhost:4317
 
 - [Full Examples](../agent-manifests/) - Real-world agent definitions
 - [Framework Adapters](../adapters/) - LangChain, CrewAI, AutoGen
-- [Schema Reference](../../spec/v0.3.0/) - Complete OSSA specification
+- [Schema Reference](../../spec/v0.5/agent.schema.json) - Current OSSA schema

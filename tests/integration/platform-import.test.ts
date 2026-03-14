@@ -4,13 +4,12 @@
  */
 
 import { describe, it, expect } from '@jest/globals';
-import { container } from '../../src/di-container.js';
 import { GenerationService } from '../../src/services/generation.service.js';
 import { getApiVersion } from '../../src/utils/version.js';
 import { API_VERSION } from '../../../src/version.js';
 
 describe('Platform Import Integration', () => {
-  const generationService = container.get(GenerationService);
+  const generationService = new GenerationService();
   const currentApiVersion = getApiVersion();
 
   it('should import from Cursor format', async () => {

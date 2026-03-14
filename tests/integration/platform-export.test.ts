@@ -4,12 +4,11 @@
  */
 
 import { describe, it, expect } from '@jest/globals';
-import { container } from '../../src/di-container.js';
 import { GenerationService } from '../../src/services/generation.service.js';
 import { API_VERSION } from '../../src/version.js';
 
 describe('Platform Export Integration', () => {
-  const generationService = container.get(GenerationService);
+  const generationService = new GenerationService();
   // const manifestRepo = container.get(ManifestRepository); // Not used in tests
 
   const baseManifest = {

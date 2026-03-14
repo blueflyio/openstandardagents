@@ -77,10 +77,6 @@ export type {
 export { isOssaSkill } from './skill.js';
 export type { OssaSkill } from './skill.js';
 
-// Export MCP server manifest types
-export { isOssaMCPServer } from './mcp-server-manifest.js';
-export type { OssaMCPServer } from './mcp-server-manifest.js';
-
 // Export Role types (v0.5 — IDE operator contexts)
 export { createRoleManifest, isOssaRole } from './role.js';
 export type {
@@ -95,6 +91,10 @@ export type {
     RoleSpec,
     RoleTools
 } from './role.js';
+
+// Export MCP server manifest types
+export { isOssaMCPServer } from './mcp-server-manifest.js';
+export type { OssaMCPServer } from './mcp-server-manifest.js';
 
 // Export Protocol Declaration types (v0.5)
 export * from './protocols.js';
