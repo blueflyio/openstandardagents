@@ -25,6 +25,7 @@
       "type": "string",
       "enum": [
         "Agent",
+        "Role",
         "Task",
         "Workflow",
         "Flow"
