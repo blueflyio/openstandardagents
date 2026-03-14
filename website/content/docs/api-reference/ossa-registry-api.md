@@ -36,6 +36,8 @@ This API requires authentication. See [Authentication Guide](../authentication.m
 GET /agents
 ```
 
+**Description**: List all agents
+
 **Parameters**:
 
 - `undefined` (undefined) - No description
@@ -69,6 +71,8 @@ curl -X GET "https://api.ossa.dev/agents" \
 ```http
 POST /agents
 ```
+
+**Description**: Register new agent
 
 **Request Body**:
 
@@ -107,6 +111,8 @@ curl -X POST "https://api.ossa.dev/agents" \
 GET /agents/{namespace}/{name}
 ```
 
+**Description**: Get agent details
+
 **Parameters**:
 
 - `undefined` (undefined) - No description
@@ -136,6 +142,8 @@ curl -X GET "https://api.ossa.dev/agents/{namespace}/{name}" \
 ```http
 PUT /agents/{namespace}/{name}
 ```
+
+**Description**: Update agent
 
 **Parameters**:
 
@@ -181,6 +189,8 @@ curl -X PUT "https://api.ossa.dev/agents/{namespace}/{name}" \
 DELETE /agents/{namespace}/{name}
 ```
 
+**Description**: Delete agent
+
 **Parameters**:
 
 - `undefined` (undefined) - No description
@@ -210,6 +220,8 @@ curl -X DELETE "https://api.ossa.dev/agents/{namespace}/{name}" \
 ```http
 GET /agents/{namespace}/{name}/versions
 ```
+
+**Description**: List agent versions
 
 **Parameters**:
 
@@ -242,6 +254,8 @@ curl -X GET "https://api.ossa.dev/agents/{namespace}/{name}/versions" \
 ```http
 POST /agents/{namespace}/{name}/versions
 ```
+
+**Description**: Publish new version
 
 **Parameters**:
 
@@ -283,6 +297,8 @@ curl -X POST "https://api.ossa.dev/agents/{namespace}/{name}/versions" \
 GET /agents/{namespace}/{name}/versions/{version}
 ```
 
+**Description**: Get version details
+
 **Parameters**:
 
 - `undefined` (undefined) - No description
@@ -313,6 +329,8 @@ curl -X GET "https://api.ossa.dev/agents/{namespace}/{name}/versions/{version}" 
 ```http
 DELETE /agents/{namespace}/{name}/versions/{version}
 ```
+
+**Description**: Unpublish version
 
 **Parameters**:
 
@@ -345,6 +363,8 @@ curl -X DELETE "https://api.ossa.dev/agents/{namespace}/{name}/versions/{version
 GET /agents/{namespace}/{name}/versions/{version}/manifest
 ```
 
+**Description**: Download manifest
+
 **Parameters**:
 
 - `undefined` (undefined) - No description
@@ -375,6 +395,8 @@ curl -X GET "https://api.ossa.dev/agents/{namespace}/{name}/versions/{version}/m
 ```http
 GET /search
 ```
+
+**Description**: Search agents
 
 **Parameters**:
 
@@ -408,6 +430,8 @@ curl -X GET "https://api.ossa.dev/search" \
 GET /certifications
 ```
 
+**Description**: List all certifications
+
 **Parameters**:
 
 - `undefined` (undefined) - No description
@@ -435,6 +459,8 @@ curl -X GET "https://api.ossa.dev/certifications" \
 ```http
 POST /certifications/{namespace}/{name}/request
 ```
+
+**Description**: Request certification
 
 **Parameters**:
 
@@ -477,6 +503,8 @@ curl -X POST "https://api.ossa.dev/certifications/{namespace}/{name}/request" \
 ```http
 GET /analytics/{namespace}/{name}
 ```
+
+**Description**: Get agent analytics
 
 **Parameters**:
 

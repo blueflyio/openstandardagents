@@ -57,6 +57,7 @@ paths:
                   - status
                   - timestamp
       x-ossa-capability: ossa-get-health
+      description: Health check
   /ready:
     get:
       operationId: getReady
@@ -76,6 +77,7 @@ paths:
                 required:
                   - ready
       x-ossa-capability: ossa-get-ready
+      description: Readiness check
   /api/v1/manifests:
     get:
       operationId: listManifests
@@ -108,6 +110,7 @@ paths:
         "500":
           $ref: "#/components/responses/InternalError"
       x-ossa-capability: ossa-list-manifests
+      description: List manifests in a directory
     post:
       operationId: createManifest
       summary: Scaffold a new manifest
@@ -134,6 +137,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Scaffold a new manifest
   /api/v1/manifests/validate:
     post:
       operationId: validateManifest
@@ -182,6 +186,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Validate an OSSA manifest
   /api/v1/manifests/inspect:
     post:
       operationId: inspectManifest
@@ -213,6 +218,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Inspect a manifest file
   /api/v1/manifests/diff:
     post:
       operationId: diffManifests
@@ -248,6 +254,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Diff two manifests
   /api/v1/manifests/migrate:
     post:
       operationId: migrateManifest
@@ -285,6 +292,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Migrate manifest to a target version
   /api/v1/wizard/definitions:
     get:
       operationId: getWizardDefinitions
@@ -369,6 +377,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Create a new wizard session
   /api/v1/wizard/sessions/{id}:
     get:
       operationId: getWizardSession
@@ -387,6 +396,7 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
       x-ossa-capability: ossa-get-wizard-session
+      description: Get wizard session state
   /api/v1/wizard/sessions/{id}/steps/current:
     get:
       operationId: getCurrentWizardStep
@@ -405,6 +415,7 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
       x-ossa-capability: ossa-get-current-wizard-step
+      description: Get current step definition with fields
   /api/v1/wizard/sessions/{id}/steps/{stepId}:
     post:
       operationId: submitWizardStep
@@ -442,6 +453,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Submit data for a wizard step
   /api/v1/wizard/sessions/{id}/undo:
     post:
       operationId: undoWizardStep
@@ -463,6 +475,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Undo the last completed step
   /api/v1/wizard/sessions/{id}/complete:
     post:
       operationId: completeWizardSession
@@ -484,6 +497,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Complete wizard and generate manifest
   /api/v1/wizard/templates:
     get:
       operationId: listWizardTemplates
@@ -500,6 +514,7 @@ paths:
                 items:
                   $ref: "#/components/schemas/AgentTemplate"
       x-ossa-capability: ossa-list-wizard-templates
+      description: List available agent templates
   /api/v1/export:
     post:
       operationId: exportManifest
@@ -525,6 +540,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Export manifest to platform-specific format
   /api/v1/export/platforms:
     get:
       operationId: listExportPlatforms
@@ -541,6 +557,7 @@ paths:
                 items:
                   $ref: "#/components/schemas/PlatformInfo"
       x-ossa-capability: ossa-list-export-platforms
+      description: List available export platforms
   /api/v1/convert:
     post:
       operationId: convertManifest
@@ -566,6 +583,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Convert manifest to platform config
   /api/v1/convert/targets:
     get:
       operationId: listConvertTargets
@@ -582,6 +600,7 @@ paths:
                 items:
                   $ref: "#/components/schemas/PlatformInfo"
       x-ossa-capability: ossa-list-convert-targets
+      description: List available conversion targets
   /api/v1/skills:
     get:
       operationId: listSkills
@@ -605,6 +624,7 @@ paths:
                   type: object
                   additionalProperties: true
       x-ossa-capability: ossa-list-skills
+      description: List skill manifests in a directory
     post:
       operationId: createSkill
       summary: Create a new skill manifest
@@ -630,6 +650,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Create a new skill manifest
   /api/v1/skills/validate:
     post:
       operationId: validateSkill
@@ -659,6 +680,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Validate a skill manifest
   /api/v1/workspace/init:
     post:
       operationId: initWorkspace
@@ -697,6 +719,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Initialize an OSSA workspace
   /api/v1/workspace/discover:
     post:
       operationId: discoverWorkspace
@@ -724,6 +747,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Discover agents in workspace
   /api/v1/workspace/status:
     get:
       operationId: getWorkspaceStatus
@@ -744,6 +768,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/WorkspaceStatus"
       x-ossa-capability: ossa-get-workspace-status
+      description: Get workspace status
   /api/v1/version:
     get:
       operationId: getVersion
@@ -765,6 +790,7 @@ paths:
                     items:
                       type: string
       x-ossa-capability: ossa-get-version
+      description: Get current OSSA spec version
   /api/v1/version/detect:
     post:
       operationId: detectVersion
@@ -799,6 +825,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Detect the OSSA version of a manifest
 components:
   parameters:
     SessionId:

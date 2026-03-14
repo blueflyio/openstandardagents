@@ -5,6 +5,9 @@ info:
   description: |
     LangChain agent with tool chain integration.
     Uses tools to accomplish tasks with memory and chain capabilities.
+  contact:
+    name: Bluefly OSSA Team
+    url: https://gitlab.com/blueflyio/ossa/openstandardagents
 x-ossa-metadata:
   version: 0.2.5-RC
   compliance:

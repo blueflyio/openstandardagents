@@ -3,6 +3,9 @@ info:
   title: GitHub Sync API
   version: 0.3.3
   description: API for syncing GitHub PRs to GitLab
+  contact:
+    name: Bluefly OSSA Team
+    url: https://gitlab.com/blueflyio/ossa/openstandardagents
 servers:
   - url: http://localhost:3000
     description: Development
@@ -30,6 +33,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Sync GitHub PR to GitLab
   /sync/batch:
     post:
       summary: Batch sync PRs
@@ -56,6 +60,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Batch sync PRs
   /sync/list:
     get:
       summary: List syncable PRs
@@ -77,6 +82,7 @@ paths:
                 items:
                   $ref: "#/components/schemas/GitHubPR"
       x-ossa-capability: github-list-prs
+      description: List syncable PRs
 components:
   schemas:
     GitHubPR:
@@ -147,3 +153,6 @@ x-ossa:
   agent:
     id: github-sync-api
     type: integrator
+tags:
+  - name: Sync
+    description: Sync operations

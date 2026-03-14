@@ -52,6 +52,7 @@ paths:
         "503":
           $ref: "#/components/responses/ServiceUnavailable"
       x-ossa-capability: core-health-check
+      description: Health check
   /health/ready:
     get:
       summary: Readiness check
@@ -67,6 +68,7 @@ paths:
         "503":
           $ref: "#/components/responses/ServiceUnavailable"
       x-ossa-capability: core-readiness-check
+      description: Readiness check
   /health/live:
     get:
       summary: Liveness check
@@ -82,6 +84,7 @@ paths:
         "503":
           $ref: "#/components/responses/ServiceUnavailable"
       x-ossa-capability: core-liveness-check
+      description: Liveness check
   /agents:
     get:
       summary: List registered agents
@@ -137,6 +140,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Register new agent
   /agents/{agentId}:
     get:
       summary: Get agent details
@@ -155,6 +159,7 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
       x-ossa-capability: core-get-agent
+      description: Get agent details
     put:
       summary: Update agent registration
       tags:
@@ -179,6 +184,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Update agent registration
     delete:
       summary: Unregister agent
       tags:
@@ -193,6 +199,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Unregister agent
   /orchestration/workflows:
     get:
       summary: List workflows
@@ -210,6 +217,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/WorkflowsList"
       x-ossa-capability: core-list-workflows
+      description: List workflows
     post:
       summary: Create workflow
       tags:
@@ -232,6 +240,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Create workflow
   /orchestration/workflows/{workflowId}/execute:
     post:
       summary: Execute workflow
@@ -260,6 +269,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Execute workflow
   /orchestration/executions/{executionId}:
     get:
       summary: Get execution status
@@ -280,6 +290,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/WorkflowExecution"
       x-ossa-capability: core-get-execution-status
+      description: Get execution status
   /specification/validate:
     post:
       summary: Validate agent manifest
@@ -325,6 +336,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/TaxonomiesList"
       x-ossa-capability: core-list-taxonomies
+      description: List agent taxonomies
   /specification/capabilities:
     get:
       summary: List capability definitions
@@ -344,6 +356,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/CapabilitiesList"
       x-ossa-capability: core-list-capabilities
+      description: List capability definitions
   /certification/request:
     post:
       summary: Request certification
@@ -367,6 +380,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Request certification
   /certification/{certificationId}:
     get:
       summary: Get certification status
@@ -387,6 +401,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Certification"
       x-ossa-capability: core-get-certification
+      description: Get certification status
   /governance/policies:
     get:
       summary: List governance policies
@@ -401,6 +416,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/PoliciesList"
       x-ossa-capability: core-list-policies
+      description: List governance policies
   /governance/compliance/{agentId}:
     get:
       summary: Get agent compliance status
@@ -417,6 +433,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ComplianceStatus"
       x-ossa-capability: core-get-agent-compliance
+      description: Get agent compliance status
   /federation/nodes:
     get:
       summary: List federation nodes
@@ -431,6 +448,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/FederationNodesList"
       x-ossa-capability: core-list-federation-nodes
+      description: List federation nodes
   /federation/join:
     post:
       summary: Join federation
@@ -454,6 +472,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Join federation
   /monitoring/metrics:
     get:
       summary: Get platform metrics
@@ -468,6 +487,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/PlatformMetrics"
       x-ossa-capability: core-get-platform-metrics
+      description: Get platform metrics
   /monitoring/events:
     get:
       summary: Get platform events
@@ -486,6 +506,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/EventsList"
       x-ossa-capability: core-get-platform-events
+      description: Get platform events
 components:
   securitySchemes:
     ApiKeyAuth:

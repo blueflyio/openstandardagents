@@ -5,6 +5,9 @@ info:
   description: |
     Automated FedRAMP compliance scanning agent that validates
     infrastructure against FedRAMP Moderate controls.
+  contact:
+    name: Bluefly OSSA Team
+    url: https://gitlab.com/blueflyio/ossa/openstandardagents
 x-ossa-metadata:
   version: 0.2.5-RC
   compliance:

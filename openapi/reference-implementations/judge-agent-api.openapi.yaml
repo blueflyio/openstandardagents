@@ -5,6 +5,9 @@ info:
   description: |
     Ultimate decision-making agent for conflict resolution and final arbitration.
     Makes decisions, resolves disputes, and prioritizes requests.
+  contact:
+    name: Bluefly OSSA Team
+    url: https://gitlab.com/blueflyio/ossa/openstandardagents
 x-ossa-metadata:
   version: 0.2.5-RC
   compliance:

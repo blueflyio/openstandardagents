@@ -72,6 +72,8 @@ curl -X POST "https://api.ossa.dev/agents" \
 GET /agents
 ```
 
+**Description**: List all agents
+
 **Parameters**:
 
 - `undefined` (undefined) - No description
@@ -99,6 +101,8 @@ curl -X GET "https://api.ossa.dev/agents" \
 GET /agents/{agentId}
 ```
 
+**Description**: Get agent details
+
 **Parameters**:
 
 - `undefined` (undefined) - No description
@@ -123,6 +127,8 @@ curl -X GET "https://api.ossa.dev/agents/{agentId}" \
 ```http
 PUT /agents/{agentId}
 ```
+
+**Description**: Update agent
 
 **Parameters**:
 
@@ -156,6 +162,8 @@ curl -X PUT "https://api.ossa.dev/agents/{agentId}" \
 ```http
 DELETE /agents/{agentId}
 ```
+
+**Description**: Delete agent
 
 **Parameters**:
 
@@ -244,6 +252,8 @@ curl -X POST "https://api.ossa.dev/drupal/content" \
 GET /drupal/content
 ```
 
+**Description**: Query Drupal content
+
 **Parameters**:
 
 - `type` (query) - No description
@@ -270,6 +280,8 @@ curl -X GET "https://api.ossa.dev/drupal/content" \
 POST /drupal/users
 ```
 
+**Description**: Create Drupal user
+
 **Request Body**:
 
 ```json
@@ -294,6 +306,8 @@ curl -X POST "https://api.ossa.dev/drupal/users" \
 ```http
 GET /drupal/users
 ```
+
+**Description**: List users
 
 **Responses**:
 
@@ -370,6 +384,8 @@ curl -X POST "https://api.ossa.dev/workflows" \
 GET /workflows
 ```
 
+**Description**: List workflows
+
 **Parameters**:
 
 - `framework` (query) - No description
@@ -390,6 +406,8 @@ curl -X GET "https://api.ossa.dev/workflows" \
 ```http
 POST /workflows/{workflowId}/execute
 ```
+
+**Description**: Execute workflow
 
 **Parameters**:
 
@@ -453,6 +471,8 @@ curl -X POST "https://api.ossa.dev/studio/sessions" \
 GET /studio/sessions
 ```
 
+**Description**: List active sessions
+
 **Responses**:
 
 **200**: Active sessions
@@ -501,6 +521,8 @@ curl -X POST "https://api.ossa.dev/studio/sessions/{sessionId}/tasks" \
 POST /gitlab/pipelines
 ```
 
+**Description**: Trigger pipeline for project
+
 **Request Body**:
 
 ```json
@@ -525,6 +547,8 @@ curl -X POST "https://api.ossa.dev/gitlab/pipelines" \
 ```http
 GET /gitlab/pipelines
 ```
+
+**Description**: List pipelines
 
 **Responses**:
 

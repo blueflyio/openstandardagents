@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: OSSA CLI API
-  version: &a1
+  version:
     "{ VERSION }": null
   description: |
     API specification for OSSA (Open Standard for Software Agents) CLI operations.
@@ -708,6 +708,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
       x-ossa-capability: cli-get-agent
+      description: Get agent by name
     put:
       operationId: updateAgent
       tags:
@@ -736,6 +737,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Update agent
     delete:
       operationId: deleteAgent
       tags:
@@ -756,6 +758,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Delete agent
   /agents/{name}/agents-md:
     get:
       operationId: getAgentsMd
@@ -854,6 +857,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Remove AGENTS.md for an agent
   /agents-md/discover:
     get:
       operationId: discoverAgentsMd
@@ -936,6 +940,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Export agent to platform
   /export/batch:
     post:
       operationId: batchExport
@@ -959,6 +964,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Batch export to multiple platforms
   /export/platforms:
     get:
       operationId: listPlatforms
@@ -986,6 +992,7 @@ paths:
                       items:
                         type: string
       x-ossa-capability: cli-list-platforms
+      description: List available export platforms
   /templates:
     get:
       operationId: listTemplates
@@ -1007,6 +1014,7 @@ paths:
                 items:
                   $ref: "#/components/schemas/AgentTemplate"
       x-ossa-capability: cli-list-templates
+      description: List all agent templates
   /templates/{id}:
     get:
       operationId: getTemplate
@@ -1027,6 +1035,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/AgentTemplate"
       x-ossa-capability: cli-get-template
+      description: Get template by ID
 x-ossa-metadata:
   version: 0.5.0
   compliance:

@@ -533,6 +533,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Submit pairing code to establish session
   /pair/{sessionId}:
     delete:
       operationId: revokeSession
@@ -566,6 +567,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Revoke a pairing session
   /health:
     get:
       operationId: getDaemonHealth
@@ -581,6 +583,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/HealthResponse"
       x-ossa-capability: daemon-get-daemon-health
+      description: Daemon health check and workspace info
   /workspace:
     get:
       operationId: getWorkspaceState
@@ -601,6 +604,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
       x-ossa-capability: daemon-get-workspace-state
+      description: Full workspace state (files + manifests)
   /workspace/files:
     get:
       operationId: getFileTree
@@ -621,6 +625,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
       x-ossa-capability: daemon-get-file-tree
+      description: Workspace file tree
   /workspace/files/{path}:
     put:
       operationId: writeFile
@@ -669,6 +674,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Write file to workspace (validated for OSSA manifests)
   /skills:
     get:
       operationId: getSkillCatalog
@@ -705,6 +711,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
       x-ossa-capability: daemon-get-skill-catalog
+      description: Aggregated skill catalog from all sources
   /skills/install:
     post:
       operationId: installSkill
@@ -746,6 +753,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Install a skill to the workspace
   /execute:
     post:
       operationId: startExecution
@@ -781,6 +789,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Start agent execution
   /execute/{executionId}:
     get:
       operationId: getExecutionStatus
@@ -814,6 +823,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
       x-ossa-capability: daemon-get-execution-status
+      description: Get execution status
     delete:
       operationId: cancelExecution
       summary: Cancel a running execution
@@ -854,6 +864,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Cancel a running execution
   /sse/execution/{executionId}:
     get:
       operationId: streamExecution
@@ -879,6 +890,7 @@ paths:
         "404":
           description: Execution not found
       x-ossa-capability: daemon-stream-execution
+      description: Stream agent execution output via SSE
   /sse/workspace:
     get:
       operationId: streamWorkspace
@@ -895,6 +907,7 @@ paths:
         "401":
           description: Unauthorized
       x-ossa-capability: daemon-stream-workspace
+      description: Stream workspace file change events via SSE
   /sse/status:
     get:
       operationId: streamStatus
@@ -921,6 +934,7 @@ paths:
         "401":
           description: Unauthorized
       x-ossa-capability: daemon-stream-status
+      description: Stream daemon health metrics via SSE
   /ws:
     get:
       operationId: websocketUpgrade

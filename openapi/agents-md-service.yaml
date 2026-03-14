@@ -3,6 +3,9 @@ info:
   title: OSSA AGENTS.md Generation Service
   description: Service for generating and managing agents.md documentation files for repositories.
   version: 1.0.0
+  contact:
+    name: Bluefly OSSA Team
+    url: https://gitlab.com/blueflyio/ossa/openstandardagents
 servers:
   - url: /api/v1/agents-md
     description: v1 API root
@@ -50,6 +53,9 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Generate AGENTS.md for a repository
+      tags:
+        - Generate
   /batch:
     post:
       summary: Batch generate AGENTS.md for multiple repositories
@@ -95,6 +101,9 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Batch generate AGENTS.md for multiple repositories
+      tags:
+        - Batch
   /:
     get:
       summary: List all repositories with AGENTS.md status
@@ -132,6 +141,9 @@ paths:
                         validates:
                           type: boolean
       x-ossa-capability: agents-md-list-repos-status
+      description: List all repositories with AGENTS.md status
+      tags:
+        - General
   /{repoId}:
     parameters:
       - name: repoId
@@ -162,6 +174,9 @@ paths:
         "404":
           description: Repository not found
       x-ossa-capability: agents-md-get-repo-status
+      description: Get AGENTS.md status for a repository
+      tags:
+        - "{RepoId}"
     put:
       summary: Regenerate or update AGENTS.md for a repository
       operationId: updateAgentsMd
@@ -194,6 +209,9 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Regenerate or update AGENTS.md for a repository
+      tags:
+        - "{RepoId}"
     delete:
       summary: Remove AGENTS.md from a repository
       operationId: deleteAgentsMd
@@ -225,6 +243,9 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Remove AGENTS.md from a repository
+      tags:
+        - "{RepoId}"
   /template:
     get:
       summary: Get current AGENTS.md template
@@ -244,6 +265,9 @@ paths:
                     items:
                       type: string
       x-ossa-capability: agents-md-get-template
+      description: Get current AGENTS.md template
+      tags:
+        - Template
     put:
       summary: Update AGENTS.md template
       operationId: updateTemplate
@@ -277,6 +301,9 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Update AGENTS.md template
+      tags:
+        - Template
 components:
   schemas:
     RepoConfig:
@@ -371,3 +398,14 @@ x-ossa:
   agent:
     id: agents-md-service
     type: worker
+tags:
+  - name: Batch
+    description: Batch operations
+  - name: General
+    description: General operations
+  - name: Generate
+    description: Generate operations
+  - name: Template
+    description: Template operations
+  - name: "{RepoId}"
+    description: "{RepoId} operations"

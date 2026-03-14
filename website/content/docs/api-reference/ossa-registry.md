@@ -38,6 +38,8 @@ This API requires authentication. See [Authentication Guide](../authentication.m
 GET /agents
 ```
 
+**Description**: List all registered agents
+
 **Parameters**:
 
 - `role` (query) - No description
@@ -70,6 +72,8 @@ curl -X GET "https://api.ossa.dev/agents" \
 ```http
 POST /agents
 ```
+
+**Description**: Register a new agent
 
 **Request Body**:
 
@@ -104,6 +108,8 @@ curl -X POST "https://api.ossa.dev/agents" \
 GET /agents/{agentId}
 ```
 
+**Description**: Get agent details
+
 **Parameters**:
 
 - `undefined` (undefined) - No description
@@ -130,6 +136,8 @@ curl -X GET "https://api.ossa.dev/agents/{agentId}" \
 ```http
 PUT /agents/{agentId}
 ```
+
+**Description**: Update agent metadata
 
 **Parameters**:
 
@@ -166,6 +174,8 @@ curl -X PUT "https://api.ossa.dev/agents/{agentId}" \
 DELETE /agents/{agentId}
 ```
 
+**Description**: Deprecate an agent
+
 **Parameters**:
 
 - `undefined` (undefined) - No description
@@ -188,6 +198,8 @@ curl -X DELETE "https://api.ossa.dev/agents/{agentId}" \
 ```http
 GET /agents/{agentId}/versions
 ```
+
+**Description**: List agent versions
 
 **Parameters**:
 
@@ -217,6 +229,8 @@ curl -X GET "https://api.ossa.dev/agents/{agentId}/versions" \
 ```http
 POST /agents/{agentId}/versions
 ```
+
+**Description**: Publish new agent version
 
 **Parameters**:
 
@@ -255,6 +269,8 @@ curl -X POST "https://api.ossa.dev/agents/{agentId}/versions" \
 GET /agents/{agentId}/certifications
 ```
 
+**Description**: List agent certifications
+
 **Parameters**:
 
 - `undefined` (undefined) - No description
@@ -283,6 +299,8 @@ curl -X GET "https://api.ossa.dev/agents/{agentId}/certifications" \
 ```http
 POST /agents/{agentId}/certifications
 ```
+
+**Description**: Add certification
 
 **Parameters**:
 
@@ -321,6 +339,8 @@ curl -X POST "https://api.ossa.dev/agents/{agentId}/certifications" \
 POST /agents/{agentId}/deploy
 ```
 
+**Description**: Deploy agent to environment
+
 **Parameters**:
 
 - `undefined` (undefined) - No description
@@ -358,6 +378,8 @@ curl -X POST "https://api.ossa.dev/agents/{agentId}/deploy" \
 GET /agents/{agentId}/health
 ```
 
+**Description**: Get agent health metrics
+
 **Parameters**:
 
 - `undefined` (undefined) - No description
@@ -387,6 +409,8 @@ curl -X GET "https://api.ossa.dev/agents/{agentId}/health" \
 POST /compliance/validate
 ```
 
+**Description**: Validate agent compliance
+
 **Request Body**:
 
 ```json
@@ -415,6 +439,8 @@ curl -X POST "https://api.ossa.dev/compliance/validate" \
 ```http
 POST /search
 ```
+
+**Description**: Search agents
 
 **Request Body**:
 

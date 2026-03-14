@@ -936,6 +936,8 @@ paths:
                     type: string
                     format: date-time
       x-ossa-capability: reference-get-/health
+      description: Ecosystem health check
+      operationId: getHealth
   /ecosystems:
     get:
       tags:
@@ -967,6 +969,8 @@ paths:
                   count:
                     type: integer
       x-ossa-capability: reference-get-/ecosystems
+      description: List all ecosystems
+      operationId: getEcosystems
     post:
       tags:
         - Ecosystem
@@ -988,6 +992,8 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Create new ecosystem
+      operationId: postEcosystems
   /ecosystems/{ecosystemId}:
     get:
       tags:
@@ -1008,6 +1014,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/Ecosystem"
       x-ossa-capability: reference-get-/ecosystems/{ecosystem-id}
+      description: Get ecosystem details
+      operationId: getEcosystemsEcosystemid
     put:
       tags:
         - Ecosystem
@@ -1043,6 +1051,8 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Update ecosystem
+      operationId: putEcosystemsEcosystemid
     delete:
       tags:
         - Ecosystem
@@ -1061,6 +1071,8 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Delete ecosystem
+      operationId: deleteEcosystemsEcosystemid
   /ecosystems/{ecosystemId}/agents:
     get:
       tags:
@@ -1100,6 +1112,8 @@ paths:
                     items:
                       $ref: "#/components/schemas/Agent"
       x-ossa-capability: reference-get-/ecosystems/{ecosystem-id}/agents
+      description: List agents in ecosystem
+      operationId: getEcosystemsEcosystemidAgents
     post:
       tags:
         - Agents
@@ -1149,6 +1163,8 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Add agent to ecosystem
+      operationId: postEcosystemsEcosystemidAgents
   /ecosystems/{ecosystemId}/coordination:
     get:
       tags:
@@ -1169,6 +1185,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/CoordinationMatrix"
       x-ossa-capability: reference-get-/ecosystems/{ecosystem-id}/coordination
+      description: Get coordination matrix
+      operationId: getEcosystemsEcosystemidCoordination
   /ecosystems/{ecosystemId}/coordinate:
     post:
       tags:
@@ -1229,6 +1247,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      operationId: postEcosystemsEcosystemidCoordinate
   /learning/federated/sessions:
     post:
       tags:
@@ -1251,6 +1270,8 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Start federated learning session
+      operationId: postLearningFederatedSessions
   /learning/federated/sessions/{sessionId}:
     get:
       tags:
@@ -1271,6 +1292,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/FederatedLearningSession"
       x-ossa-capability: reference-get-/learning/federated/sessions/{session-id}
+      description: Get learning session status
+      operationId: getLearningFederatedSessionsSessionid
   /learning/federated/sessions/{sessionId}/results:
     get:
       tags:
@@ -1298,6 +1321,8 @@ paths:
                   privacyGuarantees:
                     type: object
       x-ossa-capability: reference-get-/learning/federated/sessions/{session-id}/results
+      description: Get federated learning results
+      operationId: getLearningFederatedSessionsSessionidResults
   /psychology/flow-state:
     post:
       tags:
@@ -1320,6 +1345,8 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Optimize developer flow state
+      operationId: postPsychologyFlowState
   /psychology/motivation/{developerId}:
     get:
       tags:
@@ -1340,6 +1367,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/MotivationImpact"
       x-ossa-capability: reference-get-/psychology/motivation/{developer-id}
+      description: Get developer motivation profile
+      operationId: getPsychologyMotivationDeveloperid
   /psychology/gamification/events:
     post:
       tags:
@@ -1358,6 +1387,8 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Record gamification event
+      operationId: postPsychologyGamificationEvents
   /research/cognitive-load:
     post:
       tags:
@@ -1378,6 +1409,8 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Submit cognitive load study data
+      operationId: postResearchCognitiveLoad
   /research/studies/{studyId}/insights:
     get:
       tags:
@@ -1409,6 +1442,8 @@ paths:
                     items:
                       type: string
       x-ossa-capability: reference-get-/research/studies/{study-id}/insights
+      description: Get research insights
+      operationId: getResearchStudiesStudyidInsights
   /revenue/pricing/optimize:
     post:
       tags:
@@ -1431,6 +1466,8 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Optimize pricing dynamically
+      operationId: postRevenuePricingOptimize
   /revenue/customer/{customerId}/value:
     get:
       tags:
@@ -1460,6 +1497,8 @@ paths:
                   upsellOpportunity:
                     type: object
       x-ossa-capability: reference-get-/revenue/customer/{customer-id}/value
+      description: Calculate customer value
+      operationId: getRevenueCustomerCustomeridValue
   /evolution/trigger:
     post:
       tags:
@@ -1491,6 +1530,8 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Trigger ecosystem evolution
+      operationId: postEvolutionTrigger
   /evolution/{ecosystemId}/status:
     get:
       tags:
@@ -1511,6 +1552,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/EvolutionState"
       x-ossa-capability: reference-get-/evolution/{ecosystem-id}/status
+      description: Get evolution status
+      operationId: getEvolutionEcosystemidStatus
   /evolution/{ecosystemId}/adapt:
     post:
       tags:
@@ -1561,6 +1604,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      operationId: postEvolutionEcosystemidAdapt
   /metrics/ecosystem/{ecosystemId}:
     get:
       tags:
@@ -1603,6 +1647,8 @@ paths:
                     items:
                       $ref: "#/components/schemas/AgentPerformance"
       x-ossa-capability: reference-get-/metrics/ecosystem/{ecosystem-id}
+      description: Get comprehensive ecosystem metrics
+      operationId: getMetricsEcosystemEcosystemid
 x-ossa-metadata:
   version: 0.3.3
   compliance:

@@ -5,6 +5,9 @@ info:
   description: |
     Real-time monitoring agent for system health, performance, and resource utilization.
     Collects metrics, detects anomalies, and generates alerts.
+  contact:
+    name: Bluefly OSSA Team
+    url: https://gitlab.com/blueflyio/ossa/openstandardagents
 x-ossa-metadata:
   version: 0.2.5-RC
   compliance:

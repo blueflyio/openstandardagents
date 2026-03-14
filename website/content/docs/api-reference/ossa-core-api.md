@@ -34,6 +34,8 @@ This API requires authentication. See [Authentication Guide](../authentication.m
 GET /health
 ```
 
+**Description**: Health check
+
 **Responses**:
 
 **200**: undefined
@@ -55,6 +57,8 @@ curl -X GET "https://api.ossa.dev/health" \
 GET /health/ready
 ```
 
+**Description**: Readiness check
+
 **Responses**:
 
 **200**: undefined
@@ -75,6 +79,8 @@ curl -X GET "https://api.ossa.dev/health/ready" \
 ```http
 GET /health/live
 ```
+
+**Description**: Liveness check
 
 **Responses**:
 
@@ -129,6 +135,8 @@ curl -X GET "https://api.ossa.dev/agents" \
 POST /agents
 ```
 
+**Description**: Register new agent
+
 **Request Body**:
 
 ```json
@@ -160,6 +168,8 @@ curl -X POST "https://api.ossa.dev/agents" \
 GET /agents/{agentId}
 ```
 
+**Description**: Get agent details
+
 **Parameters**:
 
 - `undefined` (undefined) - No description
@@ -186,6 +196,8 @@ curl -X GET "https://api.ossa.dev/agents/{agentId}" \
 ```http
 PUT /agents/{agentId}
 ```
+
+**Description**: Update agent registration
 
 **Parameters**:
 
@@ -220,6 +232,8 @@ curl -X PUT "https://api.ossa.dev/agents/{agentId}" \
 DELETE /agents/{agentId}
 ```
 
+**Description**: Unregister agent
+
 **Parameters**:
 
 - `undefined` (undefined) - No description
@@ -240,6 +254,8 @@ curl -X DELETE "https://api.ossa.dev/agents/{agentId}" \
 ```http
 GET /orchestration/workflows
 ```
+
+**Description**: List workflows
 
 **Parameters**:
 
@@ -266,6 +282,8 @@ curl -X GET "https://api.ossa.dev/orchestration/workflows" \
 ```http
 POST /orchestration/workflows
 ```
+
+**Description**: Create workflow
 
 **Request Body**:
 
@@ -295,6 +313,8 @@ curl -X POST "https://api.ossa.dev/orchestration/workflows" \
 ```http
 POST /orchestration/workflows/{workflowId}/execute
 ```
+
+**Description**: Execute workflow
 
 **Parameters**:
 
@@ -328,6 +348,8 @@ curl -X POST "https://api.ossa.dev/orchestration/workflows/{workflowId}/execute"
 ```http
 GET /orchestration/executions/{executionId}
 ```
+
+**Description**: Get execution status
 
 **Parameters**:
 
@@ -389,6 +411,8 @@ curl -X POST "https://api.ossa.dev/specification/validate" \
 GET /specification/taxonomies
 ```
 
+**Description**: List agent taxonomies
+
 **Responses**:
 
 **200**: Available taxonomies
@@ -409,6 +433,8 @@ curl -X GET "https://api.ossa.dev/specification/taxonomies" \
 ```http
 GET /specification/capabilities
 ```
+
+**Description**: List capability definitions
 
 **Parameters**:
 
@@ -434,6 +460,8 @@ curl -X GET "https://api.ossa.dev/specification/capabilities" \
 ```http
 POST /certification/request
 ```
+
+**Description**: Request certification
 
 **Request Body**:
 
@@ -464,6 +492,8 @@ curl -X POST "https://api.ossa.dev/certification/request" \
 GET /certification/{certificationId}
 ```
 
+**Description**: Get certification status
+
 **Parameters**:
 
 - `certificationId` (path, required) - No description
@@ -489,6 +519,8 @@ curl -X GET "https://api.ossa.dev/certification/{certificationId}" \
 GET /governance/policies
 ```
 
+**Description**: List governance policies
+
 **Responses**:
 
 **200**: Governance policies
@@ -509,6 +541,8 @@ curl -X GET "https://api.ossa.dev/governance/policies" \
 ```http
 GET /governance/compliance/{agentId}
 ```
+
+**Description**: Get agent compliance status
 
 **Parameters**:
 
@@ -535,6 +569,8 @@ curl -X GET "https://api.ossa.dev/governance/compliance/{agentId}" \
 GET /federation/nodes
 ```
 
+**Description**: List federation nodes
+
 **Responses**:
 
 **200**: Federation nodes
@@ -555,6 +591,8 @@ curl -X GET "https://api.ossa.dev/federation/nodes" \
 ```http
 POST /federation/join
 ```
+
+**Description**: Join federation
 
 **Request Body**:
 
@@ -585,6 +623,8 @@ curl -X POST "https://api.ossa.dev/federation/join" \
 GET /monitoring/metrics
 ```
 
+**Description**: Get platform metrics
+
 **Responses**:
 
 **200**: Platform metrics
@@ -605,6 +645,8 @@ curl -X GET "https://api.ossa.dev/monitoring/metrics" \
 ```http
 GET /monitoring/events
 ```
+
+**Description**: Get platform events
 
 **Parameters**:
 

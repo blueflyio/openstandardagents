@@ -102,6 +102,8 @@ paths:
         - $ref: "#/components/x-sse-events/CapabilityResponse"
         - $ref: "#/components/x-sse-events/Error"
       x-ossa-capability: protocol-subscribe-to-events
+      tags:
+        - SSE
   /events/stream/{streamId}:
     get:
       summary: Dedicated stream endpoint
@@ -132,6 +134,8 @@ paths:
       security:
         - bearerAuth: []
       x-ossa-capability: protocol-subscribe-to-stream
+      tags:
+        - SSE
   /capabilities/{capability}/invoke:
     post:
       summary: Invoke capability with streaming response
@@ -200,6 +204,8 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      tags:
+        - SSE
 components:
   x-sse-events:
     Message:
@@ -448,6 +454,8 @@ tags:
     description: Streaming capability invocations
   - name: Health
     description: Agent health monitoring
+  - name: SSE
+    description: SSE operations
 x-ossa-metadata:
   version: 0.3.3
   compliance:

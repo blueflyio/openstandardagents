@@ -11,6 +11,9 @@ info:
     - Zod Validation: All inputs/outputs validated with Zod schemas
     - DRY: Single source of truth (.version.json)
     - SOLID: Each command is a separate service
+  contact:
+    name: Bluefly OSSA Team
+    url: https://gitlab.com/blueflyio/ossa/openstandardagents
 servers:
   - url: cli://ossa-dev
     description: OSSA Developer CLI
@@ -978,3 +981,12 @@ x-ossa:
   agent:
     id: ossa-dev-cli
     type: gateway
+tags:
+  - name: Release Management
+    description: Release Management operations
+  - name: Spec Generation
+    description: Spec Generation operations
+  - name: Version Management
+    description: Version Management operations
+  - name: Workflow Help
+    description: Workflow Help operations

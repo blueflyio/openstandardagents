@@ -5,6 +5,9 @@ info:
   description: |
     Quality assurance agent for code review, testing, and continuous improvement.
     Analyzes code quality, detects issues, and suggests improvements.
+  contact:
+    name: Bluefly OSSA Team
+    url: https://gitlab.com/blueflyio/ossa/openstandardagents
 x-ossa-metadata:
   version: 0.2.5-RC
   compliance:

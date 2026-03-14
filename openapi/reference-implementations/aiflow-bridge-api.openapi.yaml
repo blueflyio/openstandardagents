@@ -5,6 +5,9 @@ info:
   description: |
     OSSA agent with AIFlow-Agent bridge for social crypto analysis.
     Integrates with Twitter, Telegram, and Discord for autonomous social media presence.
+  contact:
+    name: Bluefly OSSA Team
+    url: https://gitlab.com/blueflyio/ossa/openstandardagents
 x-ossa-metadata:
   version: 0.2.5-RC
   compliance:

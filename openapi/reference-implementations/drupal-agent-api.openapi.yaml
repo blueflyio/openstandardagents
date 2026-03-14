@@ -14,6 +14,9 @@ info:
 
     All agents write/read data through this API.
     Drupal becomes the central data store and management platform.
+  contact:
+    name: Bluefly OSSA Team
+    url: https://gitlab.com/blueflyio/ossa/openstandardagents
 servers:
   - url: https://platform.orb.local/api/v1
     description: Production
@@ -59,6 +62,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Create content node
     get:
       tags:
         - content
@@ -88,6 +92,7 @@ paths:
                 items:
                   $ref: "#/components/schemas/ContentResponse"
       x-ossa-capability: reference-query-content
+      description: Query content
   /content/{nid}:
     get:
       tags:
@@ -108,6 +113,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ContentResponse"
       x-ossa-capability: reference-get-content
+      description: Get content by ID
     put:
       tags:
         - content
@@ -132,6 +138,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Update content
     delete:
       tags:
         - content
@@ -150,6 +157,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Delete content
   /agents/sessions:
     post:
       tags:

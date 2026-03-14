@@ -10,6 +10,9 @@ info:
       $ref: '../schemas/common/agent.yaml#/components/schemas/AgentManifest'
       $ref: '../schemas/common/errors.yaml#/components/schemas/Problem'
       $ref: '../schemas/common/pagination.yaml#/components/schemas/Pagination'
+  contact:
+    name: Bluefly OSSA Team
+    url: https://gitlab.com/blueflyio/ossa/openstandardagents
 components:
   schemas:
     AgentManifest:
@@ -87,3 +90,6 @@ x-ossa:
   agent:
     id: schemas-index
     type: specialist
+servers:
+  - url: https://schemas.openstandardagents.org
+    description: Shared schema index

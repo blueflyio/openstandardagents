@@ -5,6 +5,9 @@ info:
   description: |
     Advanced workflow orchestration agent that coordinates multi-step processes,
     manages agent swarms, and provides intelligent task routing.
+  contact:
+    name: Bluefly OSSA Team
+    url: https://gitlab.com/blueflyio/ossa/openstandardagents
 x-ossa-metadata:
   version: 0.2.5-RC
   compliance:

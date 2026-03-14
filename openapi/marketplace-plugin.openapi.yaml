@@ -161,6 +161,7 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
       x-ossa-capability: marketplace-get-catalog-item
+      description: Get full details for a catalog item
   /catalog/{itemType}/{itemId}/versions:
     get:
       operationId: listItemVersions
@@ -193,6 +194,7 @@ paths:
                     items:
                       $ref: "#/components/schemas/VersionEntry"
       x-ossa-capability: marketplace-list-item-versions
+      description: List all versions of a catalog item
   /plugins:
     get:
       operationId: listInstalledPlugins
@@ -216,6 +218,7 @@ paths:
                     items:
                       $ref: "#/components/schemas/InstalledPlugin"
       x-ossa-capability: marketplace-list-installed-plugins
+      description: List all installed plugins
     post:
       operationId: installPlugin
       summary: Install a plugin from marketplace
@@ -274,6 +277,7 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
       x-ossa-capability: marketplace-get-installed-plugin
+      description: Get details of an installed plugin
     put:
       operationId: updatePlugin
       summary: Update an installed plugin to a new version
@@ -305,6 +309,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Update an installed plugin to a new version
     delete:
       operationId: removePlugin
       summary: Remove an installed plugin
@@ -342,6 +347,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Remove an installed plugin
   /plugins/check-updates:
     get:
       operationId: checkPluginUpdates
@@ -372,6 +378,7 @@ paths:
                         changelog:
                           type: string
       x-ossa-capability: marketplace-check-plugin-updates
+      description: Check for available updates across all installed plugins
   /plugins/resolve:
     post:
       operationId: resolveDependencies
@@ -443,6 +450,7 @@ paths:
                     items:
                       $ref: "#/components/schemas/AgentSummary"
       x-ossa-capability: marketplace-list-agents
+      description: List available agents
     post:
       operationId: publishAgent
       summary: Publish an agent to the marketplace
@@ -505,6 +513,7 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
       x-ossa-capability: marketplace-get-agent
+      description: Get full agent manifest and metadata
   /agents/{agentId}/export:
     post:
       operationId: exportAgent
@@ -596,6 +605,7 @@ paths:
                     items:
                       $ref: "#/components/schemas/SkillSummary"
       x-ossa-capability: marketplace-list-skills
+      description: List available skills
   /skills/{skillId}:
     get:
       operationId: getSkill
@@ -616,6 +626,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/SkillDetail"
       x-ossa-capability: marketplace-get-skill
+      description: Get full skill definition (SKILL.md content + metadata)
   /mcp-servers:
     get:
       operationId: listMcpServers
@@ -648,6 +659,7 @@ paths:
                     items:
                       $ref: "#/components/schemas/McpServerSummary"
       x-ossa-capability: marketplace-list-mcp-servers
+      description: List available MCP servers
   /mcp-servers/{serverId}:
     get:
       operationId: getMcpServer
@@ -668,6 +680,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/McpServerDetail"
       x-ossa-capability: marketplace-get-mcp-server
+      description: Get MCP server details including discovered tools
   /tools:
     get:
       operationId: listTools
@@ -701,6 +714,7 @@ paths:
                     items:
                       $ref: "#/components/schemas/ToolSummary"
       x-ossa-capability: marketplace-list-tools
+      description: List available tools (standalone and from MCP servers)
   /templates:
     get:
       operationId: listTemplates
@@ -730,6 +744,7 @@ paths:
                     items:
                       $ref: "#/components/schemas/TemplateSummary"
       x-ossa-capability: marketplace-list-templates
+      description: List available agent and workflow templates
   /templates/{templateId}/scaffold:
     post:
       operationId: scaffoldFromTemplate
@@ -773,6 +788,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Generate a new agent manifest from a template
   /workflows:
     get:
       operationId: listWorkflows
@@ -797,6 +813,7 @@ paths:
                     items:
                       $ref: "#/components/schemas/WorkflowSummary"
       x-ossa-capability: marketplace-list-workflows
+      description: List available multi-agent workflows
   /policies:
     get:
       operationId: listPolicies
@@ -831,6 +848,7 @@ paths:
                     items:
                       $ref: "#/components/schemas/PolicySummary"
       x-ossa-capability: marketplace-list-policies
+      description: List available security policies and Cedar rule sets
   /export/platforms:
     get:
       operationId: listExportPlatforms
@@ -850,6 +868,7 @@ paths:
                     items:
                       $ref: "#/components/schemas/ExportPlatform"
       x-ossa-capability: marketplace-list-export-platforms
+      description: List all supported export target platforms
   /export:
     post:
       operationId: exportManifest
@@ -959,6 +978,7 @@ paths:
       x-ossa-autonomy:
         level: supervised
         approval_required: true
+      description: Verify an agent manifest signature and trust tier
   /registry:
     get:
       operationId: listRegistryAgents
@@ -1007,6 +1027,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/RegistryEntry"
       x-ossa-capability: marketplace-get-registry-agent
+      description: Get agent from registry by GAID
   /registry/revoke/{agentId}:
     put:
       operationId: revokeAgent
