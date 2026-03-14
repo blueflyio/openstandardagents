@@ -859,7 +859,7 @@ def _get_pg_pool():
 
     postgres_url = os.getenv(
         "POSTGRES_URL",
-        "postgresql://postgres:postgres@localhost:5432/agent_memory"
+        "postgresql://postgres:your-password-here@localhost:5432/agent_memory"
     )
 
     if _pg_pool is None:
@@ -987,7 +987,7 @@ def get_memory(session_id: str = "default") -> ConversationBufferMemory:
 
         postgres_url = os.getenv(
             "POSTGRES_URL",
-            "postgresql://postgres:postgres@localhost:5432/agent_memory"
+            "postgresql://postgres:your-password-here@localhost:5432/agent_memory"
         )
 
         message_history = PostgresChatMessageHistory(

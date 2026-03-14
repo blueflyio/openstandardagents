@@ -187,7 +187,7 @@ spec:
               - "-y"
               - "@modelcontextprotocol/server-postgres"
           env:
-            DATABASE_URL: "postgresql://user:pass@localhost:5432/db"
+            DATABASE_URL: "postgresql://user:${POSTGRES_PASSWORD}@localhost:5432/db"
           capabilities:
             tools:
               listChanged: false

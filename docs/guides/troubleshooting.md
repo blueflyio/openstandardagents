@@ -242,7 +242,7 @@ Slow message processing, high latency.
 
 **Solution**: Switch to RabbitMQ or Redis
 ```bash
-MESSENGER_TRANSPORT_DSN=amqp://user:password@rabbitmq:5672/%2f
+MESSENGER_TRANSPORT_DSN=amqp://user:${RABBITMQ_PASSWORD}@rabbitmq:5672/%2f
 ```
 
 #### 2. Too Much Middleware

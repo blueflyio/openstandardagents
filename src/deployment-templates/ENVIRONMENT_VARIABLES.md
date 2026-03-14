@@ -258,25 +258,25 @@ ALLOWED_ORIGINS="*"
 **Type**: Connection String
 **Required**: Yes
 **Secret**: Yes
-**Format**: `postgresql://user:password@host:port/database`
+**Format**: `postgresql://<user>:<password>@<host>:<port>/<database>`
 **Description**: PostgreSQL connection string
 
 **Examples**:
 ```bash
 # Standard format
-DATABASE_URL="postgresql://ossa_user:password@localhost:5432/ossa_db"
+DATABASE_URL="postgresql://ossa_user:${POSTGRES_PASSWORD}@localhost:5432/ossa_db"
 
 # With SSL
-DATABASE_URL="postgresql://user:pass@host:5432/db?sslmode=require"
+DATABASE_URL="postgresql://user:${POSTGRES_PASSWORD}@host:5432/db?sslmode=require"
 
 # Railway (auto-injected)
 DATABASE_URL="postgresql://postgres:***@monorail.proxy.rlwy.net:12345/railway"
 
 # Render (auto-injected)
-DATABASE_URL="postgres://user:pass@dpg-abc123.oregon-postgres.render.com/db"
+DATABASE_URL="postgres://user:${POSTGRES_PASSWORD}@dpg-abc123.oregon-postgres.render.com/db"
 
 # Fly.io (auto-injected)
-DATABASE_URL="postgres://postgres:pass@top2.nearest.of.ossa-db.internal:5432/ossa"
+DATABASE_URL="postgres://postgres:${POSTGRES_PASSWORD}@top2.nearest.of.ossa-db.internal:5432/ossa"
 ```
 
 **Platform Notes**:
@@ -354,7 +354,7 @@ POSTGRES_SHARED_BUFFERS=4GB    # Large DB
 **Type**: Connection String
 **Required**: Yes
 **Secret**: Yes
-**Format**: `redis://user:password@host:port`
+**Format**: `redis://<user>:<password>@<host>:<port>`
 **Description**: Redis connection string
 
 **Examples**:
@@ -1027,7 +1027,7 @@ DRUPAL_API_KEY=CHANGE_ME
 BRIDGE_API_KEY=CHANGE_ME
 
 # Database (auto-injected by platforms)
-DATABASE_URL=postgresql://user:password@localhost:5432/ossa
+DATABASE_URL=postgresql://user:${POSTGRES_PASSWORD}@localhost:5432/ossa
 REDIS_URL=redis://localhost:6379
 
 # Vector Database

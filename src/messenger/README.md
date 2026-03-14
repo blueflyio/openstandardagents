@@ -178,7 +178,7 @@ console.log(`Queue healthy: ${status.healthy}`);
 MESSENGER_TRANSPORT_DSN=doctrine://default
 
 # RabbitMQ
-MESSENGER_TRANSPORT_DSN=amqp://user:pass@host:5672/%2f
+MESSENGER_TRANSPORT_DSN=amqp://user:${RABBITMQ_PASSWORD}@host:5672/%2f
 
 # Redis
 MESSENGER_TRANSPORT_DSN=redis://redis:6379/messages
