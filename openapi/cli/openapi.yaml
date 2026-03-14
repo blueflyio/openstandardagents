@@ -76,7 +76,7 @@ paths:
         Validate OSSA agent/task/workflow manifest against JSON schema.
         Supports OpenAPI extensions validation with --openapi flag.
       operationId: cliValidate
-      tags: [Validation]
+      tags: [ Validation ]
       requestBody:
         required: true
         content:
@@ -92,13 +92,17 @@ paths:
                 $ref: '#/components/schemas/ValidateResponse'
         '400':
           $ref: '#/components/responses/ValidationError'
+      x-ossa-capability: cli-validate
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 
   /cli/lint:
     post:
       summary: "Lint manifest (CLI: ossa lint)"
       description: Lint OSSA manifest for best practices and style
       operationId: cliLint
-      tags: [Validation]
+      tags: [ Validation ]
       requestBody:
         required: true
         content:
@@ -112,13 +116,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LintResponse'
+      x-ossa-capability: cli-lint
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 
   /cli/diff:
     post:
       summary: "Diff manifests (CLI: ossa diff)"
       description: Compare two OSSA manifests and show differences
       operationId: cliDiff
-      tags: [Validation]
+      tags: [ Validation ]
       requestBody:
         required: true
         content:
@@ -132,6 +140,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DiffResponse'
+      x-ossa-capability: cli-diff
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 
   # ============================================================================
   # EXPORT/IMPORT COMMANDS
@@ -144,7 +156,7 @@ paths:
         Supported platforms: cursor, openai, anthropic, langchain, crewai,
         autogen, langflow, langgraph, llamaindex, vercel-ai
       operationId: cliExport
-      tags: [Export]
+      tags: [ Export ]
       requestBody:
         required: true
         content:
@@ -160,13 +172,17 @@ paths:
                 $ref: '#/components/schemas/ExportResponse'
         '400':
           $ref: '#/components/responses/ValidationError'
+      x-ossa-capability: cli-export
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 
   /cli/import:
     post:
       summary: "Import manifest (CLI: ossa import)"
       description: Import from platform-specific format to OSSA manifest
       operationId: cliImport
-      tags: [Import]
+      tags: [ Import ]
       requestBody:
         required: true
         content:
@@ -180,6 +196,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ImportResponse'
+      x-ossa-capability: cli-import
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 
   # ============================================================================
   # GENERATION COMMANDS
@@ -189,7 +209,7 @@ paths:
       summary: "Initialize manifest (CLI: ossa init)"
       description: Create a new OSSA agent/task/workflow manifest
       operationId: cliInit
-      tags: [Generation]
+      tags: [ Generation ]
       requestBody:
         required: true
         content:
@@ -203,13 +223,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InitResponse'
+      x-ossa-capability: cli-init
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 
   /cli/generate:
     post:
       summary: "Generate code (CLI: ossa generate)"
       description: Generate code, types, or configurations from OSSA manifest
       operationId: cliGenerate
-      tags: [Generation]
+      tags: [ Generation ]
       requestBody:
         required: true
         content:
@@ -223,13 +247,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GenerateResponse'
+      x-ossa-capability: cli-generate
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 
   /cli/migrate:
     post:
       summary: "Migrate manifest (CLI: ossa migrate)"
       description: Migrate OSSA manifest between versions
       operationId: cliMigrate
-      tags: [Migration]
+      tags: [ Migration ]
       requestBody:
         required: true
         content:
@@ -243,6 +271,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MigrateResponse'
+      x-ossa-capability: cli-migrate
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 
   /cli/upgrade:
     post:
@@ -251,7 +283,7 @@ paths:
         Automatically upgrade manifest(s) to the latest OSSA schema version.
         Supports dry-run mode, automatic backups, and recursive directory processing.
       operationId: cliUpgrade
-      tags: [Migration]
+      tags: [ Migration ]
       requestBody:
         required: true
         content:
@@ -267,6 +299,10 @@ paths:
                 $ref: '#/components/schemas/UpgradeResponse'
         '400':
           $ref: '#/components/responses/ValidationError'
+      x-ossa-capability: cli-upgrade
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 
   /cli/estimate:
     post:
@@ -275,7 +311,7 @@ paths:
         Estimate token counts and projected costs for an agent.
         Supports scenario-based projections and multi-model comparison.
       operationId: cliEstimate
-      tags: [Cost Estimation]
+      tags: [ Cost Estimation ]
       requestBody:
         required: true
         content:
@@ -289,6 +325,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/EstimateResponse'
+      x-ossa-capability: cli-estimate
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 
   # ============================================================================
   # AGENT CRUD COMMANDS
@@ -298,7 +338,7 @@ paths:
       summary: "List agents (CLI: ossa agents list)"
       description: List all agents with filtering
       operationId: cliAgentList
-      tags: [Agents]
+      tags: [ Agents ]
       parameters:
         - name: search
           in: query
@@ -328,12 +368,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AgentsList'
+      x-ossa-capability: cli-agent-list
 
     post:
       summary: "Create agent (CLI: ossa agents create)"
       description: Create a new agent from manifest
       operationId: cliAgentCreate
-      tags: [Agents]
+      tags: [ Agents ]
       requestBody:
         required: true
         content:
@@ -349,13 +390,17 @@ paths:
                 $ref: '#/components/schemas/AgentResponse'
         '400':
           $ref: '#/components/responses/ValidationError'
+      x-ossa-capability: cli-agent-create
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 
   /cli/agents/{name}:
     get:
       summary: "Get agent (CLI: ossa agents get)"
       description: Get detailed information about an agent
       operationId: cliAgentGet
-      tags: [Agents]
+      tags: [ Agents ]
       parameters:
         - $ref: '#/components/parameters/AgentName'
       responses:
@@ -367,12 +412,13 @@ paths:
                 $ref: '#/components/schemas/AgentResponse'
         '404':
           $ref: '#/components/responses/NotFound'
+      x-ossa-capability: cli-agent-get
 
     put:
       summary: "Update agent (CLI: ossa agents update)"
       description: Update an existing agent
       operationId: cliAgentUpdate
-      tags: [Agents]
+      tags: [ Agents ]
       parameters:
         - $ref: '#/components/parameters/AgentName'
       requestBody:
@@ -392,12 +438,16 @@ paths:
           $ref: '#/components/responses/ValidationError'
         '404':
           $ref: '#/components/responses/NotFound'
+      x-ossa-capability: cli-agent-update
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 
     delete:
       summary: "Delete agent (CLI: ossa agents delete)"
       description: Delete an agent
       operationId: cliAgentDelete
-      tags: [Agents]
+      tags: [ Agents ]
       parameters:
         - $ref: '#/components/parameters/AgentName'
         - name: force
@@ -410,6 +460,10 @@ paths:
           description: Agent deleted
         '404':
           $ref: '#/components/responses/NotFound'
+      x-ossa-capability: cli-agent-delete
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 
   # ============================================================================
   # REGISTRY COMMANDS
@@ -419,7 +473,7 @@ paths:
       summary: "Publish agent (CLI: ossa publish)"
       description: Publish agent to registry
       operationId: cliPublish
-      tags: [Registry]
+      tags: [ Registry ]
       requestBody:
         required: true
         content:
@@ -433,13 +487,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PublishResponse'
+      x-ossa-capability: cli-publish
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 
   /cli/registry/search:
     get:
       summary: "Search registry (CLI: ossa search)"
       description: Search for agents in registry
       operationId: cliSearch
-      tags: [Registry]
+      tags: [ Registry ]
       parameters:
         - name: query
           in: query
@@ -458,13 +516,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SearchResponse'
+      x-ossa-capability: cli-search
 
   /cli/registry/install:
     post:
       summary: "Install agent (CLI: ossa install)"
       description: Install agent from registry
       operationId: cliInstall
-      tags: [Registry]
+      tags: [ Registry ]
       requestBody:
         required: true
         content:
@@ -478,13 +537,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InstallResponse'
+      x-ossa-capability: cli-install
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 
   /cli/registry/info/{name}:
     get:
       summary: "Get agent info (CLI: ossa info)"
       description: Get detailed information about a registry agent
       operationId: cliInfo
-      tags: [Registry]
+      tags: [ Registry ]
       parameters:
         - $ref: '#/components/parameters/AgentName'
       responses:
@@ -494,6 +557,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InfoResponse'
+      x-ossa-capability: cli-info
 
   # ============================================================================
   # SCHEMA COMMANDS
@@ -503,7 +567,7 @@ paths:
       summary: "Get schema (CLI: ossa schema)"
       description: Get OSSA JSON schema
       operationId: cliSchema
-      tags: [Schema]
+      tags: [ Schema ]
       parameters:
         - name: version
           in: query
@@ -514,7 +578,7 @@ paths:
           in: query
           schema:
             type: string
-            enum: [json, yaml]
+            enum: [ json, yaml ]
             default: json
       responses:
         '200':
@@ -523,6 +587,7 @@ paths:
             application/json:
               schema:
                 type: object
+      x-ossa-capability: cli-schema
 
   # ============================================================================
   # TESTING COMMANDS
@@ -535,7 +600,7 @@ paths:
         Supports pre-defined test scenarios and watch mode for development.
         Mock mode allows testing without API keys using deterministic responses.
       operationId: cliTest
-      tags: [Testing]
+      tags: [ Testing ]
       requestBody:
         required: true
         content:
@@ -549,6 +614,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TestResponse'
+      x-ossa-capability: cli-test
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 
   # ============================================================================
   # DEPLOYMENT COMMANDS
@@ -558,7 +627,7 @@ paths:
       summary: "Deploy agent (CLI: ossa deploy)"
       description: Deploy agent to runtime environment
       operationId: cliDeploy
-      tags: [Deployment]
+      tags: [ Deployment ]
       requestBody:
         required: true
         content:
@@ -572,13 +641,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DeployResponse'
+      x-ossa-capability: cli-deploy
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 
   /cli/run:
     post:
       summary: "Run agent (CLI: ossa run)"
       description: Run agent locally or in development mode
       operationId: cliRun
-      tags: [Deployment]
+      tags: [ Deployment ]
       requestBody:
         required: true
         content:
@@ -592,13 +665,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RunResponse'
+      x-ossa-capability: cli-run
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 
   /cli/status:
     get:
       summary: "Get deployment status (CLI: ossa status)"
       description: Get deployment status for an agent
       operationId: cliStatus
-      tags: [Deployment]
+      tags: [ Deployment ]
       parameters:
         - name: name
           in: query
@@ -611,13 +688,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StatusResponse'
+      x-ossa-capability: cli-status
 
   /cli/stop:
     post:
       summary: "Stop agent (CLI: ossa stop)"
       description: Stop a running agent
       operationId: cliStop
-      tags: [Deployment]
+      tags: [ Deployment ]
       requestBody:
         required: true
         content:
@@ -631,13 +709,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StopResponse'
+      x-ossa-capability: cli-stop
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 
   /cli/rollback:
     post:
       summary: "Rollback deployment (CLI: ossa rollback)"
       description: Rollback to previous deployment
       operationId: cliRollback
-      tags: [Deployment]
+      tags: [ Deployment ]
       requestBody:
         required: true
         content:
@@ -651,6 +733,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RollbackResponse'
+      x-ossa-capability: cli-rollback
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 
   # ============================================================================
   # LLMS.TXT COMMANDS
@@ -660,7 +746,7 @@ paths:
       summary: "Generate llms.txt (CLI: ossa llms-txt generate)"
       description: Generate llms.txt file from OSSA manifest
       operationId: cliLlmsTxtGenerate
-      tags: [llms.txt]
+      tags: [ llms.txt ]
       requestBody:
         required: true
         content:
@@ -674,13 +760,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LlmsTxtGenerateResponse'
+      x-ossa-capability: cli-llms-txt-generate
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 
   /cli/llms-txt/validate:
     post:
       summary: "Validate llms.txt (CLI: ossa llms-txt validate)"
       description: Validate llms.txt file against OSSA manifest
       operationId: cliLlmsTxtValidate
-      tags: [llms.txt]
+      tags: [ llms.txt ]
       requestBody:
         required: true
         content:
@@ -694,13 +784,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LlmsTxtValidateResponse'
+      x-ossa-capability: cli-llms-txt-validate
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 
   /cli/llms-txt/sync:
     post:
       summary: "Sync llms.txt (CLI: ossa llms-txt sync)"
       description: Sync llms.txt with manifest changes
       operationId: cliLlmsTxtSync
-      tags: [llms.txt]
+      tags: [ llms.txt ]
       requestBody:
         required: true
         content:
@@ -714,6 +808,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LlmsTxtSyncResponse'
+      x-ossa-capability: cli-llms-txt-sync
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 
 components:
   parameters:
@@ -732,7 +830,7 @@ components:
     # ============================================================================
     Kind:
       type: string
-      enum: [Agent, Task, Workflow]
+      enum: [ Agent, Task, Workflow ]
       description: OSSA manifest kind
 
     ExportPlatform:
@@ -841,7 +939,7 @@ components:
             properties:
               severity:
                 type: string
-                enum: [error, warning, info]
+                enum: [ error, warning, info ]
               path:
                 type: string
               message:
@@ -864,7 +962,7 @@ components:
           type: string
         format:
           type: string
-          enum: [unified, json, side-by-side]
+          enum: [ unified, json, side-by-side ]
           default: unified
 
     DiffResponse:
@@ -883,7 +981,7 @@ components:
                 type: string
               type:
                 type: string
-                enum: [added, removed, modified]
+                enum: [ added, removed, modified ]
               before:
                 type: string
               after:
@@ -962,7 +1060,7 @@ components:
           $ref: '#/components/schemas/Kind'
         template:
           type: string
-          enum: [minimal, standard, enterprise]
+          enum: [ minimal, standard, enterprise ]
           default: standard
         output:
           type: string
@@ -1098,7 +1196,7 @@ components:
                 type: string
               status:
                 type: string
-                enum: [upgraded, skipped, failed]
+                enum: [ upgraded, skipped, failed ]
               message:
                 type: string
               currentVersion:
@@ -1124,7 +1222,7 @@ components:
           default: 100
         timeframe:
           type: string
-          enum: [day, week, month, year]
+          enum: [ day, week, month, year ]
           description: Timeframe for cost projection
           default: month
         compare:
@@ -1397,11 +1495,11 @@ components:
           type: string
         environment:
           type: string
-          enum: [local, dev, staging, production]
+          enum: [ local, dev, staging, production ]
           default: local
         driver:
           type: string
-          enum: [local, docker, kubernetes]
+          enum: [ local, docker, kubernetes ]
           default: local
         dryRun:
           type: boolean
@@ -1449,7 +1547,7 @@ components:
           type: string
         status:
           type: string
-          enum: [running, stopped, error, deploying]
+          enum: [ running, stopped, error, deploying ]
         deploymentId:
           type: string
         uptime:
@@ -1623,3 +1721,12 @@ x-ossa-metadata:
     approved: true
     approvedBy: OSSA Standards Team
     approvalDate: 2026-01-09
+  observability:
+    tracing: true
+    metrics: true
+    logging: true
+x-ossa:
+  version: 0.5.0
+  agent:
+    id: ossa-cli
+    type: gateway

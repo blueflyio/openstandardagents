@@ -33,7 +33,6 @@ All APIs use standard HTTP status codes and return errors in the following forma
 ## Support
 
 For API support, please:
-
 - Check the [Troubleshooting Guide](../guides/troubleshooting.md)
 - Open an issue on [GitLab](https://gitlab.com/blueflyio/openstandardagents/-/issues)
 - Join our [Discord community](https://discord.gg/ossa)

@@ -9,19 +9,18 @@ info:
     - Domain expertise (devops, security, data, ml, etc.)
     - Capability level (tier_1_read, tier_2_write, tier_3_full, tier_4_policy)
     - Runtime environment (kubernetes, docker, serverless, local)
-
 servers:
   - url: http://localhost:3000/api/v1
     description: Local development
-
 paths:
   /taxonomy/categories:
     get:
       summary: List all taxonomy categories
       operationId: listTaxonomyCategories
-      tags: [Taxonomy]
+      tags:
+        - Taxonomy
       responses:
-        '200':
+        "200":
           description: List of taxonomy categories
           content:
             application/json:
@@ -31,32 +30,38 @@ paths:
                   categories:
                     type: array
                     items:
-                      $ref: '#/components/schemas/TaxonomyCategory'
+                      $ref: "#/components/schemas/TaxonomyCategory"
                   total:
                     type: integer
+      x-ossa-capability: list-taxonomy-categories
     post:
       summary: Create new category
       operationId: createTaxonomyCategory
-      tags: [Taxonomy]
+      tags:
+        - Taxonomy
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TaxonomyCategoryInput'
+              $ref: "#/components/schemas/TaxonomyCategoryInput"
       responses:
-        '201':
+        "201":
           description: Category created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TaxonomyCategory'
-
+                $ref: "#/components/schemas/TaxonomyCategory"
+      x-ossa-capability: create-taxonomy-category
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /taxonomy/categories/{categoryId}:
     get:
       summary: Get category by ID
       operationId: getTaxonomyCategory
-      tags: [Taxonomy]
+      tags:
+        - Taxonomy
       parameters:
         - name: categoryId
           in: path
@@ -64,19 +69,20 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Taxonomy category details
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TaxonomyCategory'
-        '404':
+                $ref: "#/components/schemas/TaxonomyCategory"
+        "404":
           description: Category not found
-
+      x-ossa-capability: get-taxonomy-category
     put:
       summary: Update category
       operationId: updateTaxonomyCategory
-      tags: [Taxonomy]
+      tags:
+        - Taxonomy
       parameters:
         - name: categoryId
           in: path
@@ -88,19 +94,23 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TaxonomyCategoryInput'
+              $ref: "#/components/schemas/TaxonomyCategoryInput"
       responses:
-        '200':
+        "200":
           description: Category updated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TaxonomyCategory'
-
+                $ref: "#/components/schemas/TaxonomyCategory"
+      x-ossa-capability: update-taxonomy-category
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
     delete:
       summary: Delete category
       operationId: deleteTaxonomyCategory
-      tags: [Taxonomy]
+      tags:
+        - Taxonomy
       parameters:
         - name: categoryId
           in: path
@@ -108,16 +118,20 @@ paths:
           schema:
             type: string
       responses:
-        '204':
+        "204":
           description: Category deleted
-        '404':
+        "404":
           description: Category not found
-
+      x-ossa-capability: delete-taxonomy-category
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /taxonomy/classify:
     post:
       summary: Classify an agent manifest
       operationId: classifyAgent
-      tags: [Taxonomy]
+      tags:
+        - Taxonomy
       requestBody:
         required: true
         content:
@@ -129,18 +143,22 @@ paths:
                   type: object
                   description: OSSA agent manifest to classify
       responses:
-        '200':
+        "200":
           description: Classification result
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AgentClassification'
-
+                $ref: "#/components/schemas/AgentClassification"
+      x-ossa-capability: classify-agent
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /taxonomy/validate:
     post:
       summary: Validate taxonomy assignment
       operationId: validateTaxonomy
-      tags: [Taxonomy]
+      tags:
+        - Taxonomy
       requestBody:
         required: true
         content:
@@ -153,13 +171,16 @@ paths:
                 manifest:
                   type: object
       responses:
-        '200':
+        "200":
           description: Validation result
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ValidationResult'
-
+                $ref: "#/components/schemas/ValidationResult"
+      x-ossa-capability: validate-taxonomy
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 components:
   schemas:
     TaxonomyCategory:
@@ -184,7 +205,12 @@ components:
           description: Category description
         type:
           type: string
-          enum: [role, domain, capability, runtime, custom]
+          enum:
+            - role
+            - domain
+            - capability
+            - runtime
+            - custom
           description: Category type
         level:
           type: integer
@@ -211,7 +237,6 @@ components:
         updated_at:
           type: string
           format: date-time
-
     TaxonomyCategoryInput:
       type: object
       required:
@@ -225,7 +250,12 @@ components:
           type: string
         type:
           type: string
-          enum: [role, domain, capability, runtime, custom]
+          enum:
+            - role
+            - domain
+            - capability
+            - runtime
+            - custom
         level:
           type: integer
           minimum: 1
@@ -241,7 +271,6 @@ components:
           type: array
           items:
             type: string
-
     AgentClassification:
       type: object
       required:
@@ -280,7 +309,6 @@ components:
           items:
             type: string
           description: Suggested categories based on manifest analysis
-
     ValidationResult:
       type: object
       required:
@@ -304,7 +332,10 @@ components:
                 type: string
               severity:
                 type: string
-                enum: [error, warning, info]
+                enum:
+                  - error
+                  - warning
+                  - info
         warnings:
           type: array
           items:
@@ -319,3 +350,16 @@ components:
           items:
             type: string
           description: Recommendations for improving taxonomy fit
+x-ossa-metadata:
+  version: 0.3.6
+  compliance:
+    level: standard
+  observability:
+    tracing: true
+    metrics: true
+    logging: true
+x-ossa:
+  version: 0.5.0
+  agent:
+    id: agent-taxonomy-api
+    type: specialist

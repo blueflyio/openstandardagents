@@ -48,6 +48,7 @@ export const version = 1;
 
 export function factory(_compiler: TsCompilerInstance) {
   return (ctx: ts.TransformationContext): ts.Transformer<ts.SourceFile> => {
-    return (sf: ts.SourceFile) => ts.visitNode(sf, visitor(ctx)) as ts.SourceFile;
+    return (sf: ts.SourceFile) =>
+      ts.visitNode(sf, visitor(ctx)) as ts.SourceFile;
   };
 }

@@ -76,7 +76,9 @@ describe('Release surface', () => {
     expect(readme).not.toContain('apiVersion: ossa/v0.4.6');
     expect(readme).not.toContain('## Production Status (v0.4.6)');
 
-    expect(packageJson.exports?.['./schema']).toBe(`./${SPEC_PATH}/agent.schema.json`);
+    expect(packageJson.exports?.['./schema']).toBe(
+      `./${SPEC_PATH}/agent.schema.json`
+    );
     expect(packageJson.exports?.['./agent-card-schema']).toBe(
       `./${SPEC_PATH}/agent-card.schema.json`
     );

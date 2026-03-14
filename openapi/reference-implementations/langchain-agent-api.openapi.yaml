@@ -5,7 +5,6 @@ info:
   description: |
     LangChain agent with tool chain integration.
     Uses tools to accomplish tasks with memory and chain capabilities.
-
 x-ossa-metadata:
   version: 0.2.5-RC
   compliance:
@@ -14,35 +13,36 @@ x-ossa-metadata:
       - OSSA
       - OpenAPI 3.1
       - LangChain
-
+  observability:
+    tracing: true
+    metrics: true
+    logging: true
 x-ossa:
   version: 0.2.5-RC
   agent:
-    id: langchain-agent
-    type: worker
+    id: reference-implementations-langchain-agent-api
+    type: specialist
     compliance:
       standards:
         - openapi-first
       validated: true
-      validatedAt: "2024-01-15T10:00:00Z"
-
+      validatedAt: 2024-01-15T10:00:00Z
 servers:
   - url: http://localhost:3000
     description: Local development
-
 tags:
   - name: tasks
     description: Task execution operations
   - name: tools
     description: Tool operations
-
 paths:
   /execute:
     post:
       summary: Execute task with tools
       description: Execute a task using LangChain agent with available tools
       operationId: executeTask
-      tags: [tasks]
+      tags:
+        - tasks
       x-ossa-capability: execute_task
       x-ossa-autonomy:
         level: autonomous
@@ -57,7 +57,8 @@ paths:
           application/json:
             schema:
               type: object
-              required: [task]
+              required:
+                - task
               properties:
                 task:
                   type: string
@@ -71,7 +72,7 @@ paths:
                   type: object
                   description: Additional context
       responses:
-        '200':
+        "200":
           description: Task executed
           content:
             application/json:
@@ -91,13 +92,13 @@ paths:
                           type: string
                   memory:
                     type: object
-
   /tools/calculator:
     post:
       summary: Calculator tool
       description: Perform mathematical calculations
       operationId: calculator
-      tags: [tools]
+      tags:
+        - tools
       x-ossa-capability: calculator
       x-ossa-autonomy:
         level: autonomous
@@ -108,17 +109,24 @@ paths:
           application/json:
             schema:
               type: object
-              required: [operation, a, b]
+              required:
+                - operation
+                - a
+                - b
               properties:
                 operation:
                   type: string
-                  enum: [add, subtract, multiply, divide]
+                  enum:
+                    - add
+                    - subtract
+                    - multiply
+                    - divide
                 a:
                   type: number
                 b:
                   type: number
       responses:
-        '200':
+        "200":
           description: Calculation result
           content:
             application/json:
@@ -127,13 +135,13 @@ paths:
                 properties:
                   result:
                     type: number
-
   /tools/search:
     post:
       summary: Web search tool
       description: Search the web for information
       operationId: webSearch
-      tags: [tools]
+      tags:
+        - tools
       x-ossa-capability: web_search
       x-ossa-autonomy:
         level: autonomous
@@ -144,13 +152,14 @@ paths:
           application/json:
             schema:
               type: object
-              required: [query]
+              required:
+                - query
               properties:
                 query:
                   type: string
                   description: Search query
       responses:
-        '200':
+        "200":
           description: Search results
           content:
             application/json:
@@ -168,4 +177,3 @@ paths:
                           type: string
                         snippet:
                           type: string
-

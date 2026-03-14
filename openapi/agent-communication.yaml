@@ -53,7 +53,7 @@ paths:
 
         For async delivery, use webhookUrl in the request. The response will be
         delivered to the webhook endpoint when available.
-      tags: [Messaging]
+      tags: [ Messaging ]
       operationId: sendMessage
       requestBody:
         required: true
@@ -105,6 +105,10 @@ paths:
                 $ref: '#/components/schemas/Problem'
         '500':
           $ref: '#/components/responses/InternalServerError'
+      x-ossa-capability: send-message
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 
   /messages/{messageId}:
     get:
@@ -112,7 +116,7 @@ paths:
       description: |
         Retrieve the delivery status and metadata for a previously sent message.
         Includes delivery timestamps, acknowledgment status, and any errors.
-      tags: [Messaging]
+      tags: [ Messaging ]
       operationId: getMessageStatus
       parameters:
         - name: messageId
@@ -133,6 +137,7 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
+      x-ossa-capability: get-message-status
 
   /messages/{messageId}/acknowledge:
     post:
@@ -140,7 +145,7 @@ paths:
       description: |
         Acknowledge successful processing of a received message. Required for
         at-least-once delivery guarantee. Unacknowledged messages may be redelivered.
-      tags: [Messaging]
+      tags: [ Messaging ]
       operationId: acknowledgeMessage
       parameters:
         - name: messageId
@@ -157,7 +162,7 @@ paths:
               properties:
                 result:
                   type: string
-                  enum: [success, failure]
+                  enum: [ success, failure ]
                   default: success
                 error:
                   type: string
@@ -169,13 +174,17 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
+      x-ossa-capability: acknowledge-message
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 
   # Pub/Sub Channels
   /channels:
     get:
       summary: List available channels
       description: List all communication channels the authenticated agent has access to
-      tags: [Channels]
+      tags: [ Channels ]
       operationId: listChannels
       parameters:
         - name: filter
@@ -194,13 +203,14 @@ paths:
                 $ref: '#/components/schemas/ChannelsList'
         '500':
           $ref: '#/components/responses/InternalServerError'
+      x-ossa-capability: list-channels
 
     post:
       summary: Create communication channel
       description: |
         Create a new pub/sub channel for message broadcasting. Channels enable
         many-to-many communication between agents.
-      tags: [Channels]
+      tags: [ Channels ]
       operationId: createChannel
       requestBody:
         required: true
@@ -243,12 +253,16 @@ paths:
                 $ref: '#/components/schemas/Problem'
         '500':
           $ref: '#/components/responses/InternalServerError'
+      x-ossa-capability: create-channel
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 
   /channels/{channelId}:
     get:
       summary: Get channel details
       description: Retrieve channel metadata, subscriber count, and configuration
-      tags: [Channels]
+      tags: [ Channels ]
       operationId: getChannel
       parameters:
         - $ref: '#/components/parameters/ChannelId'
@@ -261,13 +275,14 @@ paths:
                 $ref: '#/components/schemas/Channel'
         '404':
           $ref: '#/components/responses/NotFound'
+      x-ossa-capability: get-channel
 
     delete:
       summary: Delete channel
       description: |
         Delete a communication channel. All subscriptions will be removed.
         Messages in the channel will be deleted according to retention policy.
-      tags: [Channels]
+      tags: [ Channels ]
       operationId: deleteChannel
       parameters:
         - $ref: '#/components/parameters/ChannelId'
@@ -278,6 +293,10 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
+      x-ossa-capability: delete-channel
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 
   /channels/{channelId}/subscribe:
     post:
@@ -285,7 +304,7 @@ paths:
       description: |
         Subscribe to a channel to receive published messages. Supports both
         push (webhook) and pull (polling) delivery modes.
-      tags: [Channels]
+      tags: [ Channels ]
       operationId: subscribeToChannel
       parameters:
         - $ref: '#/components/parameters/ChannelId'
@@ -303,14 +322,14 @@ paths:
                   deliveryMode: push
                   webhookUrl: https://worker-003.example.com/channels/task-updates
                   filter:
-                    messageTypes: [TaskAssigned, TaskCompleted]
+                    messageTypes: [ TaskAssigned, TaskCompleted ]
               pollingSubscription:
                 summary: Polling-based subscription
                 value:
                   agentId: uadp://monitor-001
                   deliveryMode: pull
                   filter:
-                    messageTypes: [TaskCompleted]
+                    messageTypes: [ TaskCompleted ]
       responses:
         '201':
           description: Subscription created
@@ -328,12 +347,16 @@ paths:
                 $ref: '#/components/schemas/Problem'
         '500':
           $ref: '#/components/responses/InternalServerError'
+      x-ossa-capability: subscribe-to-channel
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 
   /channels/{channelId}/unsubscribe:
     post:
       summary: Unsubscribe from channel
       description: Remove subscription from a channel
-      tags: [Channels]
+      tags: [ Channels ]
       operationId: unsubscribeFromChannel
       parameters:
         - $ref: '#/components/parameters/ChannelId'
@@ -343,7 +366,7 @@ paths:
           application/json:
             schema:
               type: object
-              required: [subscriptionId]
+              required: [ subscriptionId ]
               properties:
                 subscriptionId:
                   type: string
@@ -353,6 +376,10 @@ paths:
           description: Unsubscribed successfully
         '404':
           $ref: '#/components/responses/NotFound'
+      x-ossa-capability: unsubscribe-from-channel
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 
   /channels/{channelId}/publish:
     post:
@@ -360,7 +387,7 @@ paths:
       description: |
         Broadcast a message to all channel subscribers. Message will be delivered
         according to each subscriber's delivery mode (push/pull).
-      tags: [Channels]
+      tags: [ Channels ]
       operationId: publishToChannel
       parameters:
         - $ref: '#/components/parameters/ChannelId'
@@ -379,7 +406,7 @@ paths:
                     taskId: task-123
                     status: completed
                     result:
-                      entities: ["Apple Inc.", "Cupertino", "California"]
+                      entities: [ "Apple Inc.", "Cupertino", "California" ]
                     completedAt: "2025-12-18T14:30:00Z"
               agentStarted:
                 summary: Agent lifecycle event
@@ -388,7 +415,7 @@ paths:
                   payload:
                     agentId: uadp://worker-005
                     version: 1.2.0
-                    capabilities: [text_analysis, entity_extraction]
+                    capabilities: [ text_analysis, entity_extraction ]
                     startedAt: "2025-12-18T14:25:00Z"
       responses:
         '202':
@@ -407,6 +434,10 @@ paths:
                 $ref: '#/components/schemas/Problem'
         '500':
           $ref: '#/components/responses/InternalServerError'
+      x-ossa-capability: publish-to-channel
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 
   /channels/{channelId}/messages:
     get:
@@ -414,7 +445,7 @@ paths:
       description: |
         Poll for messages from a channel (pull-based delivery). Only available
         for subscriptions with deliveryMode: pull.
-      tags: [Channels]
+      tags: [ Channels ]
       operationId: pullChannelMessages
       parameters:
         - $ref: '#/components/parameters/ChannelId'
@@ -437,7 +468,7 @@ paths:
           description: Acknowledgment mode
           schema:
             type: string
-            enum: [auto, manual]
+            enum: [ auto, manual ]
             default: manual
       responses:
         '200':
@@ -455,6 +486,7 @@ paths:
                     type: boolean
         '404':
           $ref: '#/components/responses/NotFound'
+      x-ossa-capability: pull-channel-messages
 
   # Streaming (Server-Sent Events)
   /stream:
@@ -463,7 +495,7 @@ paths:
       description: |
         Open a Server-Sent Events stream to receive real-time messages.
         Client maintains persistent connection for streaming updates.
-      tags: [Streaming]
+      tags: [ Streaming ]
       operationId: streamMessages
       parameters:
         - name: agentId
@@ -503,6 +535,7 @@ paths:
                     data: {"taskId":"task-456","status":"completed","result":{"summary":"Document analyzed"}}
         '401':
           $ref: '#/components/responses/Unauthorized'
+      x-ossa-capability: stream-messages
 
   # Webhooks (for async callbacks)
   /webhooks:
@@ -511,7 +544,7 @@ paths:
       description: |
         Register a webhook endpoint to receive async message delivery.
         The A2A platform will POST messages to the registered URL.
-      tags: [Webhooks]
+      tags: [ Webhooks ]
       operationId: registerWebhook
       requestBody:
         required: true
@@ -538,12 +571,16 @@ paths:
                     description: HMAC secret for verifying webhook authenticity
         '400':
           $ref: '#/components/responses/ValidationError'
+      x-ossa-capability: register-webhook
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 
   /webhooks/{webhookId}:
     delete:
       summary: Unregister webhook
       description: Remove a webhook endpoint registration
-      tags: [Webhooks]
+      tags: [ Webhooks ]
       operationId: unregisterWebhook
       parameters:
         - name: webhookId
@@ -557,12 +594,16 @@ paths:
           description: Webhook unregistered
         '404':
           $ref: '#/components/responses/NotFound'
+      x-ossa-capability: unregister-webhook
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 
   # Health
   /health:
     get:
       summary: Health check
-      tags: [Health]
+      tags: [ Health ]
       operationId: healthCheck
       security: []
       responses:
@@ -570,6 +611,7 @@ paths:
           $ref: '#/components/responses/HealthCheck'
         '503':
           $ref: '#/components/responses/ServiceUnavailable'
+      x-ossa-capability: health-check
 
 components:
   securitySchemes:
@@ -649,7 +691,7 @@ components:
           default: 30000
         priority:
           type: string
-          enum: [low, normal, high, critical]
+          enum: [ low, normal, high, critical ]
           default: normal
         webhookUrl:
           type: string
@@ -718,11 +760,11 @@ components:
           description: Correlation ID for request/reply pattern
         status:
           type: string
-          enum: [pending, delivered, acknowledged, failed]
+          enum: [ pending, delivered, acknowledged, failed ]
           description: Message delivery status
         priority:
           type: string
-          enum: [low, normal, high, critical]
+          enum: [ low, normal, high, critical ]
         createdAt:
           type: string
           format: date-time
@@ -751,7 +793,7 @@ components:
           description: Unique message identifier
         status:
           type: string
-          enum: [accepted, queued]
+          enum: [ accepted, queued ]
           description: Initial message status
         estimatedDelivery:
           type: string
@@ -869,7 +911,7 @@ components:
           description: Subscribing agent URI
         deliveryMode:
           type: string
-          enum: [push, pull]
+          enum: [ push, pull ]
           description: Message delivery mode (push=webhook, pull=polling)
         webhookUrl:
           type: string
@@ -910,7 +952,7 @@ components:
           format: uri
         deliveryMode:
           type: string
-          enum: [push, pull]
+          enum: [ push, pull ]
         webhookUrl:
           type: string
           format: uri
@@ -918,7 +960,7 @@ components:
           $ref: '#/components/schemas/SubscriptionFilter'
         status:
           type: string
-          enum: [active, paused, failed]
+          enum: [ active, paused, failed ]
         createdAt:
           type: string
           format: date-time
@@ -985,7 +1027,7 @@ components:
       properties:
         status:
           type: string
-          enum: [healthy, degraded, unhealthy]
+          enum: [ healthy, degraded, unhealthy ]
         version:
           type: string
         uptime:
@@ -1000,7 +1042,7 @@ components:
             properties:
               status:
                 type: string
-                enum: [pass, fail]
+                enum: [ pass, fail ]
               message:
                 type: string
 
@@ -1070,3 +1112,12 @@ x-ossa-metadata:
     frameworks:
       - OSSA v0.3.3
       - OpenAPI 3.1
+  observability:
+    tracing: true
+    metrics: true
+    logging: true
+x-ossa:
+  version: 0.5.0
+  agent:
+    id: agent-communication-api
+    type: integrator

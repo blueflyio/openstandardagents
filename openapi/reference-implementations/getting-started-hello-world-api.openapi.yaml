@@ -6,7 +6,6 @@ info:
     Minimal OSSA-compliant agent API demonstrating basic capabilities.
     This agent can greet users, echo messages, and report its status.
     Perfect for learning OSSA fundamentals and testing deployments.
-
 x-ossa-metadata:
   version: 0.2.5-RC
   compliance:
@@ -14,22 +13,23 @@ x-ossa-metadata:
     frameworks:
       - OSSA
       - OpenAPI 3.1
-
+  observability:
+    tracing: true
+    metrics: true
+    logging: true
 x-ossa:
   version: 0.2.5-RC
   agent:
-    id: hello-world-agent
-    type: worker
+    id: reference-implementations-getting-started-hello-world-api
+    type: specialist
     compliance:
       standards:
         - openapi-first
       validated: true
-      validatedAt: "2024-01-15T10:00:00Z"
-
+      validatedAt: 2024-01-15T10:00:00Z
 servers:
   - url: http://localhost:3000
     description: Local development server
-
 tags:
   - name: greeting
     description: Greeting operations
@@ -37,14 +37,14 @@ tags:
     description: Echo operations
   - name: status
     description: Status operations
-
 paths:
   /greet:
     post:
       summary: Generate greeting
       description: Generates a personalized greeting message for a user
       operationId: greet
-      tags: [greeting]
+      tags:
+        - greeting
       x-ossa-capability: greeting
       x-ossa-autonomy:
         level: autonomous
@@ -59,19 +59,24 @@ paths:
           application/json:
             schema:
               type: object
-              required: [name]
+              required:
+                - name
               properties:
                 name:
                   type: string
                   description: Name to greet
-                  example: "Alice"
+                  example: Alice
                 language:
                   type: string
-                  enum: [en, es, fr, de]
+                  enum:
+                    - en
+                    - es
+                    - fr
+                    - de
                   default: en
                   description: Language for greeting
       responses:
-        '200':
+        "200":
           description: Greeting generated successfully
           content:
             application/json:
@@ -84,13 +89,13 @@ paths:
                   timestamp:
                     type: string
                     format: date-time
-
   /echo:
     post:
       summary: Echo input
       description: Echo back a message sent to the agent
       operationId: echo
-      tags: [echo]
+      tags:
+        - echo
       x-ossa-capability: echo_message
       x-ossa-autonomy:
         level: autonomous
@@ -101,13 +106,14 @@ paths:
           application/json:
             schema:
               type: object
-              required: [message]
+              required:
+                - message
               properties:
                 message:
                   type: string
                   description: Message to echo
       responses:
-        '200':
+        "200":
           description: Message echoed
           content:
             application/json:
@@ -119,19 +125,19 @@ paths:
                   received_at:
                     type: string
                     format: date-time
-
   /status:
     get:
       summary: Get agent status
       description: Returns the current status of the agent
       operationId: getStatus
-      tags: [status]
+      tags:
+        - status
       x-ossa-capability: get_status
       x-ossa-autonomy:
         level: autonomous
         approval_required: false
       responses:
-        '200':
+        "200":
           description: Agent status
           content:
             application/json:
@@ -140,10 +146,12 @@ paths:
                 properties:
                   status:
                     type: string
-                    enum: [online, offline, maintenance]
+                    enum:
+                      - online
+                      - offline
+                      - maintenance
                   version:
                     type: string
                   uptime:
                     type: integer
                     description: Uptime in seconds
-

@@ -44,7 +44,6 @@ ossa generate chat --output chat-agent.yaml
 ## API Endpoint Connection
 
 This command uses the following API endpoint:
-
 - `POST /api/v1/agents/generate` - [API Reference](../api-reference/index.md)
 
 ## Exit Codes

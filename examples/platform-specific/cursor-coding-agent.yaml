@@ -4,7 +4,7 @@ metadata:
   name: cursor-coding-assistant
   version: 1.0.0
   description: AI coding assistant for Cursor IDE with advanced code generation and refactoring
-  author: Bluefly Platform
+  author: Agent Platform
   tags:
     - cursor
     - coding-assistant

@@ -24,7 +24,6 @@ info:
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
-
 servers:
   - url: https://registry.openstandardagents.org/api/v1
     description: Production
@@ -32,7 +31,6 @@ servers:
     description: Staging
   - url: http://localhost:3100/api/v1
     description: Local development
-
 tags:
   - name: agents
     description: Agent CRUD operations
@@ -46,17 +44,17 @@ tags:
     description: Cryptographic signatures
   - name: analytics
     description: Usage metrics
-
 paths:
   /agents:
     get:
       summary: List all agents
       operationId: listAgents
-      tags: [agents]
+      tags:
+        - agents
       parameters:
-        - $ref: '#/components/parameters/PageParam'
-        - $ref: '#/components/parameters/LimitParam'
-        - $ref: '#/components/parameters/SortParam'
+        - $ref: "#/components/parameters/PageParam"
+        - $ref: "#/components/parameters/LimitParam"
+        - $ref: "#/components/parameters/SortParam"
         - name: namespace
           in: query
           schema:
@@ -73,24 +71,29 @@ paths:
             type: array
             items:
               type: string
-              enum: [fedramp, iso27001, soc2, hipaa]
+              enum:
+                - fedramp
+                - iso27001
+                - soc2
+                - hipaa
           description: Filter by compliance frameworks
       responses:
-        '200':
+        "200":
           description: List of agents
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AgentListResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '500':
-          $ref: '#/components/responses/InternalError'
-
+                $ref: "#/components/schemas/AgentListResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalError"
+      x-ossa-capability: registry-list-agents
     post:
       summary: Register new agent
       operationId: createAgent
-      tags: [agents]
+      tags:
+        - agents
       security:
         - bearerAuth: []
       requestBody:
@@ -98,128 +101,142 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AgentCreateRequest'
+              $ref: "#/components/schemas/AgentCreateRequest"
       responses:
-        '201':
+        "201":
           description: Agent created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Agent'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '409':
-          $ref: '#/components/responses/Conflict'
-        '500':
-          $ref: '#/components/responses/InternalError'
-
+                $ref: "#/components/schemas/Agent"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "500":
+          $ref: "#/components/responses/InternalError"
+      x-ossa-capability: registry-create-agent
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /agents/{namespace}/{name}:
     get:
       summary: Get agent details
       operationId: getAgent
-      tags: [agents]
+      tags:
+        - agents
       parameters:
-        - $ref: '#/components/parameters/NamespaceParam'
-        - $ref: '#/components/parameters/NameParam'
+        - $ref: "#/components/parameters/NamespaceParam"
+        - $ref: "#/components/parameters/NameParam"
       responses:
-        '200':
+        "200":
           description: Agent details
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Agent'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalError'
-
+                $ref: "#/components/schemas/Agent"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+      x-ossa-capability: registry-get-agent
     put:
       summary: Update agent
       operationId: updateAgent
-      tags: [agents]
+      tags:
+        - agents
       security:
         - bearerAuth: []
       parameters:
-        - $ref: '#/components/parameters/NamespaceParam'
-        - $ref: '#/components/parameters/NameParam'
+        - $ref: "#/components/parameters/NamespaceParam"
+        - $ref: "#/components/parameters/NameParam"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AgentUpdateRequest'
+              $ref: "#/components/schemas/AgentUpdateRequest"
       responses:
-        '200':
+        "200":
           description: Agent updated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Agent'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalError'
-
+                $ref: "#/components/schemas/Agent"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+      x-ossa-capability: registry-update-agent
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
     delete:
       summary: Delete agent
       operationId: deleteAgent
-      tags: [agents]
+      tags:
+        - agents
       security:
         - bearerAuth: []
       parameters:
-        - $ref: '#/components/parameters/NamespaceParam'
-        - $ref: '#/components/parameters/NameParam'
+        - $ref: "#/components/parameters/NamespaceParam"
+        - $ref: "#/components/parameters/NameParam"
       responses:
-        '204':
+        "204":
           description: Agent deleted
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalError'
-
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+      x-ossa-capability: registry-delete-agent
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /agents/{namespace}/{name}/versions:
     get:
       summary: List agent versions
       operationId: listVersions
-      tags: [versions]
+      tags:
+        - versions
       parameters:
-        - $ref: '#/components/parameters/NamespaceParam'
-        - $ref: '#/components/parameters/NameParam'
-        - $ref: '#/components/parameters/PageParam'
-        - $ref: '#/components/parameters/LimitParam'
+        - $ref: "#/components/parameters/NamespaceParam"
+        - $ref: "#/components/parameters/NameParam"
+        - $ref: "#/components/parameters/PageParam"
+        - $ref: "#/components/parameters/LimitParam"
       responses:
-        '200':
+        "200":
           description: List of versions
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VersionListResponse'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalError'
-
+                $ref: "#/components/schemas/VersionListResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+      x-ossa-capability: registry-list-versions
     post:
       summary: Publish new version
       operationId: createVersion
-      tags: [versions]
+      tags:
+        - versions
       security:
         - bearerAuth: []
       parameters:
-        - $ref: '#/components/parameters/NamespaceParam'
-        - $ref: '#/components/parameters/NameParam'
+        - $ref: "#/components/parameters/NamespaceParam"
+        - $ref: "#/components/parameters/NameParam"
       requestBody:
         required: true
         content:
@@ -232,7 +249,7 @@ paths:
               properties:
                 version:
                   type: string
-                  pattern: '^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+)?$'
+                  pattern: ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+)?$
                   description: Semantic version
                 manifest:
                   type: string
@@ -246,77 +263,86 @@ paths:
                   format: binary
                   description: GPG signature
       responses:
-        '201':
+        "201":
           description: Version created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Version'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '409':
-          $ref: '#/components/responses/Conflict'
-        '500':
-          $ref: '#/components/responses/InternalError'
-
+                $ref: "#/components/schemas/Version"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "500":
+          $ref: "#/components/responses/InternalError"
+      x-ossa-capability: registry-create-version
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /agents/{namespace}/{name}/versions/{version}:
     get:
       summary: Get version details
       operationId: getVersion
-      tags: [versions]
+      tags:
+        - versions
       parameters:
-        - $ref: '#/components/parameters/NamespaceParam'
-        - $ref: '#/components/parameters/NameParam'
-        - $ref: '#/components/parameters/VersionParam'
+        - $ref: "#/components/parameters/NamespaceParam"
+        - $ref: "#/components/parameters/NameParam"
+        - $ref: "#/components/parameters/VersionParam"
       responses:
-        '200':
+        "200":
           description: Version details
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Version'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalError'
-
+                $ref: "#/components/schemas/Version"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+      x-ossa-capability: registry-get-version
     delete:
       summary: Unpublish version
       operationId: deleteVersion
-      tags: [versions]
+      tags:
+        - versions
       security:
         - bearerAuth: []
       parameters:
-        - $ref: '#/components/parameters/NamespaceParam'
-        - $ref: '#/components/parameters/NameParam'
-        - $ref: '#/components/parameters/VersionParam'
+        - $ref: "#/components/parameters/NamespaceParam"
+        - $ref: "#/components/parameters/NameParam"
+        - $ref: "#/components/parameters/VersionParam"
       responses:
-        '204':
+        "204":
           description: Version deleted
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalError'
-
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+      x-ossa-capability: registry-delete-version
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /agents/{namespace}/{name}/versions/{version}/manifest:
     get:
       summary: Download manifest
       operationId: downloadManifest
-      tags: [versions]
+      tags:
+        - versions
       parameters:
-        - $ref: '#/components/parameters/NamespaceParam'
-        - $ref: '#/components/parameters/NameParam'
-        - $ref: '#/components/parameters/VersionParam'
+        - $ref: "#/components/parameters/NamespaceParam"
+        - $ref: "#/components/parameters/NameParam"
+        - $ref: "#/components/parameters/VersionParam"
       responses:
-        '200':
+        "200":
           description: OSSA manifest file
           content:
             application/x-yaml:
@@ -326,16 +352,17 @@ paths:
             application/json:
               schema:
                 type: object
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalError'
-
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+      x-ossa-capability: registry-download-manifest
   /search:
     get:
       summary: Search agents
       operationId: searchAgents
-      tags: [search]
+      tags:
+        - search
       parameters:
         - name: q
           in: query
@@ -343,8 +370,8 @@ paths:
           schema:
             type: string
           description: Search query
-        - $ref: '#/components/parameters/PageParam'
-        - $ref: '#/components/parameters/LimitParam'
+        - $ref: "#/components/parameters/PageParam"
+        - $ref: "#/components/parameters/LimitParam"
         - name: filters
           in: query
           schema:
@@ -361,77 +388,83 @@ paths:
                 items:
                   type: string
       responses:
-        '200':
+        "200":
           description: Search results
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SearchResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '500':
-          $ref: '#/components/responses/InternalError'
-
+                $ref: "#/components/schemas/SearchResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalError"
+      x-ossa-capability: registry-search-agents
   /certifications:
     get:
       summary: List all certifications
       operationId: listCertifications
-      tags: [certification]
+      tags:
+        - certification
       parameters:
-        - $ref: '#/components/parameters/PageParam'
-        - $ref: '#/components/parameters/LimitParam'
+        - $ref: "#/components/parameters/PageParam"
+        - $ref: "#/components/parameters/LimitParam"
       responses:
-        '200':
+        "200":
           description: List of certifications
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CertificationListResponse'
-        '500':
-          $ref: '#/components/responses/InternalError'
-
+                $ref: "#/components/schemas/CertificationListResponse"
+        "500":
+          $ref: "#/components/responses/InternalError"
+      x-ossa-capability: registry-list-certifications
   /certifications/{namespace}/{name}/request:
     post:
       summary: Request certification
       operationId: requestCertification
-      tags: [certification]
+      tags:
+        - certification
       security:
         - bearerAuth: []
       parameters:
-        - $ref: '#/components/parameters/NamespaceParam'
-        - $ref: '#/components/parameters/NameParam'
+        - $ref: "#/components/parameters/NamespaceParam"
+        - $ref: "#/components/parameters/NameParam"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CertificationRequest'
+              $ref: "#/components/schemas/CertificationRequest"
       responses:
-        '201':
+        "201":
           description: Certification request created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Certification'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalError'
-
+                $ref: "#/components/schemas/Certification"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+      x-ossa-capability: registry-request-certification
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /analytics/{namespace}/{name}:
     get:
       summary: Get agent analytics
       operationId: getAnalytics
-      tags: [analytics]
+      tags:
+        - analytics
       security:
         - bearerAuth: []
       parameters:
-        - $ref: '#/components/parameters/NamespaceParam'
-        - $ref: '#/components/parameters/NameParam'
+        - $ref: "#/components/parameters/NamespaceParam"
+        - $ref: "#/components/parameters/NameParam"
         - name: from
           in: query
           schema:
@@ -443,21 +476,21 @@ paths:
             type: string
             format: date-time
       responses:
-        '200':
+        "200":
           description: Analytics data
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Analytics'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalError'
-
+                $ref: "#/components/schemas/Analytics"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+      x-ossa-capability: registry-get-analytics
 components:
   securitySchemes:
     bearerAuth:
@@ -465,7 +498,6 @@ components:
       scheme: bearer
       bearerFormat: JWT
       description: JWT token obtained from authentication endpoint
-
   parameters:
     NamespaceParam:
       name: namespace
@@ -473,27 +505,24 @@ components:
       required: true
       schema:
         type: string
-        pattern: '^[a-z0-9][a-z0-9-]*[a-z0-9]$'
+        pattern: ^[a-z0-9][a-z0-9-]*[a-z0-9]$
       description: Agent namespace (e.g., 'ossa', 'my-org')
-
     NameParam:
       name: name
       in: path
       required: true
       schema:
         type: string
-        pattern: '^[a-z0-9][a-z0-9-]*[a-z0-9]$'
+        pattern: ^[a-z0-9][a-z0-9-]*[a-z0-9]$
       description: Agent name
-
     VersionParam:
       name: version
       in: path
       required: true
       schema:
         type: string
-        pattern: '^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+)?$'
+        pattern: ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+)?$
       description: Semantic version
-
     PageParam:
       name: page
       in: query
@@ -502,7 +531,6 @@ components:
         minimum: 1
         default: 1
       description: Page number
-
     LimitParam:
       name: limit
       in: query
@@ -512,16 +540,18 @@ components:
         maximum: 100
         default: 20
       description: Items per page
-
     SortParam:
       name: sort
       in: query
       schema:
         type: string
-        enum: [name, downloads, updated, created]
+        enum:
+          - name
+          - downloads
+          - updated
+          - created
         default: downloads
       description: Sort field
-
   schemas:
     Agent:
       type: object
@@ -582,19 +612,22 @@ components:
           type: array
           items:
             type: string
-            enum: [fedramp, iso27001, soc2, hipaa]
+            enum:
+              - fedramp
+              - iso27001
+              - soc2
+              - hipaa
           description: Compliance frameworks
         maintainers:
           type: array
           items:
-            $ref: '#/components/schemas/Maintainer'
+            $ref: "#/components/schemas/Maintainer"
         created_at:
           type: string
           format: date-time
         updated_at:
           type: string
           format: date-time
-
     AgentCreateRequest:
       type: object
       required:
@@ -604,10 +637,10 @@ components:
       properties:
         namespace:
           type: string
-          pattern: '^[a-z0-9][a-z0-9-]*[a-z0-9]$'
+          pattern: ^[a-z0-9][a-z0-9-]*[a-z0-9]$
         name:
           type: string
-          pattern: '^[a-z0-9][a-z0-9-]*[a-z0-9]$'
+          pattern: ^[a-z0-9][a-z0-9-]*[a-z0-9]$
         description:
           type: string
           maxLength: 500
@@ -623,7 +656,6 @@ components:
           type: array
           items:
             type: string
-
     AgentUpdateRequest:
       type: object
       properties:
@@ -642,7 +674,6 @@ components:
           type: array
           items:
             type: string
-
     AgentListResponse:
       type: object
       required:
@@ -652,10 +683,9 @@ components:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/Agent'
+            $ref: "#/components/schemas/Agent"
         pagination:
-          $ref: '#/components/schemas/Pagination'
-
+          $ref: "#/components/schemas/Pagination"
     Version:
       type: object
       required:
@@ -697,7 +727,6 @@ components:
         created_at:
           type: string
           format: date-time
-
     VersionListResponse:
       type: object
       required:
@@ -707,10 +736,9 @@ components:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/Version'
+            $ref: "#/components/schemas/Version"
         pagination:
-          $ref: '#/components/schemas/Pagination'
-
+          $ref: "#/components/schemas/Pagination"
     SearchResponse:
       type: object
       required:
@@ -721,17 +749,16 @@ components:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/SearchResult'
+            $ref: "#/components/schemas/SearchResult"
         total:
           type: integer
         query:
           type: string
         pagination:
-          $ref: '#/components/schemas/Pagination'
-
+          $ref: "#/components/schemas/Pagination"
     SearchResult:
       allOf:
-        - $ref: '#/components/schemas/Agent'
+        - $ref: "#/components/schemas/Agent"
         - type: object
           properties:
             score:
@@ -740,7 +767,6 @@ components:
             highlight:
               type: object
               description: Highlighted matching text
-
     Certification:
       type: object
       required:
@@ -758,7 +784,10 @@ components:
           format: uuid
         level:
           type: string
-          enum: [compatible, certified, enterprise]
+          enum:
+            - compatible
+            - certified
+            - enterprise
           description: |
             - compatible: Basic OSSA compliance
             - certified: Full audit passed
@@ -767,10 +796,19 @@ components:
           type: array
           items:
             type: string
-            enum: [fedramp, iso27001, soc2, hipaa]
+            enum:
+              - fedramp
+              - iso27001
+              - soc2
+              - hipaa
         status:
           type: string
-          enum: [pending, in_review, approved, rejected, expired]
+          enum:
+            - pending
+            - in_review
+            - approved
+            - rejected
+            - expired
         badge_url:
           type: string
           format: uri
@@ -788,7 +826,6 @@ components:
           format: date-time
         notes:
           type: string
-
     CertificationRequest:
       type: object
       required:
@@ -797,20 +834,26 @@ components:
       properties:
         level:
           type: string
-          enum: [compatible, certified, enterprise]
+          enum:
+            - compatible
+            - certified
+            - enterprise
         version:
           type: string
         compliance_frameworks:
           type: array
           items:
             type: string
-            enum: [fedramp, iso27001, soc2, hipaa]
+            enum:
+              - fedramp
+              - iso27001
+              - soc2
+              - hipaa
         documentation_url:
           type: string
           format: uri
         notes:
           type: string
-
     CertificationListResponse:
       type: object
       required:
@@ -820,10 +863,9 @@ components:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/Certification'
+            $ref: "#/components/schemas/Certification"
         pagination:
-          $ref: '#/components/schemas/Pagination'
-
+          $ref: "#/components/schemas/Pagination"
     Analytics:
       type: object
       required:
@@ -874,7 +916,6 @@ components:
                 type: string
               count:
                 type: integer
-
     Maintainer:
       type: object
       required:
@@ -890,11 +931,13 @@ components:
           format: email
         role:
           type: string
-          enum: [owner, maintainer, contributor]
+          enum:
+            - owner
+            - maintainer
+            - contributor
         avatar_url:
           type: string
           format: uri
-
     Pagination:
       type: object
       required:
@@ -919,7 +962,6 @@ components:
           type: boolean
         has_prev:
           type: boolean
-
     Error:
       type: object
       required:
@@ -935,46 +977,53 @@ components:
         trace_id:
           type: string
           format: uuid
-
   responses:
     BadRequest:
       description: Bad request
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
-
+            $ref: "#/components/schemas/Error"
     Unauthorized:
       description: Unauthorized
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
-
+            $ref: "#/components/schemas/Error"
     Forbidden:
       description: Forbidden
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
-
+            $ref: "#/components/schemas/Error"
     NotFound:
       description: Not found
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
-
+            $ref: "#/components/schemas/Error"
     Conflict:
       description: Conflict (duplicate)
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
-
+            $ref: "#/components/schemas/Error"
     InternalError:
       description: Internal server error
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
+x-ossa-metadata:
+  version: 0.3.3
+  compliance:
+    level: standard
+  observability:
+    tracing: true
+    metrics: true
+    logging: true
+x-ossa:
+  version: 0.5.0
+  agent:
+    id: ossa-registry-api
+    type: gateway

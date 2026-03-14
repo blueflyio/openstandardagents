@@ -8,13 +8,13 @@ Master API specification for the OSSA platform, providing comprehensive orchestr
 governance, and management capabilities for AI agents following OSSA v0.1.9 standards.
 
 ## Key Capabilities
-
 - **Agent Orchestration**: Multi-agent coordination and workflow execution
 - **Specification Engine**: Agent manifest validation and certification
 - **Registry Services**: Global agent discovery and federation
 - **Runtime Management**: Production deployment and lifecycle management
 - **Compliance & Governance**: Policy enforcement and audit trails
 - **Observability**: Comprehensive monitoring and tracing
+
 
 ## Base URL
 

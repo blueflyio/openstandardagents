@@ -5,7 +5,6 @@
 Central registry for OSSA-compliant AI agents.
 
 Similar to Docker Hub for containers or npm for packages, the OSSA Registry provides:
-
 - Agent discovery and search
 - Version management
 - Compliance certification
@@ -13,11 +12,11 @@ Similar to Docker Hub for containers or npm for packages, the OSSA Registry prov
 - Usage analytics
 
 **OpenAPI-First Architecture:**
-
 - This spec drives all types and validation
 - Zod schemas generated from this spec
 - Complete CRUD operations
 - Type-safe throughout
+
 
 ## Base URL
 

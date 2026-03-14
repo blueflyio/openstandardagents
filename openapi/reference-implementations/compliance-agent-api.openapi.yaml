@@ -5,7 +5,6 @@ info:
   description: |
     Automated FedRAMP compliance scanning agent that validates
     infrastructure against FedRAMP Moderate controls.
-
 x-ossa-metadata:
   version: 0.2.5-RC
   compliance:
@@ -18,24 +17,25 @@ x-ossa-metadata:
   governance:
     approved: true
     approvedBy: Security Team
-    approvalDate: "2024-01-15"
-
+    approvalDate: 2024-01-15
+  observability:
+    tracing: true
+    metrics: true
+    logging: true
 x-ossa:
   version: 0.2.5-RC
   agent:
-    id: fedramp-compliance-scanner
-    type: worker
+    id: reference-implementations-compliance-agent-api
+    type: governor
     compliance:
       standards:
         - openapi-first
         - type-safe
       validated: true
-      validatedAt: "2024-01-15T10:00:00Z"
-
+      validatedAt: 2024-01-15T10:00:00Z
 servers:
   - url: https://compliance-scanner.platform.com/api/v1
     description: Production
-
 tags:
   - name: scanning
     description: Compliance scanning operations
@@ -43,14 +43,14 @@ tags:
     description: Remediation operations
   - name: reporting
     description: Reporting operations
-
 paths:
   /scan:
     post:
       summary: Scan infrastructure for compliance
       description: Scan Kubernetes infrastructure for FedRAMP compliance violations
       operationId: scanInfrastructure
-      tags: [scanning]
+      tags:
+        - scanning
       x-ossa-capability: scan_infrastructure
       x-ossa-autonomy:
         level: autonomous
@@ -61,7 +61,8 @@ paths:
           application/json:
             schema:
               type: object
-              required: [namespace]
+              required:
+                - namespace
               properties:
                 namespace:
                   type: string
@@ -72,7 +73,7 @@ paths:
                     type: string
                   description: Specific controls to check (e.g., AC-2, AC-3)
       responses:
-        '200':
+        "200":
           description: Scan completed
           content:
             application/json:
@@ -90,18 +91,22 @@ paths:
                           type: string
                         severity:
                           type: string
-                          enum: [low, medium, high, critical]
+                          enum:
+                            - low
+                            - medium
+                            - high
+                            - critical
                         description:
                           type: string
                         resource:
                           type: string
-
   /remediate:
     post:
       summary: Remediate compliance violations
       description: Automatically remediate compliance violations
       operationId: remediate
-      tags: [remediation]
+      tags:
+        - remediation
       x-ossa-capability: remediate
       x-ossa-autonomy:
         level: supervised
@@ -112,7 +117,8 @@ paths:
           application/json:
             schema:
               type: object
-              required: [violation_id]
+              required:
+                - violation_id
               properties:
                 violation_id:
                   type: string
@@ -122,7 +128,7 @@ paths:
                   default: false
                   description: Whether to automatically apply remediation
       responses:
-        '200':
+        "200":
           description: Remediation completed
           content:
             application/json:
@@ -137,13 +143,13 @@ paths:
                       type: string
                   status:
                     type: string
-
   /reports/generate:
     post:
       summary: Generate compliance report
       description: Generate FedRAMP compliance report
       operationId: generateReport
-      tags: [reporting]
+      tags:
+        - reporting
       x-ossa-capability: generate_report
       x-ossa-autonomy:
         level: autonomous
@@ -154,11 +160,15 @@ paths:
           application/json:
             schema:
               type: object
-              required: [format]
+              required:
+                - format
               properties:
                 format:
                   type: string
-                  enum: [pdf, html, json]
+                  enum:
+                    - pdf
+                    - html
+                    - json
                   default: json
                 period:
                   type: object
@@ -170,7 +180,7 @@ paths:
                       type: string
                       format: date-time
       responses:
-        '200':
+        "200":
           description: Report generated
           content:
             application/json:
@@ -189,4 +199,3 @@ paths:
                         type: integer
                       violations:
                         type: integer
-

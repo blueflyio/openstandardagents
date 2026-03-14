@@ -74,7 +74,7 @@ paths:
         the agent's OSSA manifest, UADP status, or PGP keys.
         This prevents UADP from requiring a centralized registry.
       operationId: uadp_webfinger
-      tags: [discovery]
+      tags: [ discovery ]
       parameters:
         - name: resource
           in: query
@@ -87,7 +87,8 @@ paths:
           in: query
           schema:
             type: string
-          description: "Optional link relation to filter by (e.g., https://openstandardagents.org/rel/manifest)"
+          description: "Optional link relation to filter by (e.g.,
+            https://openstandardagents.org/rel/manifest)"
       responses:
         '200':
           description: JRD Resource Descriptor
@@ -99,6 +100,7 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
+      x-ossa-capability: uadp-webfinger
   # ─────────────────────────────────────────────
   # REGISTRY
   # ─────────────────────────────────────────────
@@ -110,7 +112,7 @@ paths:
         which is parsed to extract taxonomy, capabilities, and optionally `x-signature`
         for cryptographic trust elevation.
       operationId: uadp_registerAgent
-      tags: [registry]
+      tags: [ registry ]
       security:
         - bearerAuth: []
       requestBody:
@@ -149,9 +151,9 @@ paths:
                         issuer: "did:web:agents.bluefly.io:compliance-scanner"
                         timestamp: "2026-03-02T00:00:00Z"
                   endpoint: https://agents.example.com/compliance-scanner
-                  domains: [domain::security]
-                  subdomains: [subdomain::compliance]
-                  capabilities: [audit, policy-enforcement]
+                  domains: [ domain::security ]
+                  subdomains: [ subdomain::compliance ]
+                  capabilities: [ audit, policy-enforcement ]
                   status: active
       responses:
         '201':
@@ -172,13 +174,18 @@ paths:
                 $ref: '#/components/schemas/Error'
         '500':
           $ref: '#/components/responses/InternalError'
+      x-ossa-capability: uadp-register-agent
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 
   /registry/unregister/{agentId}:
     delete:
       summary: Unregister an agent
-      description: Graceful unregistration. Registry also auto-expires agents that fail health checks.
+      description: Graceful unregistration. Registry also auto-expires agents that
+        fail health checks.
       operationId: uadp_unregisterAgent
-      tags: [registry]
+      tags: [ registry ]
       security:
         - bearerAuth: []
       parameters:
@@ -192,13 +199,18 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalError'
+      x-ossa-capability: uadp-unregister-agent
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 
   /registry/heartbeat/{agentId}:
     put:
       summary: Renew agent registration heartbeat
-      description: Agents must call this endpoint periodically (default every 30s) to remain active.
+      description: Agents must call this endpoint periodically (default every 30s) to
+        remain active.
       operationId: uadp_heartbeat
-      tags: [registry]
+      tags: [ registry ]
       security:
         - bearerAuth: []
       parameters:
@@ -209,11 +221,11 @@ paths:
           application/json:
             schema:
               type: object
-              required: [status]
+              required: [ status ]
               properties:
                 status:
                   type: string
-                  enum: [active, degraded, maintenance]
+                  enum: [ active, degraded, maintenance ]
                 metrics:
                   type: object
                   additionalProperties: true
@@ -231,6 +243,10 @@ paths:
                     description: Seconds until next heartbeat required
         '404':
           $ref: '#/components/responses/NotFound'
+      x-ossa-capability: uadp-heartbeat
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 
   # ─────────────────────────────────────────────
   # DISCOVERY
@@ -247,7 +263,7 @@ paths:
 
         pagination via `limit` + `cursor` for large registries.
       operationId: uadp_discoverAgents
-      tags: [discovery]
+      tags: [ discovery ]
       parameters:
         - name: domain
           in: query
@@ -284,12 +300,12 @@ paths:
           description: Minimum trust tier required
           schema:
             type: string
-            enum: [official, verified-signature, signed, community, experimental]
+            enum: [ official, verified-signature, signed, community, experimental ]
         - name: status
           in: query
           schema:
             type: string
-            enum: [active, deprecated, revoked]
+            enum: [ active, deprecated, revoked ]
           description: Defaults to active — pass 'revoked' to include only revoked agents
         - name: limit
           in: query
@@ -300,7 +316,8 @@ paths:
             default: 20
         - name: cursor
           in: query
-          description: Opaque cursor for pagination (from `nextCursor` in a previous response)
+          description: Opaque cursor for pagination (from `nextCursor` in a previous
+            response)
           schema:
             type: string
       responses:
@@ -314,12 +331,13 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '500':
           $ref: '#/components/responses/InternalError'
+      x-ossa-capability: uadp-discover-agents
 
   /discovery/agents/{agentId}:
     get:
       summary: Get a single agent by ID
       operationId: uadp_getAgent
-      tags: [discovery]
+      tags: [ discovery ]
       parameters:
         - $ref: '#/components/parameters/AgentIdPath'
       responses:
@@ -331,6 +349,7 @@ paths:
                 $ref: '#/components/schemas/AgentRecord'
         '404':
           $ref: '#/components/responses/NotFound'
+      x-ossa-capability: uadp-get-agent
 
   # ─────────────────────────────────────────────
   # TRUST
@@ -345,14 +364,14 @@ paths:
         Returns a `TrustVerificationResult` indicating whether the signature is valid,
         what tier it earns, and why.
       operationId: uadp_verifySignature
-      tags: [trust]
+      tags: [ trust ]
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [signature]
+              required: [ signature ]
               properties:
                 agentId:
                   type: string
@@ -370,6 +389,10 @@ paths:
                 $ref: '#/components/schemas/TrustVerificationResult'
         '400':
           $ref: '#/components/responses/BadRequest'
+      x-ossa-capability: uadp-verify-signature
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 
   # ─────────────────────────────────────────────
   # REVOCATION
@@ -381,7 +404,7 @@ paths:
         Sets agent status to `revoked` with a timestamp. Revoked agents are not returned
         by the discovery endpoint by default. Required for NIST CAISI compliance.
       operationId: uadp_revokeAgent
-      tags: [revocation, registry]
+      tags: [ revocation, registry ]
       security:
         - bearerAuth: []
       parameters:
@@ -392,7 +415,7 @@ paths:
           application/json:
             schema:
               type: object
-              required: [reason]
+              required: [ reason ]
               properties:
                 reason:
                   type: string
@@ -413,7 +436,7 @@ paths:
                     type: string
                   status:
                     type: string
-                    enum: [revoked]
+                    enum: [ revoked ]
                   revokedAt:
                     type: string
                     format: date-time
@@ -421,6 +444,10 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
+      x-ossa-capability: uadp-revoke-agent
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 
   # ─────────────────────────────────────────────
   # HEALTH
@@ -429,7 +456,7 @@ paths:
     get:
       summary: Registry health and statistics
       operationId: uadp_health
-      tags: [health]
+      tags: [ health ]
       responses:
         '200':
           description: Registry healthy
@@ -443,6 +470,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HealthResponse'
+      x-ossa-capability: uadp-health
 
 components:
   securitySchemes:
@@ -467,7 +495,7 @@ components:
     # ── WEBFINGER JRD ──────────────────────────
     WebFingerJRD:
       type: object
-      required: [subject, links]
+      required: [ subject, links ]
       properties:
         subject:
           type: string
@@ -485,7 +513,7 @@ components:
           type: array
           items:
             type: object
-            required: [rel, href]
+            required: [ rel, href ]
             properties:
               rel:
                 type: string
@@ -510,11 +538,11 @@ components:
       description: |
         Cryptographic signature block for NIST CAISI identity alignment.
         Matches `metadata.x-signature` in the OSSA agent.schema.json v0.4+.
-      required: [type, value, publicKey]
+      required: [ type, value, publicKey ]
       properties:
         type:
           type: string
-          enum: [Ed25519, RSA-PSS, ECDSA, jwt, vc, did]
+          enum: [ Ed25519, RSA-PSS, ECDSA, jwt, vc, did ]
           description: Signature scheme or protocol used
         value:
           type: string
@@ -534,7 +562,7 @@ components:
     # ── TRUST ──────────────────────────────────
     TrustTier:
       type: string
-      enum: [official, verified-signature, signed, community, experimental]
+      enum: [ official, verified-signature, signed, community, experimental ]
       description: |
         Trust tier resolved from the agent's `x-signature` metadata:
         - `official` — Published by OSSA Steering Committee
@@ -545,7 +573,7 @@ components:
 
     TrustVerificationResult:
       type: object
-      required: [verified, tier, agentId]
+      required: [ verified, tier, agentId ]
       properties:
         agentId:
           type: string
@@ -567,7 +595,7 @@ components:
     # ── REGISTRATION ───────────────────────────
     RegistrationRequest:
       type: object
-      required: [agentId, name, version, manifest, endpoint, status]
+      required: [ agentId, name, version, manifest, endpoint, status ]
       properties:
         agentId:
           type: string
@@ -606,20 +634,20 @@ components:
             type: string
         status:
           type: string
-          enum: [active, degraded, maintenance]
+          enum: [ active, degraded, maintenance ]
         healthEndpoint:
           type: string
           format: uri
 
     RegistrationResponse:
       type: object
-      required: [agentId, status, registeredAt, tier]
+      required: [ agentId, status, registeredAt, tier ]
       properties:
         agentId:
           type: string
         status:
           type: string
-          enum: [registered, updated]
+          enum: [ registered, updated ]
         registeredAt:
           type: string
           format: date-time
@@ -630,7 +658,8 @@ components:
           $ref: '#/components/schemas/TrustTier'
         peers:
           type: array
-          description: "List of known UADP node URIs for P2P gossip (present if `gossip=true` was sent)"
+          description: "List of known UADP node URIs for P2P gossip (present if
+            `gossip=true` was sent)"
           items:
             type: string
             format: uri
@@ -638,7 +667,17 @@ components:
     # ── AGENT RECORD ───────────────────────────
     AgentRecord:
       type: object
-      required: [agentId, name, version, status, endpoint, tier, registeredAt, lastSeen]
+      required:
+        [
+          agentId,
+          name,
+          version,
+          status,
+          endpoint,
+          tier,
+          registeredAt,
+          lastSeen
+        ]
       properties:
         agentId:
           type: string
@@ -664,7 +703,7 @@ components:
             type: string
         status:
           type: string
-          enum: [active, deprecated, revoked, degraded, maintenance]
+          enum: [ active, deprecated, revoked, degraded, maintenance ]
         tier:
           $ref: '#/components/schemas/TrustTier'
         endpoint:
@@ -696,7 +735,7 @@ components:
     # ── DISCOVERY ──────────────────────────────
     DiscoveryResponse:
       type: object
-      required: [agents, total]
+      required: [ agents, total ]
       properties:
         agents:
           type: array
@@ -714,11 +753,11 @@ components:
     # ── HEALTH ─────────────────────────────────
     HealthResponse:
       type: object
-      required: [status, timestamp, version]
+      required: [ status, timestamp, version ]
       properties:
         status:
           type: string
-          enum: [healthy, degraded, unhealthy]
+          enum: [ healthy, degraded, unhealthy ]
         timestamp:
           type: string
           format: date-time
@@ -747,7 +786,7 @@ components:
     # ── ERRORS ─────────────────────────────────
     Error:
       type: object
-      required: [error, message]
+      required: [ error, message ]
       properties:
         error:
           type: string
@@ -785,3 +824,16 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
+x-ossa-metadata:
+  version: 0.5.0
+  compliance:
+    level: standard
+  observability:
+    tracing: true
+    metrics: true
+    logging: true
+x-ossa:
+  version: 0.5.0
+  agent:
+    id: uadp-registry
+    type: gateway

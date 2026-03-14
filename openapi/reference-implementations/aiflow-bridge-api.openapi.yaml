@@ -5,7 +5,6 @@ info:
   description: |
     OSSA agent with AIFlow-Agent bridge for social crypto analysis.
     Integrates with Twitter, Telegram, and Discord for autonomous social media presence.
-
 x-ossa-metadata:
   version: 0.2.5-RC
   compliance:
@@ -13,35 +12,36 @@ x-ossa-metadata:
     frameworks:
       - OSSA
       - OpenAPI 3.1
-
+  observability:
+    tracing: true
+    metrics: true
+    logging: true
 x-ossa:
   version: 0.3.3
   agent:
-    id: crypto-analyst-agent
-    type: specialist
+    id: reference-implementations-aiflow-bridge-api
+    type: integrator
     compliance:
       standards:
         - openapi-first
       validated: true
-      validatedAt: "2024-01-15T10:00:00Z"
-
+      validatedAt: 2024-01-15T10:00:00Z
 servers:
   - url: https://crypto-analyst.platform.com/api/v1
     description: Production
-
 tags:
   - name: market
     description: Market analysis operations
   - name: social
     description: Social media operations
-
 paths:
   /market/analyze:
     post:
       summary: Analyze cryptocurrency market
       description: Analyze cryptocurrency market trends using on-chain data and LLM reasoning
       operationId: analyzeMarket
-      tags: [market]
+      tags:
+        - market
       x-ossa-capability: analyze_market
       x-ossa-autonomy:
         level: autonomous
@@ -56,17 +56,22 @@ paths:
           application/json:
             schema:
               type: object
-              required: [token]
+              required:
+                - token
               properties:
                 token:
                   type: string
                   description: Token symbol (e.g., BNB, CAKE)
                 timeframe:
                   type: string
-                  enum: [1h, 24h, 7d, 30d]
+                  enum:
+                    - 1h
+                    - 24h
+                    - 7d
+                    - 30d
                   default: 24h
       responses:
-        '200':
+        "200":
           description: Market analysis completed
           content:
             application/json:
@@ -77,7 +82,10 @@ paths:
                     type: string
                   sentiment:
                     type: string
-                    enum: [bullish, bearish, neutral]
+                    enum:
+                      - bullish
+                      - bearish
+                      - neutral
                   analysis:
                     type: string
                   metrics:
@@ -87,13 +95,13 @@ paths:
                         type: number
                       volume:
                         type: number
-
   /social/post:
     post:
       summary: Post to social media
       description: Post content to Twitter, Telegram, or Discord
       operationId: postToSocial
-      tags: [social]
+      tags:
+        - social
       x-ossa-capability: post_social
       x-ossa-autonomy:
         level: supervised
@@ -104,19 +112,24 @@ paths:
           application/json:
             schema:
               type: object
-              required: [content, platform]
+              required:
+                - content
+                - platform
               properties:
                 content:
                   type: string
                   description: Post content
                 platform:
                   type: string
-                  enum: [twitter, telegram, discord]
+                  enum:
+                    - twitter
+                    - telegram
+                    - discord
                 character:
                   type: string
                   description: Character persona to use
       responses:
-        '200':
+        "200":
           description: Post published
           content:
             application/json:
@@ -132,5 +145,6 @@ paths:
                     format: uri
                   status:
                     type: string
-                    enum: [published, pending_approval]
-
+                    enum:
+                      - published
+                      - pending_approval

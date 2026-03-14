@@ -50,6 +50,18 @@ afterAll(async () => {
   }
 });
 
+function readTextResource(content: { text?: string; blob?: string }): string {
+  if (typeof content.text === 'string') {
+    return content.text;
+  }
+
+  if (typeof content.blob === 'string') {
+    return Buffer.from(content.blob, 'base64').toString('utf8');
+  }
+
+  throw new Error('Expected text resource content');
+}
+
 describe('ossa_validate', () => {
   it('validates a valid manifest', async () => {
     const manifestPath = path.join(
@@ -643,33 +655,33 @@ describe('MCP resources', () => {
       uri: 'ossa://template/minimal',
     });
     expect(result.contents.length).toBe(1);
-    expect(result.contents[0].text).toContain('apiVersion: ossa/v0.4');
-    expect(result.contents[0].text).toContain('kind: Agent');
+    expect(readTextResource(result.contents[0])).toContain('apiVersion: ossa/v0.4');
+    expect(readTextResource(result.contents[0])).toContain('kind: Agent');
   });
 
   it('reads full template with all sections', async () => {
     const result = await client.readResource({ uri: 'ossa://template/full' });
-    expect(result.contents[0].text).toContain('spec:');
-    expect(result.contents[0].text).toContain('tools:');
-    expect(result.contents[0].text).toContain('autonomy:');
-    expect(result.contents[0].text).toContain('extensions:');
-    expect(result.contents[0].text).toContain('token_efficiency:');
+    expect(readTextResource(result.contents[0])).toContain('spec:');
+    expect(readTextResource(result.contents[0])).toContain('tools:');
+    expect(readTextResource(result.contents[0])).toContain('autonomy:');
+    expect(readTextResource(result.contents[0])).toContain('extensions:');
+    expect(readTextResource(result.contents[0])).toContain('token_efficiency:');
   });
 
   it('reads MCP→OSSA→A2A guide', async () => {
     const result = await client.readResource({
       uri: 'ossa://guide/mcp-ossa-a2a',
     });
-    expect(result.contents[0].text).toContain('MCP');
-    expect(result.contents[0].text).toContain('OSSA');
-    expect(result.contents[0].text).toContain('A2A');
+    expect(readTextResource(result.contents[0])).toContain('MCP');
+    expect(readTextResource(result.contents[0])).toContain('OSSA');
+    expect(readTextResource(result.contents[0])).toContain('A2A');
   });
 
   it('reads supported platforms with SDK references', async () => {
     const result = await client.readResource({
       uri: 'ossa://platforms/supported',
     });
-    const platforms = JSON.parse(result.contents[0].text as string);
+    const platforms = JSON.parse(readTextResource(result.contents[0]) as string);
     expect(platforms.total).toBeGreaterThanOrEqual(14);
     expect(platforms.platforms).toBeInstanceOf(Array);
     const openai = platforms.platforms.find(

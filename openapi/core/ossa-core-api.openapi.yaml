@@ -16,14 +16,12 @@ info:
     - **Runtime Management**: Production deployment and lifecycle management
     - **Compliance & Governance**: Policy enforcement and audit trails
     - **Observability**: Comprehensive monitoring and tracing
-
   contact:
     name: Bluefly.io LLM Platform Team
     url: https://github.com/blueflyio/openstandardagents
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
-
 servers:
   - url: https://api.llm.bluefly.io/ossa/v1
     description: Production server
@@ -31,71 +29,74 @@ servers:
     description: Development server
   - url: http://localhost:3000
     description: Local development
-
 security:
   - ApiKeyAuth: []
   - BearerAuth: []
-  - OAuth2: [read, write, admin]
-
+  - OAuth2:
+      - read
+      - write
+      - admin
 paths:
-  # Health & Status
   /health:
     get:
-
       summary: Health check
-      tags: [Health]
+      tags:
+        - Health
       operationId: healthCheck
       security: []
       responses:
-        '200':
-          $ref: '#/components/responses/HealthCheck'
-        '503':
-          $ref: '#/components/responses/ServiceUnavailable'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+        "200":
+          $ref: "#/components/responses/HealthCheck"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+      x-ossa-capability: core-health-check
   /health/ready:
     get:
       summary: Readiness check
-      tags: [Health]
+      tags:
+        - Health
       operationId: readinessCheck
       security: []
       responses:
-        '200':
-          $ref: '#/components/responses/HealthCheck'
-        '503':
-          $ref: '#/components/responses/ServiceUnavailable'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
+        "200":
+          $ref: "#/components/responses/HealthCheck"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+      x-ossa-capability: core-readiness-check
   /health/live:
     get:
       summary: Liveness check
-      tags: [Health]
+      tags:
+        - Health
       operationId: livenessCheck
       security: []
       responses:
-        '200':
-          $ref: '#/components/responses/HealthCheck'
-        '503':
-          $ref: '#/components/responses/ServiceUnavailable'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
-  # Agent Registry
+        "200":
+          $ref: "#/components/responses/HealthCheck"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+      x-ossa-capability: core-liveness-check
   /agents:
     get:
       summary: List registered agents
       description: Query the global agent registry
-      tags: [Registry]
+      tags:
+        - Registry
       operationId: listAgents
       parameters:
-        - $ref: '#/components/parameters/Search'
-        - $ref: '#/components/parameters/Limit'
-        - $ref: '#/components/parameters/Offset'
+        - $ref: "#/components/parameters/Search"
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
         - name: type
           in: query
           schema:
-            $ref: '#/components/schemas/AgentType'
+            $ref: "#/components/schemas/AgentType"
         - name: capability
           in: query
           schema:
@@ -103,121 +104,139 @@ paths:
         - name: status
           in: query
           schema:
-            $ref: '#/components/schemas/AgentStatus'
+            $ref: "#/components/schemas/AgentStatus"
       responses:
-        '200':
+        "200":
           description: List of agents
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AgentsList'
-
+                $ref: "#/components/schemas/AgentsList"
+      x-ossa-capability: core-list-agents
     post:
       summary: Register new agent
-      tags: [Registry]
+      tags:
+        - Registry
       operationId: registerAgent
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AgentManifest'
+              $ref: "#/components/schemas/AgentManifest"
       responses:
-        '201':
+        "201":
           description: Agent registered
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AgentRegistration'
-        '400':
-          $ref: '#/components/responses/ValidationError'
-
+                $ref: "#/components/schemas/AgentRegistration"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+      x-ossa-capability: core-register-agent
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /agents/{agentId}:
     get:
       summary: Get agent details
-      tags: [Registry]
+      tags:
+        - Registry
       operationId: getAgent
       parameters:
-        - $ref: '#/components/parameters/AgentId'
+        - $ref: "#/components/parameters/AgentId"
       responses:
-        '200':
+        "200":
           description: Agent details
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Agent'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
+                $ref: "#/components/schemas/Agent"
+        "404":
+          $ref: "#/components/responses/NotFound"
+      x-ossa-capability: core-get-agent
     put:
       summary: Update agent registration
-      tags: [Registry]
+      tags:
+        - Registry
       operationId: updateAgent
       parameters:
-        - $ref: '#/components/parameters/AgentId'
+        - $ref: "#/components/parameters/AgentId"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AgentManifest'
+              $ref: "#/components/schemas/AgentManifest"
       responses:
-        '200':
+        "200":
           description: Agent updated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Agent'
-
+                $ref: "#/components/schemas/Agent"
+      x-ossa-capability: core-update-agent
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
     delete:
       summary: Unregister agent
-      tags: [Registry]
+      tags:
+        - Registry
       operationId: unregisterAgent
       parameters:
-        - $ref: '#/components/parameters/AgentId'
+        - $ref: "#/components/parameters/AgentId"
       responses:
-        '204':
+        "204":
           description: Agent unregistered
-
-  # Orchestration
+      x-ossa-capability: core-unregister-agent
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /orchestration/workflows:
     get:
       summary: List workflows
-      tags: [Orchestration]
+      tags:
+        - Orchestration
       operationId: listWorkflows
       parameters:
-        - $ref: '#/components/parameters/Limit'
-        - $ref: '#/components/parameters/Offset'
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
       responses:
-        '200':
+        "200":
           description: List of workflows
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkflowsList'
-
+                $ref: "#/components/schemas/WorkflowsList"
+      x-ossa-capability: core-list-workflows
     post:
       summary: Create workflow
-      tags: [Orchestration]
+      tags:
+        - Orchestration
       operationId: createWorkflow
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/WorkflowDefinition'
+              $ref: "#/components/schemas/WorkflowDefinition"
       responses:
-        '201':
+        "201":
           description: Workflow created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Workflow'
-
+                $ref: "#/components/schemas/Workflow"
+      x-ossa-capability: core-create-workflow
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /orchestration/workflows/{workflowId}/execute:
     post:
       summary: Execute workflow
-      tags: [Orchestration]
+      tags:
+        - Orchestration
       operationId: executeWorkflow
       parameters:
         - name: workflowId
@@ -229,19 +248,23 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/WorkflowExecutionRequest'
+              $ref: "#/components/schemas/WorkflowExecutionRequest"
       responses:
-        '202':
+        "202":
           description: Workflow execution started
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkflowExecution'
-
+                $ref: "#/components/schemas/WorkflowExecution"
+      x-ossa-capability: core-execute-workflow
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /orchestration/executions/{executionId}:
     get:
       summary: Get execution status
-      tags: [Orchestration]
+      tags:
+        - Orchestration
       operationId: getExecutionStatus
       parameters:
         - name: executionId
@@ -250,58 +273,63 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Execution status
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkflowExecution'
-
-  # Specification & Validation
+                $ref: "#/components/schemas/WorkflowExecution"
+      x-ossa-capability: core-get-execution-status
   /specification/validate:
     post:
       summary: Validate agent manifest
       description: Validate an OSSA agent manifest against the specification
-      tags: [Specification]
+      tags:
+        - Specification
       operationId: validateManifest
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AgentManifest'
+              $ref: "#/components/schemas/AgentManifest"
           application/yaml:
             schema:
-              $ref: '#/components/schemas/AgentManifest'
+              $ref: "#/components/schemas/AgentManifest"
       responses:
-        '200':
+        "200":
           description: Validation result
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ValidationResult'
-        '400':
-          $ref: '#/components/responses/ValidationError'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
+                $ref: "#/components/schemas/ValidationResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+      x-ossa-capability: core-validate-manifest
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /specification/taxonomies:
     get:
       summary: List agent taxonomies
-      tags: [Specification]
+      tags:
+        - Specification
       operationId: listTaxonomies
       responses:
-        '200':
+        "200":
           description: Available taxonomies
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TaxonomiesList'
-
+                $ref: "#/components/schemas/TaxonomiesList"
+      x-ossa-capability: core-list-taxonomies
   /specification/capabilities:
     get:
       summary: List capability definitions
-      tags: [Specification]
+      tags:
+        - Specification
       operationId: listCapabilities
       parameters:
         - name: category
@@ -309,37 +337,41 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Capability definitions
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CapabilitiesList'
-
-  # Certification
+                $ref: "#/components/schemas/CapabilitiesList"
+      x-ossa-capability: core-list-capabilities
   /certification/request:
     post:
       summary: Request certification
-      tags: [Certification]
+      tags:
+        - Certification
       operationId: requestCertification
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CertificationRequest'
+              $ref: "#/components/schemas/CertificationRequest"
       responses:
-        '202':
+        "202":
           description: Certification request accepted
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CertificationProcess'
-
+                $ref: "#/components/schemas/CertificationProcess"
+      x-ossa-capability: core-request-certification
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /certification/{certificationId}:
     get:
       summary: Get certification status
-      tags: [Certification]
+      tags:
+        - Certification
       operationId: getCertification
       parameters:
         - name: certificationId
@@ -348,106 +380,112 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Certification details
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Certification'
-
-  # Governance
+                $ref: "#/components/schemas/Certification"
+      x-ossa-capability: core-get-certification
   /governance/policies:
     get:
       summary: List governance policies
-      tags: [Governance]
+      tags:
+        - Governance
       operationId: listPolicies
       responses:
-        '200':
+        "200":
           description: Governance policies
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PoliciesList'
-
+                $ref: "#/components/schemas/PoliciesList"
+      x-ossa-capability: core-list-policies
   /governance/compliance/{agentId}:
     get:
       summary: Get agent compliance status
-      tags: [Governance]
+      tags:
+        - Governance
       operationId: getAgentCompliance
       parameters:
-        - $ref: '#/components/parameters/AgentId'
+        - $ref: "#/components/parameters/AgentId"
       responses:
-        '200':
+        "200":
           description: Compliance status
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ComplianceStatus'
-
-  # Federation
+                $ref: "#/components/schemas/ComplianceStatus"
+      x-ossa-capability: core-get-agent-compliance
   /federation/nodes:
     get:
       summary: List federation nodes
-      tags: [Federation]
+      tags:
+        - Federation
       operationId: listFederationNodes
       responses:
-        '200':
+        "200":
           description: Federation nodes
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FederationNodesList'
-
+                $ref: "#/components/schemas/FederationNodesList"
+      x-ossa-capability: core-list-federation-nodes
   /federation/join:
     post:
       summary: Join federation
-      tags: [Federation]
+      tags:
+        - Federation
       operationId: joinFederation
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FederationJoinRequest'
+              $ref: "#/components/schemas/FederationJoinRequest"
       responses:
-        '201':
+        "201":
           description: Joined federation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FederationMembership'
-
-  # Monitoring
+                $ref: "#/components/schemas/FederationMembership"
+      x-ossa-capability: core-join-federation
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /monitoring/metrics:
     get:
       summary: Get platform metrics
-      tags: [Monitoring]
+      tags:
+        - Monitoring
       operationId: getPlatformMetrics
       responses:
-        '200':
+        "200":
           description: Platform metrics
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PlatformMetrics'
-
+                $ref: "#/components/schemas/PlatformMetrics"
+      x-ossa-capability: core-get-platform-metrics
   /monitoring/events:
     get:
       summary: Get platform events
-      tags: [Monitoring]
+      tags:
+        - Monitoring
       operationId: getPlatformEvents
       parameters:
-        - $ref: '#/components/parameters/StartTime'
-        - $ref: '#/components/parameters/EndTime'
-        - $ref: '#/components/parameters/Limit'
+        - $ref: "#/components/parameters/StartTime"
+        - $ref: "#/components/parameters/EndTime"
+        - $ref: "#/components/parameters/Limit"
       responses:
-        '200':
+        "200":
           description: Platform events
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EventsList'
-
+                $ref: "#/components/schemas/EventsList"
+      x-ossa-capability: core-get-platform-events
 components:
   securitySchemes:
     ApiKeyAuth:
@@ -468,7 +506,6 @@ components:
             read: Read access
             write: Write access
             admin: Administrative access
-
   parameters:
     AgentId:
       name: agentId
@@ -513,28 +550,25 @@ components:
       schema:
         type: string
         format: date-time
-
   schemas:
-    # Core Agent Types - Using shared schemas
     AgentManifest:
-      $ref: '../schemas/common/agent.yaml#/components/schemas/AgentManifest'
+      $ref: ../schemas/common/agent.yaml#/components/schemas/AgentManifest
     Metadata:
-      $ref: '../schemas/common/agent.yaml#/components/schemas/Metadata'
+      $ref: ../schemas/common/agent.yaml#/components/schemas/Metadata
     AgentSpec:
-      $ref: '../schemas/common/agent.yaml#/components/schemas/AgentSpec'
+      $ref: ../schemas/common/agent.yaml#/components/schemas/AgentSpec
     AgentType:
-      $ref: '../schemas/common/agent.yaml#/components/schemas/AgentType'
+      $ref: ../schemas/common/agent.yaml#/components/schemas/AgentType
     AgentStatus:
-      $ref: '../schemas/common/agent.yaml#/components/schemas/AgentStatus'
+      $ref: ../schemas/common/agent.yaml#/components/schemas/AgentStatus
     Capability:
-      $ref: '../schemas/common/agent.yaml#/components/schemas/Capability'
+      $ref: ../schemas/common/agent.yaml#/components/schemas/Capability
     Interface:
-      $ref: '../schemas/common/agent.yaml#/components/schemas/Interface'
+      $ref: ../schemas/common/agent.yaml#/components/schemas/Interface
     Requirements:
-      $ref: '../schemas/common/agent.yaml#/components/schemas/Requirements'
+      $ref: ../schemas/common/agent.yaml#/components/schemas/Requirements
     ResourceRequirements:
-      $ref: '../schemas/common/agent.yaml#/components/schemas/ResourceRequirements'
-
+      $ref: ../schemas/common/agent.yaml#/components/schemas/ResourceRequirements
     Agent:
       type: object
       properties:
@@ -542,16 +576,15 @@ components:
           type: string
           format: uuid
         manifest:
-          $ref: '#/components/schemas/AgentManifest'
+          $ref: "#/components/schemas/AgentManifest"
         status:
-          $ref: '#/components/schemas/AgentStatus'
+          $ref: "#/components/schemas/AgentStatus"
         registration:
-          $ref: '#/components/schemas/AgentRegistration'
+          $ref: "#/components/schemas/AgentRegistration"
         certification:
-          $ref: '#/components/schemas/Certification'
+          $ref: "#/components/schemas/Certification"
         metrics:
-          $ref: '#/components/schemas/AgentMetrics'
-
+          $ref: "#/components/schemas/AgentMetrics"
     AgentRegistration:
       type: object
       properties:
@@ -571,22 +604,19 @@ components:
           type: string
         federationNode:
           type: string
-
     AgentsList:
       type: object
       properties:
         agents:
           type: array
           items:
-            $ref: '#/components/schemas/Agent'
+            $ref: "#/components/schemas/Agent"
         total:
           type: integer
         limit:
           type: integer
         offset:
           type: integer
-
-    # Orchestration
     WorkflowDefinition:
       type: object
       required:
@@ -602,16 +632,15 @@ components:
         steps:
           type: array
           items:
-            $ref: '#/components/schemas/WorkflowStep'
+            $ref: "#/components/schemas/WorkflowStep"
         triggers:
           type: array
           items:
-            $ref: '#/components/schemas/WorkflowTrigger'
+            $ref: "#/components/schemas/WorkflowTrigger"
         timeout:
           type: integer
         retryPolicy:
-          $ref: '#/components/schemas/RetryPolicy'
-
+          $ref: "#/components/schemas/RetryPolicy"
     WorkflowStep:
       type: object
       required:
@@ -637,18 +666,20 @@ components:
         timeout:
           type: integer
         retryPolicy:
-          $ref: '#/components/schemas/RetryPolicy'
-
+          $ref: "#/components/schemas/RetryPolicy"
     WorkflowTrigger:
       type: object
       properties:
         type:
           type: string
-          enum: [manual, scheduled, event, webhook]
+          enum:
+            - manual
+            - scheduled
+            - event
+            - webhook
         config:
           type: object
           additionalProperties: true
-
     RetryPolicy:
       type: object
       properties:
@@ -658,7 +689,9 @@ components:
           default: 3
         backoffType:
           type: string
-          enum: [fixed, exponential]
+          enum:
+            - fixed
+            - exponential
           default: exponential
         initialDelay:
           type: integer
@@ -666,7 +699,6 @@ components:
         maxDelay:
           type: integer
           default: 60000
-
     Workflow:
       type: object
       properties:
@@ -674,27 +706,29 @@ components:
           type: string
           format: uuid
         definition:
-          $ref: '#/components/schemas/WorkflowDefinition'
+          $ref: "#/components/schemas/WorkflowDefinition"
         status:
           type: string
-          enum: [draft, active, suspended, deprecated]
+          enum:
+            - draft
+            - active
+            - suspended
+            - deprecated
         createdAt:
           type: string
           format: date-time
         updatedAt:
           type: string
           format: date-time
-
     WorkflowsList:
       type: object
       properties:
         workflows:
           type: array
           items:
-            $ref: '#/components/schemas/Workflow'
+            $ref: "#/components/schemas/Workflow"
         total:
           type: integer
-
     WorkflowExecutionRequest:
       type: object
       properties:
@@ -706,9 +740,12 @@ components:
           additionalProperties: true
         priority:
           type: string
-          enum: [low, normal, high, critical]
+          enum:
+            - low
+            - normal
+            - high
+            - critical
           default: normal
-
     WorkflowExecution:
       type: object
       properties:
@@ -720,7 +757,12 @@ components:
           format: uuid
         status:
           type: string
-          enum: [pending, running, completed, failed, cancelled]
+          enum:
+            - pending
+            - running
+            - completed
+            - failed
+            - cancelled
         startedAt:
           type: string
           format: date-time
@@ -730,15 +772,14 @@ components:
         steps:
           type: array
           items:
-            $ref: '#/components/schemas/StepExecution'
+            $ref: "#/components/schemas/StepExecution"
         output:
           type: object
           additionalProperties: true
         errors:
           type: array
           items:
-            $ref: '#/components/schemas/ExecutionError'
-
+            $ref: "#/components/schemas/ExecutionError"
     StepExecution:
       type: object
       properties:
@@ -746,7 +787,12 @@ components:
           type: string
         status:
           type: string
-          enum: [pending, running, completed, failed, skipped]
+          enum:
+            - pending
+            - running
+            - completed
+            - failed
+            - skipped
         agentId:
           type: string
         startedAt:
@@ -759,20 +805,16 @@ components:
           type: object
           additionalProperties: true
         error:
-          $ref: '#/components/schemas/ExecutionError'
-
+          $ref: "#/components/schemas/ExecutionError"
     ExecutionError:
-      $ref: '../schemas/common/errors.yaml#/components/schemas/ExecutionError'
-
-    # Specification & Taxonomy
+      $ref: ../schemas/common/errors.yaml#/components/schemas/ExecutionError
     TaxonomiesList:
       type: object
       properties:
         taxonomies:
           type: array
           items:
-            $ref: '#/components/schemas/Taxonomy'
-
+            $ref: "#/components/schemas/Taxonomy"
     Taxonomy:
       type: object
       properties:
@@ -788,15 +830,13 @@ components:
             type: string
         version:
           type: string
-
     CapabilitiesList:
       type: object
       properties:
         capabilities:
           type: array
           items:
-            $ref: '#/components/schemas/CapabilityDefinition'
-
+            $ref: "#/components/schemas/CapabilityDefinition"
     CapabilityDefinition:
       type: object
       properties:
@@ -816,7 +856,6 @@ components:
           type: array
           items:
             type: object
-
     ValidationResult:
       type: object
       properties:
@@ -825,22 +864,19 @@ components:
         errors:
           type: array
           items:
-            $ref: '#/components/schemas/ValidationError'
+            $ref: "#/components/schemas/ValidationError"
         warnings:
           type: array
           items:
-            $ref: '#/components/schemas/ValidationWarning'
+            $ref: "#/components/schemas/ValidationWarning"
         score:
           type: number
           minimum: 0
           maximum: 100
-
     ValidationError:
-      $ref: '../schemas/common/errors.yaml#/components/schemas/ValidationError'
+      $ref: ../schemas/common/errors.yaml#/components/schemas/ValidationError
     ValidationWarning:
-      $ref: '../schemas/common/errors.yaml#/components/schemas/ValidationWarning'
-
-    # Certification
+      $ref: ../schemas/common/errors.yaml#/components/schemas/ValidationWarning
     CertificationRequest:
       type: object
       required:
@@ -852,12 +888,15 @@ components:
           format: uuid
         level:
           type: string
-          enum: [basic, standard, advanced, enterprise]
+          enum:
+            - basic
+            - standard
+            - advanced
+            - enterprise
         evidence:
           type: array
           items:
-            $ref: '#/components/schemas/Evidence'
-
+            $ref: "#/components/schemas/Evidence"
     Evidence:
       type: object
       properties:
@@ -871,7 +910,6 @@ components:
         data:
           type: object
           additionalProperties: true
-
     CertificationProcess:
       type: object
       properties:
@@ -880,15 +918,18 @@ components:
           format: uuid
         status:
           type: string
-          enum: [pending, in_review, approved, rejected]
+          enum:
+            - pending
+            - in_review
+            - approved
+            - rejected
         requestedAt:
           type: string
           format: date-time
         steps:
           type: array
           items:
-            $ref: '#/components/schemas/CertificationStep'
-
+            $ref: "#/components/schemas/CertificationStep"
     CertificationStep:
       type: object
       properties:
@@ -896,11 +937,13 @@ components:
           type: string
         status:
           type: string
-          enum: [pending, passed, failed]
+          enum:
+            - pending
+            - passed
+            - failed
         result:
           type: object
           additionalProperties: true
-
     Certification:
       type: object
       properties:
@@ -922,16 +965,13 @@ components:
           type: string
         signature:
           type: string
-
-    # Governance & Compliance
     PoliciesList:
       type: object
       properties:
         policies:
           type: array
           items:
-            $ref: '#/components/schemas/Policy'
-
+            $ref: "#/components/schemas/Policy"
     Policy:
       type: object
       properties:
@@ -943,15 +983,21 @@ components:
           type: string
         type:
           type: string
-          enum: [security, compliance, operational, quality]
+          enum:
+            - security
+            - compliance
+            - operational
+            - quality
         rules:
           type: array
           items:
-            $ref: '#/components/schemas/PolicyRule'
+            $ref: "#/components/schemas/PolicyRule"
         enforcement:
           type: string
-          enum: [mandatory, recommended, optional]
-
+          enum:
+            - mandatory
+            - recommended
+            - optional
     PolicyRule:
       type: object
       properties:
@@ -963,8 +1009,11 @@ components:
           type: string
         severity:
           type: string
-          enum: [info, warning, error, critical]
-
+          enum:
+            - info
+            - warning
+            - error
+            - critical
     ComplianceStatus:
       type: object
       properties:
@@ -975,7 +1024,7 @@ components:
         policies:
           type: array
           items:
-            $ref: '#/components/schemas/PolicyCompliance'
+            $ref: "#/components/schemas/PolicyCompliance"
         score:
           type: number
           minimum: 0
@@ -983,7 +1032,6 @@ components:
         lastChecked:
           type: string
           format: date-time
-
     PolicyCompliance:
       type: object
       properties:
@@ -994,8 +1042,7 @@ components:
         violations:
           type: array
           items:
-            $ref: '#/components/schemas/Violation'
-
+            $ref: "#/components/schemas/Violation"
     Violation:
       type: object
       properties:
@@ -1008,16 +1055,13 @@ components:
         timestamp:
           type: string
           format: date-time
-
-    # Federation
     FederationNodesList:
       type: object
       properties:
         nodes:
           type: array
           items:
-            $ref: '#/components/schemas/FederationNode'
-
+            $ref: "#/components/schemas/FederationNode"
     FederationNode:
       type: object
       properties:
@@ -1031,7 +1075,10 @@ components:
           format: uri
         status:
           type: string
-          enum: [online, offline, degraded]
+          enum:
+            - online
+            - offline
+            - degraded
         region:
           type: string
         capabilities:
@@ -1041,7 +1088,6 @@ components:
         joinedAt:
           type: string
           format: date-time
-
     FederationJoinRequest:
       type: object
       required:
@@ -1061,7 +1107,6 @@ components:
           type: string
         certificate:
           type: string
-
     FederationMembership:
       type: object
       properties:
@@ -1070,26 +1115,26 @@ components:
           format: uuid
         status:
           type: string
-          enum: [active, pending, suspended]
+          enum:
+            - active
+            - pending
+            - suspended
         joinedAt:
           type: string
           format: date-time
         certificate:
           type: string
-
-    # Monitoring & Metrics
     PlatformMetrics:
       type: object
       properties:
         agents:
-          $ref: '#/components/schemas/AgentsMetrics'
+          $ref: "#/components/schemas/AgentsMetrics"
         workflows:
-          $ref: '#/components/schemas/WorkflowsMetrics'
+          $ref: "#/components/schemas/WorkflowsMetrics"
         federation:
-          $ref: '#/components/schemas/FederationMetrics'
+          $ref: "#/components/schemas/FederationMetrics"
         system:
-          $ref: '#/components/schemas/SystemMetrics'
-
+          $ref: "#/components/schemas/SystemMetrics"
     AgentsMetrics:
       type: object
       properties:
@@ -1105,7 +1150,6 @@ components:
           type: object
           additionalProperties:
             type: integer
-
     WorkflowsMetrics:
       type: object
       properties:
@@ -1126,7 +1170,6 @@ components:
           type: number
         successRate:
           type: number
-
     FederationMetrics:
       type: object
       properties:
@@ -1138,7 +1181,6 @@ components:
           type: integer
         crossNodeTraffic:
           type: integer
-
     SystemMetrics:
       type: object
       properties:
@@ -1152,20 +1194,17 @@ components:
           type: number
         errorRate:
           type: number
-
     AgentMetrics:
-      $ref: '../schemas/common/agent.yaml#/components/schemas/AgentMetrics'
-
+      $ref: ../schemas/common/agent.yaml#/components/schemas/AgentMetrics
     EventsList:
       type: object
       properties:
         events:
           type: array
           items:
-            $ref: '#/components/schemas/Event'
+            $ref: "#/components/schemas/Event"
         total:
           type: integer
-
     Event:
       type: object
       properties:
@@ -1182,49 +1221,41 @@ components:
         data:
           type: object
           additionalProperties: true
-
-    # Common - Using shared schemas
     HealthStatus:
-      $ref: '../schemas/common/metadata.yaml#/components/schemas/HealthStatus'
+      $ref: ../schemas/common/metadata.yaml#/components/schemas/HealthStatus
     Problem:
-      $ref: '../schemas/common/errors.yaml#/components/schemas/Problem'
-
+      $ref: ../schemas/common/errors.yaml#/components/schemas/Problem
   responses:
     HealthCheck:
       description: Service health status
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/HealthStatus'
-
+            $ref: "#/components/schemas/HealthStatus"
     ValidationError:
       description: Validation error
       content:
         application/problem+json:
           schema:
-            $ref: '#/components/schemas/Problem'
-
+            $ref: "#/components/schemas/Problem"
     NotFound:
       description: Resource not found
       content:
         application/problem+json:
           schema:
-            $ref: '#/components/schemas/Problem'
-
+            $ref: "#/components/schemas/Problem"
     ServiceUnavailable:
       description: Service unavailable
       content:
         application/problem+json:
           schema:
-            $ref: '#/components/schemas/Problem'
-
+            $ref: "#/components/schemas/Problem"
     InternalServerError:
       description: Internal server error
       content:
         application/problem+json:
           schema:
-            $ref: '#/components/schemas/Problem'
-
+            $ref: "#/components/schemas/Problem"
 tags:
   - name: Health
     description: Service health and status
@@ -1242,7 +1273,6 @@ tags:
     description: Federation and multi-tenancy
   - name: Monitoring
     description: Platform monitoring and metrics
-
 x-ossa-metadata:
   version: 0.3.3
   compliance:
@@ -1263,3 +1293,8 @@ x-ossa-metadata:
     tracing: true
     metrics: true
     logging: true
+x-ossa:
+  version: 0.5.0
+  agent:
+    id: ossa-core-api
+    type: gateway

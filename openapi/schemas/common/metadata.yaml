@@ -16,7 +16,6 @@ components:
           type: string
           format: date-time
           description: Timestamp when the resource was deleted (soft delete)
-
     Labels:
       type: object
       additionalProperties:
@@ -26,7 +25,6 @@ components:
         domain: security
         capability: scanning
         runtime: kubernetes
-
     Annotations:
       type: object
       additionalProperties:
@@ -43,15 +41,17 @@ components:
         deployed_by: buildkit-cli
         git_commit: abc123
         environment: production
-        author: "John Doe"
-        license: "Apache-2.0"
-
+        author: John Doe
+        license: Apache-2.0
     HealthStatus:
       type: object
       properties:
         status:
           type: string
-          enum: [healthy, degraded, unhealthy]
+          enum:
+            - healthy
+            - degraded
+            - unhealthy
         version:
           type: string
         uptime:
@@ -66,6 +66,21 @@ components:
             properties:
               status:
                 type: string
-                enum: [pass, fail]
+                enum:
+                  - pass
+                  - fail
               message:
                 type: string
+x-ossa-metadata:
+  version: 0.5.0
+  compliance:
+    level: standard
+  observability:
+    tracing: true
+    metrics: true
+    logging: true
+x-ossa:
+  version: 0.5.0
+  agent:
+    id: schemas-common-metadata
+    type: specialist

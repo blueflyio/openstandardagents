@@ -16,10 +16,9 @@ components:
           type: string
           const: AgentManifest
         metadata:
-          $ref: '#/components/schemas/Metadata'
+          $ref: "#/components/schemas/Metadata"
         spec:
-          $ref: '#/components/schemas/AgentSpec'
-
+          $ref: "#/components/schemas/AgentSpec"
     Metadata:
       type: object
       required:
@@ -28,10 +27,10 @@ components:
       properties:
         name:
           type: string
-          pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+          pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
         version:
           type: string
-          pattern: '^\d+\.\d+\.\d+(-[a-zA-Z0-9]+)?$'
+          pattern: ^\d+\.\d+\.\d+(-[a-zA-Z0-9]+)?$
         namespace:
           type: string
         labels:
@@ -42,7 +41,6 @@ components:
           type: object
           additionalProperties:
             type: string
-
     AgentSpec:
       type: object
       required:
@@ -50,7 +48,7 @@ components:
         - capabilities
       properties:
         type:
-          $ref: '#/components/schemas/AgentType'
+          $ref: "#/components/schemas/AgentType"
         description:
           type: string
         role:
@@ -70,17 +68,16 @@ components:
         capabilities:
           type: array
           items:
-            $ref: '#/components/schemas/Capability'
+            $ref: "#/components/schemas/Capability"
         interfaces:
           type: array
           items:
-            $ref: '#/components/schemas/Interface'
+            $ref: "#/components/schemas/Interface"
         requirements:
-          $ref: '#/components/schemas/Requirements'
+          $ref: "#/components/schemas/Requirements"
         configuration:
           type: object
           additionalProperties: true
-
     AgentType:
       type: string
       enum:
@@ -91,7 +88,6 @@ components:
         - monitor
         - gateway
       description: Agent type classification
-
     AgentStatus:
       type: string
       enum:
@@ -101,7 +97,6 @@ components:
         - suspended
         - deprecated
       description: Current operational status of the agent
-
     Capability:
       type: object
       required:
@@ -128,7 +123,6 @@ components:
         parameters:
           type: object
           additionalProperties: true
-
     Interface:
       type: object
       required:
@@ -156,14 +150,13 @@ components:
             config:
               type: object
               additionalProperties: true
-
     Requirements:
       type: object
       properties:
         runtime:
           type: string
         resources:
-          $ref: '#/components/schemas/ResourceRequirements'
+          $ref: "#/components/schemas/ResourceRequirements"
         dependencies:
           type: array
           items:
@@ -172,22 +165,20 @@ components:
           type: object
           additionalProperties:
             type: string
-
     ResourceRequirements:
       type: object
       properties:
         cpu:
           type: string
-          pattern: '^[0-9]+m?$'
+          pattern: ^[0-9]+m?$
         memory:
           type: string
-          pattern: '^[0-9]+(Mi|Gi)$'
+          pattern: ^[0-9]+(Mi|Gi)$
         storage:
           type: string
-          pattern: '^[0-9]+(Mi|Gi)$'
+          pattern: ^[0-9]+(Mi|Gi)$
         gpu:
           type: string
-
     Agent:
       type: object
       properties:
@@ -195,16 +186,15 @@ components:
           type: string
           format: uuid
         manifest:
-          $ref: '#/components/schemas/AgentManifest'
+          $ref: "#/components/schemas/AgentManifest"
         status:
-          $ref: '#/components/schemas/AgentStatus'
+          $ref: "#/components/schemas/AgentStatus"
         registration:
-          $ref: '#/components/schemas/AgentRegistration'
+          $ref: "#/components/schemas/AgentRegistration"
         certification:
-          $ref: '#/components/schemas/Certification'
+          $ref: "#/components/schemas/Certification"
         metrics:
-          $ref: '#/components/schemas/AgentMetrics'
-
+          $ref: "#/components/schemas/AgentMetrics"
     AgentRegistration:
       type: object
       properties:
@@ -224,7 +214,6 @@ components:
           type: string
         federationNode:
           type: string
-
     Certification:
       type: object
       description: Certification or compliance attestation for the agent
@@ -241,7 +230,6 @@ components:
         expiresAt:
           type: string
           format: date-time
-
     AgentMetrics:
       type: object
       properties:
@@ -261,3 +249,16 @@ components:
           type: string
           format: date-time
           description: Timestamp of last activity
+x-ossa-metadata:
+  version: 0.5.0
+  compliance:
+    level: standard
+  observability:
+    tracing: true
+    metrics: true
+    logging: true
+x-ossa:
+  version: 0.5.0
+  agent:
+    id: schemas-common-agent
+    type: specialist

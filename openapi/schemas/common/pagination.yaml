@@ -25,7 +25,6 @@ components:
           type: boolean
         has_prev:
           type: boolean
-
   parameters:
     PageParam:
       name: page
@@ -35,7 +34,6 @@ components:
         minimum: 1
         default: 1
       description: Page number
-
     LimitParam:
       name: limit
       in: query
@@ -45,7 +43,6 @@ components:
         maximum: 100
         default: 20
       description: Items per page
-
     OffsetParam:
       name: offset
       in: query
@@ -54,19 +51,34 @@ components:
         minimum: 0
         default: 0
       description: Number of items to skip for pagination
-
     SearchParam:
       name: search
       in: query
       schema:
         type: string
       description: Search query
-
     SortParam:
       name: sort
       in: query
       schema:
         type: string
-        enum: [name, downloads, updated, created]
+        enum:
+          - name
+          - downloads
+          - updated
+          - created
         default: downloads
       description: Sort field
+x-ossa-metadata:
+  version: 0.5.0
+  compliance:
+    level: standard
+  observability:
+    tracing: true
+    metrics: true
+    logging: true
+x-ossa:
+  version: 0.5.0
+  agent:
+    id: schemas-common-pagination
+    type: specialist

@@ -44,7 +44,6 @@ ossa run agent.ossa.yaml --env .env.local
 ## API Endpoint Connection
 
 This command uses the following API endpoint:
-
 - `POST /api/v1/agents/{id}/execute` - [API Reference](../api-reference/index.md)
 
 ## Exit Codes

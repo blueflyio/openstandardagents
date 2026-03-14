@@ -6,13 +6,11 @@ components:
       in: header
       name: X-API-Key
       description: API key for server-to-server authentication
-
     BearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
       description: JWT token obtained from authentication endpoint
-
     OAuth2:
       type: oauth2
       description: OAuth2 authorization code flow
@@ -26,11 +24,9 @@ components:
             execute: Execute agent tasks and workflows
             admin: Administrative access
             messaging: Agent-to-agent messaging
-
     AgentMTLS:
       type: mutualTLS
       description: Mutual TLS for agent-to-agent communication
-
   schemas:
     TokenResponse:
       type: object
@@ -55,7 +51,6 @@ components:
         token_id:
           type: string
           format: uuid
-
     SecurityContext:
       type: object
       properties:
@@ -86,3 +81,16 @@ components:
                 type: object
             policy_version:
               type: string
+x-ossa-metadata:
+  version: 0.5.0
+  compliance:
+    level: standard
+  observability:
+    tracing: true
+    metrics: true
+    logging: true
+x-ossa:
+  version: 0.5.0
+  agent:
+    id: schemas-common-security
+    type: specialist

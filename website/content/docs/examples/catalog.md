@@ -51,6 +51,7 @@ ossa validate examples/enterprise/agent.yml
 Automated FedRAMP compliance scanning agent that validates
 infrastructure against FedRAMP Moderate controls.
 
+
 **File**: [`compliance-agent.yml`](https://github.com/blueflyio/openstandardagents/blob/main/examples/compliance-agent.yml)
 
 ```bash
@@ -104,6 +105,7 @@ ossa validate examples/production/agent.yml
 Universal API integration agent that connects external services,
 normalizes APIs, and provides unified access layer.
 
+
 **File**: [`spec-examples/integration-agent.yml`](https://github.com/blueflyio/openstandardagents/blob/main/examples/spec-examples/integration-agent.yml)
 
 ```bash
@@ -116,6 +118,7 @@ ossa validate examples/spec-examples/integration-agent.yml
 
 AI-powered code generation agent with support for multiple languages,
 test generation, and code review capabilities.
+
 
 **File**: [`spec-examples/development-agent.yml`](https://github.com/blueflyio/openstandardagents/blob/main/examples/spec-examples/development-agent.yml)
 
@@ -130,6 +133,7 @@ ossa validate examples/spec-examples/development-agent.yml
 AI-powered customer support agent with natural language understanding,
 context retention, and integration with ticketing systems.
 
+
 **File**: [`spec-examples/chat-agent.yml`](https://github.com/blueflyio/openstandardagents/blob/main/examples/spec-examples/chat-agent.yml)
 
 ```bash
@@ -143,6 +147,7 @@ ossa validate examples/spec-examples/chat-agent.yml
 High-performance data extraction, transformation, and loading agent
 with support for multiple data sources and destinations.
 
+
 **File**: [`spec-examples/data-processing-agent.yml`](https://github.com/blueflyio/openstandardagents/blob/main/examples/spec-examples/data-processing-agent.yml)
 
 ```bash
@@ -155,6 +160,7 @@ ossa validate examples/spec-examples/data-processing-agent.yml
 
 Lightweight agent optimized for edge deployment with minimal
 resource requirements and offline capabilities.
+
 
 **File**: [`spec-examples/edge-agent.yml`](https://github.com/blueflyio/openstandardagents/blob/main/examples/spec-examples/edge-agent.yml)
 
@@ -170,6 +176,7 @@ Automated compliance scanning agent for FedRAMP Moderate environments.
 Scans infrastructure, code, and configurations for security vulnerabilities
 and compliance violations.
 
+
 **File**: [`spec-examples/compliance-agent.yml`](https://github.com/blueflyio/openstandardagents/blob/main/examples/spec-examples/compliance-agent.yml)
 
 ```bash
@@ -182,6 +189,7 @@ ossa validate examples/spec-examples/compliance-agent.yml
 
 Automated security auditing agent that scans infrastructure,
 detects vulnerabilities, and generates compliance reports.
+
 
 **File**: [`spec-examples/audit-agent.yml`](https://github.com/blueflyio/openstandardagents/blob/main/examples/spec-examples/audit-agent.yml)
 
@@ -196,6 +204,7 @@ ossa validate examples/spec-examples/audit-agent.yml
 Serverless agent optimized for AWS Lambda, Google Cloud Functions,
 and Azure Functions with auto-scaling and cost optimization.
 
+
 **File**: [`spec-examples/serverless-agent.yml`](https://github.com/blueflyio/openstandardagents/blob/main/examples/spec-examples/serverless-agent.yml)
 
 ```bash
@@ -209,6 +218,7 @@ ossa validate examples/spec-examples/serverless-agent.yml
 Continuous system health monitoring with intelligent alerting
 and auto-remediation capabilities.
 
+
 **File**: [`spec-examples/monitoring-agent.yml`](https://github.com/blueflyio/openstandardagents/blob/main/examples/spec-examples/monitoring-agent.yml)
 
 ```bash
@@ -221,6 +231,7 @@ ossa validate examples/spec-examples/monitoring-agent.yml
 
 Advanced workflow orchestration agent that coordinates multi-step processes,
 manages agent swarms, and provides intelligent task routing.
+
 
 **File**: [`spec-examples/workflow-agent.yml`](https://github.com/blueflyio/openstandardagents/blob/main/examples/spec-examples/workflow-agent.yml)
 

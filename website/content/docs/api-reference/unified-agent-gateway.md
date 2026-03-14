@@ -5,7 +5,6 @@
 **Single Entry Point for All LLM Platform Agents**
 
 This gateway provides a unified OpenAPI interface for:
-
 - OSSA-compliant agents (validation, deployment, orchestration)
 - Drupal llm-platform (content, users, sites, data management)
 - Agent Studio (Mac/iOS/CarPlay/VSCode/IDE)
@@ -15,13 +14,13 @@ This gateway provides a unified OpenAPI interface for:
 - GitLab CI/CD orchestration
 
 **Architecture**:
-
 - Protocol: HTTP/REST + gRPC (agent-mesh)
 - Auth: API Key + JWT (GitLab SSO)
 - Registry: agent-router (service discovery)
 - Tracing: Phoenix (all requests)
 - Metrics: Prometheus
 - Storage: Drupal llm-platform (single source of truth)
+
 
 ## Base URL
 
@@ -42,6 +41,7 @@ POST /agents
 
 **Description**: Creates an OSSA-compliant agent and deploys to K8s via Helm.
 Registers with agent-router, starts Phoenix tracing.
+
 
 **Request Body**:
 
@@ -422,6 +422,7 @@ POST /studio/sessions
 
 **Description**: Creates coding session accessible from iOS/CarPlay.
 Agent continues work when you're away from computer.
+
 
 **Request Body**:
 

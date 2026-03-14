@@ -9,14 +9,12 @@ The OSSA schema defines the structure of agent manifests. Every field serves a s
 ## Core Fields
 
 ### Agent Identification
-
 - [agent.id](./agent-id.md) - Unique agent identifier
 - [agent.name](./agent-name.md) - Human-readable name
 - [agent.version](./agent-version.md) - Semantic version
 - [agent.role](./agent-role.md) - Agent role classification
 
 ### Agent Capabilities
-
 - [agent.capabilities](./agent-capabilities.md) - What the agent can do
 
 ## Schema Versions
@@ -36,7 +34,6 @@ ossa validate agent.ossa.yaml
 ## Complete Schema
 
 View the complete JSON Schema:
-
 - [Current Schema](https://github.com/blueflyio/openstandardagents/blob/main/spec/v0.5/agent.schema.json)
 
 ## Related Documentation

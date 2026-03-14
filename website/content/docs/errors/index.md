@@ -2,7 +2,7 @@
 
 Common errors and solutions.
 
-**Total Error Types**: 1
+**Total Error Types**: 2
 
 ## PathValidationError
 
@@ -11,7 +11,6 @@ Common errors and solutions.
 **Cause**: Check the error context for details
 
 **Solution**:
-
 ```bash
 # Enable debug mode
 DEBUG=* ossa <command>
@@ -22,7 +21,6 @@ DEBUG=* ossa <command>
 **Cause**: Check the error context for details
 
 **Solution**:
-
 ```bash
 # Enable debug mode
 DEBUG=* ossa <command>
@@ -33,7 +31,6 @@ DEBUG=* ossa <command>
 **Cause**: Check the error context for details
 
 **Solution**:
-
 ```bash
 # Enable debug mode
 DEBUG=* ossa <command>
@@ -44,7 +41,28 @@ DEBUG=* ossa <command>
 **Cause**: Check the error context for details
 
 **Solution**:
+```bash
+# Enable debug mode
+DEBUG=* ossa <command>
+```
 
+## TypeError
+
+### "Wrong value"
+
+**Cause**: Check the error context for details
+
+**Solution**:
+```bash
+# Enable debug mode
+DEBUG=* ossa <command>
+```
+
+### "Not supported on private methods."
+
+**Cause**: Check the error context for details
+
+**Solution**:
 ```bash
 # Enable debug mode
 DEBUG=* ossa <command>

@@ -5,7 +5,6 @@
 **REVOLUTIONARY** OSSA Agent Registry - First-of-its-kind for AI agents
 
 Production Architecture:
-
 - OpenAPI-First: Spec drives all implementation
 - DRY: Single source of truth for agent metadata
 - CRUD: Full agent lifecycle management
@@ -13,7 +12,6 @@ Production Architecture:
 - Type-Safe: Zod validation + TypeScript
 
 Features:
-
 - Agent discovery and registration
 - Version management with semantic versioning
 - Cryptographic signature verification
@@ -22,6 +20,7 @@ Features:
 - Performance metrics and health scoring
 
 OSSA Compliance: v0.1.9
+
 
 ## Base URL
 

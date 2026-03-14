@@ -5,7 +5,6 @@ info:
   description: |
     A helpful customer support agent that answers questions and helps with orders.
     Demonstrates OSSA quickstart patterns for production-ready agents.
-
 x-ossa-metadata:
   version: 0.2.5-RC
   compliance:
@@ -13,28 +12,28 @@ x-ossa-metadata:
     frameworks:
       - OSSA
       - OpenAPI 3.1
-
+  observability:
+    tracing: true
+    metrics: true
+    logging: true
 x-ossa:
   version: 0.3.3
   agent:
-    id: support-agent
+    id: reference-implementations-quickstart-support-agent-api
     type: specialist
     compliance:
       standards:
         - openapi-first
       validated: true
-      validatedAt: "2024-01-15T10:00:00Z"
-
+      validatedAt: 2024-01-15T10:00:00Z
 servers:
   - url: http://localhost:3000
     description: Local development server
-
 tags:
   - name: support
     description: Customer support operations
   - name: orders
     description: Order management operations
-
 paths:
   /chat:
     post:
@@ -43,7 +42,8 @@ paths:
         Interactive chat endpoint for customer support.
         The agent can answer questions about orders, shipping, returns, and products.
       operationId: chat
-      tags: [support]
+      tags:
+        - support
       x-ossa-capability: customer_support
       x-ossa-autonomy:
         level: supervised
@@ -59,7 +59,8 @@ paths:
           application/json:
             schema:
               type: object
-              required: [message]
+              required:
+                - message
               properties:
                 message:
                   type: string
@@ -71,7 +72,7 @@ paths:
                   type: object
                   description: Additional context for the conversation
       responses:
-        '200':
+        "200":
           description: Support response
           content:
             application/json:
@@ -90,13 +91,13 @@ paths:
                     type: array
                     items:
                       type: string
-
   /orders/{order_id}/status:
     get:
       summary: Get order status
       description: Retrieve the status of a customer order
       operationId: getOrderStatus
-      tags: [orders]
+      tags:
+        - orders
       x-ossa-capability: order_tracking
       x-ossa-autonomy:
         level: autonomous
@@ -109,7 +110,7 @@ paths:
             type: string
           description: The order ID to look up (e.g., ORD-12345)
       responses:
-        '200':
+        "200":
           description: Order status retrieved
           content:
             application/json:
@@ -120,7 +121,12 @@ paths:
                     type: string
                   status:
                     type: string
-                    enum: [pending, processing, shipped, delivered, cancelled]
+                    enum:
+                      - pending
+                      - processing
+                      - shipped
+                      - delivered
+                      - cancelled
                   tracking_number:
                     type: string
                   estimated_delivery:
@@ -137,15 +143,15 @@ paths:
                           type: integer
                         price:
                           type: number
-        '404':
+        "404":
           description: Order not found
-
   /orders/{order_id}/track:
     get:
       summary: Track order package
       description: Get detailed tracking information for an order
       operationId: trackOrder
-      tags: [orders]
+      tags:
+        - orders
       x-ossa-capability: order_tracking
       x-ossa-autonomy:
         level: autonomous
@@ -157,7 +163,7 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Tracking information
           content:
             application/json:
@@ -184,4 +190,3 @@ paths:
                           type: string
                         description:
                           type: string
-

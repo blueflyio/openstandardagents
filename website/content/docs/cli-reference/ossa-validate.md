@@ -44,7 +44,6 @@ ossa validate agent.ossa.yaml --format json
 ## API Endpoint Connection
 
 This command uses the following API endpoint:
-
 - `POST /api/v1/validate` - [API Reference](../api-reference/index.md)
 
 ## Exit Codes

@@ -24,37 +24,31 @@ Create `.ossarc.json` or `.ossarc.yaml` in your project root:
 ## Configuration Options
 
 ### registry
-
 - **Type**: `string`
 - **Default**: `"https://registry.ossa.dev"`
 - **Description**: Agent registry URL
 
 ### defaultVersion
-
 - **Type**: `string`
 - **Default**: `"latest"`
 - **Description**: Default OSSA schema version
 
 ### validation.strict
-
 - **Type**: `boolean`
 - **Default**: `false`
 - **Description**: Enable strict validation mode
 
 ### validation.allowUnknownFields
-
 - **Type**: `boolean`
 - **Default**: `true`
 - **Description**: Allow unknown fields in manifests
 
 ### runtime.timeout
-
 - **Type**: `number`
 - **Default**: `30000`
 - **Description**: Execution timeout in milliseconds
 
 ### runtime.retries
-
 - **Type**: `number`
 - **Default**: `3`
 - **Description**: Number of retry attempts

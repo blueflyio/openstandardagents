@@ -48,7 +48,6 @@ ossa agents delete --id my-agent
 ## API Endpoint Connection
 
 This command uses the following API endpoint:
-
 - `GET /api/v1/agents` - [API Reference](../api-reference/index.md)
 
 ## Exit Codes

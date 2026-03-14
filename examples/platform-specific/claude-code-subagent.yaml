@@ -4,7 +4,7 @@ metadata:
   name: claude-code-explorer
   version: 1.0.0
   description: Specialized sub-agent for deep code exploration and codebase analysis
-  author: Bluefly Platform
+  author: Agent Platform
   tags:
     - claude-code
     - subagent

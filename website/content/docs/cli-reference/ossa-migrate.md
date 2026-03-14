@@ -40,7 +40,6 @@ ossa migrate agent.yaml --output migrated-agent.yaml
 ## API Endpoint Connection
 
 This command uses the following API endpoint:
-
 - `POST /api/v1/migrate` - [API Reference](../api-reference/index.md)
 
 ## Exit Codes

@@ -1,7 +1,8 @@
 openapi: 3.1.0
 info:
   title: OSSA CLI API
-  version: {{VERSION}}
+  version: &a1
+    "{ VERSION }": null
   description: |
     API specification for OSSA (Open Standard for Software Agents) CLI operations.
 
@@ -10,17 +11,14 @@ info:
     - Runtime validation with express-openapi-validator
     - API-First development (spec drives implementation)
     - Zero type drift between spec and implementation
-
   contact:
     name: BlueFly.io
     url: https://bluefly.io
   license:
     name: MIT
-
 servers:
   - url: http://localhost:3000/api/v1
     description: Local CLI API server
-
 tags:
   - name: agents
     description: Agent CRUD operations
@@ -34,10 +32,8 @@ tags:
     description: Agent template management
   - name: catalog
     description: Agent discovery and sharing
-
 components:
   schemas:
-    # Core OSSA Agent Schema
     OssaAgent:
       type: object
       required:
@@ -48,17 +44,21 @@ components:
       properties:
         apiVersion:
           type: string
-          enum: ['ossa/v0.3.6', 'ossa/v{{VERSION}}']
-          example: 'ossa/v{{VERSION}}'
+          enum:
+            - ossa/v0.3.6
+            - ossa/v{{VERSION}}
+          example: ossa/v{{VERSION}}
         kind:
           type: string
-          enum: ['Agent', 'Workflow', 'Task']
-          example: 'Agent'
+          enum:
+            - Agent
+            - Workflow
+            - Task
+          example: Agent
         metadata:
-          $ref: '#/components/schemas/AgentMetadata'
+          $ref: "#/components/schemas/AgentMetadata"
         spec:
-          $ref: '#/components/schemas/AgentSpec'
-
+          $ref: "#/components/schemas/AgentSpec"
     AgentMetadata:
       type: object
       required:
@@ -67,36 +67,37 @@ components:
       properties:
         name:
           type: string
-          pattern: '^[a-z0-9-]+$'
+          pattern: ^[a-z0-9-]+$
           minLength: 3
           maxLength: 50
-          example: 'supercali-fragilisticagent'
+          example: supercali-fragilisticagent
         version:
           type: string
-          pattern: '^\d+\.\d+\.\d+$'
-          example: '1.0.0'
+          pattern: ^\d+\.\d+\.\d+$
+          example: 1.0.0
         description:
           type: string
           maxLength: 500
-          example: 'AI agent for data processing'
+          example: AI agent for data processing
         author:
           type: string
-          example: 'jane@example.com'
+          example: jane@example.com
         license:
           type: string
-          example: 'MIT'
+          example: MIT
         tags:
           type: array
           items:
             type: string
-          example: ['worker', 'data-processing']
+          example:
+            - worker
+            - data-processing
         created:
           type: string
           format: date-time
         updated:
           type: string
           format: date-time
-
     AgentSpec:
       type: object
       required:
@@ -107,23 +108,25 @@ components:
           description: System prompt / agent role description
           minLength: 10
           maxLength: 5000
-          example: 'You are a data processing agent that transforms CSV files'
+          example: You are a data processing agent that transforms CSV files
         llm:
-          $ref: '#/components/schemas/LLMConfig'
+          $ref: "#/components/schemas/LLMConfig"
         tools:
           type: array
           items:
-            $ref: '#/components/schemas/Tool'
+            $ref: "#/components/schemas/Tool"
         capabilities:
           type: array
           items:
             type: string
-          example: ['data-processing', 'file-handling', 'api-calls']
+          example:
+            - data-processing
+            - file-handling
+            - api-calls
         workflow:
-          $ref: '#/components/schemas/Workflow'
+          $ref: "#/components/schemas/Workflow"
         autonomy:
-          $ref: '#/components/schemas/AutonomyConfig'
-
+          $ref: "#/components/schemas/AutonomyConfig"
     LLMConfig:
       type: object
       required:
@@ -132,11 +135,16 @@ components:
       properties:
         provider:
           type: string
-          enum: ['openai', 'anthropic', 'cohere', 'huggingface', 'local']
-          example: 'anthropic'
+          enum:
+            - openai
+            - anthropic
+            - cohere
+            - huggingface
+            - local
+          example: anthropic
         model:
           type: string
-          example: 'claude-sonnet-4-20250514'
+          example: claude-sonnet-4-20250514
         temperature:
           type: number
           minimum: 0
@@ -147,7 +155,6 @@ components:
           minimum: 1
           maximum: 100000
           default: 4096
-
     Tool:
       type: object
       required:
@@ -156,31 +163,32 @@ components:
       properties:
         name:
           type: string
-          pattern: '^[a-z_][a-z0-9_]*$'
-          example: 'process_data'
+          pattern: ^[a-z_][a-z0-9_]*$
+          example: process_data
         description:
           type: string
           maxLength: 500
-          example: 'Process and transform data'
+          example: Process and transform data
         type:
           type: string
-          enum: ['function', 'api', 'mcp']
-          default: 'function'
+          enum:
+            - function
+            - api
+            - mcp
+          default: function
         inputSchema:
           type: object
           description: JSON Schema for tool input
         server:
           type: string
           description: MCP server name (if type=mcp)
-
     Workflow:
       type: object
       properties:
         steps:
           type: array
           items:
-            $ref: '#/components/schemas/WorkflowStep'
-
+            $ref: "#/components/schemas/WorkflowStep"
     WorkflowStep:
       type: object
       required:
@@ -189,26 +197,26 @@ components:
       properties:
         agent:
           type: string
-          example: 'researcher'
+          example: researcher
         task:
           type: string
-          example: 'research'
+          example: research
         description:
           type: string
-          example: 'Research the topic'
-
+          example: Research the topic
     AutonomyConfig:
       type: object
       properties:
         level:
           type: string
-          enum: ['fully_autonomous', 'supervised', 'human_in_loop']
-          default: 'supervised'
+          enum:
+            - fully_autonomous
+            - supervised
+            - human_in_loop
+          default: supervised
         requiresApproval:
           type: boolean
           default: false
-
-    # Template Schema
     AgentTemplate:
       type: object
       required:
@@ -219,34 +227,42 @@ components:
       properties:
         id:
           type: string
-          pattern: '^[a-z0-9-]+$'
-          example: 'worker-data-processor'
+          pattern: ^[a-z0-9-]+$
+          example: worker-data-processor
         name:
           type: string
-          example: 'Data Processor Worker'
+          example: Data Processor Worker
         description:
           type: string
-          example: 'Worker agent specialized in data processing tasks'
+          example: Worker agent specialized in data processing tasks
         category:
           type: string
-          enum: ['worker', 'coordinator', 'specialist', 'reviewer', 'executor']
-          example: 'worker'
+          enum:
+            - worker
+            - coordinator
+            - specialist
+            - reviewer
+            - executor
+          example: worker
         icon:
           type: string
-          example: '🔧'
+          example: 🔧
         defaults:
-          $ref: '#/components/schemas/TemplateDefaults'
+          $ref: "#/components/schemas/TemplateDefaults"
         useCases:
           type: array
           items:
             type: string
-          example: ['Process CSV files', 'Transform JSON data']
+          example:
+            - Process CSV files
+            - Transform JSON data
         examples:
           type: array
           items:
             type: string
-          example: ['data-ingestion-worker', 'etl-processor']
-
+          example:
+            - data-ingestion-worker
+            - etl-processor
     TemplateDefaults:
       type: object
       properties:
@@ -263,30 +279,32 @@ components:
           items:
             type: string
         llm:
-          $ref: '#/components/schemas/LLMConfig'
-
-    # Export Operations
+          $ref: "#/components/schemas/LLMConfig"
     ExportRequest:
       type: object
       required:
         - manifest
       properties:
         manifest:
-          $ref: '#/components/schemas/OssaAgent'
+          $ref: "#/components/schemas/OssaAgent"
         platform:
           type: string
-          enum: ['langchain', 'mcp', 'crewai', 'drupal', 'gitlab-duo']
-          example: 'mcp'
+          enum:
+            - langchain
+            - mcp
+            - crewai
+            - drupal
+            - gitlab-duo
+          example: mcp
         outputDir:
           type: string
-          example: './exports'
+          example: ./exports
         dryRun:
           type: boolean
           default: false
         validate:
           type: boolean
           default: true
-
     ExportResult:
       type: object
       required:
@@ -296,13 +314,13 @@ components:
       properties:
         platform:
           type: string
-          example: 'mcp'
+          example: mcp
         success:
           type: boolean
         files:
           type: array
           items:
-            $ref: '#/components/schemas/ExportFile'
+            $ref: "#/components/schemas/ExportFile"
         error:
           type: string
         metadata:
@@ -317,7 +335,6 @@ components:
               type: array
               items:
                 type: string
-
     ExportFile:
       type: object
       required:
@@ -327,31 +344,38 @@ components:
       properties:
         path:
           type: string
-          example: 'mcp/server.ts'
+          example: mcp/server.ts
         content:
           type: string
         type:
           type: string
-          enum: ['code', 'config', 'documentation', 'test', 'other']
+          enum:
+            - code
+            - config
+            - documentation
+            - test
+            - other
         language:
           type: string
-          example: 'typescript'
-
+          example: typescript
     BatchExportRequest:
       type: object
       required:
         - manifest
       properties:
         manifest:
-          $ref: '#/components/schemas/OssaAgent'
+          $ref: "#/components/schemas/OssaAgent"
         platforms:
           type: array
           items:
             type: string
-          example: ['langchain', 'mcp', 'crewai']
+          example:
+            - langchain
+            - mcp
+            - crewai
         outputDir:
           type: string
-          default: './exports'
+          default: ./exports
         parallel:
           type: boolean
           default: false
@@ -361,7 +385,6 @@ components:
         dryRun:
           type: boolean
           default: false
-
     BatchExportResult:
       type: object
       required:
@@ -374,7 +397,7 @@ components:
         results:
           type: array
           items:
-            $ref: '#/components/schemas/ExportResult'
+            $ref: "#/components/schemas/ExportResult"
         summary:
           type: object
           required:
@@ -391,8 +414,6 @@ components:
               type: integer
             duration:
               type: integer
-
-    # Agent List Response
     AgentList:
       type: object
       required:
@@ -402,14 +423,13 @@ components:
         agents:
           type: array
           items:
-            $ref: '#/components/schemas/AgentSummary'
+            $ref: "#/components/schemas/AgentSummary"
         total:
           type: integer
         page:
           type: integer
         pageSize:
           type: integer
-
     AgentSummary:
       type: object
       required:
@@ -435,8 +455,6 @@ components:
         updated:
           type: string
           format: date-time
-
-    # Error Response
     Error:
       type: object
       required:
@@ -445,17 +463,15 @@ components:
       properties:
         error:
           type: string
-          example: 'VALIDATION_ERROR'
+          example: VALIDATION_ERROR
         message:
           type: string
-          example: 'Agent name must be lowercase alphanumeric with hyphens'
+          example: Agent name must be lowercase alphanumeric with hyphens
         details:
           type: object
         path:
           type: string
-          example: 'metadata.name'
-
-    # AGENTS.md (agents.md standard) - OSSA owns; BuildKit consumes via this API
+          example: metadata.name
     AgentsMdContent:
       type: object
       description: AGENTS.md content or generate options (agents.md standard https://agents.md)
@@ -464,16 +480,15 @@ components:
           type: string
           description: Raw AGENTS.md markdown (when providing custom content)
         options:
-          $ref: '#/components/schemas/AgentsMdOptions'
+          $ref: "#/components/schemas/AgentsMdOptions"
           description: Options when generating from manifest (omit content to generate)
-
     AgentsMdOptions:
       type: object
       description: Options for generating AGENTS.md from OSSA manifest
       properties:
         outputPath:
           type: string
-          default: 'AGENTS.md'
+          default: AGENTS.md
           description: Output path relative to agent directory
         sections:
           type: object
@@ -519,10 +534,11 @@ components:
                   default: true
                 custom:
                   type: string
-
     AgentsMdResponse:
       type: object
-      required: [content, path]
+      required:
+        - content
+        - path
       properties:
         content:
           type: string
@@ -530,11 +546,12 @@ components:
         path:
           type: string
           description: Resolved path where file is or would be written
-
     DiscoveredAgentsMd:
       type: object
       description: One discovered AGENTS.md entry (for discovery and maintenance)
-      required: [agentsMdPath, baseDir]
+      required:
+        - agentsMdPath
+        - baseDir
       properties:
         agentsMdPath:
           type: string
@@ -558,24 +575,27 @@ components:
         baseDir:
           type: string
           description: Workspace base directory
-
     AgentsMdDiscoverResponse:
       type: object
-      required: [discovered]
+      required:
+        - discovered
       properties:
         discovered:
           type: array
           items:
-            $ref: '#/components/schemas/DiscoveredAgentsMd'
-
+            $ref: "#/components/schemas/DiscoveredAgentsMd"
     AgentsMdMaintainResponse:
       type: object
-      required: [discovered, updated, skipped, failed]
+      required:
+        - discovered
+        - updated
+        - skipped
+        - failed
       properties:
         discovered:
           type: array
           items:
-            $ref: '#/components/schemas/DiscoveredAgentsMd'
+            $ref: "#/components/schemas/DiscoveredAgentsMd"
         updated:
           type: array
           items:
@@ -594,13 +614,12 @@ components:
                 type: string
               error:
                 type: string
-
 paths:
-  # Agent CRUD Operations
   /agents:
     get:
       operationId: listAgents
-      tags: [agents]
+      tags:
+        - agents
       summary: List all agents
       description: Get list of all agents in workspace with filtering and pagination
       parameters:
@@ -627,16 +646,17 @@ paths:
             type: integer
             default: 20
       responses:
-        '200':
+        "200":
           description: List of agents
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AgentList'
-
+                $ref: "#/components/schemas/AgentList"
+      x-ossa-capability: cli-list-agents
     post:
       operationId: createAgent
-      tags: [agents]
+      tags:
+        - agents
       summary: Create new agent
       description: Create agent from manifest (used by wizard)
       requestBody:
@@ -644,25 +664,29 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/OssaAgent'
+              $ref: "#/components/schemas/OssaAgent"
       responses:
-        '201':
+        "201":
           description: Agent created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OssaAgent'
-        '400':
+                $ref: "#/components/schemas/OssaAgent"
+        "400":
           description: Validation error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-
+                $ref: "#/components/schemas/Error"
+      x-ossa-capability: cli-create-agent
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /agents/{name}:
     get:
       operationId: getAgent
-      tags: [agents]
+      tags:
+        - agents
       summary: Get agent by name
       parameters:
         - name: name
@@ -671,22 +695,23 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Agent details
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OssaAgent'
-        '404':
+                $ref: "#/components/schemas/OssaAgent"
+        "404":
           description: Agent not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-
+                $ref: "#/components/schemas/Error"
+      x-ossa-capability: cli-get-agent
     put:
       operationId: updateAgent
-      tags: [agents]
+      tags:
+        - agents
       summary: Update agent
       parameters:
         - name: name
@@ -699,18 +724,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/OssaAgent'
+              $ref: "#/components/schemas/OssaAgent"
       responses:
-        '200':
+        "200":
           description: Agent updated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OssaAgent'
-
+                $ref: "#/components/schemas/OssaAgent"
+      x-ossa-capability: cli-update-agent
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
     delete:
       operationId: deleteAgent
-      tags: [agents]
+      tags:
+        - agents
       summary: Delete agent
       parameters:
         - name: name
@@ -719,16 +748,19 @@ paths:
           schema:
             type: string
       responses:
-        '204':
+        "204":
           description: Agent deleted
-        '404':
+        "404":
           description: Agent not found
-
-  # AGENTS.md (agents.md) - same logic as ossa agents-md CLI; BuildKit consumes via API
+      x-ossa-capability: cli-delete-agent
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /agents/{name}/agents-md:
     get:
       operationId: getAgentsMd
-      tags: [agents-md]
+      tags:
+        - agents-md
       summary: Get AGENTS.md for an agent
       description: Return AGENTS.md content (from disk or generate from manifest). Same logic as ossa agents-md generate.
       parameters:
@@ -745,22 +777,23 @@ paths:
             default: false
           description: If true, generate from manifest when file missing
       responses:
-        '200':
+        "200":
           description: AGENTS.md content
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AgentsMdResponse'
-        '404':
+                $ref: "#/components/schemas/AgentsMdResponse"
+        "404":
           description: Agent or AGENTS.md not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-
+                $ref: "#/components/schemas/Error"
+      x-ossa-capability: cli-get-agents-md
     put:
       operationId: putAgentsMd
-      tags: [agents-md]
+      tags:
+        - agents-md
       summary: Create or update AGENTS.md for an agent
       description: Write AGENTS.md (raw content or generate from manifest with options). Same logic as ossa agents-md generate.
       parameters:
@@ -773,30 +806,34 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AgentsMdContent'
+              $ref: "#/components/schemas/AgentsMdContent"
       responses:
-        '200':
+        "200":
           description: AGENTS.md written
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AgentsMdResponse'
-        '400':
+                $ref: "#/components/schemas/AgentsMdResponse"
+        "400":
           description: Validation error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '404':
+                $ref: "#/components/schemas/Error"
+        "404":
           description: Agent not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-
+                $ref: "#/components/schemas/Error"
+      x-ossa-capability: cli-put-agents-md
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
     delete:
       operationId: deleteAgentsMd
-      tags: [agents-md]
+      tags:
+        - agents-md
       summary: Remove AGENTS.md for an agent
       parameters:
         - name: name
@@ -805,20 +842,23 @@ paths:
           schema:
             type: string
       responses:
-        '204':
+        "204":
           description: AGENTS.md deleted
-        '404':
+        "404":
           description: Agent or AGENTS.md not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-
-  # AGENTS.md discovery and maintenance (update/maintain after creation)
+                $ref: "#/components/schemas/Error"
+      x-ossa-capability: cli-delete-agents-md
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /agents-md/discover:
     get:
       operationId: discoverAgentsMd
-      tags: [agents-md]
+      tags:
+        - agents-md
       summary: Discover all AGENTS.md in workspace
       description: Find all AGENTS.md files and their manifests (.agents/*/ and root) for update and maintenance.
       parameters:
@@ -829,17 +869,18 @@ paths:
             default: .
           description: Workspace directory to scan
       responses:
-        '200':
+        "200":
           description: List of discovered AGENTS.md entries
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AgentsMdDiscoverResponse'
-
+                $ref: "#/components/schemas/AgentsMdDiscoverResponse"
+      x-ossa-capability: cli-discover-agents-md
   /agents-md/maintain:
     post:
       operationId: maintainAgentsMd
-      tags: [agents-md]
+      tags:
+        - agents-md
       summary: Maintain AGENTS.md files in workspace
       description: Discover then validate/regenerate to update and maintain AGENTS.md after creation.
       parameters:
@@ -862,59 +903,70 @@ paths:
                   type: boolean
                   default: false
       responses:
-        '200':
+        "200":
           description: Maintain result
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AgentsMdMaintainResponse'
-
-  # Export Operations
+                $ref: "#/components/schemas/AgentsMdMaintainResponse"
+      x-ossa-capability: cli-maintain-agents-md
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /export:
     post:
       operationId: exportAgent
-      tags: [export]
+      tags:
+        - export
       summary: Export agent to platform
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ExportRequest'
+              $ref: "#/components/schemas/ExportRequest"
       responses:
-        '200':
+        "200":
           description: Export successful
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ExportResult'
-
+                $ref: "#/components/schemas/ExportResult"
+      x-ossa-capability: cli-export-agent
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /export/batch:
     post:
       operationId: batchExport
-      tags: [export]
+      tags:
+        - export
       summary: Batch export to multiple platforms
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BatchExportRequest'
+              $ref: "#/components/schemas/BatchExportRequest"
       responses:
-        '200':
+        "200":
           description: Batch export completed
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BatchExportResult'
-
+                $ref: "#/components/schemas/BatchExportResult"
+      x-ossa-capability: cli-batch-export
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /export/platforms:
     get:
       operationId: listPlatforms
-      tags: [export]
+      tags:
+        - export
       summary: List available export platforms
       responses:
-        '200':
+        "200":
           description: List of platforms
           content:
             application/json:
@@ -933,12 +985,12 @@ paths:
                       type: array
                       items:
                         type: string
-
-  # Template Operations
+      x-ossa-capability: cli-list-platforms
   /templates:
     get:
       operationId: listTemplates
-      tags: [templates]
+      tags:
+        - templates
       summary: List all agent templates
       parameters:
         - name: category
@@ -946,19 +998,20 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: List of templates
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/AgentTemplate'
-
+                  $ref: "#/components/schemas/AgentTemplate"
+      x-ossa-capability: cli-list-templates
   /templates/{id}:
     get:
       operationId: getTemplate
-      tags: [templates]
+      tags:
+        - templates
       summary: Get template by ID
       parameters:
         - name: id
@@ -967,9 +1020,23 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Template details
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AgentTemplate'
+                $ref: "#/components/schemas/AgentTemplate"
+      x-ossa-capability: cli-get-template
+x-ossa-metadata:
+  version: 0.5.0
+  compliance:
+    level: standard
+  observability:
+    tracing: true
+    metrics: true
+    logging: true
+x-ossa:
+  version: 0.5.0
+  agent:
+    id: ossa-cli-api
+    type: gateway

@@ -5,17 +5,15 @@ info:
   description: |
     Developer CLI for OSSA version management and spec generation.
     **Separate from npm package** - Only for developers working on OSSA itself.
-    
+
     Architecture:
     - OpenAPI-First: This spec drives all CLI commands
     - Zod Validation: All inputs/outputs validated with Zod schemas
     - DRY: Single source of truth (.version.json)
     - SOLID: Each command is a separate service
-
 servers:
   - url: cli://ossa-dev
     description: OSSA Developer CLI
-
 paths:
   /version/release:
     post:
@@ -31,19 +29,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/VersionReleaseRequest'
+              $ref: "#/components/schemas/VersionReleaseRequest"
       responses:
-        '200':
+        "200":
           description: Release prepared successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VersionReleaseResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '500':
-          $ref: '#/components/responses/InternalError'
-
+                $ref: "#/components/schemas/VersionReleaseResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalError"
+      x-ossa-capability: dev-cli-version-release
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /version/validate:
     get:
       operationId: versionValidate
@@ -54,15 +55,15 @@ paths:
       tags:
         - Version Management
       responses:
-        '200':
+        "200":
           description: Validation results
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VersionValidateResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-
+                $ref: "#/components/schemas/VersionValidateResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+      x-ossa-capability: dev-cli-version-validate
   /version/audit:
     get:
       operationId: versionAudit
@@ -80,13 +81,13 @@ paths:
             default: false
           description: Automatically replace hardcoded versions with 0.3.6
       responses:
-        '200':
+        "200":
           description: Audit results
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VersionAuditResponse'
-
+                $ref: "#/components/schemas/VersionAuditResponse"
+      x-ossa-capability: dev-cli-version-audit
   /version/status:
     get:
       operationId: versionStatus
@@ -101,13 +102,13 @@ paths:
       tags:
         - Version Management
       responses:
-        '200':
+        "200":
           description: Version status
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VersionStatusResponse'
-
+                $ref: "#/components/schemas/VersionStatusResponse"
+      x-ossa-capability: dev-cli-version-status
   /version/check:
     get:
       operationId: versionCheck
@@ -118,13 +119,13 @@ paths:
       tags:
         - Version Management
       responses:
-        '200':
+        "200":
           description: Check results
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VersionCheckResponse'
-
+                $ref: "#/components/schemas/VersionCheckResponse"
+      x-ossa-capability: dev-cli-version-check
   /version/sync:
     post:
       operationId: versionSync
@@ -139,15 +140,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/VersionSyncRequest'
+              $ref: "#/components/schemas/VersionSyncRequest"
       responses:
-        '200':
+        "200":
           description: Sync complete
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VersionSyncResponse'
-
+                $ref: "#/components/schemas/VersionSyncResponse"
+      x-ossa-capability: dev-cli-version-sync
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /spec/generate:
     post:
       operationId: specGenerate
@@ -163,19 +167,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SpecGenerateRequest'
+              $ref: "#/components/schemas/SpecGenerateRequest"
       responses:
-        '200':
+        "200":
           description: Spec generated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SpecGenerateResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '500':
-          $ref: '#/components/responses/InternalError'
-
+                $ref: "#/components/schemas/SpecGenerateResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalError"
+      x-ossa-capability: dev-cli-spec-generate
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /spec/validate:
     post:
       operationId: specValidate
@@ -190,15 +197,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SpecValidateRequest'
+              $ref: "#/components/schemas/SpecValidateRequest"
       responses:
-        '200':
+        "200":
           description: Validation results
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SpecValidateResponse'
-
+                $ref: "#/components/schemas/SpecValidateResponse"
+      x-ossa-capability: dev-cli-spec-validate
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /workflow/release:
     get:
       operationId: workflowRelease
@@ -208,13 +218,13 @@ paths:
       tags:
         - Workflow Help
       responses:
-        '200':
+        "200":
           description: Workflow guide
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkflowResponse'
-
+                $ref: "#/components/schemas/WorkflowResponse"
+      x-ossa-capability: dev-cli-workflow-release
   /workflow/validate:
     get:
       operationId: workflowValidate
@@ -224,13 +234,13 @@ paths:
       tags:
         - Workflow Help
       responses:
-        '200':
+        "200":
           description: Workflow guide
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkflowResponse'
-
+                $ref: "#/components/schemas/WorkflowResponse"
+      x-ossa-capability: dev-cli-workflow-validate
   /release/verify:
     post:
       operationId: releaseVerify
@@ -246,19 +256,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ReleaseVerifyRequest'
+              $ref: "#/components/schemas/ReleaseVerifyRequest"
       responses:
-        '200':
+        "200":
           description: Verification results
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ReleaseVerifyResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '500':
-          $ref: '#/components/responses/InternalError'
-
+                $ref: "#/components/schemas/ReleaseVerifyResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalError"
+      x-ossa-capability: dev-cli-release-verify
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /release/prep:
     post:
       operationId: releasePrep
@@ -273,19 +286,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ReleasePrepRequest'
+              $ref: "#/components/schemas/ReleasePrepRequest"
       responses:
-        '200':
+        "200":
           description: Preparation results
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ReleasePrepResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '500':
-          $ref: '#/components/responses/InternalError'
-
+                $ref: "#/components/schemas/ReleasePrepResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalError"
+      x-ossa-capability: dev-cli-release-prep
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 components:
   schemas:
     VersionReleaseRequest:
@@ -295,7 +311,10 @@ components:
       properties:
         bumpType:
           type: string
-          enum: [patch, minor, major]
+          enum:
+            - patch
+            - minor
+            - major
           description: Version bump type
         dryRun:
           type: boolean
@@ -305,7 +324,6 @@ components:
           type: boolean
           default: false
           description: Skip validation after bump
-
     VersionReleaseResponse:
       type: object
       required:
@@ -330,7 +348,6 @@ components:
           items:
             type: string
           description: Next steps for release
-
     VersionValidateResponse:
       type: object
       required:
@@ -352,7 +369,6 @@ components:
           type: object
           additionalProperties:
             type: string
-
     VersionAuditResponse:
       type: object
       required:
@@ -362,13 +378,12 @@ components:
         files:
           type: array
           items:
-            $ref: '#/components/schemas/HardcodedVersionFile'
+            $ref: "#/components/schemas/HardcodedVersionFile"
         total:
           type: integer
         fixed:
           type: integer
           description: Number of files fixed (if fix=true)
-
     HardcodedVersionFile:
       type: object
       required:
@@ -387,7 +402,6 @@ components:
         suggested:
           type: string
           description: Suggested replacement with 0.3.6
-
     VersionStatusResponse:
       type: object
       required:
@@ -426,9 +440,11 @@ components:
               description: Files with hardcoded versions
         health:
           type: string
-          enum: [healthy, warning, error]
+          enum:
+            - healthy
+            - warning
+            - error
           description: Overall version health status
-
     VersionCheckResponse:
       type: object
       required:
@@ -437,7 +453,10 @@ components:
       properties:
         status:
           type: string
-          enum: [OK, WARN, ERROR]
+          enum:
+            - OK
+            - WARN
+            - ERROR
           description: Check status
         consistent:
           type: boolean
@@ -450,7 +469,6 @@ components:
         message:
           type: string
           description: Human-readable status message
-
     VersionSyncRequest:
       type: object
       properties:
@@ -462,7 +480,6 @@ components:
           items:
             type: string
           description: Specific files to sync (defaults to all)
-
     VersionSyncResponse:
       type: object
       required:
@@ -477,7 +494,6 @@ components:
           type: array
           items:
             type: string
-
     SpecGenerateRequest:
       type: object
       properties:
@@ -489,7 +505,6 @@ components:
           type: boolean
           default: true
           description: Validate generated spec
-
     SpecGenerateResponse:
       type: object
       required:
@@ -505,8 +520,7 @@ components:
           items:
             type: string
         validation:
-          $ref: '#/components/schemas/SpecValidationResult'
-
+          $ref: "#/components/schemas/SpecValidationResult"
     SpecValidateRequest:
       type: object
       required:
@@ -515,7 +529,6 @@ components:
         specPath:
           type: string
           description: Path to spec file to validate
-
     SpecValidateResponse:
       type: object
       required:
@@ -532,7 +545,6 @@ components:
           type: array
           items:
             type: string
-
     SpecValidationResult:
       type: object
       required:
@@ -545,7 +557,6 @@ components:
           type: array
           items:
             type: string
-
     WorkflowResponse:
       type: object
       required:
@@ -569,7 +580,6 @@ components:
               optional:
                 type: boolean
                 default: false
-
     ReleaseVerifyRequest:
       type: object
       properties:
@@ -584,7 +594,6 @@ components:
           type: boolean
           default: false
           description: Skip CI configuration validation
-
     ReleaseVerifyResponse:
       type: object
       required:
@@ -608,13 +617,13 @@ components:
           type: string
           description: Version tag (e.g., v0.3.3)
         repository:
-          $ref: '#/components/schemas/RepositoryState'
+          $ref: "#/components/schemas/RepositoryState"
         versionState:
-          $ref: '#/components/schemas/VersionState'
+          $ref: "#/components/schemas/VersionState"
         tagState:
-          $ref: '#/components/schemas/TagState'
+          $ref: "#/components/schemas/TagState"
         ciConfig:
-          $ref: '#/components/schemas/CIConfigState'
+          $ref: "#/components/schemas/CIConfigState"
           description: CI configuration state (optional if skipCIConfig=true)
         errors:
           type: array
@@ -631,7 +640,6 @@ components:
           items:
             type: string
           description: Next steps to complete release
-
     RepositoryState:
       type: object
       required:
@@ -649,8 +657,7 @@ components:
         checks:
           type: array
           items:
-            $ref: '#/components/schemas/RepositoryCheck'
-
+            $ref: "#/components/schemas/RepositoryCheck"
     RepositoryCheck:
       type: object
       required:
@@ -664,7 +671,6 @@ components:
           type: boolean
         message:
           type: string
-
     VersionState:
       type: object
       required:
@@ -685,8 +691,7 @@ components:
         checks:
           type: array
           items:
-            $ref: '#/components/schemas/RepositoryCheck'
-
+            $ref: "#/components/schemas/RepositoryCheck"
     TagState:
       type: object
       required:
@@ -711,8 +716,7 @@ components:
         checks:
           type: array
           items:
-            $ref: '#/components/schemas/RepositoryCheck'
-
+            $ref: "#/components/schemas/RepositoryCheck"
     CIConfigState:
       type: object
       required:
@@ -722,12 +726,11 @@ components:
         files:
           type: array
           items:
-            $ref: '#/components/schemas/CIConfigCheck'
+            $ref: "#/components/schemas/CIConfigCheck"
         checks:
           type: array
           items:
-            $ref: '#/components/schemas/RepositoryCheck'
-
+            $ref: "#/components/schemas/RepositoryCheck"
     CIConfigCheck:
       type: object
       required:
@@ -745,8 +748,7 @@ components:
         checks:
           type: array
           items:
-            $ref: '#/components/schemas/RepositoryCheck'
-
+            $ref: "#/components/schemas/RepositoryCheck"
     ReleasePrepRequest:
       type: object
       required:
@@ -767,7 +769,6 @@ components:
           type: boolean
           default: false
           description: Skip NPM validation
-
     ReleasePrepResponse:
       type: object
       required:
@@ -789,11 +790,11 @@ components:
         versionTag:
           type: string
         gitlab:
-          $ref: '#/components/schemas/GitLabValidation'
+          $ref: "#/components/schemas/GitLabValidation"
         github:
-          $ref: '#/components/schemas/GitHubValidation'
+          $ref: "#/components/schemas/GitHubValidation"
         npm:
-          $ref: '#/components/schemas/NPMValidation'
+          $ref: "#/components/schemas/NPMValidation"
         allErrors:
           type: array
           items:
@@ -805,7 +806,7 @@ components:
         checklist:
           type: array
           items:
-            $ref: '#/components/schemas/ChecklistItem'
+            $ref: "#/components/schemas/ChecklistItem"
         nextSteps:
           type: array
           items:
@@ -814,7 +815,6 @@ components:
           type: array
           items:
             type: string
-
     GitLabValidation:
       type: object
       required:
@@ -858,7 +858,6 @@ components:
           type: array
           items:
             type: string
-
     GitHubValidation:
       type: object
       required:
@@ -888,7 +887,6 @@ components:
           type: array
           items:
             type: string
-
     NPMValidation:
       type: object
       required:
@@ -923,7 +921,6 @@ components:
           type: array
           items:
             type: string
-
     ChecklistItem:
       type: object
       required:
@@ -938,10 +935,13 @@ components:
           type: string
         status:
           type: string
-          enum: [pass, fail, warning, skip]
+          enum:
+            - pass
+            - fail
+            - warning
+            - skip
         message:
           type: string
-
   responses:
     BadRequest:
       description: Bad request
@@ -954,7 +954,6 @@ components:
                 type: string
               details:
                 type: object
-
     InternalError:
       description: Internal server error
       content:
@@ -966,3 +965,16 @@ components:
                 type: string
               details:
                 type: object
+x-ossa-metadata:
+  version: 1.0.0
+  compliance:
+    level: standard
+  observability:
+    tracing: true
+    metrics: true
+    logging: true
+x-ossa:
+  version: 0.5.0
+  agent:
+    id: ossa-dev-cli
+    type: gateway

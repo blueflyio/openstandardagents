@@ -10,11 +10,9 @@ info:
     - Supports multi-cloud deployments
     - Includes compliance and security policies
     - Auto-generates Kubernetes resources
-
 servers:
   - url: http://localhost:3101/api/v1
     description: Local development
-
 tags:
   - name: generate
     description: Helm chart generation
@@ -22,53 +20,61 @@ tags:
     description: Chart validation
   - name: templates
     description: Template management
-
 paths:
   /generate:
     post:
       summary: Generate Helm chart from OSSA manifest
       operationId: generateHelmChart
-      tags: [generate]
+      tags:
+        - generate
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/GenerateRequest'
+              $ref: "#/components/schemas/GenerateRequest"
       responses:
-        '200':
+        "200":
           description: Helm chart generated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GenerateResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-
+                $ref: "#/components/schemas/GenerateResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+      x-ossa-capability: reference-generate-helm-chart
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /generate/batch:
     post:
       summary: Generate Helm charts for multiple agents
       operationId: generateBatch
-      tags: [generate]
+      tags:
+        - generate
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BatchGenerateRequest'
+              $ref: "#/components/schemas/BatchGenerateRequest"
       responses:
-        '200':
+        "200":
           description: Batch generation complete
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BatchGenerateResponse'
-
+                $ref: "#/components/schemas/BatchGenerateResponse"
+      x-ossa-capability: reference-generate-batch
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /validate:
     post:
       summary: Validate Helm chart
       operationId: validateChart
-      tags: [validate]
+      tags:
+        - validate
       requestBody:
         required: true
         content:
@@ -82,44 +88,52 @@ paths:
                   type: string
                   format: binary
       responses:
-        '200':
+        "200":
           description: Validation result
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ValidationResponse'
-
+                $ref: "#/components/schemas/ValidationResponse"
+      x-ossa-capability: reference-validate-chart
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
   /templates:
     get:
       summary: List available templates
       operationId: listTemplates
-      tags: [templates]
+      tags:
+        - templates
       responses:
-        '200':
+        "200":
           description: Template list
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TemplateListResponse'
-
+                $ref: "#/components/schemas/TemplateListResponse"
+      x-ossa-capability: reference-list-templates
     post:
       summary: Create custom template
       operationId: createTemplate
-      tags: [templates]
+      tags:
+        - templates
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TemplateCreateRequest'
+              $ref: "#/components/schemas/TemplateCreateRequest"
       responses:
-        '201':
+        "201":
           description: Template created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Template'
-
+                $ref: "#/components/schemas/Template"
+      x-ossa-capability: reference-create-template
+      x-ossa-autonomy:
+        level: supervised
+        approval_required: true
 components:
   schemas:
     GenerateRequest:
@@ -131,8 +145,7 @@ components:
           type: object
           description: OSSA agent manifest
         options:
-          $ref: '#/components/schemas/GenerationOptions'
-
+          $ref: "#/components/schemas/GenerationOptions"
     GenerationOptions:
       type: object
       properties:
@@ -155,7 +168,10 @@ components:
               type: string
             pullPolicy:
               type: string
-              enum: [Always, IfNotPresent, Never]
+              enum:
+                - Always
+                - IfNotPresent
+                - Never
               default: IfNotPresent
         resources:
           type: object
@@ -215,7 +231,11 @@ components:
               type: array
               items:
                 type: string
-                enum: [fedramp, iso27001, soc2, hipaa]
+                enum:
+                  - fedramp
+                  - iso27001
+                  - soc2
+                  - hipaa
             policies:
               type: array
               items:
@@ -232,7 +252,6 @@ components:
             jaeger:
               type: boolean
               default: false
-
     GenerateResponse:
       type: object
       required:
@@ -265,7 +284,6 @@ components:
               type: string
             size:
               type: integer
-
     BatchGenerateRequest:
       type: object
       required:
@@ -281,8 +299,7 @@ components:
               manifest:
                 type: object
               options:
-                $ref: '#/components/schemas/GenerationOptions'
-
+                $ref: "#/components/schemas/GenerationOptions"
     BatchGenerateResponse:
       type: object
       required:
@@ -301,7 +318,6 @@ components:
                 type: string
               error:
                 type: string
-
     ValidationResponse:
       type: object
       required:
@@ -319,7 +335,6 @@ components:
             type: string
         metadata:
           type: object
-
     Template:
       type: object
       required:
@@ -335,13 +350,17 @@ components:
           type: string
         type:
           type: string
-          enum: [deployment, statefulset, daemonset, job, cronjob]
+          enum:
+            - deployment
+            - statefulset
+            - daemonset
+            - job
+            - cronjob
         template:
           type: string
         created_at:
           type: string
           format: date-time
-
     TemplateListResponse:
       type: object
       required:
@@ -350,8 +369,7 @@ components:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/Template'
-
+            $ref: "#/components/schemas/Template"
     TemplateCreateRequest:
       type: object
       required:
@@ -365,10 +383,14 @@ components:
           type: string
         type:
           type: string
-          enum: [deployment, statefulset, daemonset, job, cronjob]
+          enum:
+            - deployment
+            - statefulset
+            - daemonset
+            - job
+            - cronjob
         template:
           type: string
-
     Error:
       type: object
       required:
@@ -379,11 +401,23 @@ components:
           type: string
         message:
           type: string
-
   responses:
     BadRequest:
       description: Bad request
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
+x-ossa-metadata:
+  version: 0.3.3
+  compliance:
+    level: standard
+  observability:
+    tracing: true
+    metrics: true
+    logging: true
+x-ossa:
+  version: 0.5.0
+  agent:
+    id: reference-implementations-helm-generator
+    type: specialist

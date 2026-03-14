@@ -67,6 +67,7 @@ Manage GitLab agent integration
 
 Manage OSSA agents
 
+
 ## Global Options
 
 - `--help` - Show help for any command
